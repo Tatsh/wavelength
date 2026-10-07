@@ -19,6 +19,18 @@ public:
      */
     virtual void SetSink(MsgSink *pSink);
 
+    /**
+     * Join a chat room. Vtable slot 18.
+     *
+     * The result arrives at pSink as a JoinChatroomResultMsg. The name is inferred.
+     *
+     * @param pSink The sink that receives the result.
+     * @param nChatroomId The identifier of the room.
+     * @ghidraAddress NTSC-U/C: 0x00260238
+     * @ghidraAddress PAL: 0x00269318
+     */
+    virtual void JoinChatroom(MsgSink *pSink, int nChatroomId);
+
     MsgSink *mSink; /*!< The receiver of the result messages. +0x04 */
 };
 

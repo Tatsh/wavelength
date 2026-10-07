@@ -61,7 +61,7 @@ public:
      */
     void Poll(float fTime) override;
 
-private:
+protected:
     /**
      * Start the hold.
      *

@@ -3,11 +3,13 @@ set(WAVELENGTH_MET_SRCS
     autosavedonescreen.cpp
     avatarpanel.cpp
     bonuspicpanel.cpp
+    bootscreen.cpp
     bossjourneyscreen.cpp
     bossunlockscreen.cpp
     choosememcardscreen.cpp
     controllerconfigscreen.cpp
     controllerpanel.cpp
+    creditsscreen.cpp
     dialogpanel.cpp
     errorscreen.cpp
     focuschangepanel.cpp
@@ -33,6 +35,7 @@ set(WAVELENGTH_MET_SRCS
     keyboardscreen.cpp
     launchscreen.cpp
     mainoptionsscreen.cpp
+    marketingscreen.cpp
     mcdialogpanel.cpp
     metaarenascreen.cpp
     metagame.cpp
@@ -48,18 +51,41 @@ set(WAVELENGTH_MET_SRCS
     mixtrack.cpp
     modescreen.cpp
     multiendgamescreen.cpp
+    multifreqselectscreen.cpp
+    multisetupremixsavescreen.cpp
+    netendgamescreen.cpp
+    nethostattemptscreen.cpp
+    netjoinlpadscreen.cpp
+    netlaunchpadquitscreen.cpp
+    netlaunchscreen.cpp
+    netlpadscreen.cpp
+    netreadonlywarnscreen.cpp
+    netsortedscreen.cpp
+    netswitchlobbyscreen.cpp
+    nocontrollerscreen.cpp
+    numplayersscreen.cpp
     partunlockdonescreen.cpp
     partunlockscreen.cpp
     pausescreen.cpp
     powerupscreen.cpp
     prelaunchscreen.cpp
     puptipsscreen.cpp
+    readonlycheckscreen.cpp
+    readonlysavescreen.cpp
+    remixcontrollerscreen.cpp
     remixcopydelscreen.cpp
+    remixcreatemodescreen.cpp
+    remixdiscardscreen.cpp
     remixdownloadlist.cpp
     remixloadlist.cpp
     remixorfreqscreen.cpp
+    remixsongscreen.cpp
+    remixtypescreen.cpp
     saveeditedfreqscreen.cpp
     savefreqscreen.cpp
+    selloadedfreqscreen.cpp
+    setupremixsavescreen.cpp
+    shareremixscreen.cpp
     soloendgamescreen.cpp
     sologamestatspanel.cpp
     solowinstatspanel.cpp
@@ -72,7 +98,8 @@ set(WAVELENGTH_MET_SRCS
     transitionscreen.cpp
     unlockavatarpanel.cpp
     unlockscreen.cpp
-    viewanimplayer.cpp)
+    viewanimplayer.cpp
+    xproceedscreen.cpp)
 
 add_library(wavelength_met STATIC ${WAVELENGTH_MET_SRCS})
 target_link_libraries(wavelength_met PRIVATE wavelength_common)

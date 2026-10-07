@@ -8,6 +8,7 @@
 #include "game/playerprofile.h"
 #include "game/remixinfo.h"
 #include "game/songentry.h"
+#include "netflow/netgameparams.h"
 #include "os/string.h"
 #include "script/dataarray.h"
 
@@ -109,6 +110,44 @@ public:
      * @ghidraAddress PAL: 0x002784d8
      */
     int GetNumPlayers() const;
+
+    /**
+     * Take the settings of an online game the host published.
+     *
+     * @param pParams The settings.
+     * @ghidraAddress NTSC-U/C: 0x0026eae0
+     * @ghidraAddress PAL: 0x00278680
+     */
+    void SetGameParams(const NetGameParams *pParams);
+
+    /**
+     * Replace the buffer of the remix data with a new one, billed to `RemixBuf`.
+     *
+     * @param nSize The size of the new buffer, or 0 for none.
+     * @ghidraAddress NTSC-U/C: 0x0026e0f8
+     * @ghidraAddress PAL: 0x00277c98
+     */
+    void SetRemixBuffer(int nSize);
+
+    /**
+     * Copy the description of the remix the game plays.
+     *
+     * @param pInfo The description.
+     * @ghidraAddress NTSC-U/C: 0x0026e150
+     * @ghidraAddress PAL: 0x00277cf0
+     */
+    void SetRemix(const RemixInfo *pInfo);
+
+    /**
+     * Set the flag that the screens which choose an existing or a tutorial remix set.
+     *
+     * The name is inferred.
+     *
+     * @param nActive The flag.
+     * @ghidraAddress NTSC-U/C: 0x0026e198
+     * @ghidraAddress PAL: 0x00277d38
+     */
+    void SetRemixActive(int nActive);
 
     /**
      * Report the number of controllers the players on this console use.
@@ -635,7 +674,7 @@ public:
     String mSong;        /*!< The song of the game, the "song" entry of the "db" section. */
     int mLoadRemix;      /*!< `load_remix`, whether a saved remix is played. +0x24 */
     int mRemixReadOnly;  /*!< Non-zero when the remix may not be saved over. +0x28 */
-    int mReserved2C[5];  // +0x2c, not yet recovered.
+    String mReserved2C;  // +0x2c, not yet recovered.
     int mPracticeMode;   /*!< `practice_mode`. +0x40 */
     int mTutorial;       /*!< Whether the tutorial is played. +0x44 */
     int mSkillLevel;     /*!< `skill_level`. +0x48 */

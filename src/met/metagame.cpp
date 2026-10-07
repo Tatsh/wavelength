@@ -16,7 +16,9 @@
 #include "math/rand.h"
 #include "memcard/mcmanager.h"
 #include "met/avatarpanel.h"
+#include "met/bootscreen.h"
 #include "met/bossunlockscreen.h"
+#include "met/creditsscreen.h"
 #include "met/dialogpanel.h"
 #include "met/errorscreen.h"
 #include "met/freqconfirmscreen.h"
@@ -32,6 +34,7 @@
 #include "met/keyboardkey.h"
 #include "met/keyboardpanel.h"
 #include "met/keyboardscreen.h"
+#include "met/marketingscreen.h"
 #include "met/mcdialogpanel.h"
 #include "met/metaarenascreen.h"
 #include "met/metagameutil.h"
@@ -40,18 +43,41 @@
 #include "met/metasongscreen.h"
 #include "met/metastartscreen.h"
 #include "met/modescreen.h"
+#include "met/multifreqselectscreen.h"
+#include "met/multisetupremixsavescreen.h"
+#include "met/netendgamescreen.h"
+#include "met/nethostattemptscreen.h"
+#include "met/netjoinlpadscreen.h"
+#include "met/netlaunchpadquitscreen.h"
+#include "met/netlaunchscreen.h"
+#include "met/netlpadscreen.h"
+#include "met/netreadonlywarnscreen.h"
+#include "met/netsortedscreen.h"
+#include "met/netswitchlobbyscreen.h"
 #include "met/nocontrollerscreen.h"
+#include "met/numplayersscreen.h"
 #include "met/partunlockscreen.h"
 #include "met/pausescreen.h"
+#include "met/readonlycheckscreen.h"
+#include "met/readonlysavescreen.h"
+#include "met/remixcontrollerscreen.h"
+#include "met/remixcreatemodescreen.h"
+#include "met/remixdiscardscreen.h"
+#include "met/remixsongscreen.h"
+#include "met/remixtypescreen.h"
 #include "met/saveeditedfreqscreen.h"
 #include "met/savefreqscreen.h"
 #include "met/saveremixscreen.h"
+#include "met/selloadedfreqscreen.h"
+#include "met/setupremixsavescreen.h"
+#include "met/shareremixscreen.h"
 #include "met/songdecryptscreen.h"
 #include "met/songpicpanel.h"
 #include "met/songpreview.h"
 #include "met/transitionerrorscreen.h"
 #include "met/transitionmusic.h"
 #include "met/transitionscreen.h"
+#include "met/xproceedscreen.h"
 #include "netflow/lobbymsgtypes.h"
 #include "netflow/netlaunchpad.h"
 #include "netflow/netlobby.h"
@@ -382,7 +408,7 @@ Metagame::Metagame() {
     mFirstBoot = 1;
     mReloadFrontEnd = 1;
     mLeaveScreenShown = 1;
-    mReservedDC = -1;
+    mChatroom.mId = -1;
     mGameFxBankSlot = -1;
     mMetaFxBankSlot = -1;
     mMusicSharedBankSlot = -1;
@@ -410,21 +436,48 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(FreqScreen::New, "freq_screen");
     TheUI.RegisterScreenType(TransitionScreen::New, "transition_screen");
     TheUI.RegisterScreenType(IntroScreen::New, "intro_screen");
+    TheUI.RegisterScreenType(MarketingScreen::New, "mktg_screen");
+    TheUI.RegisterScreenType(CreditsScreen::New, "credits_screen");
+    TheUI.RegisterScreenType(NoControllerScreen::New, "no_controller_screen");
     TheUI.RegisterScreenType(ErrorScreen::New, "error_screen");
+    TheUI.RegisterScreenType(XProceedScreen::New, "x_proceed_screen");
     TheUI.RegisterScreenType(MetaStartScreen::New, "meta_start_screen");
     TheUI.RegisterScreenType(MetaMainScreen::New, "meta_main_screen");
     TheUI.RegisterScreenType(ModeScreen::New, "mode_screen");
+    TheUI.RegisterScreenType(RemixTypeScreen::New, "remix_type_screen");
+    TheUI.RegisterScreenType(NumPlayersScreen::New, "num_players_screen");
     TheUI.RegisterScreenType(MetaSkillScreen::New, "meta_skill_screen");
     TheUI.RegisterScreenType(MetaArenaScreen::New, "meta_arena_screen");
     TheUI.RegisterScreenType(MetaSongScreen::New, "meta_song_screen");
+    TheUI.RegisterScreenType(RemixSongScreen::New, "remix_song_screen");
+    TheUI.RegisterScreenType(NetEndGameScreen::New, "fn_end_screen");
     TheUI.RegisterScreenType(FreqMakerPartConfigScreen::New, "f_maker_part_screen");
     TheUI.RegisterScreenType(FreqMakerEmblemScreen::New, "f_maker_emblem_screen");
     TheUI.RegisterScreenType(FreqMakerMainScreen::New, "f_maker_main_screen");
     TheUI.RegisterScreenType(FreqMakerCustomScreen::New, "f_maker_custom_screen");
     TheUI.RegisterScreenType(FreqMakerErrorScreen::New, "f_maker_error_screen");
+    TheUI.RegisterScreenType(MultiFreqSelectScreen::New, "f_m_sel_screen");
+    TheUI.RegisterScreenType(SelLoadedFreqScreen::New, "sel_loaded_f_screen");
     TheUI.RegisterScreenType(FreqConfirmScreen::New, "confirm_screen");
+    TheUI.RegisterScreenType(SetupRemixSaveScreen::New, "setup_remix_save_screen");
+    TheUI.RegisterScreenType(MultiSetupRemixSaveScreen::New, "multi_setup_remix_save_screen");
+    TheUI.RegisterScreenType(RemixDiscardScreen::New, "remix_discard_screen");
+    TheUI.RegisterScreenType(RemixCreateModeScreen::New, "remix_create_mode_screen");
+    TheUI.RegisterScreenType(RemixControllerScreen::New, "remix_controller_screen");
     TheUI.RegisterScreenType(KeyboardScreen::New, "keyboard_screen");
     TheUI.RegisterPanelType(KeyboardPanel::New, "kb_panel");
+    TheUI.RegisterScreenType(NetHostAttemptScreen::New, "net_host_attempt_screen");
+    TheUI.RegisterScreenType(NetSortedScreen::New, "net_sorted_screen");
+    TheUI.RegisterScreenType(NetLaunchpadQuitScreen::New, "net_launchpad_quit_screen");
+    TheUI.RegisterScreenType(NetSwitchLobbyScreen::New, "net_switch_lobby_screen");
+    TheUI.RegisterScreenType(NetJoinLPadScreen::New, "net_join_lpad_screen");
+    TheUI.RegisterScreenType(NetLpadScreen::New, "lpad_screen");
+    TheUI.RegisterScreenType(NetLaunchScreen::New, "net_launch_screen");
+    TheUI.RegisterScreenType(ShareRemixScreen::New, "share_remix_screen");
+    TheUI.RegisterScreenType(BootScreen::New, "boot_screen");
+    TheUI.RegisterScreenType(ReadOnlyCheckScreen::New, "read_only_check_screen");
+    TheUI.RegisterScreenType(ReadOnlySaveScreen::New, "read_only_save_screen");
+    TheUI.RegisterScreenType(NetReadOnlyWarnScreen::New, "net_ro_warn_screen");
     TheUI.RegisterScreenType(SaveFreqScreen::New, "save_freq_screen");
     TheUI.RegisterScreenType(SaveEditedFreqScreen::New, "save_edited_freq_screen");
     TheUI.RegisterPanelType(FreqPanel::New, "freq_panel");

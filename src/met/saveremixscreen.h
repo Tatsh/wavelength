@@ -13,6 +13,7 @@
  */
 class SaveRemixScreen : public OverwriteSaveScreen, public MemcardUser {
 public:
+    int mReservedA0;    // +0xa0, cleared by the screens that open this one.
     int mReservedB4[3]; // +0xb4, not yet recovered.
     String mRemixName;  /*!< The name the remix is saved under. +0xc0 */
 };

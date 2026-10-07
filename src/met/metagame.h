@@ -14,6 +14,7 @@
 #include "msg/launchpadabortedmsg.h"
 #include "msg/lobbyconnectionlostmsg.h"
 #include "msg/message.h"
+#include "netflow/netchatroominfo.h"
 #include "os/string.h"
 #include "rnd/cam.h"
 #include "rnd/environ.h"
@@ -400,9 +401,7 @@ public:
     int mMetaFxBankSlot;             /*!< `meta_fx_bank_slot` of the metagame configuration. */
     int mMusicSharedBankSlot;        /*!< `music_shared_bank_slot` of the metagame configuration. */
     int mMusicSwapBankSlot;          /*!< `music_swap_bank_slot` of the metagame configuration. */
-    int mReservedDC;                 // +0xdc, set to -1 by the constructor and not yet identified.
-    String mReservedE0;              // +0xe0, not yet identified.
-    int mReservedF4[2];              // +0xf4, not yet identified.
+    NetChatroomInfo mChatroom;       /*!< The chat room this console joined last. +0xdc */
     String mSelectedArena;           /*!< The arena chosen last. */
     int mFreqsOnCard;                /*!< Non-zero when the memory card check found saved Freqs. */
     std::list<UnlockEvent> mUnlockScreens; /*!< The queued screens that follow the song. */

@@ -118,3 +118,15 @@ void JoypadSetMenuControl(int nPad, bool bMenu);
  * @ghidraAddress PAL: 0x002947f0
  */
 void JoypadSetVibration(int nPad, int nSmallMotor, int nBigMotor);
+
+/**
+ * Report whether a multitap is connected, as the controller poll last found.
+ *
+ * The name is inferred from the player count screen. That screen offers three and four players
+ * only while the flag is set.
+ *
+ * @return Non-zero while a multitap is connected.
+ * @ghidraAddress NTSC-U/C: 0x0028c4d0
+ * @ghidraAddress PAL: 0x00295e20
+ */
+int JoypadMultitapConnected();

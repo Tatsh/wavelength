@@ -76,6 +76,13 @@ public:
     AvatarPartSet();
 
     /**
+     * Copy every member of another set, the avatar player included.
+     *
+     * @param other The set to copy.
+     */
+    AvatarPartSet(const AvatarPartSet &other) = default;
+
+    /**
      * Return the avatar player and destroy the set.
      *
      * @ghidraAddress NTSC-U/C: 0x00271a58

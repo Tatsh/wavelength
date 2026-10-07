@@ -102,6 +102,18 @@ public:
     const char *GetGenreName() const;
 
     /**
+     * Report the localised name of a remix of the song, the token `<name>_REMIX_TITLE`.
+     *
+     * Without a translation of the token, the routine reports the result of the routine at
+     * `0x0027cf90`.
+     *
+     * @return The name.
+     * @ghidraAddress NTSC-U/C: 0x0027d010
+     * @ghidraAddress PAL: 0x00286928
+     */
+    const char *GetRemixTitle() const;
+
+    /**
      * Report the `bpm` of the song.
      *
      * @return The tempo in beats per minute.
