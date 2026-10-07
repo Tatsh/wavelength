@@ -1,6 +1,6 @@
 # Game code, `0x002a0000` to `0x002b0000`
 
-2 of 66 routines done.
+3 of 66 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -53,7 +53,7 @@ preliminary.
 | `StepDmaNormalTransfer`                        |        :x:         |      1 |     80 | `0x002a25e8` | `0x002ac558` | `uint StepDmaNormalTransfer(void)`                                                                                                                                                                       |
 | `ConvertToDmaPhysicalAddress`                  |        :x:         |      8 |     76 | `0x002a1920` | `0x002ab890` | `uint ConvertToDmaPhysicalAddress(uint dwAddress)`                                                                                                                                                       |
 | `FinalizeCommandTask`                          |       :memo:       |     69 |     72 | `0x002a0238` | `0x002a9ef0` | `void FinalizeCommandTask(int * pCommand)`                                                                                                                                                               |
-| `StopTaskStateMachine`                         |        :x:         |     57 |     72 | `0x002a0160` | `0x002a9e18` | `void StopTaskStateMachine(int * pThis, long bCancel)`                                                                                                                                                   |
+| `StopTaskStateMachine`                         | :white_check_mark: |     57 |     72 | `0x002a0160` | `0x002a9e18` | `void StopTaskStateMachine(int * pThis, long bCancel)`                                                                                                                                                   |
 | `PollTaskStateMachine`                         |       :memo:       |     39 |     72 | `0x002a01a8` | `0x002a9e60` | `int PollTaskStateMachine(int * pThis)`                                                                                                                                                                  |
 | `StartCommandSequenceTask`                     |        :x:         |     14 |     72 | `0x002a04d8` | `0x002aa190` | `void StartCommandSequenceTask(int * pTask)`                                                                                                                                                             |
 | `FindNextFormatSpecifier`                      |        :x:         |      2 |     72 | `0x002a11b8` | `0x002ab128` | `char * FindNextFormatSpecifier(char * pszFormat)`                                                                                                                                                       |
