@@ -85,7 +85,8 @@
   },
   package_json+: {
     cspell+: {
-      ignorePaths+: ['3rdparty/**'],
+      // The generated progress parts list routine names, not prose.
+      ignorePaths+: ['3rdparty/**', 'progress/**'],
     },
     'markdownlint-cli2'+: {
       ignores: ['3rdparty/**'],
