@@ -1,77 +1,20 @@
 set(WAVELENGTH_APP_SRCS
     animhelper.cpp
     appactivefilter.cpp
-    application.cpp
     appticktask.cpp
     apptimetask.cpp
     attachment.cpp
     cutscene.cpp
-    durgemcurve.cpp
-    durgemrowstring.cpp
-    durgemstrip.cpp
-    durgemtrails.cpp
-    globals.cpp
-    hudanalogstick.cpp
-    hudbadge.cpp
-    hudcountdown.cpp
-    hudeffects.cpp
-    hudenergy.cpp
-    hudfeedback.cpp
-    hudgenmessage.cpp
-    hudhighlight.cpp
-    hudletterbox.cpp
-    hudloop.cpp
-    hudpanel.cpp
-    hudpoints.cpp
-    hudpowerup.cpp
-    hudtcgroup.cpp
-    hudtextmessage.cpp
-    hudtrack.cpp
-    hudtracklabel.cpp
-    hudwinmessage.cpp
-    hudutil.cpp
     linearanim.cpp
     longop.cpp
-    msgqueue.cpp
     msgsink.cpp
     msgsource.cpp
     ovyassembly.cpp
     playbacker.cpp
-    playsound.cpp
     recorder.cpp
-    renderer.cpp
-    rendererbase.cpp
     scheduler.cpp
-    scriptsink.cpp
     task.cpp
-    timeclock.cpp
-    tnlactivator.cpp
-    tnlarms.cpp
-    tnlarrow.cpp
-    tnlbumpfx.cpp
-    tnlcamerarig.cpp
-    tnlcatcher.cpp
-    tnlcripplefx.cpp
-    tnlemitter.cpp
-    tnlfirefx.cpp
-    tnlgem.cpp
-    tnlgemeffectkind.cpp
-    tnlgemmanager.cpp
-    tnlgemmeshkind.cpp
-    tnlgridmarkers.cpp
-    tnllattice.cpp
-    tnlmultfx.cpp
-    tnlname.cpp
-    tnlnowring.cpp
-    tnlpanelfx.cpp
-    tnlpanelfxdelay.cpp
-    tnlpendingtrigger.cpp
-    tnlpointer.cpp
-    tnlsabretrail.cpp
-    tnlseekerfade.cpp
-    tnlsnake.cpp
-    tnlutil.cpp
-    tunnelcache.cpp)
+    timeclock.cpp)
 
 add_library(wavelength_app STATIC ${WAVELENGTH_APP_SRCS})
 target_link_libraries(wavelength_app PRIVATE wavelength_common)

@@ -2,7 +2,6 @@ set(WAVELENGTH_RND_SRCS
     amovieset.cpp
     animatable.cpp
     arena.cpp
-    asyncloader.cpp
     blur.cpp
     bufstream.cpp
     button.cpp
@@ -41,7 +40,6 @@ set(WAVELENGTH_RND_SRCS
     stream.cpp
     string.cpp
     text.cpp
-    toolstream.cpp
     transanim.cpp
     transformable.cpp
     tunnel.cpp

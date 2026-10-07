@@ -1,82 +1,15 @@
 set(WAVELENGTH_MSG_SRCS
-    advancesectionmsg.cpp
-    advancesectiontogglemsg.cpp
-    allnotesoffmsg.cpp
-    axebuttonmsg.cpp
-    begingamelocalmsg.cpp
-    beginphrasecatchmsg.cpp
-    catchmsg.cpp
-    caughtbarmsg.cpp
-    caughtpowerbarmsg.cpp
-    choosepowerupmsg.cpp
-    cleargemmsg.cpp
-    cleargemsmsg.cpp
-    contctrlmsg.cpp
-    deployedpowerupmsg.cpp
-    durgemmsg.cpp
     editgempacket.cpp
-    enablefreestylemsg.cpp
-    endgamemsg.cpp
-    fadegamemsg.cpp
     finalscorepacket.cpp
-    freestylefxmsg.cpp
-    gamebeginmsg.cpp
-    gameconnectfailuremsg.cpp
-    gameconnectionlostmsg.cpp
-    gameconnectsuccessmsg.cpp
-    gamemanagerdoplaybackmsg.cpp
-    gameovermsg.cpp
-    invalidateseekermsg.cpp
-    invalidatetrackmsg.cpp
-    isrecordingmsg.cpp
-    jameffectmsg.cpp
-    leavegamemsg.cpp
     lobbyconnectionlostmsg.cpp
-    looptogglemsg.cpp
-    looptoolmsg.cpp
     message.cpp
-    metcontrollerreading.cpp
-    metfreqendedmsg.cpp
-    metstartnetlaunchmsg.cpp
-    metstartpausemsg.cpp
-    metunlockstagesmsg.cpp
-    multipliermsg.cpp
-    multiplierstatemsg.cpp
     musemsg.cpp
     mutevocalspacket.cpp
-    nearesttrackmsg.cpp
-    notemsg.cpp
-    nowbarmsg.cpp
     packetfactories.cpp
-    pausegamesystemmsg.cpp
-    phrasemsg.cpp
-    pitchmsg.cpp
-    playbackmodemsg.cpp
-    playbacktogglemsg.cpp
-    playerleftgamemsg.cpp
     playerupdatepacket.cpp
-    powerupcountmsg.cpp
-    powerupfailedmsg.cpp
     previewpacket.cpp
-    rawcontrollermsg.cpp
-    refreshnetmsg.cpp
-    remixfxmsg.cpp
     remixerupdatepacket.cpp
-    rotleftmsg.cpp
-    rotrightmsg.cpp
-    scriptmsg.cpp
-    sectionchangepacket.cpp
-    showeraseeffectmsg.cpp
-    stdmidimsg.cpp
-    streakovermsg.cpp
-    susgemmsg.cpp
-    sustainnotemsg.cpp
-    textmsg.cpp
-    toggleghostmsg.cpp
-    tracksonmsg.cpp
-    transportaddress.cpp
-    unpausegamesystemmsg.cpp
-    winmsg.cpp)
+    sectionchangepacket.cpp)
 
 add_library(wavelength_msg STATIC ${WAVELENGTH_MSG_SRCS})
 target_link_libraries(wavelength_msg PRIVATE wavelength_common)

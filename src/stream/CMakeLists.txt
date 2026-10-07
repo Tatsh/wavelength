@@ -3,14 +3,11 @@ set(WAVELENGTH_STREAM_SRCS
     hxchunkname.cpp
     hxidatachunk.cpp
     hxilistchunk.cpp
-    hxmemstream.cpp
     hxstream.cpp
     hxvarlennumber.cpp
     ibfilestream.cpp
     ibstream.cpp
-    iobmemstream.cpp
     iobpreallocmemstream.cpp
-    obfilestream.cpp
     obstream.cpp)
 
 add_library(wavelength_stream STATIC ${WAVELENGTH_STREAM_SRCS})

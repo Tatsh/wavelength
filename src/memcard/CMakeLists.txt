@@ -3,46 +3,23 @@ set(WAVELENGTH_MEMCARD_SRCS
     closeop.cpp
     createdirop.cpp
     deletefileop.cpp
-    deleteremixmct.cpp
     entspaceop.cpp
-    formatcardmct.cpp
     formatop.cpp
-    getallconnectstatesmct.cpp
-    getconnectstatemct.cpp
     listdirop.cpp
-    listremixesmct.cpp
-    loadfilemct.cpp
-    loadglobalsettingsmct.cpp
-    loadjukeboxplaylistmct.cpp
-    loadpersonasmct.cpp
-    loadremixmct.cpp
     memcard.cpp
     memcardcbhandler.cpp
-    memcardmanager.cpp
     memcardop.cpp
-    memcardps2.cpp
     memcardsavepaths.cpp
     memcardtask.cpp
     memcarduser.cpp
-    minimumsavespacemct.cpp
     openreadop.cpp
     openwriteop.cpp
     readop.cpp
-    remixindex.cpp
     renamefileop.cpp
-    savefilemct.cpp
-    saveglobalsettingsmct.cpp
-    saveicon.cpp
-    savejukeboxplaylistmct.cpp
-    savepersonasmct.cpp
-    saveremixmct.cpp
     seekop.cpp
     shiftjis.cpp
     unformatop.cpp
     writeop.cpp)
-if(VIDEO_STANDARD STREQUAL "PAL")
-  list(APPEND WAVELENGTH_MEMCARD_SRCS savespacecheckermct.cpp)
-endif()
 
 add_library(wavelength_memcard STATIC ${WAVELENGTH_MEMCARD_SRCS})
 target_link_libraries(wavelength_memcard PRIVATE wavelength_common)

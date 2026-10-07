@@ -1,76 +1,32 @@
 set(WAVELENGTH_GAME_SRCS
-    axefx.cpp
-    axenewgemmaker.cpp
-    axeoldgemmaker.cpp
-    axingstg.cpp
-    campaignstats.cpp
-    catchingstg.cpp
-    controllercmd.cpp
-    controllerconfig.cpp
-    delayer.cpp
     difficultyrating.cpp
-    dogamesystemplaycmd.cpp
     duel.cpp
     duellogic.cpp
     duelpattern.cpp
     dueltrack.cpp
     dueltrackpitcher.cpp
-    enablemgr.cpp
-    endrecordingcmd.cpp
     forcefeedbackmgr.cpp
     forcefeedbackmgrcontroller.cpp
     forcefeedbackmgrmotoreffect.cpp
-    freqappearance.cpp
-    freqappearancedetail.cpp
-    freqmakercursor.cpp
-    freqpart.cpp
-    freqparttemplate.cpp
     game.cpp
     gameconfig.cpp
-    gameinfo.cpp
     gamelogic.cpp
-    gameparams.cpp
-    gameplaybacker.cpp
-    gamercmd.cpp
-    gamerecorder.cpp
-    gamestats.cpp
     gametrackselector.cpp
     gemcatcher.cpp
     gemcursor.cpp
     helptext.cpp
     inputmgr.cpp
-    genericcatcher.cpp
-    globalsettings.cpp
-    gsperiodical.cpp
     harmony.cpp
-    idablebase.cpp
-    inputcheatdetectorgs.cpp
-    inputcheatdetectormet.cpp
     inputmap.cpp
-    jameffectsmgr.cpp
     joypadps2.cpp
-    jukeboxplaylist.cpp
-    leveldata.cpp
-    levelstats.cpp
     lineartransform.cpp
-    localjamenablemgr.cpp
     localplayer.cpp
     lyric.cpp
-    metagameworld.cpp
-    middisabler.cpp
-    midichase.cpp
     mixer.cpp
-    msgjoiner.cpp
     multigamelogic.cpp
-    multipowerbarmgr.cpp
-    multiscreenanim.cpp
     netarbiter.cpp
     netfaker.cpp
-    notefinder.cpp
     padrecord.cpp
-    phraseeraser.cpp
-    phrasemaker.cpp
-    pitchpicker.cpp
     pitchtrack.cpp
     pitchtrackbuilder.cpp
     pitchtrackdisplay.cpp
@@ -80,38 +36,23 @@ set(WAVELENGTH_GAME_SRCS
     pitchtrackriffdata.cpp
     pitchtrackriffs.cpp
     player.cpp
-    playerinfo.cpp
     playmap.cpp
     points.cpp
-    powerup.cpp
-    powerupcollection.cpp
-    powerupcollectioni.cpp
-    powerupplacer.cpp
-    quantizer.cpp
-    rawcontroller.cpp
     remix.cpp
     remixtutorial.cpp
     remoteplayer.cpp
-    riffrangefinder.cpp
-    riffset.cpp
     scratchtrack.cpp
     scratchtrackbuilder.cpp
     scratchtrackdata.cpp
-    screenanim.cpp
     scripttrackbuilder.cpp
     scripttrackdata.cpp
     sectionboundaries.cpp
-    singlepowerupcollection.cpp
-    skillstats.cpp
     slotgrid.cpp
     sologamelogic.cpp
-    solopowerbarmgr.cpp
-    soloscreenanim.cpp
     stats.cpp
     track.cpp
     trackselector.cpp
     tutorialgamelogic.cpp
-    voxingstg.cpp
     world.cpp
     worldlogic.cpp
     worldmgr.cpp)

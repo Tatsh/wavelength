@@ -10,7 +10,6 @@ set(WAVELENGTH_OS_SRCS
     formatmessage.cpp
     formatstring.cpp
     genpath.cpp
-    heap.cpp
     hostmode.cpp
     hxstr.cpp
     inflate.c

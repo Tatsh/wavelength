@@ -1,8 +1,6 @@
 set(WAVELENGTH_SCH_SRCS
-    barsequencer.cpp
     cmdid.cpp
     command.cpp
-    sequencercmd.cpp
     tempomap.cpp
     tickclock.cpp
     time.cpp
