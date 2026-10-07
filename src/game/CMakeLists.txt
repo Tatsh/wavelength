@@ -1,5 +1,4 @@
-# The interpreter headers the step rings unit needs are vendored under 3rdparty.
-set(RESONANCE_GAME_SRCS
+set(WAVELENGTH_GAME_SRCS
     autocatchpowerup.cpp
     autoriffer.cpp
     axefx.cpp
@@ -114,7 +113,5 @@ set(RESONANCE_GAME_SRCS
     trackselector.cpp
     voxingstg.cpp)
 
-add_library(resonance_game STATIC ${RESONANCE_GAME_SRCS})
-target_link_libraries(resonance_game PRIVATE resonance_common)
-target_include_directories(resonance_game PRIVATE "${CMAKE_SOURCE_DIR}/src/python/PC"
-                                                  "${CMAKE_SOURCE_DIR}/3rdparty/Python-2.0/Include")
+add_library(wavelength_game STATIC ${WAVELENGTH_GAME_SRCS})
+target_link_libraries(wavelength_game PRIVATE wavelength_common)

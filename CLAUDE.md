@@ -1,4 +1,4 @@
-# Resonance Memory
+# Wavelength Memory
 
 See @README.md for an overview of this project.
 

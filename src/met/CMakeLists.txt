@@ -1,5 +1,4 @@
-# The interpreter headers the two scripting-adjacent units need are vendored under 3rdparty.
-set(RESONANCE_MET_SRCS
+set(WAVELENGTH_MET_SRCS
     albumcache.cpp
     creditsroll.cpp
     discswap.cpp
@@ -103,35 +102,32 @@ set(RESONANCE_MET_SRCS
     scrollinglist.cpp
     texturepairrecord.cpp)
 
-add_library(resonance_met STATIC ${RESONANCE_MET_SRCS})
-target_link_libraries(resonance_met PRIVATE resonance_common)
-target_include_directories(resonance_met PRIVATE "${CMAKE_SOURCE_DIR}/src/python/PC"
-                                                 "${CMAKE_SOURCE_DIR}/3rdparty/Python-2.0/Include")
-
+add_library(wavelength_met STATIC ${WAVELENGTH_MET_SRCS})
+target_link_libraries(wavelength_met PRIVATE wavelength_common)
 # Patched builds show the commit and the build time on the title screen. The header is regenerated
 # on every build.
 if(ENABLE_PATCHES)
   set(_build_info "${CMAKE_BINARY_DIR}/generated/buildinfo.h")
   add_custom_target(
-    resonance_build_info
+    wavelength_build_info
     COMMAND "${CMAKE_COMMAND}" "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" "-DOUTPUT=${_build_info}" -P
             "${CMAKE_SOURCE_DIR}/cmake/build-info.cmake"
     BYPRODUCTS "${_build_info}"
     VERBATIM)
-  add_dependencies(resonance_met resonance_build_info)
-  target_include_directories(resonance_met PRIVATE "${CMAKE_BINARY_DIR}/generated")
+  add_dependencies(wavelength_met wavelength_build_info)
+  target_include_directories(wavelength_met PRIVATE "${CMAKE_BINARY_DIR}/generated")
 
   # The credits of patched builds open with this entry. The avatar is fetched once, when the
   # header is first generated. When it cannot be fetched, the entry shows the text alone.
-  set(RESONANCE_CREDITS_GITHUB_USER
+  set(WAVELENGTH_CREDITS_GITHUB_USER
       "Tatsh"
       CACHE STRING "GitHub user whose avatar the first credit shows.")
-  set(RESONANCE_CREDITS_TEXT
+  set(WAVELENGTH_CREDITS_TEXT
       "Reconstruction:\\nAndrew Udvare\\ngithub.com/Tatsh"
       CACHE STRING "Text of the first credit. \\n breaks a line.")
-  find_program(RESONANCE_MAGICK magick)
-  set(_credits_magick "${RESONANCE_MAGICK}")
-  if(NOT RESONANCE_MAGICK)
+  find_program(WAVELENGTH_MAGICK magick)
+  set(_credits_magick "${WAVELENGTH_MAGICK}")
+  if(NOT WAVELENGTH_MAGICK)
     message(STATUS "ImageMagick was not found. The first credit has no avatar.")
     set(_credits_magick "")
   endif()
@@ -139,11 +135,11 @@ if(ENABLE_PATCHES)
   add_custom_command(
     OUTPUT "${_credits_avatar}"
     COMMAND
-      "${RESONANCE_TOOL_CREDITS_AVATAR}" "${_credits_avatar}" --magick "${_credits_magick}" --user
-      "${RESONANCE_CREDITS_GITHUB_USER}" --text "${RESONANCE_CREDITS_TEXT}"
-    DEPENDS resonance_tools "${RESONANCE_TOOL_CREDITS_AVATAR}"
+      "${WAVELENGTH_TOOL_CREDITS_AVATAR}" "${_credits_avatar}" --magick "${_credits_magick}" --user
+      "${WAVELENGTH_CREDITS_GITHUB_USER}" --text "${WAVELENGTH_CREDITS_TEXT}"
+    DEPENDS wavelength_tools "${WAVELENGTH_TOOL_CREDITS_AVATAR}"
     COMMENT "Writing ${_credits_avatar}"
     VERBATIM)
-  add_custom_target(resonance_credits_avatar DEPENDS "${_credits_avatar}")
-  add_dependencies(resonance_met resonance_credits_avatar)
+  add_custom_target(wavelength_credits_avatar DEPENDS "${_credits_avatar}")
+  add_dependencies(wavelength_met wavelength_credits_avatar)
 endif()

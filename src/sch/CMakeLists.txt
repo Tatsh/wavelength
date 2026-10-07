@@ -1,4 +1,4 @@
-set(RESONANCE_SCH_SRCS
+set(WAVELENGTH_SCH_SRCS
     barsequencer.cpp
     cmdid.cpp
     command.cpp
@@ -8,5 +8,5 @@ set(RESONANCE_SCH_SRCS
     time.cpp
     timedcommand.cpp)
 
-add_library(resonance_sch STATIC ${RESONANCE_SCH_SRCS})
-target_link_libraries(resonance_sch PRIVATE resonance_common)
+add_library(wavelength_sch STATIC ${WAVELENGTH_SCH_SRCS})
+target_link_libraries(wavelength_sch PRIVATE wavelength_common)

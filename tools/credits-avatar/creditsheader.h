@@ -10,10 +10,10 @@ namespace Tools::CreditsAvatar {
 /**
  * Compose the credits avatar header.
  *
- * The header defines `RESONANCE_CREDITS_TEXT`, `RESONANCE_CREDITS_AVATAR_SIZE`, and
- * `RESONANCE_CREDITS_HAS_AVATAR`. With texels, `RESONANCE_CREDITS_HAS_AVATAR` is 1 and the header
+ * The header defines `WAVELENGTH_CREDITS_TEXT`, `WAVELENGTH_CREDITS_AVATAR_SIZE`, and
+ * `WAVELENGTH_CREDITS_HAS_AVATAR`. With texels, `WAVELENGTH_CREDITS_HAS_AVATAR` is 1 and the header
  * also defines the texel array `kCreditsAvatarTexels`. Without texels,
- * `RESONANCE_CREDITS_HAS_AVATAR` is 0 and the credit has no picture.
+ * `WAVELENGTH_CREDITS_HAS_AVATAR` is 0 and the credit has no picture.
  *
  * @param text Credit text.
  * @param size Width and height of the texture in pixels.

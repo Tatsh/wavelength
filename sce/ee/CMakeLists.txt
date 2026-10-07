@@ -1,4 +1,4 @@
-set(RESONANCE_EZMPEG_SRCS
+set(WAVELENGTH_EZMPEG_SRCS
     sample/audiodec.c
     sample/disp.c
     sample/readbuf.c
@@ -7,13 +7,13 @@ set(RESONANCE_EZMPEG_SRCS
     sample/videodec.c
     sample/vobuf.c)
 
-add_library(resonance_ezmpeg STATIC ${RESONANCE_EZMPEG_SRCS})
-target_link_libraries(resonance_ezmpeg PRIVATE resonance_common)
-target_include_directories(resonance_ezmpeg PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include")
+add_library(wavelength_ezmpeg STATIC ${WAVELENGTH_EZMPEG_SRCS})
+target_link_libraries(wavelength_ezmpeg PRIVATE wavelength_common)
+target_include_directories(wavelength_ezmpeg PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include")
 
 # The Sony library reconstructions. Each unit lists its sources explicitly, as the subsystem
 # libraries do. libdma is absent until its routines are recovered.
-set(RESONANCE_SONYLIB_SRCS
+set(WAVELENGTH_SONYLIB_SRCS
     src/fileio.c
     src/iopcontrol.c
     src/iopheap.c
@@ -40,12 +40,12 @@ set(RESONANCE_SONYLIB_SRCS
     src/sifrpc.c
     src/tty.c)
 
-add_library(resonance_sonylibs STATIC ${RESONANCE_SONYLIB_SRCS})
-target_link_libraries(resonance_sonylibs PRIVATE resonance_common)
+add_library(wavelength_sonylibs STATIC ${WAVELENGTH_SONYLIB_SRCS})
+target_link_libraries(wavelength_sonylibs PRIVATE wavelength_common)
 # The original libraries assert in the shipped build. No build type may compile the assertions out.
-target_compile_options(resonance_sonylibs PRIVATE -UNDEBUG)
-target_include_directories(resonance_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include")
+target_compile_options(wavelength_sonylibs PRIVATE -UNDEBUG)
+target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include")
 
 # The system layer the compiler's C and C++ runtime needs, over the reconstructed kernel.
-add_library(resonance_runtime STATIC runtime/newlib.c runtime/pthread.c runtime/softfloat.c)
-target_link_libraries(resonance_runtime PRIVATE resonance_common)
+add_library(wavelength_runtime STATIC runtime/newlib.c runtime/pthread.c runtime/softfloat.c)
+target_link_libraries(wavelength_runtime PRIVATE wavelength_common)

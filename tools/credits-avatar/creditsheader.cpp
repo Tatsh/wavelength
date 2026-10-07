@@ -41,9 +41,9 @@ std::string composeCreditsHeader(const std::string &text,
                               "\n"
                               "#include <stdint.h>\n"
                               "\n"
-                              "#define RESONANCE_CREDITS_TEXT {}\n"
-                              "#define RESONANCE_CREDITS_AVATAR_SIZE {}\n"
-                              "#define RESONANCE_CREDITS_HAS_AVATAR {}\n",
+                              "#define WAVELENGTH_CREDITS_TEXT {}\n"
+                              "#define WAVELENGTH_CREDITS_AVATAR_SIZE {}\n"
+                              "#define WAVELENGTH_CREDITS_HAS_AVATAR {}\n",
                               cString(text),
                               size,
                               texels ? 1 : 0);

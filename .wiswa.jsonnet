@@ -1,15 +1,14 @@
 {
   uses_user_defaults: true,
-  project_name: 'resonance',
+  project_name: 'wavelength',
   project_type: 'c++',
-  description: 'Reconstructed source of the PlayStation 2 game FreQuency.',
-  keywords: ['decompilation', 'frequency', 'game', 'playstation 2', 'reverse engineering'],
-  security_policy_supported_versions: { '1.0.x': ':white_check_mark:' },
+  description: 'Reconstructed source of the PlayStation 2 game Amplitude.',
+  keywords: ['amplitude', 'decompilation', 'game', 'playstation 2', 'reverse engineering'],
   want_codeql: false,
   want_tests: false,
   want_winget: false,
   clang_format_args: "$(git ls-files 'sce/*.c' 'sce/*.h' 'src/*.h' 'src/*.cpp' 'tools/*.h' " +
-                     "'tools/*.cpp' ':!:src/python/*')",
+                     "'tools/*.cpp')",
   clang_format+: {
     BreakInheritanceList: 'AfterColon',
     IncludeBlocks: 'Regroup',
@@ -86,14 +85,14 @@
   },
   package_json+: {
     cspell+: {
-      ignorePaths+: ['3rdparty/**', 'src/python/PC/**', 'src/python/patches/**'],
+      ignorePaths+: ['3rdparty/**'],
     },
     'markdownlint-cli2'+: {
       ignores: ['3rdparty/**'],
     },
   },
   pre_commit_config+: {
-    exclude: '^(3rdparty|src/python/(PC|patches))/',
+    exclude: '^3rdparty/',
   },
   gitattributes+: ['/3rdparty/** -text linguist-vendored'],
   // Vendored upstream sources are not reformatted.

@@ -1,5 +1,5 @@
-set(RESONANCE_PROFILE_SRCS
+set(WAVELENGTH_PROFILE_SRCS
     profiler.cpp)
 
-add_library(resonance_profile STATIC ${RESONANCE_PROFILE_SRCS})
-target_link_libraries(resonance_profile PRIVATE resonance_common)
+add_library(wavelength_profile STATIC ${WAVELENGTH_PROFILE_SRCS})
+target_link_libraries(wavelength_profile PRIVATE wavelength_common)

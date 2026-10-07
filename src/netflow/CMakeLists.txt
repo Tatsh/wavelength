@@ -1,4 +1,4 @@
-set(RESONANCE_NETFLOW_SRCS netflow.c)
+set(WAVELENGTH_NETFLOW_SRCS netflow.c)
 
-add_library(resonance_netflow STATIC ${RESONANCE_NETFLOW_SRCS})
-target_link_libraries(resonance_netflow PRIVATE resonance_common)
+add_library(wavelength_netflow STATIC ${WAVELENGTH_NETFLOW_SRCS})
+target_link_libraries(wavelength_netflow PRIVATE wavelength_common)

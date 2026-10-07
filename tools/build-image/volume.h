@@ -10,7 +10,7 @@
 
 #include "error.h"
 
-/** Writer of a FreQuency disc image with the built executable and module in place. */
+/** Writer of an Amplitude disc image with the built executable in place. */
 namespace Tools::BuildImage {
 
 /** A file found in the ISO9660 tree. */
@@ -33,9 +33,9 @@ public:
     /** Name of the boot configuration file. */
     static constexpr std::string_view kSystemCnf = "SYSTEM.CNF";
     /** Executable of the European release. */
-    static constexpr std::string_view kPalExecutable = "SCES_507.91";
+    static constexpr std::string_view kPalExecutable = "SCES_517.06";
     /** Executable of the North American release. */
-    static constexpr std::string_view kNtscExecutable = "SCUS_971.25";
+    static constexpr std::string_view kNtscExecutable = "SCUS_972.58";
 
     /** The data bytes of one sector. */
     using Sector = std::array<std::uint8_t, kSectorData>;

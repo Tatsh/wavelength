@@ -50,7 +50,7 @@ public:
 } // namespace
 
 void setupLogging(bool debug) {
-    auto logger = spdlog::stderr_logger_st("resonance-tools");
+    auto logger = spdlog::stderr_logger_st("wavelength-tools");
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
     formatter->add_flag<LevelNameFormatter>(kLevelFlag).set_pattern("%*: %v");
     logger->set_formatter(std::move(formatter));

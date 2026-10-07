@@ -1,4 +1,4 @@
-set(RESONANCE_APP_SRCS
+set(WAVELENGTH_APP_SRCS
     animhelper.cpp
     appactivefilter.cpp
     application.cpp
@@ -85,5 +85,5 @@ set(RESONANCE_APP_SRCS
     tnlutil.cpp
     tunnelcache.cpp)
 
-add_library(resonance_app STATIC ${RESONANCE_APP_SRCS})
-target_link_libraries(resonance_app PRIVATE resonance_common)
+add_library(wavelength_app STATIC ${WAVELENGTH_APP_SRCS})
+target_link_libraries(wavelength_app PRIVATE wavelength_common)

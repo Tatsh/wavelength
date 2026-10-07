@@ -1,12 +1,12 @@
-# The main build runs the host tools in this project to write the disc image, write the module name
-# into EZMIDI.IRX, and generate the credits avatar header. The main build configures this project with the host
-# compiler. The tools are never installed.
+# The main build runs the host tools in this project to write the disc image and generate the
+# credits avatar header. The main build configures this project with the host compiler. The tools
+# are never installed.
 #
 # Each dependency comes from vcpkg when the vcpkg toolchain is in use, otherwise from the system,
 # and otherwise from the pinned release below. zlib and OpenSSL come only from vcpkg or the system.
 # The vcpkg manifest is vcpkg.json at the repository root, selected through VCPKG_MANIFEST_DIR.
 cmake_minimum_required(VERSION 3.24)
-project(resonance_tools CXX)
+project(wavelength_tools CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,7 +58,7 @@ find_package(OpenSSL 3.0 COMPONENTS Crypto SSL)
 
 # Reports whether a dependency came from vcpkg, the system, or a download. location is a path
 # from the package search, empty when the package was downloaded.
-function(resonance_tools_report_source dependency location)
+function(wavelength_tools_report_source dependency location)
   if(NOT location)
     set(_source "the pinned release (FetchContent)")
   elseif(VCPKG_INSTALLED_DIR)
@@ -79,19 +79,19 @@ foreach(_package argparse elfio httplib nlohmann_json spdlog)
   if(${_package}_FOUND)
     set(_location "${${_package}_DIR}")
   endif()
-  resonance_tools_report_source(${_package} "${_location}")
+  wavelength_tools_report_source(${_package} "${_location}")
 endforeach()
 list(GET ZLIB_INCLUDE_DIRS 0 _zlib_location)
-resonance_tools_report_source(zlib "${_zlib_location}")
+wavelength_tools_report_source(zlib "${_zlib_location}")
 
-# resonance_tools_https is the HTTP client, with HTTPS when OpenSSL is available. Without OpenSSL, the tools report that
-# network features are unavailable.
-add_library(resonance_tools_https INTERFACE)
-target_link_libraries(resonance_tools_https INTERFACE httplib::httplib)
+# wavelength_tools_https is the HTTP client, with HTTPS when OpenSSL is available. Without OpenSSL,
+# the tools report that network features are unavailable.
+add_library(wavelength_tools_https INTERFACE)
+target_link_libraries(wavelength_tools_https INTERFACE httplib::httplib)
 if(OpenSSL_FOUND)
-  resonance_tools_report_source(OpenSSL "${OPENSSL_INCLUDE_DIR}")
-  target_compile_definitions(resonance_tools_https INTERFACE CPPHTTPLIB_OPENSSL_SUPPORT)
-  target_link_libraries(resonance_tools_https INTERFACE OpenSSL::Crypto OpenSSL::SSL)
+  wavelength_tools_report_source(OpenSSL "${OPENSSL_INCLUDE_DIR}")
+  target_compile_definitions(wavelength_tools_https INTERFACE CPPHTTPLIB_OPENSSL_SUPPORT)
+  target_link_libraries(wavelength_tools_https INTERFACE OpenSSL::Crypto OpenSSL::SSL)
 else()
   message(STATUS "OpenSSL was not found. The tools cannot use HTTPS.")
 endif()
@@ -99,4 +99,3 @@ endif()
 add_subdirectory(common)
 add_subdirectory(build-image)
 add_subdirectory(credits-avatar)
-add_subdirectory(name-irx)

@@ -1,7 +1,4 @@
-# The embedded interpreter's headers are vendored under 3rdparty rather than recorded as
-# differences. The port's own configuration header comes first on the path so it wins over
-# anything upstream with the same name.
-set(RESONANCE_SCRIPT_SRCS
+set(WAVELENGTH_SCRIPT_SRCS
     apptunnelscript.cpp
     cheatunlockstages.cpp
     cmdpostscript.cpp
@@ -34,8 +31,5 @@ set(RESONANCE_SCRIPT_SRCS
     testregistry.cpp
     togglemode.cpp)
 
-add_library(resonance_script STATIC ${RESONANCE_SCRIPT_SRCS})
-target_link_libraries(resonance_script PRIVATE resonance_common)
-target_include_directories(
-  resonance_script PRIVATE "${CMAKE_SOURCE_DIR}/src/python/PC"
-                           "${CMAKE_SOURCE_DIR}/3rdparty/Python-2.0/Include")
+add_library(wavelength_script STATIC ${WAVELENGTH_SCRIPT_SRCS})
+target_link_libraries(wavelength_script PRIVATE wavelength_common)

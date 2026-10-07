@@ -1,4 +1,4 @@
-set(RESONANCE_MEMCARD_SRCS
+set(WAVELENGTH_MEMCARD_SRCS
     checkinfoop.cpp
     closeop.cpp
     createdirop.cpp
@@ -41,8 +41,8 @@ set(RESONANCE_MEMCARD_SRCS
     unformatop.cpp
     writeop.cpp)
 if(VIDEO_STANDARD STREQUAL "PAL")
-  list(APPEND RESONANCE_MEMCARD_SRCS savespacecheckermct.cpp)
+  list(APPEND WAVELENGTH_MEMCARD_SRCS savespacecheckermct.cpp)
 endif()
 
-add_library(resonance_memcard STATIC ${RESONANCE_MEMCARD_SRCS})
-target_link_libraries(resonance_memcard PRIVATE resonance_common)
+add_library(wavelength_memcard STATIC ${WAVELENGTH_MEMCARD_SRCS})
+target_link_libraries(wavelength_memcard PRIVATE wavelength_common)

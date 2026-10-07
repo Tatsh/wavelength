@@ -1,4 +1,4 @@
-set(RESONANCE_RNDARTT_SRCS
+set(WAVELENGTH_RNDARTT_SRCS
     abitmap.cpp
     abmpfile.cpp
     acanvas.cpp
@@ -21,5 +21,5 @@ set(RESONANCE_RNDARTT_SRCS
     atgafile.cpp
     normalkey.cpp)
 
-add_library(resonance_rndartt STATIC ${RESONANCE_RNDARTT_SRCS})
-target_link_libraries(resonance_rndartt PRIVATE resonance_common)
+add_library(wavelength_rndartt STATIC ${WAVELENGTH_RNDARTT_SRCS})
+target_link_libraries(wavelength_rndartt PRIVATE wavelength_common)

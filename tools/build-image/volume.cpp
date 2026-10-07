@@ -51,7 +51,7 @@ std::expected<std::string, Error> Volume::parseBoot2(std::span<const std::uint8_
     auto name = upperAscii(match[1].str());
     if (name != kPalExecutable && name != kNtscExecutable) {
         return discImageError(std::format(
-            "{} boots {}, an executable of no known FreQuency release.", kSystemCnf, name));
+            "{} boots {}, an executable of no known Amplitude release.", kSystemCnf, name));
     }
     return name;
 }

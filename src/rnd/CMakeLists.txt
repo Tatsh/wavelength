@@ -1,4 +1,4 @@
-set(RESONANCE_RND_SRCS
+set(WAVELENGTH_RND_SRCS
     amovieset.cpp
     animatable.cpp
     arena.cpp
@@ -51,5 +51,5 @@ set(RESONANCE_RND_SRCS
     tunnelseekstrip.cpp
     view.cpp)
 
-add_library(resonance_rnd STATIC ${RESONANCE_RND_SRCS})
-target_link_libraries(resonance_rnd PRIVATE resonance_common)
+add_library(wavelength_rnd STATIC ${WAVELENGTH_RND_SRCS})
+target_link_libraries(wavelength_rnd PRIVATE wavelength_common)

@@ -29,8 +29,8 @@ endif()
 string(TIMESTAMP _time "%Y-%m-%d %H:%M")
 
 set(_content "#pragma once\n\n")
-string(APPEND _content "#define RESONANCE_GIT_REVISION \"${_revision}\"\n")
-string(APPEND _content "#define RESONANCE_BUILD_TIME \"${_time}\"\n")
+string(APPEND _content "#define WAVELENGTH_GIT_REVISION \"${_revision}\"\n")
+string(APPEND _content "#define WAVELENGTH_BUILD_TIME \"${_time}\"\n")
 
 # Rewriting an unchanged header would recompile the file that includes it on every build.
 if(EXISTS "${OUTPUT}")

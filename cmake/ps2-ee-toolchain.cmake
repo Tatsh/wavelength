@@ -21,8 +21,8 @@ find_program(
 
 # The original compiler loaded through a null pointer where the code did and retained the null
 # tests that follow such a load. Path isolation would replace the loads with a trap, and null-check
-# deletion would drop the tests. It also let signed arithmetic wrap, and overflow tests such as
-# CPython's size checks in tuplerepeat remain in the code.
+# deletion would drop the tests. It also let signed arithmetic wrap, and -fwrapv retains the
+# overflow tests that rely on the wrap.
 set(_ee_flags "-D_EE -O2 -G0 -fno-isolate-erroneous-paths-dereference")
 string(APPEND _ee_flags " -fno-delete-null-pointer-checks -fwrapv")
 set(CMAKE_C_FLAGS_INIT "${_ee_flags}")

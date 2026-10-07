@@ -1,7 +1,7 @@
-set(RESONANCE_MID_SRCS
+set(WAVELENGTH_MID_SRCS
     reader.cpp
     receiver.cpp
     tick.cpp)
 
-add_library(resonance_mid STATIC ${RESONANCE_MID_SRCS})
-target_link_libraries(resonance_mid PRIVATE resonance_common)
+add_library(wavelength_mid STATIC ${WAVELENGTH_MID_SRCS})
+target_link_libraries(wavelength_mid PRIVATE wavelength_common)

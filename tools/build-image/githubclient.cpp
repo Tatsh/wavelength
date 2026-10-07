@@ -14,7 +14,7 @@ namespace {
 
 constexpr std::string_view kGitHubApi = "https://api.github.com";
 constexpr std::string_view kWorkflowFile = "build.yml";
-constexpr std::string_view kUserAgent = "resonance-build-image";
+constexpr std::string_view kUserAgent = "wavelength-build-image";
 constexpr time_t kHttpTimeoutSeconds = 30;
 constexpr int kMaximumRedirects = 30;
 constexpr int kFirstRedirectStatus = 300;

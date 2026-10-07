@@ -1,6 +1,6 @@
-# How to contribute to resonance
+# How to contribute to wavelength
 
-Thank you for your interest in contributing to resonance! Please follow these guidelines to help
+Thank you for your interest in contributing to wavelength! Please follow these guidelines to help
 maintain code quality and consistency.
 
 ## General Guidelines

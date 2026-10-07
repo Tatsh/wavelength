@@ -1,4 +1,4 @@
-set(RESONANCE_MSG_SRCS
+set(WAVELENGTH_MSG_SRCS
     advancesectionmsg.cpp
     advancesectiontogglemsg.cpp
     allnotesoffmsg.cpp
@@ -122,5 +122,5 @@ set(RESONANCE_MSG_SRCS
     updatescorepacket.cpp
     winmsg.cpp)
 
-add_library(resonance_msg STATIC ${RESONANCE_MSG_SRCS})
-target_link_libraries(resonance_msg PRIVATE resonance_common)
+add_library(wavelength_msg STATIC ${WAVELENGTH_MSG_SRCS})
+target_link_libraries(wavelength_msg PRIVATE wavelength_common)

@@ -70,13 +70,13 @@ void MetCreditsScreen::ResolveContainerViews() {
 void MetCreditsScreen::AddLeadingCredit() {
     mAnimationEndFrame = mEndFrame;
     mGroup = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(HxStr(kGroupName)));
-#if RESONANCE_CREDITS_HAS_AVATAR
+#if WAVELENGTH_CREDITS_HAS_AVATAR
     const unsigned char *pAvatar = kCreditsAvatarTexels;
 #else
     const unsigned char *pAvatar = nullptr;
 #endif
     const float flDistance = mCreditsRoll->AddLeadingCredit(
-        HxStr(RESONANCE_CREDITS_TEXT), pAvatar, RESONANCE_CREDITS_AVATAR_SIZE);
+        HxStr(WAVELENGTH_CREDITS_TEXT), pAvatar, WAVELENGTH_CREDITS_AVATAR_SIZE);
     if (mGroup == nullptr || flDistance == 0.0f || mAnimationEndFrame <= 0.0f) {
         return;
     }

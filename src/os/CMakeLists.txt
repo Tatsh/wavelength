@@ -1,4 +1,4 @@
-set(RESONANCE_OS_SRCS
+set(WAVELENGTH_OS_SRCS
     acircbuff.cpp
     assert.cpp
     async.cpp
@@ -29,8 +29,8 @@ set(RESONANCE_OS_SRCS
     timer.cpp
     zone.cpp)
 
-add_library(resonance_os STATIC ${RESONANCE_OS_SRCS})
-target_link_libraries(resonance_os PRIVATE resonance_common)
+add_library(wavelength_os STATIC ${WAVELENGTH_OS_SRCS})
+target_link_libraries(wavelength_os PRIVATE wavelength_common)
 
 # inflate.c includes the vendored gzip 1.2.4 inflate.c. The sign-compare warning concerns upstream
 # style.

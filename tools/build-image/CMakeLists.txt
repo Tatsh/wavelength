@@ -9,5 +9,5 @@ add_executable(
   volume.cpp
   ziparchive.cpp)
 target_link_libraries(
-  build-image PRIVATE argparse::argparse nlohmann_json::nlohmann_json resonance_tools_common
-                      resonance_tools_https spdlog::spdlog ZLIB::ZLIB)
+  build-image PRIVATE argparse::argparse nlohmann_json::nlohmann_json wavelength_tools_common
+                      wavelength_tools_https spdlog::spdlog ZLIB::ZLIB)

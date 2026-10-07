@@ -1,4 +1,4 @@
-set(RESONANCE_STREAM_SRCS
+set(WAVELENGTH_STREAM_SRCS
     hxchunkheader.cpp
     hxchunkname.cpp
     hxidatachunk.cpp
@@ -13,5 +13,5 @@ set(RESONANCE_STREAM_SRCS
     obfilestream.cpp
     obstream.cpp)
 
-add_library(resonance_stream STATIC ${RESONANCE_STREAM_SRCS})
-target_link_libraries(resonance_stream PRIVATE resonance_common)
+add_library(wavelength_stream STATIC ${WAVELENGTH_STREAM_SRCS})
+target_link_libraries(wavelength_stream PRIVATE wavelength_common)

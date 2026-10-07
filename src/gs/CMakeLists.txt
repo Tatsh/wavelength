@@ -1,4 +1,4 @@
-set(RESONANCE_GS_SRCS
+set(WAVELENGTH_GS_SRCS
     effector.cpp
     ghostnoteseffector.cpp
     midionoffeffector.cpp
@@ -17,5 +17,5 @@ set(RESONANCE_GS_SRCS
     voxer.cpp
     waheffector.cpp)
 
-add_library(resonance_gs STATIC ${RESONANCE_GS_SRCS})
-target_link_libraries(resonance_gs PRIVATE resonance_common)
+add_library(wavelength_gs STATIC ${WAVELENGTH_GS_SRCS})
+target_link_libraries(wavelength_gs PRIVATE wavelength_common)

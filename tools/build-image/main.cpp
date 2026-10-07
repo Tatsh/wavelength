@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -34,34 +33,27 @@ namespace {
 namespace fs = std::filesystem;
 
 constexpr std::string_view kProgram = "build-image";
-constexpr std::string_view kDefaultRepo = "Tatsh/resonance";
+constexpr std::string_view kDefaultRepo = "Tatsh/wavelength";
 constexpr std::string_view kReleaseAssetsArtifact = "release-assets-";
 constexpr std::string_view kBuildTypeRelease = "Release";
 constexpr std::string_view kBuildTypeDebug = "Debug";
-constexpr std::string_view kExecutablePrefix = "resonance-";
+constexpr std::string_view kExecutablePrefix = "wavelength-";
 constexpr std::string_view kExecutableSuffix = ".elf";
-constexpr std::string_view kTargetModule = "EZMIDI.IRX";
 constexpr int kUsageErrorStatus = 2;
 
 using Payload = std::vector<std::uint8_t>;
 
 struct Options {
     std::string buildType;
-    std::optional<fs::path> ezmidiIrx;
     fs::path inputImage;
     fs::path outputCue;
     bool overwrite = false;
     bool pal = false;
     std::string repo;
-    std::optional<fs::path> resonanceBin;
     std::optional<std::uint64_t> runId;
     std::optional<fs::path> systemArea;
     std::optional<std::string> token;
-};
-
-struct Payloads {
-    Payload executable;
-    Payload module;
+    std::optional<fs::path> wavelengthBin;
 };
 
 bool isRelativeTo(const fs::path &path, const fs::path &base) {
@@ -111,7 +103,7 @@ std::expected<std::string, Error> identify(const fs::path &inputImage) {
     });
 }
 
-// The executable is the one member whose name matches resonance-<VERSION>-<STD><LABEL>.elf.
+// The executable is the one member whose name matches wavelength-<VERSION>-<STD><LABEL>.elf.
 std::expected<Payload, Error> extractExecutable(const ZipArchive &archive,
                                                 const std::string &artifact,
                                                 const std::string &standardLabel) {
@@ -134,31 +126,10 @@ std::expected<Payload, Error> extractExecutable(const ZipArchive &archive,
     return archive.extract(matches.front());
 }
 
-std::expected<Payload, Error>
-extractModule(const ZipArchive &archive, const std::string &artifact, const std::string &standard) {
-    const auto wanted = std::format("EZMIDI-{}.IRX", standard);
-    const auto names = archive.names();
-    const auto found = std::ranges::find_if(
-        names, [&wanted](const auto &name) { return baseName(name) == wanted; });
-    if (found == names.end()) {
-        return artifactError(std::format("Artifact {} lacks {}.", artifact, wanted));
-    }
-    return archive.extract(*found);
-}
-
-// The video standard of the downloaded builds follows the disc being rebuilt. The Release
-// artifact provides the module whatever the build type.
-std::expected<Payloads, Error> resolvePayloads(const Options &options) {
-    if (options.resonanceBin && options.ezmidiIrx) {
-        auto executable = readFile(*options.resonanceBin);
-        auto module = readFile(*options.ezmidiIrx);
-        if (!executable) {
-            return std::unexpected(std::move(executable.error()));
-        }
-        if (!module) {
-            return std::unexpected(std::move(module.error()));
-        }
-        return Payloads{std::move(*executable), std::move(*module)};
+// The video standard of the downloaded build follows the disc being rebuilt.
+std::expected<Payload, Error> resolveExecutable(const Options &options) {
+    if (options.wavelengthBin) {
+        return readFile(*options.wavelengthBin);
     }
     const auto token = effectiveToken(options);
     if (!token) {
@@ -180,42 +151,15 @@ std::expected<Payloads, Error> resolvePayloads(const Options &options) {
         }
         runId = *latest;
     }
-    // Each artifact is downloaded at most once.
-    std::map<std::string, ZipArchive> archives;
-    const auto archive =
-        [&](const std::string &artifact) -> std::expected<const ZipArchive *, Error> {
-        if (const auto found = archives.find(artifact); found != archives.end()) {
-            return &found->second;
-        }
-        auto opened = client.downloadArtifact(runId, artifact).and_then(ZipArchive::open);
-        if (!opened) {
-            return std::unexpected(std::move(opened.error()));
-        }
-        return &archives.emplace(artifact, std::move(*opened)).first->second;
-    };
-    const auto releaseArtifact = std::format("{}{}", kReleaseAssetsArtifact, standard);
     const auto label = options.buildType == kBuildTypeRelease ?
                            std::string() :
                            std::format("-{}", options.buildType);
-
-    auto executable =
-        options.resonanceBin ?
-            readFile(*options.resonanceBin) :
-            archive(releaseArtifact + label).and_then([&](const ZipArchive *found) {
-                return extractExecutable(*found, releaseArtifact + label, standard + label);
-            });
-    if (!executable) {
-        return std::unexpected(std::move(executable.error()));
-    }
-    auto module = options.ezmidiIrx ?
-                      readFile(*options.ezmidiIrx) :
-                      archive(releaseArtifact).and_then([&](const ZipArchive *found) {
-                          return extractModule(*found, releaseArtifact, standard);
-                      });
-    if (!module) {
-        return std::unexpected(std::move(module.error()));
-    }
-    return Payloads{std::move(*executable), std::move(*module)};
+    const auto artifact = std::format("{}{}{}", kReleaseAssetsArtifact, standard, label);
+    return client.downloadArtifact(runId, artifact)
+        .and_then(ZipArchive::open)
+        .and_then([&](const ZipArchive &archive) {
+            return extractExecutable(archive, artifact, standard + label);
+        });
 }
 
 std::expected<std::unique_ptr<Volume>, Error> openVolume(const Options &options) {
@@ -253,9 +197,9 @@ std::expected<std::uint32_t, Error> run(const Options &options) {
     if (pathIsDirectory(options.inputImage) && isRelativeTo(resolved(image), input)) {
         return discImageError("Output must lie outside the disc root.");
     }
-    auto payloads = resolvePayloads(options);
-    if (!payloads) {
-        return std::unexpected(std::move(payloads.error()));
+    auto executable = resolveExecutable(options);
+    if (!executable) {
+        return std::unexpected(std::move(executable.error()));
     }
     const auto source = openVolume(options);
     if (!source) {
@@ -274,8 +218,7 @@ std::expected<std::uint32_t, Error> run(const Options &options) {
     }
     spdlog::info("Original is the {} release ({}).", isPal ? "PAL" : "NTSC-U/C", *target);
     std::vector<Replacement> replacements;
-    replacements.push_back({*target, std::move(payloads->executable)});
-    replacements.push_back({std::string(kTargetModule), std::move(payloads->module)});
+    replacements.push_back({*target, std::move(*executable)});
     return ImageBuilder::plan(**source, std::move(replacements))
         .and_then([&options](ImageBuilder builder) { return builder.write(options.outputCue); });
 }
@@ -294,7 +237,7 @@ int main(int argc, char *argv[]) {
     using namespace Tools::BuildImage;
     argparse::ArgumentParser parser(std::string(kProgram), "", argparse::default_arguments::help);
     parser.add_description(
-        "Rebuild a FreQuency CD image with replacement binaries. The raw MODE2/2352 bin is "
+        "Rebuild an Amplitude CD image with a replacement executable. The raw MODE2/2352 bin is "
         "written beside the cue sheet, with the same name and a .bin suffix.");
     parser.add_argument("input_image")
         .help("Original image in cue, bin, or ISO form, or the disc root directory (the directory "
@@ -306,29 +249,22 @@ int main(int argc, char *argv[]) {
         .help("Print the name of the executable the original boots, and exit.")
         .flag();
     parser.add_argument("--pal")
-        .help("The executable is a PAL build. The European disc (SCES_507.91) requires the flag, "
+        .help("The executable is a PAL build. The European disc (SCES_517.06) requires the flag, "
               "and the North American disc refuses it.")
         .flag();
     parser.add_argument("--build-type")
         .metavar("BUILD_TYPE")
-        .help("Build type of the downloaded executable. The module always comes from the Release "
-              "build.")
+        .help("Build type of the downloaded executable.")
         .default_value(std::string(kBuildTypeRelease))
         .nargs(1)
         .choices(std::string(kBuildTypeRelease), std::string(kBuildTypeDebug));
     parser.add_argument("--debug").help("Enable debug logging.").flag();
-    parser.add_argument("--ezmidi-irx")
-        .metavar("EZMIDI_IRX")
-        .help("Local module file, bypassing the artifact download.");
     parser.add_argument("--overwrite").help("Replace the output files when present.").flag();
     parser.add_argument("--repo")
         .metavar("REPO")
         .help("Repository with the build artifacts.")
         .default_value(std::string(kDefaultRepo))
         .nargs(1);
-    parser.add_argument("--resonance-bin")
-        .metavar("RESONANCE_BIN")
-        .help("Local executable file, bypassing the artifact download.");
     parser.add_argument("--run-id")
         .metavar("RUN_ID")
         .help("Actions run to fetch. The latest successful run is used when omitted.");
@@ -338,6 +274,9 @@ int main(int argc, char *argv[]) {
               "root input. The sectors are zero otherwise.");
     parser.add_argument("--token").metavar("TOKEN").help(
         "GitHub token. GITHUB_TOKEN or GH_TOKEN provides the value when the flag is absent.");
+    parser.add_argument("--wavelength-bin")
+        .metavar("WAVELENGTH_BIN")
+        .help("Local executable file, bypassing the artifact download.");
     // argparse reports usage errors only by throwing.
     try {
         parser.parse_args(argc, argv);
@@ -351,9 +290,8 @@ int main(int argc, char *argv[]) {
         return usageError(
             parser, std::format("The input image {} does not exist.", options.inputImage.string()));
     }
-    for (auto [name, field] : {std::pair{"--ezmidi-irx", &options.ezmidiIrx},
-                               std::pair{"--resonance-bin", &options.resonanceBin},
-                               std::pair{"--system-area", &options.systemArea}}) {
+    for (auto [name, field] : {std::pair{"--system-area", &options.systemArea},
+                               std::pair{"--wavelength-bin", &options.wavelengthBin}}) {
         if (const auto value = parser.present<std::string>(name)) {
             std::error_code error;
             if (!fs::is_regular_file(*value, error)) {

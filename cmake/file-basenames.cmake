@@ -1,20 +1,20 @@
 # The original build passed each source file by its bare name. __FILE__ in an allocation tag or an
-# assertion is therefore the file's basename (tupleobject.c, cutscene.c). Mapping each source
+# assertion is therefore the file's basename (cutscene.c). Mapping each source
 # file's directory to nothing gives the same strings.
 
-function(_resonance_collect_targets directory out)
+function(_wavelength_collect_targets directory out)
   get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
   get_property(children DIRECTORY "${directory}" PROPERTY SUBDIRECTORIES)
   foreach(child IN LISTS children)
-    _resonance_collect_targets("${child}" child_targets)
+    _wavelength_collect_targets("${child}" child_targets)
     list(APPEND targets ${child_targets})
   endforeach()
   set(${out} "${targets}" PARENT_SCOPE)
 endfunction()
 
-function(resonance_basename_file_macros)
+function(wavelength_basename_file_macros)
   foreach(directory IN LISTS ARGN)
-    _resonance_collect_targets("${directory}" targets)
+    _wavelength_collect_targets("${directory}" targets)
     foreach(target IN LISTS targets)
       get_target_property(type ${target} TYPE)
       if(type STREQUAL "INTERFACE_LIBRARY" OR type STREQUAL "UTILITY")
