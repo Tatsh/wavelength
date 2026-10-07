@@ -87,7 +87,6 @@ preliminary.
 | `DestroyArkFileVtableThunk`                        |  :x:   |      0 |     48 | `0x003a7e58` | `0x00416b38` | `void DestroyArkFileVtableThunk(void * pThis, ulong flags)`                        |
 | `DestroyBoolOptionObject`                          |  :x:   |      0 |     48 | `0x003ab520` | `0x0041a280` | `undefined DestroyBoolOptionObject()`                                              |
 | `DestroyBootPkt`                                   |  :x:   |      0 |     48 | `0x003a0f18` | `0x0040fbf8` | `void DestroyBootPkt(undefined4 * pThis, ulong nFlags)`                            |
-| `DestroyBufStreamVtableThunk`                      |  :x:   |      0 |     48 | `0x003a8ae0` |              | `void DestroyBufStreamVtableThunk(void * pThis, ulong flags)`                      |
 | `DestroyClientStatusPkt`                           |  :x:   |      0 |     48 | `0x003a0820` | `0x0040f500` | `void DestroyClientStatusPkt(undefined4 * pThis, ulong nFlags)`                    |
 | `DestroyExpInterpolatorVtableThunk`                |  :x:   |      0 |     48 | `0x003a86d0` | `0x004173b0` | `void DestroyExpInterpolatorVtableThunk(void * pThis, ulong flags)`                |
 | `DestroyInverseExponentialInterpolatorVtableThunk` |  :x:   |      0 |     48 | `0x003a8778` | `0x00417458` | `void DestroyInverseExponentialInterpolatorVtableThunk(void * pThis, ulong flags)` |
@@ -100,6 +99,7 @@ preliminary.
 | `DestroyTimeRequestPkt`                            |  :x:   |      0 |     48 | `0x003a0ab8` | `0x0040f798` | `void DestroyTimeRequestPkt(undefined4 * pThis, ulong nFlags)`                     |
 | `DestroyUpdateRanksPkt`                            |  :x:   |      0 |     48 | `0x003a1768` | `0x00410448` | `void DestroyUpdateRanksPkt(undefined4 * pThis, ulong nFlags)`                     |
 | `DestructJoinFailedPkt`                            |  :x:   |      0 |     48 | `0x003a0448` | `0x0040f128` | `undefined DestructJoinFailedPkt()`                                                |
+| `DestroyBufStreamVtableThunk`                      | :memo: |      0 |     48 | `0x003a8ae0` |              | `void DestroyBufStreamVtableThunk(void * pThis, ulong flags)`                      |
 | `DestroyDerivedMidiReceiverObject`                 |  :x:   |      0 |     40 | `0x003a6458` | `0x00415138` | `void DestroyDerivedMidiReceiverObject(int pThis)`                                 |
 | `DestroyMidiReceiverSubobjectVariantB`             |  :x:   |      0 |     40 | `0x003a66c8` | `0x004153a8` | `void DestroyMidiReceiverSubobjectVariantB(int pThis)`                             |
 | `RegisterBoolOptionParser`                         |  :x:   |      0 |     36 | `0x003ab5f8` | `0x0041a358` | `undefined RegisterBoolOptionParser()`                                             |
