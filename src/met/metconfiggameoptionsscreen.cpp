@@ -4,16 +4,13 @@
 #include <vector>
 
 #include "app/application.h"
-#include "game/forcefeedbackmgr.h"
 #include "game/globalsettings.h"
-#include "game/grooveworld.h"
 #include "met/metfrontendstate.h"
 #include "met/metglobalsettingssaverscreen.h"
 #include "met/methelpscreen.h"
 #include "met/metrenderer.h"
 #include "met/metscreentitlescreen.h"
 #include "met/metstrings.h"
-#include "mid/tick.h"
 #include "os/hxstr.h"
 #include "rnd/button.h"
 #include "rnd/manager.h"
@@ -249,9 +246,4 @@ void MetConfigGameOptionsScreen::ToggleOption(int nRow) {
 void MetConfigGameOptionsScreen::ApplyOptions() {
     GlobalSettings::shared()->mGameOptions = mOptions;
     Application::shared()->GetSynth()->SetStereo(mOptions.mStereo);
-    GrooveWorld *pWorld = Application::shared()->GetWorld();
-    if (pWorld != nullptr) {
-        pWorld->mForceFeedback->SetEnabled(mOptions.mForceFeedback);
-        pWorld->mForceFeedback->StartMetronome(Sch::Tick(0));
-    }
 }

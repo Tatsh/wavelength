@@ -9,6 +9,7 @@
 #include "game/stickevent.h"
 #include "game/worldlogic.h"
 #include "msg/message.h"
+#include "script/dataarray.h"
 
 /**
  * One game in progress under one rule set.
@@ -481,5 +482,7 @@ public:
 
     int mState;  /*!< The stage of the world, from loading through the end of the song. */
     Song *mSong; /*!< The song LoadAssets() built. */
-    // The members after +0x08 are not yet declared.
+    DataArray *mSongConfig; /*!< The entry of the song in the "songs" section. */
+    int mSeed;              /*!< The seed of the random numbers of the logic. */
+    // The members after +0x10 are not yet declared.
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "os/string.h"
 
 /**
@@ -131,11 +133,27 @@ public:
     /** Vtable slot 14, pure in this class. The signature is not yet recovered. */
     virtual void VirtualSlot14() = 0;
 
-    /** Vtable slot 15, pure in this class. The signature is not yet recovered. */
-    virtual void VirtualSlot15() = 0;
+    /**
+     * Vtable slot 15. Queue the division of the sound memory among the bank slots.
+     *
+     * The member is pure in this class. SynthPS2 copies the sizes into a queued job and returns 0.
+     * The name is inferred.
+     *
+     * @param blocks The size of each bank slot in 64-byte blocks, indexed by slot. A negative size
+     *     leaves the slot as it is.
+     * @return 0.
+     */
+    virtual int Partition(const std::vector<int> &blocks) = 0;
 
-    /** Vtable slot 16, pure in this class. The signature is not yet recovered. */
-    virtual void VirtualSlot16() = 0;
+    /**
+     * Vtable slot 16. Report the size of a bank file in 64-byte blocks, rounded up.
+     *
+     * The member is pure in this class. The name is inferred.
+     *
+     * @param file The bank file.
+     * @return The number of blocks.
+     */
+    virtual int GetBankBlockCount(const String &file) = 0;
 
     /**
      * Vtable slot 17. Report whether a sample bank finished loading into a slot.
@@ -225,11 +243,23 @@ public:
      */
     virtual void VirtualSlot27();
 
-    /** Vtable slot 28, pure in this class. The signature is not yet recovered. */
-    virtual void VirtualSlot28() = 0;
+    /**
+     * Vtable slot 28. Queue a job that turns the software effects on.
+     *
+     * The member is pure in this class. SynthPS2 returns 0. The name is inferred.
+     *
+     * @return 0.
+     */
+    virtual int EnableSoftFx() = 0;
 
-    /** Vtable slot 29, pure in this class. The signature is not yet recovered. */
-    virtual void VirtualSlot29() = 0;
+    /**
+     * Vtable slot 29. Queue a job that turns the software effects off.
+     *
+     * The member is pure in this class. SynthPS2 returns 0. The name is inferred.
+     *
+     * @return 0.
+     */
+    virtual int DisableSoftFx() = 0;
 
     /**
      * Vtable slot 30. Set the output level that slot 31 reports.

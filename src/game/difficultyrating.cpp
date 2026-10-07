@@ -144,7 +144,7 @@ int DifficultyRating::RateCatchTrack(const CatchTrackData *pData, int nSlot) {
     int nNumGems = pData->GetNumGems();
     BeginTrack(nSlot);
     for (int i = 0; i < nNumGems; ++i) {
-        const CatchTrackData::Gem *pGem = pData->GetGem(i);
+        const Gem *pGem = pData->GetGem(i);
         AddGem(pGem->mLane, pGem->mTick);
     }
     return EndTrack();

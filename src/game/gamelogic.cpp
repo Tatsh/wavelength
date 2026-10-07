@@ -521,7 +521,7 @@ int GameLogic::HasQuit() const {
     return mQuit;
 }
 
-int GameLogic::GetReserved60() const {
+int GameLogic::IsRestartRequested() const {
     return mReserved60;
 }
 
@@ -847,7 +847,7 @@ void GameLogic::PlacePowerups() {
         RateAverager rate(mTicksPerBar);
         int nLastBar = -1;
         for (int i = 0; i < nGems; ++i) {
-            const CatchTrackData::Gem *pGem = pData->GetGem(i);
+            const Gem *pGem = pData->GetGem(i);
             const int nBar = pGem->mTick / mTicksPerBar;
             if (nBar != nLastBar) {
                 if (rate.mSum != 0.0f) {
@@ -887,7 +887,7 @@ void GameLogic::PlacePowerups() {
             const int nGems = pData->GetNumGems();
             RateAverager rate(mTicksPerBar);
             for (int i = 0; i < nGems; ++i) {
-                const CatchTrackData::Gem *pGem = pData->GetGem(i);
+                const Gem *pGem = pData->GetGem(i);
                 const int nBar = pGem->mTick / mTicksPerBar;
                 if (nBar < nStartBar) {
                     continue;

@@ -2,14 +2,41 @@
 
 #include <vector>
 
+#include "os/prnstream.h"
+
 /**
  * Display of the play field and the heads-up display of every player.
  *
- * The RTTI includes the class name. The one instance is TheGfxManager. Only the members its
- * callers here use are declared, and their names are inferred from the displays they drive.
+ * The RTTI records the class as deriving from PrnStream. The one instance is TheGfxManager. Only
+ * the members its callers here use are declared, and their names are inferred from the displays
+ * they drive.
  */
-class GfxManager {
+class GfxManager : public PrnStream {
 public:
+    /** The values of Poll() that WorldMgr tests. */
+    enum PollResult {
+        kPollWorldReady = 1, /*!< The display is ready for a loading world to load its assets. */
+        kPollUnloaded = 2,   /*!< The display finished changing back after an unload. */
+    };
+
+    /**
+     * Release the display.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b1790
+     * @ghidraAddress PAL: 0x001ba530
+     */
+    ~GfxManager() override;
+
+    /**
+     * Discard text written to the display as a stream. The body is empty.
+     *
+     * @param pszText The text.
+     * @ghidraAddress NTSC-U/C: 0x001b4450
+     * @ghidraAddress PAL: 0x001bd1f0
+     */
+    void Print([[maybe_unused]] const char *pszText) override {
+    }
+
     /** What SetPendingPointsResult() shows happened to a player's pending points. */
     enum PendingPointsResult {
         kPendingPointsCleared = 0,  /*!< The pending points were reset. */
@@ -631,6 +658,118 @@ public:
                 signed char nRiff,
                 float fTick,
                 float fTicks);
+
+    /**
+     * Register the display script commands.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b1cc0
+     * @ghidraAddress PAL: 0x001baa60
+     */
+    void Init();
+
+    /**
+     * Unregister what Init() registered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b1ed8
+     * @ghidraAddress PAL: 0x001bac78
+     */
+    void Terminate();
+
+    /**
+     * Return the display to its state with no world.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b2030
+     * @ghidraAddress PAL: 0x001badd0
+     */
+    void Reset();
+
+    /**
+     * Build the display for a world that starts loading.
+     *
+     * @param fTime The time the display starts at. WorldMgr passes -1.
+     * @ghidraAddress NTSC-U/C: 0x001b2068
+     * @ghidraAddress PAL: 0x001bae08
+     */
+    void Load(float fTime);
+
+    /**
+     * Start changing the display back after the world was destroyed.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b3458
+     * @ghidraAddress PAL: 0x001bc1f8
+     */
+    void Unload();
+
+    /**
+     * Draw the display.
+     *
+     * @param fTime The running world's position in ticks, or 0 when no world is running.
+     * @ghidraAddress NTSC-U/C: 0x001b3d10
+     * @ghidraAddress PAL: 0x001bcab0
+     */
+    void Draw(float fTime);
+
+    /**
+     * Show the instrument a track changed to.
+     *
+     * @param nTrack The track.
+     * @param nInstrument The instrument.
+     * @ghidraAddress NTSC-U/C: 0x001b5878
+     * @ghidraAddress PAL: 0x001be618
+     */
+    void SetTrackInstrument(int nTrack, int nInstrument);
+
+    /**
+     * Take a gem off the play field.
+     *
+     * The name is inferred.
+     *
+     * @param nTrack The track.
+     * @param nSlot The gem button the gem lies under.
+     * @param fTick The tick of the gem.
+     * @ghidraAddress NTSC-U/C: 0x001b5a98
+     * @ghidraAddress PAL: 0x001be838
+     */
+    void RemoveGem(int nTrack, int nSlot, float fTick);
+
+    /**
+     * Set the meter that shows how much of a phrase a player has caught.
+     *
+     * The name is inferred.
+     *
+     * @param nPlayer The player's index.
+     * @param fLevel The level, from 0 to 1.
+     * @ghidraAddress NTSC-U/C: 0x001b5b20
+     * @ghidraAddress PAL: 0x001be8c0
+     */
+    void SetCatchMeter(int nPlayer, float fLevel);
+
+    /**
+     * Show a player catching a phrase.
+     *
+     * The name is inferred.
+     *
+     * @param nPlayer The player's index.
+     * @param nTrack The track.
+     * @param nStyle The style of the display. DuelTrack passes 0.
+     * @param bQuiet Whether the status display is not told. DuelTrack passes false.
+     * @param fStartTick The tick the phrase starts at.
+     * @param fEndTick The tick after the phrase.
+     * @ghidraAddress NTSC-U/C: 0x001b5d00
+     * @ghidraAddress PAL: 0x001beaa0
+     */
+    void
+    ShowCapture(int nPlayer, int nTrack, int nStyle, bool bQuiet, float fStartTick, float fEndTick);
+
+    /**
+     * Dim one bar of a track.
+     *
+     * @param nTrack The track.
+     * @param fTick The tick the bar starts at.
+     * @ghidraAddress NTSC-U/C: 0x001b5f58
+     * @ghidraAddress PAL: 0x001becf8
+     */
+    void DimBar(int nTrack, float fTick);
 };
 
 /**

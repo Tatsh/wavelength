@@ -17,16 +17,15 @@
 class NetFaker {
 public:
     /**
-     * Construct a faker at a gem.
+     * Construct a faker at the first gem the reactor reports.
      *
      * Inline. The constructors of DuelTrack and ClickTrack expand it.
      *
      * @param pReactor The rules the gems are reported to.
-     * @param cursor The first gem.
      */
-    NetFaker(TrackReactor *pReactor, const GemCursor &cursor)
-        : mReactor(pReactor), mCursor(cursor), mLastBar(-1),
-          mUpdateCommand(NewMemFunCommand(this, &NetFaker::Update)), mCountMisses(false) {
+    explicit NetFaker(TrackReactor *pReactor)
+        : mReactor(pReactor), mCursor(pReactor->GetCursor()), mLastBar(-1),
+          mUpdateCommand(NewMemFunCommand(this, &NetFaker::Update)), mCountMisses(0) {
     }
 
     /**
@@ -70,5 +69,5 @@ private:
     GemCursor mCursor;           /*!< The next gem. */
     int mLastBar;                /*!< The bar of the last gem reported, or -1. */
     Ptr<Command> mUpdateCommand; /*!< The command that calls Update(). */
-    bool mCountMisses;           /*!< Whether a remote player not catching misses gems. */
+    int mCountMisses;            /*!< Whether a remote player not catching misses gems. */
 };

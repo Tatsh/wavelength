@@ -9,7 +9,6 @@
 #include "app/scheduler.h"
 #include "app/timeclock.h"
 #include "game/dogamesystemplaycmd.h"
-#include "game/forcefeedbackmgr.h"
 #include "game/gameplaybacker.h"
 #include "game/gamerecorder.h"
 #include "game/inputmap.h"
@@ -300,9 +299,6 @@ void GameManagerImpl::OnPauseGameSystem(Message *) {
     Application::shared()->GetSynth()->PlayMidi(
         kStatusControlChangeChannel16, kControllerAllNotesOff, 0);
     Application::shared()->GetSynth()->SetPaused(1);
-    if (mpWorld != nullptr) {
-        mpWorld->mForceFeedback->SetPaused(1);
-    }
 
     MetStartPauseMsg pause;
     mpMetaWorld->GetRenderer()->Dispatch(&pause);
@@ -357,9 +353,6 @@ void GameManagerImpl::OnUnpauseGameSystem(Message *) {
         GetWorld()->mInputMap->Rebuild();
     }
     Application::shared()->GetSynth()->SetPaused(0);
-    if (mpWorld != nullptr) {
-        mpWorld->mForceFeedback->SetPaused(0);
-    }
     if (GetGameMode() != kGameModeNet) {
         Application::shared()->GetWatchdog()->mClock.Resume();
     }

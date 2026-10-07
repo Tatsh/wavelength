@@ -180,12 +180,12 @@ public:
     int HasQuit() const override;
 
     /**
-     * Report mReserved60.
+     * Report whether the song is to start again once it ends.
      *
      * @return mReserved60.
      * @ghidraAddress NTSC-U/C: 0x00112980
      */
-    int GetReserved60() const override;
+    int IsRestartRequested() const override;
 
     /**
      * Report whether a player is on the freestyle track.
@@ -598,7 +598,7 @@ public:
     SpeedRamp *mSpeedRamp;                    /*!< The speed of the song. */
     bool mPhraseThisBar;                      /*!< Whether a catch track has a phrase this bar. */
     int mQuit;                                /*!< Set by the derived logic when a player quit. */
-    int mReserved60;                          // +0x60, reported by GetReserved60().
+    int mReserved60;                          // +0x60, reported by IsRestartRequested().
     int mSectionStartBar;                     /*!< First bar of the current section. */
     int mNextSectionBar;                      /*!< First bar of the next section. */
     int mSection;                             /*!< Index of the current section. */

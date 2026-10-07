@@ -31,11 +31,13 @@ set(WAVELENGTH_MSG_SRCS
     deployedpowerupmsg.cpp
     displaypointermsg.cpp
     durgemmsg.cpp
+    editgempacket.cpp
     enablefreestylemsg.cpp
     endgamemsg.cpp
     erasemsg.cpp
     eraseoffmsg.cpp
     fadegamemsg.cpp
+    finalscorepacket.cpp
     freestylefxmsg.cpp
     gamebeginmsg.cpp
     gamechatpacket.cpp

@@ -100,7 +100,27 @@ public:
         return "EditGemPacket";
     }
 
-    int mTrack;   /*!< The track. */
+    /**
+     * Write the fields packed into one word.
+     *
+     * The track takes three bits, the gem button two, the tick 26, and the repeat flag one.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0010c348
+     * @ghidraAddress PAL: 0x0010da80
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the word saveGuts() writes back into the fields.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0010c3d8
+     * @ghidraAddress PAL: 0x0010db10
+     */
+    void restoreGuts(BinStream &stream) override;
+
+    int mTrack;   /*!< The track, in a duel the side of the player who catches the gem. */
     int mSlot;    /*!< The gem button of the gem. */
     int mTick;    /*!< The tick of the gem. */
     bool mRepeat; /*!< Whether the edit repeats on every other bar of the section. */

@@ -18,17 +18,25 @@ set(WAVELENGTH_GAME_SRCS
     delayer.cpp
     difficultyrating.cpp
     dogamesystemplaycmd.cpp
+    duel.cpp
+    duellogic.cpp
     duelpattern.cpp
+    dueltrack.cpp
+    dueltrackpitcher.cpp
     effectpowerup.cpp
     enablemgr.cpp
     endrecordingcmd.cpp
     forcefeedbackmgr.cpp
+    forcefeedbackmgrcontroller.cpp
+    forcefeedbackmgrmotoreffect.cpp
     freestylepowerup.cpp
     freqappearance.cpp
     freqappearancedetail.cpp
     freqmakercursor.cpp
     freqpart.cpp
     freqparttemplate.cpp
+    game.cpp
+    gameconfig.cpp
     gameenablemgr.cpp
     gameinfo.cpp
     gamelogic.cpp
@@ -146,7 +154,8 @@ set(WAVELENGTH_GAME_SRCS
     track.cpp
     trackdata.cpp
     trackselector.cpp
-    voxingstg.cpp)
+    voxingstg.cpp
+    worldmgr.cpp)
 
 add_library(wavelength_game STATIC ${WAVELENGTH_GAME_SRCS})
 target_link_libraries(wavelength_game PRIVATE wavelength_common)

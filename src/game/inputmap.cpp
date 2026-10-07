@@ -4,7 +4,6 @@
 #include "app/globals.h"
 #include "app/timeclock.h"
 #include "game/controllerconfig.h"
-#include "game/forcefeedbackmgr.h"
 #include "game/gamemanagerimpl.h"
 #include "game/globalsettings.h"
 #include "game/grooveworld.h"
@@ -289,10 +288,6 @@ void InputMap::Rebuild() {
             const int nAction = config.ActionCode(i);
             AddBinding(kReadingTypeJoy, nPort + 1, nButton, nPort, nAction, config.RiffIndex(i));
         }
-    }
-    ForceFeedbackMgr *pForceFeedback = Application::shared()->GetWorld()->mForceFeedback;
-    if (pForceFeedback != nullptr) {
-        pForceFeedback->SetEnabled(GlobalSettings::shared()->mGameOptions.mForceFeedback);
     }
 }
 

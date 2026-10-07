@@ -10,6 +10,14 @@
 class FxMidi {
 public:
     /**
+     * Play the sound of the first handle.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fc38
+     * @ghidraAddress PAL: 0x00289538
+     */
+    static void PlaySound0();
+
+    /**
      * Play the sound of the second handle.
      *
      * A pitch track plays it when a player edits a bar another player owns.
@@ -78,6 +86,118 @@ public:
      * @ghidraAddress PAL: 0x002899e8
      */
     static void PlayWinnerSound(int nSlot);
+
+    /**
+     * Play `DUEL_LAYPATT`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280140
+     * @ghidraAddress PAL: 0x00289a40
+     */
+    static void PlayDuelLayPattern();
+
+    /**
+     * Play `DUEL_CATCHPATT`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280188
+     * @ghidraAddress PAL: 0x00289a88
+     */
+    static void PlayDuelCatchPattern();
+
+    /**
+     * Play `DUEL_NICE`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002801d0
+     * @ghidraAddress PAL: 0x00289ad0
+     */
+    static void PlayDuelNice();
+
+    /**
+     * Play `DUEL_YOUGOTIT`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280218
+     * @ghidraAddress PAL: 0x00289b18
+     */
+    static void PlayDuelYouGotIt();
+
+    /**
+     * Play `DUEL_ALMOST`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280260
+     * @ghidraAddress PAL: 0x00289b60
+     */
+    static void PlayDuelAlmost();
+
+    /**
+     * Play `DUEL_ONELETTER`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002802a8
+     * @ghidraAddress PAL: 0x00289ba8
+     */
+    static void PlayDuelOneLetter();
+
+    /**
+     * Play `DUEL_AWW`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002802f0
+     * @ghidraAddress PAL: 0x00289bf0
+     */
+    static void PlayDuelAww();
+
+    /**
+     * Play `DUEL_PERFECT`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280338
+     * @ghidraAddress PAL: 0x00289c38
+     */
+    static void PlayDuelPerfect();
+
+    /**
+     * Play `DUEL_GAMETIE`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280388
+     * @ghidraAddress PAL: 0x00289c88
+     */
+    static void PlayDuelGameTie();
+
+    /**
+     * Play `DUEL_GREENWINS`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002803d0
+     * @ghidraAddress PAL: 0x00289cd0
+     */
+    static void PlayDuelGreenWins();
+
+    /**
+     * Play `DUEL_PURPLEWINS`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280418
+     * @ghidraAddress PAL: 0x00289d18
+     */
+    static void PlayDuelPurpleWins();
+
+    /**
+     * Play `DUEL_MISS`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280460
+     * @ghidraAddress PAL: 0x00289d60
+     */
+    static void PlayDuelMiss();
+
+    /**
+     * Play `DUEL_MISSTHIS`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002804a8
+     * @ghidraAddress PAL: 0x00289da8
+     */
+    static void PlayDuelMissThis();
+
+    /**
+     * Play `DUEL_CHEER`.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002804f0
+     * @ghidraAddress PAL: 0x00289df0
+     */
+    static void PlayDuelCheer();
 
     /**
      * Play the sound of a gem or bar erased in the remix editor.

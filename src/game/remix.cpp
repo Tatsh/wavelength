@@ -105,7 +105,7 @@ void Remix::BuildTracks(int nStartTick) {
     int nOption = 0;
     for (int nTrack = 0; nTrack < mSong->GetNumTracks(); ++nTrack) {
         const int nType = mSong->GetTrackType(nTrack);
-        if (nType == Song::kTrackTypeVox || nType == Song::kTrackTypePitch) {
+        if (nType == Song::kTrackTypePitch || nType == Song::kTrackTypeVox) {
             instruments.push_back(mSong->GetTrackInstrument(nTrack));
             types.push_back(nType);
         } else if (nType == Song::kTrackTypeScratch || nType == Song::kTrackTypeAxe) {

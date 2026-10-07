@@ -6,12 +6,17 @@
 /**
  * Interface through which the rules react to the phrases of a player's track.
  *
- * The RTTI includes the class name. DuelTrack derives from it as its second base. Only the members
- * its callers here use are declared, and their names are inferred.
+ * The RTTI includes the class name. DuelTrack derives from it as its second base, and NetFaker
+ * reports the gems of a remote player through it. The names of the members are inferred.
  */
 class TrackReactor {
 public:
-    /** Release the interface. */
+    /**
+     * Release the interface.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00335238
+     * @ghidraAddress PAL: 0x003a27e8
+     */
     virtual ~TrackReactor() {
     }
 
@@ -52,7 +57,7 @@ public:
      * @param cursor The gem.
      * @param bRemote Whether the hit came from another console.
      */
-    virtual void HitGem(int nTick, GemCursor &cursor, bool bRemote) = 0;
+    virtual void HitGem(int nTick, const GemCursor &cursor, bool bRemote) = 0;
 
     /**
      * Act on a gem the player missed.
@@ -63,5 +68,14 @@ public:
      * @param cursor The gem.
      * @param bRemote Whether the miss came from another console.
      */
-    virtual void MissGem(int nTick, GemCursor &cursor, bool bRemote) = 0;
+    virtual void MissGem(int nTick, const GemCursor &cursor, bool bRemote) = 0;
+
+    /**
+     * Report a cursor at the first gem the player catches.
+     *
+     * The member is pure in this class.
+     *
+     * @return The cursor.
+     */
+    virtual GemCursor GetCursor() = 0;
 };

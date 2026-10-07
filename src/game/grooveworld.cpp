@@ -118,13 +118,12 @@ constexpr int kReadingTypeJoy = 0x6a6f7920;
 constexpr int kPauseButton = 10;
 constexpr int kJoyButtonLimit = 100;
 
-// The fade StartPlay() sends to the delayer, the track and bar whose quantum sets when input is
-// enabled, and the lead of the metronome it starts, in MIDI ticks.
+// The fade StartPlay() sends to the delayer, and the track and bar whose quantum sets when input is
+// enabled.
 constexpr int kStartFadeMs = 1000;
 constexpr int kStartFadeIn = 1;
 constexpr int kFirstTrack = 0;
 constexpr int kFirstBar = 0;
-constexpr int kMetronomeLeadTicks = 3200;
 
 // The configuration codes PrepareLevel() reads: the sound-bank movie flag and its path, the start
 // offset in ticks, and the tutorial flag it stores in mIsTutorial.
@@ -374,11 +373,6 @@ void GrooveWorld::StartPlay() {
 
     mStats->Reset(mPlayers.size());
     std::for_each(mPlayers.begin(), mPlayers.end(), std::mem_fn(&Player::StartMF));
-    mForceFeedback->SetJukeboxMode(Application::shared()->IsJukeboxMode());
-    mForceFeedback->SetPlaybackMode(mIsPlayback);
-    mForceFeedback->SetEnabled(GlobalSettings::shared()->mGameOptions.mForceFeedback);
-    mForceFeedback->SetPlayerCount(mLocalPlayers.size());
-    mForceFeedback->StartMetronome(Sch::Tick(kMetronomeLeadTicks));
 }
 
 void GrooveWorld::OnControllerReading(int nTag, int nPadIndex, int nButton, float flValue) {
@@ -485,8 +479,6 @@ void GrooveWorld::Exit(int nMode, int bContinueJukebox, int bRestart) {
         Application::shared()->GetWatchdog()->Snapshot();
         mSongClock->Pause();
     }
-    mForceFeedback->StopAll(Sch::Tick(0));
-
     FuncCmd *pFinish = new FuncCmd(this, &GrooveWorld::FinishSong);
     [[maybe_unused]] Sch::CmdID id;
     id.mValue = kUnallocatedCommand; // Yes, the binary prepares this handle and never passes it.

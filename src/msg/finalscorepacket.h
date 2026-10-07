@@ -94,5 +94,22 @@ public:
         return "FinalScorePacket";
     }
 
+    /**
+     * Write the score.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0010c460
+     * @ghidraAddress PAL: 0x0010db98
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the score.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0010c490
+     */
+    void restoreGuts(BinStream &stream) override;
+
     int mScore; /*!< The player's score. */
 };

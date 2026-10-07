@@ -24,7 +24,6 @@
 #include "app/tnlsnake.h"
 #include "app/tnlutil.h"
 #include "app/tunnelcache.h"
-#include "game/forcefeedbackmgr.h"
 #include "game/gamemanagerimpl.h"
 #include "game/grooveworld.h"
 #include "game/leveldata.h"
@@ -858,9 +857,6 @@ void AppTunnel::OnDeployedPowerup(DeployedPowerupMsg *pMsg) {
         // The binary copies the name before the lookup.
         const Color playerColor = TnlColorFromName(HxStr(pMsg->mPlayer->mColorName));
         StartFireFX(flPathStart, kFireIndex, pMsg->mTrack, blue, playerColor, flPathEnd);
-        if (Application::shared()->GetWorld() != nullptr) {
-            Application::shared()->GetWorld()->mForceFeedback->PlayAutocatchEffect(pMsg->mPlayer);
-        }
         break;
     }
     case kHudItemBumper: {
@@ -874,9 +870,6 @@ void AppTunnel::OnDeployedPowerup(DeployedPowerupMsg *pMsg) {
         const float flTargetOffset =
             static_cast<float>(kBumperTargetOffset - nMaxLevel * kBumperTargetLevelStep);
         (void)StartBumpFX(pMsg->mTrack, HxStr(pMsg->mTarget->mColorName), 0, flTargetOffset);
-        if (Application::shared()->GetWorld() != nullptr) {
-            Application::shared()->GetWorld()->mForceFeedback->PlayBumpEffect(pMsg->mTarget);
-        }
         break;
     }
     case kHudItemMultiplier: {
@@ -1094,8 +1087,8 @@ inline void AppTunnel::OnAxeButton(AxeButtonMsg *pMsg) {
     }
 }
 
-inline void AppTunnel::OnPlayersTrackNeutralized(PlayersTrackNeutralizedMsg *pMsg) {
-    Application::shared()->GetWorld()->mForceFeedback->PlayNeutralizedEffect(pMsg->mPlayer);
+inline void
+AppTunnel::OnPlayersTrackNeutralized([[maybe_unused]] PlayersTrackNeutralizedMsg *pMsg) {
 }
 
 inline void AppTunnel::OnToggleGhost(ToggleGhostMsg *pMsg) {

@@ -71,13 +71,13 @@ public:
     int HasQuit() const override;
 
     /**
-     * Report the value at `+0x60` of the game logic.
+     * Report whether the song is to start again once it ends.
      *
-     * @return The value.
+     * @return Non-zero when the song restarts.
      * @ghidraAddress NTSC-U/C: 0x0033f070
      * @ghidraAddress PAL: 0x003ac5a8
      */
-    int GetReserved60() const override;
+    int IsRestartRequested() const override;
 
     /**
      * Report whether a player plays the freestyle track.

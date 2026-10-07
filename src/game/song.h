@@ -6,12 +6,16 @@
 #include "game/backmusic.h"
 #include "game/banktrack.h"
 #include "game/catchtrackdata.h"
+#include "game/duelpatterntable.h"
 #include "game/freestylefx.h"
 #include "game/levelmidibuilder.h"
 #include "game/lyric.h"
+#include "game/pitchtrackgems.h"
+#include "game/pitchtrackriffdata.h"
 #include "game/playmap.h"
 #include "game/scratchtrackdata.h"
 #include "game/sectionboundaries.h"
+#include "game/slotgrid.h"
 #include "game/worldtrack.h"
 #include "gs/muse.h"
 
@@ -19,16 +23,16 @@
  * One song: its configuration from the song text file and the tracks its MIDI file builds.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred from the song text file it
- * reads. Only the members GameLogic uses are declared.
+ * reads. Only the members its callers here use are declared.
  */
 class Song {
 public:
     /** Types of an instrument track. */
     enum TrackType {
         kTrackTypeAxe = 1,     /*!< A guitar freestyle track. */
-        kTrackTypeVox = 2,     /*!< A vocal track. */
+        kTrackTypePitch = 2,   /*!< A pitch track. */
         kTrackTypeScratch = 3, /*!< A turntable freestyle track. */
-        kTrackTypePitch = 4,   /*!< A pitch track. */
+        kTrackTypeVox = 4,     /*!< A vocal track. */
         kTrackTypeCatch = 5,   /*!< A catch track. */
     };
 
@@ -65,6 +69,17 @@ public:
     int GetTrackInstrument(int nTrack) const;
 
     /**
+     * Report the duel patterns of the song.
+     *
+     * The name is inferred.
+     *
+     * @return The patterns.
+     * @ghidraAddress NTSC-U/C: 0x0011ee40
+     * @ghidraAddress PAL: 0x001205d0
+     */
+    DuelPatternTable *GetDuelPatterns();
+
+    /**
      * Report the gems of a catch track.
      *
      * @param nTrack The track.
@@ -90,6 +105,16 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0011ee88
      */
     AxeContour *GetAxeContour(int nTrack) const;
+
+    /**
+     * Report the riffs of a track.
+     *
+     * @param nTrack The track.
+     * @return The riffs, or null for a track without riffs.
+     * @ghidraAddress NTSC-U/C: 0x0011eea8
+     * @ghidraAddress PAL: 0x00120638
+     */
+    PitchTrackRiffData *GetTrackRiffData(int nTrack) const;
 
     /**
      * Report the flags of a track.
@@ -212,6 +237,27 @@ public:
     float GetSpeed() const;
 
     /**
+     * Report the slot grid of the song.
+     *
+     * @return The grid the song refers to at `+0x7c`.
+     * @ghidraAddress NTSC-U/C: 0x0011f030
+     * @ghidraAddress PAL: 0x001207c0
+     */
+    SlotGrid *GetSlotGrid() const;
+
+    /**
+     * Report the gem patterns of a pitch track.
+     *
+     * The body also calls GetTrackType() and discards the result.
+     *
+     * @param nTrack The track.
+     * @return The entry of the track in the array at `+0x348`.
+     * @ghidraAddress NTSC-U/C: 0x0011f038
+     * @ghidraAddress PAL: 0x001207c8
+     */
+    std::vector<PitchTrackGems *> *GetTrackPitchData(int nTrack);
+
+    /**
      * Report the steps of the catch tracks to enable, each a list of track indices.
      *
      * @return The steps.
@@ -238,6 +284,29 @@ public:
     const std::vector<unsigned char> *GetLowVolumes(int nChannel) const;
 
     /**
+     * Report whether a track has a volume list.
+     *
+     * @param nTrack The track.
+     * @return Whether the volume list of the track is not empty.
+     * @ghidraAddress NTSC-U/C: 0x0011f0e0
+     * @ghidraAddress PAL: 0x00120870
+     */
+    bool HasTrackVolumes(int nTrack) const;
+
+    /**
+     * Report the volumes of a track.
+     *
+     * The body also calls HasTrackVolumes() and discards the result.
+     *
+     * @param nTrack The track.
+     * @return The volume list, with the volume of the playing track first and the volume of a
+     *         muted track second.
+     * @ghidraAddress NTSC-U/C: 0x0011f100
+     * @ghidraAddress PAL: 0x00120890
+     */
+    const std::vector<unsigned char> &GetTrackVolumes(int nTrack) const;
+
+    /**
      * Report whether the song sets the low volumes of the freestyle track.
      *
      * @return Whether the volumes are set.
@@ -253,9 +322,17 @@ public:
      */
     const std::vector<unsigned char> *GetFreestyleLowVolumes() const;
 
-    unsigned char mReserved00[0x18]; // +0x00, not yet recovered.
+    unsigned char mReserved00[0x04]; // +0x00, not yet recovered.
+    int mDifficulty; /*!< The difficulty. The duel coaches the players at 1. +0x04 */
+    unsigned char mReserved08[0x10]; // +0x08, not yet recovered.
     LevelMidiBuilder *mBuilder;      /*!< The builder of the tracks. +0x18 */
-    unsigned char mReserved1c[0x28]; // +0x1c, not yet recovered.
+    unsigned char mReserved1c[0x04]; // +0x1c, not yet recovered.
+    DuelPatternTable mDuelPatterns;  /*!< The duel patterns of the song. +0x20 */
+    unsigned char mReserved30[0x14]; // +0x30, not yet recovered.
     int mNumBars;                    /*!< `song_bars`, the length of the song in bars. +0x44 */
     int mIntroBars; /*!< `intro_bars`, one more than the bars before bar 0. +0x48 */
+    unsigned char mReserved4c[0x2ec]; // +0x4c, not yet recovered.
+    std::vector<int> mSkippedBars;    /*!< The bars a duel passes over, ascending. +0x338 */
+    unsigned char mReserved348[0x1c]; // +0x348, not yet recovered.
+    std::vector<int> mDuelTrackOrder; /*!< The tracks a duel plays, cycled by section. +0x364 */
 };

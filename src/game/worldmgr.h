@@ -44,6 +44,14 @@ public:
     WorldMgr();
 
     /**
+     * Release the driver. The body is empty, and the world and the router are not destroyed.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00104898
+     * @ghidraAddress PAL: 0x00105f80
+     */
+    ~WorldMgr();
+
+    /**
      * Report the single instance, constructing it on first use.
      *
      * @return The instance.
@@ -53,7 +61,7 @@ public:
     static WorldMgr *shared();
 
     /**
-     * Initialise the graphics manager at `0x0043b020` and mark the driver initialised.
+     * Initialise TheGfxManager and TheGameConfig, and mark the driver initialised.
      *
      * @ghidraAddress NTSC-U/C: 0x001048c0
      * @ghidraAddress PAL: 0x00105fa8
@@ -61,7 +69,9 @@ public:
     void Init();
 
     /**
-     * Destroy the world and the router if either exists, and shut down the graphics manager.
+     * Destroy the world and the router if either exists, and shut down TheGfxManager.
+     *
+     * The two pointers are not cleared.
      *
      * @ghidraAddress NTSC-U/C: 0x00104900
      * @ghidraAddress PAL: 0x00105fe8
@@ -78,7 +88,7 @@ public:
     int GetState() const;
 
     /**
-     * Notify the graphics manager and enter kStateIdle.
+     * Reset TheGfxManager and enter kStateIdle.
      *
      * @ghidraAddress NTSC-U/C: 0x00104a00
      * @ghidraAddress PAL: 0x001060e8
@@ -89,7 +99,8 @@ public:
      * Build the World for the selected rule set and enter kStateLoading.
      *
      * Rule set 1 builds a Game, rule set 2 a Remix, and rule set 3 a Duel. Any other value builds
-     * no world and passes "invalid ruleset" to the empty diagnostic routine at `0x00333d50`.
+     * no world and passes "invalid ruleset" to DebugWarn(). The periodic controller check is
+     * turned off until Unload().
      *
      * @ghidraAddress NTSC-U/C: 0x00104a70
      * @ghidraAddress PAL: 0x00106158
@@ -135,19 +146,32 @@ public:
     int Poll();
 
     /**
-     * Draw through the graphics manager, at the running world's time or at time 0 otherwise.
+     * Draw TheGfxManager, at the running world's tick or at time 0 otherwise.
      *
      * @ghidraAddress NTSC-U/C: 0x00104ef0
      * @ghidraAddress PAL: 0x001065d8
      */
     void Draw();
 
+private:
+    /**
+     * Send Reset All Controllers on every MIDI channel and restore the full output level of
+     * TheSynth.
+     *
+     * Start() and Unload() call the routine. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001047d0
+     * @ghidraAddress PAL: 0x00105eb8
+     */
+    static void ResetSynthControllers();
+
+public:
     World *mWorld;       /*!< The world Load() built, or null. */
     InputMgr *mInputMgr; /*!< The router Start() attached, or null. */
     int mState;          /*!< One of State. */
     int mEvent;          /*!< The Event Poll() reports next. */
     int mInitialized;    /*!< Set by Init(). */
-    int mWorldStarted;   /*!< Set once the loading world was told its assets are ready. */
+    int mWorldStarted;   /*!< Set once the loading world was told to load its assets. */
 };
 
 /**

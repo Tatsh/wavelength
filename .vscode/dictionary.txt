@@ -111,6 +111,7 @@ callbackxferhdtoiop
 campaignstats
 catchingstg
 catchmsg
+catchpatt
 catchprogresspacket
 caughtbarmsg
 caughtphrasepacket
@@ -216,7 +217,10 @@ dsource
 dsrlv
 dsubu
 dthe
+duellogic
 duelpattern
+dueltrack
+dueltrackpitcher
 durgemcurve
 durgemmsg
 durgemrowstring
@@ -228,6 +232,7 @@ dwavelength
 easywarn
 ecossin
 edata
+editgempacket
 eekernel
 eeregs
 eetypes
@@ -286,6 +291,7 @@ fcset
 fdata
 fenv
 ffmd
+finalscorepacket
 findctp
 fini
 firefs
@@ -296,6 +302,8 @@ fminv
 fogcol
 fogcol's
 forcefeedbackmgr
+forcefeedbackmgrcontroller
+forcefeedbackmgrmotoreffect
 fordblks
 formatcardmct
 formatmessage
@@ -326,6 +334,7 @@ fxwires
 gamebeginmsg
 gamechatpacket
 gamecheats
+gameconfig
 gameconnectfailuremsg
 gameconnectionlostmsg
 gameconnectsuccessmsg
@@ -345,6 +354,7 @@ gamerecorder
 gameskill
 gamestats
 gamestrings
+gametie
 gametrackselector
 gedf
 gemcatcher
@@ -499,6 +509,7 @@ kscope
 kseg
 kuhgb
 labl
+laypatt
 lbits
 leavegamemsg
 levelbuilder
@@ -714,6 +725,7 @@ minimumsavespacemct
 miniw
 miptbp
 missingconfigvals
+missthis
 mktemp
 mmag
 mmix
@@ -927,6 +939,7 @@ pthread
 ptsmult
 ptstmp
 ptstmphot
+purplewins
 pyinstaller
 pyinterpreter
 pylock
@@ -1097,6 +1110,7 @@ sndb
 sndbank
 sndh
 softfloat
+softfx
 sologamelogic
 solomulti
 solopowerbarmgr
@@ -1305,6 +1319,7 @@ wiswa
 wiswa's
 wmaybe
 wnonnull
+worldmgr
 writeop
 writx
 wstringop
@@ -1319,6 +1334,7 @@ xtop
 xyoffset
 xyzf
 yarnrc
+yougotit
 zbuf
 ziparchive
 zizmor

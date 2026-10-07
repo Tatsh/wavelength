@@ -63,11 +63,13 @@ public:
     virtual int HasQuit() const = 0;
 
     /**
-     * Report the value at `+0x60` of the game logic.
+     * Report whether the song is to start again once it ends.
      *
-     * @return The value.
+     * World::IsRestartRequested() returns the value.
+     *
+     * @return Non-zero when the song restarts.
      */
-    virtual int GetReserved60() const = 0;
+    virtual int IsRestartRequested() const = 0;
 
     /**
      * Report whether a player plays the freestyle track.

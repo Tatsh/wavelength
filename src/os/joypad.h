@@ -78,3 +78,16 @@ void JoypadSetStickMessages(bool bEnable);
  * @ghidraAddress PAL: 0x002944c0
  */
 void JoypadSetMenuControl(int nPad, bool bMenu);
+
+/**
+ * Drive the vibration motors of the controller on a port.
+ *
+ * The name is inferred.
+ *
+ * @param nPad The controller port.
+ * @param nSmallMotor The small motor's state, 0 or 1.
+ * @param nBigMotor The big motor's level.
+ * @ghidraAddress NTSC-U/C: 0x0028aff8
+ * @ghidraAddress PAL: 0x002947f0
+ */
+void JoypadSetVibration(int nPad, int nSmallMotor, int nBigMotor);

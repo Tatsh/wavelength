@@ -27,7 +27,7 @@ void NetFaker::Update() {
     Player *pPlayer = mReactor->GetPlayer();
     if (pPlayer != nullptr && !TheGameDb->IsLocalPlayer(pPlayer->GetIndex()) &&
         !pPlayer->IsAborted() && mReactor->IsBarActive(nBar)) {
-        if (nBar == mLastBar && mCountMisses && !pPlayer->GetCatching()) {
+        if (nBar == mLastBar && mCountMisses != 0 && !pPlayer->GetCatching()) {
             mReactor->MissGem(mCursor.GetTick(), mCursor, true);
         } else {
             mReactor->HitGem(mCursor.GetTick(), mCursor, true);

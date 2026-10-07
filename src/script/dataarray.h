@@ -77,6 +77,19 @@ public:
     bool FindFloat(const char *pszName, float *pfValue, bool bFail) const;
 
     /**
+     * Find the truth value that follows a tag.
+     *
+     * @param pszName The symbol that starts the child array.
+     * @param pnValue Receives 1 when the integer at index 1 of the child array is not zero and 0
+     * otherwise, when the child array exists.
+     * @param bFail Passed to FindArray().
+     * @return Whether the child array exists.
+     * @ghidraAddress NTSC-U/C: 0x002963f0
+     * @ghidraAddress PAL: 0x002a0008
+     */
+    bool FindBool(const char *pszName, int *pnValue, bool bFail) const;
+
+    /**
      * Report a node as a symbol.
      *
      * @param nIndex The node.

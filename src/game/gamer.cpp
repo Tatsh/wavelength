@@ -6,7 +6,6 @@
 #include "app/playsound.h"
 #include "game/bgtrackgraph.h"
 #include "game/enablemgr.h"
-#include "game/forcefeedbackmgr.h"
 #include "game/gameenablemgr.h"
 #include "game/gamemanagerimpl.h"
 #include "game/gamercmd.h"
@@ -246,10 +245,6 @@ void Gamer::OnPlaybackMode(PlaybackModeMsg *pMsg) {
         mSectionRepeats = 1;
         mPlayMap->StartLoop(nBar); // Yes, the binary discards this call's result.
     }
-
-    ForceFeedbackMgr *pForceFeedback = mGlobals->GetWorld()->mForceFeedback;
-    pForceFeedback->SetJukeboxMode(mPlaybackOn);
-    pForceFeedback->StartMetronome(Sch::Tick(0));
 
     PlaybackToggleMsg toggle(mPlaybackOn);
     Send(&toggle);

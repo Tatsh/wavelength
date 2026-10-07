@@ -47,7 +47,7 @@ public:
      * Drive the vibration motors of the controller on one port.
      *
      * The JoypadPS2 whose player is nPort receives both levels, and a player with no JoypadPS2
-     * is ignored. ForceFeedbackMgr::ApplyMotors() is the recovered caller.
+     * is ignored.
      *
      * @param nPort The player, from 1.
      * @param nSmallMotor The small motor's state, 0 or 1.

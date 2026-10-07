@@ -10,6 +10,15 @@
 class GameCallback {
 public:
     /**
+     * Install the listener the gameplay code reports to.
+     *
+     * @param pCallback The listener, or null to stop reporting.
+     * @ghidraAddress NTSC-U/C: 0x0010f020
+     * @ghidraAddress PAL: 0x001107b8
+     */
+    static void Set(GameCallback *pCallback);
+
+    /**
      * Release the listener.
      *
      * @ghidraAddress NTSC-U/C: 0x003443a8

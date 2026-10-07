@@ -3,8 +3,6 @@
 #include "app/application.h"
 #include "app/playsound.h"
 #include "app/tnlplayer.h"
-#include "game/forcefeedbackmgr.h"
-#include "game/grooveworld.h"
 #include "os/formatstring.h"
 #include "os/hxstr.h"
 #include "rnd/manager.h"
@@ -61,10 +59,6 @@ void TnlCrippleFX::SetFrame(float flFrame) {
             for (auto it = mTargets.begin(); it != mTargets.end(); ++it) {
                 PlaySoundByName("SND_CRIPPLER_HIT");
                 (*it)->SetCrippleFrame(flFrame);
-                if (Application::shared()->GetWorld() != nullptr) {
-                    Application::shared()->GetWorld()->mForceFeedback->PlayCrippleEffect(
-                        (*it)->mPlayer);
-                }
             }
             mHitFrame = flFrame;
             mState = kStateHit;
