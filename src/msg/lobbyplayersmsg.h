@@ -3,7 +3,7 @@
 #include <list>
 
 #include "msg/message.h"
-#include "netflow/netlaunchpadplayer.h"
+#include "netflow/lobbyplayer.h"
 
 /**
  * Identity that LobbyPlayersMsg::Type() reports.
@@ -20,6 +20,7 @@ extern int g_nLobbyPlayersMsgType;
  */
 class LobbyPlayersMsg : public Message {
 public:
-    std::list<NetLaunchpadPlayer> *mPlayers; /*!< The players. */
-    int mLaunchpad;                          /*!< The index of the session in the lobby list. */
+    std::list<LobbyPlayer> *mPlayers; /*!< The players, in 0x90-byte list nodes. */
+    int mLaunchpad;                   /*!< The index of the session in the lobby list. */
+    int mHasPrevious;                 /*!< Non-zero when more players precede a ranking page. */
 };

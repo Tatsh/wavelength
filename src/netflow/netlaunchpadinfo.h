@@ -9,7 +9,7 @@
  * copies them member by member.
  */
 struct NetLaunchpadInfo {
-    int mReserved00;       // +0x00, not yet recovered.
+    int mOpen;             /*!< Non-zero for a session, zero for an empty entry of the list. */
     int mLaunchpadId;      /*!< The first identifier NetJoinLPadScreen joins the session by. */
     int mLaunchpadWorld;   /*!< The second identifier NetJoinLPadScreen joins the session by. */
     NetGameParams mParams; /*!< The settings of the game. */

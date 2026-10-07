@@ -353,7 +353,7 @@ public:
     int mReserved00[12];   // +0x00, not yet recovered.
     String mName;          /*!< The player's name. +0x30 */
     DateTime mBorn;        /*!< The date the Freq was created. +0x44 */
-    int mReserved4C[5];    // +0x4c, not yet recovered.
+    String mPassword;      /*!< The online password, or empty when it is not saved. +0x4c */
     int mNameLocked;       /*!< Non-zero when the player may not rename the Freq. +0x60 */
     int mReserved64[4];    // +0x64, not yet recovered.
     AvatarPartSet mAvatar; /*!< The Freq's parts and colours. +0x74 */

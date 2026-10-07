@@ -4,6 +4,7 @@
 
 #include "math/color.h"
 #include "os/hxstr.h"
+#include "os/string.h"
 #include "rnd/collideable.h"
 #include "rnd/drawable.h"
 #include "rnd/transformable.h"
@@ -165,6 +166,18 @@ public:
      * @ghidraAddress PAL: 0x0024b608
      */
     float MeasureWidth(const char *pszText, int nLength);
+
+    /**
+     * Break a text into lines that fit the width of this text, in the font of this text.
+     *
+     * The name is inferred.
+     *
+     * @param pszText The text.
+     * @param pWrapped Receives the text with a newline at each break.
+     * @ghidraAddress NTSC-U/C: 0x00242ba8
+     * @ghidraAddress PAL: 0x0024b680
+     */
+    void WrapText(const char *pszText, String *pWrapped);
 
     /**
      * Replace the font.

@@ -25,6 +25,8 @@ set(WAVELENGTH_MET_SRCS
     freqmakerpartconfigscreen.cpp
     freqpanel.cpp
     freqscreen.cpp
+    freqselpanel.cpp
+    fullrankedpanel.cpp
     gameoptionsscreen.cpp
     gizmo.cpp
     helppanel.cpp
@@ -33,6 +35,7 @@ set(WAVELENGTH_MET_SRCS
     keyboardpanel.cpp
     keyboardrequest.cpp
     keyboardscreen.cpp
+    launchmtvpanel.cpp
     launchscreen.cpp
     mainoptionsscreen.cpp
     marketingscreen.cpp
@@ -52,21 +55,52 @@ set(WAVELENGTH_MET_SRCS
     modescreen.cpp
     multiendgamescreen.cpp
     multifreqselectscreen.cpp
+    multigamestatspanel.cpp
     multisetupremixsavescreen.cpp
+    netchangepassword.cpp
+    netchangepasswordscreen.cpp
+    netcreateaccount.cpp
+    netcreateconfigscreen.cpp
+    netcreateuserscreen.cpp
+    netdodownloadscreen.cpp
+    netdoplayersearchscreen.cpp
+    netdouploadscreen.cpp
     netendgamescreen.cpp
+    neteulascreen.cpp
+    netflashupdate.cpp
+    netfoundplayerpanel.cpp
     nethostattemptscreen.cpp
+    netinetdisconnect.cpp
     netjoinlpadscreen.cpp
     netlaunchpadquitscreen.cpp
     netlaunchscreen.cpp
+    netlobbyconnect.cpp
+    netlobbydisconnect.cpp
+    netloginscreen.cpp
+    netlpadgamepanel.cpp
+    netlpadplayerpanel.cpp
     netlpadscreen.cpp
+    netnewchatroomscreen.cpp
+    netparamsscreen.cpp
+    netpasswordscreen.cpp
+    netrankedplayerspanel.cpp
+    netrankingscreen.cpp
     netreadonlywarnscreen.cpp
+    netserverlogin.cpp
+    netserverselscreen.cpp
+    netsongpanel.cpp
+    netsorteddatapanel.cpp
+    netsortedlaunchpadspanel.cpp
     netsortedscreen.cpp
     netswitchlobbyscreen.cpp
+    netwelcomescreen.cpp
     nocontrollerscreen.cpp
     numplayersscreen.cpp
     partunlockdonescreen.cpp
     partunlockscreen.cpp
     pausescreen.cpp
+    playersearchresultsscreen.cpp
+    playersearchsetupscreen.cpp
     powerupscreen.cpp
     prelaunchscreen.cpp
     puptipsscreen.cpp
@@ -84,10 +118,13 @@ set(WAVELENGTH_MET_SRCS
     saveeditedfreqscreen.cpp
     savefreqscreen.cpp
     selloadedfreqscreen.cpp
+    setupnamescreen.cpp
+    setupnewchatroomscreen.cpp
     setupremixsavescreen.cpp
     shareremixscreen.cpp
     soloendgamescreen.cpp
     sologamestatspanel.cpp
+    sololosetipspanel.cpp
     solowinstatspanel.cpp
     songdecryptscreen.cpp
     songpicpanel.cpp
@@ -98,6 +135,7 @@ set(WAVELENGTH_MET_SRCS
     transitionscreen.cpp
     unlockavatarpanel.cpp
     unlockscreen.cpp
+    uploadnotescreen.cpp
     viewanimplayer.cpp
     xproceedscreen.cpp)
 

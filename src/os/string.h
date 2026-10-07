@@ -260,6 +260,16 @@ public:
     bool operator!=(const char *pszText) const;
 
     /**
+     * Report whether the text differs from another string's text.
+     *
+     * @param other The other string.
+     * @return Whether `strcmp()` reports the texts different.
+     * @ghidraAddress NTSC-U/C: 0x0029f068
+     * @ghidraAddress PAL: 0x002a8d28
+     */
+    bool operator!=(const String &other) const;
+
+    /**
      * Report a copy of the string with text appended.
      *
      * @param pszText The text to append.

@@ -18,6 +18,13 @@ extern int g_nJoinChatroomResultMsgType;
  */
 class JoinChatroomResultMsg : public Message {
 public:
+    /** Values of mResult. */
+    enum Result {
+        kResultVulgarName = -76, /*!< The chatroom name is not acceptable. */
+        kResultNameExists = -74, /*!< A chatroom of the name exists. */
+        kResultSuccess = 0,      /*!< The player is in the chatroom. */
+    };
+
     int mResult;               /*!< Zero on success, otherwise an error code. */
     NetChatroomInfo mChatroom; /*!< The room joined. */
 };

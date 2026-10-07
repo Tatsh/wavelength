@@ -5,8 +5,9 @@
 /**
  * Network connection of the console.
  *
- * The RTTI includes the class name, and InetImpl derives from it. Only the member its callers
- * here use is declared.
+ * The RTTI includes the class name, and InetImpl derives from it. The members report their results
+ * to the receiver SetSink() sets, as messages such as InetConfigsResultMsg and
+ * InetConnectResultMsg. The member names other than GetConnectionType() are inferred.
  */
 class NetInet {
 public:
@@ -17,6 +18,40 @@ public:
 
     /** Release the connection. */
     virtual ~NetInet();
+
+    /** Start the program that creates a network configuration. */
+    virtual void LaunchConfigTool() = 0;
+
+    /** Start listing the network configurations of the memory card. */
+    virtual void RequestConfigs() = 0;
+
+    /**
+     * Start connecting with a network configuration.
+     *
+     * @param pSink The receiver of the InetConnectStatusMsg and InetConnectResultMsg.
+     * @param nConfig The identifier of the configuration.
+     */
+    virtual void Connect(MsgSink *pSink, int nConfig) = 0;
+
+    /**
+     * Set the receiver of the result messages.
+     *
+     * @param pSink The receiver, or null.
+     */
+    virtual void SetSink(MsgSink *pSink) = 0;
+
+    /**
+     * Start looking up the address of a host.
+     *
+     * @param pszHost The host name.
+     */
+    virtual void LookupHost(const char *pszHost) = 0;
+
+    /** Clear the pending request. */
+    virtual void ClearPending() = 0;
+
+    /** Start checking whether the connection still works. */
+    virtual void CheckConnection() = 0;
 
     /**
      * Load the network modules. Vtable slot 2. The name is inferred.
@@ -39,6 +74,9 @@ public:
      * @return The kind.
      */
     virtual int GetConnectionType() = 0;
+
+    /** Mark the connection ready. */
+    virtual void SetReady() = 0;
 };
 
 /**

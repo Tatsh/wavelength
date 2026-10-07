@@ -56,6 +56,17 @@ public:
     const char *GetArtist() const;
 
     /**
+     * Report the localised record label, the token `<name>_LABEL`.
+     *
+     * The name is inferred.
+     *
+     * @return The record label.
+     * @ghidraAddress NTSC-U/C: 0x0027cf48
+     * @ghidraAddress PAL: 0x00286860
+     */
+    const char *GetLabel() const;
+
+    /**
      * Report the localised short form of the artist, the token `<name>_ARTIST_SHORT`.
      *
      * @return The short artist.

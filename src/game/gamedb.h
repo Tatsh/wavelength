@@ -189,6 +189,18 @@ public:
     const char *GetPlayerName(int nPlayer) const;
 
     /**
+     * Report the colour symbol of a player's difficulty.
+     *
+     * The name is inferred.
+     *
+     * @param nPlayer The player.
+     * @return The symbol.
+     * @ghidraAddress NTSC-U/C: 0x0026e988
+     * @ghidraAddress PAL: 0x00278528
+     */
+    const char *GetPlayerColor(int nPlayer) const;
+
+    /**
      * Report the position of a player in the order of the online session.
      *
      * @param nPlayer The player.
@@ -613,6 +625,28 @@ public:
     const char *GetModeName() const;
 
     /**
+     * Report the localised name of a mode.
+     *
+     * @param nRuleSet The rule set, one of RuleSet.
+     * @return The name, or the empty string for another value.
+     * @ghidraAddress NTSC-U/C: 0x0026f3f0
+     * @ghidraAddress PAL: 0x00278f90
+     */
+    const char *GetModeName(int nRuleSet) const;
+
+    /**
+     * Report the localised name of a power-up level.
+     *
+     * The name is inferred.
+     *
+     * @param nPowerupLevel The level, 0 to 2.
+     * @return The name, or the empty string for another value.
+     * @ghidraAddress NTSC-U/C: 0x0026f470
+     * @ghidraAddress PAL: 0x00279010
+     */
+    const char *GetPowerupName(int nPowerupLevel) const;
+
+    /**
      * Append the names of the arenas of the "arenas" section, in their order there.
      *
      * @param pArenas The list to append to.
@@ -674,7 +708,7 @@ public:
     String mSong;        /*!< The song of the game, the "song" entry of the "db" section. */
     int mLoadRemix;      /*!< `load_remix`, whether a saved remix is played. +0x24 */
     int mRemixReadOnly;  /*!< Non-zero when the remix may not be saved over. +0x28 */
-    String mReserved2C;  // +0x2c, not yet recovered.
+    String mRemixName;   /*!< The name of the saved remix played. +0x2c */
     int mPracticeMode;   /*!< `practice_mode`. +0x40 */
     int mTutorial;       /*!< Whether the tutorial is played. +0x44 */
     int mSkillLevel;     /*!< `skill_level`. +0x48 */

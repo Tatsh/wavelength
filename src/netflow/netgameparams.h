@@ -12,7 +12,7 @@ struct NetGameParams {
     String mSong;       /*!< The song of the game. */
     int mLoadRemix;     /*!< Whether a saved remix is played. */
     int mRemixReadOnly; /*!< Whether the remix of the game cannot be changed. */
-    String mReserved1C; // +0x1c, not yet recovered.
+    String mRemixName;  /*!< The name of the remix the game plays. */
     int mPracticeMode;  /*!< The practice mode. */
     int mTutorial;      /*!< Whether the tutorial is played. */
     int mSkillLevel;    /*!< The skill level. */
