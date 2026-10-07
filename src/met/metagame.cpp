@@ -12,12 +12,19 @@
 #include "math/color.h"
 #include "math/rand.h"
 #include "memcard/mcmanager.h"
+#include "met/freqconfirmscreen.h"
 #include "met/freqpanel.h"
 #include "met/freqscreen.h"
 #include "met/introscreen.h"
+#include "met/metaarenascreen.h"
 #include "met/metagameutil.h"
+#include "met/metamainscreen.h"
+#include "met/metaskillscreen.h"
+#include "met/metasongscreen.h"
 #include "met/metastartscreen.h"
+#include "met/modescreen.h"
 #include "met/sharedmusic.h"
+#include "met/songpicpanel.h"
 #include "met/songpreview.h"
 #include "met/transitionscreen.h"
 #include "netflow/lobbymsgtypes.h"
@@ -275,7 +282,14 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(TransitionScreen::New, "transition_screen");
     TheUI.RegisterScreenType(IntroScreen::New, "intro_screen");
     TheUI.RegisterScreenType(MetaStartScreen::New, "meta_start_screen");
+    TheUI.RegisterScreenType(MetaMainScreen::New, "meta_main_screen");
+    TheUI.RegisterScreenType(ModeScreen::New, "mode_screen");
+    TheUI.RegisterScreenType(MetaSkillScreen::New, "meta_skill_screen");
+    TheUI.RegisterScreenType(MetaArenaScreen::New, "meta_arena_screen");
+    TheUI.RegisterScreenType(MetaSongScreen::New, "meta_song_screen");
+    TheUI.RegisterScreenType(FreqConfirmScreen::New, "confirm_screen");
     TheUI.RegisterPanelType(FreqPanel::New, "freq_panel");
+    TheUI.RegisterPanelType(SongPicPanel::New, "song_pic_panel");
     Gizmo::Init(pMetagame);
     TheMetagame.CreateGizmo();
     LoadSharedMusic();
