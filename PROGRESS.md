@@ -27,20 +27,20 @@ python3 .wiswa-ci/port/progress.py --write
 | Excluded: Vendored under 3rdparty      |    294 |
 | Excluded: C and compiler runtime       |    227 |
 | To port                                | 10,796 |
-| Done                                   |  1,052 |
+| Done                                   |  1,170 |
 | Stubbed (not counted as done)          |     20 |
-| Declared only (not counted as done)    |  1,157 |
-| Share done                             |  9.74% |
+| Declared only (not counted as done)    |  1,216 |
+| Share done                             | 10.84% |
 | FreQuency annotations left in the tree |  3,602 |
 
 ## By component
 
 | Component                    | Routines | Done | Share |
 | ---------------------------- | -------: | ---: | ----: |
-| Game code                    |    6,814 |  858 | 12.6% |
+| Game code                    |    6,814 |  946 | 13.9% |
 | Sony online library (SCE-RT) |    1,255 |    0 |  0.0% |
 | Sony EE libraries            |      437 |    1 |  0.2% |
-| Compiler-emitted instances   |    2,290 |  193 |  8.4% |
+| Compiler-emitted instances   |    2,290 |  223 |  9.7% |
 
 ## IOP modules
 
@@ -72,8 +72,8 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00160000.md](progress/game-code-00160000.md)                                   | Game code                    | `0x00160000`-`0x00170000` |      273 |   33 | 12.1% |
 | [game-code-00170000.md](progress/game-code-00170000.md)                                   | Game code                    | `0x00170000`-`0x00180000` |      276 |    0 |  0.0% |
 | [game-code-00180000.md](progress/game-code-00180000.md)                                   | Game code                    | `0x00180000`-`0x00190000` |      180 |   23 | 12.8% |
-| [game-code-00190000.md](progress/game-code-00190000.md)                                   | Game code                    | `0x00190000`-`0x001a0000` |      246 |   69 | 28.0% |
-| [game-code-001a0000.md](progress/game-code-001a0000.md)                                   | Game code                    | `0x001a0000`-`0x001b0000` |      247 |   35 | 14.2% |
+| [game-code-00190000.md](progress/game-code-00190000.md)                                   | Game code                    | `0x00190000`-`0x001a0000` |      246 |   88 | 35.8% |
+| [game-code-001a0000.md](progress/game-code-001a0000.md)                                   | Game code                    | `0x001a0000`-`0x001b0000` |      247 |  101 | 40.9% |
 | [game-code-001b0000.md](progress/game-code-001b0000.md)                                   | Game code                    | `0x001b0000`-`0x001c0000` |      292 |   17 |  5.8% |
 | [game-code-001c0000.md](progress/game-code-001c0000.md)                                   | Game code                    | `0x001c0000`-`0x001d0000` |      174 |    0 |  0.0% |
 | [game-code-001d0000.md](progress/game-code-001d0000.md)                                   | Game code                    | `0x001d0000`-`0x001e0000` |      181 |    0 |  0.0% |
@@ -86,7 +86,7 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00240000.md](progress/game-code-00240000.md)                                   | Game code                    | `0x00240000`-`0x00250000` |      193 |    2 |  1.0% |
 | [game-code-00250000.md](progress/game-code-00250000.md)                                   | Game code                    | `0x00250000`-`0x00260000` |      268 |    0 |  0.0% |
 | [game-code-00260000.md](progress/game-code-00260000.md)                                   | Game code                    | `0x00260000`-`0x00270000` |      373 |    0 |  0.0% |
-| [game-code-00270000.md](progress/game-code-00270000.md)                                   | Game code                    | `0x00270000`-`0x00280000` |      253 |    9 |  3.6% |
+| [game-code-00270000.md](progress/game-code-00270000.md)                                   | Game code                    | `0x00270000`-`0x00280000` |      253 |   12 |  4.7% |
 | [game-code-00280000.md](progress/game-code-00280000.md)                                   | Game code                    | `0x00280000`-`0x00290000` |      322 |    0 |  0.0% |
 | [game-code-00290000.md](progress/game-code-00290000.md)                                   | Game code                    | `0x00290000`-`0x002a0000` |      421 |   13 |  3.1% |
 | [sony-online-library-sce-rt-002a0000.md](progress/sony-online-library-sce-rt-002a0000.md) | Sony online library (SCE-RT) | `0x002a0000`-`0x002b0000` |      143 |    0 |  0.0% |
@@ -100,8 +100,8 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [sony-ee-libraries-00310000.md](progress/sony-ee-libraries-00310000.md)                   | Sony EE libraries            | `0x00310000`-`0x00320000` |      313 |    0 |  0.0% |
 | [compiler-emitted-instances-00330000.md](progress/compiler-emitted-instances-00330000.md) | Compiler-emitted instances   | `0x00330000`-`0x00340000` |      303 |   61 | 20.1% |
 | [compiler-emitted-instances-00340000.md](progress/compiler-emitted-instances-00340000.md) | Compiler-emitted instances   | `0x00340000`-`0x00350000` |      436 |   68 | 15.6% |
-| [compiler-emitted-instances-00350000.md](progress/compiler-emitted-instances-00350000.md) | Compiler-emitted instances   | `0x00350000`-`0x00360000` |      473 |   20 |  4.2% |
-| [compiler-emitted-instances-00360000.md](progress/compiler-emitted-instances-00360000.md) | Compiler-emitted instances   | `0x00360000`-`0x00370000` |      233 |    3 |  1.3% |
+| [compiler-emitted-instances-00350000.md](progress/compiler-emitted-instances-00350000.md) | Compiler-emitted instances   | `0x00350000`-`0x00360000` |      473 |   28 |  5.9% |
+| [compiler-emitted-instances-00360000.md](progress/compiler-emitted-instances-00360000.md) | Compiler-emitted instances   | `0x00360000`-`0x00370000` |      233 |   25 | 10.7% |
 | [compiler-emitted-instances-00370000.md](progress/compiler-emitted-instances-00370000.md) | Compiler-emitted instances   | `0x00370000`-`0x00380000` |      298 |   36 | 12.1% |
 | [compiler-emitted-instances-00380000.md](progress/compiler-emitted-instances-00380000.md) | Compiler-emitted instances   | `0x00380000`-`0x00390000` |      163 |    0 |  0.0% |
 | [compiler-emitted-instances-00390000.md](progress/compiler-emitted-instances-00390000.md) | Compiler-emitted instances   | `0x00390000`-`0x003a0000` |      277 |    5 |  1.8% |
