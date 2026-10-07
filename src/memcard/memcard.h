@@ -1,268 +1,176 @@
 #pragma once
 
-#include <list>
-
-class HxStr;
-class MemcardCBHandler;
-class MemcardOp;
+#include "memcard/memcardcbhandler.h"
+#include "memcard/memcarddirentry.h"
 
 /**
- * Queue of memory-card operations, with one entry point per libmc call.
+ * Advance the memory card command in flight.
  *
- * Its RTTI descriptor is at `0x0086f630`. It has no base class. The vptr therefore sits after the
- * data at offset 4 rather than at offset 0. An instance is eight bytes and the vtable is at
- * `0x0082c030`, with three slots.
+ * Without waiting, the routine queries the library whether the command finished. A finished command
+ * reports its result to the handler that issued it, through the handler method for the command.
+ * A command the routine does not know is reported as `Bad memcard func: %d`.
  *
- * Every entry point below constructs one MemcardOp subclass on the heap and appends it to the
- * queue. Nothing is issued at that moment. Update() drives the head of the queue, one libmc call
- * at a time. A caller that queues an open, a write and a close in one turn therefore gets them
- * serviced in order over the following frames. Ordering is what makes the queue rather than a set
- * of direct calls necessary, because libmc services one command at a time.
- *
- * Every entry point takes an `nCookie` ticket number, which the operation stores and Cancel()
- * matches on. Every MemcardTask passes its own ticket. Abandoning a task therefore abandons exactly
- * the operations that task queued, wherever they sit in the queue.
- *
- * One instance exists. It is a `MemcardPS2` built with `new` inside the constructor at
- * `0x001f2960`, which belongs to a singleton outside this subsystem.
+ * @ghidraAddress NTSC-U/C: 0x0028b5c0
+ * @ghidraAddress PAL: 0x00294dc0
  */
-class Memcard {
-public:
-    /**
-     * Construct an empty queue.
-     *
-     * The body default-constructs the queue and nothing else. The compiler inlined it into
-     * `MemcardPS2::MemcardPS2()`. No address of its own survives.
-     */
-    Memcard();
+void MemcardPoll();
 
-    /**
-     * Release the queue.
-     *
-     * Occupies vtable slot 1. Any operation still queued is discarded without being issued and
-     * without being destroyed, because the body clears the list rather than deleting through it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x001f6140
-     * @ghidraAddress PAL: 0x001fcb50
-     */
-    virtual ~Memcard();
+/**
+ * Start reading the type, the free space, and the format of a card.
+ *
+ * MemcardCBHandler::OnGetInfo() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @param pnType Receives the card type.
+ * @param pnFree Receives the free space in kilobytes.
+ * @param pnFormat Receives non-zero for a formatted card.
+ * @ghidraAddress NTSC-U/C: 0x0028b8c8
+ * @ghidraAddress PAL: 0x002950c8
+ */
+void MemcardGetInfo(MemcardCBHandler *pHandler, int nPort, int *pnType, int *pnFree, int *pnFormat);
 
-    /**
-     * Advance the head of the queue by one step.
-     *
-     * Occupies vtable slot 2. The body of this class is empty, and `MemcardPS2` supplies the
-     * PlayStation 2 implementation. The method title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x001f61a8
-     * @ghidraAddress PAL: 0x001fcbb8
-     */
-    virtual void Update();
+/**
+ * Start opening a file.
+ *
+ * MemcardCBHandler::OnOpen() receives the file descriptor or the error.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @param pszName The file.
+ * @param nMode The library's open mode bits.
+ * @ghidraAddress NTSC-U/C: 0x0028b928
+ * @ghidraAddress PAL: 0x00295128
+ */
+void MemcardOpen(MemcardCBHandler *pHandler, int nPort, const char *pszName, int nMode);
 
-    /**
-     * Queue an enquiry about the card in one slot.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047e370
-     * @ghidraAddress PAL: 0x004bc048
-     */
-    void CheckInfo(MemcardCBHandler *pHandler, int nPortSlot, int nCookie);
+/**
+ * Start closing a file.
+ *
+ * MemcardCBHandler::OnClose() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nFd The file descriptor.
+ * @ghidraAddress NTSC-U/C: 0x0028b980
+ * @ghidraAddress PAL: 0x00295180
+ */
+void MemcardClose(MemcardCBHandler *pHandler, int nFd);
 
-    /**
-     * Queue an enquiry about the free directory entries under one path.
-     *
-     * No caller exists in the image.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param path The directory to measure.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047e498
-     * @ghidraAddress PAL: 0x004bc170
-     */
-    void EntSpace(MemcardCBHandler *pHandler, int nPortSlot, const HxStr &path, int nCookie);
+/**
+ * Start reading a file.
+ *
+ * MemcardCBHandler::OnRead() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nFd The file descriptor.
+ * @param pBuffer Receives the bytes.
+ * @param nSize The number of bytes.
+ * @ghidraAddress NTSC-U/C: 0x0028b9c0
+ * @ghidraAddress PAL: 0x002951c0
+ */
+void MemcardRead(MemcardCBHandler *pHandler, int nFd, void *pBuffer, int nSize);
 
-    /**
-     * Queue a format of the card in one slot.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047e5d0
-     * @ghidraAddress PAL: 0x004bc2a8
-     */
-    void Format(MemcardCBHandler *pHandler, int nPortSlot, int nCookie);
+/**
+ * Start writing a file.
+ *
+ * MemcardCBHandler::OnWrite() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nFd The file descriptor.
+ * @param pData The bytes.
+ * @param nSize The number of bytes.
+ * @ghidraAddress NTSC-U/C: 0x0028ba08
+ * @ghidraAddress PAL: 0x00295208
+ */
+void MemcardWrite(MemcardCBHandler *pHandler, int nFd, const void *pData, int nSize);
 
-    /**
-     * Queue an unformat of the card in one slot.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047e6f8
-     * @ghidraAddress PAL: 0x004bc3d0
-     */
-    void Unformat(MemcardCBHandler *pHandler, int nPortSlot, int nCookie);
+/**
+ * Start moving the position of a file.
+ *
+ * MemcardCBHandler::OnSeek() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nFd The file descriptor.
+ * @param nOffset The offset.
+ * @param nMode The origin of the offset.
+ * @ghidraAddress NTSC-U/C: 0x0028ba50
+ * @ghidraAddress PAL: 0x00295250
+ */
+void MemcardSeek(MemcardCBHandler *pHandler, int nFd, int nOffset, int nMode);
 
-    /**
-     * Queue the creation of one directory.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param path The directory to create, taken by value and destroyed on return.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047e820
-     * @ghidraAddress PAL: 0x004bc4f8
-     */
-    void CreateDir(MemcardCBHandler *pHandler, int nPortSlot, HxStr path, int nCookie);
+/**
+ * Start creating a directory.
+ *
+ * MemcardCBHandler::OnMkdir() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @param pszName The directory.
+ * @ghidraAddress NTSC-U/C: 0x0028ba98
+ * @ghidraAddress PAL: 0x00295298
+ */
+void MemcardMkdir(MemcardCBHandler *pHandler, int nPort, const char *pszName);
 
-    /**
-     * Queue a listing of one directory.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param path The directory to list.
-     * @param nCookie The tag Cancel() matches on.
-     * @param nMode The `sceMcGetDir()` mode.
-     * @ghidraAddress NTSC-U/C: 0x0047e990
-     * @ghidraAddress PAL: 0x004bc688
-     */
-    void ListDir(
-        MemcardCBHandler *pHandler, int nPortSlot, const HxStr &path, int nCookie, unsigned nMode);
+/**
+ * Start listing the entries that match a name.
+ *
+ * At most 20 entries are listed, whatever nMaxEntries requests. MemcardCBHandler::OnGetDir()
+ * receives the count and the entries.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @param pszName The name. It may include wildcards.
+ * @param nMaxEntries The number of entries requested.
+ * @param nMode The library's listing mode.
+ * @ghidraAddress NTSC-U/C: 0x0028baf0
+ * @ghidraAddress PAL: 0x002952f0
+ */
+void MemcardGetDir(
+    MemcardCBHandler *pHandler, int nPort, const char *pszName, int nMaxEntries, int nMode);
 
-    /**
-     * Queue a read from an open descriptor.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot, which the operation records and never uses.
-     * @param nFile The descriptor to read from.
-     * @param pBuffer The destination.
-     * @param nLength The number of bytes to read.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047ead8
-     * @ghidraAddress PAL: 0x004bc7d0
-     */
-    void Read(MemcardCBHandler *pHandler,
-              int nPortSlot,
-              int nFile,
-              void *pBuffer,
-              int nLength,
-              int nCookie);
+/**
+ * Start deleting a file or an empty directory.
+ *
+ * MemcardCBHandler::OnDelete() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @param pszName The file or directory.
+ * @ghidraAddress NTSC-U/C: 0x0028bb80
+ * @ghidraAddress PAL: 0x00295380
+ */
+void MemcardDelete(MemcardCBHandler *pHandler, int nPort, const char *pszName);
 
-    /**
-     * Queue a write to an open descriptor.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot, which the operation records and never uses.
-     * @param nFile The descriptor to write to.
-     * @param pBuffer The source.
-     * @param nLength The number of bytes to write.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047ec30
-     * @ghidraAddress PAL: 0x004bc928
-     */
-    void Write(MemcardCBHandler *pHandler,
-               int nPortSlot,
-               int nFile,
-               const void *pBuffer,
-               int nLength,
-               int nCookie);
+/**
+ * Start formatting a card.
+ *
+ * MemcardCBHandler::OnFormat() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @ghidraAddress NTSC-U/C: 0x0028bbd8
+ * @ghidraAddress PAL: 0x002953d8
+ */
+void MemcardFormat(MemcardCBHandler *pHandler, int nPort);
 
-    /**
-     * Queue a move of the position of an open descriptor.
-     *
-     * No caller exists in the image.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nFile The descriptor to move.
-     * @param nOffset The offset to move by.
-     * @param nOrigin The origin the offset is measured from.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047ed88
-     * @ghidraAddress PAL: 0x004bca80
-     */
-    void Seek(MemcardCBHandler *pHandler, int nFile, int nOffset, int nOrigin, int nCookie);
+/**
+ * Start unformatting a card.
+ *
+ * MemcardCBHandler::OnUnformat() receives the result.
+ *
+ * @param pHandler The handler of the result.
+ * @param nPort The memory card slot.
+ * @ghidraAddress NTSC-U/C: 0x0028bc30
+ * @ghidraAddress PAL: 0x00295430
+ */
+void MemcardUnformat(MemcardCBHandler *pHandler, int nPort);
 
-    /**
-     * Queue an open for writing.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param path The file to open.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047eed0
-     * @ghidraAddress PAL: 0x004bcbc8
-     */
-    void OpenWrite(MemcardCBHandler *pHandler, int nPortSlot, const HxStr &path, int nCookie);
-
-    /**
-     * Queue an open for reading.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param path The file to open.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047f008
-     * @ghidraAddress PAL: 0x004bcd00
-     */
-    void OpenRead(MemcardCBHandler *pHandler, int nPortSlot, const HxStr &path, int nCookie);
-
-    /**
-     * Queue a close of an open descriptor.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nFile The descriptor to close.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047f140
-     * @ghidraAddress PAL: 0x004bce38
-     */
-    void Close(MemcardCBHandler *pHandler, int nFile, int nCookie);
-
-    /**
-     * Queue the deletion of one file or directory.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param path The file or directory to delete.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047f268
-     * @ghidraAddress PAL: 0x004bcf60
-     */
-    void DeleteFile(MemcardCBHandler *pHandler, int nPortSlot, const HxStr &path, int nCookie);
-
-    /**
-     * Queue a rename.
-     *
-     * No caller exists in the image.
-     *
-     * @param pHandler The receiver the finished operation reports to.
-     * @param nPortSlot The packed port and slot.
-     * @param oldPath The existing name.
-     * @param newPath The replacement name.
-     * @param nCookie The tag Cancel() matches on.
-     * @ghidraAddress NTSC-U/C: 0x0047f3a0
-     * @ghidraAddress PAL: 0x004bd098
-     */
-    void RenameFile(MemcardCBHandler *pHandler,
-                    int nPortSlot,
-                    const HxStr &oldPath,
-                    const HxStr &newPath,
-                    int nCookie);
-
-    /**
-     * Discard every queued operation that was queued with one tag.
-     *
-     * An operation already in flight is discarded along with the rest, and its libmc call is not
-     * waited for.
-     *
-     * @param nCookie The tag to match.
-     * @ghidraAddress NTSC-U/C: 0x0047f4e8
-     * @ghidraAddress PAL: 0x004bd1e0
-     */
-    void Cancel(int nCookie);
-
-protected:
-    // Operations in the order they were queued. Update() services the front of it. +0x00
-    std::list<MemcardOp *> mOps;
-};
+/**
+ * Report the localisation token of the name of a memory card slot.
+ *
+ * @param nPort The memory card slot.
+ * @return The token, or an empty string for a slot without a name.
+ * @ghidraAddress NTSC-U/C: 0x0028bfa8
+ * @ghidraAddress PAL: 0x002958f8
+ */
+const char *MemcardGetSlotName(int nPort);

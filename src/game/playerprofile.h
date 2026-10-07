@@ -5,6 +5,7 @@
 #include "game/avatarpartset.h"
 #include "game/inputmap.h"
 #include "game/songrecord.h"
+#include "os/binstream.h"
 #include "os/string.h"
 
 /**
@@ -280,6 +281,28 @@ public:
     int mOnlineOption;           /*!< The value GetOnlineOption() reports. +0xd4 */
     int mReservedD8[8];          // +0xd8, not yet recovered.
 };
+
+/**
+ * Write a profile to a stream.
+ *
+ * @param stream The stream.
+ * @param profile The profile.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0027b608
+ * @ghidraAddress PAL: 0x00285038
+ */
+BinStream &operator<<(BinStream &stream, const PlayerProfile &profile);
+
+/**
+ * Read a profile from a stream.
+ *
+ * @param stream The stream.
+ * @param profile Receives the profile.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0027b638
+ * @ghidraAddress PAL: 0x00285068
+ */
+BinStream &operator>>(BinStream &stream, PlayerProfile &profile);
 
 /**
  * Non-zero when every avatar part and emblem counts as unlocked.

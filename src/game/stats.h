@@ -684,7 +684,7 @@ public:
      *
      * The RTTI records the class as nested in Stats and as deriving from MemcardUser.
      */
-    class StatsMemcardUser : public MemcardUser {
+    class StatsMemcardUser final : public MemcardUser {
     public:
         /**
          * Empty the log once the memory card task ends.

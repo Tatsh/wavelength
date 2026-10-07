@@ -22,7 +22,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002944c8
      * @ghidraAddress PAL: 0x0029e0f0
      */
-    BufStream(const char *pBuffer, int nSize, bool bLittleEndian);
+    BufStream(char *pBuffer, int nSize, bool bLittleEndian);
 
     /**
      * Release the stream. The buffer is not released.
@@ -98,8 +98,8 @@ public:
     }
 
 private:
-    const char *mBuffer; /*!< The buffer. */
-    int mFail;           /*!< Whether a transfer ran past the end, or the buffer is null. */
-    int mPosition;       /*!< The position in the buffer. */
-    int mSize;           /*!< The size of the buffer in bytes. */
+    char *mBuffer; /*!< The buffer. */
+    int mFail;     /*!< Whether a transfer ran past the end, or the buffer is null. */
+    int mPosition; /*!< The position in the buffer. */
+    int mSize;     /*!< The size of the buffer in bytes. */
 };

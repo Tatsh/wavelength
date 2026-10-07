@@ -92,8 +92,6 @@ public:
      * Move on when the save ends. A save leads to the done screen and marks the profile as saved,
      * and a failure opens its dialog.
      *
-     * The memory card task reports here through the third virtual routine of MemcardUser.
-     *
      * @param nStatus How the save ended: 0 for a save, 1 without a memory card, 2 without enough
      *                space, 3 for an unformatted memory card, 4 for another memory card than
      *                before, 5 when a Freq of the name exists, and 6 when the memory card has no
@@ -101,7 +99,7 @@ public:
      * @param nSpace The space the save needs, when the memory card is too full.
      * @ghidraAddress NTSC-U/C: 0x001ac010
      */
-    void OnFreqSaved(int nStatus, int nSpace);
+    void OnFreqSaved(int nStatus, int nSpace) override;
 
     int mReservedB4[3]; // +0xb4, not yet recovered.
     int mIsCancel;      /*!< Non-zero when a failure also offers to continue, `isCancel`. +0xc0 */

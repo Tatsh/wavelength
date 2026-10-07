@@ -121,7 +121,7 @@ MidiReader::MidiReader(const char *pszFile, MidiReceiver *pReceiver)
       mRunningStatus(0), mPending(), mPendingTick(0), mCompare(&MidiReader::CompareMidi) {
 }
 
-MidiReader::MidiReader(const char *pBuffer, int nSize, MidiReceiver *pReceiver)
+MidiReader::MidiReader(char *pBuffer, int nSize, MidiReceiver *pReceiver)
     : mStream(new BufStream(pBuffer, nSize, false)), mReceiver(pReceiver), mState(kStateHeader),
       mNumTracks(0), mDivision(0), mTargetDivision(kTargetDivision), mTrackIndex(0), mTrackTick(0),
       mRunningStatus(0), mPending(), mPendingTick(0), mCompare(&MidiReader::CompareMidi) {

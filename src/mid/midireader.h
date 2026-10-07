@@ -105,7 +105,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00159048
      * @ghidraAddress PAL: 0x0015a8d0
      */
-    MidiReader(const char *pBuffer, int nSize, MidiReceiver *pReceiver);
+    MidiReader(char *pBuffer, int nSize, MidiReceiver *pReceiver);
 
     /**
      * Close the stream.

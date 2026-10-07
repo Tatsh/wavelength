@@ -68,6 +68,15 @@ public:
      */
     void Finish(bool bSucceeded);
 
+    /**
+     * Report mState.
+     *
+     * @return One of State.
+     * @ghidraAddress NTSC-U/C: 0x002a01f0
+     * @ghidraAddress PAL: 0x002a9ea8
+     */
+    int GetState() const;
+
     /** One of State. */
     int mState;
 

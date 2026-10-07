@@ -1,274 +1,198 @@
 #pragma once
 
-#include "memcard/memcardconnectstate.h"
+#include <list>
+#include <vector>
+
+#include "game/globalsettings.h"
+#include "game/playerprofile.h"
+#include "game/remixinfo.h"
+#include "netflow/inetconfig.h"
 
 /**
- * Receiver notified once a memory-card task has finished.
+ * Receiver of the outcome of the memory card work MCManager runs.
  *
- * Its RTTI descriptor is at `0x0086f618`. It has no base class and no data members. An instance is
- * the four-byte vptr alone, and the vtable is at `0x007daf78`.
- *
- * The interface declares one method per `MemcardTask` subclass, and every body is a single
- * `jr ra`. An implementation overrides only the tasks it starts. Each method is pinned to its
- * task by the task's reporting virtual. The reporting virtual reads one fixed vtable slot of the
- * user the task was constructed with.
- *
- * Ten front-end screens derive from this interface alongside `MetScreen`, at offset 140 or 164,
- * and four of the remix tasks derive from it as well, at offset 28. Each of those four runs an
- * inner `LoadFileMCT` or `SaveFileMCT` and receives the inner task's report here.
- *
- * Every method title is inferred from the task that reports through the slot. No string in the
- * image identifies any of them. No task reports through two of the slots, and both are recorded
- * below as unrecovered.
+ * The RTTI includes the class name and records no base. The vptr is the only member, and the
+ * class has no virtual destructor. MCManager::Poll() reports the end of each piece of work through
+ * the one method for it. Every method does nothing here. Each status is one of
+ * MemcardTask::Status.
  */
 class MemcardUser {
 public:
     /**
-     * Release the receiver.
+     * Learn the outcome of MCManager::InitialCheck().
      *
-     * Occupies vtable slot 1. The body is empty.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00184448
-     * @ghidraAddress PAL: 0x00189730
+     * @param nStatus The outcome.
+     * @param nFormat Non-zero for a formatted card.
+     * @param nFree The free space of the card in kilobytes.
+     * @param nNeeded The kilobytes one more Freq needs.
+     * @ghidraAddress NTSC-U/C: 0x00341db0
+     * @ghidraAddress PAL: 0x003af2e8
      */
-    virtual ~MemcardUser();
+    virtual void OnInitialCheck([[maybe_unused]] int nStatus,
+                                [[maybe_unused]] int nFormat,
+                                [[maybe_unused]] int nFree,
+                                [[maybe_unused]] int nNeeded) {
+    }
 
     /**
-     * Report the state of one slot. Slot 2, from `GetConnectStateMCT`.
+     * Learn the outcome of MCManager::GetCardStatus().
      *
-     * The state arrives by value. The slot's compiled body therefore destroys the argument's
-     * string rather than being empty like the rest.
-     *
-     * @param state What the slot reported.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184478
-     * @ghidraAddress PAL: 0x00189760
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00341db8
+     * @ghidraAddress PAL: 0x003af2f0
      */
-    virtual void OnConnectState(MemcardConnectState state, int nStatus);
+    virtual void OnCardStatus([[maybe_unused]] int nStatus) {
+    }
 
     /**
-     * Report that every slot has been enquired about. Slot 3, from `GetAllConnectStatesMCT`.
+     * Learn the outcome of MCManager::SaveFreq().
      *
-     * The task reports each slot through OnConnectState() as its enquiry finishes, and reports
-     * here once with no argument when the last of them is done.
-     *
-     * @ghidraAddress NTSC-U/C: 0x001844a0
-     * @ghidraAddress PAL: 0x00189798
+     * @param nStatus The outcome.
+     * @param nNeeded The kilobytes a save that did not fit needed, or zero.
+     * @ghidraAddress NTSC-U/C: 0x00341dc0
+     * @ghidraAddress PAL: 0x003af2f8
      */
-    virtual void OnAllConnectStates();
+    virtual void OnFreqSaved([[maybe_unused]] int nStatus, [[maybe_unused]] int nNeeded) {
+    }
 
     /**
-     * Report the space a save would need against the space a card has. Slot 4, from
-     * `MinimumSaveSpaceMCT`.
+     * Learn the outcome of MCManager::LoadFreqs().
      *
-     * The second argument is the task's measurement rather than its status. This slot is the only
-     * one that does not receive a MemcardStatus.
-     *
-     * The European release adds nSkipWarning and nCampaign. `MinimumSaveSpaceMCT` passes two
-     * members that only its constructor writes, with zero. Their titles are inferred from
-     * MetMemDetectScreen::OnMinimumSaveSpace(), the one override that reads them.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nSpace The measurement.
-     * @param nSkipWarning Non-zero to show no space warning at all. European release only.
-     * @param nCampaign 1 to warn against the smaller campaign requirement. European release only.
-     * @ghidraAddress NTSC-U/C: 0x001844a8
-     * @ghidraAddress PAL: 0x001897a0
+     * @param nStatus The outcome.
+     * @param pProfiles The profiles loaded, newest first. MCManager retains them.
+     * @ghidraAddress NTSC-U/C: 0x00341dc8
+     * @ghidraAddress PAL: 0x003af300
      */
-#ifdef VIDEO_STANDARD_PAL
-    virtual void OnMinimumSaveSpace(int nPortSlot, int nSpace, int nSkipWarning, int nCampaign);
-#else
-    virtual void OnMinimumSaveSpace(int nPortSlot, int nSpace);
-#endif
+    virtual void OnFreqsLoaded([[maybe_unused]] int nStatus,
+                               [[maybe_unused]] std::vector<PlayerProfile> *pProfiles) {
+    }
 
     /**
-     * Report a finished format. Slot 5, from `FormatCardMCT` when it was requested to format.
+     * Learn the outcome of MCManager::DeleteFreq().
      *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x001844b0
-     * @ghidraAddress PAL: 0x001897a8
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00341dd0
+     * @ghidraAddress PAL: 0x003af308
      */
-    virtual void OnCardFormatted(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished unformat. Slot 6, from `FormatCardMCT` when it was requested to unformat.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x001844b8
-     * @ghidraAddress PAL: 0x001897b0
-     */
-    virtual void OnCardUnformatted(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished save of the FreQ roster. Slot 7, from `SavePersonasMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @param nKilobytes SaveFileMCT::mKilobytes, the kilobytes the card lacked when nStatus is
-     *                   kMemcardStatusCardFull. European release only.
-     * @ghidraAddress NTSC-U/C: 0x001844c0
-     * @ghidraAddress PAL: 0x001897b8
-     */
-#ifdef VIDEO_STANDARD_PAL
-    virtual void OnPersonasSaved(int nPortSlot, int nStatus, int nKilobytes);
-#else
-    virtual void OnPersonasSaved(int nPortSlot, int nStatus);
-#endif
-
-    /**
-     * Report a finished save of one remix. Slot 8, from `SaveRemixMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @param nKilobytes SaveFileMCT::mKilobytes, the kilobytes the card lacked when nStatus is
-     *                   kMemcardStatusCardFull. European release only.
-     * @ghidraAddress NTSC-U/C: 0x001844c8
-     * @ghidraAddress PAL: 0x001897c0
-     */
-#ifdef VIDEO_STANDARD_PAL
-    virtual void OnRemixSaved(int nPortSlot, int nStatus, int nKilobytes);
-#else
-    virtual void OnRemixSaved(int nPortSlot, int nStatus);
-#endif
-
-    /**
-     * Report a finished save of the global settings. Slot 9, from `SaveGlobalSettingsMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @param nKilobytes SaveFileMCT::mKilobytes, the kilobytes the card lacked when nStatus is
-     *                   kMemcardStatusCardFull. European release only.
-     * @ghidraAddress NTSC-U/C: 0x001844d0
-     * @ghidraAddress PAL: 0x001897c8
-     */
-#ifdef VIDEO_STANDARD_PAL
-    virtual void OnGlobalSettingsSaved(int nPortSlot, int nStatus, int nKilobytes);
-#else
-    virtual void OnGlobalSettingsSaved(int nPortSlot, int nStatus);
-#endif
-
-    /**
-     * Report a finished save of a jukebox playlist. Slot 10, from `SaveJukeboxPlayListMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @param nKilobytes SaveFileMCT::mKilobytes, the kilobytes the card lacked when nStatus is
-     *                   kMemcardStatusCardFull. European release only.
-     * @ghidraAddress NTSC-U/C: 0x001844d8
-     * @ghidraAddress PAL: 0x001897d0
-     */
-#ifdef VIDEO_STANDARD_PAL
-    virtual void OnJukeboxPlayListSaved(int nPortSlot, int nStatus, int nKilobytes);
-#else
-    virtual void OnJukeboxPlayListSaved(int nPortSlot, int nStatus);
-#endif
-
-    /**
-     * Report a finished listing of the saved remixes. Slot 11, from `ListRemixesMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x001844e0
-     * @ghidraAddress PAL: 0x001897d8
-     */
-    virtual void OnRemixesListed(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished load of one remix. Slot 12, from `LoadRemixMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x001844e8
-     * @ghidraAddress PAL: 0x001897e0
-     */
-    virtual void OnRemixLoaded(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished load of the FreQ roster. Slot 13, from `LoadPersonasMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x001844f0
-     * @ghidraAddress PAL: 0x001897e8
-     */
-    virtual void OnPersonasLoaded(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished load of the global settings. Slot 14, from `LoadGlobalSettingsMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x001844f8
-     * @ghidraAddress PAL: 0x001897f0
-     */
-    virtual void OnGlobalSettingsLoaded(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished load of a jukebox playlist. Slot 15, from `LoadJukeboxPlayListMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184500
-     * @ghidraAddress PAL: 0x001897f8
-     */
-    virtual void OnJukeboxPlayListLoaded(int nPortSlot, int nStatus);
-
-    /**
-     * Report a finished deletion of one remix. Slot 16, from `DeleteRemixMCT`.
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184508
-     * @ghidraAddress PAL: 0x00189800
-     */
-    virtual void OnRemixDeleted(int nPortSlot, int nStatus);
+    virtual void OnFreqDeleted([[maybe_unused]] int nStatus) {
+    }
 
     /**
      * Do nothing.
      *
-     * Slot 17. No task in the image reports through this slot and no subclass overrides it. Its
-     * purpose and argument list cannot be established. The two arguments are declared to match
-     * every neighbouring slot.
+     * No work reports through this vtable slot and no receiver overrides it. The arguments cannot
+     * be established and are not declared.
      *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184510
-     * @ghidraAddress PAL: 0x00189808
+     * @ghidraAddress NTSC-U/C: 0x00341dd8
+     * @ghidraAddress PAL: 0x003af310
      */
-    virtual void UnusedFirstReport(int nPortSlot, int nStatus);
+    virtual void UnusedReport() {
+    }
 
     /**
-     * Do nothing.
+     * Learn the outcome of MCManager::SaveRemix().
      *
-     * Slot 18. Recorded on the same evidence as UnusedFirstReport().
-     *
-     * @param nPortSlot The packed port and slot.
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184518
-     * @ghidraAddress PAL: 0x00189810
+     * @param nStatus The outcome.
+     * @param nNeeded The kilobytes a save that did not fit needed, or zero.
+     * @ghidraAddress NTSC-U/C: 0x00341de0
+     * @ghidraAddress PAL: 0x003af318
      */
-    virtual void UnusedSecondReport(int nPortSlot, int nStatus);
+    virtual void OnRemixSaved([[maybe_unused]] int nStatus, [[maybe_unused]] int nNeeded) {
+    }
 
     /**
-     * Report a finished load of one file. Slot 19, from `LoadFileMCT`.
+     * Learn the outcome of MCManager::LoadRemix().
      *
-     * The slot receives the status alone, without a port and slot. Only the two inner file tasks
-     * report this way.
-     *
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184520
-     * @ghidraAddress PAL: 0x00189818
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00341de8
+     * @ghidraAddress PAL: 0x003af320
      */
-    virtual void OnFileLoaded(int nStatus);
+    virtual void OnRemixLoaded([[maybe_unused]] int nStatus) {
+    }
 
     /**
-     * Report a finished save of one file. Slot 20, from `SaveFileMCT`.
+     * Learn the outcome of MCManager::ListRemixes().
      *
-     * @param nStatus One of MemcardStatus.
-     * @ghidraAddress NTSC-U/C: 0x00184528
-     * @ghidraAddress PAL: 0x00189820
+     * @param nStatus The outcome.
+     * @param pInfos The descriptions of the remixes. MCManager retains them.
+     * @ghidraAddress NTSC-U/C: 0x00341df0
+     * @ghidraAddress PAL: 0x003af328
      */
-    virtual void OnFileSaved(int nStatus);
+    virtual void OnRemixesListed([[maybe_unused]] int nStatus,
+                                 [[maybe_unused]] std::vector<RemixInfo> *pInfos) {
+    }
+
+    /**
+     * Learn the outcome of MCManager::DeleteRemix().
+     *
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00341df8
+     * @ghidraAddress PAL: 0x003af330
+     */
+    virtual void OnRemixDeleted([[maybe_unused]] int nStatus) {
+    }
+
+    /**
+     * Learn the outcome of MCManager::SaveSettings().
+     *
+     * @param nStatus The outcome.
+     * @param nNeeded The kilobytes a save that did not fit needed, or zero.
+     * @ghidraAddress NTSC-U/C: 0x00341e00
+     * @ghidraAddress PAL: 0x003af338
+     */
+    virtual void OnSettingsSaved([[maybe_unused]] int nStatus, [[maybe_unused]] int nNeeded) {
+    }
+
+    /**
+     * Learn the outcome of MCManager::LoadSettings().
+     *
+     * @param nStatus The outcome.
+     * @param settings A copy of the settings loaded.
+     * @ghidraAddress NTSC-U/C: 0x00341e08
+     * @ghidraAddress PAL: 0x003af340
+     */
+    virtual void OnSettingsLoaded([[maybe_unused]] int nStatus,
+                                  [[maybe_unused]] GlobalSettings settings) {
+    }
+
+    /**
+     * Learn the outcome of MCManager::ListNetConfigs().
+     *
+     * @param nStatus The outcome.
+     * @param pConfigs The network configurations. The work retains them.
+     * @ghidraAddress NTSC-U/C: 0x00341e50
+     * @ghidraAddress PAL: 0x003af388
+     */
+    virtual void OnNetConfigsListed([[maybe_unused]] int nStatus,
+                                    [[maybe_unused]] std::list<InetConfig> *pConfigs) {
+    }
+
+    /**
+     * Learn the outcome of MCManager::FormatCard().
+     *
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00341e58
+     * @ghidraAddress PAL: 0x003af390
+     */
+    virtual void OnCardFormatted([[maybe_unused]] int nStatus) {
+    }
+
+    /**
+     * Learn the outcome of the unformat work. The game never starts the work.
+     *
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00341e60
+     * @ghidraAddress PAL: 0x003af398
+     */
+    virtual void OnCardUnformatted([[maybe_unused]] int nStatus) {
+    }
+
+    /**
+     * Learn the outcome of MCManager::SaveFile().
+     *
+     * @param nStatus The outcome.
+     * @ghidraAddress NTSC-U/C: 0x00358ab8
+     */
+    virtual void OnFileSaved([[maybe_unused]] int nStatus) {
+    }
 };
