@@ -49,14 +49,15 @@ int NetcnfifData::ReadCommand(const sceNetCnfCommand *command, int *nameServerCo
         } else {
             return 0;
         }
-        // Every command record begins with its header, and the code identifies the record.
-        const auto *nameServer = reinterpret_cast<const sceNetCnfNameServerCommand *>(command);
+        const auto *nameServer =
+            reinterpret_cast<const sceNetCnfNameServerCommand *>(command); // Header is member 0.
         result = sceNetCnfAddress2String(text, kTextSize, &nameServer->address);
         ++*nameServerCount;
         break;
     }
     case SCE_NETCNF_COMMAND_ROUTE: {
-        const auto *route = reinterpret_cast<const sceNetCnfRouteCommand *>(command);
+        const auto *route =
+            reinterpret_cast<const sceNetCnfRouteCommand *>(command); // Header is member 0.
         result = sceNetCnfAddress2String(mGateway, kTextSize, &route->gateway);
         break;
     }

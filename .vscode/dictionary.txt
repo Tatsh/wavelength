@@ -41,7 +41,9 @@ arkfile
 arkfiles
 arle
 arrghghghgh
+asyncblock
 asynccallback
+asyncinfo
 atgafile
 atten
 audiodec
@@ -340,6 +342,10 @@ imagebuilder
 immediates
 inbuf
 inetctl
+inete
+ineteventqueue
+ineti
+inett
 inptr
 inputmap
 inputmgr
@@ -353,6 +359,7 @@ inttypes
 invers
 iobpreallocmemstream
 iopcontrol
+iopexports
 iopfixup
 iopheap
 iopimports
@@ -406,7 +413,10 @@ libkernl
 libmc
 libmpeg
 libmtap
+libnet
 libnetb
+libnetb's
+libnetconfig
 libpad
 libscf
 libsd
@@ -648,6 +658,7 @@ quat
 qwords
 randu
 rateaverager
+rawip
 raytest
 rbor
 rbsr
@@ -742,6 +753,7 @@ snapcraft
 sndb
 sndbank
 sndh
+snprofil
 softfloat
 softfx
 soloarena
@@ -796,6 +808,7 @@ streamtask
 strequal
 strncmp
 strncpy
+strstr
 strtol
 subu
 subx
@@ -920,6 +933,7 @@ vutext
 waitfortasktask
 waitinteractiveremixtask
 waitinteractivetask
+waitsuspend
 waittimetask
 wbdc
 wchar

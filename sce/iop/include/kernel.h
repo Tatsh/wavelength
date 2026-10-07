@@ -180,12 +180,71 @@ int StartThread(int thid, void *arg);
  */
 int ChangeThreadPriority(int thid, int priority);
 
+/** Thread states ThreadInfo::status reports. */
+enum ThreadStatus {
+    THS_RUN = 0x01,         /*!< Running. */
+    THS_READY = 0x02,       /*!< Ready to run. */
+    THS_WAIT = 0x04,        /*!< Waiting. */
+    THS_SUSPEND = 0x08,     /*!< Suspended. */
+    THS_WAITSUSPEND = 0x0c, /*!< Waiting and suspended. */
+    THS_DORMANT = 0x10,     /*!< Dormant. */
+};
+
+/** Kinds of wait ThreadInfo::waitType reports. */
+enum ThreadWaitType {
+    TSW_SLEEP = 1,     /*!< SleepThread(). */
+    TSW_DELAY = 2,     /*!< DelayThread(). */
+    TSW_SEMA = 3,      /*!< A semaphore. */
+    TSW_EVENTFLAG = 4, /*!< An event flag. */
+    TSW_MBX = 5,       /*!< A message box. */
+    TSW_VPL = 6,       /*!< A variable-length memory pool. */
+    TSW_FPL = 7,       /*!< A fixed-length memory pool. */
+};
+
+/** State of a thread, as ReferThreadStatus() reads it. */
+struct ThreadInfo {
+    unsigned int attr;         /*!< Attribute bits given to CreateThread(). */
+    unsigned int option;       /*!< Option word given to CreateThread(). */
+    int status;                /*!< A #ThreadStatus. */
+    void *entry;               /*!< Entry point. */
+    void *stack;               /*!< Start of the stack. */
+    int stackSize;             /*!< Stack size in bytes. */
+    unsigned int reserved0;    /* +0x18 */
+    int initPriority;          /*!< Starting priority. */
+    int currentPriority;       /*!< Current priority. */
+    int waitType;              /*!< A #ThreadWaitType. */
+    int waitId;                /*!< Object the thread waits on. */
+    int wakeupCount;           /*!< WakeupThread() calls not yet consumed. */
+    unsigned int reserved1[6]; /* +0x30 */
+};
+
+/**
+ * End the calling thread. The thread becomes dormant.
+ */
+__attribute__((noreturn)) void ExitThread(void);
+
 /**
  * Identify the calling thread.
  *
  * @return The thread identifier.
  */
 int GetThreadId(void);
+
+/**
+ * Check the stack of the calling thread.
+ *
+ * @return A stack size the libnetb module prints in its state dump.
+ */
+int CheckThreadStack(void);
+
+/**
+ * Read the state of a thread.
+ *
+ * @param thid Thread identifier.
+ * @param info Receives the state.
+ * @return #KE_OK, or a negative error code.
+ */
+int ReferThreadStatus(int thid, struct ThreadInfo *info);
 
 /**
  * Sleep until another thread or a handler wakes the calling thread.

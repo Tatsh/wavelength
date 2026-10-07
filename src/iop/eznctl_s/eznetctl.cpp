@@ -195,7 +195,8 @@ char *EzNetCtl::LookUpName(char *name, int size) {
     printf(kMessagePrefix, __FILE__);
     printf(kLookUpMessage, name, size);
     sceInetAddress address;
-    int result = sceInetName2Address(0, &address, name, kLookUpTimeout, kLookUpRetries);
+    // The binary leaves the sixth argument uninitialised.
+    int result = sceInetName2Address(0, &address, name, kLookUpTimeout, kLookUpRetries, 0);
     if (result != 0) {
         printf(kMessagePrefix, __FILE__);
         printf(kName2AddressErrorMessage, result);

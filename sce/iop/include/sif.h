@@ -9,10 +9,10 @@ extern "C" {
 
 /** One transfer from IOP memory to EE memory. */
 typedef struct {
-    void *data; /*!< Source in IOP memory. */
-    void *addr; /*!< Destination in EE memory. */
-    int size;   /*!< Byte count. */
-    int mode;   /*!< Transfer mode bits. */
+    const void *data; /*!< Source in IOP memory. */
+    void *addr;       /*!< Destination in EE memory. */
+    int size;         /*!< Byte count. */
+    int mode;         /*!< Transfer mode bits. */
 } sceSifDmaData;
 
 /**

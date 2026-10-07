@@ -53,6 +53,15 @@ char *strncpy(char *dest, const char *src, size_t n);
 char *strcat(char *dest, const char *src);
 
 /**
+ * Find a string in another.
+ *
+ * @param text String to search.
+ * @param pattern String to find.
+ * @return The first occurrence of @p pattern in @p text, or null.
+ */
+char *strstr(const char *text, const char *pattern);
+
+/**
  * Compare two regions byte by byte.
  *
  * @param left First region.
