@@ -47,9 +47,13 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cmake --build build --target archives -- -k 0
+      # Linking, packaging, and uploading wait until enough of Amplitude is ported for the
+      # executable to link. Remove the three `if: false` conditions to restore them.
       - name: 'Link executable'
+        if: false
         run: cmake --build build --target wavelength
       - name: 'Package release assets'
+        if: false
         env:
           BUILD_TYPE: '${{ matrix.build-type }}'
           VIDEO_STANDARD: '${{ matrix.video-standard }}'
@@ -80,6 +84,7 @@ jobs:
             "release/wavelength-${VERSION}-${VIDEO_STANDARD}${LABEL}.elf"
           ls -l release
       - name: 'Upload release assets'
+        if: false
         uses: 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
         with:
           # The artifact has an unversioned name so release.yml can request it by a fixed name.
