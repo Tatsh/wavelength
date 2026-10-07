@@ -1,15 +1,24 @@
 #pragma once
 
-#include "os/refcounted.h"
+#include "app/attachment.h"
 
 /**
- * Deferred action that a scheduler or a script runs later.
+ * Unit of work a Scheduler runs at a set time.
  *
- * The RTTI includes the class name. The object begins with the RefCounted words, and a Ptr is
- * the usual owner.
+ * The RTTI includes the class name and records Attachment as the base. The class adds no member.
+ * The vtable also lists four members with default bodies after Execute(), which this header does
+ * not yet declare.
  */
-class Command : public RefCounted {
+class Command : public Attachment {
 public:
-    /** Run the action. */
+    /**
+     * Release the command.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00334e70
+     * @ghidraAddress PAL: 0x003a2420
+     */
+    ~Command() override;
+
+    /** Do the work. */
     virtual void Execute() = 0;
 };

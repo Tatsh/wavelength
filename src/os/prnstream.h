@@ -55,10 +55,40 @@ public:
      *
      * @param nValue The value.
      * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e2a0
+     * @ghidraAddress PAL: 0x002a7f68
+     */
+    PrnStream &operator<<(int nValue);
+
+    /**
+     * Write a byte as an unsigned integer in decimal.
+     *
+     * @param nValue The value.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e2e0
+     * @ghidraAddress PAL: 0x002a7fa8
+     */
+    PrnStream &operator<<(unsigned char nValue);
+
+    /**
+     * Write an unsigned integer in decimal.
+     *
+     * @param nValue The value.
+     * @return The stream.
      * @ghidraAddress NTSC-U/C: 0x0029e350
      * @ghidraAddress PAL: 0x002a8018
      */
-    PrnStream &operator<<(int nValue);
+    PrnStream &operator<<(unsigned int nValue);
+
+    /**
+     * Write a number with two decimals.
+     *
+     * @param fValue The value.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e3c0
+     * @ghidraAddress PAL: 0x002a8088
+     */
+    PrnStream &operator<<(float fValue);
 };
 
 /**

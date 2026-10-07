@@ -63,6 +63,15 @@ DataArray *SystemConfig();
 const char *GetSystemLanguage();
 
 /**
+ * Report the configuration SystemInit() read.
+ *
+ * @return The root of the configuration.
+ * @ghidraAddress NTSC-U/C: 0x0028c6a0
+ * @ghidraAddress PAL: 0x00296028
+ */
+DataArray *SystemConfig();
+
+/**
  * The clock SystemMs() reads.
  *
  * @ghidraAddress NTSC-U/C: 0x00491a10

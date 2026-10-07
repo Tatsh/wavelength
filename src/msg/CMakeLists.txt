@@ -102,6 +102,7 @@ set(WAVELENGTH_MSG_SRCS
     scriptmsg.cpp
     scstartplayingpacket.cpp
     sectioncapturedmsg.cpp
+    sectionchangepacket.cpp
     seekermsg.cpp
     showeraseeffectmsg.cpp
     spjoinacceptpacket.cpp

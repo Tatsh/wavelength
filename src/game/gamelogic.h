@@ -2,22 +2,26 @@
 
 #include <vector>
 
+#include "game/btnevent.h"
 #include "game/catchtrack.h"
+#include "game/changesectionevent.h"
 #include "game/freestyletrack.h"
-#include "game/inputevents.h"
+#include "game/gametrackselector.h"
 #include "game/localplayer.h"
 #include "game/player.h"
 #include "game/playmap.h"
+#include "game/playnoteevent.h"
+#include "game/rotateevent.h"
 #include "game/song.h"
+#include "game/stickevent.h"
 #include "game/track.h"
-#include "game/gametrackselector.h"
 #include "game/worldbeat.h"
 #include "game/worldlogic.h"
 #include "math/rand.h"
 #include "os/command.h"
-#include "os/commandscheduler.h"
 #include "os/ptr.h"
 #include "os/ramp.h"
+#include "os/scheduler.h"
 #include "script/dataarray.h"
 #include "synth/songspeed.h"
 
@@ -29,16 +33,17 @@
  * the sections of the song, places the power-ups, moves the players between the tracks, and
  * finds the phrase each player should play next.
  *
- * The derived classes supply GetTick(), Reserved11(), and the hooks from OnStart() on.
+ * The derived classes supply GetTick(), GetTime(), and the hooks from OnStart() on.
  */
 class GameLogic : public WorldLogic {
 public:
     /** Values of mState. */
     enum State {
-        kStateIdle = 0,      /*!< The song has not started. */
-        kStatePlaying = 1,   /*!< The song is playing. */
-        kStatePaused = 2,    /*!< The song is paused, and mSavedState records the state to resume. */
+        kStateIdle = 0,    /*!< The song has not started. */
+        kStatePlaying = 1, /*!< The song is playing. */
+        kStatePaused = 2,  /*!< The song is paused, and mSavedState records the state to resume. */
         kStateSuspended = 3, /*!< The derived logic stopped the song without pausing it. */
+        kStateWon = 4,       /*!< The song was won and the victory lap plays. */
         kStateRunning = 5,   /*!< The derived logic runs the song without the player input. */
         kStateEnding = 6,    /*!< The song ended, and the logic waits for the display to finish. */
         kStateFinished = 7,  /*!< Stop() ran. */
@@ -69,7 +74,7 @@ public:
          * @param pScheduler The scheduler the steps run on.
          * @param fSpeed The speed to start at.
          */
-        SpeedRamp(CommandScheduler *pScheduler, float fSpeed) : Ramp(pScheduler, fSpeed) {
+        SpeedRamp(Scheduler *pScheduler, float fSpeed) : Ramp(pScheduler, fSpeed) {
         }
 
         /**

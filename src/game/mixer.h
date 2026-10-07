@@ -5,8 +5,9 @@
 /**
  * Volume control of the song's tracks.
  *
- * The RTTI includes the class name. The one instance is the function-local static of its
- * singleton accessor, and TheMixer addresses it. Only the members GameLogic uses are declared.
+ * The class is not polymorphic. The RTTI includes the name in the nested classes VolumeRamp and
+ * TrackData. The one instance is the function-local static of its singleton accessor, and TheMixer
+ * addresses it. Only the members its callers here use are declared.
  */
 class Mixer {
 public:
@@ -50,6 +51,22 @@ public:
      * @ghidraAddress PAL: 0x001257f0
      */
     void HoldTrack(int nTrack, int nUntilTick);
+
+    /**
+     * Play every track at full volume.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001241c0
+     * @ghidraAddress PAL: 0x00125940
+     */
+    void PlayFullMix();
+
+    /**
+     * Set the volumes of the victory lap.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00124220
+     * @ghidraAddress PAL: 0x001259a0
+     */
+    void StartVictoryLap();
 
     /**
      * Start following the players and register the `track_solo` cheat.

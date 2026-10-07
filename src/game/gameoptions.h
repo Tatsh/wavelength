@@ -14,7 +14,7 @@ struct GameOptions {
         kFreqSizeHidden = 2, /*!< No display. */
     };
 
-    int mFreqSize;    /*!< The size of the display of the tracks, one of FreqSize. +0x00 */
-    int mOutputMode;  /*!< The speaker output mode. +0x04 */
-    int mHelpText;    /*!< Whether hints are shown, as a word of 0 or 1. +0x08 */
+    int mFreqSize;   /*!< The size of the display of the tracks, one of FreqSize. +0x00 */
+    int mOutputMode; /*!< The speaker output mode. +0x04 */
+    int mHelpText;   /*!< Whether hints are shown, as a word of 0 or 1. +0x08 */
 };

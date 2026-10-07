@@ -1,10 +1,13 @@
 #pragma once
 
+#include "app/attachment.h"
+
 /**
- * Owner of one reference to a RefCounted object.
+ * Owner of one reference to an Attachment.
  *
- * The RTTI includes the template name. The object is the one pointer, which may be null. The
- * addresses below are those of the `Command` instance.
+ * The RTTI includes the template name. The object is the one pointer, which may be null. Each
+ * instantiation has its own out-of-line copies of the members, and the addresses listed are those
+ * of the instantiations for Command and Muse.
  *
  * @tparam T The referenced class.
  */
@@ -47,7 +50,7 @@ public:
     }
 
     /**
-     * Drop the reference.
+     * Give back the reference.
      *
      * @ghidraAddress NTSC-U/C: 0x00334298
      * @ghidraAddress PAL: 0x003a1848

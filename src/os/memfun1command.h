@@ -3,63 +3,56 @@
 #include "os/command.h"
 
 /**
- * Command that calls a member function with one argument on one object.
+ * Command that calls a member function of an object with one argument.
  *
- * The RTTI includes the template name. The object is the Command words, the object pointer, the
- * member pointer, and the argument. The addresses below are those of the `GameLogic` instance
- * with an `int` argument.
+ * The RTTI records each instantiation under its template arguments, the member function type, the
+ * object class, and the argument type, and records Command as the base. The addresses listed are
+ * those of the instantiation for SoloGameLogic with a bool argument.
  *
- * @tparam T The class of the object.
- * @tparam A The type of the argument.
+ * @tparam Function The member function type.
+ * @tparam Object The class of the object.
+ * @tparam Argument The type of the argument.
  */
-template <typename T, typename A>
+template <typename Function, typename Object, typename Argument>
 class MemFun1Command : public Command {
 public:
-    /** The member function type. */
-    using Function = void (T::*)(A);
-
     /**
      * Bind a member function and its argument to an object.
      *
      * @param pObject The object.
-     * @param pFunction The member function.
+     * @param pfnMember The member function.
      * @param argument The argument.
      */
-    MemFun1Command(T *pObject, Function pFunction, A argument)
-        : mObject(pObject), mFunction(pFunction), mArgument(argument) {
+    MemFun1Command(Object *pObject, Function pfnMember, Argument argument)
+        : mObject(pObject), mMember(pfnMember), mArgument(argument) {
     }
 
     /**
-     * Call the member function on the object with the argument.
+     * Call the member function with the argument.
      *
-     * @ghidraAddress NTSC-U/C: 0x00338180
-     * @ghidraAddress PAL: 0x003a5730
+     * @ghidraAddress NTSC-U/C: 0x003414b0
+     * @ghidraAddress PAL: 0x003ae9e8
      */
     void Execute() override {
-        (mObject->*mFunction)(mArgument);
+        (mObject->*mMember)(mArgument);
     }
 
-private:
-    T *mObject;         /*!< The object the function is called on. */
-    Function mFunction; /*!< The member function. */
-    A mArgument;        /*!< The argument the function is called with. */
+    Object *mObject;    /*!< The object. */
+    Function mMember;   /*!< The member function. */
+    Argument mArgument; /*!< The argument. */
 };
 
 /**
- * Allocate a MemFun1Command that binds a member function and its argument to an object.
+ * Allocate a command that calls a member function of an object with one argument.
  *
- * The addresses are those of the `GameLogic` instance with an `int` argument.
- *
- * @tparam T The class of the object.
- * @tparam A The type of the argument.
  * @param pObject The object.
- * @param pFunction The member function.
+ * @param pfnMember The member function.
  * @param argument The argument.
  * @return The command, with no reference taken.
- * @ghidraAddress NTSC-U/C: 0x003379e8
- * @ghidraAddress PAL: 0x003a4f98
+ * @ghidraAddress NTSC-U/C: 0x00340ab8
+ * @ghidraAddress PAL: 0x003adff0
  */
-template <typename T, typename A>
-Command *NewMemFun1Command(T *pObject, void (T::*pFunction)(A), A argument) {
-    return new MemFun1Command<T, A>(pObject, pFunction, argument);
+template <typename Function, typename Object, typename Argument>
+Command *NewMemFun1Command(Object *pObject, Function pfnMember, Argument argument) {
+    return new MemFun1Command<Function, Object, Argument>(pObject, pfnMember, argument);
 }

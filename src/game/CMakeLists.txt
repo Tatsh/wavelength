@@ -16,6 +16,7 @@ set(WAVELENGTH_GAME_SRCS
     controllerconfig.cpp
     cripplepowerup.cpp
     delayer.cpp
+    difficultyrating.cpp
     dogamesystemplaycmd.cpp
     effectpowerup.cpp
     enablemgr.cpp
@@ -103,18 +104,29 @@ set(WAVELENGTH_GAME_SRCS
     powerupplacer.cpp
     quantizer.cpp
     rawcontroller.cpp
+    remixtutorial.cpp
+    remoteplayer.cpp
     riff.cpp
     riffrangefinder.cpp
     riffset.cpp
     scoretrackgraph.cpp
+    scratchtrack.cpp
+    scratchtrackbuilder.cpp
+    scratchtrackdata.cpp
     screenanim.cpp
+    scripttrackbuilder.cpp
+    scripttrackdata.cpp
+    sectionboundaries.cpp
     simplifiedgamepowerupplacer.cpp
     singlecatcher.cpp
     singlepowerupcollection.cpp
     skillstats.cpp
+    sologamelogic.cpp
     solopowerbarmgr.cpp
     soloscreenanim.cpp
+    stats.cpp
     tnlarena.cpp
+    track.cpp
     trackdata.cpp
     trackselector.cpp
     voxingstg.cpp)

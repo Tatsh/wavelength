@@ -1,6 +1,6 @@
 #pragma once
 
-#include "os/commandscheduler.h"
+#include "os/scheduler.h"
 
 /**
  * Value that moves linearly to a target over song ticks, applied in steps by a scheduled command.
@@ -18,7 +18,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002817f8
      * @ghidraAddress PAL: 0x0028b0f8
      */
-    Ramp(CommandScheduler *pScheduler, float fValue);
+    Ramp(Scheduler *pScheduler, float fValue);
 
     /**
      * Stop the ramp.

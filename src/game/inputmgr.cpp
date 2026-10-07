@@ -37,8 +37,7 @@ inline float CyclesToMs(unsigned nCycles) {
 
 InputMgr::InputMgr(World *pWorld)
     : mWorld(pWorld), mRepeatInitialDelayMs(TheGameConfig->mRotationRepeatInitialDelayMs),
-      mRepeatDelayMs(TheGameConfig->mRotationRepeatDelayMs),
-      mDemo(TheGameDb->GetDemo() != 0) {
+      mRepeatDelayMs(TheGameConfig->mRotationRepeatDelayMs), mDemo(TheGameDb->GetDemo() != 0) {
     JoypadAddSink(this);
     mControllers.reserve(TheGameDb->GetNumPads());
     for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
@@ -132,8 +131,9 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
     case kActionRotateNext: {
         ControllerData &data = mControllers[nPad];
         if (nPressed != 0) {
-            const int nDirection = nAction != kActionRotatePrevious ? RotateEvent::kDirectionNext
-                                                                    : RotateEvent::kDirectionPrevious;
+            const int nDirection = nAction != kActionRotatePrevious ?
+                                       RotateEvent::kDirectionNext :
+                                       RotateEvent::kDirectionPrevious;
             if (mWorld->IsFreestyling(nPad)) {
                 break;
             }
@@ -160,8 +160,11 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
     case kActionFirstGem + 1:
     case kActionLastGem: {
         const ExpressionStick *pStick = mControllers[nPad].mStick;
-        const PlayNoteEvent note(nPlayer, static_cast<unsigned char>(nAction - kActionFirstGem),
-                                 nPressed, pStick->mX, pStick->mY);
+        const PlayNoteEvent note(nPlayer,
+                                 static_cast<unsigned char>(nAction - kActionFirstGem),
+                                 nPressed,
+                                 pStick->mX,
+                                 pStick->mY);
         mWorld->Handle(note);
         break;
     }

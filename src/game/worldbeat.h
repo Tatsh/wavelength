@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/worldtrack.h"
-#include "os/commandscheduler.h"
+#include "os/scheduler.h"
 
 /**
  * Player of the events of the track named "WORLD", which runs each event at its tick.
@@ -20,7 +20,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00280c10
      * @ghidraAddress PAL: 0x0028a510
      */
-    WorldBeat(CommandScheduler *pScheduler, WorldTrack *pTrack, int nLengthTicks);
+    WorldBeat(Scheduler *pScheduler, WorldTrack *pTrack, int nLengthTicks);
 
     /**
      * Release the player.

@@ -195,6 +195,7 @@ deployedpowerupmsg
 devconsole
 devirtualised
 dfan
+difficultyrating
 dimx
 directoryvolume
 discon
@@ -887,6 +888,7 @@ powerupplacer
 powx
 powy
 ppacb
+ppsz
 preapproved
 primaddr
 prmodecont
@@ -951,8 +953,10 @@ remixfx
 remixfxmsg
 remixindex
 remixpan
+remixtutorial
 remixtype
 remixunavail
+remoteplayer
 remotetrackselectmsg
 renamefileop
 rendererbase
@@ -1003,6 +1007,9 @@ scommon
 scoretrackgraph
 scplayerjoinedpacket
 scratchplate
+scratchtrack
+scratchtrackbuilder
+scratchtrackdata
 screenanim
 screendump
 scriptcalltemplates
@@ -1011,6 +1018,8 @@ scripthost
 scriptmsg
 scriptsink
 scripttemplatemap
+scripttrackbuilder
+scripttrackdata
 scrndump
 scrollinglist
 scstartplayingpacket
@@ -1018,7 +1027,9 @@ scus
 sdata
 sdrdrv
 seccache
+sectionboundaries
 sectioncapturedmsg
+sectionchangepacket
 sectorencoder
 seekermsg
 seekop
@@ -1067,10 +1078,12 @@ sndb
 sndbank
 sndh
 softfloat
+sologamelogic
 solomulti
 solopowerbarmgr
 soloremix
 soloscreenanim
+songspeed
 songtitle
 sonylib
 sonylibs

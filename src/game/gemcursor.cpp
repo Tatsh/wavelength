@@ -27,8 +27,7 @@ GemCursor::GemCursor() {
 }
 
 GemCursor::GemCursor(const GemCursor &other)
-    : mData(other.mData), mPlayMap(other.mPlayMap), mIndex(other.mIndex),
-      mOffset(other.mOffset) {
+    : mData(other.mData), mPlayMap(other.mPlayMap), mIndex(other.mIndex), mOffset(other.mOffset) {
 }
 
 GemCursor &GemCursor::operator=(const GemCursor &other) {
@@ -94,8 +93,7 @@ void GemCursor::AdvanceToTick(int nTick, bool bSkipCurrent, int *pIsLast) {
             mIndex = kInvalidIndex;
             return;
         }
-        mPlayMap->GetSegment(nChangeTick, &nChangeTick, &nEnd, &nNextStart, &nNextLength,
-                             pIsLast);
+        mPlayMap->GetSegment(nChangeTick, &nChangeTick, &nEnd, &nNextStart, &nNextLength, pIsLast);
         mOffset += nEnd - nNextStart;
         mIndex = mData->FindGem(nNextStart);
         nFoundTick = mIndex != kInvalidIndex ? mData->GetGem(mIndex)->mTick : kNoGemTick;

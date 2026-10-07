@@ -6,7 +6,8 @@
 /**
  * The gems of one catch track, in the order of their ticks.
  *
- * The RTTI includes the class name. Only the members its callers here use are declared.
+ * The RTTI includes the class name. The class is not polymorphic. Only the members its callers here
+ * use are declared.
  */
 class CatchTrackData {
 public:
@@ -17,8 +18,8 @@ public:
      */
     struct Gem {
         int mLane;       /*!< The lane of the gem. */
-        int mTick;        /*!< The tick of the gem in the song as written. */
-        Ptr<Muse> mMuse;  /*!< The music the gem plays when caught. */
+        int mTick;       /*!< The tick of the gem in the song as written. */
+        Ptr<Muse> mMuse; /*!< The music the gem plays when caught. */
     };
 
     /**

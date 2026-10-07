@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/string.h"
+
 /**
  * Abstract base of the game's sound output.
  *
@@ -7,8 +9,8 @@
  * implement it. SynthPS2 drives the sound hardware, and SynthNull supplies empty bodies.
  * Create() builds one of the two as TheSynth.
  *
- * The vtable runs past seventeen slots. The slots up to slot 9 are declared in order, and the
- * later slots are not yet declared. Slots 1, 2, 5, 6, 8, and 9 are pure in this class.
+ * The vtable has 34 slots. The slots up to slot 30 are declared in order, and the later slots are
+ * not yet declared.
  */
 class Synth {
 public:
@@ -95,6 +97,150 @@ public:
      * The main loop calls it after the game database has been serviced. The name is inferred.
      */
     virtual void Poll() = 0;
+
+    /**
+     * Vtable slot 10. The base body returns 0. The parameters are not yet recovered.
+     *
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x00395f90
+     */
+    virtual int VirtualSlot10();
+
+    /**
+     * Vtable slot 11. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395f98
+     */
+    virtual void VirtualSlot11();
+
+    /**
+     * Vtable slot 12. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395fa0
+     */
+    virtual void VirtualSlot12();
+
+    /**
+     * Vtable slot 13. The base body returns 0. The parameters are not yet recovered.
+     *
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x00395fa8
+     */
+    virtual int VirtualSlot13();
+
+    /** Vtable slot 14, pure in this class. The signature is not yet recovered. */
+    virtual void VirtualSlot14() = 0;
+
+    /** Vtable slot 15, pure in this class. The signature is not yet recovered. */
+    virtual void VirtualSlot15() = 0;
+
+    /** Vtable slot 16, pure in this class. The signature is not yet recovered. */
+    virtual void VirtualSlot16() = 0;
+
+    /**
+     * Vtable slot 17. Report whether a sample bank finished loading into a slot.
+     *
+     * The member is pure in this class. The name is inferred.
+     *
+     * @param nSlot The bank slot.
+     * @return Whether the bank is loaded.
+     */
+    virtual bool IsBankLoaded(unsigned short nSlot) = 0;
+
+    /**
+     * Vtable slot 18. The base body returns 1. The parameters are not yet recovered.
+     *
+     * @return 1.
+     * @ghidraAddress NTSC-U/C: 0x00395fb0
+     */
+    virtual int VirtualSlot18();
+
+    /**
+     * Vtable slot 19. Start loading a sample bank file into a slot.
+     *
+     * The member is pure in this class. The name is inferred.
+     *
+     * @param nSlot The bank slot.
+     * @param file The bank file.
+     * @param bFlag The meaning is not yet recovered. Duel passes true.
+     */
+    virtual void LoadBank(unsigned short nSlot, const String &file, bool bFlag) = 0;
+
+    /**
+     * Vtable slot 20. Empty a sample bank slot.
+     *
+     * The member is pure in this class. The name is inferred.
+     *
+     * @param nSlot The bank slot.
+     */
+    virtual void UnloadBank(unsigned short nSlot) = 0;
+
+    /**
+     * Vtable slot 21. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395fb8
+     */
+    virtual void VirtualSlot21();
+
+    /**
+     * Vtable slot 22. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395fc0
+     */
+    virtual void VirtualSlot22();
+
+    /**
+     * Vtable slot 23. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395fc8
+     */
+    virtual void VirtualSlot23();
+
+    /**
+     * Vtable slot 24. The base body returns 0. The parameters are not yet recovered.
+     *
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x00395fd0
+     */
+    virtual int VirtualSlot24();
+
+    /**
+     * Vtable slot 25. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395fe0
+     */
+    virtual void VirtualSlot25();
+
+    /**
+     * Vtable slot 26. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395fe8
+     */
+    virtual void VirtualSlot26();
+
+    /**
+     * Vtable slot 27. The base body is empty. The parameters are not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00395ff0
+     */
+    virtual void VirtualSlot27();
+
+    /** Vtable slot 28, pure in this class. The signature is not yet recovered. */
+    virtual void VirtualSlot28() = 0;
+
+    /** Vtable slot 29, pure in this class. The signature is not yet recovered. */
+    virtual void VirtualSlot29() = 0;
+
+    /**
+     * Vtable slot 30. Set the output level that slot 31 reports.
+     *
+     * The base body is empty. SynthPS2 scales the level by 16383 and sends it to the sound
+     * processor. The name is inferred.
+     *
+     * @param fLevel The level, 1 for full.
+     * @ghidraAddress NTSC-U/C: 0x00395ff8
+     */
+    virtual void SetOutputLevel(float fLevel);
 };
 
 /**

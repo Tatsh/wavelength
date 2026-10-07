@@ -13,7 +13,8 @@
  * The class is not polymorphic and has no RTTI. The name is inferred from the "db" section of the
  * configuration Init() reads. The one instance is the function-local static of shared(), and
  * TheGameDb addresses it. Only the members the recovered routines use are declared.
- * WorldMgr::UpdateTime() writes the two timing floats at `+0x158` and `+0x15c`.
+ * WorldMgr::Load() reads the rule set from `+0x50`, and WorldMgr::UpdateTime() writes the two
+ * timing floats at `+0x158` and `+0x15c`.
  */
 class GameDb {
 public:
@@ -210,6 +211,89 @@ public:
      */
     GameOptions *GetOptions();
 
+    /**
+     * Report whether the campaign win sequence runs.
+     *
+     * @return Non-zero while the sequence runs.
+     * @ghidraAddress NTSC-U/C: 0x0026e0d0
+     * @ghidraAddress PAL: 0x00277c70
+     */
+    int IsWinSequence() const;
+
+    /**
+     * Start or end the campaign win sequence.
+     *
+     * @param bWinSequence Start the sequence.
+     * @ghidraAddress NTSC-U/C: 0x0026e0d8
+     * @ghidraAddress PAL: 0x00277c78
+     */
+    void SetWinSequence(bool bWinSequence);
+
+    /**
+     * Set the practice mode.
+     *
+     * @param bPracticeMode Play in practice mode.
+     * @ghidraAddress NTSC-U/C: 0x0026eba8
+     * @ghidraAddress PAL: 0x00278748
+     */
+    void SetPracticeMode(bool bPracticeMode);
+
+    /**
+     * Record the fraction of the possible capture bars a solo song captured.
+     *
+     * @param fEnergized The fraction.
+     * @ghidraAddress NTSC-U/C: 0x0026ecb8
+     * @ghidraAddress PAL: 0x00278858
+     */
+    void SetEnergized(float fEnergized);
+
+    /**
+     * Record the bars a solo song played with every track captured.
+     *
+     * @param nBars The bars.
+     * @ghidraAddress NTSC-U/C: 0x0026ecc8
+     * @ghidraAddress PAL: 0x00278868
+     */
+    void SetFullMixBars(int nBars);
+
+    /**
+     * Record the longest streak of a solo song.
+     *
+     * @param nStreak The streak.
+     * @ghidraAddress NTSC-U/C: 0x0026ecd8
+     * @ghidraAddress PAL: 0x00278878
+     */
+    void SetBestStreak(int nStreak);
+
+    /**
+     * Record the fraction of the song played.
+     *
+     * @param fProgress The fraction.
+     * @ghidraAddress NTSC-U/C: 0x0026ece8
+     * @ghidraAddress PAL: 0x00278888
+     */
+    void SetProgress(float fProgress);
+
+    /**
+     * Report the localised name of the difficulty of the game.
+     *
+     * @return The name.
+     * @ghidraAddress NTSC-U/C: 0x0026f238
+     * @ghidraAddress PAL: 0x00278dd8
+     */
+    const char *GetDifficultyName() const;
+
+    /**
+     * Report the localised name of a difficulty.
+     *
+     * @param nSkillLevel The skill level.
+     * @param nRuleSet The rule set, one of RuleSet.
+     * @return The name.
+     * @ghidraAddress NTSC-U/C: 0x0026f290
+     * @ghidraAddress PAL: 0x00278e30
+     */
+    const char *GetDifficultyName(int nSkillLevel, int nRuleSet) const;
+
     int mReserved00;     // +0x00, the player list. The element type is not yet recovered.
     int mReserved04;     // +0x04, the player list.
     int mReserved08;     // +0x08, the player list.
@@ -223,8 +307,18 @@ public:
     int mPowerupLevel;   /*!< Index into GameConfig::mPowerupProbMulti. +0x4c */
     int mRuleSet;        /*!< `rule_set`, one of RuleSet. +0x50 */
     int mCommunity;      /*!< `community`, one of Community. +0x54 */
-    int mReserved58[12]; // +0x58, not yet recovered.
-    int mReserved88;     // +0x88, read by GameLogic::EndSong().
+    int mReserved58;     // +0x58, not yet recovered.
+    String mArena;       /*!< The arena of the game. +0x5c */
+    int mReserved70[6];  // +0x70, not yet recovered.
+    int mWinSequence;    /*!< Whether the campaign win sequence runs. +0x88 */
+    int mReserved8C[2];  // +0x8c, not yet recovered.
+    float mEnergized;    /*!< The value of SetEnergized(). +0x94 */
+    int mFullMixBars;    /*!< The value of SetFullMixBars(). +0x98 */
+    int mBestStreak;     /*!< The value of SetBestStreak(). +0x9c */
+    float mProgress;     /*!< The value of SetProgress(). +0xa0 */
+    int mReservedA4[45]; // +0xa4, not yet recovered.
+    float mSongTick;     /*!< The running world's position in ticks. +0x158 */
+    float mSongTime;     /*!< The running world's position on its song clock. +0x15c */
 };
 
 /**

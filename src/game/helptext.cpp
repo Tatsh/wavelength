@@ -3,9 +3,9 @@
 #include "game/controllerdisplay.h"
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
-#include "os/commandscheduler.h"
 #include "os/locale.h"
 #include "os/memfuncommand.h"
+#include "os/scheduler.h"
 
 namespace {
 
@@ -94,8 +94,12 @@ bool HelpText::ShowDeployAutocatcher() {
     return Show("DEPLOY_AUTOCATCHER", nullptr, true, true, kAllPlayers, true);
 }
 
-bool HelpText::Show(const char *pszFirst, const char *pszSecond, bool bBeginnerOnly,
-                    bool bOnePadOnly, int nPlayer, bool bLocalize) {
+bool HelpText::Show(const char *pszFirst,
+                    const char *pszSecond,
+                    bool bBeginnerOnly,
+                    bool bOnePadOnly,
+                    int nPlayer,
+                    bool bLocalize) {
     if (bOnePadOnly && TheGameDb->GetNumPads() >= 2) {
         return false;
     }
@@ -106,7 +110,7 @@ bool HelpText::Show(const char *pszFirst, const char *pszSecond, bool bBeginnerO
         TheGameDb->GetOptions()->mHelpText == 0) {
         return false;
     }
-    const float fNowMs = TheCommandScheduler.mTime;
+    const float fNowMs = TheSongScheduler.mTime;
     if (fNowMs - mLastShownMs < kMinIntervalMs) {
         return false;
     }
@@ -123,17 +127,17 @@ bool HelpText::Show(const char *pszFirst, const char *pszSecond, bool bBeginnerO
         nCommunity == GameDb::kCommunityLocal || nCommunity == GameDb::kCommunityOnline;
     const float fOffsetY = bMultiplayer ? kMultiplayerOffsetY : kNoOffset;
     const float fScale = bMultiplayer ? kMultiplayerScale : kFullScale;
-    TheGfxManager.ShowMessage(pszFirst, pszSecond, nPlayer, fDurationMs, fScale, fOffsetY,
-                              kNoOffset);
+    TheGfxManager.ShowMessage(
+        pszFirst, pszSecond, nPlayer, fDurationMs, fScale, fOffsetY, kNoOffset);
     mLastShownMs = fNowMs;
     return true;
 }
 
 void HelpText::PlayAttentionCue() {
-    TheCommandScheduler.Remove(mStopCueCmd.Get());
+    TheSongScheduler.Cancel(mStopCueCmd.Get());
     TheControllerDisplay->Show();
     TheControllerDisplay->SetHighlight(true);
-    TheCommandScheduler.AddAfterMs(kAttentionCueMs, mStopCueCmd.Get(), false);
+    TheSongScheduler.PostAfter(mStopCueCmd.Get(), kAttentionCueMs, false);
 }
 
 void HelpText::StopAttentionCue() {

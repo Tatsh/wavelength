@@ -141,8 +141,12 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00117d90
      * @ghidraAddress PAL: 0x00119528
      */
-    bool Show(const char *pszFirst, const char *pszSecond, bool bBeginnerOnly, bool bOnePadOnly,
-              int nPlayer, bool bLocalize);
+    bool Show(const char *pszFirst,
+              const char *pszSecond,
+              bool bBeginnerOnly,
+              bool bOnePadOnly,
+              int nPlayer,
+              bool bLocalize);
 
     /**
      * Highlight the controller buttons for two seconds.

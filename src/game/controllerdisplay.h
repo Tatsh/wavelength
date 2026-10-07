@@ -57,6 +57,16 @@ public:
      * @ghidraAddress PAL: 0x0014c9e8
      */
     void Clear();
+
+    /**
+     * Refresh the button labels.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014b128
+     * @ghidraAddress PAL: 0x0014cac8
+     */
+    void RefreshLabels();
 };
 
 /**

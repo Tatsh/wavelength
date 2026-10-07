@@ -3,7 +3,7 @@
 #include "game/axecontour.h"
 #include "game/freestyletrack.h"
 #include "game/playmap.h"
-#include "game/sectionlist.h"
+#include "game/sectionboundaries.h"
 
 /**
  * Freestyle track played as a guitar.
@@ -28,7 +28,7 @@ public:
      * @ghidraAddress PAL: 0x00148df8
      */
     AxeTrack(AxeContour *pContour,
-             SectionList *pSections,
+             SectionBoundaries *pSections,
              PlayMap *pPlayMap,
              const float *pfMsPerTick,
              int nIndex,
@@ -102,4 +102,21 @@ public:
     void HandleInput([[maybe_unused]] Player *pPlayer,
                      [[maybe_unused]] const BtnEvent<10> &event) override {
     }
+
+    /**
+     * Report whether a note is active.
+     *
+     * @return True while a note sounds.
+     * @ghidraAddress NTSC-U/C: 0x00347d98
+     * @ghidraAddress PAL: 0x003b51c8
+     */
+    bool IsActive() override;
+
+    /**
+     * Withdraw the scheduled commands and rebuild what the track plays from the song position.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00147dd8
+     * @ghidraAddress PAL: 0x00149798
+     */
+    void Refresh() override;
 };

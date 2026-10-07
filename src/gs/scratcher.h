@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "gs/muse.h"
 #include "gs/pitcher.h"
 #include "mid/tick.h"
 #include "msg/message.h"
@@ -59,6 +60,62 @@ public:
      * @ghidraAddress PAL: 0x001d7aa8
      */
     virtual ~Scratcher();
+
+    /**
+     * Construct a scratcher over three recorded pieces.
+     *
+     * @param pFirst The first piece.
+     * @param pSecond The second piece.
+     * @param pThird The third piece.
+     * @param nQuantumTicks The quantisation the scratch position snaps to.
+     * @param nLengthTicks The length of each piece.
+     * @param nChannel The MIDI channel of the pieces.
+     * @ghidraAddress NTSC-U/C: 0x00153e88
+     * @ghidraAddress PAL: 0x001556f0
+     */
+    Scratcher(Muse *pFirst,
+              Muse *pSecond,
+              Muse *pThird,
+              int nQuantumTicks,
+              int nLengthTicks,
+              int nChannel);
+
+    /**
+     * Start scratching for a player.
+     *
+     * @param nPlayer The player index.
+     * @param nValue The value the scratcher records with the player. Its use is not yet
+     * identified.
+     * @ghidraAddress NTSC-U/C: 0x00154360
+     * @ghidraAddress PAL: 0x00155bc8
+     */
+    virtual void Start(int nPlayer, int nValue);
+
+    /**
+     * Stop scratching and silence the scratch sound.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00154440
+     * @ghidraAddress PAL: 0x00155ca8
+     */
+    virtual void Stop();
+
+    /**
+     * Set the pitch, which takes effect when it moves by more than 0.02.
+     *
+     * @param fPitch The pitch.
+     * @ghidraAddress NTSC-U/C: 0x001544b8
+     * @ghidraAddress PAL: 0x00155d20
+     */
+    virtual void SetPitch(float fPitch);
+
+    /**
+     * Set the scratch position from the stick.
+     *
+     * @param fPosition The stick position.
+     * @ghidraAddress NTSC-U/C: 0x00154508
+     * @ghidraAddress PAL: 0x00155d70
+     */
+    virtual void SetPosition(float fPosition);
 
     /**
      * Advance to the bar the elapsed tick count falls in.

@@ -42,6 +42,14 @@ public:
     int Release();
 
     /**
+     * Take one reference.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00293eb0
+     * @ghidraAddress PAL: 0x0029d868
+     */
+    void AddRef();
+
+    /**
      * Destroy the object.
      *
      * The default implementation deletes the object through the virtual destructor.

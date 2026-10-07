@@ -4,22 +4,28 @@
 #include <cstdlib>
 
 #include "game/gameconfig.h"
-#include "game/sessionlog.h"
-#include "os/commandscheduler.h"
+#include "game/stats.h"
+#include "os/scheduler.h"
 
-GemCatcher::CatchCheckCmd::CatchCheckCmd(Receiver *pReceiver, CatchTrackState *pState,
-                                         const float *pMsPerTick, int nTrack, int nLane,
-                                         int nSlopMs, int nTicksPerBar)
+GemCatcher::CatchCheckCmd::CatchCheckCmd(Receiver *pReceiver,
+                                         CatchTrackState *pState,
+                                         const float *pMsPerTick,
+                                         int nTrack,
+                                         int nLane,
+                                         int nSlopMs,
+                                         int nTicksPerBar)
     : mReceiver(pReceiver), mState(pState), mMsPerTick(pMsPerTick), mTrack(nTrack), mLane(nLane),
       mSlopMs(nSlopMs), mTicksPerBar(nTicksPerBar), mId(TheDefaultCommandId) {
 }
 
 void GemCatcher::CatchCheckCmd::Schedule() {
-    mCursor = mState->GetCursor(mLane, TheCommandScheduler.mTick);
+    mCursor = mState->GetCursor(mLane, TheSongScheduler.mTick);
     if (mCursor.IsValid()) {
-        TheCommandScheduler.AddAtMs(static_cast<float>(mCursor.GetTick()) * *mMsPerTick +
+        TheSongScheduler.PostAtTime(this,
+                                    static_cast<float>(mCursor.GetTick()) * *mMsPerTick +
                                         static_cast<float>(mSlopMs),
-                                    this, mId, false);
+                                    mId,
+                                    false);
     }
 }
 
@@ -27,20 +33,20 @@ void GemCatcher::CatchCheckCmd::Execute() {
     if (mCursor.IsValid()) {
         const int nBar = mCursor.GetTick() / mTicksPerBar;
         if (!mState->IsCaptured(nBar) && mState->IsEnabled(nBar)) {
-            Pass(TheCommandScheduler.mTick, mCursor);
+            Pass(TheSongScheduler.mTick, mCursor);
         }
     }
     ScheduleNext();
 }
 
 void GemCatcher::CatchCheckCmd::Restart() {
-    TheCommandScheduler.Remove(this);
+    TheSongScheduler.Cancel(this);
     mId = TheDefaultCommandId;
     Schedule();
 }
 
 void GemCatcher::CatchCheckCmd::Catch() {
-    const int nTick = TheCommandScheduler.mTick;
+    const int nTick = TheSongScheduler.mTick;
     if (!mCursor.IsValid()) {
         Miss(nTick);
         return;
@@ -68,11 +74,11 @@ void GemCatcher::CatchCheckCmd::Catch() {
         return;
     }
     const float fMsPerTick = *mMsPerTick;
-    const float fErrorMs = static_cast<float>(nearest.GetTick()) * fMsPerTick -
-                           static_cast<float>(nTick) * fMsPerTick;
+    const float fErrorMs =
+        static_cast<float>(nearest.GetTick()) * fMsPerTick - static_cast<float>(nTick) * fMsPerTick;
     if (std::fabs(fErrorMs) < static_cast<float>(mSlopMs)) {
         Hit(nTick, nearest, fErrorMs);
-        TheCommandScheduler.Remove(this);
+        TheSongScheduler.Cancel(this);
         if (!(nearest == mCursor)) {
             Pass(nTick, mCursor);
             mCursor.AdvanceToLane(mLane);
@@ -91,13 +97,16 @@ void GemCatcher::CatchCheckCmd::ScheduleNext() {
     (void)mCursor.GetTick(); // Yes, the binary discards this call's result.
     mCursor.AdvanceToLane(mLane);
     if (mCursor.IsValid()) {
-        TheCommandScheduler.AddAtMs(static_cast<float>(mCursor.GetTick()) * *mMsPerTick +
+        TheSongScheduler.PostAtTime(this,
+                                    static_cast<float>(mCursor.GetTick()) * *mMsPerTick +
                                         static_cast<float>(mSlopMs),
-                                    this, mId, false);
+                                    mId,
+                                    false);
     }
 }
 
-GemCursor GemCatcher::CatchCheckCmd::Nearest(const GemCursor &first, const GemCursor &second,
+GemCursor GemCatcher::CatchCheckCmd::Nearest(const GemCursor &first,
+                                             const GemCursor &second,
                                              int nTick) const {
     if (!first.IsValid() || !second.IsValid()) {
         return first.IsValid() ? first : second;
@@ -109,31 +118,33 @@ GemCursor GemCatcher::CatchCheckCmd::Nearest(const GemCursor &first, const GemCu
 }
 
 void GemCatcher::CatchCheckCmd::Hit(int nTick, const GemCursor &cursor, float fErrorMs) {
-    TheSessionLog->LogGemHit(mTrack, cursor.GetTick(), nTick, fErrorMs);
+    TheStats->GemHit(mTrack, cursor.GetTick(), nTick, fErrorMs);
     mReceiver->OnHit(nTick, cursor);
 }
 
 void GemCatcher::CatchCheckCmd::Pass(int nTick, const GemCursor &cursor) {
-    TheSessionLog->LogGemPass(mTrack, cursor.GetTick());
+    TheStats->GemPass(mTrack, cursor.GetTick());
     mReceiver->OnPass(nTick, cursor);
 }
 
 void GemCatcher::CatchCheckCmd::Miss(int nTick, const GemCursor &cursor, float fErrorMs) {
-    TheSessionLog->LogGemMiss(mTrack, cursor.GetTick(), nTick, fErrorMs);
+    TheStats->GemMiss(mTrack, cursor.GetTick(), nTick, fErrorMs);
     mReceiver->OnMiss(nTick, mLane);
 }
 
 void GemCatcher::CatchCheckCmd::Miss(int nTick) {
-    TheSessionLog->LogMiss(mTrack, nTick);
+    TheStats->GemMiss(mTrack, nTick);
     mReceiver->OnMiss(nTick, mLane);
 }
 
-GemCatcher::GemCatcher(Receiver *pReceiver, CatchTrackState *pState, const float *pMsPerTick,
-                       int nTrack, int nTicksPerBar) {
+GemCatcher::GemCatcher(Receiver *pReceiver,
+                       CatchTrackState *pState,
+                       const float *pMsPerTick,
+                       int nTrack,
+                       int nTicksPerBar) {
     for (int nLane = 0; nLane < kNumLanes; ++nLane) {
-        mChecks[nLane] = Ptr<CatchCheckCmd>(new CatchCheckCmd(pReceiver, pState, pMsPerTick, nTrack,
-                                                              nLane, TheGameConfig->mSlopMs,
-                                                              nTicksPerBar));
+        mChecks[nLane] = Ptr<CatchCheckCmd>(new CatchCheckCmd(
+            pReceiver, pState, pMsPerTick, nTrack, nLane, TheGameConfig->mSlopMs, nTicksPerBar));
     }
 }
 
@@ -150,7 +161,7 @@ void GemCatcher::Start() {
 
 void GemCatcher::Stop() {
     for (Ptr<CatchCheckCmd> &check : mChecks) {
-        TheCommandScheduler.Remove(check.Get());
+        TheSongScheduler.Cancel(check.Get());
     }
 }
 

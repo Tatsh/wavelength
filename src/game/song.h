@@ -10,8 +10,8 @@
 #include "game/levelmidibuilder.h"
 #include "game/lyric.h"
 #include "game/playmap.h"
-#include "game/scratchdata.h"
-#include "game/sectionlist.h"
+#include "game/scratchtrackdata.h"
+#include "game/sectionboundaries.h"
 #include "game/worldtrack.h"
 #include "gs/muse.h"
 
@@ -77,7 +77,7 @@ public:
      * @return The patterns.
      * @ghidraAddress NTSC-U/C: 0x0011ee68
      */
-    ScratchData *GetScratchData(int nTrack) const;
+    ScratchTrackData *GetScratchData(int nTrack) const;
 
     /**
      * Report the notes of a guitar track.
@@ -145,14 +145,16 @@ public:
      *
      * @return The sections.
      * @ghidraAddress NTSC-U/C: 0x0011efc0
+     * @ghidraAddress PAL: 0x00120750
      */
-    SectionList *GetSections() const;
+    SectionBoundaries *GetSections() const;
 
     /**
      * Report the duration of one tick.
      *
      * @return The duration in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x0011efc8
+     * @ghidraAddress PAL: 0x00120758
      */
     float *GetMsPerTick() const;
 
@@ -161,6 +163,7 @@ public:
      *
      * @return The map.
      * @ghidraAddress NTSC-U/C: 0x0011efd0
+     * @ghidraAddress PAL: 0x00120760
      */
     PlayMap *GetPlayMap() const;
 
@@ -201,6 +204,7 @@ public:
      *
      * @return The speed.
      * @ghidraAddress NTSC-U/C: 0x0011f020
+     * @ghidraAddress PAL: 0x001207b0
      */
     float GetSpeed() const;
 
@@ -246,7 +250,9 @@ public:
      */
     const std::vector<unsigned char> *GetFreestyleLowVolumes() const;
 
-    LevelMidiBuilder *mBuilder; /*!< The builder of the tracks. +0x18 */
-    int mNumBars;               /*!< `song_bars`, the length of the song in bars. +0x44 */
-    int mIntroBars;             /*!< `intro_bars`, the bars before the first section. +0x48 */
+    unsigned char mReserved00[0x18]; // +0x00, not yet recovered.
+    LevelMidiBuilder *mBuilder;      /*!< The builder of the tracks. +0x18 */
+    unsigned char mReserved1c[0x28]; // +0x1c, not yet recovered.
+    int mNumBars;                    /*!< `song_bars`, the length of the song in bars. +0x44 */
+    int mIntroBars; /*!< `intro_bars`, one more than the bars before bar 0. +0x48 */
 };

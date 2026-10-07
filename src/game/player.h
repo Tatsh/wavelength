@@ -1,6 +1,8 @@
 #pragma once
 
-#include "game/inputevents.h"
+#include "game/btnevent.h"
+#include "game/playnoteevent.h"
+#include "game/stickevent.h"
 #include "game/track.h"
 #include "os/command.h"
 #include "os/ptr.h"
@@ -9,10 +11,10 @@
  * One participant in a song: the track the participant plays, the score, and the streak.
  *
  * The RTTI includes the class name. The class has no base. LocalPlayer derives from it for a
- * player on this console. A player's points accumulate as pending points while a phrase is
- * played, and CommitPendingPoints() adds them to the score scaled by the streak multiplier and the
- * multiplier power-up, or LosePendingPoints() forfeits them. Every change is shown through
- * TheGfxManager.
+ * player on this console, and RemotePlayer for a player on another console. A player's points
+ * accumulate as pending points while a phrase is played, and CommitPendingPoints() adds them to
+ * the score scaled by the streak multiplier and the multiplier power-up, or LosePendingPoints()
+ * forfeits them. Every change is shown through TheGfxManager.
  */
 class Player {
 public:
@@ -20,7 +22,7 @@ public:
      * Construct a player with no track, no score, no streak, and no power-up.
      *
      * @param nIndex The player's index.
-     * @param nTicksPerBar The length of a bar in ticks, the unit of the multiplier power-up.
+     * @param nTicksPerBar The song ticks in one bar, which time the multiplier power-up.
      * @ghidraAddress NTSC-U/C: 0x0012d9b0
      * @ghidraAddress PAL: 0x0012f188
      */
@@ -159,6 +161,15 @@ public:
     }
 
     /**
+     * Report whether the player left the song.
+     *
+     * @return Whether Abort() ran.
+     */
+    bool IsAborted() const {
+        return mAborted;
+    }
+
+    /**
      * Report the player's track.
      *
      * @return The track, or null.
@@ -213,7 +224,7 @@ public:
     void HandleInput(const StickEvent<6> &event);
 
     /**
-     * Mark the player as having quit the song.
+     * Mark the player as having left the song.
      *
      * @ghidraAddress NTSC-U/C: 0x0012dc60
      * @ghidraAddress PAL: 0x0012f438
@@ -284,7 +295,7 @@ public:
     bool GetCatching() const;
 
     /**
-     * Report the kind of power-up the player has.
+     * Report the kind of power-up the player holds.
      *
      * GameLogic::OnDeployPowerup() selects the deployment by the value.
      *
@@ -295,7 +306,7 @@ public:
     int GetPowerup() const;
 
     /**
-     * Record the kind of power-up the player has and show it.
+     * Record the kind of power-up the player holds and show it.
      *
      * A power-up gained is reported to TheGameCallback when one is installed.
      *
@@ -333,12 +344,12 @@ protected:
     Track *mTrack;                      /*!< The track the player plays, or null. */
     int mScore;                         /*!< The score. */
     int mPendingPoints;                 /*!< The points of the phrase being played. */
-    int mMultiplierValue;               /*!< 1, or the multiplier power-up value while active. */
+    int mMultiplierValue;               /*!< 1, or the multiplier power-up value. */
     int mStreak;                        /*!< The streak. */
     bool mCatching;                     /*!< Whether the player is catching. */
-    bool mAborted;                      /*!< Whether the player has quit the song. */
+    bool mAborted;                      /*!< Whether the player has left the song. */
     bool mRepeat;                       /*!< The remix repeat state. */
-    int mReserved;                      // +0x28, set to -1 and not read by any routine here.
+    int mReserved;                      // +0x28, set to -1 and not read here.
     Ptr<Command> mMultiplierEndCommand; /*!< The command that calls EndMultiplier(). */
-    int mPowerup;                       /*!< The kind of power-up the player has. */
+    int mPowerup;                       /*!< The kind of power-up the player holds. */
 };

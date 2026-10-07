@@ -30,6 +30,19 @@ public:
     BufStream(char *pBuffer, int nSize);
 
     /**
+     * Construct a stream over nSize bytes at pBuffer with a byte order, positioned at the start.
+     *
+     * A null buffer starts the stream failed.
+     *
+     * @param pBuffer The buffer, which the caller retains.
+     * @param nSize The buffer size in bytes.
+     * @param bLittleEndian Read multibyte values least significant byte first.
+     * @ghidraAddress NTSC-U/C: 0x002944c8
+     * @ghidraAddress PAL: 0x0029e0f0
+     */
+    BufStream(char *pBuffer, int nSize, bool bLittleEndian);
+
+    /**
      * @ghidraAddress NTSC-U/C: 0x005104e0
      * @ghidraAddress PAL: 0x0054fac8
      */

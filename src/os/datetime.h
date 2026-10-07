@@ -3,6 +3,32 @@
 class HxStr;
 
 /**
+ * Local date and time of the console clock.
+ *
+ * The type has no RTTI, and the name is inferred. Callers clear it before ReadClock() fills it.
+ */
+class DateTime {
+public:
+    /**
+     * Read the console clock.
+     *
+     * The first call starts the clock. Each field is converted from its BCD byte.
+     *
+     * @return False, with no field written, when the clock reports an error.
+     * @ghidraAddress NTSC-U/C: 0x00288648
+     * @ghidraAddress PAL: 0x00291ef8
+     */
+    bool ReadClock();
+
+    unsigned char mSecond; /*!< The second, 0 to 59. */
+    unsigned char mMinute; /*!< The minute, 0 to 59. */
+    unsigned char mHour;   /*!< The hour, 0 to 23. */
+    unsigned char mDay;    /*!< The day of the month, from 1. */
+    unsigned char mMonth;  /*!< The month, from 0. */
+    unsigned char mYear;   /*!< The years since 1900. */
+};
+
+/**
  * Write the console's local date and time as "MM/DD/YY, HH:MM".
  *
  * The clock is read with sceCdReadClock() and converted to local time. Each field is written as

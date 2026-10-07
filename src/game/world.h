@@ -1,7 +1,11 @@
 #pragma once
 
 #include "app/msgsink.h"
-#include "game/inputevents.h"
+#include "game/btnevent.h"
+#include "game/changesectionevent.h"
+#include "game/playnoteevent.h"
+#include "game/rotateevent.h"
+#include "game/stickevent.h"
 
 /**
  * One game in progress under one rule set.

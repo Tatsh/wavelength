@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * Tag that a CommandScheduler stores beside each queued command.
+ * Tag that a Scheduler stores beside each queued command.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. The object is one word.
  */

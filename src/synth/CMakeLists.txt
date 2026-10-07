@@ -3,6 +3,7 @@ set(WAVELENGTH_SYNTH_SRCS
     callbackxferhdtoiop.cpp
     midi_main.cpp
     ps2hardsynth.cpp
+    songspeed.cpp
     source.cpp
     synth.cpp
     synthsustainer.cpp)

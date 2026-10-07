@@ -14,8 +14,8 @@
 #include "game/rateaverager.h"
 #include "game/remoteplayer.h"
 #include "game/scratchtrack.h"
-#include "game/sessionlog.h"
 #include "game/songentry.h"
+#include "game/stats.h"
 #include "game/triggermgr.h"
 #include "gfx/gfxmanager.h"
 #include "math/statsaccumulator.h"
@@ -101,20 +101,20 @@ constexpr int kHardestSkillLevel = 3;
 
 int GameLogic::GetControllerArgument(DataArray *pCommand) {
     int nController = -1;
-    pCommand->FindData(kControllerKey, &nController, true);
+    pCommand->FindInt(kControllerKey, &nController, true);
     return nController;
 }
 
 void GameLogic::OnAutocatcherCommand(DataArray *pCommand, void *pUserData) {
     GameLogic *pLogic = static_cast<GameLogic *>(pUserData);
-    if (TheCommandScheduler.mTick >= 0) {
+    if (TheSongScheduler.mTick >= 0) {
         pLogic->DeployAutocatcher(pLogic->mLocalPlayers[GetControllerArgument(pCommand)]);
     }
 }
 
 void GameLogic::OnMultiplierCommand(DataArray *pCommand, void *pUserData) {
     GameLogic *pLogic = static_cast<GameLogic *>(pUserData);
-    if (TheCommandScheduler.mTick >= 0) {
+    if (TheSongScheduler.mTick >= 0) {
         pLogic->DeployMultiplier(pLogic->mLocalPlayers[GetControllerArgument(pCommand)]);
     }
 }
@@ -134,7 +134,7 @@ void GameLogic::OnSlowCommand([[maybe_unused]] DataArray *pCommand, void *pUserD
 
 void GameLogic::OnFreestyleCommand(DataArray *pCommand, void *pUserData) {
     GameLogic *pLogic = static_cast<GameLogic *>(pUserData);
-    if (TheCommandScheduler.mTick >= 0) {
+    if (TheSongScheduler.mTick >= 0) {
         pLogic->DeployFreestyle(pLogic->mLocalPlayers[GetControllerArgument(pCommand)]);
     }
 }
@@ -151,14 +151,14 @@ void GameLogic::OnFreestyleToggleCommand(DataArray *pCommand, void *pUserData) {
 
 void GameLogic::OnBumperCommand(DataArray *pCommand, void *pUserData) {
     GameLogic *pLogic = static_cast<GameLogic *>(pUserData);
-    if (TheCommandScheduler.mTick >= 0) {
+    if (TheSongScheduler.mTick >= 0) {
         pLogic->DeployBumper(pLogic->mLocalPlayers[GetControllerArgument(pCommand)]);
     }
 }
 
 void GameLogic::OnCripplerCommand(DataArray *pCommand, void *pUserData) {
     GameLogic *pLogic = static_cast<GameLogic *>(pUserData);
-    if (TheCommandScheduler.mTick >= 0) {
+    if (TheSongScheduler.mTick >= 0) {
         pLogic->DeployCrippler(pLogic->mLocalPlayers[GetControllerArgument(pCommand)]);
     }
 }
@@ -190,22 +190,22 @@ GameLogic::PlayerData::PlayerData(Command *pEndFreestyle) : mEndFreestyleCmd(pEn
 GameLogic::GameLogic(Song *pSong, DataArray *pConfig, int nSeed)
     : mSong(pSong), mState(kStateIdle), mReserved0c(0), mTicksPerBar(pSong->mBuilder->mTicksPerBar),
       mNumBars(pSong->mNumBars), mPlayMap(pSong->GetPlayMap()), mFreestyleTrack(nullptr),
-      mTrackSelector(nullptr), mSpeedRamp(new SpeedRamp(&TheCommandScheduler, mSong->GetSpeed())),
+      mTrackSelector(nullptr), mSpeedRamp(new SpeedRamp(&TheSongScheduler, mSong->GetSpeed())),
       mPhraseThisBar(false), mQuit(0), mReserved60(0), mSectionStartBar(0),
-      mNextSectionBar(pSong->GetSections()->GetSectionEnd(0)), mSection(0),
-      mWorldBeat(&TheCommandScheduler, pSong->GetWorldTrack(), mTicksPerBar * mNumBars),
+      mNextSectionBar(pSong->GetSections()->SectionEnd(0)), mSection(0),
+      mWorldBeat(&TheSongScheduler, pSong->GetWorldTrack(), mTicksPerBar * mNumBars),
       mSavedState(kStatePlaying), mSlowdown(false), mNextEnableStep(0),
       mBarCmd(NewMemFunCommand(this, &GameLogic::TickBar)),
       mStopSlowdownCmd(NewMemFunCommand(this, &GameLogic::StopSlowdown)), mRand(nSeed),
       mEndTick(0) {
     TheControllerDisplay->Init();
     if (TheGameDb->mTutorial == 0) {
-        TheCommandScheduler.AddAtTick(
+        TheSongScheduler.PostAt(
             NewMemFun1Command(&TheGfxManager, &GfxManager::ShowTrackLabels, true), 0, false);
     }
     if (TheGameDb->mTutorial != 0) {
         int nLoopBars = kDefaultInitialTrackLoop;
-        pConfig->FindData(kInitialTrackLoopKey, &nLoopBars, true);
+        pConfig->FindInt(kInitialTrackLoopKey, &nLoopBars, true);
         mPlayMap->AddLoop(0, nLoopBars, 0);
     }
 
@@ -235,7 +235,7 @@ GameLogic::GameLogic(Song *pSong, DataArray *pConfig, int nSeed)
     if (mSong->HasFreestyleLowVolumes()) {
         TheMixer->SetInstrumentVolumes(*mSong->GetFreestyleLowVolumes());
     }
-    TheSessionLog->Begin(nTracks, mNumBars);
+    TheStats->Begin(nTracks, mNumBars);
 
     std::vector<Track *> tracks(mCatchTracks.begin(), mCatchTracks.end());
     mTrackSelector =
@@ -333,12 +333,13 @@ float GameLogic::GetProgress() {
 
 void GameLogic::Start() {
     mState = kStatePlaying;
-    SectionList *pSections = mSong->GetSections();
+    SectionBoundaries *pSections = mSong->GetSections();
     TheGfxManager.AddCheckpoint(0, 0.0f, 0.0f, kCheckpointScale);
-    for (int i = 1; i < pSections->GetNumSections(); ++i) {
-        TheGfxManager.AddCheckpoint(
-            0, static_cast<float>(pSections->GetSectionStart(i) * mTicksPerBar), 0.0f,
-            kCheckpointScale);
+    for (int i = 1; i < pSections->NumSections(); ++i) {
+        TheGfxManager.AddCheckpoint(0,
+                                    static_cast<float>(pSections->SectionStart(i) * mTicksPerBar),
+                                    0.0f,
+                                    kCheckpointScale);
     }
     if (TheGameDb->mTutorial == 0) {
         TheGfxManager.AddCheckpoint(
@@ -366,7 +367,7 @@ void GameLogic::Start() {
     TheHelpText->Reset();
     mSong->GetBankTrack()->Start();
     for (int i = 0; i < mSong->GetNumIntroMuses(); ++i) {
-        mSong->GetIntroMuse(i)->Play(&TheCommandScheduler);
+        mSong->GetIntroMuse(i)->Play(&TheSongScheduler);
     }
 
     if (TheGameDb->GetDemo() == 0) {
@@ -374,19 +375,19 @@ void GameLogic::Start() {
         TheForceFeedbackMgr->Start(mSong->GetMsPerTick(), mTicksPerBar);
         TheForceFeedbackMgr->StartMetronome(kForceFeedbackBeatTicks, nFirstBeat);
     }
-    TheCommandScheduler.AddAtTick(mBarCmd.Get(), 0, false);
+    TheSongScheduler.PostAt(mBarCmd.Get(), 0, false);
     OnStart();
-    TheCommandScheduler.AddAtTick(NewMemFunCommand(&TheMetagame, &Metagame::ShowBlankScreen),
-                                  kBlankScreenTick, false);
+    TheSongScheduler.PostAt(
+        NewMemFunCommand(&TheMetagame, &Metagame::ShowBlankScreen), kBlankScreenTick, false);
 
     FreestyleFx *pFx = mSong->GetFreestyleFx();
     if (pFx != nullptr) {
         pFx->Activate();
         for (int i = 0; i < pFx->GetNumSets(); ++i) {
             const int nBar = pFx->GetSetBar(i);
-            TheCommandScheduler.AddAtTick(
-                NewMemFun1Command(this, &GameLogic::ApplyFreestyleEffect, i), nBar * mTicksPerBar,
-                false);
+            TheSongScheduler.PostAt(NewMemFun1Command(this, &GameLogic::ApplyFreestyleEffect, i),
+                                    nBar * mTicksPerBar,
+                                    false);
         }
     }
 
@@ -427,9 +428,9 @@ void GameLogic::Stop() {
     mWorldBeat.Stop();
     mSong->GetLyric()->Stop();
     TheMixer->Deactivate();
-    TheSessionLog->End();
+    TheStats->End();
     TheForceFeedbackMgr->StopAll();
-    TheCommandScheduler.Remove(mBarCmd.Get());
+    TheSongScheduler.Cancel(mBarCmd.Get());
 }
 
 void GameLogic::SetPaused(bool bPaused, int nPad, int nReason) {
@@ -463,20 +464,20 @@ void GameLogic::Poll() {
     if (!TheGfxManager.IsOutroDone()) {
         return;
     }
-    if (TheCommandScheduler.IsRunning() && TheCommandScheduler.mTick < mEndTick) {
+    if (TheSongScheduler.IsRunning() && TheSongScheduler.mTick < mEndTick) {
         return;
     }
     Stop();
 }
 
 void GameLogic::EndSong() {
-    TheSessionLog->End();
+    TheStats->End();
     GameFx::StopLoop();
     float fOutroMs = 0.0f;
     if (mQuit == 0) {
         const int nCommunity = TheGameDb->mCommunity;
         int nSkipOutro = 0;
-        if (nCommunity == GameDb::kCommunitySolo && TheGameDb->mReserved88 == 0) {
+        if (nCommunity == GameDb::kCommunitySolo && TheGameDb->mWinSequence == 0) {
             const char *pszNextSong =
                 TheGameDb->GetProfile(0)->FindFirstUnfinishedSong(TheGameDb->mSkillLevel);
             if (pszNextSong != nullptr) {
@@ -496,10 +497,10 @@ void GameLogic::EndSong() {
         const float *pfMsPerTick = mSong->GetMsPerTick();
         const float fFadeMs = kMinimumEndingFadeMs < fOutroMs ? fOutroMs : kMinimumEndingFadeMs;
         TheMixer->FadeOut(static_cast<int>(fFadeMs / *pfMsPerTick));
-        mEndTick = static_cast<int>((TheCommandScheduler.mTime + fFadeMs + kEndingTailMs) /
-                                    *pfMsPerTick);
-        TheCommandScheduler.AddAtTick(
-            NewMemFunCommand<GameLogic>(this, &WorldLogic::AllNotesOff), mEndTick - 1, false);
+        mEndTick =
+            static_cast<int>((TheSongScheduler.mTime + fFadeMs + kEndingTailMs) / *pfMsPerTick);
+        TheSongScheduler.PostAt(
+            NewMemFunCommand(this, &WorldLogic::AllNotesOff), mEndTick - 1, false);
     }
     mState = kStateEnding;
 }
@@ -547,7 +548,7 @@ void GameLogic::CreateTracks(int *pFreestyleType, int *pFreestyleInstrument) {
             void *pBlock = PoolMemAlloc(sizeof(CatchTrack), kCatchTrackTag, 0);
             CatchTrackData *pData = mSong->GetCatchTrackData(i);
             const float *pfMsPerTick = mSong->GetMsPerTick();
-            SectionList *pSections = mSong->GetSections();
+            SectionBoundaries *pSections = mSong->GetSections();
             const int nIndex = static_cast<int>(mCatchTracks.size());
             const int nIntroBars = mSong->mIntroBars;
             const int nFlags = mSong->GetTrackFlags(i);
@@ -568,7 +569,7 @@ void GameLogic::CreateTracks(int *pFreestyleType, int *pFreestyleInstrument) {
             *pFreestyleInstrument = mSong->GetTrackInstrument(i);
             void *pBlock = PoolMemAlloc(sizeof(AxeTrack), kAxeTrackTag, 0);
             AxeContour *pContour = mSong->GetAxeContour(i);
-            SectionList *pSections = mSong->GetSections();
+            SectionBoundaries *pSections = mSong->GetSections();
             PlayMap *pPlayMap = mSong->GetPlayMap();
             const float *pfMsPerTick = mSong->GetMsPerTick();
             mFreestyleTrack = new (pBlock) AxeTrack(pContour,
@@ -585,8 +586,8 @@ void GameLogic::CreateTracks(int *pFreestyleType, int *pFreestyleInstrument) {
             *pFreestyleType = nType;
             *pFreestyleInstrument = mSong->GetTrackInstrument(i);
             void *pBlock = PoolMemAlloc(sizeof(ScratchTrack), kScratchTrackTag, 0);
-            ScratchData *pData = mSong->GetScratchData(i);
-            SectionList *pSections = mSong->GetSections();
+            ScratchTrackData *pData = mSong->GetScratchData(i);
+            SectionBoundaries *pSections = mSong->GetSections();
             PlayMap *pPlayMap = mSong->GetPlayMap();
             const float *pfMsPerTick = mSong->GetMsPerTick();
             mFreestyleTrack = new (pBlock) ScratchTrack(pData,
@@ -612,7 +613,7 @@ void GameLogic::Finish(bool bWon) {
         JoypadSetMenuControl(i, true);
     }
     for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
-        TheCommandScheduler.Remove(mPlayerData[i].mEndFreestyleCmd.Get());
+        TheSongScheduler.Cancel(mPlayerData[i].mEndFreestyleCmd.Get());
         TheGfxManager.SetPendingPointsResult(i, GfxManager::kPendingPointsCleared);
         TheGfxManager.HidePendingPoints(i);
         if (mPlayers[i]->GetTrack() == mFreestyleTrack) {
@@ -650,13 +651,13 @@ void GameLogic::Finish(bool bWon) {
 }
 
 void GameLogic::TickBar() {
-    const int nBar = TheCommandScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
     if (nBar == mNextSectionBar) {
         AdvanceSection();
     }
     TheTriggerMgr.NewBarEvent(nBar);
     if (mState == kStatePlaying || mState == kStatePaused) {
-        TheCommandScheduler.AddAfterTicks(mBarCmd.Get(), mTicksPerBar, false);
+        TheSongScheduler.PostIn(mBarCmd.Get(), mTicksPerBar, false);
     }
     mPhraseThisBar = false;
     if (nBar < mNumBars) {
@@ -671,15 +672,15 @@ void GameLogic::TickBar() {
 }
 
 void GameLogic::AdvanceSection() {
-    SectionList *pSections = mSong->GetSections();
-    const int nTick = TheCommandScheduler.mTick;
+    SectionBoundaries *pSections = mSong->GetSections();
+    const int nTick = TheSongScheduler.mTick;
     const int nBar = nTick / mTicksPerBar;
     ++mSection;
     mSectionStartBar = nBar;
     if (!pSections->IsPastEnd(nBar)) {
-        mNextSectionBar = pSections->GetSectionEnd(mSection);
+        mNextSectionBar = pSections->SectionEnd(mSection);
     }
-    TheSessionLog->LogSectionEnd(nTick);
+    TheStats->CompleteStage(nTick);
     OnSection();
 }
 
@@ -706,7 +707,7 @@ void GameLogic::CapturePhrase(CatchTrack *pTrack, Player *pPlayer, int nBar, boo
 
         if (bStreak) {
             PlayerData &data = mPlayerData[nPlayer];
-            const int nNowBar = TheCommandScheduler.mTick / mTicksPerBar;
+            const int nNowBar = TheSongScheduler.mTick / mTicksPerBar;
             if (data.mNextPhraseBar == kNone) {
                 // A phrase missed in this bar is forgiven when the capture resumes the old streak.
                 if (nNowBar == data.mMissedBar && data.mLastNextPhraseBar >= nNowBar) {
@@ -793,8 +794,8 @@ void GameLogic::FindNextPhrase(int nPlayer, int nTrack, int nFromBar) {
 
 void GameLogic::PlaceRandomPowerups() {
     // Only the local multiplayer game draws bumpers and cripplers.
-    const int nKinds = TheGameDb->mCommunity == GameDb::kCommunityLocal ? kPowerupCount :
-                                                                          kPowerupBumper;
+    const int nKinds =
+        TheGameDb->mCommunity == GameDb::kCommunityLocal ? kPowerupCount : kPowerupBumper;
     for (CatchTrack *pTrack : mCatchTracks) {
         for (int nBar = 0; nBar < mNumBars; ++nBar) {
             pTrack->SetPowerup(nBar, RandomInt(kPowerupAutocatcher, nKinds));
@@ -860,12 +861,12 @@ void GameLogic::PlacePowerups() {
     }
     const float fThreshold = stats.GetMedian();
 
-    SectionList *pSections = mSong->GetSections();
-    const int nSections = pSections->GetNumSections();
+    SectionBoundaries *pSections = mSong->GetSections();
+    const int nSections = pSections->NumSections();
     for (int nSection = 0; nSection < nSections; ++nSection) {
         const int nTracks = static_cast<int>(mCatchTracks.size());
-        const int nEndBar = pSections->GetSectionEnd(nSection);
-        int nStartBar = pSections->GetSectionStart(nSection);
+        const int nEndBar = pSections->SectionEnd(nSection);
+        int nStartBar = pSections->SectionStart(nSection);
         if (nSection == 0) {
             nStartBar = kFirstPowerupBar;
         } else {
@@ -969,10 +970,10 @@ void GameLogic::MissPhrase(Track *pTrack) {
         TheTriggerMgr.PhraseMissEvent(nPlayer);
         if (TheGameConfig->mStreaksEnabled) {
             PlayerData &data = mPlayerData[nPlayer];
-            if (TheCommandScheduler.mTick / mTicksPerBar >= data.mNextPhraseBar ||
+            if (TheSongScheduler.mTick / mTicksPerBar >= data.mNextPhraseBar ||
                 data.mCapturedTrack == pTrack->mIndex) {
                 ClearNextPhrase(nPlayer);
-                data.mMissedBar = TheCommandScheduler.mTick / mTicksPerBar;
+                data.mMissedBar = TheSongScheduler.mTick / mTicksPerBar;
                 pPlayer->ResetStreak();
             }
         }
@@ -1046,7 +1047,7 @@ void GameLogic::HandleInput([[maybe_unused]] const BtnEvent<4> &event) {
 }
 
 void GameLogic::HandleInput(const BtnEvent<5> &event) {
-    if (mState != kStatePlaying || TheCommandScheduler.mTick < 0) {
+    if (mState != kStatePlaying || TheSongScheduler.mTick < 0) {
         return;
     }
     Player *pPlayer = mPlayers[event.mPlayer];
@@ -1054,7 +1055,7 @@ void GameLogic::HandleInput(const BtnEvent<5> &event) {
     if (pPlayer->GetTrack() == mFreestyleTrack) {
         return;
     }
-    const int nTick = TheCommandScheduler.mTick;
+    const int nTick = TheSongScheduler.mTick;
     bool bDeployed = false;
     switch (nPowerup) {
     case kPowerupNone:
@@ -1084,7 +1085,7 @@ void GameLogic::HandleInput(const BtnEvent<5> &event) {
     if (!bDeployed) {
         return;
     }
-    TheSessionLog->LogPowerup(pPlayer->GetIndex(), nTick, nPowerup);
+    TheStats->DeployPowerup(pPlayer->GetIndex(), nTick, nPowerup);
     GameFx::PlayPowerup(nPowerup);
     pPlayer->SetPowerup(kPowerupNone);
 }
@@ -1114,17 +1115,16 @@ void GameLogic::LeaveFreestyle(Player *pPlayer, int nTrack) {
         nTrack = TheGfxManager.GetViewedTrack(nPlayer);
     }
     mTrackSelector->MovePlayer(nPlayer, nTrack);
-    TheCommandScheduler.Remove(mPlayerData[nPlayer].mEndFreestyleCmd.Get());
+    TheSongScheduler.Cancel(mPlayerData[nPlayer].mEndFreestyleCmd.Get());
     if (pPlayer->GetStreak() > 0) {
-        FindNextPhrase(nPlayer, kNone, TheCommandScheduler.mTick / mTicksPerBar);
+        FindNextPhrase(nPlayer, kNone, TheSongScheduler.mTick / mTicksPerBar);
     }
 }
 
 void GameLogic::StartSlowdown() {
     const float fSlowdownSpeed = TheGameConfig->mSlowdownSpeed;
-    mSpeedRamp->MoveTo(TheGameConfig->mSlowdownStartTicks,
-                       kSlowdownStepTicks,
-                       fSlowdownSpeed * mSong->GetSpeed());
+    mSpeedRamp->MoveTo(
+        TheGameConfig->mSlowdownStartTicks, kSlowdownStepTicks, fSlowdownSpeed * mSong->GetSpeed());
     mSlowdown = true;
 }
 
@@ -1138,21 +1138,21 @@ void GameLogic::StopSlowdown() {
 
 bool GameLogic::DeploySlowdown(Player *pPlayer) {
     ShowPowerupText(kSlowdownText, pPlayer->GetIndex());
-    const int nNow = TheCommandScheduler.mTick;
+    const int nNow = TheSongScheduler.mTick;
     const int nEndTick = nNow + TheGameConfig->mSlowdownDurationBars * mTicksPerBar;
     TheGfxManager.ShowSlowdown(pPlayer->GetIndex(),
                                static_cast<float>(nNow + TheGameConfig->mSlowdownStartTicks),
                                static_cast<float>(nEndTick),
                                static_cast<float>(nEndTick + TheGameConfig->mSlowdownStopTicks));
     StartSlowdown();
-    TheCommandScheduler.Remove(mStopSlowdownCmd.Get());
-    TheCommandScheduler.AddAtTick(mStopSlowdownCmd.Get(), nEndTick, false);
+    TheSongScheduler.Cancel(mStopSlowdownCmd.Get());
+    TheSongScheduler.PostAt(mStopSlowdownCmd.Get(), nEndTick, false);
     return true;
 }
 
 bool GameLogic::DeployAutocatcher(Player *pPlayer) {
     Track *pTrack = pPlayer->GetTrack();
-    const int nBar = TheCommandScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
     if (!mCatchTracks[pTrack->mIndex]->Autocatch(nBar, pPlayer)) {
         TheHelpText->ShowAutocatcherFailed();
         return false;
@@ -1188,11 +1188,11 @@ bool GameLogic::DeployFreestyle(Player *pPlayer) {
     const int nBars = TheGameDb->mCommunity == GameDb::kCommunitySolo ?
                           TheGameConfig->mFreestyleDurationBarsSolo :
                           TheGameConfig->mFreestyleDurationBarsMultiNet;
-    TheCommandScheduler.Remove(mPlayerData[nPlayer].mEndFreestyleCmd.Get());
-    TheCommandScheduler.AddAfterTicks(
+    TheSongScheduler.Cancel(mPlayerData[nPlayer].mEndFreestyleCmd.Get());
+    TheSongScheduler.PostIn(
         mPlayerData[nPlayer].mEndFreestyleCmd.Get(), mTicksPerBar * nBars, false);
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        const int nBar = TheCommandScheduler.mTick / mTicksPerBar;
+        const int nBar = TheSongScheduler.mTick / mTicksPerBar;
         for (CatchTrack *pTrack : mCatchTracks) {
             pTrack->Freestyle(nBar, nBars + 1, pPlayer);
         }

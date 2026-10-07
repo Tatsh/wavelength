@@ -1,263 +1,136 @@
 #include "game/trackselector.h"
 
 #include <algorithm>
-#include <vector>
-
-#include "app/hudutil.h"
-#include "game/localplayer.h"
-#include "mid/tick.h"
-#include "msg/deployedpowerupmsg.h"
-#include "msg/phrasemuffedmsg.h"
-#include "msg/remotetrackselectmsg.h"
-#include "msg/rotleftmsg.h"
-#include "msg/rotrightmsg.h"
-#include "msg/trackselectmsg.h"
-#include "os/hxstr.h"
-#include "script/testregistry.h"
 
 namespace {
 
-// The answer Player::GetTrack() reports for a player that occupies no channel.
-constexpr int kNoChannel = -1;
-
-// MIDI ticks in one bar.
-constexpr int kTicksPerBar = 1920;
-
-// The channel steps the two rotation messages apply.
-constexpr int kRotateDown = -1;
-constexpr int kRotateUp = 1;
-
-// The name SelfTest() registers under, and the colour name it gives its players.
-static const char *const kTestName = "TrackSelector";
-static const char *const kTestColorName = "null";
-// The players SelfTest() builds, and the position every one of its rebinds uses.
-constexpr int kTestPlayerCount = 4;
-constexpr int kTestTick = 0;
-// The roster indices SelfTest() moves, and the channels it moves them between.
-constexpr int kTestFirstPlayer = 0;
-constexpr int kTestThirdPlayer = 2;
-constexpr int kTestFourthPlayer = 3;
-constexpr int kTestHomeChannel = 0;
-
-// Registers the self-test from the unit's static initialiser.
-class SelfTestRegistration {
-public:
-    SelfTestRegistration() {
-        TestRegistry::Register(kTestName, TrackSelector::RunSelfTest);
-    }
-};
-const SelfTestRegistration sSelfTestRegistration;
-
-// Queries a player's channel and step, discarding both answers.
-void ProbePlayer(Player *pPlayer) {
-    pPlayer->GetTrack();
-    pPlayer->GetPlace();
-}
+constexpr int kEmptySlot = -1;
+constexpr int kNoTrack = -1;
+constexpr int kNoPlayer = -1;
 
 } // namespace
 
-TrackSelector::TrackSelector(const std::vector<Player *> &players)
-    : mChannelCount(kTrackSelectorChannelCount), mSlotCount(players.size()) {
-    for (int nChannel = 0; nChannel < kTrackSelectorChannelCount; ++nChannel) {
-        for (int nSlot = 0; nSlot < mSlotCount; ++nSlot) {
-            mGrid[nChannel][nSlot] = &NullPlayer::sInstance;
+TrackSelector::TrackInfo::TrackInfo() : mPlayers(kNumSlots, kEmptySlot) {
+}
+
+int TrackSelector::TrackInfo::Find(int nPlayer) const {
+    return static_cast<int>(std::find(mPlayers.begin(), mPlayers.end(), nPlayer) -
+                            mPlayers.begin());
+}
+
+int TrackSelector::TrackInfo::Count() const {
+    int nEmpty = 0;
+    for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
+        if (*it == kEmptySlot) {
+            ++nEmpty;
         }
     }
-    for (unsigned nIndex = 0; nIndex < players.size(); ++nIndex) {
-        const int nChannel = players[nIndex]->GetTrack();
+    return static_cast<int>(mPlayers.size()) - nEmpty;
+}
 
-        if (nChannel != kNoChannel) {
-            InsertLightForDrawable(players[nIndex], nChannel, 0);
+void TrackSelector::TrackInfo::Add(int nPlayer) {
+    mPlayers[Count()] = nPlayer;
+}
+
+void TrackSelector::TrackInfo::Compact() {
+    for (unsigned int i = 1; i < mPlayers.size(); ++i) {
+        if (mPlayers[i] == kEmptySlot) {
+            continue;
+        }
+        int nTarget = static_cast<int>(i);
+        if (mPlayers[i - 1] == kEmptySlot) {
+            nTarget = static_cast<int>(i) - 1;
+            while (nTarget > 0 && mPlayers[nTarget - 1] == kEmptySlot) {
+                --nTarget;
+            }
+        }
+        if (mPlayers[nTarget] == kEmptySlot) {
+            mPlayers[nTarget] = mPlayers[i];
+            mPlayers[i] = kEmptySlot;
         }
     }
 }
 
-void TrackSelector::RemoveLightFromColumn(Player *pPlayer, int nChannel, int nPayload) {
-    if (nChannel == kNoChannel) {
+void TrackSelector::TrackInfo::Remove(int nPlayer) {
+    int nSlot = Find(nPlayer);
+    int nCount = Count();
+    for (; nSlot < nCount - 1; ++nSlot) {
+        mPlayers[nSlot] = mPlayers[nSlot + 1];
+    }
+    mPlayers[nCount - 1] = kEmptySlot;
+}
+
+TrackSelector::TrackSelector(int nTracks) : mTrackInfos(nTracks, TrackInfo()), mNeedsCompact(0) {
+}
+
+void TrackSelector::AddPlayer(int nTrack) {
+    mPlayerTracks.push_back(nTrack);
+    mTrackInfos[nTrack].Add(static_cast<int>(mPlayerTracks.size()) - 1);
+}
+
+void TrackSelector::AddPlayer(int nTrack, int nSlot) {
+    mPlayerTracks.push_back(nTrack);
+    mTrackInfos[nTrack].mPlayers[nSlot] = static_cast<int>(mPlayerTracks.size()) - 1;
+}
+
+int TrackSelector::GetNumPlayers() const {
+    return static_cast<int>(mPlayerTracks.size());
+}
+
+int TrackSelector::GetNumTracks() const {
+    return static_cast<int>(mTrackInfos.size());
+}
+
+void TrackSelector::SetPlayerTrack(int nPlayer, int nTrack) {
+    int nOldTrack = mPlayerTracks[nPlayer];
+    if (nOldTrack != kNoTrack) {
+        mTrackInfos[nOldTrack].Remove(nPlayer);
+    }
+    mPlayerTracks[nPlayer] = nTrack;
+    if (nTrack != kNoTrack) {
+        mTrackInfos[nTrack].Add(nPlayer);
+    }
+}
+
+void TrackSelector::SwapPlayer(int nPlayer, int nTrack, int nSlot) {
+    mNeedsCompact = 1;
+    int nOldTrack = mPlayerTracks[nPlayer];
+    int nOldSlot = mTrackInfos[nOldTrack].Find(nPlayer);
+    int nOther = mTrackInfos[nTrack].mPlayers[nSlot];
+    mTrackInfos[nOldTrack].mPlayers[nOldSlot] = nOther;
+    mTrackInfos[nTrack].mPlayers[nSlot] = nPlayer;
+    mPlayerTracks[nPlayer] = nTrack;
+    if (nOther != kNoPlayer) {
+        mPlayerTracks[nOther] = nOldTrack;
+    }
+}
+
+void TrackSelector::Compact() {
+    if (!mNeedsCompact) {
         return;
     }
-
-    int nFound = 0;
-    while (nFound < mSlotCount && mGrid[nChannel][nFound] != pPlayer) {
-        ++nFound;
+    for (unsigned int i = 0; i < mTrackInfos.size(); ++i) {
+        mTrackInfos[i].Compact();
     }
-    for (int nSlot = nFound; nSlot < mSlotCount; ++nSlot) {
-        Player *pNext = (nSlot + 1 == mSlotCount) ? static_cast<Player *>(&NullPlayer::sInstance) :
-                                                    mGrid[nChannel][nSlot + 1];
-        if (pNext != mGrid[nChannel][nSlot]) {
-            TrackSelectMsg message;
-            message.mTrack = nChannel;
-            message.mPlace = nSlot;
-            message.mPosition = Sch::Tick(nPayload);
-            message.mPlayer = pNext;
-            Send(&message);
-            mGrid[nChannel][nSlot] = pNext;
-        }
-    }
+    mNeedsCompact = 0;
 }
 
-void TrackSelector::InsertLightForDrawable(Player *pPlayer, int nChannel, int nPayload) {
-    for (int nSlot = 0; nSlot < mSlotCount; ++nSlot) {
-        if (mGrid[nChannel][nSlot] == &NullPlayer::sInstance) {
-            mGrid[nChannel][nSlot] = pPlayer;
-            TrackSelectMsg message;
-            message.mTrack = nChannel;
-            message.mPlace = nSlot;
-            message.mPosition = Sch::Tick(nPayload);
-            message.mPlayer = pPlayer;
-            Send(&message);
-            return;
-        }
-    }
+int TrackSelector::GetPlayerTrack(int nPlayer) const {
+    return mPlayerTracks[nPlayer];
 }
 
-int TrackSelector::RebuildChannelGrid(BumpPacket *pPacket) {
-    const int nChannel = pPacket->mTrack;
-    Player *pPlayer = pPacket->mPlayer;
-    const Sch::Tick position(std::min(
-        std::max(pPacket->mBar * Sch::Tick(kTicksPerBar).mTick, kTickMinimum), kTickMaximum));
-    if (pPlayer->GetPlace() == 0) {
-        return 0;
-    }
-
-    {
-        DeployedPowerupMsg message;
-        message.mKind = kHudItemBumper;
-        message.mPlayer = pPlayer;
-        message.mTarget = mGrid[nChannel][0];
-        message.mFirstBar = 0;
-        message.mBarCount = 0;
-        message.mTrack = nChannel;
-        Send(&message);
-    }
-    while (pPlayer->GetPlace() != 0) {
-        MovePlayerToBack(mGrid[nChannel][0], nChannel, position.mTick);
-    }
-    pPacket->mResult = 1;
-    return 1;
+int TrackSelector::GetPlayerSlot(int nPlayer) const {
+    return mTrackInfos[mPlayerTracks[nPlayer]].Find(nPlayer);
 }
 
-inline void TrackSelector::OnMsg(const RotLeftMsg &msg) {
-    Player *pPlayer = msg.mPlayer;
-    if (pPlayer->IsLocal()) {
-        AddLightToChannel(pPlayer, msg.mPosition.mTick, kRotateDown);
-    }
+int TrackSelector::GetFirstPlayer(int nTrack) const {
+    return mTrackInfos[nTrack].mPlayers.front();
 }
 
-inline void TrackSelector::OnMsg(const RotRightMsg &msg) {
-    Player *pPlayer = msg.mPlayer;
-    if (pPlayer->IsLocal()) {
-        AddLightToChannel(pPlayer, msg.mPosition.mTick, kRotateUp);
-    }
+int TrackSelector::GetNumPlayersOnTrack(int nTrack) const {
+    return mTrackInfos[nTrack].Count();
 }
 
-inline void TrackSelector::OnPhraseMuffed(PhraseMuffedMsg *pMsg) {
-    Player *pPlayer = pMsg->mPlayer;
-    if (pPlayer->IsLocal()) {
-        pPlayer->Dispatch(pMsg);
-    }
-}
-
-inline void TrackSelector::OnRemoteTrackSelect(RemoteTrackSelectMsg *pMsg) {
-    Player *pPlayer = pMsg->mPlayer;
-    MovePlayer(pPlayer, pPlayer->GetTrack(), pMsg->mTrack, pMsg->mPosition.mTick);
-}
-
-void TrackSelector::DispatchPriv(Message *pMsg) {
-    const int nType = pMsg->Type();
-    if (nType == g_nRotLeftMsgType) {
-        OnMsg(*static_cast<RotLeftMsg *>(pMsg));
-    } else if (nType == g_nRotRightMsgType) {
-        OnMsg(*static_cast<RotRightMsg *>(pMsg));
-    } else if (nType == g_nPhraseMuffedMsgType) {
-        OnPhraseMuffed(static_cast<PhraseMuffedMsg *>(pMsg));
-    } else if (nType == g_nBumpPacketType) {
-        RebuildChannelGrid(static_cast<BumpPacket *>(pMsg));
-    } else if (nType == g_nRemoteTrackSelectMsgType) {
-        OnRemoteTrackSelect(static_cast<RemoteTrackSelectMsg *>(pMsg));
-    }
-}
-
-int TrackSelector::SelfTest() {
-    std::vector<Player *> players;
-    for (int nIndex = 0; nIndex < kTestPlayerCount; ++nIndex) {
-        players.push_back(
-            new LocalPlayer(nIndex, nIndex, HxStr(kTestColorName), nullptr, nullptr, nIndex));
-    }
-
-    TrackSelector selector(players);
-    for (int nIndex = 0; nIndex < kTestPlayerCount; ++nIndex) {
-        selector.AddSink(players[nIndex]);
-    }
-    for (int nIndex = 0; nIndex < kTestPlayerCount; ++nIndex) {
-        ProbePlayer(players[nIndex]);
-    }
-
-    selector.MovePlayer(players[kTestFourthPlayer],
-                        kTestFourthPlayer,
-                        kTestHomeChannel,
-                        Sch::Tick(kTestTick).mTick);
-    // Yes, the binary keeps an empty loop here.
-    for (int nSlot = kTrackSelectorSlotCount - 1; nSlot >= 0; --nSlot) {
-    }
-    ProbePlayer(players[kTestFourthPlayer]);
-
-    selector.MovePlayer(
-        players[kTestThirdPlayer], kTestThirdPlayer, kTestHomeChannel, Sch::Tick(kTestTick).mTick);
-    // Yes, the binary keeps an empty loop here.
-    for (int nSlot = kTrackSelectorSlotCount - 1; nSlot >= 0; --nSlot) {
-    }
-    ProbePlayer(players[kTestFirstPlayer]);
-    ProbePlayer(players[kTestFourthPlayer]);
-    ProbePlayer(players[kTestThirdPlayer]);
-
-    selector.MovePlayerToBack(
-        players[kTestThirdPlayer], kTestHomeChannel, Sch::Tick(kTestTick).mTick);
-    ProbePlayer(players[kTestFirstPlayer]);
-    ProbePlayer(players[kTestFourthPlayer]);
-    ProbePlayer(players[kTestThirdPlayer]);
-
-    selector.MovePlayerToBack(
-        players[kTestFourthPlayer], kTestHomeChannel, Sch::Tick(kTestTick).mTick);
-    ProbePlayer(players[kTestFirstPlayer]);
-    ProbePlayer(players[kTestThirdPlayer]);
-    ProbePlayer(players[kTestFourthPlayer]);
-
-    selector.MovePlayerToBack(
-        players[kTestFirstPlayer], kTestHomeChannel, Sch::Tick(kTestTick).mTick);
-    ProbePlayer(players[kTestThirdPlayer]);
-    ProbePlayer(players[kTestFourthPlayer]);
-    ProbePlayer(players[kTestFirstPlayer]);
-
-    // Yes, the binary never deletes the players.
-    return 1;
-}
-
-int TrackSelector::RunSelfTest() {
-    return SelfTest();
-}
-
-TrackSelector::~TrackSelector() {
-}
-
-void TrackSelector::MovePlayer(Player *pPlayer, int nFromChannel, int nToChannel, int nPayload) {
-    RemoveLightFromColumn(pPlayer, nFromChannel, nPayload);
-    InsertLightForDrawable(pPlayer, nToChannel, nPayload);
-}
-
-void TrackSelector::MovePlayerToBack(Player *pPlayer, int nChannel, int nPayload) {
-    if (mGrid[nChannel][0] == pPlayer && mGrid[nChannel][1] == &NullPlayer::sInstance) {
-        return;
-    }
-    RemoveLightFromColumn(pPlayer, nChannel, nPayload);
-    InsertLightForDrawable(pPlayer, nChannel, nPayload);
-}
-
-int TrackSelector::AddLightToChannel(Player *pPlayer, int nPayload, int nDelta) {
-    const int nChannel = pPlayer->GetTrack();
-    const int nTarget = (nChannel + nDelta + mChannelCount) % mChannelCount;
-
-    RemoveLightFromColumn(pPlayer, nChannel, nPayload);
-    InsertLightForDrawable(pPlayer, nTarget, nPayload);
-    return 1;
+const int *TrackSelector::GetPlayersOnTrack(int nTrack) const {
+    return mTrackInfos[nTrack].mPlayers.data();
 }

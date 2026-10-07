@@ -75,6 +75,112 @@ public:
     void ShowSlowdown(int nPlayer, float fStartTick, float fEndTick, float fStopTick);
 
     /**
+     * Show or hide a player's freestyle effect.
+     *
+     * @param nPlayer The player index.
+     * @param bActive Show the effect.
+     * @param nColumn The column the effect is drawn at.
+     * @ghidraAddress NTSC-U/C: 0x001b5cc0
+     * @ghidraAddress PAL: 0x001bea60
+     */
+    void SetFreestyle(int nPlayer, bool bActive, int nColumn);
+
+    /**
+     * Return a player's freestyle effect to its idle state.
+     *
+     * @param nPlayer The player index.
+     * @ghidraAddress NTSC-U/C: 0x001b5ce0
+     * @ghidraAddress PAL: 0x001bea80
+     */
+    void ResetFreestyle(int nPlayer);
+
+    /**
+     * Start the intro of the song display.
+     *
+     * The name is inferred.
+     *
+     * @param fArgument The command argument, -1 from a scheduled command.
+     * @return The duration of the intro, in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x001b34c8
+     * @ghidraAddress PAL: 0x001bc268
+     */
+    float StartIntro(float fArgument);
+
+    /**
+     * Run the intro of the song display again.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b3520
+     * @ghidraAddress PAL: 0x001bc2c0
+     */
+    void RestartIntro();
+
+    /**
+     * Advance the display to a song time.
+     *
+     * @param fTime The song time.
+     * @return The display state.
+     * @ghidraAddress NTSC-U/C: 0x001b37f8
+     * @ghidraAddress PAL: 0x001bc598
+     */
+    int Poll(float fTime);
+
+    /**
+     * Begin loading the display assets that follow the song.
+     *
+     * The name is inferred.
+     *
+     * @param nFirst The first argument. The meaning is not yet recovered.
+     * @param nSecond The second argument. The meaning is not yet recovered.
+     * @ghidraAddress NTSC-U/C: 0x001b4f40
+     * @ghidraAddress PAL: 0x001bdce0
+     */
+    void BeginLoad(int nFirst, int nSecond);
+
+    /**
+     * Show the lyric text.
+     *
+     * @param pszText The text.
+     * @param bFirstLine Show the text on the first line.
+     * @ghidraAddress NTSC-U/C: 0x001b5340
+     * @ghidraAddress PAL: 0x001be0e0
+     */
+    void SetLyricText(const char *pszText, bool bFirstLine);
+
+    /**
+     * Report whether the display finished its pending work.
+     *
+     * The name is inferred.
+     *
+     * @return True when the display is idle.
+     * @ghidraAddress NTSC-U/C: 0x001b56e8
+     * @ghidraAddress PAL: 0x001be488
+     */
+    bool IsIdle();
+
+    /**
+     * Mark the winner of a song.
+     *
+     * @param nPlayer The winner's index, or -1 for none.
+     * @ghidraAddress NTSC-U/C: 0x001b5728
+     * @ghidraAddress PAL: 0x001be4c8
+     */
+    void SetWinner(int nPlayer);
+
+    /**
+     * Rank the score bars at the end of a section and fire the triggers that wait on it.
+     *
+     * Every caller passes the section, and the body does not read it.
+     *
+     * @param nPlayer The player whose completion the triggers receive.
+     * @param nSection The section.
+     * @ghidraAddress NTSC-U/C: 0x001b5db0
+     * @ghidraAddress PAL: 0x001beb50
+     */
+    void CompleteStage(int nPlayer, int nSection);
+
+    /**
      * Show a message of one or two lines.
      *
      * @param pszLine The first line.
@@ -127,11 +233,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b5970
      * @ghidraAddress PAL: 0x001be710
      */
-    void ShowPlayerOnFreestyleTrack(int nPlayer,
-                                    int nType,
-                                    int nInstrument,
-                                    bool bVictory,
-                                    int nReserved);
+    void ShowPlayerOnFreestyleTrack(
+        int nPlayer, int nType, int nInstrument, bool bVictory, int nReserved);
 
     /**
      * Set the size of the display of the tracks of a player.
@@ -263,6 +366,48 @@ public:
      * @ghidraAddress PAL: 0x001bef10
      */
     void SetLaneShown(int nPlayer, bool bShown);
+
+    /**
+     * Set the scroll speed of the lanes.
+     *
+     * The name is inferred.
+     *
+     * @param fSpeed The speed, 1 for normal.
+     * @ghidraAddress NTSC-U/C: 0x001b60a0
+     * @ghidraAddress PAL: 0x001bee40
+     */
+    void SetScrollSpeed(float fSpeed);
+
+    /**
+     * Remove the gems from the lanes.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b61b0
+     * @ghidraAddress PAL: 0x001bef50
+     */
+    void ClearLanes();
+
+    /**
+     * Remove every element of the song display.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b61e0
+     * @ghidraAddress PAL: 0x001bef80
+     */
+    void ClearAll();
+
+    /**
+     * Activate or deactivate the song display.
+     *
+     * The name is inferred.
+     *
+     * @param bActive Activate the display.
+     * @ghidraAddress NTSC-U/C: 0x001b6250
+     * @ghidraAddress PAL: 0x001beff0
+     */
+    void SetActive(bool bActive);
 };
 
 /**

@@ -71,6 +71,32 @@ public:
     InputMap(Globals *pGlobals, std::vector<Player *> *pPlayers);
 
     /**
+     * Build a map with every button and stick binding cleared.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027d5c0
+     * @ghidraAddress PAL: 0x00286ed8
+     */
+    InputMap();
+
+    /**
+     * Copy the button and stick bindings of another map.
+     *
+     * @param other The map to copy.
+     * @return The map.
+     * @ghidraAddress NTSC-U/C: 0x0027d9f0
+     * @ghidraAddress PAL: 0x00287308
+     */
+    InputMap &operator=(const InputMap &other);
+
+    /**
+     * Load the bindings the "input_map" entry of the "db" configuration section lists.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027dc78
+     * @ghidraAddress PAL: 0x00287590
+     */
+    void LoadDefaults();
+
+    /**
      * Clear g_pInputMap and release every binding.
      *
      * @ghidraAddress NTSC-U/C: 0x001193d0

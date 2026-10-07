@@ -79,8 +79,13 @@ public:
          * @ghidraAddress NTSC-U/C: 0x001169a0
          * @ghidraAddress PAL: 0x00118138
          */
-        CatchCheckCmd(Receiver *pReceiver, CatchTrackState *pState, const float *pMsPerTick,
-                      int nTrack, int nLane, int nSlopMs, int nTicksPerBar);
+        CatchCheckCmd(Receiver *pReceiver,
+                      CatchTrackState *pState,
+                      const float *pMsPerTick,
+                      int nTrack,
+                      int nLane,
+                      int nSlopMs,
+                      int nTicksPerBar);
 
         /**
          * Move to the next gem of the lane from the current tick and queue the command for it.
@@ -177,15 +182,15 @@ public:
         void Miss(int nTick);
 
     private:
-        Receiver *mReceiver;      /*!< The receiver of the judgements. */
-        CatchTrackState *mState;  /*!< The state of the track. */
-        const float *mMsPerTick;  /*!< The length of a tick in milliseconds. */
-        int mTrack;               /*!< The track. */
-        int mLane;                /*!< The lane. */
-        int mSlopMs;              /*!< The largest time between a press and a caught gem. */
-        int mTicksPerBar;         /*!< The length of a bar in ticks. */
-        GemCursor mCursor;        /*!< The next gem of the lane. */
-        CommandId mId;            /*!< The tag of the queued command. */
+        Receiver *mReceiver;     /*!< The receiver of the judgements. */
+        CatchTrackState *mState; /*!< The state of the track. */
+        const float *mMsPerTick; /*!< The length of a tick in milliseconds. */
+        int mTrack;              /*!< The track. */
+        int mLane;               /*!< The lane. */
+        int mSlopMs;             /*!< The largest time between a press and a caught gem. */
+        int mTicksPerBar;        /*!< The length of a bar in ticks. */
+        GemCursor mCursor;       /*!< The next gem of the lane. */
+        CommandId mId;           /*!< The tag of the queued command. */
     };
 
     /**
@@ -199,7 +204,10 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00117160
      * @ghidraAddress PAL: 0x001188f8
      */
-    GemCatcher(Receiver *pReceiver, CatchTrackState *pState, const float *pMsPerTick, int nTrack,
+    GemCatcher(Receiver *pReceiver,
+               CatchTrackState *pState,
+               const float *pMsPerTick,
+               int nTrack,
                int nTicksPerBar);
 
     /**

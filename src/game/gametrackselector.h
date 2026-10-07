@@ -178,10 +178,10 @@ public:
      */
     void RefreshTrack(int nTrack);
 
-    TrackSelector mSelector;       /*!< The grid of the players on the tracks. */
+    TrackSelector mSelector;        /*!< The grid of the players on the tracks. */
     std::vector<Player *> mPlayers; /*!< Every player, by index. */
-    std::vector<Track *> mTracks;  /*!< The catch tracks, then the freestyle track. */
-    int mFreestyleType;            /*!< The track type of the freestyle track. */
-    int mFreestyleInstrument;      /*!< The instrument of the freestyle track. */
-    bool mHasFreestyle;            /*!< Whether the song has a freestyle track. */
+    std::vector<Track *> mTracks;   /*!< The catch tracks, then the freestyle track. */
+    int mFreestyleType;             /*!< The track type of the freestyle track. */
+    int mFreestyleInstrument;       /*!< The instrument of the freestyle track. */
+    bool mHasFreestyle;             /*!< Whether the song has a freestyle track. */
 };

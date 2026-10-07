@@ -2,14 +2,38 @@
 
 #include <vector>
 
+#include "game/inputmap.h"
+
 /**
  * Saved settings and progress of one player, among them the controller bindings.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. Each player entry of GameDb
- * stores one at `+0x10`. This header declares only the members GameLogic uses.
+ * stores one at `+0x10`. This header declares only the members its callers here use.
  */
 class PlayerProfile {
 public:
+    /**
+     * Report whether a song is the one song of its campaign tier the player has not yet won.
+     *
+     * The name is inferred.
+     *
+     * @param pszSong The song.
+     * @param nSkillLevel The skill level.
+     * @return True when winning the song completes the tier.
+     * @ghidraAddress NTSC-U/C: 0x00279660
+     * @ghidraAddress PAL: 0x002830f0
+     */
+    bool CompletesTier(const char *pszSong, int nSkillLevel);
+
+    /**
+     * Report the controller bindings.
+     *
+     * @return The bindings, which the profile stores at `+0xd8`.
+     * @ghidraAddress NTSC-U/C: 0x0027afc8
+     * @ghidraAddress PAL: 0x00284a58
+     */
+    InputMap *GetInputMap();
+
     /**
      * Report the first song of a skill level the player has not finished.
      *

@@ -32,6 +32,32 @@ public:
         kEventQuit = 4,             /*!< End the program. */
     };
 
+    /** Kinds of dialog ShowDialog() shows over a song. */
+    enum DialogType {
+        kDialogSoloWon = 0,      /*!< The result of a won solo song, or of a practice song. */
+        kDialogSoloLost = 1,     /*!< The result of a lost solo song. */
+        kDialogEndGame = 2,      /*!< The results at the end of a multiplayer song. */
+        kDialogPause = 5,        /*!< The pause menu. */
+        kDialogNoController = 6, /*!< The pause menu of a disconnected controller. */
+    };
+
+    /** Choices a dialog reports to its callback. */
+    enum DialogAction {
+        kDialogActionQuit = 1,     /*!< Quit the song. */
+        kDialogActionPractice = 2, /*!< Play the song again in practice mode. */
+        kDialogActionResume = 3,   /*!< Return to the song. */
+        kDialogActionEnd = 4,      /*!< End the song. */
+        kDialogActionContinue = 5, /*!< Continue to the victory lap. */
+    };
+
+    /**
+     * Routine a dialog reports the player's choice to.
+     *
+     * @param action The choice.
+     * @param pUserData The value given to ShowDialog().
+     */
+    typedef void (*DialogCallback)(DialogAction action, void *pUserData);
+
     /**
      * Load one of the five loading screens at random from `metagame\loading%d.rnd` and draw it.
      *
@@ -153,6 +179,32 @@ public:
      * @ghidraAddress PAL: 0x0016b0c8
      */
     void DispatchPriv(Message *pMsg) override;
+
+    /**
+     * Show a dialog over the song and report the player's choice to a callback.
+     *
+     * @param type The dialog.
+     * @param pfnCallback The routine the choice is reported to.
+     * @param pUserData A value passed back to the callback unchanged.
+     * @param nPad The controller the dialog listens to, or -1 for every controller.
+     * @ghidraAddress NTSC-U/C: 0x00166840
+     * @ghidraAddress PAL: 0x00169808
+     */
+    void ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUserData, int nPad);
+
+    /**
+     * Show a dialog over the song that listens to every controller.
+     *
+     * A scheduled dialog command calls the routine through this form, which passes -1 for the
+     * controller.
+     *
+     * @param type The dialog.
+     * @param pfnCallback The routine the choice is reported to.
+     * @param pUserData A value passed back to the callback unchanged.
+     */
+    void ShowDialogToAll(DialogType type, DialogCallback pfnCallback, void *pUserData) {
+        ShowDialog(type, pfnCallback, pUserData, -1);
+    }
 
     int mState;      /*!< One of State. */
     int mScreen;     /*!< Front end screen code. Draw() acts only on code 8. */

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "os/commandscheduler.h"
-#include "os/refcounted.h"
+#include "app/attachment.h"
+#include "os/scheduler.h"
 
 /**
- * Piece of MIDI performance that a CommandScheduler plays.
+ * Piece of MIDI performance that a Scheduler plays.
  *
- * The RTTI includes the class name and records the reference-counted base. The vtable lists eight
- * pure members after the destructor. This header declares the first four.
+ * The RTTI includes the class name and records Attachment as the base. The vtable lists eight pure
+ * members after the destructor. This header declares the first four.
  */
-class Muse : public RefCounted {
+class Muse : public Attachment {
 public:
     /**
      * Release the muse.
@@ -25,7 +25,7 @@ public:
      *
      * @param pScheduler The scheduler that plays the events.
      */
-    virtual void Play(CommandScheduler *pScheduler) = 0;
+    virtual void Play(Scheduler *pScheduler) = 0;
 
     /**
      * Play with every event moved by an offset.
@@ -33,7 +33,7 @@ public:
      * @param pScheduler The scheduler that plays the events.
      * @param nOffset The offset in ticks.
      */
-    virtual void PlayFrom(CommandScheduler *pScheduler, int nOffset) = 0;
+    virtual void PlayFrom(Scheduler *pScheduler, int nOffset) = 0;
 
     /**
      * Play the events that fall in a window.
@@ -42,7 +42,7 @@ public:
      * @param nStart The first tick of the window.
      * @param nEnd The tick after the window.
      */
-    virtual void PlayWindow(CommandScheduler *pScheduler, int nStart, int nEnd) = 0;
+    virtual void PlayWindow(Scheduler *pScheduler, int nStart, int nEnd) = 0;
 
     /** Withdraw every event still queued and silence the notes that sound. */
     virtual void Stop() = 0;

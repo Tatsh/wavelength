@@ -2,8 +2,9 @@
 
 #include "game/backmusic.h"
 #include "game/catchtrackdata.h"
+#include "game/player.h"
 #include "game/playmap.h"
-#include "game/sectionlist.h"
+#include "game/sectionboundaries.h"
 #include "game/track.h"
 
 // GameLogic and CatchTrack refer to each other.
@@ -37,7 +38,7 @@ public:
                CatchTrackData *pData,
                const float *pfMsPerTick,
                PlayMap *pPlayMap,
-               SectionList *pSections,
+               SectionBoundaries *pSections,
                int nIndex,
                int nIntroBars,
                int nNumBars,
@@ -164,6 +165,18 @@ public:
     void Enable(int nBar);
 
     /**
+     * Reset the gems and the display of the track to a song tick.
+     *
+     * The name is inferred.
+     *
+     * @param pPlayer The player.
+     * @param nTick The song tick to rebuild from.
+     * @ghidraAddress NTSC-U/C: 0x0014ce80
+     * @ghidraAddress PAL: 0x0014e820
+     */
+    void Restart(Player *pPlayer, int nTick);
+
+    /**
      * Report whether a phrase of the track is in a bar.
      *
      * @param nBar The bar.
@@ -172,6 +185,20 @@ public:
      * @ghidraAddress PAL: 0x0014e898
      */
     bool HasPhraseAt(int nBar);
+
+    /**
+     * Find the phrase that is playing or next plays at a bar.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar.
+     * @param pStartTick Receives the first tick of the phrase.
+     * @param pEndTick Receives the tick after the phrase.
+     * @return True when a phrase was found.
+     * @ghidraAddress NTSC-U/C: 0x0014cf20
+     * @ghidraAddress PAL: 0x0014e8c0
+     */
+    bool FindPhrase(int nBar, int *pStartTick, int *pEndTick);
 
     /**
      * Report the tick of the first gem at or after a tick.

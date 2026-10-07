@@ -3,21 +3,36 @@
 #include "os/prnstream.h"
 
 /**
- * Growable text that is also a stream: text printed to it is appended.
+ * Shared terminated buffer every empty String points at.
  *
- * The RTTI records the class as deriving from PrnStream. An empty string shares one static
- * buffer instead of owning storage. Only the members its callers here use are declared.
+ * @ghidraAddress NTSC-U/C: 0x003b24d0
+ */
+extern char *g_szStringEmptyBuffer;
+
+/**
+ * Growable text buffer that is also a PrnStream.
+ *
+ * The RTTI includes the class name and records PrnStream as the base. An empty string points
+ * mBuffer at g_szStringEmptyBuffer rather than at an allocation of its own.
  */
 class String : public PrnStream {
 public:
     /**
-     * Copy a C string.
+     * Construct an empty string.
      *
-     * @param pszText The text, or null for an empty string.
+     * The constructor has no out-of-line copy, and it does not set mCapacity.
+     */
+    String() : mLength(0), mBuffer(g_szStringEmptyBuffer) {
+    }
+
+    /**
+     * Construct a copy of a C string.
+     *
+     * @param pszText The text.
      * @ghidraAddress NTSC-U/C: 0x0029e9b0
      * @ghidraAddress PAL: 0x002a8670
      */
-    String(const char *pszText);
+    explicit String(const char *pszText);
 
     /**
      * Copy another string.
@@ -29,7 +44,7 @@ public:
     String(const String &other);
 
     /**
-     * Release the storage.
+     * Release the text.
      *
      * @ghidraAddress NTSC-U/C: 0x0029ead8
      * @ghidraAddress PAL: 0x002a8798
@@ -46,16 +61,36 @@ public:
     void Print(const char *pszText) override;
 
     /**
+     * Replace the text with a copy of a C string.
+     *
+     * @param pszText The text. A null pointer empties the string.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029eed8
+     * @ghidraAddress PAL: 0x002a8b98
+     */
+    String &operator=(const char *pszText);
+
+    /**
+     * Release the text and leave the string empty.
+     *
+     * The name is inferred.
+     *
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029f528
+     * @ghidraAddress PAL: 0x002a91e8
+     */
+    String &Clear();
+
+    /**
      * Report the text.
      *
-     * @return The text, terminated.
+     * @return The terminated text, which the string retains.
      */
     const char *c_str() const {
-        return mText;
+        return mBuffer;
     }
 
-private:
-    int mLength;   /*!< The length of the text. */
-    int mCapacity; /*!< The size of the owned buffer, including the terminator. */
-    char *mText;   /*!< The text, owned unless it is the shared empty buffer. */
+    int mLength;   /*!< Characters before the terminator. */
+    int mCapacity; /*!< Bytes allocated for mBuffer. */
+    char *mBuffer; /*!< The terminated text. */
 };

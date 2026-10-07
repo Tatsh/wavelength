@@ -7,7 +7,7 @@
 #include "game/freestylefx.h"
 #include "game/lyric.h"
 #include "game/playmap.h"
-#include "game/scratchdata.h"
+#include "game/scratchtrackdata.h"
 #include "game/worldtrack.h"
 #include "gs/muse.h"
 
@@ -66,7 +66,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00122488
      * @ghidraAddress PAL: 0x00123c08
      */
-    ScratchData *GetScratchData(int nTrack) const;
+    ScratchTrackData *GetScratchData(int nTrack) const;
 
     /**
      * Report the notes of a guitar track.
@@ -126,11 +126,11 @@ public:
      */
     Muse *GetIntroMuse(int nIndex) const;
 
-    PlayMap *mPlayMap;        /*!< The map of the song positions. +0x40 */
-    BankTrack *mBankTrack;    /*!< The track named "BANK". +0x44 */
-    WorldTrack mWorldTrack;   /*!< The events of the track named "WORLD". +0x48 */
-    Lyric *mLyric;            /*!< The lyrics. +0x58 */
+    PlayMap *mPlayMap;         /*!< The map of the song positions. +0x40 */
+    BankTrack *mBankTrack;     /*!< The track named "BANK". +0x44 */
+    WorldTrack mWorldTrack;    /*!< The events of the track named "WORLD". +0x48 */
+    Lyric *mLyric;             /*!< The lyrics. +0x58 */
     FreestyleFx *mFreestyleFx; /*!< The effect sets, or null. +0x5c */
-    float mSpeed;             /*!< The speed of the song. +0x60 */
-    int mTicksPerBar;         /*!< The length of a bar in ticks. +0x98 */
+    float mSpeed;              /*!< The speed of the song. +0x60 */
+    int mTicksPerBar;          /*!< The length of a bar in ticks. +0x98 */
 };

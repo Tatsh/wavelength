@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "app/attachment.h"
+#include "gs/muse.h"
 #include "mid/tickobj.h"
 #include "msg/musemsg.h"
 #include "stream/ibstream.h"
@@ -13,10 +14,10 @@
 /**
  * Sequence of messages, each at a song position.
  *
- * Its RTTI descriptor is at `0x008ef088`. It has Attachment as its one base. The allocation in
- * MultiMuseMsg::restoreGuts() measures the object at 0x14 bytes. Its layout is the reference count
- * at `+0x00`, the vptr at `+0x04`, and the vector over `+0x08` through `+0x13`. Its vtable is at
- * `0x007dfb78` and runs four entries, slot 2 retaining Attachment::Destroy().
+ * Its RTTI descriptor is at `0x008ef088`. Amplitude's RTTI records Muse as the base. The allocation
+ * in MultiMuseMsg::restoreGuts() measures the object at 0x14 bytes. Its layout is the reference
+ * count at `+0x00`, the vptr at `+0x04`, and the vector over `+0x08` through `+0x13`. Its vtable is
+ * at `0x007dfb78` and runs four entries, slot 2 retaining Attachment::Destroy().
  *
  * The element type is attested. The one Sequencer instantiation in the image is
  * `Sequencer<TickObj<MuseMsg *> const *>` at `0x008eec48`, and MultiMusePlayer::Start() posts one
@@ -27,8 +28,65 @@
  * MultiMuseMsg carries one of these and is how a sequence moves between a MsgSource and a
  * MsgSink, and MultiMusePlayer is what turns one into messages over time.
  */
-class MultiMuse : public Attachment {
+class MultiMuse : public Muse {
 public:
+    /**
+     * Construct an empty sequence.
+     *
+     * @param nValue The value the constructor records at `+0x18`. Its use is not yet identified.
+     * @ghidraAddress NTSC-U/C: 0x0015a008
+     * @ghidraAddress PAL: 0x0015b7f8
+     */
+    explicit MultiMuse(int nValue);
+
+    /**
+     * Insert a muse at a song position.
+     *
+     * @param pMuse The muse, which the sequence then manages.
+     * @param nTick The song position, in ticks.
+     * @ghidraAddress NTSC-U/C: 0x0015a760
+     * @ghidraAddress PAL: 0x0015bf50
+     */
+    void Add(Muse *pMuse, int nTick);
+
+    /**
+     * Play from the start.
+     *
+     * @param pScheduler The scheduler that plays the events.
+     * @ghidraAddress NTSC-U/C: 0x0015a198
+     * @ghidraAddress PAL: 0x0015b988
+     */
+    void Play(Scheduler *pScheduler) override;
+
+    /**
+     * Play with every muse moved by an offset.
+     *
+     * @param pScheduler The scheduler that plays the events.
+     * @param nOffset The offset in ticks.
+     * @ghidraAddress NTSC-U/C: 0x0015a1c8
+     * @ghidraAddress PAL: 0x0015b9b8
+     */
+    void PlayFrom(Scheduler *pScheduler, int nOffset) override;
+
+    /**
+     * Play the muses that fall in a window.
+     *
+     * @param pScheduler The scheduler that plays the events.
+     * @param nStart The first tick of the window.
+     * @param nEnd The tick after the window.
+     * @ghidraAddress NTSC-U/C: 0x0015a1f8
+     * @ghidraAddress PAL: 0x0015b9e8
+     */
+    void PlayWindow(Scheduler *pScheduler, int nStart, int nEnd) override;
+
+    /**
+     * Withdraw every queued muse and stop the ones that play.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0015a560
+     * @ghidraAddress PAL: 0x0015bd50
+     */
+    void Stop() override;
+
     /**
      * Allocate a sequence from the tagged heap under the tag "MultiMuse".
      *

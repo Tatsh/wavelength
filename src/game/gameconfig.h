@@ -6,8 +6,9 @@
  * Tuning values of the game, read from the "game" section of the configuration.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred from the section. The one
- * instance is the function-local static of its singleton accessor, and TheGameConfig addresses
- * it. Only the members its callers here read are declared, and each records its offset.
+ * instance is the function-local static of shared(), and TheGameConfig addresses it. Only the
+ * members its callers here read are declared. The vectors with one entry for each skill level are
+ * indexed by GameDb::mSkillLevel.
  */
 class GameConfig {
 public:
@@ -35,10 +36,24 @@ public:
      */
     float GetPowerupWeight(int nPlayers, int nSection, int nSections, int nPowerup);
 
+    /**
+     * Report the single instance, constructing it on first use.
+     *
+     * @return The instance.
+     * @ghidraAddress NTSC-U/C: 0x00110200
+     * @ghidraAddress PAL: 0x00111998
+     */
+    static GameConfig *shared();
+
     int mSlopMs;                           /*!< `slop_ms`. +0x00 */
+    unsigned char mReserved04[0x5c];       // +0x04, not yet recovered.
+    int mScratcherQuantizationTicks;       /*!< `scratcher_quantization_ticks`. +0x60 */
+    int mScratcherSampleQuantizationTicks; /*!< `scratcher_sample_quantization_ticks`. +0x64 */
+    int mReserved68;                       // +0x68, not yet recovered.
     int mCheckpointBars;                   /*!< `checkpoint_bars`. +0x6c */
     float mPowerupProbSolo;                /*!< `powerup_prob_solo`. +0x70 */
     std::vector<float> mPowerupProbMulti;  /*!< `powerup_prob_multi`. +0x74 */
+    int mReserved84[4];                    // +0x84, not yet recovered.
     int mSlowdownStartTicks;               /*!< `slowdown_start_ticks`. +0x94 */
     int mSlowdownStopTicks;                /*!< `slowdown_stop_ticks`. +0x98 */
     int mSlowdownDurationBars;             /*!< `slowdown_duration_bars`. +0x9c */
@@ -47,15 +62,21 @@ public:
     int mMultiplierValue;                  /*!< `multiplier_value`. +0xa8 */
     int mFreestyleDurationBarsSolo;        /*!< `freestyle_duration_bars_solo`. +0xac */
     int mFreestyleDurationBarsMultiNet;    /*!< `freestyle_duration_bars_multi_net`. +0xb0 */
+    int mReservedB4[2];                    // +0xb4, not yet recovered.
     int mStreakMultiplierMaxSolo;          /*!< `streak_multiplier_max_solo`. +0xbc */
     int mStreakMultiplierMaxMulti;         /*!< `streak_multiplier_max_multi`. +0xc0 */
     float mRotationRepeatInitialDelayMs;   /*!< `rotation_repeat_initial_delay_ms`. +0xc4 */
     float mRotationRepeatDelayMs;          /*!< `rotation_repeat_delay_ms`. +0xc8 */
-    bool mStreaksEnabled;                  /*!< `streaks_enabled`. +0x108 */
+    std::vector<float> mBarsPerCapture;    /*!< The bars one capture is worth, by skill. +0xcc */
+    std::vector<float> mInitialJuice; /*!< The juice a solo song starts with, by skill. +0xdc */
+    std::vector<float> mCaptureJuice; /*!< The juice of one capture, by skill. +0xec */
+    float mJuiceMeterMax;             /*!< The juice maximum as a multiple of the start. +0xfc */
+    int mReserved100[2];              // +0x100, not yet recovered.
+    bool mStreaksEnabled;             /*!< `streaks_enabled`. +0x108 */
 };
 
 /**
- * The game configuration.
+ * The game configuration, GameConfig::shared() as the unit's static initialiser stored it.
  *
  * @ghidraAddress NTSC-U/C: 0x00435f14
  */

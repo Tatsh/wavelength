@@ -5,8 +5,8 @@
 /**
  * Player on another console of an online session.
  *
- * The RTTI records the class as deriving from Player. Only the members GameLogic uses are
- * declared.
+ * The RTTI records the class as deriving from Player. The class adds no member and overrides only
+ * the destructor.
  */
 class RemotePlayer : public Player {
 public:
@@ -19,4 +19,13 @@ public:
      * @ghidraAddress PAL: 0x00138ba0
      */
     RemotePlayer(int nIndex, int nTicksPerBar);
+
+    /**
+     * Release the player.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033fd50
+     * @ghidraAddress PAL: 0x003ad288
+     */
+    ~RemotePlayer() override {
+    }
 };
