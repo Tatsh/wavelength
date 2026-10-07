@@ -465,7 +465,6 @@ private:
      *
      * @ghidraAddress NTSC-U/C: 0x00165930
      * @ghidraAddress PAL: 0x001688a0
-     * @stub
      */
     void ExitFrontEnd();
 

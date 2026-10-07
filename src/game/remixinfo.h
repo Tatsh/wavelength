@@ -42,7 +42,9 @@ public:
     int mDataSize;                  /*!< The size of the remix that follows in bytes. +0x48 */
     int mReserved4C[16];            // +0x4c, not yet recovered.
     DateTime mDate;                 /*!< The six-byte date the inline constructor clears. +0x8c */
-    char mReserved92[14];           // +0x92, not yet recovered.
+    char mReserved92[7];            // +0x92, not yet recovered.
+    signed char mReadOnly;          /*!< Non-zero when the remix may not be saved over. +0x99 */
+    char mReserved9A[6];            // +0x9a, not yet recovered.
 };
 
 /**

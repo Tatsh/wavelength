@@ -45,6 +45,7 @@
 #include "met/pausescreen.h"
 #include "met/saveeditedfreqscreen.h"
 #include "met/savefreqscreen.h"
+#include "met/saveremixscreen.h"
 #include "met/songdecryptscreen.h"
 #include "met/songpicpanel.h"
 #include "met/songpreview.h"
@@ -179,6 +180,21 @@ constexpr char kLostLobbyToken[] = "lost_lobby_error_msg";
 constexpr char kErrorOkComponent[] = "ok";
 constexpr char kNetConfigScreen[] = "fn_config";
 constexpr char kNetPortalScreen[] = "net_portal";
+
+// The screens the front end returns to after a song.
+constexpr char kSoloArenaScreen[] = "game2soloarena";
+constexpr char kDuelSelectSongScreen[] = "game2duel_sel_song";
+constexpr char kMultiCustomScreen[] = "game2multicustom";
+constexpr char kMultiSelectSongScreen[] = "game2multi_sel_song";
+constexpr char kMultiEndRemixScreen[] = "game2multi_end_remix";
+constexpr char kNetEndSaveReadOnlyScreen[] = "game2net_end_save_read_only";
+constexpr char kSaveRemixScreen[] = "save_remix";
+constexpr char kNoEndScreenLog[] = "end game screen not being set\n";
+constexpr char kLaunchpadLaunchScreen[] = "launchpad2launchseq";
+constexpr char kSoloTutorialLaunchScreen[] = "solotut2launchseq";
+constexpr char kSoloCustomScreen[] = "game2solocustom";
+constexpr char kSoloMetaScreen[] = "game2solometa";
+constexpr char kSoloRemixScreen[] = "game2soloremix";
 
 // The screens that follow a song.
 constexpr char kUnlockArenaScreen[] = "game2unlockarena";
@@ -809,6 +825,66 @@ void Metagame::ShowFrontEnd() {
 }
 
 void Metagame::ExitFrontEnd() {
+    // Yes, the binary times the unload with a timer it never reads.
+    Timer timer{};
+    timer.Start();
+    mArena->Unload();
+    delete mMusic;
+    mMusic = nullptr;
+    UnloadBanks();
+    mFirstBoot = 0;
+    timer.Stop();
+
+    if (TheUI.mEditMode) {
+        TheUI.UnloadGroup(kFrontEndGroup);
+    }
+
+    if (TheGameDb->GetDemo() != nullptr) {
+        mNextScreen = kStartScreen;
+        return;
+    }
+
+    const int nRuleSet = TheGameDb->mRuleSet;
+    const int nCommunity = TheGameDb->mCommunity;
+    if (TheGameDb->mTutorial) {
+        mNextScreen = nRuleSet == GameDb::kRuleSetRemix ? kSoloRemixModeScreen : kSoloArenaScreen;
+    } else if (nCommunity == GameDb::kCommunityLocal) {
+        if (nRuleSet == GameDb::kRuleSetDuel) {
+            mNextScreen = kDuelSelectSongScreen;
+        } else if (nRuleSet == GameDb::kRuleSetGame) {
+            mNextScreen = TheGameDb->mLoadRemix ? kMultiCustomScreen : kMultiSelectSongScreen;
+        } else {
+            mNextScreen = kMultiEndRemixScreen;
+        }
+    } else if (nCommunity == GameDb::kCommunityOnline) {
+        if (TheNetLaunchpad == nullptr) {
+            mNextScreen = kLostLaunchpadScreen;
+        } else if (nRuleSet == GameDb::kRuleSetGame || nRuleSet == GameDb::kRuleSetDuel) {
+            if (!TheNetLaunchpad->IsGuest()) {
+                mNextScreen = kNetLaunchHostScreen;
+            } else if (nRuleSet != GameDb::kRuleSetGame || !TheGameDb->mLoadRemix) {
+                mNextScreen = kNetLaunchGuestScreen;
+            } else if (TheGameDb->mRemixReadOnly) {
+                mNextScreen = kNetEndSaveReadOnlyScreen;
+                dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen(kSaveRemixScreen, false))
+                    ->mRemixName = TheGameDb->GetRemixInfo()->mName;
+            } else {
+                mNextScreen = kNetEndRemixScreen;
+            }
+        } else if (nRuleSet == GameDb::kRuleSetRemix) {
+            mNextScreen = kNetEndRemixScreen;
+        } else {
+            DebugWarn(kNoEndScreenLog);
+        }
+    } else if (strcmp(TheUI.mCurrentScreen->mName, kLaunchpadLaunchScreen) != 0 &&
+               strcmp(TheUI.mCurrentScreen->mName, kSoloTutorialLaunchScreen) != 0) {
+        mNextScreen = kStartScreen;
+    } else if (nRuleSet == GameDb::kRuleSetGame) {
+        mNextScreen = TheGameDb->mLoadRemix ? kSoloCustomScreen : kSoloMetaScreen;
+    } else {
+        mNextScreen =
+            TheGameDb->GetRemixInfo()->mReadOnly ? kSoloRemixModeScreen : kSoloRemixScreen;
+    }
 }
 
 void Metagame::StartLoading() {

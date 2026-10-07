@@ -6,6 +6,7 @@
 #include "game/gameoptions.h"
 #include "game/inputmap.h"
 #include "game/playerprofile.h"
+#include "game/remixinfo.h"
 #include "game/songentry.h"
 #include "os/string.h"
 #include "script/dataarray.h"
@@ -508,6 +509,24 @@ public:
     void SetArena(const char *pszArena);
 
     /**
+     * Report the description of the remix being played.
+     *
+     * @return The description.
+     * @ghidraAddress NTSC-U/C: 0x0026e0e8
+     * @ghidraAddress PAL: 0x00277c88
+     */
+    RemixInfo *GetRemixInfo();
+
+    /**
+     * Set mRemixReadOnly.
+     *
+     * @param nReadOnly Non-zero when the remix may not be saved over.
+     * @ghidraAddress NTSC-U/C: 0x0026ec30
+     * @ghidraAddress PAL: 0x002787d0
+     */
+    void SetRemixReadOnly(int nReadOnly);
+
+    /**
      * Report whether the remix of an online game has ended.
      *
      * @return Non-zero once the remix has ended.
@@ -615,7 +634,8 @@ public:
     int mReserved0C;     // +0x0c, the player list.
     String mSong;        /*!< The song of the game, the "song" entry of the "db" section. */
     int mLoadRemix;      /*!< `load_remix`, whether a saved remix is played. +0x24 */
-    int mReserved28[6];  // +0x28, not yet recovered.
+    int mRemixReadOnly;  /*!< Non-zero when the remix may not be saved over. +0x28 */
+    int mReserved2C[5];  // +0x2c, not yet recovered.
     int mPracticeMode;   /*!< `practice_mode`. +0x40 */
     int mTutorial;       /*!< Whether the tutorial is played. +0x44 */
     int mSkillLevel;     /*!< `skill_level`. +0x48 */
