@@ -19,6 +19,14 @@ struct UnlockableItem {
         kKindBossSong = 2,    /*!< The song of a boss arena. */
         kKindBonusSong = 3,   /*!< A song beyond the campaign. */
         kKindCampaignEnd = 5, /*!< The end of the campaign at a skill level. */
+        kKindHead = 7,        /*!< A head. */
+        kKindTorso = 8,       /*!< A torso. */
+        kKindLowerBody = 9,   /*!< A pair of legs. */
+        kKindArms = 10,       /*!< A pair of arms. */
+        kKindHeadGear = 11,   /*!< A head gear. */
+        kKindFaceGear = 12,   /*!< A face gear. */
+        kKindEmblem = 13,     /*!< An emblem. */
+        kKindPrefab = 14,     /*!< A prefabricated Freq. */
     };
 
     const char *mName;   /*!< The unlocked song, part, or arena, a symbol. */

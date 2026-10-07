@@ -204,6 +204,30 @@ public:
     void ReleasePlayer();
 
     /**
+     * Apply the pending parts to the avatar player once their files have loaded.
+     *
+     * The name is inferred.
+     *
+     * @return Whether no part is left pending.
+     * @ghidraAddress NTSC-U/C: 0x002723a0
+     * @ghidraAddress PAL: 0x0027bf50
+     */
+    bool UpdatePlayer();
+
+    /**
+     * Choose the animation the avatar player plays, and start it at once when a player draws the
+     * set.
+     *
+     * The name is inferred.
+     *
+     * @param pszAnim The animation.
+     * @param nFlags Stored in mBaseAnimFlags.
+     * @ghidraAddress NTSC-U/C: 0x002725e0
+     * @ghidraAddress PAL: 0x0027c190
+     */
+    void SetBaseAnim(const char *pszAnim, int nFlags);
+
+    /**
      * Apply the parts to the avatar and render it into the avatar texture.
      *
      * @param pScreenRect The part of the screen the avatar fills, or null for the projector.

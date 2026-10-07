@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/string.h"
+
 class HxStr;
 
 /**
@@ -19,6 +21,33 @@ public:
      * @ghidraAddress PAL: 0x00291ef8
      */
     bool ReadClock();
+
+    /**
+     * Write the date as "MM/DD/YYYY". The name is inferred.
+     *
+     * @param text Receives the date.
+     * @ghidraAddress NTSC-U/C: 0x00288a68
+     * @ghidraAddress PAL: 0x00292318
+     */
+    void FormatDate(String &text) const;
+
+    /**
+     * Write the date and time as "MM/DD/YYYY  HH:MM:SS". The name is inferred.
+     *
+     * @param text Receives the date and time.
+     * @ghidraAddress NTSC-U/C: 0x00288a08
+     * @ghidraAddress PAL: 0x002922b8
+     */
+    void FormatDateTime(String &text) const;
+
+    /**
+     * Write the month and the day as "MM/DD". The name is inferred.
+     *
+     * @param text Receives the month and the day.
+     * @ghidraAddress NTSC-U/C: 0x00288ab8
+     * @ghidraAddress PAL: 0x00292368
+     */
+    void FormatMonthDay(String &text) const;
 
     unsigned char mSecond; /*!< The second, 0 to 59. */
     unsigned char mMinute; /*!< The minute, 0 to 59. */

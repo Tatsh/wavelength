@@ -7,6 +7,7 @@
 #include "game/songrecord.h"
 #include "game/unlockableitem.h"
 #include "os/binstream.h"
+#include "os/datetime.h"
 #include "os/string.h"
 
 /**
@@ -227,6 +228,28 @@ public:
     bool IsSongFinished(const char *pszSong, int nSkillLevel);
 
     /**
+     * Report whether the player has beaten the game at a skill level, the symbol `beat_game` among
+     * the records of that level. Every level counts while the unlock-all setting is on. The name
+     * is inferred.
+     *
+     * @param nSkillLevel The skill level.
+     * @return Whether the game was beaten.
+     * @ghidraAddress NTSC-U/C: 0x00279888
+     * @ghidraAddress PAL: 0x00283318
+     */
+    bool HasBeatenGame(int nSkillLevel);
+
+    /**
+     * Report the highest skill level at which the player has beaten the game. The name is
+     * inferred.
+     *
+     * @return The skill level, or -1 when the game was not beaten.
+     * @ghidraAddress NTSC-U/C: 0x00279908
+     * @ghidraAddress PAL: 0x00283398
+     */
+    int GetHighestBeatenSkillLevel();
+
+    /**
      * Copy the record of a song at a skill level. The record does not change when there is none.
      *
      * @param pszSong The song.
@@ -329,7 +352,8 @@ public:
 
     int mReserved00[12];   // +0x00, not yet recovered.
     String mName;          /*!< The player's name. +0x30 */
-    int mReserved44[7];    // +0x44, not yet recovered.
+    DateTime mBorn;        /*!< The date the Freq was created. +0x44 */
+    int mReserved4C[5];    // +0x4c, not yet recovered.
     int mNameLocked;       /*!< Non-zero when the player may not rename the Freq. +0x60 */
     int mReserved64[4];    // +0x64, not yet recovered.
     AvatarPartSet mAvatar; /*!< The Freq's parts and colours. +0x74 */

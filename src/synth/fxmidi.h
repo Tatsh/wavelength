@@ -127,6 +127,30 @@ public:
     static void StopLoop();
 
     /**
+     * Play the sound of a song being decrypted. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fdd8
+     * @ghidraAddress PAL: 0x002896d8
+     */
+    static void PlayDecrypt();
+
+    /**
+     * Start the looping sound of a moving cursor. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fe20
+     * @ghidraAddress PAL: 0x00289720
+     */
+    static void PlayCursorLoop();
+
+    /**
+     * Stop the looping sound of a moving cursor. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fe68
+     * @ghidraAddress PAL: 0x00289768
+     */
+    static void StopCursorLoop();
+
+    /**
      * Play the sound that warns that the juice of a solo player is low.
      *
      * @ghidraAddress NTSC-U/C: 0x0027fea0

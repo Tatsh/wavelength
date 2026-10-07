@@ -507,6 +507,17 @@ float Animatable::UnfilterFrame(float flValue) {
     return flValue;
 }
 
+float Animatable::ChildrenEndFrame() {
+    float flEnd = 0.0f;
+    for (Animatable *pChild : mAnims) {
+        const float flChildEnd = pChild->UnfilterFrame(pChild->FilteredFrameEnd());
+        if (flEnd < flChildEnd) {
+            flEnd = flChildEnd;
+        }
+    }
+    return UnfilterFrame(flEnd);
+}
+
 void Animatable::AddFilter(Filter *pFilter) {
     mFilters.push_back(pFilter);
 }

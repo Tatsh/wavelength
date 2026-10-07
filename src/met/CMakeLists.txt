@@ -1,13 +1,21 @@
 set(WAVELENGTH_MET_SRCS
+    arenaunlockscreen.cpp
+    autosavedonescreen.cpp
     avatarpanel.cpp
+    bonuspicpanel.cpp
+    bossjourneyscreen.cpp
+    bossunlockscreen.cpp
     choosememcardscreen.cpp
     controllerconfigscreen.cpp
     controllerpanel.cpp
     dialogpanel.cpp
     errorscreen.cpp
     focuschangepanel.cpp
+    freestylelaptipscreen.cpp
     freqconfirmscreen.cpp
     freqcopydelscreen.cpp
+    freqlist.cpp
+    freqloadlist.cpp
     freqmakercustomscreen.cpp
     freqmakeremblemscreen.cpp
     freqmakererrorscreen.cpp
@@ -23,6 +31,7 @@ set(WAVELENGTH_MET_SRCS
     keyboardpanel.cpp
     keyboardrequest.cpp
     keyboardscreen.cpp
+    launchscreen.cpp
     mainoptionsscreen.cpp
     mcdialogpanel.cpp
     metaarenascreen.cpp
@@ -38,16 +47,32 @@ set(WAVELENGTH_MET_SRCS
     mixmidibuilder.cpp
     mixtrack.cpp
     modescreen.cpp
+    multiendgamescreen.cpp
+    partunlockdonescreen.cpp
+    partunlockscreen.cpp
+    pausescreen.cpp
+    powerupscreen.cpp
+    prelaunchscreen.cpp
+    puptipsscreen.cpp
     remixcopydelscreen.cpp
+    remixdownloadlist.cpp
+    remixloadlist.cpp
     remixorfreqscreen.cpp
     saveeditedfreqscreen.cpp
     savefreqscreen.cpp
+    soloendgamescreen.cpp
     sologamestatspanel.cpp
     solowinstatspanel.cpp
+    songdecryptscreen.cpp
     songpicpanel.cpp
     songpreview.cpp
+    songsellist.cpp
+    tipsscreen.cpp
     transitionmusic.cpp
-    transitionscreen.cpp)
+    transitionscreen.cpp
+    unlockavatarpanel.cpp
+    unlockscreen.cpp
+    viewanimplayer.cpp)
 
 add_library(wavelength_met STATIC ${WAVELENGTH_MET_SRCS})
 target_link_libraries(wavelength_met PRIVATE wavelength_common)

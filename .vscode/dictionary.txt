@@ -35,6 +35,7 @@ apptimetask
 apsz
 arbiterpacket
 arect
+arenaunlockscreen
 argn
 argparse
 arkfile
@@ -51,6 +52,7 @@ augm
 autobrief
 autocatch
 autocatcher
+autosavedonescreen
 avatarpanel
 avatarpartset
 averager
@@ -84,6 +86,9 @@ blak
 blez
 blit
 bltz
+bonuspicpanel
+bossjourneyscreen
+bossunlockscreen
 breug
 bsky
 buffsz
@@ -269,10 +274,13 @@ fplugin
 fprintf
 fram
 freestylebumppacket
+freestylelaptipscreen
 freestylepacket
 freestyletrack
 freqconfirmscreen
 freqcopydelscreen
+freqlist
+freqloadlist
 freqmakercustomscreen
 freqmakeremblemscreen
 freqmakererrorscreen
@@ -398,6 +406,7 @@ kputchar
 kputs
 kseg
 labl
+launchscreen
 laypatt
 lazysusan
 lbits
@@ -446,6 +455,7 @@ lrbutton
 lsax
 lshift
 ltxt
+lucida
 luma
 macroblock
 macroblock's
@@ -572,6 +582,7 @@ mulax
 mulq
 mult
 multiarena
+multiendgamescreen
 multigamelogic
 multimesh
 multimuse
@@ -642,6 +653,9 @@ padrecord
 paletted
 particlesys
 particlesysanim
+partunlockdonescreen
+partunlockscreen
+pausescreen
 pcgth
 pcpyld
 periodictimer
@@ -670,9 +684,11 @@ pmon
 pnor
 poolallocator
 poopoopoo
+powerupscreen
 ppacb
 ppsz
 preapproved
+prelaunchscreen
 previewpacket
 primaddr
 prmodecont
@@ -691,6 +707,7 @@ psrah
 psrlh
 pstex
 pthread
+puptipsscreen
 purplewins
 pyinstaller
 pylock
@@ -717,9 +734,11 @@ reginfo
 releaseable
 relocs
 remixcopydelscreen
+remixdownloadlist
 remixer
 remixerupdatepacket
 remixhud
+remixloadlist
 remixorfreqscreen
 remixtutorial
 remoteplayer
@@ -801,6 +820,7 @@ softfloat
 softfx
 soloarena
 solocustom
+soloendgamescreen
 solofreq
 sologamelogic
 sologamestatspanel
@@ -811,9 +831,11 @@ soloskill
 solosong
 solotut
 solowinstatspanel
+songdecryptscreen
 songpicpanel
 songpos
 songpreview
+songsellist
 songspeed
 sonylib
 sonylibs
@@ -887,6 +909,7 @@ ticktimer
 timeclock
 timedcommand
 timrman
+tipsscreen
 tmfc
 tostring
 totbytes
@@ -934,6 +957,8 @@ undraft
 undrafted
 unistd
 unlockarena
+unlockavatarpanel
+unlockscreen
 unmute
 unmutes
 unpaletted
@@ -948,6 +973,7 @@ vendored
 venv
 vibuf
 victorylap
+viewanimplayer
 vmadday
 vmaddaz
 vmaddw

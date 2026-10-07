@@ -91,11 +91,15 @@ void SoloWinStatsPanel::Refresh() {
         pGrade->SetMat(FindGradeMaterial(nMedal, true));
     }
 
-    mReveal.SetView(
+    mReveal.SetAnim(
         dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString(kViewFormat, mName))));
 }
 
 void SoloWinStatsPanel::Poll(float fTime) {
     FreqPanel::Poll(fTime);
     mReveal.Poll(fTime);
+}
+
+void SoloWinStatsPanel::StartAnim(float fTime) {
+    mReveal.Start(fTime);
 }

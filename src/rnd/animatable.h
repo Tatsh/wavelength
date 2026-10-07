@@ -6,6 +6,7 @@
 
 class MetagameArena;
 class MetRenderer;
+class ViewAnimPlayer;
 namespace Rnd {
 class Dbg;
 class Stream;
@@ -51,6 +52,8 @@ class Animatable : public virtual Object {
     // MetagameArena walks mAnims of its arena scene and reads mFrame of its transition, and the
     // image has no accessor for either.
     friend class ::MetagameArena;
+    // ViewAnimPlayer::Poll() walks mAnims directly, and the image has no accessor for it.
+    friend class ::ViewAnimPlayer;
 
 public:
     /**
@@ -741,6 +744,19 @@ public:
      * @ghidraAddress PAL: 0x004d2f18
      */
     float UnfilterFrame(float flValue);
+
+    /**
+     * Report the last frame of the children, in this object's incoming frame numbering.
+     *
+     * Each child's FilteredFrameEnd() is brought back through the child's filters, and the largest,
+     * from zero, is brought back through this object's filters. The routine is not virtual, and the
+     * name is inferred.
+     *
+     * @return The last frame.
+     * @ghidraAddress NTSC-U/C: 0x00199c10
+     * @ghidraAddress PAL: 0x001a1150
+     */
+    float ChildrenEndFrame();
 
     /**
      * Append an already-built filter to mFilters.

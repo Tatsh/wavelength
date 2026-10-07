@@ -10,6 +10,15 @@
  */
 class SongEntry {
 public:
+    /** Values of GetType(). */
+    enum Type {
+        kTypeNormal = 0,   /*!< A song whose entry does not specify a type. */
+        kTypeBoss = 1,     /*!< The boss song of an arena. */
+        kTypeBonus = 2,    /*!< A bonus song. */
+        kTypeSecret = 3,   /*!< A secret song. */
+        kTypeTutorial = 4, /*!< The tutorial. */
+    };
+
     /**
      * Report the `type` of the song.
      *
@@ -27,6 +36,15 @@ public:
      * @ghidraAddress PAL: 0x002867f8
      */
     const char *GetName() const;
+
+    /**
+     * Report the localised title of the song. The name is inferred.
+     *
+     * @return The title.
+     * @ghidraAddress NTSC-U/C: 0x0027cf00
+     * @ghidraAddress PAL: 0x00286818
+     */
+    const char *GetTitle() const;
 
     /**
      * Report the localised artist, the token `<name>_ARTIST`.
@@ -73,6 +91,15 @@ public:
      * @ghidraAddress PAL: 0x00286b48
      */
     const char *GetGenre() const;
+
+    /**
+     * Report the localised genre, the token `<name>_GENRE`, without the tempo.
+     *
+     * @return The genre.
+     * @ghidraAddress NTSC-U/C: 0x0027d2d8
+     * @ghidraAddress PAL: 0x00286bf0
+     */
+    const char *GetGenreName() const;
 
     /**
      * Report the `bpm` of the song.

@@ -19,6 +19,15 @@ public:
     static void Init();
 
     /**
+     * Advance every player to a front-end time. The name is inferred.
+     *
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x00270fe8
+     * @ghidraAddress PAL: 0x0027ab88
+     */
+    static void PollAll(float fTime);
+
+    /**
      * Report the model of a part.
      *
      * @param nPart One of AvatarPartSet::Part.

@@ -66,6 +66,23 @@ public:
     bool IsOutroDone();
 
     /**
+     * Start the journey to the boss arena that follows the boss unlock. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001b56b0
+     * @ghidraAddress PAL: 0x001be450
+     */
+    void StartBossJourney();
+
+    /**
+     * Report whether the journey StartBossJourney() started is done. The name is inferred.
+     *
+     * @return Non-zero once the journey is done.
+     * @ghidraAddress NTSC-U/C: 0x001b56f8
+     * @ghidraAddress PAL: 0x001be498
+     */
+    int IsBossJourneyDone();
+
+    /**
      * Hide a player's pending points.
      *
      * @param nPlayer The player's index.

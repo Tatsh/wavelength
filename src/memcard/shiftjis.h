@@ -21,32 +21,16 @@ struct ShiftJisRange {
 /**
  * The ASCII punctuation from space to tilde in ASCII order, followed by one zero entry.
  *
- * @ghidraAddress NTSC-U/C: 0x007251a8
- * @ghidraAddress PAL: 0x00768e48
+ * @ghidraAddress NTSC-U/C: 0x003b2430
  */
 extern const ShiftJisSymbol g_aShiftJisSymbols[kShiftJisSymbolCount + 1];
 
 /**
  * The digit, capital, and small-letter runs, based at `0x824f`, `0x8260`, and `0x8281`.
  *
- * @ghidraAddress NTSC-U/C: 0x00725230
- * @ghidraAddress PAL: 0x00768ed0
+ * @ghidraAddress NTSC-U/C: 0x003b24b8
  */
 extern const ShiftJisRange g_aShiftJisRanges[kShiftJisRangeCount];
-
-/**
- * Convert one full-width Shift-JIS character back to ASCII.
- *
- * A lead byte of `0x82` maps three trail-byte runs back onto the digits and the letters, and the
- * digit run covers one trail byte more than the ten digits. A lead byte of `0x81` is looked up in
- * g_aShiftJisSymbols by its trail byte alone. The title is inferred.
- *
- * @param pShiftJis The two bytes of the character.
- * @return The ASCII character, or zero when the character has none.
- * @ghidraAddress NTSC-U/C: 0x00556750
- * @ghidraAddress PAL: 0x005978a8
- */
-char DecodeShiftJisCharacter(const char *pShiftJis);
 
 /**
  * Convert one ASCII character to its full-width Shift-JIS code.
@@ -56,35 +40,20 @@ char DecodeShiftJisCharacter(const char *pShiftJis);
  *
  * @param cAscii The character.
  * @return The two-byte code, lead byte high, or zero for a character outside the tables.
- * @ghidraAddress NTSC-U/C: 0x00556818
- * @ghidraAddress PAL: 0x00597970
+ * @ghidraAddress NTSC-U/C: 0x0029e518
+ * @ghidraAddress PAL: 0x002a81e0
  */
 unsigned short EncodeShiftJisCharacter(unsigned char cAscii);
-
-/**
- * Convert Shift-JIS text back to ASCII.
- *
- * The source length is halved and every pair converted. The first pair with no ASCII form
- * replaces the whole result with `.Kanji.`. The shipped program does not call it, and the title is
- * inferred.
- *
- * @param pszShiftJis The text to convert.
- * @param pszAscii The destination, of at least half the source length plus one byte.
- * @ghidraAddress NTSC-U/C: 0x00556928
- * @ghidraAddress PAL: 0x00597a80
- */
-void ShiftJisToAscii(const char *pszShiftJis, char *pszAscii);
 
 /**
  * Convert ASCII text to the Shift-JIS bytes `icon.sys` stores a title as.
  *
  * Every character becomes two bytes, lead byte first, and two zero bytes end the result.
- * `SaveFileMCT::BuildIconSys()` is its only caller, and the title is inferred from that use and
- * from the `.Kanji.` fallback of the reverse conversion.
+ * MCCreateSaveDirTask is its only caller, and the title is inferred from that use.
  *
  * @param pszAscii The text to convert.
  * @param pszDest The destination, of at least twice the text length plus two bytes.
- * @ghidraAddress NTSC-U/C: 0x00556a20
- * @ghidraAddress PAL: 0x00597b78
+ * @ghidraAddress NTSC-U/C: 0x0029e628
+ * @ghidraAddress PAL: 0x002a82f0
  */
 void AsciiToShiftJis(const char *pszAscii, char *pszDest);

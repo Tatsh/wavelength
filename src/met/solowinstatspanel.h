@@ -1,7 +1,7 @@
 #pragma once
 
 #include "met/sologamestatspanel.h"
-#include "met/textanimplayer.h"
+#include "met/viewanimplayer.h"
 #include "script/dataarray.h"
 
 /**
@@ -71,5 +71,14 @@ public:
      */
     void Poll(float fTime) override;
 
-    TextAnimPlayer mReveal; /*!< The reveal of the statistics. */
+    /**
+     * Start the reveal.
+     *
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x00170020
+     * @ghidraAddress PAL: 0x00173328
+     */
+    void StartAnim(float fTime);
+
+    ViewAnimPlayer mReveal; /*!< The reveal of the statistics. */
 };
