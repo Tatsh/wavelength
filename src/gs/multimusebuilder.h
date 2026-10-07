@@ -6,7 +6,7 @@
  * Collector of MIDI channel messages that cuts MultiMuse pieces out of them.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. This header declares only
- * the members a ScratchTrackBuilder uses.
+ * the members a ScratchTrackBuilder and a PitchTrackBuilder use.
  */
 class MultiMuseBuilder {
 public:
@@ -46,6 +46,19 @@ public:
      * @ghidraAddress PAL: 0x0015c410
      */
     unsigned char GetChannel() const;
+
+    /**
+     * Count the collected messages in a span of ticks.
+     *
+     * A note-on message whose third word is negative does not count. The name is inferred.
+     *
+     * @param nStart The first tick of the span.
+     * @param nEnd The tick after the span.
+     * @return The number of messages.
+     * @ghidraAddress NTSC-U/C: 0x0015ac28
+     * @ghidraAddress PAL: 0x0015c418
+     */
+    int CountMessages(int nStart, int nEnd);
 
     /**
      * Build a piece from the messages in a span of ticks.

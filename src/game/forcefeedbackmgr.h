@@ -4,7 +4,7 @@
  * Vibration of the controllers, on the beat and for the effects of the game.
  *
  * The RTTI includes the nested ForceFeedbackMgr::BeatCmd, ForceFeedbackMgr::Controller, and
- * ForceFeedbackMgr::MotorEffect. Only the members GameLogic uses are declared.
+ * ForceFeedbackMgr::MotorEffect. Only the members its callers here use are declared.
  */
 class ForceFeedbackMgr {
 public:
@@ -45,6 +45,24 @@ public:
      * @ghidraAddress PAL: 0x0010e6c8
      */
     void SetBeatEnabled(int nPad, bool bEnabled);
+
+    /**
+     * Play the effect of a bumper on a controller.
+     *
+     * @param nPad The controller.
+     * @ghidraAddress NTSC-U/C: 0x0010d010
+     * @ghidraAddress PAL: 0x0010e748
+     */
+    void PlayBumpEffect(int nPad);
+
+    /**
+     * Play the effect of a crippler on a controller.
+     *
+     * @param nPad The controller.
+     * @ghidraAddress NTSC-U/C: 0x0010d038
+     * @ghidraAddress PAL: 0x0010e770
+     */
+    void PlayCrippleEffect(int nPad);
 
     /**
      * Play the effect of an autocatcher on a controller.

@@ -18,6 +18,7 @@ set(WAVELENGTH_GAME_SRCS
     delayer.cpp
     difficultyrating.cpp
     dogamesystemplaycmd.cpp
+    duelpattern.cpp
     effectpowerup.cpp
     enablemgr.cpp
     endrecordingcmd.cpp
@@ -69,14 +70,19 @@ set(WAVELENGTH_GAME_SRCS
     localjamenablemgr.cpp
     localplayer.cpp
     localplayercmd.cpp
+    lyric.cpp
     metagameworld.cpp
     middisabler.cpp
     midichase.cpp
+    mixer.cpp
     msgjoiner.cpp
     multicatcher.cpp
+    multigamelogic.cpp
     multipowerbarmgr.cpp
     multiplierpowerup.cpp
     multiscreenanim.cpp
+    netarbiter.cpp
+    netfaker.cpp
     netjamenablemgr.cpp
     netplayer.cpp
     neutralizepowerup.cpp
@@ -91,6 +97,14 @@ set(WAVELENGTH_GAME_SRCS
     phraseplayer.cpp
     pitchingstg.cpp
     pitchpicker.cpp
+    pitchtrack.cpp
+    pitchtrackbuilder.cpp
+    pitchtrackdisplay.cpp
+    pitchtrackgems.cpp
+    pitchtrackmusic.cpp
+    pitchtrackplaygems.cpp
+    pitchtrackriffdata.cpp
+    pitchtrackriffs.cpp
     player.cpp
     playerinfo.cpp
     playmap.cpp
@@ -98,12 +112,14 @@ set(WAVELENGTH_GAME_SRCS
     playmaplinearsteprings.cpp
     playmaprepeatring.cpp
     playmapring.cpp
+    points.cpp
     powerup.cpp
     powerupcollection.cpp
     powerupcollectioni.cpp
     powerupplacer.cpp
     quantizer.cpp
     rawcontroller.cpp
+    remix.cpp
     remixtutorial.cpp
     remoteplayer.cpp
     riff.cpp
@@ -121,6 +137,7 @@ set(WAVELENGTH_GAME_SRCS
     singlecatcher.cpp
     singlepowerupcollection.cpp
     skillstats.cpp
+    slotgrid.cpp
     sologamelogic.cpp
     solopowerbarmgr.cpp
     soloscreenanim.cpp

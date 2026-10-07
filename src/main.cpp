@@ -50,8 +50,8 @@ void CheckLeftoverObjects() {
         return;
     }
 
-    TheDebug << "Freq2 main: Flushing " << static_cast<int>(Rnd::TheManager.mObjects.size())
-             << " objects.\n";
+    TheDebug << "Freq2 main: Flushing "
+             << static_cast<unsigned int>(Rnd::TheManager.mObjects.size()) << " objects.\n";
     TheDebug << "THIS IS BAD.  THERE SHOULD BE NONE,\n"
              << "aside from internal default objects,\n"
              << "such as \"[default cam\"].\nLeftovers:\n    " << Rnd::TheManager.mObjects << "\n";

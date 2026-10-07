@@ -50,7 +50,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002962c8
      * @ghidraAddress PAL: 0x0029fee0
      */
-    bool FindSymbol(const char *pszName, const char **ppszValue, bool bFail);
+    bool FindSymbol(const char *pszName, const char **ppszValue, bool bFail) const;
 
     /**
      * Find the integer that follows a tag.
@@ -62,7 +62,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00296360
      * @ghidraAddress PAL: 0x0029ff78
      */
-    bool FindInt(const char *pszName, int *pnValue, bool bFail);
+    bool FindInt(const char *pszName, int *pnValue, bool bFail) const;
 
     /**
      * Find the floating-point number that follows a tag.
@@ -74,7 +74,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002963a8
      * @ghidraAddress PAL: 0x0029ffc0
      */
-    bool FindFloat(const char *pszName, float *pfValue, bool bFail);
+    bool FindFloat(const char *pszName, float *pfValue, bool bFail) const;
 
     /**
      * Report a node as a symbol.

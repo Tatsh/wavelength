@@ -115,6 +115,26 @@ public:
     bool IsLocalPlayer(int nPlayer) const;
 
     /**
+     * Report the slot of a player, which selects the player's sounds and colours.
+     *
+     * @param nPlayer The player.
+     * @return The slot.
+     * @ghidraAddress NTSC-U/C: 0x0026e970
+     * @ghidraAddress PAL: 0x00278510
+     */
+    int GetPlayerSlot(int nPlayer) const;
+
+    /**
+     * Report the name of a player.
+     *
+     * @param nPlayer The player.
+     * @return The name.
+     * @ghidraAddress NTSC-U/C: 0x0026e9b8
+     * @ghidraAddress PAL: 0x00278558
+     */
+    const char *GetPlayerName(int nPlayer) const;
+
+    /**
      * Report the position of a player in the order of the online session.
      *
      * @param nPlayer The player.
@@ -145,6 +165,26 @@ public:
      * @ghidraAddress PAL: 0x002785c0
      */
     PlayerProfile *GetProfile(int nPlayer);
+
+    /**
+     * Report the score SetPlayerScore() recorded for a player.
+     *
+     * @param nPlayer The player.
+     * @return The score.
+     * @ghidraAddress NTSC-U/C: 0x0026ea50
+     * @ghidraAddress PAL: 0x002785f0
+     */
+    int GetPlayerScore(int nPlayer) const;
+
+    /**
+     * Report the rank SetPlayerScore() gave a player, 0 for the best score.
+     *
+     * @param nPlayer The player.
+     * @return The rank.
+     * @ghidraAddress NTSC-U/C: 0x0026ea68
+     * @ghidraAddress PAL: 0x00278608
+     */
+    int GetPlayerRank(int nPlayer) const;
 
     /**
      * Report the controller bindings in the profile of a player.

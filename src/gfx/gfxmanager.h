@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 /**
  * Display of the play field and the heads-up display of every player.
  *
@@ -408,6 +410,227 @@ public:
      * @ghidraAddress PAL: 0x001beff0
      */
     void SetActive(bool bActive);
+
+    /**
+     * Set the energy meter of a player.
+     *
+     * @param nPlayer The player's index.
+     * @param fEnergy The energy, in percent.
+     * @ghidraAddress NTSC-U/C: 0x001b4d68
+     * @ghidraAddress PAL: 0x001bdb08
+     */
+    void SetEnergy(int nPlayer, float fEnergy);
+
+    /**
+     * Show a player's score and the points just added to it.
+     *
+     * @param nPlayer The player's index.
+     * @param nScore The new score.
+     * @param nMultiplier The streak multiplier the points were scored at.
+     * @param nPoints The points just added, or 0.
+     * @ghidraAddress NTSC-U/C: 0x001b4f90
+     * @ghidraAddress PAL: 0x001bdd30
+     */
+    void SetScore(int nPlayer, int nScore, int nMultiplier, int nPoints);
+
+    /**
+     * Show a player's streak multiplier and the one the next capture earns.
+     *
+     * @param nPlayer The player's index.
+     * @param nMultiplier The current streak multiplier.
+     * @param nNextMultiplier The streak multiplier after one more capture.
+     * @param bBoosted Whether a multiplier power-up is active.
+     * @ghidraAddress NTSC-U/C: 0x001b4fd8
+     * @ghidraAddress PAL: 0x001bdd78
+     */
+    void SetStreakMultiplier(int nPlayer, int nMultiplier, int nNextMultiplier, bool bBoosted);
+
+    /**
+     * Show the points a player's current phrase is worth.
+     *
+     * @param nPlayer The player's index.
+     * @param nPoints The points.
+     * @ghidraAddress NTSC-U/C: 0x001b50d0
+     * @ghidraAddress PAL: 0x001bde70
+     */
+    void ShowPendingPoints(int nPlayer, int nPoints);
+
+    /**
+     * Mark whether a player leads the score.
+     *
+     * @param nPlayer The player's index.
+     * @param bLeader Whether the player leads.
+     * @ghidraAddress NTSC-U/C: 0x001b5190
+     * @ghidraAddress PAL: 0x001bdf30
+     */
+    void SetLeader(int nPlayer, bool bLeader);
+
+    /**
+     * Show the power-up icon of a player.
+     *
+     * @param nPlayer The player's index.
+     * @param nPowerup The kind of power-up the player holds, or GameLogic::kPowerupNone to hide
+     *        the icon.
+     * @ghidraAddress NTSC-U/C: 0x001b5218
+     * @ghidraAddress PAL: 0x001bdfb8
+     */
+    void ShowPowerup(int nPlayer, int nPowerup);
+
+    /**
+     * Show the song tick a player's multiplier power-up ends at.
+     *
+     * @param nPlayer The player's index.
+     * @param fTick The tick.
+     * @ghidraAddress NTSC-U/C: 0x001b5240
+     * @ghidraAddress PAL: 0x001bdfe0
+     */
+    void SetMultiplierEndTick(int nPlayer, float fTick);
+
+    /**
+     * Show a player crippling another.
+     *
+     * @param nAttacker The index of the player who deployed the crippler.
+     * @param nVictim The index of the player struck.
+     * @ghidraAddress NTSC-U/C: 0x001b5280
+     * @ghidraAddress PAL: 0x001be020
+     */
+    void ShowCripple(int nAttacker, int nVictim);
+
+    /**
+     * Show a player knocking another off a track with a bumper.
+     *
+     * @param nAttacker The index of the player who deployed the bumper.
+     * @param nVictim The index of the player struck.
+     * @param nTrack The track the victim moves to.
+     * @ghidraAddress NTSC-U/C: 0x001b52a0
+     * @ghidraAddress PAL: 0x001be040
+     */
+    void ShowBump(int nAttacker, int nVictim, int nTrack);
+
+    /**
+     * Build the display of the tracks of a song.
+     *
+     * @param fStartTick The tick the song starts at.
+     * @param fEndTick The tick the song ends at.
+     * @param pTickDuration The duration of one tick on the song clock.
+     * @param firstList The first list.
+     * @param secondList The second list.
+     * @param nOption The option.
+     * @param flags The flags.
+     * @ghidraAddress NTSC-U/C: 0x001b2688
+     * @ghidraAddress PAL: 0x001bb428
+     */
+    void BuildTracks(float fStartTick,
+                     float fEndTick,
+                     const float *pTickDuration,
+                     const std::vector<int> &firstList,
+                     const std::vector<int> &secondList,
+                     int nOption,
+                     const std::vector<bool> &flags);
+
+    /**
+     * Place a gem on the play field.
+     *
+     * @param nTrack The track.
+     * @param nSlot The gem button the gem lies under.
+     * @param nPlayer The player the gem is for, or -1.
+     * @param fTick The tick of the gem.
+     * @param nStyle The style of the gem.
+     * @param nFlags The flags of the gem.
+     * @ghidraAddress NTSC-U/C: 0x001b5a78
+     * @ghidraAddress PAL: 0x001be818
+     */
+    void PlaceGem(int nTrack, int nSlot, int nPlayer, float fTick, int nStyle, int nFlags);
+
+    /**
+     * Remove the gems of a track in a range of ticks.
+     *
+     * The name is inferred.
+     *
+     * @param nTrack The track.
+     * @param bAll Whether every kind of gem is removed.
+     * @param fStartTick The first tick of the range.
+     * @param fEndTick The tick after the range.
+     * @ghidraAddress NTSC-U/C: 0x001b5ab8
+     * @ghidraAddress PAL: 0x001be858
+     */
+    void ClearGems(int nTrack, bool bAll, float fStartTick, float fEndTick);
+
+    /**
+     * Show the result of a gem a player played or removed.
+     *
+     * The name is inferred.
+     *
+     * @param nTrack The track.
+     * @param nSlot The gem button of the gem.
+     * @param bHit Whether the gem counts as hit.
+     * @param nPlayer The player's index.
+     * @param nFlags The flags of the display.
+     * @param fTick The tick of the gem.
+     * @ghidraAddress NTSC-U/C: 0x001b5b70
+     * @ghidraAddress PAL: 0x001be910
+     */
+    void ShowGemResult(int nTrack, int nSlot, bool bHit, int nPlayer, int nFlags, float fTick);
+
+    /**
+     * Show a player hitting a gem.
+     *
+     * @param nPlayer The player's index.
+     * @param nTrack The track.
+     * @param nSlot The gem button the gem lies under.
+     * @param fTick The tick of the gem.
+     * @ghidraAddress NTSC-U/C: 0x001b5c40
+     * @ghidraAddress PAL: 0x001be9e0
+     */
+    void HitGem(int nPlayer, int nTrack, int nSlot, float fTick);
+
+    /**
+     * Show the bars of a phrase on a track, from the camera of a player.
+     *
+     * @param nPlayer The player's index.
+     * @param nTrack The track.
+     * @param bPlayable Whether the player plays the phrase.
+     * @param fStartTick The tick the phrase starts at.
+     * @param fEndTick The tick after the phrase.
+     * @param nStyle The style of the display.
+     * @param bSlide Whether the camera moves to the phrase.
+     * @ghidraAddress NTSC-U/C: 0x001b5f08
+     * @ghidraAddress PAL: 0x001beca8
+     */
+    void ShowPhrase(int nPlayer,
+                    int nTrack,
+                    bool bPlayable,
+                    float fStartTick,
+                    float fEndTick,
+                    int nStyle,
+                    bool bSlide);
+
+    /**
+     * Set the look of one bar of a track.
+     *
+     * The name is inferred.
+     *
+     * @param nTrack The track.
+     * @param nPlayer The player whose camera shows the bar.
+     * @param nOwner The player who owns the bar, or -1.
+     * @param bInSong Whether the bar maps to a bar of the song.
+     * @param bVisible Whether the bar is shown.
+     * @param nFlags The flags of the bar.
+     * @param nRiff The riff of the bar, or -1.
+     * @param fTick The tick the bar starts at.
+     * @param fTicks The length of the bar in ticks.
+     * @ghidraAddress NTSC-U/C: 0x001b5f30
+     * @ghidraAddress PAL: 0x001becd0
+     */
+    void SetBar(int nTrack,
+                int nPlayer,
+                int nOwner,
+                bool bInSong,
+                bool bVisible,
+                int nFlags,
+                signed char nRiff,
+                float fTick,
+                float fTicks);
 };
 
 /**

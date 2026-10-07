@@ -54,6 +54,17 @@ public:
      * @ghidraAddress PAL: 0x00207e48
      */
     void PhraseMissEvent(int nPlayer);
+
+    /**
+     * Fire the triggers that wait on a lyric.
+     *
+     * The lyric is stored for the triggers' actions to read.
+     *
+     * @param pszLyric The lyric text.
+     * @ghidraAddress NTSC-U/C: 0x001ff308
+     * @ghidraAddress PAL: 0x002080a8
+     */
+    void LyricEvent(const char *pszLyric);
 };
 
 /**

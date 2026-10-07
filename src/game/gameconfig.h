@@ -3,6 +3,15 @@
 #include <vector>
 
 /**
+ * Points of a gem whose tick is a multiple of a divisor, from the `gem` list of the `points`
+ * section.
+ */
+struct GemPointValue {
+    int mDivisor; /*!< The divisor of the gem's tick. */
+    int mPoints;  /*!< The points of the gem. */
+};
+
+/**
  * Tuning values of the game, read from the "game" section of the configuration.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred from the section. The one
@@ -46,7 +55,10 @@ public:
     static GameConfig *shared();
 
     int mSlopMs;                           /*!< `slop_ms`. +0x00 */
-    unsigned char mReserved04[0x5c];       // +0x04, not yet recovered.
+    unsigned char mReserved04[0x10];       // +0x04, not yet recovered.
+    std::vector<GemPointValue> mGemPoints; /*!< `gem` of `points`, in order. +0x14 */
+    int mPhraseScale;                      /*!< `phrase_scale` of `points`. +0x24 */
+    unsigned char mReserved28[0x38];       // +0x28, not yet recovered.
     int mScratcherQuantizationTicks;       /*!< `scratcher_quantization_ticks`. +0x60 */
     int mScratcherSampleQuantizationTicks; /*!< `scratcher_sample_quantization_ticks`. +0x64 */
     int mReserved68;                       // +0x68, not yet recovered.

@@ -586,7 +586,7 @@ public:
 
     Song *mSong;                              /*!< The song. */
     int mState;                               /*!< One of State. */
-    int mReserved0c;                          // +0x0c, cleared by the constructor.
+    int mPaused;                              /*!< Whether SetPaused() paused the song. */
     int mTicksPerBar;                         /*!< Length of a bar, in ticks. */
     int mNumBars;                             /*!< Length of the song, in bars. */
     PlayMap *mPlayMap;                        /*!< The map of the song positions. */

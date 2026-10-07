@@ -2,10 +2,9 @@
 
 #include <iostream>
 
+#include "os/binstream.h"
 #include "os/mem.h"
-
-class IBStream;
-class OBStream;
+#include "os/prnstream.h"
 
 /**
  * Base of every event the game passes between a MsgSource and a MsgSink.
@@ -116,46 +115,39 @@ public:
     virtual const char *GetName() const = 0;
 
     /**
+     * Write this message's payload to a diagnostic stream.
+     *
+     * Vtable slot 5. The default writes nothing. Every translation unit that destroys a message
+     * emits its own copy of the empty body. The address below is the first copy.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00334850
+     * @ghidraAddress PAL: 0x003a1e00
+     */
+    virtual void PrintExtra(PrnStream &stream) const;
+
+    /**
      * Write this message's payload to a stream.
      *
-     * The default writes nothing. GemMsg's override at `0x003d8830` streams its fields, so the
-     * member exists for diagnostics.
+     * Vtable slot 6. The default does nothing. The packets of an online session override the
+     * pair of slots 6 and 7, which is therefore the wire format.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x001051f0
-     * @ghidraAddress PAL: 0x001051f0
+     * @ghidraAddress NTSC-U/C: 0x00334858
+     * @ghidraAddress PAL: 0x003a1e08
      */
-    virtual void PrintExtra(std::ostream &stream) const;
+    virtual void saveGuts(BinStream &stream) const;
 
     /**
-     * Write this message's payload to an output stream.
+     * Read this message's payload from a stream.
      *
-     * Vtable slot 6. The default does nothing. An override copies each field into a temporary and
-     * hands the temporary to OBStream::WriteLE(), chaining on the stream the call returns.
-     * PSJoinRequestPacket's override at `0x003e5538` writes its four words this way and then
-     * delegates its FreqAppearance member to slot 2 of FreqAppearance.
-     *
-     * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x001051f8
-     * @ghidraAddress PAL: 0x001051f8
-     */
-    virtual void saveGuts(OBStream &stream) const;
-
-    /**
-     * Read this message's payload from an input stream.
-     *
-     * Vtable slot 7. The default does nothing. An override passes the address of each field
-     * straight to IBStream::ReadLE() for the transfer to fill the field in place.
-     * PSJoinRequestPacket's override at `0x003e5638` reads its four words this way and then
-     * delegates its FreqAppearance member to slot 3 of FreqAppearance. Twenty-two of the classes
-     * that override this pair are packets and four are MIDI messages. The pair is therefore the
-     * wire format rather than a diagnostic.
+     * Vtable slot 7. The default does nothing.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x00105200
-     * @ghidraAddress PAL: 0x00105200
+     * @ghidraAddress NTSC-U/C: 0x00334860
+     * @ghidraAddress PAL: 0x003a1e10
      */
-    virtual void restoreGuts(IBStream &stream);
+    virtual void restoreGuts(BinStream &stream);
 
     /**
      * Write this message to a diagnostic stream as `{GetName() PrintExtra()}`.

@@ -216,6 +216,7 @@ dsource
 dsrlv
 dsubu
 dthe
+duelpattern
 durgemcurve
 durgemmsg
 durgemrowstring
@@ -747,6 +748,7 @@ mult
 multfx
 multfxa
 multicatcher
+multigamelogic
 multimesh
 multimuse
 multimusemsg
@@ -765,11 +767,14 @@ musemsg
 museplayer
 musesynth
 museutil
+mutevocalspacket
 mvoll
 mvolr
 mypy
 namenogood
 nearesttrackmsg
+netarbiter
+netfaker
 netflow
 netgame
 netjamenablemgr
@@ -822,6 +827,7 @@ orthonormalize
 outcnt
 ovyassembly
 pabe
+packetfactories
 paddh
 padman
 padman's
@@ -855,6 +861,14 @@ pitchingstg
 pitchmsg
 pitchpicker
 pitchriffmsg
+pitchtrack
+pitchtrackbuilder
+pitchtrackdisplay
+pitchtrackgems
+pitchtrackmusic
+pitchtrackplaygems
+pitchtrackriffdata
+pitchtrackriffs
 playbacker
 playbacker's
 playbackmodemsg
@@ -863,6 +877,7 @@ playerinfo
 playerleftgamemsg
 playermode
 playerstrackneutralizedmsg
+playerupdatepacket
 playmap
 playmaplinear
 playmaplinearsteprings
@@ -890,6 +905,7 @@ powy
 ppacb
 ppsz
 preapproved
+previewpacket
 primaddr
 prmodecont
 prmodecontaddr
@@ -949,6 +965,8 @@ reginfo
 registercfunction
 releaseable
 remixdata
+remixer
+remixerupdatepacket
 remixfx
 remixfxmsg
 remixindex
@@ -1064,6 +1082,7 @@ singlepowerupcollection
 skillstats
 skillz
 slerp
+slotgrid
 slti
 sltiu
 sltu
@@ -1241,6 +1260,7 @@ vdec
 vendored
 venv
 vibuf
+victorylap
 videodec
 vmadday
 vmaddaz

@@ -40,6 +40,7 @@ public:
      *
      * @return The number of tracks.
      * @ghidraAddress NTSC-U/C: 0x0011ede0
+     * @ghidraAddress PAL: 0x00120570
      */
     int GetNumTracks() const;
 
@@ -49,6 +50,7 @@ public:
      * @param nTrack The track.
      * @return One of TrackType.
      * @ghidraAddress NTSC-U/C: 0x0011ee00
+     * @ghidraAddress PAL: 0x00120590
      */
     int GetTrackType(int nTrack) const;
 
@@ -58,6 +60,7 @@ public:
      * @param nTrack The track.
      * @return The instrument.
      * @ghidraAddress NTSC-U/C: 0x0011ee20
+     * @ghidraAddress PAL: 0x001205b0
      */
     int GetTrackInstrument(int nTrack) const;
 

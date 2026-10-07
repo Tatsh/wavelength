@@ -89,6 +89,16 @@ public:
      * @ghidraAddress PAL: 0x002a8088
      */
     PrnStream &operator<<(float fValue);
+
+    /**
+     * Write `true` or `false`.
+     *
+     * @param bValue The value.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e450
+     * @ghidraAddress PAL: 0x002a8118
+     */
+    PrnStream &operator<<(bool bValue);
 };
 
 /**

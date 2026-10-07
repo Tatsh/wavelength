@@ -188,7 +188,7 @@ GameLogic::PlayerData::PlayerData(Command *pEndFreestyle) : mEndFreestyleCmd(pEn
 }
 
 GameLogic::GameLogic(Song *pSong, DataArray *pConfig, int nSeed)
-    : mSong(pSong), mState(kStateIdle), mReserved0c(0), mTicksPerBar(pSong->mBuilder->mTicksPerBar),
+    : mSong(pSong), mState(kStateIdle), mPaused(0), mTicksPerBar(pSong->mBuilder->mTicksPerBar),
       mNumBars(pSong->mNumBars), mPlayMap(pSong->GetPlayMap()), mFreestyleTrack(nullptr),
       mTrackSelector(nullptr), mSpeedRamp(new SpeedRamp(&TheSongScheduler, mSong->GetSpeed())),
       mPhraseThisBar(false), mQuit(0), mReserved60(0), mSectionStartBar(0),

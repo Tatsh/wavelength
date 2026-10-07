@@ -274,10 +274,10 @@ void SoloGameLogic::SetPaused(bool bPaused, int nPad, int nReason) {
     if (bPaused && mState != kStatePlaying) {
         return;
     }
-    if (mReserved0c == bPaused) {
+    if (mPaused == bPaused) {
         return;
     }
-    mReserved0c = bPaused;
+    mPaused = bPaused;
     GameLogic::SetPaused(bPaused, nPad, nReason);
     if (bPaused) {
         TheSongScheduler.Pause();

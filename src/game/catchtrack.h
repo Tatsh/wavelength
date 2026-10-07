@@ -212,6 +212,16 @@ public:
     int GetNextGemTick(int nTick, int *pType);
 
     /**
+     * Capture the phrase of a bar for a player.
+     *
+     * @param nBar The bar.
+     * @param pPlayer The player.
+     * @ghidraAddress NTSC-U/C: 0x0014cfa0
+     * @ghidraAddress PAL: 0x0014e940
+     */
+    void Capture(int nBar, Player *pPlayer);
+
+    /**
      * Capture the phrase of a bar for a player with the autocatcher power-up.
      *
      * @param nBar The bar.

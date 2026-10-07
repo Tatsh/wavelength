@@ -11,19 +11,19 @@ constexpr int kTickBits = 28;
 
 } // namespace
 
-void SectionChangePacket::saveGuts(OBStream &stream) const {
+void SectionChangePacket::saveGuts(BinStream &stream) const {
     unsigned int nPayload;
     BitStream bits(&nPayload, kPayloadBytes);
     bits.Pack(mSection, kSectionBits);
     bits.Pack(mTick, kTickBits);
     const unsigned int nWord = nPayload;
-    stream.WriteLE(&nWord, kPayloadBytes);
+    stream.WriteEndian(&nWord, kPayloadBytes);
 }
 
-void SectionChangePacket::restoreGuts(IBStream &stream) {
+void SectionChangePacket::restoreGuts(BinStream &stream) {
     unsigned int nPayload;
-    stream.ReadLE(&nPayload, kPayloadBytes);
+    stream.ReadEndian(&nPayload, kPayloadBytes);
     BitStream bits(&nPayload, kPayloadBytes);
-    mSection = bits.Unpack(kSectionBits);
-    mTick = bits.Unpack(kTickBits);
+    mSection = static_cast<int>(bits.Unpack(kSectionBits));
+    mTick = static_cast<int>(bits.Unpack(kTickBits));
 }

@@ -1,133 +1,78 @@
 #include "game/playmap.h"
 
 #include <algorithm>
-#include <cstddef>
-#include <vector>
-
-#include "os/hxstr.h"
-#include "os/mem.h"
 
 namespace {
 
-// The capacity the constructor reserves in mSteps and mSectionLengths.
-constexpr std::vector<int>::size_type kInitialCapacity = 8;
+// The length of a loop that repeats without end, and the end bar while one plays.
+constexpr int kEndlessBars = 0x20000001;
 
 } // namespace
 
-void *PlayMap::operator new(size_t nSize) {
-    return AllocateTaggedMemory(nSize, "PlayMap");
+PlayMap::PlayMap(int nTicksPerBar, int nEndBar)
+    : mTicksPerBar(nTicksPerBar), mLoops(), mEndBar(nEndBar), mLooping(false) {
+    mLoops.push_back(Loop{0, kEndlessBars, 0});
 }
 
-void PlayMap::operator delete(void *pBlock) {
-    OperatorDeleteOverride(pBlock, "PlayMap");
-}
-
-PlayMap::PlayMap() : mBarCount(0), mUnusedValue(0) {
-    mSteps.reserve(kInitialCapacity);
-    mSteps.push_back(0);
-    mSectionLengths.reserve(kInitialCapacity);
-}
-
-void PlayMap::AddStep(int nPosition, HxStr strLabel) {
-    mSectionLengths.push_back(nPosition - mSteps.back()); // Unguarded on the first call.
-    mSteps.push_back(nPosition);
-    mSectionNames.push_back(strLabel);
-}
-
-void PlayMap::SetBarCount(int nBarCount) {
-    mBarCount = nBarCount;
-}
-
-void PlayMap::ResetSpans() {
-}
-
-int PlayMap::MapToLinkedStep(int nPosition, [[maybe_unused]] int nSet) {
-    return nPosition;
-}
-
-int PlayMap::GetLength() const {
-    return mSteps.back();
-}
-
-int PlayMap::GetEndBar() {
-    return GetLength(); // Dispatched through the table, not called directly.
-}
-
-int PlayMap::GetNumSections() const {
-    return static_cast<int>(mSteps.size()) - 1;
-}
-
-int PlayMap::GetPatternSection(int nIndex) {
-    return nIndex;
-}
-
-int PlayMap::GetPatternIndex(int nBar) {
-    const std::vector<int>::iterator it =
-        std::upper_bound(mSteps.begin(), mSteps.end(), MapBar(nBar));
-    return static_cast<int>(it - mSteps.begin()) - 1;
-}
-
-int PlayMap::FindStepIndex(int nPosition) {
-    const std::vector<int>::iterator it = std::upper_bound(mSteps.begin(), mSteps.end(), nPosition);
-    return static_cast<int>(it - mSteps.begin()) - 1;
-}
-
-int PlayMap::IsStepStart(int nBar) {
-    if (nBar < 0) {
-        return 0;
+void PlayMap::AddLoop(int nStartBar, int nNumBars, int nPlayBar) {
+    mLooping = true;
+    const Loop &last = mLoops.back();
+    const int nPartBars = (nPlayBar - last.mPlayBar) % last.mNumBars;
+    if (nPartBars != 0) {
+        mLoops.push_back(Loop{last.mStartBar, nPartBars, nPlayBar - nPartBars});
     }
-    const int nPosition = MapBar(nBar);
-    return std::find(mSteps.begin(), mSteps.end(), nPosition) != mSteps.end();
+    mLoops.push_back(Loop{nStartBar, nNumBars, nPlayBar});
 }
 
-int PlayMap::StepStartBar(int nBar) {
-    const int nPosition = MapBar(nBar);
-    const std::vector<int>::iterator it = std::upper_bound(mSteps.begin(), mSteps.end(), nPosition);
-    return nBar - (nPosition - *(it - 1));
-}
-
-int PlayMap::NextStepBar(int nBar) {
-    if (nBar < 0) {
-        return 0;
+int PlayMap::MapBar(int nBar) const {
+    const Loop key{0, 0, nBar};
+    auto it = std::upper_bound(mLoops.begin(), mLoops.end(), key);
+    if (it != mLoops.begin()) {
+        --it;
     }
-    const int nPosition = MapBar(nBar);
-    const std::vector<int>::iterator it = std::lower_bound(mSteps.begin(), mSteps.end(), nPosition);
-    return nBar - (nPosition - *it);
+    return it->mStartBar + (nBar - it->mPlayBar) % it->mNumBars;
 }
 
-int PlayMap::FollowingStepBar(int nBar) {
+int PlayMap::MapTick(int nTick) const {
+    return MapBar(nTick / mTicksPerBar) * mTicksPerBar + nTick % mTicksPerBar;
+}
+
+void PlayMap::GetSegment(
+    int nTick, int *pChangeTick, int *pEnd, int *pNextStart, int *pNextLength, int *pIsLast) {
+    int nBar = nTick / mTicksPerBar;
     if (nBar < 0) {
-        return 0;
+        nBar = 0;
     }
-    const int nPosition = MapBar(nBar);
-    const std::vector<int>::iterator it = std::upper_bound(mSteps.begin(), mSteps.end(), nPosition);
-    return nBar - (nPosition - *it);
+    const Loop key{0, 0, nBar};
+    auto it = std::upper_bound(mLoops.begin(), mLoops.end(), key);
+    if (it != mLoops.begin()) {
+        --it;
+    }
+    if (it->mNumBars == kEndlessBars) {
+        *pChangeTick = kEndlessBars;
+        *pIsLast = 1;
+        return;
+    }
+
+    int nChangeBar = nBar - (nBar - it->mPlayBar) % it->mNumBars + it->mNumBars;
+    *pEnd = (it->mStartBar + it->mNumBars) * mTicksPerBar;
+    const auto next = it + 1;
+    *pIsLast = next == mLoops.end();
+    auto nextLoop = it;
+    if (next != mLoops.end() && !(nChangeBar < next->mPlayBar)) {
+        nextLoop = next;
+        nChangeBar = next->mPlayBar;
+    }
+    *pNextStart = nextLoop->mStartBar * mTicksPerBar;
+    *pNextLength = nextLoop->mNumBars * mTicksPerBar;
+    *pChangeTick = nChangeBar * mTicksPerBar;
 }
 
-int PlayMap::GetAbsoluteSectionIndex(int nBar) {
-    const std::vector<int>::iterator it =
-        std::upper_bound(mSteps.begin(), mSteps.end(), MapBar(nBar));
-    const int nIndex = static_cast<int>(it - mSteps.begin()) - 1;
-    const int nTotal = mSteps.back();
-    // Scales the folded term by nTotal twice. That is what the binary computes.
-    return (nTotal * (nBar - (nBar % nTotal))) + nIndex;
+int PlayMap::GetEndBar() const {
+    return mLooping ? kEndlessBars : mEndBar;
 }
 
-int PlayMap::IsLooping(int) {
-    return 0;
-}
-
-void PlayMap::CloseSpan(int) {
-}
-
-int PlayMap::EndLoop(int) {
-    return 0;
-}
-
-int PlayMap::StartLoop(int) {
-    return 0;
-}
-
-int PlayMap::ToggleLoop(int) {
-    return 0;
+void PlayMap::ClearLoops() {
+    mLoops.clear();
+    mLoops.push_back(Loop{0, kEndlessBars, 0});
 }

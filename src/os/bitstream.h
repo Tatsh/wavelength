@@ -1,10 +1,10 @@
 #pragma once
 
 /**
- * Packer of values into a buffer bit by bit, most significant bit first.
+ * Packer of values into a buffer bit by bit, lowest bit first.
  *
- * The class is not polymorphic and has no RTTI. The name is inferred. This header declares only
- * the members a SectionChangePacket uses.
+ * The class is not polymorphic and has no RTTI. The name is inferred. The packets of an online
+ * session pack their fields with it before they write the buffer to a BinStream.
  */
 class BitStream {
 public:
@@ -19,7 +19,18 @@ public:
     BitStream(void *pBuffer, int nSize);
 
     /**
+     * Append one bit.
+     *
+     * @param bValue The bit.
+     * @ghidraAddress NTSC-U/C: 0x00296e90
+     * @ghidraAddress PAL: 0x002a0aa0
+     */
+    void PackBool(bool bValue);
+
+    /**
      * Append the low bits of a value.
+     *
+     * The first bit appended to an empty stream clears the whole buffer.
      *
      * @param nValue The value.
      * @param nBits The number of bits to append.
@@ -27,6 +38,15 @@ public:
      * @ghidraAddress PAL: 0x002a0ae0
      */
     void Pack(unsigned int nValue, int nBits);
+
+    /**
+     * Read the next bit.
+     *
+     * @return The bit.
+     * @ghidraAddress NTSC-U/C: 0x00296f90
+     * @ghidraAddress PAL: 0x002a0ba0
+     */
+    bool UnpackBool();
 
     /**
      * Read the next bits as an unsigned value.

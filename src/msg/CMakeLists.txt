@@ -68,11 +68,13 @@ set(WAVELENGTH_MSG_SRCS
     multipliermsg.cpp
     multiplierstatemsg.cpp
     musemsg.cpp
+    mutevocalspacket.cpp
     nearesttrackmsg.cpp
     neutralizemsg.cpp
     notemsg.cpp
     nowbarmsg.cpp
     packet.cpp
+    packetfactories.cpp
     pausegamesystemmsg.cpp
     phrasecapturedmsg.cpp
     phrasemsg.cpp
@@ -84,13 +86,16 @@ set(WAVELENGTH_MSG_SRCS
     playbacktogglemsg.cpp
     playerleftgamemsg.cpp
     playerstrackneutralizedmsg.cpp
+    playerupdatepacket.cpp
     pointamountmsg.cpp
     powerupcountmsg.cpp
     powerupfailedmsg.cpp
+    previewpacket.cpp
     psjoinrequestpacket.cpp
     rawcontrollermsg.cpp
     refreshnetmsg.cpp
     remixfxmsg.cpp
+    remixerupdatepacket.cpp
     remotetrackselectmsg.cpp
     rotleftmsg.cpp
     rotrightmsg.cpp

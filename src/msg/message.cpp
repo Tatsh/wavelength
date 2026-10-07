@@ -1,15 +1,13 @@
 #include "msg/message.h"
 
-#include <iostream>
-
 Message::~Message() {
 }
 
-void Message::PrintExtra(std::ostream &) const {
+void Message::PrintExtra(PrnStream &) const {
 }
 
-void Message::saveGuts(OBStream &) const {
+void Message::saveGuts(BinStream &) const {
 }
 
-void Message::restoreGuts(IBStream &) {
+void Message::restoreGuts(BinStream &) {
 }

@@ -61,6 +61,18 @@ public:
     void Print(const char *pszText) override;
 
     /**
+     * Replace the text with a copy of another string's text.
+     *
+     * The shared empty buffer is shared again rather than copied.
+     *
+     * @param other The other string.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029ef78
+     * @ghidraAddress PAL: 0x002a8c38
+     */
+    String &operator=(const String &other);
+
+    /**
      * Replace the text with a copy of a C string.
      *
      * @param pszText The text. A null pointer empties the string.
@@ -94,3 +106,15 @@ public:
     int mCapacity; /*!< Bytes allocated for mBuffer. */
     char *mBuffer; /*!< The terminated text. */
 };
+
+/**
+ * Format text into one shared buffer and return it.
+ *
+ * The result remains valid only until the next call.
+ *
+ * @param pszFormat A printf-style format string.
+ * @return The shared buffer.
+ * @ghidraAddress NTSC-U/C: 0x0029e948
+ * @ghidraAddress PAL: 0x002a8608
+ */
+const char *FormatString(const char *pszFormat, ...);

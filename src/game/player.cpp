@@ -1,218 +1,192 @@
 #include "game/player.h"
 
-#include <algorithm>
-#include <iostream>
-
-#include "app/msgsource.h"
-#include "game/freqappearance.h"
-#include "msg/juiceamountmsg.h"
-#include "msg/phrasecapturedmsg.h"
-#include "msg/pointamountmsg.h"
-#include "msg/updatescorepacket.h"
+#include "game/gamecallback.h"
+#include "game/gameconfig.h"
+#include "game/gamedb.h"
+#include "game/gamelogic.h"
+#include "game/stats.h"
+#include "gfx/gfxmanager.h"
+#include "os/memfuncommand.h"
+#include "os/scheduler.h"
 
 namespace {
 
-// Ceiling AnnounceState() applies to the value it publishes.
-constexpr int kJuiceMaximum = 800;
+// The multiplier value while no multiplier power-up is active.
+constexpr int kNoMultiplier = 1;
 
-// The ceiling the constructor gives both the score and the juice.
-constexpr int kInitialCeiling = 1;
+// The streak multiplier SetScore() passes with a score set outright.
+constexpr int kBaseStreakMultiplier = 1;
 
-constexpr char kNullText[] = "{player null}";
-constexpr char kOpenText[] = "{player ";
-constexpr char kNetText[] = " net}";
-constexpr char kLocalText[] = " local}";
+constexpr int kNoReserved = -1;
 
 } // namespace
 
-Player::Player(int nId, const HxStr &colorName, const FreqAppearance *pAppearance)
-    : IDable<Player>(nId), mPlayerId(nId), mColorName(colorName), mAppearance(pAppearance),
-      mJuice(0), mMaxJuice(kInitialCeiling), mScore(0), mMaxScore(kInitialCeiling),
-      mLastEraseTime(0) {
-}
-
-int Player::GetInputSlot() const {
-    return -1;
-}
-
-int Player::IsNull() {
-    return 0;
-}
-
-int Player::GetTrack() {
-    return -1;
-}
-
-int Player::GetPlace() {
-    return 0;
-}
-
-int Player::UnusedQuery() {
-    return 0;
-}
-
-void Player::UnusedHook() {
-}
-
-void Player::SetFreestyleSpan(int, int) {
-}
-
-int Player::IsFreestyleBar(int) {
-    return 0;
-}
-
-int Player::IsLooping() {
-    return 0;
-}
-
-void Player::AnnounceState() {
-    JuiceAmountMsg message;
-    message.mPlayer = this;
-    message.mMaxJuice = mMaxJuice < kJuiceMaximum ? mMaxJuice : kJuiceMaximum;
-
-    Send(&message);
-}
-
-void Player::DeactivatePlacer() {
-}
-
-void Player::Print(std::ostream &stream) {
-    if (IsNull() != 0) {
-        stream << kNullText;
-        return;
-    }
-
-    stream << kOpenText << mPlayerId;
-    if (GetInputSlot() == kNoInputSlot) {
-        stream << kNetText;
-    } else {
-        stream << kLocalText;
-    }
-}
-
-int Player::CountCaughtGem() {
-    // The image leaves the return register untouched here, so the value is indeterminate.
-    return 0;
-}
-
-int Player::CountMissedGem() {
-    // The image leaves the return register untouched here, so the value is indeterminate.
-    return 0;
-}
-
-int Player::GetMultiplier(int) {
-    return 1;
-}
-
-int Player::GetBestStreak() {
-    return 0;
-}
-
-float Player::GetCaptureRatio() {
-    return 0.0f;
-}
-
-int Player::GetGameMode() {
-    return 0;
-}
-
-int Player::MarkBarScored(int) {
-    return 1;
-}
-
-int Player::GetScore() {
-    return mScore;
-}
-
-int Player::GetJuice() {
-    return mJuice;
-}
-
-void Player::SetScore(int nScore, int nMaxScore) {
-    mMaxScore = nMaxScore;
-    mScore = nScore;
-}
-
-void Player::SetJuice(int nJuice, int nMaxJuice) {
-    mMaxJuice = nMaxJuice;
-    mJuice = nJuice;
-}
-
-void Player::AddScore(int nDelta, int bNotify) {
-    const int nOldScore = mScore;
-    mScore = std::max(0, std::min(mScore + nDelta, mMaxScore));
-    if (mScore == nOldScore) {
-        return;
-    }
-
-    PointAmountMsg message;
-    message.mPlayer = this;
-    // Yes, the binary caps the score ceiling at the juice maximum too.
-    message.mMaxScore = std::min(mMaxScore, kJuiceMaximum);
-    Send(&message);
-
-    if (bNotify != 0) {
-        UpdateScorePacket packet(mPlayerId, nDelta);
-        Send(&packet);
-    }
-}
-
-void Player::OnMsg(const PhraseCapturedMsg &msg) {
-    AddScore(msg.mScore, 1);
-    AddJuice(msg.mJuice, 1);
-}
-
-void Player::AddJuice(int nAmount, int bNotify) {
-    const int nOldJuice = mJuice;
-    mJuice = std::max(0, std::min(mJuice + nAmount, mMaxJuice));
-    if (mJuice == nOldJuice) {
-        return;
-    }
-
-    JuiceAmountMsg message;
-    message.mPlayer = this;
-    message.mMaxJuice = std::min(mMaxJuice, kJuiceMaximum);
-    Send(&message);
-
-    if (bNotify != 0) {
-        UpdateScorePacket packet(mPlayerId, nAmount);
-        Send(&packet);
-    }
+Player::Player(int nIndex, int nTicksPerBar)
+    : mIndex(nIndex), mTicksPerBar(nTicksPerBar), mTrack(nullptr), mScore(0), mPendingPoints(0),
+      mMultiplierValue(kNoMultiplier), mStreak(0), mCatching(false), mAborted(false), mRepeat(true),
+      mReserved(kNoReserved), mMultiplierEndCommand(NewMemFunCommand(this, &Player::EndMultiplier)),
+      mPowerup(GameLogic::kPowerupNone) {
 }
 
 Player::~Player() {
+    CancelMultiplier();
 }
 
-inline HxStr Player::GetColorName() {
-    return mColorName;
+void Player::SetTrack(Track *pTrack) {
+    mTrack = pTrack;
+    TheStats->ChangeTrack(mIndex, pTrack->mIndex, TheSongScheduler.mTick);
 }
 
-inline HxStr Player::GetUsername() {
-    return mAppearance->mUserName;
+Track *Player::GetTrack() const {
+    return mTrack;
 }
 
-int Player::StartMF() {
-    AnnounceState();
-    return 0;
+void Player::HidePowerup() {
+    TheGfxManager.ShowPowerup(mIndex, GameLogic::kPowerupNone);
 }
 
-int Player::StopMF() {
-    DeactivatePlacer();
-    return 0;
+void Player::CancelMultiplier() {
+    TheSongScheduler.Cancel(mMultiplierEndCommand.Get());
 }
 
-inline void Player::OnUpdateScore(UpdateScorePacket *pPacket) {
-    if (pPacket->mPlayerId == mPlayerId) {
-        AddScore(pPacket->mScoreDelta, 0);
+void Player::HandleInput(const PlayNoteEvent &event) {
+    mTrack->HandleInput(this, event);
+}
+
+void Player::HandleInput(const BtnEvent<10> &event) {
+    mTrack->HandleInput(this, event);
+}
+
+void Player::HandleInput(const BtnEvent<8> &event) {
+    mTrack->HandleInput(this, event);
+}
+
+void Player::HandleInput(const StickEvent<2> &event) {
+    mTrack->HandleInput(this, event);
+}
+
+void Player::HandleInput(const StickEvent<6> &event) {
+    mTrack->HandleInput(this, event);
+}
+
+void Player::Abort() {
+    mAborted = true;
+}
+
+void Player::SetScore(int nScore) {
+    mScore = nScore;
+    TheGfxManager.SetScore(mIndex, nScore, kBaseStreakMultiplier, 0);
+}
+
+void Player::AddScore(int nPoints) {
+    mScore += nPoints;
+    TheGfxManager.SetScore(mIndex, mScore, kBaseStreakMultiplier, nPoints);
+}
+
+void Player::SetPendingPoints(int nPoints, bool bHide) {
+    mPendingPoints = nPoints;
+    if (nPoints != 0) {
+        TheGfxManager.ShowPendingPoints(mIndex, nPoints * mMultiplierValue);
+        return;
+    }
+    TheGfxManager.SetPendingPointsResult(mIndex, GfxManager::kPendingPointsCleared);
+    if (bHide) {
+        TheGfxManager.HidePendingPoints(mIndex);
     }
 }
 
-void Player::DispatchPriv(Message *pMsg) {
-    const int nType = pMsg->Type();
-    if (nType == g_nUpdateScorePacketType) {
-        OnUpdateScore(static_cast<UpdateScorePacket *>(pMsg));
-    } else if (nType == g_nPhraseCapturedMsgType) {
-        // Awarded whichever player the capture names.
-        OnMsg(*static_cast<PhraseCapturedMsg *>(pMsg));
+void Player::CommitPendingPoints(bool bHide) {
+    const int nStreakMultiplier = StreakMultiplier(mStreak);
+    const int nPoints = mPendingPoints * mMultiplierValue * nStreakMultiplier;
+    mScore += nPoints;
+    if (nPoints > 0) {
+        TheGfxManager.SetScore(mIndex, mScore, nStreakMultiplier, nPoints);
+        TheGfxManager.SetPendingPointsResult(mIndex, GfxManager::kPendingPointsCaptured);
+        if (bHide) {
+            TheGfxManager.HidePendingPoints(mIndex);
+        }
+    } else {
+        TheGfxManager.SetPendingPointsResult(mIndex, GfxManager::kPendingPointsCleared);
     }
+    mPendingPoints = 0;
+}
+
+void Player::LosePendingPoints() {
+    TheGfxManager.SetPendingPointsResult(mIndex, GfxManager::kPendingPointsLost);
+    mPendingPoints = 0;
+}
+
+void Player::ActivateMultiplier() {
+    mMultiplierValue = TheGameConfig->mMultiplierValue;
+    TheGfxManager.SetStreakMultiplier(
+        mIndex, StreakMultiplier(mStreak), StreakMultiplier(mStreak + 1), true);
+    SetPendingPoints(mPendingPoints, true);
+    const int nEndTick =
+        TheSongScheduler.mTick + TheGameConfig->mMultiplierDurationBars * mTicksPerBar;
+    TheGfxManager.SetMultiplierEndTick(mIndex, static_cast<float>(nEndTick));
+    TheSongScheduler.Cancel(mMultiplierEndCommand.Get());
+    TheSongScheduler.PostAt(mMultiplierEndCommand.Get(), nEndTick, false);
+}
+
+void Player::EndMultiplier() {
+    mMultiplierValue = kNoMultiplier;
+    TheGfxManager.SetStreakMultiplier(
+        mIndex, StreakMultiplier(mStreak), StreakMultiplier(mStreak + 1), false);
+    SetPendingPoints(mPendingPoints, true);
+}
+
+void Player::SetStreak(int nStreak) {
+    mStreak = nStreak;
+    TheGfxManager.SetStreakMultiplier(mIndex,
+                                      StreakMultiplier(nStreak),
+                                      StreakMultiplier(mStreak + 1),
+                                      mMultiplierValue > kNoMultiplier);
+}
+
+void Player::IncrementStreak() {
+    SetStreak(mStreak + 1);
+}
+
+void Player::ResetStreak() {
+    SetStreak(0);
+}
+
+int Player::GetStreak() const {
+    return mStreak;
+}
+
+void Player::SetCatching(bool bCatching) {
+    mCatching = bCatching;
+}
+
+bool Player::GetCatching() const {
+    return mCatching;
+}
+
+int Player::GetPowerup() const {
+    return mPowerup;
+}
+
+void Player::SetPowerup(int nPowerup) {
+    mPowerup = nPowerup;
+    TheGfxManager.ShowPowerup(mIndex, nPowerup);
+    if (TheGameCallback != nullptr && nPowerup != GameLogic::kPowerupNone) {
+        TheGameCallback->OnPowerup();
+    }
+}
+
+bool Player::GetRepeat() const {
+    return mRepeat;
+}
+
+void Player::SetRepeat(bool bRepeat) {
+    mRepeat = bRepeat;
+}
+
+int Player::StreakMultiplier(int nStreak) const {
+    const int nMultiplier = nStreak + 1;
+    const int nMaximum = TheGameDb->mCommunity == GameDb::kCommunitySolo ?
+                             TheGameConfig->mStreakMultiplierMaxSolo :
+                             TheGameConfig->mStreakMultiplierMaxMulti;
+    return nMaximum < nMultiplier ? nMaximum : nMultiplier;
 }
