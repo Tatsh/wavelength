@@ -1,6 +1,6 @@
 # Game code, `0x001b0000` to `0x001c0000`
 
-18 of 292 routines done.
+17 of 292 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -45,7 +45,7 @@ preliminary.
 | `AddFreqTrackSongPosCheckpoint`                        |        :x:         |      1 |    528 | `0x001b96e8` | `0x001c2488` | `void AddFreqTrackSongPosCheckpoint(float flPosition, int pWidget, long fHasLabel)`                                                                                                   |
 | `ShowFreqTrackPowerupIcon`                             |        :x:         |      2 |    500 | `0x001bcdb8` | `0x001c5b58` | `void ShowFreqTrackPowerupIcon(undefined8 pWidget, undefined8 nEffectType)`                                                                                                           |
 | `SetFreqTrackPointsExitMode`                           |        :x:         |      2 |    496 | `0x001bebe8` | `0x001c7988` | `void SetFreqTrackPointsExitMode(int * pWidget, int nMode)`                                                                                                                           |
-| `UpdateFreqTrackIntroAnim`                             | :white_check_mark: |      4 |    468 | `0x001b4d68` | `0x001bdb08` | `void UpdateFreqTrackIntroAnim(float flProgress, int pScreen, undefined8 qwDevice)`                                                                                                   |
+| `UpdateFreqTrackIntroAnim`                             |       :memo:       |      4 |    468 | `0x001b4d68` | `0x001bdb08` | `void UpdateFreqTrackIntroAnim(float flProgress, int pScreen, undefined8 qwDevice)`                                                                                                   |
 | `UpdateFreqTrackSongPosCheckpointColors`               |        :x:         |      1 |    448 | `0x001b9a30` | `0x001c27d0` | `void UpdateFreqTrackSongPosCheckpointColors(float * pWidget)`                                                                                                                        |
 | `HandleOverlayLabelCmd`                                |        :x:         |      2 |    428 | `0x001b0a80` | `0x001b9820` | `void HandleOverlayLabelCmd(int * pCmd)`                                                                                                                                              |
 | `UpdateFreqTrackLaneDeviceAssign`                      |        :x:         |      2 |    412 | `0x001bab68` | `0x001c3908` | `void UpdateFreqTrackLaneDeviceAssign(undefined4 nArg, void * pWidget)`                                                                                                               |
