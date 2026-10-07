@@ -57,6 +57,41 @@ typedef struct {
  */
 typedef int (*sceMpegCallback)(sceMpeg *pMpeg, void *pCallbackData, void *pData);
 
+/** Decoder callback types sceMpegAddCallback() registers. */
+#define sceMpegCbError 0      /*!< A decoding error. */
+#define sceMpegCbNodata 1     /*!< The decoder ran out of input. */
+#define sceMpegCbBackground 4 /*!< Idle time while the decoder waits. */
+
+/** The callback data of an sceMpegCbError callback. */
+typedef struct {
+    int type;         /*!< Always sceMpegCbError. */
+    char *errMessage; /*!< The error text. */
+} sceMpegCbDataError;
+
+/**
+ * Create a decoder over a work area.
+ *
+ * @param pMpeg The decoder.
+ * @param pWork The work area.
+ * @param nWorkSize Size of the work area in bytes.
+ * @return The decoder, or null when the work area is too small.
+ * @ghidraAddress NTSC-U/C: 0x00307fd8
+ */
+sceMpeg *sceMpegCreate(sceMpeg *pMpeg, unsigned char *pWork, int nWorkSize);
+
+/**
+ * Register a decoder callback for a callback type.
+ *
+ * @param pMpeg The decoder.
+ * @param nType The callback type.
+ * @param pfnCallback The callback.
+ * @param pData Data passed to the callback.
+ * @return The previous callback.
+ * @ghidraAddress NTSC-U/C: 0x00308310
+ */
+sceMpegCallback
+sceMpegAddCallback(sceMpeg *pMpeg, int nType, sceMpegCallback pfnCallback, void *pData);
+
 /**
  * Stop the two IPU DMA channels and clear their counts, then reset the IPU and load its tables.
  *

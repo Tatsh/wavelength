@@ -14,6 +14,7 @@ addu
 addx
 addy
 addz
+adpcm
 adsr
 adtl
 advancesectionmsg
@@ -62,6 +63,8 @@ autocatchmsg
 autocatchpowerup
 autoriffer
 averager
+avoll
+avolr
 axebuttonmsg
 axefx
 axenewgemmaker
@@ -148,6 +151,7 @@ colorable
 coloring
 configquery
 congrat
+constructo
 contctrlmsg
 controllercmd
 controllerconfig
@@ -212,7 +216,9 @@ docstrings
 dogamesystemplaycmd
 dopenssl
 doutput
+dpsm
 drawverts
+dsay
 dsllv
 dsmcc
 dsource
@@ -273,13 +279,13 @@ eret
 erss
 esac
 esbenp
-esony
 etext
 evoll
 evolr
 extensionmodulebase
 ezmidi
 ezmpeg
+ezmpegstr
 fadegamemsg
 fadeuser
 faild
@@ -393,6 +399,8 @@ hangpoint
 hangpoints
 hardsynth
 harmonix
+hblank
+hblanks
 hblkhd
 hblks
 hdemo
@@ -468,6 +476,7 @@ insize
 internel
 intrcode
 intrman
+introscreen
 inttypes
 invalidateseekermsg
 invalidatetrackmsg
@@ -517,6 +526,7 @@ kuhgb
 labl
 laypatt
 lbits
+ldimage
 leavegamemsg
 levelbuilder
 levelconverter
@@ -573,6 +583,7 @@ logoback
 longop
 looptogglemsg
 looptoolmsg
+lpad
 lrbutton
 lsax
 lsdmode
@@ -717,7 +728,6 @@ metsolostagesscreen
 metsolostatsscreen
 metsolowinscreen
 metsonglists
-metsonyscreen
 metstagefinishscreen
 metstartnetlaunchmsg
 metstartpausemsg
@@ -799,6 +809,7 @@ netfaker
 netflow
 netgame
 netjamenablemgr
+netlaunch
 netplayer
 neut
 neutralizemsg
@@ -971,7 +982,6 @@ raytest
 rbor
 rbsr
 rdparty
-readbuf
 readop
 reax
 recalc
@@ -1120,7 +1130,10 @@ sndbank
 sndh
 softfloat
 softfx
+soloarena
+solocustom
 sologamelogic
+solometa
 solomulti
 solopowerbarmgr
 soloremix
@@ -1140,6 +1153,7 @@ spjoindenypacket
 spyramid
 sqwc
 srcs
+ssbd
 sstv
 startable
 statusline
@@ -1161,7 +1175,6 @@ stmod
 stopriffmsg
 streakovermsg
 strequal
-strfile
 stuttereffector
 subu
 subx
@@ -1286,6 +1299,7 @@ undrafted
 unformatop
 unistd
 unlabeled
+unlockarena
 unlockstages
 unmute
 unmuted
@@ -1304,7 +1318,6 @@ vendored
 venv
 vibuf
 victorylap
-videodec
 vmadday
 vmaddaz
 vmaddw
@@ -1316,7 +1329,6 @@ vmixer
 vmixl
 vmixr
 vmulax
-vobuf
 voll
 volr
 volumeeffector
@@ -1352,10 +1364,10 @@ worldlogic
 worldmgr
 writeop
 writx
-wstringop
 wuninitialized
 wuse
 xdecref
+xdir
 xfms
 xgkick
 xincref

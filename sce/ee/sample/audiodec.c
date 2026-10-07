@@ -9,267 +9,304 @@
 #include <libsdr.h>
 #include <sifdev.h>
 
-#include "os/log.h"
-
 enum {
-    kPresetSize = 0x800,
-    kFullLevel = 0x3fff,
+    kFullMasterVolume = 0x3fff,
     kFullInputVolume = 0x7fff,
-    kBlockStep = 0x400,
+    kSilentVolume = 0,
+    kBlockSize = 1024,
     kPositionMask = 0xffffff,
+    kCoreCount = 2,
+    kSoundChannel = 0,
+    kWait = 1,
+    // The sound processor address the cleared buffer is uploaded to.
+    kZeroSpuAddress = 0x4000,
 };
 
-// The cleared block that creation uploads to the second processor side region.
-static unsigned char g_presetData[kPresetSize];
-
-// NTSC-U/C: 0x00567e68, PAL: 0x005a8330
-static int dmaToIop(int nIopDest, void *pSource, int nSize) {
-    // Send one contiguous block to the processor side, then wait for completion.
+// NTSC-U/C: 0x001b02f8, PAL: 0x001b9098
+static int sendToIOP(int dst, unsigned char *src, int size) {
     sceSifDmaData transfer;
-    unsigned int transferId;
+    unsigned int id;
 
-    if (nSize <= 0) {
+    if (size <= 0) {
         return 0;
     }
-    transfer.data = (unsigned int)(uintptr_t)pSource;
-    transfer.addr = (unsigned int)nIopDest;
-    transfer.size = (unsigned int)nSize;
+    transfer.data = (unsigned int)(uintptr_t)src;
+    transfer.addr = (unsigned int)dst;
+    transfer.size = (unsigned int)size;
     transfer.mode = 0;
     FlushCache(WRITEBACK_DCACHE);
-    transferId = sceSifSetDma(&transfer, 1);
-    while (sceSifDmaStat(transferId) >= 0) {
+    id = sceSifSetDma(&transfer, 1);
+    while (sceSifDmaStat(id) >= 0) {
     }
-    return nSize;
+    return size;
 }
 
-// NTSC-U/C: 0x00567c78, PAL: 0x005a8140
-static void
-splitIopSpan(int *pWrite, int *pWriteLen, int *pWrap, int *pWrapLen, AudioDec *pWork, int nEnd) {
-    // Describe the span ending at nEnd as up to two processor side blocks, wrapping at the
-    // buffer size. The first block starts at the write offset, and the second restarts at the
-    // buffer base when the span crosses the end.
-    int aligned;
-    int span;
-
-    nEnd += pWork->iopBufferSize;
-    nEnd -= pWork->iopOffset;
-    span = pWork->iopBufferSize - pWork->iopOffset;
-    nEnd -= kBlockStep;
-    nEnd %= pWork->iopBufferSize;
-    aligned = nEnd / kBlockStep * kBlockStep;
-    *pWrite = pWork->iopBuffer + pWork->iopOffset;
-    if (span < aligned) {
-        *pWriteLen = pWork->iopBufferSize - pWork->iopOffset;
-        *pWrap = pWork->iopBuffer;
-        *pWrapLen = aligned - (pWork->iopBufferSize - pWork->iopOffset);
-    } else {
-        *pWriteLen = aligned;
-        *pWrap = 0;
-        *pWrapLen = 0;
-    }
-}
-
-// NTSC-U/C: 0x00567d20, PAL: 0x005a81e8
-static int sendWrappedToIop(int nIopDest,
-                            int nFirstLen,
-                            int nIopWrap,
-                            int nLimitExtra,
-                            unsigned char *pSource,
-                            int nCount,
-                            unsigned char *pWrapSource,
-                            int nTrailing) {
-    // Copy across both ring wraps in up to three direct memory access blocks. The read span
-    // runs from pSource for nCount bytes and continues at pWrapSource for nTrailing bytes,
-    // while the write span runs from nIopDest and continues at nIopWrap.
-    int limit = nFirstLen + nLimitExtra;
-    int total = nCount + nTrailing;
-
-    if (limit < total) {
-        int over = total - limit;
-        if (over < nTrailing) {
-            nTrailing -= over;
-        } else {
-            nCount -= over - nTrailing;
-            nTrailing = 0;
-        }
-    }
-    if (nCount < nFirstLen) {
-        int tail = nFirstLen - nCount;
-
-        dmaToIop(nIopDest, pSource, nCount);
-        if (nTrailing < tail) {
-            dmaToIop(nIopDest + nCount, pWrapSource, nTrailing);
-        } else {
-            dmaToIop(nIopDest + nCount, pWrapSource, tail);
-            dmaToIop(nIopWrap, pWrapSource + tail, nTrailing - tail);
-        }
-    } else {
-        dmaToIop(nIopDest, pSource, nFirstLen);
-        dmaToIop(nIopWrap, pSource + nFirstLen, nCount - nFirstLen);
-        dmaToIop(nIopWrap + nCount - nFirstLen, pWrapSource, nTrailing);
-    }
-    return nCount + nTrailing;
-}
-
-// NTSC-U/C: 0x00567ee0, PAL: 0x005a83a8
-static void setupIopVoices(int nLevel) {
-    // Apply the level to both voice pairs through the sound driver.
+// NTSC-U/C: 0x001b0378, PAL: 0x001b9118
+static void changeMasterVolume(int val) {
     int core;
 
-    for (core = 0; core < 2; ++core) {
-        sceSdRemote(1, 0x8010, 0x980 | core, nLevel);
-        sceSdRemote(1, 0x8010, 0xa80 | core, nLevel);
+    for (core = 0; core < kCoreCount; ++core) {
+        sceSdRemote(kWait, rSdSetParam, core | SD_P_MVOLL, val);
+        sceSdRemote(kWait, rSdSetParam, core | SD_P_MVOLR, val);
     }
 }
 
-// NTSC-U/C: 0x00567f48, PAL: 0x005a8410
-static void setIopInputVolume(int nVolume) {
-    // Set the left and right sound data input volume of the second core through the sound driver.
-    sceSdRemote(1, 0x8010, 0xf81, nVolume);
-    sceSdRemote(1, 0x8010, 0x1081, nVolume);
+// NTSC-U/C: 0x001b03e0, PAL: 0x001b9180
+static void changeInputVolume(int val) {
+    sceSdRemote(kWait, rSdSetParam, SD_CORE_0 | SD_P_AVOLL, val);
+    sceSdRemote(kWait, rSdSetParam, SD_CORE_0 | SD_P_AVOLR, val);
 }
 
-int audioDecSendToIOP(AudioDec *pAudioDec) {
-    // Move the staged bytes to the processor side, following the transfer stage. The idle and
-    // stopping stages transfer nothing, the priming stage offers the whole free span, and the
-    // streaming stage queries the driver for the write position first. The staged counts are read
-    // after the driver call.
-    int pending;
-    int total;
-    int aligned;
-    // Both writers below fill every slot, but the stage chain leaves the array untouched on its
-    // early exits, so the staging starts cleared.
-    int span[4] = {0, 0, 0, 0};
-    int transferred = 0;
-    int ready;
-    int extra;
-    int rest;
-    int chunk;
-    unsigned char *pRead;
-    int remaining;
-    int writePos;
+// NTSC-U/C: 0x001b00e0, PAL: 0x001b8e80
+// Describe the free part of the IOP ring ahead of the write offset as up to two spans, keeping one
+// block between the write offset and the play position.
+static void iopGetArea(int *pd0, int *d0, int *pd1, int *d1, AudioDec *ad, int pos) {
+    int diff = (pos + ad->iopBuffSize - ad->iopLastPos - kBlockSize) % ad->iopBuffSize;
 
-    if (pAudioDec->state == 1) {
-        span[1] = pAudioDec->iopBufferSize - pAudioDec->totalBytesSent;
-        span[0] = pAudioDec->iopBuffer + pAudioDec->totalBytesSent % pAudioDec->iopBufferSize;
-        span[2] = 0;
-        span[3] = 0;
-    } else if (pAudioDec->state < 2) {
-        if (pAudioDec->state == 0) {
-            return 0;
+    if ((unsigned int)(pos - ad->iopLastPos) < kBlockSize) {
+        *pd0 = ad->iopBuff;
+        *d0 = 0;
+        *pd1 = ad->iopBuff;
+        *d1 = 0;
+        return;
+    }
+    diff = diff / kBlockSize * kBlockSize;
+    if (ad->iopBuffSize - ad->iopLastPos >= diff) {
+        *pd0 = ad->iopBuff + ad->iopLastPos;
+        *d0 = diff;
+        *pd1 = 0;
+        *d1 = 0;
+    } else {
+        *pd0 = ad->iopBuff + ad->iopLastPos;
+        *d0 = ad->iopBuffSize - ad->iopLastPos;
+        *pd1 = ad->iopBuff;
+        *d1 = diff - (ad->iopBuffSize - ad->iopLastPos);
+    }
+}
+
+// NTSC-U/C: 0x001b01b0, PAL: 0x001b8f50
+// Copy two source spans into two IOP spans, trimming the source to the room the IOP spans offer.
+static int sendToIOP2area(
+    int pd0, int d0, int pd1, int d1, unsigned char *ps0, int s0, unsigned char *ps1, int s1) {
+    if (d0 + d1 < s0 + s1) {
+        const int diff = (s0 + s1) - (d0 + d1);
+        if (diff < s1) {
+            s1 -= diff;
+        } else {
+            s0 -= diff - s1;
+            s1 = 0;
         }
-    } else if (pAudioDec->state == 2) {
-        const int position = sceSdRemote(1, 0x8100, 1);
-
-        splitIopSpan(&span[0],
-                     &span[1],
-                     &span[2],
-                     &span[3],
-                     pAudioDec,
-                     (position & kPositionMask) - pAudioDec->iopBuffer);
-    } else if (pAudioDec->state == 3) {
-        return 0;
     }
-    pending = pAudioDec->count;
-    total = pAudioDec->put - pending + pAudioDec->bufferSize;
-    aligned = pending / kBlockStep * kBlockStep;
-    ready = span[1];
-    extra = span[3];
-    rest = total % pAudioDec->bufferSize;
-    chunk = pAudioDec->bufferSize - rest;
-    pRead = pAudioDec->buffer + rest;
-    if (aligned < chunk) {
-        chunk = aligned;
+    if (s0 >= d0) {
+        sendToIOP(pd0, ps0, d0);
+        sendToIOP(pd1, ps0 + d0, s0 - d0);
+        sendToIOP(pd1 + s0 - d0, ps1, s1);
+    } else {
+        const int rest = d0 - s0;
+        if (s1 >= rest) {
+            sendToIOP(pd0, ps0, s0);
+            sendToIOP(pd0 + s0, ps1, rest);
+            sendToIOP(pd1, ps1 + rest, s1 - rest);
+        } else {
+            sendToIOP(pd0, ps0, s0);
+            sendToIOP(pd0 + s0, ps1, s1);
+        }
     }
-    remaining = aligned - chunk;
-    writePos = pAudioDec->iopOffset;
-    if (ready + extra >= kBlockStep && chunk + remaining >= kBlockStep) {
-        transferred = sendWrappedToIop(
-            span[0], ready, span[2], extra, pRead, chunk, pAudioDec->buffer, remaining);
-    }
-    writePos += transferred;
-    pAudioDec->count -= transferred;
-    pAudioDec->totalBytesSent += transferred;
-    pAudioDec->iopOffset = writePos % pAudioDec->iopBufferSize;
-    return transferred;
+    return s0 + s1;
 }
 
-int audioDecCreate(AudioDec *pAudioDec,
-                   unsigned char *pBuffer,
-                   int nBufferSize,
-                   int nIopBufferSize) {
-    // Clear the decoder, reserve both processor side regions, and upload the preset block. A
-    // failed reservation reports through the console and the routine returns zero.
-    pAudioDec->state = 0;
-    pAudioDec->headerCount = 0;
-    pAudioDec->put = 0;
-    pAudioDec->count = 0;
-    pAudioDec->totalBytes = 0;
-    pAudioDec->totalBytesSent = 0;
-    pAudioDec->iopOffset = 0;
-    pAudioDec->iopPauseOffset = 0;
-    pAudioDec->buffer = pBuffer;
-    pAudioDec->bufferSize = nBufferSize;
-    pAudioDec->iopBufferSize = nIopBufferSize;
-    pAudioDec->iopBuffer = (int)(uintptr_t)sceSifAllocIopHeap(nIopBufferSize);
-    if (pAudioDec->iopBuffer < 0) {
-        printf("Cannot allocate IOP memory\n");
-        return 0;
-    }
-    pAudioDec->iopExtra = (int)(uintptr_t)sceSifAllocIopHeap(kPresetSize);
-    if (pAudioDec->iopExtra < 0) {
-        printf("Cannot allocate IOP memory\n");
-        return 0;
-    }
-    memset(g_presetData, 0, kPresetSize);
-    dmaToIop(pAudioDec->iopExtra, g_presetData, kPresetSize);
-    setupIopVoices(kFullLevel);
+int audioDecCreate(AudioDec *ad,
+                   unsigned char *buff,
+                   int buffSize,
+                   void *iopBuff,
+                   int iopBuffSize,
+                   unsigned char *zeroBuff,
+                   void *iopZeroBuff,
+                   int zeroBuffSize) {
+    ad->data = buff;
+    ad->size = buffSize;
+    ad->zeroBuffSize = zeroBuffSize;
+    ad->state = AU_STATE_INIT;
+    ad->hdrCount = 0;
+    ad->put = 0;
+    ad->count = 0;
+    ad->totalBytes = 0;
+    ad->totalBytesSent = 0;
+    ad->iopLastPos = 0;
+    ad->iopPausePos = 0;
+    ad->iopBuffSize = iopBuffSize;
+    ad->iopBuff = (int)(uintptr_t)iopBuff;
+    ad->iopZero = (int)(uintptr_t)iopZeroBuff;
+    memset(zeroBuff, 0, zeroBuffSize);
+    sendToIOP(ad->iopZero, zeroBuff, zeroBuffSize);
+    changeMasterVolume(kFullMasterVolume);
     return 1;
 }
 
-int audioDecDelete(AudioDec *pAudioDec) {
-    // Release both processor side regions and silence the voices.
-    sceSifFreeIopHeap((void *)(uintptr_t)pAudioDec->iopBuffer);
-    sceSifFreeIopHeap((void *)(uintptr_t)pAudioDec->iopExtra);
-    setupIopVoices(0);
-    return 1;
-}
-
-int audioDecIsPreset(AudioDec *pAudioDec) {
-    // Report whether the handed count has reached the processor side buffer size.
-    return pAudioDec->totalBytesSent >= pAudioDec->iopBufferSize;
-}
-
-void audioDecStart(AudioDec *pAudioDec) {
-    // Raise the input volume, hand the buffer range to the driver, and enter streaming.
-    const int aligned = pAudioDec->iopBufferSize / kBlockStep * kBlockStep;
-
-    setIopInputVolume(kFullInputVolume);
-    sceSdRemote(1,
-                0x80e0,
-                1,
-                0x13,
-                pAudioDec->iopBuffer,
-                aligned,
-                pAudioDec->iopBuffer + pAudioDec->iopPauseOffset);
-    pAudioDec->state = 2;
-}
-
-void audioDecReset(AudioDec *pAudioDec) {
-    // Stop the driver, park its reply, and clear the decoder back to idle.
+void audioDecPause(AudioDec *ad) {
     int position;
 
-    pAudioDec->state = 3;
-    setIopInputVolume(0);
-    sceSdRemote(1, 0x80e0, 1, 2, 0, 0);
-    position = sceSdRemote(1, 0x80d0, 1, 0, pAudioDec->iopExtra, 0x4000, 0x800);
-    pAudioDec->iopPauseOffset = (position & kPositionMask) - pAudioDec->iopBuffer;
-    pAudioDec->iopPauseOffset = 0;
-    pAudioDec->state = 0;
-    pAudioDec->headerCount = 0;
-    pAudioDec->put = 0;
-    pAudioDec->count = 0;
-    pAudioDec->totalBytes = 0;
-    pAudioDec->totalBytesSent = 0;
-    pAudioDec->iopOffset = 0;
+    ad->state = AU_STATE_PAUSE;
+    changeInputVolume(kSilentVolume);
+    position = sceSdRemote(kWait, rSdBlockTrans, kSoundChannel, SD_TRANS_MODE_STOP, 0, 0);
+    ad->iopPausePos = (position & kPositionMask) - ad->iopBuff;
+    sceSdRemote(kWait,
+                rSdVoiceTrans,
+                kSoundChannel,
+                SD_TRANS_MODE_WRITE | SD_TRANS_BY_DMA,
+                ad->iopZero,
+                kZeroSpuAddress,
+                ad->zeroBuffSize);
+}
+
+void audioDecResume(AudioDec *ad) {
+    changeInputVolume(kFullInputVolume);
+    sceSdRemote(kWait,
+                rSdBlockTrans,
+                kSoundChannel,
+                SD_TRANS_MODE_WRITE_FROM | SD_BLOCK_LOOP,
+                ad->iopBuff,
+                ad->iopBuffSize / kBlockSize * kBlockSize,
+                ad->iopBuff + ad->iopPausePos);
+    ad->state = AU_STATE_PLAY;
+}
+
+void audioDecStart(AudioDec *ad) {
+    audioDecResume(ad);
+}
+
+void audioDecReset(AudioDec *ad) {
+    audioDecPause(ad);
+    ad->iopPausePos = 0;
+    ad->state = AU_STATE_INIT;
+    ad->hdrCount = 0;
+    ad->put = 0;
+    ad->count = 0;
+    ad->totalBytes = 0;
+    ad->totalBytesSent = 0;
+    ad->iopLastPos = 0;
+}
+
+void audioDecBeginPut(
+    AudioDec *ad, unsigned char **ptr0, int *len0, unsigned char **ptr1, int *len1) {
+    int free;
+
+    if (ad->state == AU_STATE_INIT) {
+        *ptr0 = &ad->header.bytes[ad->hdrCount];
+        *len0 = AUDIO_HEADER_SIZE - ad->hdrCount;
+        *ptr1 = ad->data;
+        *len1 = ad->size;
+        return;
+    }
+    free = ad->size - ad->count;
+    if (ad->size - ad->put >= free) {
+        *ptr0 = ad->data + ad->put;
+        *len0 = free;
+        *ptr1 = NULL;
+        *len1 = 0;
+    } else {
+        *ptr0 = ad->data + ad->put;
+        *len0 = ad->size - ad->put;
+        *ptr1 = ad->data;
+        *len1 = free - (ad->size - ad->put);
+    }
+}
+
+void audioDecEndPut(AudioDec *ad, int size) {
+    if (ad->state == AU_STATE_INIT) {
+        int header = AUDIO_HEADER_SIZE - ad->hdrCount;
+        if ((unsigned int)size < (unsigned int)header) {
+            header = size;
+        }
+        ad->hdrCount += header;
+        if ((unsigned int)ad->hdrCount >= AUDIO_HEADER_SIZE) {
+            const SpuStreamHeader *sshd = &ad->header.blocks.sshd;
+            const SpuStreamBody *ssbd = &ad->header.blocks.ssbd;
+
+            ad->state = AU_STATE_PRESET;
+            printf("-------- audio information --------------------\n");
+            printf("[%c%c%c%c]\n"
+                   "header size:                            %d\n"
+                   "type(0:PCM big, 1:PCM little, 2:ADPCM): %d\n"
+                   "sampling rate:                          %dHz\n"
+                   "channels:                               %d\n"
+                   "interleave size:                        %d\n"
+                   "interleave start block address:         %d\n"
+                   "interleave end block address:           %d\n",
+                   sshd->id[0],
+                   sshd->id[1],
+                   sshd->id[2],
+                   sshd->id[3],
+                   sshd->size,
+                   sshd->type,
+                   sshd->rate,
+                   sshd->ch,
+                   sshd->interSize,
+                   sshd->loopStart,
+                   sshd->loopEnd);
+            printf("[%c%c%c%c]\n"
+                   "data size:                              %d\n",
+                   ssbd->id[0],
+                   ssbd->id[1],
+                   ssbd->id[2],
+                   ssbd->id[3],
+                   ssbd->size);
+        }
+        size -= header;
+    }
+    ad->put = (ad->put + size) % ad->size;
+    ad->count += size;
+    ad->totalBytes += size;
+}
+
+int audioDecIsPreset(AudioDec *ad) {
+    return ad->totalBytesSent >= ad->iopBuffSize;
+}
+
+int audioDecSendToIOP(AudioDec *ad) {
+    // A stage outside the four leaves the spans as they were, so they start cleared.
+    int pd0 = 0;
+    int d0 = 0;
+    int pd1 = 0;
+    int d1 = 0;
+    int ret = 0;
+    int counted;
+    int pos;
+    int s0;
+    int s1;
+
+    switch (ad->state) {
+    case AU_STATE_INIT:
+        return 0;
+    case AU_STATE_PRESET:
+        pd0 = ad->iopBuff + ad->totalBytesSent % ad->iopBuffSize;
+        d0 = ad->iopBuffSize - ad->totalBytesSent;
+        pd1 = 0;
+        d1 = 0;
+        break;
+    case AU_STATE_PLAY: {
+        const int position = sceSdRemote(kWait, rSdBlockTransStatus, kSoundChannel);
+        iopGetArea(&pd0, &d0, &pd1, &d1, ad, (position & kPositionMask) - ad->iopBuff);
+        break;
+    }
+    case AU_STATE_PAUSE:
+        return 0;
+    default:
+        break;
+    }
+
+    counted = ad->count / kBlockSize * kBlockSize;
+    pos = (ad->put - ad->count + ad->size) % ad->size;
+    s0 = ad->size - pos;
+    if (s0 >= counted) {
+        s0 = counted;
+    }
+    s1 = counted - s0;
+    if (d0 + d1 >= kBlockSize && s0 + s1 >= kBlockSize) {
+        ret = sendToIOP2area(pd0, d0, pd1, d1, ad->data + pos, s0, ad->data, s1);
+    }
+    ad->count -= ret;
+    ad->totalBytesSent += ret;
+    ad->iopLastPos = (ad->iopLastPos + ret) % ad->iopBuffSize;
+    return ret;
 }

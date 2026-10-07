@@ -348,9 +348,9 @@ public:
     static void DestroyAllScreens();
 
     /**
-     * Create the four screens the front end needs before its containers have loaded.
+     * Create the screens the front end needs before its containers have loaded.
      *
-     * Registers MetSonyScreen, MetMemDetectStartup, MetMsgScreen, and MetLogoScreen in
+     * Registers MetMemDetectStartup, MetMsgScreen, and MetLogoScreen in
      * ScreenRegistry(), each built by its factory on the renderer with the `rndglobal` zone.
      * MetRenderer::ResolveSceneViews() is the one caller. The title is inferred.
      *

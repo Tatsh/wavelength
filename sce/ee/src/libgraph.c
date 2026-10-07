@@ -155,11 +155,10 @@ static int sceGszbufaddr(short nPsm, short nWidth, short nHeight) {
     return (short)(blocks << 1);
 }
 
-// NTSC-U/C: 0x00636360, PAL: 0x00676ef0
 // Writes one display environment to the privileged registers. The first
 // GS revision uses the first video circuit, and any other revision uses the
 // second circuit together with the output mode register.
-static void sceGsPutDispEnv(const sceGsDispEnv *pDisp) {
+void sceGsPutDispEnv(const sceGsDispEnv *pDisp) {
     GsState *state = sceGsGetGParam();
 
     if (state->gsVersion == 1) {

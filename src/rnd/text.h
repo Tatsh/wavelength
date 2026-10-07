@@ -156,6 +156,17 @@ public:
     virtual void SetText(const HxStr &text);
 
     /**
+     * Measure a run of characters in the font of the text.
+     *
+     * @param pszText The characters.
+     * @param nLength The number of characters.
+     * @return The sum of the advances of the characters, or 0 without a font.
+     * @ghidraAddress NTSC-U/C: 0x00242b30
+     * @ghidraAddress PAL: 0x0024b608
+     */
+    float MeasureWidth(const char *pszText, int nLength);
+
+    /**
      * Replace the font.
      *
      * Rnd::Drawable vtable slot 7. A null argument is stored, unlike Rnd::Mesh::SetMat(),

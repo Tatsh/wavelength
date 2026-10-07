@@ -82,6 +82,16 @@ public:
     static void PlayCheat();
 
     /**
+     * Play the sound of going back a screen in the front end.
+     *
+     * The metagame plays it when Triangle led away from a screen. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fb60
+     * @ghidraAddress PAL: 0x00289460
+     */
+    static void PlayBack();
+
+    /**
      * Stop the looping sound of a song.
      *
      * @ghidraAddress NTSC-U/C: 0x0027fda0

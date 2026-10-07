@@ -240,3 +240,12 @@ public:
  * @ghidraAddress NTSC-U/C: 0x00436218
  */
 extern Scheduler TheSongScheduler;
+
+/**
+ * The scheduler of the front end clock, which times the menu music.
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00436910
+ */
+extern Scheduler TheMetaScheduler;

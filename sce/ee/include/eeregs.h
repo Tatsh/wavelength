@@ -6,6 +6,10 @@
  * `*D_STAT = value`.
  */
 
+/** Timer 0 counter register. */
+#define T0_COUNT ((volatile unsigned int *)0x10000000)
+/** Timer 0 mode register. */
+#define T0_MODE ((volatile unsigned int *)0x10000010)
 /** Timer 3 mode register. */
 #define T3_MODE ((volatile unsigned int *)0x10001810)
 
@@ -13,6 +17,18 @@
 #define D0_CHCR ((volatile unsigned int *)0x10008000)
 /** DMA channel 1 (VIF1) control register. */
 #define D1_CHCR ((volatile unsigned int *)0x10009000)
+/** DMA channel 2 (GIF) control register. */
+#define D2_CHCR ((volatile unsigned int *)0x1000a000)
+/** DMA channel 2 (GIF) quadword count register. */
+#define D2_QWC ((volatile unsigned int *)0x1000a020)
+/** DMA channel 2 (GIF) tag address register. */
+#define D2_TADR ((volatile unsigned int *)0x1000a030)
+/** DMA channel 4 (to the IPU) control register. */
+#define D4_CHCR ((volatile unsigned int *)0x1000b400)
+/** DMA channel 4 (to the IPU) memory address register. */
+#define D4_MADR ((volatile unsigned int *)0x1000b410)
+/** DMA channel 4 (to the IPU) quadword count register. */
+#define D4_QWC ((volatile unsigned int *)0x1000b420)
 /** DMA controller control register. */
 #define D_CTRL ((volatile unsigned int *)0x1000e000)
 /** DMA controller interrupt status register. */

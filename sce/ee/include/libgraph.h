@@ -204,6 +204,15 @@ void sceGsSetDefDispEnv(
     sceGsDispEnv *pDisp, short nPsm, short nWidth, short nHeight, short nDx, short nDy);
 
 /**
+ * Write a display environment to the privileged display registers.
+ *
+ * @param pDisp The registers to write.
+ * @ghidraAddress NTSC-U/C: 0x0030f7b0
+ * @ghidraAddress PAL: 0x0037bd60
+ */
+void sceGsPutDispEnv(const sceGsDispEnv *pDisp);
+
+/**
  * Fill the eight draw environment pairs.
  *
  * The depth buffer follows the frame buffer, dithering follows the colour depth, and the test word

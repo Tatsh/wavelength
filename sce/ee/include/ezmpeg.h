@@ -1,462 +1,236 @@
 #ifndef EZMPEG_H
 #define EZMPEG_H
 
-#include <libmpeg.h>
+#include <eetypes.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * Sony's ezmpeg sample: the video decoder, the audio decoder, the stream reader, and the display
- * the cutscene player drives, under the sample's names.
+ * Sony's ezmpegstr sample: the audio decoder and the image loader the movie player drives, under
+ * the sample's names.
  */
 
 /**
- * Video decoder, 0xb8 bytes.
+ * One quadword of an image load DMA chain.
  *
- * The decoder state follows the embedded sceMpeg and the input ring. The two handler identifiers
- * the cutscene player registers close the structure.
+ * A DMA tag fills the low doubleword, and a GIF tag or a register write fills all four words. The
+ * DMA controller reads the chain by quadword, so every tag starts on a 16-byte boundary.
  */
+typedef union {
+    u_long128 qword;             /*!< The quadword. */
+    unsigned long long dword[2]; /*!< The two doublewords, low first. */
+    unsigned int word[4];        /*!< The four words, low first. */
+} __attribute__((aligned(16))) LoadImageTag;
+
+/** Bytes of the stream header the audio decoder collects before the samples. */
+#define AUDIO_HEADER_SIZE 0x28
+
+/** Values of AudioDec::state. */
+#define AU_STATE_INIT 0   /*!< Collecting the stream header. */
+#define AU_STATE_PRESET 1 /*!< Filling the IOP buffer before playback. */
+#define AU_STATE_PLAY 2   /*!< Streaming to the sound processor. */
+#define AU_STATE_PAUSE 3  /*!< Stopped, with the play position kept. */
+
+/** The format block at the start of an audio stream. */
 typedef struct {
-    sceMpeg mpeg;              /*!< Decoder state. */
-    unsigned char vibuf[0x60]; /*!< Input ring, treated as a ViBuf by the decoder unit. */
-    int state;                 /*!< Decoder state, such as VD_STATE_ABORT or VD_STATE_END. */
-    int reserved;              /*!< Never read or written by the decoder unit. +0xac */
-    int hid_endimage;          /*!< Identifier of the end-of-image interrupt handler. */
-    int hid_vblank;            /*!< Identifier of the vertical blank interrupt handler. */
-} VideoDec;
+    char id[4];    /*!< The block identifier. */
+    int size;      /*!< Header size in bytes. */
+    int type;      /*!< 0 for big-endian PCM, 1 for little-endian PCM, 2 for ADPCM. */
+    int rate;      /*!< Sampling rate in hertz. */
+    int ch;        /*!< Channel count. */
+    int interSize; /*!< Interleave size in bytes. */
+    int loopStart; /*!< Block address the interleave starts at. */
+    int loopEnd;   /*!< Block address the interleave ends at. */
+} SpuStreamHeader;
+
+/** The data block header that follows the format block. */
+typedef struct {
+    char id[4]; /*!< The block identifier. */
+    int size;   /*!< Data size in bytes. */
+} SpuStreamBody;
 
 /**
- * Audio decoder, 0x5c bytes.
+ * Audio decoder, 0x60 bytes.
  *
- * The structure includes the transfer stage, the staging buffer on the Emotion Engine side, and
- * the two regions on the IOP side, with the counts the transfers advance.
+ * The decoder collects the stream header byte by byte, stages the samples in an Emotion Engine
+ * ring, and moves them to an IOP ring the sound processor plays in a loop.
  */
 typedef struct {
-    int state;                  /*!< Transfer stage (idle, priming, streaming, or stopping). */
-    unsigned char header[0x28]; /*!< Stream header, filled byte by byte before the samples. */
-    int headerCount;            /*!< Header bytes received so far. */
-    unsigned char *buffer;      /*!< Staging buffer on the Emotion Engine side. */
-    int put;                    /*!< Staging write offset. */
-    int count;                  /*!< Staged bytes not yet transferred. */
-    int bufferSize;             /*!< Staging buffer size in bytes. */
-    int totalBytes;             /*!< Bytes staged since the last reset. */
-    int iopBuffer;              /*!< Buffer address on the IOP side. */
-    int iopBufferSize;          /*!< Buffer size on the IOP side. */
-    int iopOffset;              /*!< Write offset into the buffer on the IOP side. */
-    int iopPauseOffset;         /*!< Play offset the driver reported at the stop call. */
-    int totalBytesSent;         /*!< Bytes sent to the IOP side since the last reset. */
-    int iopExtra;               /*!< Second region on the IOP side, with the preset block. */
+    int state; /*!< One of the AU_STATE values. */
+    union {
+        unsigned char bytes[AUDIO_HEADER_SIZE]; /*!< The header as it arrives. */
+        struct {
+            SpuStreamHeader sshd; /*!< The format block. */
+            SpuStreamBody ssbd;   /*!< The data block header. */
+        } blocks;                 /*!< The header once complete. */
+    } header;                     /*!< The stream header. */
+    int hdrCount;                 /*!< Header bytes collected so far. */
+    unsigned char *data;          /*!< The Emotion Engine ring. */
+    int put;                      /*!< Write offset into the Emotion Engine ring. */
+    int count;                    /*!< Bytes staged and not yet sent. */
+    int size;                     /*!< Size of the Emotion Engine ring in bytes. */
+    int totalBytes;               /*!< Bytes staged since the last reset. */
+    int iopBuff;                  /*!< The IOP ring. */
+    int iopBuffSize;              /*!< Size of the IOP ring in bytes. */
+    int iopLastPos;               /*!< Write offset into the IOP ring. */
+    int iopPausePos;              /*!< Play offset the sound processor reported when stopped. */
+    int totalBytesSent;           /*!< Bytes sent to the IOP since the last reset. */
+    int iopZero;      /*!< A cleared IOP buffer the sound processor plays while stopped. */
+    int zeroBuffSize; /*!< Size of the cleared buffer in bytes. */
 } AudioDec;
 
-/** Ring buffer between the file reader and the demultiplexer, 0x5000c bytes. */
-typedef struct {
-    unsigned char data[0x50000]; /*!< The ring. */
-    int put;                     /*!< Write offset. */
-    int count;                   /*!< Bytes in the ring. */
-    int size;                    /*!< Capacity in bytes. */
-} ReadBuf;
-
 /**
- * An open stream, 0x38 bytes.
+ * Clear an audio decoder, upload the cleared buffer to the IOP, and set the master volume.
  *
- * A stream on the disc is read through the CD streaming functions and any other stream through
- * fd.
- */
-typedef struct {
-    int isOnCD;                 /*!< Nonzero for a stream on the disc. */
-    int size;                   /*!< Size of the stream in bytes. */
-    unsigned char cdFile[0x28]; /*!< The sceCdlFILE entry, then the IOP heap pointer at +0x2c. */
-    int fd;                     /*!< File descriptor of a stream not on the disc. */
-    int reserved;               /*!< Never read or written by the stream unit. +0x34 */
-} StrFile;
-
-/**
- * Decoded-frame queue, 0x14 bytes.
- *
- * The display's interrupt handler lowers the count while the decode worker waits on it.
- */
-typedef struct {
-    void *data;         /*!< Frame data of each slot. */
-    void *tag;          /*!< DMA tags of each slot. */
-    int write;          /*!< Slot the decoder fills next. */
-    volatile int count; /*!< Decoded frames waiting for display. */
-    int size;           /*!< Count of slots. */
-} VoBuf;
-
-/** Values videoDecGetState() returns and videoDecAbort() stores. */
-#define VD_STATE_ABORT 1 /*!< Playback was aborted. */
-#define VD_STATE_END 3   /*!< Decoding finished and the queue drained. */
-
-/** Stream callback of the video decoder. */
-typedef int (*VideoDecCallback)(sceMpeg *pMpeg, void *pCallbackData, void *pData);
-
-/** Interrupt handler of the display. */
-typedef int (*InterruptHandler)(int nCause);
-
-/**
- * Create the decoder context, install the decoder callbacks, and create the input ring.
- *
- * @param pVideoDec The video decoder.
- * @param pWork Work area of the decoder context.
- * @param nWorkSize Size of pWork in bytes.
- * @param pData Data area of the input ring.
- * @param pTag DMA tag area of the input ring.
- * @param nTagSize Count of DMA tags.
- * @param pTimeStamps Time stamp area of the input ring.
- * @param nTimeStamps Count of time stamps.
- * @ghidraAddress NTSC-U/C: 0x005692f8
- * @ghidraAddress PAL: 0x005a97c0
- */
-void videoDecCreate(VideoDec *pVideoDec,
-                    unsigned char *pWork,
-                    int nWorkSize,
-                    void *pData,
-                    void *pTag,
-                    int nTagSize,
-                    void *pTimeStamps,
-                    int nTimeStamps);
-
-/**
- * Register a stream callback with the decoder.
- *
- * @param pVideoDec The video decoder.
- * @param nType The stream type.
- * @param nChannel The channel.
- * @param pfnCallback The callback.
- * @param pData Data passed to the callback.
+ * @param ad The decoder.
+ * @param buff The Emotion Engine ring.
+ * @param buffSize Size of the Emotion Engine ring in bytes.
+ * @param iopBuff The IOP ring.
+ * @param iopBuffSize Size of the IOP ring in bytes.
+ * @param zeroBuff A buffer the routine clears and uploads.
+ * @param iopZeroBuff The IOP buffer the cleared buffer is uploaded to.
+ * @param zeroBuffSize Size of both cleared buffers in bytes.
  * @return Always 1.
- * @ghidraAddress NTSC-U/C: 0x00569600
- * @ghidraAddress PAL: 0x005a9ac8
+ * @ghidraAddress NTSC-U/C: 0x001afb48
+ * @ghidraAddress PAL: 0x001b88e8
  */
-int videoDecSetStream(
-    VideoDec *pVideoDec, int nType, int nChannel, VideoDecCallback pfnCallback, void *pData);
+int audioDecCreate(AudioDec *ad,
+                   unsigned char *buff,
+                   int buffSize,
+                   void *iopBuff,
+                   int iopBuffSize,
+                   unsigned char *zeroBuff,
+                   void *iopZeroBuff,
+                   int zeroBuffSize);
 
 /**
- * Report the decoder state.
+ * Stop the sound processor, keep its play position, and point it at the cleared buffer.
  *
- * @param pVideoDec The video decoder.
- * @return The state.
- * @ghidraAddress NTSC-U/C: 0x00569440
- * @ghidraAddress PAL: 0x005a9908
+ * @param ad The decoder.
+ * @ghidraAddress NTSC-U/C: 0x001afbe8
+ * @ghidraAddress PAL: 0x001b8988
  */
-int videoDecGetState(VideoDec *pVideoDec);
+void audioDecPause(AudioDec *ad);
 
 /**
- * Store VD_STATE_ABORT in the decoder state.
+ * Restart the sound processor on the IOP ring from the kept play position.
  *
- * @param pVideoDec The video decoder.
- * @ghidraAddress NTSC-U/C: 0x00569430
- * @ghidraAddress PAL: 0x005a98f8
+ * @param ad The decoder.
+ * @ghidraAddress NTSC-U/C: 0x001afc70
+ * @ghidraAddress PAL: 0x001b8a10
  */
-void videoDecAbort(VideoDec *pVideoDec);
+void audioDecResume(AudioDec *ad);
 
 /**
- * Append a sequence end code to the input ring and flush the ring.
+ * Start playback.
  *
- * @param pVideoDec The video decoder.
- * @return 1, or 0 when the ring does not have room for the end code.
- * @ghidraAddress NTSC-U/C: 0x005694d0
- * @ghidraAddress PAL: 0x005a9998
+ * @param ad The decoder.
+ * @ghidraAddress NTSC-U/C: 0x001afce0
+ * @ghidraAddress PAL: 0x001b8a80
  */
-int videoDecFlush(VideoDec *pVideoDec);
+void audioDecStart(AudioDec *ad);
 
 /**
- * Report whether the input ring is empty and no reference picture remains.
+ * Stop playback and clear the decoder back to collecting a header.
  *
- * @param pVideoDec The video decoder.
- * @return 1 when flushed, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x005695b0
- * @ghidraAddress PAL: 0x005a9a78
+ * @param ad The decoder.
+ * @ghidraAddress NTSC-U/C: 0x001afd00
+ * @ghidraAddress PAL: 0x001b8aa0
  */
-int videoDecIsFlushed(VideoDec *pVideoDec);
+void audioDecReset(AudioDec *ad);
 
 /**
- * Delete the input ring and the decoder.
+ * Report where the next audio bytes go, as up to two spans.
  *
- * @param pVideoDec The video decoder.
- * @return Always 1.
- * @ghidraAddress NTSC-U/C: 0x005693f8
- * @ghidraAddress PAL: 0x005a98c0
+ * While the header is incomplete, the first span is the rest of the header and the second is the
+ * whole Emotion Engine ring. Otherwise the spans are the free part of the ring, split where the
+ * ring wraps.
+ *
+ * @param ad The decoder.
+ * @param ptr0 Receives the start of the first span.
+ * @param len0 Receives the size of the first span.
+ * @param ptr1 Receives the start of the second span.
+ * @param len1 Receives the size of the second span.
+ * @ghidraAddress NTSC-U/C: 0x001afd48
+ * @ghidraAddress PAL: 0x001b8ae8
  */
-int videoDecDelete(VideoDec *pVideoDec);
+void audioDecBeginPut(
+    AudioDec *ad, unsigned char **ptr0, int *len0, unsigned char **ptr1, int *len1);
 
 /**
- * Decode the stream, wait for the display to drain the frame queue, and store VD_STATE_END.
+ * Account for bytes written to the spans audioDecBeginPut() reported.
  *
- * @param pVideoDec The video decoder.
- * @ghidraAddress NTSC-U/C: 0x005696a0
- * @ghidraAddress PAL: 0x005a9b68
+ * Header bytes come first. The header is printed once it is complete, and the decoder then
+ * enters AU_STATE_PRESET.
+ *
+ * @param ad The decoder.
+ * @param size The bytes written.
+ * @ghidraAddress NTSC-U/C: 0x001afdf8
+ * @ghidraAddress PAL: 0x001b8b98
  */
-void videoDecMain(VideoDec *pVideoDec);
+void audioDecEndPut(AudioDec *ad, int size);
 
 /**
- * Copy a video packet from the read buffer into the decoder's input ring with its time stamps.
+ * Report whether the IOP ring has been filled once.
  *
- * @param pMpeg The decoder.
- * @param pCallbackData The sceMpegCbDataStr packet.
- * @param pData The ReadBuf the packet addresses.
- * @return 1 when bytes were copied, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x0059afa0
- * @ghidraAddress PAL: 0x005de438
+ * @param ad The decoder.
+ * @return Nonzero once the bytes sent reach the size of the IOP ring.
+ * @ghidraAddress NTSC-U/C: 0x001aff10
+ * @ghidraAddress PAL: 0x001b8cb0
  */
-int videoCallback(sceMpeg *pMpeg, void *pCallbackData, void *pData);
+int audioDecIsPreset(AudioDec *ad);
 
 /**
- * Copy a PCM packet, less its four-byte header, from the read buffer into the audio decoder.
+ * Move the staged bytes to the free part of the IOP ring, in whole 1024-byte blocks.
  *
- * @param pMpeg The decoder.
- * @param pCallbackData The sceMpegCbDataStr packet.
- * @param pData The ReadBuf the packet addresses.
- * @return 1 when bytes were copied, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x0059b0c8
- * @ghidraAddress PAL: 0x005de560
- */
-int pcmCallback(sceMpeg *pMpeg, void *pCallbackData, void *pData);
-
-/**
- * Clear an audio decoder, allocate both regions on the IOP side, and upload the preset block.
- *
- * @param pAudioDec The audio decoder.
- * @param pBuffer Staging buffer.
- * @param nBufferSize Size of pBuffer in bytes.
- * @param nIopBufferSize Size of the buffer on the IOP side in bytes.
- * @return 1, or 0 when an allocation fails.
- * @ghidraAddress NTSC-U/C: 0x00567820
- * @ghidraAddress PAL: 0x005a7ce8
- */
-int audioDecCreate(AudioDec *pAudioDec,
-                   unsigned char *pBuffer,
-                   int nBufferSize,
-                   int nIopBufferSize);
-
-/**
- * Free both regions on the IOP side and silence the voices.
- *
- * @param pAudioDec The audio decoder.
- * @return Always 1.
- * @ghidraAddress NTSC-U/C: 0x005678e0
- * @ghidraAddress PAL: 0x005a7da8
- */
-int audioDecDelete(AudioDec *pAudioDec);
-
-/**
- * Send staged bytes to the IOP side according to the transfer stage.
- *
- * @param pAudioDec The audio decoder.
+ * @param ad The decoder.
  * @return The bytes sent.
- * @ghidraAddress NTSC-U/C: 0x00567670
- * @ghidraAddress PAL: 0x005a7b38
+ * @ghidraAddress NTSC-U/C: 0x001aff28
+ * @ghidraAddress PAL: 0x001b8cc8
  */
-int audioDecSendToIOP(AudioDec *pAudioDec);
+int audioDecSendToIOP(AudioDec *ad);
 
 /**
- * Report whether the bytes sent have filled the buffer on the IOP side.
+ * Build the DMA chain that loads a picture of 16 by 16 pixel macroblocks into the frame buffer.
  *
- * @param pAudioDec The audio decoder.
- * @return 1 when filled, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x00567a50
- * @ghidraAddress PAL: 0x005a7f18
+ * The picture is 640 pixels wide in the frame buffer, and each macroblock is 1024 bytes of 32-bit
+ * pixels following the one before it.
+ *
+ * @param tags The chain to build.
+ * @param image The macroblocks.
+ * @param x Left edge in pixels.
+ * @param y Top edge in pixels.
+ * @param w Width in pixels.
+ * @param h Height in pixels.
+ * @ghidraAddress NTSC-U/C: 0x001b0428
+ * @ghidraAddress PAL: 0x001b91c8
  */
-int audioDecIsPreset(AudioDec *pAudioDec);
+void setLoadImageTags(LoadImageTag *tags, void *image, int x, int y, int w, int h);
 
 /**
- * Raise the input volume, pass the buffer range to the sound driver, and enter streaming.
+ * Build the DMA chain that fills an area of the frame buffer with one repeated macroblock.
  *
- * @param pAudioDec The audio decoder.
- * @ghidraAddress NTSC-U/C: 0x00567a68
- * @ghidraAddress PAL: 0x005a7f30
+ * @param tags The chain to build.
+ * @param image The macroblock.
+ * @param x Left edge in pixels.
+ * @param y Top edge in pixels.
+ * @param w Width in pixels.
+ * @param h Height in pixels.
+ * @ghidraAddress NTSC-U/C: 0x001b0460
+ * @ghidraAddress PAL: 0x001b9200
  */
-void audioDecStart(AudioDec *pAudioDec);
+void setLoadImageTagsTile(LoadImageTag *tags, void *image, int x, int y, int w, int h);
 
 /**
- * Stop the sound driver and clear the audio decoder back to idle.
+ * Start the GIF channel on a chain setLoadImageTags() built.
  *
- * @param pAudioDec The audio decoder.
- * @ghidraAddress NTSC-U/C: 0x00567ad8
- * @ghidraAddress PAL: 0x005a7fa0
+ * @param tags The chain.
+ * @ghidraAddress NTSC-U/C: 0x001b0888
+ * @ghidraAddress PAL: 0x001b9628
  */
-void audioDecReset(AudioDec *pAudioDec);
-
-/**
- * Reset the offsets and restore the full capacity.
- *
- * @param pReadBuf The read buffer.
- * @ghidraAddress NTSC-U/C: 0x005cb2b8
- * @ghidraAddress PAL: 0x0060d218
- */
-void readBufCreate(ReadBuf *pReadBuf);
-
-/**
- * Delete a read buffer. The buffer has nothing to release.
- *
- * @param pReadBuf The read buffer.
- * @ghidraAddress NTSC-U/C: 0x005cb2d0
- * @ghidraAddress PAL: 0x0060d230
- */
-void readBufDelete(ReadBuf *pReadBuf);
-
-/**
- * Offer the write position.
- *
- * @param pReadBuf The read buffer.
- * @param ppPut Receives the write position when the ring has room.
- * @return The free bytes.
- * @ghidraAddress NTSC-U/C: 0x005cb2d8
- * @ghidraAddress PAL: 0x0060d238
- */
-int readBufBeginPut(ReadBuf *pReadBuf, unsigned char **ppPut);
-
-/**
- * Advance the write position past stored bytes, wrapping at the capacity.
- *
- * @param pReadBuf The read buffer.
- * @param nSize Bytes stored.
- * @return The bytes accepted, at most the free bytes.
- * @ghidraAddress NTSC-U/C: 0x005cb308
- * @ghidraAddress PAL: 0x0060d268
- */
-int readBufEndPut(ReadBuf *pReadBuf, int nSize);
-
-/**
- * Offer the read position.
- *
- * @param pReadBuf The read buffer.
- * @param ppGet Receives the read position when the ring is not empty.
- * @return The bytes in the ring.
- * @ghidraAddress NTSC-U/C: 0x005cb350
- * @ghidraAddress PAL: 0x0060d2b0
- */
-int readBufBeginGet(ReadBuf *pReadBuf, unsigned char **ppGet);
-
-/**
- * Discard consumed bytes.
- *
- * @param pReadBuf The read buffer.
- * @param nSize Bytes consumed.
- * @return The bytes discarded, at most the bytes in the ring.
- * @ghidraAddress NTSC-U/C: 0x005cb398
- * @ghidraAddress PAL: 0x0060d2f8
- */
-int readBufEndGet(ReadBuf *pReadBuf, int nSize);
-
-/**
- * Open a stream.
- *
- * A "cdrom0:" name is uppercased in place, its forward slashes become backslashes, and it gains
- * ";1" when it does not have a version. A name without a device opens on "host0:".
- *
- * @param pFile Receives the stream.
- * @param pszName The stream name.
- * @return 1, or 0 when the stream cannot be opened.
- * @ghidraAddress NTSC-U/C: 0x0058de70
- * @ghidraAddress PAL: 0x005d11c8
- */
-int strFileOpen(StrFile *pFile, const char *pszName);
-
-/**
- * Close a stream, stopping CD streaming and freeing its IOP heap for a stream on the disc.
- *
- * @param pFile The stream.
- * @return Always 1.
- * @ghidraAddress NTSC-U/C: 0x0058e130
- * @ghidraAddress PAL: 0x005d1488
- */
-int strFileClose(StrFile *pFile);
-
-/**
- * Read from a stream. A stream on the disc reads whole 2048-byte sectors.
- *
- * @param pFile The stream.
- * @param pBuffer Receives the data.
- * @param nSize Bytes to read.
- * @return The bytes read.
- * @ghidraAddress NTSC-U/C: 0x0058e180
- * @ghidraAddress PAL: 0x005d14d8
- */
-int strFileRead(StrFile *pFile, void *pBuffer, int nSize);
-
-/**
- * Create a frame queue and mark every slot empty.
- *
- * @param pVoBuf The frame queue.
- * @param pData Frame data area.
- * @param pTag DMA tag area.
- * @param nFrames Count of slots.
- * @ghidraAddress NTSC-U/C: 0x005d3fa0
- * @ghidraAddress PAL: 0x00616008
- */
-void voBufCreate(VoBuf *pVoBuf, void *pData, void *pTag, int nFrames);
-
-/**
- * Delete a frame queue. The queue has nothing to release.
- *
- * @param pVoBuf The frame queue.
- * @ghidraAddress NTSC-U/C: 0x005d40c0
- * @ghidraAddress PAL: 0x00616128
- */
-void voBufDelete(VoBuf *pVoBuf);
-
-/**
- * Report whether every slot of a frame queue is in use.
- *
- * @param pVoBuf The frame queue.
- * @return 1 when count equals size, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x005d3ff8
- * @ghidraAddress PAL: 0x00616060
- */
-int voBufIsFull(VoBuf *pVoBuf);
-
-/**
- * Clear GS memory to a colour.
- *
- * @param nRed Red of the colour.
- * @param nGreen Green of the colour.
- * @param nBlue Blue of the colour.
- * @param nWidth Width in pixels.
- * @param nHeight Height in pixels.
- * @ghidraAddress NTSC-U/C: 0x005d2860
- * @ghidraAddress PAL: 0x006148a8
- */
-void clearGsMem(int nRed, int nGreen, int nBlue, int nWidth, int nHeight);
-
-/**
- * Wait for the field to move off nWaitField, then start presenting decoded frames.
- *
- * @param nWaitField The field to wait out.
- * @ghidraAddress NTSC-U/C: 0x005d3008
- * @ghidraAddress PAL: 0x00615050
- */
-void startDisplay(int nWaitField);
-
-/**
- * Stop presenting decoded frames.
- *
- * @ghidraAddress NTSC-U/C: 0x005d3050
- * @ghidraAddress PAL: 0x00615098
- */
-void endDisplay(void);
-
-/**
- * Release the frame the display finished showing back to the frame queue.
- *
- * @param nCause The interrupt cause.
- * @return Always 0.
- * @ghidraAddress NTSC-U/C: 0x005d3068
- * @ghidraAddress PAL: 0x006150b0
- */
-int handler_endimage(int nCause);
-
-/**
- * Present the next field of the oldest decoded frame on each vertical blank.
- *
- * @param nCause The interrupt cause.
- * @return Always 0.
- * @ghidraAddress NTSC-U/C: 0x005d2e38
- * @ghidraAddress PAL: 0x00614e80
- */
-int vblankHandler(int nCause);
+void loadImage(LoadImageTag *tags);
 
 /**
  * Print an error line. The game defines the routine, and the sample units call it.
@@ -466,15 +240,6 @@ int vblankHandler(int nCause);
  * @ghidraAddress PAL: 0x00551198
  */
 void ErrMessage(char *pszMessage);
-
-/**
- * Rotate the ready queue at the game's default thread priority. The game defines the routine, and
- * the sample units call it.
- *
- * @ghidraAddress NTSC-U/C: 0x00510f48
- * @ghidraAddress PAL: 0x005511c0
- */
-void switchThread(void);
 
 #ifdef __cplusplus
 }

@@ -71,6 +71,11 @@ typedef struct {
 #define SCE_CREAT 0x0200
 /** Truncate the file on opening. */
 #define SCE_TRUNC 0x0400
+/** Return from each request before it completes. */
+#define SCE_NOWAIT 0x8000
+
+/** sceIoctl() request that reports whether a request of a #SCE_NOWAIT file is still running. */
+#define SCE_FS_EXECUTING 0x1
 
 /** Seek origins of sceLseek(). */
 #define SCE_SEEK_SET 0

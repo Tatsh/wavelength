@@ -1,11 +1,4 @@
-set(WAVELENGTH_EZMPEG_SRCS
-    sample/audiodec.c
-    sample/disp.c
-    sample/readbuf.c
-    sample/strfile.c
-    sample/vibuf.c
-    sample/videodec.c
-    sample/vobuf.c)
+set(WAVELENGTH_EZMPEG_SRCS sample/audiodec.c sample/ldimage.c)
 
 add_library(wavelength_ezmpeg STATIC ${WAVELENGTH_EZMPEG_SRCS})
 target_link_libraries(wavelength_ezmpeg PRIVATE wavelength_common)

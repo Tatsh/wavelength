@@ -1,5 +1,10 @@
 #pragma once
 
+#include "ui/uicomponentfocuschangemsg.h"
+#include "ui/uicomponentselectmsg.h"
+#include "ui/uicomponentselectstartmsg.h"
+#include "ui/uiscreenchangemsg.h"
+
 /**
  * Registry of the triggers that fire actions on game and display events.
  *
@@ -65,6 +70,69 @@ public:
      * @ghidraAddress PAL: 0x002080a8
      */
     void LyricEvent(const char *pszLyric);
+
+    /**
+     * Fire the triggers that wait on the front end starting.
+     *
+     * The three values are stored for the triggers' actions to read, together with a new random
+     * value. The metagame passes its clock twice and 0. The name is inferred.
+     *
+     * @param flStart The first value.
+     * @param flTime The second value.
+     * @param flValue The third value.
+     * @ghidraAddress NTSC-U/C: 0x001feb88
+     * @ghidraAddress PAL: 0x00207928
+     */
+    void MetagameEvent(float flStart, float flTime, float flValue);
+
+    /**
+     * Fire the triggers that wait on a component being chosen.
+     *
+     * The names of the component, its panel, and its screen are stored for the triggers' actions
+     * to read.
+     *
+     * @param pMsg The message that reported the choice.
+     * @ghidraAddress NTSC-U/C: 0x001fe7d8
+     * @ghidraAddress PAL: 0x00207578
+     */
+    void ComponentSelectEvent(UIComponentSelectMsg *pMsg);
+
+    /**
+     * Fire the triggers that wait on the choice of a component beginning.
+     *
+     * @param pMsg The message that reported the choice.
+     * @ghidraAddress NTSC-U/C: 0x001fe888
+     * @ghidraAddress PAL: 0x00207628
+     */
+    void ComponentSelectStartEvent(UIComponentSelectStartMsg *pMsg);
+
+    /**
+     * Fire the triggers that wait on the focus moving between components.
+     *
+     * @param pMsg The message that reported the move.
+     * @ghidraAddress NTSC-U/C: 0x001fe938
+     * @ghidraAddress PAL: 0x002076d8
+     */
+    void ComponentFocusEvent(UIComponentFocusChangeMsg *pMsg);
+
+    /**
+     * Fire the triggers that wait on a move between screens.
+     *
+     * @param pMsg The message that reported the move.
+     * @ghidraAddress NTSC-U/C: 0x001feae0
+     * @ghidraAddress PAL: 0x00207880
+     */
+    void ScreenChangeEvent(UIScreenChangeMsg *pMsg);
+
+    /**
+     * Fire the triggers that wait on a button.
+     *
+     * @param nPlayer The controller.
+     * @param nButtons The buttons the controller holds.
+     * @ghidraAddress NTSC-U/C: 0x001febc8
+     * @ghidraAddress PAL: 0x00207968
+     */
+    void ButtonEvent(int nPlayer, int nButtons);
 };
 
 /**

@@ -12,6 +12,13 @@
  */
 class RndLoader {
 public:
+    /** Behaviour bits of a load, as Rnd::Manager::AddLoader() takes them. */
+    enum Flags {
+        kAsync = 1,    /*!< Load across frames instead of before AddLoader() returns. */
+        kPostLoad = 2, /*!< Run the pass that follows the object bodies once they have loaded. */
+        kDeleteObjects = 4, /*!< Delete the loaded objects when the loader is deleted. */
+    };
+
     /**
      * Interface a loader consults before it creates each object of its file.
      *

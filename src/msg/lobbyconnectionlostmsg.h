@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "msg/message.h"
+#include "netflow/lobbymsgtypes.h"
 #include "os/hxstr.h"
 
 /**
@@ -94,14 +95,3 @@ public:
 private:
     HxStr mReason; // +0x04, with a title like GameConnectionLostMsg's printed string
 };
-
-/**
- * Identity that LobbyConnectionLostMsg::Type() reports.
- *
- * This word belongs to LobbyConnectionLostMsg because LobbyConnectionLostMsg::Type() at
- * `0x003e1cd0` returns it.
- *
- * @ghidraAddress NTSC-U/C: 0x006d0394
- * @ghidraAddress PAL: 0x00713b2c
- */
-extern int g_nLobbyConnectionLostMsgType;

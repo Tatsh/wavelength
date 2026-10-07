@@ -1,5 +1,21 @@
 #pragma once
 
+#include "os/string.h"
+
+/**
+ * Build the device path of a game file.
+ *
+ * When the game runs from the disc, the path is `cdrom0:\` and the file upper-cased, with
+ * backslashes for slashes and a `;1` version suffix. Otherwise it is `host0:` and the file. The
+ * name is inferred.
+ *
+ * @param path Receives the path.
+ * @param pszFile The file, relative to the root of the game files.
+ * @ghidraAddress NTSC-U/C: 0x002894a8
+ * @ghidraAddress PAL: 0x00292ca0
+ */
+void MakeDevicePath(String &path, const char *pszFile);
+
 /**
  * Open file of the host or the disc.
  *

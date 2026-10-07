@@ -13,16 +13,19 @@ extern "C" {
 
 /** Commands of sceSdRemote(), one per libsd call. */
 enum {
-    rSdInit = 0x8000,          /*!< sceSdInit(flag). */
-    rSdSetParam = 0x8010,      /*!< sceSdSetParam(entry, value). */
-    rSdGetParam = 0x8020,      /*!< sceSdGetParam(entry). */
-    rSdSetSwitch = 0x8030,     /*!< sceSdSetSwitch(entry, value). */
-    rSdGetSwitch = 0x8040,     /*!< sceSdGetSwitch(entry). */
-    rSdSetAddr = 0x8050,       /*!< sceSdSetAddr(entry, value). */
-    rSdGetAddr = 0x8060,       /*!< sceSdGetAddr(entry). */
-    rSdSetCoreAttr = 0x8070,   /*!< sceSdSetCoreAttr(entry, value). */
-    rSdGetCoreAttr = 0x8080,   /*!< sceSdGetCoreAttr(entry). */
-    rSdSetEffectAttr = 0x8130, /*!< sceSdSetEffectAttr(core, attr). */
+    rSdInit = 0x8000,             /*!< sceSdInit(flag). */
+    rSdSetParam = 0x8010,         /*!< sceSdSetParam(entry, value). */
+    rSdGetParam = 0x8020,         /*!< sceSdGetParam(entry). */
+    rSdSetSwitch = 0x8030,        /*!< sceSdSetSwitch(entry, value). */
+    rSdGetSwitch = 0x8040,        /*!< sceSdGetSwitch(entry). */
+    rSdSetAddr = 0x8050,          /*!< sceSdSetAddr(entry, value). */
+    rSdGetAddr = 0x8060,          /*!< sceSdGetAddr(entry). */
+    rSdSetCoreAttr = 0x8070,      /*!< sceSdSetCoreAttr(entry, value). */
+    rSdGetCoreAttr = 0x8080,      /*!< sceSdGetCoreAttr(entry). */
+    rSdVoiceTrans = 0x80d0,       /*!< sceSdVoiceTrans(channel, mode, iop, spu, size). */
+    rSdBlockTrans = 0x80e0,       /*!< sceSdBlockTrans(channel, mode, iop, size, start). */
+    rSdBlockTransStatus = 0x8100, /*!< sceSdBlockTransStatus(channel, flag). */
+    rSdSetEffectAttr = 0x8130,    /*!< sceSdSetEffectAttr(core, attr). */
 };
 
 /** Core selectors of an entry value. */
@@ -48,6 +51,8 @@ enum {
 #define SD_P_MVOLR ((0x0a << 8) | 0x80)
 #define SD_P_EVOLL ((0x0b << 8) | 0x80)
 #define SD_P_EVOLR ((0x0c << 8) | 0x80)
+#define SD_P_AVOLL ((0x0f << 8) | 0x80)
+#define SD_P_AVOLR ((0x10 << 8) | 0x80)
 
 /** Core switches, one bit per voice. */
 #define SD_S_KON (0x15 << 8)
@@ -73,7 +78,12 @@ enum {
 
 /** Transfer directions and modes of sceSdVoiceTrans(). */
 #define SD_TRANS_MODE_WRITE 0
+#define SD_TRANS_MODE_STOP 2
+#define SD_TRANS_MODE_WRITE_FROM 3
 #define SD_TRANS_BY_DMA 0
+
+/** Block transfer flag of sceSdBlockTrans() that loops over the buffer. */
+#define SD_BLOCK_LOOP 0x10
 
 /** Poll flag of sceSdVoiceTransStatus(). */
 #define SD_TRANS_STATUS_CHECK 0

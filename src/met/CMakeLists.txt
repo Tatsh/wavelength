@@ -7,7 +7,9 @@ set(WAVELENGTH_MET_SRCS
     freqscreen.cpp
     gameoptions.cpp
     gizmo.cpp
+    introscreen.cpp
     listdataprovider.cpp
+    metagame.cpp
     metarenasscreen.cpp
     metastartscreen.cpp
     metbuttonlist.cpp
@@ -98,7 +100,6 @@ set(WAVELENGTH_MET_SRCS
     metsolostatsscreen.cpp
     metsolowinscreen.cpp
     metsonglists.cpp
-    metsonyscreen.cpp
     metstagefinishscreen.cpp
     metstrings.cpp
     mettoplogoscreen.cpp

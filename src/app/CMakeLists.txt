@@ -6,7 +6,7 @@ set(WAVELENGTH_APP_SRCS
     apptimetask.cpp
     apptunnel.cpp
     attachment.cpp
-    cutscene.c
+    cutscene.cpp
     durgemcurve.cpp
     durgemrowstring.cpp
     durgemstrip.cpp

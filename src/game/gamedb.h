@@ -263,6 +263,29 @@ public:
     GameOptions *GetOptions();
 
     /**
+     * Pass two camera values to the renderer of the players' avatars.
+     *
+     * The metagame passes 0.05 and 1 as the front end starts. The meaning of the two values is
+     * not yet recovered, and the name is inferred.
+     *
+     * @param fFirst The first value.
+     * @param fSecond The second value.
+     * @ghidraAddress NTSC-U/C: 0x0026f4e8
+     * @ghidraAddress PAL: 0x00279088
+     */
+    void SetAvatarCameraParams(float fFirst, float fSecond);
+
+    /**
+     * Unlock every song.
+     *
+     * The `unlock_all songs` cheat calls it. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0026e0b0
+     * @ghidraAddress PAL: 0x00277c50
+     */
+    void UnlockAllSongs();
+
+    /**
      * Report whether the campaign win sequence runs.
      *
      * @return Non-zero while the sequence runs.

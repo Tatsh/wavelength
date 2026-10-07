@@ -11,7 +11,7 @@
  * implement it. SynthPS2 drives the sound hardware, and SynthNull supplies empty bodies.
  * Create() builds one of the two as TheSynth.
  *
- * The vtable has 34 slots. The slots up to slot 30 are declared in order, and the later slots are
+ * The vtable has 38 slots. The slots up to slot 32 are declared in order, and the later slots are
  * not yet declared.
  */
 class Synth {
@@ -271,6 +271,27 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00395ff8
      */
     virtual void SetOutputLevel(float fLevel);
+
+    /**
+     * Vtable slot 31. Report the output level.
+     *
+     * The base body returns 1. The name is inferred.
+     *
+     * @return The level, 1 for full.
+     * @ghidraAddress NTSC-U/C: 0x00396000
+     */
+    virtual float GetOutputLevel();
+
+    /**
+     * Vtable slot 32. The base body is empty, and the purpose is not yet recovered.
+     *
+     * SynthPS2 sends the value to the sound processor as command 0x6d. The metagame passes 1
+     * before it plays the intro movie.
+     *
+     * @param nValue The value sent.
+     * @ghidraAddress NTSC-U/C: 0x00396010
+     */
+    virtual void VirtualSlot32(int nValue);
 };
 
 /**

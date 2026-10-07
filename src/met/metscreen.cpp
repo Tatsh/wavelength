@@ -70,7 +70,6 @@
 #include "met/metsolostagesscreen.h"
 #include "met/metsolostatsscreen.h"
 #include "met/metsolowinscreen.h"
-#include "met/metsonyscreen.h"
 #include "met/metstagefinishscreen.h"
 #include "met/mettoplogoscreen.h"
 #include "met/mettutorialscreen.h"
@@ -122,7 +121,6 @@ constexpr int kLoadComplete = 1;
 // The zone the start-up screens load into.
 static const char *const kGlobalZone = "rndglobal";
 // The registry keys CreateStartupScreens() writes.
-static const char *const kSonyScreenKey = "MetSonyScreen";
 static const char *const kMemDetectStartupKey = "MetMemDetectStartup";
 static const char *const kMsgScreenKey = "MetMsgScreen";
 static const char *const kLogoScreenKey = "MetLogoScreen";
@@ -722,7 +720,6 @@ void MetScreen::PollContainerLoads() {
 
 void MetScreen::CreateStartupScreens(MetRenderer *pRenderer) {
     int nZone = FindZoneByName(kGlobalZone);
-    ScreenRegistry()[HxStr(kSonyScreenKey)] = MetScreenEntry(MetSonyScreen::New(pRenderer, nZone));
     ScreenRegistry()[HxStr(kMemDetectStartupKey)] =
         MetScreenEntry(MetMemDetectStartup::New(pRenderer, nZone));
     ScreenRegistry()[HxStr(kMsgScreenKey)] = MetScreenEntry(MetMsgScreen::New(pRenderer, nZone));

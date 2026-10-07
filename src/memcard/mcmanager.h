@@ -12,6 +12,34 @@
 class MCManager {
 public:
     /**
+     * Read the memory card configuration and build the tasks.
+     *
+     * Metagame::Init() calls it.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0015c400
+     * @ghidraAddress PAL: 0x0015dbf0
+     */
+    void Init();
+
+    /**
+     * Destroy the tasks Init() built.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0015c550
+     * @ghidraAddress PAL: 0x0015dd40
+     */
+    void Terminate();
+
+    /**
+     * Advance the running task by one frame.
+     *
+     * Metagame::Update() calls it every frame.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0015ccd8
+     * @ghidraAddress PAL: 0x0015e4c8
+     */
+    void Poll();
+
+    /**
      * Start saving a block of memory to a file of a memory card.
      *
      * The task reports to the user when it ends.

@@ -55,7 +55,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003608d0
      * @ghidraAddress PAL: 0x003cede8
      */
-    static FreqPanel *New(DataArray *pData, const char *pszDir) {
+    static UIPanel *New(DataArray *pData, const char *pszDir) {
         return new FreqPanel(pData, pszDir);
     }
 

@@ -47,7 +47,7 @@ struct JoypadStick {
  * declared.
  */
 struct JoypadState {
-    int mReserved00;                       // +0x00, not yet identified.
+    int mButtons;                          /*!< The buttons held, one bit for each. */
     JoypadStick mSticks[kJoypadNumSticks]; /*!< The analogue sticks. */
     unsigned char mReserved14[0x64];       // +0x14, not yet identified.
     int mConnected;                        /*!< Non-zero while the controller is connected. +0x78 */
