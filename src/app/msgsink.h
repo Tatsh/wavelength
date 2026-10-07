@@ -37,32 +37,28 @@ class Message;
 class MsgSink {
 public:
     /**
-     * Allocate a sink from the tagged heap under the tag "MsgSink".
+     * Allocate a sink from the pool heaps under the tag "MsgSink".
      *
-     * No out-of-line body exists. Every allocation of a derived class inlines the call, 78 sites
-     * in all, among them the Synth unit's file-local NullSynth::New() at `0x0013a0c0` and
-     * `new MetArenasScreen` at `0x001fc690`. Both pass the literal `MsgSink`. MsgSource declares
-     * no allocation pair. Its destructor at `0x0054a168` proves that by releasing its vector
-     * without a tagged free, and a class deriving from both bases therefore resolves the operator
-     * here without ambiguity.
+     * No out-of-line body exists. Every allocation of a derived class inlines the call with the
+     * default alignment, among them the one in InputMgr's constructor at `0x001182a8`.
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
      */
     void *operator new(size_t nSize) {
-        return AllocateTaggedMemory(nSize, "MsgSink");
+        return PoolMemAlloc(static_cast<int>(nSize), "MsgSink", 0);
     }
 
     /**
-     * Release a sink to the tagged heap.
+     * Return a sink to the pool heaps.
      *
-     * No out-of-line body exists. The release branch of every derived destructor inlines the call
-     * with the literal `MsgSink`, 294 sites in all.
+     * No out-of-line body exists. The release branch of every derived destructor inlines the call,
+     * among them the one in InputMgr's destructor at `0x00118700`.
      *
      * @param pBlock The block.
      */
     void operator delete(void *pBlock) {
-        OperatorDeleteOverride(pBlock, "MsgSink");
+        PoolMemFree(pBlock);
     }
 
     /**

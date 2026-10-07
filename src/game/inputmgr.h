@@ -51,15 +51,15 @@ public:
     explicit InputMgr(World *pWorld);
 
     /**
-     * Allocate a router from the tagged heap under the tag "InputMgr".
+     * Allocate a router from the pool heaps under the tag "InputMgr".
      *
-     * No out-of-line body exists. WorldMgr::Start() inlines the call.
+     * No out-of-line body exists. WorldMgr::Start() inlines the call with the default alignment.
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
      */
     void *operator new(size_t nSize) {
-        return AllocateTaggedMemory(nSize, "InputMgr");
+        return PoolMemAlloc(static_cast<int>(nSize), "InputMgr", 0);
     }
 
     /**

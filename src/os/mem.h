@@ -517,7 +517,7 @@ void MemCompact(int nHeap, int nByteBudget, bool bStrictBudget);
  *
  * @param nSize The block size in bytes.
  * @param pszTag The tag to bill the allocation to.
- * @param nAlign The alignment request. Zero selects the default.
+ * @param nAlign The alignment in bytes, a power of two of at least four. Zero selects 16 bytes.
  * @return The block.
  * @ghidraAddress NTSC-U/C: 0x0029ab68
  * @ghidraAddress PAL: 0x002a4788
