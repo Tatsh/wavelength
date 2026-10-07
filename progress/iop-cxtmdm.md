@@ -1,6 +1,6 @@
 # IOP module cxtmdm
 
-0 of 51 routines done.
+0 of 42 routines done.
 
 Addresses are module-relative. Import stubs are left out because the
 build generates them from the module's import tables.
@@ -48,13 +48,4 @@ build generates them from the module's import tables.
 | `FUN_0000239c` |  :x:   |      2 |     24 | `0x0000239c` | `undefined FUN_0000239c()` |
 | `FUN_00001fe8` |  :x:   |      3 |     20 | `0x00001fe8` | `undefined FUN_00001fe8()` |
 | `FUN_000006c8` |  :x:   |      1 |     12 | `0x000006c8` | `undefined FUN_000006c8()` |
-| `FUN_00002844` |  :x:   |      8 |      8 | `0x00002844` | `undefined FUN_00002844()` |
-| `FUN_0000283c` |  :x:   |      2 |      8 | `0x0000283c` | `undefined FUN_0000283c()` |
-| `FUN_00002938` |  :x:   |      2 |      8 | `0x00002938` | `undefined FUN_00002938()` |
-| `FUN_000029c4` |  :x:   |      2 |      8 | `0x000029c4` | `undefined FUN_000029c4()` |
 | `FUN_000025b8` |  :x:   |      1 |      8 | `0x000025b8` | `undefined FUN_000025b8()` |
-| `FUN_00002834` |  :x:   |      1 |      8 | `0x00002834` | `undefined FUN_00002834()` |
-| `FUN_0000284c` |  :x:   |      1 |      8 | `0x0000284c` | `undefined FUN_0000284c()` |
-| `FUN_00002854` |  :x:   |      1 |      8 | `0x00002854` | `undefined FUN_00002854()` |
-| `FUN_00002958` |  :x:   |      1 |      8 | `0x00002958` | `undefined FUN_00002958()` |
-| `FUN_00002a28` |  :x:   |      1 |      8 | `0x00002a28` | `undefined FUN_00002a28()` |

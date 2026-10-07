@@ -1,6 +1,6 @@
 # IOP module eznctl_s
 
-0 of 33 routines done.
+0 of 26 routines done.
 
 Addresses are module-relative. Import stubs are left out because the
 build generates them from the module's import tables.
@@ -33,10 +33,3 @@ build generates them from the module's import tables.
 | `FUN_00000edc` |  :x:   |      2 |     64 | `0x00000edc` | `undefined FUN_00000edc()` |
 | `FUN_000001ec` |  :x:   |      1 |     56 | `0x000001ec` | `undefined FUN_000001ec()` |
 | `FUN_0000064c` |  :x:   |      0 |     36 | `0x0000064c` | `undefined FUN_0000064c()` |
-| `FUN_00001ea8` |  :x:   |      7 |      8 | `0x00001ea8` | `undefined FUN_00001ea8()` |
-| `FUN_00001d60` |  :x:   |      2 |      8 | `0x00001d60` | `undefined FUN_00001d60()` |
-| `FUN_00001cf0` |  :x:   |      1 |      8 | `0x00001cf0` | `undefined FUN_00001cf0()` |
-| `FUN_00001dc4` |  :x:   |      1 |      8 | `0x00001dc4` | `undefined FUN_00001dc4()` |
-| `FUN_00001e28` |  :x:   |      1 |      8 | `0x00001e28` | `undefined FUN_00001e28()` |
-| `FUN_00001e64` |  :x:   |      1 |      8 | `0x00001e64` | `undefined FUN_00001e64()` |
-| `FUN_00001edc` |  :x:   |      1 |      8 | `0x00001edc` | `undefined FUN_00001edc()` |

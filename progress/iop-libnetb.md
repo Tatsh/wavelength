@@ -1,6 +1,6 @@
 # IOP module libnetb
 
-0 of 49 routines done.
+0 of 42 routines done.
 
 Addresses are module-relative. Import stubs are left out because the
 build generates them from the module's import tables.
@@ -49,10 +49,3 @@ build generates them from the module's import tables.
 | `FUN_00001fe4` |  :x:   |      2 |     56 | `0x00001fe4` | `undefined FUN_00001fe4()` |
 | `FUN_000011e4` |  :x:   |      1 |     24 | `0x000011e4` | `undefined FUN_000011e4()` |
 | `FUN_00000b50` |  :x:   |      2 |     12 | `0x00000b50` | `undefined FUN_00000b50()` |
-| `FUN_00003d64` |  :x:   |      3 |      8 | `0x00003d64` | `undefined FUN_00003d64()` |
-| `FUN_00003cf8` |  :x:   |      2 |      8 | `0x00003cf8` | `undefined FUN_00003cf8()` |
-| `FUN_00003a84` |  :x:   |      1 |      8 | `0x00003a84` | `undefined FUN_00003a84()` |
-| `FUN_00003a8c` |  :x:   |      1 |      8 | `0x00003a8c` | `undefined FUN_00003a8c()` |
-| `FUN_00003ac0` |  :x:   |      1 |      8 | `0x00003ac0` | `undefined FUN_00003ac0()` |
-| `FUN_00003b7c` |  :x:   |      1 |      8 | `0x00003b7c` | `undefined FUN_00003b7c()` |
-| `FUN_00003c9c` |  :x:   |      1 |      8 | `0x00003c9c` | `undefined FUN_00003c9c()` |

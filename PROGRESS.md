@@ -47,15 +47,15 @@ python3 .wiswa-ci/port/progress.py --write
 Each IOP module is measured against its own program in the `/amplitude-IOP` folder of the
 disassembler project, from the annotations under `src/iop/<module>/`.
 
-| Module                               | Routines | Done | Share |
-| ------------------------------------ | -------: | ---: | ----: |
-| [synth_s](progress/iop-synth_s.md)   |      155 |    0 |  0.0% |
-| [softfx_s](progress/iop-softfx_s.md) |       99 |   74 | 74.7% |
-| [cxtmdm](progress/iop-cxtmdm.md)     |       51 |    0 |  0.0% |
-| [ezncnf_s](progress/iop-ezncnf_s.md) |       26 |    0 |  0.0% |
-| [eznctl_s](progress/iop-eznctl_s.md) |       33 |    0 |  0.0% |
-| [libnetb](progress/iop-libnetb.md)   |       49 |    0 |  0.0% |
-| [SNProfil](progress/iop-snprofil.md) |        6 |    0 |  0.0% |
+| Module                               | Routines | Done |  Share |
+| ------------------------------------ | -------: | ---: | -----: |
+| [synth_s](progress/iop-synth_s.md)   |      142 |  142 | 100.0% |
+| [softfx_s](progress/iop-softfx_s.md) |       74 |   74 | 100.0% |
+| [cxtmdm](progress/iop-cxtmdm.md)     |       42 |    0 |   0.0% |
+| [ezncnf_s](progress/iop-ezncnf_s.md) |       21 |    0 |   0.0% |
+| [eznctl_s](progress/iop-eznctl_s.md) |       26 |    0 |   0.0% |
+| [libnetb](progress/iop-libnetb.md)   |       42 |    0 |   0.0% |
+| [SNProfil](progress/iop-snprofil.md) |        3 |    0 |   0.0% |
 
 ## Parts
 
