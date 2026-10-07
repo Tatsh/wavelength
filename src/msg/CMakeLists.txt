@@ -4,9 +4,9 @@ set(WAVELENGTH_MSG_SRCS
     capturepacket.cpp
     editgempacket.cpp
     finalscorepacket.cpp
+    fxpacket.cpp
     lobbyconnectionlostmsg.cpp
     message.cpp
-    musemsg.cpp
     mutevocalspacket.cpp
     packetfactories.cpp
     playerupdatepacket.cpp

@@ -54,6 +54,8 @@ avatarpartset
 averager
 avoll
 avolr
+axecontour
+axeharmony
 axer
 axers
 axetrack
@@ -96,9 +98,11 @@ capturepacket
 catchpatt
 catchtrackbuilder
 catchtrackdata
+catchtrackdisplay
 cdread
 cdreadstm
 cdrom
+changesectionevent
 chcr
 checkinfoop
 circbuff
@@ -266,6 +270,7 @@ fsmblks
 ftext
 ftoi
 fwrapv
+fxpacket
 gameconfig
 gamelogic
 gametie
@@ -273,6 +278,7 @@ gametrackselector
 gedf
 gemcatcher
 gemcursor
+gemslice
 genpath
 gfxdevice
 ghidra
@@ -285,6 +291,7 @@ graphviz
 gsdoublebuffer
 gszbufaddr
 gtdf
+guideticker
 handoff
 harmonix
 hblank
@@ -351,6 +358,7 @@ jinja
 joypadps
 jsonnet
 jsonschema
+juicemeter
 kapsz
 keyboardkey
 keyboardmgr
@@ -461,7 +469,9 @@ metaskillscreen
 metasongscreen
 metastartscreen
 mfir
+midichannelstate
 midieventqueue
+midireader
 miniw
 mipsel
 miptbp
@@ -506,7 +516,9 @@ mulw
 mulx
 muly
 mulz
-musemsg
+musefactory
+muselooper
+mutablenotemuse
 mutevocalspacket
 mvoll
 mvolr
@@ -525,7 +537,6 @@ netflow
 netlaunch
 netportal
 newlib
-nlfilebuf
 nlohmann
 noat
 nodefaultlibs
@@ -538,6 +549,8 @@ noreorder
 normalkey
 nostartfiles
 nostdlib
+notemuse
+notemusebase
 nowbdc
 nullptr
 numpydoc
@@ -584,6 +597,7 @@ playbacker's
 playerprofile
 playerupdatepacket
 playmap
+playnoteevent
 pmaxh
 pminh
 pmon
@@ -637,6 +651,7 @@ releaseable
 relocs
 remixer
 remixerupdatepacket
+remixhud
 remixtutorial
 remoteplayer
 renamefileop
@@ -655,6 +670,7 @@ rndmovie
 rndtex
 rodata
 romver
+rotateevent
 rpcd
 rpcm
 rshift
@@ -753,6 +769,7 @@ stdc
 stddef
 stdint
 stdlib
+stdmidimuse
 stdnoreturn
 stmask
 stmblk
@@ -777,6 +794,7 @@ synthlock
 synthmodule
 synthserver
 sysclib
+sysex
 sysmem
 tadr
 tagfile
@@ -803,6 +821,7 @@ tostring
 totbytes
 toupper
 tpcpyud
+trackcapturer
 trackselector
 transanim
 transes
@@ -845,7 +864,8 @@ undrafted
 unformatop
 unistd
 unlockarena
-unoverridden
+unmute
+unmutes
 unpaletted
 unrecovered
 uordblks

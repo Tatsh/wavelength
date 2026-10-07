@@ -51,6 +51,50 @@ public:
      */
     void Write(const void *pData, int nBytes) override;
 
+    /**
+     * Write out buffered data.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00299728
+     * @ghidraAddress PAL: 0x002a3328
+     */
+    void Flush() override;
+
+    /**
+     * Move the position.
+     *
+     * @param nOffset The offset in bytes.
+     * @param eFrom The origin of the offset.
+     * @ghidraAddress NTSC-U/C: 0x00299758
+     * @ghidraAddress PAL: 0x002a3358
+     */
+    void Seek(int nOffset, SeekType eFrom) override;
+
+    /**
+     * Report the position.
+     *
+     * @return The position in bytes.
+     * @ghidraAddress NTSC-U/C: 0x002997d0
+     * @ghidraAddress PAL: 0x002a33d0
+     */
+    int Tell() override;
+
+    /**
+     * Report whether the position is at the end.
+     *
+     * @return Whether no byte is left.
+     * @ghidraAddress NTSC-U/C: 0x00299800
+     * @ghidraAddress PAL: 0x002a3400
+     */
+    bool Eof() override;
+
+    /**
+     * Report whether an operation failed.
+     *
+     * @return Whether an operation failed.
+     * @ghidraAddress NTSC-U/C: 0x00299830
+     */
+    bool Fail() override;
+
     File *mFile; /*!< The file, or null when it did not open. */
     int mFail;   /*!< Non-zero once an operation failed. */
 };

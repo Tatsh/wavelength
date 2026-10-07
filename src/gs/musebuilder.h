@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gs/multimusebuilder.h"
 #include "gs/muse.h"
+#include "gs/musefactory.h"
 #include "mid/midivalidator.h"
 #include "mid/trackbuilder.h"
 #include "os/ptr.h"
@@ -111,5 +111,5 @@ public:
 
     Ptr<Muse> *mMuse;         /*!< The owner the finished piece is stored through. */
     MidiValidator mValidator; /*!< The checker of the messages. */
-    MultiMuseBuilder mPieces; /*!< The collected messages. */
+    MuseFactory mPieces;      /*!< The collected messages. */
 };

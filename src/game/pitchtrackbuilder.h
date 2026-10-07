@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "game/pitchtrackriffdata.h"
-#include "gs/multimusebuilder.h"
+#include "gs/musefactory.h"
 #include "mid/midivalidator.h"
 #include "mid/trackbuilder.h"
 
@@ -144,6 +144,6 @@ private:
     int mEndTick;                  /*!< The tick the song ends at. */
     PitchTrackRiffData *mRiffData; /*!< The riff data built. */
     MidiValidator mValidator;      /*!< The checker of the messages. */
-    MultiMuseBuilder mRiffs;       /*!< The collected messages of the riffs. */
+    MuseFactory mRiffs;            /*!< The collected messages of the riffs. */
     std::vector<Gem> mGems;        /*!< The gem notes, in tick order. */
 };

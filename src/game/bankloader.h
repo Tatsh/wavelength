@@ -3,14 +3,17 @@
 #include <vector>
 
 #include "game/playmap.h"
+#include "os/command.h"
+#include "os/ptr.h"
 #include "os/string.h"
 
 /**
  * Loader of the sound banks of a song, from its track named "BANK".
  *
- * The class is not polymorphic. The RTTI of the nested PermBankLoader records the name. A
- * permanent bank stays in its synthesiser slot for the whole song. The swapped banks take turns in
- * two slots after the permanent banks, each from the bar the track gives.
+ * The class is not polymorphic. The RTTI of the nested BankLoader::PermBankLoader and
+ * BankLoader::SwapBankLoader records the name. A permanent bank stays in its synthesiser slot for
+ * the whole song. The swapped banks take turns in two slots after the permanent banks, each from
+ * the bar the track gives.
  */
 class BankLoader {
 public:
@@ -23,16 +26,16 @@ public:
     };
 
     /**
-     * Loader of one permanent bank.
+     * Loader of one permanent bank, bound to a synthesiser bank slot.
      *
-     * The RTTI includes the name. Only the members BankLoader uses are declared.
+     * The RTTI includes the nested name. The class is not polymorphic.
      */
     class PermBankLoader {
     public:
         /**
-         * Construct a loader and ask the synthesiser how many blocks the bank needs.
+         * Construct a loader and query the size of the bank from the synthesiser.
          *
-         * @param nSlot The synthesiser slot.
+         * @param nSlot The synthesiser bank slot.
          * @param pszFile The bank file.
          * @ghidraAddress NTSC-U/C: 0x00151898
          * @ghidraAddress PAL: 0x001530e0
@@ -40,7 +43,7 @@ public:
         PermBankLoader(unsigned short nSlot, const char *pszFile);
 
         /**
-         * Release the loader.
+         * Unload the bank when Load() was called.
          *
          * @ghidraAddress NTSC-U/C: 0x00151908
          * @ghidraAddress PAL: 0x00153150
@@ -48,7 +51,7 @@ public:
         ~PermBankLoader();
 
         /**
-         * Start loading the bank.
+         * Start loading the bank into its slot.
          *
          * @ghidraAddress NTSC-U/C: 0x00151980
          * @ghidraAddress PAL: 0x001531c8
@@ -56,45 +59,61 @@ public:
         void Load();
 
         /**
-         * Report whether the bank is loaded.
+         * Report whether the bank finished loading.
          *
-         * @return False until a started load finishes.
+         * @return Whether Load() was called and the synthesiser reports the slot loaded.
          * @ghidraAddress NTSC-U/C: 0x001519c8
          * @ghidraAddress PAL: 0x00153210
          */
-        bool IsLoaded();
+        bool IsLoaded() const;
 
-        unsigned short mSlot; /*!< The synthesiser slot. */
+        unsigned short mSlot; /*!< The synthesiser bank slot. */
         String mFile;         /*!< The bank file. */
-        int mBlocks;          /*!< The blocks the bank needs, or -1. */
+        int mBlockCount;      /*!< The size the synthesiser reports for the file, or -1. */
+        int mLoading;         /*!< Whether Load() was called. */
     };
 
     /**
-     * Loader of the banks that take turns in two slots.
+     * Loader that swaps the banks of a song through two synthesiser slots as the song moves on.
      *
-     * The RTTI includes the name. Only the members BankLoader uses are declared.
+     * The RTTI includes the nested name and the nested SwapBankLoader::SwapBank. The class is not
+     * polymorphic. Each bar of the song has a bank. While one slot plays, the loader loads the next
+     * different bank into the other slot ahead of the bar that needs it.
      */
     class SwapBankLoader {
     public:
+        /** One bank file and its size. */
+        struct SwapBank {
+            String mFile; /*!< The bank file. */
+            int mSize;    /*!< The size the synthesiser reports for the file. */
+        };
+
+        /** Values of mState. */
+        enum State {
+            kStateIdle = 0,    /*!< Nothing is loading. */
+            kStateLoading = 1, /*!< The first bank loads. */
+            kStateLoaded = 2,  /*!< The first bank is loaded. */
+        };
+
         /**
-         * Construct a loader with no bank.
+         * Construct a loader with no banks.
          *
-         * @param nSlot The first of the two synthesiser slots.
-         * @param pPlayMap The map of the song positions.
-         * @param nIntroBars The bars before bar 0.
-         * @param nNumBars The length of the song in bars.
+         * @param nBaseSlot The first of the two synthesiser slots.
+         * @param pPlayMap The play map of the song.
+         * @param nLeadBars The bars before bar 0 that have a bank.
+         * @param nNumBars The bars of the song.
          * @param nTicksPerBar The song ticks in one bar.
          * @ghidraAddress NTSC-U/C: 0x00154bf0
          * @ghidraAddress PAL: 0x00156458
          */
-        SwapBankLoader(unsigned short nSlot,
+        SwapBankLoader(unsigned short nBaseSlot,
                        PlayMap *pPlayMap,
-                       int nIntroBars,
+                       int nLeadBars,
                        int nNumBars,
                        int nTicksPerBar);
 
         /**
-         * Release the loader.
+         * Unload the banks.
          *
          * @ghidraAddress NTSC-U/C: 0x00154d18
          * @ghidraAddress PAL: 0x00156580
@@ -102,23 +121,23 @@ public:
         ~SwapBankLoader();
 
         /**
-         * Add a bank that plays from a bar on.
+         * Add a bank that plays from a bar to the end of the song.
          *
          * @param pszFile The bank file.
-         * @param nBar The bar.
+         * @param nStartBar The first bar.
          * @ghidraAddress NTSC-U/C: 0x00154e00
          * @ghidraAddress PAL: 0x00156668
          */
-        void Add(const char *pszFile, int nBar);
+        void AddBank(const char *pszFile, int nStartBar);
 
         /**
-         * Report the blocks the largest bank needs.
+         * Report the size of the largest bank.
          *
-         * @return The blocks.
+         * @return The size, or 0 without banks.
          * @ghidraAddress NTSC-U/C: 0x001550e8
          * @ghidraAddress PAL: 0x00156950
          */
-        int GetMaxBlocks();
+        int GetMaxBankSize() const;
 
         /**
          * Start loading the first bank.
@@ -131,14 +150,14 @@ public:
         /**
          * Report whether the first bank is loaded.
          *
-         * @return Whether the load finished.
+         * @return Whether it is loaded, and true unless it is loading.
          * @ghidraAddress NTSC-U/C: 0x00155170
          * @ghidraAddress PAL: 0x001569d8
          */
         bool PollLoad();
 
         /**
-         * Swap the banks as the song plays.
+         * Load the bank the song needs next.
          *
          * @ghidraAddress NTSC-U/C: 0x001551d8
          * @ghidraAddress PAL: 0x00156a40
@@ -146,22 +165,89 @@ public:
         void Start();
 
         /**
-         * Stop swapping the banks.
+         * Withdraw the scheduled load and unload the slots.
          *
          * @ghidraAddress NTSC-U/C: 0x001551f8
          * @ghidraAddress PAL: 0x00156a60
          */
-        void Stop();
+        void Unload();
 
         /**
-         * Withdraw the scheduled swap and swap for the song position again.
+         * Withdraw the scheduled load and load the bank the song needs next.
          *
          * @ghidraAddress NTSC-U/C: 0x001552b8
          * @ghidraAddress PAL: 0x00156b20
          */
         void Restart();
 
-        unsigned short mSlot; /*!< The first of the two synthesiser slots. */
+    private:
+        friend class BankLoader;
+
+        /**
+         * Report the bank of a bar.
+         *
+         * @param nBar The bar, from -mLeadBars.
+         * @return The index into mBanks, or -1.
+         * @ghidraAddress NTSC-U/C: 0x0034cca8
+         * @ghidraAddress PAL: 0x003ba0d8
+         */
+        int GetBank(int nBar) const {
+            return mBankOfBar[nBar + mLeadBars];
+        }
+
+        /**
+         * Set the bank of a bar.
+         *
+         * @param nBar The bar, from -mLeadBars.
+         * @param nBank The index into mBanks.
+         * @ghidraAddress NTSC-U/C: 0x0034ccc8
+         * @ghidraAddress PAL: 0x003ba0f8
+         */
+        void SetBank(int nBar, int nBank) {
+            mBankOfBar[nBar + mLeadBars] = nBank;
+        }
+
+        /**
+         * Load the next bank that differs from the bank of the current bar, and schedule this
+         * routine again.
+         *
+         * @ghidraAddress NTSC-U/C: 0x00155308
+         * @ghidraAddress PAL: 0x00156b70
+         */
+        void Advance();
+
+        /**
+         * Report the slot the next load goes to.
+         *
+         * @return The slot.
+         * @ghidraAddress NTSC-U/C: 0x001554e0
+         * @ghidraAddress PAL: 0x00156d48
+         */
+        unsigned short GetLoadSlot() const;
+
+        /**
+         * Load a bank into the next slot unless a slot already has it.
+         *
+         * @param nBank The index into mBanks.
+         * @ghidraAddress NTSC-U/C: 0x00155508
+         * @ghidraAddress PAL: 0x00156d70
+         */
+        void LoadBank(int nBank);
+
+        /** Number of slots the loader alternates between. */
+        static constexpr int kNumSlots = 2;
+
+        unsigned short mBaseSlot;       /*!< The first of the two synthesiser slots. */
+        const char *mLoaded[kNumSlots]; /*!< The text of the file in each slot, or null. */
+        int mLeadBars;                  /*!< The bars before bar 0 that have a bank. */
+        int mNumBars;                   /*!< The bars of the song. */
+        int mTicksPerBar;               /*!< The song ticks in one bar. */
+        PlayMap *mPlayMap;              /*!< The play map of the song. */
+        std::vector<SwapBank> mBanks;   /*!< The banks. */
+        std::vector<int> mBankOfBar;    /*!< The bank of each bar from -mLeadBars, or -1. */
+        int mState;                     /*!< One of State. */
+        int mLoadCount;                 /*!< The loads since the slots were empty. */
+        Ptr<Command> mAdvanceCmd;       /*!< The command that calls Advance(). */
     };
 
     /**

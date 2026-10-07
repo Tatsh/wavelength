@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/binstream.h"
+
 /**
  * Input event that plays a note on one of the three gem buttons.
  *
@@ -19,6 +21,36 @@ public:
      * @ghidraAddress PAL: 0x00152bb8
      */
     PlayNoteEvent(unsigned char nPlayer, unsigned char nButton, int nState, float fX, float fY);
+
+    /**
+     * Construct the event from a recording.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x001512a0
+     * @ghidraAddress PAL: 0x00152b90
+     */
+    explicit PlayNoteEvent(BinStream &stream);
+
+    /**
+     * Record the event.
+     *
+     * The player, the button, and the low byte of the state take one byte each, and the
+     * coordinates four bytes each.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x001512e8
+     */
+    void Save(BinStream &stream) const;
+
+    /**
+     * Read the event Save() records.
+     *
+     * The state becomes 1 when its byte is not zero.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x001513b0
+     */
+    void Load(BinStream &stream);
 
     unsigned char mPlayer; /*!< The player index. */
     unsigned char mButton; /*!< The gem button, 0 to 2. */

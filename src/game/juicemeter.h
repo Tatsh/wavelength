@@ -55,7 +55,30 @@ public:
      */
     float GetMax() const;
 
-    float mValue;    /*!< The value. */
-    float mMax;      /*!< The maximum. */
-    int mReserved08; // +0x08, cleared by the constructor.
+private:
+    /**
+     * Show the value on the energy meter of the first player.
+     *
+     * The display also learns whether the juice has run out.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00151788
+     * @ghidraAddress PAL: 0x00152fd0
+     */
+    void UpdateDisplay();
+
+    /**
+     * Warn once that the juice is low when a change brings it below a sixth of the maximum.
+     *
+     * A value above a third of the maximum allows the warning again.
+     *
+     * @param fOld The value before the change. The body does not read it.
+     * @param fNew The value after the change.
+     * @ghidraAddress NTSC-U/C: 0x00151800
+     * @ghidraAddress PAL: 0x00153048
+     */
+    void CheckLow(float fOld, float fNew);
+
+    float mValue; /*!< The value. */
+    float mMax;   /*!< The maximum. */
+    int mWarned;  /*!< Whether the low juice warning played since the value was last high. */
 };

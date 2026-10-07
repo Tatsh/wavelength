@@ -232,6 +232,8 @@ public:
     int mTick;                  /*!< The song clock in ticks. */
     float mFrameTime;           /*!< The clock time the last pump ran the commands up to. */
     int mFrameTick;             /*!< The clock tick the last pump ran the commands up to. */
+    float mPrevFrameTime;       /*!< The clock time the pump before the last ran up to. */
+    int mPrevFrameTick;         /*!< The clock tick the pump before the last ran up to. */
 };
 
 /**

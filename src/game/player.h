@@ -339,6 +339,9 @@ public:
     int StreakMultiplier(int nStreak) const;
 
 protected:
+    // TrackCapturer reads and writes mLastHitTick directly.
+    friend class TrackCapturer;
+
     int mIndex;                         /*!< The player's index. */
     int mTicksPerBar;                   /*!< The song ticks in one bar. */
     Track *mTrack;                      /*!< The track the player plays, or null. */
@@ -349,7 +352,7 @@ protected:
     bool mCatching;                     /*!< Whether the player is catching. */
     bool mAborted;                      /*!< Whether the player has left the song. */
     bool mRepeat;                       /*!< The remix repeat state. */
-    int mReserved;                      // +0x28, set to -1 and not read here.
+    int mLastHitTick;                   /*!< The tick of the last gem hit, or -1. */
     Ptr<Command> mMultiplierEndCommand; /*!< The command that calls EndMultiplier(). */
     int mPowerup;                       /*!< The kind of power-up the player holds. */
 };

@@ -4,7 +4,7 @@
 
 #include "game/catchtrackdata.h"
 #include "game/lyric.h"
-#include "gs/multimusebuilder.h"
+#include "gs/musefactory.h"
 #include "mid/midivalidator.h"
 #include "mid/trackbuilder.h"
 
@@ -149,7 +149,7 @@ public:
     MidiValidator mValidator;   /*!< The checker of the channel messages. */
     int mSkill;                 /*!< The skill level whose gems the builder reads. */
     std::vector<GemData> mGems; /*!< The gems in tick order. */
-    MultiMuseBuilder mSamples;  /*!< The sample messages. */
+    MuseFactory mSamples;       /*!< The sample messages. */
     int mLastNoteOnTick;        /*!< The tick of the last note-on message, or -1. */
     int mFirstSampleTick;       /*!< The tick of the first sample note, or -1. */
 

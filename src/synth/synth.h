@@ -244,11 +244,14 @@ public:
     virtual void SetSoftFxSweep(float fPosition);
 
     /**
-     * Vtable slot 26. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 26. The base body is empty. The purpose is not yet recovered.
      *
+     * AxeVoice passes the vertical position of the stick.
+     *
+     * @param fValue The value.
      * @ghidraAddress NTSC-U/C: 0x00395fe8
      */
-    virtual void VirtualSlot26();
+    virtual void VirtualSlot26(float fValue);
 
     /**
      * Vtable slot 27. Send the settings of the software effect.

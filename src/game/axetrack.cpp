@@ -57,7 +57,7 @@ void AxeTrack::Stop() {
     TheSongScheduler.Cancel(mHarmonyCommand.Get());
     TheSongScheduler.Cancel(mContourCommand.Get());
     for (auto *pAxer : mAxers) {
-        pAxer->Stop();
+        pAxer->Deactivate();
     }
 }
 
@@ -94,9 +94,9 @@ void AxeTrack::HandleInput(Player *pPlayer, const StickEvent<2> &event) {
     mX = event.mX;
     mY = event.mY;
     Axer *pAxer = mAxers[mActiveButton];
-    (void)pAxer->IsPlaying(); // Yes, the binary discards this call's result.
-    pAxer->SetPosition(mX);
-    pAxer->SetPitch(mY);
+    (void)pAxer->IsActive(); // Yes, the binary discards this call's result.
+    pAxer->SetX(mX);
+    pAxer->SetSweep(mY);
 }
 
 void AxeTrack::StartNote(int nButton, float fX, float fY) {
@@ -110,9 +110,9 @@ void AxeTrack::StartNote(int nButton, float fX, float fY) {
     const int nTick = TheSongScheduler.mTick;
     (void)(nTick / mTicksPerBar); // Yes, the binary computes this quotient and discards it.
     const int nOffset = nTick % pAxer->GetLength();
-    pAxer->SetPosition(fX);
-    pAxer->SetPitch(fY);
-    pAxer->Start(nOffset);
+    pAxer->SetX(fX);
+    pAxer->SetSweep(fY);
+    pAxer->Activate(nOffset);
     TheStats->AxeBegin(mIndex, nTick);
 }
 
@@ -121,7 +121,7 @@ void AxeTrack::EndNote() {
         return;
     }
 
-    mAxers[mActiveButton]->Stop();
+    mAxers[mActiveButton]->Deactivate();
     mActiveButton = kNoButton;
     if (mPlayer != nullptr) {
         TheStats->AxeEnd(mIndex, TheSongScheduler.mTick);

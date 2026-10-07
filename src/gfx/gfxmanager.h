@@ -830,6 +830,84 @@ public:
      * @ghidraAddress PAL: 0x001becf8
      */
     void DimBar(int nTrack, float fTick);
+
+    /**
+     * Sub-panel of a player's remix menu.
+     *
+     * The RTTI includes the name as an argument of a command template. Only the values RemixHUD
+     * passes are listed.
+     */
+    enum RemixSubPanel {
+        kRemixSubPanelMain = 0,  /*!< The list of remix panels. */
+        kRemixSubPanelBoot = 5,  /*!< The list of the players the host can remove. */
+        kRemixSubPanelTempo = 6, /*!< The tempo control. */
+    };
+
+    /**
+     * Set the text of an entry of a remix sub-panel.
+     *
+     * @param nPlayer The player's index.
+     * @param nIndex The entry.
+     * @param pszText The text.
+     * @param ePanel The sub-panel.
+     * @ghidraAddress NTSC-U/C: 0x001b55e8
+     * @ghidraAddress PAL: 0x001be388
+     */
+    void SetRemixPanelText(int nPlayer, int nIndex, const char *pszText, RemixSubPanel ePanel);
+
+    /**
+     * Move the cursor of a remix sub-panel to an entry.
+     *
+     * @param nPlayer The player's index.
+     * @param nIndex The entry, or -1 for none.
+     * @param ePanel The sub-panel.
+     * @ghidraAddress NTSC-U/C: 0x001b5608
+     * @ghidraAddress PAL: 0x001be3a8
+     */
+    void SelectRemixPanelEntry(int nPlayer, int nIndex, RemixSubPanel ePanel);
+
+    /**
+     * Flash the cursor of a remix sub-panel to confirm a choice.
+     *
+     * @param nPlayer The player's index.
+     * @param ePanel The sub-panel.
+     * @ghidraAddress NTSC-U/C: 0x001b5630
+     * @ghidraAddress PAL: 0x001be3d0
+     */
+    void FlashRemixPanel(int nPlayer, RemixSubPanel ePanel);
+
+    /**
+     * Light or darken an entry of a remix sub-panel.
+     *
+     * @param nPlayer The player's index.
+     * @param nIndex The entry.
+     * @param nLit Non-zero to light the entry.
+     * @param ePanel The sub-panel.
+     * @ghidraAddress NTSC-U/C: 0x001b5650
+     * @ghidraAddress PAL: 0x001be3f0
+     */
+    void SetRemixPanelLit(int nPlayer, int nIndex, int nLit, RemixSubPanel ePanel);
+
+    /**
+     * Show one sub-panel of a player's remix menu.
+     *
+     * @param nPlayer The player's index.
+     * @param ePanel The sub-panel.
+     * @ghidraAddress NTSC-U/C: 0x001b5670
+     * @ghidraAddress PAL: 0x001be410
+     */
+    void ShowRemixPanel(int nPlayer, RemixSubPanel ePanel);
+
+    /**
+     * Show a note a scratch plays on a player's track.
+     *
+     * @param nPlayer The player's index.
+     * @param fTick The song tick of the note.
+     * @param fDuration The length of the note in ticks.
+     * @ghidraAddress NTSC-U/C: 0x001b5a58
+     * @ghidraAddress PAL: 0x001be7f8
+     */
+    void ShowScratchNote(int nPlayer, float fTick, float fDuration);
 };
 
 /**

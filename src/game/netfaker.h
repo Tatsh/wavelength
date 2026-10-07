@@ -19,13 +19,14 @@ public:
     /**
      * Construct a faker at the first gem the reactor reports.
      *
-     * Inline. The constructors of DuelTrack and ClickTrack expand it.
+     * Inline. The constructors of DuelTrack and TrackCapturer expand it.
      *
      * @param pReactor The rules the gems are reported to.
+     * @param nCountMisses Non-zero to count the misses of a remote player who is not catching.
      */
-    explicit NetFaker(TrackReactor *pReactor)
+    explicit NetFaker(TrackReactor *pReactor, int nCountMisses = 0)
         : mReactor(pReactor), mCursor(pReactor->GetCursor()), mLastBar(-1),
-          mUpdateCommand(NewMemFunCommand(this, &NetFaker::Update)), mCountMisses(0) {
+          mUpdateCommand(NewMemFunCommand(this, &NetFaker::Update)), mCountMisses(nCountMisses) {
     }
 
     /**

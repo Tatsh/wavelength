@@ -1,137 +1,136 @@
 #include "gs/multimuse.h"
 
 #include <algorithm>
-#include <cstddef>
-#include <vector>
-
-#include "game/tickobjvector.h"
-#include "gs/nlfilebuf.h"
-#include "msg/messageio.h"
-#include "os/mem.h"
 
 namespace {
 
-// The indent Print() starts from, meaning the stream has no nlfilebuf to measure a column with.
-constexpr long long kNoIndent = -1;
+bool TickBefore(const MultiMuse::TimedMuse &left, const MultiMuse::TimedMuse &right) {
+    return left.mTick < right.mTick;
+}
 
 } // namespace
 
-MultiMuse::~MultiMuse() {
-    for (std::vector<TickObj<MuseMsg *> >::iterator it = mEntries.begin(); it != mEntries.end();
-         ++it) {
-        delete it->mValue;
-    }
+void MultiMuse::MultiMuseCmd::Execute() {
+    mMulti->Advance();
 }
 
-void MultiMuse::Print(std::ostream &stream) {
-    long long nIndent = kNoIndent;
-    std::vector<TickObj<MuseMsg *> >::iterator it = mEntries.begin();
-    if (it == mEntries.end()) {
-        stream << "[empty]";
+MultiMuse::MultiMuse(int nStopPrevious)
+    : mMuses(), mNext(mMuses.end()), mFirstActive(mMuses.end()), mStopPrevious(nStopPrevious),
+      mScheduler(nullptr), mCmd(new MultiMuseCmd(this)), mLength(0), mOffset(0), mEnd(0) {
+}
+
+MultiMuse::~MultiMuse() {
+    Stop();
+}
+
+void MultiMuse::Play(Scheduler *pScheduler) {
+    PlayFrom(pScheduler, 0);
+}
+
+void MultiMuse::PlayFrom(Scheduler *pScheduler, int nOffset) {
+    PlayWindow(pScheduler, nOffset, mLength + 1);
+}
+
+void MultiMuse::PlayWindow(Scheduler *pScheduler, int nStart, int nEnd) {
+    Stop();
+    if (!(nStart < nEnd)) {
         return;
     }
-
-    std::ostream &open = stream << "[";
-    nlfilebuf *pBuffer = dynamic_cast<nlfilebuf *>(open.rdbuf());
-    if (pBuffer != nullptr) {
-        nIndent = static_cast<int>(open.tellp()) - pBuffer->mLineStart;
+    mScheduler = pScheduler;
+    mNext = mFirstActive = mMuses.begin();
+    while (mNext != mMuses.end() && mNext->mTick <= nStart && mNext->mTick < nEnd) {
+        mNext->mMuse->PlayWindow(pScheduler, nStart - mNext->mTick, nEnd - mNext->mTick);
+        ++mNext;
     }
-    PrintMuseMsgTickObj(open, it->mPosition, it->mValue);
+    if (mNext == mMuses.end() || !(mNext->mTick < nEnd)) {
+        mScheduler = nullptr;
+        mNext = mFirstActive = mMuses.end();
+        return;
+    }
+    mOffset = mScheduler->mTick - nStart;
+    mEnd = mOffset + nEnd;
+    mScheduler->PostAt(mCmd.Get(), mOffset + mNext->mTick, false);
+}
 
-    for (++it; it != mEntries.end(); ++it) {
-        std::ostream &line = stream << std::endl;
-        if (nIndent != kNoIndent) {
-            nlfilebuf *pLineBuffer = dynamic_cast<nlfilebuf *>(line.rdbuf());
-            if (pLineBuffer != nullptr) {
-                const long long nPad =
-                    nIndent - (static_cast<int>(line.tellp()) - pLineBuffer->mLineStart);
-                for (int i = 0; i < nPad; ++i) {
-                    line << " ";
-                }
-            }
+bool MultiMuse::IsPlaying() {
+    if (mScheduler != nullptr) {
+        return true;
+    }
+    for (auto it = mFirstActive; it != mNext; ++it) {
+        if (it->mMuse->IsPlaying()) {
+            return true;
         }
-        pBuffer = dynamic_cast<nlfilebuf *>(stream.rdbuf());
-        if (pBuffer != nullptr) {
-            nIndent = static_cast<int>(stream.tellp()) - pBuffer->mLineStart;
+    }
+    return false;
+}
+
+int MultiMuse::GetLength() {
+    return mLength;
+}
+
+void MultiMuse::Advance() {
+    if (mStopPrevious) {
+        while (mFirstActive != mNext) {
+            mFirstActive->mMuse->Stop();
+            ++mFirstActive;
         }
-        PrintMuseMsgTickObj(stream, it->mPosition, it->mValue);
     }
-    stream << "]";
-}
-
-void *MultiMuse::operator new(size_t nSize) {
-    return AllocateTaggedMemory(nSize, "MultiMuse");
-}
-
-void MultiMuse::operator delete(void *pBlock) {
-    OperatorDeleteOverride(pBlock, "MultiMuse");
-}
-
-void MultiMuse::SaveFields(OBStream &stream) {
-    const int nCount = mEntries.end() - mEntries.begin();
-    stream.WriteLE(&nCount, sizeof(nCount));
-
-    std::vector<TickObj<MuseMsg *> >::iterator it = mEntries.begin();
-    for (; it != mEntries.end(); ++it) {
-        Sch::Tick position = it->mPosition;
-        position.saveGuts(stream);
-        stream << it->mValue;
+    const int nTick = mNext->mTick;
+    while (mNext != mMuses.end() && mNext->mTick == nTick) {
+        mNext->mMuse->PlayWindow(mScheduler, 0, mEnd - mOffset - nTick);
+        ++mNext;
     }
-}
-
-std::ostream &PrintMuseMsgTickObj(std::ostream &stream, Sch::Tick position, MuseMsg *pMsg) {
-    std::ostream &open = stream << "[";
-    position.Print(open);
-    std::ostream &separated = open << ": ";
-    pMsg->Print(separated); // Yes, the binary discards the result.
-    return separated << "]";
-}
-
-void MultiMuse::Append(const MultiMuse &other) {
-    mEntries.reserve(other.mEntries.size());
-    for (std::vector<TickObj<MuseMsg *> >::const_iterator it = other.mEntries.begin();
-         it != other.mEntries.end();
-         ++it) {
-        TickObj<MuseMsg *> entry;
-        entry.mValue = static_cast<MuseMsg *>(it->mValue->Clone());
-        entry.mPosition = it->mPosition;
-        mEntries.push_back(entry);
-    }
-}
-
-void MultiMuse::LoadFields(IBStream &stream) {
-    mEntries.clear();
-    int nCount;
-    stream.ReadLE(&nCount, sizeof(nCount));
-    mEntries.reserve(nCount);
-    for (int i = 0; i < nCount; ++i) {
-        Sch::Tick position;
-        position.restoreGuts(stream);
-        Message *pMsg;
-        stream >> pMsg;
-        TickObj<MuseMsg *> entry;
-        entry.mPosition = position;
-        entry.mValue = dynamic_cast<MuseMsg *>(pMsg);
-        mEntries.push_back(entry);
-    }
-}
-
-void MultiMuse::Add(MuseMsg *pMsg, int nTick, int bCheckLast) {
-    TickObj<MuseMsg *> entry;
-    entry.mPosition.mTick = nTick;
-    entry.mValue = static_cast<MuseMsg *>(pMsg->Clone());
-    if (bCheckLast != 0) {
-        InsertSorted(mEntries, entry);
+    if (mNext != mMuses.end() && mNext->mTick + mOffset < mEnd) {
+        mScheduler->PostAt(mCmd.Get(), mOffset + mNext->mTick, false);
     } else {
-        InsertAtLowerBound(mEntries, entry);
+        mScheduler = nullptr;
+        mFirstActive = mNext = mMuses.end();
     }
 }
 
-MuseMsg *MultiMuse::Find(int nTick) {
-    std::vector<TickObj<MuseMsg *> >::iterator it =
-        std::lower_bound(mEntries.begin(), mEntries.end(), nTick, TickObjAfter<MuseMsg *>);
-    if (it != mEntries.end() && it->mPosition.mTick == nTick) {
-        return it->mValue;
+void MultiMuse::Stop() {
+    if (mScheduler != nullptr) {
+        mScheduler->Cancel(mCmd.Get());
     }
-    return nullptr;
+    mScheduler = nullptr;
+    mFirstActive = mNext = mMuses.end();
+    for (TimedMuse &timed : mMuses) {
+        timed.mMuse->Stop();
+    }
+}
+
+Muse *MultiMuse::Clone() {
+    MultiMuse *pCopy = new MultiMuse(0);
+    for (TimedMuse &timed : mMuses) {
+        pCopy->Add(timed.mMuse.Get()->Clone(), timed.mTick);
+    }
+    return pCopy;
+}
+
+void MultiMuse::SetNoteCB(NoteCB *pNoteCB) {
+    for (TimedMuse &timed : mMuses) {
+        timed.mMuse->SetNoteCB(pNoteCB);
+    }
+}
+
+void MultiMuse::Add(Muse *pMuse, int nTick) {
+    const TimedMuse timed{Ptr<Muse>(pMuse), nTick};
+    std::list<TimedMuse>::iterator it;
+    if (mMuses.empty() || !(nTick < mMuses.back().mTick)) {
+        it = mMuses.insert(mMuses.end(), timed);
+    } else {
+        it =
+            mMuses.insert(std::upper_bound(mMuses.begin(), mMuses.end(), timed, TickBefore), timed);
+    }
+    if (mScheduler != nullptr && std::prev(mNext) == it && !(nTick < mScheduler->mTick - mOffset) &&
+        mOffset + nTick < mEnd) {
+        // The new muse starts before the one the command waits on.
+        mScheduler->Cancel(mCmd.Get());
+        mScheduler->PostAt(mCmd.Get(), mOffset + nTick, false);
+        mNext = it;
+    }
+    const int nEnd = nTick + pMuse->GetLength();
+    if (mLength < nEnd) {
+        mLength = nEnd;
+    }
 }

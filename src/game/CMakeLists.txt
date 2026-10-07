@@ -10,6 +10,8 @@ set(WAVELENGTH_GAME_SRCS
     bankloaderbuilder.cpp
     catchtrackbuilder.cpp
     catchtrackdata.cpp
+    catchtrackdisplay.cpp
+    changesectionevent.cpp
     controllerdisplay.cpp
     difficultyrating.cpp
     duel.cpp
@@ -26,11 +28,13 @@ set(WAVELENGTH_GAME_SRCS
     gametrackselector.cpp
     gemcatcher.cpp
     gemcursor.cpp
+    gemslice.cpp
+    guideticker.cpp
     helptext.cpp
-    inputmgr.cpp
-    harmony.cpp
     inputmap.cpp
+    inputmgr.cpp
     joypadps2.cpp
+    juicemeter.cpp
     lineartransform.cpp
     localplayer.cpp
     lyric.cpp
@@ -50,11 +54,14 @@ set(WAVELENGTH_GAME_SRCS
     player.cpp
     playerprofile.cpp
     playmap.cpp
+    playnoteevent.cpp
     points.cpp
     rateaverager.cpp
     remix.cpp
+    remixhud.cpp
     remixtutorial.cpp
     remoteplayer.cpp
+    rotateevent.cpp
     scratchtrack.cpp
     scratchtrackbuilder.cpp
     scratchtrackdata.cpp
@@ -67,6 +74,8 @@ set(WAVELENGTH_GAME_SRCS
     stats.cpp
     streamqueue.cpp
     streamtask.cpp
+    stutter.cpp
+    trackcapturer.cpp
     track.cpp
     trackselector.cpp
     tutorialgamelogic.cpp

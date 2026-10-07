@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "game/scratchtrackdata.h"
-#include "gs/multimusebuilder.h"
+#include "gs/musefactory.h"
 #include "mid/midivalidator.h"
 #include "mid/trackbuilder.h"
 
@@ -144,6 +144,6 @@ public:
     int mTicksPerBar;                           /*!< The length of a bar. */
     int mIntroTicks;                            /*!< The length of the song intro. */
     std::vector<std::pair<int, int> > mButtons; /*!< The start and end tick of each note. */
-    MultiMuseBuilder mPieces;                   /*!< The sound the pieces are cut from. */
+    MuseFactory mPieces;                        /*!< The sound the pieces are cut from. */
     MidiValidator mValidator;                   /*!< The checker of the channel messages. */
 };

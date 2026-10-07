@@ -17,14 +17,15 @@ constexpr int kNoMultiplier = 1;
 // The streak multiplier SetScore() passes with a score set outright.
 constexpr int kBaseStreakMultiplier = 1;
 
-constexpr int kNoReserved = -1;
+constexpr int kNoHitTick = -1;
 
 } // namespace
 
 Player::Player(int nIndex, int nTicksPerBar)
     : mIndex(nIndex), mTicksPerBar(nTicksPerBar), mTrack(nullptr), mScore(0), mPendingPoints(0),
       mMultiplierValue(kNoMultiplier), mStreak(0), mCatching(false), mAborted(false), mRepeat(true),
-      mReserved(kNoReserved), mMultiplierEndCommand(NewMemFunCommand(this, &Player::EndMultiplier)),
+      mLastHitTick(kNoHitTick),
+      mMultiplierEndCommand(NewMemFunCommand(this, &Player::EndMultiplier)),
       mPowerup(GameLogic::kPowerupNone) {
 }
 

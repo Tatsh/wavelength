@@ -53,4 +53,13 @@ public:
      */
     ~NoteMuse() override {
     }
+
+    /**
+     * Produce a copy of the note on the heap.
+     *
+     * @return The copy, with no reference taken.
+     * @ghidraAddress NTSC-U/C: 0x0015bb08
+     * @ghidraAddress PAL: 0x0015d2f8
+     */
+    Muse *Clone() override;
 };

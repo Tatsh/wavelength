@@ -32,7 +32,7 @@ void GemCatcher::CatchCheckCmd::Schedule() {
 void GemCatcher::CatchCheckCmd::Execute() {
     if (mCursor.IsValid()) {
         const int nBar = mCursor.GetTick() / mTicksPerBar;
-        if (!mState->IsCaptured(nBar) && mState->IsEnabled(nBar)) {
+        if (!mState->GetCapturedBy(nBar) && mState->IsEnabled(nBar)) {
             Pass(TheSongScheduler.mTick, mCursor);
         }
     }
@@ -58,12 +58,12 @@ void GemCatcher::CatchCheckCmd::Catch() {
     GemCursor next(mCursor);
     next.AdvanceToLane(mLane);
     int nBar = current.GetTick() / mTicksPerBar;
-    if (mState->IsCaptured(nBar) || !mState->IsEnabled(nBar)) {
+    if (mState->GetCapturedBy(nBar) || !mState->IsEnabled(nBar)) {
         current = GemCursor();
     }
     if (next.IsValid()) {
         nBar = next.GetTick() / mTicksPerBar;
-        if (mState->IsCaptured(nBar) || !mState->IsEnabled(nBar)) {
+        if (mState->GetCapturedBy(nBar) || !mState->IsEnabled(nBar)) {
             next = GemCursor();
         }
     }

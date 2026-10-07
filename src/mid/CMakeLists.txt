@@ -1,6 +1,6 @@
 set(WAVELENGTH_MID_SRCS
-    reader.cpp
-    receiver.cpp
+    mbt.cpp
+    midireader.cpp
     tick.cpp)
 
 add_library(wavelength_mid STATIC ${WAVELENGTH_MID_SRCS})

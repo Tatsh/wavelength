@@ -73,7 +73,7 @@ AxeTrackContourBuilder::~AxeTrackContourBuilder() {
 
 void AxeTrackContourBuilder::OnEndTrack() {
     auto itMessage = mMessages.begin();
-    mChannelState.Reset(itMessage->mStatus & kStatusChannelMask);
+    mChannelState.SetChannel(itMessage->mStatus & kStatusChannelMask);
     AxeContour *apContours[AxeTrackData::kSetSize] = {};
     int nSetTick = 0;
     auto itButton = mButtons.begin();
@@ -86,7 +86,7 @@ void AxeTrackContourBuilder::OnEndTrack() {
         while (itMessage->mTick < itButton->first ||
                (itMessage->mTick == itButton->first &&
                 (itMessage->mStatus & kStatusTypeMask) == kStatusNoteOff)) {
-            mChannelState.Process(itMessage->mStatus, itMessage->mData1, itMessage->mData2);
+            mChannelState.OnMessage(itMessage->mStatus, itMessage->mData1, itMessage->mData2);
             ++itMessage;
             if (itMessage == mMessages.end()) {
                 return; // Yes, the binary abandons the notes of an unfinished set.
@@ -158,14 +158,14 @@ AxeContour *AxeTrackContourBuilder::BuildContour(std::vector<MidiMsg>::iterator 
     }
 
     auto *pContour = new AxeContour(nLength, itMessage->mStatus & kStatusChannelMask);
-    Muse *pState = mChannelState.MakeMuse();
+    Muse *pState = mChannelState.GetMuse();
     if (pState != nullptr) {
-        pContour->Add(kStateTick, pState);
+        pContour->AddMuse(kStateTick, pState);
     }
 
     std::map<unsigned char, MidiMsg> notes;
     for (; itMessage != mMessages.end() && itMessage->mTick <= nEndTick; ++itMessage) {
-        mChannelState.Process(itMessage->mStatus, itMessage->mData1, itMessage->mData2);
+        mChannelState.OnMessage(itMessage->mStatus, itMessage->mData1, itMessage->mData2);
         const unsigned char nType = itMessage->mStatus & kStatusTypeMask;
         if (nType == kStatusNoteOn) {
             notes[itMessage->mData1] = *itMessage;
@@ -176,7 +176,7 @@ AxeContour *AxeTrackContourBuilder::BuildContour(std::vector<MidiMsg>::iterator 
                               noteOn.mData2,
                               itMessage->mTick - noteOn.mTick);
         } else {
-            pContour->Add(
+            pContour->AddMuse(
                 itMessage->mTick - nStartTick,
                 new StdMidiMuse(itMessage->mStatus, itMessage->mData1, itMessage->mData2));
         }

@@ -9,11 +9,37 @@
  * Player that repeats a piece of music over a fixed number of ticks.
  *
  * The RTTI includes the class name. The class is not polymorphic. Its nested command
- * MuseLooper::RepeatCmd restarts the piece each time a loop ends. The routines are not
- * reconstructed.
+ * MuseLooper::RepeatCmd restarts the piece each time a loop ends.
  */
 class MuseLooper {
 public:
+    /**
+     * Command that restarts the piece of a looper at the end of each loop.
+     *
+     * The RTTI includes the nested name and records Command as the base.
+     */
+    class RepeatCmd : public Command {
+    public:
+        /**
+         * Construct the command of a looper.
+         *
+         * @param pLooper The looper.
+         */
+        explicit RepeatCmd(MuseLooper *pLooper) : mLooper(pLooper) {
+        }
+
+        /**
+         * Restart the piece and schedule the end of the new loop.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034eec8
+         * @ghidraAddress PAL: 0x003bc2f0
+         */
+        void Execute() override;
+
+    private:
+        MuseLooper *mLooper; /*!< The looper. */
+    };
+
     /**
      * Construct a stopped looper.
      *
@@ -58,6 +84,24 @@ public:
      * @ghidraAddress PAL: 0x0015d710
      */
     bool IsPlaying() const;
+
+    /**
+     * Report the ticks of one loop.
+     *
+     * @return The ticks.
+     * @ghidraAddress NTSC-U/C: 0x0015be08
+     * @ghidraAddress PAL: 0x0015d5f8
+     */
+    int GetLength() const;
+
+    /**
+     * Report the position of the scheduler in the current loop.
+     *
+     * @return The ticks since the current loop started.
+     * @ghidraAddress NTSC-U/C: 0x0015bf30
+     * @ghidraAddress PAL: 0x0015d720
+     */
+    int GetPosition() const;
 
     Ptr<Command> mRepeatCmd; /*!< The MuseLooper::RepeatCmd that restarts the piece. */
     Ptr<Muse> mMuse;         /*!< The piece. */

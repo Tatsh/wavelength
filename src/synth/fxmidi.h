@@ -61,6 +61,34 @@ public:
     static void PlayPowerupSound(int nPowerup);
 
     /**
+     * Play the sound of a power-up a player caught.
+     *
+     * @param nPowerup The kind of power-up, one of GameLogic::Powerup.
+     * @ghidraAddress NTSC-U/C: 0x0027ff30
+     * @ghidraAddress PAL: 0x00289830
+     */
+    static void PlayPowerupCatchSound(int nPowerup);
+
+    /**
+     * Play the sound that warns that the juice of a solo player is low.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fea0
+     * @ghidraAddress PAL: 0x002897a0
+     */
+    static void PlayJuiceLowSound();
+
+    /**
+     * Play the guide sound of a gem lane.
+     *
+     * GuideTicker plays it for each gem of an enabled bar.
+     *
+     * @param nLane The lane.
+     * @ghidraAddress NTSC-U/C: 0x0027ffd0
+     * @ghidraAddress PAL: 0x002898d0
+     */
+    static void PlayGuideSound(int nLane);
+
+    /**
      * Report whether a leader sound is playing.
      *
      * @return Whether one of the four leader sounds plays.

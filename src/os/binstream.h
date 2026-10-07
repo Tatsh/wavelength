@@ -27,6 +27,45 @@ public:
      */
     virtual void Write(const void *pData, int nBytes) = 0;
 
+    /** Origins of Seek(). */
+    enum SeekType {
+        kSeekBegin = 0,   /*!< From the start of the stream. */
+        kSeekCurrent = 1, /*!< From the current position. */
+        kSeekEnd = 2,     /*!< From the end of the stream. */
+    };
+
+    /** Write out buffered data. */
+    virtual void Flush() = 0;
+
+    /**
+     * Move the position.
+     *
+     * @param nOffset The offset in bytes.
+     * @param eFrom The origin of the offset.
+     */
+    virtual void Seek(int nOffset, SeekType eFrom) = 0;
+
+    /**
+     * Report the position.
+     *
+     * @return The position in bytes.
+     */
+    virtual int Tell() = 0;
+
+    /**
+     * Report whether the position is at the end.
+     *
+     * @return Whether no byte is left.
+     */
+    virtual bool Eof() = 0;
+
+    /**
+     * Report whether a transfer failed.
+     *
+     * @return Whether a transfer failed.
+     */
+    virtual bool Fail() = 0;
+
     /**
      * Read a value of 2, 4, 8, or 16 bytes, reversing its bytes unless the stream is little endian.
      *

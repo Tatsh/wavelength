@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/backmusic.h"
-#include "gs/multimusebuilder.h"
+#include "gs/musefactory.h"
 #include "mid/midivalidator.h"
 #include "mid/trackbuilder.h"
 
@@ -125,5 +125,5 @@ public:
     int mTicksPerBar;         /*!< The song ticks in one bar. */
     BackMusic *mMusic;        /*!< The music to fill. */
     MidiValidator mValidator; /*!< The checker of the channel messages. */
-    MultiMuseBuilder mPieces; /*!< The collected channel messages. */
+    MuseFactory mPieces;      /*!< The collected channel messages. */
 };

@@ -55,7 +55,7 @@ float Synth::GetLag() {
 void Synth::SetSoftFxSweep([[maybe_unused]] float fPosition) {
 }
 
-void Synth::VirtualSlot26() {
+void Synth::VirtualSlot26([[maybe_unused]] float fValue) {
 }
 
 void Synth::SetSoftFxFilter([[maybe_unused]] const SoftFxFilter &filter) {

@@ -74,5 +74,14 @@ public:
      */
     const char *GetGenre() const;
 
+    /**
+     * Report the `bpm` of the song.
+     *
+     * @return The tempo in beats per minute.
+     * @ghidraAddress NTSC-U/C: 0x0027d510
+     * @ghidraAddress PAL: 0x00286e28
+     */
+    float GetBpm() const;
+
     DataArray *mData; /*!< The entry. */
 };

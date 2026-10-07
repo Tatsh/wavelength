@@ -4,6 +4,7 @@
 
 #include "game/catchtrackdata.h"
 #include "game/gemcursor.h"
+#include "game/player.h"
 #include "game/playmap.h"
 
 /**
@@ -20,10 +21,10 @@ public:
      * The RTTI includes the class name.
      */
     struct BarState {
-        int mCaptured;   /*!< Whether the phrase of the bar is captured. */
-        int mEnabled;    /*!< Whether the gems of the bar can be caught. */
-        int mHasGems;    /*!< Whether a gem of the track lies in the bar. */
-        int mReserved0C; // +0x0c, not yet identified.
+        Player *mCapturedBy; /*!< The player who captured the phrase of the bar, or null. */
+        int mEnabled;        /*!< Whether the gems of the bar can be caught. */
+        int mHasGems;        /*!< Whether a gem of the track lies in the bar. */
+        int mPowerup;        /*!< The power-up the phrase of the bar awards, or 0. */
     };
 
     /**
@@ -47,14 +48,14 @@ public:
     ~CatchTrackState();
 
     /**
-     * Report whether the phrase of a bar is captured.
+     * Report the player who captured the phrase of a bar.
      *
      * @param nBar The bar the song plays.
-     * @return Whether the phrase is captured.
+     * @return The player, or null while the phrase is not captured.
      * @ghidraAddress NTSC-U/C: 0x0014e230
      * @ghidraAddress PAL: 0x0014fbd0
      */
-    bool IsCaptured(int nBar);
+    Player *GetCapturedBy(int nBar);
 
     /**
      * Set whether the gems of a range of bars can be caught.
@@ -76,6 +77,26 @@ public:
      * @ghidraAddress PAL: 0x0014fc88
      */
     bool IsEnabled(int nBar);
+
+    /**
+     * Report whether no gem of the track lies in a bar.
+     *
+     * @param nBar The bar the song plays.
+     * @return Whether the bar has no gems.
+     * @ghidraAddress NTSC-U/C: 0x0014e320
+     * @ghidraAddress PAL: 0x0014fcc0
+     */
+    bool IsBarEmpty(int nBar);
+
+    /**
+     * Report the power-up a bar awards when its phrase is caught.
+     *
+     * @param nBar The bar the song plays.
+     * @return The kind of power-up, or 0 for none.
+     * @ghidraAddress NTSC-U/C: 0x0014e390
+     * @ghidraAddress PAL: 0x0014fd30
+     */
+    int GetPowerup(int nBar);
 
     /**
      * Construct a cursor at the first gem of the track.

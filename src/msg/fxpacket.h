@@ -84,6 +84,36 @@ public:
         return "FXPacket";
     }
 
+    /**
+     * Write the section, the track, the effect, and the switch to a diagnostic stream.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00150ef0
+     * @ghidraAddress PAL: 0x001527e0
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
+    /**
+     * Write the payload packed into two bytes.
+     *
+     * The section takes the low four bits, the track the next three, the effect the next two, and
+     * the switch the bit after them.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00150dc8
+     * @ghidraAddress PAL: 0x001526b8
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the two bytes saveGuts() writes back into the fields.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x00150e68
+     * @ghidraAddress PAL: 0x00152758
+     */
+    void restoreGuts(BinStream &stream) override;
+
     int mSection; /*!< The section. */
     int mTrack;   /*!< The track. */
     int mType;    /*!< The effect. */
