@@ -56,24 +56,26 @@ set(WAVELENGTH_IOP_CXX_FLAGS
 # The C++ runtime every C++ module links.
 set(WAVELENGTH_IOP_CXX_RUNTIME "${CMAKE_SOURCE_DIR}/src/iop/runtime/runtime.cpp")
 
-# wavelength_add_irx(<module> <source>...)
+# wavelength_add_irx(<module> [NO_CXX_RUNTIME] <source>...)
 #
 # Builds <module>.irx from the sources, given relative to src/iop/<module> in link order. C, C++,
 # and preprocessed assembler (.S) sources are accepted. A module with a C++ source also links the
-# C++ runtime under src/iop/runtime.
+# C++ runtime under src/iop/runtime, unless NO_CXX_RUNTIME is given for C++ code that needs none
+# of it.
 function(wavelength_add_irx module)
   if(_wavelength_iop_missing)
     return()
   endif()
+  cmake_parse_arguments(PARSE_ARGV 1 _irx "NO_CXX_RUNTIME" "" "")
   set(_src_dir "${CMAKE_SOURCE_DIR}/src/iop/${module}")
   set(_build_dir "${CMAKE_BINARY_DIR}/iop/${module}")
   file(MAKE_DIRECTORY "${_build_dir}")
 
   set(_sources "")
   set(_needs_runtime FALSE)
-  foreach(_src ${ARGN})
+  foreach(_src ${_irx_UNPARSED_ARGUMENTS})
     list(APPEND _sources "${_src_dir}/${_src}")
-    if(_src MATCHES "\\.cpp$")
+    if(_src MATCHES "\\.cpp$" AND NOT _irx_NO_CXX_RUNTIME)
       set(_needs_runtime TRUE)
     endif()
   endforeach()

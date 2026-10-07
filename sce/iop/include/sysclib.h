@@ -10,6 +10,69 @@ extern "C" {
 /** Memory and string routines of the resident sysclib library. */
 
 /**
+ * Compare two regions byte by byte.
+ *
+ * @param left First region.
+ * @param right Second region.
+ * @param n Byte count.
+ * @return Zero when the regions are equal, otherwise the sign of the first difference.
+ */
+int memcmp(const void *left, const void *right, size_t n);
+
+/**
+ * Copy memory, with the source first.
+ *
+ * @param src Source.
+ * @param dest Destination.
+ * @param n Byte count.
+ */
+void bcopy(const void *src, void *dest, size_t n);
+
+/**
+ * Clear memory.
+ *
+ * @param dest Destination.
+ * @param n Byte count.
+ */
+void bzero(void *dest, size_t n);
+
+/**
+ * Write formatted text to a buffer.
+ *
+ * @param buffer Destination.
+ * @param format Format string.
+ * @return The number of characters written, not counting the terminator.
+ */
+int sprintf(char *buffer, const char *format, ...);
+
+/**
+ * Copy a string.
+ *
+ * @param dest Destination.
+ * @param src Source.
+ * @return @p dest.
+ */
+char *strcpy(char *dest, const char *src);
+
+/**
+ * Measure a string.
+ *
+ * @param text String.
+ * @return The number of characters before the terminator.
+ */
+size_t strlen(const char *text);
+
+/**
+ * Compare at most n characters of two strings.
+ *
+ * @param left First string.
+ * @param right Second string.
+ * @param n Largest number of characters to compare.
+ * @return Zero when the prefixes are equal, otherwise the sign of the first difference.
+ */
+int strncmp(const char *left, const char *right, size_t n);
+
+/**
  * Copy memory between regions that do not overlap.
  *
  * @param dest Destination.

@@ -4,6 +4,8 @@ abmpfile
 acanvas
 acanvaslin
 acircbuff
+adcb
+adce
 adda
 addi
 addiu
@@ -59,6 +61,7 @@ bartels
 bascus
 basenames
 bclr
+bcopy
 bdec
 beis
 besces
@@ -75,6 +78,7 @@ buildinfo
 buildsystems
 bvoll
 bvolr
+bzero
 callbackxferbdtoiop
 catchpatt
 cdread
@@ -99,6 +103,7 @@ collectchildren
 collideable
 collideables
 color
+conexant
 constructo
 corefx
 coveragerc
@@ -117,6 +122,7 @@ crti
 crtn
 ctype
 cxtmdm
+cxtmodem
 cycl
 daddu
 dashcam
@@ -189,6 +195,7 @@ errorscreen
 esac
 esbenp
 etext
+evfid
 evoll
 evolr
 ezmidi
@@ -374,6 +381,7 @@ linkfile
 linkonce
 listdirop
 littlemips
+lmode
 lobbyconnectionlostmsg
 localizeerrors
 localplayer
@@ -419,6 +427,7 @@ memcardsavepaths
 memcardtask
 memcarduser
 memclr
+memcmp
 memcpy
 memset
 memstream
@@ -483,6 +492,7 @@ mvolr
 mypy
 nameirx
 netarbiter
+netdev
 netfaker
 netflow
 netlaunch
@@ -665,6 +675,7 @@ slotgrid
 slti
 sltiu
 sltu
+smartscm
 smblks
 smflag
 smpl
@@ -696,6 +707,7 @@ spdif
 spewregister
 spewtable
 spindlctrl
+sprintf
 spyramid
 sqwc
 srcs
@@ -718,7 +730,9 @@ stmblk
 stmnblk
 stmod
 strcmp
+strcpy
 strequal
+strncmp
 subu
 subx
 suby
@@ -742,6 +756,7 @@ texa
 texs
 tgmath
 thbase
+thevent
 thid
 thsemap
 tickclock

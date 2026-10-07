@@ -23,3 +23,7 @@ wavelength_add_irx(
   vibrato.cpp
   random.cpp
   imports.S)
+# The modem driver ships only on the NTSC-U/C disc.
+if(VIDEO_STANDARD STREQUAL "NTSC")
+  wavelength_add_irx(cxtmdm NO_CXX_RUNTIME cxtmodem.cpp cxtmdm.cpp imports.S)
+endif()

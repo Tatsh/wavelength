@@ -7,12 +7,13 @@ extern "C" {
 
 /**
  * IOP kernel services a module imports from the resident kernel libraries (loadcore, sysmem,
- * intrman, thbase, thsemap, timrman, and scrtpad). The layouts follow the stabs the shipped
- * EZMIDI.IRX records.
+ * intrman, thbase, thevent, thsemap, timrman, and scrtpad). The layouts follow the stabs the
+ * shipped EZMIDI.IRX records.
  */
 
 /** Values a module entry returns to the loader. */
 enum ModuleStartResult {
+    RESIDENT_END = 0,           /*!< The module stays loaded. */
     NO_RESIDENT_END = 1,        /*!< The module does not stay loaded. */
     REMOVABLE_RESIDENT_END = 2, /*!< The module stays loaded and may be unloaded later. */
 };
@@ -25,9 +26,10 @@ typedef struct _moduleinfo {
 
 /** Kernel result codes the module compares against. */
 enum KernelErrorCode {
-    KE_OK = 0,                 /*!< Success. */
-    KE_ERROR = -1,             /*!< Unspecified failure. */
-    KE_TIMER_NOT_INUSE = -156, /*!< The timer is not running. */
+    KE_OK = 0,                  /*!< Success. */
+    KE_ERROR = -1,              /*!< Unspecified failure. */
+    KE_TIMER_NOT_INUSE = -156,  /*!< The timer is not running. */
+    KE_ILLEGAL_PRIORITY = -413, /*!< The thread priority is out of range. */
 };
 
 /** Interrupt numbers of the IOP interrupt controller and its DMA channels. */
@@ -43,9 +45,13 @@ enum INUM {
 struct ThreadParam {
     unsigned int attr;   /*!< Attribute bits such as #TH_C. */
     unsigned int option; /*!< Caller-defined option word. */
-    void (*entry)(void); /*!< Entry point. */
-    int stackSize;       /*!< Stack size in bytes. */
-    int initPriority;    /*!< Starting priority, where a smaller value runs first. */
+    union {
+        void (*entry)(void);                       /*!< Entry point. */
+        void (*entryWithArgument)(void *argument); /*!< Entry point that takes the StartThread()
+                                                      argument. */
+    };
+    int stackSize;    /*!< Stack size in bytes. */
+    int initPriority; /*!< Starting priority, where a smaller value runs first. */
 };
 
 /** A 64-bit system clock value in bus cycles. */
@@ -162,7 +168,16 @@ int TerminateThread(int thid);
  * @param arg Argument the entry point receives.
  * @return #KE_OK, or a negative error code.
  */
-int StartThread(int thid, unsigned long arg);
+int StartThread(int thid, void *arg);
+
+/**
+ * Change the priority of a thread.
+ *
+ * @param thid Thread identifier.
+ * @param priority New priority, where a smaller value runs first.
+ * @return #KE_OK, #KE_ILLEGAL_PRIORITY, or another negative error code.
+ */
+int ChangeThreadPriority(int thid, int priority);
 
 /**
  * Identify the calling thread.
@@ -264,6 +279,83 @@ void GetSystemTime(SysClock *clock);
  * @param clock Receives the cycle count.
  */
 void USec2SysClock(unsigned int usec, SysClock *clock);
+
+/**
+ * Run a handler in interrupt context once a time has passed.
+ *
+ * @param clock Delay in system clock cycles.
+ * @param handler Handler. It returns the next delay in cycles, or zero to stop.
+ * @param common Argument the handler receives.
+ * @return #KE_OK, or a negative error code.
+ */
+int SetAlarm(SysClock *clock, unsigned int (*handler)(void *common), void *common);
+
+/**
+ * Cancel an alarm that SetAlarm() installed.
+ *
+ * @param handler Handler of the alarm.
+ * @param common Argument of the alarm.
+ * @return #KE_OK, or a negative error code.
+ */
+int CancelAlarm(unsigned int (*handler)(void *common), void *common);
+
+/** Creation parameters of an event flag. */
+struct EventFlagParam {
+    unsigned int attr;        /*!< Attribute bits. */
+    unsigned int option;      /*!< Caller-defined option word. */
+    unsigned int initPattern; /*!< Starting bit pattern. */
+};
+
+/** Wait mode bits for WaitEventFlag(). */
+enum EventFlagWaitMode {
+    WEF_OR = 0x01,    /*!< Wake when any requested bit is set, rather than all of them. */
+    WEF_CLEAR = 0x10, /*!< Clear the requested bits on wake. */
+};
+
+/**
+ * Create an event flag.
+ *
+ * @param param Creation parameters.
+ * @return The event flag identifier, or a negative error code.
+ */
+int CreateEventFlag(struct EventFlagParam *param);
+
+/**
+ * Delete an event flag, waking its waiters with an error.
+ *
+ * @param evfid Event flag identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int DeleteEventFlag(int evfid);
+
+/**
+ * Set bits of an event flag from thread context.
+ *
+ * @param evfid Event flag identifier.
+ * @param bits Bits to set.
+ * @return #KE_OK, or a negative error code.
+ */
+int SetEventFlag(int evfid, unsigned int bits);
+
+/**
+ * Set bits of an event flag from interrupt context.
+ *
+ * @param evfid Event flag identifier.
+ * @param bits Bits to set.
+ * @return #KE_OK, or a negative error code.
+ */
+int iSetEventFlag(int evfid, unsigned int bits);
+
+/**
+ * Wait until bits of an event flag are set.
+ *
+ * @param evfid Event flag identifier.
+ * @param bits Bits to wait for.
+ * @param mode Bits of #EventFlagWaitMode.
+ * @param result Receives the bit pattern at wake.
+ * @return #KE_OK, or a negative error code.
+ */
+int WaitEventFlag(int evfid, unsigned int bits, int mode, unsigned int *result);
 
 /**
  * Allocate a hardware timer.
