@@ -5,7 +5,6 @@
 #include "mid/tick.h"
 #include "msg/invalidatetrackmsg.h"
 #include "msg/message.h"
-#include "msg/phrasepacket.h"
 #include "sch/cmdid.h"
 
 class Phrase;
@@ -415,20 +414,6 @@ public:
      * @ghidraAddress PAL: 0x001c6280
      */
     void WithdrawCommands();
-
-    /**
-     * Install the phrase a PhrasePacket for this track carries at its step, or clear the step when
-     * the packet has none, and post the window bar mapped to that step again.
-     *
-     * When the owner changes, TrackData::SetOwner() receives the owner PhraseDatabase::GetOwner()
-     * reported before the change, which is what the binary passes. DispatchPriv() expands the
-     * body inline, and the out-of-line copy has no caller.
-     *
-     * @param pPacket The packet.
-     * @ghidraAddress NTSC-U/C: 0x001c0010
-     * @ghidraAddress PAL: 0x001c5e40
-     */
-    void OnPhrasePacket(PhrasePacket *pPacket);
 
     /**
      * Clear and post again every window bar whose mapped bar lies in the range an

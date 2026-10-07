@@ -2,132 +2,80 @@ set(WAVELENGTH_MSG_SRCS
     advancesectionmsg.cpp
     advancesectiontogglemsg.cpp
     allnotesoffmsg.cpp
-    autocatchmsg.cpp
     axebuttonmsg.cpp
-    axisfxmsg.cpp
-    axisregistermsg.cpp
-    axisxpowmsg.cpp
-    axisypowmsg.cpp
-    barstatusmsg.cpp
     begingamelocalmsg.cpp
     beginphrasecatchmsg.cpp
-    bsloadlevelpacket.cpp
-    bumpmsg.cpp
-    bumppacket.cpp
-    buttonpowmsg.cpp
     catchmsg.cpp
-    catchprogresspacket.cpp
     caughtbarmsg.cpp
-    caughtphrasepacket.cpp
     caughtpowerbarmsg.cpp
     choosepowerupmsg.cpp
     cleargemmsg.cpp
     cleargemsmsg.cpp
     contctrlmsg.cpp
-    cripplemsg.cpp
-    cripplepacket.cpp
-    csclientstatuspacket.cpp
-    csinitiateplaypacket.cpp
     deployedpowerupmsg.cpp
-    displaypointermsg.cpp
     durgemmsg.cpp
     editgempacket.cpp
     enablefreestylemsg.cpp
     endgamemsg.cpp
-    erasemsg.cpp
-    eraseoffmsg.cpp
     fadegamemsg.cpp
     finalscorepacket.cpp
     freestylefxmsg.cpp
     gamebeginmsg.cpp
-    gamechatpacket.cpp
     gameconnectfailuremsg.cpp
     gameconnectionlostmsg.cpp
     gameconnectsuccessmsg.cpp
     gamemanagerdoplaybackmsg.cpp
     gameovermsg.cpp
-    gem.cpp
-    gemmsg.cpp
-    gempacket.cpp
     invalidateseekermsg.cpp
     invalidatetrackmsg.cpp
     isrecordingmsg.cpp
     jameffectmsg.cpp
-    juiceamountmsg.cpp
     leavegamemsg.cpp
     lobbyconnectionlostmsg.cpp
     looptogglemsg.cpp
     looptoolmsg.cpp
     message.cpp
-    messageio.cpp
     metcontrollerreading.cpp
     metfreqendedmsg.cpp
     metstartnetlaunchmsg.cpp
     metstartpausemsg.cpp
     metunlockstagesmsg.cpp
-    msgtypes.cpp
-    multimusemsg.cpp
     multipliermsg.cpp
     multiplierstatemsg.cpp
     musemsg.cpp
     mutevocalspacket.cpp
     nearesttrackmsg.cpp
-    neutralizemsg.cpp
     notemsg.cpp
     nowbarmsg.cpp
-    packet.cpp
     packetfactories.cpp
     pausegamesystemmsg.cpp
-    phrasecapturedmsg.cpp
     phrasemsg.cpp
-    phrasemuffedmsg.cpp
-    phrasepacket.cpp
     pitchmsg.cpp
-    pitchriffmsg.cpp
     playbackmodemsg.cpp
     playbacktogglemsg.cpp
     playerleftgamemsg.cpp
-    playerstrackneutralizedmsg.cpp
     playerupdatepacket.cpp
-    pointamountmsg.cpp
     powerupcountmsg.cpp
     powerupfailedmsg.cpp
     previewpacket.cpp
-    psjoinrequestpacket.cpp
     rawcontrollermsg.cpp
     refreshnetmsg.cpp
     remixfxmsg.cpp
     remixerupdatepacket.cpp
-    remotetrackselectmsg.cpp
     rotleftmsg.cpp
     rotrightmsg.cpp
-    scallclientsstatuspacket.cpp
-    scallplayersinfopacket.cpp
-    scgameoverpacket.cpp
-    scloadlevelpacket.cpp
-    scplayerjoinedpacket.cpp
     scriptmsg.cpp
-    scstartplayingpacket.cpp
-    sectioncapturedmsg.cpp
     sectionchangepacket.cpp
-    seekermsg.cpp
     showeraseeffectmsg.cpp
-    spjoinacceptpacket.cpp
-    spjoindenypacket.cpp
     stdmidimsg.cpp
-    stopriffmsg.cpp
     streakovermsg.cpp
     susgemmsg.cpp
     sustainnotemsg.cpp
-    testarbiterpacket.cpp
     textmsg.cpp
     toggleghostmsg.cpp
-    trackselectmsg.cpp
-    trackselectpacket.cpp
     tracksonmsg.cpp
     transportaddress.cpp
     unpausegamesystemmsg.cpp
-    updatescorepacket.cpp
     winmsg.cpp)
 
 add_library(wavelength_msg STATIC ${WAVELENGTH_MSG_SRCS})

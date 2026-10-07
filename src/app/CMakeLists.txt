@@ -4,7 +4,6 @@ set(WAVELENGTH_APP_SRCS
     application.cpp
     appticktask.cpp
     apptimetask.cpp
-    apptunnel.cpp
     attachment.cpp
     cutscene.cpp
     durgemcurve.cpp
@@ -18,18 +17,13 @@ set(WAVELENGTH_APP_SRCS
     hudeffects.cpp
     hudenergy.cpp
     hudfeedback.cpp
-    hudfreq.cpp
     hudgenmessage.cpp
     hudhighlight.cpp
     hudletterbox.cpp
     hudloop.cpp
     hudpanel.cpp
     hudpoints.cpp
-    hudposition.cpp
     hudpowerup.cpp
-    hudscore.cpp
-    hudscorepulse.cpp
-    hudscreenflash.cpp
     hudtcgroup.cpp
     hudtextmessage.cpp
     hudtrack.cpp
@@ -38,11 +32,9 @@ set(WAVELENGTH_APP_SRCS
     hudutil.cpp
     linearanim.cpp
     longop.cpp
-    mainloop.cpp
     msgqueue.cpp
     msgsink.cpp
     msgsource.cpp
-    overlay.cpp
     ovyassembly.cpp
     playbacker.cpp
     playsound.cpp
@@ -51,13 +43,11 @@ set(WAVELENGTH_APP_SRCS
     rendererbase.cpp
     scheduler.cpp
     scriptsink.cpp
-    systemtime.cpp
     task.cpp
     timeclock.cpp
     tnlactivator.cpp
     tnlarms.cpp
     tnlarrow.cpp
-    tnlboundary.cpp
     tnlbumpfx.cpp
     tnlcamerarig.cpp
     tnlcatcher.cpp
@@ -73,11 +63,9 @@ set(WAVELENGTH_APP_SRCS
     tnlmultfx.cpp
     tnlname.cpp
     tnlnowring.cpp
-    tnlpanel.cpp
     tnlpanelfx.cpp
     tnlpanelfxdelay.cpp
     tnlpendingtrigger.cpp
-    tnlplayer.cpp
     tnlpointer.cpp
     tnlsabretrail.cpp
     tnlseekerfade.cpp

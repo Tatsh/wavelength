@@ -1,20 +1,12 @@
 set(WAVELENGTH_GAME_SRCS
-    autocatchpowerup.cpp
-    autoriffer.cpp
     axefx.cpp
     axenewgemmaker.cpp
     axeoldgemmaker.cpp
-    axephrasemaker.cpp
     axingstg.cpp
-    axiscontrol.cpp
-    bgtrackgraph.cpp
-    bumppowerup.cpp
     campaignstats.cpp
-    catcher.cpp
     catchingstg.cpp
     controllercmd.cpp
     controllerconfig.cpp
-    cripplepowerup.cpp
     delayer.cpp
     difficultyrating.cpp
     dogamesystemplaycmd.cpp
@@ -23,13 +15,11 @@ set(WAVELENGTH_GAME_SRCS
     duelpattern.cpp
     dueltrack.cpp
     dueltrackpitcher.cpp
-    effectpowerup.cpp
     enablemgr.cpp
     endrecordingcmd.cpp
     forcefeedbackmgr.cpp
     forcefeedbackmgrcontroller.cpp
     forcefeedbackmgrmotoreffect.cpp
-    freestylepowerup.cpp
     freqappearance.cpp
     freqappearancedetail.cpp
     freqmakercursor.cpp
@@ -37,15 +27,10 @@ set(WAVELENGTH_GAME_SRCS
     freqparttemplate.cpp
     game.cpp
     gameconfig.cpp
-    gameenablemgr.cpp
     gameinfo.cpp
     gamelogic.cpp
-    gamemanagerimpl.cpp
     gameparams.cpp
     gameplaybacker.cpp
-    gamepowerbarmgr.cpp
-    gamepowerupplacer.cpp
-    gamer.cpp
     gamercmd.cpp
     gamerecorder.cpp
     gamestats.cpp
@@ -55,55 +40,36 @@ set(WAVELENGTH_GAME_SRCS
     helptext.cpp
     inputmgr.cpp
     genericcatcher.cpp
-    ghostnotespowerup.cpp
     globalsettings.cpp
-    grooveworld.cpp
     gsperiodical.cpp
     harmony.cpp
     idablebase.cpp
-    inputcheatdetector.cpp
     inputcheatdetectorgs.cpp
     inputcheatdetectormet.cpp
     inputmap.cpp
-    inputpollerps2.cpp
     jameffectsmgr.cpp
-    jampowerupplacer.cpp
     joypadps2.cpp
     jukeboxplaylist.cpp
-    levelbuilder.cpp
-    levelconverter.cpp
     leveldata.cpp
     levelstats.cpp
     lineartransform.cpp
     localjamenablemgr.cpp
     localplayer.cpp
-    localplayercmd.cpp
     lyric.cpp
     metagameworld.cpp
     middisabler.cpp
     midichase.cpp
     mixer.cpp
     msgjoiner.cpp
-    multicatcher.cpp
     multigamelogic.cpp
     multipowerbarmgr.cpp
-    multiplierpowerup.cpp
     multiscreenanim.cpp
     netarbiter.cpp
     netfaker.cpp
-    netjamenablemgr.cpp
-    netplayer.cpp
-    neutralizepowerup.cpp
     notefinder.cpp
-    nullplayer.cpp
     padrecord.cpp
-    phrase.cpp
-    phrasedatabase.cpp
     phraseeraser.cpp
     phrasemaker.cpp
-    phraseneutralizer.cpp
-    phraseplayer.cpp
-    pitchingstg.cpp
     pitchpicker.cpp
     pitchtrack.cpp
     pitchtrackbuilder.cpp
@@ -116,10 +82,6 @@ set(WAVELENGTH_GAME_SRCS
     player.cpp
     playerinfo.cpp
     playmap.cpp
-    playmaplinear.cpp
-    playmaplinearsteprings.cpp
-    playmaprepeatring.cpp
-    playmapring.cpp
     points.cpp
     powerup.cpp
     powerupcollection.cpp
@@ -130,10 +92,8 @@ set(WAVELENGTH_GAME_SRCS
     remix.cpp
     remixtutorial.cpp
     remoteplayer.cpp
-    riff.cpp
     riffrangefinder.cpp
     riffset.cpp
-    scoretrackgraph.cpp
     scratchtrack.cpp
     scratchtrackbuilder.cpp
     scratchtrackdata.cpp
@@ -141,8 +101,6 @@ set(WAVELENGTH_GAME_SRCS
     scripttrackbuilder.cpp
     scripttrackdata.cpp
     sectionboundaries.cpp
-    simplifiedgamepowerupplacer.cpp
-    singlecatcher.cpp
     singlepowerupcollection.cpp
     skillstats.cpp
     slotgrid.cpp
@@ -150,9 +108,7 @@ set(WAVELENGTH_GAME_SRCS
     solopowerbarmgr.cpp
     soloscreenanim.cpp
     stats.cpp
-    tnlarena.cpp
     track.cpp
-    trackdata.cpp
     trackselector.cpp
     tutorialgamelogic.cpp
     voxingstg.cpp

@@ -1,7 +1,6 @@
 set(WAVELENGTH_OS_SRCS
     acircbuff.cpp
     assert.cpp
-    async.cpp
     asynccallback.cpp
     cycles.cpp
     datetime.cpp
