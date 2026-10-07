@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00390000` to `0x003a0000`
 
-5 of 277 routines done.
+8 of 277 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -109,7 +109,7 @@ preliminary.
 | `GetRndFontSinglePtrTypeInfo`                                          |        :x:         |      1 |     80 | `0x003959b0` | `0x004040a0` | `type_info * GetRndFontSinglePtrTypeInfo(void)`                                                                                |
 | `FileListMsg__ConstructFileListMsg`                                    |        :x:         |      1 |     76 | `0x0039b3a0` | `0x00409fe8` | `void * FileListMsg__ConstructFileListMsg(FileListMsg * pSource)`                                                              |
 | `InetCheckConnectionResultMsg__CreateInetCheckConnectionResultMsg`     |        :x:         |      1 |     76 | `0x00397730` | `0x00405fb8` | `void InetCheckConnectionResultMsg__CreateInetCheckConnectionResultMsg(InetCheckConnectionResultMsg * pInit)`                  |
-| `LobbyConnectionLostMsg__ConstructLobbyConnectionLostMsg`              |        :x:         |      1 |     76 | `0x0039b060` | `0x00409ca8` | `void * LobbyConnectionLostMsg__ConstructLobbyConnectionLostMsg(LobbyConnectionLostMsg * pSource)`                             |
+| `LobbyConnectionLostMsg__ConstructLobbyConnectionLostMsg`              | :white_check_mark: |      1 |     76 | `0x0039b060` | `0x00409ca8` | `void * LobbyConnectionLostMsg__ConstructLobbyConnectionLostMsg(LobbyConnectionLostMsg * pSource)`                             |
 | `CreateRndCompositeMeshDrawObject`                                     |        :x:         |      2 |     72 | `0x00390170` | `0x003fe878` | `undefined4 CreateRndCompositeMeshDrawObject(undefined8 param_1)`                                                              |
 | `CreateRndTransAnimObject`                                             |        :x:         |      1 |     72 | `0x00392e78` | `0x00401580` | `undefined4 CreateRndTransAnimObject(undefined8 pInitArg)`                                                                     |
 | `CreateRndTexInstance`                                                 |        :x:         |      2 |     64 | `0x00391120` | `0x003ff828` | `void CreateRndTexInstance(undefined8 nameArg)`                                                                                |
@@ -227,8 +227,6 @@ preliminary.
 | `LoadGameMsg__GetLoadGameMsgTypeId`                                    |        :x:         |      0 |      1 | `0x00398e28` | `0x004076b0` | `undefined4 LoadGameMsg__GetLoadGameMsgTypeId(void)`                                                                           |
 | `LoadGamePkt__GetLoadGamePktName`                                      |        :x:         |      0 |      1 | `0x0039a7d8` | `0x00409060` | `char * LoadGamePkt__GetLoadGamePktName(void)`                                                                                 |
 | `LoadGamePkt__GetLoadGamePktTypeId`                                    |        :x:         |      0 |      1 | `0x0039a7c8` | `0x00409050` | `undefined4 LoadGamePkt__GetLoadGamePktTypeId(void)`                                                                           |
-| `LobbyConnectionLostMsg__GetLobbyConnectionLostMsgName`                |        :x:         |      0 |      1 | `0x0039b0c0` | `0x00409d08` | `char * LobbyConnectionLostMsg__GetLobbyConnectionLostMsgName(void)`                                                           |
-| `LobbyConnectionLostMsg__GetLobbyConnectionLostMsgTypeId`              |        :x:         |      0 |      1 | `0x0039b0b0` | `0x00409cf8` | `undefined4 LobbyConnectionLostMsg__GetLobbyConnectionLostMsgTypeId(void)`                                                     |
 | `LobbyDisconnectResultMsg__GetLobbyDisconnectResultMsgName`            |        :x:         |      0 |      1 | `0x0039b1c0` | `0x00409e08` | `char * LobbyDisconnectResultMsg__GetLobbyDisconnectResultMsgName(void)`                                                       |
 | `LobbyDisconnectResultMsg__GetLobbyDisconnectResultMsgTypeId`          |        :x:         |      0 |      1 | `0x0039b1b0` | `0x00409df8` | `undefined4 LobbyDisconnectResultMsg__GetLobbyDisconnectResultMsgTypeId(void)`                                                 |
 | `NetInetBase__NetInetBaseNopVirtual`                                   |        :x:         |      0 |      1 | `0x00397500` |              | `void NetInetBase__NetInetBaseNopVirtual(void)`                                                                                |
@@ -280,6 +278,8 @@ preliminary.
 | `SynthBase__SynthBaseNopVirtual0xe8`                                   |       :memo:       |      0 |      1 | `0x00395fe8` |              | `void SynthBase__SynthBaseNopVirtual0xe8(void)`                                                                                |
 | `SynthBase__SynthBaseNopVirtual0xf0`                                   |       :memo:       |      0 |      1 | `0x00395ff0` |              | `void SynthBase__SynthBaseNopVirtual0xf0(void)`                                                                                |
 | `SynthBase__SynthBaseNopVirtual0xf8`                                   |       :memo:       |      0 |      1 | `0x00395ff8` |              | `void SynthBase__SynthBaseNopVirtual0xf8(void)`                                                                                |
+| `LobbyConnectionLostMsg__GetLobbyConnectionLostMsgName`                | :white_check_mark: |      0 |      1 | `0x0039b0c0` | `0x00409d08` | `char * LobbyConnectionLostMsg__GetLobbyConnectionLostMsgName(void)`                                                           |
+| `LobbyConnectionLostMsg__GetLobbyConnectionLostMsgTypeId`              | :white_check_mark: |      0 |      1 | `0x0039b0b0` | `0x00409cf8` | `undefined4 LobbyConnectionLostMsg__GetLobbyConnectionLostMsgTypeId(void)`                                                     |
 | `SynthBase__GetSynthBaseOneConst`                                      | :white_check_mark: |      0 |      1 | `0x00395fb0` |              | `undefined4 SynthBase__GetSynthBaseOneConst(void)`                                                                             |
 | `SynthBase__SynthBaseNopVirtual0x98`                                   | :white_check_mark: |      0 |      1 | `0x00395f98` |              | `void SynthBase__SynthBaseNopVirtual0x98(void)`                                                                                |
 | `SynthBase__SynthBaseNopVirtual0xb8`                                   | :white_check_mark: |      0 |      1 | `0x00395fb8` |              | `void SynthBase__SynthBaseNopVirtual0xb8(void)`                                                                                |
