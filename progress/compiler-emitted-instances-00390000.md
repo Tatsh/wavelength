@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00390000` to `0x003a0000`
 
-5 of 277 routines done.
+1 of 277 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -281,7 +281,7 @@ preliminary.
 | `SynthBase__SynthBaseNopVirtual0xf8`                                   |        :x:         |      0 |      1 | `0x00395ff8` |              | `void SynthBase__SynthBaseNopVirtual0xf8(void)`                                                                                |
 | `SynthPS2__GetSynthPS2Field0x20080`                                    |        :x:         |      0 |      1 | `0x00396a18` |              | `undefined4 SynthPS2__GetSynthPS2Field0x20080(int pThis)`                                                                      |
 | `TextFilterTask__DestroyTextFilterTask`                                |        :x:         |      0 |      1 | `0x0039bb50` |              | `void TextFilterTask__DestroyTextFilterTask(void * pThis, ulong dwFlags)`                                                      |
-| `RndRenderer__BeginFrame`                                              | :white_check_mark: |      0 |      1 | `0x00390fb0` | `0x003ff6b8` | `void RndRenderer__BeginFrame(int pThis)`                                                                                      |
-| `RndRenderer__EndFrame`                                                | :white_check_mark: |      0 |      1 | `0x00390fc0` | `0x003ff6c8` | `void RndRenderer__EndFrame(void)`                                                                                             |
-| `RndRenderer__Terminate`                                               | :white_check_mark: |      0 |      1 | `0x00390f58` | `0x003ff660` | `void RndRenderer__Terminate(void)`                                                                                            |
-| `Synth__VirtualSlot3`                                                  | :white_check_mark: |      0 |      1 | `0x00395f58` |              | `void Synth__VirtualSlot3(void)`                                                                                               |
+| `RndRenderer__BeginFrame`                                              |       :memo:       |      0 |      1 | `0x00390fb0` | `0x003ff6b8` | `void RndRenderer__BeginFrame(int pThis)`                                                                                      |
+| `RndRenderer__EndFrame`                                                |       :memo:       |      0 |      1 | `0x00390fc0` | `0x003ff6c8` | `void RndRenderer__EndFrame(void)`                                                                                             |
+| `RndRenderer__Terminate`                                               |       :memo:       |      0 |      1 | `0x00390f58` | `0x003ff660` | `void RndRenderer__Terminate(void)`                                                                                            |
+| `Synth__VirtualSlot3`                                                  |       :memo:       |      0 |      1 | `0x00395f58` |              | `void Synth__VirtualSlot3(void)`                                                                                               |
