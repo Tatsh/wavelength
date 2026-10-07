@@ -5,7 +5,6 @@
 #include "game/avatarcam.h"
 #include "game/avatarpartset.h"
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "met/metagame.h"
 #include "os/debug.h"
 #include "os/joypad.h"
@@ -14,6 +13,7 @@
 #include "rnd/manager.h"
 #include "rnd/mat.h"
 #include "rnd/mesh.h"
+#include "synth/fxmidi.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 #include "ui/uipanel.h"
@@ -310,7 +310,7 @@ void FreqMakerPartConfigScreen::StepDown(
     if (nValue == nMin) {
         pButton->SetArrowShowing(LRButton::kArrowLeft, false);
         if (mErrorPlayed == 0) {
-            GameFx::PlayWrong();
+            FxMidi::PlayWrong();
             mErrorPlayed = 1;
         }
         return;
@@ -321,7 +321,7 @@ void FreqMakerPartConfigScreen::StepDown(
     } else {
         pButton->SetArrowShowing(LRButton::kArrowRight, true);
     }
-    GameFx::PlayMenuDown();
+    FxMidi::PlayMenuDown();
     *pValue = nStep;
 }
 
@@ -331,7 +331,7 @@ void FreqMakerPartConfigScreen::StepUp(
     if (nValue == nLimit - 1) {
         pButton->SetArrowShowing(LRButton::kArrowRight, false);
         if (mErrorPlayed == 0) {
-            GameFx::PlayWrong();
+            FxMidi::PlayWrong();
             mErrorPlayed = 1;
         }
         return;
@@ -342,7 +342,7 @@ void FreqMakerPartConfigScreen::StepUp(
     } else {
         pButton->SetArrowShowing(LRButton::kArrowLeft, true);
     }
-    GameFx::PlayMenuUp();
+    FxMidi::PlayMenuUp();
     *pValue = nStep;
 }
 
@@ -358,10 +358,10 @@ bool FreqMakerPartConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMs
         const int nChoices = static_cast<int>(mChoices.size());
         if (nButton == kPadDLeft) {
             mIndex = mIndex - 1 > -1 ? mIndex - 1 : nChoices - 1;
-            GameFx::PlayMenuDown();
+            FxMidi::PlayMenuDown();
         } else if (nButton == kPadDRight) {
             mIndex = mIndex + 1 < nChoices ? mIndex + 1 : 0;
-            GameFx::PlayMenuUp();
+            FxMidi::PlayMenuUp();
         }
         const char *pszChoice = mChoices[mIndex];
         mPartButton->SetText(TheLocale.Localize(pszChoice, true));

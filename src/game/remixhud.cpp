@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/memfun2command.h"
@@ -332,10 +331,10 @@ void RemixHUD::SetFocused(int nFocused) {
 void RemixHUD::Navigate(bool bUp, bool bRepeat) {
     const float fDelay = bRepeat ? kRepeatMs : kFirstRepeatMs;
     if (bUp) {
-        GameFx::PlayMenuUp();
+        FxMidi::PlayMenuUp();
         TheSongScheduler.PostAfter(mRepeatUpCmd.Get(), fDelay, false);
     } else {
-        GameFx::PlayMenuDown();
+        FxMidi::PlayMenuDown();
         TheSongScheduler.PostAfter(mRepeatDownCmd.Get(), fDelay, false);
     }
 
@@ -442,7 +441,7 @@ bool RemixHUD::HandleJoypad(JoypadInputMsg *pMsg) {
     case kButtonConfirm:
         if (pMsg->mPressed) {
             if (Confirm()) {
-                GameFx::PlayMenuSelect();
+                FxMidi::PlayMenuSelect();
             } else {
                 FxMidi::PlaySound1();
             }

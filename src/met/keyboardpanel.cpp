@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "game/gamefx.h"
 #include "met/keyboardkey.h"
 #include "os/debug.h"
 #include "os/joypad.h"
@@ -11,6 +10,7 @@
 #include "os/string.h"
 #include "os/system.h"
 #include "rnd/manager.h"
+#include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -114,7 +114,7 @@ void KeyboardPanel::Exit(bool bForce, float fTime) {
 }
 
 void KeyboardPanel::SetFocus(UIComponent *pComponent, int nButton) {
-    GameFx::PlayKeyboardLeftUp();
+    FxMidi::PlayKeyboardLeftUp();
     UIPanel::SetFocus(pComponent, nButton); // Yes, the binary bypasses FreqPanel::SetFocus().
 }
 
@@ -137,7 +137,7 @@ bool KeyboardPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         SetShiftMode(kShiftOnce);
     } else if (strcmp(pszKey, "but_back") == 0) {
         Backspace();
-        GameFx::PlayKeyboardBack();
+        FxMidi::PlayKeyboardBack();
         return true;
     } else if (strcmp(pszKey, "but_larrow") == 0) {
         MoveLeft();
@@ -151,7 +151,7 @@ bool KeyboardPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         Delete();
     } else if (strcmp(pszKey, "but_enter") == 0) {
         Commit();
-        GameFx::PlayMenuSelect();
+        FxMidi::PlayMenuSelect();
         return true;
     } else {
         const char *pszFunctionKey = strchr(pszKey, kFunctionKeyLetter);
@@ -161,7 +161,7 @@ bool KeyboardPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
             TypeChar(pMsg->mComponent->Text()[0]);
         }
     }
-    GameFx::PlayKeyboardKeyEnter();
+    FxMidi::PlayKeyboardKeyEnter();
     return true;
 }
 
@@ -183,31 +183,31 @@ bool KeyboardPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     case kPadCircle:
         FlashKey("but_enter");
         Commit();
-        GameFx::PlayMenuSelect();
+        FxMidi::PlayMenuSelect();
         return true;
     case kPadSquare:
         FlashKey("but_space");
         TypeSpace();
-        GameFx::PlayKeyboardKeyEnter();
+        FxMidi::PlayKeyboardKeyEnter();
         return true;
     case kPadL1:
         FlashKey("but_larrow");
         MoveLeft();
-        GameFx::PlayKeyboardLeftUp();
+        FxMidi::PlayKeyboardLeftUp();
         return true;
     case kPadR1:
         FlashKey("but_rarrow");
         MoveRight();
-        GameFx::PlayKeyboardLeftUp();
+        FxMidi::PlayKeyboardLeftUp();
         return true;
     case kPadL2:
         FlashKey("but_back");
         Backspace();
-        GameFx::PlayKeyboardBack();
+        FxMidi::PlayKeyboardBack();
         return true;
     case kPadR2:
         SetShiftMode(kShiftOnce);
-        GameFx::PlayKeyboardKeyEnter();
+        FxMidi::PlayKeyboardKeyEnter();
         return true;
     default:
         return false;
@@ -353,7 +353,7 @@ bool KeyboardPanel::HandleInvalid(UITextEntryInvalidMsg *pMsg) {
         return false;
     }
     if (pMsg->mEndOfField) {
-        GameFx::PlayWrong();
+        FxMidi::PlayWrong();
         return false;
     }
     if (mShiftMode == kShiftOnce || mShiftMode == kShiftCaps) {

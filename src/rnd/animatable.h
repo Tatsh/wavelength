@@ -4,6 +4,7 @@
 
 #include "rnd/object.h"
 
+class MetagameArena;
 class MetRenderer;
 namespace Rnd {
 class Dbg;
@@ -47,6 +48,9 @@ class Animatable : public virtual Object {
     // MetRenderer::AddScreenView() and AddBackgroundView() search mAnims directly before
     // AddAnim(), and the image has no accessor for it.
     friend class ::MetRenderer;
+    // MetagameArena walks mAnims of its arena scene and reads mFrame of its transition, and the
+    // image has no accessor for either.
+    friend class ::MetagameArena;
 
 public:
     /**

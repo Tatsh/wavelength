@@ -1,13 +1,13 @@
 #include "met/freqscreen.h"
 
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "met/freqpanel.h"
 #include "met/metagame.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
+#include "synth/fxmidi.h"
 #include "ui/uicomponentselectmsg.h"
 
 namespace {
@@ -56,7 +56,7 @@ void FreqScreen::Exit(UIScreen *pNextScreen, float fTime) {
     }
     UIScreen::Exit(pNextScreen, fTime);
     if (mNeedsTransitionSfx) {
-        GameFx::StopTransition();
+        FxMidi::StopTransition();
     }
 }
 
@@ -64,10 +64,10 @@ void FreqScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     const int nState = TheMetagame.GetState();
     if (mNeedsTransitionSfx) {
         if (nState == Metagame::kStateFrontEnd) {
-            GameFx::PlayTransition();
+            FxMidi::PlayTransition();
         }
     } else if (!mNoProjectorSfx) {
-        GameFx::PlayProjector();
+        FxMidi::PlayProjector();
     }
 
     if (!TheMetagame.mGizmo->IsShowing()) {
@@ -113,19 +113,19 @@ bool FreqScreen::DispatchPriv(Message *pMsg) {
 void FreqScreen::PlayButtonSound(int nButton) {
     switch (nButton) {
     case kPadCross:
-        GameFx::PlayMenuSelect();
+        FxMidi::PlayMenuSelect();
         break;
     case kPadDUp:
-        GameFx::PlayMenuUp();
+        FxMidi::PlayMenuUp();
         break;
     case kPadDRight:
-        GameFx::PlayMenuRight();
+        FxMidi::PlayMenuRight();
         break;
     case kPadDDown:
-        GameFx::PlayMenuDown();
+        FxMidi::PlayMenuDown();
         break;
     case kPadDLeft:
-        GameFx::PlayMenuLeft();
+        FxMidi::PlayMenuLeft();
         break;
     default:
         break;

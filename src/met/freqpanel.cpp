@@ -3,7 +3,6 @@
 #include <cmath>
 #include <list>
 
-#include "game/gamefx.h"
 #include "math/transform.h"
 #include "met/gizmo.h"
 #include "met/metagame.h"
@@ -13,6 +12,7 @@
 #include "rnd/object.h"
 #include "rnd/transanim.h"
 #include "rnd/transformable.h"
+#include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -268,16 +268,16 @@ void FreqPanel::SetFocus(UIComponent *pComponent, int nButton) {
     UIPanel::SetFocus(pComponent, nButton);
     switch (nButton) {
     case kPadDUp:
-        GameFx::PlayMenuUp();
+        FxMidi::PlayMenuUp();
         break;
     case kPadDRight:
-        GameFx::PlayMenuRight();
+        FxMidi::PlayMenuRight();
         break;
     case kPadDDown:
-        GameFx::PlayMenuDown();
+        FxMidi::PlayMenuDown();
         break;
     case kPadDLeft:
-        GameFx::PlayMenuLeft();
+        FxMidi::PlayMenuLeft();
         break;
     default:
         break;

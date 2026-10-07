@@ -166,6 +166,27 @@ public:
      */
     void RemoveView(View *pChild);
 
+    /**
+     * Activate the view and set the frames between which it is active.
+     *
+     * An inactive view does not update or draw its children.
+     *
+     * @param flStart The first frame.
+     * @param flEnd The frame after the last.
+     * @ghidraAddress NTSC-U/C: 0x00248270
+     * @ghidraAddress PAL: 0x00250d10
+     */
+    void SetActiveRange(float flStart, float flEnd);
+
+    /**
+     * Activate or deactivate the view.
+     *
+     * @param nActive Non-zero to activate.
+     * @ghidraAddress NTSC-U/C: 0x00248288
+     * @ghidraAddress PAL: 0x00250d28
+     */
+    void SetActive(int nActive);
+
     // Declared in recovered offset order. Each flag is named after the class key of the factory
     // that sets it. Every writer is one of those factories and no reader was located, so the four
     // are public because nothing in the image constrains them further.
@@ -174,6 +195,9 @@ public:
     int mTransformable; /*!< Set when the class key was "Transformable". +0xf4 */
     int mDrawable;      /*!< Set when the class key was "Drawable". +0xf8 */
     int mCollideable;   /*!< Set when the class key was "Collideable". +0xfc */
+    float mActiveStart; /*!< The first frame of the active range. */
+    float mActiveEnd;   /*!< The frame after the active range. */
+    int mActive;        /*!< Whether the view updates and draws its children. */
 
 private:
     /**

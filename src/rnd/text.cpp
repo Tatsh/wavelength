@@ -7,9 +7,9 @@
 #include "math/color.h"
 #include "math/vector3.h"
 #include "os/dbg.h"
-#include "os/formatstring.h"
 #include "os/hxstr.h"
 #include "os/mem.h"
+#include "os/string.h"
 #include "rnd/collideable.h"
 #include "rnd/drawable.h"
 #include "rnd/font.h"
@@ -705,7 +705,7 @@ void Text::BuildGlyphMesh() {
     }
 
     {
-        const HxStr meshName(Rnd::MakeString("[%s_mesh]", NameText(this)));
+        const HxStr meshName(FormatString("[%s_mesh]", NameText(this)));
         // The binary's handler covers only the factory call and returns null.
         try {
             mMesh = Mesh::sNew(meshName);

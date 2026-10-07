@@ -1,97 +1,46 @@
 #pragma once
 
-#include <iostream>
-
 #include "msg/message.h"
 #include "netflow/lobbymsgtypes.h"
-#include "os/hxstr.h"
 
 /**
- * Event the game passes between a MsgSource and a MsgSink.
+ * Message that reports that the connection to the online lobby was lost.
  *
- * Its RTTI descriptor is at `0x008efd40`. It has Message as its one base. The object is 0xc bytes
- * and its vtable is at `0x00811e80`. The whole payload is the single HxStr at `+0x04`. Clone()
- * copies it inline through HxStr::HxStr(const HxStr &) rather than delegating, and the cleanup
- * block that follows is the compiler unwinding the copy if it throws.
- *
- * Unlike its two siblings, PrintExtra() writes nothing, although the class has the same string.
- *
- * The destructor at `0x003e1b18` is compiler-generated and has no declaration here. So is the
- * string copy at `0x003e1d68`, the same shape as GameConnectFailureMsg's at `0x003e1868`.
+ * The RTTI includes the class name and records Message as the base. The object is 8 bytes and its
+ * vtable is at `0x003d4e30`. The payload is the error code of the network library. The destructor
+ * at `0x0039afb8` is compiler-generated and has no declaration here.
  */
 class LobbyConnectionLostMsg : public Message {
 public:
-    /**
-     * Construct a message with an empty string.
-     *
-     * Inline. New() expands it, zeroing the string. A declaration is required because the class
-     * declares a second constructor.
-     */
-    LobbyConnectionLostMsg() {
-    }
-
-    /**
-     * Construct a message carrying a copy of a string.
-     *
-     * The image lists no caller for the out-of-line body.
-     *
-     * @param reason The string copied into `+0x04`.
-     * @ghidraAddress NTSC-U/C: 0x003e1d10
-     * @ghidraAddress PAL: 0x0041a1b0
-     */
-    LobbyConnectionLostMsg(const HxStr &reason);
-
-    /**
-     * Produce a message with an empty string on the heap.
-     *
-     * The translation unit at `0x003d9818` registers this factory.
-     *
-     * @return The message.
-     * @ghidraAddress NTSC-U/C: 0x003d7ad8
-     * @ghidraAddress PAL: 0x0040f9e8
-     */
-    static Message *New();
+    /** The error code of a connection to the internet that went down. */
+    static constexpr int kInternetDown = -91;
 
     /**
      * Produce a heap copy of this message.
      *
      * @return The copy.
-     * @ghidraAddress NTSC-U/C: 0x003e1c30
-     * @ghidraAddress PAL: 0x0041a0c8
+     * @ghidraAddress NTSC-U/C: 0x0039b060
+     * @ghidraAddress PAL: 0x00409ca8
      */
-    virtual Message *Clone();
+    Message *Clone() override;
 
     /**
      * Report this message's registered identity.
      *
      * @return g_nLobbyConnectionLostMsgType.
-     * @ghidraAddress NTSC-U/C: 0x003e1cd0
-     * @ghidraAddress PAL: 0x0041a168
+     * @ghidraAddress NTSC-U/C: 0x0039b0b0
+     * @ghidraAddress PAL: 0x00409cf8
      */
-    virtual int Type();
+    int Type() override;
 
     /**
      * Report this message's class name.
      *
      * @return The literal `LobbyConnectionLostMsg`.
-     * @ghidraAddress NTSC-U/C: 0x003e1ce0
-     * @ghidraAddress PAL: 0x0041a178
+     * @ghidraAddress NTSC-U/C: 0x0039b0c0
+     * @ghidraAddress PAL: 0x00409d08
      */
-    virtual const char *GetName() const;
+    const char *GetName() const override;
 
-    /**
-     * Write nothing.
-     *
-     * Slot 5. The empty body lies among the other message PrintExtra() bodies, directly after
-     * GameConnectionLostMsg's, rather than after this class's destructor, so the override is this
-     * class's own.
-     *
-     * @param stream The stream, which is not written.
-     * @ghidraAddress NTSC-U/C: 0x003e4098
-     * @ghidraAddress PAL: 0x0041c2c8
-     */
-    virtual void PrintExtra(std::ostream &stream) const;
-
-private:
-    HxStr mReason; // +0x04, with a title like GameConnectionLostMsg's printed string
+    int mError; /*!< The error code of the network library. */
 };

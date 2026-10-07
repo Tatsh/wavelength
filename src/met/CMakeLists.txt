@@ -1,8 +1,13 @@
 set(WAVELENGTH_MET_SRCS
     avatarpanel.cpp
+    choosememcardscreen.cpp
+    controllerconfigscreen.cpp
+    controllerpanel.cpp
     dialogpanel.cpp
     errorscreen.cpp
+    focuschangepanel.cpp
     freqconfirmscreen.cpp
+    freqcopydelscreen.cpp
     freqmakercustomscreen.cpp
     freqmakeremblemscreen.cpp
     freqmakererrorscreen.cpp
@@ -10,6 +15,7 @@ set(WAVELENGTH_MET_SRCS
     freqmakerpartconfigscreen.cpp
     freqpanel.cpp
     freqscreen.cpp
+    gameoptionsscreen.cpp
     gizmo.cpp
     helppanel.cpp
     introscreen.cpp
@@ -17,9 +23,11 @@ set(WAVELENGTH_MET_SRCS
     keyboardpanel.cpp
     keyboardrequest.cpp
     keyboardscreen.cpp
+    mainoptionsscreen.cpp
     mcdialogpanel.cpp
     metaarenascreen.cpp
     metagame.cpp
+    metagamearena.cpp
     metagameutil.cpp
     metamainscreen.cpp
     metamusicsong.cpp
@@ -27,10 +35,15 @@ set(WAVELENGTH_MET_SRCS
     metasongscreen.cpp
     metastartscreen.cpp
     mix.cpp
+    mixmidibuilder.cpp
     mixtrack.cpp
     modescreen.cpp
+    remixcopydelscreen.cpp
+    remixorfreqscreen.cpp
     saveeditedfreqscreen.cpp
     savefreqscreen.cpp
+    sologamestatspanel.cpp
+    solowinstatspanel.cpp
     songpicpanel.cpp
     songpreview.cpp
     transitionmusic.cpp

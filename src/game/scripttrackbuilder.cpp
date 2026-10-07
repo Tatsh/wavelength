@@ -2,8 +2,8 @@
 
 #include <cstring>
 
-#include "os/formatstring.h"
-#include "rnd/bufstream.h"
+#include "os/bufstream.h"
+#include "os/string.h"
 
 namespace {
 
@@ -22,7 +22,8 @@ ScriptTrackBuilder::ScriptTrackBuilder(const char *pszName,
 void ScriptTrackBuilder::OnText(int nTick,
                                 const char *pszText,
                                 [[maybe_unused]] unsigned char nType) {
-    Rnd::BufStream stream(const_cast<char *>(pszText), static_cast<int>(strlen(pszText)), true);
-    DataArray *pCommand = DataArray::Read(Rnd::MakeString(kCommandNameFormat, nTick), &stream);
+    BufStream stream(
+        const_cast<char *>(pszText), static_cast<int>(strlen(pszText)), true); // Read only.
+    DataArray *pCommand = DataArray::Read(FormatString(kCommandNameFormat, nTick), &stream);
     mData->AddCommand(nTick, pCommand);
 }

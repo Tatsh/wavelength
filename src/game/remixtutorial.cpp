@@ -10,7 +10,7 @@
 #include "game/waitfortasktask.h"
 #include "game/waitinteractiveremixtask.h"
 #include "game/waittimetask.h"
-#include "os/formatstring.h"
+#include "os/string.h"
 #include "os/system.h"
 #include "script/scriptfunction.h"
 #include "synth/fxmidi.h"
@@ -206,7 +206,7 @@ RemixTutorial::RemixTutorial(RemixLogic *pLogic) {
     ScriptFunction::Register(OnAllowPatternCancel, kAllowPatternCancelCommand, this);
     ScriptFunction::Register(OnAllowRotationLeft, kAllowRotationLeftCommand, this);
 
-    mStreams.mDirectory = Rnd::MakeString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+    mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
 
     DataArray *pScript = SystemConfig()
                              ->FindArray(kDbSection, false)

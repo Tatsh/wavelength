@@ -57,7 +57,6 @@ public:
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x0016f668
      * @ghidraAddress PAL: 0x00172970
-     * @stub
      */
     void Poll(float fTime) override;
 

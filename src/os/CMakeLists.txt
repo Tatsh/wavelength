@@ -8,7 +8,6 @@ set(WAVELENGTH_OS_SRCS
     devconsole.cpp
     filelog.cpp
     formatmessage.cpp
-    formatstring.cpp
     genpath.cpp
     hostmode.cpp
     hxstr.cpp
@@ -24,6 +23,7 @@ set(WAVELENGTH_OS_SRCS
     seccache.cpp
     spewregister.cpp
     spewtable.cpp
+    string.cpp
     zone.cpp)
 
 add_library(wavelength_os STATIC ${WAVELENGTH_OS_SRCS})

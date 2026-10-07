@@ -5,7 +5,6 @@
 #include "game/avatarcam.h"
 #include "game/avatarpartset.h"
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "math/color.h"
 #include "math/rand.h"
 #include "memcard/mcmanager.h"
@@ -24,6 +23,7 @@
 #include "rnd/mat.h"
 #include "rnd/mesh.h"
 #include "rnd/text.h"
+#include "synth/fxmidi.h"
 #include "ui/uibutton.h"
 #include "ui/uimanager.h"
 #include "ui/uipanel.h"
@@ -283,10 +283,10 @@ bool FreqMakerMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         const int nPrefabs = static_cast<int>(mPrefabs.size());
         if (pMsg->mButton == kPadDLeft) {
             mPrefabIndex = mPrefabIndex - 1 > -1 ? mPrefabIndex - 1 : nPrefabs - 1;
-            GameFx::PlayMenuDown();
+            FxMidi::PlayMenuDown();
         } else if (pMsg->mButton == kPadDRight) {
             mPrefabIndex = mPrefabIndex + 1 < nPrefabs ? mPrefabIndex + 1 : 0;
-            GameFx::PlayMenuUp();
+            FxMidi::PlayMenuUp();
         }
         AvatarPartSet *pAvatar = TheGameDb->GetAvatar(0);
         pAvatar->Load(FindPrefab(mPrefabs[mPrefabIndex]));

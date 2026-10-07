@@ -5,6 +5,7 @@
 #include "game/avatarpartset.h"
 #include "game/inputmap.h"
 #include "game/songrecord.h"
+#include "game/unlockableitem.h"
 #include "os/binstream.h"
 #include "os/string.h"
 
@@ -38,6 +39,32 @@ public:
      * @ghidraAddress PAL: 0x00284a58
      */
     InputMap *GetInputMap();
+
+    /**
+     * Replace the controller bindings and mark the profile modified.
+     *
+     * @param pMap The bindings to copy.
+     * @ghidraAddress NTSC-U/C: 0x0027afd8
+     * @ghidraAddress PAL: 0x00284a68
+     */
+    void SetInputMap(const InputMap *pMap);
+
+    /**
+     * Report whether the tip about the freestyle lap has shown. The name is inferred.
+     *
+     * @return Non-zero once the tip has shown.
+     * @ghidraAddress NTSC-U/C: 0x0027aea8
+     * @ghidraAddress PAL: 0x00284938
+     */
+    int HasSeenFreestyleTip();
+
+    /**
+     * Record that the tip about the freestyle lap has shown. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027aec8
+     * @ghidraAddress PAL: 0x00284958
+     */
+    void SetSeenFreestyleTip();
 
     /**
      * Report the first song of a skill level the player has not finished.
@@ -142,6 +169,14 @@ public:
     void SetOnlineOption(int nOption);
 
     /**
+     * Count every avatar part and emblem as unlocked for every profile.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027b040
+     * @ghidraAddress PAL: 0x00284ad0
+     */
+    static void UnlockAllParts();
+
+    /**
      * Construct a profile with the default settings.
      *
      * @ghidraAddress NTSC-U/C: 0x00276e68
@@ -203,6 +238,18 @@ public:
     void GetSongRecord(const char *pszSong, int nSkillLevel, SongRecord *pRecord);
 
     /**
+     * Record the result of a song and collect the items it unlocks.
+     *
+     * While the unlock-all-songs cheat is on, nothing is recorded and the list is emptied.
+     *
+     * @param pRecord The result.
+     * @param pUnlocks Receives the items the result unlocks.
+     * @ghidraAddress NTSC-U/C: 0x002778e8
+     * @ghidraAddress PAL: 0x00281378
+     */
+    void RecordResult(const SongRecord *pRecord, std::vector<UnlockableItem> *pUnlocks);
+
+    /**
      * Report the sum of the best scores of the songs of an arena. The name is inferred.
      *
      * @param pszArena The arena.
@@ -236,6 +283,19 @@ public:
      * @ghidraAddress PAL: 0x00284628
      */
     int GetMedal(const char *pszSong, int nSkillLevel);
+
+    /**
+     * Report the medal a score earns on a song at a skill level. The name is inferred.
+     *
+     * @param pszSong The song.
+     * @param nSkillLevel The skill level.
+     * @param nScore The score.
+     * @param nPercent The share of the song played, in percent. Only 100 earns a medal.
+     * @return The medal, or 0.
+     * @ghidraAddress NTSC-U/C: 0x0027ac08
+     * @ghidraAddress PAL: 0x00284698
+     */
+    int GetMedalForScore(const char *pszSong, int nSkillLevel, int nScore, int nPercent);
 
     /**
      * Grant the power-up of mPendingPowerup once it is unlocked at a skill level, and clear it.

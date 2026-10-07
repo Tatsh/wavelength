@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "game/playerprofile.h"
 #include "game/songrecord.h"
 #include "met/metagame.h"
@@ -20,6 +19,7 @@
 #include "rnd/mesh.h"
 #include "rnd/text.h"
 #include "rnd/view.h"
+#include "synth/fxmidi.h"
 #include "ui/uibutton.h"
 #include "ui/uilabel.h"
 #include "ui/uimanager.h"
@@ -473,7 +473,7 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 
     if (pMsg->mButton == kPadSquare && TheGameDb->mCommunity == kPracticeCommunity &&
         TheGameDb->mRuleSet == kPracticeRuleSet) {
-        GameFx::PlaySquare();
+        FxMidi::PlaySquare();
         UIComponent *pFocus = mBandPanel->mFocus;
         SongEntry song = FindSong(pFocus);
         bool bUnlocked = true;

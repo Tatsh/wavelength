@@ -8,7 +8,6 @@
 #include "game/forcefeedbackmgr.h"
 #include "game/gameconfig.h"
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "game/helptext.h"
 #include "game/mixer.h"
 #include "game/rateaverager.h"
@@ -28,6 +27,7 @@
 #include "os/memfuncommand.h"
 #include "os/system.h"
 #include "script/scriptfunction.h"
+#include "synth/fxmidi.h"
 
 namespace {
 
@@ -124,7 +124,7 @@ void GameLogic::OnSlowCommand([[maybe_unused]] DataArray *pCommand, void *pUserD
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
         return;
     }
-    GameFx::PlayCheat();
+    FxMidi::PlayCheat();
     if (pLogic->mSlowdown) {
         pLogic->StopSlowdown();
     } else {
@@ -175,7 +175,7 @@ void GameLogic::OnPowerupCommand(DataArray *pCommand, void *pUserData) {
         TheGameDb->mCommunity == GameDb::kCommunitySolo) {
         return;
     }
-    GameFx::PlayCheat();
+    FxMidi::PlayCheat();
     pLogic->mPlayers[nController]->SetPowerup(nPowerup);
 }
 
@@ -472,7 +472,7 @@ void GameLogic::Poll() {
 
 void GameLogic::EndSong() {
     TheStats->End();
-    GameFx::StopLoop();
+    FxMidi::StopLoop();
     float fOutroMs = 0.0f;
     if (mQuit == 0) {
         const int nCommunity = TheGameDb->mCommunity;
@@ -1086,7 +1086,7 @@ void GameLogic::HandleInput(const BtnEvent<5> &event) {
         return;
     }
     TheStats->DeployPowerup(pPlayer->GetIndex(), nTick, nPowerup);
-    GameFx::PlayPowerup(nPowerup);
+    FxMidi::PlayPowerupSound(nPowerup);
     pPlayer->SetPowerup(kPowerupNone);
 }
 

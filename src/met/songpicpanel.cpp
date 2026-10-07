@@ -3,6 +3,9 @@
 #include "os/fileutil.h"
 #include "os/string.h"
 #include "rnd/manager.h"
+#include "rnd/mat.h"
+#include "rnd/mesh.h"
+#include "rnd/tex.h"
 
 SongPicPanel::SongPicPanel(DataArray *pData, const char *pszDir) : FreqPanel(pData, pszDir) {
     mPictureShowing = 1;
@@ -63,6 +66,23 @@ void SongPicPanel::SetPictureShowing(bool bShowing) {
 
 void SongPicPanel::Poll(float fTime) {
     FreqPanel::Poll(fTime);
+    if (!mLoaded || mPicturePath.mLength == 0 || !Rnd::TheManager.IsTextureLoaded(mPicturePath)) {
+        return;
+    }
+
+    if (mPictureShowing != 0) {
+        mPictureMesh->SetShowing(true);
+        Rnd::Mesh *pBeat =
+            dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("s_g_sel_song_pic_beat.mesh"));
+        if (pBeat != nullptr) {
+            const char *pszMat = mEncrypted != 0 ? "band_lock.mat" : "band_unlock.mat";
+            pBeat->SetMat(dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszMat)));
+        }
+    }
+    Rnd::Tex *pTex = dynamic_cast<Rnd::Tex *>(Rnd::TheManager.Find("band_pic.bmp"));
+    pTex->SetBitmapConfig(0, 0, 0, mPicturePath, 0, 0);
+    mPicturePath.Clear();
+    mPictureReady = 1;
 }
 
 void SongPicPanel::Exit(bool bForce, float fTime) {

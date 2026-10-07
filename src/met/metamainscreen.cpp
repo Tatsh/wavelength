@@ -1,12 +1,12 @@
 #include "met/metamainscreen.h"
 
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "game/playerprofile.h"
 #include "met/metagame.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
+#include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -34,7 +34,7 @@ void MetaMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void MetaMainScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
-    GameFx::StopPortals();
+    FxMidi::StopPortals();
 }
 
 bool MetaMainScreen::DispatchPriv(Message *pMsg) {
@@ -101,14 +101,14 @@ bool MetaMainScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
         return false;
     }
 
-    GameFx::StopPortals();
+    FxMidi::StopPortals();
     String button(pMsg->mComponent->mName);
     if (button == "solo_but") {
-        GameFx::PlaySoloPortal();
+        FxMidi::PlaySoloPortal();
     } else if (button == "multi_but") {
-        GameFx::PlayMultiPortal();
+        FxMidi::PlayMultiPortal();
     } else if (button == "freqnet_but") {
-        GameFx::PlayNetPortal();
+        FxMidi::PlayNetPortal();
     }
     return false;
 }

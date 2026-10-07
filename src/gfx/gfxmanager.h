@@ -117,6 +117,15 @@ public:
     void SetFreestyle(int nPlayer, bool bActive, int nColumn);
 
     /**
+     * Show or hide the display of the players' scores and meters over the tracks.
+     *
+     * @param bShow Whether the display shows.
+     * @ghidraAddress NTSC-U/C: 0x001b6190
+     * @ghidraAddress PAL: 0x001bef30
+     */
+    void ShowHud(bool bShow);
+
+    /**
      * Return a player's freestyle effect to its idle state.
      *
      * @param nPlayer The player index.

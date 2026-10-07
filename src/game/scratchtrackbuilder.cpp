@@ -3,8 +3,8 @@
 #include "game/gameconfig.h"
 #include "gs/muse.h"
 #include "gs/scratcher.h"
-#include "os/formatstring.h"
 #include "os/ptr.h"
+#include "os/string.h"
 
 namespace {
 
@@ -113,7 +113,7 @@ void ScratchTrackBuilder::OnEndTrack() {
                kNoNextSet) {
             for (int j = 0; j < ScratchTrackData::kSetSize; ++j) {
                 if (apSet[j] == nullptr) {
-                    Error(nTick, Rnd::MakeString(kMissingScratcherFormat, j + 1));
+                    Error(nTick, FormatString(kMissingScratcherFormat, j + 1));
                 }
             }
         }

@@ -26,6 +26,26 @@ public:
     explicit SelLoadedFreqScreen(DataArray *pData);
 
     /**
+     * Handle a message sent to the screen.
+     *
+     * @param pMsg The message.
+     * @return Whether the message was handled.
+     * @ghidraAddress NTSC-U/C: 0x0018ec30
+     * @ghidraAddress PAL: 0x00195f48
+     */
+    bool DispatchPriv(Message *pMsg) override;
+
+    /**
+     * Enter, and list the Freqs.
+     *
+     * @param pPrevScreen The screen this one replaces.
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x0018eb80
+     * @ghidraAddress PAL: 0x00195e98
+     */
+    void Enter(UIScreen *pPrevScreen, float fTime) override;
+
+    /**
      * Replace the listed Freqs.
      *
      * @param profiles The Freqs.

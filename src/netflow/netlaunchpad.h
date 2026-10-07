@@ -21,6 +21,15 @@ public:
      * LaunchpadRT moves its console's entry to state 3. The name is inferred.
      */
     virtual void NotifyLoaded() = 0;
+
+    /**
+     * Vtable slot 4. Report whether this console joined the session rather than hosting it.
+     *
+     * LaunchpadRT reports its word at `+0xac`. The name is inferred.
+     *
+     * @return Non-zero for a guest.
+     */
+    virtual int IsGuest() = 0;
 };
 
 /**

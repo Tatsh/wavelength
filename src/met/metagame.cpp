@@ -1,18 +1,22 @@
 #include "met/metagame.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 
 #include "app/cutscene.h"
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "game/playerprofile.h"
+#include "game/songentry.h"
+#include "game/songrecord.h"
 #include "game/triggermgr.h"
+#include "gfx/gfxmanager.h"
 #include "math/color.h"
 #include "math/rand.h"
 #include "memcard/mcmanager.h"
 #include "met/avatarpanel.h"
+#include "met/bossunlockscreen.h"
 #include "met/dialogpanel.h"
 #include "met/errorscreen.h"
 #include "met/freqconfirmscreen.h"
@@ -24,6 +28,7 @@
 #include "met/freqpanel.h"
 #include "met/freqscreen.h"
 #include "met/introscreen.h"
+#include "met/jukeboxscreen.h"
 #include "met/keyboardkey.h"
 #include "met/keyboardpanel.h"
 #include "met/keyboardscreen.h"
@@ -35,13 +40,19 @@
 #include "met/metasongscreen.h"
 #include "met/metastartscreen.h"
 #include "met/modescreen.h"
+#include "met/nocontrollerscreen.h"
+#include "met/partunlockscreen.h"
+#include "met/pausescreen.h"
 #include "met/saveeditedfreqscreen.h"
 #include "met/savefreqscreen.h"
+#include "met/songdecryptscreen.h"
 #include "met/songpicpanel.h"
 #include "met/songpreview.h"
+#include "met/transitionerrorscreen.h"
 #include "met/transitionmusic.h"
 #include "met/transitionscreen.h"
 #include "netflow/lobbymsgtypes.h"
+#include "netflow/netlaunchpad.h"
 #include "netflow/netlobby.h"
 #include "os/debug.h"
 #include "os/file.h"
@@ -49,6 +60,7 @@
 #include "os/keyboard.h"
 #include "os/locale.h"
 #include "os/scheduler.h"
+#include "os/string.h"
 #include "os/system.h"
 #include "os/timer.h"
 #include "rnd/manager.h"
@@ -59,6 +71,8 @@
 #include "rnd/view.h"
 #include "script/dataarray.h"
 #include "script/scriptfunction.h"
+#include "script/symbol.h"
+#include "synth/fxmidi.h"
 #include "synth/synth.h"
 #include "ui/uimanager.h"
 
@@ -122,6 +136,75 @@ constexpr char kGuestLaunchpadScreen[] = "fn_g_lpad";
 constexpr char kLobbyErrorScreen[] = "lobby_error";
 constexpr char kLaunchpadErrorScreen[] = "lpad_error";
 constexpr char kUnlockArenaAnimScreen[] = "unlockarena_anim";
+constexpr char kSelectArenaScreen[] = "s_g_sel_arena";
+constexpr char kJukeboxScreen[] = "jbox_redbook";
+
+// The arguments of the unlock_all command.
+constexpr char kUnlockSongsArg[] = "songs";
+constexpr char kUnlockFreqsArg[] = "freqs";
+
+constexpr char kDefaultNameToken[] = "default_name_1";
+
+// The screens a song leads to in a remix and in an online game.
+constexpr char kSoloRemixModeScreen[] = "game2soloremix_mode";
+constexpr char kMultiRemixModeScreen[] = "game2multiremix_mode";
+constexpr char kLostLaunchpadScreen[] = "game2lost_launchpad";
+constexpr char kNetLaunchHostScreen[] = "game2netlaunch_host";
+constexpr char kNetLaunchGuestScreen[] = "game2netlaunch_guest";
+constexpr char kNetEndRemixScreen[] = "game2net_end_remix";
+constexpr char kLostLobbyScreen[] = "game2lost_lobby";
+
+// The arena of the campaign's win sequence, and the song a finished campaign plays again.
+constexpr char kWinArena[] = "Winarena";
+constexpr char kFallbackSong[] = "DRUMNBASS";
+
+// The share of a song played and of its gems blasted, in percent.
+constexpr float kPercent = 100.0f;
+constexpr int kPracticeResult = 100;
+
+// The messages of the launchpad error screen, by reason.
+constexpr char kLaunchpadIncompatibleError[] = "net_lpad_incompatible";
+constexpr char kLaunchpadHostError[] = "net_lpad_abort_host";
+constexpr char kLaunchpadBootError[] = "net_lpad_abort_boot";
+constexpr char kLaunchpadDiedError[] = "net_lpad_abort_died";
+constexpr char kLaunchpadBadError[] = "net_lpad_abort_bad";
+constexpr char kLaunchpadLostError[] = "net_lpad_lost_error";
+constexpr char kErrorMessageFormat[] = "%s_msg";
+
+// The messages and the transition of the lobby error screen.
+constexpr char kInternetDownLog[] = "Inet down error\n";
+constexpr char kOtherErrorLog[] = "Some other error\n";
+constexpr char kLostInternetToken[] = "lost_internet_error_msg";
+constexpr char kLostLobbyToken[] = "lost_lobby_error_msg";
+constexpr char kErrorOkComponent[] = "ok";
+constexpr char kNetConfigScreen[] = "fn_config";
+constexpr char kNetPortalScreen[] = "net_portal";
+
+// The screens that follow a song.
+constexpr char kUnlockArenaScreen[] = "game2unlockarena";
+constexpr char kSongDecryptScreen[] = "song_decrypt";
+constexpr char kUnlockPartsScreen[] = "unlock_parts";
+constexpr char kUnlockBossScreen[] = "unlock_boss";
+constexpr char kAutoSaveFreqScreen[] = "auto_save_freq";
+constexpr char kAutoSaveSettingsScreen[] = "auto_save_settings";
+constexpr char kFreestyleTipScreen[] = "freestyle_lap_tip";
+
+// The dialogs over a song.
+constexpr char kMultiGamePauseScreen[] = "m_g_pause";
+constexpr char kSoloPauseScreen[] = "s_pause";
+constexpr char kSoloRemixPauseScreen[] = "s_r_pause";
+constexpr char kMultiRemixPauseScreen[] = "m_r_pause";
+constexpr char kNoControllerScreen[] = "no_controller";
+constexpr char kPracticeEndScreen[] = "s_g_end_practice";
+constexpr char kSoloWinScreen[] = "s_g_end_win";
+constexpr char kSoloLoseScreen[] = "s_g_end_lose";
+constexpr char kTieCountFormat[] = "tie%d";
+constexpr char kTieSuffix[] = "tie";
+constexpr char kWinSuffix[] = "win";
+constexpr char kOnlineEndScreenFormat[] = "fn_g_end_%dpl_%s";
+constexpr char kLocalEndScreenFormat[] = "m_g_end_%dpl_%s";
+constexpr int kNamedTieWinners = 3;
+constexpr int kTieWinners = 2;
 
 // The screens after a song that show the player's character on the gizmo again.
 constexpr const char *kReturnScreens[] = {
@@ -199,8 +282,16 @@ void MetaChangeScreen(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
     }
 }
 
-// NTSC-U/C: 0x00165828, PAL: 0x00168738 (stub)
+// NTSC-U/C: 0x00165828, PAL: 0x00168738
 void SoloSongScreen([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
+    TheGameDb->SetRuleSet(GameDb::kRuleSetGame);
+    TheGameDb->SetCommunity(GameDb::kCommunitySolo);
+    TheGameDb->ClearPlayers();
+    PlayerProfile profile;
+    profile.mName = TheLocale.Localize(kDefaultNameToken, true);
+    TheGameDb->AddPlayer(&profile);
+    TheGameDb->UnlockAllSongs();
+    TheUI.GotoScreen(kSelectArenaScreen);
 }
 
 // NTSC-U/C: 0x00168bb0, PAL: 0x0016bd38
@@ -232,8 +323,15 @@ void ExitTube([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUser
     TheMetagame.mMusic->ExitTube(1.0f < TheMetagame.mSpeed);
 }
 
-// NTSC-U/C: 0x00168ce0, PAL: 0x0016be68 (stub)
-void UnlockAll([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
+// NTSC-U/C: 0x00168ce0, PAL: 0x0016be68
+void UnlockAll(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
+    FxMidi::PlayCheat();
+    if (strcmp(pCommand->Sym(1), kUnlockSongsArg) == 0) {
+        TheGameDb->UnlockAllSongs();
+        dynamic_cast<JukeboxScreen *>(TheUI.FindScreen(kJukeboxScreen, false))->mShowAllSongs = 1;
+    } else if (strcmp(pCommand->Sym(1), kUnlockFreqsArg) == 0) {
+        PlayerProfile::UnlockAllParts();
+    }
 }
 
 // Report whether a pair of screen names is listed in an entry of the metagame configuration.
@@ -728,12 +826,46 @@ void Metagame::ExitPlaying() {
 }
 
 void Metagame::StartLeaving() {
+    const int nRuleSet = TheGameDb->mRuleSet;
+    if (nRuleSet != GameDb::kRuleSetRemix || TheGameDb->GetNetRemixEnded()) {
+        return;
+    }
+
+    const int nCommunity = TheGameDb->mCommunity;
+    if (nCommunity == GameDb::kCommunitySolo) {
+        mNextScreen = kSoloRemixModeScreen;
+    } else if (nCommunity == GameDb::kCommunityLocal) {
+        mNextScreen = kMultiRemixModeScreen;
+    } else if (nCommunity == GameDb::kCommunityOnline) {
+        if (TheNetLaunchpad == nullptr) {
+            mNextScreen = kLostLaunchpadScreen;
+        } else if (TheNetLaunchpad->IsGuest()) {
+            mNextScreen = kNetLaunchGuestScreen;
+        } else {
+            mNextScreen = kNetLaunchHostScreen;
+        }
+    }
 }
 
 void Metagame::ExitLeaving() {
 }
 
 void Metagame::StartRestarting() {
+    const int nSkillLevel = TheGameDb->mSkillLevel;
+    if (TheGameDb->IsWinSequence()) {
+        TheGameDb->SetArena(kWinArena);
+    } else {
+        const char *pszSong = TheGameDb->GetProfile(0)->FindFirstUnfinishedSong(nSkillLevel);
+        if (pszSong != nullptr) {
+            TheGameDb->SetSong(pszSong);
+        } else {
+            TheGameDb->SetSong(LookupSymbol(kFallbackSong));
+        }
+    }
+    mSharedMusicFadedIn = 0;
+    LoadFxBanks();
+    mEffects.Apply();
+    mLeaveTime = SystemMs() + kLeaveDelayMs;
 }
 
 void Metagame::ExitRestarting() {
@@ -763,21 +895,188 @@ void Metagame::ExitState([[maybe_unused]] int nNextState) {
 }
 
 void Metagame::RecordCampaignResult() {
+    if (TheGameDb->mLoadRemix || TheGameDb->mPracticeMode || TheGameDb->GetDemo() != nullptr) {
+        return;
+    }
+
+    SongRecord record;
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    record.mSong = entry.GetName();
+    record.mScore = static_cast<unsigned short>(TheGameDb->GetPlayerScore(0));
+    record.mSkillLevel = static_cast<unsigned char>(TheGameDb->mSkillLevel);
+    record.mBestStreak = static_cast<unsigned char>(TheGameDb->GetBestStreak());
+    record.mBlasted = static_cast<unsigned char>(TheGameDb->GetEnergized() * kPercent);
+    record.mPercentDone = static_cast<unsigned char>(TheGameDb->GetProgress() * kPercent);
+    record.mFullMixBars = static_cast<unsigned char>(TheGameDb->GetFullMixBars());
+    TheGameDb->GetProfile(0)->RecordResult(&record, &mUnlocks);
 }
 
 void Metagame::QueueUnlocks() {
+    int nBossIndex = -1;
+    bool bPartsQueued = false;
+    bool bCampaignEnded = false;
+    bool bSongQueued = false;
+    mUnlockScreens.clear();
+
+    for (unsigned int i = 0; i < mUnlocks.size(); ++i) {
+        const UnlockableItem &item = mUnlocks[i];
+        switch (item.mKind) {
+        case UnlockableItem::kKindArena: {
+            mNextScreen = kUnlockArenaScreen;
+            std::vector<const char *> arenas;
+            TheGameDb->GetUnlockedArenas(&arenas, TheGameDb->mSkillLevel, true, false);
+            mArena->SetRevealArena(static_cast<int>(arenas.size()));
+            if (mDialogAction == kDialogActionResume) {
+                mDialogAction = kDialogActionEnd;
+            }
+            break;
+        }
+        case UnlockableItem::kKindBossSong:
+            dynamic_cast<SongDecryptScreen *>(TheUI.FindScreen(kSongDecryptScreen, false))
+                ->SetSong(item.mName);
+            mUnlockScreens.push_back(kUnlockEventSong);
+            nBossIndex = i;
+            break;
+        case UnlockableItem::kKindSong:
+        case UnlockableItem::kKindBonusSong:
+            dynamic_cast<SongDecryptScreen *>(TheUI.FindScreen(kSongDecryptScreen, false))
+                ->SetSong(item.mName);
+            mUnlockScreens.push_back(kUnlockEventSong);
+            bSongQueued = true;
+            break;
+        case UnlockableItem::kKindCampaignEnd:
+            bCampaignEnded = true;
+            break;
+        default: {
+            PartUnlockScreen *pScreen =
+                dynamic_cast<PartUnlockScreen *>(TheUI.FindScreen(kUnlockPartsScreen, false));
+            if (pScreen->AddItem(item) && !bPartsQueued) {
+                mUnlockScreens.push_back(kUnlockEventParts);
+                bPartsQueued = true;
+            }
+            break;
+        }
+        }
+    }
+
+    if (bCampaignEnded && !bSongQueued) {
+        mNextScreen = kStartScreen;
+    }
+    if (TheGameDb->GetProfile(0)->IsModified()) {
+        mUnlockScreens.push_back(kUnlockEventSaveFreq);
+    }
+    if (TheGameDb->GetOptions()->mModified) {
+        mUnlockScreens.push_back(kUnlockEventSaveSettings);
+    }
+
+    if (nBossIndex >= 0 && mDialogAction == kDialogActionResume) {
+        dynamic_cast<BossUnlockScreen *>(TheUI.FindScreen(kUnlockBossScreen, false))->mSong =
+            mUnlocks[nBossIndex].mName;
+        mUnlockScreens.push_back(kUnlockEventBoss);
+    } else if (TheGameDb->mCommunity == GameDb::kCommunitySolo &&
+               !TheGameDb->GetProfile(0)->HasSeenFreestyleTip() &&
+               mDialogAction == kDialogActionContinue) {
+        mUnlockScreens.push_back(kUnlockEventFreestyleTip);
+        TheGameDb->GetProfile(0)->SetSeenFreestyleTip();
+    }
+
+    mUnlocks.clear();
 }
 
-void Metagame::ShowDialog([[maybe_unused]] DialogType type,
-                          [[maybe_unused]] DialogCallback pfnCallback,
-                          [[maybe_unused]] void *pUserData,
-                          [[maybe_unused]] int nPad) {
+void Metagame::ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUserData, int nPad) {
+    mDialogCallback = pfnCallback;
+    mDialogUserData = pUserData;
+    mDialogShowing = 1;
+    mDialogAction = kDialogActionNone;
+
+    if (type == kDialogTutorialEnd) {
+        ShowEndGameScreens(kDialogActionEnd);
+        return;
+    }
+
+    const char *pszScreen = nullptr;
+    if (type == kDialogPause) {
+        const int nRuleSet = TheGameDb->mRuleSet;
+        const int nCommunity = TheGameDb->mCommunity;
+        if (TheGameDb->mTutorial) {
+            pszScreen = kMultiGamePauseScreen;
+        } else if (nCommunity == GameDb::kCommunitySolo) {
+            pszScreen = nRuleSet == GameDb::kRuleSetGame ? kSoloPauseScreen : kSoloRemixPauseScreen;
+        } else if (nCommunity == GameDb::kCommunityLocal &&
+                   (nRuleSet == GameDb::kRuleSetGame || nRuleSet == GameDb::kRuleSetDuel)) {
+            pszScreen = kMultiGamePauseScreen;
+        } else {
+            pszScreen = kMultiRemixPauseScreen;
+        }
+        dynamic_cast<PauseScreen *>(TheUI.FindScreen(pszScreen, false))->mPad = nPad;
+    } else if (type == kDialogNoController) {
+        pszScreen = kNoControllerScreen;
+        dynamic_cast<NoControllerScreen *>(TheUI.FindScreen(pszScreen, false))->mPad = nPad;
+    } else if (TheGameDb->mPracticeMode) {
+        pszScreen = kPracticeEndScreen;
+    } else if (type == kDialogSoloWon || type == kDialogSoloLost) {
+        pszScreen = type == kDialogSoloWon ? kSoloWinScreen : kSoloLoseScreen;
+        TheGfxManager.ShowHud(false);
+    } else if (type == kDialogEndGame) {
+        int nWinners = 0;
+        for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
+            if (TheGameDb->GetPlayerRank(i) == 0) {
+                ++nWinners;
+            }
+        }
+        const bool bOnline = TheGameDb->mCommunity == GameDb::kCommunityOnline;
+        {
+            String suffix;
+            if (nWinners >= kNamedTieWinners) {
+                suffix = FormatString(kTieCountFormat, TheGameDb->GetNumPlayers());
+            } else if (nWinners >= kTieWinners) {
+                suffix = kTieSuffix;
+            } else {
+                suffix = kWinSuffix;
+            }
+            pszScreen = FormatString(bOnline ? kOnlineEndScreenFormat : kLocalEndScreenFormat,
+                                     TheGameDb->GetNumPlayers(),
+                                     suffix.c_str());
+        }
+        TheGfxManager.ShowHud(false);
+    }
+    // Yes, the binary goes to a null screen for the remaining dialog types.
+    TheUI.GotoScreen(pszScreen);
 }
 
 void Metagame::RecordPracticeResult() {
+    SongRecord record;
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    record.mSong = entry.GetName();
+    // Yes, the binary records a score of 100 for a practice song.
+    record.mScore = kPracticeResult;
+    record.mSkillLevel = static_cast<unsigned char>(TheGameDb->mSkillLevel);
+    record.mBestStreak = static_cast<unsigned char>(TheGameDb->GetBestStreak());
+    record.mPercentDone = kPracticeResult;
+    record.mBlasted = 0;
+    record.mFullMixBars = 0;
+    TheGameDb->GetProfile(0)->RecordResult(&record, &mUnlocks);
 }
 
-void Metagame::ShowEndGameScreens([[maybe_unused]] DialogAction action) {
+void Metagame::ShowEndGameScreens(DialogAction action) {
+    mDialogAction = action;
+    if (TheGameDb->mTutorial) {
+        if (action != kDialogActionEnd) {
+            FinishDialog();
+            return;
+        }
+        RecordPracticeResult();
+    }
+    if (action != kDialogActionEnd || TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+        FinishDialog();
+        return;
+    }
+    if (TheGameDb->GetProfile(0)->IsModified() || TheGameDb->GetOptions()->mModified) {
+        QueueUnlocks();
+        AdvanceUnlocks();
+    } else {
+        FinishDialog();
+    }
 }
 
 void Metagame::FinishDialog() {
@@ -791,6 +1090,38 @@ void Metagame::FinishDialog() {
 }
 
 void Metagame::AdvanceUnlocks() {
+    if (mUnlockScreens.empty()) {
+        FinishDialog();
+        return;
+    }
+
+    switch (mUnlockScreens.front()) {
+    case kUnlockEventBoss:
+        TheUI.GotoScreen(kUnlockBossScreen);
+        break;
+    case kUnlockEventParts:
+        TheUI.GotoScreen(kUnlockPartsScreen);
+        break;
+    case kUnlockEventSong:
+        TheUI.GotoScreen(kSongDecryptScreen);
+        break;
+    case kUnlockEventSaveFreq: {
+        SaveFreqScreen *pScreen =
+            dynamic_cast<SaveFreqScreen *>(TheUI.FindScreen(kAutoSaveFreqScreen, false));
+        pScreen->mOverwriteStatus = 1;
+        TheUI.GotoScreen(pScreen);
+        break;
+    }
+    case kUnlockEventSaveSettings:
+        TheUI.GotoScreen(kAutoSaveSettingsScreen);
+        break;
+    case kUnlockEventFreestyleTip:
+        TheUI.GotoScreen(kFreestyleTipScreen);
+        break;
+    default:
+        break;
+    }
+    mUnlockScreens.pop_front();
 }
 
 bool Metagame::IsSpeedUp(const char *pszFrom, const char *pszTo) {
@@ -940,17 +1271,90 @@ bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
     }
     if (mLastSelectButton == kPadTriangle &&
         dynamic_cast<TransitionScreen *>(pMsg->mOldScreen) == nullptr) {
-        GameFx::PlayBack();
+        FxMidi::PlayBack();
     }
     mLastSelectButton = kPadNone;
     return false;
 }
 
-bool Metagame::OnLaunchpadAborted([[maybe_unused]] Message *pMsg) {
+bool Metagame::OnLaunchpadAborted(LaunchpadAbortedMsg *pMsg) {
+    if (pMsg->mReason == LaunchpadAbortedMsg::kReasonNone) {
+        return false;
+    }
+    UIScreen *pCurrent = TheUI.mCurrentScreen;
+    // Yes, the binary reads the next screen of a null current screen.
+    if (pCurrent != nullptr && strcmp(pCurrent->mName, kLobbyErrorScreen) == 0) {
+        return false;
+    }
+    UIScreen *pNext = pCurrent->mNextScreen;
+    if (pNext != nullptr && strcmp(pNext->mName, kLobbyErrorScreen) == 0) {
+        return false;
+    }
+
+    const char *pszError;
+    switch (pMsg->mReason) {
+    case LaunchpadAbortedMsg::kReasonIncompatible:
+        pszError = kLaunchpadIncompatibleError;
+        break;
+    case LaunchpadAbortedMsg::kReasonHost:
+        pszError = kLaunchpadHostError;
+        break;
+    case LaunchpadAbortedMsg::kReasonBoot:
+        pszError = kLaunchpadBootError;
+        break;
+    case LaunchpadAbortedMsg::kReasonDied:
+        pszError = kLaunchpadDiedError;
+        break;
+    case LaunchpadAbortedMsg::kReasonBad:
+        pszError = kLaunchpadBadError;
+        break;
+    default:
+        pszError = kLaunchpadLostError;
+        break;
+    }
+    const String message(TheLocale.Localize(FormatString(kErrorMessageFormat, pszError), true));
+    TransitionErrorScreen *pError =
+        dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kLaunchpadErrorScreen, false));
+    pError->mMessage = message.c_str();
+
+    if (mReserved144) {
+        TheUI.GotoScreen(pError);
+    } else if (strcmp(kLostLobbyScreen, mNextScreen) != 0) {
+        mNextScreen =
+            TheGameDb->mRuleSet == GameDb::kRuleSetRemix && TheGameDb->GetNetRemixEnded() == 1 ?
+                kNetEndRemixScreen :
+                kLostLaunchpadScreen;
+        mNetScreenPending = 1;
+        mNetScreen = kLaunchpadErrorScreen;
+    }
     return false;
 }
 
-bool Metagame::OnLostInternet([[maybe_unused]] Message *pMsg) {
+bool Metagame::OnLostInternet(LobbyConnectionLostMsg *pMsg) {
+    TransitionErrorScreen *pError =
+        dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kLobbyErrorScreen, false));
+    if (pMsg->mError == LobbyConnectionLostMsg::kInternetDown) {
+        printf(kInternetDownLog);
+        pError->mMessage = TheLocale.Localize(kLostInternetToken, true);
+        pError->ClearTransitions();
+        pError->AddTransition(kErrorOkComponent, kPadNone, kNetConfigScreen);
+    } else {
+        printf(kOtherErrorLog);
+        pError->mMessage = TheLocale.Localize(kLostLobbyToken, true);
+        pError->ClearTransitions();
+        pError->AddTransition(kErrorOkComponent, kPadNone, kNetPortalScreen);
+    }
+
+    if (mReserved144) {
+        TheUI.GotoScreen(pError);
+    } else {
+        mNextScreen =
+            TheGameDb->mRuleSet == GameDb::kRuleSetRemix && TheGameDb->GetNetRemixEnded() == 1 ?
+                kNetEndRemixScreen :
+                kLostLobbyScreen;
+        mNetScreenPending = 1;
+        mNetScreen = kLobbyErrorScreen;
+    }
     return false;
 }
 
@@ -991,10 +1395,10 @@ bool Metagame::DispatchPriv(Message *pMsg) {
         return OnTransitionComplete(static_cast<UITransitionCompleteMsg *>(pMsg));
     }
     if (nType == g_nLaunchpadAbortedMsgType) {
-        return OnLaunchpadAborted(pMsg);
+        return OnLaunchpadAborted(static_cast<LaunchpadAbortedMsg *>(pMsg));
     }
     if (nType == g_nLobbyConnectionLostMsgType) {
-        return OnLostInternet(pMsg);
+        return OnLostInternet(static_cast<LobbyConnectionLostMsg *>(pMsg));
     }
     if (nType == g_nGameParamsUpdateMsgType) {
         return OnGameParamsUpdate(pMsg);

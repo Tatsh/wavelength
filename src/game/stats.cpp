@@ -4,7 +4,7 @@
 #include "memcard/mcmanager.h"
 #include "os/datetime.h"
 #include "os/filestream.h"
-#include "os/formatstring.h"
+#include "os/string.h"
 
 namespace {
 
@@ -210,13 +210,13 @@ String Stats::FormatField(const String &name, bool bValue) {
 void Stats::AppendTimestamp(String &text) {
     DateTime date{};
     (void)date.ReadClock(); // Yes, the binary discards this call's result.
-    text << Rnd::MakeString(kTimestampFormat,
-                            date.mYear - kYearsBefore2000,
-                            date.mMonth + 1,
-                            date.mDay,
-                            date.mHour,
-                            date.mMinute,
-                            date.mSecond);
+    text << FormatString(kTimestampFormat,
+                         date.mYear - kYearsBefore2000,
+                         date.mMonth + 1,
+                         date.mDay,
+                         date.mHour,
+                         date.mMinute,
+                         date.mSecond);
 }
 
 Stats::Stats()

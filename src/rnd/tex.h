@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "os/async.h"
+#include "os/filepath.h"
 #include "os/hxstr.h"
 #include "rnd/filepath.h"
 #include "rnd/manager.h"
@@ -232,6 +233,25 @@ public:
      */
     void SetBitmapConfig(
         int nWidth, int nHeight, int nBitsPerPixel, const HxStr &path, int nMipSelect, int nFlags);
+
+    /**
+     * Install a bitmap configuration and the path of its file.
+     *
+     * @param nWidth The bitmap width.
+     * @param nHeight The bitmap height.
+     * @param nBitsPerPixel The bitmap depth.
+     * @param path The bitmap path.
+     * @param nMipSelect The mip selector.
+     * @param nFlags The flag word.
+     * @ghidraAddress NTSC-U/C: 0x00240f50
+     * @ghidraAddress PAL: 0x00249a80
+     */
+    void SetBitmapConfig(int nWidth,
+                         int nHeight,
+                         int nBitsPerPixel,
+                         const ::FilePath &path,
+                         int nMipSelect,
+                         int nFlags);
 
     /**
      * Advance the asynchronous mip loads and report whether any level is still outstanding.

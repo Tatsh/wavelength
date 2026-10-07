@@ -18,9 +18,9 @@ public:
     const char *mSong;          /*!< The song, a symbol. */
     unsigned short mScore;      /*!< The best score. */
     unsigned char mSkillLevel;  /*!< The skill level. */
-    unsigned char mReserved07;  // +0x07, not yet recovered.
-    unsigned char mReserved08;  // +0x08, not yet recovered.
-    unsigned char mReserved09;  // +0x09, not yet recovered.
+    unsigned char mBestStreak;  /*!< The best streak. */
+    unsigned char mBlasted;     /*!< The share of the gems blasted, in percent. */
+    unsigned char mFullMixBars; /*!< The bars played with the full mix. */
     unsigned char mPercentDone; /*!< The part of the song played, 100 for a finished song. */
     unsigned char mReserved0B;  // +0x0b, not yet recovered.
 };

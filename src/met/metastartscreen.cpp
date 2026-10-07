@@ -1,7 +1,6 @@
 #include "met/metastartscreen.h"
 
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "game/playerprofile.h"
 #include "math/rand.h"
 #include "os/joypad.h"
@@ -10,6 +9,7 @@
 #include "os/system.h"
 #include "rnd/manager.h"
 #include "rnd/text.h"
+#include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -135,7 +135,7 @@ bool MetaStartScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             return true;
         }
         if (pMsg->mPad == kFirstPad && (pMsg->mButton == kPadCross || pMsg->mButton == kPadStart)) {
-            GameFx::PlayMenuSelect();
+            FxMidi::PlayMenuSelect();
         }
     }
     return FreqScreen::HandleJoypad(pMsg);

@@ -7,6 +7,17 @@
 InputMap::InputMap() : mButtons(kButtonCount, 0), mSticks(kStickCount, 0) {
 }
 
+InputMap::InputMap(const InputMap &other) : mButtons(), mSticks() {
+    mButtons.resize(other.mButtons.size(), 0);
+    for (unsigned int i = 0; i < mButtons.size(); ++i) {
+        mButtons[i] = other.mButtons[i];
+    }
+    mSticks.resize(other.mSticks.size(), 0);
+    for (unsigned int i = 0; i < mSticks.size(); ++i) {
+        mSticks[i] = other.mSticks[i];
+    }
+}
+
 InputMap &InputMap::operator=(const InputMap &other) {
     if (this != &other) {
         // The sizes of this map bound both copies.

@@ -12,13 +12,13 @@
 #include "game/stats.h"
 #include "gfx/gfxmanager.h"
 #include "os/debug.h"
-#include "os/formatstring.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/memfun1command.h"
 #include "os/memfun3command.h"
 #include "os/memfuncommand.h"
 #include "os/scheduler.h"
+#include "os/string.h"
 #include "os/system.h"
 #include "script/scriptfunction.h"
 #include "synth/fxmidi.h"
@@ -135,7 +135,7 @@ public:
 
 void SoloGameLogic::CheckpointTextCmd::Execute() {
     TheGfxManager.ShowMessage(
-        Rnd::MakeString(TheLocale.Localize(kStageCompletedToken, true), mLogic->mSection + 1),
+        FormatString(TheLocale.Localize(kStageCompletedToken, true), mLogic->mSection + 1),
         nullptr,
         kAllPlayers,
         kCheckpointTextDurationMs,
@@ -223,7 +223,7 @@ void SoloGameLogic::AdvanceWinSequence() {
         pszLine = TheLocale.Localize(kWonCampaign11Token, true);
         const char *pszFormat = TheLocale.Localize(kWonCampaign12Token, true);
         const char *pszDifficulty = TheGameDb->GetDifficultyName();
-        pszSecondLine = Rnd::MakeString(pszFormat, pszDifficulty);
+        pszSecondLine = FormatString(pszFormat, pszDifficulty);
         if (TheGameDb->mSkillLevel == kSkillLevelInsane) {
             ++mWinSequenceStep;
         }
@@ -234,7 +234,7 @@ void SoloGameLogic::AdvanceWinSequence() {
         const char *pszFormat = TheLocale.Localize(kWonCampaign2Token, true);
         const char *pszDifficulty =
             TheGameDb->GetDifficultyName(TheGameDb->mSkillLevel + 1, GameDb::kRuleSetGame);
-        pszLine = Rnd::MakeString(pszFormat, pszDifficulty);
+        pszLine = FormatString(pszFormat, pszDifficulty);
         break;
     }
     case kWinStepNextCampaign:

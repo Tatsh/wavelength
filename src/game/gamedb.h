@@ -276,6 +276,15 @@ public:
     GameOptions *GetOptions();
 
     /**
+     * Replace the settings of the game options screen and apply the speaker output mode.
+     *
+     * @param pOptions The settings.
+     * @ghidraAddress NTSC-U/C: 0x0026f510
+     * @ghidraAddress PAL: 0x002790b0
+     */
+    void SetOptions(const GameOptions *pOptions);
+
+    /**
      * Pass two camera values to the renderer of the players' avatars.
      *
      * The metagame passes 0.05 and 1 as the front end starts. The meaning of the two values is
@@ -454,6 +463,69 @@ public:
     void SetProgress(float fProgress);
 
     /**
+     * Report the value of SetEnergized().
+     *
+     * @return The value.
+     * @ghidraAddress NTSC-U/C: 0x0026ecc0
+     * @ghidraAddress PAL: 0x00278860
+     */
+    float GetEnergized() const;
+
+    /**
+     * Report the value of SetFullMixBars().
+     *
+     * @return The bars.
+     * @ghidraAddress NTSC-U/C: 0x0026ecd0
+     * @ghidraAddress PAL: 0x00278870
+     */
+    int GetFullMixBars() const;
+
+    /**
+     * Report the value of SetBestStreak().
+     *
+     * @return The streak.
+     * @ghidraAddress NTSC-U/C: 0x0026ece0
+     * @ghidraAddress PAL: 0x00278880
+     */
+    int GetBestStreak() const;
+
+    /**
+     * Report the value of SetProgress().
+     *
+     * @return The fraction.
+     * @ghidraAddress NTSC-U/C: 0x0026ecf0
+     * @ghidraAddress PAL: 0x00278890
+     */
+    float GetProgress() const;
+
+    /**
+     * Set the arena of the game.
+     *
+     * @param pszArena The arena.
+     * @ghidraAddress NTSC-U/C: 0x0026ec38
+     * @ghidraAddress PAL: 0x002787d8
+     */
+    void SetArena(const char *pszArena);
+
+    /**
+     * Report whether the remix of an online game has ended.
+     *
+     * @return Non-zero once the remix has ended.
+     * @ghidraAddress NTSC-U/C: 0x0026e1a0
+     * @ghidraAddress PAL: 0x00277d40
+     */
+    int GetNetRemixEnded() const;
+
+    /**
+     * Record whether the remix of an online game has ended.
+     *
+     * @param nEnded Non-zero once the remix has ended.
+     * @ghidraAddress NTSC-U/C: 0x0026e1a8
+     * @ghidraAddress PAL: 0x00277d48
+     */
+    void SetNetRemixEnded(int nEnded);
+
+    /**
      * Report the localised name of the difficulty of the game.
      *
      * @return The name.
@@ -559,7 +631,8 @@ public:
     int mFullMixBars;    /*!< The value of SetFullMixBars(). +0x98 */
     int mBestStreak;     /*!< The value of SetBestStreak(). +0x9c */
     float mProgress;     /*!< The value of SetProgress(). +0xa0 */
-    int mReservedA4[45]; // +0xa4, not yet recovered.
+    int mReservedA4[44]; // +0xa4, not yet recovered.
+    int mNetRemixEnded;  /*!< Whether the remix of an online game has ended. */
     float mSongTick;     /*!< The running world's position in ticks. +0x158 */
     float mSongTime;     /*!< The running world's position on its song clock. +0x15c */
 };

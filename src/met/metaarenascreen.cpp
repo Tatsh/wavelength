@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "game/gamedb.h"
-#include "game/gamefx.h"
 #include "game/playerprofile.h"
 #include "game/songentry.h"
 #include "met/metagame.h"
@@ -15,6 +14,7 @@
 #include "os/locale.h"
 #include "rnd/manager.h"
 #include "rnd/text.h"
+#include "synth/fxmidi.h"
 #include "synth/synth.h"
 #include "ui/uibutton.h"
 #include "ui/uimanager.h"
@@ -173,7 +173,7 @@ bool MetaArenaScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
         String arena(pArena->mName);
         if (arena != "Tutorial") {
             if (pArena != mFocusArena) {
-                GameFx::PlayLazySusan();
+                FxMidi::PlayLazySusan();
             }
             mFocusArena = pArena;
         }

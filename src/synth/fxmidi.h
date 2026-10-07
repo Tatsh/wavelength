@@ -4,11 +4,78 @@
  * Bank of interface sounds built from the "fx_midi_file" entry of the "db" configuration section.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. One instance exists, at the
- * pointer `0x00440d58`, and its members are one sound handle each. Only the members its callers
- * here use are declared, and their names are inferred from the events that play them.
+ * pointer `0x00440d58`, and its members are one sound cue each. Every member below plays or stops
+ * one cue of that instance. Only the members its callers here use are declared, and their names are
+ * inferred from the events that play them.
  */
 class FxMidi {
 public:
+    /**
+     * Play the sound of the left directional button in the menus.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027f9f8
+     * @ghidraAddress PAL: 0x002892f8
+     */
+    static void PlayMenuLeft();
+
+    /**
+     * Play the sound of the right directional button in the menus.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fa40
+     * @ghidraAddress PAL: 0x00289340
+     */
+    static void PlayMenuRight();
+
+    /**
+     * Play the sound of the up directional button in the menus.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fa88
+     * @ghidraAddress PAL: 0x00289388
+     */
+    static void PlayMenuUp();
+
+    /**
+     * Play the sound of the down directional button in the menus.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fad0
+     * @ghidraAddress PAL: 0x002893d0
+     */
+    static void PlayMenuDown();
+
+    /**
+     * Play the sound of a choice in the menus.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fb18
+     * @ghidraAddress PAL: 0x00289418
+     */
+    static void PlayMenuSelect();
+
+    /**
+     * Play the sound of going back a screen in the front end.
+     *
+     * The metagame plays it when Triangle led away from a screen.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fb60
+     * @ghidraAddress PAL: 0x00289460
+     */
+    static void PlayBack();
+
+    /**
+     * Play the sound of a cheat.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fba8
+     * @ghidraAddress PAL: 0x002894a8
+     */
+    static void PlayCheat();
+
+    /**
+     * Play the sound of the projector that moves between the menu screens.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fbf0
+     * @ghidraAddress PAL: 0x002894f0
+     */
+    static void PlayProjector();
+
     /**
      * Play the sound of the first handle.
      *
@@ -52,13 +119,20 @@ public:
     static void PlayWinSound();
 
     /**
-     * Play the sound of a power-up.
+     * Stop the looping sound of a song.
      *
-     * @param nPowerup The kind of power-up, one of GameLogic::Powerup.
-     * @ghidraAddress NTSC-U/C: 0x0027ff80
-     * @ghidraAddress PAL: 0x00289880
+     * @ghidraAddress NTSC-U/C: 0x0027fda0
+     * @ghidraAddress PAL: 0x002896a0
      */
-    static void PlayPowerupSound(int nPowerup);
+    static void StopLoop();
+
+    /**
+     * Play the sound that warns that the juice of a solo player is low.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fea0
+     * @ghidraAddress PAL: 0x002897a0
+     */
+    static void PlayJuiceLowSound();
 
     /**
      * Play the sound of a power-up a player caught.
@@ -70,12 +144,13 @@ public:
     static void PlayPowerupCatchSound(int nPowerup);
 
     /**
-     * Play the sound that warns that the juice of a solo player is low.
+     * Play the sound of a deployed power-up.
      *
-     * @ghidraAddress NTSC-U/C: 0x0027fea0
-     * @ghidraAddress PAL: 0x002897a0
+     * @param nPowerup The kind of power-up, one of GameLogic::Powerup.
+     * @ghidraAddress NTSC-U/C: 0x0027ff80
+     * @ghidraAddress PAL: 0x00289880
      */
-    static void PlayJuiceLowSound();
+    static void PlayPowerupSound(int nPowerup);
 
     /**
      * Play the guide sound of a gem lane.
@@ -242,4 +317,108 @@ public:
      * @ghidraAddress PAL: 0x00289e80
      */
     static void PlayEraseSectionSound();
+
+    /**
+     * Play the `WRONG` cue of a choice that is not allowed.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002805c8
+     * @ghidraAddress PAL: 0x00289ec8
+     */
+    static void PlayWrong();
+
+    /**
+     * Play the `SQUARE` cue. The song screen plays it to start a practice song.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280610
+     * @ghidraAddress PAL: 0x00289f10
+     */
+    static void PlaySquare();
+
+    /**
+     * Play the `LAZYSUSAN` cue. The arena screen plays it when the focus moves to another arena.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280658
+     * @ghidraAddress PAL: 0x00289f58
+     */
+    static void PlayLazySusan();
+
+    /**
+     * Play the `KEYBOARD_LEFT_UP` cue of the front-end keyboard.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002806a0
+     * @ghidraAddress PAL: 0x00289fa0
+     */
+    static void PlayKeyboardLeftUp();
+
+    /**
+     * Play the `KEYBOARD_BACK` cue of the front-end keyboard.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002806f8
+     * @ghidraAddress PAL: 0x00289ff8
+     */
+    static void PlayKeyboardBack();
+
+    /**
+     * Play the `KEYBOARD_KEYENTER` cue of the front-end keyboard.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280740
+     * @ghidraAddress PAL: 0x0028a040
+     */
+    static void PlayKeyboardKeyEnter();
+
+    /**
+     * Play the `ARENA_UNLOCK` cue of an arena that has just been unlocked.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280788
+     * @ghidraAddress PAL: 0x0028a088
+     */
+    static void PlayArenaUnlock();
+
+    /**
+     * Play the `SOLOPORTAL` cue of the solo button of the main menu.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002807d0
+     * @ghidraAddress PAL: 0x0028a0d0
+     */
+    static void PlaySoloPortal();
+
+    /**
+     * Play the `MULTIPORTAL` cue of the multiplayer button of the main menu.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280818
+     * @ghidraAddress PAL: 0x0028a118
+     */
+    static void PlayMultiPortal();
+
+    /**
+     * Play the `NETPORTAL` cue of the online button of the main menu.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280860
+     * @ghidraAddress PAL: 0x0028a160
+     */
+    static void PlayNetPortal();
+
+    /**
+     * Stop the three portal cues of the main menu.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002808a8
+     * @ghidraAddress PAL: 0x0028a1a8
+     */
+    static void StopPortals();
+
+    /**
+     * Start the sound of a screen that asks for a transition sound.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280928
+     * @ghidraAddress PAL: 0x0028a228
+     */
+    static void PlayTransition();
+
+    /**
+     * Stop the sound PlayTransition() started.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280970
+     * @ghidraAddress PAL: 0x0028a270
+     */
+    static void StopTransition();
 };

@@ -2,8 +2,8 @@
 
 #include "math/color.h"
 #include "math/vector3.h"
+#include "os/binstream.h"
 #include "os/string.h"
-#include "rnd/stream.h"
 
 /**
  * Reference-counted array of script data nodes.
@@ -90,7 +90,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00297ee0
      * @ghidraAddress PAL: 0x002a1ae0
      */
-    static DataArray *Read(const char *pszPath, Rnd::Stream *pStream);
+    static DataArray *Read(const char *pszPath, BinStream *pStream);
 
     /**
      * Find the child array whose first node is a tag.
@@ -229,6 +229,20 @@ public:
      * @ghidraAddress PAL: 0x002a03d8
      */
     DataArray *Array(int nIndex) const;
+
+    /**
+     * Build the path of the compiled copy of a data file.
+     *
+     * The compiled copy is `<directory>/gen/<base>.<extension>.bin`. It is used when the game runs
+     * from the disc or when bCompiled asks for it, and the path is copied unchanged otherwise.
+     *
+     * @param pszOut Receives the path.
+     * @param pszPath The path of the data file.
+     * @param bCompiled Use the compiled copy even when the game does not run from the disc.
+     * @ghidraAddress NTSC-U/C: 0x00298208
+     * @ghidraAddress PAL: 0x002a1e10
+     */
+    static void MakeCompiledPath(char *pszOut, const char *pszPath, bool bCompiled);
 
     int mReserved00;      // +0x00, the node storage. The node type is not yet recovered.
     const char *mFile;    /*!< The file the array was read from. */

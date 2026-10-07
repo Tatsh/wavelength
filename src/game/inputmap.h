@@ -28,6 +28,15 @@ public:
     InputMap();
 
     /**
+     * Construct a copy of another map.
+     *
+     * @param other The map to copy.
+     * @ghidraAddress NTSC-U/C: 0x0027d700
+     * @ghidraAddress PAL: 0x00287018
+     */
+    InputMap(const InputMap &other);
+
+    /**
      * Copy the button and stick bindings of another map.
      *
      * @param other The map to copy.
@@ -46,6 +55,36 @@ public:
      * @ghidraAddress PAL: 0x002873e8
      */
     int GetButtonAction(int nButton);
+
+    /**
+     * Bind a controller button to an action.
+     *
+     * @param nButton The button.
+     * @param nAction The action, or 0 to clear the binding.
+     * @ghidraAddress NTSC-U/C: 0x0027dab8
+     * @ghidraAddress PAL: 0x002873d0
+     */
+    void SetButtonAction(int nButton, int nAction);
+
+    /**
+     * Bind an analogue stick to an action.
+     *
+     * @param nStick The stick.
+     * @param nAction The action.
+     * @ghidraAddress NTSC-U/C: 0x0027dae8
+     * @ghidraAddress PAL: 0x00287400
+     */
+    void SetStickAction(int nStick, int nAction);
+
+    /**
+     * Report the action an analogue stick is bound to.
+     *
+     * @param nStick The stick.
+     * @return The action.
+     * @ghidraAddress NTSC-U/C: 0x0027db00
+     * @ghidraAddress PAL: 0x00287418
+     */
+    int GetStickAction(int nStick);
 
     /**
      * Find the analogue stick bound to an action.

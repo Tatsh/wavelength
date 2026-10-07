@@ -107,6 +107,7 @@ cdreadstm
 cdrom
 changesectionevent
 chcr
+choosememcardscreen
 circbuff
 clippedlines
 clippedsprites
@@ -126,7 +127,9 @@ color
 conductorbuilder
 conexant
 constructo
+controllerconfigscreen
 controllerdisplay
+controllerpanel
 corefx
 coveragerc
 cpdext
@@ -164,6 +167,7 @@ devconsole
 devirtualised
 dialing
 dialogpanel
+dialogs
 difficultyrating
 dimx
 directoryvolume
@@ -175,8 +179,13 @@ dmaend
 docstrings
 dopenssl
 doutput
+dpadd
+dpadl
+dpadr
+dpadu
 dpsm
 drawverts
+drumnbass
 dsay
 dsllv
 dsmcc
@@ -247,6 +256,7 @@ findctp
 fini
 flusha
 fmacro
+focuschangepanel
 fogcol
 fogcol's
 forcefeedbackmgr
@@ -254,7 +264,6 @@ forcefeedbackmgrcontroller
 forcefeedbackmgrmotoreffect
 fordblks
 formatmessage
-formatstring
 foxundermoon
 fplugin
 fprintf
@@ -263,6 +272,7 @@ freestylebumppacket
 freestylepacket
 freestyletrack
 freqconfirmscreen
+freqcopydelscreen
 freqmakercustomscreen
 freqmakeremblemscreen
 freqmakererrorscreen
@@ -280,6 +290,7 @@ fxmgr
 fxpacket
 gameconfig
 gamelogic
+gameoptionsscreen
 gametie
 gametrackselector
 gedf
@@ -451,6 +462,7 @@ maddx
 maddz
 madr
 magick
+mainoptionsscreen
 mainpage
 malloc
 matanim
@@ -515,6 +527,7 @@ memset
 memstream
 meshanim
 metaarenascreen
+metagamearena
 metagameutil
 metamainscreen
 metamusicsong
@@ -529,6 +542,7 @@ miniw
 mipsel
 miptbp
 missthis
+mixmidibuilder
 mixtrack
 mktemp
 mmag
@@ -562,6 +576,7 @@ multigamelogic
 multimesh
 multimuse
 multiportal
+multiremix
 multiskill
 multisong
 multitap
@@ -701,9 +716,11 @@ regen
 reginfo
 releaseable
 relocs
+remixcopydelscreen
 remixer
 remixerupdatepacket
 remixhud
+remixorfreqscreen
 remixtutorial
 remoteplayer
 reserv
@@ -786,12 +803,14 @@ soloarena
 solocustom
 solofreq
 sologamelogic
+sologamestatspanel
 solometa
 soloportal
 soloremix
 soloskill
 solosong
 solotut
+solowinstatspanel
 songpicpanel
 songpos
 songpreview
@@ -966,6 +985,7 @@ wctype
 wdelete
 werror
 wextra
+winarena
 winget
 wiswa
 wiswa's

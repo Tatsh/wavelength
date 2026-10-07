@@ -11,9 +11,9 @@
 #include "math/transformops.h"
 #include "math/vector3.h"
 #include "os/dbg.h"
-#include "os/formatstring.h"
 #include "os/hxstr.h"
 #include "os/mem.h"
+#include "os/string.h"
 #include "rnd/animatable.h"
 #include "rnd/drawable.h"
 #include "rnd/manager.h"
@@ -820,8 +820,7 @@ void Tunnel::BuildSliceMeshes() {
     for (unsigned nSlice = 0; nSlice < mSliceChains.size(); ++nSlice) {
         RunLongOperationDrawProc();
         LodMesh &chain = mSliceChains[nSlice];
-        chain.Build(
-            HxStr(Rnd::MakeString(kSliceNameFormat, NameText(this), nSlice)), mLodCount, true);
+        chain.Build(HxStr(FormatString(kSliceNameFormat, NameText(this), nSlice)), mLodCount, true);
         chain.SetVertexCount(nBlockVerts * mRingCount);
         Mesh *pMesh = chain.front();
         std::vector<MeshVert> &verts = pMesh->mVertsOwner->mVerts;
@@ -882,8 +881,7 @@ void Tunnel::BuildLaneMeshes() {
     const Color white{1.0f, 1.0f, 1.0f, 1.0f};
     for (unsigned nLane = 0; nLane < mSliceChains.size(); ++nLane) {
         LodMesh &chain = mSliceChains[nLane];
-        chain.Build(
-            HxStr(Rnd::MakeString(kSliceNameFormat, NameText(this), nLane)), mLodCount, true);
+        chain.Build(HxStr(FormatString(kSliceNameFormat, NameText(this), nLane)), mLodCount, true);
         chain.SetVertexCount(nBlockVerts);
         Mesh *pMesh = chain.front();
         std::vector<MeshVert> &verts = pMesh->mVertsOwner->mVerts;
@@ -929,8 +927,7 @@ void Tunnel::BuildCellMeshes() {
     for (unsigned nCell = 0; nCell < mCellChains.size(); ++nCell) {
         RunLongOperationDrawProc();
         LodMesh &chain = mCellChains[nCell];
-        chain.Build(
-            HxStr(Rnd::MakeString(kCellNameFormat, NameText(this), nCell)), mLodCount, true);
+        chain.Build(HxStr(FormatString(kCellNameFormat, NameText(this), nCell)), mLodCount, true);
         chain.SetVertexCount(kPanelRows * nColumns);
         Mesh *pMesh = chain.front();
         SetGridTexCoords(pMesh->mVertsOwner->mVerts, 0, kPanelRows, nColumns, 1.0f);

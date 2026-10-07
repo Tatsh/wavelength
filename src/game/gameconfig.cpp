@@ -1,11 +1,11 @@
 #include "game/gameconfig.h"
 
 #include "game/gamecallback.h"
-#include "game/gamefx.h"
 #include "game/gamelogic.h"
 #include "os/debug.h"
 #include "os/system.h"
 #include "script/scriptfunction.h"
+#include "synth/fxmidi.h"
 
 namespace {
 
@@ -201,28 +201,28 @@ void GameConfig::EnableDuelAuthoring([[maybe_unused]] DataArray *pCommand,
 
 void GameConfig::TogglePowerupCheat([[maybe_unused]] DataArray *pCommand,
                                     [[maybe_unused]] void *pUserData) {
-    GameFx::PlayCheat();
+    FxMidi::PlayCheat();
     g_bPowerupCheat = !g_bPowerupCheat;
     DebugPrint("CHEAT: powerup cheat mode %s\n", g_bPowerupCheat ? kOnText : kOffText);
 }
 
 void GameConfig::ToggleScrambleGems([[maybe_unused]] DataArray *pCommand,
                                     [[maybe_unused]] void *pUserData) {
-    GameFx::PlayCheat();
+    FxMidi::PlayCheat();
     g_bScrambleGems = !g_bScrambleGems;
     DebugPrint("CHEAT: scrambled gem mode %s\n", g_bScrambleGems ? kOnText : kOffText);
 }
 
 void GameConfig::TogglePowerupsAPlenty([[maybe_unused]] DataArray *pCommand,
                                        [[maybe_unused]] void *pUserData) {
-    GameFx::PlayCheat();
+    FxMidi::PlayCheat();
     g_bPowerupsAPlenty = !g_bPowerupsAPlenty;
     DebugPrint("CHEAT: powerups-a-plenty mode %s\n", g_bPowerupsAPlenty ? kOnText : kOffText);
 }
 
 void GameConfig::ToggleAutopilot([[maybe_unused]] DataArray *pCommand,
                                  [[maybe_unused]] void *pUserData) {
-    GameFx::PlayCheat();
+    FxMidi::PlayCheat();
     TheGameConfig->mFakeInput = !TheGameConfig->mFakeInput;
     DebugPrint("CHEAT: autopilot mode %s\n", TheGameConfig->mFakeInput ? kOnText : kOffText);
 }

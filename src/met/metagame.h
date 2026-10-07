@@ -4,12 +4,15 @@
 #include <vector>
 
 #include "app/msgsink.h"
+#include "game/unlockableitem.h"
 #include "met/gizmo.h"
 #include "met/helppanel.h"
 #include "met/metagamearena.h"
 #include "met/metamusicsong.h"
 #include "met/mix.h"
 #include "msg/joypadinputmsg.h"
+#include "msg/launchpadabortedmsg.h"
+#include "msg/lobbyconnectionlostmsg.h"
 #include "msg/message.h"
 #include "os/string.h"
 #include "rnd/cam.h"
@@ -79,8 +82,20 @@ public:
         kDialogTutorialEnd = 7,  /*!< The menu at the end of the tutorial. The name is inferred. */
     };
 
+    /** The screens that follow a song, in the order QueueUnlocks() queues them. */
+    enum UnlockEvent {
+        kUnlockEventNone = 0,         /*!< No screen. */
+        kUnlockEventBoss = 1,         /*!< `unlock_boss`, a boss song unlocked. */
+        kUnlockEventParts = 2,        /*!< `unlock_parts`, avatar parts and emblems unlocked. */
+        kUnlockEventSong = 3,         /*!< `song_decrypt`, a song unlocked. */
+        kUnlockEventSaveFreq = 5,     /*!< `auto_save_freq`, the Freq changed. */
+        kUnlockEventSaveSettings = 6, /*!< `auto_save_settings`, the settings changed. */
+        kUnlockEventFreestyleTip = 7, /*!< `freestyle_lap_tip`, the first freestyle lap. */
+    };
+
     /** Choices a dialog reports to its callback. */
     enum DialogAction {
+        kDialogActionNone = 0,     /*!< No choice made yet. */
         kDialogActionQuit = 1,     /*!< Quit the song. */
         kDialogActionPractice = 2, /*!< Play the song again in practice mode. */
         kDialogActionResume = 3,   /*!< Return to the song. */
@@ -95,12 +110,6 @@ public:
      * @param pUserData The value given to ShowDialog().
      */
     typedef void (*DialogCallback)(DialogAction action, void *pUserData);
-
-    /** One item a song unlocked, waiting for its unlock screen. */
-    struct Unlock {
-        const char *mName;   /*!< The unlocked song, part, or arena. */
-        unsigned char mKind; /*!< The kind of the item, which selects the unlock screen. */
-    };
 
     /**
      * Construct the metagame in kStateFrontEnd with nothing loaded.
@@ -285,9 +294,10 @@ public:
     /**
      * Record the result of a campaign song in the profile of the first player.
      *
+     * A remix, a practice song, and a demo record nothing.
+     *
      * @ghidraAddress NTSC-U/C: 0x00165fb8
      * @ghidraAddress PAL: 0x00168f80
-     * @stub
      */
     void RecordCampaignResult();
 
@@ -296,7 +306,6 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x001660c8
      * @ghidraAddress PAL: 0x00169090
-     * @stub
      */
     void QueueUnlocks();
 
@@ -309,7 +318,6 @@ public:
      * @param nPad The controller the dialog listens to, or -1 for every controller.
      * @ghidraAddress NTSC-U/C: 0x00166840
      * @ghidraAddress PAL: 0x00169808
-     * @stub
      */
     void ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUserData, int nPad);
 
@@ -333,7 +341,6 @@ public:
      * @param action The choice the result dialog reported.
      * @ghidraAddress NTSC-U/C: 0x00166cb8
      * @ghidraAddress PAL: 0x00169ca8
-     * @stub
      */
     void ShowEndGameScreens(DialogAction action);
 
@@ -342,7 +349,6 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x00166e08
      * @ghidraAddress PAL: 0x00169df8
-     * @stub
      */
     void AdvanceUnlocks();
 
@@ -399,15 +405,15 @@ public:
     int mReservedF4[2];              // +0xf4, not yet identified.
     String mSelectedArena;           /*!< The arena chosen last. */
     int mFreqsOnCard;                /*!< Non-zero when the memory card check found saved Freqs. */
-    std::list<int> mUnlockScreens;   /*!< The queued unlock screens, by kind. */
-    std::vector<Unlock> mUnlocks;    /*!< The items the last song unlocked. */
-    Gizmo *mGizmo;                   /*!< The projector of the menu screens. +0x12c */
-    Rnd::Cam *mUiCamera;             /*!< The camera of the front end. */
-    Rnd::Environ *mUiEnviron;        /*!< The lights of the front end. */
-    int mSpeedingUp;                 /*!< Set while a `speed_up` transition runs. */
-    float mSpeed;                    /*!< The rate of mTime against the scheduler. */
-    int mNetScreenPending;           /*!< Whether mNetScreen waits to be shown. */
-    int mReserved144;                // +0x144, set to 1 by the constructor and not yet identified.
+    std::list<UnlockEvent> mUnlockScreens; /*!< The queued screens that follow the song. */
+    std::vector<UnlockableItem> mUnlocks;  /*!< The items the last song unlocked. */
+    Gizmo *mGizmo;                         /*!< The projector of the menu screens. +0x12c */
+    Rnd::Cam *mUiCamera;                   /*!< The camera of the front end. */
+    Rnd::Environ *mUiEnviron;              /*!< The lights of the front end. */
+    int mSpeedingUp;                       /*!< Set while a `speed_up` transition runs. */
+    float mSpeed;                          /*!< The rate of mTime against the scheduler. */
+    int mNetScreenPending;                 /*!< Whether mNetScreen waits to be shown. */
+    int mReserved144;  // +0x144, set to 1 by the constructor and not yet identified.
     String mNetScreen; /*!< The network screen to show once a launchpad screen shows. */
 
 private:
@@ -500,7 +506,6 @@ private:
      *
      * @ghidraAddress NTSC-U/C: 0x00165d18
      * @ghidraAddress PAL: 0x00168cc8
-     * @stub
      */
     void StartLeaving();
 
@@ -517,7 +522,6 @@ private:
      *
      * @ghidraAddress NTSC-U/C: 0x00165df8
      * @ghidraAddress PAL: 0x00168dc0
-     * @stub
      */
     void StartRestarting();
 
@@ -543,7 +547,6 @@ private:
      *
      * @ghidraAddress NTSC-U/C: 0x00166c18
      * @ghidraAddress PAL: 0x00169c08
-     * @stub
      */
     void RecordPracticeResult();
 
@@ -642,26 +645,27 @@ private:
     bool OnScreenChange(UIScreenChangeMsg *pMsg);
 
     /**
-     * Show the error of an aborted launchpad.
+     * Show the error of an aborted launchpad, at once in the front end or after the song.
+     *
+     * Nothing shows while the lobby error screen shows or is next.
      *
      * @param pMsg The message.
-     * @return Whether the message was handled.
+     * @return false.
      * @ghidraAddress NTSC-U/C: 0x00167b50
      * @ghidraAddress PAL: 0x0016abe0
-     * @stub
      */
-    bool OnLaunchpadAborted(Message *pMsg);
+    bool OnLaunchpadAborted(LaunchpadAbortedMsg *pMsg);
 
     /**
-     * Show the error of a lost connection.
+     * Show the error of a lost connection to the lobby, at once in the front end or after the
+     * song.
      *
      * @param pMsg The message.
-     * @return Whether the message was handled.
+     * @return false.
      * @ghidraAddress NTSC-U/C: 0x00167d78
      * @ghidraAddress PAL: 0x0016ae08
-     * @stub
      */
-    bool OnLostInternet(Message *pMsg);
+    bool OnLostInternet(LobbyConnectionLostMsg *pMsg);
 
     /**
      * Show the settings of the launchpad a host changed.

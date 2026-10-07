@@ -18,11 +18,11 @@
 #include "math/rand.h"
 #include "netflow/nettransport.h"
 #include "os/debug.h"
-#include "os/formatstring.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/memfuncommand.h"
 #include "os/scheduler.h"
+#include "os/string.h"
 #include "os/system.h"
 #include "synth/fxmidi.h"
 #include "synth/synth.h"
@@ -1112,7 +1112,7 @@ int DuelLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     pPlayer->Abort();
     mTrackSelector->RemovePlayer(nPlayer);
     const char *pszFormat = TheLocale.Localize(kClientAbortedKey, true);
-    const char *pszText = Rnd::MakeString(pszFormat, TheGameDb->GetPlayerName(nPlayer));
+    const char *pszText = FormatString(pszFormat, TheGameDb->GetPlayerName(nPlayer));
     TheGfxManager.ShowMessage(pszText,
                               nullptr,
                               kAllPlayers,

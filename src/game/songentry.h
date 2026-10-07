@@ -83,5 +83,17 @@ public:
      */
     float GetBpm() const;
 
+    /**
+     * Report the short title of the song.
+     *
+     * The title is the localized `<name>_TITLE_SHORT`, or the full title when the text table has
+     * no short title.
+     *
+     * @return The title.
+     * @ghidraAddress NTSC-U/C: 0x0027cf90
+     * @ghidraAddress PAL: 0x002868a8
+     */
+    const char *GetTitleShort() const;
+
     DataArray *mData; /*!< The entry. */
 };

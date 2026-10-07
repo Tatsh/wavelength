@@ -1,5 +1,6 @@
 #pragma once
 
+#include "os/binstream.h"
 #include "ui/uicomponentfocuschangemsg.h"
 #include "ui/uicomponentselectmsg.h"
 #include "ui/uicomponentselectstartmsg.h"
@@ -133,6 +134,50 @@ public:
      * @ghidraAddress PAL: 0x00207968
      */
     void ButtonEvent(int nPlayer, int nButtons);
+
+    /**
+     * Run the actions whose time has come.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001fe460
+     * @ghidraAddress PAL: 0x00207200
+     */
+    void Poll();
+
+    /**
+     * Read triggers from a data file and register them.
+     *
+     * @param pszFile The data file, which also identifies the triggers in error messages.
+     * @param pStream The stream to read instead of the file, or null.
+     * @ghidraAddress NTSC-U/C: 0x001fe600
+     * @ghidraAddress PAL: 0x002073a0
+     */
+    void Load(const char *pszFile, BinStream *pStream);
+
+    /**
+     * Fire the triggers that wait on the focus arriving at a component, with no previous
+     * component.
+     *
+     * @param pszComponent The component.
+     * @param pszPanel The panel of the component.
+     * @param pszScreen The screen of the panel.
+     * @ghidraAddress NTSC-U/C: 0x001fea18
+     * @ghidraAddress PAL: 0x002077b8
+     */
+    void ComponentFocusEvent(const char *pszComponent, const char *pszPanel, const char *pszScreen);
+
+    /**
+     * Fire the triggers that wait on the begin event.
+     *
+     * The metagame calls it once the triggers of the arena have loaded, and GfxManager once the
+     * tracks are built. The name is inferred from the debug message.
+     *
+     * @param nValue The value stored for the triggers' actions to read.
+     * @ghidraAddress NTSC-U/C: 0x001fec38
+     * @ghidraAddress PAL: 0x002079d8
+     */
+    void BeginEvent(int nValue);
 };
 
 /**
