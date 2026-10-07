@@ -240,6 +240,16 @@ public:
     bool operator==(const char *pszText) const;
 
     /**
+     * Report whether the text equals another string's text.
+     *
+     * @param other The other string.
+     * @return Whether `strcmp()` reports the texts equal.
+     * @ghidraAddress NTSC-U/C: 0x0029f0c8
+     * @ghidraAddress PAL: 0x002a8d88
+     */
+    bool operator==(const String &other) const;
+
+    /**
      * Report whether the text differs from a C string.
      *
      * @param pszText The C string, or null.

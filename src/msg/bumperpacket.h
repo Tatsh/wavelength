@@ -95,5 +95,32 @@ public:
         return "BumperPacket";
     }
 
+    /**
+     * Write the victims, at most three.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014a960
+     * @ghidraAddress PAL: 0x0014c320
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the victims saveGuts() writes, after the victims are removed.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0014aa38
+     * @ghidraAddress PAL: 0x0014c3f0
+     */
+    void restoreGuts(BinStream &stream) override;
+
+    /**
+     * Write each victim's player and track.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014ad30
+     * @ghidraAddress PAL: 0x0014c6d0
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
     std::vector<VictimData> mVictims; /*!< The players struck. */
 };

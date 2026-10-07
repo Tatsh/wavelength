@@ -1,4 +1,7 @@
 set(WAVELENGTH_MSG_SRCS
+    arbiterpacket.cpp
+    bumperpacket.cpp
+    capturepacket.cpp
     editgempacket.cpp
     finalscorepacket.cpp
     lobbyconnectionlostmsg.cpp

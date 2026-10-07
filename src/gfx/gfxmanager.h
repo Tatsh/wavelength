@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "math/vector2.h"
 #include "os/prnstream.h"
 
 /**
@@ -187,6 +188,54 @@ public:
      * @ghidraAddress PAL: 0x001be0e0
      */
     void SetLyricText(const char *pszText, bool bFirstLine);
+
+    /**
+     * Show the controller button icon of a lane.
+     *
+     * The name is inferred.
+     *
+     * @param nLane The lane.
+     * @param pPosition The position of the icon on the screen.
+     * @param pTarget The position the icon moves to.
+     * @ghidraAddress NTSC-U/C: 0x001b5360
+     * @ghidraAddress PAL: 0x001be100
+     */
+    void ShowButtonIcon(int nLane, const Vector2 *pPosition, const Vector2 *pTarget);
+
+    /**
+     * Highlight the controller button icon of a lane, or clear the highlight.
+     *
+     * The name is inferred.
+     *
+     * @param nLane The lane.
+     * @param nHighlight Nonzero to highlight the icon.
+     * @ghidraAddress NTSC-U/C: 0x001b5380
+     * @ghidraAddress PAL: 0x001be120
+     */
+    void SetButtonIconHighlight(int nLane, int nHighlight);
+
+    /**
+     * Hide the controller button icon of a lane.
+     *
+     * The name is inferred.
+     *
+     * @param nLane The lane.
+     * @ghidraAddress NTSC-U/C: 0x001b53a0
+     * @ghidraAddress PAL: 0x001be140
+     */
+    void HideButtonIcon(int nLane);
+
+    /**
+     * Set the glyph the controller button icon of a lane shows.
+     *
+     * The name is inferred.
+     *
+     * @param nLane The lane.
+     * @param pszGlyph The glyph of the button, or null.
+     * @ghidraAddress NTSC-U/C: 0x001b53c0
+     * @ghidraAddress PAL: 0x001be160
+     */
+    void SetButtonIconGlyph(int nLane, const char *pszGlyph);
 
     /**
      * Report whether the display finished its pending work.

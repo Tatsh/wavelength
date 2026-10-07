@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "game/axecontour.h"
+#include "game/axetrackdata.h"
 #include "game/backmusic.h"
-#include "game/banktrack.h"
+#include "game/bankloader.h"
 #include "game/catchtrackdata.h"
 #include "game/duelpatterntable.h"
 #include "game/freestylefx.h"
@@ -176,7 +176,7 @@ public:
      * @return The notes.
      * @ghidraAddress NTSC-U/C: 0x0011ee88
      */
-    AxeContour *GetAxeContour(int nTrack) const;
+    AxeTrackData *GetAxeData(int nTrack) const;
 
     /**
      * Report the riffs of a track.
@@ -283,7 +283,7 @@ public:
      * @return The track.
      * @ghidraAddress NTSC-U/C: 0x0011efe0
      */
-    BankTrack *GetBankTrack() const;
+    BankLoader *GetBankTrack() const;
 
     /**
      * Report the events of the track named "WORLD".

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "game/axecontour.h"
+#include "game/axetrackdata.h"
 #include "game/backmusic.h"
-#include "game/banktrack.h"
+#include "game/bankloader.h"
 #include "game/catchtrackdata.h"
 #include "game/freestylefx.h"
 #include "game/lyric.h"
@@ -77,7 +77,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001224a0
      * @ghidraAddress PAL: 0x00123c20
      */
-    AxeContour *GetAxeContour(int nTrack) const;
+    AxeTrackData *GetAxeData(int nTrack) const;
 
     /**
      * Report the flags of a track.
@@ -140,7 +140,7 @@ public:
     ScriptTrackData *FindScriptTrack(const char *pszName) const;
 
     PlayMap *mPlayMap;         /*!< The map of the song positions. +0x40 */
-    BankTrack *mBankTrack;     /*!< The track named "BANK". +0x44 */
+    BankLoader *mBankTrack;    /*!< The track named "BANK". +0x44 */
     WorldTrack mWorldTrack;    /*!< The events of the track named "WORLD". +0x48 */
     Lyric *mLyric;             /*!< The lyrics. +0x58 */
     FreestyleFx *mFreestyleFx; /*!< The effect sets, or null. +0x5c */

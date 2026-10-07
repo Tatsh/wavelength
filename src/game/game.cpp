@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "game/banktrack.h"
+#include "game/bankloader.h"
 #include "game/gameconfig.h"
 #include "game/multigamelogic.h"
 #include "game/playerprofile.h"
@@ -176,7 +176,7 @@ void Game::ReleaseBanks() {
 }
 
 void Game::BeginEnding() {
-    BankTrack *pBankTrack = mSong->GetBankTrack();
+    BankLoader *pBankTrack = mSong->GetBankTrack();
     pBankTrack->Stop();
     pBankTrack->Load();
 }

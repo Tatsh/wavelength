@@ -17,6 +17,14 @@ public:
     };
 
     /**
+     * Construct an idle task.
+     *
+     * The constructor has no out-of-line copy.
+     */
+    Task() : mState(kStateIdle) {
+    }
+
+    /**
      * Release the task.
      *
      * @ghidraAddress NTSC-U/C: 0x002a0130

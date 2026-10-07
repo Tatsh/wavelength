@@ -105,6 +105,33 @@ public:
         return "ArbiterPacket";
     }
 
+    /**
+     * Write the sequence number and the assignments of at most four players.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00146ea0
+     * @ghidraAddress PAL: 0x00148880
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the fields saveGuts() writes, after the assignments are removed.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x00146fb0
+     * @ghidraAddress PAL: 0x00148988
+     */
+    void restoreGuts(BinStream &stream) override;
+
+    /**
+     * Write the sequence number and each player's track and slot.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00147330
+     * @ghidraAddress PAL: 0x00148cf0
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
     std::vector<PlayerData> mPlayers; /*!< The assignments. */
     int mVersion;                     /*!< The assignment's sequence number. */
 };

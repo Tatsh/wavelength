@@ -568,11 +568,11 @@ void GameLogic::CreateTracks(int *pFreestyleType, int *pFreestyleInstrument) {
             *pFreestyleType = nType;
             *pFreestyleInstrument = mSong->GetTrackInstrument(i);
             void *pBlock = PoolMemAlloc(sizeof(AxeTrack), kAxeTrackTag, 0);
-            AxeContour *pContour = mSong->GetAxeContour(i);
+            AxeTrackData *pData = mSong->GetAxeData(i);
             SectionBoundaries *pSections = mSong->GetSections();
             PlayMap *pPlayMap = mSong->GetPlayMap();
             const float *pfMsPerTick = mSong->GetMsPerTick();
-            mFreestyleTrack = new (pBlock) AxeTrack(pContour,
+            mFreestyleTrack = new (pBlock) AxeTrack(pData,
                                                     pSections,
                                                     pPlayMap,
                                                     pfMsPerTick,

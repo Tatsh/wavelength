@@ -1,5 +1,16 @@
 set(WAVELENGTH_GAME_SRCS
     avatarpartset.cpp
+    axetrack.cpp
+    axetrackcontourbuilder.cpp
+    axetrackdata.cpp
+    axetrackharmonybuilder.cpp
+    backmusic.cpp
+    backmusicbuilder.cpp
+    bankloader.cpp
+    bankloaderbuilder.cpp
+    catchtrackbuilder.cpp
+    catchtrackdata.cpp
+    controllerdisplay.cpp
     difficultyrating.cpp
     duel.cpp
     duellogic.cpp
@@ -40,21 +51,32 @@ set(WAVELENGTH_GAME_SRCS
     playerprofile.cpp
     playmap.cpp
     points.cpp
+    rateaverager.cpp
     remix.cpp
     remixtutorial.cpp
     remoteplayer.cpp
     scratchtrack.cpp
     scratchtrackbuilder.cpp
     scratchtrackdata.cpp
+    scripttask.cpp
     scripttrackbuilder.cpp
     scripttrackdata.cpp
     sectionboundaries.cpp
     slotgrid.cpp
     sologamelogic.cpp
     stats.cpp
+    streamqueue.cpp
+    streamtask.cpp
     track.cpp
     trackselector.cpp
     tutorialgamelogic.cpp
+    voxtrack.cpp
+    voxtrackdisplay.cpp
+    voxtrackmusic.cpp
+    waitfortasktask.cpp
+    waitinteractiveremixtask.cpp
+    waitinteractivetask.cpp
+    waittimetask.cpp
     world.cpp
     worldlogic.cpp
     worldmgr.cpp)

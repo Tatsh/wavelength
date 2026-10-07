@@ -3,12 +3,13 @@
 #include <vector>
 
 #include "game/gem.h"
+#include "game/playmap.h"
 
 /**
  * The gems of one catch track, in the order of their ticks.
  *
- * The RTTI includes the class name. The class is not polymorphic. The object is 0x14 bytes. Only
- * the members its callers here use are declared.
+ * The RTTI includes the class name. The class is not polymorphic. The object is 0x14 bytes. Gems
+ * at the same tick are in the order of their lanes.
  */
 class CatchTrackData {
 public:
@@ -22,6 +23,14 @@ public:
     explicit CatchTrackData(int nLengthTicks);
 
     /**
+     * Construct an empty list with room for 500 gems and no length.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014bca8
+     * @ghidraAddress PAL: 0x0014d648
+     */
+    CatchTrackData();
+
+    /**
      * Release the gems.
      *
      * @ghidraAddress NTSC-U/C: 0x0014bce8
@@ -30,7 +39,7 @@ public:
     ~CatchTrackData();
 
     /**
-     * Insert a gem at the place its tick orders it.
+     * Insert a gem at the place its tick orders it, unless it is past the end of the track.
      *
      * The name is inferred.
      *
@@ -39,6 +48,20 @@ public:
      * @ghidraAddress PAL: 0x0014d730
      */
     void AddGem(const Gem &gem);
+
+    /**
+     * Remove the gems of a span of the song, which wraps past the end of the track when it ends
+     * before it starts.
+     *
+     * The name is inferred.
+     *
+     * @param pPlayMap The map of the song positions.
+     * @param nStartTick The first song tick of the span.
+     * @param nEndTick The song tick after the span.
+     * @ghidraAddress NTSC-U/C: 0x0014c028
+     * @ghidraAddress PAL: 0x0014d9c8
+     */
+    void EraseSpan(PlayMap *pPlayMap, int nStartTick, int nEndTick);
 
     /**
      * Report the number of gems.
@@ -92,6 +115,14 @@ public:
     int FindGem(int nTick) const;
 
 private:
+    /**
+     * Walk the gems. The body does nothing else.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014c470
+     * @ghidraAddress PAL: 0x0014de10
+     */
+    void CheckGems() const;
+
     std::vector<Gem> mGems; /*!< The gems in the order of their ticks. */
-    int mLengthTicks;       /*!< The length of the track in ticks. */
+    int mLengthTicks;       /*!< The length of the track in ticks, or -1. */
 };

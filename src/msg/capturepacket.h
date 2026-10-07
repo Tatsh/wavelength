@@ -102,6 +102,24 @@ public:
         return "CapturePacket";
     }
 
+    /**
+     * Write the fields packed into one half-word.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014b208
+     * @ghidraAddress PAL: 0x0014cba8
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the half-word saveGuts() writes back into the fields.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0014b2a0
+     * @ghidraAddress PAL: 0x0014cc40
+     */
+    void restoreGuts(BinStream &stream) override;
+
     int mTrack;      /*!< The index of the track. */
     int mBar;        /*!< The bar of the capture. */
     bool mAutocatch; /*!< Whether an autocatcher captured the phrase. */

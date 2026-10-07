@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/banktrack.h"
+#include "game/bankloader.h"
 #include "gfx/gfxmanager.h"
 #include "os/string.h"
 #include "os/system.h"
@@ -68,7 +68,7 @@ bool Duel::IsAssetLoadDone() {
 }
 
 void Duel::BeginEnding() {
-    BankTrack *pBankTrack = mSong->GetBankTrack();
+    BankLoader *pBankTrack = mSong->GetBankTrack();
     pBankTrack->Stop();
     pBankTrack->Load();
 }

@@ -14,6 +14,16 @@
 const char *FileGetPath(const char *pszPath);
 
 /**
+ * Report the file name of a path without its directory and its extension.
+ *
+ * @param pszPath The path.
+ * @return A shared buffer the next call replaces.
+ * @ghidraAddress NTSC-U/C: 0x00289da0
+ * @ghidraAddress PAL: 0x00293598
+ */
+const char *FileGetBase(const char *pszPath);
+
+/**
  * Report the directory the game's files are read from, `.`.
  *
  * The name is inferred.
