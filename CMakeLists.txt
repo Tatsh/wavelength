@@ -52,7 +52,9 @@ if(BUILD_DOCS OR BUILD_DOCS_ONLY)
   set(DOXYGEN_PREDEFINED "_EE")
   # Every reconstructed routine records the address it was recovered from with this tag.
   set(DOXYGEN_VERBATIM_VARS DOXYGEN_ALIASES)
-  set(DOXYGEN_ALIASES [[ghidraAddress="\par Ghidra address:^^"]])
+  # A routine whose body is only a placeholder carries @stub until it is reconstructed.
+  set(DOXYGEN_ALIASES [[ghidraAddress="\par Ghidra address:^^"]]
+                      [[stub="\par Stub:^^The body is a placeholder and is not reconstructed yet."]])
   set(DOXYGEN_EXCLUDE_PATTERNS "*/node_modules/*" "*/build/*")
   # Headers sit beside their implementations under src and tools, and only headers are documented.
   set(DOXYGEN_FILE_PATTERNS "*.h")
