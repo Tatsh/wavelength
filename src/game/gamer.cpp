@@ -163,7 +163,7 @@ void Gamer::Withdraw() {
     mGlobals->GetSongClock()->Withdraw(command);
 }
 
-void Gamer::DispatchPriv(Message *pMsg) {
+bool Gamer::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == AdvanceSectionMsg::sID) {
         OnMsg(*static_cast<AdvanceSectionMsg *>(pMsg));
@@ -176,6 +176,7 @@ void Gamer::DispatchPriv(Message *pMsg) {
     } else if (nType == CrippleMsg::sID) {
         OnCripple(static_cast<CrippleMsg *>(pMsg));
     }
+    return false;
 }
 
 void Gamer::OnMsg(const AdvanceSectionMsg &msg) {

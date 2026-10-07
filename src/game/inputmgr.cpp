@@ -218,8 +218,9 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
     return false;
 }
 
-void InputMgr::DispatchPriv(Message *pMsg) {
+bool InputMgr::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nJoypadInputMsgType) {
-        HandleButton(static_cast<JoypadInputMsg *>(pMsg));
+        return HandleButton(static_cast<JoypadInputMsg *>(pMsg));
     }
+    return false;
 }

@@ -244,22 +244,22 @@ int NotePitcher::Tick(int nElapsedTicks) {
     return 1;
 }
 
-void NotePitcher::DispatchPriv(Message *pMsg) {
+bool NotePitcher::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(PitchRiffMsg::sID)) {
         PostPitchMsg(static_cast<PitchRiffMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(EraseMsg::sID)) {
         PostAllNotesOffMsg(static_cast<EraseMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_nEraseOffMsgType)) {
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         PostSeekerMsg(static_cast<TrackSelectMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(InvalidateSeekerMsg::sID)) {
         InvalidateSeekerMsg *pInvalidate = static_cast<InvalidateSeekerMsg *>(pMsg);
@@ -267,6 +267,7 @@ void NotePitcher::DispatchPriv(Message *pMsg) {
             PostSeekerMsgSecond(pInvalidate->mBar, 0);
         }
     }
+    return false;
 }
 
 void NotePitcher::OnInvalidateSeeker(InvalidateSeekerMsg *pMsg) {

@@ -230,10 +230,11 @@ protected:
      * Every other message is ignored.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x002be6a0
      * @ghidraAddress PAL: 0x002de3c8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 #ifdef VIDEO_STANDARD_PAL
     /**

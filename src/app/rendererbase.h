@@ -52,10 +52,11 @@ public:
          * DispatchPriv() runs directly, so a chain of routers cannot form.
          *
          * @param pMsg The message to forward.
+         * @return False.
          * @ghidraAddress NTSC-U/C: 0x00139f50
          * @ghidraAddress PAL: 0x0013a898
          */
-        virtual void Dispatch(Message *pMsg);
+        virtual bool Dispatch(Message *pMsg);
 
         /**
          * Receive a message directly, which this class ignores.
@@ -65,10 +66,11 @@ public:
          * exist for the class to be concrete.
          *
          * @param pMsg The message, which the body does not read.
+         * @return False.
          * @ghidraAddress NTSC-U/C: 0x00139f48
          * @ghidraAddress PAL: 0x0013a890
          */
-        virtual void DispatchPriv(Message *pMsg);
+        virtual bool DispatchPriv(Message *pMsg);
 
         /**
          * The sink every message is handed to. +0x04
@@ -110,10 +112,11 @@ public:
      * PollMessages() drains the queue. MetRenderer and Renderer both inherit this body.
      *
      * @param pMsg The message to store.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00139f80
      * @ghidraAddress PAL: 0x0013a8c8
      */
-    virtual void Dispatch(Message *pMsg);
+    virtual bool Dispatch(Message *pMsg);
 
     /**
      * Start the renderer running. Slot 4, with an empty body in this class.

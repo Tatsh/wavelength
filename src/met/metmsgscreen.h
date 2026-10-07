@@ -199,10 +199,11 @@ public:
      * Slot 3. The type is read through Message::Type() and not used.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x002f0640
      * @ghidraAddress PAL: 0x00313ff0
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Clear the showing flag, refresh the dialogue, and show the screen. Slot 5.

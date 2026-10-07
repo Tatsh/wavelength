@@ -2,9 +2,9 @@
 
 #include "msg/notemsg.h"
 
-void RiffRangeFinder::DispatchPriv(Message *pMsg) {
+bool RiffRangeFinder::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() != static_cast<int>(NoteMsg::sID)) {
-        return;
+        return false;
     }
     const unsigned int nNote = static_cast<NoteMsg *>(pMsg)->mNote;
     if (nNote < mLow) {
@@ -13,4 +13,5 @@ void RiffRangeFinder::DispatchPriv(Message *pMsg) {
     if (mHigh < nNote) {
         mHigh = nNote;
     }
+    return false;
 }

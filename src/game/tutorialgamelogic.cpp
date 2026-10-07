@@ -542,7 +542,7 @@ void TutorialGameLogic::OnDialog(Metagame::DialogAction action, void *pUserData)
 void TutorialGameLogic::PlayScriptTrack(const char *pszName) {
     ScriptTrackData *pTrack = mSong->GetScriptTrack(pszName);
     if (pTrack == nullptr) {
-        DebugFail(kMissingScriptTrackFormat, pszName);
+        DebugNotify(kMissingScriptTrackFormat, pszName);
         return;
     }
     Ptr<PlayScriptCmd> cmd(new PlayScriptCmd(pTrack, mSong->GetMsPerTick()));
@@ -681,7 +681,7 @@ void TutorialGameLogic::ScheduleStageComplete(int nBarsAhead) {
     TheSongScheduler.PostAt(cmd.Get(), static_cast<int>(fTick), false);
 }
 
-void TutorialGameLogic::DispatchPriv(Message *pMsg) {
+bool TutorialGameLogic::DispatchPriv(Message *pMsg) {
     (void)pMsg->Type(); // Yes, the binary discards this call's result.
-    WorldLogic::DispatchPriv(pMsg);
+    return WorldLogic::DispatchPriv(pMsg);
 }

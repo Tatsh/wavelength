@@ -70,10 +70,11 @@ public:
      * Act on a message sent to the world.
      *
      * @param pMsg The message.
+     * @return False, for every message.
      * @ghidraAddress NTSC-U/C: 0x00145778
      * @ghidraAddress PAL: 0x00147108
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Report the rule set the world plays under.

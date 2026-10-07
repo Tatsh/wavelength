@@ -42,10 +42,11 @@ public:
      * Every other message is ignored.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001c4538
      * @ghidraAddress PAL: 0x001ca380
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     static constexpr unsigned int kHighestNote = 127;

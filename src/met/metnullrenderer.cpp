@@ -147,8 +147,9 @@ int MetNullRenderer::ParseRuleset(const HxStr &ruleset) {
     return kPlayModeNone; // Yes, the binary returns after Fatal().
 }
 
-void MetNullRenderer::DispatchPriv(Message *pMsg) {
+bool MetNullRenderer::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == RawControllerMsg::sID) {
         OnRawController(static_cast<RawControllerMsg *>(pMsg));
     }
+    return false;
 }

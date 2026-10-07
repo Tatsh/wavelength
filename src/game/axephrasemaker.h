@@ -59,10 +59,11 @@ public:
      * OnInvalidateSeeker() copies.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0019c408
      * @ghidraAddress PAL: 0x001a2170
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Act on the start of a bar. Slot 4.

@@ -165,7 +165,7 @@ Renderer::~Renderer() {
     delete mTunnel;
 }
 
-void Renderer::DispatchPriv(Message *pMsg) {
+bool Renderer::DispatchPriv(Message *pMsg) {
     int nType = pMsg->Type();
     if (nType == g_nGameBeginMsgType) {
         OnMsg(*static_cast<GameBeginMsg *>(pMsg));
@@ -176,6 +176,7 @@ void Renderer::DispatchPriv(Message *pMsg) {
     } else {
         Send(pMsg);
     }
+    return false;
 }
 
 void Renderer::PollMessages() {

@@ -94,7 +94,7 @@ void AxeNewGemMaker::PostGemMessages(StdMidiMsg *pMsg) {
     mStripId = 0;
 }
 
-void AxeNewGemMaker::DispatchPriv(Message *pMsg) {
+bool AxeNewGemMaker::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         TrackSelectMsg *pSelect = static_cast<TrackSelectMsg *>(pMsg);
@@ -107,8 +107,9 @@ void AxeNewGemMaker::DispatchPriv(Message *pMsg) {
             mValue = pAxis->mValue;
         }
     } else if (nType == g_nAxisFXMsgType) {
-        return;
+        return false;
     } else if (nType == static_cast<int>(StdMidiMsg::sID)) {
         PostGemMessages(static_cast<StdMidiMsg *>(pMsg));
     }
+    return false;
 }

@@ -101,8 +101,9 @@ void JamEffectsMgr::EnableAll(int bEnabled) {
     }
 }
 
-void JamEffectsMgr::DispatchPriv(Message *pMsg) {
+bool JamEffectsMgr::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == JamEffectMsg::sID) {
         PostRemixFxMsg(static_cast<JamEffectMsg *>(pMsg));
     }
+    return false;
 }

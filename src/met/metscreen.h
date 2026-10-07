@@ -986,10 +986,11 @@ protected:
      * The override is empty, so a screen that wants messages overrides the slot again.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x003907a8
      * @ghidraAddress PAL: 0x003c2078
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 protected:
     /**

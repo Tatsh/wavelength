@@ -924,7 +924,7 @@ inline void AppTunnel::OnDurGem(DurGemMsg *pMsg) {
                            pMsg->mEndBlend);
 }
 
-void AppTunnel::DispatchPriv(Message *pMsg) {
+bool AppTunnel::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         OnTrackSelect(static_cast<TrackSelectMsg *>(pMsg));
@@ -981,6 +981,7 @@ void AppTunnel::DispatchPriv(Message *pMsg) {
     } else if (nType == g_nPowerupFailedMsgType) {
         OnPowerupFailed(static_cast<PowerupFailedMsg *>(pMsg));
     }
+    return false;
 }
 
 void AppTunnel::OnTrackSelect(TrackSelectMsg *pMsg) {

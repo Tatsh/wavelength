@@ -39,9 +39,10 @@ public:
      * Pass a JoypadConnectionMsg to OnJoypadConnection() and ignore any other message.
      *
      * @param pMsg The message.
+     * @return The result of the handler of a joypad connection message, otherwise false.
      * @ghidraAddress NTSC-U/C: 0x00146db0
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /** Start the song. */
     virtual void Start() = 0;

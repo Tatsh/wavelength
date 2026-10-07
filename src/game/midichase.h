@@ -44,10 +44,11 @@ public:
      * Every other message is ignored.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001a6660
      * @ghidraAddress PAL: 0x001ac3c8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Pass every message of a range to MsgSink::Dispatch().

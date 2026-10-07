@@ -43,10 +43,11 @@ public:
      * StdMidiMsg and NoteMsg go through their OnMsg() overloads, which are expanded inline here.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001a6f08
      * @ghidraAddress PAL: 0x001acc70
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Start passing notes.

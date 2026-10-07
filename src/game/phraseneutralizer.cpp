@@ -66,8 +66,9 @@ void PhraseNeutralizer::PostTrackNeutralizedMsg(NeutralizeMsg *pMsg) {
     }
 }
 
-void PhraseNeutralizer::DispatchPriv(Message *pMsg) {
+bool PhraseNeutralizer::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == NeutralizeMsg::sID) {
         PostTrackNeutralizedMsg(static_cast<NeutralizeMsg *>(pMsg));
     }
+    return false;
 }

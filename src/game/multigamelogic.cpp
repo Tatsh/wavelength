@@ -733,7 +733,7 @@ void MultiGameLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     }
 }
 
-void MultiGameLogic::DispatchPriv(Message *pMsg) {
+bool MultiGameLogic::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nPlayerUpdatePacketType) {
         OnPlayerUpdate(static_cast<PlayerUpdatePacket *>(pMsg));
@@ -760,6 +760,7 @@ void MultiGameLogic::DispatchPriv(Message *pMsg) {
     } else if (nType == g_nPlayerAbortedMsgType) {
         OnPlayerAborted(static_cast<PlayerAbortedMsg *>(pMsg));
     } else {
-        WorldLogic::DispatchPriv(pMsg);
+        return WorldLogic::DispatchPriv(pMsg);
     }
+    return false;
 }

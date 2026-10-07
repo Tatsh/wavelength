@@ -200,10 +200,11 @@ protected:
      * Primary table slot 3.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001d0980
      * @ghidraAddress PAL: 0x001d6838
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     /**

@@ -14,7 +14,9 @@ namespace Rnd {
 // own descendants. A null start appends nothing. The four are defined in this header, and every
 // unit that uses them emits its own copies: Rnd::Manager's at `0x00519fc8`, `0x0051a0e0`,
 // `0x0051a1f8`, and `0x0051a310`, and ScrollingList's at `0x003fcf20`, `0x003fd038`,
-// `0x003fd150`, and `0x003fd268`.
+// `0x003fd150`, and `0x003fd268`. In NTSC-U/C Amplitude, UIList's copies are at `0x00205430`,
+// `0x00205530`, `0x00205630`, and `0x00205730` (PAL `0x0020e1e8`, `0x0020e2e8`, `0x0020e3e8`, and
+// `0x0020e4e8`).
 
 /**
  * Append every animation descendant of an animatable.

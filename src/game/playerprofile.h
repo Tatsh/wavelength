@@ -3,12 +3,14 @@
 #include <vector>
 
 #include "game/inputmap.h"
+#include "os/string.h"
 
 /**
  * Saved settings and progress of one player, among them the controller bindings.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. Each player entry of GameDb
- * stores one at `+0x10`. This header declares only the members its callers here use.
+ * stores one at `+0x10`. The object is 0xf8 bytes. This header declares only the members its
+ * callers here use.
  */
 class PlayerProfile {
 public:
@@ -101,4 +103,38 @@ public:
      * @ghidraAddress PAL: 0x00284aa8
      */
     void SetOnlineOption(int nOption);
+
+    /**
+     * Construct a profile with the default settings.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00276e68
+     * @ghidraAddress PAL: 0x002808f8
+     */
+    PlayerProfile();
+
+    /**
+     * Copy a profile.
+     *
+     * @param other The profile to copy.
+     * @ghidraAddress NTSC-U/C: 0x002771d8
+     * @ghidraAddress PAL: 0x00280c68
+     */
+    PlayerProfile(const PlayerProfile &other);
+
+    /**
+     * Destroy the profile.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002772d8
+     * @ghidraAddress PAL: 0x00280d68
+     */
+    ~PlayerProfile();
+
+    int mReserved00[12]; // +0x00, not yet recovered.
+    String mName;        /*!< The player's name. +0x30 */
+    int mReserved44[28]; // +0x44, not yet recovered.
+    int mCustom;        /*!< Non-zero for a player's own profile rather than a default one. +0xb4 */
+    int mReservedB8[6]; // +0xb8, not yet recovered.
+    int mSoloOption;    /*!< The value GetSoloOption() reports. +0xd0 */
+    int mOnlineOption;  /*!< The value GetOnlineOption() reports. +0xd4 */
+    int mReservedD8[8]; // +0xd8, not yet recovered.
 };

@@ -34,7 +34,7 @@ void NetPlayer::OnTrackSelectPacket(TrackSelectPacket *pPacket) {
     Send(&message);
 }
 
-void NetPlayer::DispatchPriv(Message *message) {
+bool NetPlayer::DispatchPriv(Message *message) {
     const int nType = message->Type();
     if (nType == g_nTrackSelectPacketType) {
         OnTrackSelectPacket(static_cast<TrackSelectPacket *>(message));
@@ -47,4 +47,5 @@ void NetPlayer::DispatchPriv(Message *message) {
     } else {
         Player::DispatchPriv(message);
     }
+    return false;
 }

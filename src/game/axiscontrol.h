@@ -47,10 +47,11 @@ public:
      * other note-on, like an AllNotesOffMsg, ends a bend in progress with a centred pitch bend.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0019ed80
      * @ghidraAddress PAL: 0x001a4ae8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     /**

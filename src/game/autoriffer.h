@@ -57,10 +57,11 @@ public:
      * Act on a message.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00199910
      * @ghidraAddress PAL: 0x0019f678
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Repeat the current riff at a song position, or release the buttons.

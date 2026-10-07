@@ -625,7 +625,7 @@ void MetRenderer::DrawSimple() {
     }
 }
 
-void MetRenderer::DispatchPriv(Message *pMsg) {
+bool MetRenderer::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == RawControllerMsg::sID) {
         OnRawController(static_cast<RawControllerMsg *>(pMsg));
@@ -644,6 +644,7 @@ void MetRenderer::DispatchPriv(Message *pMsg) {
     } else {
         ForwardToPanel(pMsg);
     }
+    return false;
 }
 
 void MetRenderer::OnStartPause([[maybe_unused]] Message *pMsg) {

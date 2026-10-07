@@ -68,10 +68,11 @@ public:
      * and runs one handler for each. A PowerupCountMsg is recognised and ignored.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x004206e0
      * @ghidraAddress PAL: 0x0045ba00
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Advance the display to one song position.

@@ -51,6 +51,16 @@ public:
     PrnStream &operator<<(const char *pszText);
 
     /**
+     * Write a character.
+     *
+     * @param ch The character.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e230
+     * @ghidraAddress PAL: 0x002a7ef8
+     */
+    PrnStream &operator<<(char ch);
+
+    /**
      * Write an integer in decimal.
      *
      * @param nValue The value.

@@ -36,8 +36,9 @@ public:
      * Primary table slot 3. Forwards to MsgSource::Send().
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001ab4a8
      * @ghidraAddress PAL: 0x001b1210
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 };

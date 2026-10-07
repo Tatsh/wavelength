@@ -81,10 +81,11 @@ public:
      * identities the class documentation lists, and every other message is discarded.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001adb78
      * @ghidraAddress PAL: 0x001b38e0
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Schedule the catcher's two commands on the clock.

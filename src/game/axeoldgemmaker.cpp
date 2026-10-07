@@ -112,7 +112,7 @@ float AxeOldGemMaker::BlendForStep(int nStep) {
     return kStepBlends[nIndex];
 }
 
-void AxeOldGemMaker::DispatchPriv(Message *pMsg) {
+bool AxeOldGemMaker::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == PhraseMsg::sID) {
         OnPhrase(static_cast<PhraseMsg *>(pMsg));
@@ -121,4 +121,5 @@ void AxeOldGemMaker::DispatchPriv(Message *pMsg) {
     } else if (nType == static_cast<int>(StdMidiMsg::sID)) {
         OnStdMidi(static_cast<StdMidiMsg *>(pMsg));
     }
+    return false;
 }

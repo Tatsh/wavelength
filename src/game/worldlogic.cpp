@@ -82,8 +82,9 @@ int WorldLogic::OnJoypadConnection(JoypadConnectionMsg *pMsg) {
     return 0;
 }
 
-void WorldLogic::DispatchPriv(Message *pMsg) {
+bool WorldLogic::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nJoypadConnectionMsgType) {
-        (void)OnJoypadConnection(static_cast<JoypadConnectionMsg *>(pMsg)); // The result is 0.
+        return OnJoypadConnection(static_cast<JoypadConnectionMsg *>(pMsg)) != 0;
     }
+    return false;
 }

@@ -347,6 +347,17 @@ public:
     Box BoundingBox();
 
     /**
+     * Compute the bounding box of the vertices in the mesh's own space.
+     *
+     * A mesh with no vertex reports a box with both corners at the origin.
+     *
+     * @param pBox Receives the box.
+     * @ghidraAddress NTSC-U/C: 0x00234d50
+     * @ghidraAddress PAL: 0x0023d8d0
+     */
+    void BoundingBox(Box *pBox);
+
+    /**
      * Replace the geometry with an axis-aligned cube.
      *
      * The eight vertices sit at plus or minus flHalfSize on each axis with white colour and zero

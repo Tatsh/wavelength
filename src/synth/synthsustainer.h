@@ -76,8 +76,9 @@ protected:
      * message is discarded.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001d2a10
      * @ghidraAddress PAL: 0x001d88c8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 };

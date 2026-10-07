@@ -25,9 +25,9 @@ MidiChase::MidiChase() : mChannel(kUnset), mProgram(kUnset), mBendLow(kUnset), m
 MidiChase::~MidiChase() {
 }
 
-void MidiChase::DispatchPriv(Message *pMsg) {
+bool MidiChase::DispatchPriv(Message *pMsg) {
     if (static_cast<unsigned int>(pMsg->Type()) != StdMidiMsg::sID) {
-        return;
+        return false;
     }
 
     StdMidiMsg *pMidi = static_cast<StdMidiMsg *>(pMsg);
@@ -46,6 +46,7 @@ void MidiChase::DispatchPriv(Message *pMsg) {
     default:
         break;
     }
+    return false;
 }
 
 void MidiChase::HandleRange(const TickObj<MuseMsg *> *pBegin, const TickObj<MuseMsg *> *pEnd) {

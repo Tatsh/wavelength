@@ -53,10 +53,11 @@ protected:
      * and passes it to RunScript().
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00118b50
      * @ghidraAddress PAL: 0x00119088
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     /**

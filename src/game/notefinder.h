@@ -48,10 +48,11 @@ public:
      * Pass a NoteMsg to OnNote() and ignore every other message.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001023b0
      * @ghidraAddress PAL: 0x001023b0
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Non-zero once a note sounds past mTick.

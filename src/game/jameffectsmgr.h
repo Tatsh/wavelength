@@ -57,10 +57,11 @@ public:
      * Slot 3. A JamEffectMsg goes to PostRemixFxMsg(), and every other message is discarded.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001a63d0
      * @ghidraAddress PAL: 0x001ac138
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Switch every effect on or off from one bit of a mask.

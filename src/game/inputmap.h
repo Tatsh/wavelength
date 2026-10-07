@@ -128,10 +128,11 @@ public:
      * Pass a RawControllerMsg to OnControllerReading() and ignore every other message.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0011dc20
      * @ghidraAddress PAL: 0x0011e1a8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Report the map that exists.

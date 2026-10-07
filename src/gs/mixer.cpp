@@ -171,22 +171,23 @@ void Mixer::ApplyControlChange(StdMidiMsg *pMsg) {
     mOutput->Dispatch(pMsg);
 }
 
-void Mixer::DispatchPriv(Message *pMsg) {
+bool Mixer::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(StdMidiMsg::sID)) {
         StdMidiMsg *pMidi = static_cast<StdMidiMsg *>(pMsg);
         if ((pMidi->mStatus & 0xf0) == kStatusControlChange) {
             ApplyControlChange(pMidi);
-            return;
+            return false;
         }
         mOutput->Dispatch(pMsg);
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTracksOnMsgType)) {
         OnTracksOn(static_cast<TracksOnMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         OnTrackSelect(static_cast<TrackSelectMsg *>(pMsg));
     }
+    return false;
 }

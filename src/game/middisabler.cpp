@@ -20,7 +20,7 @@ MidiDisabler::MidiDisabler(int bEnabled) : mEnabled(bEnabled) {
 MidiDisabler::~MidiDisabler() {
 }
 
-void MidiDisabler::DispatchPriv(Message *pMsg) {
+bool MidiDisabler::DispatchPriv(Message *pMsg) {
     const unsigned int dwType = pMsg->Type();
     if (dwType == StdMidiMsg::sID) {
         OnMsg(*static_cast<StdMidiMsg *>(pMsg));
@@ -29,6 +29,7 @@ void MidiDisabler::DispatchPriv(Message *pMsg) {
     } else {
         Send(pMsg);
     }
+    return false;
 }
 
 void MidiDisabler::Enable() {

@@ -127,10 +127,11 @@ public:
      * mode 1 with a non-empty winner list passes one level higher.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00406ff0
      * @ghidraAddress PAL: 0x00440950
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Advance the screen animation to one song position.

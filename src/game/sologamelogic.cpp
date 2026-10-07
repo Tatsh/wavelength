@@ -761,7 +761,7 @@ void SoloGameLogic::Restart(bool bRestartIntro) {
     }
 }
 
-void SoloGameLogic::DispatchPriv(Message *pMsg) {
+bool SoloGameLogic::DispatchPriv(Message *pMsg) {
     (void)pMsg->Type(); // Yes, the binary discards this call's result.
-    WorldLogic::DispatchPriv(pMsg);
+    return WorldLogic::DispatchPriv(pMsg);
 }

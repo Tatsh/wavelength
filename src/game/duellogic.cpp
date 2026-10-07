@@ -1126,21 +1126,25 @@ int DuelLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     return 0;
 }
 
-void DuelLogic::DispatchPriv(Message *pMsg) {
+bool DuelLogic::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nPlayerUpdatePacketType) {
-        (void)OnPlayerUpdate(static_cast<PlayerUpdatePacket *>(pMsg));
-    } else if (nType == g_nEditGemPacketType) {
-        (void)OnEditGem(static_cast<EditGemPacket *>(pMsg));
-    } else if (nType == g_nCapturePacketType) {
-        (void)OnCapture(static_cast<CapturePacket *>(pMsg));
-    } else if (nType == g_nFinalScorePacketType) {
-        (void)OnFinalScore(static_cast<FinalScorePacket *>(pMsg));
-    } else if (nType == g_nGameEndedMsgType) {
-        (void)OnGameEnded(static_cast<GameEndedMsg *>(pMsg));
-    } else if (nType == g_nPlayerAbortedMsgType) {
-        (void)OnPlayerAborted(static_cast<PlayerAbortedMsg *>(pMsg));
-    } else {
-        WorldLogic::DispatchPriv(pMsg);
+        return OnPlayerUpdate(static_cast<PlayerUpdatePacket *>(pMsg)) != 0;
     }
+    if (nType == g_nEditGemPacketType) {
+        return OnEditGem(static_cast<EditGemPacket *>(pMsg)) != 0;
+    }
+    if (nType == g_nCapturePacketType) {
+        return OnCapture(static_cast<CapturePacket *>(pMsg)) != 0;
+    }
+    if (nType == g_nFinalScorePacketType) {
+        return OnFinalScore(static_cast<FinalScorePacket *>(pMsg)) != 0;
+    }
+    if (nType == g_nGameEndedMsgType) {
+        return OnGameEnded(static_cast<GameEndedMsg *>(pMsg)) != 0;
+    }
+    if (nType == g_nPlayerAbortedMsgType) {
+        return OnPlayerAborted(static_cast<PlayerAbortedMsg *>(pMsg)) != 0;
+    }
+    return WorldLogic::DispatchPriv(pMsg);
 }

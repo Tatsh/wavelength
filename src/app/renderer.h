@@ -105,10 +105,11 @@ public:
      * the sinks.
      *
      * @param pMsg The message to dispatch.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0042d3b8
      * @ghidraAddress PAL: 0x00468f70
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Sample the song clock, then deliver every queued message.

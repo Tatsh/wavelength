@@ -135,10 +135,11 @@ protected:
      * Primary table slot 3. MultiMusePlayer retains this body unchanged.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001ab170
      * @ghidraAddress PAL: 0x001b0ed8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * The out-of-line copy of the AllNotesOffMsg branch DispatchPriv() expands inline.

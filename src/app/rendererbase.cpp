@@ -1,10 +1,12 @@
 #include "app/rendererbase.h"
 
-void RendererBase::Router::Dispatch(Message *pMsg) {
+bool RendererBase::Router::Dispatch(Message *pMsg) {
     mTarget->DispatchPriv(pMsg);
+    return false;
 }
 
-void RendererBase::Router::DispatchPriv(Message *) {
+bool RendererBase::Router::DispatchPriv(Message *) {
+    return false;
 }
 
 RendererBase::RendererBase() {
@@ -15,8 +17,9 @@ RendererBase::RendererBase() {
 RendererBase::~RendererBase() {
 }
 
-void RendererBase::Dispatch(Message *pMsg) {
+bool RendererBase::Dispatch(Message *pMsg) {
     mQueue.Dispatch(pMsg);
+    return false;
 }
 
 void RendererBase::Start() {

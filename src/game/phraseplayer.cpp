@@ -165,6 +165,7 @@ void PhrasePlayer::PlayPhraseMuse(Phrase *pPhrase, int nBar) {
     mLastBar = nBar;
 }
 
-void PhrasePlayer::DispatchPriv(Message *pMsg) {
+bool PhrasePlayer::DispatchPriv(Message *pMsg) {
     pMsg->Type(); // Yes, the binary discards this call's result.
+    return false;
 }

@@ -94,6 +94,117 @@ public:
     String &Clear();
 
     /**
+     * Report one character.
+     *
+     * @param nIndex The character's position.
+     * @return The character.
+     * @ghidraAddress NTSC-U/C: 0x0029f020
+     * @ghidraAddress PAL: 0x002a8ce0
+     */
+    char operator[](int nIndex) const;
+
+    /**
+     * Replace a run of characters with another string's text.
+     *
+     * @param nPos The first character of the run.
+     * @param nCount The length of the run.
+     * @param text The replacement.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029f438
+     * @ghidraAddress PAL: 0x002a90f8
+     */
+    String &Replace(int nPos, int nCount, const String &text);
+
+    /**
+     * Cut the text to a length.
+     *
+     * The shared empty buffer is left unchanged.
+     *
+     * @param nLength The new length.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029f580
+     * @ghidraAddress PAL: 0x002a9240
+     */
+    String &Truncate(int nLength);
+
+    /**
+     * Remove a run of characters.
+     *
+     * A run that reaches the end of the text truncates the text at nPos.
+     *
+     * @param nPos The first character of the run.
+     * @param nCount The length of the run.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029f5a8
+     * @ghidraAddress PAL: 0x002a9268
+     */
+    String &Erase(int nPos, int nCount);
+
+    /**
+     * Append another string's text.
+     *
+     * @param other The other string.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029ec88
+     * @ghidraAddress PAL: 0x002a8948
+     */
+    String &operator+=(const String &other);
+
+    /**
+     * Append a C string.
+     *
+     * @param pszText The text.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029ed58
+     * @ghidraAddress PAL: 0x002a8a18
+     */
+    String &operator+=(const char *pszText);
+
+    /**
+     * Compare a run of characters with a C string.
+     *
+     * @param nPos The first character of the run.
+     * @param nCount The length of the run.
+     * @param pszText The text to compare with.
+     * @return 0 when the run equals the text, otherwise the sign of the difference.
+     * @ghidraAddress NTSC-U/C: 0x0029f2f0
+     * @ghidraAddress PAL: 0x002a8fb0
+     */
+    int Compare(int nPos, int nCount, const char *pszText) const;
+
+    /**
+     * Insert copies of one character.
+     *
+     * @param nPos The position the copies go before.
+     * @param nCount The number of copies.
+     * @param ch The character.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029f630
+     * @ghidraAddress PAL: 0x002a92f0
+     */
+    String &Insert(int nPos, int nCount, char ch);
+
+    /**
+     * Report whether the text sorts before another string's text.
+     *
+     * @param other The other string.
+     * @return Whether `strcmp()` places this text first.
+     * @ghidraAddress NTSC-U/C: 0x0029f0f0
+     * @ghidraAddress PAL: 0x002a8db0
+     */
+    bool operator<(const String &other) const;
+
+    /**
+     * Report a copy of the string with text appended.
+     *
+     * @param pszText The text to append.
+     * @return The new string.
+     * @ghidraAddress NTSC-U/C: 0x0029eb68
+     * @ghidraAddress PAL: 0x002a8828
+     */
+    String operator+(const char *pszText) const;
+
+    /**
      * Report the text.
      *
      * @return The terminated text, which the string retains.

@@ -262,6 +262,7 @@ endmpg
 endpara
 endrecordingcmd
 endx
+enterexit
 entspaceop
 envx
 eran
@@ -323,8 +324,10 @@ freqappearancedetail
 freqcontroller
 freqmakercursor
 freqpan
+freqpanel
 freqpart
 freqparttemplate
+freqscreen
 frustrum
 fsand
 fsmblks
@@ -398,6 +401,7 @@ heff
 helptext
 hialloc
 hibytes
+hilight
 hilite
 hisquare
 hostmode
@@ -560,6 +564,7 @@ loadjukeboxplaylistmct
 loadpersonasmct
 loadremixmct
 lobbyconnectionlostmsg
+localizeerrors
 localjamenablemgr
 localplayer
 localplayercmd
@@ -568,6 +573,7 @@ logoback
 longop
 looptogglemsg
 looptoolmsg
+lrbutton
 lsax
 lsdmode
 lshift
@@ -623,6 +629,7 @@ meshanim
 messageio
 metagameworld
 metarenasscreen
+metastartscreen
 metbuttonlist
 metcommandmap
 metcommandrepeater
@@ -1130,6 +1137,7 @@ spewtable
 spindlctrl
 spjoinacceptpacket
 spjoindenypacket
+spyramid
 sqwc
 srcs
 sstv
@@ -1255,6 +1263,23 @@ tvel
 uchar
 udnl
 udvare
+uibutton
+uicomponent
+uicomponentfocuschangemsg
+uicomponentselectmsg
+uicomponentselectstartmsg
+uilabel
+uilist
+uimanager
+uinavigator
+uipanel
+uiscreen
+uiscreenchangemsg
+uistyle
+uitextentry
+uitextentrycompletemsg
+uitextentryinvalidmsg
+uitransitioncompletemsg
 undebug
 undraft
 undrafted

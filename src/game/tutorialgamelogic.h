@@ -68,10 +68,11 @@ public:
      * Report the type of a message and pass it to WorldLogic::DispatchPriv().
      *
      * @param pMsg The message.
+     * @return The result of WorldLogic::DispatchPriv().
      * @ghidraAddress NTSC-U/C: 0x00141168
      * @ghidraAddress PAL: 0x00142b28
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Report the song position in ticks.

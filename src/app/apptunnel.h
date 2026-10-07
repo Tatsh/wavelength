@@ -120,10 +120,11 @@ public:
      * every other type are ignored, and nothing is passed on to MsgSink.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00449688
      * @ghidraAddress PAL: 0x00486938
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Advance the tunnel to one song position.

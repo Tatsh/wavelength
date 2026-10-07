@@ -58,10 +58,11 @@ public:
      * (mPlaying set and the controller sent), and an AllNotesOffMsg ends it.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0019b538
      * @ghidraAddress PAL: 0x001a12a0
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     /**

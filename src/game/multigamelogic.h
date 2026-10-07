@@ -59,10 +59,12 @@ public:
      * Apply a packet from another console, or hand any other message to WorldLogic.
      *
      * @param pMsg The message.
+     * @return False for a message the logic handles here, otherwise the result of
+     *         WorldLogic::DispatchPriv().
      * @ghidraAddress NTSC-U/C: 0x00127748
      * @ghidraAddress PAL: 0x00128f58
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Report the tick of the scheduler's clock.

@@ -451,10 +451,8 @@ public:
     // at 0x004d77d8, which is library code and has no body in this tree.
     std::vector<Stage> mStages; // +0x1c
 
-protected:
-    // Every member below is protected rather than private. Rnd::PsMat writes four of the colours in
-    // its setter overrides, and the material selection path in the same file reads the whole
-    // surface to build the GS register writes. The order below is the recovered offset order.
+    // Public because Gizmo reads and writes it from outside the hierarchy, and the image has no
+    // accessor.
     BlendMode mBlend; // +0x28 Defaults to kBlendModeSrcAlpha.
 
 public:

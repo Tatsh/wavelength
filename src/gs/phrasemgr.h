@@ -516,10 +516,11 @@ protected:
      * RefreshAllBars(). The two On routines and RefreshAllBars() are expanded inline.
      *
      * @param pMsg The message or packet.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001bc718
      * @ghidraAddress PAL: 0x001c24f0
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     // Post again, with its gems cleared, the first window bar that mMap maps to a step.

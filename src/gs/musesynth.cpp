@@ -100,26 +100,28 @@ void MuseSynth::PlayerFinished(MusePlayer *pPlayer) {
     delete pPlayer;
 }
 
-void MuseSynth::DispatchPriv(Message *pMsg) {
+bool MuseSynth::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(StdMidiMsg::sID) ||
         nType == static_cast<int>(SustainNoteMsg::sID)) {
         mOutput->Dispatch(pMsg);
-        return;
+        return false;
     }
     if (nType == static_cast<int>(NoteMsg::sID)) {
         StartNotePlayer(pMsg);
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwMultiMuseMsgType)) {
         StartMultiMusePlayer(pMsg);
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwAllNotesOffMsgType)) {
         ReleaseAllPlayers();
     }
+    return false;
 }
 
-void MsgSplitter::DispatchPriv(Message *pMsg) {
+bool MsgSplitter::DispatchPriv(Message *pMsg) {
     Send(pMsg);
+    return false;
 }

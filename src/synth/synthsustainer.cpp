@@ -16,13 +16,14 @@ SynthSustainer::SynthSustainer() : mSink(nullptr) {
 SynthSustainer::~SynthSustainer() {
 }
 
-void SynthSustainer::DispatchPriv(Message *pMsg) {
+bool SynthSustainer::DispatchPriv(Message *pMsg) {
     unsigned dwType = pMsg->Type();
     if (dwType == SustainNoteMsg::sID) {
         HandleSustainNote(static_cast<SustainNoteMsg *>(pMsg));
     } else if (dwType == StdMidiMsg::sID) {
         HandleStdMidi(static_cast<StdMidiMsg *>(pMsg));
     }
+    return false;
 }
 
 void SynthSustainer::HandleSustainNote(SustainNoteMsg *pMsg) {

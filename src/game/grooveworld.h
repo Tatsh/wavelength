@@ -96,10 +96,11 @@ public:
      * matching neither is discarded. The two forwarders below are expanded inline here.
      *
      * @param pMsg The message to route.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00195388
      * @ghidraAddress PAL: 0x0019b008
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Report a controller reading. Slot 2 of the secondary table.

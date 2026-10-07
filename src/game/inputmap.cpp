@@ -76,10 +76,11 @@ InputMap::~InputMap() {
     g_pInputMap = nullptr;
 }
 
-void InputMap::DispatchPriv(Message *pMsg) {
+bool InputMap::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == RawControllerMsg::sID) {
         OnControllerReading(static_cast<RawControllerMsg *>(pMsg));
     }
+    return false;
 }
 
 void InputMap::OnControllerReading(RawControllerMsg *pMsg) {

@@ -37,10 +37,11 @@ public:
      * other message is discarded.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001c1700
      * @ghidraAddress PAL: 0x001c7548
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     /**

@@ -504,10 +504,11 @@ protected:
      * Act on a message.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00107540
      * @ghidraAddress PAL: 0x00107610
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Enter a local game.

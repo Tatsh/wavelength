@@ -561,7 +561,7 @@ void Catcher::PostSeekerRangeMsg(int nFirstBar, int nBarCount) {
     mSeekerFirstBar = nFirstBar;
 }
 
-void Catcher::DispatchPriv(Message *pMsg) {
+bool Catcher::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == PitchRiffMsg::sID) {
         PostCatchMsg(static_cast<PitchRiffMsg *>(pMsg));
@@ -579,6 +579,7 @@ void Catcher::DispatchPriv(Message *pMsg) {
     } else if (nType == InvalidateSeekerMsg::sID) {
         OnInvalidateSeeker(static_cast<InvalidateSeekerMsg *>(pMsg));
     }
+    return false;
 }
 
 int Catcher::IsBarFree(int nBar) {

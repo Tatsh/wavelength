@@ -494,13 +494,14 @@ void GrooveWorld::Exit(int nMode, int bContinueJukebox, int bRestart) {
     Attachment::ReleaseIfSet(pFinish);
 }
 
-void GrooveWorld::DispatchPriv(Message *pMsg) {
+bool GrooveWorld::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nCripplePacketType) {
         OnCripplePacket(pMsg);
     } else if (nType == g_nBumpPacketType) {
         OnBumpPacket(pMsg);
     }
+    return false;
 }
 
 void GrooveWorld::OnCripplePacket(Message *pMsg) {

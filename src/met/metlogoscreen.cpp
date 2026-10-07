@@ -252,10 +252,11 @@ void MetLogoScreen::UpdateIdleAnimation(float flTime) {
     UpdateBlink(flTime);
 }
 
-void MetLogoScreen::DispatchPriv(Message *pMsg) {
+bool MetLogoScreen::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nMetUnlockStagesMsgType) {
         RecordUnlock();
     }
+    return false;
 }
 
 #ifdef VIDEO_STANDARD_PAL

@@ -64,7 +64,7 @@ void AxeFX::OnFilterValue(float flValue) {
     }
 }
 
-void AxeFX::DispatchPriv(Message *pMsg) {
+bool AxeFX::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nAxisFXMsgType) {
         OnAxisFX(static_cast<AxisFXMsg *>(pMsg));
@@ -73,4 +73,5 @@ void AxeFX::DispatchPriv(Message *pMsg) {
     } else if (nType == static_cast<int>(g_dwAllNotesOffMsgType)) {
         mPlaying = 0;
     }
+    return false;
 }

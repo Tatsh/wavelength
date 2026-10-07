@@ -35,7 +35,8 @@ set(WAVELENGTH_SUBSYSTEMS
     sch
     script
     stream
-    synth)
+    synth
+    ui)
 
 foreach(SUBSYSTEM ${WAVELENGTH_SUBSYSTEMS})
   add_subdirectory(${SUBSYSTEM})

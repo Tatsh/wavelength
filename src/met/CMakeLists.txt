@@ -3,9 +3,13 @@ set(WAVELENGTH_MET_SRCS
     creditsroll.cpp
     discswap.cpp
     fadeuser.cpp
+    freqpanel.cpp
+    freqscreen.cpp
     gameoptions.cpp
+    gizmo.cpp
     listdataprovider.cpp
     metarenasscreen.cpp
+    metastartscreen.cpp
     metbuttonlist.cpp
     metcommandmap.cpp
     metcommandrepeater.cpp

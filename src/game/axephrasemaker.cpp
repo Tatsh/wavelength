@@ -213,7 +213,7 @@ void AxePhraseMaker::SendSeekerMsg(int) const {
     Send(&msg);
 }
 
-void AxePhraseMaker::DispatchPriv(Message *pMsg) {
+bool AxePhraseMaker::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nAxisRegisterMsgType) {
         AxisRegisterMsg *pAxis = static_cast<AxisRegisterMsg *>(pMsg);
@@ -229,6 +229,7 @@ void AxePhraseMaker::DispatchPriv(Message *pMsg) {
     } else if (nType == InvalidateSeekerMsg::sID) {
         OnMsg(*static_cast<InvalidateSeekerMsg *>(pMsg));
     }
+    return false;
 }
 
 int AxePhraseMaker::GetPeriodOrigin() {

@@ -81,10 +81,11 @@ protected:
      * Store a copy of a message.
      *
      * @param pMsg The message to copy and store.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0054b290
      * @ghidraAddress PAL: 0x0058b7c0
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     std::vector<Message *> mFirst;

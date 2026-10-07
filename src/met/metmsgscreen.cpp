@@ -186,9 +186,10 @@ void MetMsgScreen::Refresh() {
     mChoice = kNoSelection;
 }
 
-void MetMsgScreen::DispatchPriv(Message *pMsg) {
+bool MetMsgScreen::DispatchPriv(Message *pMsg) {
     pMsg->Type(); // Yes, the binary discards this call's result.
     ForwardToOwner(pMsg);
+    return false;
 }
 
 void MetMsgScreen::EnterAndShow() {

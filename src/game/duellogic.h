@@ -79,10 +79,11 @@ public:
      * goes to WorldLogic::DispatchPriv().
      *
      * @param pMsg The message.
+     * @return The result of the handler or of WorldLogic::DispatchPriv().
      * @ghidraAddress NTSC-U/C: 0x0010aa00
      * @ghidraAddress PAL: 0x0010c138
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Start the music, set the first roles, and schedule the commands of the duel.

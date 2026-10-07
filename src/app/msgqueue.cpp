@@ -27,9 +27,10 @@ void MsgQueue::Store(Message *pMsg) {
     mTarget->push_back(pMsg->Clone());
 }
 
-void MsgQueue::DispatchPriv(Message *pMsg) {
+bool MsgQueue::DispatchPriv(Message *pMsg) {
     pMsg->Type(); // Yes, the binary discards this call's result.
     mTarget->push_back(pMsg->Clone());
+    return false;
 }
 
 void MsgQueue::Poll() {

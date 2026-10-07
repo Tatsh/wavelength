@@ -70,10 +70,11 @@ public:
      * this player updates the two cached words, and anything else falls through to the base.
      *
      * @param message The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00125f70
      * @ghidraAddress PAL: 0x00126608
      */
-    virtual void DispatchPriv(Message *message);
+    virtual bool DispatchPriv(Message *message);
 
 private:
     /**

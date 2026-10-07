@@ -3,7 +3,9 @@
 #include <list>
 #include <map>
 
+#include "os/binstream.h"
 #include "os/hxstr.h"
+#include "rnd/rndloader.h"
 
 namespace Rnd {
 class Dbg;
@@ -157,6 +159,17 @@ public:
     Object *Create(const HxStr &className, const HxStr &objectName);
 
     /**
+     * Build one instance of a registered class.
+     *
+     * @param pszClass The type name.
+     * @param pszName The object name for the new instance.
+     * @return The new object, or null when the type name is unregistered.
+     * @ghidraAddress NTSC-U/C: 0x002397f8
+     * @ghidraAddress PAL: 0x00242378
+     */
+    Object *Create(const char *pszClass, const char *pszName);
+
+    /**
      * Clone an object under a prefixed name, optionally with its descendants and its parents.
      *
      * The clone is created from the source's class, named with prefix followed by the source's
@@ -303,6 +316,51 @@ public:
      * @ghidraAddress PAL: 0x005609f0
      */
     Object *Find(const HxStr &name);
+
+    /**
+     * Resolve a loaded object by name.
+     *
+     * @param pszName The object name as written in the `.rnd` file.
+     * @return The object, or null when no object has that name.
+     * @ghidraAddress NTSC-U/C: 0x00237e00
+     * @ghidraAddress PAL: 0x00240980
+     */
+    Object *Find(const char *pszName);
+
+    /**
+     * Clone an object under a prefixed name, optionally with its descendants and its parents.
+     *
+     * @param pSource The object to clone.
+     * @param pszPrefix The prefix for the clone's name and every descendant clone's.
+     * @param pClones Receives the clone first, followed by the clones of the descendants.
+     * @param nFlags The copy flags.
+     * @param bRecurse Non-zero to clone the descendants.
+     * @param bLink Non-zero to attach the clone to the source's parents.
+     * @ghidraAddress NTSC-U/C: 0x002382b0
+     * @ghidraAddress PAL: 0x00240e30
+     */
+    void Clone(Object *pSource,
+               const char *pszPrefix,
+               std::list<Object *> *pClones,
+               unsigned nFlags,
+               int bRecurse,
+               int bLink);
+
+    /**
+     * Create a loader for a `.rnd` file and queue it.
+     *
+     * A loader created with an even nFlags first finishes the loads already queued.
+     *
+     * @param pszFile The file.
+     * @param nFlags The load flags. Bit 0 lets the queued loads continue in the background.
+     * @param pCallback The callback the loader consults for each object, or null.
+     * @param pStream The stream to read instead of the file, or null. The loader destroys it.
+     * @return The loader.
+     * @ghidraAddress NTSC-U/C: 0x00238e98
+     * @ghidraAddress PAL: 0x00241a18
+     */
+    RndLoader *
+    AddLoader(const char *pszFile, int nFlags, RndLoader::Callback *pCallback, BinStream *pStream);
 
     /**
      * Write the registry and every object in it to sink.

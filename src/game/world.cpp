@@ -444,15 +444,18 @@ int World::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     return 0;
 }
 
-void World::DispatchPriv(Message *pMsg) {
+bool World::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nStartGameMsgType) {
-        (void)OnStartGame(static_cast<StartGameMsg *>(pMsg));
-    } else if (nType == g_nPlayerAbortedMsgType) {
-        (void)OnPlayerAborted(static_cast<PlayerAbortedMsg *>(pMsg));
-    } else if (nType == g_nGameEndedMsgType) {
-        (void)OnGameEnded(static_cast<GameEndedMsg *>(pMsg));
+        return OnStartGame(static_cast<StartGameMsg *>(pMsg)) != 0;
     }
+    if (nType == g_nPlayerAbortedMsgType) {
+        return OnPlayerAborted(static_cast<PlayerAbortedMsg *>(pMsg)) != 0;
+    }
+    if (nType == g_nGameEndedMsgType) {
+        return OnGameEnded(static_cast<GameEndedMsg *>(pMsg)) != 0;
+    }
+    return false;
 }
 
 void World::Record(const RotateEvent &event) {

@@ -87,10 +87,11 @@ public:
      * first two handlers are expanded inline here.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00112978
      * @ghidraAddress PAL: 0x00112dd8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Record the track graphs and build the enable policy for the session mode.

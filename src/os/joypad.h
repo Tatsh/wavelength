@@ -6,6 +6,31 @@
 constexpr int kJoypadNumSticks = 2;
 
 /**
+ * Buttons of a controller, the values JoypadInputMsg::mButton takes.
+ *
+ * The values from 16 to 23 are not yet identified. The name is inferred.
+ */
+enum JoypadButton {
+    kPadL2 = 0,       /*!< The L2 button. */
+    kPadR2 = 1,       /*!< The R2 button. */
+    kPadL1 = 2,       /*!< The L1 button. */
+    kPadR1 = 3,       /*!< The R1 button. */
+    kPadTriangle = 4, /*!< The triangle button. */
+    kPadCircle = 5,   /*!< The circle button. */
+    kPadCross = 6,    /*!< The cross button, which chooses in the menus. */
+    kPadSquare = 7,   /*!< The square button. */
+    kPadSelect = 8,   /*!< The SELECT button. */
+    kPadL3 = 9,       /*!< The left stick pressed in. */
+    kPadR3 = 10,      /*!< The right stick pressed in. */
+    kPadStart = 11,   /*!< The START button. */
+    kPadDUp = 12,     /*!< Up on the directional buttons. */
+    kPadDRight = 13,  /*!< Right on the directional buttons. */
+    kPadDDown = 14,   /*!< Down on the directional buttons. */
+    kPadDLeft = 15,   /*!< Left on the directional buttons. */
+    kPadNone = 24,    /*!< No button. */
+};
+
+/**
  * Position of one analogue stick.
  *
  * The name is inferred.

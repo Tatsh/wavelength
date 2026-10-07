@@ -33,10 +33,12 @@ public:
      * Handle a message sent to the logic.
      *
      * @param pMsg The message.
+     * @return False for a message the logic handles here, otherwise the result of
+     *         WorldLogic::DispatchPriv().
      * @ghidraAddress NTSC-U/C: 0x00136390
      * @ghidraAddress PAL: 0x00137ba8
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Start the song.

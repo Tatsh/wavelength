@@ -46,10 +46,11 @@ public:
      * sets mPlayer. Every other message is discarded.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001c3130
      * @ghidraAddress PAL: 0x001c8f78
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * A note number paired with the pitch it was played as.

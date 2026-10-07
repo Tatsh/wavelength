@@ -255,30 +255,30 @@ void Voxer::OnInvalidateSeeker(int) {
     Send(&off);
 }
 
-void Voxer::DispatchPriv(Message *pMsg) {
+bool Voxer::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(PitchRiffMsg::sID)) {
         OnPitchRiff(static_cast<PitchRiffMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(StopRiffMsg::sID)) {
         OnStopRiff(static_cast<StopRiffMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(EraseMsg::sID)) {
         EraseMsg *pErase = static_cast<EraseMsg *>(pMsg);
         if (pErase->mTrack != mTrack) {
-            return;
+            return false;
         }
         if (mPlayer != pErase->mPlayer) {
-            return;
+            return false;
         }
         OnErase(pErase->mPosition.mTick / mBarTicks, pErase->mDoubleTap, 1);
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         OnTrackSelect(static_cast<TrackSelectMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(InvalidateSeekerMsg::sID)) {
         InvalidateSeekerMsg *pInvalidate = static_cast<InvalidateSeekerMsg *>(pMsg);
@@ -286,6 +286,7 @@ void Voxer::DispatchPriv(Message *pMsg) {
             OnInvalidateSeeker(pInvalidate->mBar);
         }
     }
+    return false;
 }
 
 Voxer::~Voxer() {

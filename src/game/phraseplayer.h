@@ -45,10 +45,11 @@ public:
      * answer, which is what remains of a dispatch with no case left in the release build.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001c2928
      * @ghidraAddress PAL: 0x001c8770
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Play the phrase of one bar.

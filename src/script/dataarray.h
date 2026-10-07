@@ -1,5 +1,6 @@
 #pragma once
 
+#include "math/vector3.h"
 #include "rnd/stream.h"
 
 /**
@@ -10,6 +11,66 @@
  */
 class DataArray {
 public:
+    /** Kinds of node Type() reports. The other values are not yet identified. */
+    enum NodeType {
+        kNodeInt = 0,    /*!< An integer. */
+        kNodeSymbol = 1, /*!< A symbol. */
+    };
+
+    /**
+     * Take one more reference.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002960a0
+     * @ghidraAddress PAL: 0x0029fcb8
+     */
+    void AddRef();
+
+    /**
+     * Report the number of nodes.
+     *
+     * @return mSize.
+     */
+    int Size() const {
+        return mSize;
+    }
+
+    /**
+     * Report the kind of a node.
+     *
+     * @param nIndex The node.
+     * @return One of NodeType.
+     * @ghidraAddress NTSC-U/C: 0x002966f0
+     * @ghidraAddress PAL: 0x002a0308
+     */
+    int Type(int nIndex) const;
+
+    /**
+     * Find the integer that follows a tag and report it as a flag.
+     *
+     * @param pszName The symbol that starts the child array.
+     * @param pbValue Receives whether the integer at index 1 of the child array is non-zero, when
+     *                the child array exists.
+     * @param bFail Passed to FindArray().
+     * @return Whether the child array exists.
+     * @ghidraAddress NTSC-U/C: 0x002963f0
+     * @ghidraAddress PAL: 0x002a0008
+     */
+    bool FindBool(const char *pszName, bool *pbValue, bool bFail) const;
+
+    /**
+     * Find the three numbers that follow a tag.
+     *
+     * The fourth word of the vector is left as it was.
+     *
+     * @param pszName The symbol that starts the child array.
+     * @param pValue Receives the numbers at indices 1 to 3 of the child array when it exists.
+     * @param bFail Passed to FindArray().
+     * @return Whether the child array exists.
+     * @ghidraAddress NTSC-U/C: 0x002964a8
+     * @ghidraAddress PAL: 0x002a00c0
+     */
+    bool FindVector(const char *pszName, Vector3 *pValue, bool bFail) const;
+
     /**
      * Drop one reference and destroy the array when none remains.
      *
@@ -130,7 +191,7 @@ public:
     DataArray *Array(int nIndex) const;
 
     int mReserved00;      // +0x00, the node storage. The node type is not yet recovered.
-    int mReserved04;      // +0x04, not yet identified.
+    const char *mFile;    /*!< The file the array was read from. */
     short mSize;          /*!< Number of nodes. */
     unsigned short mRefs; /*!< Reference count Release() decrements. */
 };

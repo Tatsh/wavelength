@@ -32,10 +32,11 @@ public:
      * Act on a controller message.
      *
      * @param pMsg The message.
+     * @return The result of the button handler for a controller button, otherwise false.
      * @ghidraAddress NTSC-U/C: 0x0014ed88
      * @ghidraAddress PAL: 0x00150708
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Move the position toward the stick for the time since the last poll.

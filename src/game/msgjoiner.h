@@ -27,8 +27,9 @@ public:
      * Slot 3 of the MsgSink table.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00195b70
      * @ghidraAddress PAL: 0x0019b808
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 };

@@ -110,23 +110,23 @@ void AxisControl::SendPitchBend(int nTick, int nValue) {
     Send(&msg);
 }
 
-void AxisControl::DispatchPriv(Message *pMsg) {
+bool AxisControl::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nAxisRegisterMsgType) {
         OnAxisRegister(static_cast<AxisRegisterMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == g_nAxisFXMsgType) {
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         OnTrackSelect(static_cast<TrackSelectMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(SustainNoteMsg::sID)) {
         // The tick is stored without the finiteness check.
         mSustainTick.mTick = static_cast<SustainNoteMsg *>(pMsg)->mTick;
-        return;
+        return false;
     }
 
     if (nType == static_cast<int>(StdMidiMsg::sID)) {
@@ -134,6 +134,7 @@ void AxisControl::DispatchPriv(Message *pMsg) {
     } else if (nType == static_cast<int>(g_dwAllNotesOffMsgType)) {
         OnAllNotesOff(static_cast<AllNotesOffMsg *>(pMsg));
     }
+    return false;
 }
 
 void AxisControl::OnStdMidi(StdMidiMsg *pMsg) {

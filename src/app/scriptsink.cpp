@@ -23,9 +23,10 @@ void ScriptSink::RunMessageScript(Message *pMsg) {
     RunScript(HxStr(pszScript));
 }
 
-void ScriptSink::DispatchPriv(Message *pMsg) {
+bool ScriptSink::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() != g_nScriptMsgType) {
-        return;
+        return false;
     }
     RunMessageScript(pMsg);
+    return false;
 }

@@ -118,7 +118,7 @@ TnlArena::~TnlArena() {
     }
 }
 
-void TnlArena::DispatchPriv(Message *pMsg) {
+bool TnlArena::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nPointAmountMsgType) {
         OnPointAmount(static_cast<PointAmountMsg *>(pMsg));
@@ -127,6 +127,7 @@ void TnlArena::DispatchPriv(Message *pMsg) {
     } else if (nType == g_nWinMsgType) {
         OnWin(static_cast<WinMsg *>(pMsg));
     }
+    return false;
 }
 
 inline void TnlArena::OnPointAmount([[maybe_unused]] PointAmountMsg *pMsg) {

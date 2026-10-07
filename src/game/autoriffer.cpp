@@ -211,35 +211,36 @@ void AutoRiffer::PlayRiff(int nTick) {
     }
 }
 
-void AutoRiffer::DispatchPriv(Message *pMsg) {
+bool AutoRiffer::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == PitchRiffMsg::sID) {
         OnPitchRiff(static_cast<PitchRiffMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == EraseMsg::sID) {
         OnErase(static_cast<EraseMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == StopRiffMsg::sID) {
         OnStopRiff(static_cast<StopRiffMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         TrackSelectMsg *pSelect = static_cast<TrackSelectMsg *>(pMsg);
         if (pSelect->mTrack != mTrack || pSelect->mPlace != 0) {
-            return;
+            return false;
         }
         Player *pPlayer = pSelect->mPlayer;
         if (pPlayer != mPlayer || pPlayer->IsNull()) {
             StopRiff(pSelect->mPosition.mTick);
         }
         mPlayer = pPlayer;
-        return;
+        return false;
     }
     if (nType == g_nGameOverMsgType) {
         StopRiff(Sch::Tick(0).mTick);
     }
+    return false;
 }
 
 AutoRiffer::~AutoRiffer() {

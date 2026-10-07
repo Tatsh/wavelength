@@ -313,38 +313,39 @@ void Scratcher::SendSeekerMsg(int) const {
 Scratcher::~Scratcher() {
 }
 
-void Scratcher::DispatchPriv(Message *pMsg) {
+bool Scratcher::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(PitchRiffMsg::sID)) {
         PitchRiffMsg *pRiff = static_cast<PitchRiffMsg *>(pMsg);
         if (pRiff->mTrack != mTrack) {
-            return;
+            return false;
         }
         if (mPlayer != pRiff->mPlayer) {
-            return;
+            return false;
         }
         mLastGem = pRiff->mButton;
         OnPitchRiff(pRiff->mButton, 0, pRiff->mPosition.mTick);
-        return;
+        return false;
     }
     if (nType == static_cast<int>(EraseMsg::sID)) {
         EraseGemRange(static_cast<EraseMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         OnTrackSelect(static_cast<TrackSelectMsg *>(pMsg));
-        return;
+        return false;
     }
     if (nType == static_cast<int>(InvalidateSeekerMsg::sID)) {
         InvalidateSeekerMsg *pInvalidate = static_cast<InvalidateSeekerMsg *>(pMsg);
         if (pInvalidate->mTrack == mTrack) {
             SendSeekerMsg(pInvalidate->mBar);
         }
-        return;
+        return false;
     }
     if (nType == static_cast<int>(g_nAxisRegisterMsgType)) {
         PostNowBarMsg(static_cast<AxisRegisterMsg *>(pMsg));
     }
+    return false;
 }
 
 void Scratcher::OnPitchRiffMsg(PitchRiffMsg *pMsg) {

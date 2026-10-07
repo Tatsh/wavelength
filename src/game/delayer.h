@@ -36,8 +36,9 @@ public:
      * Act on a message. Primary table slot 3.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0040d0f0
      * @ghidraAddress PAL: 0x00446b30
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 };

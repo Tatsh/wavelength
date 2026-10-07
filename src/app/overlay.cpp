@@ -328,7 +328,7 @@ inline HudTrack *Overlay::FindTrack(Player *pPlayer) {
     return nullptr;
 }
 
-void Overlay::DispatchPriv(Message *pMsg) {
+bool Overlay::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(g_dwTrackSelectMsgType)) {
         OnTrackSelect(pMsg);
@@ -379,6 +379,7 @@ void Overlay::DispatchPriv(Message *pMsg) {
     } else if (nType == g_nPowerupFailedMsgType) {
         OnPowerupFailed(pMsg);
     }
+    return false;
 }
 
 void Overlay::OnTrackSelect(Message *pMsg) {

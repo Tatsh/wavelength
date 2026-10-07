@@ -9,30 +9,14 @@ class Message;
 /**
  * Receiver of engine messages.
  *
- * Its RTTI descriptor is at `0x0086f780`, built from the length-prefixed literal at `0x007cccb0`
- * with no base list. The class declares no data member, and the compiler-generated vptr therefore
- * lands at offset 0 over a four-byte subobject. Player corroborates the size by
- * placing its MsgSink base at `+0x08` and its MsgSource base at `+0x0c`. 134 classes derive from
- * MsgSink and 40 of them derive directly.
+ * The RTTI includes the class name and records no base. The class declares no data member, and
+ * the vptr sits at offset 0 over a four-byte subobject. The vtable at `0x003c7708` runs the type
+ * function, the destructor, Dispatch(), and DispatchPriv(), whose entry is the shared pure-virtual
+ * stub.
  *
- * The vtable at `0x007ccc40` runs four entries and a zero terminator: the type function, the
- * destructor, Dispatch(), and DispatchPriv(). The DispatchPriv() entry addresses the shared
- * pure-virtual stub at `0x005381a8`, the target of 355 slots across the image. That entry marks
- * the member pure rather than defaulted.
- *
- * The destructor and Dispatch() are defined inline. g++ 2.9x emitted the vtable into every
- * translation unit that constructs or destroys a derived object, producing 45 byte-identical
- * copies, and emitted the two bodies alongside them. 48 further copies of the destructor, 104 of
- * Dispatch(), and 44 of the type function remain in the image. Every copy that occupies no vtable
- * slot is referenced only from a frame-unwind record. The reconstruction therefore owes two
- * definitions rather than 196.
- *
- * Five derived classes have an implicitly declared destructor emitted at a distinct address and
- * byte-identical to this one. A trivial derived destructor stores only the base table pointer once
- * the compiler discards the dead store of its own. Those five are NoteFinder at `0x00105588`,
- * RendererBase::Router at `0x00139d70`, MidiChase at `0x001a67d8`, the file-local Shifter of
- * GsMuseUtil.cpp at `0x001ab878`, and RiffRangeFinder at `0x001c4200`. The reconstruction declares
- * none of the five. The compiler generates each one.
+ * Both members report whether the sink handled the message. MsgSource::SendUntilHandled() stops
+ * at the first sink that reports a message as handled, and the front end passes a message on only
+ * when a sink does not handle it.
  */
 class MsgSink {
 public:
@@ -62,36 +46,32 @@ public:
     }
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x00105120
-     * @ghidraAddress PAL: 0x00105120
+     * @ghidraAddress NTSC-U/C: 0x00338948
+     * @ghidraAddress PAL: 0x003a5ef8
      */
     virtual ~MsgSink();
 
     /**
      * Accept a message.
      *
-     * The body dispatches table slot 3, DispatchPriv(), through the object's own vptr. Two
-     * overrides are recovered. RendererBase::Router at `0x00139f50` forwards the message to the
-     * sink it stores, and RendererBase at `0x00139f80` stores the message in its queue. Every other
-     * MsgSink subobject table in the image places this body at slot 2.
+     * The body calls DispatchPriv() through the object's own vptr and reports its result. Classes
+     * that route a message elsewhere first override it.
      *
      * @param pMsg The message.
-     * @ghidraAddress NTSC-U/C: 0x00105158
-     * @ghidraAddress PAL: 0x00105158
+     * @return Whether the message was handled.
+     * @ghidraAddress NTSC-U/C: 0x00333eb0
+     * @ghidraAddress PAL: 0x003a1460
      */
-    virtual void Dispatch(Message *pMsg);
+    virtual bool Dispatch(Message *pMsg);
 
     /**
      * Act on a message.
      *
-     * Public rather than protected. The counter-example is one of the two classes that override
-     * Dispatch(). RendererBase::Router at `0x00139f50` dispatches this member's slot on the
-     * separate sink it stores at `+0x04`. The stored sink is an object of an unrelated class, and
-     * protected access would not reach it. Every other dispatch in the image comes from Dispatch()
-     * on the same object. The protected reading held until the Router override was found. A
-     * friend declaration fits equally well.
+     * Public rather than protected, because some sinks pass a message to the DispatchPriv() of
+     * another sink they store.
      *
      * @param pMsg The message.
+     * @return Whether the message was handled.
      */
-    virtual void DispatchPriv(Message *pMsg) = 0;
+    virtual bool DispatchPriv(Message *pMsg) = 0;
 };

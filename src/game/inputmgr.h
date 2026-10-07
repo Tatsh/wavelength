@@ -103,10 +103,11 @@ public:
      * Act on a message sent to the router.
      *
      * @param pMsg The message.
+     * @return The result of HandleButton() for a controller button, otherwise false.
      * @ghidraAddress NTSC-U/C: 0x00118d90
      * @ghidraAddress PAL: 0x0011a528
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
 private:
     World *mWorld;                            /*!< The world input goes to. */

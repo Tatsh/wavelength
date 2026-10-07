@@ -48,10 +48,11 @@ public:
     virtual int IsNull();
 
     /**
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x00133528
      * @ghidraAddress PAL: 0x00133d90
      */
-    virtual void DispatchPriv(Message *message);
+    virtual bool DispatchPriv(Message *message);
 
     /**
      * Stand-in every unoccupied player reference stores.

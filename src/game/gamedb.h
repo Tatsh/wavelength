@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/avatarpartset.h"
 #include "game/gameoptions.h"
 #include "game/inputmap.h"
 #include "game/playerprofile.h"
@@ -167,6 +168,16 @@ public:
     PlayerProfile *GetProfile(int nPlayer);
 
     /**
+     * Report the avatar parts of a player, which its profile stores.
+     *
+     * @param nPlayer The player.
+     * @return The parts.
+     * @ghidraAddress NTSC-U/C: 0x0026ea38
+     * @ghidraAddress PAL: 0x002785d8
+     */
+    AvatarPartSet *GetAvatar(int nPlayer);
+
+    /**
      * Report the score SetPlayerScore() recorded for a player.
      *
      * @param nPlayer The player.
@@ -279,6 +290,41 @@ public:
     void SetPracticeMode(bool bPracticeMode);
 
     /**
+     * Remove every player.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0026e548
+     * @ghidraAddress PAL: 0x002780e8
+     */
+    void ClearPlayers();
+
+    /**
+     * Add a player with a copy of a profile.
+     *
+     * @param pProfile The profile to copy.
+     * @ghidraAddress NTSC-U/C: 0x0026e5e0
+     * @ghidraAddress PAL: 0x00278180
+     */
+    void AddPlayer(const PlayerProfile *pProfile);
+
+    /**
+     * Set mSkillLevel.
+     *
+     * @param nSkillLevel The skill level.
+     * @ghidraAddress NTSC-U/C: 0x0026eb98
+     * @ghidraAddress PAL: 0x00278738
+     */
+    void SetSkillLevel(int nSkillLevel);
+
+    /**
+     * Set mPowerupLevel.
+     *
+     * @param nPowerupLevel The power-up level.
+     * @ghidraAddress NTSC-U/C: 0x0026eba0
+     * @ghidraAddress PAL: 0x00278740
+     */
+    void SetPowerupLevel(int nPowerupLevel);
+
+    /**
      * Set whether the tutorial is played.
      *
      * The solo arena screen sets it when the player confirms the "Tutorial" arena, and the
@@ -289,6 +335,51 @@ public:
      * @ghidraAddress PAL: 0x00278750
      */
     void SetTutorial(int nTutorial);
+
+    /**
+     * Set mSong.
+     *
+     * @param pszSong The song.
+     * @ghidraAddress NTSC-U/C: 0x0026ebb8
+     * @ghidraAddress PAL: 0x00278758
+     */
+    void SetSong(const char *pszSong);
+
+    /**
+     * Set mLoadRemix.
+     *
+     * @param bLoadRemix Whether a saved remix is played.
+     * @ghidraAddress NTSC-U/C: 0x0026ec58
+     * @ghidraAddress PAL: 0x002787f8
+     */
+    void SetLoadRemix(bool bLoadRemix);
+
+    /**
+     * Set mRuleSet.
+     *
+     * @param nRuleSet One of RuleSet.
+     * @ghidraAddress NTSC-U/C: 0x0026ec60
+     * @ghidraAddress PAL: 0x00278800
+     */
+    void SetRuleSet(int nRuleSet);
+
+    /**
+     * Set mCommunity.
+     *
+     * @param nCommunity One of Community.
+     * @ghidraAddress NTSC-U/C: 0x0026ec68
+     * @ghidraAddress PAL: 0x00278808
+     */
+    void SetCommunity(int nCommunity);
+
+    /**
+     * Choose the demo to play, or none.
+     *
+     * @param pszDemo The demo recording, or null for none.
+     * @ghidraAddress NTSC-U/C: 0x0026ec98
+     * @ghidraAddress PAL: 0x00278838
+     */
+    void SetDemo(const char *pszDemo);
 
     /**
      * Record the fraction of the possible capture bars a solo song captured.

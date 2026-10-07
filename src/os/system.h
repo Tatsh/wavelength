@@ -54,6 +54,30 @@ void SystemSetPadCheck(bool bEnabled);
 DataArray *SystemConfig();
 
 /**
+ * Report whether files are read from the disc rather than from the host.
+ *
+ * @return Whether files come from the disc.
+ * @ghidraAddress NTSC-U/C: 0x0028c5a8
+ */
+bool UsingCD();
+
+/**
+ * Choose whether files are read from the disc rather than from the host.
+ *
+ * @param bUsingCD Whether files come from the disc.
+ * @ghidraAddress NTSC-U/C: 0x0028c5b8
+ * @ghidraAddress PAL: 0x00295f40
+ */
+void SetUsingCD(bool bUsingCD);
+
+/**
+ * Whether the `host_config` command-line option asked for the script files to come from the host.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b2234
+ */
+extern bool g_bHostConfig;
+
+/**
  * Report the language the console is set to.
  *
  * @return The language key, for example "english".

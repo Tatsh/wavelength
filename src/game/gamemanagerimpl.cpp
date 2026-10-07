@@ -228,7 +228,7 @@ void GameManagerImpl::SetDrawEnabled(int nEnabled) {
     mDrawSuppressed = nEnabled ^ 1;
 }
 
-void GameManagerImpl::DispatchPriv(Message *pMsg) {
+bool GameManagerImpl::DispatchPriv(Message *pMsg) {
     int nType = pMsg->Type();
     if (nType == g_nBeginGameLocalMsgType) {
         OnBeginGameLocal(pMsg);
@@ -243,6 +243,7 @@ void GameManagerImpl::DispatchPriv(Message *pMsg) {
     } else {
         Fatal("DISPATCH_CHECK: Unhandled Message: %s", pMsg->GetName());
     }
+    return false;
 }
 
 GameManagerImpl::GameManagerImpl()

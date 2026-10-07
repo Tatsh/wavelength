@@ -102,7 +102,7 @@ unsigned char PitchPicker::GetSustainPitch(int nTick, unsigned char nNote) {
     return nPitch;
 }
 
-void PitchPicker::DispatchPriv(Message *pMsg) {
+bool PitchPicker::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == static_cast<int>(g_dwMultiMuseMsgType)) {
         OnMsg(*static_cast<MultiMuseMsg *>(pMsg));
@@ -121,6 +121,7 @@ void PitchPicker::DispatchPriv(Message *pMsg) {
             mPlayer = pSelect->mPlayer;
         }
     }
+    return false;
 }
 
 void PitchPicker::OnStdMidi(StdMidiMsg *pMsg) {

@@ -35,7 +35,7 @@ public:
     }
 
     // NTSC-U/C: 0x001ab970, PAL: 0x001b16d8
-    virtual void DispatchPriv(Message *pMsg) {
+    virtual bool DispatchPriv(Message *pMsg) {
         const int nType = pMsg->Type();
         if (nType == static_cast<int>(NoteMsg::sID)) {
             OnMsg(*static_cast<NoteMsg *>(pMsg));
@@ -44,6 +44,7 @@ public:
         } else if (nType >= g_nFirstMuseMsgType && nType < g_nEndMuseMsgType) {
             OnMsg(*static_cast<MuseMsg *>(pMsg));
         }
+        return false;
     }
 
 private:

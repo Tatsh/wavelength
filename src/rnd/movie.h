@@ -371,6 +371,12 @@ public:
      */
     std::list<TrackTexture> mTrackTextures;
 
+    /**
+     * The one texture the movie plays into in Amplitude, which keeps it at `+0x34`. Public
+     * because Gizmo binds it to a material from outside the class.
+     */
+    Tex *mTex;
+
 private:
     // +0x34 Palette the PALL chunks fill and every frame chunk's bitmap draws through. The
     // constructor also clears it with memset() after constructing it.

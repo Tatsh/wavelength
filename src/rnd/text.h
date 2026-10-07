@@ -342,6 +342,14 @@ public:
     virtual void SetHighlight(int nHighlight);
 
     /**
+     * Attach the text again to every cursor that refers to it.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002417f0
+     * @ghidraAddress PAL: 0x0024a2f8
+     */
+    void UpdateCursors();
+
+    /**
      * Report the font the text is set in.
      *
      * HudTextMessage's constructor inlines the load, and the out-of-line copy has no caller.

@@ -165,10 +165,11 @@ protected:
      * Table slot 3.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001a7780
      * @ghidraAddress PAL: 0x001ad4e8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
 private:
     unsigned char mChannel; // +0x08

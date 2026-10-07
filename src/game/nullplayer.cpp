@@ -15,7 +15,8 @@ int NullPlayer::IsNull() {
     return 1;
 }
 
-void NullPlayer::DispatchPriv(Message *) {
+bool NullPlayer::DispatchPriv(Message *) {
+    return false;
 }
 
 // NTSC-U/C: 0x0066f930, PAL: 0x006b0520

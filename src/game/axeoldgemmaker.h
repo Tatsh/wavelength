@@ -45,10 +45,11 @@ public:
      * OnStdMidi(). Every other message is ignored.
      *
      * @param pMsg The message.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x001a47a8
      * @ghidraAddress PAL: 0x001aa510
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Report the gem blend for a pitch step.

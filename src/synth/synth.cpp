@@ -204,10 +204,11 @@ inline void Synth::OnStdMidi(StdMidiMsg *pMsg) {
     PlayMidi(pMsg->mStatus, pMsg->mData1, pMsg->mData2);
 }
 
-void Synth::DispatchPriv(Message *pMsg) {
+bool Synth::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() != static_cast<int>(StdMidiMsg::sID)) {
-        return;
+        return false;
     }
 
     OnStdMidi(static_cast<StdMidiMsg *>(pMsg));
+    return false;
 }

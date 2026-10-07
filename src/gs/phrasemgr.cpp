@@ -644,7 +644,7 @@ void PhraseMgr::StartCommands() {
     }
 }
 
-void PhraseMgr::DispatchPriv(Message *pMsg) {
+bool PhraseMgr::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
     if (nType == g_nPhrasePacketType) {
         OnPhrasePacket(static_cast<PhrasePacket *>(pMsg));
@@ -659,6 +659,7 @@ void PhraseMgr::DispatchPriv(Message *pMsg) {
     } else if (nType == g_nGameBeginMsgType) {
         RefreshAllBars();
     }
+    return false;
 }
 
 int PhraseMgr::TickToBar(int nTick) {

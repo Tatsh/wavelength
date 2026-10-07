@@ -71,6 +71,16 @@ public:
     void Send(Message *pMsg) const;
 
     /**
+     * Deliver a message to the registered sinks in registration order until one handles it.
+     *
+     * @param pMsg The message to deliver.
+     * @return Whether a sink handled the message.
+     * @ghidraAddress NTSC-U/C: 0x0029d420
+     * @ghidraAddress PAL: 0x002a70e8
+     */
+    bool SendUntilHandled(Message *pMsg);
+
+    /**
      * Unregister every sink.
      *
      * GrooveWorld::DestroyGraphs() at `0x0018da60` calls it. An identical copy sits at

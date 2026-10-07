@@ -108,10 +108,11 @@ public:
      * payload in mRecording.
      *
      * @param pMsg The message to dispatch.
+     * @return False.
      * @ghidraAddress NTSC-U/C: 0x0036c5d8
      * @ghidraAddress PAL: 0x0039afd8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    virtual bool DispatchPriv(Message *pMsg);
 
     /**
      * Start the front end running.

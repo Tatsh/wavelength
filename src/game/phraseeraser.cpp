@@ -23,13 +23,13 @@ void PhraseEraser::OnEraseMsg(EraseMsg *pMsg) {
 void PhraseEraser::EraseBar(int) {
 }
 
-void PhraseEraser::DispatchPriv(Message *pMsg) {
+bool PhraseEraser::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() != EraseMsg::sID) {
-        return;
+        return false;
     }
     EraseMsg *pErase = static_cast<EraseMsg *>(pMsg);
     if (pErase->mTrack != mTrack) {
-        return;
+        return false;
     }
     mActive = 1;
     const int nBar = pErase->mPosition.mTick / mPhraseMgr->mBarTicks;
@@ -37,4 +37,5 @@ void PhraseEraser::DispatchPriv(Message *pMsg) {
     mLastBar = nBar;
     mPlayer = pErase->mPlayer;
     EraseBar(nBar);
+    return false;
 }

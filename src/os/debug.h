@@ -59,12 +59,13 @@ void DebugPrint(const char *pszFormat, ...);
 void DebugWarn(const char *pszFormat, ...);
 
 /**
- * Format an error that the shipped build discards.
+ * Format a notice that the shipped build discards.
  *
- * The body is empty. The callers pass messages about missing data. The name is inferred.
+ * The body is empty. The callers pass reports of missing data, skipped objects, and failed loads.
+ * The name is inferred.
  *
  * @param pszFormat The `printf` format.
  * @ghidraAddress NTSC-U/C: 0x00339f48
  * @ghidraAddress PAL: 0x003a7480
  */
-void DebugFail(const char *pszFormat, ...);
+void DebugNotify(const char *pszFormat, ...);

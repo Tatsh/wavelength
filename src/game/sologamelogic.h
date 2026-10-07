@@ -95,10 +95,11 @@ public:
      * Handle a message sent to the logic.
      *
      * @param pMsg The message.
+     * @return The result of WorldLogic::DispatchPriv().
      * @ghidraAddress NTSC-U/C: 0x0013b2b0
      * @ghidraAddress PAL: 0x0013cb80
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Report the game tick, the song tick shifted by the restarts of the victory lap.

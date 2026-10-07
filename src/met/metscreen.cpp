@@ -490,7 +490,8 @@ void MetScreen::OnEnterFinished() {
 void MetScreen::OnExitFinished() {
 }
 
-void MetScreen::DispatchPriv([[maybe_unused]] Message *pMsg) {
+bool MetScreen::DispatchPriv([[maybe_unused]] Message *pMsg) {
+    return false;
 }
 
 void MetScreen::PlaySlideSound([[maybe_unused]] int nSelector) {

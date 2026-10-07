@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app/msgsink.h"
+#include "met/gizmo.h"
 #include "msg/message.h"
 
 /**
@@ -176,10 +177,11 @@ public:
      * Handle a message sent to the metagame.
      *
      * @param pMsg The message.
+     * @return The result of the handler of the message's type, or false for any other message.
      * @ghidraAddress NTSC-U/C: 0x00168038
      * @ghidraAddress PAL: 0x0016b0c8
      */
-    void DispatchPriv(Message *pMsg) override;
+    bool DispatchPriv(Message *pMsg) override;
 
     /**
      * Show a dialog over the song and report the player's choice to a callback.
@@ -212,7 +214,9 @@ public:
     int mReserved0C; // +0x0c, not yet identified.
     int mReserved10; // +0x10, set by EnterLeaving() and cleared by Update().
     int mEvent;      /*!< The Event Update() reports next. */
-    // The members after +0x14 run past +0x12c and are not yet declared.
+    // The members from +0x18 to +0x128 are not yet declared.
+    Gizmo *mGizmo; /*!< The projector of the menu screens. +0x12c */
+    // The members after +0x12c are not yet declared.
 };
 
 /**
