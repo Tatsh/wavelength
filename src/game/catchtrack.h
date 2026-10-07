@@ -156,6 +156,29 @@ public:
     void SetPowerup(int nBar, int nPowerup);
 
     /**
+     * Rebuild the gems and the display after the song gained a loop at a bar.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar the loop plays from.
+     * @ghidraAddress NTSC-U/C: 0x0014cc18
+     * @ghidraAddress PAL: 0x0014e5b8
+     */
+    void Loop(int nBar);
+
+    /**
+     * Place a power-up in a bar given by its index.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar.
+     * @param nPowerup One of GameLogic::Powerup.
+     * @ghidraAddress NTSC-U/C: 0x0014cc70
+     * @ghidraAddress PAL: 0x0014e610
+     */
+    void SetBarPowerup(int nBar, int nPowerup);
+
+    /**
      * Enable the phrases of the track from a bar on.
      *
      * @param nBar The bar.
@@ -242,4 +265,39 @@ public:
      * @ghidraAddress PAL: 0x0014ebf0
      */
     void Freestyle(int nBar, int nBars, Player *pPlayer);
+
+    /**
+     * Give a run of bars to a player, or take them from every player.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The first bar.
+     * @param nBars The number of bars.
+     * @param pPlayer The player, or null to deactivate the bars.
+     * @ghidraAddress NTSC-U/C: 0x0014d420
+     * @ghidraAddress PAL: 0x0014edc0
+     */
+    void AssignBars(int nBar, int nBars, Player *pPlayer);
+
+    /**
+     * Turn on or off the automatic play of the track's gems.
+     *
+     * The name is inferred.
+     *
+     * @param bAutopilot Play the gems automatically.
+     * @ghidraAddress NTSC-U/C: 0x0014d790
+     * @ghidraAddress PAL: 0x0014f130
+     */
+    void SetAutopilot(bool bAutopilot);
+
+    /**
+     * Hide or show the seeker of the track.
+     *
+     * The name is inferred.
+     *
+     * @param bNoSeeker Hide the seeker.
+     * @ghidraAddress NTSC-U/C: 0x0014d7b0
+     * @ghidraAddress PAL: 0x0014f150
+     */
+    void SetNoSeeker(bool bNoSeeker);
 };

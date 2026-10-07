@@ -8,6 +8,7 @@
 #include "game/lyric.h"
 #include "game/playmap.h"
 #include "game/scratchtrackdata.h"
+#include "game/scripttrackdata.h"
 #include "game/worldtrack.h"
 #include "gs/muse.h"
 
@@ -125,6 +126,18 @@ public:
      * @ghidraAddress PAL: 0x00123cc8
      */
     Muse *GetIntroMuse(int nIndex) const;
+
+    /**
+     * Find the commands of a track named "SCRIPT" by their name.
+     *
+     * The name is inferred.
+     *
+     * @param pszName The name.
+     * @return The commands, or null.
+     * @ghidraAddress NTSC-U/C: 0x00122570
+     * @ghidraAddress PAL: 0x00123cf0
+     */
+    ScriptTrackData *FindScriptTrack(const char *pszName) const;
 
     PlayMap *mPlayMap;         /*!< The map of the song positions. +0x40 */
     BankTrack *mBankTrack;     /*!< The track named "BANK". +0x44 */

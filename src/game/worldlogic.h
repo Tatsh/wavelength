@@ -6,6 +6,7 @@
 #include "game/playnoteevent.h"
 #include "game/rotateevent.h"
 #include "game/stickevent.h"
+#include "msg/joypadconnectionmsg.h"
 #include "msg/message.h"
 
 /**
@@ -35,7 +36,7 @@ public:
     ~WorldLogic() override;
 
     /**
-     * Handle a message sent to the logic.
+     * Pass a JoypadConnectionMsg to OnJoypadConnection() and ignore any other message.
      *
      * @param pMsg The message.
      * @ghidraAddress NTSC-U/C: 0x00146db0
@@ -183,6 +184,8 @@ public:
     /**
      * Pause or resume the song.
      *
+     * The base body acts only on a resume, which calls ScheduleControllerCheck().
+     *
      * @param bPaused Pause the song.
      * @param nPad The controller that paused the song, or -1.
      * @param nReason Non-zero when a disconnected controller paused the song.
@@ -207,12 +210,36 @@ public:
     void AllNotesOff();
 
     /**
-     * Schedule a check of the first connected pad one tick from now.
+     * Pause the song again one tick from now when a controller is disconnected.
      *
-     * The name is inferred.
+     * The pause passes the controller FindDisconnectedPad() found and a non-zero reason to
+     * SetPaused(). The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x00146be0
      * @ghidraAddress PAL: 0x00148590
      */
     void ScheduleControllerCheck();
+
+    /**
+     * Find the controller of a player on this console that is disconnected.
+     *
+     * A demo has none. The name is inferred.
+     *
+     * @return The controller, or -1 when every controller is connected.
+     * @ghidraAddress NTSC-U/C: 0x00146c48
+     * @ghidraAddress PAL: 0x001485f8
+     */
+    static int FindDisconnectedPad();
+
+    /**
+     * Pause the playing song when the controller of a player is disconnected.
+     *
+     * A demo does not pause. The name is inferred.
+     *
+     * @param pMsg The message.
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x00146d00
+     * @ghidraAddress PAL: 0x001486b0
+     */
+    int OnJoypadConnection(JoypadConnectionMsg *pMsg);
 };

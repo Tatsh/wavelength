@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "app/msgsink.h"
 #include "game/netgamescore.h"
 #include "msg/externalpacket.h"
 
@@ -13,6 +14,15 @@
  */
 class NetTransport {
 public:
+    /**
+     * Set the sink the received messages go to.
+     *
+     * TransportRT's table places the member first. The name is inferred.
+     *
+     * @param pSink The sink, or null.
+     */
+    virtual void SetSink(MsgSink *pSink) = 0;
+
     /** Release the transport. */
     virtual ~NetTransport();
 

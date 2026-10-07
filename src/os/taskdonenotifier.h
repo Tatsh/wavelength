@@ -25,4 +25,17 @@ public:
      * @param pszName The name of the work.
      */
     virtual void NotifyWhenDone(Task *pTask, const char *pszName) = 0;
+
+    /**
+     * Tell a waiting task that its work is done.
+     *
+     * The name is inferred.
+     *
+     * @param pTask The task given to NotifyWhenDone().
+     * @ghidraAddress NTSC-U/C: 0x001418f8
+     * @ghidraAddress PAL: 0x00143298
+     */
+    static void ReportDone(Task *pTask) {
+        pTask->Finish(true);
+    }
 };

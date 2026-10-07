@@ -39,6 +39,7 @@ public:
         kDialogEndGame = 2,      /*!< The results at the end of a multiplayer song. */
         kDialogPause = 5,        /*!< The pause menu. */
         kDialogNoController = 6, /*!< The pause menu of a disconnected controller. */
+        kDialogTutorialEnd = 7,  /*!< The menu at the end of the tutorial. The name is inferred. */
     };
 
     /** Choices a dialog reports to its callback. */

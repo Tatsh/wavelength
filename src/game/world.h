@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "app/msgsink.h"
 #include "game/btnevent.h"
 #include "game/changesectionevent.h"
@@ -8,17 +10,46 @@
 #include "game/song.h"
 #include "game/stickevent.h"
 #include "game/worldlogic.h"
+#include "msg/gameendedmsg.h"
 #include "msg/message.h"
+#include "msg/playerabortedmsg.h"
+#include "msg/startgamemsg.h"
+#include "os/file.h"
 #include "script/dataarray.h"
 
 /**
  * One game in progress under one rule set.
  *
  * The RTTI records the class as deriving from MsgSink. Game, Remix, and Duel derive from it, one
- * for each rule set WorldMgr::Load() can build.
+ * for each rule set WorldMgr::Load() can build. LoadAssets() builds the Song, and Poll() steps the
+ * load through mLoadStep. Start() starts the song clock and installs the logic, which TheWorldLogic
+ * addresses. A logic that ends because the player quit plays the ending and starts the song again.
+ * An online world holds the session messages that arrive before the song starts and passes them to
+ * the logic once it starts.
  */
 class World : public MsgSink {
 public:
+    /** Values of mState. */
+    enum State {
+        kStateIdle = 0,       /*!< Nothing was loaded. */
+        kStateLoading = 1,    /*!< LoadAssets() runs the load steps. */
+        kStateLoaded = 2,     /*!< The load finished, and the world can start. */
+        kStatePlaying = 3,    /*!< The song plays. */
+        kStateEnding = 4,     /*!< The ending of a quit song plays. */
+        kStateRestarting = 5, /*!< The song starts again on the next poll. */
+    };
+
+    /** Values of mLoadStep. */
+    enum LoadStep {
+        kLoadStepDemo = 0,     /*!< The demo recording is read. */
+        kLoadStepSong = 1,     /*!< The song loads. */
+        kLoadStepTracks = 2,   /*!< The first loading stage runs. */
+        kLoadStepMusic = 3,    /*!< The front-end music fades out. */
+        kLoadStepAssets = 4,   /*!< The second loading stage runs. */
+        kLoadStepSession = 5,  /*!< The online session's start message is awaited. */
+        kLoadStepComplete = 6, /*!< Every step finished. */
+    };
+
     /**
      * Construct a world with no game state.
      *
@@ -63,11 +94,11 @@ public:
     virtual bool IsFinished() = 0;
 
     /**
-     * Report the time the display advances to while the world runs.
+     * Report how far the running world has played, from WorldLogic::GetProgress().
      *
      * The name is inferred.
      *
-     * @return The time, or 0 when the world is not running.
+     * @return The fraction, or 0 when the world is not running.
      * @ghidraAddress NTSC-U/C: 0x001451f8
      * @ghidraAddress PAL: 0x00146b88
      */
@@ -400,11 +431,11 @@ public:
      *
      * The name is inferred.
      *
-     * @return Whether a restart was requested.
+     * @return The value of WorldLogic::IsRestartRequested() while the song plays, and 0 otherwise.
      * @ghidraAddress NTSC-U/C: 0x00144908
      * @ghidraAddress PAL: 0x00146298
      */
-    bool IsRestartRequested();
+    int IsRestartRequested();
 
     /**
      * Report whether a player is in a freestyle while the song plays.
@@ -480,9 +511,146 @@ public:
      */
     void SetLogic(WorldLogic *pLogic);
 
-    int mState;  /*!< The stage of the world, from loading through the end of the song. */
-    Song *mSong; /*!< The song LoadAssets() built. */
-    DataArray *mSongConfig; /*!< The entry of the song in the "songs" section. */
-    int mSeed;              /*!< The seed of the random numbers of the logic. */
-    // The members after +0x10 are not yet declared.
+    int mState;                                 /*!< One of State. */
+    Song *mSong;                                /*!< The song LoadAssets() built. */
+    DataArray *mSongConfig;                     /*!< The entry of the song in "songs". */
+    int mSeed;                                  /*!< The seed of the logic's random numbers. */
+    int mLoadStep;                              /*!< One of LoadStep. */
+    std::vector<GameEndedMsg *> mGameEndedMsgs; /*!< Copies held until the song starts. */
+    std::vector<PlayerAbortedMsg *> mPlayerAbortedMsgs; /*!< Copies held until the song starts. */
+    File *mDemoFile;            /*!< The demo recording being read, or null. */
+    int mDemoSize;              /*!< The size of the demo recording in bytes. */
+    unsigned char *mDemoBuffer; /*!< The demo recording, or null. */
+    int mLeadTicks;             /*!< The ticks the song plays before bar 0. */
+
+private:
+    /**
+     * Destroy the installed logic and install none.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001445a0
+     * @ghidraAddress PAL: 0x00145f30
+     */
+    void DeleteLogic();
+
+    /**
+     * Start the logic once the song clock arrives at bar 0 minus the lead, and pass it the online
+     * session messages that arrived before.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144738
+     * @ghidraAddress PAL: 0x001460c8
+     */
+    void OnSongStart();
+
+    /**
+     * Advance the load by one step of mLoadStep.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144a28
+     * @ghidraAddress PAL: 0x001463b8
+     */
+    void PollLoad();
+
+    /**
+     * End the load, or wait for the start message of an online session that has none yet.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144c40
+     * @ghidraAddress PAL: 0x001465d0
+     */
+    void FinishLoad();
+
+    /**
+     * Advance the ending of a quit song, and restart the song once it finished.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144cc8
+     * @ghidraAddress PAL: 0x00146658
+     */
+    void PollQuitEnding();
+
+    /**
+     * Advance the logic, and start the ending once the player quit.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144d48
+     * @ghidraAddress PAL: 0x001466d8
+     */
+    void PollPlaying();
+
+    /**
+     * Start the song again from its beginning with a new logic.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144dd0
+     * @ghidraAddress PAL: 0x00146760
+     */
+    void Restart();
+
+    /**
+     * Clear the display and start the ending of a quit song.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00144ee8
+     * @ghidraAddress PAL: 0x00146878
+     */
+    void BeginQuitEnding();
+
+    /**
+     * Reset the song clock to a tick, from the demo recording, a recording file, or nothing, and
+     * start it at the song's speed.
+     *
+     * The name is inferred.
+     *
+     * @param nTick The tick.
+     * @ghidraAddress NTSC-U/C: 0x00145240
+     * @ghidraAddress PAL: 0x00146bd0
+     */
+    void StartClock(int nTick);
+
+    /**
+     * Take the seed of an online session and end the load.
+     *
+     * @param pMsg The message.
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x00145420
+     * @ghidraAddress PAL: 0x00146db0
+     */
+    int OnStartGame(StartGameMsg *pMsg);
+
+    /**
+     * Hold a copy of the end of the session, and end a load that waits for the session.
+     *
+     * @param pMsg The message.
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x00145440
+     * @ghidraAddress PAL: 0x00146dd0
+     */
+    int OnGameEnded(GameEndedMsg *pMsg);
+
+    /**
+     * Hold a copy of a player leaving the session.
+     *
+     * @param pMsg The message.
+     * @return 0.
+     * @ghidraAddress NTSC-U/C: 0x001455f0
+     * @ghidraAddress PAL: 0x00146f80
+     */
+    int OnPlayerAborted(PlayerAbortedMsg *pMsg);
 };
+
+/**
+ * The logic of the running world, which World::SetLogic() installs, or null.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003af838
+ */
+extern WorldLogic *TheWorldLogic;

@@ -186,6 +186,8 @@ dbits
 dbuild
 dbut
 dcmake
+deactivator
+deactivators
 deci
 defsym
 deletefileop
@@ -1116,6 +1118,7 @@ solomulti
 solopowerbarmgr
 soloremix
 soloscreenanim
+songpos
 songspeed
 songtitle
 sonylib
@@ -1246,6 +1249,7 @@ tunnelevent
 tunnelseeker
 tunnelseeksection
 tunnelseekstrip
+tutorialgamelogic
 tutorialrmx
 tvel
 uchar
@@ -1319,6 +1323,7 @@ wiswa
 wiswa's
 wmaybe
 wnonnull
+worldlogic
 worldmgr
 writeop
 writx

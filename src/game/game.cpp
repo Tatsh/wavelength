@@ -61,7 +61,7 @@ Game::Game() {
     mLogic = nullptr;
     mCheerBankSlot = kNoBankSlot;
     mFxBankSlot = kNoBankSlot;
-    mDemo = TheGameDb->GetDemo() != 0 ? 1 : 0;
+    mDemo = TheGameDb->GetDemo() != nullptr ? 1 : 0;
     mReserved58 = 0;
 }
 
@@ -80,7 +80,7 @@ void Game::OnStart() {
 }
 
 void Game::CreateLogic() {
-    if (TheGameDb->GetDemo() != 0 || TheGameConfig->mZeroRandSeed) {
+    if (TheGameDb->GetDemo() != nullptr || TheGameConfig->mZeroRandSeed) {
         mSeed = 0;
     }
     if (TheGameDb->mTutorial != 0) {
@@ -225,7 +225,7 @@ void Game::BuildTracks(int nStartTick) {
                               trackTypes,
                               nOption,
                               clearedSongs);
-    if (TheGameDb->GetDemo() != 0) {
+    if (TheGameDb->GetDemo() != nullptr) {
         TheGfxManager.SetLyricText(TheLocale.Localize(kDemoModeKey, true), true);
     }
 }

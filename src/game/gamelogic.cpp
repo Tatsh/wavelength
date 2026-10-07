@@ -370,7 +370,7 @@ void GameLogic::Start() {
         mSong->GetIntroMuse(i)->Play(&TheSongScheduler);
     }
 
-    if (TheGameDb->GetDemo() == 0) {
+    if (TheGameDb->GetDemo() == nullptr) {
         const int nFirstBeat = mTicksPerBar - mTicksPerBar * mSong->mIntroBars;
         TheForceFeedbackMgr->Start(mSong->GetMsPerTick(), mTicksPerBar);
         TheForceFeedbackMgr->StartMetronome(kForceFeedbackBeatTicks, nFirstBeat);
@@ -643,7 +643,7 @@ void GameLogic::Finish(bool bWon) {
     for (size_t i = 0; i < mPlayers.size(); ++i) {
         TheGameDb->SetPlayerScore(static_cast<int>(i), mPlayers[i]->GetScore());
     }
-    if (TheGameDb->GetDemo() != 0) {
+    if (TheGameDb->GetDemo() != nullptr) {
         EndSong();
     } else {
         OnFinish(bWon);
@@ -823,7 +823,7 @@ void GameLogic::PlacePowerups() {
     }
 
     std::vector<bool> enabled(kPowerupCount, true);
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo && TheGameDb->GetDemo() == 0) {
+    if (TheGameDb->mCommunity == GameDb::kCommunitySolo && TheGameDb->GetDemo() == nullptr) {
         const int nSkillLevel = TheGameDb->mSkillLevel;
         PlayerProfile *pProfile = TheGameDb->GetProfile(0);
         DataArray *pDist =
@@ -1035,7 +1035,7 @@ void GameLogic::HandleInput([[maybe_unused]] const BtnEvent<4> &event) {
     }
     const bool bOption = TheGfxManager.GetOption();
     TheGfxManager.SetOption(!bOption);
-    if (TheGameDb->GetDemo() != 0) {
+    if (TheGameDb->GetDemo() != nullptr) {
         return;
     }
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {

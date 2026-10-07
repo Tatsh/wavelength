@@ -136,6 +136,17 @@ public:
     float StartIntro(float fArgument);
 
     /**
+     * Report whether the intro StartIntro() began has left its running state.
+     *
+     * The name is inferred.
+     *
+     * @return True once the intro no longer runs.
+     * @ghidraAddress NTSC-U/C: 0x001b3508
+     * @ghidraAddress PAL: 0x001bc2a8
+     */
+    bool IsIntroFinished() const;
+
+    /**
      * Run the intro of the song display again.
      *
      * The name is inferred.

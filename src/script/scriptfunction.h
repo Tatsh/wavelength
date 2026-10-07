@@ -39,4 +39,16 @@ public:
      * @ghidraAddress PAL: 0x002a2130
      */
     static void Unregister(Handler pfnHandler);
+
+    /**
+     * Run a script command through the routine registered for its name.
+     *
+     * An unregistered name is passed to DebugPrint().
+     *
+     * @param pCommand The command, with the command name as its first node.
+     * @return Whether a routine was registered for the name.
+     * @ghidraAddress NTSC-U/C: 0x00298600
+     * @ghidraAddress PAL: 0x002a2210
+     */
+    static bool Dispatch(DataArray *pCommand);
 };

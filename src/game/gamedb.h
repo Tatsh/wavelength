@@ -207,13 +207,13 @@ public:
     void SetPlayerScore(int nPlayer, int nScore);
 
     /**
-     * Report the demo being played.
+     * Report the file of the demo being played.
      *
-     * @return The demo, or 0 when no demo is played.
+     * @return The file, or null when no demo is played.
      * @ghidraAddress NTSC-U/C: 0x0026ec78
      * @ghidraAddress PAL: 0x00278818
      */
-    int GetDemo() const;
+    const char *GetDemo() const;
 
     /**
      * Record whether the song was won.
@@ -277,6 +277,18 @@ public:
      * @ghidraAddress PAL: 0x00278748
      */
     void SetPracticeMode(bool bPracticeMode);
+
+    /**
+     * Set whether the tutorial is played.
+     *
+     * The solo arena screen sets it when the player confirms the "Tutorial" arena, and the
+     * song screen sets it for a song whose `type` is 4. Every other way into a song clears it.
+     *
+     * @param nTutorial Non-zero to play the tutorial.
+     * @ghidraAddress NTSC-U/C: 0x0026ebb0
+     * @ghidraAddress PAL: 0x00278750
+     */
+    void SetTutorial(int nTutorial);
 
     /**
      * Record the fraction of the possible capture bars a solo song captured.

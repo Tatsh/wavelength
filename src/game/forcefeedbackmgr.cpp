@@ -21,7 +21,7 @@ ForceFeedbackMgr::~ForceFeedbackMgr() {
 
 void ForceFeedbackMgr::Start(const float *pTickDuration, int nTicksPerBar) {
     const int nPlayers = TheGameDb->GetNumPads();
-    if (nPlayers > kMaxPlayers || TheGameDb->GetDemo() != 0 ||
+    if (nPlayers > kMaxPlayers || TheGameDb->GetDemo() != nullptr ||
         TheGameConfig->mForceFeedbackEnabled == 0) {
         return;
     }

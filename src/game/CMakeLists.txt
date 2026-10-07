@@ -154,7 +154,10 @@ set(WAVELENGTH_GAME_SRCS
     track.cpp
     trackdata.cpp
     trackselector.cpp
+    tutorialgamelogic.cpp
     voxingstg.cpp
+    world.cpp
+    worldlogic.cpp
     worldmgr.cpp)
 
 add_library(wavelength_game STATIC ${WAVELENGTH_GAME_SRCS})

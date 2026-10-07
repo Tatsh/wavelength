@@ -13,6 +13,22 @@
 class Scheduler {
 public:
     /**
+     * Construct a stopped scheduler with no command.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002820c0
+     * @ghidraAddress PAL: 0x0028b978
+     */
+    Scheduler();
+
+    /**
+     * Release the queued commands.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00282198
+     * @ghidraAddress PAL: 0x0028ba50
+     */
+    ~Scheduler();
+
+    /**
      * Run a command a number of ticks from now.
      *
      * @param pCommand The command.
@@ -131,12 +147,91 @@ public:
      */
     int GetClockTick();
 
-    int mReserved00; // +0x00, not yet identified.
-    int mReserved04; // +0x04, not yet identified.
-    int mReserved08; // +0x08, not yet identified.
-    int mReserved0C; // +0x0c, not yet identified.
-    float mTime;     /*!< The song clock in milliseconds. */
-    int mTick;       /*!< The song clock in ticks. */
+    /**
+     * Stop the clock, drop every command, and set the clock to a tick at normal speed.
+     *
+     * The name is inferred.
+     *
+     * @param pTickDuration The duration of one tick in milliseconds, which the scheduler retains.
+     * @param nTick The tick.
+     * @ghidraAddress NTSC-U/C: 0x00282298
+     * @ghidraAddress PAL: 0x0028bb50
+     */
+    void Reset(const float *pTickDuration, int nTick);
+
+    /**
+     * Reset the clock for a recorded song.
+     *
+     * The shipped body passes only the tick duration and the tick to Reset(). The name is
+     * inferred.
+     *
+     * @param pTickDuration The duration of one tick in milliseconds.
+     * @param pszFile The file to record to.
+     * @param nDevice The memory card to record to, or -1 for the host.
+     * @param nTick The tick.
+     * @ghidraAddress NTSC-U/C: 0x00282360
+     * @ghidraAddress PAL: 0x0028bc18
+     */
+    void ResetForRecording(const float *pTickDuration, const char *pszFile, int nDevice, int nTick);
+
+    /**
+     * Reset the clock and replay the commands a file recorded.
+     *
+     * The name is inferred.
+     *
+     * @param pTickDuration The duration of one tick in milliseconds.
+     * @param pszFile The recording.
+     * @param nTick The tick.
+     * @ghidraAddress NTSC-U/C: 0x00282380
+     * @ghidraAddress PAL: 0x0028bc38
+     */
+    void ResetForPlayback(const float *pTickDuration, const char *pszFile, int nTick);
+
+    /**
+     * Reset the clock and replay the commands a buffer recorded.
+     *
+     * The name is inferred.
+     *
+     * @param pTickDuration The duration of one tick in milliseconds.
+     * @param pBuffer The recording.
+     * @param nSize The size of the recording in bytes.
+     * @param nTick The tick.
+     * @ghidraAddress NTSC-U/C: 0x002823d8
+     * @ghidraAddress PAL: 0x0028bc90
+     */
+    void ResetForPlayback(const float *pTickDuration,
+                          const unsigned char *pBuffer,
+                          int nSize,
+                          int nTick);
+
+    /**
+     * Drop every queued command.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00282768
+     * @ghidraAddress PAL: 0x0028c020
+     */
+    void Clear();
+
+    /**
+     * Advance the clock to the current time and run the commands it passed.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002827f0
+     * @ghidraAddress PAL: 0x0028c0a8
+     */
+    void Poll();
+
+    int mReserved00;            // +0x00, not yet identified.
+    int mReserved04;            // +0x04, not yet identified.
+    int mReserved08;            // +0x08, not yet identified.
+    const float *mTickDuration; /*!< The duration of one tick Reset() was given. */
+    float mTime;                /*!< The song clock in milliseconds. */
+    int mTick;                  /*!< The song clock in ticks. */
+    float mFrameTime;           /*!< The clock time the last pump ran the commands up to. */
+    int mFrameTick;             /*!< The clock tick the last pump ran the commands up to. */
 };
 
 /**

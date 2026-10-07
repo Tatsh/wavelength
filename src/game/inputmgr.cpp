@@ -37,7 +37,8 @@ inline float CyclesToMs(unsigned nCycles) {
 
 InputMgr::InputMgr(World *pWorld)
     : mWorld(pWorld), mRepeatInitialDelayMs(TheGameConfig->mRotationRepeatInitialDelayMs),
-      mRepeatDelayMs(TheGameConfig->mRotationRepeatDelayMs), mDemo(TheGameDb->GetDemo() != 0) {
+      mRepeatDelayMs(TheGameConfig->mRotationRepeatDelayMs),
+      mDemo(TheGameDb->GetDemo() != nullptr) {
     JoypadAddSink(this);
     mControllers.reserve(TheGameDb->GetNumPads());
     for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {

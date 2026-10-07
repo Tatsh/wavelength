@@ -14,10 +14,12 @@
 #include "game/pitchtrackriffdata.h"
 #include "game/playmap.h"
 #include "game/scratchtrackdata.h"
+#include "game/scripttrackdata.h"
 #include "game/sectionboundaries.h"
 #include "game/slotgrid.h"
 #include "game/worldtrack.h"
 #include "gs/muse.h"
+#include "script/dataarray.h"
 
 /**
  * One song: its configuration from the song text file and the tracks its MIDI file builds.
@@ -38,6 +40,76 @@ public:
 
     /** Number of mixer channels the song can set the low volumes of. */
     static constexpr int kNumMixerChannels = 16;
+
+    /**
+     * Read the configuration of a song for a difficulty and a rule set.
+     *
+     * @param pSongConfig The entry of the song in the "songs" section.
+     * @param nSkillLevel The difficulty.
+     * @param nRuleSet The rule set the song is played under, one of GameDb::RuleSet.
+     * @ghidraAddress NTSC-U/C: 0x00118e00
+     * @ghidraAddress PAL: 0x0011a598
+     */
+    Song(DataArray *pSongConfig, int nSkillLevel, int nRuleSet);
+
+    /**
+     * Release the song and its tracks.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00119008
+     * @ghidraAddress PAL: 0x0011a7a0
+     */
+    ~Song();
+
+    /**
+     * Start loading the MIDI file and the assets of the tracks.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001194b0
+     * @ghidraAddress PAL: 0x0011ac48
+     */
+    void Load();
+
+    /**
+     * Advance the load Load() started.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00119568
+     * @ghidraAddress PAL: 0x0011ad00
+     */
+    void PollLoad();
+
+    /**
+     * Report whether the load Load() started is complete.
+     *
+     * The name is inferred.
+     *
+     * @return Whether the song is loaded.
+     * @ghidraAddress NTSC-U/C: 0x001197d8
+     * @ghidraAddress PAL: 0x0011af68
+     */
+    bool IsLoaded();
+
+    /**
+     * Apply the saved remix the game database selects to the sections of the song.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0011e880
+     * @ghidraAddress PAL: 0x00120010
+     */
+    void ApplySavedRemix();
+
+    /**
+     * Create the movie players of the tracks once the assets are loaded.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0011e738
+     * @ghidraAddress PAL: 0x0011fec8
+     */
+    void CreateMoviePlayers();
 
     /**
      * Report the number of instrument tracks.
@@ -176,6 +248,16 @@ public:
      * @ghidraAddress PAL: 0x00120750
      */
     SectionBoundaries *GetSections() const;
+
+    /**
+     * Find a track named "SCRIPT" of the MIDI file by the name of its commands.
+     *
+     * @param pszName The name.
+     * @return The commands, or null.
+     * @ghidraAddress NTSC-U/C: 0x0011efa0
+     * @ghidraAddress PAL: 0x00120730
+     */
+    ScriptTrackData *GetScriptTrack(const char *pszName) const;
 
     /**
      * Report the duration of one tick.
