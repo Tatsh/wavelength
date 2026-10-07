@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00350000` to `0x00360000`
 
-28 of 473 routines done.
+29 of 473 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -11,7 +11,7 @@ preliminary.
 | `NetHostingScreen__DestroyPanelWithTwoVtblVectors`                  |        :x:         |      1 |    328 | `0x0035a308` | `0x003c7e58` | `void NetHostingScreen__DestroyPanelWithTwoVtblVectors(NetHostingScreen * pObj, ulong dwFlags)`                                                                          |
 | `MCCreateSaveDirTask__DestroyMemcardTaskWithSourceVectorObject`     |        :x:         |      2 |    320 | `0x00352670` | `0x003be278` | `void MCCreateSaveDirTask__DestroyMemcardTaskWithSourceVectorObject(MCCreateSaveDirTask * pThis, int nDeleteFlag)`                                                       |
 | `NetParamsScreen__ReleasePanelTwoVtblVectorsAt35b3b8`               |        :x:         |      3 |    296 | `0x0035b3b8` | `0x003c8f10` | `void NetParamsScreen__ReleasePanelTwoVtblVectorsAt35b3b8(NetParamsScreen * pPanel, ulong dwFlags)`                                                                      |
-| `Metagame__DestroyMetagameObject`                                   |       :memo:       |      2 |    264 | `0x00354d70` | `0x003c1fc0` | `void Metagame__DestroyMetagameObject(Metagame * pObj, ulong flags)`                                                                                                     |
+| `Metagame__DestroyMetagameObject`                                   | :white_check_mark: |      2 |    264 | `0x00354d70` | `0x003c1fc0` | `void Metagame__DestroyMetagameObject(Metagame * pObj, ulong flags)`                                                                                                     |
 | `MCFindRemixTask__DestroyMemcardTaskWithThreeSourcesObject`         |        :x:         |      2 |    224 | `0x00352d60` | `0x003c0068` | `void MCFindRemixTask__DestroyMemcardTaskWithThreeSourcesObject(MCFindRemixTask * pThis, int nDeleteFlag)`                                                               |
 | `FreqCopyDelScreen__ReleaseCampaignVectorAndDestroy`                |        :x:         |      1 |    208 | `0x00356d88` | `0x003c3fe8` | `void FreqCopyDelScreen__ReleaseCampaignVectorAndDestroy(FreqCopyDelScreen * param_1, ulong flags)`                                                                      |
 | `GetMCGetDirTaskPtrTypeInfo`                                        |        :x:         |      1 |    208 | `0x00351210` |              | `type_info * GetMCGetDirTaskPtrTypeInfo(void)`                                                                                                                           |
