@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "os/string.h"
+#include "synth/softfxfilter.h"
+#include "synth/streamplayer.h"
 
 /**
  * Abstract base of the game's sound output.
@@ -11,8 +13,7 @@
  * implement it. SynthPS2 drives the sound hardware, and SynthNull supplies empty bodies.
  * Create() builds one of the two as TheSynth.
  *
- * The vtable has 38 slots. The slots up to slot 32 are declared in order, and the later slots are
- * not yet declared.
+ * The vtable has 38 slots, declared in order.
  */
 class Synth {
 public:
@@ -109,11 +110,14 @@ public:
     virtual int VirtualSlot10();
 
     /**
-     * Vtable slot 11. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 11. Set the stream the output plays, or none.
      *
+     * The base body is empty. The name is inferred.
+     *
+     * @param pStream The stream, or null.
      * @ghidraAddress NTSC-U/C: 0x00395f98
      */
-    virtual void VirtualSlot11();
+    virtual void SetStream(StreamPlayer *pStream);
 
     /**
      * Vtable slot 12. The base body is empty. The parameters are not yet recovered.
@@ -208,26 +212,36 @@ public:
     virtual void VirtualSlot22();
 
     /**
-     * Vtable slot 23. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 23. Set the lag of the output, the value of the `lag_ms` entry of the `synth`
+     * section.
      *
+     * The base body is empty. The name is inferred.
+     *
+     * @param fLag The lag in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00395fc8
      */
-    virtual void VirtualSlot23();
+    virtual void SetLag(float fLag);
 
     /**
-     * Vtable slot 24. The base body returns 0. The parameters are not yet recovered.
+     * Vtable slot 24. Report the lag slot 23 set.
      *
-     * @return 0.
+     * The base body returns 0. The name is inferred.
+     *
+     * @return The lag in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00395fd0
      */
-    virtual int VirtualSlot24();
+    virtual float GetLag();
 
     /**
-     * Vtable slot 25. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 25. Set the position of the sweep of a sweeping software filter.
      *
+     * The base body is empty. SynthPS2 records the position for the filter types that sweep and
+     * reports any other type. The name is inferred.
+     *
+     * @param fPosition The position, 1 for the top of the sweep.
      * @ghidraAddress NTSC-U/C: 0x00395fe0
      */
-    virtual void VirtualSlot25();
+    virtual void SetSoftFxSweep(float fPosition);
 
     /**
      * Vtable slot 26. The base body is empty. The parameters are not yet recovered.
@@ -237,11 +251,14 @@ public:
     virtual void VirtualSlot26();
 
     /**
-     * Vtable slot 27. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 27. Send the settings of the software effect.
      *
+     * The base body is empty. The name is inferred.
+     *
+     * @param filter The settings.
      * @ghidraAddress NTSC-U/C: 0x00395ff0
      */
-    virtual void VirtualSlot27();
+    virtual void SetSoftFxFilter(const SoftFxFilter &filter);
 
     /**
      * Vtable slot 28. Queue a job that turns the software effects on.
@@ -292,6 +309,58 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00396010
      */
     virtual void VirtualSlot32(int nValue);
+
+    /**
+     * Vtable slot 33. Set whether the effect buses feed the hardware effects.
+     *
+     * The base body is empty. SynthPS2 sends the value as command 0x6e. The name is inferred.
+     *
+     * @param nOn Whether the buses feed the hardware effects.
+     * @ghidraAddress NTSC-U/C: 0x00396018
+     */
+    virtual void SetBusToCoreFx(int nOn);
+
+    /**
+     * Vtable slot 34. Set whether the effect buses feed the software effect.
+     *
+     * The base body is empty, and SynthPS2 does not override it with any work. The name is
+     * inferred.
+     *
+     * @param nOn Whether the buses feed the software effect.
+     * @ghidraAddress NTSC-U/C: 0x00396020
+     */
+    virtual void SetBusToSoftFx(int nOn);
+
+    /**
+     * Vtable slot 35. The base body is empty, and the purpose is not yet recovered.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00396028
+     */
+    virtual void VirtualSlot35();
+
+    /**
+     * Vtable slot 36. Queue a job that sends packed messages.
+     *
+     * The base body is empty. The name is inferred.
+     *
+     * @param messages The messages, each packed as SendPackedMessage() takes it.
+     * @ghidraAddress NTSC-U/C: 0x00396030
+     */
+    virtual void SendMessages(const std::vector<unsigned int> &messages);
+
+    /** Routine a queued callback job calls with its argument. */
+    typedef void (*Callback)(int nArg);
+
+    /**
+     * Vtable slot 37. Queue a job that calls a routine once the jobs before it have run.
+     *
+     * The base body is empty. The name is inferred.
+     *
+     * @param pfnCallback The routine.
+     * @param nArg The argument passed to the routine.
+     * @ghidraAddress NTSC-U/C: 0x00396038
+     */
+    virtual void QueueCallback(Callback pfnCallback, int nArg);
 };
 
 /**

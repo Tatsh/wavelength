@@ -1,36 +1,55 @@
 #pragma once
 
+#include "os/string.h"
+#include "synth/streamplayer.h"
+
 /**
  * The streamed clip of a song that plays while the song screen shows the song.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. The clip is a state machine
- * whose state is stored in globals. Every member is static. Only the members the metagame and the
- * song and arena screens use are declared, and the routines are not reconstructed.
+ * whose state is stored in globals, and every member is static. While the menu music plays the
+ * state is kStateMenu. Stop() switches the sound output to the effects of the clip, and a job the
+ * output runs afterwards sets kStateReady. Load() chooses a clip, and Poll() plays it, fading its
+ * volume in and out. End() fades the clip out. Once the clip has stopped, Poll() restores the
+ * effects of the menu music, and a job the output runs afterwards sets kStateMenu again.
  */
 class SongPreview {
 public:
+    /** The states of the clip, the values of sState. */
+    enum State {
+        kStateStarting = 0,  /*!< Stop() waits for the output to take the effects of the clip. */
+        kStateReady = 1,     /*!< A clip may be chosen and played. */
+        kStateEnding = 2,    /*!< End() waits for the clip to stop. */
+        kStateRestoring = 3, /*!< Poll() waits for the output to take the effects of the menu. */
+        kStateMenu = 4,      /*!< The menu music plays, and no clip does. */
+    };
+
     /**
-     * Fade out a playing clip over a time and release it.
+     * Mute the menu music and prepare the sound output for clips.
      *
-     * @param fFadeSeconds The length of the fade.
+     * In kStateMenu the output level drops to 0 and the `song_preview_effects` entry of the
+     * metagame configuration applies. The state becomes kStateStarting until the output runs a
+     * job that sets kStateReady.
+     *
+     * @param fFadeStep The volume a clip gains or loses on each Poll().
      * @ghidraAddress NTSC-U/C: 0x00196570
      * @ghidraAddress PAL: 0x0019da00
      */
-    static void Stop(float fFadeSeconds);
+    static void Stop(float fFadeStep);
 
     /**
-     * Fade out the clip, forget the clip to play, and wait for the fade to end.
+     * Fade out the clip, forget the clip to play, and enter kStateEnding.
      *
-     * @param bRestoreMusic Whether the menu music returns once the clip ended.
+     * @param bRestoreMusic Whether the effects of the menu music return once the clip has stopped.
      * @ghidraAddress NTSC-U/C: 0x00196668
      * @ghidraAddress PAL: 0x0019daf8
      */
     static void End(bool bRestoreMusic);
 
     /**
-     * Report whether the clip is in state 1, the state of waiting for a clip to play.
+     * Report whether the clip is in kStateReady.
      *
-     * @return Whether the clip waits.
+     * @return Whether a clip may play.
      * @ghidraAddress NTSC-U/C: 0x001966a0
      * @ghidraAddress PAL: 0x0019db30
      */
@@ -67,9 +86,9 @@ public:
     static bool IsIdle();
 
     /**
-     * Report whether the clip is in state 4, the state Stop() fades out.
+     * Report whether the clip is in kStateMenu, the state before Stop().
      *
-     * @return Whether the clip plays.
+     * @return Whether the menu music plays.
      * @ghidraAddress NTSC-U/C: 0x001967d8
      * @ghidraAddress PAL: 0x0019dcf8
      */
@@ -96,4 +115,70 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003af8ac
      */
     static const char *sBonusEncrypt;
+
+private:
+    /**
+     * Enter kStateMenu. The sound output calls it once the effects of the menu music apply.
+     *
+     * @param nArg The argument of the job. The routine does not read it.
+     * @ghidraAddress NTSC-U/C: 0x00196550
+     */
+    static void OnMenuRestored(int nArg);
+
+    /**
+     * Enter kStateReady. The sound output calls it once the effects of the clips apply.
+     *
+     * @param nArg The argument of the job. The routine does not read it.
+     * @ghidraAddress NTSC-U/C: 0x00196560
+     */
+    static void OnClipReady(int nArg);
+
+    /**
+     * The state, one of State.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003af890
+     */
+    static int sState;
+
+    /**
+     * The stream of the clip that plays, or null.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003af894
+     */
+    static StreamPlayer *sPlayer;
+
+    /**
+     * The output level of the clip.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003af898
+     */
+    static float sVolume;
+
+    /**
+     * The volume the clip gains on each Poll(), negative while it fades out.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003af89c
+     */
+    static float sFadeRate;
+
+    /**
+     * The size of a fade step, the value Stop() was given.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003af8a0
+     */
+    static float sFadeStep;
+
+    /**
+     * Whether the effects of the menu music return once the clip has stopped.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003af8a4
+     */
+    static int sRestoreMusic;
+
+    /**
+     * The stream file of the clip to play next, or empty.
+     *
+     * @ghidraAddress NTSC-U/C: 0x004368a0
+     */
+    static String sClip;
 };

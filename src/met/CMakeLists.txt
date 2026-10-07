@@ -3,15 +3,21 @@ set(WAVELENGTH_MET_SRCS
     freqpanel.cpp
     freqscreen.cpp
     gizmo.cpp
+    helppanel.cpp
     introscreen.cpp
     metaarenascreen.cpp
     metagame.cpp
     metamainscreen.cpp
+    metamusicsong.cpp
     metaskillscreen.cpp
     metasongscreen.cpp
     metastartscreen.cpp
+    mix.cpp
+    mixtrack.cpp
     modescreen.cpp
     songpicpanel.cpp
+    songpreview.cpp
+    transitionmusic.cpp
     transitionscreen.cpp)
 
 add_library(wavelength_met STATIC ${WAVELENGTH_MET_SRCS})

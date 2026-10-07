@@ -7,7 +7,7 @@
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
 #include "math/rand.h"
-#include "met/menumusic.h"
+#include "met/transitionmusic.h"
 #include "netflow/netlaunchpad.h"
 #include "netflow/nettransport.h"
 #include "os/command.h"
@@ -246,7 +246,7 @@ void World::PollLoad() {
             mLoadStep = kLoadStepTracks;
             mLeadTicks = mSong->mBuilder->mTicksPerBar * mSong->mIntroBars;
             BeginSongLoad();
-            FadeOutMenuMusic();
+            FadeOutSharedMusic();
         }
         break;
     case kLoadStepTracks:
@@ -256,7 +256,7 @@ void World::PollLoad() {
         }
         break;
     case kLoadStepMusic:
-        if (!IsMenuMusicFading()) {
+        if (!IsSharedMusicFading()) {
             mLoadStep = kLoadStepAssets;
             BeginAssetLoad();
         }

@@ -98,6 +98,7 @@ collideable
 collideables
 color
 constructo
+corefx
 coveragerc
 cpdext
 cpdist
@@ -255,6 +256,7 @@ hblanks
 hblkhd
 hblks
 heff
+helppanel
 helptext
 hialloc
 hibytes
@@ -408,6 +410,7 @@ memstream
 meshanim
 metaarenascreen
 metamainscreen
+metamusicsong
 metaskillscreen
 metasongscreen
 metastartscreen
@@ -417,6 +420,7 @@ miniw
 mipsel
 miptbp
 missthis
+mixtrack
 mktemp
 mmag
 mmix
@@ -663,6 +667,7 @@ solosong
 solotut
 songpicpanel
 songpos
+songpreview
 songspeed
 sonylib
 sonylibs
@@ -699,6 +704,7 @@ subx
 suby
 sutructure
 svdata
+syntheffects
 synthlock
 synthmodule
 synthserver
@@ -732,6 +738,7 @@ trackselector
 transanim
 transes
 transformops
+transitionmusic
 transitionscreen
 trmopn
 trxdir

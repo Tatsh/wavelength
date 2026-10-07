@@ -7,8 +7,8 @@
 #include "met/gizmo.h"
 #include "met/helppanel.h"
 #include "met/metagamearena.h"
-#include "met/metamusic.h"
 #include "met/metamusicsong.h"
+#include "met/mix.h"
 #include "msg/joypadinputmsg.h"
 #include "msg/message.h"
 #include "os/string.h"
@@ -385,7 +385,7 @@ public:
     DialogCallback mDialogCallback;  /*!< The routine the dialog reports to, or null. */
     void *mDialogUserData;           /*!< The value passed back to mDialogCallback. */
     DialogAction mDialogAction;      /*!< The choice made in the dialog. */
-    MetaMusic *mMusic;               /*!< The menu music, while the front end shows. */
+    Mix *mMusic;                     /*!< The menu music, while the front end shows. */
     MetaMusicSong *mMusicSong;       /*!< The menu song of mMusic. */
     SynthEffects mEffects;           /*!< The `effects` entry of the metagame configuration. */
     float *mTickMs;                  /*!< The milliseconds of one tick of the front end clock. */

@@ -1,26 +1,26 @@
 #pragma once
 
-#include "met/metamusic.h"
+#include "met/mix.h"
+#include "met/mixmidibuilder.h"
+#include "os/string.h"
 #include "script/dataarray.h"
 
 /**
- * One menu song of the `songs` entry of the metagame configuration, loading its tracks into a
- * MetaMusic.
+ * One menu song of the `songs` entry of the metagame configuration, loading its tracks into a Mix.
  *
- * The class is not polymorphic and has no RTTI, so its name is inferred. Only the members the
- * metagame uses are declared.
+ * The class is not polymorphic and has no RTTI. The name is inferred. The object is 0x24 bytes.
  */
 class MetaMusicSong {
 public:
     /**
      * Build the song and the path of its sample bank.
      *
-     * @param pMusic The music the tracks load into.
+     * @param pMix The music the tracks load into.
      * @param pConfig The entry of the song, with its `bank_file` and `mix` entries.
      * @ghidraAddress NTSC-U/C: 0x0016a440
      * @ghidraAddress PAL: 0x0016d5c8
      */
-    MetaMusicSong(MetaMusic *pMusic, DataArray *pConfig);
+    MetaMusicSong(Mix *pMix, DataArray *pConfig);
 
     /**
      * Release the reader of the song.
@@ -63,4 +63,27 @@ public:
      * @ghidraAddress PAL: 0x0016d750
      */
     const char *BankFile() const;
+
+    /**
+     * Set the bank file to the `bank_file` entry, beside the configuration file of the entry.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0016a5d0
+     * @ghidraAddress PAL: 0x0016d758
+     */
+    void FindBankFile();
+
+    /**
+     * Hand each track the reader built to the music, and then the track names of each `mix`
+     * entry.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0016a6a0
+     * @ghidraAddress PAL: 0x0016d828
+     */
+    void AddTracks();
+
+    MixMidiBuilder *mBuilder; /*!< The reader of the song's MIDI file, or null. */
+    Mix *mMix;                /*!< The music the tracks load into. */
+    String mBankFile;         /*!< The path of the sample bank. */
+    int mLoaded;              /*!< Whether the tracks have been handed to the music. */
+    DataArray *mConfig;       /*!< The entry of the song. */
 };

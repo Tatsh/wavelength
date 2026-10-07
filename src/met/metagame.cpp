@@ -23,9 +23,9 @@
 #include "met/metasongscreen.h"
 #include "met/metastartscreen.h"
 #include "met/modescreen.h"
-#include "met/sharedmusic.h"
 #include "met/songpicpanel.h"
 #include "met/songpreview.h"
+#include "met/transitionmusic.h"
 #include "met/transitionscreen.h"
 #include "netflow/lobbymsgtypes.h"
 #include "netflow/netlobby.h"
@@ -289,6 +289,7 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(MetaSongScreen::New, "meta_song_screen");
     TheUI.RegisterScreenType(FreqConfirmScreen::New, "confirm_screen");
     TheUI.RegisterPanelType(FreqPanel::New, "freq_panel");
+    TheUI.RegisterPanelType(HelpPanel::New, "help_panel");
     TheUI.RegisterPanelType(SongPicPanel::New, "song_pic_panel");
     Gizmo::Init(pMetagame);
     TheMetagame.CreateGizmo();
@@ -1055,7 +1056,7 @@ void Metagame::UnloadBanks() {
 }
 
 void Metagame::CreateMusic() {
-    mMusic = new MetaMusic;
+    mMusic = new Mix;
     DataArray *pSongs = SystemConfig()->FindArray(kMetagameKey, true)->FindArray(kSongsKey, true);
     int nSong = 0;
     if (mFirstBoot == 0) {

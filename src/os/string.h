@@ -172,6 +172,41 @@ public:
      */
     int Compare(int nPos, int nCount, const char *pszText) const;
 
+    /** The position Find() reports when the text does not occur. */
+    static constexpr int npos = -1;
+
+    /**
+     * Find the first occurrence of a C string in the text.
+     *
+     * @param pszText The text to find.
+     * @return The position of the occurrence, or npos.
+     * @ghidraAddress NTSC-U/C: 0x0029f250
+     * @ghidraAddress PAL: 0x002a8f10
+     */
+    int Find(const char *pszText) const;
+
+    /**
+     * Copy the characters from a position to the end.
+     *
+     * @param nPos The first character copied.
+     * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x0029f328
+     * @ghidraAddress PAL: 0x002a8fe8
+     */
+    String Substring(int nPos) const;
+
+    /**
+     * Copy a run of characters, or the characters from a position to the end when the run
+     * reaches the end.
+     *
+     * @param nPos The first character copied.
+     * @param nCount The length of the run.
+     * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x0029f358
+     * @ghidraAddress PAL: 0x002a9018
+     */
+    String Substring(int nPos, int nCount) const;
+
     /**
      * Insert copies of one character.
      *
