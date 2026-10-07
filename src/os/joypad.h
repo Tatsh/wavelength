@@ -1,5 +1,59 @@
 #pragma once
 
+#include "app/msgsink.h"
+
+/** The number of analogue sticks of a controller. */
+constexpr int kJoypadNumSticks = 2;
+
+/**
+ * Position of one analogue stick.
+ *
+ * The name is inferred.
+ */
+struct JoypadStick {
+    float mX; /*!< The horizontal position, from -1 to 1. */
+    float mY; /*!< The vertical position, from -1 to 1. */
+};
+
+/**
+ * State of one controller as the last poll read it.
+ *
+ * The name is inferred. The record is 0x80 bytes. Only the members its callers here read are
+ * declared.
+ */
+struct JoypadState {
+    int mReserved00;                       // +0x00, not yet identified.
+    JoypadStick mSticks[kJoypadNumSticks]; /*!< The analogue sticks. */
+};
+
+/**
+ * Report the state of a controller.
+ *
+ * @param nPad The controller.
+ * @return The state.
+ * @ghidraAddress NTSC-U/C: 0x0028aca0
+ * @ghidraAddress PAL: 0x00294498
+ */
+JoypadState *JoypadGetState(int nPad);
+
+/**
+ * Add a sink to the receivers of the controller messages.
+ *
+ * @param pSink The sink.
+ * @ghidraAddress NTSC-U/C: 0x0028acf0
+ * @ghidraAddress PAL: 0x002944e8
+ */
+void JoypadAddSink(MsgSink *pSink);
+
+/**
+ * Remove a sink from the receivers of the controller messages.
+ *
+ * @param pSink The sink.
+ * @ghidraAddress NTSC-U/C: 0x0028ad18
+ * @ghidraAddress PAL: 0x00294510
+ */
+void JoypadRemoveSink(MsgSink *pSink);
+
 /**
  * Turn the analog stick messages of the controller poll on or off.
  *
@@ -11,3 +65,16 @@
  * @ghidraAddress PAL: 0x002944d8
  */
 void JoypadSetStickMessages(bool bEnable);
+
+/**
+ * Give the input of a controller to the menus or to the running world.
+ *
+ * WorldLogic gives every controller to the world while it exists, and a paused game gives them
+ * back to the menus. The name is inferred.
+ *
+ * @param nPad The controller.
+ * @param bMenu Whether the menus receive the input.
+ * @ghidraAddress NTSC-U/C: 0x0028acc8
+ * @ghidraAddress PAL: 0x002944c0
+ */
+void JoypadSetMenuControl(int nPad, bool bMenu);

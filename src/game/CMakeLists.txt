@@ -29,6 +29,7 @@ set(WAVELENGTH_GAME_SRCS
     freqparttemplate.cpp
     gameenablemgr.cpp
     gameinfo.cpp
+    gamelogic.cpp
     gamemanagerimpl.cpp
     gameparams.cpp
     gameplaybacker.cpp
@@ -38,6 +39,11 @@ set(WAVELENGTH_GAME_SRCS
     gamercmd.cpp
     gamerecorder.cpp
     gamestats.cpp
+    gametrackselector.cpp
+    gemcatcher.cpp
+    gemcursor.cpp
+    helptext.cpp
+    inputmgr.cpp
     genericcatcher.cpp
     ghostnotespowerup.cpp
     globalsettings.cpp

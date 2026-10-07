@@ -1,526 +1,344 @@
 #pragma once
 
-#include <iostream>
-
-#include "app/msgsink.h"
-#include "app/msgsource.h"
-#include "game/idable.h"
-#include "os/hxstr.h"
-
-class FreqAppearance;
-class PhraseCapturedMsg;
-class UpdateScorePacket;
-
-/** What Player::GetInputSlot() reports for a player with no input slot. */
-constexpr int kNoInputSlot = -1;
+#include "game/inputevents.h"
+#include "game/track.h"
+#include "os/command.h"
+#include "os/ptr.h"
 
 /**
- * One participant in a session, local or remote.
+ * One participant in a song: the track the participant plays, the score, and the streak.
  *
- * `Player` in the RTTI descriptor at `0x009020c0`, over three bases: `IDable<Player>` at offset 0,
- * `MsgSink` at 8, and `MsgSource` at 12. Three classes derive from it, `LocalPlayer`, `NetPlayer`,
- * and `NullPlayer`.
- *
- * Three vtables belong to it, each walked to its all-zero terminator rather than counted from the
- * slot titles, which understate every one of them. The primary at `0x007d2170` has 21 entries, so
- * this class declares 19 virtuals of its own after slot 0 and the destructor. The `MsgSink` table
- * at `0x007d2148` has 4 and overrides only `DispatchPriv`, and the `MsgSource` table at
- * `0x007d2120` has 4 and overrides nothing, leaving `AddSink` and `RemoveSink` as inherited.
- *
- * Almost all of the primary table is inert defaults: slots 2 and 4 return -1, six return 0, two
- * return 1, one returns 0.0f, and five are empty. Only slots 11 and 13 have a body of any size, so
- * this class is an interface with defaults and the three subclasses carry the behaviour.
- *
- * The base subobjects account for `+0x00` through `+0x1f`, which the destructor at `0x00132ae8`
- * confirms by restoring a vptr at `+0x04` for `IDable<Player>`, at `+0x08` for `MsgSink`, and at
- * `+0x1c` for `MsgSource`, whose own `mSinks` vector it tears down at `+0x10`. This class's own
- * members start at `+0x20`, and the only one the destructor releases is the colour name at `+0x24`.
+ * The RTTI includes the class name. The class has no base. LocalPlayer derives from it for a
+ * player on this console. A player's points accumulate as pending points while a phrase is
+ * played, and CommitPendingPoints() adds them to the score scaled by the streak multiplier and the
+ * multiplier power-up, or LosePendingPoints() forfeits them. Every change is shown through
+ * TheGfxManager.
  */
-class Player : public IDable<Player>, public MsgSink, public MsgSource {
+class Player {
 public:
     /**
-     * Register the player under its identifier and start its tallies.
+     * Construct a player with no track, no score, no streak, and no power-up.
      *
-     * The score starts at 0 with a ceiling of 1, the juice at 0 with a ceiling of 1, and the last
-     * erase time at 0.
-     *
-     * @param nId The identifier, also recorded in mPlayerId.
-     * @param colorName The player's colour name.
-     * @param pAppearance The appearance the player is drawn with.
-     * @ghidraAddress NTSC-U/C: 0x0012f5c0
-     * @ghidraAddress PAL: 0x0012fd78
+     * @param nIndex The player's index.
+     * @param nTicksPerBar The length of a bar in ticks, the unit of the multiplier power-up.
+     * @ghidraAddress NTSC-U/C: 0x0012d9b0
+     * @ghidraAddress PAL: 0x0012f188
      */
-    Player(int nId, const HxStr &colorName, const FreqAppearance *pAppearance);
+    Player(int nIndex, int nTicksPerBar);
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x00132ae8
-     * @ghidraAddress PAL: 0x00133318
+     * Cancel the multiplier power-up's end and release its command.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0012da40
+     * @ghidraAddress PAL: 0x0012f218
      */
     virtual ~Player();
 
     /**
-     * Report the controller slot that drives this player.
+     * Move to a track and log the move.
      *
-     * Slot 2. Returns kNoInputSlot here, and NetPlayer inherits it. LocalPlayer returns the slot
-     * its constructor received, and InputMap matches a controller reading against it.
-     *
-     * @return The input slot, or kNoInputSlot.
-     * @ghidraAddress NTSC-U/C: 0x00132c20
-     * @ghidraAddress PAL: 0x00133460
+     * @param pTrack The track.
+     * @ghidraAddress NTSC-U/C: 0x0012daa0
+     * @ghidraAddress PAL: 0x0012f278
      */
-    virtual int GetInputSlot() const;
+    virtual void SetTrack(Track *pTrack);
 
     /**
-     * Test whether this player is the stand-in for an absent one.
+     * Hide the player's power-up icon.
      *
-     * Returns false here. Only `NullPlayer` returns true, and Print() branches on the answer to
-     * write "{player null}", which is what recovers the verb.
+     * mPowerup is unchanged.
      *
-     * @return Non-zero when this player is a stand-in.
-     * @ghidraAddress NTSC-U/C: 0x00132c60
-     * @ghidraAddress PAL: 0x001334a0
+     * @ghidraAddress NTSC-U/C: 0x0012dae8
+     * @ghidraAddress PAL: 0x0012f2c0
      */
-    virtual int IsNull();
+    virtual void HidePowerup();
 
     /**
-     * Report the track this player occupies.
+     * Withdraw the scheduled end of the multiplier power-up.
      *
-     * Slot 4. Returns -1 here. LocalPlayer and NetPlayer return the track the last TrackSelectMsg
-     * for the player chose, and powerups deploy and riffs play on it.
-     *
-     * @return The track, or -1.
-     * @ghidraAddress NTSC-U/C: 0x00132c98
-     * @ghidraAddress PAL: 0x001334d8
+     * @ghidraAddress NTSC-U/C: 0x0012db10
+     * @ghidraAddress PAL: 0x0012f2e8
      */
-    virtual int GetTrack();
+    virtual void CancelMultiplier();
 
     /**
-     * Report the player's place on its track.
-     *
-     * Slot 5. Returns zero here. LocalPlayer and NetPlayer return the second word of the last
-     * TrackSelectMsg for the player, the place that TrackSelectPacket includes beside the track.
-     *
-     * @return The place.
-     * @ghidraAddress NTSC-U/C: 0x00132ca0
-     * @ghidraAddress PAL: 0x001334e0
-     */
-    virtual int GetPlace();
-
-    /**
-     * Report zero.
-     *
-     * Slot 6. LocalPlayer's override also returns zero, and the image has no caller of the slot.
-     * The title records that the slot is unused.
-     *
-     * @return Always 0.
-     * @ghidraAddress NTSC-U/C: 0x00132ca8
-     * @ghidraAddress PAL: 0x001334e8
-     */
-    virtual int UnusedQuery();
-
-    /**
-     * Do nothing.
-     *
-     * Slot 7. LocalPlayer's override is also empty, and the image has no caller of the slot. The
-     * title records that the slot is unused.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00132cb0
-     * @ghidraAddress PAL: 0x001334f0
-     */
-    virtual void UnusedHook();
-
-    /**
-     * Give the player a span of bars it plays freely.
-     *
-     * Slot 8. Empty here. LocalPlayer stores both bars, and IsFreestyleBar() tests a bar against
-     * them. Gamer passes the eight-bar span of an enable-freestyle powerup and the span a solo win
-     * grants, and a jam player's constructor passes a span that never ends.
-     *
-     * @param nStartBar The first bar of the span.
-     * @param nEndBar The bar after the span.
-     * @ghidraAddress NTSC-U/C: 0x00132cb8
-     * @ghidraAddress PAL: 0x001334f8
-     */
-    virtual void SetFreestyleSpan(int nStartBar, int nEndBar);
-
-    /**
-     * Test whether a bar lies in the player's freestyle span.
-     *
-     * Slot 9. Returns zero here, ignoring its argument. NotePitcher plays a bar inside the span
-     * without the track's usual requirement.
-     *
-     * @param nBar The bar.
-     * @return Non-zero when the bar is in the span.
-     * @ghidraAddress NTSC-U/C: 0x00132cc0
-     * @ghidraAddress PAL: 0x00133500
-     */
-    virtual int IsFreestyleBar(int nBar);
-
-    /**
-     * Report whether the player is looping.
-     *
-     * Slot 10. Returns zero here. LocalPlayer returns the flag SetLooping() and ToggleLoop()
-     * maintain.
-     *
-     * @return Non-zero when looping.
-     * @ghidraAddress NTSC-U/C: 0x00132cc8
-     * @ghidraAddress PAL: 0x00133508
-     */
-    virtual int IsLooping();
-
-    /**
-     * Announce the player's state.
-     *
-     * Slot 11. Here, builds a `JuiceAmountMsg` on the stack for this player, with mMaxJuice
-     * clamped to a maximum of 800, and sends it through the `MsgSource` subobject. LocalPlayer adds
-     * its track, powerups, score ceiling, ghost, and loop state.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0012f788
-     * @ghidraAddress PAL: 0x0012ff40
-     */
-    virtual void AnnounceState();
-
-    /**
-     * Deactivate the powerup placer.
-     *
-     * Slot 12. Empty here. LocalPlayer runs PowerupPlacer::Deactivate(), the counterpart of the
-     * PowerupPlacer::Activate() that AnnounceState() runs. The image has no caller of the slot but
-     * StopMF(), itself uncalled. The title is inferred from the forwarding alone.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00132d30
-     * @ghidraAddress PAL: 0x00133570
-     */
-    virtual void DeactivatePlacer();
-
-    /**
-     * Write a description of this player to stream.
-     *
-     * Writes the literal "{player null}" when IsNull() reports true, and otherwise "{player "
-     * followed by the identifier at `+0x20`. Those two literals at `0x007d2048` and `0x007d2058`
-     * are what attest both this routine and IsNull().
-     *
-     * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x00133110
-     * @ghidraAddress PAL: 0x00133960
-     */
-    virtual void Print(std::ostream &stream);
-
-    /**
-     * Count one caught gem.
-     *
-     * Slot 14. Catcher runs it for every gem the player catches and discards the result. Does not
-     * touch the return register here. The value it yields is therefore indeterminate. LocalPlayer
-     * increments its count and returns the new value. A base whose default yields an indeterminate
-     * value is faithful to the image rather than a reconstruction error.
-     *
-     * @return The new count.
-     * @ghidraAddress NTSC-U/C: 0x00132d70
-     * @ghidraAddress PAL: 0x001335b0
-     */
-    virtual int CountCaughtGem();
-
-    /**
-     * Count one missed gem.
-     *
-     * Slot 15. Catcher runs it when a gem passes uncaught. Does not touch the return register
-     * here, as with CountCaughtGem(). LocalPlayer increments its count and returns the new value.
-     *
-     * @return The new count.
-     * @ghidraAddress NTSC-U/C: 0x00132d78
-     * @ghidraAddress PAL: 0x001335b8
-     */
-    virtual int CountMissedGem();
-
-    /**
-     * Report the score multiplier a capture starting at a bar earns.
-     *
-     * Slot 16. Returns 1 here, ignoring its argument. Catcher and Scratcher pass the result in a
-     * BeginPhraseCatchMsg.
-     *
-     * @param nBar The bar.
-     * @return The multiplier.
-     * @ghidraAddress NTSC-U/C: 0x00132d80
-     * @ghidraAddress PAL: 0x001335c0
-     */
-    virtual int GetMultiplier(int nBar);
-
-    /**
-     * Report the best streak of consecutive captures.
-     *
-     * Slot 17. Returns zero here. Gamer records it as the solo tally.
-     *
-     * @return The streak.
-     * @ghidraAddress NTSC-U/C: 0x00132d88
-     * @ghidraAddress PAL: 0x001335c8
-     */
-    virtual int GetBestStreak();
-
-    /**
-     * Report the proportion of captured phrases among those captured and muffed.
-     *
-     * Slot 18. Returns 0.0f here. Gamer records it as the solo ratio.
-     *
-     * @return A fraction between 0 and 1.
-     * @ghidraAddress NTSC-U/C: 0x00132d90
-     * @ghidraAddress PAL: 0x001335d0
-     */
-    virtual float GetCaptureRatio();
-
-    /**
-     * Report the game mode the player was built in.
-     *
-     * Slot 19. Returns zero here.
-     *
-     * @return The game mode.
-     * @ghidraAddress NTSC-U/C: 0x00132da0
-     * @ghidraAddress PAL: 0x001335e0
-     */
-    virtual int GetGameMode();
-
-    /**
-     * Record that a bar scored, reporting whether it had not scored before.
-     *
-     * Slot 20. Returns 1 here, ignoring its argument. Scratcher does not award points for a bar
-     * the slot reports zero for.
-     *
-     * @param nBar The bar.
-     * @return Non-zero when the bar is later than every bar recorded before.
-     * @ghidraAddress NTSC-U/C: 0x00132db0
-     * @ghidraAddress PAL: 0x001335f0
-     */
-    virtual int MarkBarScored(int nBar);
-
-    /**
-     * Receive one message.
-     *
-     * The only `MsgSink` virtual this class overrides, at slot 3 of its `MsgSink` table. An
-     * UpdateScorePacket for this player adds its delta without notifying, and a
-     * PhraseCapturedMsg is awarded through OnMsg() whichever player it identifies. Every other
-     * message is discarded.
-     *
-     * @param pMsg The message.
-     * @ghidraAddress NTSC-U/C: 0x00133240
-     * @ghidraAddress PAL: 0x00133a90
-     */
-    virtual void DispatchPriv(Message *pMsg);
-
-    // Declared in recovered offset order. The base subobjects occupy +0x00 through +0x1f.
-    /**
-     * Identifier a message addresses this player by.
-     *
-     * Print() writes it after the "{player " literal and DispatchPriv compares it against a
-     * field of an incoming message. Gem reads it directly at `0x001a2608` and `0x001a2d84` from
-     * outside the hierarchy, and the image exposes no accessor. The member is therefore public
-     * here. A friend declaration for Gem fits the image equally well.
-     *
-     * +0x20
-     */
-    int mPlayerId;
-
-    /**
-     * The player's colour name, such as `green` or `red`. +0x24
-     *
-     * ~Player releases its buffer at `+0x28` with the inlined HxStr destructor. HudScore, HudFreq,
-     * and HudScorePulse copy-construct it directly at `0x00419848`, `0x00419b40`, and `0x0041c2d0`
-     * from outside the hierarchy, and the image has no accessor for it.
-     */
-    HxStr mColorName;
-
-    /**
-     * Report the juice the player has banked.
-     *
-     * The routine at `0x0012f970` clamps the value to 0 through mMaxJuice, the maximum
-     * JuiceAmountMsg announces, and the message accessor at `0x003e4198` divides it by that
-     * announced maximum.
-     *
-     * @return The juice.
-     * @ghidraAddress NTSC-U/C: 0x001330f8
-     * @ghidraAddress PAL: 0x00133948
-     */
-    int GetJuice();
-
-    /**
-     * Report the player's score.
-     *
-     * The routine at `0x0012f808` clamps the value to 0 through mMaxScore. Renderer compares the
-     * scores of every world player through this accessor to find the leader.
-     *
-     * @return The score.
-     * @ghidraAddress NTSC-U/C: 0x001330e0
-     * @ghidraAddress PAL: 0x00133930
-     */
-    int GetScore();
-
-    /**
-     * Set the score and the ceiling it is clamped to.
-     *
-     * Gamer's constructor sets every player to 0 with a ceiling of 100000. The title is inferred.
+     * Set the score and show it.
      *
      * @param nScore The score.
-     * @param nMaxScore The ceiling.
-     * @ghidraAddress NTSC-U/C: 0x001330e8
-     * @ghidraAddress PAL: 0x00133938
+     * @ghidraAddress NTSC-U/C: 0x0012dc70
+     * @ghidraAddress PAL: 0x0012f448
      */
-    void SetScore(int nScore, int nMaxScore);
+    virtual void SetScore(int nScore);
 
     /**
-     * Set the juice and the ceiling it is clamped to.
+     * Add points to the score and show the new score.
      *
-     * Gamer's constructor passes two configuration values in kGameModeSolo and zeros otherwise.
-     * The title is inferred.
-     *
-     * @param nJuice The juice.
-     * @param nMaxJuice The ceiling.
-     * @ghidraAddress NTSC-U/C: 0x00133100
-     * @ghidraAddress PAL: 0x00133950
+     * @param nPoints The points.
+     * @ghidraAddress NTSC-U/C: 0x0012dcb0
+     * @ghidraAddress PAL: 0x0012f488
      */
-    void SetJuice(int nJuice, int nMaxJuice);
+    virtual void AddScore(int nPoints);
 
     /**
-     * Add juice, clamped to 0 through the ceiling, and announce a change.
+     * Add the pending points to the score and clear them.
      *
-     * A change sends a JuiceAmountMsg through the MsgSource subobject and, when bNotify is set,
-     * an UpdateScorePacket with the amount. The script command that adds juice is the recovered
-     * caller. The title is inferred.
+     * The points added are the pending points times the multiplier power-up value times the streak
+     * multiplier. A capture worth no points shows the pending points as cleared rather than
+     * captured.
      *
-     * @param nAmount The juice to add, which may be negative.
-     * @param bNotify Non-zero to also send the UpdateScorePacket.
-     * @ghidraAddress NTSC-U/C: 0x0012f970
-     * @ghidraAddress PAL: 0x00130128
+     * @param bHide Whether the pending points display is hidden after a capture worth points.
+     * @ghidraAddress NTSC-U/C: 0x0012dd80
+     * @ghidraAddress PAL: 0x0012f558
      */
-    void AddJuice(int nAmount, int bNotify);
+    virtual void CommitPendingPoints(bool bHide);
 
     /**
-     * Add to the score, clamped to 0 through the ceiling, and announce a change.
+     * Forfeit the pending points.
      *
-     * The score counterpart of AddJuice(). A change sends a PointAmountMsg with the ceiling capped
-     * at 800 and, when bNotify is set, an UpdateScorePacket with the delta. PhraseNeutralizer is a
-     * recovered caller. The title is inferred.
-     *
-     * @param nDelta The points to add, which may be negative.
-     * @param bNotify Non-zero to also send the UpdateScorePacket.
-     * @ghidraAddress NTSC-U/C: 0x0012f808
-     * @ghidraAddress PAL: 0x0012ffc0
+     * @ghidraAddress NTSC-U/C: 0x0012de40
+     * @ghidraAddress PAL: 0x0012f618
      */
-    void AddScore(int nDelta, int bNotify);
+    virtual void LosePendingPoints();
 
     /**
-     * Add a captured phrase's score and juice, announcing both.
+     * Start the multiplier power-up and schedule its end.
      *
-     * LocalPlayer::DispatchPriv() and the routine at `0x00122be8` are the callers.
+     * The power-up lasts GameConfig::mMultiplierDurationBars bars from the current tick. A power-up
+     * already running is restarted.
      *
-     * @param msg The capture.
-     * @ghidraAddress NTSC-U/C: 0x001331c8
-     * @ghidraAddress PAL: 0x00133a18
+     * @ghidraAddress NTSC-U/C: 0x0012de78
+     * @ghidraAddress PAL: 0x0012f650
      */
-    void OnMsg(const PhraseCapturedMsg &msg);
+    virtual void ActivateMultiplier();
 
     /**
-     * Report whether the player has an input slot.
+     * Set whether the player is catching.
      *
-     * Inline, and TrackSelector::DispatchPriv() expands it. The address is its uncalled
-     * out-of-line copy.
-     *
-     * @return Non-zero when GetInputSlot() reports a value other than -1.
-     * @ghidraAddress NTSC-U/C: 0x00132c30
-     * @ghidraAddress PAL: 0x00133470
+     * @param bCatching Whether the player is catching.
+     * @ghidraAddress NTSC-U/C: 0x0012e0c8
+     * @ghidraAddress PAL: 0x0012f8a0
      */
-    int IsLocal() const {
-        return GetInputSlot() != kNoInputSlot;
+    virtual void SetCatching(bool bCatching);
+
+    /**
+     * Set the remix repeat state.
+     *
+     * @param bRepeat The state.
+     * @ghidraAddress NTSC-U/C: 0x0012e150
+     * @ghidraAddress PAL: 0x0012f928
+     */
+    virtual void SetRepeat(bool bRepeat);
+
+    /**
+     * Report the controller port of the player.
+     *
+     * @return -1, because a player of this class has no controller.
+     * @ghidraAddress NTSC-U/C: 0x0033dbd0
+     * @ghidraAddress PAL: 0x003ab108
+     */
+    virtual int GetPadNum() const {
+        return -1;
     }
 
     /**
-     * Delete a player through its virtual destructor, doing nothing for null.
+     * Report the player's index.
      *
-     * Inline. GrooveWorld::DeletePlayers() passes it to `std::for_each`, which is what gives it
-     * the out-of-line copy at this address. The title is inferred.
-     *
-     * @param pPlayer The player to delete, or null.
-     * @ghidraAddress NTSC-U/C: 0x00132d38
-     * @ghidraAddress PAL: 0x00133578
+     * @return The index.
      */
-    static void Delete(Player *pPlayer) {
-        delete pPlayer;
+    int GetIndex() const {
+        return mIndex;
     }
 
     /**
-     * Copy the player's colour name.
+     * Report the score.
      *
-     * Inline. The address is its uncalled out-of-line copy. The title is inferred.
-     *
-     * @return mColorName, by value.
-     * @ghidraAddress NTSC-U/C: 0x00132c68
-     * @ghidraAddress PAL: 0x001334a8
+     * @return The score.
      */
-    HxStr GetColorName();
+    int GetScore() const {
+        return mScore;
+    }
 
     /**
-     * Copy the username of the player's appearance.
+     * Report the player's track.
      *
-     * Inline. The address is its uncalled out-of-line copy. The title is inferred.
-     *
-     * @return FreqAppearance::mUserName of mAppearance, by value.
-     * @ghidraAddress NTSC-U/C: 0x001330a8
-     * @ghidraAddress PAL: 0x001338f8
+     * @return The track, or null.
+     * @ghidraAddress NTSC-U/C: 0x0012dae0
+     * @ghidraAddress PAL: 0x0012f2b8
      */
-    HxStr GetUsername();
+    Track *GetTrack() const;
 
     /**
-     * Run AnnounceState() and report zero.
+     * Hand a note event to the player's track.
      *
-     * Inline. The address is its uncalled out-of-line copy.
-     *
-     * @return Always 0.
-     * @ghidraAddress NTSC-U/C: 0x00132cd0
-     * @ghidraAddress PAL: 0x00133510
+     * @param event The event.
+     * @ghidraAddress NTSC-U/C: 0x0012db48
+     * @ghidraAddress PAL: 0x0012f320
      */
-    int StartMF();
+    void HandleInput(const PlayNoteEvent &event);
 
     /**
-     * Run DeactivatePlacer() and report zero.
+     * Hand a button event to the player's track.
      *
-     * Inline. The address is its uncalled out-of-line copy.
-     *
-     * @return Always 0.
-     * @ghidraAddress NTSC-U/C: 0x00132d00
-     * @ghidraAddress PAL: 0x00133540
+     * @param event The event.
+     * @ghidraAddress NTSC-U/C: 0x0012db80
+     * @ghidraAddress PAL: 0x0012f358
      */
-    int StopMF();
+    void HandleInput(const BtnEvent<10> &event);
 
-private:
     /**
-     * Adds the packet's delta without notifying when the packet names this player.
+     * Hand a button event to the player's track.
      *
-     * DispatchPriv() expands it inline. The address is its uncalled out-of-line copy.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00133210
-     * @ghidraAddress PAL: 0x00133a60
+     * @param event The event.
+     * @ghidraAddress NTSC-U/C: 0x0012dbb8
+     * @ghidraAddress PAL: 0x0012f390
      */
-    void OnUpdateScore(UpdateScorePacket *pPacket);
+    void HandleInput(const BtnEvent<8> &event);
 
-    // The persona's appearance. GrooveWorld::AddLocalPlayer() passes MetPersonaData::mAppearance.
-    const FreqAppearance *mAppearance; // +0x2c
-    int mJuice;                        // +0x30
+    /**
+     * Hand a stick event to the player's track.
+     *
+     * @param event The event.
+     * @ghidraAddress NTSC-U/C: 0x0012dbf0
+     * @ghidraAddress PAL: 0x0012f3c8
+     */
+    void HandleInput(const StickEvent<2> &event);
+
+    /**
+     * Hand a stick event to the player's track.
+     *
+     * @param event The event.
+     * @ghidraAddress NTSC-U/C: 0x0012dc28
+     * @ghidraAddress PAL: 0x0012f400
+     */
+    void HandleInput(const StickEvent<6> &event);
+
+    /**
+     * Mark the player as having quit the song.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0012dc60
+     * @ghidraAddress PAL: 0x0012f438
+     */
+    void Abort();
+
+    /**
+     * Set the pending points and show them scaled by the multiplier power-up value.
+     *
+     * @param nPoints The points.
+     * @param bHide Whether a display of zero points is hidden as well as cleared.
+     * @ghidraAddress NTSC-U/C: 0x0012dcf0
+     * @ghidraAddress PAL: 0x0012f4c8
+     */
+    void SetPendingPoints(int nPoints, bool bHide);
+
+    /**
+     * End the multiplier power-up.
+     *
+     * The command that ActivateMultiplier() schedules calls this.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0012df80
+     * @ghidraAddress PAL: 0x0012f758
+     */
+    void EndMultiplier();
+
+    /**
+     * Set the streak and show the streak multipliers it earns.
+     *
+     * @param nStreak The streak.
+     * @ghidraAddress NTSC-U/C: 0x0012e008
+     * @ghidraAddress PAL: 0x0012f7e0
+     */
+    void SetStreak(int nStreak);
+
+    /**
+     * Lengthen the streak by one.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0012e080
+     * @ghidraAddress PAL: 0x0012f858
+     */
+    void IncrementStreak();
+
+    /**
+     * Reset the streak to zero.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0012e0a0
+     * @ghidraAddress PAL: 0x0012f878
+     */
+    void ResetStreak();
+
+    /**
+     * Report the streak.
+     *
+     * @return The streak.
+     * @ghidraAddress NTSC-U/C: 0x0012e0c0
+     * @ghidraAddress PAL: 0x0012f898
+     */
+    int GetStreak() const;
+
+    /**
+     * Report whether the player is catching.
+     *
+     * @return Whether the player is catching.
+     * @ghidraAddress NTSC-U/C: 0x0012e0d0
+     * @ghidraAddress PAL: 0x0012f8a8
+     */
+    bool GetCatching() const;
+
+    /**
+     * Report the kind of power-up the player has.
+     *
+     * GameLogic::OnDeployPowerup() selects the deployment by the value.
+     *
+     * @return One of GameLogic::Powerup, or GameLogic::kPowerupNone.
+     * @ghidraAddress NTSC-U/C: 0x0012e0d8
+     * @ghidraAddress PAL: 0x0012f8b0
+     */
+    int GetPowerup() const;
+
+    /**
+     * Record the kind of power-up the player has and show it.
+     *
+     * A power-up gained is reported to TheGameCallback when one is installed.
+     *
+     * @param nPowerup One of GameLogic::Powerup, or GameLogic::kPowerupNone.
+     * @ghidraAddress NTSC-U/C: 0x0012e0e0
+     * @ghidraAddress PAL: 0x0012f8b8
+     */
+    void SetPowerup(int nPowerup);
+
+    /**
+     * Report the remix repeat state.
+     *
+     * @return The state.
+     * @ghidraAddress NTSC-U/C: 0x0012e148
+     * @ghidraAddress PAL: 0x0012f920
+     */
+    bool GetRepeat() const;
+
+    /**
+     * Report the streak multiplier a streak earns.
+     *
+     * The multiplier is one more than the streak, capped at GameConfig::mStreakMultiplierMaxSolo
+     * with one player and at GameConfig::mStreakMultiplierMaxMulti otherwise.
+     *
+     * @param nStreak The streak.
+     * @return The multiplier.
+     * @ghidraAddress NTSC-U/C: 0x0012e158
+     * @ghidraAddress PAL: 0x0012f930
+     */
+    int StreakMultiplier(int nStreak) const;
 
 protected:
-    // The ceiling AddJuice() clamps mJuice to. AnnounceState() clamps it to kJuiceMaximum before
-    // announcing it.
-    int mMaxJuice; // +0x34
-
-private:
-    int mScore; // +0x38
-
-protected:
-    // The ceiling AddScore() clamps mScore to. LocalPlayer::AnnounceState() announces it.
-    int mMaxScore; // +0x3c
-
-public:
-    /**
-     * Scheduler time of this player's last erase press, in nanoseconds.
-     *
-     * The constructor at `0x0012f5c0` zeroes it. InputMap::OnControllerReading() reads and writes
-     * it directly at `0x00119a6c` and `0x00119adc` to detect a double tap, and the image has no
-     * accessor for it. +0x40
-     */
-    long long mLastEraseTime;
+    int mIndex;                         /*!< The player's index. */
+    int mTicksPerBar;                   /*!< The song ticks in one bar. */
+    Track *mTrack;                      /*!< The track the player plays, or null. */
+    int mScore;                         /*!< The score. */
+    int mPendingPoints;                 /*!< The points of the phrase being played. */
+    int mMultiplierValue;               /*!< 1, or the multiplier power-up value while active. */
+    int mStreak;                        /*!< The streak. */
+    bool mCatching;                     /*!< Whether the player is catching. */
+    bool mAborted;                      /*!< Whether the player has quit the song. */
+    bool mRepeat;                       /*!< The remix repeat state. */
+    int mReserved;                      // +0x28, set to -1 and not read by any routine here.
+    Ptr<Command> mMultiplierEndCommand; /*!< The command that calls EndMultiplier(). */
+    int mPowerup;                       /*!< The kind of power-up the player has. */
 };

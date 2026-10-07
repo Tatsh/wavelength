@@ -2,222 +2,139 @@
 
 #include <vector>
 
-#include "app/msgsink.h"
-#include "app/msgsource.h"
-#include "game/nullplayer.h"
-#include "game/player.h"
-#include "msg/bumppacket.h"
-#include "msg/message.h"
-
-class PhraseMuffedMsg;
-class RemoteTrackSelectMsg;
-class RotLeftMsg;
-class RotRightMsg;
-
-/** Channels the selector tracks. The constructor writes this count into the object. */
-constexpr int kTrackSelectorChannelCount = 8;
-
 /**
- * Slots reserved per channel.
+ * Grid of which players occupy which track, in the order the players arrived on each track.
  *
- * The column stride the constructor and every accessor apply is 0x10 bytes over four-byte
- * elements, so a column stores four. The fill loop's bound is the roster size rather than this
- * constant, and a fifth player would therefore write past its column. Every caller in the image
- * passes at most four players.
+ * The RTTI includes the nested TrackSelector::TrackInfo. The class is not polymorphic. Only the
+ * members GameTrackSelector uses are declared.
  */
-constexpr int kTrackSelectorSlotCount = 4;
-
-/**
- * Grid of which players occupy which track channel.
- *
- * Its RTTI descriptor is at `0x008ef688`. It is built over MsgSink at offset 0 and MsgSource at
- * offset 4. Two tables belong to it, the primary at `0x007d37d8` with four entries and the
- * MsgSource subobject table at `0x007d37b0` with four and a `-4` adjustment on every entry. Both
- * run to the same length as their bases, so the class introduces no virtual of its own and
- * overrides only the destructor and DispatchPriv().
- *
- * The grid is `kTrackSelectorChannelCount` columns of `kTrackSelectorSlotCount` player pointers at
- * `+0x20`, which makes the object 0xa0 bytes. An unoccupied slot stores the address of the
- * file-scope NullPlayer at `0x0066f930` rather than a null pointer, which is why every comparison
- * here is against that object rather than against zero. The Player translation unit's static
- * initialiser at `0x00132618` builds it, alongside the `IDable<Player>` table at `0x0066f920`.
- *
- * A player's channel comes from Player::GetTrack(), primary table slot 4, and the constructor
- * skips a player whose answer is -1. Player::GetInputSlot() reports the payload word the message
- * paths check before acting, and Player::GetPlace() drives the walk RebuildChannelGrid() performs.
- *
- * The accessor at `0x0013f0f0` guards on the descriptor at `0x008ef688`, and the descriptor settles
- * the class name.
- *
- * RemoveLightFromColumn(), InsertLightForDrawable(), and RebuildChannelGrid() each build a message
- * field by field on the stack and send it, so the message classes carry public fields rather than
- * a constructor.
- *
- * The unit registers SelfTest() with TestRegistry under the name `TrackSelector`.
- *
- * Every data member is private. The five message paths and the three rebinding helpers are the
- * only code in the image that reads one, and each is a member of this class.
- */
-class TrackSelector : public MsgSink, public MsgSource {
+class TrackSelector {
 public:
     /**
-     * Build the grid over a roster of players.
+     * The players on one track, in the order they arrived.
      *
-     * Every slot of every column starts as the NullPlayer, and each player whose Player::GetTrack()
-     * reports a channel other than -1 is then inserted into that channel with a zero payload.
-     *
-     * @param players The roster. Only its size and its elements are read.
-     * @ghidraAddress NTSC-U/C: 0x0013b250
-     * @ghidraAddress PAL: 0x0013bb98
+     * The RTTI includes the class name.
      */
-    TrackSelector(const std::vector<Player *> &players);
+    struct TrackInfo {
+        std::vector<int> mPlayers; /*!< The players, or -1 for an empty slot. */
+    };
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x0013f020
-     * @ghidraAddress PAL: 0x0013f9d8
+     * Construct a grid of tracks with no players.
+     *
+     * @param nTracks The number of tracks.
+     * @ghidraAddress NTSC-U/C: 0x0013ea10
+     * @ghidraAddress PAL: 0x001402e0
      */
-    virtual ~TrackSelector();
+    explicit TrackSelector(int nTracks);
 
     /**
-     * Act on a message.
+     * Add a player on a track.
      *
-     * Slot 3 of the MsgSink table. A RotLeftMsg rotates the addressed player one channel down and
-     * a RotRightMsg one channel up, both only when Player::GetInputSlot() reports a value other
-     * than -1.
-     * A BumpPacket rebuilds a column, a RemoteTrackSelectMsg rebinds one channel, and a
-     * PhraseMuffedMsg is forwarded to the sink the addressed player provides. Every other message
-     * is discarded.
-     *
-     * @param pMsg The message.
-     * @ghidraAddress NTSC-U/C: 0x0013b868
-     * @ghidraAddress PAL: 0x0013c1b0
+     * @param nTrack The track.
+     * @ghidraAddress NTSC-U/C: 0x0013eb08
+     * @ghidraAddress PAL: 0x001403d8
      */
-    virtual void DispatchPriv(Message *pMsg);
+    void AddPlayer(int nTrack);
 
     /**
-     * Exercise the grid against four stand-in players.
+     * Report the number of players.
      *
-     * The routine builds four LocalPlayer objects with the colour name `null`, constructs a grid
-     * over them, registers the selector with each, and then runs a fixed sequence of rebinds and
-     * channel queries whose results it discards. It destroys the grid and the roster vector but
-     * not the players. Nothing in the shipped game calls it apart from the test registry.
-     *
-     * @return Always 1.
-     * @ghidraAddress NTSC-U/C: 0x0013ba08
-     * @ghidraAddress PAL: 0x0013c350
+     * @return The number of players.
+     * @ghidraAddress NTSC-U/C: 0x0013ee08
+     * @ghidraAddress PAL: 0x001406d8
      */
-    static int SelfTest();
+    int GetNumPlayers() const;
 
     /**
-     * Run SelfTest() in the shape TestRegistry::TestFunc requires.
+     * Report the number of tracks.
      *
-     * The unit's static initialiser registers it. The integer result reaches the `hx.test`
-     * command through the return register, which decides its `ok` report.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013f8e8
-     * @ghidraAddress PAL: 0x001402b0
+     * @return The number of tracks.
+     * @ghidraAddress NTSC-U/C: 0x0013ee20
+     * @ghidraAddress PAL: 0x001406f0
      */
-    static int RunSelfTest();
-
-private:
-    /**
-     * Close the gap one player occupies in a channel's column by shifting every slot above it down,
-     * filling the last with the NullPlayer, and announcing each move with a TrackSelectMsg whose
-     * payload is the channel, the slot moved into, nPayload, and the player moved in.
-     *
-     * A channel of -1 is ignored.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013b480
-     * @ghidraAddress PAL: 0x0013bdc8
-     */
-    void RemoveLightFromColumn(Player *pPlayer, int nChannel, int nPayload);
+    int GetNumTracks() const;
 
     /**
-     * Store a player in the first slot of a channel's column that still holds the NullPlayer and
-     * announce it with a TrackSelectMsg whose payload is the channel, that slot, nPayload, and the
-     * player.
+     * Move a player to the end of a track.
      *
-     * A full column is ignored.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013b5e8
-     * @ghidraAddress PAL: 0x0013bf30
+     * @param nPlayer The player.
+     * @param nTrack The track, or -1 to remove the player from every track.
+     * @ghidraAddress NTSC-U/C: 0x0013ee38
+     * @ghidraAddress PAL: 0x00140708
      */
-    void InsertLightForDrawable(Player *pPlayer, int nChannel, int nPayload);
+    void SetPlayerTrack(int nPlayer, int nTrack);
 
     /**
-     * Rebind a column from a BumpPacket.
+     * Swap a player with the player in a slot of a track.
      *
-     * When the packet's player reports a step through Player::GetPlace(), announce a bumper with a
-     * DeployedPowerupMsg, rebind the head of the column for as long as the player continues
-     * reporting one, and mark the packet handled. The position is the packet's bar in ticks,
-     * clamped to the finite range.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013b6a8
-     * @ghidraAddress PAL: 0x0013bff0
+     * @param nPlayer The player.
+     * @param nTrack The track.
+     * @param nSlot The slot.
+     * @ghidraAddress NTSC-U/C: 0x0013eed0
+     * @ghidraAddress PAL: 0x001407a0
      */
-    int RebuildChannelGrid(BumpPacket *pPacket);
-
-    // The four handlers below are inline, and DispatchPriv() expands each. The addresses are
-    // their uncalled out-of-line copies.
+    void SwapPlayer(int nPlayer, int nTrack, int nSlot);
 
     /**
-     * Moves the addressed player one channel down when it has an input slot.
+     * Remove the empty slots of every track after a swap.
      *
-     * @ghidraAddress NTSC-U/C: 0x0013f5a0
-     * @ghidraAddress PAL: 0x0013ff68
+     * @ghidraAddress NTSC-U/C: 0x0013efc0
+     * @ghidraAddress PAL: 0x00140890
      */
-    void OnMsg(const RotLeftMsg &msg);
+    void Compact();
 
     /**
-     * Moves the addressed player one channel up when it has an input slot.
+     * Report the track of a player.
      *
-     * @ghidraAddress NTSC-U/C: 0x0013f608
-     * @ghidraAddress PAL: 0x0013ffd0
+     * @param nPlayer The player.
+     * @return The track, or -1.
+     * @ghidraAddress NTSC-U/C: 0x0013f050
+     * @ghidraAddress PAL: 0x00140920
      */
-    void OnMsg(const RotRightMsg &msg);
+    int GetPlayerTrack(int nPlayer) const;
 
     /**
-     * Passes a muff to the player's own sink when the player has an input slot.
+     * Report the slot of a player on its track.
      *
-     * @ghidraAddress NTSC-U/C: 0x0013f670
-     * @ghidraAddress PAL: 0x00140038
+     * @param nPlayer The player.
+     * @return The slot, 0 for the first player on the track.
+     * @ghidraAddress NTSC-U/C: 0x0013f068
+     * @ghidraAddress PAL: 0x00140938
      */
-    void OnPhraseMuffed(PhraseMuffedMsg *pMsg);
+    int GetPlayerSlot(int nPlayer) const;
 
     /**
-     * Moves the player from its own channel to the one the message selects.
+     * Report the first player on a track.
      *
-     * @ghidraAddress NTSC-U/C: 0x0013f6d8
-     * @ghidraAddress PAL: 0x001400a0
+     * @param nTrack The track.
+     * @return The player, or -1.
+     * @ghidraAddress NTSC-U/C: 0x0013f0a0
+     * @ghidraAddress PAL: 0x00140970
      */
-    void OnRemoteTrackSelect(RemoteTrackSelectMsg *pMsg);
+    int GetFirstPlayer(int nTrack) const;
 
     /**
-     * Move a player from one channel to another.
+     * Report the number of players on a track.
      *
-     * @ghidraAddress NTSC-U/C: 0x0013f748
-     * @ghidraAddress PAL: 0x00140110
+     * @param nTrack The track.
+     * @return The number of players.
+     * @ghidraAddress NTSC-U/C: 0x0013f0b8
+     * @ghidraAddress PAL: 0x00140988
      */
-    void MovePlayer(Player *pPlayer, int nFromChannel, int nToChannel, int nPayload);
+    int GetNumPlayersOnTrack(int nTrack) const;
 
     /**
-     * Rebind a channel unless the player already occupies its first slot and its second slot is
-     * unoccupied.
+     * Report the players on a track.
      *
-     * @ghidraAddress NTSC-U/C: 0x0013f7a8
-     * @ghidraAddress PAL: 0x00140170
+     * @param nTrack The track.
+     * @return The players, in the order they arrived.
+     * @ghidraAddress NTSC-U/C: 0x0013f0e0
+     * @ghidraAddress PAL: 0x001409b0
      */
-    void MovePlayerToBack(Player *pPlayer, int nChannel, int nPayload);
+    const int *GetPlayersOnTrack(int nTrack) const;
 
-    /**
-     * Move a player the given number of channels from its own, wrapping at the channel count.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013f840
-     * @ghidraAddress PAL: 0x00140208
-     */
-    int AddLightToChannel(Player *pPlayer, int nPayload, int nDelta);
-
-    int mChannelCount; // +0x18, always kTrackSelectorChannelCount
-    int mSlotCount;    // +0x1c, the roster size the constructor measured
-    Player *mGrid[kTrackSelectorChannelCount][kTrackSelectorSlotCount]; // +0x20
+    std::vector<int> mPlayerTracks;     /*!< The track of each player, or -1. */
+    std::vector<TrackInfo> mTrackInfos; /*!< The players on each track. */
+    int mNeedsCompact;                  /*!< Set by SwapPlayer() and cleared by Compact(). */
 };

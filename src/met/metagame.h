@@ -136,6 +136,16 @@ public:
     void DrawOverlay();
 
     /**
+     * Show the blank screen unless the word at `+0x40` is set.
+     *
+     * GameLogic::Start() schedules the routine shortly before the first bar. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00165048
+     * @ghidraAddress PAL: 0x00167f08
+     */
+    void ShowBlankScreen();
+
+    /**
      * Handle a message sent to the metagame.
      *
      * @param pMsg The message.

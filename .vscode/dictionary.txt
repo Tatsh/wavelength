@@ -61,6 +61,7 @@ autocatcher
 autocatchmsg
 autocatchpowerup
 autoriffer
+averager
 axebuttonmsg
 axefx
 axenewgemmaker
@@ -328,6 +329,7 @@ gameconnectionlostmsg
 gameconnectsuccessmsg
 gameenablemgr
 gameinfo
+gamelogic
 gamemanagerdoplaybackmsg
 gamemanagerimpl
 gameoptions
@@ -341,7 +343,10 @@ gamerecorder
 gameskill
 gamestats
 gamestrings
+gametrackselector
 gedf
+gemcatcher
+gemcursor
 gemmsg
 gempacket
 genericcatcher
@@ -376,6 +381,7 @@ hblks
 hdemo
 heapdump
 heff
+helptext
 hialloc
 hibytes
 hilite
@@ -438,6 +444,7 @@ inputcheatdetector
 inputcheatdetectorgs
 inputcheatdetectormet
 inputmap
+inputmgr
 inputpollerps
 insize
 internel

@@ -463,3 +463,29 @@ int MemFindHeap(const char *pszName);
  * @ghidraAddress PAL: 0x002a4b98
  */
 void MemCompact(int nHeap, int nByteBudget, bool bStrictBudget);
+
+/**
+ * Allocate a block from the pool heaps and bill it to a tag.
+ *
+ * Every class-specific `operator new` forwards here with its class name as the tag, and the global
+ * `operator new` passes the tag `new`.
+ *
+ * @param nSize The block size in bytes.
+ * @param pszTag The tag to bill the allocation to.
+ * @param nAlign The alignment request. Zero selects the default.
+ * @return The block.
+ * @ghidraAddress NTSC-U/C: 0x0029ab68
+ * @ghidraAddress PAL: 0x002a4788
+ */
+void *PoolMemAlloc(int nSize, const char *pszTag, int nAlign);
+
+/**
+ * Return a block PoolMemAlloc() handed out to the pool heap that owns it.
+ *
+ * A null block is ignored.
+ *
+ * @param pBlock The block.
+ * @ghidraAddress NTSC-U/C: 0x0029acd0
+ * @ghidraAddress PAL: 0x002a48f0
+ */
+void PoolMemFree(void *pBlock);

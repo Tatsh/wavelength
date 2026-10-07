@@ -1,6 +1,7 @@
 #pragma once
 
 #include "os/timer.h"
+#include "script/dataarray.h"
 
 /**
  * Bring up the operating layer from the command line and the configuration file.
@@ -31,6 +32,26 @@ void SystemTerminate();
  * @ghidraAddress PAL: 0x00295ed0
  */
 void SystemPoll();
+
+/**
+ * Turn the periodic controller connection check of SystemPoll() on or off.
+ *
+ * The name is inferred.
+ *
+ * @param bEnabled Whether SystemPoll() checks which controllers are connected.
+ * @ghidraAddress NTSC-U/C: 0x0028c4c0
+ * @ghidraAddress PAL: 0x00295e10
+ */
+void SystemSetPadCheck(bool bEnabled);
+
+/**
+ * Report the configuration SystemInit() read.
+ *
+ * @return The root of the configuration.
+ * @ghidraAddress NTSC-U/C: 0x0028c6a0
+ * @ghidraAddress PAL: 0x00296028
+ */
+DataArray *SystemConfig();
 
 /**
  * Report the language the console is set to.

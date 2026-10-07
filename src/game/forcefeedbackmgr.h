@@ -1,299 +1,80 @@
 #pragma once
 
-#include <vector>
-
-#include "mid/tick.h"
-#include "sch/time.h"
-
-class Player;
-
 /**
- * Driver of the controllers' vibration motors during a song.
+ * Vibration of the controllers, on the beat and for the effects of the game.
  *
- * The class is not polymorphic and emits no RTTI. The name is inferred from its translation unit.
- * The six file-local scheduler commands beside it record `ForceFeedbackMgr.cpp` in their
- * anonymous-namespace RTTI names (SteadyFBCmd, StartMetronomeFBCmd, SetPowerupFBCmd,
- * SetSmallMotorCmd, SetLargeMotorCmd, and SetBothMotorsCmd). The object is 0x48 bytes. GrooveWorld
- * builds one, keeps it at `+0x34`, and deletes it in GrooveWorld::Shutdown(). The constructor also
- * stores the object in the unit's pointer at `0x0067a3f0`, which every command's Execute() goes
- * through.
- *
- * Two kinds of vibration run through it. The metronome pulses the small motor of every player not
- * inside a powerup effect once a beat, and an effect runs one of five configured motor patterns on
- * one player's controller. Any bit set in mFlags suspends both.
- *
- * The unit's static initialiser at `0x0016ff68` hands six factory functions to the command
- * registrar at `0x00538208` with an identifier of zero, and each factory returns null. All six are
- * the commands' NewCmd() members.
+ * The RTTI includes the nested ForceFeedbackMgr::BeatCmd, ForceFeedbackMgr::Controller, and
+ * ForceFeedbackMgr::MotorEffect. Only the members GameLogic uses are declared.
  */
 class ForceFeedbackMgr {
 public:
-    /** One controller's motor state. */
-    struct Slot {
-        int mPowerup;    /*!< Non-zero while an effect runs. The metronome skips the slot. */
-        int mBigMotor;   /*!< The big motor's level. */
-        int mSmallMotor; /*!< The small motor's state, 0 or 1. */
-    };
-
-    /** One vibration effect, read from the configuration by LoadConfig(). */
-    struct Effect {
-        int mSmallMotor;   /*!< The small motor's state while a pulse is on. */
-        int mBigMotor;     /*!< The big motor's level while a pulse is on. */
-        int mPulseCount;   /*!< The pulses the effect runs. */
-        Sch::Tick mPeriod; /*!< The length of one pulse, in MIDI ticks. */
-    };
+    /**
+     * Prepare the controllers for a song.
+     *
+     * @param pfMsPerTick The duration of one tick in milliseconds.
+     * @param nTicksPerBar The length of a bar in ticks.
+     * @ghidraAddress NTSC-U/C: 0x0010ca08
+     * @ghidraAddress PAL: 0x0010e140
+     */
+    void Start(const float *pfMsPerTick, int nTicksPerBar);
 
     /**
-     * Load the configuration and register the object as the unit's instance.
+     * Stop every motor and the beat.
      *
-     * @ghidraAddress NTSC-U/C: 0x0016dae0
-     * @ghidraAddress PAL: 0x001703f0
+     * @ghidraAddress NTSC-U/C: 0x0010cd58
+     * @ghidraAddress PAL: 0x0010e490
      */
-    ForceFeedbackMgr();
+    void StopAll();
 
     /**
-     * Clear mEffects and the unit's instance pointer.
+     * Pulse the motors on the beat.
      *
-     * @ghidraAddress NTSC-U/C: 0x0016dca8
-     * @ghidraAddress PAL: 0x001705b8
+     * @param nPeriodTicks The beat period in ticks.
+     * @param nFirstTick The tick of the first beat.
+     * @ghidraAddress NTSC-U/C: 0x0010cde8
+     * @ghidraAddress PAL: 0x0010e520
      */
-    ~ForceFeedbackMgr();
+    void StartMetronome(int nPeriodTicks, int nFirstTick);
 
     /**
-     * Schedule the metronome's start a delay from the current song position.
+     * Let the motors of a controller pulse on the beat or stop them pulsing.
      *
-     * The stopped flag is cleared first. Nothing is scheduled unless the remaining flags are clear
-     * or the paused flag alone is set.
-     *
-     * @param delay The delay, in MIDI ticks.
-     * @ghidraAddress NTSC-U/C: 0x0016e1b8
-     * @ghidraAddress PAL: 0x00170ac8
+     * @param nPad The controller.
+     * @param bEnabled Whether the motors pulse.
+     * @ghidraAddress NTSC-U/C: 0x0010cf90
+     * @ghidraAddress PAL: 0x0010e6c8
      */
-    void StartMetronome(const Sch::Tick &delay);
+    void SetBeatEnabled(int nPad, bool bEnabled);
 
     /**
-     * Size mSlots to the players and suspend everything for three players or more.
+     * Play the effect of an autocatcher on a controller.
      *
-     * @param nPlayers The player count.
-     * @ghidraAddress NTSC-U/C: 0x0016e2b8
-     * @ghidraAddress PAL: 0x00170bc8
+     * @param nPad The controller.
+     * @ghidraAddress NTSC-U/C: 0x0010d060
+     * @ghidraAddress PAL: 0x0010e798
      */
-    void SetPlayerCount(unsigned int nPlayers);
+    void PlayAutocatchEffect(int nPad);
 
     /**
-     * Pulse the small motor of every idle controller for mPulseLength and schedule the next beat.
+     * Stop the motors while the song is paused.
      *
-     * The file-local SteadyFBCmd runs it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0016e408
-     * @ghidraAddress PAL: 0x00170d18
+     * @ghidraAddress NTSC-U/C: 0x0010d130
+     * @ghidraAddress PAL: 0x0010e868
      */
-    void PulseBeat();
+    void Pause();
 
     /**
-     * Schedule the first beat pulse ahead of the next beat by the motors' latency.
+     * Restart the motors Pause() stopped.
      *
-     * The file-local StartMetronomeFBCmd runs it. The lead is half the pulse length in
-     * milliseconds plus 90000000, converted to MIDI ticks through the song clock's tempo map. A
-     * beat closer than the lead moves the pulse one beat on.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0016e610
-     * @ghidraAddress PAL: 0x00170f20
+     * @ghidraAddress NTSC-U/C: 0x0010d198
+     * @ghidraAddress PAL: 0x0010e8d0
      */
-    void SyncMetronome();
-
-    /**
-     * Start one vibration effect on a player's controller.
-     *
-     * Nothing happens while any flag is set or the slot is -1. The slot is marked as running an
-     * effect, each pulse turns both motors on at twice the period times the pulse index and off
-     * again, and a closing SetPowerupFBCmd clears the mark after one period.
-     *
-     * @param nPlayerSlot The player's slot, as Player::GetInputSlot() reports it.
-     * @param nEffect The effect number, an index into mEffects.
-     * @ghidraAddress NTSC-U/C: 0x0016e848
-     * @ghidraAddress PAL: 0x00171158
-     */
-    void PlayEffect(int nPlayerSlot, int nEffect);
-
-    /**
-     * Stop every motor and set flags in mFlags. The image has no caller.
-     *
-     * @param nMask The flags to set.
-     * @ghidraAddress NTSC-U/C: 0x001704c8
-     * @ghidraAddress PAL: 0x00172dd8
-     */
-    void Suspend(unsigned char nMask);
-
-    /**
-     * Stop every motor and set the paused flag, or clear the flag.
-     *
-     * GameManagerImpl's pause and unpause handlers are the recovered callers.
-     *
-     * @param bPaused Non-zero to pause.
-     * @ghidraAddress NTSC-U/C: 0x00170588
-     * @ghidraAddress PAL: 0x00172e98
-     */
-    void SetPaused(int bPaused);
-
-    /**
-     * Stop every motor and set the jukebox flag, or clear the flag.
-     *
-     * GrooveWorld passes Globals::IsJukeboxMode().
-     *
-     * @param bJukebox Non-zero in jukebox mode.
-     * @ghidraAddress NTSC-U/C: 0x00170648
-     * @ghidraAddress PAL: 0x00172f58
-     */
-    void SetJukeboxMode(int bJukebox);
-
-    /**
-     * Stop every motor and set the playback flag, or clear the flag.
-     *
-     * GrooveWorld passes GrooveWorld::mIsPlayback.
-     *
-     * @param bPlayback Non-zero while a recording plays back.
-     * @ghidraAddress NTSC-U/C: 0x00170708
-     * @ghidraAddress PAL: 0x00173018
-     */
-    void SetPlaybackMode(int bPlayback);
-
-    /**
-     * Clear the disabled flag, or stop every motor and set it.
-     *
-     * @param bEnabled Non-zero to allow vibration.
-     * @ghidraAddress NTSC-U/C: 0x001707c8
-     * @ghidraAddress PAL: 0x001730d8
-     */
-    void SetEnabled(int bEnabled);
-
-    /**
-     * Set a slot's powerup mark when the slot exists. SetPowerupFBCmd runs it.
-     *
-     * @param nPlayerSlot The slot.
-     * @param bPowerup The mark.
-     * @ghidraAddress NTSC-U/C: 0x00170890
-     * @ghidraAddress PAL: 0x001731a0
-     */
-    void SetPowerup(unsigned int nPlayerSlot, int bPowerup);
-
-    /**
-     * Stop every motor twice over and set the stopped flag.
-     *
-     * GrooveWorld::Exit() is the one caller, and it passes a song position of zero that the body
-     * does not read.
-     *
-     * @param when The song position, which the body does not read.
-     * @ghidraAddress NTSC-U/C: 0x001708d0
-     * @ghidraAddress PAL: 0x001731e0
-     */
-    void StopAll(Sch::Tick when);
-
-    /**
-     * @param nPlayerSlot The slot.
-     * @param nLevel The big motor's level.
-     * @ghidraAddress NTSC-U/C: 0x001709f8
-     * @ghidraAddress PAL: 0x00173308
-     */
-    void SetBigMotor(int nPlayerSlot, int nLevel);
-
-    /**
-     * @param nPlayerSlot The slot.
-     * @param nState The small motor's state.
-     * @ghidraAddress NTSC-U/C: 0x00170a30
-     * @ghidraAddress PAL: 0x00173340
-     */
-    void SetSmallMotor(int nPlayerSlot, int nState);
-
-    /**
-     * @param nPlayerSlot The slot.
-     * @param nSmallState The small motor's state.
-     * @param nBigLevel The big motor's level.
-     * @ghidraAddress NTSC-U/C: 0x00170a68
-     * @ghidraAddress PAL: 0x00173378
-     */
-    void SetBothMotors(int nPlayerSlot, int nSmallState, int nBigLevel);
-
-    /**
-     * Pass a slot's motor state to the controller through InputPoller::SetVibration().
-     *
-     * @param nPlayerSlot The slot. The controller's port is one more.
-     * @ghidraAddress NTSC-U/C: 0x00170ab0
-     * @ghidraAddress PAL: 0x001733c0
-     */
-    void ApplyMotors(int nPlayerSlot);
-
-    /**
-     * Play effect 4, configuration 0x4b6, on a player's controller. The image has no caller.
-     *
-     * @param pPlayer The player.
-     * @ghidraAddress NTSC-U/C: 0x00170b20
-     * @ghidraAddress PAL: 0x00173430
-     */
-    void PlayUnusedEffect(Player *pPlayer);
-
-    /**
-     * Play the effect a bumper hit produces, effect 1, on the target's controller.
-     *
-     * AppTunnel's powerup routine at `0x00448d58` calls it for a bumper.
-     *
-     * @param pPlayer The player that was bumped.
-     * @ghidraAddress NTSC-U/C: 0x00170b68
-     * @ghidraAddress PAL: 0x00173478
-     */
-    void PlayBumpEffect(Player *pPlayer);
-
-    /**
-     * Play the effect an autocatcher produces, effect 0, on a player's controller.
-     *
-     * AppTunnel's powerup routine at `0x00448d58` calls it for an autocatcher.
-     *
-     * @param pPlayer The player that used the autocatcher.
-     * @ghidraAddress NTSC-U/C: 0x00170bb0
-     * @ghidraAddress PAL: 0x001734c0
-     */
-    void PlayAutocatchEffect(Player *pPlayer);
-
-    /**
-     * Play the effect a neutralized track produces, effect 3, on a player's controller.
-     *
-     * AppTunnel's handler of PlayersTrackNeutralizedMsg calls it.
-     *
-     * @param pPlayer The player whose track was neutralized.
-     * @ghidraAddress NTSC-U/C: 0x00170bf8
-     * @ghidraAddress PAL: 0x00173508
-     */
-    void PlayNeutralizedEffect(Player *pPlayer);
-
-    /**
-     * Play the effect a crippler hit produces, effect 2, on a player's controller.
-     *
-     * TnlCrippleFX's frame routine at `0x0043e500` is the recovered caller.
-     *
-     * @param pPlayer The player that was hit.
-     * @ghidraAddress NTSC-U/C: 0x00170c40
-     * @ghidraAddress PAL: 0x00173550
-     */
-    void PlayCrippleEffect(Player *pPlayer);
-
-private:
-    /**
-     * Reads the metronome settings (configuration 0x4b1) and the five effects (0x4b4, 0x4b5, 0x4b2,
-     * 0x4b3, and 0x4b6), and empties mSlots.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0016de58
-     * @ghidraAddress PAL: 0x00170768
-     */
-    void LoadConfig();
-
-    unsigned char mFlags;         // +0x00, any set bit suspends vibration
-    std::vector<Slot> mSlots;     // +0x04
-    std::vector<Effect> mEffects; // +0x10
-    int mReserved1c;              // +0x1c, never read or written
-    int mReserved20;              // +0x20, never read or written
-    Sch::Tick mUnusedPosition;    // +0x24, constructed and never read
-    long long mUnusedTime;        // +0x28, zero on construction and never read
-    int mMetronomeFirstSetting;   // +0x30, the first metronome setting, never read
-    Sch::Time mPulseLength;       // +0x38, in nanoseconds
-    Sch::Tick mBeatPeriod;        // +0x40, the bar divided by the third metronome setting
+    void Resume();
 };
+
+/**
+ * The vibration of the controllers.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00435df4
+ */
+extern ForceFeedbackMgr *TheForceFeedbackMgr;

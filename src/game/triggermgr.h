@@ -25,6 +25,35 @@ public:
      * @ghidraAddress PAL: 0x00207480
      */
     void Terminate();
+
+    /**
+     * Fire the triggers that wait on the start of a bar.
+     *
+     * The bar is stored for the triggers' actions to read.
+     *
+     * @param nBar The bar.
+     * @ghidraAddress NTSC-U/C: 0x001fef50
+     * @ghidraAddress PAL: 0x00207cf0
+     */
+    void NewBarEvent(int nBar);
+
+    /**
+     * Fire the triggers that wait on the end of a phrase.
+     *
+     * @param nTrack The track the phrase ended on.
+     * @ghidraAddress NTSC-U/C: 0x001fefa8
+     * @ghidraAddress PAL: 0x00207d48
+     */
+    void PhraseEndEvent(int nTrack);
+
+    /**
+     * Fire the triggers that wait on a missed phrase.
+     *
+     * @param nPlayer The player that missed the phrase.
+     * @ghidraAddress NTSC-U/C: 0x001ff0a8
+     * @ghidraAddress PAL: 0x00207e48
+     */
+    void PhraseMissEvent(int nPlayer);
 };
 
 /**

@@ -27,6 +27,24 @@ public:
         }
     }
 
+    /**
+     * Raise the start count, and take the counter reading when the count leaves zero.
+     */
+    void Start() {
+        if (mRunning++ == 0) {
+            mStart = ReadCycleCount();
+        }
+    }
+
+    /**
+     * Lower the start count, and add the cycles since the start to mCycles when it arrives at zero.
+     */
+    void Stop() {
+        if (--mRunning == 0) {
+            mCycles += ReadCycleCount() - mStart;
+        }
+    }
+
     unsigned mStart;    /*!< Counter reading at the start of the current measurement. */
     unsigned mCycles;   /*!< Cycles of the last completed measurement. */
     float mLastMs;      /*!< mCycles converted to milliseconds when the timer last stopped. */

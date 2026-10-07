@@ -79,6 +79,26 @@ public:
     virtual ~InputMap();
 
     /**
+     * Report the action a controller button is bound to.
+     *
+     * @param nButton The button.
+     * @return The action.
+     * @ghidraAddress NTSC-U/C: 0x0027dad0
+     * @ghidraAddress PAL: 0x002873e8
+     */
+    int GetButtonAction(int nButton);
+
+    /**
+     * Find the analogue stick bound to an action.
+     *
+     * @param nAction The action.
+     * @return The stick, or the number of sticks when no stick is bound to the action.
+     * @ghidraAddress NTSC-U/C: 0x0027db18
+     * @ghidraAddress PAL: 0x00287430
+     */
+    int FindStick(int nAction);
+
+    /**
      * Pass a RawControllerMsg to OnControllerReading() and ignore every other message.
      *
      * @param pMsg The message.

@@ -43,6 +43,17 @@ public:
      */
     void Terminate();
 
+    /**
+     * Look up the text of a token in the language Init() loaded.
+     *
+     * @param pszToken The token.
+     * @param bFail Treat a missing token as an error.
+     * @return The text.
+     * @ghidraAddress NTSC-U/C: 0x00299d30
+     * @ghidraAddress PAL: 0x002a3930
+     */
+    const char *Localize(const char *pszToken, bool bFail);
+
     DataArray *mStrings; /*!< The text table Init() built, or null. */
     int mReserved04;     // +0x04, cleared by the constructor and not yet identified.
 };

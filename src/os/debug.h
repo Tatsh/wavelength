@@ -45,3 +45,15 @@ extern Debug TheDebug;
  * @ghidraAddress PAL: 0x003a10b8
  */
 void DebugPrint(const char *pszFormat, ...);
+
+/**
+ * Format a warning that the shipped build discards.
+ *
+ * The body is empty. Each of the 159 call sites still evaluates its arguments and makes the call.
+ * The callers pass messages about invalid data and unsupported requests. The name is inferred.
+ *
+ * @param pszFormat The `printf` format.
+ * @ghidraAddress NTSC-U/C: 0x00333d50
+ * @ghidraAddress PAL: 0x003a1300
+ */
+void DebugWarn(const char *pszFormat, ...);
