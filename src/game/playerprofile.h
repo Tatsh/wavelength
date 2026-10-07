@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "game/inputmap.h"
+#include "game/songrecord.h"
 #include "os/string.h"
 
 /**
@@ -129,12 +130,115 @@ public:
      */
     ~PlayerProfile();
 
+    /**
+     * Copy another profile into this one.
+     *
+     * @param other The profile to copy.
+     * @return The profile.
+     * @ghidraAddress NTSC-U/C: 0x00277498
+     * @ghidraAddress PAL: 0x00280f28
+     */
+    PlayerProfile &operator=(const PlayerProfile &other);
+
+    /**
+     * Report whether a song was finished at a skill level.
+     *
+     * A song counts when its record shows the whole song played. Skill level 4 accepts a finished
+     * record at any skill level. Every song counts while the unlock-all setting is on. The name is
+     * inferred.
+     *
+     * @param pszSong The song.
+     * @param nSkillLevel The skill level, or 4 for any.
+     * @return Whether the song was finished.
+     * @ghidraAddress NTSC-U/C: 0x00279960
+     * @ghidraAddress PAL: 0x002833f0
+     */
+    bool IsSongFinished(const char *pszSong, int nSkillLevel);
+
+    /**
+     * Copy the record of a song at a skill level. The record does not change when there is none.
+     *
+     * @param pszSong The song.
+     * @param nSkillLevel The skill level.
+     * @param pRecord The record to fill.
+     * @ghidraAddress NTSC-U/C: 0x00279a48
+     * @ghidraAddress PAL: 0x002834d8
+     */
+    void GetSongRecord(const char *pszSong, int nSkillLevel, SongRecord *pRecord);
+
+    /**
+     * Report the sum of the best scores of the songs of an arena. The name is inferred.
+     *
+     * @param pszArena The arena.
+     * @param nSkillLevel The skill level.
+     * @return The sum.
+     * @ghidraAddress NTSC-U/C: 0x00279b08
+     * @ghidraAddress PAL: 0x00283598
+     */
+    int GetArenaScore(const char *pszArena, int nSkillLevel);
+
+    /**
+     * Report the arena score to beat, from the `arena_scores` of the "db" section.
+     *
+     * The profile itself is not read. The name is inferred.
+     *
+     * @param pszArena The arena.
+     * @param nSkillLevel The skill level.
+     * @return The score.
+     * @ghidraAddress NTSC-U/C: 0x00279c40
+     * @ghidraAddress PAL: 0x002836d0
+     */
+    int GetArenaScoreToBeat(const char *pszArena, int nSkillLevel);
+
+    /**
+     * Report the medal of a song at a skill level. The name is inferred.
+     *
+     * @param pszSong The song.
+     * @param nSkillLevel The skill level.
+     * @return The medal.
+     * @ghidraAddress NTSC-U/C: 0x0027ab98
+     * @ghidraAddress PAL: 0x00284628
+     */
+    int GetMedal(const char *pszSong, int nSkillLevel);
+
+    /**
+     * Grant the power-up of mPendingPowerup once it is unlocked at a skill level, and clear it.
+     *
+     * The name is inferred.
+     *
+     * @param nSkillLevel The skill level.
+     * @return The power-up granted, or null.
+     * @ghidraAddress NTSC-U/C: 0x0027ae38
+     * @ghidraAddress PAL: 0x002848c8
+     */
+    const char *TakePendingPowerup(int nSkillLevel);
+
+    /**
+     * Report mModified.
+     *
+     * @return Non-zero when the profile changed since it was saved.
+     * @ghidraAddress NTSC-U/C: 0x0027b020
+     * @ghidraAddress PAL: 0x00284ab0
+     */
+    int IsModified() const;
+
+    /**
+     * Set mModified.
+     *
+     * @param nModified Non-zero when the profile changed since it was saved.
+     * @ghidraAddress NTSC-U/C: 0x0027b028
+     * @ghidraAddress PAL: 0x00284ab8
+     */
+    void SetModified(int nModified);
+
     int mReserved00[12]; // +0x00, not yet recovered.
     String mName;        /*!< The player's name. +0x30 */
-    int mReserved44[28]; // +0x44, not yet recovered.
-    int mCustom;        /*!< Non-zero for a player's own profile rather than a default one. +0xb4 */
-    int mReservedB8[6]; // +0xb8, not yet recovered.
-    int mSoloOption;    /*!< The value GetSoloOption() reports. +0xd0 */
-    int mOnlineOption;  /*!< The value GetOnlineOption() reports. +0xd4 */
-    int mReservedD8[8]; // +0xd8, not yet recovered.
+    int mReserved44[27]; // +0x44, not yet recovered.
+    int mModified;       /*!< Non-zero when the profile changed since it was saved. +0xb0 */
+    int mCustom; /*!< Non-zero for a player's own profile rather than a default one. +0xb4 */
+    const char *mPendingPowerup; /*!< The power-up TakePendingPowerup() grants, or null. +0xb8 */
+    int mReservedBC[5];          // +0xbc, not yet recovered.
+    int mSoloOption;             /*!< The value GetSoloOption() reports. +0xd0 */
+    int mOnlineOption;           /*!< The value GetOnlineOption() reports. +0xd4 */
+    int mReservedD8[8];          // +0xd8, not yet recovered.
 };

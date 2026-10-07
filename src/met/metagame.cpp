@@ -157,11 +157,11 @@ constexpr unsigned char kMidiControlChange = 0xb0;
 constexpr unsigned char kMidiControlVolume = 7;
 constexpr int kStreamSilent = 1;
 
-// The menu music mixes of the song screen, with and without a preview.
-constexpr int kPreviewMix = 7;
-constexpr int kPreviewMixTick = 1920;
-constexpr int kSongSelectMix = 9;
-constexpr int kSongSelectMixTick = 500;
+// The menu music mixes of the song screen, while no clip plays and before a clip starts.
+constexpr int kIdleMix = 7;
+constexpr int kIdleMixTick = 1920;
+constexpr int kClipMix = 9;
+constexpr int kClipMixTick = 500;
 
 // NTSC-U/C: 0x001657c0, PAL: 0x001686d0
 void MetaStartGame([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
@@ -253,7 +253,7 @@ Metagame::Metagame() {
     mMusicSwapBankSlot = -1;
     mTickMs = nullptr;
     mSharedMusicFadedIn = 0;
-    mReserved110 = 0;
+    mFreqsOnCard = 0;
     mReserved144 = 1;
     mSpeed = 1.0f;
     mGizmo = nullptr;
@@ -446,7 +446,7 @@ int Metagame::Update() {
         mGizmo->Poll(mTime);
     }
     TheMCManager.Poll();
-    PollSongPreview();
+    SongPreview::Poll();
 
     if (mState == kStateLoading || mState == kStateRestarting) {
         float flUnused;
@@ -1050,10 +1050,10 @@ void Metagame::CreateMusic() {
     mMusicSong = new MetaMusicSong(mMusic, pSongs->Array(nSong + 1));
 }
 
-void Metagame::SetPreviewMix(bool bPreview) {
-    if (bPreview) {
-        mMusic->SwitchMix(kPreviewMix, kPreviewMixTick);
+void Metagame::SetSongScreenMix(bool bIdle) {
+    if (bIdle) {
+        mMusic->SwitchMix(kIdleMix, kIdleMixTick);
     } else {
-        mMusic->SwitchMix(kSongSelectMix, kSongSelectMixTick);
+        mMusic->SwitchMix(kClipMix, kClipMixTick);
     }
 }

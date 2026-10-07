@@ -12,3 +12,14 @@
  * @ghidraAddress PAL: 0x002934d0
  */
 const char *FileGetPath(const char *pszPath);
+
+/**
+ * Report the directory the game's files are read from, `.`.
+ *
+ * The name is inferred.
+ *
+ * @return The directory.
+ * @ghidraAddress NTSC-U/C: 0x002895b8
+ * @ghidraAddress PAL: 0x00292db0
+ */
+const char *FileRoot();

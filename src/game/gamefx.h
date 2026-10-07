@@ -107,4 +107,54 @@ public:
      * @ghidraAddress PAL: 0x00289880
      */
     static void PlayPowerup(int nPowerup);
+
+    /**
+     * Play the `SQUARE` cue. The song screen plays it to start a practice song. The name is
+     * inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280610
+     * @ghidraAddress PAL: 0x00289f10
+     */
+    static void PlaySquare();
+
+    /**
+     * Play the `LAZYSUSAN` cue. The arena screen plays it when the focus moves to another arena.
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280658
+     * @ghidraAddress PAL: 0x00289f58
+     */
+    static void PlayLazySusan();
+
+    /**
+     * Play the `SOLOPORTAL` cue of the solo button of the main menu. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002807d0
+     * @ghidraAddress PAL: 0x0028a0d0
+     */
+    static void PlaySoloPortal();
+
+    /**
+     * Play the `MULTIPORTAL` cue of the multiplayer button of the main menu. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280818
+     * @ghidraAddress PAL: 0x0028a118
+     */
+    static void PlayMultiPortal();
+
+    /**
+     * Play the `NETPORTAL` cue of the online button of the main menu. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280860
+     * @ghidraAddress PAL: 0x0028a160
+     */
+    static void PlayNetPortal();
+
+    /**
+     * Stop the three portal cues of the main menu. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002808a8
+     * @ghidraAddress PAL: 0x0028a1a8
+     */
+    static void StopPortals();
 };

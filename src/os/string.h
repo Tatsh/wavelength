@@ -195,6 +195,26 @@ public:
     bool operator<(const String &other) const;
 
     /**
+     * Report whether the text equals a C string.
+     *
+     * @param pszText The C string, or null.
+     * @return Whether `strcmp()` reports the texts equal, or false for a null C string.
+     * @ghidraAddress NTSC-U/C: 0x0029f090
+     * @ghidraAddress PAL: 0x002a8d50
+     */
+    bool operator==(const char *pszText) const;
+
+    /**
+     * Report whether the text differs from a C string.
+     *
+     * @param pszText The C string, or null.
+     * @return Whether `strcmp()` reports the texts different, or true for a null C string.
+     * @ghidraAddress NTSC-U/C: 0x0029f030
+     * @ghidraAddress PAL: 0x002a8cf0
+     */
+    bool operator!=(const char *pszText) const;
+
+    /**
      * Report a copy of the string with text appended.
      *
      * @param pszText The text to append.

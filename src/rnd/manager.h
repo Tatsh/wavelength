@@ -4,6 +4,7 @@
 #include <map>
 
 #include "os/binstream.h"
+#include "os/filepath.h"
 #include "os/hxstr.h"
 #include "rnd/rndloader.h"
 
@@ -326,6 +327,38 @@ public:
      * @ghidraAddress PAL: 0x00240980
      */
     Object *Find(const char *pszName);
+
+    /**
+     * Take a reference on the texture file of a path, loading it on the first reference.
+     *
+     * An empty path is ignored. The name is inferred.
+     *
+     * @param path The file.
+     * @ghidraAddress NTSC-U/C: 0x00239c90
+     * @ghidraAddress PAL: 0x00242810
+     */
+    void AcquireTexture(const ::FilePath &path);
+
+    /**
+     * Report whether the texture file of a path finished loading. The name is inferred.
+     *
+     * @param path The file.
+     * @return Whether the file is loaded.
+     * @ghidraAddress NTSC-U/C: 0x0023a080
+     * @ghidraAddress PAL: 0x00242c00
+     */
+    bool IsTextureLoaded(const ::FilePath &path);
+
+    /**
+     * Drop a reference on the texture file of a path, releasing it with the last reference.
+     *
+     * The name is inferred.
+     *
+     * @param path The file.
+     * @ghidraAddress NTSC-U/C: 0x0023a4e0
+     * @ghidraAddress PAL: 0x00243060
+     */
+    void ReleaseTexture(const ::FilePath &path);
 
     /**
      * Clone an object under a prefixed name, optionally with its descendants and its parents.

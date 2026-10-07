@@ -1,9 +1,12 @@
 #pragma once
 
+#include <vector>
+
 #include "game/avatarpartset.h"
 #include "game/gameoptions.h"
 #include "game/inputmap.h"
 #include "game/playerprofile.h"
+#include "game/songentry.h"
 #include "os/string.h"
 #include "script/dataarray.h"
 
@@ -28,9 +31,19 @@ public:
 
     /** Values of mCommunity. */
     enum Community {
+        kCommunityNone = 0,   /*!< No game is being set up, as in the options menu. */
         kCommunitySolo = 1,   /*!< One player. */
         kCommunityLocal = 2,  /*!< Several players on this console. */
         kCommunityOnline = 3, /*!< Players on several consoles. */
+    };
+
+    /** Values of mSkillLevel. The names follow the buttons of the skill menu. */
+    enum SkillLevel {
+        kSkillNovice = 0,       /*!< The `novice_but` level. */
+        kSkillIntermediate = 1, /*!< The `intermediate_but` level. */
+        kSkillAdvanced = 2,     /*!< The `advanced_but` level. */
+        kSkillInsane = 3,       /*!< The `insane_but` level. */
+        kSkillAny = 4,          /*!< Any level, for the song and arena queries. */
     };
 
     /** The value of mPowerupLevel that places no power-up. */
@@ -459,6 +472,70 @@ public:
      * @ghidraAddress PAL: 0x00278e30
      */
     const char *GetDifficultyName(int nSkillLevel, int nRuleSet) const;
+
+    /**
+     * Report the localised name of the mode of the game, from mRuleSet.
+     *
+     * @return The name.
+     * @ghidraAddress NTSC-U/C: 0x0026f3d0
+     * @ghidraAddress PAL: 0x00278f70
+     */
+    const char *GetModeName() const;
+
+    /**
+     * Append the names of the arenas of the "arenas" section, in their order there.
+     *
+     * @param pArenas The list to append to.
+     * @param bIncludeTutorial Whether the `Tutorial` arena is listed.
+     * @ghidraAddress NTSC-U/C: 0x0026d0a0
+     * @ghidraAddress PAL: 0x00276c40
+     */
+    void GetArenaNames(std::vector<const char *> *pArenas, bool bIncludeTutorial);
+
+    /**
+     * List the arenas the players have unlocked at a skill level.
+     *
+     * @param pArenas The list to fill.
+     * @param nSkillLevel The skill level, or 4 for any.
+     * @param bFirstPlayerOnly Whether only the first player's unlocks count.
+     * @param bIncludeTutorial Whether the `Tutorial` arena is considered.
+     * @ghidraAddress NTSC-U/C: 0x0026dd40
+     * @ghidraAddress PAL: 0x002778e0
+     */
+    void GetUnlockedArenas(std::vector<const char *> *pArenas,
+                           int nSkillLevel,
+                           bool bFirstPlayerOnly,
+                           bool bIncludeTutorial);
+
+    /**
+     * Append the songs of an arena that are available at a skill level.
+     *
+     * @param pSongs The list to append to.
+     * @param pszArena The arena.
+     * @param nSkillLevel The skill level, or 4 for any.
+     * @param nFilter Which songs are listed. The callers pass 0 and 1.
+     * @ghidraAddress NTSC-U/C: 0x0026d2b0
+     * @ghidraAddress PAL: 0x00276e50
+     */
+    void GetArenaSongs(std::vector<SongEntry> *pSongs,
+                       const char *pszArena,
+                       int nSkillLevel,
+                       int nFilter);
+
+    /**
+     * List the songs the players have unlocked in an arena, or in every unlocked arena.
+     *
+     * @param pSongs The list to fill.
+     * @param pszArena The arena, or an empty string for every unlocked arena.
+     * @param nSkillLevel The skill level, or 4 for any.
+     * @param bFirstPlayerOnly Whether only the first player's unlocks count.
+     * @ghidraAddress NTSC-U/C: 0x0026d9a0
+     * @ghidraAddress PAL: 0x00277540
+     */
+    void GetUnlockedSongs(std::vector<SongEntry> *pSongs,
+                          const char *pszArena,
+                          int nSkillLevel,
+                          bool bFirstPlayerOnly);
 
     int mReserved00;     // +0x00, the player list. The element type is not yet recovered.
     int mReserved04;     // +0x04, the player list.

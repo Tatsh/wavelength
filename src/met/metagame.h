@@ -347,13 +347,14 @@ public:
     void AdvanceUnlocks();
 
     /**
-     * Switch the menu music to the mix of the song previews, or back.
+     * Switch the menu music of the song screen to mix 7 over 1920 ticks while no song clip plays,
+     * or to mix 9 over 500 ticks before a clip starts.
      *
-     * @param bPreview Whether a song preview plays.
+     * @param bIdle Whether no song clip plays.
      * @ghidraAddress NTSC-U/C: 0x001692c0
      * @ghidraAddress PAL: 0x0016c448
      */
-    void SetPreviewMix(bool bPreview);
+    void SetSongScreenMix(bool bIdle);
 
     /**
      * Handle a message sent to the metagame.
@@ -397,7 +398,7 @@ public:
     String mReservedE0;              // +0xe0, not yet identified.
     int mReservedF4[2];              // +0xf4, not yet identified.
     String mSelectedArena;           /*!< The arena chosen last. */
-    int mReserved110;                // +0x110, cleared by the constructor and not yet identified.
+    int mFreqsOnCard;                /*!< Non-zero when the memory card check found saved Freqs. */
     std::list<int> mUnlockScreens;   /*!< The queued unlock screens, by kind. */
     std::vector<Unlock> mUnlocks;    /*!< The items the last song unlocked. */
     Gizmo *mGizmo;                   /*!< The projector of the menu screens. +0x12c */

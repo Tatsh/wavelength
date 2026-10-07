@@ -1,10 +1,18 @@
 set(WAVELENGTH_MET_SRCS
+    freqconfirmscreen.cpp
     freqpanel.cpp
     freqscreen.cpp
     gizmo.cpp
     introscreen.cpp
+    metaarenascreen.cpp
     metagame.cpp
-    metastartscreen.cpp)
+    metamainscreen.cpp
+    metaskillscreen.cpp
+    metasongscreen.cpp
+    metastartscreen.cpp
+    modescreen.cpp
+    songpicpanel.cpp
+    transitionscreen.cpp)
 
 add_library(wavelength_met STATIC ${WAVELENGTH_MET_SRCS})
 target_link_libraries(wavelength_met PRIVATE wavelength_common)
