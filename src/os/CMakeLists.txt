@@ -26,7 +26,6 @@ set(WAVELENGTH_OS_SRCS
     seccache.cpp
     spewregister.cpp
     spewtable.cpp
-    timer.cpp
     zone.cpp)
 
 add_library(wavelength_os STATIC ${WAVELENGTH_OS_SRCS})

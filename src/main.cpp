@@ -1,172 +1,280 @@
-#include <iostream>
-#ifdef VIDEO_STANDARD_PAL
-#include <libdma.h>
-#include <libgraph.h>
-#endif
-
-#include "app/application.h"
-#include "gfx/gfxdevice.h"
-#include "os/async.h"
-#include "os/dbg.h"
-#include "os/hostmode.h"
-#include "os/hxstr.h"
-#include "os/iop.h"
-#include "os/log.h"
-#include "os/openarkobject.h"
-#include "os/zone.h"
-#include "rnd/asyncloader.h"
+#include "game/gamedb.h"
+#include "game/triggermgr.h"
+#include "game/worldmgr.h"
+#include "met/metagame.h"
+#include "netflow/net.h"
+#include "os/debug.h"
+#include "os/joypad.h"
+#include "os/locale.h"
+#include "os/mem.h"
+#include "os/system.h"
 #include "rnd/manager.h"
-#include "rnd/view.h"
+#include "rnd/object.h"
+#include "rnd/rndrenderer.h"
+#include "script/scriptfunction.h"
+#include "synth/synth.h"
 
 namespace {
 
-// The loading screen has its own archive, which is mounted before the session archives and
-// unmounted once the screen has been drawn.
-constexpr char kLoadingArkPath[] = "ark/loading.ark";
+constexpr char kConfigFile[] = "freq2_config.txt";
+constexpr char kExitAppCommand[] = "exit_app";
+constexpr char kRndHeapName[] = "rnd";
 
-#ifdef VIDEO_STANDARD_PAL
-constexpr int kDisplayWidth = 512;
-constexpr int kDisplayHeight = 512;
-#else
-constexpr int kDisplayWidth = 640;
-constexpr int kDisplayHeight = 448;
-#endif
-constexpr int kDisplayBitDepth = 16;
+// Time the pending renderer loads may take each frame.
+constexpr float kLoaderBudgetMs = 10.0f;
 
-// A newline follows every kLoadingDotsPerLine progress dots.
-constexpr int kLoadingDotsPerLine = 64;
+// Bytes the renderer heap compaction may move each frame. A world that has finished loading gets
+// the smaller budget, and a world that has been unloaded restores the larger one.
+constexpr int kDefaultRndHeapCompactBytes = 100000;
+constexpr int kLoadedRndHeapCompactBytes = 40000;
 
-#ifdef VIDEO_STANDARD_PAL
-// The channel table main() copies before it waits for DMA to finish. It is the identity mapping of
-// the ten channel numbers.
-constexpr int kExitDmaChannels[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-constexpr int kExitDmaWaitCount = sizeof(kExitDmaChannels) / sizeof(kExitDmaChannels[0]);
+// NTSC-U/C: 0x003ae480
+bool g_bQuitRequested = false;
 
-// The sceDmaSync() mode that blocks, and the polls it makes before it gives up.
-constexpr int kDmaSyncBlocking = 0;
-constexpr int kExitDmaSyncTimeout = 1000;
-#endif
+// NTSC-U/C: 0x003ae484
+int g_nRndHeapCompactBytes = kDefaultRndHeapCompactBytes;
 
-int g_nLoadingDots = 0;
+// NTSC-U/C: 0x003ae488
+bool g_bRndHeapCompactStrict = false;
 
-const char *g_szLastFailure;
+// NTSC-U/C: 0x00100200, PAL: 0x00100200
+void CheckLeftoverObjects() {
+    bool bLeftover = false;
+    for (const auto &entry : Rnd::TheManager.mObjects) {
+        if (entry.second->mInternal == 0) {
+            bLeftover = true;
+            break;
+        }
+    }
+    if (!bLeftover) {
+        return;
+    }
 
-// NTSC-U/C: 0x001f2638, PAL: 0x001f8f48
-void RecordFailMessage(const char *pszMessage) {
-    std::cout << pszMessage;
-    g_szLastFailure = pszMessage;
+    TheDebug << "Freq2 main: Flushing " << static_cast<int>(Rnd::TheManager.mObjects.size())
+             << " objects.\n";
+    TheDebug << "THIS IS BAD.  THERE SHOULD BE NONE,\n"
+             << "aside from internal default objects,\n"
+             << "such as \"[default cam\"].\nLeftovers:\n    " << Rnd::TheManager.mObjects << "\n";
+    Rnd::TheManager.DeleteLoadedObjects();
 }
 
-// NTSC-U/C: 0x001f2670, PAL: 0x001f8f80
-void HaltOnFailure() {
-    Fatal(g_szLastFailure);
+// NTSC-U/C: 0x00100318, PAL: 0x00100318
+void QuitApp([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
+    g_bQuitRequested = true;
 }
 
-// NTSC-U/C: 0x001f2698, PAL: 0x001f8fa8
-// ShowLoadingScreen expands this inline; the out-of-line copy has no caller.
-inline void PrintLoadingDot() {
-    ++g_nLoadingDots;
-    printf(".%s", (g_nLoadingDots & (kLoadingDotsPerLine - 1)) == 0 ? "\n" : "");
+// NTSC-U/C: 0x00100328, PAL: 0x00100328
+void HandleMetagameFrontEnd(int nMetagameEvent) {
+    (void)TheWorldMgr->GetState(); // Yes, the binary discards this call's result.
+    if (nMetagameEvent == Metagame::kEventStartGame) {
+        TheMetagame.EnterLoading();
+        (void)SystemMs(); // Yes, the binary discards the elapsed time.
+        TheRnd->BeginFrame();
+        TheRnd->EndFrame();
+        TheWorldMgr->Load();
+    } else if (nMetagameEvent == Metagame::kEventQuit) {
+        g_bQuitRequested = true;
+    }
 }
 
-#ifdef VIDEO_STANDARD_PAL
-// The file-name suffix of the console language's loading screen, empty for English.
-inline const char *GetLoadingScreenSuffix() {
-    switch (GetLanguage()) {
-    case SCE_GERMAN_LANGUAGE:
-        return "_ger";
-    case SCE_FRENCH_LANGUAGE:
-        return "_fre";
-    case SCE_ITALIAN_LANGUAGE:
-        return "_ita";
-    case SCE_SPANISH_LANGUAGE:
-        return "_spa";
+// NTSC-U/C: 0x00100408, PAL: 0x00100408
+void HandleMetagameLoading([[maybe_unused]] int nMetagameEvent) {
+    (void)TheWorldMgr->GetState(); // Yes, the binary discards this call's result.
+}
+
+// NTSC-U/C: 0x00100430, PAL: 0x00100430
+void HandleMetagamePlaying(int nMetagameEvent) {
+    // A world in any other state is queried a second time and the answer discarded.
+    if (TheWorldMgr->GetState() != WorldMgr::kStatePlaying) {
+        (void)TheWorldMgr->GetState();
+    }
+    if (nMetagameEvent == Metagame::kEventQuit) {
+        g_bQuitRequested = true;
+    } else if (nMetagameEvent == Metagame::kEventLeaveGame) {
+        TheWorldMgr->Unload();
+        TheMetagame.EnterLeaving();
+    }
+}
+
+// NTSC-U/C: 0x001004b0, PAL: 0x001004b0
+void HandleMetagameLeaving([[maybe_unused]] int nMetagameEvent) {
+    (void)TheWorldMgr->GetState(); // Yes, the binary discards this call's result.
+}
+
+// NTSC-U/C: 0x001004d8, PAL: 0x001004d8
+void HandleMetagameRestarting([[maybe_unused]] int nMetagameEvent) {
+    // A world in any other state is queried a second time and the answer discarded.
+    if (TheWorldMgr->GetState() != WorldMgr::kStateLoading) {
+        (void)TheWorldMgr->GetState();
+    }
+}
+
+// NTSC-U/C: 0x00100678, PAL: 0x00100678
+void HandleWorldLoading(int nWorldEvent) {
+    // A metagame in any other state is queried a second time and the answer discarded.
+    if (TheMetagame.GetState() != Metagame::kStateLoading) {
+        (void)TheMetagame.GetState();
+    }
+    if (nWorldEvent == WorldMgr::kEventLoaded) {
+        TheMetagame.EnterPlaying();
+        TheWorldMgr->Start();
+    }
+}
+
+// NTSC-U/C: 0x00100518, PAL: 0x00100518
+void HandleWorldPlaying(int nWorldEvent) {
+    // A metagame in any other state is queried a second time and the answer discarded.
+    if (TheMetagame.GetState() != Metagame::kStatePlaying) {
+        (void)TheMetagame.GetState();
+    }
+    if (nWorldEvent == WorldMgr::kEventFinished) {
+        TheWorldMgr->Unload();
+        TheRnd->BeginFrame();
+        TheRnd->EndFrame();
+        TheMetagame.EnterLeaving();
+    } else if (nWorldEvent == WorldMgr::kEventRestart) {
+        TheWorldMgr->Unload();
+        TheMetagame.EnterRestarting();
+    }
+}
+
+// NTSC-U/C: 0x001005e0, PAL: 0x001005e0
+void HandleWorldUnloaded(int nWorldEvent, bool bReturnToFrontEnd) {
+    if (TheMetagame.GetState() == Metagame::kStateRestarting) {
+        if (nWorldEvent == WorldMgr::kEventUnloaded) {
+            TheWorldMgr->Load();
+        }
+    } else if (bReturnToFrontEnd && nWorldEvent == WorldMgr::kEventUnloaded) {
+        TheMetagame.EnterFrontEnd();
+        TheWorldMgr->Reset();
+    }
+}
+
+// NTSC-U/C: 0x001006e8, PAL: 0x001006e8
+// The body is empty in the shipped build. The call is made all the same.
+void TraceStateEvents([[maybe_unused]] int nMetagameEvent,
+                      [[maybe_unused]] int nMetagameState,
+                      [[maybe_unused]] int nWorldEvent,
+                      [[maybe_unused]] int nWorldState) {
+}
+
+// NTSC-U/C: 0x001006f0, PAL: 0x001006f0
+void DispatchStateEvents(int nMetagameEvent, int nWorldEvent) {
+    const int nMetagameState = TheMetagame.GetState();
+    const int nWorldState = TheWorldMgr->GetState();
+    TraceStateEvents(nMetagameEvent, nMetagameState, nWorldEvent, nWorldState);
+
+    switch (nMetagameState) {
+    case Metagame::kStateFrontEnd:
+        HandleMetagameFrontEnd(nMetagameEvent);
+        break;
+    case Metagame::kStateLoading:
+        HandleMetagameLoading(nMetagameEvent);
+        break;
+    case Metagame::kStatePlaying:
+        HandleMetagamePlaying(nMetagameEvent);
+        break;
+    case Metagame::kStateLeaving:
+        HandleMetagameLeaving(nMetagameEvent);
+        break;
+    case Metagame::kStateRestarting:
+        HandleMetagameRestarting(nMetagameEvent);
+        break;
     default:
-        return "";
+        break;
+    }
+
+    // The world handlers see the state read before the metagame handler ran.
+    switch (nWorldState) {
+    case WorldMgr::kStateLoading:
+        HandleWorldLoading(nWorldEvent);
+        break;
+    case WorldMgr::kStatePlaying:
+        HandleWorldPlaying(nWorldEvent);
+        break;
+    case WorldMgr::kStateUnloaded:
+        HandleWorldUnloaded(nWorldEvent, nMetagameEvent == Metagame::kEventReturnToFrontEnd);
+        break;
+    default:
+        break;
     }
 }
 
-// PAL: 0x001f8ff8
-// main() expands WaitForExitDma() inline, and the out-of-line copy has no caller.
-inline void WaitForExitDma() {
-    int channels[kExitDmaWaitCount];
-    for (int i = 0; i < kExitDmaWaitCount; ++i) {
-        channels[i] = kExitDmaChannels[i];
+// NTSC-U/C: 0x00100828, PAL: 0x00100828
+void UpdateAppFrame() {
+    TheWorldMgr->UpdateTime();
+    TheSynth->UpdateTime();
+    SystemPoll();
+    Rnd::TheManager.PollLoaders(kLoaderBudgetMs);
+    PollNetSubsystem();
+
+    const int nMetagameEvent = TheMetagame.Update();
+    const int nWorldEvent = TheWorldMgr->Poll();
+    if (nWorldEvent == WorldMgr::kEventLoaded) {
+        g_nRndHeapCompactBytes = kLoadedRndHeapCompactBytes;
+        g_bRndHeapCompactStrict = true;
+    } else if (nWorldEvent == WorldMgr::kEventUnloaded) {
+        g_bRndHeapCompactStrict = false;
+        g_nRndHeapCompactBytes = kDefaultRndHeapCompactBytes;
     }
-    for (int i = 0; i < kExitDmaWaitCount; ++i) {
-        // Yes, the binary waits on the first channel of the table every time.
-        sceDmaSync(sceDmaGetChan(channels[0]), kDmaSyncBlocking, kExitDmaSyncTimeout);
-    }
+
+    TheGameDb->Poll();
+    TheSynth->Poll();
+
+    TheRnd->BeginFrame();
+    MemCompact(MemFindHeap(kRndHeapName), g_nRndHeapCompactBytes, g_bRndHeapCompactStrict);
+    TheMetagame.Draw();
+    TheWorldMgr->Draw();
+    TheMetagame.DrawOverlay();
+    TheRnd->EndFrame();
+
+    DispatchStateEvents(nMetagameEvent, nWorldEvent);
 }
-#endif
 
-// NTSC-U/C: 0x001ef620, PAL: 0x001f59d8
-void ShowLoadingScreen() {
-#ifdef VIDEO_STANDARD_PAL
-    const HxStr baseName("loading");
-    const HxStr extension(".rnd");
-    const HxStr suffix(GetLoadingScreenSuffix());
-    const HxStr fileName = baseName + suffix + extension;
-    RndAsyncLoader loader(HxStr("loading/"), fileName, -1);
-#else
-    RndAsyncLoader loader(HxStr("loading/"), HxStr("loading.rnd"), -1);
-#endif
-    loader.Enqueue();
+// NTSC-U/C: 0x001009e0
+void InitializeAppSubsystems(int argc, char **argv) {
+    SystemInit(argc, argv, kConfigFile);
+    Rnd::TheManager.Init();
+    TheRnd->Init();
+    TheMetagame.ShowLoadingScreen();
+    Synth::Create();
+    TheGameDb->Init();
+    InitializeNetSubsystem();
+    TheLocale.Init(GetSystemLanguage());
+    TheTriggerMgr.Init();
+    TheWorldMgr->Init();
+    TheMetagame.Init();
+    ScriptFunction::Register(QuitApp, kExitAppCommand, nullptr);
+}
 
-    float flProgress = 0.0f;
-    while (loader.Poll(&flProgress) == 0) {
-        PrintLoadingDot();
-        RndAsyncLoader::PollAsyncLoads();
-    }
-
-    // The progress the poll reports is discarded; the screen is resolved by name instead. The
-    // binary really does dispatch this through the runtime cast helper.
-    Rnd::View *pView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(HxStr("view")));
-    Rnd::ThePs.BeginFrame();
-    pView->Draw();
-    Rnd::ThePs.PresentFrame(1);
+// NTSC-U/C: 0x00100ab0, PAL: 0x00101ac8
+void TerminateAppSubsystems() {
+    ScriptFunction::Unregister(QuitApp);
+    TheMetagame.Terminate();
+    TheWorldMgr->Terminate();
+    TheTriggerMgr.Terminate();
+    TheGameDb->Terminate();
+    TheLocale.Terminate();
+    TerminateNetSubsystem();
+    CheckLeftoverObjects();
+    TheRnd->Terminate();
+    Rnd::TheManager.DeleteLoadedObjects();
+    Synth::Destroy();
 }
 
 } // namespace
 
-// NTSC-U/C: 0x001ef870, PAL: 0x001f5fb0
-int main() {
-    printf("\n\n**********************\n");
-    printf("FREQ session beginning\n");
-    printf("**********************\n");
+// NTSC-U/C: 0x00100b50
+int main(int argc, char **argv) {
+    InitializeAppSubsystems(argc, argv);
+    JoypadSetStickMessages(true);
 
-    ZoneInit(1);
-    InitIop();
-    InitAsync();
-
-    Rnd::TheDbg.SetNotify(RecordFailMessage);
-    Rnd::TheDbg.mAbortProc = HaltOnFailure;
-
-    Rnd::TheManager.Init();
-    Rnd::ThePs.Init(kDisplayWidth, kDisplayHeight, kDisplayBitDepth);
-
-    if (UsingArkFiles() != 0) {
-        if (OpenArkObject::Open(kLoadingArkPath) == 0) {
-            Fatal("Can't open loading.ark arkfile!\n");
-        }
+    while (!g_bQuitRequested) {
+        UpdateAppFrame();
     }
 
-    ShowLoadingScreen();
-
-    if (UsingArkFiles() != 0) {
-        OpenArkObject::Close(kLoadingArkPath);
-    }
-
-    InitArk(); // Yes, the binary discards this call's result.
-    LoadIopModules();
-
-    Application::shared()->Run(); // Yes, the binary discards this call's result.
-#ifdef VIDEO_STANDARD_PAL
-    Application::shared()->ExitInstance(); // Yes, the binary discards this call's result.
-    ShutdownIop();
-    CloseArk(); // Yes, the binary discards this call's result.
-    WaitForExitDma();
-    sceGsSyncVCallback(nullptr);
-#endif
+    TerminateAppSubsystems();
+    SystemTerminate();
+    DebugPrint("exiting...\n");
     return 0;
 }

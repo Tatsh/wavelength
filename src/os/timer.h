@@ -1,72 +1,35 @@
 #pragma once
 
+#include "os/cycles.h"
+
 /**
- * The EE cycle clock the engine times itself against.
+ * Stopwatch on the EE cycle counter.
  *
- * Every member is static, and the class emits no RTTI. Its name comes from the debugging symbols of
- * the North American demo release. GetElapsedMilliseconds() accumulates into the members, and
- * around thirty routines across the engine inline GetElapsedMilliseconds().
+ * The RTTI includes the class name. The class is not polymorphic, and the object is 0x14 bytes
+ * with no vptr. The system clock at `0x00491a10` is one instance, and many routines build another
+ * on the stack to time their body.
+ *
+ * Every member routine in the image is expanded inline at its call sites.
  */
 class Timer {
 public:
     /**
-     * Start the clock from the current counter reading.
+     * Restart the measurement at the current counter reading.
      *
-     * The total and the last difference become zero and the last reading becomes the counter. The
-     * counter is read twice and the first reading is discarded. The static initialiser at
-     * `0x004662d0`, in the unit that defines the out-of-line GetElapsedMilliseconds(), is the one
-     * caller.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004fefb0
-     * @ghidraAddress PAL: 0x0053dd60
+     * Only a timer whose mRunning is exactly 1 is split. Any other timer is unchanged. A split
+     * timer stores the cycles since the previous reading in mCycles, replacing the earlier value.
      */
-    static void Init();
+    void Split() {
+        if (mRunning == 1) {
+            const unsigned nCount = ReadCycleCount();
+            mCycles = nCount - mStart;
+            mStart = nCount;
+        }
+    }
 
-    /**
-     * Milliseconds per EE cycle, the reciprocal of kCyclesPerMillisecond.
-     *
-     * Init() writes it and no routine in the image reads it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x007082b4
-     * @ghidraAddress PAL: 0x0074bde4
-     */
-    static float sClock2Ms;
-
-    /**
-     * Word Init() clears beside the cycle state. No routine in the image reads it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x007082b8
-     * @ghidraAddress PAL: 0x0074bde8
-     */
-    static int sElapsedMs;
-
-    /**
-     * Cycles accumulated across every read.
-     *
-     * Accumulating differences rather than counter readings makes the total correct across a wrap
-     * of the 32-bit counter.
-     *
-     * @ghidraAddress NTSC-U/C: 0x007082c0
-     * @ghidraAddress PAL: 0x0074bdf0
-     */
-    static long long sElapsedCycles;
-
-    /**
-     * The counter reading the last call took.
-     *
-     * @ghidraAddress NTSC-U/C: 0x007082c8
-     * @ghidraAddress PAL: 0x0074bdf8
-     */
-    static unsigned sElapsedTimer;
-
-    /**
-     * The difference the last call added to the total.
-     *
-     * The word follows sElapsedTimer, and Init() addresses it through that member's base. Every
-     * caller writes this word and none reads it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x007082cc
-     * @ghidraAddress PAL: 0x0074bdfc
-     */
-    static unsigned sLastCycleDelta;
+    unsigned mStart;    /*!< Counter reading at the start of the current measurement. */
+    unsigned mCycles;   /*!< Cycles of the last completed measurement. */
+    float mLastMs;      /*!< mCycles converted to milliseconds when the timer last stopped. */
+    unsigned mReserved; // +0x0c, not written by any routine recovered so far.
+    int mRunning;       /*!< Start count. The timer measures while the count is non-zero. */
 };

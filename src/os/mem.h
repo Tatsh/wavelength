@@ -435,3 +435,31 @@ void *HeapRealloc(void *pBlock, size_t nSize);
  * @ghidraAddress PAL: 0x0025bd58
  */
 void ReportHeapCapacity();
+
+/**
+ * Look up a heap by its configured name.
+ *
+ * The heap table has one 0x18-byte entry per heap, and the lookup compares the name of each entry
+ * in table order.
+ *
+ * @param pszName The heap name, for example "rnd".
+ * @return The table index of the heap, or -1 when no heap has that name.
+ * @ghidraAddress NTSC-U/C: 0x0029ad90
+ * @ghidraAddress PAL: 0x002a49b0
+ */
+int MemFindHeap(const char *pszName);
+
+/**
+ * Move live blocks of one heap together to merge its free space.
+ *
+ * A negative heap index is ignored. With bStrictBudget set, compaction stops before the first block
+ * that would take the bytes moved past the budget. Otherwise compaction stops only after the bytes
+ * moved exceed the budget, and the last block moved may cross it.
+ *
+ * @param nHeap The table index MemFindHeap() reported.
+ * @param nByteBudget The most bytes to move in this call.
+ * @param bStrictBudget Whether the budget is a hard limit.
+ * @ghidraAddress NTSC-U/C: 0x0029af78
+ * @ghidraAddress PAL: 0x002a4b98
+ */
+void MemCompact(int nHeap, int nByteBudget, bool bStrictBudget);

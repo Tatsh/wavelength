@@ -112,17 +112,24 @@ public:
     bool Contains(const Object *pObject);
 
     /**
-     * Register the profile timers and the loadable renderer classes.
+     * Register the loadable renderer classes.
      *
-     * The six timers "callback", "anim", "updateworldxfm", "draw", "swap", and "frame" become
-     * records 14 through 19 of the 0x14-byte timer table addressed by `*(0x00720378)`, each name
-     * assigned to the HxStr at record + 0x08. The twenty-two class registrations listed above
-     * follow, each passing a static HxStr that a static initialiser built from a literal.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00519bb8
-     * @ghidraAddress PAL: 0x00559f88
+     * @ghidraAddress NTSC-U/C: 0x00236800
+     * @ghidraAddress PAL: 0x0023f380
      */
     void Init();
+
+    /**
+     * Advance the pending asynchronous loads until a time budget is spent.
+     *
+     * The budget is measured on the system clock through SystemMs(). The main loop grants 10
+     * milliseconds a frame. The name is inferred from the behaviour.
+     *
+     * @param flBudgetMs The time the loads may take, in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x00237bc0
+     * @ghidraAddress PAL: 0x00240740
+     */
+    void PollLoaders(float flBudgetMs);
 
     /**
      * Pair a type name with the factory that builds it.
@@ -320,13 +327,13 @@ public:
      * Scans mObjects from the first key for an object whose mInternal is clear, destroys it, and
      * starts the scan again, until only the objects the renderer created itself remain. Restarting
      * is what makes the scan correct, because destroying an Rnd::Object erases its own entry from
-     * mObjects and invalidates the position the scan held.
+     * mObjects and invalidates the position the scan held. A second registry at `+0x20` is then
+     * cleared by the routine at `0x0023a5f0`.
      *
-     * The title is inferred from the behaviour. No call site survives, and the predicate is the
-     * inverse of the one the address was first recorded under.
+     * The title is inferred from the behaviour. The shutdown sequence in main.cpp is the caller.
      *
-     * @ghidraAddress NTSC-U/C: 0x0051bf70
-     * @ghidraAddress PAL: 0x0055c430
+     * @ghidraAddress NTSC-U/C: 0x0023a420
+     * @ghidraAddress PAL: 0x00242fa0
      */
     void DeleteLoadedObjects();
 
@@ -358,8 +365,7 @@ private:
 /**
  * The renderer's object registry.
  *
- * @ghidraAddress NTSC-U/C: 0x00719868
- * @ghidraAddress PAL: 0x0075d768
+ * @ghidraAddress NTSC-U/C: 0x0043c798
  */
 extern Manager TheManager;
 
