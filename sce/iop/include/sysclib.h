@@ -9,6 +9,49 @@ extern "C" {
 
 /** Memory and string routines of the resident sysclib library. */
 
+/** Character class bits look_ctype_table() returns. */
+enum CtypeClass {
+    CTYPE_DIGIT = 0x04, /*!< A decimal digit. */
+    CTYPE_SPACE = 0x08, /*!< White space. */
+};
+
+/**
+ * Classify a character.
+ *
+ * @param c Character.
+ * @return #CtypeClass bits.
+ */
+char look_ctype_table(char c);
+
+/**
+ * Convert the leading number of a string.
+ *
+ * @param text String.
+ * @param end Receives the address after the number, or null.
+ * @param base Number base.
+ * @return The number.
+ */
+long strtol(const char *text, char **end, int base);
+
+/**
+ * Copy at most n characters of a string, padding the rest with terminators.
+ *
+ * @param dest Destination.
+ * @param src Source.
+ * @param n Byte count.
+ * @return @p dest.
+ */
+char *strncpy(char *dest, const char *src, size_t n);
+
+/**
+ * Append a string.
+ *
+ * @param dest String to extend.
+ * @param src String to append.
+ * @return @p dest.
+ */
+char *strcat(char *dest, const char *src);
+
 /**
  * Compare two regions byte by byte.
  *

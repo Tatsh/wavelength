@@ -156,6 +156,7 @@ demangles
 depfile
 devconsole
 devirtualised
+dialing
 dialogpanel
 difficultyrating
 dimx
@@ -219,6 +220,9 @@ ezmpeg
 ezmpegstr
 ezncnf
 eznctl
+eznet
+eznetcnf
+eznetctl
 faild
 fbmsk
 fbrst
@@ -315,6 +319,7 @@ ibstream
 imagebuilder
 immediates
 inbuf
+inetctl
 inptr
 inputmap
 inputmgr
@@ -508,6 +513,12 @@ mvolr
 mypy
 nameirx
 netarbiter
+netcnf
+netcnfif
+netcnfifdata
+netcnfifenv
+netcnfrequest
+netctlstatus
 netdev
 netfaker
 netflow
@@ -747,12 +758,15 @@ stmask
 stmblk
 stmnblk
 stmod
+strcat
 strcmp
 strcpy
 streamqueue
 streamtask
 strequal
 strncmp
+strncpy
+strtol
 subu
 subx
 suby

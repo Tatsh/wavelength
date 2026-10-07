@@ -24,6 +24,14 @@ typedef struct {
  */
 unsigned int sceSifSetDma(sceSifDmaData *sdd, int len);
 
+/**
+ * Report the progress of queued transfers.
+ *
+ * @param id Transfer identifier from sceSifSetDma().
+ * @return A negative value once the transfers are complete.
+ */
+int sceSifDmaStat(unsigned int id);
+
 /** Initialise the SIF DMA interface. */
 void sceSifInit(void);
 

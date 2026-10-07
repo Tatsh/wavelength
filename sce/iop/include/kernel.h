@@ -30,6 +30,7 @@ enum KernelErrorCode {
     KE_ERROR = -1,              /*!< Unspecified failure. */
     KE_TIMER_NOT_INUSE = -156,  /*!< The timer is not running. */
     KE_ILLEGAL_PRIORITY = -413, /*!< The thread priority is out of range. */
+    KE_RELEASE_WAIT = -418,     /*!< Another context released the wait. */
 };
 
 /** Interrupt numbers of the IOP interrupt controller and its DMA channels. */
@@ -216,6 +217,14 @@ int DelayThread(int usec);
  * @return #KE_OK, or a negative error code.
  */
 int iWakeupThread(int thid);
+
+/**
+ * End the wait of a waiting thread from interrupt context. The wait returns #KE_RELEASE_WAIT.
+ *
+ * @param thid Thread identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int iReleaseWaitThread(int thid);
 
 /**
  * Create a semaphore.
