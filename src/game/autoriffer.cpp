@@ -204,6 +204,7 @@ void AutoRiffer::PlayRiff(int nTick) {
     }
 
     Cmd *pCommand = new Cmd(this, nEnd);
+    pCommand->AddRef();
     mClock->PostAtSongTick(pCommand, nEnd, mCommand);
     if (pCommand != nullptr) {
         pCommand->Release();

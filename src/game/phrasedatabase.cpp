@@ -43,6 +43,7 @@ void PhraseDatabase::SetOwners(Player *pPlayer) {
     for (int i = 0; i < nCount; ++i) {
         if (mPhrases[i] == nullptr) {
             mPhrases[i] = new Phrase;
+            mPhrases[i]->AddRef();
         }
         mPhrases[i]->mPlayer = pPlayer;
     }
@@ -142,6 +143,7 @@ void PhraseDatabase::SetOwnerAt(Player *pPlayer, int nTick) {
 void PhraseDatabase::SetOwner(Player *pPlayer, int nIndex) {
     if (mPhrases[nIndex] == nullptr) {
         mPhrases[nIndex] = new Phrase;
+        mPhrases[nIndex]->AddRef();
     }
     mPhrases[nIndex]->mPlayer = pPlayer;
 }

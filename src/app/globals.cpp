@@ -32,6 +32,7 @@ void Globals::Init() {
     mScriptSink = new ScriptSink(this);
     mGameManager = new GameManagerImpl;
     mMainLoop = new MainLoop(1, mWatchdog, mGameManager);
+    mMainLoop->AddRef();
     // NTSC-U/C: 0x004ee2f8, PAL: 0x0052cea0
     // The log stream is the preallocated read-write stream rather than the
     // output interface: the constructor writes two base vtables and fills a 0x20-byte

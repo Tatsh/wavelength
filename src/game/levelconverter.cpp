@@ -842,10 +842,12 @@ void LevelConverter::NextRiff() {
             return;
         }
         mRiff = new Riff(mRiffIndex);
+        mRiff->AddRef();
         mRiff->mLength = length;
         mBuilder->AddRiff(mRiffSetStart.mTick, mRiff);
     } else {
         mRiff = new Riff(nGem);
+        mRiff->AddRef();
         mRiff->mLength = length;
         mBuilder->AddGem(mRiffStart.mTick, nGem, mRiff);
     }

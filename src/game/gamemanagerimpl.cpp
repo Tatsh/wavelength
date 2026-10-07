@@ -445,6 +445,7 @@ void GameManagerImpl::OnBeginGameLocal(Message *) {
     Application::shared()->GetWatchdog()->Flush();
 
     DoGameSystemPlayCmd *pCommand = new DoGameSystemPlayCmd;
+    pCommand->AddRef();
     Sch::CmdID id;
     id.mValue = kUnallocatedCommand;
     const Sch::Time now{0};

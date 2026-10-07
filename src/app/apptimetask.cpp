@@ -92,6 +92,7 @@ void TimeTask::Run() {
 
     mNextNs += mPeriodNs;
     Cmd *pCommand = new Cmd(this);
+    pCommand->AddRef();
     const Sch::Time due{mNextNs};
     mClock->Post(pCommand, due, mCommand, kNotRecordable, kAbsolute);
     if (pCommand != nullptr) {

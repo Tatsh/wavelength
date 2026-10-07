@@ -58,6 +58,7 @@ void Sch::TimeClock::Resume() {
 void Sch::TimeClock::Post(
     Sch::Command *pCommand, Sch::Time tick, CmdID &id, int bRecordable, int bDelta) {
     Sch::TimedCommand *pTimed = new Sch::TimedCommand(pCommand, tick, bDelta);
+    pTimed->AddRef();
     if (bDelta != 0) {
         mWatchdog->QueueDelta(pTimed, tick.mValue, id, bRecordable, kDefaultOrder);
     } else {
@@ -69,6 +70,7 @@ void Sch::TimeClock::Post(
 
 void Sch::TimeClock::PostIn(Sch::Command *pCommand, Sch::Time tick, CmdID &id, int bRecordable) {
     Sch::TimedCommand *pTimed = new Sch::TimedCommand(pCommand, tick, kDeltaPost);
+    pTimed->AddRef();
     mWatchdog->QueueDelta(pTimed, tick.mValue, id, bRecordable, kDefaultOrder);
     Attachment::ReleaseIfSet(pTimed);
 }
@@ -77,6 +79,7 @@ void Sch::TimeClock::PostIn(Sch::Command *pCommand, Sch::Time tick) {
     CmdID id;
     id.mValue = kUnallocatedCommand;
     Sch::TimedCommand *pTimed = new Sch::TimedCommand(pCommand, tick, kDeltaPost);
+    pTimed->AddRef();
     mWatchdog->QueueDelta(pTimed, tick.mValue, id, kNotRecordable, kDefaultOrder);
     Attachment::ReleaseIfSet(pTimed);
 }

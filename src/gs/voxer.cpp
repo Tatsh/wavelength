@@ -182,6 +182,7 @@ void Voxer::StartPhrase(int nTick) {
     BarStatusMsg status(nBar, mTrack, mPlayer);
     Send(&status);
     mPhrase = new Phrase();
+    mPhrase->AddRef();
     mPhrase->mPlayer = mPlayer;
     mPhraseBar = nBar;
     OnErase(nBar, 0, 0);

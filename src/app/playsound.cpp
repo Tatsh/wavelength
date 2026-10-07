@@ -191,6 +191,7 @@ NoteDestroyer *g_pNoteDestroyer;
 
 void CreateNoteDestroyer() {
     g_pNoteDestroyer = new NoteDestroyer(Application::shared());
+    g_pNoteDestroyer->AddRef();
 }
 
 void PlaySynthSound(int nNote, int nNote2, int nVelocity, int bAutoStop) {

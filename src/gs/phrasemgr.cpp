@@ -430,6 +430,7 @@ void PhraseMgr::OnCommand(int nBar) {
 
     const int nNextBar = nBar + 1;
     Cmd *pCommand = new Cmd(this, nNextBar);
+    pCommand->AddRef();
     const Sch::Tick when(ClampPosition(mBarTicks * nNextBar));
     mClock->PostAtSongTick(pCommand, when.mTick, mCommand);
     if (pCommand != nullptr) {
@@ -446,6 +447,7 @@ void PhraseMgr::OnExportCommand(int nBar) {
 
     const int nNextBar = nBar + 1;
     ExportCmd *pCommand = new ExportCmd(this, nNextBar);
+    pCommand->AddRef();
     const Sch::Tick start(ClampPosition(mBarTicks * nNextBar));
     const Sch::Tick when(ClampPosition(start.mTick + mExportLead.mTick));
     mClock->PostAtSongTick(pCommand, when.mTick, mExportCommand);
@@ -625,6 +627,7 @@ void PhraseMgr::PostPhraseMsg(int nPhrase) {
 
 void PhraseMgr::StartCommands() {
     Cmd *pCommand = new Cmd(this, kFirstBar);
+    pCommand->AddRef();
     const Sch::Tick when(ClampPosition(mBarTicks * kFirstBar));
     mClock->PostAtSongTick(pCommand, when.mTick, mCommand);
     if (pCommand != nullptr) {
@@ -632,6 +635,7 @@ void PhraseMgr::StartCommands() {
     }
 
     ExportCmd *pExportCommand = new ExportCmd(this, kFirstExportBar);
+    pExportCommand->AddRef();
     const Sch::Tick start(ClampPosition(mBarTicks * kFirstExportBar));
     const Sch::Tick exportWhen(ClampPosition(start.mTick + mExportLead.mTick));
     mClock->PostAtSongTick(pExportCommand, exportWhen.mTick, mExportCommand);

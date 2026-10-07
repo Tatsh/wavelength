@@ -141,6 +141,7 @@ void Synth::Setup() {
 
 void Synth::FadeOut(int nDurationMs) {
     SynthFade *pFade = new SynthFade(this, nDurationMs);
+    pFade->AddRef();
     pFade->Start(kFadeEpochNow);
     if (pFade != nullptr) {
         pFade->Release();

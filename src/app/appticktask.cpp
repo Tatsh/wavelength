@@ -98,6 +98,7 @@ void TickTask::Start(int nEpochOffset) {
     const int nNext = Sch::Tick(ClampTick(mNextTick + mPeriod)).mTick;
     mNextTick = Sch::Tick(ClampTick((nNext / mPeriod) * mPeriod)).mTick;
     Cmd *pCommand = new Cmd(this);
+    pCommand->AddRef();
     mClock->PostAtSongTick(pCommand, mNextTick, mCommand);
     if (pCommand != nullptr) {
         pCommand->Release();
@@ -112,6 +113,7 @@ void TickTask::Run() {
 
     mNextTick = ClampTick(mNextTick + mPeriod);
     Cmd *pCommand = new Cmd(this);
+    pCommand->AddRef();
     mClock->PostAtSongTick(pCommand, mNextTick, mCommand);
     if (pCommand != nullptr) {
         pCommand->Release();

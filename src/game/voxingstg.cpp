@@ -7,6 +7,7 @@
 VoxingSTG::VoxingSTG(TrackData *pTrackData)
     : ScoreTrackGraph(pTrackData), mVoxer(nullptr), mJamEffects(nullptr) {
     mVoxer = new Voxer(mPhraseMgr, mQuantizer, mApplication->GetSongClock(), mTrackData);
+    mVoxer->AddRef();
     mOldGemMaker = new AxeOldGemMaker(mTrackData);
     mNewGemMaker = new AxeNewGemMaker(mTrackData);
 

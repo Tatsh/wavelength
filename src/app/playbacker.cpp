@@ -28,6 +28,7 @@ void Sch::Playbacker::Load(IBStream &stream) {
     mCommands.erase(mCommands.begin(), mCommands.end());
     for (;;) {
         Sch::TimedCommand *pCommand = new Sch::TimedCommand;
+        pCommand->AddRef();
         pCommand->Load(stream);
         if (stream.Eof() != 0 || pCommand->mCommand->CmdID() == kEndRecordingCmdId) {
             delete pCommand;

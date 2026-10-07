@@ -14,8 +14,10 @@ PitchingSTG::PitchingSTG(TrackData *pTrackData)
                                    mApplication->GetPlayMode() == kPlayModeGame,
                                    1,
                                    0);
+        mPitcher->AddRef();
     } else if (mTrackData->mKind == kTrackModeScratch) {
         mPitcher = new Scratcher(mPhraseMgr, mQuantizer, mApplication->GetSongClock(), mTrackData);
+        mPitcher->AddRef();
     }
 
     if (mApplication->GetPlayMode() == kPlayModeJam) {

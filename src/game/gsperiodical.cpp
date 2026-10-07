@@ -68,6 +68,7 @@ GsPeriodical::GsPeriodical(Sch::TickClock *pClock, PhraseMaker *pPhraseMaker, in
 
 void GsPeriodical::PostAt(int nTick) {
     PeriodicalCmd *pCommand = new PeriodicalCmd(this, nTick);
+    pCommand->AddRef();
     mClock->PostAtSongTick(pCommand, nTick, mCommand);
     if (pCommand != nullptr) {
         pCommand->Release();

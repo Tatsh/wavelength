@@ -78,6 +78,7 @@ int Phrase::AddGem(int nTick, int nGem, int nTrans) {
 void Phrase::AddMuseMsg(int nTick, MuseMsg *pMsg) {
     if (mMuse == nullptr) {
         mMuse = new MultiMuse;
+        mMuse->AddRef();
     }
     mMuse->Add(pMsg, nTick, 1);
 }
@@ -182,6 +183,7 @@ void Phrase::Load(IBStream &stream) {
     if (cMuse == kPresent) {
         delete mMuse;
         mMuse = new MultiMuse;
+        mMuse->AddRef();
         mMuse->LoadFields(stream);
         LoadValues(stream);
     }
@@ -297,6 +299,7 @@ IBStream &operator>>(IBStream &stream, Phrase *&pPhrase) {
         pPhrase = nullptr;
     } else {
         pPhrase = new Phrase;
+        pPhrase->AddRef();
         pPhrase->Load(stream);
     }
     return stream;

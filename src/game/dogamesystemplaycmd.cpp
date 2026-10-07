@@ -20,7 +20,9 @@ const Sch::CommandFactory kDoGameSystemPlayCmdFactory(kDoGameSystemPlayCmdId,
 int DoGameSystemPlayCmd::sCmdID = kDoGameSystemPlayCmdId;
 
 Sch::Command *DoGameSystemPlayCmd::New() {
-    return new DoGameSystemPlayCmd;
+    DoGameSystemPlayCmd *pCommand = new DoGameSystemPlayCmd;
+    pCommand->AddRef();
+    return pCommand;
 }
 
 int DoGameSystemPlayCmd::CmdID() {

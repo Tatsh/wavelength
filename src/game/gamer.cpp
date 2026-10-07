@@ -573,6 +573,7 @@ void Gamer::ScheduleBar(int nBar) {
     }
 
     GamerCmd *pCommand = new GamerCmd(this, nBar);
+    pCommand->AddRef();
     mGlobals->GetSongClock()->PostAtSongTick(pCommand, when.mTick, mCommand);
     if (pCommand != nullptr) {
         pCommand->Release();

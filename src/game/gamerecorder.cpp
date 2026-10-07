@@ -87,6 +87,7 @@ GameRecorder::~GameRecorder() {
 
 void GameRecorder::ScheduleEnd() {
     EndRecordingCmd *pCommand = new EndRecordingCmd(this);
+    pCommand->AddRef();
     Sch::CmdID id;
     id.mValue = kUnallocatedCommand;
     const Sch::Time now{0};

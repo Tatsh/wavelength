@@ -91,6 +91,7 @@ void PhrasePlayer::PlayBarGems(Phrase *pPhrase, int nBar, Sch::Tick from, Sch::T
     }
 
     MultiMuse *pMuse = new MultiMuse;
+    pMuse->AddRef();
     const std::vector<TickObj<int> > *pGems = mTrackData->GetGems(nBar);
     const int nStep = mPhraseMgr->mMap->MapBar(nBar);
     for (std::vector<TickObj<int> >::const_iterator it = pGems->begin(); it != pGems->end(); ++it) {
@@ -108,6 +109,7 @@ void PhrasePlayer::PlayBarGems(Phrase *pPhrase, int nBar, Sch::Tick from, Sch::T
 
 void PhrasePlayer::PlayPhraseGems(Phrase *pPhrase, int nBar, Sch::Tick from, Sch::Tick elapsed) {
     MultiMuse *pMuse = new MultiMuse;
+    pMuse->AddRef();
     for (std::vector<Phrase::Gem>::iterator it = pPhrase->mGems.begin(); it != pPhrase->mGems.end();
          ++it) {
         if (it->mPosition.mTick < from.mTick) {

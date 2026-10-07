@@ -433,6 +433,7 @@ void Catcher::SchedulePostGemCommand(int nTick) {
     const Sch::Tick when = MakePosition(nDelay + Sch::Tick(1).mTick);
 
     PostGemCmd *pCommand = new PostGemCmd(this, nGemTick);
+    pCommand->AddRef();
     mClock->PostAtSongTick(pCommand, when.mTick, mPostGemCommand);
     if (pCommand != nullptr) {
         pCommand->Release();
@@ -443,6 +444,7 @@ void Catcher::ScheduleGemCommand(int nTick) {
     const int nGemTick = FindNextGemTick(nTick);
 
     GemCmd *pCommand = new GemCmd(this, nGemTick);
+    pCommand->AddRef();
     mClock->PostAtSongTick(pCommand, nGemTick, mGemCommand);
     if (pCommand != nullptr) {
         pCommand->Release();

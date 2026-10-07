@@ -85,6 +85,7 @@ void ActiveFilter::SetTarget(float flTarget) {
     }
 
     mStepCommand = new Cmd(this);
+    mStepCommand->AddRef();
     mValue = mTarget;
     Update();
 }

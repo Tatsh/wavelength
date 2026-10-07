@@ -40,7 +40,9 @@ Effector *Effector::CreateForType(int nType, unsigned char nChannel, int nTrack)
     case kEffectorTypeWah: {
         const int nDepth = QueryConfigValue(kWahDepthConfigCode, nTrack);
         const int nPeriod = QueryConfigValue(kWahPeriodConfigCode, nTrack);
-        pEffector = new WahEffector(pClock, nChannel, nDepth, nPeriod);
+        WahEffector *pWah = new WahEffector(pClock, nChannel, nDepth, nPeriod);
+        pWah->AddRef();
+        pEffector = pWah;
         break;
     }
     case kEffectorTypeStutter: {
@@ -49,7 +51,10 @@ Effector *Effector::CreateForType(int nType, unsigned char nChannel, int nTrack)
         if (parameters.size() != kStutterParameterCount) {
             Fatal("Need 2 stutter parameters");
         }
-        pEffector = new StutterEffector(pClock, nChannel, parameters[0], parameters[1]);
+        StutterEffector *pStutter =
+            new StutterEffector(pClock, nChannel, parameters[0], parameters[1]);
+        pStutter->AddRef();
+        pEffector = pStutter;
         break;
     }
     case kEffectorTypeMidiOnOffFirst:

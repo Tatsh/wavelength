@@ -96,6 +96,7 @@ void NotePlayer::Start(MsgSink *pSink) {
     NoteOn(nNow);
 
     Cmd *pCommand = new Cmd(this, Sch::Tick(ClampPosition(nNow + mDuration)).mTick);
+    pCommand->AddRef();
     const Sch::Tick end(ClampPosition(nNow + mDuration));
     mClock->PostAtSongTick(pCommand, end.mTick, mCommand);
     if (pCommand != nullptr) {

@@ -63,6 +63,7 @@ void BGTrackGraph::BuildSequencer() {
 
     mSequencer =
         new BarSequencer(Application::shared()->GetSongClock(), mTrackData, mDisabler, mUnmapped);
+    mSequencer->AddRef();
     mSequencer->Start(Sch::Tick(0).mTick);
 }
 

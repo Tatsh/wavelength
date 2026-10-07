@@ -266,7 +266,9 @@ public:
     // The factory the unit's static initialiser registers. The expanded default constructor sets
     // the reference count to 1 and leaves the three members unwritten.
     static Sch::Command *NewCmd() {
-        return new ExitCmd;
+        ExitCmd *pCommand = new ExitCmd;
+        pCommand->AddRef();
+        return pCommand;
     }
 
     // The word at 0x0067f24c, which the image initialises to 7.
@@ -349,6 +351,7 @@ void GrooveWorld::StartPlay() {
 
     if (mIsTutorial == 0) {
         FuncCmd *pEnable = new FuncCmd(this, &GrooveWorld::EnableInput);
+        pEnable->AddRef();
         const Sch::Tick zero(0);
         const Sch::Tick lead(mLevel->GetTrack(kFirstTrack)->GetQuant(kFirstBar) / 2);
         const Sch::Tick when(
@@ -358,6 +361,7 @@ void GrooveWorld::StartPlay() {
     }
 
     FuncCmd *pStart = new FuncCmd(this, &GrooveWorld::StartSequencers);
+    pStart->AddRef();
     mSongClock->PostAtSongTick(pStart, Sch::Tick(0).mTick);
     Attachment::ReleaseIfSet(pStart);
 
@@ -413,6 +417,7 @@ void GrooveWorld::OnControllerReading(int nTag, int nPadIndex, int nButton, floa
     }
     const MetControllerReading reading{nTag, nPadIndex, nButton, flValue};
     ControllerCmd *pCommand = new ControllerCmd(reading);
+    pCommand->AddRef();
     Sch::CmdID id;
     id.mValue = kUnallocatedCommand;
     mApp->GetWatchdogTimer()->PostIn(pCommand, Sch::Time{0}, id, kRecordable);
@@ -440,6 +445,7 @@ void GrooveWorld::PostExit(int nMode, int bContinueJukebox, int bRestart) {
         return;
     }
     ExitCmd *pCommand = new ExitCmd(nMode, bContinueJukebox, bRestart);
+    pCommand->AddRef();
     Sch::CmdID id;
     id.mValue = kUnallocatedCommand;
     Application::shared()->GetWatchdogTimer()->PostIn(pCommand, Sch::Time{0}, id, kRecordable);
@@ -480,6 +486,7 @@ void GrooveWorld::Exit(int nMode, int bContinueJukebox, int bRestart) {
         mSongClock->Pause();
     }
     FuncCmd *pFinish = new FuncCmd(this, &GrooveWorld::FinishSong);
+    pFinish->AddRef();
     [[maybe_unused]] Sch::CmdID id;
     id.mValue = kUnallocatedCommand; // Yes, the binary prepares this handle and never passes it.
     mApp->GetWatchdogTimer()->PostIn(
@@ -828,6 +835,7 @@ void GrooveWorld::FinishSong() {
 
     if (mExitMode == kExitModeQuit) {
         FuncCmd *pCommand = new FuncCmd(this, &GrooveWorld::EndLevel);
+        pCommand->AddRef();
         mApp->GetWatchdogTimer()->PostIn(pCommand, Sch::Time{kEndLevelDelayNs});
         Attachment::ReleaseIfSet(pCommand);
     } else {

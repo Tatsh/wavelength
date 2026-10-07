@@ -37,6 +37,7 @@ TickClock::TickClock(Scheduler *pWatchdog, TempoMap *pTempoMap) : TimeClock(pWat
         ++mTempoMap->mRefs;
     } else {
         mTempoMap = new TempoMap(kDefaultMicrosecondsPerQuarter);
+        mTempoMap->AddRef();
     }
 }
 
@@ -73,6 +74,7 @@ void TickClock::PostAt(Command *pCommand, Time tick) {
     CmdID id;
     id.mValue = kUnallocatedCommand;
     TimedCommand *pTimed = new TimedCommand(pCommand, tick, kAbsolutePost);
+    pTimed->AddRef();
     mWatchdog->QueueAbsolute(
         pTimed, tick.mValue - mNegatedOrigin, id, kNotRecordable, kDefaultOrder);
     Attachment::ReleaseIfSet(pTimed);
@@ -84,6 +86,7 @@ void TickClock::PostAtSongTick(Command *pCommand,
                                [[maybe_unused]] int nUnused) {
     const long long nTime = SongTickToTime(mTempoMap, nTick);
     TimedCommand *pTimed = new TimedCommand(pCommand, Time{nTime}, kAbsolutePost);
+    pTimed->AddRef();
     mWatchdog->QueueAbsolute(pTimed, nTime - mNegatedOrigin, id, kNotRecordable, kDefaultOrder);
     Attachment::ReleaseIfSet(pTimed);
 }
@@ -93,6 +96,7 @@ void TickClock::PostAtSongTick(Command *pCommand, long long nTick) {
     id.mValue = kUnallocatedCommand;
     const long long nTime = SongTickToTime(mTempoMap, nTick);
     TimedCommand *pTimed = new TimedCommand(pCommand, Time{nTime}, kAbsolutePost);
+    pTimed->AddRef();
     mWatchdog->QueueAbsolute(pTimed, nTime - mNegatedOrigin, id, kNotRecordable, kDefaultOrder);
     Attachment::ReleaseIfSet(pTimed);
 }

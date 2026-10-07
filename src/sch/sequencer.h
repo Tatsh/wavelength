@@ -130,6 +130,7 @@ public:
 
         if (mCommand == nullptr) {
             mCommand = new SequencerCmd(this);
+            mCommand->AddRef();
         }
         mClock->PostAtSongTick(mCommand, mNextTick.mTick, mCmdId);
     }

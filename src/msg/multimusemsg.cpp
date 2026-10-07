@@ -54,5 +54,6 @@ void MultiMuseMsg::saveGuts(OBStream &stream) const {
 void MultiMuseMsg::restoreGuts(IBStream &stream) {
     // Whatever sequence the message already stored is replaced without being released.
     mMuse = new MultiMuse();
+    mMuse->AddRef();
     mMuse->LoadFields(stream);
 }

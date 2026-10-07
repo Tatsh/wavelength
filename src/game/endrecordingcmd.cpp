@@ -20,7 +20,9 @@ constexpr char kDescription[] = "{EndRecordingCmd}";
 int EndRecordingCmd::sCmdID = kEndRecordingCmdId;
 
 Sch::Command *NewEndRecordingCmd() {
-    return new EndRecordingCmd;
+    EndRecordingCmd *pCommand = new EndRecordingCmd;
+    pCommand->AddRef();
+    return pCommand;
 }
 
 int EndRecordingCmd::CmdID() {

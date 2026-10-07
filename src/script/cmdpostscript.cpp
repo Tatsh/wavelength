@@ -47,5 +47,7 @@ int ScriptCmd::sCmdID;
 } // namespace
 
 Sch::Command *NewScriptCmd(const HxStr &script) {
-    return new ScriptCmd(script);
+    ScriptCmd *pCommand = new ScriptCmd(script);
+    pCommand->AddRef();
+    return pCommand;
 }

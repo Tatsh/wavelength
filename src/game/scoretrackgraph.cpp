@@ -57,6 +57,7 @@ void ScoreTrackGraph::Start() {
     chase.Replay(mMuseSynth);
 
     mSequencer = new BarSequencer(mApplication->GetSongClock(), mTrackData, mMuseSynth, kMapped);
+    mSequencer->AddRef();
     mSequencer->Start(Sch::Tick(0).mTick);
 }
 

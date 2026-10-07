@@ -25,6 +25,7 @@ public:
     // NTSC-U/C: 0x001ab4c8, PAL: 0x001b1230
     MultiMuse *GetShiftedMuse(const MultiMuse &muse, int nTrans) {
         mResult = new MultiMuse;
+        mResult->AddRef();
         mTrans = nTrans;
         for (const auto &entry : muse.mEntries) {
             mPosition = entry.mPosition;

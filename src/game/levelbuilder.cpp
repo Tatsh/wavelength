@@ -67,6 +67,7 @@ LevelBuilder::LevelBuilder(unsigned nTrackCount)
     : mOwnTrack(nullptr), mCurrentTrack(nullptr), mTempoMap(nullptr) {
     const int bStartLoop = QueryConfigFlag(kStartLoopQuery);
     mTempoMap = new Sch::TempoMap(kDefaultMicrosecondsPerQuarter);
+    mTempoMap->AddRef();
     PlayMapLinear *pMap = new PlayMapLinear(kPlayMapLoadStepRings);
     mPlayMap = pMap;
 
@@ -240,4 +241,5 @@ void LevelBuilder::AddTempo([[maybe_unused]] int nTick, int nMicrosecondsPerQuar
         mTempoMap->Release();
     }
     mTempoMap = new Sch::TempoMap(nMicrosecondsPerQuarter);
+    mTempoMap->AddRef();
 }

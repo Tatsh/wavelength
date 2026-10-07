@@ -30,7 +30,9 @@ const Sch::CommandFactory kControllerCmdFactory(kControllerCmdId, NewControllerC
 int ControllerCmd::sCmdID = kControllerCmdId;
 
 Sch::Command *NewControllerCmd() {
-    return new ControllerCmd;
+    ControllerCmd *pCommand = new ControllerCmd;
+    pCommand->AddRef();
+    return pCommand;
 }
 
 int ControllerCmd::CmdID() {

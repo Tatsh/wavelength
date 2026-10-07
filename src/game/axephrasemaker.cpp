@@ -126,6 +126,7 @@ void AxePhraseMaker::StartPhrase(int nTick) {
     FinishPhrase();
     mPhraseBar = nBar;
     mPhrase = new Phrase();
+    mPhrase->AddRef();
     mPhrase->mPlayer = mPlayer;
     mPhrase->AddXLocal(Sch::Tick(0).mTick, mValue);
 

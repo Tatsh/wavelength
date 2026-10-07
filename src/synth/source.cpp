@@ -138,29 +138,43 @@ private:
 } // namespace
 
 Source *Source::AllocateSineSource(float flPeriod, float flPhase) {
-    return new Sine(kTwoPi / flPeriod, flPhase * kTwoPi);
+    Source *pSource = new Sine(kTwoPi / flPeriod, flPhase * kTwoPi);
+    pSource->AddRef();
+    return pSource;
 }
 
 Source *Source::AllocateSquareSource(float flPeriod) {
-    return new Square(flPeriod);
+    Source *pSource = new Square(flPeriod);
+    pSource->AddRef();
+    return pSource;
 }
 
 Source *Source::AllocateTriSource(float flPeriod, float flPhase) {
-    return new Tri(flPeriod, flPhase * flPeriod, kTriangleSpan / flPeriod);
+    Source *pSource = new Tri(flPeriod, flPhase * flPeriod, kTriangleSpan / flPeriod);
+    pSource->AddRef();
+    return pSource;
 }
 
 Source *Source::AllocateRampSource(float flPeriod, float flPhase) {
-    return new Ramp(flPeriod, flPhase * flPeriod, 1.0f / flPeriod);
+    Source *pSource = new Ramp(flPeriod, flPhase * flPeriod, 1.0f / flPeriod);
+    pSource->AddRef();
+    return pSource;
 }
 
 Source *Source::AllocateFadeOutSource(int bStopAtEnd, float flDuration) {
-    return new Fade(flDuration, 0.0f, bStopAtEnd);
+    Source *pSource = new Fade(flDuration, 0.0f, bStopAtEnd);
+    pSource->AddRef();
+    return pSource;
 }
 
 Source *Source::AllocateFadeInSource(int bStopAtEnd, float flDuration) {
-    return new Fade(flDuration, 1.0f, bStopAtEnd);
+    Source *pSource = new Fade(flDuration, 1.0f, bStopAtEnd);
+    pSource->AddRef();
+    return pSource;
 }
 
 Source *Source::AllocateHoldAndFadeDownSource(int bStopAtEnd, float flHold, float flFade) {
-    return new HoldAndFadeDown(flHold, flFade, bStopAtEnd);
+    Source *pSource = new HoldAndFadeDown(flHold, flFade, bStopAtEnd);
+    pSource->AddRef();
+    return pSource;
 }
