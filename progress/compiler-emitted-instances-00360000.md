@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00360000` to `0x00370000`
 
-2 of 233 routines done.
+3 of 233 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -142,7 +142,6 @@ preliminary.
 | `AllocateButtonComponentMsgSink`                                     |        :x:         |      1 |     80 | `0x003624d0` | `0x003d09e8` | `void AllocateButtonComponentMsgSink(undefined8 arg1, undefined8 arg2)`                                                            |
 | `AllocateFreestyleLobbyModeDialog`                                   |        :x:         |      1 |     80 | `0x003614e8` | `0x003cfa00` | `void * AllocateFreestyleLobbyModeDialog(undefined8 a0)`                                                                           |
 | `AllocateFreestyleNameEntryDialog`                                   |        :x:         |      1 |     80 | `0x00361438` | `0x003cf950` | `void * AllocateFreestyleNameEntryDialog(undefined8 a0, undefined8 a1)`                                                            |
-| `AllocateFreqScreenStateDialog`                                      |        :x:         |      1 |     80 | `0x003618d0` | `0x003cfde8` | `void AllocateFreqScreenStateDialog(void)`                                                                                         |
 | `AllocateJukeboxListScreenMsgSink`                                   |        :x:         |      1 |     80 | `0x00362168` | `0x003d0680` | `void * AllocateJukeboxListScreenMsgSink(void)`                                                                                    |
 | `AllocateJukeboxSongListMsgSink`                                     |        :x:         |      1 |     80 | `0x003622b8` | `0x003d07d0` | `void * AllocateJukeboxSongListMsgSink(void * pArg)`                                                                               |
 | `AllocateListScrollWidgetMsgSink`                                    |        :x:         |      1 |     80 | `0x003625a8` | `0x003d0ac0` | `void * AllocateListScrollWidgetMsgSink(void)`                                                                                     |
@@ -174,6 +173,7 @@ preliminary.
 | `ResolveRndMatPointeeDescriptor`                                     |        :x:         |      1 |     80 | `0x0036c0d0` | `0x003da800` | `void * ResolveRndMatPointeeDescriptor(void)`                                                                                      |
 | `ResolveRndTextSinglePtrDescriptor`                                  |        :x:         |      1 |     80 | `0x003619c0` | `0x003cfed8` | `undefined4 * ResolveRndTextSinglePtrDescriptor(void)`                                                                             |
 | `ResolveTnlGeomPanelFXDataPtrDescriptor`                             |        :x:         |      1 |     80 | `0x0036bf00` | `0x003da630` | `void * ResolveTnlGeomPanelFXDataPtrDescriptor(void)`                                                                              |
+| `AllocateFreqScreenStateDialog`                                      | :white_check_mark: |      1 |     80 | `0x003618d0` | `0x003cfde8` | `void AllocateFreqScreenStateDialog(void)`                                                                                         |
 | `AllocateMsgSinkDialogViaCtor19d568`                                 | :white_check_mark: |      1 |     80 | `0x003608d0` | `0x003cede8` | `void AllocateMsgSinkDialogViaCtor19d568(undefined8 a0, undefined8 a1)`                                                            |
 | `ChatTextEntry__DestroyObjectBaseVtbl207838At3613a0`                 |        :x:         |      1 |     72 | `0x003613a0` | `0x003cf8b8` | `void ChatTextEntry__DestroyObjectBaseVtbl207838At3613a0(ChatTextEntry * pObj, ulong flags)`                                       |
 | `DestroyScreenObjectBaseVtbl19e490At361120`                          |        :x:         |      0 |     72 | `0x00361120` | `0x003cf638` | `void DestroyScreenObjectBaseVtbl19e490At361120(void * pObj, ulong flags)`                                                         |
