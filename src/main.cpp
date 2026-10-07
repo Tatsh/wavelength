@@ -264,7 +264,7 @@ void TerminateAppSubsystems() {
 
 } // namespace
 
-// NTSC-U/C: 0x00100b50
+// NTSC-U/C: 0x00100b50, PAL: 0x00101b68
 int main(int argc, char **argv) {
     InitializeAppSubsystems(argc, argv);
     JoypadSetStickMessages(true);
