@@ -1,12 +1,26 @@
 set(WAVELENGTH_MET_SRCS
+    avatarpanel.cpp
+    dialogpanel.cpp
+    errorscreen.cpp
     freqconfirmscreen.cpp
+    freqmakercustomscreen.cpp
+    freqmakeremblemscreen.cpp
+    freqmakererrorscreen.cpp
+    freqmakermainscreen.cpp
+    freqmakerpartconfigscreen.cpp
     freqpanel.cpp
     freqscreen.cpp
     gizmo.cpp
     helppanel.cpp
     introscreen.cpp
+    keyboardkey.cpp
+    keyboardpanel.cpp
+    keyboardrequest.cpp
+    keyboardscreen.cpp
+    mcdialogpanel.cpp
     metaarenascreen.cpp
     metagame.cpp
+    metagameutil.cpp
     metamainscreen.cpp
     metamusicsong.cpp
     metaskillscreen.cpp
@@ -15,6 +29,8 @@ set(WAVELENGTH_MET_SRCS
     mix.cpp
     mixtrack.cpp
     modescreen.cpp
+    saveeditedfreqscreen.cpp
+    savefreqscreen.cpp
     songpicpanel.cpp
     songpreview.cpp
     transitionmusic.cpp

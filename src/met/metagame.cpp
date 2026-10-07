@@ -12,10 +12,22 @@
 #include "math/color.h"
 #include "math/rand.h"
 #include "memcard/mcmanager.h"
+#include "met/avatarpanel.h"
+#include "met/dialogpanel.h"
+#include "met/errorscreen.h"
 #include "met/freqconfirmscreen.h"
+#include "met/freqmakercustomscreen.h"
+#include "met/freqmakeremblemscreen.h"
+#include "met/freqmakererrorscreen.h"
+#include "met/freqmakermainscreen.h"
+#include "met/freqmakerpartconfigscreen.h"
 #include "met/freqpanel.h"
 #include "met/freqscreen.h"
 #include "met/introscreen.h"
+#include "met/keyboardkey.h"
+#include "met/keyboardpanel.h"
+#include "met/keyboardscreen.h"
+#include "met/mcdialogpanel.h"
 #include "met/metaarenascreen.h"
 #include "met/metagameutil.h"
 #include "met/metamainscreen.h"
@@ -23,6 +35,8 @@
 #include "met/metasongscreen.h"
 #include "met/metastartscreen.h"
 #include "met/modescreen.h"
+#include "met/saveeditedfreqscreen.h"
+#include "met/savefreqscreen.h"
 #include "met/songpicpanel.h"
 #include "met/songpreview.h"
 #include "met/transitionmusic.h"
@@ -49,6 +63,7 @@
 #include "ui/uimanager.h"
 
 Metagame TheMetagame;
+Scheduler TheMetaScheduler;
 
 namespace {
 
@@ -281,16 +296,30 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(FreqScreen::New, "freq_screen");
     TheUI.RegisterScreenType(TransitionScreen::New, "transition_screen");
     TheUI.RegisterScreenType(IntroScreen::New, "intro_screen");
+    TheUI.RegisterScreenType(ErrorScreen::New, "error_screen");
     TheUI.RegisterScreenType(MetaStartScreen::New, "meta_start_screen");
     TheUI.RegisterScreenType(MetaMainScreen::New, "meta_main_screen");
     TheUI.RegisterScreenType(ModeScreen::New, "mode_screen");
     TheUI.RegisterScreenType(MetaSkillScreen::New, "meta_skill_screen");
     TheUI.RegisterScreenType(MetaArenaScreen::New, "meta_arena_screen");
     TheUI.RegisterScreenType(MetaSongScreen::New, "meta_song_screen");
+    TheUI.RegisterScreenType(FreqMakerPartConfigScreen::New, "f_maker_part_screen");
+    TheUI.RegisterScreenType(FreqMakerEmblemScreen::New, "f_maker_emblem_screen");
+    TheUI.RegisterScreenType(FreqMakerMainScreen::New, "f_maker_main_screen");
+    TheUI.RegisterScreenType(FreqMakerCustomScreen::New, "f_maker_custom_screen");
+    TheUI.RegisterScreenType(FreqMakerErrorScreen::New, "f_maker_error_screen");
     TheUI.RegisterScreenType(FreqConfirmScreen::New, "confirm_screen");
+    TheUI.RegisterScreenType(KeyboardScreen::New, "keyboard_screen");
+    TheUI.RegisterPanelType(KeyboardPanel::New, "kb_panel");
+    TheUI.RegisterScreenType(SaveFreqScreen::New, "save_freq_screen");
+    TheUI.RegisterScreenType(SaveEditedFreqScreen::New, "save_edited_freq_screen");
     TheUI.RegisterPanelType(FreqPanel::New, "freq_panel");
+    TheUI.RegisterPanelType(AvatarPanel::New, "avatar_panel");
     TheUI.RegisterPanelType(HelpPanel::New, "help_panel");
+    TheUI.RegisterPanelType(DialogPanel::New, "dialog_panel");
+    TheUI.RegisterPanelType(MCDialogPanel::New, "mc_dialog_panel");
     TheUI.RegisterPanelType(SongPicPanel::New, "song_pic_panel");
+    TheUI.RegisterComponentType(KeyboardKey::New, "key_comp");
     Gizmo::Init(pMetagame);
     TheMetagame.CreateGizmo();
     LoadSharedMusic();

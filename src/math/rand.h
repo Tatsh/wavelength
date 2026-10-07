@@ -39,3 +39,14 @@ public:
  * @ghidraAddress PAL: 0x0029bdf0
  */
 int RandomInt(int nLow, int nHigh);
+
+/**
+ * Draw a floating-point number from the shared generator.
+ *
+ * @param fLow The smallest value.
+ * @param fHigh The largest value.
+ * @return The number.
+ * @ghidraAddress NTSC-U/C: 0x00292470
+ * @ghidraAddress PAL: 0x0029be38
+ */
+float RandomFloat(float fLow, float fHigh);

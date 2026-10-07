@@ -60,7 +60,7 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (strcmp(pszButton, "edit") == 0) {
         FreqMakerMainScreen *pMaker =
             dynamic_cast<FreqMakerMainScreen *>(TheUI.FindScreen("f_maker", false));
-        pMaker->mReservedA0 = 0;
+        pMaker->mSaveStarted = 0;
         pMaker->mEditing = 1;
         pMaker->mFreqName = TheGameDb->GetPlayerName(0);
         pMaker->mProfile = *TheGameDb->GetProfile(0);
@@ -68,7 +68,7 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         FreqMakerMainScreen *pMaker =
             dynamic_cast<FreqMakerMainScreen *>(TheUI.FindScreen("f_maker", false));
         pMaker->mEditing = 0;
-        pMaker->mReservedA0 = 0;
+        pMaker->mSaveStarted = 0;
         pMaker->mFreqName = "";
         pMaker->mProfile = *TheGameDb->GetProfile(0);
     } else if (strcmp(pszButton, "load") == 0) {

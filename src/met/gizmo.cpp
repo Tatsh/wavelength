@@ -93,7 +93,7 @@ bool Gizmo::IsShowingAvatar() const {
 
 void Gizmo::Draw() {
     if (IsShowingAvatar()) {
-        TheGameDb->GetAvatar(0)->Render(false);
+        TheGameDb->GetAvatar(0)->Render(nullptr);
     }
     mView->Draw();
 }

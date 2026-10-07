@@ -1,4 +1,5 @@
 set(WAVELENGTH_GAME_SRCS
+    avatarpartset.cpp
     difficultyrating.cpp
     duel.cpp
     duellogic.cpp
@@ -36,6 +37,7 @@ set(WAVELENGTH_GAME_SRCS
     pitchtrackriffdata.cpp
     pitchtrackriffs.cpp
     player.cpp
+    playerprofile.cpp
     playmap.cpp
     points.cpp
     remix.cpp

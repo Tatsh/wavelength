@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "game/avatarpartset.h"
 #include "game/inputmap.h"
 #include "game/songrecord.h"
 #include "os/string.h"
@@ -68,6 +69,40 @@ public:
      * @ghidraAddress PAL: 0x00284978
      */
     bool IsUnlocked(const char *pszItem, int nSkillLevel);
+
+    /**
+     * List the choices of an avatar part the player may use.
+     *
+     * Every choice qualifies while g_dwUnlockAllParts is set. The name is inferred.
+     *
+     * @param nPart One of AvatarPartSet::Part.
+     * @param pTypes Receives the symbols of the choices.
+     * @ghidraAddress NTSC-U/C: 0x0027aaf0
+     * @ghidraAddress PAL: 0x00284580
+     */
+    void GetUnlockedParts(int nPart, std::vector<const char *> *pTypes);
+
+    /**
+     * List the emblems the player may use.
+     *
+     * Every emblem qualifies while g_dwUnlockAllParts is set. The name is inferred.
+     *
+     * @param pTypes Receives the symbols of the emblems.
+     * @ghidraAddress NTSC-U/C: 0x0027ab48
+     * @ghidraAddress PAL: 0x002845d8
+     */
+    void GetUnlockedEmblems(std::vector<const char *> *pTypes);
+
+    /**
+     * Remove the items the player has not unlocked at any skill level from a list.
+     *
+     * The name is inferred.
+     *
+     * @param pItems The symbols of the items.
+     * @ghidraAddress NTSC-U/C: 0x0027ace8
+     * @ghidraAddress PAL: 0x00284778
+     */
+    void RemoveLockedItems(std::vector<const char *> *pItems);
 
     /**
      * Report the display option the player chose for the solo game.
@@ -231,10 +266,13 @@ public:
      */
     void SetModified(int nModified);
 
-    int mReserved00[12]; // +0x00, not yet recovered.
-    String mName;        /*!< The player's name. +0x30 */
-    int mReserved44[27]; // +0x44, not yet recovered.
-    int mModified;       /*!< Non-zero when the profile changed since it was saved. +0xb0 */
+    int mReserved00[12];   // +0x00, not yet recovered.
+    String mName;          /*!< The player's name. +0x30 */
+    int mReserved44[7];    // +0x44, not yet recovered.
+    int mNameLocked;       /*!< Non-zero when the player may not rename the Freq. +0x60 */
+    int mReserved64[4];    // +0x64, not yet recovered.
+    AvatarPartSet mAvatar; /*!< The Freq's parts and colours. +0x74 */
+    int mModified;         /*!< Non-zero when the profile changed since it was saved. +0xb0 */
     int mCustom; /*!< Non-zero for a player's own profile rather than a default one. +0xb4 */
     const char *mPendingPowerup; /*!< The power-up TakePendingPowerup() grants, or null. +0xb8 */
     int mReservedBC[5];          // +0xbc, not yet recovered.
@@ -242,3 +280,10 @@ public:
     int mOnlineOption;           /*!< The value GetOnlineOption() reports. +0xd4 */
     int mReservedD8[8];          // +0xd8, not yet recovered.
 };
+
+/**
+ * Non-zero when every avatar part and emblem counts as unlocked.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b1508
+ */
+extern unsigned int g_dwUnlockAllParts;

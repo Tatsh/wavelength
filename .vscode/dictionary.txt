@@ -46,6 +46,8 @@ augm
 autobrief
 autocatch
 autocatcher
+avatarpanel
+avatarpartset
 averager
 avoll
 avolr
@@ -132,6 +134,7 @@ demangles
 depfile
 devconsole
 devirtualised
+dialogpanel
 difficultyrating
 dimx
 directoryvolume
@@ -182,6 +185,7 @@ enterexit
 entspaceop
 envx
 eret
+errorscreen
 esac
 esbenp
 etext
@@ -222,6 +226,11 @@ fplugin
 fprintf
 fram
 freqconfirmscreen
+freqmakercustomscreen
+freqmakeremblemscreen
+freqmakererrorscreen
+freqmakermainscreen
+freqmakerpartconfigscreen
 freqpanel
 freqscreen
 frustrum
@@ -315,7 +324,11 @@ joypadps
 jsonnet
 jsonschema
 kapsz
+keyboardkey
 keyboardmgr
+keyboardpanel
+keyboardrequest
+keyboardscreen
 keychannel
 keyframed
 kind's
@@ -369,6 +382,7 @@ longop
 lpad
 lrbutton
 lsax
+lshift
 ltxt
 luma
 macroblock
@@ -392,6 +406,7 @@ matanim
 math
 maxx
 mbai
+mcdialogpanel
 mcman
 mcserv
 mdebug
@@ -409,6 +424,7 @@ memset
 memstream
 meshanim
 metaarenascreen
+metagameutil
 metamainscreen
 metamusicsong
 metaskillscreen
@@ -528,6 +544,7 @@ pitchtrackriffdata
 pitchtrackriffs
 playbacker
 playbacker's
+playerprofile
 playerupdatepacket
 playmap
 pmaxh
@@ -602,9 +619,12 @@ rodata
 romver
 rpcd
 rpcm
+rshift
 rtti
 sampledesc
 saturator
+saveeditedfreqscreen
+savefreqscreen
 sbclaude
 sbss
 sces

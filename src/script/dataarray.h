@@ -1,6 +1,8 @@
 #pragma once
 
+#include "math/color.h"
 #include "math/vector3.h"
+#include "os/string.h"
 #include "rnd/stream.h"
 
 /**
@@ -100,6 +102,44 @@ public:
      * @ghidraAddress PAL: 0x0029fe98
      */
     DataArray *FindArray(const char *pszTag, bool bFail) const;
+
+    /**
+     * Find the child array whose first node is an integer tag.
+     *
+     * An array marked as sorted is searched by halves.
+     *
+     * @param nTag The tag.
+     * @return The child, or null when none has the tag.
+     * @ghidraAddress NTSC-U/C: 0x002960e8
+     * @ghidraAddress PAL: 0x0029fd00
+     */
+    DataArray *FindArray(int nTag) const;
+
+    /**
+     * Find the symbol that follows a tag and copy it into a string.
+     *
+     * @param pszName The symbol that starts the child array.
+     * @param pValue Receives the symbol at index 1 of the child array when it exists.
+     * @param bFail Passed to FindArray().
+     * @return Whether the child array exists.
+     * @ghidraAddress NTSC-U/C: 0x00296310
+     * @ghidraAddress PAL: 0x0029ff28
+     */
+    bool FindString(const char *pszName, String *pValue, bool bFail) const;
+
+    /**
+     * Find the colour that follows a tag.
+     *
+     * The alpha is read only when the child array has a fourth component.
+     *
+     * @param pszName The symbol that starts the child array.
+     * @param pValue Receives the colour at indices 1 to 4 of the child array when it exists.
+     * @param bFail Passed to FindArray().
+     * @return Whether the child array exists.
+     * @ghidraAddress NTSC-U/C: 0x00296520
+     * @ghidraAddress PAL: 0x002a0138
+     */
+    bool FindColor(const char *pszName, Color *pValue, bool bFail) const;
 
     /**
      * Find the symbol that follows a tag.

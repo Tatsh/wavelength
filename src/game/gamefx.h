@@ -157,4 +157,36 @@ public:
      * @ghidraAddress PAL: 0x0028a1a8
      */
     static void StopPortals();
+
+    /**
+     * Play the `WRONG` cue of a choice that is not allowed. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002805c8
+     * @ghidraAddress PAL: 0x00289ec8
+     */
+    static void PlayWrong();
+
+    /**
+     * Play the `KEYBOARD_LEFT_UP` cue of the front-end keyboard. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002806a0
+     * @ghidraAddress PAL: 0x00289fa0
+     */
+    static void PlayKeyboardLeftUp();
+
+    /**
+     * Play the `KEYBOARD_BACK` cue of the front-end keyboard. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002806f8
+     * @ghidraAddress PAL: 0x00289ff8
+     */
+    static void PlayKeyboardBack();
+
+    /**
+     * Play the `KEYBOARD_KEYENTER` cue of the front-end keyboard. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00280740
+     * @ghidraAddress PAL: 0x0028a040
+     */
+    static void PlayKeyboardKeyEnter();
 };

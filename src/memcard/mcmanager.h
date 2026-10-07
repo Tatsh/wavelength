@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/playerprofile.h"
 #include "memcard/memcarduser.h"
 
 /**
@@ -59,6 +60,35 @@ public:
                   const void *pData,
                   int nSize,
                   bool bReserved);
+
+    /**
+     * Start saving the Freq of a profile to a memory card.
+     *
+     * The task reports to the user when it ends.
+     *
+     * @param pUser The user to report to.
+     * @param nSlot The memory card slot.
+     * @param pProfile The profile.
+     * @param pszName The name the Freq is saved under.
+     * @param nOverwrite Non-zero when a saved Freq of the same name may be replaced.
+     * @ghidraAddress NTSC-U/C: 0x0015c7e8
+     * @ghidraAddress PAL: 0x0015dfd8
+     */
+    void SaveFreq(MemcardUser *pUser,
+                  int nSlot,
+                  PlayerProfile *pProfile,
+                  const char *pszName,
+                  int nOverwrite);
+
+    /**
+     * Report the localised name of a memory card slot.
+     *
+     * @param nSlot The memory card slot.
+     * @return The name.
+     * @ghidraAddress NTSC-U/C: 0x0015d050
+     * @ghidraAddress PAL: 0x0015e840
+     */
+    const char *GetSlotName(int nSlot);
 };
 
 /**

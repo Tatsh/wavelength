@@ -20,7 +20,8 @@ public:
      * Receive the text the player typed.
      *
      * @param pszText The text.
-     * @return Non-zero when the text was not accepted.
+     * @return Non-zero for the keyboard to return to the screen that opened it, or zero when the
+     *         user already moved to another screen.
      */
     virtual int ReceiveKeyboardText(const char *pszText) = 0;
 };
