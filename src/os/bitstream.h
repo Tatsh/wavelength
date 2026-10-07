@@ -40,6 +40,16 @@ public:
     void Pack(unsigned int nValue, int nBits);
 
     /**
+     * Append the low bits of a signed value in two's complement.
+     *
+     * @param nValue The value.
+     * @param nBits The number of bits to append.
+     * @ghidraAddress NTSC-U/C: 0x00296eb0
+     * @ghidraAddress PAL: 0x002a0ac0
+     */
+    void PackSigned(int nValue, int nBits);
+
+    /**
      * Read the next bit.
      *
      * @return The bit.
@@ -57,6 +67,16 @@ public:
      * @ghidraAddress PAL: 0x002a0c08
      */
     unsigned int Unpack(int nBits);
+
+    /**
+     * Read the next bits as a signed value in two's complement.
+     *
+     * @param nBits The number of bits to read.
+     * @return The value.
+     * @ghidraAddress NTSC-U/C: 0x00296fb0
+     * @ghidraAddress PAL: 0x002a0bc0
+     */
+    int UnpackSigned(int nBits);
 
     void *mBuffer; /*!< The buffer. */
     int mBitPos;   /*!< The position of the next bit. */

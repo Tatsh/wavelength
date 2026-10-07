@@ -19,6 +19,13 @@ constexpr int kMillisecondsPerSecond = 1000;
 unsigned ReadCycleCount();
 
 /**
+ * Milliseconds per EE cycle.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b2258
+ */
+extern float gSystemCycles2Ms;
+
+/**
  * Report how many milliseconds one second has.
  *
  * The body is here rather than in a source file because callers expand it inline. Its one

@@ -1,12 +1,14 @@
 #pragma once
 
 #include "app/msgsink.h"
+#include "msg/joypadinputmsg.h"
+#include "os/joypad.h"
 
 /**
  * Analogue stick of one controller that bends the notes a player plays.
  *
- * The RTTI includes the class name and records the MsgSink base. Only the members its callers
- * here use are declared.
+ * The RTTI includes the class name and records the MsgSink base. The directional buttons also move
+ * the position, at a constant speed while they are held.
  */
 class ExpressionStick : public MsgSink {
 public:
@@ -39,9 +41,10 @@ public:
     bool DispatchPriv(Message *pMsg) override;
 
     /**
-     * Move the position toward the stick for the time since the last poll.
+     * Take the stick position when the stick moved, otherwise move the position by the speed the
+     * directional buttons set for the time since the last poll.
      *
-     * @return Whether the position moved.
+     * @return Whether the stick moved or a directional button moves the position.
      * @ghidraAddress NTSC-U/C: 0x0014ea98
      * @ghidraAddress PAL: 0x00150418
      */
@@ -55,8 +58,24 @@ public:
      */
     void Reset();
 
-    int mPad;   /*!< The controller. */
-    int mStick; /*!< The stick. */
-    float mX;   /*!< The horizontal position, from -1 to 1. */
-    float mY;   /*!< The vertical position, from -1 to 1. */
+    /**
+     * Start or stop the movement of the position for a directional button of the controller.
+     *
+     * The name is inferred.
+     *
+     * @param pMsg The message.
+     * @return False.
+     * @ghidraAddress NTSC-U/C: 0x0014ec90
+     * @ghidraAddress PAL: 0x00150610
+     */
+    bool HandleButton(JoypadInputMsg *pMsg);
+
+    int mPad;               /*!< The controller. */
+    int mStick;             /*!< The stick. */
+    float mX;               /*!< The horizontal position, from -1 to 1. */
+    float mY;               /*!< The vertical position, from -1 to 1. */
+    float mSpeedX;          /*!< The horizontal movement, in units per millisecond. */
+    float mSpeedY;          /*!< The vertical movement, in units per millisecond. */
+    JoypadStick mLastStick; /*!< The stick position at the last poll. */
+    float mLastPollMs;      /*!< The system time of the last poll, in milliseconds. */
 };

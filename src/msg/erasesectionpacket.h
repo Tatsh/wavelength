@@ -98,6 +98,24 @@ public:
         return "EraseSectionPacket";
     }
 
+    /**
+     * Write the track and the bar packed into one word.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014e900
+     * @ghidraAddress PAL: 0x00150280
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the word saveGuts() writes back into the fields.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0014e978
+     * @ghidraAddress PAL: 0x001502f8
+     */
+    void restoreGuts(BinStream &stream) override;
+
     int mTrack; /*!< The track. */
     int mBar;   /*!< A bar of the section erased. */
 };

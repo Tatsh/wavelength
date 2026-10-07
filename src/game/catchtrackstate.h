@@ -10,8 +10,9 @@
 /**
  * Per-bar state of one catch track during a song.
  *
- * The RTTI includes the nested CatchTrackState::BarState. Only the members its callers here use
- * are declared.
+ * The RTTI includes the nested CatchTrackState::BarState. The state is kept for each bar of the
+ * song as written. The members that take a bar the song plays map it through the play map, and
+ * the members that take a bar as written index the state directly.
  */
 class CatchTrackState {
 public:
@@ -46,6 +47,31 @@ public:
      * @ghidraAddress PAL: 0x0014faa0
      */
     ~CatchTrackState();
+
+    /**
+     * Record the player who captured the phrase of a bar.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar as written.
+     * @param pPlayer The player, or null.
+     * @ghidraAddress NTSC-U/C: 0x0014e1a0
+     * @ghidraAddress PAL: 0x0014fb40
+     */
+    void SetWrittenCapturedBy(int nBar, Player *pPlayer);
+
+    /**
+     * Record the player who captured the phrases of a range of bars.
+     *
+     * The name is inferred.
+     *
+     * @param nStartBar The first bar the song plays.
+     * @param nEndBar The bar after the range.
+     * @param pPlayer The player, or null.
+     * @ghidraAddress NTSC-U/C: 0x0014e1b8
+     * @ghidraAddress PAL: 0x0014fb58
+     */
+    void SetCapturedBy(int nStartBar, int nEndBar, Player *pPlayer);
 
     /**
      * Report the player who captured the phrase of a bar.
@@ -89,6 +115,30 @@ public:
     bool IsBarEmpty(int nBar);
 
     /**
+     * Report whether no gem of the track lies in a bar.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar as written.
+     * @return Whether the bar has no gems.
+     * @ghidraAddress NTSC-U/C: 0x0014e360
+     * @ghidraAddress PAL: 0x0014fd00
+     */
+    bool IsWrittenBarEmpty(int nBar);
+
+    /**
+     * Set whether the gems of a bar can be caught.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar as written.
+     * @param bEnabled Whether the gems can be caught.
+     * @ghidraAddress NTSC-U/C: 0x0014e378
+     * @ghidraAddress PAL: 0x0014fd18
+     */
+    void SetWrittenEnabled(int nBar, bool bEnabled);
+
+    /**
      * Report the power-up a bar awards when its phrase is caught.
      *
      * @param nBar The bar the song plays.
@@ -97,6 +147,30 @@ public:
      * @ghidraAddress PAL: 0x0014fd30
      */
     int GetPowerup(int nBar);
+
+    /**
+     * Set the power-up a bar awards when its phrase is caught.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar the song plays.
+     * @param nPowerup The kind of power-up, or 0 for none.
+     * @ghidraAddress NTSC-U/C: 0x0014e3c8
+     * @ghidraAddress PAL: 0x0014fd68
+     */
+    void SetPowerup(int nBar, int nPowerup);
+
+    /**
+     * Set the power-up a bar awards when its phrase is caught.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The bar as written.
+     * @param nPowerup The kind of power-up, or 0 for none.
+     * @ghidraAddress NTSC-U/C: 0x0014e410
+     * @ghidraAddress PAL: 0x0014fdb0
+     */
+    void SetWrittenPowerup(int nBar, int nPowerup);
 
     /**
      * Construct a cursor at the first gem of the track.
@@ -139,6 +213,39 @@ public:
     void ClearBars(int nStartBar, int nEndBar);
 
 private:
+    /** The lane FindCursor() takes for a gem of any lane. */
+    static constexpr int kAnyLane = -1;
+
+    /**
+     * Construct a cursor at the first gem at or after a tick, moved on to a lane unless the lane is
+     * kAnyLane.
+     *
+     * The name is inferred.
+     *
+     * @param nLane The lane, or kAnyLane.
+     * @param nTick The tick the song plays at.
+     * @return The cursor.
+     * @ghidraAddress NTSC-U/C: 0x0034aee8
+     * @ghidraAddress PAL: 0x003b8318
+     */
+    GemCursor FindCursor(int nLane, int nTick) {
+        GemCursor cursor(mPlayMap, mData, nTick);
+        if ((nLane != kAnyLane) && cursor.IsValid() && (cursor.GetLane() != nLane)) {
+            cursor.AdvanceToLane(nLane);
+        }
+        return cursor;
+    }
+
+    /**
+     * Mark each bar as written that has a gem of the track.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014e4b0
+     * @ghidraAddress PAL: 0x0014fe50
+     */
+    void MarkGems();
+
     PlayMap *mPlayMap;           /*!< The play map of the song. */
     CatchTrackData *mData;       /*!< The gems of the track. */
     int mNumBars;                /*!< The length of the song in bars. */

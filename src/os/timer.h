@@ -13,6 +13,44 @@
  */
 class Timer {
 public:
+    /** Construct a stopped timer with no measurement. */
+    Timer() {
+        mRunning = 0;
+        mCycles = 0;
+        mLastMs = 0.0f;
+    }
+
+    /**
+     * Stop the timer and record the cycles measured so far in milliseconds in mLastMs.
+     */
+    void Reset() {
+        const float fMs = static_cast<float>(mCycles) * gSystemCycles2Ms;
+        mRunning = 0;
+        mCycles = 0;
+        mLastMs = fMs;
+    }
+
+    /**
+     * Suspend a running timer, adding the cycles since the start to mCycles. The start count
+     * becomes negative until Resume().
+     */
+    void Pause() {
+        if (mRunning > 0) {
+            mRunning = -mRunning;
+            mCycles += ReadCycleCount() - mStart;
+        }
+    }
+
+    /**
+     * Continue a timer Pause() suspended from the current counter reading.
+     */
+    void Resume() {
+        if (mRunning < 0) {
+            mRunning = -mRunning;
+            mStart = ReadCycleCount();
+        }
+    }
+
     /**
      * Restart the measurement at the current counter reading.
      *

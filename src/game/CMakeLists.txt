@@ -11,7 +11,9 @@ set(WAVELENGTH_GAME_SRCS
     catchtrackbuilder.cpp
     catchtrackdata.cpp
     catchtrackdisplay.cpp
+    catchtrackstate.cpp
     changesectionevent.cpp
+    conductorbuilder.cpp
     controllerdisplay.cpp
     difficultyrating.cpp
     duel.cpp
@@ -19,9 +21,11 @@ set(WAVELENGTH_GAME_SRCS
     duelpattern.cpp
     dueltrack.cpp
     dueltrackpitcher.cpp
+    expressionstick.cpp
     forcefeedbackmgr.cpp
     forcefeedbackmgrcontroller.cpp
     forcefeedbackmgrmotoreffect.cpp
+    freestyletrack.cpp
     game.cpp
     gameconfig.cpp
     gamelogic.cpp

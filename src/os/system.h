@@ -101,13 +101,6 @@ extern Timer gSystemTimer;
 extern unsigned long long gSystemCycles;
 
 /**
- * Milliseconds per EE cycle.
- *
- * @ghidraAddress NTSC-U/C: 0x003b2258
- */
-extern float gSystemCycles2Ms;
-
-/**
  * Report the milliseconds the system clock has measured since it was last reset.
  *
  * The body is here rather than in a source file because the engine expands it inline at most call

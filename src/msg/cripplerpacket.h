@@ -97,5 +97,22 @@ public:
         return "CripplerPacket";
     }
 
+    /**
+     * Write the victim as one byte.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014e790
+     * @ghidraAddress PAL: 0x00150130
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the byte saveGuts() writes back into the victim.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0014e7d0
+     */
+    void restoreGuts(BinStream &stream) override;
+
     int mVictim; /*!< The session order of the player struck. */
 };

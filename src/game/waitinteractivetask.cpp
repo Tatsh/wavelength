@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "os/cycles.h"
 #include "os/scheduler.h"
 #include "script/scriptfunction.h"
 
@@ -39,7 +40,6 @@ constexpr int kFirstCondition = 1;
 
 constexpr int kInitialMissLane = 1;
 constexpr int kNthCaptureFired = 99999;
-constexpr float kMillisecondsPerSecond = 1000.0f;
 
 } // namespace
 

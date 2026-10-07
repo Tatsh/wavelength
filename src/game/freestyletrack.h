@@ -1,16 +1,20 @@
 #pragma once
 
+#include "game/player.h"
 #include "game/playmap.h"
 #include "game/sectionboundaries.h"
 #include "game/track.h"
 #include "os/command.h"
 #include "os/ptr.h"
+#include "os/timer.h"
 
 /**
  * Track the player plays freely with the analog sticks rather than by hitting gems.
  *
- * The RTTI records the class as deriving from Track. AxeTrack and ScratchTrack derive from it.
- * Only the members a ScratchTrack uses are declared.
+ * The RTTI records the class as deriving from Track. AxeTrack and ScratchTrack derive from it. In
+ * a game the player earns pending points for the time an active note sounds in each bar, and the
+ * points are committed at the end of the bar. Online, the button and the stick positions are sent
+ * to the other consoles.
  */
 class FreestyleTrack : public Track {
 public:
@@ -50,7 +54,8 @@ public:
     void Stop() override;
 
     /**
-     * Assign the player and restart the rumble.
+     * Commit the points of the player that leaves, assign the player, and start the bars of the
+     * player that arrives.
      *
      * @param pPlayer The player, or null.
      * @ghidraAddress NTSC-U/C: 0x0014f0f0
@@ -61,7 +66,7 @@ public:
     using Track::HandleInput;
 
     /**
-     * Act on a note the track's player played.
+     * Send a note the track's player played, and start or stop the scoring of the time it sounds.
      *
      * @param pPlayer The player.
      * @param event The event.
@@ -83,7 +88,7 @@ public:
     }
 
     /**
-     * Pass a stick position of the track's player to the graphics.
+     * Pass a stick position of the track's player to the graphics and the other consoles.
      *
      * @param pPlayer The player.
      * @param event The event.
@@ -134,5 +139,51 @@ public:
      */
     int SpanEnd(int nTick, int nStart, int nEnd);
 
-    int mTickOffset; /*!< The offset of the game tick from the song tick after a restart. */
+    /**
+     * Award the player pending points for the time the active note sounded in the bar, and run
+     * again a twentieth of a bar later.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014f400
+     * @ghidraAddress PAL: 0x00150d60
+     */
+    void UpdatePoints();
+
+    /**
+     * Commit the pending points of the bar that ends and restart the timing of the active note.
+     *
+     * The name is inferred.
+     *
+     * @param bSchedule Whether to run again at the end of the next bar.
+     * @ghidraAddress NTSC-U/C: 0x0014f610
+     * @ghidraAddress PAL: 0x00150f70
+     */
+    void StartBar(bool bSchedule);
+
+    /**
+     * Send the button and a stick position of a local player to the other consoles, at most once
+     * every 150 milliseconds.
+     *
+     * The name is inferred.
+     *
+     * @param pPlayer The player.
+     * @param fX The horizontal stick position.
+     * @param fY The vertical stick position.
+     * @ghidraAddress NTSC-U/C: 0x0014f7c8
+     * @ghidraAddress PAL: 0x00151128
+     */
+    void SendUpdate(Player *pPlayer, float fX, float fY);
+
+    int mTickOffset;                    /*!< The offset of the game tick from the song tick. */
+    const SectionBoundaries *mSections; /*!< The section boundaries of the song. */
+    PlayMap *mPlayMap;                  /*!< The map of the song positions. */
+    const float *mMsPerTick;            /*!< The length of a tick, in milliseconds. */
+    int mNumBars;                       /*!< The length of the song, in bars. */
+    int mTicksPerBar;                   /*!< The length of a bar, in ticks. */
+    int mButton;                        /*!< The button of the last note the player played. */
+    float mLastSendMs;                  /*!< The system time SendUpdate() last sent at. */
+    Timer mNoteTimer;                   /*!< The time the active note sounded in the bar. */
+    Ptr<Command> mBarCommand;           /*!< Calls StartBar() with true. */
+    Ptr<Command> mPointsCommand;        /*!< Calls UpdatePoints(). */
 };

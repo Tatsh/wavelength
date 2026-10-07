@@ -13,6 +13,7 @@
 #include "os/command.h"
 #include "os/datetime.h"
 #include "os/mem.h"
+#include "os/memcardsync.h"
 #include "os/memfuncommand.h"
 #include "os/scheduler.h"
 #include "os/string.h"
@@ -40,6 +41,10 @@ constexpr int kNoOpenFlags = 0;
 
 // The value of `record_to_memcard` that records to the host.
 constexpr int kHostDevice = -1;
+
+// The listing MemcardFileExists() requests.
+constexpr int kMaxListEntries = 16;
+constexpr unsigned int kNewListing = 0;
 
 // DateTime::mYear counts from 1900 and DateTime::mMonth from 0.
 constexpr int kCenturyYears = 100;
@@ -96,11 +101,24 @@ void MakeUniqueHostName(String &file) {
     }
 }
 
-// Append `_` and a number to a memory card file name until no file of that name exists. The body
-// opens the card and lists the name through the memory card RPC routines at `0x0028bcd8` and
-// `0x0028be90`, from a helper at `0x00144100`.
-// NTSC-U/C: 0x00144128, PAL: 0x00145ab8 (stub)
-void MakeUniqueMemcardName([[maybe_unused]] int nDevice, [[maybe_unused]] String &file) {
+// Report whether a file of a name exists on the memory card of a device.
+// NTSC-U/C: 0x00144100, PAL: 0x00145a90
+bool MemcardFileExists(int nDevice, const char *pszName) {
+    int nCount;
+    return MemcardGetDirAndWait(nDevice, pszName, kMaxListEntries, kNewListing, &nCount) > 0;
+}
+
+// Append `_` and a number to a memory card file name until no file of that name exists.
+// NTSC-U/C: 0x00144128, PAL: 0x00145ab8
+void MakeUniqueMemcardName(int nDevice, String &file) {
+    MemcardGetInfoAndWait(nDevice, nullptr, nullptr, nullptr);
+    int nNumber = 0;
+    const String base(file);
+    while (MemcardFileExists(nDevice, file.c_str())) {
+        file = base;
+        ++nNumber;
+        file << kNumberSeparator << nNumber;
+    }
 }
 
 } // namespace

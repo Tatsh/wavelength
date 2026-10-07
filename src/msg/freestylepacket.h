@@ -27,6 +27,20 @@ public:
     }
 
     /**
+     * Construct a packet for a freestyle player.
+     *
+     * Inline. FreestyleTrack::SendUpdate() expands it on its stack.
+     *
+     * @param bActive Whether the player is playing freestyle.
+     * @param nButton The button held.
+     * @param fX The stick's horizontal position.
+     * @param fY The stick's vertical position.
+     */
+    FreestylePacket(bool bActive, int nButton, float fX, float fY)
+        : mActive(bActive), mButton(nButton), mX(fX), mY(fY) {
+    }
+
+    /**
      * Produce a default-constructed packet on the heap.
      *
      * @return The packet.
@@ -83,6 +97,59 @@ public:
     const char *GetName() const override {
         return "FreestylePacket";
     }
+
+    /**
+     * Write the state and the button, then each stick position in fixed point, in one half-word.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014faa0
+     * @ghidraAddress PAL: 0x00151400
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the half-word saveGuts() writes back into the fields.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0014fb68
+     * @ghidraAddress PAL: 0x001514c8
+     */
+    void restoreGuts(BinStream &stream) override;
+
+    /**
+     * Write the state, the button, and the stick position.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014fc18
+     * @ghidraAddress PAL: 0x00151578
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
+    /**
+     * Convert a value from -1 to 1 to a signed fixed-point value.
+     *
+     * The name is inferred.
+     *
+     * @param fValue The value.
+     * @param nBits The width of the result, sign included.
+     * @return The fixed-point value, rounded.
+     * @ghidraAddress NTSC-U/C: 0x0014fa28
+     * @ghidraAddress PAL: 0x00151388
+     */
+    static int Quantize(float fValue, int nBits);
+
+    /**
+     * Convert a signed fixed-point value back to a value from -1 to 1.
+     *
+     * The name is inferred.
+     *
+     * @param nValue The fixed-point value.
+     * @param nBits The width of the value, sign included.
+     * @return The value.
+     * @ghidraAddress NTSC-U/C: 0x0014fa68
+     * @ghidraAddress PAL: 0x001513c8
+     */
+    static float Dequantize(int nValue, int nBits);
 
     bool mActive; /*!< Whether the player is playing freestyle. */
     int mButton;  /*!< The button held. */

@@ -2,8 +2,13 @@ set(WAVELENGTH_MSG_SRCS
     arbiterpacket.cpp
     bumperpacket.cpp
     capturepacket.cpp
+    cripplerpacket.cpp
     editgempacket.cpp
+    erasebarpacket.cpp
+    erasesectionpacket.cpp
     finalscorepacket.cpp
+    freestylebumppacket.cpp
+    freestylepacket.cpp
     fxpacket.cpp
     lobbyconnectionlostmsg.cpp
     message.cpp

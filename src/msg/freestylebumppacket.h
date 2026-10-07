@@ -99,6 +99,33 @@ public:
         return "FreestyleBumpPacket";
     }
 
+    /**
+     * Write the player and the track packed into one byte.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014edf8
+     * @ghidraAddress PAL: 0x00150778
+     */
+    void saveGuts(BinStream &stream) const override;
+
+    /**
+     * Read the byte saveGuts() writes back into the fields.
+     *
+     * @param stream The stream to read from.
+     * @ghidraAddress NTSC-U/C: 0x0014ee88
+     * @ghidraAddress PAL: 0x001507f8
+     */
+    void restoreGuts(BinStream &stream) override;
+
+    /**
+     * Write the player and the track.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x0014ef08
+     * @ghidraAddress PAL: 0x00150868
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
     int mNetOrder; /*!< The session order of the player bumped. */
     int mTrack;    /*!< The track the player was moved to. */
 };

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "math/vector2.h"
+#include "math/vector3.h"
 #include "os/prnstream.h"
 
 /**
@@ -123,6 +124,30 @@ public:
      * @ghidraAddress PAL: 0x001bea80
      */
     void ResetFreestyle(int nPlayer);
+
+    /**
+     * Move a player's freestyle effect to a position of the first stick.
+     *
+     * The name is inferred.
+     *
+     * @param nPlayer The player index.
+     * @param position The stick position in the horizontal and depth components.
+     * @ghidraAddress NTSC-U/C: 0x001b5a30
+     * @ghidraAddress PAL: 0x001be7d0
+     */
+    void SetFreestylePosition(int nPlayer, const Vector3 &position);
+
+    /**
+     * Ignore a position of the second stick for a player's freestyle effect.
+     *
+     * The name is inferred.
+     *
+     * @param nPlayer The player index.
+     * @param position The stick position in the horizontal and depth components.
+     * @ghidraAddress NTSC-U/C: 0x001b5a50
+     * @ghidraAddress PAL: 0x001be7f0
+     */
+    void SetFreestyleSecondPosition(int nPlayer, const Vector3 &position);
 
     /**
      * Start the intro of the song display.
