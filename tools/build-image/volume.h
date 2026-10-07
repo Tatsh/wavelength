@@ -4,18 +4,20 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <filesystem>
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "error.h"
 
-/** Writer of an Amplitude disc image with the built executable in place. */
+/** Writer of an Amplitude disc image with the built executable and IOP modules in place. */
 namespace Tools::BuildImage {
 
 /** A file found in the ISO9660 tree. */
 struct LocatedFile {
-    std::uint32_t lba = 0;        /*!< First data sector, relative to the track start. */
+    std::uint32_t lba = 0;        /*!< First data sector. */
     std::uint32_t parentLba = 0;  /*!< First sector of the containing directory. */
     std::uint32_t parentSize = 0; /*!< Length of the containing directory in bytes. */
     std::uint32_t size = 0;       /*!< Data length in bytes. */
@@ -44,18 +46,18 @@ public:
     virtual ~Volume() = default;
 
     /**
-     * Locate a file by name anywhere in the tree.
+     * Locate a file by name anywhere in the tree, ignoring case.
      *
      * @param name File name without the version suffix.
-     * @return Extent and containing directory of the match, or an error when the file is missing
-     * or spans several extents.
+     * @return Extent and containing directory of the match, or an error when the file is missing,
+     * several files have the name once case is ignored, or the file spans several extents.
      */
     virtual std::expected<LocatedFile, Error> find(const std::string &name) = 0;
 
     /**
      * Read the data bytes of one sector.
      *
-     * @param lba Sector number relative to the track start.
+     * @param lba Sector number.
      * @param sector Destination of the 2048 data bytes.
      * @return Nothing, or an error when the medium ends before the sector.
      */
@@ -65,7 +67,7 @@ public:
     /**
      * Read the data bytes of consecutive sectors, stopping where the medium ends.
      *
-     * @param lba First sector number relative to the track start.
+     * @param lba First sector number.
      * @param sectors Destination, a whole number of sectors long.
      * @return Number of sectors read in full, or an error when a source file cannot be read.
      */
@@ -121,9 +123,19 @@ public:
     static std::string lowerAscii(std::string_view text);
 
     /**
+     * Describe a name that several files share once case is ignored.
+     *
+     * @param name The name looked up.
+     * @param matches Paths of the files with the name.
+     * @return The error message.
+     */
+    static std::string ambiguousName(std::string_view name,
+                                     const std::vector<std::filesystem::path> &matches);
+
+    /**
      * Report that a sector lies past the end of the medium.
      *
-     * @param lba Sector number relative to the track start.
+     * @param lba Sector number.
      * @return The error.
      */
     static std::unexpected<Error> pastEnd(std::uint32_t lba);

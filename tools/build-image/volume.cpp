@@ -76,6 +76,17 @@ std::string Volume::lowerAscii(std::string_view text) {
     return lower;
 }
 
+std::string Volume::ambiguousName(std::string_view name,
+                                  const std::vector<std::filesystem::path> &matches) {
+    std::string listed;
+    for (const auto &match : matches) {
+        listed += listed.empty() ? "" : ", ";
+        listed += match.generic_string();
+    }
+    return std::format(
+        "{} files have the name {} when case is ignored ({}).", matches.size(), name, listed);
+}
+
 std::unexpected<Error> Volume::pastEnd(std::uint32_t lba) {
     return discImageError(std::format("Sector {} lies past the end of the medium.", lba));
 }

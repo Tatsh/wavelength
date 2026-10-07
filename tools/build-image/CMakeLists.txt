@@ -4,7 +4,6 @@ add_executable(
   githubclient.cpp
   imagebuilder.cpp
   main.cpp
-  sectorencoder.cpp
   sourceimage.cpp
   volume.cpp
   ziparchive.cpp)

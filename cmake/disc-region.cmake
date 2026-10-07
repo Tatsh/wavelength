@@ -3,7 +3,7 @@
 
 set(WAVELENGTH_DISC_IMAGE
     ""
-    CACHE PATH "Original Amplitude disc image (cue, bin, or ISO), or the disc root directory, \
+    CACHE PATH "Original Amplitude ISO image, or the disc root directory, \
 that the image target rebuilds. It must be the release VIDEO_STANDARD selects.")
 
 if(WAVELENGTH_DISC_IMAGE AND NOT BUILD_DOCS_ONLY)

@@ -29,10 +29,19 @@ extern "C" {
 #define SD_VP_VOLXR (0x07 << 8)
 
 /** Core parameters. Each is combined with a core. */
+#define SD_P_MMIX (0x08 << 8)
 #define SD_P_MVOLL ((0x09 << 8) + (0x01 << 7))
 #define SD_P_MVOLR ((0x0a << 8) + (0x01 << 7))
 #define SD_P_EVOLL ((0x0b << 8) + (0x01 << 7))
 #define SD_P_EVOLR ((0x0c << 8) + (0x01 << 7))
+#define SD_P_BVOLL ((0x0f << 8) + (0x01 << 7))
+#define SD_P_BVOLR ((0x10 << 8) + (0x01 << 7))
+
+/** Core addresses. Each is combined with a core. */
+#define SD_A_IRQA (0x1f << 8)
+
+/** Core attributes of sceSdSetCoreAttr(). Each is combined with a core. */
+#define SD_C_IRQ_ENABLE (0x02 << 1)
 
 /** Core switches, one bit per voice. Each is combined with a core. */
 #define SD_S_PMON (0x13 << 8)
@@ -147,11 +156,8 @@ unsigned short sceSdNote2Pitch(unsigned short center_note,
  * @param size Byte count.
  * @return The byte count, or a negative error code.
  */
-int sceSdVoiceTrans(short channel,
-                    unsigned short mode,
-                    unsigned char *m_addr,
-                    unsigned int s_addr,
-                    unsigned int size);
+int sceSdVoiceTrans(
+    short channel, unsigned short mode, void *m_addr, unsigned int s_addr, unsigned int size);
 
 /**
  * Report or wait for the end of a voice transfer.
@@ -161,6 +167,43 @@ int sceSdVoiceTrans(short channel,
  * @return Nonzero once the transfer has ended.
  */
 unsigned int sceSdVoiceTransStatus(short channel, short flag);
+
+/**
+ * Read an address register pair.
+ *
+ * @param entry Entry value.
+ * @return SPU2 byte address.
+ */
+unsigned int sceSdGetAddr(unsigned short entry);
+
+/**
+ * Switch a core attribute.
+ *
+ * @param entry Attribute such as #SD_C_IRQ_ENABLE, combined with a core.
+ * @param value Nonzero to switch the attribute on.
+ */
+void sceSdSetCoreAttr(unsigned short entry, unsigned short value);
+
+/**
+ * Install the handler a transfer channel runs when a transfer ends.
+ *
+ * @param channel Transfer channel.
+ * @param handler Handler run in interrupt context.
+ * @param data Argument the handler receives.
+ * @return The previous handler.
+ */
+sceSdTransIntrHandler
+sceSdSetTransIntrHandler(int channel, sceSdTransIntrHandler handler, void *data);
+
+/**
+ * Install the handler the SPU2 interrupt runs. The handler receives the bits of the cores whose
+ * interrupt address was reached.
+ *
+ * @param handler Handler run in interrupt context.
+ * @param data Argument the handler receives.
+ * @return The previous handler.
+ */
+sceSdSpu2IntrHandler sceSdSetSpu2IntrHandler(sceSdSpu2IntrHandler handler, void *data);
 
 #ifdef __cplusplus
 }

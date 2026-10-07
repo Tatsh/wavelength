@@ -56,6 +56,12 @@ typedef struct _sif_queue_data {
 } sceSifQueueData;
 
 /**
+ * Export 4 of sifcmd. The softFX module calls it without arguments before it starts its
+ * processing, and its role is not yet identified.
+ */
+void sifcmd_4(void);
+
+/**
  * Initialise the RPC layer.
  *
  * @param mode Reserved, zero.
@@ -96,6 +102,23 @@ sceSifServeData *sceSifRegisterRpc(sceSifServeData *sd,
  * @param qd Queue to drain.
  */
 void sceSifRpcLoop(sceSifQueueData *qd);
+
+/**
+ * Remove a server from a queue.
+ *
+ * @param sd Server record.
+ * @param qd Queue the server belongs to.
+ * @return @p sd, or null when the server is not registered.
+ */
+sceSifServeData *sceSifRemoveRpc(sceSifServeData *sd, sceSifQueueData *qd);
+
+/**
+ * Remove a queue from the system.
+ *
+ * @param qd Queue to remove.
+ * @return @p qd, or null when the queue is not registered.
+ */
+sceSifQueueData *sceSifRemoveRpcQueue(sceSifQueueData *qd);
 
 #ifdef __cplusplus
 }

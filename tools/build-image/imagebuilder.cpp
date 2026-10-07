@@ -10,15 +10,12 @@
 #include <spdlog/spdlog.h>
 
 #include "byteorder.h"
-#include "fileio.h"
 #include "imageerror.h"
-#include "sectorencoder.h"
 
 namespace Tools::BuildImage {
 
 namespace {
 
-constexpr std::uint32_t kPostgapSectors = 150;
 constexpr std::size_t kBatchSectors = 1024;
 constexpr std::string_view kElfMagic = "\x7f"
                                        "ELF";
@@ -30,9 +27,6 @@ constexpr std::size_t kRecordLba = 2;
 constexpr std::size_t kRecordSize = 10;
 constexpr std::size_t kRecordNameLength = 32;
 constexpr std::size_t kRecordName = 33;
-
-constexpr std::string_view kCueTemplate =
-    "FILE \"{}\" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n";
 
 } // namespace
 
@@ -88,23 +82,28 @@ std::expected<void, Error> ImageBuilder::placePayloads() {
             std::ranges::copy(slice.first(std::min(slice.size(), kSectorData)), chunk.begin());
             overlays_[appendLba + index] = chunk;
         }
-        for (std::uint32_t index = 0; index < Volume::sectorsFor(found->parentSize); ++index) {
+        auto patched = false;
+        for (std::uint32_t index = 0; !patched && index < Volume::sectorsFor(found->parentSize);
+             ++index) {
             const auto parentLba = found->parentLba + index;
-            auto [parent, inserted] = overlays_.try_emplace(parentLba);
-            if (inserted) {
-                if (auto read = source_->readSector(parentLba, parent->second); !read) {
-                    return read;
-                }
+            Volume::Sector parent;
+            if (const auto overlay = overlays_.find(parentLba); overlay != overlays_.end()) {
+                parent = overlay->second;
+            } else if (auto read = source_->readSector(parentLba, parent); !read) {
+                return read;
             }
-            // Like the original tool, every sector of the directory must have the record.
-            if (auto patched = patchRecord(parent->second,
-                                           found->lba,
-                                           target,
-                                           appendLba,
-                                           static_cast<std::uint32_t>(payload.size()));
-                !patched) {
-                return patched;
+            if (patchRecord(parent,
+                            found->lba,
+                            target,
+                            appendLba,
+                            static_cast<std::uint32_t>(payload.size()))) {
+                overlays_[parentLba] = parent;
+                patched = true;
             }
+        }
+        if (!patched) {
+            return discImageError(
+                std::format("The directory record of {} is missing from its directory.", target));
         }
         written_.emplace_back(target, appendLba);
         spdlog::info("Relocated {} to sector {} ({} bytes).", target, appendLba, payload.size());
@@ -125,25 +124,19 @@ std::expected<void, Error> ImageBuilder::placePayloads() {
 
 std::expected<std::uint32_t, Error> ImageBuilder::write(const std::filesystem::path &output) {
     constexpr auto kSectorData = Volume::kSectorData;
-    constexpr auto kRawSize = SectorEncoder::kRawSize;
-    static constexpr Volume::Sector kZeroSector{};
-    auto image = output;
-    image.replace_extension(".bin");
-    std::ofstream file(image, std::ios::binary | std::ios::trunc);
+    std::ofstream file(output, std::ios::binary | std::ios::trunc);
     if (!file) {
-        return ioError(std::format("Cannot write {}.", image.string()));
+        return ioError(std::format("Cannot write {}.", output.string()));
     }
-    const auto total = volumeSectors_ + kPostgapSectors;
     const auto readLimit = std::min(source_->volumeSectors(), volumeSectors_);
-    std::vector<std::uint8_t> input(kBatchSectors * kSectorData);
-    std::vector<std::uint8_t> encoded(kBatchSectors * kRawSize);
-    for (std::uint32_t lba = 0; lba < total;) {
-        const auto count = std::min<std::size_t>(kBatchSectors, total - lba);
+    std::vector<std::uint8_t> sectors(kBatchSectors * kSectorData);
+    for (std::uint32_t lba = 0; lba < volumeSectors_;) {
+        const auto count = std::min<std::size_t>(kBatchSectors, volumeSectors_ - lba);
         const auto readable = lba < readLimit ? std::min<std::size_t>(count, readLimit - lba) : 0;
         std::size_t available = 0;
         if (readable != 0) {
             const auto read =
-                source_->readSectors(lba, std::span(input).first(readable * kSectorData));
+                source_->readSectors(lba, std::span(sectors).first(readable * kSectorData));
             if (!read) {
                 return std::unexpected(read.error());
             }
@@ -151,42 +144,33 @@ std::expected<std::uint32_t, Error> ImageBuilder::write(const std::filesystem::p
         }
         for (std::size_t i = 0; i < count; ++i) {
             const auto current = static_cast<std::uint32_t>(lba + i);
-            std::span<const std::uint8_t, kSectorData> data = kZeroSector;
-            if (current < volumeSectors_) {
-                if (const auto found = overlays_.find(current); found != overlays_.end()) {
-                    data = found->second;
-                } else if (i < available) {
-                    data = std::span(input).subspan(i * kSectorData).first<kSectorData>();
-                } else {
-                    return Volume::pastEnd(current);
-                }
+            const auto sector = std::span(sectors).subspan(i * kSectorData, kSectorData);
+            if (const auto found = overlays_.find(current); found != overlays_.end()) {
+                std::ranges::copy(found->second, sector.begin());
+            } else if (i >= available) {
+                return Volume::pastEnd(current);
             }
-            SectorEncoder::encode(
-                current, data, std::span(encoded).subspan(i * kRawSize).first<kRawSize>());
         }
         // The streams write char.
-        file.write(reinterpret_cast<const char *>(encoded.data()),
-                   static_cast<std::streamsize>(count * kRawSize));
+        file.write(reinterpret_cast<const char *>(sectors.data()),
+                   static_cast<std::streamsize>(count * kSectorData));
         if (!file) {
-            return ioError(std::format("Cannot write {}.", image.string()));
+            return ioError(std::format("Cannot write {}.", output.string()));
         }
         lba += static_cast<std::uint32_t>(count);
     }
     file.close();
     if (!file) {
-        return ioError(std::format("Cannot write {}.", image.string()));
+        return ioError(std::format("Cannot write {}.", output.string()));
     }
-    if (auto cue = writeFile(output, std::format(kCueTemplate, image.filename().string())); !cue) {
-        return std::unexpected(std::move(cue.error()));
-    }
-    return verify(image).transform([total] { return total; });
+    return verify(output).transform([this] { return volumeSectors_; });
 }
 
-std::expected<void, Error> ImageBuilder::patchRecord(Volume::Sector &sector,
-                                                     std::uint32_t oldLba,
-                                                     const std::string &name,
-                                                     std::uint32_t newLba,
-                                                     std::uint32_t newSize) {
+bool ImageBuilder::patchRecord(Volume::Sector &sector,
+                               std::uint32_t oldLba,
+                               const std::string &name,
+                               std::uint32_t newLba,
+                               std::uint32_t newSize) {
     std::size_t offset = 0;
     while (offset + kRecordName <= sector.size()) {
         const auto length = sector[offset];
@@ -202,12 +186,11 @@ std::expected<void, Error> ImageBuilder::patchRecord(Volume::Sector &sector,
             Volume::upperAscii(entryName.substr(0, entryName.find(';'))) == name) {
             writeBoth(sector, offset + kRecordLba, newLba);
             writeBoth(sector, offset + kRecordSize, newSize);
-            return {};
+            return true;
         }
         offset += length;
     }
-    return discImageError(
-        std::format("The directory record of {} is missing from its directory.", name));
+    return false;
 }
 
 std::expected<void, Error> ImageBuilder::verify(const std::filesystem::path &image) const {
@@ -220,8 +203,7 @@ std::expected<void, Error> ImageBuilder::verify(const std::filesystem::path &ima
             std::ranges::find(replacements_, target, &Replacement::target)->payload;
         std::array<char, kVerifyLength> head{};
         file.clear();
-        file.seekg(static_cast<std::streamoff>(std::uint64_t{lba} * SectorEncoder::kRawSize +
-                                               SectorEncoder::kDataOffset));
+        file.seekg(static_cast<std::streamoff>(std::uint64_t{lba} * Volume::kSectorData));
         file.read(head.data(), head.size());
         const auto prefix = std::span(payload).first(std::min(payload.size(), kVerifyLength));
         if (static_cast<std::size_t>(file.gcount()) != prefix.size() ||

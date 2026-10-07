@@ -165,7 +165,7 @@ jobs:
           REPO: '${{ github.repository }}'
           TAG: '${{ steps.guard.outputs.tag }}'
         if: "steps.check.outputs.ready == 'true'"
-        name: 'Attach the executables to the release'
+        name: 'Attach the executables and the IOP modules to the release'
         run: |
           run_id=$(gh run list --repo "$REPO" --workflow Build --commit "$HEAD_SHA" \
             --json databaseId,conclusion \
@@ -192,8 +192,15 @@ jobs:
               if [[ "$elf" != "$release_elf" ]]; then
                 mv "$elf" "$release_elf"
               fi
-              echo "Uploading ${release_elf} to release ${TAG}."
-              gh release upload "$TAG" "$release_elf" --repo "$REPO" --clobber
+              files=("$release_elf")
+              # The Release artifact also has the IOP modules, each named <MODULE>-<STD>.irx.
+              if [[ -z "$label" ]]; then
+                while IFS= read -r -d '' irx; do
+                  files+=("$irx")
+                done < <(find "$dir" -type f -name "*-${standard}.irx" -print0)
+              fi
+              echo "Uploading ${files[*]} to release ${TAG}."
+              gh release upload "$TAG" "${files[@]}" --repo "$REPO" --clobber
             done
           done
       - env:

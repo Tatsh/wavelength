@@ -31,7 +31,8 @@ public:
      * Build the volume layout.
      *
      * @param root Disc root directory with `SYSTEM.CNF`.
-     * @param systemArea The 12 sectors of boot logo data. The sectors are zero when omitted.
+     * @param systemArea The 16 system area sectors (32768 bytes) with the boot logo. The sectors
+     * are zero when omitted.
      * @return The volume, or an error when the directory is not a disc root, a name is not valid,
      * a file cannot be examined, or the system area has the wrong size.
      */

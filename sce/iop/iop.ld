@@ -1,7 +1,8 @@
 /*
  * Relocatable link of an IOP module before the fixup step converts it to an IRX. The fixup tool
- * places the segments and creates the boundary symbols. The script only merges the input sections
- * in the order the shipped modules use and drops sections the loader does not read.
+ * places the segments and creates the boundary symbols. The script merges the input sections in
+ * the order the shipped modules use, collects the C++ constructor list, and drops sections the
+ * loader does not read.
  */
 
 OUTPUT_FORMAT("elf32-littlemips")
@@ -12,7 +13,15 @@ SECTIONS
 {
     .text : { *(.text) *(.text.*) }
     .rodata : { *(.rodata) *(.rodata.*) }
-    .data : { *(.data) *(.data.*) }
+    .data : {
+        *(.data) *(.data.*)
+        /* The module entry runs the constructors between these symbols, as the shipped modules
+           run their constructor list. */
+        . = ALIGN(4);
+        __ctors_start = .;
+        KEEP(*(.ctors))
+        __ctors_end = .;
+    }
     .sdata : { *(.sdata) *(.sdata.*) }
     .sbss : { *(.sbss) *(.sbss.*) *(.scommon) }
     .bss : { *(.bss) *(.bss.*) *(COMMON) }

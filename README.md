@@ -25,24 +25,44 @@ The game does not build yet.
 
 ## Building
 
-The build uses the ps2dev cross compiler for the Emotion Engine and its C and C++ runtime. It does
-not use ps2sdk. Every Sony library routine the game calls is reconstructed under `sce/`, and
-`sce/ee/runtime` connects the compiler's runtime to the reconstructed kernel.
+The build uses the ps2dev cross compilers for the Emotion Engine and the IOP, their C and C++
+runtime, and the IRX fixup tool (`srxfixup`). It does not use ps2sdk. Every Sony library routine
+the game calls is reconstructed under `sce/`, and `sce/ee/runtime` connects the compiler's runtime
+to the reconstructed kernel.
 
 ```shell
-cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/ps2-ee-toolchain.cmake -DWAVELENGTH_DISC_IMAGE=/path/to/Amplitude.cue
+cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/ps2-ee-toolchain.cmake -DWAVELENGTH_DISC_IMAGE=/path/to/Amplitude.iso
 cmake --build build --target image
 ```
 
-The `image` target writes `build/wavelength.cue` and `build/wavelength.bin`, a raw Mode 2 CD image
-like the original disc, with the built executable in place of the original. The original may be a
-cue, a bin, or an ISO of the North American release (`SCUS_972.58`) or the European release
-(`SCES_517.06`). Without `WAVELENGTH_DISC_IMAGE`, the build produces the executable only.
+The `image` target writes `build/wavelength.iso`, an ISO image of the DVD, with the built
+executable and IOP modules in place of the originals. The original is an ISO image of the North
+American release (`SCUS_972.58`) or the European release (`SCES_517.06`). Without
+`WAVELENGTH_DISC_IMAGE`, the build produces the executable and the IOP modules only. File names on
+the disc are matched without regard to case, and each name must be unique once case is ignored.
 
 `WAVELENGTH_DISC_IMAGE` may also be the disc root, the directory with `SYSTEM.CNF`. A copy of the
-disc files lacks the boot logo that the original disc stores in its first 12 sectors. A console may
-refuse a disc without the boot logo. Set `WAVELENGTH_DISC_SYSTEM_AREA` to a file with the 24576
-bytes of the first 12 sectors of the original disc to include the boot logo.
+disc files lacks the boot logo that the original disc stores in its system area, the first 16
+sectors of the ISO image. A console may refuse a disc without the boot logo. Set
+`WAVELENGTH_DISC_SYSTEM_AREA` to a file with the first 32768 bytes of the original ISO image to
+include the boot logo.
+
+### IOP modules
+
+The game's own IOP modules are rebuilt from `src/iop`, one directory per module, with the IOP
+toolchain (`mipsel-none-elf`) from `PS2DEV`. Each module is registered in `src/iop/CMakeLists.txt`
+with one line that lists its sources in link order:
+
+```cmake
+wavelength_add_irx(softfx_s softfx.cpp lock.cpp periodictimer.cpp effects.cpp ringbuffer.cpp
+                   streambuffer.cpp imports.S)
+```
+
+The function builds `build/iop/<module>/<module>.irx`, and the `image` target puts it on the disc in
+place of the module with the same name in `IOP`. A module lists its import tables in an assembler
+source with the macros of `sce/iop/include/iopimports.s`, and a module with C++ sources also links
+the runtime in `src/iop/runtime`. The `iop_modules` target builds every module. Builds for PAL
+define `VIDEO_STANDARD_PAL` for the modules that differ between the releases.
 
 ## Provenance and licence
 

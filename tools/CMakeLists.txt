@@ -1,6 +1,6 @@
-# The main build runs the host tools in this project to write the disc image and generate the
-# credits avatar header. The main build configures this project with the host compiler. The tools
-# are never installed.
+# The main build runs the host tools in this project to write the disc image, write the module name
+# into each IOP module, and generate the credits avatar header. The main build configures this
+# project with the host compiler. The tools are never installed.
 #
 # Each dependency comes from vcpkg when the vcpkg toolchain is in use, otherwise from the system,
 # and otherwise from the pinned release below. zlib and OpenSSL come only from vcpkg or the system.
@@ -99,3 +99,4 @@ endif()
 add_subdirectory(common)
 add_subdirectory(build-image)
 add_subdirectory(credits-avatar)
+add_subdirectory(name-irx)

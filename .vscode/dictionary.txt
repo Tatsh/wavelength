@@ -68,6 +68,8 @@ bsky
 buffsz
 buildinfo
 buildsystems
+bvoll
+bvolr
 callbackxferbdtoiop
 catchpatt
 cdread
@@ -122,6 +124,7 @@ defsym
 deletefileop
 demangled
 demangles
+depfile
 devconsole
 devirtualised
 difficultyrating
@@ -157,6 +160,9 @@ editgempacket
 eekernel
 eeregs
 eetypes
+einvalid
+elfclass
+elfdata
 elfio
 elif
 enablew
@@ -274,6 +280,7 @@ inputmap
 inputmgr
 insize
 internel
+intr
 intrcode
 intrman
 introscreen
@@ -281,8 +288,12 @@ inttypes
 invers
 iobpreallocmemstream
 iopcontrol
+iopfixup
 iopheap
+iopimports
+iopmod
 ioprp
+irqa
 isce
 isub
 isubiu
@@ -301,6 +312,7 @@ keyframed
 kind's
 kochanek
 koff
+kprintf
 kputchar
 kputs
 kseg
@@ -335,6 +347,7 @@ libvu
 lightanim
 linearanim
 lineartransform
+linkfile
 linkonce
 listdirop
 littlemips
@@ -382,6 +395,7 @@ memcardtask
 memcarduser
 memclr
 memcpy
+memset
 memstream
 meshanim
 metaarenascreen
@@ -391,6 +405,7 @@ metasongscreen
 metastartscreen
 mfir
 miniw
+mipsel
 miptbp
 missthis
 mktemp
@@ -408,6 +423,7 @@ msgsink
 msgsource
 msifrpc
 msin
+msoft
 msubw
 mtap
 mtapman
@@ -436,6 +452,7 @@ mutevocalspacket
 mvoll
 mvolr
 mypy
+nameirx
 netarbiter
 netfaker
 netflow
@@ -454,6 +471,7 @@ noone
 noreorder
 normalkey
 nostartfiles
+nostdlib
 nowbdc
 nullptr
 numpydoc
@@ -481,6 +499,7 @@ particlesys
 particlesysanim
 pcgth
 pcpyld
+periodictimer
 pextlb
 pextub
 phdrs
@@ -502,7 +521,6 @@ pmaxh
 pminh
 pmon
 pnor
-postgap
 ppacb
 ppsz
 preapproved
@@ -546,6 +564,7 @@ refree
 regen
 reginfo
 releaseable
+relocs
 remixer
 remixerupdatepacket
 remixtutorial
@@ -556,6 +575,7 @@ reservedfc
 rgbaq
 rgbaqaddr
 riffer
+ringbuffer
 ripgreprc
 rmode
 rndartt
@@ -568,9 +588,11 @@ romver
 rpcd
 rpcm
 rtti
+saturator
 sbclaude
 sbss
 sces
+scesd
 schemafile
 scommon
 scratchtrack
@@ -580,13 +602,13 @@ screendump
 scripttemplatemap
 scripttrackbuilder
 scripttrackdata
+scrtpad
 scus
 sdata
 sdrdrv
 seccache
 sectionboundaries
 sectionchangepacket
-sectorencoder
 seekop
 sema
 semas
@@ -639,6 +661,7 @@ spindlctrl
 spyramid
 sqwc
 srcs
+srxfixup
 ssbd
 startable
 statusline
@@ -656,6 +679,7 @@ stmask
 stmblk
 stmnblk
 stmod
+strcmp
 strequal
 subu
 subx
@@ -663,6 +687,7 @@ suby
 sutructure
 svdata
 sysclib
+sysmem
 tadr
 tagfile
 tatsh
@@ -676,6 +701,7 @@ texs
 tgmath
 thbase
 thid
+thsemap
 tickclock
 timeclock
 timedcommand

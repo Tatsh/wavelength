@@ -47,6 +47,12 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cmake --build build --target archives -- -k 0
+      # Remove continue-on-error once every module the image replaces is reconstructed.
+      - name: 'Link IOP modules'
+        continue-on-error: true
+        run: |
+          echo "::add-matcher::.github/problem-matchers/gcc.json"
+          cmake --build build --target iop_modules -- -k 0
       # Linking, packaging, and uploading wait until enough of Amplitude is ported for the
       # executable to link. Remove the three `if: false` conditions to restore them.
       - name: 'Link executable'
@@ -82,6 +88,15 @@ jobs:
           # NTSC is the North American (SCUS-97258) build and PAL the European (SCES-51706) build.
           mips64r5900el-ps2-elf-objcopy --strip-debug "$ELF" \
             "release/wavelength-${VERSION}-${VIDEO_STANDARD}${LABEL}.elf"
+          # The IOP modules ignore the build type, and only the Release artifact includes them. Each
+          # carries its standard in the file name, and build-image puts it on the disc under the
+          # module's own name.
+          if [ "$BUILD_TYPE" = 'Release' ]; then
+            find build/iop -name '*.irx' -type f | while read -r IRX; do
+              NAME="$(basename "$IRX" .irx)"
+              cp "$IRX" "release/${NAME}-${VIDEO_STANDARD}.irx"
+            done
+          fi
           ls -l release
       - name: 'Upload release assets'
         if: false

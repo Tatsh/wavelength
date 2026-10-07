@@ -30,6 +30,7 @@ endif()
 set(WAVELENGTH_TOOLS_DIR "${CMAKE_BINARY_DIR}/tools")
 set(WAVELENGTH_TOOL_BUILD_IMAGE "${WAVELENGTH_TOOLS_DIR}/build-image/build-image")
 set(WAVELENGTH_TOOL_CREDITS_AVATAR "${WAVELENGTH_TOOLS_DIR}/credits-avatar/credits-avatar")
+set(WAVELENGTH_TOOL_NAME_IRX "${WAVELENGTH_TOOLS_DIR}/name-irx/name-irx")
 
 # The host build does not receive the cross toolchain file, on the command line or through the
 # environment. Its only toolchain file is the host vcpkg one.
@@ -51,5 +52,6 @@ add_custom_target(
   wavelength_tools
   COMMAND "${CMAKE_COMMAND}" --build "${WAVELENGTH_TOOLS_DIR}"
   BYPRODUCTS "${WAVELENGTH_TOOL_BUILD_IMAGE}" "${WAVELENGTH_TOOL_CREDITS_AVATAR}"
+             "${WAVELENGTH_TOOL_NAME_IRX}"
   COMMENT "Building the host tools"
   VERBATIM)

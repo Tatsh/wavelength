@@ -6,9 +6,16 @@ extern "C" {
 #endif
 
 /**
- * IOP kernel services a module imports from the resident kernel libraries (loadcore, intrman,
- * thbase, and timrman). The layouts follow the stabs the shipped EZMIDI.IRX records.
+ * IOP kernel services a module imports from the resident kernel libraries (loadcore, sysmem,
+ * intrman, thbase, thsemap, timrman, and scrtpad). The layouts follow the stabs the shipped
+ * EZMIDI.IRX records.
  */
+
+/** Values a module entry returns to the loader. */
+enum ModuleStartResult {
+    NO_RESIDENT_END = 1,        /*!< The module does not stay loaded. */
+    REMOVABLE_RESIDENT_END = 2, /*!< The module stays loaded and may be unloaded later. */
+};
 
 /** Module identity the loader reads through the `Module` symbol. */
 typedef struct _moduleinfo {
@@ -59,12 +66,62 @@ typedef struct {
 /** Prescale divisor of one for AllocHardTimer() and SetupHardTimer(). */
 #define TIMER_PRESCALE_1 1
 
+/** Creation parameters of a semaphore. */
+struct SemaParam {
+    unsigned int attr;   /*!< Attribute bits. */
+    unsigned int option; /*!< Caller-defined option word. */
+    int initCount;       /*!< Starting count. */
+    int maxCount;        /*!< Largest count. */
+};
+
+/**
+ * Allocate IOP memory.
+ *
+ * @param mode Placement mode, zero for the first free block.
+ * @param size Byte count.
+ * @param address Requested address for an address placement mode, otherwise null.
+ * @return The block, or null.
+ */
+void *AllocSysMemory(int mode, int size, void *address);
+
+/**
+ * Release IOP memory.
+ *
+ * @param block Block from AllocSysMemory().
+ * @return #KE_OK, or a negative error code.
+ */
+int FreeSysMemory(void *block);
+
+/**
+ * Print formatted text to the kernel console.
+ *
+ * @param format Format string.
+ * @return The number of characters printed.
+ */
+int Kprintf(const char *format, ...);
+
 /**
  * Enable interrupts on the calling CPU.
  *
  * @return #KE_OK.
  */
 int CpuEnableIntr(void);
+
+/**
+ * Disable interrupts on the calling CPU.
+ *
+ * @param state Receives the previous interrupt state.
+ * @return #KE_OK, or a negative error code when interrupts were already disabled.
+ */
+int CpuSuspendIntr(int *state);
+
+/**
+ * Restore the interrupt state CpuSuspendIntr() saved.
+ *
+ * @param state The saved state.
+ * @return #KE_OK.
+ */
+int CpuResumeIntr(int state);
 
 /**
  * Unmask one interrupt source.
@@ -81,6 +138,22 @@ int EnableIntr(int intrcode);
  * @return The thread identifier, or a negative error code.
  */
 int CreateThread(struct ThreadParam *param);
+
+/**
+ * Delete a dormant thread.
+ *
+ * @param thid Thread identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int DeleteThread(int thid);
+
+/**
+ * Stop another thread, leaving it dormant.
+ *
+ * @param thid Thread identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int TerminateThread(int thid);
 
 /**
  * Start a dormant thread.
@@ -112,6 +185,54 @@ int SleepThread(void);
  * @return #KE_OK, or a negative error code.
  */
 int iWakeupThread(int thid);
+
+/**
+ * Create a semaphore.
+ *
+ * @param param Creation parameters.
+ * @return The semaphore identifier, or a negative error code.
+ */
+int CreateSema(struct SemaParam *param);
+
+/**
+ * Delete a semaphore.
+ *
+ * @param semid Semaphore identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int DeleteSema(int semid);
+
+/**
+ * Increment a semaphore, waking a waiting thread.
+ *
+ * @param semid Semaphore identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int SignalSema(int semid);
+
+/**
+ * Decrement a semaphore, waiting while its count is zero.
+ *
+ * @param semid Semaphore identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int WaitSema(int semid);
+
+/**
+ * Reserve the scratchpad memory.
+ *
+ * @param mode Reservation mode, zero.
+ * @return The scratchpad address, or a negative error code in place of the address.
+ */
+void *AllocScratchPad(int mode);
+
+/**
+ * Release the scratchpad memory.
+ *
+ * @param address Address from AllocScratchPad().
+ * @return #KE_OK, or a negative error code.
+ */
+int FreeScratchPad(void *address);
 
 /**
  * Read the system clock.

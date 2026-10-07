@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
@@ -39,6 +40,8 @@ constexpr std::string_view kBuildTypeRelease = "Release";
 constexpr std::string_view kBuildTypeDebug = "Debug";
 constexpr std::string_view kExecutablePrefix = "wavelength-";
 constexpr std::string_view kExecutableSuffix = ".elf";
+constexpr std::string_view kModuleSuffix = ".irx";
+constexpr std::string_view kIsoSuffix = ".iso";
 constexpr int kUsageErrorStatus = 2;
 
 using Payload = std::vector<std::uint8_t>;
@@ -46,7 +49,8 @@ using Payload = std::vector<std::uint8_t>;
 struct Options {
     std::string buildType;
     fs::path inputImage;
-    fs::path outputCue;
+    std::vector<fs::path> iopModules;
+    fs::path outputImage;
     bool overwrite = false;
     bool pal = false;
     std::string repo;
@@ -54,6 +58,12 @@ struct Options {
     std::optional<fs::path> systemArea;
     std::optional<std::string> token;
     std::optional<fs::path> wavelengthBin;
+};
+
+// The executable and the IOP modules that replace their originals.
+struct Payloads {
+    Payload executable;
+    std::vector<Replacement> modules;
 };
 
 bool isRelativeTo(const fs::path &path, const fs::path &base) {
@@ -126,10 +136,52 @@ std::expected<Payload, Error> extractExecutable(const ZipArchive &archive,
     return archive.extract(matches.front());
 }
 
-// The video standard of the downloaded build follows the disc being rebuilt.
-std::expected<Payload, Error> resolveExecutable(const Options &options) {
+// Each member named <MODULE>-<STD>.irx replaces the disc's <MODULE>.irx.
+std::expected<std::vector<Replacement>, Error> extractModules(const ZipArchive &archive,
+                                                              const std::string &standard) {
+    const auto suffix = Volume::upperAscii(std::format("-{}{}", standard, kModuleSuffix));
+    std::vector<Replacement> modules;
+    for (const auto &name : archive.names()) {
+        const auto base = Volume::upperAscii(baseName(name));
+        if (base.size() <= suffix.size() || !base.ends_with(suffix)) {
+            continue;
+        }
+        auto data = archive.extract(name);
+        if (!data) {
+            return std::unexpected(std::move(data.error()));
+        }
+        modules.push_back(
+            {base.substr(0, base.size() - suffix.size()) + Volume::upperAscii(kModuleSuffix),
+             std::move(*data)});
+    }
+    return modules;
+}
+
+std::expected<std::vector<Replacement>, Error> readModules(const std::vector<fs::path> &paths) {
+    std::vector<Replacement> modules;
+    for (const auto &path : paths) {
+        auto data = readFile(path);
+        if (!data) {
+            return std::unexpected(std::move(data.error()));
+        }
+        modules.push_back({Volume::upperAscii(path.filename().string()), std::move(*data)});
+    }
+    return modules;
+}
+
+// The video standard of the downloaded build follows the disc being rebuilt. The Release artifact
+// provides the IOP modules whatever the build type.
+std::expected<Payloads, Error> resolvePayloads(const Options &options) {
     if (options.wavelengthBin) {
-        return readFile(*options.wavelengthBin);
+        auto executable = readFile(*options.wavelengthBin);
+        if (!executable) {
+            return std::unexpected(std::move(executable.error()));
+        }
+        auto modules = readModules(options.iopModules);
+        if (!modules) {
+            return std::unexpected(std::move(modules.error()));
+        }
+        return Payloads{std::move(*executable), std::move(*modules)};
     }
     const auto token = effectiveToken(options);
     if (!token) {
@@ -154,12 +206,26 @@ std::expected<Payload, Error> resolveExecutable(const Options &options) {
     const auto label = options.buildType == kBuildTypeRelease ?
                            std::string() :
                            std::format("-{}", options.buildType);
-    const auto artifact = std::format("{}{}{}", kReleaseAssetsArtifact, standard, label);
-    return client.downloadArtifact(runId, artifact)
-        .and_then(ZipArchive::open)
-        .and_then([&](const ZipArchive &archive) {
-            return extractExecutable(archive, artifact, standard + label);
-        });
+    const auto releaseArtifact = std::format("{}{}", kReleaseAssetsArtifact, standard);
+    const auto artifact = releaseArtifact + label;
+    auto executable = client.downloadArtifact(runId, artifact)
+                          .and_then(ZipArchive::open)
+                          .and_then([&](const ZipArchive &archive) {
+                              return extractExecutable(archive, artifact, standard + label);
+                          });
+    if (!executable) {
+        return std::unexpected(std::move(executable.error()));
+    }
+    auto modules = options.iopModules.empty() ? client.downloadArtifact(runId, releaseArtifact)
+                                                    .and_then(ZipArchive::open)
+                                                    .and_then([&](const ZipArchive &archive) {
+                                                        return extractModules(archive, standard);
+                                                    }) :
+                                                readModules(options.iopModules);
+    if (!modules) {
+        return std::unexpected(std::move(modules.error()));
+    }
+    return Payloads{std::move(*executable), std::move(*modules)};
 }
 
 std::expected<std::unique_ptr<Volume>, Error> openVolume(const Options &options) {
@@ -181,25 +247,23 @@ std::expected<std::unique_ptr<Volume>, Error> openVolume(const Options &options)
 }
 
 std::expected<std::uint32_t, Error> run(const Options &options) {
-    if (Volume::lowerAscii(options.outputCue.extension().string()) != ".cue") {
+    if (Volume::lowerAscii(options.outputImage.extension().string()) != kIsoSuffix) {
         return discImageError(
-            std::format("The output {} is not a cue sheet.", options.outputCue.string()));
+            std::format("The output {} is not an ISO image.", options.outputImage.string()));
     }
-    auto image = options.outputCue;
-    image.replace_extension(".bin");
-    if (!options.overwrite && (pathExists(options.outputCue) || pathExists(image))) {
-        return discImageError(std::format("The output {} exists.", options.outputCue.string()));
+    if (!options.overwrite && pathExists(options.outputImage)) {
+        return discImageError(std::format("The output {} exists.", options.outputImage.string()));
     }
     const auto input = resolved(options.inputImage);
-    if (resolved(image) == input || resolved(options.outputCue) == input) {
+    if (resolved(options.outputImage) == input) {
         return discImageError("Output must differ from the input.");
     }
-    if (pathIsDirectory(options.inputImage) && isRelativeTo(resolved(image), input)) {
+    if (pathIsDirectory(options.inputImage) && isRelativeTo(resolved(options.outputImage), input)) {
         return discImageError("Output must lie outside the disc root.");
     }
-    auto executable = resolveExecutable(options);
-    if (!executable) {
-        return std::unexpected(std::move(executable.error()));
+    auto payloads = resolvePayloads(options);
+    if (!payloads) {
+        return std::unexpected(std::move(payloads.error()));
     }
     const auto source = openVolume(options);
     if (!source) {
@@ -218,9 +282,10 @@ std::expected<std::uint32_t, Error> run(const Options &options) {
     }
     spdlog::info("Original is the {} release ({}).", isPal ? "PAL" : "NTSC-U/C", *target);
     std::vector<Replacement> replacements;
-    replacements.push_back({*target, std::move(*executable)});
+    replacements.push_back({*target, std::move(payloads->executable)});
+    std::ranges::move(payloads->modules, std::back_inserter(replacements));
     return ImageBuilder::plan(**source, std::move(replacements))
-        .and_then([&options](ImageBuilder builder) { return builder.write(options.outputCue); });
+        .and_then([&options](ImageBuilder builder) { return builder.write(options.outputImage); });
 }
 
 int usageError(const argparse::ArgumentParser &parser, const std::string &message) {
@@ -236,14 +301,12 @@ int main(int argc, char *argv[]) {
     using namespace Tools;
     using namespace Tools::BuildImage;
     argparse::ArgumentParser parser(std::string(kProgram), "", argparse::default_arguments::help);
-    parser.add_description(
-        "Rebuild an Amplitude CD image with a replacement executable. The raw MODE2/2352 bin is "
-        "written beside the cue sheet, with the same name and a .bin suffix.");
+    parser.add_description("Rebuild an Amplitude DVD image with a replacement executable and "
+                           "replacement IOP modules, and write it as an ISO image.");
     parser.add_argument("input_image")
-        .help("Original image in cue, bin, or ISO form, or the disc root directory (the directory "
-              "with SYSTEM.CNF).");
-    parser.add_argument("output_cue")
-        .help("Destination cue sheet path. Required unless --identify is given.")
+        .help("Original ISO image, or the disc root directory (the directory with SYSTEM.CNF).");
+    parser.add_argument("output_iso")
+        .help("Destination ISO image path. Required unless --identify is given.")
         .nargs(argparse::nargs_pattern::optional);
     parser.add_argument("--identify")
         .help("Print the name of the executable the original boots, and exit.")
@@ -254,12 +317,19 @@ int main(int argc, char *argv[]) {
         .flag();
     parser.add_argument("--build-type")
         .metavar("BUILD_TYPE")
-        .help("Build type of the downloaded executable.")
+        .help("Build type of the downloaded executable. The IOP modules always come from the "
+              "Release build.")
         .default_value(std::string(kBuildTypeRelease))
         .nargs(1)
         .choices(std::string(kBuildTypeRelease), std::string(kBuildTypeDebug));
     parser.add_argument("--debug").help("Enable debug logging.").flag();
-    parser.add_argument("--overwrite").help("Replace the output files when present.").flag();
+    parser.add_argument("--iop-module")
+        .metavar("IOP_MODULE")
+        .help("Local IOP module file that replaces the disc file of the same name. Repeat the "
+              "flag for each module. The modules are not downloaded when the flag is given.")
+        .default_value(std::vector<std::string>())
+        .append();
+    parser.add_argument("--overwrite").help("Replace the output file when present.").flag();
     parser.add_argument("--repo")
         .metavar("REPO")
         .help("Repository with the build artifacts.")
@@ -270,8 +340,8 @@ int main(int argc, char *argv[]) {
         .help("Actions run to fetch. The latest successful run is used when omitted.");
     parser.add_argument("--system-area")
         .metavar("SYSTEM_AREA")
-        .help("The first 12 sectors of the original disc (24576 bytes, the boot logo), for a disc "
-              "root input. The sectors are zero otherwise.");
+        .help("The system area of the original disc, its first 16 sectors (32768 bytes) with the "
+              "boot logo, for a disc root input. The sectors are zero otherwise.");
     parser.add_argument("--token").metavar("TOKEN").help(
         "GitHub token. GITHUB_TOKEN or GH_TOKEN provides the value when the flag is absent.");
     parser.add_argument("--wavelength-bin")
@@ -301,6 +371,14 @@ int main(int argc, char *argv[]) {
             *field = *value;
         }
     }
+    for (const auto &module : parser.get<std::vector<std::string>>("--iop-module")) {
+        std::error_code error;
+        if (!fs::is_regular_file(module, error)) {
+            return usageError(parser,
+                              std::format("The --iop-module file {} does not exist.", module));
+        }
+        options.iopModules.emplace_back(module);
+    }
     if (const auto runId = parser.present<std::string>("--run-id")) {
         std::uint64_t value = 0;
         const auto *end = runId->data() + runId->size();
@@ -327,27 +405,21 @@ int main(int argc, char *argv[]) {
         std::cout << *boots << '\n';
         return EXIT_SUCCESS;
     }
-    const auto output = parser.present<std::string>("output_cue");
+    const auto output = parser.present<std::string>("output_iso");
     if (!output) {
-        return usageError(parser, "The output cue sheet is required unless --identify is given.");
+        return usageError(parser, "The output ISO image is required unless --identify is given.");
     }
-    options.outputCue = *output;
-    auto image = options.outputCue;
-    image.replace_extension(".bin");
-    const auto cueExisted = pathExists(options.outputCue);
-    const auto imageExisted = pathExists(image);
+    options.outputImage = *output;
+    const auto outputExisted = pathExists(options.outputImage);
     const auto sectors = run(options);
     if (!sectors) {
         std::error_code ignored;
-        if (!cueExisted) {
-            fs::remove(options.outputCue, ignored);
-        }
-        if (!imageExisted) {
-            fs::remove(image, ignored);
+        if (!outputExisted) {
+            fs::remove(options.outputImage, ignored);
         }
         spdlog::error("Image build failed. {}", sectors.error().message);
         return EXIT_FAILURE;
     }
-    std::cout << std::format("Wrote {} ({} sectors).\n", options.outputCue.string(), *sectors);
+    std::cout << std::format("Wrote {} ({} sectors).\n", options.outputImage.string(), *sectors);
     return EXIT_SUCCESS;
 }

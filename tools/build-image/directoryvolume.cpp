@@ -16,9 +16,10 @@ namespace Tools::BuildImage {
 
 namespace {
 
-// The first 12 sectors of a PlayStation 2 disc store the encrypted boot logo the console checks.
-constexpr std::uint32_t kLogoSectors = 12;
-constexpr std::size_t kSystemAreaSize = kLogoSectors * Volume::kSectorData;
+// The system area of an ISO9660 volume is every sector before the primary volume descriptor. On a
+// PlayStation 2 disc it stores the encrypted boot logo the console checks.
+constexpr std::uint32_t kSystemAreaSectors = Volume::kPvdSector;
+constexpr std::size_t kSystemAreaSize = kSystemAreaSectors * Volume::kSectorData;
 constexpr std::uint32_t kPathTableLba = 18;
 constexpr std::uint32_t kPathTableCopies = 4;
 constexpr std::size_t kIsoNameMax = 30;
@@ -88,6 +89,25 @@ std::unexpected<Error> notDiscRoot(const std::filesystem::path &root) {
                                       Volume::kSystemCnf));
 }
 
+// Returns the one entry of the disc root whose name is SYSTEM.CNF in any case.
+std::expected<std::filesystem::path, Error>
+systemCnfOf(const std::filesystem::path &root,
+            const std::vector<std::filesystem::directory_entry> &entries) {
+    std::vector<std::filesystem::path> matches;
+    for (const auto &entry : entries) {
+        if (Volume::upperAscii(entry.path().filename().string()) == Volume::kSystemCnf) {
+            matches.push_back(entry.path());
+        }
+    }
+    if (matches.empty()) {
+        return notDiscRoot(root);
+    }
+    if (matches.size() > 1) {
+        return discImageError(Volume::ambiguousName(Volume::kSystemCnf, matches));
+    }
+    return matches.front();
+}
+
 void fill(std::span<std::uint8_t> bytes, std::size_t offset, std::size_t length, char value) {
     std::fill_n(bytes.begin() + static_cast<std::ptrdiff_t>(offset), length, value);
 }
@@ -105,10 +125,8 @@ DirectoryVolume::create(const std::filesystem::path &root,
     if (!entries) {
         return std::unexpected(entries.error());
     }
-    if (std::ranges::none_of(*entries, [](const auto &entry) {
-            return upperAscii(entry.path().filename().string()) == kSystemCnf;
-        })) {
-        return notDiscRoot(root);
+    if (const auto systemCnf = systemCnfOf(root, *entries); !systemCnf) {
+        return std::unexpected(systemCnf.error());
     }
     if (systemArea && systemArea->size() != kSystemAreaSize) {
         return discImageError(std::format("The system area must be {} bytes.", kSystemAreaSize));
@@ -218,28 +236,36 @@ std::expected<std::string, Error> DirectoryVolume::identify(const std::filesyste
     if (!entries) {
         return std::unexpected(entries.error());
     }
-    const auto found = std::ranges::find_if(*entries, [](const auto &entry) {
-        return upperAscii(entry.path().filename().string()) == kSystemCnf;
+    return systemCnfOf(root, *entries).and_then(readFile).and_then([](const auto &data) {
+        return parseBoot2(data);
     });
-    if (found == entries->end()) {
-        return notDiscRoot(root);
-    }
-    return readFile(found->path()).and_then([](const auto &data) { return parseBoot2(data); });
 }
 
 std::expected<LocatedFile, Error> DirectoryVolume::find(const std::string &name) {
+    const auto folded = upperAscii(name);
+    std::vector<const Entry *> matches;
     for (const auto &entry : files_) {
-        if (stripVersion(entry.isoName) == name) {
-            const auto &parent = directories_[parentOf_.at(name)];
-            return LocatedFile{entry.lba, parent.lba, parent.size, entry.size};
+        if (upperAscii(stripVersion(entry.isoName)) == folded) {
+            matches.push_back(&entry);
         }
     }
-    return discImageError(std::format("{} is missing from the directory.", name));
+    if (matches.empty()) {
+        return discImageError(std::format("{} is missing from the directory.", name));
+    }
+    if (matches.size() > 1) {
+        std::vector<std::filesystem::path> paths;
+        for (const auto *entry : matches) {
+            paths.push_back(entry->path);
+        }
+        return discImageError(ambiguousName(name, paths));
+    }
+    const auto &parent = directories_[parentOf_.at(stripVersion(matches.front()->isoName))];
+    return LocatedFile{matches.front()->lba, parent.lba, parent.size, matches.front()->size};
 }
 
 std::expected<void, Error>
 DirectoryVolume::readSector(std::uint32_t lba, std::span<std::uint8_t, kSectorData> sector) {
-    if (lba < kLogoSectors) {
+    if (lba < kSystemAreaSectors) {
         std::copy_n(systemArea_.begin() + static_cast<std::ptrdiff_t>(lba * kSectorData),
                     kSectorData,
                     sector.begin());
