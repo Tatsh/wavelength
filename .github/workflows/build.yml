@@ -43,10 +43,7 @@ jobs:
         env:
           BUILD_TYPE: '${{ matrix.build-type }}'
           VIDEO_STANDARD: '${{ matrix.video-standard }}'
-      # FreQuency sources not yet ported fail to compile against the Amplitude headers. The
-      # errors still appear as annotations. Remove continue-on-error once every object compiles.
       - name: 'Compile'
-        continue-on-error: true
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cmake --build build --target archives -- -k 0
