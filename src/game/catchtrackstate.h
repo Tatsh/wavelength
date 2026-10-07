@@ -212,6 +212,17 @@ public:
      */
     void ClearBars(int nStartBar, int nEndBar);
 
+    /**
+     * Report the gems of the track.
+     *
+     * Inline.
+     *
+     * @return The gems.
+     */
+    CatchTrackData *GetData() const {
+        return mData;
+    }
+
 private:
     /** The lane FindCursor() takes for a gem of any lane. */
     static constexpr int kAnyLane = -1;

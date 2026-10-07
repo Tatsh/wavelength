@@ -7,7 +7,7 @@
 #include "game/bankloader.h"
 #include "game/catchtrackdata.h"
 #include "game/duelpatterntable.h"
-#include "game/freestylefx.h"
+#include "game/fxmgr.h"
 #include "game/levelmidibuilder.h"
 #include "game/lyric.h"
 #include "game/pitchtrackgems.h"
@@ -307,7 +307,7 @@ public:
      * @return The effect sets, or null.
      * @ghidraAddress NTSC-U/C: 0x0011f010
      */
-    FreestyleFx *GetFreestyleFx() const;
+    FXMgr *GetFXMgr() const;
 
     /**
      * Report the speed of the song.

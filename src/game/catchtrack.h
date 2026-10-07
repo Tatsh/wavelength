@@ -1,11 +1,22 @@
 #pragma once
 
+#include <vector>
+
 #include "game/backmusic.h"
 #include "game/catchtrackdata.h"
+#include "game/catchtrackdisplay.h"
+#include "game/catchtrackmusic.h"
+#include "game/catchtrackstate.h"
+#include "game/gemcursor.h"
+#include "game/guideticker.h"
 #include "game/player.h"
 #include "game/playmap.h"
 #include "game/sectionboundaries.h"
 #include "game/track.h"
+#include "game/trackcapturer.h"
+#include "os/command.h"
+#include "os/mem.h"
+#include "os/ptr.h"
 
 // GameLogic and CatchTrack refer to each other.
 class GameLogic;
@@ -13,11 +24,120 @@ class GameLogic;
 /**
  * Track whose phrases a player captures by playing them.
  *
- * The RTTI records the class as deriving from Track. The object is 0x148 bytes, and GameLogic
- * allocates it under the tag "CatchTrack". Only the members GameLogic uses are declared.
+ * The RTTI records the class as deriving from Track, and includes the nested
+ * CatchTrack::DeactivateCmd and CatchTrack::CaptureReceiver. The object is 0x148 bytes, and
+ * GameLogic allocates it under the tag "CatchTrack". A captured run of bars plays its music and
+ * the background music of the track until the run ends.
  */
 class CatchTrack : public Track {
 public:
+    /**
+     * Command that ends the captured run of the track.
+     *
+     * The RTTI includes the nested name and records Command as the base. Its members are inline.
+     */
+    class DeactivateCmd : public Command {
+    public:
+        /**
+         * Construct the command of a track.
+         *
+         * @param pTrack The track.
+         */
+        explicit DeactivateCmd(CatchTrack *pTrack) : mTrack(pTrack) {
+        }
+
+        /**
+         * Release the command.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034a970
+         * @ghidraAddress PAL: 0x003b7da0
+         */
+        ~DeactivateCmd() override {
+        }
+
+        /**
+         * End the phrase of the track and stop its background music.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034a9e8
+         * @ghidraAddress PAL: 0x003b7e18
+         */
+        void Execute() override;
+
+    private:
+        CatchTrack *mTrack; /*!< The track. */
+    };
+
+    /**
+     * Receiver of the runs of the capturer of a track.
+     *
+     * The RTTI includes the nested name and records TrackCapturer::Receiver as the base. Its
+     * members are inline.
+     */
+    class CaptureReceiver : public TrackCapturer::Receiver {
+    public:
+        /**
+         * Construct the receiver of a track.
+         *
+         * @param pTrack The track.
+         */
+        explicit CaptureReceiver(CatchTrack *pTrack) : mTrack(pTrack) {
+        }
+
+        /**
+         * Release the receiver.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034aaa8
+         * @ghidraAddress PAL: 0x003b7ed8
+         */
+        ~CaptureReceiver() override {
+        }
+
+        /**
+         * Pass a capture to the track.
+         *
+         * @param cursor The last gem of the run.
+         * @ghidraAddress NTSC-U/C: 0x0034ab28
+         * @ghidraAddress PAL: 0x003b7f58
+         */
+        void OnCapture(const GemCursor &cursor) override {
+            mTrack->OnCapture(cursor);
+        }
+
+        /**
+         * Pass a lost run to the track.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034ab48
+         * @ghidraAddress PAL: 0x003b7f78
+         */
+        void OnRunLost() override {
+            mTrack->OnRunLost();
+        }
+
+        /**
+         * Pass the start of a run to the track.
+         *
+         * @param cursor The first gem of the run.
+         * @param nEndBar The bar after the run.
+         * @ghidraAddress NTSC-U/C: 0x0034ab68
+         * @ghidraAddress PAL: 0x003b7f98
+         */
+        void OnRunStart(const GemCursor &cursor, int nEndBar) override {
+            mTrack->OnRunStart(cursor, nEndBar);
+        }
+
+    private:
+        CatchTrack *mTrack; /*!< The track. */
+    };
+
+    /**
+     * Release a track to the pool heap GameLogic allocated it from.
+     *
+     * @param pBlock The block.
+     */
+    static void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
+
     /**
      * Construct a catch track.
      *
@@ -30,7 +150,7 @@ public:
      * @param nIntroBars The bars before the first section.
      * @param nNumBars The length of the song in bars.
      * @param nTicksPerBar The length of a bar in ticks.
-     * @param nFlags The flags the song records for the track.
+     * @param nFlags Nonzero for each bar of music to stop the bar before it.
      * @ghidraAddress NTSC-U/C: 0x0014c4a8
      * @ghidraAddress PAL: 0x0014de48
      */
@@ -46,7 +166,7 @@ public:
                int nFlags);
 
     /**
-     * Release the track.
+     * Stop and release the track.
      *
      * @ghidraAddress NTSC-U/C: 0x0014c698
      * @ghidraAddress PAL: 0x0014e038
@@ -54,7 +174,7 @@ public:
     ~CatchTrack() override;
 
     /**
-     * Start the track.
+     * Start the display, the music, and the guide ticker of the track, once.
      *
      * @ghidraAddress NTSC-U/C: 0x0014c8e0
      * @ghidraAddress PAL: 0x0014e280
@@ -62,7 +182,7 @@ public:
     void Start() override;
 
     /**
-     * Stop the track.
+     * Stop the track and every scheduled command.
      *
      * @ghidraAddress NTSC-U/C: 0x0014ca38
      * @ghidraAddress PAL: 0x0014e3d8
@@ -79,7 +199,8 @@ public:
     void SetPlayer(Player *pPlayer) override;
 
     /**
-     * Act on a note a player played on this track.
+     * Pass a button press of the track's player to the capturer, or show another player that the
+     * track is behind.
      *
      * @param pPlayer The player.
      * @param event The event.
@@ -137,7 +258,7 @@ public:
     }
 
     /**
-     * Play a background music track while this track plays.
+     * Play a background music track while a captured run of this track plays.
      *
      * @param pMusic The background music.
      * @ghidraAddress NTSC-U/C: 0x0014c798
@@ -146,17 +267,7 @@ public:
     void AddBackMusic(BackMusic *pMusic);
 
     /**
-     * Place a power-up in a bar.
-     *
-     * @param nBar The bar.
-     * @param nPowerup One of GameLogic::Powerup.
-     * @ghidraAddress NTSC-U/C: 0x0014cc50
-     * @ghidraAddress PAL: 0x0014e5f0
-     */
-    void SetPowerup(int nBar, int nPowerup);
-
-    /**
-     * Rebuild the gems and the display after the song gained a loop at a bar.
+     * Redraw the track from a bar and restart the capturer after the song gained a loop.
      *
      * The name is inferred.
      *
@@ -167,11 +278,21 @@ public:
     void Loop(int nBar);
 
     /**
-     * Place a power-up in a bar given by its index.
+     * Place a power-up in a bar.
+     *
+     * @param nBar The bar the song plays.
+     * @param nPowerup One of GameLogic::Powerup.
+     * @ghidraAddress NTSC-U/C: 0x0014cc50
+     * @ghidraAddress PAL: 0x0014e5f0
+     */
+    void SetPowerup(int nBar, int nPowerup);
+
+    /**
+     * Place a power-up in a bar as written.
      *
      * The name is inferred.
      *
-     * @param nBar The bar.
+     * @param nBar The bar as written.
      * @param nPowerup One of GameLogic::Powerup.
      * @ghidraAddress NTSC-U/C: 0x0014cc70
      * @ghidraAddress PAL: 0x0014e610
@@ -179,21 +300,22 @@ public:
     void SetBarPowerup(int nBar, int nPowerup);
 
     /**
-     * Enable the phrases of the track from a bar on.
+     * Enable the bars with gems from a bar on, except the checkpoint bars at the start of each
+     * section, then redraw the track and start the capturer.
      *
-     * @param nBar The bar.
+     * @param nBar The bar. A song with a loop enables every bar.
      * @ghidraAddress NTSC-U/C: 0x0014cc90
      * @ghidraAddress PAL: 0x0014e630
      */
     void Enable(int nBar);
 
     /**
-     * Reset the gems and the display of the track to a song tick.
+     * Enable every bar, give every bar to a player, and move the display to a tick.
      *
      * The name is inferred.
      *
-     * @param pPlayer The player.
-     * @param nTick The song tick to rebuild from.
+     * @param pPlayer The player, or null.
+     * @param nTick The song tick to show from.
      * @ghidraAddress NTSC-U/C: 0x0014ce80
      * @ghidraAddress PAL: 0x0014e820
      */
@@ -210,29 +332,29 @@ public:
     bool HasPhraseAt(int nBar);
 
     /**
-     * Find the phrase that is playing or next plays at a bar.
+     * Find the first gem of the next phrase from a bar.
      *
      * The name is inferred.
      *
      * @param nBar The bar.
-     * @param pStartTick Receives the first tick of the phrase.
-     * @param pEndTick Receives the tick after the phrase.
+     * @param pTick Receives the tick of the gem.
+     * @param pLane Receives the lane of the gem.
      * @return True when a phrase was found.
      * @ghidraAddress NTSC-U/C: 0x0014cf20
      * @ghidraAddress PAL: 0x0014e8c0
      */
-    bool FindPhrase(int nBar, int *pStartTick, int *pEndTick);
+    bool FindPhrase(int nBar, int *pTick, int *pLane);
 
     /**
      * Report the tick of the first gem at or after a tick.
      *
      * @param nTick The tick.
-     * @param pType Receives the type of the gem when not null.
+     * @param pLane Receives the lane of the gem when not null.
      * @return The tick of the gem, or -1 when no gem follows.
      * @ghidraAddress NTSC-U/C: 0x0014cf40
      * @ghidraAddress PAL: 0x0014e8e0
      */
-    int GetNextGemTick(int nTick, int *pType);
+    int GetNextGemTick(int nTick, int *pLane);
 
     /**
      * Capture the phrase of a bar for a player.
@@ -245,7 +367,7 @@ public:
     void Capture(int nBar, Player *pPlayer);
 
     /**
-     * Capture the phrase of a bar for a player with the autocatcher power-up.
+     * Capture the phrase of a bar or the next bar for a player with the autocatcher power-up.
      *
      * @param nBar The bar.
      * @param pPlayer The player.
@@ -267,13 +389,13 @@ public:
     void Freestyle(int nBar, int nBars, Player *pPlayer);
 
     /**
-     * Give a run of bars to a player, or take them from every player.
+     * Give a run of bars as written to a player, or take them from every player.
      *
      * The name is inferred.
      *
      * @param nBar The first bar.
      * @param nBars The number of bars.
-     * @param pPlayer The player, or null to deactivate the bars.
+     * @param pPlayer The player, or null.
      * @ghidraAddress NTSC-U/C: 0x0014d420
      * @ghidraAddress PAL: 0x0014edc0
      */
@@ -300,4 +422,118 @@ public:
      * @ghidraAddress PAL: 0x0014f150
      */
     void SetNoSeeker(bool bNoSeeker);
+
+private:
+    /**
+     * Capture the bars of a run from a bar for a player, through the end of the section when the
+     * run arrives at it, and report the capture.
+     *
+     * The name is inferred.
+     *
+     * @param nBar The first bar.
+     * @param pPlayer The player.
+     * @param bAuto Whether the autocatcher power-up captured the run.
+     * @ghidraAddress NTSC-U/C: 0x0014d138
+     * @ghidraAddress PAL: 0x0014ead8
+     */
+    void CaptureBars(int nBar, Player *pPlayer, bool bAuto);
+
+    /**
+     * Give a range of bars to a player, start the background music, schedule the end of the run,
+     * and show the run.
+     *
+     * The name is inferred.
+     *
+     * @param nStartBar The first bar.
+     * @param nEndBar The bar after the range, limited to the end of the song.
+     * @param pPlayer The player.
+     * @param bAuto Whether the autocatcher power-up captured the run.
+     * @param bFreestyle Whether the freestyle power-up gave the run.
+     * @ghidraAddress NTSC-U/C: 0x0014d298
+     * @ghidraAddress PAL: 0x0014ec38
+     */
+    void ActivateBars(int nStartBar, int nEndBar, Player *pPlayer, bool bAuto, bool bFreestyle);
+
+    /**
+     * Show whether the bar the song plays has notes the player can energise.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014d490
+     * @ghidraAddress PAL: 0x0014ee30
+     */
+    void UpdateHint();
+
+    /**
+     * Schedule UpdateHint() five bars from now, unless that is past the end of the song.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014d540
+     * @ghidraAddress PAL: 0x0014eee0
+     */
+    void ScheduleHint();
+
+    /**
+     * Report the bars a capture clears ahead of the captured bar, for the number of players.
+     *
+     * The name is inferred.
+     *
+     * @return The bars.
+     * @ghidraAddress NTSC-U/C: 0x0014d5f8
+     * @ghidraAddress PAL: 0x0014ef98
+     */
+    static int GetStrandBars();
+
+    /**
+     * Capture the run the player completed.
+     *
+     * The name is inferred.
+     *
+     * @param cursor The last gem of the run.
+     * @ghidraAddress NTSC-U/C: 0x0014d638
+     * @ghidraAddress PAL: 0x0014efd8
+     */
+    void OnCapture(const GemCursor &cursor);
+
+    /**
+     * Report a missed phrase and the streak it broke.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0014d6b8
+     * @ghidraAddress PAL: 0x0014f058
+     */
+    void OnRunLost();
+
+    /**
+     * Continue the streak of the player into the run that starts.
+     *
+     * The name is inferred.
+     *
+     * @param cursor The first gem of the run.
+     * @param nEndBar The bar after the run.
+     * @ghidraAddress NTSC-U/C: 0x0014d738
+     * @ghidraAddress PAL: 0x0014f0d8
+     */
+    void OnRunStart(const GemCursor &cursor, int nEndBar);
+
+    PlayMap *mPlayMap;                   /*!< The map of the song positions. */
+    GameLogic *mLogic;                   /*!< The logic of the game. */
+    CatchTrackState mState;              /*!< The state of the bars of the track. */
+    const SectionBoundaries *mSections;  /*!< The sections of the song. */
+    int mTicksPerBar;                    /*!< The length of a bar in ticks. */
+    int mNumBars;                        /*!< The length of the song in bars. */
+    CatchTrackDisplay mDisplay;          /*!< The display of the bars and gems. */
+    CatchTrackMusic mMusic;              /*!< The music of the captured bars. */
+    GuideTicker mGuideTicker;            /*!< The guide sound of the gems. */
+    CaptureReceiver *mReceiver;          /*!< The receiver of the runs of mCapturer. */
+    Ptr<Command> mDeactivateCommand;     /*!< The DeactivateCmd of the track. */
+    Ptr<Command> mIdleCommand;           /*!< Never set. Stop() withdraws it. */
+    Ptr<Command> mHintCommand;           /*!< Calls UpdateHint(). */
+    std::vector<BackMusic *> mBackMusic; /*!< The music a captured run plays. */
+    int mShowHints;                      /*!< Whether the hints are shown, outside the tutorial. */
+    TrackCapturer mCapturer;             /*!< The rules of the runs of the track. */
+    int mStarted;                        /*!< Whether Start() ran since the last Stop(). */
+    int mEnabled;                        /*!< Whether Enable() ran. */
 };

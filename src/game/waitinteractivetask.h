@@ -70,10 +70,11 @@ public:
     /**
      * Count a broken streak, and evaluate the conditions.
      *
+     * @param nStreak The length of the streak that broke, which is not read.
      * @ghidraAddress NTSC-U/C: 0x00141d88
      * @ghidraAddress PAL: 0x00143728
      */
-    void OnStreakBroken() override;
+    void OnStreakBroken(int nStreak) override;
 
     /**
      * Count a deployed powerup, and evaluate the conditions.

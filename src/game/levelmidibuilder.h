@@ -4,7 +4,7 @@
 #include "game/backmusic.h"
 #include "game/bankloader.h"
 #include "game/catchtrackdata.h"
-#include "game/freestylefx.h"
+#include "game/fxmgr.h"
 #include "game/lyric.h"
 #include "game/playmap.h"
 #include "game/scratchtrackdata.h"
@@ -139,11 +139,11 @@ public:
      */
     ScriptTrackData *FindScriptTrack(const char *pszName) const;
 
-    PlayMap *mPlayMap;         /*!< The map of the song positions. +0x40 */
-    BankLoader *mBankTrack;    /*!< The track named "BANK". +0x44 */
-    WorldTrack mWorldTrack;    /*!< The events of the track named "WORLD". +0x48 */
-    Lyric *mLyric;             /*!< The lyrics. +0x58 */
-    FreestyleFx *mFreestyleFx; /*!< The effect sets, or null. +0x5c */
-    float mSpeed;              /*!< The speed of the song. +0x60 */
-    int mTicksPerBar;          /*!< The length of a bar in ticks. +0x98 */
+    PlayMap *mPlayMap;      /*!< The map of the song positions. +0x40 */
+    BankLoader *mBankTrack; /*!< The track named "BANK". +0x44 */
+    WorldTrack mWorldTrack; /*!< The events of the track named "WORLD". +0x48 */
+    Lyric *mLyric;          /*!< The lyrics. +0x58 */
+    FXMgr *mFXMgr;          /*!< The effect sets, or null. +0x5c */
+    float mSpeed;           /*!< The speed of the song. +0x60 */
+    int mTicksPerBar;       /*!< The length of a bar in ticks. +0x98 */
 };

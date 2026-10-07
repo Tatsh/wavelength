@@ -96,9 +96,12 @@ bzero
 callbackxferbdtoiop
 capturepacket
 catchpatt
+catchtrack
 catchtrackbuilder
 catchtrackdata
 catchtrackdisplay
+catchtrackmusic
+catchtrackstate
 cdread
 cdreadstm
 cdrom
@@ -122,6 +125,7 @@ collectchildren
 collideable
 collideables
 color
+conductorbuilder
 conexant
 constructo
 controllerdisplay
@@ -136,6 +140,7 @@ cpsm
 createdirop
 creditsavatar
 creditsheader
+cripplerpacket
 crtbegin
 crtend
 crti
@@ -158,6 +163,7 @@ deletefileop
 demangled
 demangles
 depfile
+dequantize
 devconsole
 devirtualised
 dialing
@@ -211,6 +217,8 @@ endx
 enterexit
 entspaceop
 envx
+erasebarpacket
+erasesectionpacket
 eret
 errorscreen
 esac
@@ -219,6 +227,7 @@ etext
 evfid
 evoll
 evolr
+expressionstick
 ezmidi
 ezmpeg
 ezmpegstr
@@ -256,6 +265,9 @@ foxundermoon
 fplugin
 fprintf
 fram
+freestylebumppacket
+freestylepacket
+freestyletrack
 freqconfirmscreen
 freqmakercustomscreen
 freqmakeremblemscreen
@@ -270,6 +282,7 @@ fsmblks
 ftext
 ftoi
 fwrapv
+fxmgr
 fxpacket
 gameconfig
 gamelogic

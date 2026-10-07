@@ -2,6 +2,7 @@
 
 #include "game/catchtrackstate.h"
 #include "game/playmap.h"
+#include "game/sectionboundaries.h"
 #include "os/command.h"
 #include "os/ptr.h"
 
@@ -45,20 +46,20 @@ public:
      * Construct a display that has drawn nothing.
      *
      * @param pState The state of the bars of the track.
-     * @param nReserved04 Stored and not read here.
+     * @param pSections The sections of the song, stored and not read here.
      * @param nTrack The track.
-     * @param nReserved0C Stored and not read here.
-     * @param nReserved10 Stored and not read here.
+     * @param nIntroBars The bars before the first section, stored and not read here.
+     * @param nNumBars The length of the song in bars, stored and not read here.
      * @param nTicksPerBar The song ticks in one bar.
      * @param pPlayMap The play map of the song.
      * @ghidraAddress NTSC-U/C: 0x001579f0
      * @ghidraAddress PAL: 0x00159278
      */
     CatchTrackDisplay(CatchTrackState *pState,
-                      int nReserved04,
+                      const SectionBoundaries *pSections,
                       int nTrack,
-                      int nReserved0C,
-                      int nReserved10,
+                      int nIntroBars,
+                      int nNumBars,
                       int nTicksPerBar,
                       PlayMap *pPlayMap);
 
@@ -155,14 +156,14 @@ private:
      */
     bool Advance();
 
-    CatchTrackState *mState;          /*!< The state of the bars of the track. */
-    int mReserved04;                  // +0x04, stored by the constructor, not read here.
-    int mTrack;                       /*!< The track. */
-    int mReserved0C;                  // +0x0c, stored by the constructor, not read here.
-    int mReserved10;                  // +0x10, stored by the constructor, not read here.
-    int mTicksPerBar;                 /*!< The song ticks in one bar. */
-    Ptr<UpdateDisplayCmd> mUpdateCmd; /*!< The command that calls Advance(). */
-    int mDrawnBar;                    /*!< The bar after the bars drawn so far. */
-    int mTickOffset;                  /*!< The ticks between the song and the display. */
-    PlayMap *mPlayMap;                /*!< The play map of the song. */
+    CatchTrackState *mState;            /*!< The state of the bars of the track. */
+    const SectionBoundaries *mSections; /*!< The sections of the song. */
+    int mTrack;                         /*!< The track. */
+    int mIntroBars;                     /*!< The bars before the first section. */
+    int mNumBars;                       /*!< The length of the song in bars. */
+    int mTicksPerBar;                   /*!< The song ticks in one bar. */
+    Ptr<UpdateDisplayCmd> mUpdateCmd;   /*!< The command that calls Advance(). */
+    int mDrawnBar;                      /*!< The bar after the bars drawn so far. */
+    int mTickOffset;                    /*!< The ticks between the song and the display. */
+    PlayMap *mPlayMap;                  /*!< The play map of the song. */
 };

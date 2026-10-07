@@ -8,9 +8,11 @@ set(WAVELENGTH_GAME_SRCS
     backmusicbuilder.cpp
     bankloader.cpp
     bankloaderbuilder.cpp
+    catchtrack.cpp
     catchtrackbuilder.cpp
     catchtrackdata.cpp
     catchtrackdisplay.cpp
+    catchtrackmusic.cpp
     catchtrackstate.cpp
     changesectionevent.cpp
     conductorbuilder.cpp
@@ -26,6 +28,7 @@ set(WAVELENGTH_GAME_SRCS
     forcefeedbackmgrcontroller.cpp
     forcefeedbackmgrmotoreffect.cpp
     freestyletrack.cpp
+    fxmgr.cpp
     game.cpp
     gameconfig.cpp
     gamelogic.cpp

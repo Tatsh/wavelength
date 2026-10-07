@@ -6,6 +6,7 @@
 #include "game/netfaker.h"
 #include "game/player.h"
 #include "game/playmap.h"
+#include "game/sectionboundaries.h"
 #include "game/trackreactor.h"
 #include "gs/muse.h"
 #include "os/command.h"
@@ -189,8 +190,8 @@ public:
      * @param pState The state of the bars of the track.
      * @param pMsPerTick The length of a tick in milliseconds.
      * @param pPlayMap The play map of the song.
-     * @param nReserved Stored and not read here.
-     * @param nUnused Passed by the caller. The body does not read it.
+     * @param pSections The sections of the song, stored and not read here.
+     * @param nNumBars The length of the song in bars, which the body does not read.
      * @param nTrack The track.
      * @param nTicksPerBar The song ticks in one bar.
      * @param nStopPreviousNote Non-zero to stop the note of the previous gem at each hit.
@@ -201,8 +202,8 @@ public:
                   CatchTrackState *pState,
                   const float *pMsPerTick,
                   PlayMap *pPlayMap,
-                  int nReserved,
-                  int nUnused,
+                  const SectionBoundaries *pSections,
+                  int nNumBars,
                   int nTrack,
                   int nTicksPerBar,
                   int nStopPreviousNote);
@@ -502,7 +503,7 @@ private:
 
     CatchReceiver *mCatchReceiver;            /*!< The receiver of the gem catcher. */
     CatchTrackState *mState;                  /*!< The state of the bars of the track. */
-    int mReserved0C;                          // +0x0c, stored by the constructor, not read here.
+    const SectionBoundaries *mSections;       /*!< The sections of the song. */
     GemCatcher mCatcher;                      /*!< The judge of the presses. */
     NetFaker *mNetFaker;                      /*!< The stand-in of a remote player, online only. */
     Faker *mFaker;                            /*!< The autopilot, or null. */

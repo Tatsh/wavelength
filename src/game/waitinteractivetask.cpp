@@ -142,7 +142,7 @@ void WaitInteractiveTask::OnAutocapture() {
     EvaluateConditions();
 }
 
-void WaitInteractiveTask::OnStreakBroken() {
+void WaitInteractiveTask::OnStreakBroken([[maybe_unused]] int nStreak) {
     mStreak = -mStreak;
     ++mCaptureFailCount;
     EvaluateConditions();

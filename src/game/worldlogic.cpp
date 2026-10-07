@@ -19,6 +19,8 @@ constexpr int kControllerCheckDelayTicks = 1;
 
 } // namespace
 
+// The static initialiser at NTSC-U/C 0x00146e20 (PAL 0x00148800) constructs and destroys it.
+// NTSC-U/C: 0x00436218
 Scheduler TheSongScheduler;
 
 WorldLogic::WorldLogic() {

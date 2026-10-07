@@ -292,7 +292,7 @@ void GameLogic::AssignTracks() {
 }
 
 void GameLogic::ApplyFreestyleEffect(int nSet) {
-    mSong->GetFreestyleFx()->ApplySet(nSet);
+    mSong->GetFXMgr()->ApplySet(nSet);
 }
 
 GameLogic::~GameLogic() {
@@ -380,7 +380,7 @@ void GameLogic::Start() {
     TheSongScheduler.PostAt(
         NewMemFunCommand(&TheMetagame, &Metagame::ShowBlankScreen), kBlankScreenTick, false);
 
-    FreestyleFx *pFx = mSong->GetFreestyleFx();
+    FXMgr *pFx = mSong->GetFXMgr();
     if (pFx != nullptr) {
         pFx->Activate();
         for (int i = 0; i < pFx->GetNumSets(); ++i) {
@@ -408,7 +408,7 @@ void GameLogic::Start() {
 
 void GameLogic::Stop() {
     mState = kStateFinished;
-    FreestyleFx *pFx = mSong->GetFreestyleFx();
+    FXMgr *pFx = mSong->GetFXMgr();
     if (pFx != nullptr) {
         pFx->Reset();
     }

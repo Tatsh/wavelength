@@ -72,9 +72,10 @@ public:
     /**
      * Report a broken streak.
      *
+     * @param nStreak The length of the streak that broke.
      * @ghidraAddress NTSC-U/C: 0x00343f68
      */
-    virtual void OnStreakBroken() {
+    virtual void OnStreakBroken([[maybe_unused]] int nStreak) {
     }
 
     /**

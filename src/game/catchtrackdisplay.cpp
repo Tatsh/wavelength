@@ -29,13 +29,13 @@ void CatchTrackDisplay::UpdateDisplayCmd::Execute() {
 }
 
 CatchTrackDisplay::CatchTrackDisplay(CatchTrackState *pState,
-                                     int nReserved04,
+                                     const SectionBoundaries *pSections,
                                      int nTrack,
-                                     int nReserved0C,
-                                     int nReserved10,
+                                     int nIntroBars,
+                                     int nNumBars,
                                      int nTicksPerBar,
                                      PlayMap *pPlayMap)
-    : mReserved04(nReserved04), mTrack(nTrack), mReserved0C(nReserved0C), mReserved10(nReserved10),
+    : mSections(pSections), mTrack(nTrack), mIntroBars(nIntroBars), mNumBars(nNumBars),
       mTicksPerBar(nTicksPerBar), mUpdateCmd(new UpdateDisplayCmd(this)), mPlayMap(pPlayMap) {
     mState = pState;
     mDrawnBar = 0;

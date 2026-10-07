@@ -16,6 +16,7 @@
 #include "os/memcardsync.h"
 #include "os/memfuncommand.h"
 #include "os/scheduler.h"
+#include "os/serializablecommand.h"
 #include "os/string.h"
 #include "os/system.h"
 #include "synth/songspeed.h"
@@ -65,16 +66,43 @@ constexpr float kStartTime = 0.0f;
 // NTSC-U/C: 0x003af83c
 float gWorldLoadStartMs;
 
-// A controller event the scheduler delivers to the logic, so that a recording of the song clock
-// includes it.
+// The identifier a recording saves the input command of each event under.
 template <typename Event>
-class InputCmd : public Command {
+constexpr int kInputCmdId = 0;
+template <>
+constexpr int kInputCmdId<RotateEvent> = 0;
+template <>
+constexpr int kInputCmdId<PlayNoteEvent> = 1;
+template <>
+constexpr int kInputCmdId<ChangeSectionEvent> = 7;
+template <int kId>
+constexpr int kInputCmdId<BtnEvent<kId>> = kId;
+template <int kId>
+constexpr int kInputCmdId<StickEvent<kId>> = kId;
+
+// A controller event the scheduler delivers to the logic, so that a recording of the song clock
+// includes it. The static initialiser at NTSC-U/C 0x001458e0 (PAL 0x00147270) registers each
+// instance in Factory<Command>, and the routine at NTSC-U/C 0x00145830 (PAL 0x001471c0) destroys
+// the registry at exit.
+template <typename Event>
+class InputCmd : public SerializableCommand<kInputCmdId<Event>, InputCmd<Event>> {
 public:
     explicit InputCmd(const Event &event) : mEvent(event) {
     }
 
+    explicit InputCmd(BinStream &stream) : mEvent(stream) {
+    }
+
     void Execute() override {
         TheWorldLogic->HandleInput(mEvent);
+    }
+
+    void Save(BinStream &stream) const override {
+        mEvent.Save(stream);
+    }
+
+    void Load(BinStream &stream) override {
+        mEvent.Load(stream);
     }
 
     // Post the event to run at once while the logic runs and the clock runs.
@@ -485,27 +513,27 @@ void World::Record(const PlayNoteEvent &event) {
 }
 
 void World::Record(const BtnEvent<8> &event) {
-    InputCmd<BtnEvent<8> >::Post(event);
+    InputCmd<BtnEvent<8>>::Post(event);
 }
 
 void World::Record(const StickEvent<2> &event) {
-    InputCmd<StickEvent<2> >::Post(event);
+    InputCmd<StickEvent<2>>::Post(event);
 }
 
 void World::Record(const StickEvent<6> &event) {
-    InputCmd<StickEvent<6> >::Post(event);
+    InputCmd<StickEvent<6>>::Post(event);
 }
 
 void World::Record(const BtnEvent<3> &event) {
-    InputCmd<BtnEvent<3> >::Post(event);
+    InputCmd<BtnEvent<3>>::Post(event);
 }
 
 void World::Record(const BtnEvent<4> &event) {
-    InputCmd<BtnEvent<4> >::Post(event);
+    InputCmd<BtnEvent<4>>::Post(event);
 }
 
 void World::Record(const BtnEvent<5> &event) {
-    InputCmd<BtnEvent<5> >::Post(event);
+    InputCmd<BtnEvent<5>>::Post(event);
 }
 
 void World::Record(const ChangeSectionEvent &event) {
@@ -513,9 +541,9 @@ void World::Record(const ChangeSectionEvent &event) {
 }
 
 void World::Record(const BtnEvent<9> &event) {
-    InputCmd<BtnEvent<9> >::Post(event);
+    InputCmd<BtnEvent<9>>::Post(event);
 }
 
 void World::Record(const BtnEvent<10> &event) {
-    InputCmd<BtnEvent<10> >::Post(event);
+    InputCmd<BtnEvent<10>>::Post(event);
 }
