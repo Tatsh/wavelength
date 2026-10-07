@@ -179,6 +179,22 @@ int GetThreadId(void);
 int SleepThread(void);
 
 /**
+ * Wake a sleeping thread from thread context.
+ *
+ * @param thid Thread identifier.
+ * @return #KE_OK, or a negative error code.
+ */
+int WakeupThread(int thid);
+
+/**
+ * Suspend the calling thread for a time.
+ *
+ * @param usec Microseconds.
+ * @return #KE_OK, or a negative error code.
+ */
+int DelayThread(int usec);
+
+/**
  * Wake a sleeping thread from interrupt context.
  *
  * @param thid Thread identifier.

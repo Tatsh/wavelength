@@ -38,10 +38,13 @@ extern "C" {
 #define SD_P_BVOLR ((0x10 << 8) + (0x01 << 7))
 
 /** Core addresses. Each is combined with a core. */
+#define SD_A_EEA (0x1d << 8)
 #define SD_A_IRQA (0x1f << 8)
 
 /** Core attributes of sceSdSetCoreAttr(). Each is combined with a core. */
+#define SD_C_EFFECT_ENABLE (0x01 << 1)
 #define SD_C_IRQ_ENABLE (0x02 << 1)
+#define SD_C_SPDIF_MODE (0x05 << 1)
 
 /** Core switches, one bit per voice. Each is combined with a core. */
 #define SD_S_PMON (0x13 << 8)
@@ -91,6 +94,33 @@ typedef struct {
     int delay;     /*!< Delay of the echo modes. */
     int feedback;  /*!< Feedback of the echo modes. */
 } sceSdEffectAttr;
+
+/**
+ * Initialise the SPU2 and the library.
+ *
+ * @param flag Zero for a full initialisation.
+ * @return Zero on success, or a negative error code.
+ */
+int sceSdInit(int flag);
+
+/**
+ * Configure the reverb of a core.
+ *
+ * @param core Core number.
+ * @param attr Reverb settings.
+ * @return Zero once the settings are applied, nonzero while the core is busy.
+ */
+int sceSdSetEffectAttr(int core, sceSdEffectAttr *attr);
+
+/**
+ * Clear the reverb work area of a core.
+ *
+ * @param core Core number.
+ * @param channel Transfer channel that clears the area.
+ * @param effect_mode Reverb mode whose area size applies.
+ * @return Zero once the area is cleared, nonzero while the channel is busy.
+ */
+int sceSdClearEffectWorkArea(int core, int channel, int effect_mode);
 
 /**
  * Write a parameter register.

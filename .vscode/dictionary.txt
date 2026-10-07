@@ -49,7 +49,10 @@ autocatcher
 averager
 avoll
 avolr
+bankheader
 bankmax
+bankprogram
+banksampledesc
 bartels
 bascus
 basenames
@@ -110,6 +113,7 @@ crtend
 crti
 crtn
 ctype
+cxtmdm
 cycl
 daddu
 dashcam
@@ -185,6 +189,8 @@ evolr
 ezmidi
 ezmpeg
 ezmpegstr
+ezncnf
+eznctl
 faild
 fbmsk
 fbrst
@@ -293,6 +299,7 @@ iopheap
 iopimports
 iopmod
 ioprp
+ioputil
 irqa
 isce
 isub
@@ -335,6 +342,7 @@ libkernl
 libmc
 libmpeg
 libmtap
+libnetb
 libpad
 libscf
 libsd
@@ -404,6 +412,7 @@ metaskillscreen
 metasongscreen
 metastartscreen
 mfir
+midieventqueue
 miniw
 mipsel
 miptbp
@@ -521,6 +530,7 @@ pmaxh
 pminh
 pmon
 pnor
+poolallocator
 ppacb
 ppsz
 preapproved
@@ -528,6 +538,7 @@ previewpacket
 primaddr
 prmodecont
 prmodecontaddr
+profil
 pscam
 psenviron
 psllh
@@ -588,6 +599,7 @@ romver
 rpcd
 rpcm
 rtti
+sampledesc
 saturator
 sbclaude
 sbss
@@ -655,6 +667,7 @@ songspeed
 sonylib
 sonylibs
 sourceimage
+spdif
 spewregister
 spewtable
 spindlctrl
@@ -686,6 +699,9 @@ subx
 suby
 sutructure
 svdata
+synthlock
+synthmodule
+synthserver
 sysclib
 sysmem
 tadr
@@ -703,6 +719,7 @@ thbase
 thid
 thsemap
 tickclock
+ticktimer
 timeclock
 timedcommand
 timrman
