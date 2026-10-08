@@ -18,6 +18,9 @@
  */
 class RndMatAnim : public RndAnimatable {
 public:
+    /** The bit of the Copy() flags that shares the source's keys rather than copying them. */
+    static constexpr int kCopyShareKeys = 4;
+
     /**
      * The keys of one texture stage.
      *
@@ -165,8 +168,8 @@ public:
     /**
      * Copy another animation and its base.
      *
-     * The keys are copied when the source has its own and the flags do not request a shallow
-     * copy. Otherwise the source's keys owner becomes this one's.
+     * The keys are copied when the source has its own and the flags do not include
+     * kCopyShareKeys. Otherwise the source's keys owner becomes this one's.
      *
      * @param pSource The animation to copy from.
      * @param nFlags The set of fields to copy.

@@ -44,6 +44,8 @@ set(WAVELENGTH_RND_SRCS
     rndmanager.cpp
     rndmat.cpp
     rndmatanim.cpp
+    rndmesh.cpp
+    rndmeshanim.cpp
     rndobject.cpp
     rndrenderer.cpp
     rndtex.cpp

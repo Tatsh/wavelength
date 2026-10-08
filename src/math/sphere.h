@@ -1,6 +1,8 @@
 #pragma once
 
+#include "math/plane.h"
 #include "math/vector3.h"
+#include "os/prnstream.h"
 
 /**
  * Bounding sphere.
@@ -83,3 +85,30 @@ public:
     Vector3 mCenter; // +0x00
     float mRadius;   // +0x10
 };
+
+/**
+ * Test a segment against a sphere.
+ *
+ * The point of the line through the segment closest to the centre is tested, whether or not it
+ * lies between the ends. The name is inferred.
+ *
+ * @param segment The segment, in the space of the sphere.
+ * @param sphere The sphere.
+ * @param fT Receives the position of the closest point along the segment, 0 at the start and 1 at
+ *        the end.
+ * @return Whether the closest point lies within the sphere.
+ * @ghidraAddress NTSC-U/C: 0x00290b38
+ * @ghidraAddress PAL: 0x0029a500
+ */
+bool Intersect(const Segment &segment, const Sphere &sphere, float &fT);
+
+/**
+ * Write the centre and the radius of a sphere.
+ *
+ * @param stream The stream to write to.
+ * @param sphere The sphere.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00290670
+ * @ghidraAddress PAL: 0x0029a038
+ */
+PrnStream &operator<<(PrnStream &stream, const Sphere &sphere);

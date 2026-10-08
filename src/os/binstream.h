@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "os/string.h"
 
 /**
@@ -132,3 +134,47 @@ private:
  * @ghidraAddress NTSC-U/C: 0x0029f868
  */
 BinStream &operator>>(BinStream &stream, String &text);
+
+/**
+ * Write a vector as its element count followed by each element.
+ *
+ * Each element type has its own instance. The Key<Vector3> instance is at `0x003875b8` and the
+ * RndMesh::Vert instance at `0x00389208`.
+ *
+ * @tparam T The type of the elements.
+ * @param stream The stream to write to.
+ * @param elements The elements.
+ * @return The stream.
+ */
+template <typename T>
+BinStream &operator<<(BinStream &stream, const std::vector<T> &elements) {
+    const int nSize = static_cast<int>(elements.size());
+    stream.WriteEndian(&nSize, sizeof(nSize));
+    for (const T &element : elements) {
+        stream << element;
+    }
+    return stream;
+}
+
+/**
+ * Read a vector the vector writer wrote.
+ *
+ * The vector is resized to the count with default elements, which are then read in place. Each
+ * element type has its own instance. The Key<Vector3> instance is at `0x00387e60` and the
+ * RndMesh::Vert instance at `0x00389558`.
+ *
+ * @tparam T The type of the elements.
+ * @param stream The stream to read from.
+ * @param elements Receives the elements.
+ * @return The stream.
+ */
+template <typename T>
+BinStream &operator>>(BinStream &stream, std::vector<T> &elements) {
+    int nSize;
+    stream.ReadEndian(&nSize, sizeof(nSize));
+    elements.resize(nSize, T());
+    for (T &element : elements) {
+        stream >> element;
+    }
+    return stream;
+}

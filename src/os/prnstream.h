@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
 /**
  * Text output stream.
@@ -143,6 +144,28 @@ PrnStream &operator<<(PrnStream &stream, const std::list<T> &list) {
     stream << "(size:" << static_cast<unsigned int>(list.size()) << ")";
     int nIndex = 0;
     for (const auto &element : list) {
+        stream << "\n" << nIndex << "\t" << element;
+        ++nIndex;
+    }
+    return stream;
+}
+
+/**
+ * Write a vector as its size followed by one tab-indented line per element.
+ *
+ * The output has the shape of the list writer's. Each element type has its own instance. The
+ * Key<Vector3> instance is at `0x00387300` and the RndMesh::Vert instance at `0x00388f60`.
+ *
+ * @tparam T The type of the elements.
+ * @param stream The stream to write to.
+ * @param elements The vector to write.
+ * @return The stream.
+ */
+template <typename T>
+PrnStream &operator<<(PrnStream &stream, const std::vector<T> &elements) {
+    stream << "(size:" << static_cast<unsigned int>(elements.size()) << ")";
+    int nIndex = 0;
+    for (const T &element : elements) {
         stream << "\n" << nIndex << "\t" << element;
         ++nIndex;
     }

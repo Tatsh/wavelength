@@ -5,6 +5,7 @@
 #include "math/color.h"
 #include "math/quaternion.h"
 #include "math/transform.h"
+#include "math/vector2.h"
 #include "math/vector3.h"
 #include "os/binstream.h"
 #include "os/prnstream.h"
@@ -114,6 +115,25 @@ inline void Interp(const Vector3 &a, const Vector3 &b, float fRatio, Vector3 &ou
 }
 
 /**
+ * Blend two two-component vectors, taking either end exactly at a position of 0 or 1.
+ *
+ * @param a The value at 0.
+ * @param b The value at 1.
+ * @param fRatio The position.
+ * @param out Receives the blend.
+ */
+inline void Interp(const Vector2 &a, const Vector2 &b, float fRatio, Vector2 &out) {
+    if (fRatio == 0.0f) {
+        out = a;
+    } else if (fRatio == 1.0f) {
+        out = b;
+    } else {
+        out.x = (b.x - a.x) * fRatio + a.x;
+        out.y = (b.y - a.y) * fRatio + a.y;
+    }
+}
+
+/**
  * Blend two colours.
  *
  * @param a The value at 0.
@@ -143,6 +163,8 @@ inline void Interp(float fA, float fB, float fRatio, float &fOut) {
 
 /**
  * Take the first of two pointers, which do not blend.
+ *
+ * The RndTex instance is at `0x00232058`.
  *
  * @tparam T The type pointed at.
  * @param pA The value at 0.
@@ -223,6 +245,17 @@ inline void WriteKeyValue(BinStream &stream, const Vector3 &v) {
 }
 
 /**
+ * Write a two-component vector key value as two floats.
+ *
+ * @param stream The stream to write to.
+ * @param v The value.
+ */
+inline void WriteKeyValue(BinStream &stream, const Vector2 &v) {
+    WriteKeyValue(stream, v.x);
+    WriteKeyValue(stream, v.y);
+}
+
+/**
  * Write a quaternion key value as four floats.
  *
  * @param stream The stream to write to.
@@ -271,6 +304,17 @@ inline void ReadKeyValue(BinStream &stream, Vector3 &v) {
 }
 
 /**
+ * Read a two-component vector key value as two floats.
+ *
+ * @param stream The stream to read from.
+ * @param v Receives the value.
+ */
+inline void ReadKeyValue(BinStream &stream, Vector2 &v) {
+    ReadKeyValue(stream, v.x);
+    ReadKeyValue(stream, v.y);
+}
+
+/**
  * Read a quaternion key value as four floats.
  *
  * @param stream The stream to read from.
@@ -294,6 +338,41 @@ inline void ReadKeyValue(BinStream &stream, Color &color) {
     ReadKeyValue(stream, color.g);
     ReadKeyValue(stream, color.b);
     ReadKeyValue(stream, color.a);
+}
+
+/**
+ * Write a list key value as its count followed by each value.
+ *
+ * Each value type has its own instance. The Vector3 instance is at `0x0038bf40`.
+ *
+ * @tparam T The type of the values.
+ * @param stream The stream to write to.
+ * @param values The value.
+ */
+template <typename T>
+void WriteKeyValue(BinStream &stream, const std::vector<T> &values) {
+    const int nSize = static_cast<int>(values.size());
+    stream.WriteEndian(&nSize, sizeof(nSize));
+    for (const T &value : values) {
+        WriteKeyValue(stream, value);
+    }
+}
+
+/**
+ * Read a list key value the list key value writer wrote.
+ *
+ * @tparam T The type of the values.
+ * @param stream The stream to read from.
+ * @param values Receives the value.
+ */
+template <typename T>
+void ReadKeyValue(BinStream &stream, std::vector<T> &values) {
+    int nSize;
+    stream.ReadEndian(&nSize, sizeof(nSize));
+    values.resize(nSize, T());
+    for (T &value : values) {
+        ReadKeyValue(stream, value);
+    }
 }
 
 /**
@@ -331,47 +410,6 @@ BinStream &operator>>(BinStream &stream, Key<T> &key) {
 }
 
 /**
- * Write keys as their count followed by each key.
- *
- * Each value type has its own instance. The vector instance is at `0x003875b8`.
- *
- * @tparam T The type of the values.
- * @param stream The stream to write to.
- * @param keys The keys.
- * @return The stream.
- */
-template <typename T>
-BinStream &operator<<(BinStream &stream, const std::vector<Key<T>> &keys) {
-    const int nSize = static_cast<int>(keys.size());
-    stream.WriteEndian(&nSize, sizeof(nSize));
-    for (const Key<T> &key : keys) {
-        stream << key;
-    }
-    return stream;
-}
-
-/**
- * Read keys the key list writer wrote.
- *
- * Each value type has its own instance. The vector instance is at `0x00387e60`.
- *
- * @tparam T The type of the values.
- * @param stream The stream to read from.
- * @param keys Receives the keys.
- * @return The stream.
- */
-template <typename T>
-BinStream &operator>>(BinStream &stream, std::vector<Key<T>> &keys) {
-    int nSize;
-    stream.ReadEndian(&nSize, sizeof(nSize));
-    keys.resize(nSize, Key<T>());
-    for (Key<T> &key : keys) {
-        stream >> key;
-    }
-    return stream;
-}
-
-/**
  * Write a key as its frame and its value.
  *
  * Each value type has its own instance. The vector instance is at `0x00387288`.
@@ -384,26 +422,5 @@ BinStream &operator>>(BinStream &stream, std::vector<Key<T>> &keys) {
 template <typename T>
 PrnStream &operator<<(PrnStream &stream, const Key<T> &key) {
     stream << "(frame:" << key.frame << " value:" << key.value << ")";
-    return stream;
-}
-
-/**
- * Write keys as their count followed by one tab-indented line per key.
- *
- * Each value type has its own instance. The vector instance is at `0x00387300`.
- *
- * @tparam T The type of the values.
- * @param stream The stream to write to.
- * @param keys The keys.
- * @return The stream.
- */
-template <typename T>
-PrnStream &operator<<(PrnStream &stream, const std::vector<Key<T>> &keys) {
-    stream << "(size:" << static_cast<unsigned int>(keys.size()) << ")";
-    int nIndex = 0;
-    for (const Key<T> &key : keys) {
-        stream << "\n" << nIndex << "\t" << key;
-        ++nIndex;
-    }
     return stream;
 }

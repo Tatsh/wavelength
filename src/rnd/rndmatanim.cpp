@@ -252,7 +252,7 @@ void RndMatAnim::Copy(const RndObject *pSource, int nFlags) {
     RndAnimatable::Copy(pSource, nFlags);
     ReleaseRefs();
     mMat = pAnim->mMat;
-    if ((nFlags & kCopyShallow) == 0 && pAnim->mKeysOwner == pAnim) {
+    if ((nFlags & kCopyShareKeys) == 0 && pAnim->mKeysOwner == pAnim) {
         mKeysOwner = this;
         mStages = pAnim->mStages;
         mLightKeys = pAnim->mLightKeys;

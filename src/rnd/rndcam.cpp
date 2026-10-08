@@ -247,6 +247,28 @@ void RndCam::Load(BinStream &stream) {
     AcquireTargetTex();
 }
 
+void RndCam::WorldToScreen(const Vector3 &world, Vector2 &screen) const {
+    const Transform &xfm = mWorldProject;
+    const float fX = xfm.mBasisX.x * world.x + xfm.mBasisY.x * world.y + xfm.mBasisZ.x * world.z +
+                     xfm.mTranslation.x;
+    const float fY = xfm.mBasisX.y * world.x + xfm.mBasisY.y * world.y + xfm.mBasisZ.y * world.z +
+                     xfm.mTranslation.y;
+    const float fZ = xfm.mBasisX.z * world.x + xfm.mBasisY.z * world.y + xfm.mBasisZ.z * world.z +
+                     xfm.mTranslation.z;
+    if (fZ == 0.0f) {
+        screen.x = fX;
+        screen.y = fY;
+    } else {
+        const float fInverse = 1.0f / fZ;
+        screen.x = fX * fInverse;
+        screen.y = fY * fInverse;
+    }
+    screen.y = (screen.y + 1.0f) * 0.5f;
+    screen.x = (screen.x + 1.0f) * 0.5f;
+    screen.x = mScreenRect.x + screen.x * mScreenRect.w;
+    screen.y = mScreenRect.y + screen.y * mScreenRect.h;
+}
+
 void RndCam::SetTargetTex(RndTex *pTex) {
     if (mTargetTex != nullptr) {
         mTargetTex->RemoveRef(this);

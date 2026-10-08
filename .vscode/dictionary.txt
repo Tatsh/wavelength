@@ -1010,6 +1010,8 @@ rndglobal
 rndmanager
 rndmat
 rndmatanim
+rndmesh
+rndmeshanim
 rndmovie
 rndobject
 rndrenderer

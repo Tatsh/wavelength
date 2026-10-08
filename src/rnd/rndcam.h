@@ -149,6 +149,19 @@ public:
     void Load(BinStream &stream) override;
 
     /**
+     * Project a world point to a screen point through mWorldProject and mScreenRect.
+     *
+     * A point that projects to a depth of exactly 0 skips the perspective divide. The name is
+     * inferred.
+     *
+     * @param world The point in world space.
+     * @param screen Receives the point in fractions of the target.
+     * @ghidraAddress NTSC-U/C: 0x002204b8
+     * @ghidraAddress PAL: 0x00229288
+     */
+    void WorldToScreen(const Vector3 &world, Vector2 &screen) const;
+
+    /**
      * Render into a texture rather than the display, or stop.
      *
      * @param pTex The texture, or null for the display.

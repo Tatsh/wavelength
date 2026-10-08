@@ -19,6 +19,9 @@
  */
 class RndTransAnim : public RndAnimatable, public RndDrawable {
 public:
+    /** The bit of the Copy() flags that shares the source's keys rather than copying them. */
+    static constexpr int kCopyShareKeys = 0x100;
+
     /** How the translation and scale keys interpolate. */
     enum Interp {
         kInterpLinear = 0, /*!< Straight lines between keys. */
