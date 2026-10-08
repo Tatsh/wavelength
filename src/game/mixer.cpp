@@ -31,6 +31,8 @@ constexpr unsigned char kMidiVolumeController = 17;
 
 } // namespace
 
+// The unit's static initialiser at NTSC-U/C: 0x00124708, PAL: 0x00125e88, and its global
+// constructor at NTSC-U/C: 0x00124740, PAL: 0x00125ec0, store the instance.
 Mixer *TheMixer = Mixer::shared();
 
 void Mixer::ReadVolumes(const DataArray *pConfig,
@@ -133,6 +135,7 @@ void Mixer::SetInstrumentVolumes(const std::vector<unsigned char> &volumes) {
 }
 
 Mixer *Mixer::shared() {
+    // The instance is destroyed at exit by NTSC-U/C: 0x00123ec0, PAL: 0x00125640.
     static Mixer instance;
     return &instance;
 }

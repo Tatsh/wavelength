@@ -42,6 +42,8 @@ int g_nMaxRemixes;
 const char *g_pszRemixExt;
 const char *g_pszFreqExt;
 const char *g_pszMemcardBaseDir;
+// The unit's static initialiser at NTSC-U/C: 0x001626d8, and its global constructor at
+// NTSC-U/C: 0x001627c8, PAL: 0x00165540, construct and destroy the three.
 String g_RemixPath;
 String g_MemcardPath;
 std::list<String> g_RemixNames;

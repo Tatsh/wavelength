@@ -1,7 +1,7 @@
 #include "game/controllerdisplay.h"
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "gfx/gfxmanager.h"
 #include "math/vector2.h"
 #include "os/debug.h"
@@ -36,6 +36,8 @@ constexpr float kIconY = -95.0f;
 
 } // namespace
 
+// The unit's static initialiser at NTSC-U/C: 0x0014b1b0, PAL: 0x0014cb50, and its global
+// constructor at NTSC-U/C: 0x0014b1e8, PAL: 0x0014cb88, store the instance.
 ControllerDisplay *TheControllerDisplay = ControllerDisplay::shared();
 
 ControllerDisplay::ControllerDisplay() : mShowCount(0), mOption(0), mHighlight(0) {

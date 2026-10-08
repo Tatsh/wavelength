@@ -8,7 +8,7 @@
  * The actions a player's controller buttons and analogue sticks are bound to.
  *
  * The class is not polymorphic and has no RTTI. The name comes from the "input_map" configuration
- * entry LoadDefaults() reads. Each player profile has one, and InputMgr reads the bindings of
+ * entry LoadDefaults() reads. Each Campaign has one, and InputMgr reads the bindings of
  * every pad.
  */
 class InputMap {

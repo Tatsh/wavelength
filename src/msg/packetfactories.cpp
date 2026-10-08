@@ -40,6 +40,8 @@ constexpr int kSectionChangePacketType = 416;
 constexpr int kFXPacketType = 417;
 constexpr int kMuteVocalsPacketType = 418;
 
+// The unit's static initialiser at NTSC-U/C: 0x00123558, PAL: 0x00124cd8, and its global
+// constructor at NTSC-U/C: 0x00123728, PAL: 0x00124ea8, construct the factories.
 // NTSC-U/C: 0x00435f30
 const MessageFactory kPlayerUpdatePacketFactory(kPlayerUpdatePacketType, PlayerUpdatePacket::New);
 // NTSC-U/C: 0x00435f38

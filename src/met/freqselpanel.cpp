@@ -51,7 +51,7 @@ FreqSelPanel::FreqSelPanel(DataArray *pData, const char *pszDir)
     pData->FindInt(kAvatarIndexEntry, &mAvatarIndex, false);
 }
 
-void FreqSelPanel::SetProfiles(const std::vector<PlayerProfile> &profiles, int nSelected) {
+void FreqSelPanel::SetProfiles(const std::vector<Campaign> &profiles, int nSelected) {
     SetAvatar(nullptr);
     mProfiles.clear();
     mProfiles = profiles;
@@ -132,7 +132,7 @@ bool FreqSelPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 void FreqSelPanel::ShowSelected() {
-    PlayerProfile &profile = mProfiles[mSelected];
+    Campaign &profile = mProfiles[mSelected];
     SetAvatar(&profile.mAvatar);
     Rnd::Mesh *pRankMesh = FindObject<Rnd::Mesh>(kRankMeshFormat, mName);
     const String button(FormatString(kNameButtonFormat, mAvatarIndex + 1));

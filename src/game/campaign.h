@@ -13,11 +13,12 @@
 /**
  * Saved settings and progress of one player, among them the controller bindings.
  *
- * The class is not polymorphic and has no RTTI. The name is inferred. Each player entry of GameDb
+ * The class is not polymorphic. The name comes from the RTTI of the vectors that hold it. Each
+ * player entry of GameDb
  * stores one at `+0x10`. The object is 0xf8 bytes. This header declares only the members its
  * callers here use.
  */
-class PlayerProfile {
+class Campaign {
 public:
     /**
      * Report whether a song is the one song of its campaign tier the player has not yet won.
@@ -183,7 +184,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00276e68
      * @ghidraAddress PAL: 0x002808f8
      */
-    PlayerProfile();
+    Campaign();
 
     /**
      * Copy a profile.
@@ -192,7 +193,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002771d8
      * @ghidraAddress PAL: 0x00280c68
      */
-    PlayerProfile(const PlayerProfile &other);
+    Campaign(const Campaign &other);
 
     /**
      * Destroy the profile.
@@ -200,7 +201,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002772d8
      * @ghidraAddress PAL: 0x00280d68
      */
-    ~PlayerProfile();
+    ~Campaign();
 
     /**
      * Copy another profile into this one.
@@ -210,7 +211,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00277498
      * @ghidraAddress PAL: 0x00280f28
      */
-    PlayerProfile &operator=(const PlayerProfile &other);
+    Campaign &operator=(const Campaign &other);
 
     /**
      * Report whether a song was finished at a skill level.
@@ -375,7 +376,7 @@ public:
  * @ghidraAddress NTSC-U/C: 0x0027b608
  * @ghidraAddress PAL: 0x00285038
  */
-BinStream &operator<<(BinStream &stream, const PlayerProfile &profile);
+BinStream &operator<<(BinStream &stream, const Campaign &profile);
 
 /**
  * Read a profile from a stream.
@@ -386,7 +387,7 @@ BinStream &operator<<(BinStream &stream, const PlayerProfile &profile);
  * @ghidraAddress NTSC-U/C: 0x0027b638
  * @ghidraAddress PAL: 0x00285068
  */
-BinStream &operator>>(BinStream &stream, PlayerProfile &profile);
+BinStream &operator>>(BinStream &stream, Campaign &profile);
 
 /**
  * Non-zero when every avatar part and emblem counts as unlocked.

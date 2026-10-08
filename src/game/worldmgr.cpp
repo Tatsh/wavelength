@@ -54,6 +54,7 @@ void WorldMgr::Terminate() {
 }
 
 WorldMgr *WorldMgr::shared() {
+    // The instance is destroyed at exit by NTSC-U/C: 0x00104978, PAL: 0x00106060.
     static WorldMgr sInstance;
     return &sInstance;
 }
@@ -179,4 +180,6 @@ void WorldMgr::Draw() {
     }
 }
 
+// The unit's static initialiser at NTSC-U/C: 0x00104f58, PAL: 0x00106640, and its global
+// constructor at NTSC-U/C: 0x00104f90, PAL: 0x00106678, store the instance.
 WorldMgr *TheWorldMgr = WorldMgr::shared();

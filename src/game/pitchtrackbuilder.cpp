@@ -39,7 +39,7 @@ int PitchTrackBuilder::GetGemSlot(unsigned char nNote) {
     }
 }
 
-PitchTrackBuilder::PitchTrackBuilder(const char *pszName,
+PitchTrackBuilder::PitchTrackBuilder(int nTrack,
                                      bool bValidate,
                                      ErrorHandler pfnError,
                                      const String &riffName,
@@ -47,8 +47,8 @@ PitchTrackBuilder::PitchTrackBuilder(const char *pszName,
                                      int nStartTick,
                                      int nEndTick,
                                      PitchTrackRiffData *pRiffData)
-    : TrackBuilder(pszName, bValidate, pfnError), mStartTick(nStartTick), mEndTick(nEndTick),
-      mRiffData(pRiffData), mValidator(pszName, pfnError, nChannel, true), mRiffs(), mGems() {
+    : TrackBuilder(nTrack, bValidate, pfnError), mStartTick(nStartTick), mEndTick(nEndTick),
+      mRiffData(pRiffData), mValidator(nTrack, pfnError, nChannel, true), mRiffs(), mGems() {
     mRiffData->mName = riffName;
 }
 

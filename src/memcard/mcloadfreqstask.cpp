@@ -18,7 +18,7 @@ MCLoadFreqsTask::MCLoadFreqsTask() {
     Add(mLoadFiles);
 }
 
-void MCLoadFreqsTask::Set(int nPort, std::vector<PlayerProfile> *pProfiles) {
+void MCLoadFreqsTask::Set(int nPort, std::vector<Campaign> *pProfiles) {
     mGetInfo->Set(this, nPort, 0);
     const char *pszDirExt = nullptr;
     g_pMemcardConfig->FindSymbol("freq_dir_ext", &pszDirExt, true);

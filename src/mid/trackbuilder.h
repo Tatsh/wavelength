@@ -21,13 +21,13 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @ghidraAddress NTSC-U/C: 0x00280af0
      * @ghidraAddress PAL: 0x0028a3f0
      */
-    TrackBuilder(const char *pszName, bool bValidate, ErrorHandler pfnError);
+    TrackBuilder(int nTrack, bool bValidate, ErrorHandler pfnError);
 
     /**
      * Release the builder.
@@ -47,7 +47,7 @@ public:
      */
     void Error(int nTick, const char *pszMessage);
 
-    const char *mName;          /*!< The track name. */
+    int mTrack;                 /*!< The number of the MIDI track. */
     bool mValidate;             /*!< Check the events for authoring errors. */
     ErrorHandler mErrorHandler; /*!< The routine that reports an error, or null. */
 };

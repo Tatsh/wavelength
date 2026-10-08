@@ -35,6 +35,8 @@ public:
      *
      * @param pData The description of the screen.
      * @return The screen.
+     * @ghidraAddress NTSC-U/C: 0x0035aa00
+     * @ghidraAddress PAL: 0x003c8550
      */
     static UIScreen *New(DataArray *pData) {
         return new PlayerSearchSetupScreen(pData);

@@ -27,6 +27,8 @@ constexpr int kFirstTick = 0;
 // The characters of kSwapSuffix.
 constexpr int kSwapSuffixLength = 2;
 
+// The unit's static initialiser at NTSC-U/C: 0x0014a800, PAL: 0x0014c1c0, and its global
+// constructor at NTSC-U/C: 0x0014a870, PAL: 0x0014c230, construct and destroy the suffixes.
 // NTSC-U/C: 0x00436258
 String g_strBankFileSuffix(".bnk");
 
@@ -57,14 +59,14 @@ bool BankLoaderBuilder::IsSwapBankName(const String &name) {
     return name.Substring(nPos - kSwapSuffixLength, kSwapSuffixLength) == kSwapSuffix;
 }
 
-BankLoaderBuilder::BankLoaderBuilder(const char *pszName,
+BankLoaderBuilder::BankLoaderBuilder(int nTrack,
                                      bool bValidate,
                                      ErrorHandler pfnError,
                                      int nIntroTicks,
                                      int nTicksPerBar,
                                      const String *pDirectory,
                                      BankLoader *pLoader)
-    : TrackBuilder(pszName, bValidate, pfnError), mDirectory(pDirectory), mIntroTicks(nIntroTicks),
+    : TrackBuilder(nTrack, bValidate, pfnError), mDirectory(pDirectory), mIntroTicks(nIntroTicks),
       mTicksPerBar(nTicksPerBar), mLoader(pLoader) {
 }
 

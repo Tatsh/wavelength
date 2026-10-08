@@ -27,6 +27,21 @@ public:
     SongSelList(DataArray *pData, const char *pszPanel);
 
     /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `song_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x003600e8
+     * @ghidraAddress PAL: 0x003ce600
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new SongSelList(pData, pszPanel);
+    }
+
+    /**
      * Fill a row with a choice, or with the short artist of a song.
      *
      * @param nRow The row.

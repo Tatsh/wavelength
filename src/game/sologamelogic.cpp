@@ -2,12 +2,12 @@
 
 #include <algorithm>
 
+#include "game/campaign.h"
 #include "game/controllerdisplay.h"
 #include "game/gameconfig.h"
 #include "game/gamedb.h"
 #include "game/helptext.h"
 #include "game/mixer.h"
-#include "game/playerprofile.h"
 #include "game/sectionboundaries.h"
 #include "game/stats.h"
 #include "gfx/gfxmanager.h"
@@ -647,7 +647,7 @@ void SoloGameLogic::OnFinish(bool bWon) {
             mDialogOpen = 1;
         } else {
             FxMidi::PlayWinSound();
-            PlayerProfile *pProfile = TheGameDb->GetProfile(kLocalPlayer);
+            Campaign *pProfile = TheGameDb->GetProfile(kLocalPlayer);
             if (pProfile->CompletesTier(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel) ||
                 mForceWinSequence) {
                 TheGameDb->SetWinSequence(true);

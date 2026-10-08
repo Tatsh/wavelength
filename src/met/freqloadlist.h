@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "met/freqlist.h"
 #include "script/dataarray.h"
 
@@ -25,6 +25,21 @@ public:
      * @ghidraAddress PAL: 0x001a1780
      */
     FreqLoadList(DataArray *pData, const char *pszPanel);
+
+    /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `freqs_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x0035fc78
+     * @ghidraAddress PAL: 0x003cdf00
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new FreqLoadList(pData, pszPanel);
+    }
 
     /**
      * Fill a row with the name of a Freq.
@@ -52,7 +67,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0019a280
      * @ghidraAddress PAL: 0x001a17c0
      */
-    void SetProfiles(const std::vector<PlayerProfile> &profiles);
+    void SetProfiles(const std::vector<Campaign> &profiles);
 
-    std::vector<PlayerProfile> mProfiles; /*!< The listed Freqs. +0xc0 */
+    std::vector<Campaign> mProfiles; /*!< The listed Freqs. +0xc0 */
 };

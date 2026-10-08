@@ -56,16 +56,16 @@ int AxeTrackContourBuilder::ButtonForNote(unsigned char nNote) {
     }
 }
 
-AxeTrackContourBuilder::AxeTrackContourBuilder(const char *pszName,
+AxeTrackContourBuilder::AxeTrackContourBuilder(int nTrack,
                                                bool bValidate,
                                                ErrorHandler pfnError,
                                                int nChannel,
                                                int nTicksPerBar,
                                                int nIntroTicks,
                                                AxeTrackData *pData)
-    : TrackBuilder(pszName, bValidate, pfnError), mData(pData), mTicksPerBar(nTicksPerBar),
+    : TrackBuilder(nTrack, bValidate, pfnError), mData(pData), mTicksPerBar(nTicksPerBar),
       mIntroTicks(nIntroTicks), mChannelState(kInitialChannel),
-      mValidator(pszName, pfnError, nChannel, true) {
+      mValidator(nTrack, pfnError, nChannel, true) {
 }
 
 AxeTrackContourBuilder::~AxeTrackContourBuilder() {

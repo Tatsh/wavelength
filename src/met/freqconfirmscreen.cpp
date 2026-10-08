@@ -2,8 +2,8 @@
 
 #include <string.h>
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "met/freqmakermainscreen.h"
 #include "met/metagame.h"
 #include "met/selloadedfreqscreen.h"
@@ -109,7 +109,7 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 
     if (strcmp(pszButton, "create") == 0) {
         TheGameDb->ClearPlayers();
-        PlayerProfile profile;
+        Campaign profile;
         profile.mName = TheLocale.Localize("player_1", true);
         TheGameDb->AddPlayer(&profile);
     }

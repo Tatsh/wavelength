@@ -1,7 +1,7 @@
 #pragma once
 
 #include "app/msgsink.h"
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "os/string.h"
 
 /**
@@ -30,7 +30,7 @@ public:
      *
      * @param pProfile The profile of the player.
      */
-    virtual void SetProfile(PlayerProfile *pProfile) = 0;
+    virtual void SetProfile(Campaign *pProfile) = 0;
 
     /**
      * Start connecting to the lobby server.

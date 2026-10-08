@@ -21,7 +21,7 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nChannel The MIDI channel of the track.
@@ -29,12 +29,11 @@ public:
      * @param nTicksPerBar The length of a bar.
      * @param nIntroTicks The length of the song intro, which must not have notes.
      * @param nReserved The value the constructor records at `+0x14`.
-     * @param nUnused Ignored.
      * @param pData The data to fill.
      * @ghidraAddress NTSC-U/C: 0x001380d8
      * @ghidraAddress PAL: 0x00139938
      */
-    ScratchTrackBuilder(const char *pszName,
+    ScratchTrackBuilder(int nTrack,
                         bool bValidate,
                         ErrorHandler pfnError,
                         int nChannel,
@@ -42,7 +41,6 @@ public:
                         int nTicksPerBar,
                         int nIntroTicks,
                         int nReserved,
-                        int nUnused,
                         ScratchTrackData *pData);
 
     /**

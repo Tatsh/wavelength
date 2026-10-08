@@ -72,7 +72,7 @@ bool CatchTrackBuilder::DecodeGemNote(unsigned char nNote, int *pnLane, int *pnS
     return true;
 }
 
-CatchTrackBuilder::CatchTrackBuilder(const char *pszName,
+CatchTrackBuilder::CatchTrackBuilder(int nTrack,
                                      bool bValidate,
                                      ErrorHandler pfnError,
                                      int nChannel,
@@ -81,8 +81,8 @@ CatchTrackBuilder::CatchTrackBuilder(const char *pszName,
                                      Lyric *pLyric,
                                      int nFilterEffects,
                                      int nSkill)
-    : TrackBuilder(pszName, bValidate, pfnError), mIntroTicks(nIntroTicks), mData(pData),
-      mFilterEffects(nFilterEffects), mLyric(pLyric), mValidator(pszName, pfnError, nChannel, true),
+    : TrackBuilder(nTrack, bValidate, pfnError), mIntroTicks(nIntroTicks), mData(pData),
+      mFilterEffects(nFilterEffects), mLyric(pLyric), mValidator(nTrack, pfnError, nChannel, true),
       mSkill(nSkill), mLastNoteOnTick(kNoTick), mFirstSampleTick(kNoTick) {
 }
 

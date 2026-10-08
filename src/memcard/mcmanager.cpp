@@ -8,6 +8,8 @@
 #include "os/locale.h"
 #include "os/task.h"
 
+// The unit's static initialiser at NTSC-U/C: 0x0015d0b8, PAL: 0x0015e8a8, and its global
+// constructor at NTSC-U/C: 0x0015d218, PAL: 0x0015ea08, construct and destroy it.
 MCManager TheMCManager;
 
 void MCManager::Init() {
@@ -58,11 +60,8 @@ void MCManager::GetCardStatus(MemcardUser *pUser, int nSlot) {
     StartTask(mCardStatus, pUser);
 }
 
-void MCManager::SaveFreq(MemcardUser *pUser,
-                         int nSlot,
-                         PlayerProfile *pProfile,
-                         const char *pszOldName,
-                         int nOverwrite) {
+void MCManager::SaveFreq(
+    MemcardUser *pUser, int nSlot, Campaign *pProfile, const char *pszOldName, int nOverwrite) {
     mSaveFreq->Set(nSlot, pProfile, pszOldName, nOverwrite);
     StartTask(mSaveFreq, pUser);
 }

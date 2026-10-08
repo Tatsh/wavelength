@@ -2,10 +2,13 @@
 
 #include <cstring>
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
 #include "met/freqselpanel.h"
 #include "os/joypad.h"
+#include "os/locale.h"
 #include "os/string.h"
+#include "synth/fxmidi.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 
@@ -69,4 +72,60 @@ bool MultiFreqSelectScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         CheckDone();
     }
     return bHandled;
+}
+
+bool MultiFreqSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
+    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+        return true;
+    }
+    const int nPad = pMsg->mPad;
+    if (nPad >= mNumPlayers) {
+        return FreqScreen::HandleJoypad(pMsg);
+    }
+    if (pMsg->mPressed != 0 && pMsg->mButton == kPadTriangle) {
+        if (mConfirmed[nPad]) {
+            mConfirmed[nPad] = false;
+            const char *pszPanel = FormatString(kPanelFormat, TheGameDb->GetNumPlayers(), nPad + 1);
+            dynamic_cast<FreqSelPanel *>(TheUI.FindPanel(pszPanel, false))->SetChosen(false);
+            FxMidi::PlayBack();
+            return FreqScreen::HandleJoypad(pMsg);
+        }
+        bool bAnyConfirmed = false;
+        for (int i = 0; i < mNumPlayers; ++i) {
+            bAnyConfirmed = bAnyConfirmed || mConfirmed[i];
+        }
+        if (!bAnyConfirmed) {
+            TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetDuel ? "m_mode" : "m_player");
+        }
+        return false;
+    }
+    if (!mConfirmed[nPad]) {
+        const char *pszPanel = FormatString(kPanelFormat, TheGameDb->GetNumPlayers(), nPad + 1);
+        // Yes, the binary discards the result of the panel's Dispatch().
+        dynamic_cast<FreqSelPanel *>(TheUI.FindPanel(pszPanel, false))->Dispatch(pMsg);
+    }
+    return FreqScreen::HandleJoypad(pMsg);
+}
+
+void MultiFreqSelectScreen::CheckDone() {
+    bool bAllConfirmed = true;
+    for (int i = 0; i < mNumPlayers; ++i) {
+        bAllConfirmed = bAllConfirmed && mConfirmed[i];
+    }
+    if (!bAllConfirmed) {
+        return;
+    }
+    for (int i = 0; i < mNumPlayers; ++i) {
+        if (strcmp(TheGameDb->GetProfile(i)->mName.c_str(), "") == 0) {
+            Campaign *pProfile = TheGameDb->GetProfile(i);
+            pProfile->mName = TheLocale.Localize(FormatString("default_name_%d", i + 1), true);
+        }
+    }
+    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+        TheUI.GotoScreen("multifreq2multiskill_duel");
+    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+        TheUI.GotoScreen("multifreq2multimode_remix");
+    } else {
+        TheUI.GotoScreen("multifreq2multiskill");
+    }
 }

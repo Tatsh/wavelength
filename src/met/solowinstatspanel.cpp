@@ -1,7 +1,7 @@
 #include "met/solowinstatspanel.h"
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "game/songrecord.h"
 #include "met/metagameutil.h"
 #include "os/locale.h"
@@ -83,7 +83,7 @@ void SoloWinStatsPanel::Refresh() {
         dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString(kGradeMeshFormat, mName)));
     pGrade->SetShowing(bShowGrade);
     if (bShowGrade) {
-        PlayerProfile *pProfile = TheGameDb->GetProfile(0);
+        Campaign *pProfile = TheGameDb->GetProfile(0);
         const int nMedal = pProfile->GetMedalForScore(TheGameDb->mSong.c_str(),
                                                       TheGameDb->mSkillLevel,
                                                       TheGameDb->GetPlayerScore(0),

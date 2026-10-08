@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * Best result of one player on one song at one skill level, as PlayerProfile stores it.
+ * Best result of one player on one song at one skill level, as Campaign stores it.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. The object is 12 bytes.
  */

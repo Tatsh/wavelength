@@ -154,6 +154,19 @@ extern "C" void GzipDecompressFdToRam(int nFile, void *pBuffer);
 int GzipDecompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
 
 /**
+ * Report the uncompressed length a gzip member in memory records in its trailer.
+ *
+ * The length is the last four bytes of the member, read without regard to alignment.
+ *
+ * @param pSource The stored bytes.
+ * @param nSourceLength The number of stored bytes.
+ * @return The uncompressed length.
+ * @ghidraAddress NTSC-U/C: 0x00283620
+ * @ghidraAddress PAL: 0x0028ced0
+ */
+int GzipInflatedSize(const void *pSource, int nSourceLength);
+
+/**
  * Report the stored length of a file.
  *
  * The path is opened, measured by seeking to its end, rewound, and closed. A gzip file reports its

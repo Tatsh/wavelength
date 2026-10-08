@@ -25,6 +25,21 @@ public:
     NetMainPlayersList(DataArray *pData, const char *pszPanel);
 
     /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `players_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x00360230
+     * @ghidraAddress PAL: 0x003ce748
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new NetMainPlayersList(pData, pszPanel);
+    }
+
+    /**
      * Replace the players and select one.
      *
      * The name is inferred.

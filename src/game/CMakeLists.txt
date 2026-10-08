@@ -8,6 +8,7 @@ set(WAVELENGTH_GAME_SRCS
     backmusicbuilder.cpp
     bankloader.cpp
     bankloaderbuilder.cpp
+    campaign.cpp
     catchtrack.cpp
     catchtrackbuilder.cpp
     catchtrackdata.cpp
@@ -42,6 +43,7 @@ set(WAVELENGTH_GAME_SRCS
     inputmgr.cpp
     joypadps2.cpp
     juicemeter.cpp
+    levelmidibuilder.cpp
     lineartransform.cpp
     localplayer.cpp
     lyric.cpp
@@ -59,7 +61,6 @@ set(WAVELENGTH_GAME_SRCS
     pitchtrackriffdata.cpp
     pitchtrackriffs.cpp
     player.cpp
-    playerprofile.cpp
     playmap.cpp
     playnoteevent.cpp
     points.cpp
@@ -78,6 +79,7 @@ set(WAVELENGTH_GAME_SRCS
     sectionboundaries.cpp
     slotgrid.cpp
     sologamelogic.cpp
+    song.cpp
     stats.cpp
     streamqueue.cpp
     streamtask.cpp

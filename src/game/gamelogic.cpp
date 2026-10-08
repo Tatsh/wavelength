@@ -825,7 +825,7 @@ void GameLogic::PlacePowerups() {
     std::vector<bool> enabled(kPowerupCount, true);
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo && TheGameDb->GetDemo() == nullptr) {
         const int nSkillLevel = TheGameDb->mSkillLevel;
-        PlayerProfile *pProfile = TheGameDb->GetProfile(0);
+        Campaign *pProfile = TheGameDb->GetProfile(0);
         DataArray *pDist =
             SystemConfig()->FindArray(kGameKey, true)->FindArray(kPowerupDistKey, true);
         enabled[kPowerupAutocatcher] =

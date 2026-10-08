@@ -2,8 +2,8 @@
 
 #include <cstring>
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "met/controllerpanel.h"
 #include "met/metagame.h"
 #include "met/savefreqscreen.h"

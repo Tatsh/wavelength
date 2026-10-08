@@ -10,10 +10,12 @@
 #include "met/metagamearena.h"
 #include "met/metamusicsong.h"
 #include "met/mix.h"
+#include "msg/gameparamsupdatemsg.h"
 #include "msg/joypadinputmsg.h"
 #include "msg/launchpadabortedmsg.h"
 #include "msg/lobbyconnectionlostmsg.h"
 #include "msg/message.h"
+#include "msg/shareremixprogressmsg.h"
 #include "netflow/netchatroominfo.h"
 #include "os/string.h"
 #include "rnd/cam.h"
@@ -666,48 +668,52 @@ private:
     bool OnLostInternet(LobbyConnectionLostMsg *pMsg);
 
     /**
-     * Show the settings of the launchpad a host changed.
+     * Take the settings of the online game the host published, keeping the read-only flag of the
+     * remix in step, and show them on the launchpad screen when it is the current screen.
      *
      * @param pMsg The message.
-     * @return Whether the message was handled.
+     * @return false.
      * @ghidraAddress NTSC-U/C: 0x00167f50
      * @ghidraAddress PAL: 0x0016afe0
-     * @stub
      */
-    bool OnGameParamsUpdate(Message *pMsg);
+    bool OnGameParamsUpdate(GameParamsUpdateMsg *pMsg);
 
     /**
-     * Build the players of a network game and start it.
+     * Add the players of the launchpad to the game database, this console's player first, and go
+     * to the launch sequence.
      *
-     * @param pMsg The LoadGameMsg.
-     * @return Whether the message was handled.
+     * A remix game without a loaded remix starts an untitled one. Every remix game records the
+     * song and the names of the players as the creators. With no launchpad, the routine shows
+     * that the session was lost.
+     *
+     * @param pMsg The message. It is not read.
+     * @return false.
      * @ghidraAddress NTSC-U/C: 0x00168dc0
      * @ghidraAddress PAL: 0x0016bf48
-     * @stub
      */
     bool OnLoadGame(Message *pMsg);
 
     /**
-     * Show the screen that shares a remix with a guest.
+     * While the guest launchpad screens or the keyboard show, go to `net_share_remix`, or show
+     * that the session was lost when there is no launchpad.
      *
-     * @param pMsg The message.
-     * @return Whether the message was handled.
+     * @param pMsg The message. It is not read.
+     * @return false.
      * @ghidraAddress NTSC-U/C: 0x001690c8
      * @ghidraAddress PAL: 0x0016c250
-     * @stub
      */
     bool OnShareRemixBegin(Message *pMsg);
 
     /**
-     * Pass the progress of a shared remix to its screen.
+     * Pass the progress of a shared remix to `net_share_remix` while a launchpad screen,
+     * `net_share_remix`, `net_launch`, or the keyboard is the current screen.
      *
      * @param pMsg The message.
-     * @return Whether the message was handled.
+     * @return false.
      * @ghidraAddress NTSC-U/C: 0x00169178
      * @ghidraAddress PAL: 0x0016c300
-     * @stub
      */
-    bool OnShareRemixProgress(Message *pMsg);
+    bool OnShareRemixProgress(ShareRemixProgressMsg *pMsg);
 
     /**
      * Divide the sample memory among the bank slots and start loading the transition effects

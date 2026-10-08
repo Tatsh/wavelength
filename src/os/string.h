@@ -186,6 +186,17 @@ public:
     int Find(const char *pszText) const;
 
     /**
+     * Find the first occurrence of a character at or after a position.
+     *
+     * @param ch The character to find.
+     * @param nPos The first position searched.
+     * @return The position of the occurrence, or npos, also for a position past the end.
+     * @ghidraAddress NTSC-U/C: 0x0029f1f0
+     * @ghidraAddress PAL: 0x002a8eb0
+     */
+    int Find(char ch, int nPos) const;
+
+    /**
      * Copy the characters from a position to the end.
      *
      * @param nPos The first character copied.
@@ -278,6 +289,26 @@ public:
      * @ghidraAddress PAL: 0x002a8828
      */
     String operator+(const char *pszText) const;
+
+    /**
+     * Report a copy of the string with a character appended.
+     *
+     * @param ch The character to append.
+     * @return The new string.
+     * @ghidraAddress NTSC-U/C: 0x0029ebc8
+     * @ghidraAddress PAL: 0x002a8888
+     */
+    String operator+(char ch) const;
+
+    /**
+     * Report a copy of the string with another string's text appended.
+     *
+     * @param other The other string.
+     * @return The new string.
+     * @ghidraAddress NTSC-U/C: 0x0029ec28
+     * @ghidraAddress PAL: 0x002a88e8
+     */
+    String operator+(const String &other) const;
 
     /**
      * Report the text.

@@ -15,14 +15,14 @@ public:
     /**
      * Construct a checker.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nChannel The channel every message must use.
      * @param bRequirePrograms Report a note that precedes the first program change.
      * @ghidraAddress NTSC-U/C: 0x0027e1e8
      * @ghidraAddress PAL: 0x00287b00
      */
-    MidiValidator(const char *pszName,
+    MidiValidator(int nTrack,
                   TrackBuilder::ErrorHandler pfnError,
                   int nChannel,
                   bool bRequirePrograms);

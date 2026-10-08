@@ -27,6 +27,20 @@ public:
     explicit PowerupScreen(DataArray *pData);
 
     /**
+     * Create a screen from its script description.
+     *
+     * The metagame registers the routine for the screen type `powerup_screen`.
+     *
+     * @param pData The script description.
+     * @return The new screen.
+     * @ghidraAddress NTSC-U/C: 0x0035dbf8
+     * @ghidraAddress PAL: 0x003cbcd0
+     */
+    static UIScreen *New(DataArray *pData) {
+        return new PowerupScreen(pData);
+    }
+
+    /**
      * Route a chosen button and a press on a button, and pass on every other message.
      *
      * @param pMsg The message.

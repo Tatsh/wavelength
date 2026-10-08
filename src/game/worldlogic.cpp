@@ -19,7 +19,8 @@ constexpr int kControllerCheckDelayTicks = 1;
 
 } // namespace
 
-// The static initialiser at NTSC-U/C 0x00146e20 (PAL 0x00148800) constructs and destroys it.
+// The unit's static initialiser at NTSC-U/C: 0x00146e20, PAL: 0x00148800, and its global
+// constructor at NTSC-U/C: 0x00146e60, PAL: 0x00148840, construct and destroy it.
 // NTSC-U/C: 0x00436218
 Scheduler TheSongScheduler;
 

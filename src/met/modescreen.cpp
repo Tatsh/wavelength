@@ -2,8 +2,8 @@
 
 #include <vector>
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "game/songentry.h"
 #include "met/jukeboxscreen.h"
 #include "met/metagame.h"
@@ -66,16 +66,16 @@ bool ModeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         TheGameDb->SetRuleSet(GameDb::kRuleSetDuel);
         TheGameDb->SetSkillLevel(GameDb::kSkillIntermediate);
         if (TheGameDb->GetProfile(0)->mCustom != 0) {
-            PlayerProfile first(*TheGameDb->GetProfile(0));
+            Campaign first(*TheGameDb->GetProfile(0));
             TheGameDb->ClearPlayers();
             TheGameDb->AddPlayer(&first);
         } else {
             TheGameDb->ClearPlayers();
-            PlayerProfile first;
+            Campaign first;
             first.mName = TheLocale.Localize("player_1", true);
             TheGameDb->AddPlayer(&first);
         }
-        PlayerProfile second;
+        Campaign second;
         second.mName = TheLocale.Localize("player_2", true);
         TheGameDb->AddPlayer(&second);
     } else {

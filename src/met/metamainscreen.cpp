@@ -1,7 +1,7 @@
 #include "met/metamainscreen.h"
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "met/metagame.h"
 #include "os/joypad.h"
 #include "os/locale.h"
@@ -26,7 +26,7 @@ MetaMainScreen::MetaMainScreen(DataArray *pData) : FreqScreen(pData) {
 void MetaMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     if (TheGameDb->GetNumPads() >= kMultiplePads) {
-        PlayerProfile profile(*TheGameDb->GetProfile(0));
+        Campaign profile(*TheGameDb->GetProfile(0));
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&profile);
     }
@@ -81,13 +81,13 @@ bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 
     if (button == "solo_but" || button == "freqnet_but") {
         if (TheGameDb->GetProfile(0)->mCustom != 0) {
-            PlayerProfile profile(*TheGameDb->GetProfile(0));
+            Campaign profile(*TheGameDb->GetProfile(0));
             TheGameDb->ClearPlayers();
             TheGameDb->AddPlayer(&profile);
             TheMetagame.mGizmo->SetShowAvatar(true);
         } else {
             TheGameDb->ClearPlayers();
-            PlayerProfile profile;
+            Campaign profile;
             profile.mName = TheLocale.Localize("player_1", true);
             TheGameDb->AddPlayer(&profile);
             TheMetagame.mGizmo->SetShowAvatar(false);

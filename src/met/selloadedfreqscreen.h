@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "met/freqscreen.h"
 #include "msg/joypadinputmsg.h"
 #include "script/dataarray.h"
@@ -71,7 +71,7 @@ public:
      * @param profiles The Freqs.
      * @ghidraAddress NTSC-U/C: 0x0035d730
      */
-    virtual void SetProfiles(const std::vector<PlayerProfile> &profiles) {
+    virtual void SetProfiles(const std::vector<Campaign> &profiles) {
         mProfiles = profiles;
     }
 
@@ -98,6 +98,6 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    std::vector<PlayerProfile> mProfiles; /*!< The Freqs of the memory card. */
-    PlayerProfile mProfile;               /*!< The profile the player had before loading. */
+    std::vector<Campaign> mProfiles; /*!< The Freqs of the memory card. */
+    Campaign mProfile;               /*!< The profile the player had before loading. */
 };

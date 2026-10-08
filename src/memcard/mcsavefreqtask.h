@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "memcard/mcchecksavespaceneededtask.h"
 #include "memcard/mccreatesavedirtask.h"
 #include "memcard/mcdeletetask.h"
@@ -41,7 +41,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00160220
      * @ghidraAddress PAL: 0x00162a80
      */
-    void Set(int nPort, PlayerProfile *pProfile, const char *pszOldName, int nOverwrite);
+    void Set(int nPort, Campaign *pProfile, const char *pszOldName, int nOverwrite);
 
     /**
      * Report the space a save that did not fit needed.

@@ -36,6 +36,8 @@ public:
      *
      * @param pData The description of the screen.
      * @return The screen.
+     * @ghidraAddress NTSC-U/C: 0x00359078
+     * @ghidraAddress PAL: 0x003c63e0
      */
     static UIScreen *New(DataArray *pData) {
         return new NetLobbyDisconnect(pData);

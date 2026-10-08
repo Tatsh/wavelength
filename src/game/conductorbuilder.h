@@ -14,7 +14,7 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nNumBars The length of the song in bars, which the play map ends at.
@@ -25,7 +25,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0014e5c0
      * @ghidraAddress PAL: 0x0014ff60
      */
-    ConductorBuilder(const char *pszName,
+    ConductorBuilder(int nTrack,
                      bool bValidate,
                      ErrorHandler pfnError,
                      int nNumBars,

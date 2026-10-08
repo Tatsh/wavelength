@@ -35,6 +35,8 @@ public:
      *
      * @param pData The description of the screen.
      * @return The screen.
+     * @ghidraAddress NTSC-U/C: 0x00358ca0
+     * @ghidraAddress PAL: 0x003c6008
      */
     static UIScreen *New(DataArray *pData) {
         return new NetCreateConfigScreen(pData);

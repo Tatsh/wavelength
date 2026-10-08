@@ -4,8 +4,8 @@
 
 #include "game/avatarpartset.h"
 #include "game/avatarplayer.h"
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "game/songentry.h"
 #include "math/rand.h"
 #include "met/avatarpanel.h"
@@ -51,7 +51,7 @@ SoloEndGameScreen::SoloEndGameScreen(DataArray *pData) : FreqScreen(pData) {
 void SoloEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     if (strcmp(kWinStatsPanel, mStatsPanel) == 0) {
-        PlayerProfile *pProfile = TheGameDb->GetProfile(0);
+        Campaign *pProfile = TheGameDb->GetProfile(0);
         const bool bBeatenGame = pProfile->HasBeatenGame(TheGameDb->mSkillLevel);
         const bool bFinished =
             pProfile->IsSongFinished(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel);

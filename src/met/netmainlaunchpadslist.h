@@ -25,6 +25,21 @@ public:
     NetMainLaunchpadsList(DataArray *pData, const char *pszPanel);
 
     /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `launchpads_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x003605c8
+     * @ghidraAddress PAL: 0x003ceae0
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new NetMainLaunchpadsList(pData, pszPanel);
+    }
+
+    /**
      * Replace the launchpads and select one.
      *
      * The name is inferred.

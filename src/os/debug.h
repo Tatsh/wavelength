@@ -69,3 +69,15 @@ void DebugWarn(const char *pszFormat, ...);
  * @ghidraAddress PAL: 0x003a7480
  */
 void DebugNotify(const char *pszFormat, ...);
+
+/**
+ * Format an error that the shipped build discards.
+ *
+ * The body is empty. The callers pass errors in the song files and the start-up configuration
+ * that no error handler takes. The name is inferred.
+ *
+ * @param pszFormat The `printf` format.
+ * @ghidraAddress NTSC-U/C: 0x00339f80
+ * @ghidraAddress PAL: 0x003a74b8
+ */
+void DebugError(const char *pszFormat, ...);

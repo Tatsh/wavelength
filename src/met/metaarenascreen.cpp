@@ -4,8 +4,8 @@
 #include <string.h>
 #include <vector>
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "game/songentry.h"
 #include "met/metagame.h"
 #include "met/songpreview.h"

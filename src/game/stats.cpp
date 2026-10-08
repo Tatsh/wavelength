@@ -229,6 +229,7 @@ Stats::~Stats() {
 }
 
 Stats *Stats::shared() {
+    // The instance is destroyed at exit by NTSC-U/C: 0x0013c0f8, PAL: 0x0013d9c8.
     static Stats instance;
     return &instance;
 }
@@ -465,4 +466,6 @@ void Stats::WriteSessionLog() {
     mLog << kFieldCloseLine;
 }
 
+// The unit's static initialiser at NTSC-U/C: 0x0013e668, PAL: 0x0013ff38, and its global
+// constructor at NTSC-U/C: 0x0013e6a0, PAL: 0x0013ff70, store the instance.
 Stats *TheStats = Stats::shared();

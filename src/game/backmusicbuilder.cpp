@@ -7,15 +7,15 @@ constexpr int kAnyChannel = -1;
 
 } // namespace
 
-BackMusicBuilder::BackMusicBuilder(const char *pszName,
+BackMusicBuilder::BackMusicBuilder(int nTrack,
                                    bool bValidate,
                                    ErrorHandler pfnError,
                                    int nIntroBars,
                                    int nNumBars,
                                    int nTicksPerBar,
                                    BackMusic *pMusic)
-    : TrackBuilder(pszName, bValidate, pfnError), mIntroBars(nIntroBars), mNumBars(nNumBars),
-      mTicksPerBar(nTicksPerBar), mMusic(pMusic), mValidator(pszName, pfnError, kAnyChannel, true) {
+    : TrackBuilder(nTrack, bValidate, pfnError), mIntroBars(nIntroBars), mNumBars(nNumBars),
+      mTicksPerBar(nTicksPerBar), mMusic(pMusic), mValidator(nTrack, pfnError, kAnyChannel, true) {
 }
 
 BackMusicBuilder::~BackMusicBuilder() {

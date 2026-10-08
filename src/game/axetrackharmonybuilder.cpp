@@ -19,14 +19,14 @@ constexpr unsigned char kStatusNoteOn = 0x90;
 
 } // namespace
 
-AxeTrackHarmonyBuilder::AxeTrackHarmonyBuilder(const char *pszName,
+AxeTrackHarmonyBuilder::AxeTrackHarmonyBuilder(int nTrack,
                                                bool bValidate,
                                                ErrorHandler pfnError,
                                                int nChannel,
                                                int nIntroTicks,
                                                AxeTrackData *pData)
-    : TrackBuilder(pszName, bValidate, pfnError), mData(pData),
-      mValidator(pszName, pfnError, nChannel, false), mIntroTicks(nIntroTicks), mStartTick(kNoTick),
+    : TrackBuilder(nTrack, bValidate, pfnError), mData(pData),
+      mValidator(nTrack, pfnError, nChannel, false), mIntroTicks(nIntroTicks), mStartTick(kNoTick),
       mHarmony(nullptr) {
 }
 

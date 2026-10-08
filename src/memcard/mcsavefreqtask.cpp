@@ -28,10 +28,7 @@ MCSaveFreqTask::MCSaveFreqTask() {
     Add(mSaveFile);
 }
 
-void MCSaveFreqTask::Set(int nPort,
-                         PlayerProfile *pProfile,
-                         const char *pszOldName,
-                         int nOverwrite) {
+void MCSaveFreqTask::Set(int nPort, Campaign *pProfile, const char *pszOldName, int nOverwrite) {
     mNeeded = 0;
     mPort = nPort;
     mName = pProfile->mName.c_str();

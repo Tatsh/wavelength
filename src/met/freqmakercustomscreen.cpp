@@ -55,7 +55,7 @@ void FreqMakerCustomScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
 
     std::vector<const char *> choices;
-    PlayerProfile *pProfile = TheGameDb->GetProfile(0);
+    Campaign *pProfile = TheGameDb->GetProfile(0);
     pProfile->GetUnlockedParts(AvatarPartSet::kPartHeadGear, &choices);
     DisableWithoutChoice(mFocusPanel, "head_gear", choices);
     pProfile->GetUnlockedParts(AvatarPartSet::kPartFaceGear, &choices);

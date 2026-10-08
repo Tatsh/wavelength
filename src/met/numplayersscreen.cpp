@@ -1,7 +1,7 @@
 #include "met/numplayersscreen.h"
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
@@ -58,18 +58,18 @@ bool NumPlayersScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 
     String button(pMsg->mComponent->mName);
     if (TheGameDb->GetProfile(0)->mCustom != 0) {
-        PlayerProfile first(*TheGameDb->GetProfile(0));
+        Campaign first(*TheGameDb->GetProfile(0));
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&first);
     } else {
         TheGameDb->ClearPlayers();
-        PlayerProfile first;
+        Campaign first;
         first.mName = TheLocale.Localize("player_1", true);
         TheGameDb->AddPlayer(&first);
     }
 
     // The binary renames one profile for each further player.
-    PlayerProfile other;
+    Campaign other;
     other.mName = TheLocale.Localize("player_2", true);
     TheGameDb->AddPlayer(&other);
     if (button == kThreePlayersButton) {

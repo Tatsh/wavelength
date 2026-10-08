@@ -37,6 +37,8 @@ public:
      *
      * @param pData The description of the screen.
      * @return The screen.
+     * @ghidraAddress NTSC-U/C: 0x0035b150
+     * @ghidraAddress PAL: 0x003c8ca8
      */
     static UIScreen *New(DataArray *pData) {
         return new NetDoUploadScreen(pData);

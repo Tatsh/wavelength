@@ -11,12 +11,9 @@ constexpr char kCommandNameFormat[] = "SCRIPT track, tick:%d";
 
 } // namespace
 
-ScriptTrackBuilder::ScriptTrackBuilder(const char *pszName,
-                                       bool bValidate,
-                                       ErrorHandler pfnError,
-                                       int nReserved,
-                                       ScriptTrackData *pData)
-    : TrackBuilder(pszName, bValidate, pfnError), mReserved10(nReserved), mData(pData) {
+ScriptTrackBuilder::ScriptTrackBuilder(
+    int nTrack, bool bValidate, ErrorHandler pfnError, int nReserved, ScriptTrackData *pData)
+    : TrackBuilder(nTrack, bValidate, pfnError), mReserved10(nReserved), mData(pData) {
 }
 
 void ScriptTrackBuilder::OnText(int nTick,

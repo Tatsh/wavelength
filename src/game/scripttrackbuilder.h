@@ -13,7 +13,7 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nReserved The value the constructor records at `+0x10`.
@@ -21,11 +21,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00138b70
      * @ghidraAddress PAL: 0x0013a3d0
      */
-    ScriptTrackBuilder(const char *pszName,
-                       bool bValidate,
-                       ErrorHandler pfnError,
-                       int nReserved,
-                       ScriptTrackData *pData);
+    ScriptTrackBuilder(
+        int nTrack, bool bValidate, ErrorHandler pfnError, int nReserved, ScriptTrackData *pData);
 
     /**
      * Release the builder.

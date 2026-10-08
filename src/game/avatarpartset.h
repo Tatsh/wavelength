@@ -11,7 +11,7 @@
 /**
  * Parts and colours of a player's avatar, the Freq the Freq maker edits.
  *
- * The class is not polymorphic and has no RTTI. The name is inferred. Each PlayerProfile stores
+ * The class is not polymorphic and has no RTTI. The name is inferred. Each Campaign stores
  * one at `+0x74`, and the object is 0x3c bytes. The parts come from the `parts` array of the
  * `avatar` entry of the "db" section. Each part of that array has a `types` array that lists the
  * choices, and the torso part also has an `emblem` array with another `types` array. The set

@@ -41,6 +41,8 @@ public:
      * @param pData The script description.
      * @param pszDir The directory of the description file.
      * @return The new panel.
+     * @ghidraAddress NTSC-U/C: 0x00357e40
+     * @ghidraAddress PAL: 0x003c51f0
      */
     static UIPanel *New(DataArray *pData, const char *pszDir) {
         return new NetRankedPlayersPanel(pData, pszDir);

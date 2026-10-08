@@ -65,8 +65,12 @@ constexpr int kTimeSignatureSkipBytes = 2;
 constexpr int kChunkLengthBytes = 4;
 constexpr int kHeaderWordBytes = 2;
 
-const char *const kHeaderChunk = "MThd";
-const char *const kTrackChunk = "MTrk";
+// The unit's static initialiser at NTSC-U/C: 0x00159ee8, PAL: 0x0015b6d8, and its global
+// constructor at NTSC-U/C: 0x00159f40, PAL: 0x0015b730, copy the two names in.
+// NTSC-U/C: 0x004362a0
+const MidiReader::ChunkName kHeaderChunk{{'M', 'T', 'h', 'd'}};
+// NTSC-U/C: 0x004362a8
+const MidiReader::ChunkName kTrackChunk{{'M', 'T', 'r', 'k'}};
 
 int Rank(unsigned char nStatus) {
     switch (nStatus & kTypeMask) {
@@ -185,7 +189,8 @@ void MidiReader::ReadHeader(BinStream &stream) {
     name.Read(stream);
     int nLength = 0;
     stream.ReadEndian(&nLength, kChunkLengthBytes);
-    (void)strncmp(name.mName, kHeaderChunk, ChunkName::kLength); // The binary discards the result.
+    (void)strncmp(
+        name.mName, kHeaderChunk.mName, ChunkName::kLength); // The binary discards the result.
     short nFormat;
     stream.ReadEndian(&nFormat, kHeaderWordBytes);
     stream.ReadEndian(&mNumTracks, kHeaderWordBytes);
@@ -203,7 +208,8 @@ void MidiReader::BeginTrack(BinStream &stream) {
     name.Read(stream);
     int nLength = 0;
     stream.ReadEndian(&nLength, kChunkLengthBytes);
-    (void)strncmp(name.mName, kTrackChunk, ChunkName::kLength); // The binary discards the result.
+    (void)strncmp(
+        name.mName, kTrackChunk.mName, ChunkName::kLength); // The binary discards the result.
     mReceiver->OnNewTrack(static_cast<unsigned char>(mTrackIndex));
     mPendingTick = kNoTick;
     mState = kStateEvent;

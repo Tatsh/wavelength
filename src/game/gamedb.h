@@ -3,9 +3,9 @@
 #include <vector>
 
 #include "game/avatarpartset.h"
+#include "game/campaign.h"
 #include "game/gameoptions.h"
 #include "game/inputmap.h"
-#include "game/playerprofile.h"
 #include "game/remixinfo.h"
 #include "game/songentry.h"
 #include "netflow/netgameparams.h"
@@ -130,6 +130,17 @@ public:
     void SetRemixBuffer(int nSize);
 
     /**
+     * Report the buffer of the remix data.
+     *
+     * @return mRemixBuffer.
+     * @ghidraAddress NTSC-U/C: 0x0026e0e0
+     * @ghidraAddress PAL: 0x00277c80
+     */
+    char *GetRemixBuffer() {
+        return mRemixBuffer;
+    }
+
+    /**
      * Copy the description of the remix the game plays.
      *
      * @param pInfo The description.
@@ -148,6 +159,38 @@ public:
      * @ghidraAddress PAL: 0x00277d38
      */
     void SetRemixActive(int nActive);
+
+    /**
+     * Set mNetPlayers.
+     *
+     * @param nNetPlayers The number of players of an online game.
+     * @ghidraAddress NTSC-U/C: 0x0026ec70
+     * @ghidraAddress PAL: 0x00278810
+     */
+    void SetNetPlayers(int nNetPlayers);
+
+    /**
+     * Set mRemixName.
+     *
+     * @param pszName The name of the saved remix played.
+     * @ghidraAddress NTSC-U/C: 0x0026ec10
+     * @ghidraAddress PAL: 0x002787b0
+     */
+    void SetRemixName(const char *pszName);
+
+    /**
+     * List the songs the players have unlocked at a skill level, without the songs of type 3 that
+     * the first profile has not unlocked.
+     *
+     * The name is inferred.
+     *
+     * @param pSongs The list to fill.
+     * @param nSkillLevel The skill level, or 4 for any.
+     * @param bFirstPlayerOnly Whether only the first player's unlocks count.
+     * @ghidraAddress NTSC-U/C: 0x0026d8a0
+     * @ghidraAddress PAL: 0x00277440
+     */
+    void GetHostSongs(std::vector<SongEntry> *pSongs, int nSkillLevel, bool bFirstPlayerOnly);
 
     /**
      * Report the number of controllers the players on this console use.
@@ -230,7 +273,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0026ea20
      * @ghidraAddress PAL: 0x002785c0
      */
-    PlayerProfile *GetProfile(int nPlayer);
+    Campaign *GetProfile(int nPlayer);
 
     /**
      * Report the avatar parts of a player, which its profile stores.
@@ -401,7 +444,19 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0026e5e0
      * @ghidraAddress PAL: 0x00278180
      */
-    void AddPlayer(const PlayerProfile *pProfile);
+    void AddPlayer(const Campaign *pProfile);
+
+    /**
+     * Add a player of an online game with a copy of a profile.
+     *
+     * @param bLocal Non-zero for the player of this console, which also counts it as local.
+     * @param pProfile The profile to copy.
+     * @param nId The player's identifier in the session.
+     * @param nDifficulty The difficulty the player chose, -1 for none.
+     * @ghidraAddress NTSC-U/C: 0x0026e790
+     * @ghidraAddress PAL: 0x00278330
+     */
+    void AddPlayer(int bLocal, const Campaign *pProfile, int nId, int nDifficulty);
 
     /**
      * Set mSkillLevel.
@@ -715,7 +770,7 @@ public:
     int mPowerupLevel;   /*!< Index into GameConfig::mPowerupProbMulti. +0x4c */
     int mRuleSet;        /*!< `rule_set`, one of RuleSet. +0x50 */
     int mCommunity;      /*!< `community`, one of Community. +0x54 */
-    int mReserved58;     // +0x58, not yet recovered.
+    int mNetPlayers;     /*!< The number of players of an online game. +0x58 */
     String mArena;       /*!< The arena of the game. +0x5c */
     int mReserved70[6];  // +0x70, not yet recovered.
     int mWinSequence;    /*!< Whether the campaign win sequence runs. +0x88 */
@@ -724,7 +779,9 @@ public:
     int mFullMixBars;    /*!< The value of SetFullMixBars(). +0x98 */
     int mBestStreak;     /*!< The value of SetBestStreak(). +0x9c */
     float mProgress;     /*!< The value of SetProgress(). +0xa0 */
-    int mReservedA4[44]; // +0xa4, not yet recovered.
+    int mReservedA4[2];  // +0xa4, not yet recovered.
+    char *mRemixBuffer;  /*!< The packed data of the remix, which SetRemixBuffer() replaces. */
+    int mReservedB0[41]; // +0xb0, not yet recovered.
     int mNetRemixEnded;  /*!< Whether the remix of an online game has ended. */
     float mSongTick;     /*!< The running world's position in ticks. +0x158 */
     float mSongTime;     /*!< The running world's position on its song clock. +0x15c */

@@ -21,4 +21,19 @@ public:
      * @ghidraAddress PAL: 0x001a4d10
      */
     NetSortedLaunchpadsList(DataArray *pData, const char *pszPanel);
+
+    /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `sorted_launchpads_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x00360740
+     * @ghidraAddress PAL: 0x003cec58
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new NetSortedLaunchpadsList(pData, pszPanel);
+    }
 };

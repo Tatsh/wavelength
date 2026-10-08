@@ -15,7 +15,7 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nIntroBars The bars before bar 0.
@@ -25,7 +25,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00149950
      * @ghidraAddress PAL: 0x0014b310
      */
-    BackMusicBuilder(const char *pszName,
+    BackMusicBuilder(int nTrack,
                      bool bValidate,
                      ErrorHandler pfnError,
                      int nIntroBars,

@@ -96,26 +96,27 @@ public:
      *
      * The name is inferred.
      *
-     * @param nReserved 0 from the routines here. The meaning is not yet recovered.
+     * @param nReset Non-zero to select the first entry of the song list again.
      * @ghidraAddress NTSC-U/C: 0x0035b538
      * @ghidraAddress PAL: 0x003c9090
      */
-    virtual void OnChoiceChanged([[maybe_unused]] int nReserved) {
+    virtual void OnChoiceChanged([[maybe_unused]] int nReset) {
     }
 
     int mMode;                    /*!< The chosen entry of mModes. */
     int mSkill;                   /*!< The chosen entry of mSkills. */
     int mLastSkillMode;           /*!< The last mode the skill applies to. */
-    int mReserved7C;              // +0x7c, 1 after construction, not yet identified.
+    int mDuelMode;                /*!< The entry of mModes that plays a duel, or -1 for none. */
+    int mRemixMode;               /*!< The entry of mModes that plays a remix. */
     std::vector<String> mModes;   /*!< The names of the modes. */
     std::vector<String> mSkills;  /*!< The names of the skills. */
     UIPanel *mSongPanel;          /*!< The panel mSongPanelName identifies. */
     const char *mSongPanelName;   /*!< `song_panel_name`, the panel with the song list. */
     const char *mButtonPanelName; /*!< `button_panel_name`, the panel with the choices. */
     const char *mTriBackScreen;   /*!< `tri_back`, the screen the triangle button returns to. */
-    int mReservedB4;              // +0xb4, 0 after construction, not yet identified.
+    int mChoiceCount;             /*!< The fixed choices ahead of the songs in the song list. */
 
-private:
+protected:
     /**
      * Move to the song panel from `song`, or back to the button panel from `cursor`.
      *

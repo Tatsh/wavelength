@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "met/avatarpanel.h"
 #include "script/dataarray.h"
 #include "ui/uicomponentselectmsg.h"
@@ -41,6 +41,8 @@ public:
      * @param pData The script description.
      * @param pszDir The directory of the description file.
      * @return The new panel.
+     * @ghidraAddress NTSC-U/C: 0x00357898
+     * @ghidraAddress PAL: 0x003c4af8
      */
     static UIPanel *New(DataArray *pData, const char *pszDir) {
         return new FreqSelPanel(pData, pszDir);
@@ -87,7 +89,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00170be8
      * @ghidraAddress PAL: 0x00173ef0
      */
-    void SetProfiles(const std::vector<PlayerProfile> &profiles, int nSelected);
+    void SetProfiles(const std::vector<Campaign> &profiles, int nSelected);
 
     int mAvatarIndex; /*!< `avatar_index`, the player who chooses. */
     int mNumProfiles; /*!< The number of profiles, from the last entry. */
@@ -140,6 +142,6 @@ private:
      */
     void ShowSelected();
 
-    int mReserved10C;                     // +0x10c, not yet identified.
-    std::vector<PlayerProfile> mProfiles; /*!< The profiles to choose from. */
+    int mReserved10C;                // +0x10c, not yet identified.
+    std::vector<Campaign> mProfiles; /*!< The profiles to choose from. */
 };

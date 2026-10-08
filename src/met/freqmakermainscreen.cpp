@@ -146,7 +146,7 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         pPrevScreen != TheUI.FindScreen("no_lead_trail_spaces_screen", false)) {
         mNameTyped = 0;
         if (mEditing == 0 && mSaveStarted == 0) {
-            PlayerProfile profile;
+            Campaign profile;
             mFreqName = "";
             profile.mName = mFreqName.c_str();
             AvatarPanel *pAvatarPanel = FindAvatarPanel();

@@ -149,8 +149,11 @@ void ForceFeedbackMgr::Resume() {
 }
 
 ForceFeedbackMgr *ForceFeedbackMgr::shared() {
+    // The instance is destroyed at exit by NTSC-U/C: 0x0010d268, PAL: 0x0010e9a0.
     static ForceFeedbackMgr sInstance;
     return &sInstance;
 }
 
+// The unit's static initialiser at NTSC-U/C: 0x0010d2e8, PAL: 0x0010ea20, and its global
+// constructor at NTSC-U/C: 0x0010d320, PAL: 0x0010ea58, store the instance.
 ForceFeedbackMgr *TheForceFeedbackMgr = ForceFeedbackMgr::shared();

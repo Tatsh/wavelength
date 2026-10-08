@@ -189,6 +189,7 @@ void GameConfig::Load() {
 }
 
 GameConfig *GameConfig::shared() {
+    // The instance is destroyed at exit by NTSC-U/C: 0x001101d8, PAL: 0x00111970.
     static GameConfig instance;
     return &instance;
 }
@@ -227,4 +228,6 @@ void GameConfig::ToggleAutopilot([[maybe_unused]] DataArray *pCommand,
     DebugPrint("CHEAT: autopilot mode %s\n", TheGameConfig->mFakeInput ? kOnText : kOffText);
 }
 
+// The unit's static initialiser at NTSC-U/C: 0x001103e8, PAL: 0x00111b80, and its global
+// constructor at NTSC-U/C: 0x00110420, PAL: 0x00111bb8, store the instance.
 GameConfig *TheGameConfig = GameConfig::shared();

@@ -57,7 +57,7 @@ int ScratchTrackBuilder::ButtonForNote(unsigned char nNote) {
     }
 }
 
-ScratchTrackBuilder::ScratchTrackBuilder(const char *pszName,
+ScratchTrackBuilder::ScratchTrackBuilder(int nTrack,
                                          bool bValidate,
                                          ErrorHandler pfnError,
                                          int nChannel,
@@ -65,11 +65,10 @@ ScratchTrackBuilder::ScratchTrackBuilder(const char *pszName,
                                          int nTicksPerBar,
                                          int nIntroTicks,
                                          int nReserved,
-                                         [[maybe_unused]] int nUnused,
                                          ScratchTrackData *pData)
-    : TrackBuilder(pszName, bValidate, pfnError), mData(pData), mReserved14(nReserved),
+    : TrackBuilder(nTrack, bValidate, pfnError), mData(pData), mReserved14(nReserved),
       mIndex(nIndex), mTicksPerBar(nTicksPerBar), mIntroTicks(nIntroTicks),
-      mValidator(pszName, pfnError, nChannel, true) {
+      mValidator(nTrack, pfnError, nChannel, true) {
 }
 
 ScratchTrackBuilder::~ScratchTrackBuilder() {

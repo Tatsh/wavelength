@@ -18,14 +18,14 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param pMuse The owner the finished piece is stored through.
      * @ghidraAddress NTSC-U/C: 0x0027e6f8
      * @ghidraAddress PAL: 0x00288010
      */
-    MuseBuilder(const char *pszName, bool bValidate, ErrorHandler pfnError, Ptr<Muse> *pMuse);
+    MuseBuilder(int nTrack, bool bValidate, ErrorHandler pfnError, Ptr<Muse> *pMuse);
 
     /**
      * Release the builder.

@@ -16,7 +16,7 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nIntroTicks The length of the song intro.
@@ -26,7 +26,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0014a458
      * @ghidraAddress PAL: 0x0014be18
      */
-    BankLoaderBuilder(const char *pszName,
+    BankLoaderBuilder(int nTrack,
                       bool bValidate,
                       ErrorHandler pfnError,
                       int nIntroTicks,

@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "game/bankloader.h"
+#include "game/campaign.h"
 #include "game/gameconfig.h"
 #include "game/multigamelogic.h"
-#include "game/playerprofile.h"
 #include "game/sologamelogic.h"
 #include "game/song.h"
 #include "game/songentry.h"
@@ -211,7 +211,7 @@ void Game::BuildTracks(int nStartTick) {
     const int nSongType = entry.GetType();
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo && TheGameDb->mTutorial == 0 &&
         nSongType != kSongTypeWithoutClearedSongs) {
-        PlayerProfile *pProfile = TheGameDb->GetProfile(0);
+        Campaign *pProfile = TheGameDb->GetProfile(0);
         const int nSkillLevel = TheGameDb->mSkillLevel;
         pProfile->GetClearedSongs(nSkillLevel, TheGameDb->FindSongGroup(), &clearedSongs);
     } else {

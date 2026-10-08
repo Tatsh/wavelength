@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "memcard/mcgetdirtask.h"
 #include "memcard/mcgetinfotask.h"
 #include "memcard/mcloadfreqfilestask.h"
@@ -31,7 +31,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00160980
      * @ghidraAddress PAL: 0x00163310
      */
-    void Set(int nPort, std::vector<PlayerProfile> *pProfiles);
+    void Set(int nPort, std::vector<Campaign> *pProfiles);
 
     MCGetInfoTask *mGetInfo;         /*!< The step that reads the card information. */
     MCGetDirTask *mGetDir;           /*!< The step that lists the Freq files. */

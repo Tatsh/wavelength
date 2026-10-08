@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "memcard/mcloadfiletask.h"
 #include "memcard/memcardtask.h"
 
@@ -22,12 +22,12 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00160500
      * @ghidraAddress PAL: 0x00162d60
      */
-    void Set(int nPort, std::vector<PlayerProfile> *pProfiles);
+    void Set(int nPort, std::vector<Campaign> *pProfiles);
 
     int mCardPort; /*!< The memory card slot the files load from. */
     int mIndex;    /*!< The index into MemcardTask::sDirEntries of the file loading now. */
-    std::vector<PlayerProfile> *mProfiles; /*!< Receives the profiles. */
-    MCLoadFileTask mLoad;                  /*!< The step that loads one file. */
+    std::vector<Campaign> *mProfiles; /*!< Receives the profiles. */
+    MCLoadFileTask mLoad;             /*!< The step that loads one file. */
 
 protected:
     /**

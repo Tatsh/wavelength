@@ -23,6 +23,8 @@ constexpr float kAttentionCueMs = 2000.0f;
 
 } // namespace
 
+// The unit's static initialiser at NTSC-U/C: 0x00118010, PAL: 0x001197a8, and its global
+// constructor at NTSC-U/C: 0x00118048, PAL: 0x001197e0, store the instance.
 HelpText *TheHelpText = HelpText::shared();
 
 HelpText::HelpText()
@@ -33,6 +35,7 @@ HelpText::HelpText()
 HelpText::~HelpText() = default;
 
 HelpText *HelpText::shared() {
+    // The instance is destroyed at exit by NTSC-U/C: 0x00117a10, PAL: 0x001191a8.
     static HelpText instance;
     return &instance;
 }

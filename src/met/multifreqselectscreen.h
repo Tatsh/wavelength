@@ -85,17 +85,23 @@ public:
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
     /**
-     * Respond to a controller button.
+     * Handle a button of a player's controller.
+     *
+     * The triangle button takes back the player's choice, or with no choice made by any player
+     * goes back to the mode or player menu. A player who has not chosen passes every other button
+     * to the player's panel.
      *
      * @param pMsg The message of the button.
-     * @return Whether the message was handled.
+     * @return True while the screen moves in or out, false after going back, otherwise the result
+     * of FreqScreen::HandleJoypad().
      * @ghidraAddress NTSC-U/C: 0x00190190
      * @ghidraAddress PAL: 0x001974a8
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
     /**
-     * Go on to the next screen once every player has chosen.
+     * Go on to the skill or remix menu once every player has chosen, giving every player without
+     * a name the default name of the player's number.
      *
      * @ghidraAddress NTSC-U/C: 0x001906a0
      * @ghidraAddress PAL: 0x001979b8

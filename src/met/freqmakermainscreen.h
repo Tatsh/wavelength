@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "game/playerprofile.h"
+#include "game/campaign.h"
 #include "met/freqmakerundoscreen.h"
 #include "met/keyboarduser.h"
 #include "msg/joypadinputmsg.h"
@@ -218,14 +218,14 @@ public:
     int mReserved74[3];                 // +0x74, not yet recovered.
     int mPrefabIndex;                   /*!< The entry of mPrefabs that `prefabs` shows. +0x80 */
     std::vector<const char *> mPrefabs; /*!< The prefabs, then the unlocked locked prefabs. */
-    int mEditing;     /*!< 1 when the screen edits the player's Freq, 0 for a new one. +0x94 */
-    int mNameTyped;   /*!< Non-zero once a name arrived from the keyboard. */
-    int mChanged;     /*!< Non-zero once the Freq changed. */
-    int mSaveStarted; /*!< Non-zero once the Freq went to the save screen. +0xa0 */
-    int mNameTrimmed; /*!< Non-zero when spaces were removed from the typed name. */
-    int mSaveOnName;  /*!< Non-zero while saving waits for the keyboard. */
-    String mFreqName; /*!< The name of the Freq. +0xac */
-    PlayerProfile mProfile;        /*!< The profile the screen started from. +0xc0 */
+    int mEditing;      /*!< 1 when the screen edits the player's Freq, 0 for a new one. +0x94 */
+    int mNameTyped;    /*!< Non-zero once a name arrived from the keyboard. */
+    int mChanged;      /*!< Non-zero once the Freq changed. */
+    int mSaveStarted;  /*!< Non-zero once the Freq went to the save screen. +0xa0 */
+    int mNameTrimmed;  /*!< Non-zero when spaces were removed from the typed name. */
+    int mSaveOnName;   /*!< Non-zero while saving waits for the keyboard. */
+    String mFreqName;  /*!< The name of the Freq. +0xac */
+    Campaign mProfile; /*!< The profile the screen started from. +0xc0 */
     DataArray *mPrefabsData;       /*!< The `prefabs` of the metagame configuration. +0x1b8 */
     DataArray *mLockedPrefabsData; /*!< The `locked_prefabs` of the metagame configuration. */
 };

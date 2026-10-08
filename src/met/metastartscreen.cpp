@@ -1,7 +1,7 @@
 #include "met/metastartscreen.h"
 
+#include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/playerprofile.h"
 #include "math/rand.h"
 #include "os/joypad.h"
 #include "os/locale.h"
@@ -89,17 +89,17 @@ void MetaStartScreen::LaunchAttract() {
     pSong->FindInt("num_players", &nNumPlayers, true);
 
     if (TheGameDb->GetProfile(0)->mCustom != 0) {
-        PlayerProfile profile(*TheGameDb->GetProfile(0));
+        Campaign profile(*TheGameDb->GetProfile(0));
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&profile);
     } else {
         TheGameDb->ClearPlayers();
-        PlayerProfile profile;
+        Campaign profile;
         profile.mName = TheLocale.Localize("default_name_1", true);
         TheGameDb->AddPlayer(&profile);
     }
     for (int i = 1; i < nNumPlayers; ++i) {
-        PlayerProfile profile;
+        Campaign profile;
         profile.mName = TheLocale.Localize(FormatString("default_name_%d", i + 1), true);
         TheGameDb->AddPlayer(&profile);
     }

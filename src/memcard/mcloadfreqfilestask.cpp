@@ -5,15 +5,15 @@
 #include "memcard/memcardconfig.h"
 #include "os/bufstream.h"
 
-void MCLoadFreqFilesTask::Set(int nPort, std::vector<PlayerProfile> *pProfiles) {
+void MCLoadFreqFilesTask::Set(int nPort, std::vector<Campaign> *pProfiles) {
     mProfiles = pProfiles;
     mCardPort = nPort;
 }
 
 void MCLoadFreqFilesTask::OnStart() {
-    std::vector<PlayerProfile> *pProfiles = mProfiles;
+    std::vector<Campaign> *pProfiles = mProfiles;
     const int nCount = sDirCount;
-    PlayerProfile blank;
+    Campaign blank;
     pProfiles->resize(nCount, blank);
     std::sort(sDirEntries, sDirEntries + sDirCount);
     mIndex = sDirCount - 1;

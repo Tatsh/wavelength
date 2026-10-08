@@ -70,6 +70,7 @@ set(WAVELENGTH_MET_SRCS
     netflashupdate.cpp
     netfoundplayerpanel.cpp
     nethostattemptscreen.cpp
+    nethostingscreen.cpp
     netinetdisconnect.cpp
     netjoinlpadscreen.cpp
     netlaunchpadquitscreen.cpp
@@ -86,6 +87,7 @@ set(WAVELENGTH_MET_SRCS
     netrankedplayerspanel.cpp
     netrankingscreen.cpp
     netreadonlywarnscreen.cpp
+    netsearchscreen.cpp
     netserverlogin.cpp
     netserverselscreen.cpp
     netsongpanel.cpp
@@ -113,6 +115,7 @@ set(WAVELENGTH_MET_SRCS
     remixdownloadlist.cpp
     remixloadlist.cpp
     remixorfreqscreen.cpp
+    remixselectscreen.cpp
     remixsongscreen.cpp
     remixtypescreen.cpp
     saveeditedfreqscreen.cpp

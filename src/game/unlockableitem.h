@@ -4,7 +4,7 @@
  * One item a song unlocked: a song, an avatar part, or an arena.
  *
  * The RTTI includes the name through the vectors of the class. The object is 8 bytes.
- * PlayerProfile collects the items a result unlocks, and the metagame shows an unlock screen for
+ * Campaign collects the items a result unlocks, and the metagame shows an unlock screen for
  * each.
  */
 struct UnlockableItem {

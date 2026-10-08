@@ -73,6 +73,8 @@ constexpr int kLoopingLane = 0;
 // A "show_patterns" style command acts only on this exact argument.
 constexpr int kCommandOn = 1;
 
+// The unit's static initialiser at NTSC-U/C: 0x001372c0, PAL: 0x00138b20, and its global
+// constructor at NTSC-U/C: 0x00137300, PAL: 0x00138b60, construct and destroy it.
 // NTSC-U/C: 0x00436148
 InputMap gSavedInputMap;
 

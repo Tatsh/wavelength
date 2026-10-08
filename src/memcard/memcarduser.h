@@ -3,8 +3,8 @@
 #include <list>
 #include <vector>
 
+#include "game/campaign.h"
 #include "game/globalsettings.h"
-#include "game/playerprofile.h"
 #include "game/remixinfo.h"
 #include "netflow/inetconfig.h"
 
@@ -64,7 +64,7 @@ public:
      * @ghidraAddress PAL: 0x003af300
      */
     virtual void OnFreqsLoaded([[maybe_unused]] int nStatus,
-                               [[maybe_unused]] std::vector<PlayerProfile> *pProfiles) {
+                               [[maybe_unused]] std::vector<Campaign> *pProfiles) {
     }
 
     /**

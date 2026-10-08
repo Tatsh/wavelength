@@ -1,7 +1,5 @@
 #include "met/mixmidibuilder.h"
 
-#include <cstdint>
-
 #include "os/mem.h"
 #include "os/system.h"
 
@@ -162,10 +160,7 @@ void MixMidiBuilder::OnText(int nTick, const char *pszText, unsigned char nType)
         if (mTrackIndex > 0) {
             if (mNames.find(String(pszText)) != mNames.end()) {
                 mTracks.push_back(TrackData());
-                // Yes, the binary hands the track index to the builder where it expects a name.
-                const char *pszName =
-                    reinterpret_cast<const char *>(static_cast<std::intptr_t>(mTrackIndex));
-                mMuseBuilder = new MuseBuilder(pszName, false, nullptr, &mTracks.back().mMuse);
+                mMuseBuilder = new MuseBuilder(mTrackIndex, false, nullptr, &mTracks.back().mMuse);
                 mHasTrack = 1;
             }
         }

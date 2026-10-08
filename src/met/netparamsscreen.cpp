@@ -34,8 +34,8 @@ NetParamsScreen::NetParamsScreen(DataArray *pData) : FreqScreen(pData) {
     mMode = 0;
     mSkill = 0;
     mLastSkillMode = 0;
-    mReservedB4 = 0;
-    mReserved7C = 1;
+    mChoiceCount = 0;
+    mDuelMode = 1;
     pData->FindSymbol(kSongPanelEntry, &mSongPanelName, false);
     pData->FindSymbol(kButtonPanelEntry, &mButtonPanelName, false);
     pData->FindSymbol(kTriBackEntry, &mTriBackScreen, false);

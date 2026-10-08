@@ -43,6 +43,8 @@ public:
      *
      * @param pData The description of the screen.
      * @return The screen.
+     * @ghidraAddress NTSC-U/C: 0x00359400
+     * @ghidraAddress PAL: 0x003c6768
      */
     static UIScreen *New(DataArray *pData) {
         return new NetCreateUserScreen(pData);

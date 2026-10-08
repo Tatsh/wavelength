@@ -154,7 +154,7 @@ void TransitionBuilder::OnText([[maybe_unused]] int nTick,
     }
     String name(pszText);
     if (name == kTransition1 || name == kTransition3 || name == kTransition4) {
-        mBuilder = new MuseBuilder(nullptr, false, nullptr, &mMuse);
+        mBuilder = new MuseBuilder(0, false, nullptr, &mMuse);
     }
 }
 

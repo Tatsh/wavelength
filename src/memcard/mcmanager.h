@@ -2,8 +2,8 @@
 
 #include <vector>
 
+#include "game/campaign.h"
 #include "game/globalsettings.h"
-#include "game/playerprofile.h"
 #include "game/remixinfo.h"
 #include "memcard/mccardstatustask.h"
 #include "memcard/mcdeletefreqtask.h"
@@ -89,11 +89,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0015c7e8
      * @ghidraAddress PAL: 0x0015dfd8
      */
-    void SaveFreq(MemcardUser *pUser,
-                  int nSlot,
-                  PlayerProfile *pProfile,
-                  const char *pszOldName,
-                  int nOverwrite);
+    void SaveFreq(
+        MemcardUser *pUser, int nSlot, Campaign *pProfile, const char *pszOldName, int nOverwrite);
 
     /**
      * Start loading every saved Freq into mProfiles. MemcardUser::OnFreqsLoaded() learns the
@@ -268,7 +265,7 @@ public:
     MCUnformatCardTask *mUnformatCard;     /*!< Unformat work. No routine starts it. */
     MCListNetConfigsTask *mListNetConfigs; /*!< The work of ListNetConfigs(). */
     MemcardSerialTask *mCurrentTask;       /*!< The running task, or null. */
-    std::vector<PlayerProfile> mProfiles;  /*!< The profiles LoadFreqs() loads. */
+    std::vector<Campaign> mProfiles;       /*!< The profiles LoadFreqs() loads. */
     std::vector<RemixInfo> mRemixInfos;    /*!< The descriptions ListRemixes() reads. */
     GlobalSettings mSettings;              /*!< The settings LoadSettings() loads. */
     std::vector<int> mReserved80;          // +0x80, emptied by ClearResults() and never read.

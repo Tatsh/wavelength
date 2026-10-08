@@ -21,4 +21,19 @@ public:
      * @ghidraAddress PAL: 0x001a3d10
      */
     NetRankedPlayersList(DataArray *pData, const char *pszPanel);
+
+    /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `ranked_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x00360338
+     * @ghidraAddress PAL: 0x003ce850
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new NetRankedPlayersList(pData, pszPanel);
+    }
 };

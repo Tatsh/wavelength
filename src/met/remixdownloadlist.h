@@ -27,6 +27,21 @@ public:
     RemixDownloadList(DataArray *pData, const char *pszPanel);
 
     /**
+     * Create a list from its script description.
+     *
+     * The metagame registers the routine for the component type `downloads_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x0035ff48
+     * @ghidraAddress PAL: 0x003ce460
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new RemixDownloadList(pData, pszPanel);
+    }
+
+    /**
      * Fill a row with the month and the day of a remix and its name.
      *
      * @param nRow The row.

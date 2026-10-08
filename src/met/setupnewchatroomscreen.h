@@ -35,6 +35,8 @@ public:
      *
      * @param pData The description of the screen.
      * @return The screen.
+     * @ghidraAddress NTSC-U/C: 0x0035a860
+     * @ghidraAddress PAL: 0x003c83b0
      */
     static UIScreen *New(DataArray *pData) {
         return new SetupNewChatroomScreen(pData);

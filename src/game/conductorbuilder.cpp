@@ -12,7 +12,7 @@ constexpr double kMaxTempoErrorMs = 0.1;
 
 } // namespace
 
-ConductorBuilder::ConductorBuilder(const char *pszName,
+ConductorBuilder::ConductorBuilder(int nTrack,
                                    bool bValidate,
                                    ErrorHandler pfnError,
                                    int nNumBars,
@@ -20,7 +20,7 @@ ConductorBuilder::ConductorBuilder(const char *pszName,
                                    const float *pfMsPerTick,
                                    PlayMap **ppPlayMap,
                                    int *pTicksPerBar)
-    : TrackBuilder(pszName, bValidate, pfnError), mNumBars(nNumBars), mTicksPerBeat(nTicksPerBeat),
+    : TrackBuilder(nTrack, bValidate, pfnError), mNumBars(nNumBars), mTicksPerBeat(nTicksPerBeat),
       mMsPerTick(pfMsPerTick), mPlayMap(ppPlayMap), mTicksPerBar(pTicksPerBar) {
 }
 

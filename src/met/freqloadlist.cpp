@@ -13,7 +13,7 @@ namespace {
 
 constexpr char kPanel[] = "f_load_p";
 
-// The account state shows as `yes` for this value of PlayerProfile::mNameLocked.
+// The account state shows as `yes` for this value of Campaign::mNameLocked.
 constexpr int kNameLocked = 1;
 
 } // namespace
@@ -21,7 +21,7 @@ constexpr int kNameLocked = 1;
 FreqLoadList::FreqLoadList(DataArray *pData, const char *pszPanel) : FreqList(pData, pszPanel) {
 }
 
-void FreqLoadList::SetProfiles(const std::vector<PlayerProfile> &profiles) {
+void FreqLoadList::SetProfiles(const std::vector<Campaign> &profiles) {
     dynamic_cast<AvatarPanel *>(TheUI.FindPanel(kPanel, false))->SetAvatar(nullptr);
     mProfiles = profiles;
     Refresh(static_cast<int>(mProfiles.size()), kKeepSelection);
@@ -38,7 +38,7 @@ void FreqLoadList::UpdateCursor() {
 
     UIComponent *pComponent = TheUI.FindComponent(kPanel, "born", false);
     format = TheLocale.Localize("f_load_p_14", true);
-    const PlayerProfile &profile = mProfiles[mSelected];
+    const Campaign &profile = mProfiles[mSelected];
     String born;
     profile.mBorn.FormatDate(born);
     text = FormatString(format.c_str(), born.c_str());

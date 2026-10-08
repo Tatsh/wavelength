@@ -44,7 +44,7 @@ bool SelLoadedFreqScreen::DispatchPriv(Message *pMsg) {
 bool SelLoadedFreqScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (pMsg->mButton == kPadCross) {
         auto *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kList, false));
-        PlayerProfile profile(mProfiles[pList->mSelected]);
+        Campaign profile(mProfiles[pList->mSelected]);
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&profile);
         TheMetagame.mGizmo->SetShowAvatar(true);

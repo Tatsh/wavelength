@@ -23,6 +23,20 @@ public:
     }
 
     /**
+     * Create a screen from its script description.
+     *
+     * The metagame registers the routine for the screen type `x_proceed_screen`.
+     *
+     * @param pData The script description.
+     * @return The new screen.
+     * @ghidraAddress NTSC-U/C: 0x0035ce68
+     * @ghidraAddress PAL: 0x003caf40
+     */
+    static UIScreen *New(DataArray *pData) {
+        return new XProceedScreen(pData);
+    }
+
+    /**
      * Route a controller button to HandleJoypad(), and pass on every other message.
      *
      * @param pMsg The message.

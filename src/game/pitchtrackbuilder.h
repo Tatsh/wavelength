@@ -25,7 +25,7 @@ public:
     /**
      * Construct a builder.
      *
-     * @param pszName The track name the error messages give.
+     * @param nTrack The number of the MIDI track the error messages give.
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param riffName The name the riff data receives.
@@ -36,7 +36,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00129978
      * @ghidraAddress PAL: 0x0012b170
      */
-    PitchTrackBuilder(const char *pszName,
+    PitchTrackBuilder(int nTrack,
                       bool bValidate,
                       ErrorHandler pfnError,
                       const String &riffName,

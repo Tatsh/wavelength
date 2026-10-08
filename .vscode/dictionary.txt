@@ -317,6 +317,7 @@ foxundermoon
 fplugin
 fprintf
 fram
+freestyl
 freestylebumppacket
 freestylelaptipscreen
 freestylepacket
@@ -475,6 +476,7 @@ laypatt
 lazysusan
 lbits
 ldimage
+levelmidibuilder
 lfversion
 libcconsole
 libcdvd
@@ -709,6 +711,7 @@ netflashupdate
 netflow
 netfoundplayerpanel
 nethostattemptscreen
+nethostingscreen
 netinetdisconnect
 netjoinlpadscreen
 netlaunch
@@ -729,6 +732,7 @@ netportal
 netrankedplayerspanel
 netrankingscreen
 netreadonlywarnscreen
+netsearchscreen
 netserverlogin
 netserverselscreen
 netsongpanel
@@ -819,7 +823,6 @@ pitchtrackriffdata
 pitchtrackriffs
 playbacker
 playbacker's
-playerprofile
 playersearchresultsscreen
 playersearchsetupscreen
 playerupdatepacket
@@ -901,6 +904,7 @@ remixerupdatepacket
 remixhud
 remixloadlist
 remixorfreqscreen
+remixselectscreen
 remixsongscreen
 remixtutorial
 remixtypescreen

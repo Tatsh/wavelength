@@ -37,6 +37,8 @@ public:
      * @param pData The script description.
      * @param pszDir The directory of the description file.
      * @return The new panel.
+     * @ghidraAddress NTSC-U/C: 0x003583f8
+     * @ghidraAddress PAL: 0x003c57a8
      */
     static UIPanel *New(DataArray *pData, const char *pszDir) {
         return new NetSongPanel(pData, pszDir);

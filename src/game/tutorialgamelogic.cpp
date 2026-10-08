@@ -4,11 +4,11 @@
 #include <climits>
 #include <cstring>
 
+#include "game/campaign.h"
 #include "game/gameconfig.h"
 #include "game/gamedb.h"
 #include "game/gametrackselector.h"
 #include "game/inputmap.h"
-#include "game/playerprofile.h"
 #include "game/playmap.h"
 #include "game/scripttask.h"
 #include "game/waitfortasktask.h"
@@ -99,6 +99,8 @@ constexpr float kFullProgress = 1.0f;
 constexpr int kMaxSeed = INT_MAX;
 
 // The bindings of the first player before the tutorial replaced them.
+// The unit's static initialiser at NTSC-U/C: 0x001411b8, PAL: 0x00142b78, and its global
+// constructor at NTSC-U/C: 0x001411f8, PAL: 0x00142bb8, construct and destroy it.
 // NTSC-U/C: 0x004361e0
 InputMap gSavedInputMap;
 

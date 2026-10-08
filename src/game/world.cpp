@@ -81,9 +81,10 @@ template <int kId>
 constexpr int kInputCmdId<StickEvent<kId>> = kId;
 
 // A controller event the scheduler delivers to the logic, so that a recording of the song clock
-// includes it. The static initialiser at NTSC-U/C 0x001458e0 (PAL 0x00147270) registers each
-// instance in Factory<Command>, and the routine at NTSC-U/C 0x00145830 (PAL 0x001471c0) destroys
-// the registry at exit.
+// includes it. The unit's static initialiser at NTSC-U/C: 0x001458e0, PAL: 0x00147270, and its
+// global constructor at NTSC-U/C: 0x001469f8, PAL: 0x00148388, register each instance in
+// Factory<Command>, and the routine at NTSC-U/C: 0x00145830, PAL: 0x001471c0, destroys the
+// registry at exit.
 template <typename Event>
 class InputCmd : public SerializableCommand<kInputCmdId<Event>, InputCmd<Event>> {
 public:
@@ -310,7 +311,7 @@ void World::PollLoad() {
     case kLoadStepAssets:
         PollAssetLoad();
         if (IsAssetLoadDone()) {
-            mSong->CreateMoviePlayers();
+            mSong->ApplySynthSettings();
             FinishLoad();
         }
         break;
