@@ -279,6 +279,14 @@ int sceMcGetSlotMax(int nPort) {
     return g_mcResult.nResult;
 }
 
+int sceMcEnd(void) {
+    if (g_nMcSemaId >= 0) {
+        DeleteSema(g_nMcSemaId);
+        g_nMcSemaId = -1;
+    }
+    return 1;
+}
+
 int sceMcOpen(int nPort, int nSlot, const char *pszName, int nMode) {
     int nResult;
 

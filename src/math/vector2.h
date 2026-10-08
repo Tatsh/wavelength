@@ -14,6 +14,17 @@ struct Vector2 {
     float y;
 };
 
+/**
+ * Write a vector as `(x: y:)`.
+ *
+ * @param stream The stream to write to.
+ * @param vector The vector.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00292f98
+ * @ghidraAddress PAL: 0x0029c960
+ */
+PrnStream &operator<<(PrnStream &stream, const Vector2 &vector);
+
 namespace Rnd {
 
 /**
@@ -94,14 +105,3 @@ float Length(const Vector2 &v);
  * @ghidraAddress PAL: 0x004fccc8
  */
 void SubVec2(const float *pA, const float *pB, float *pOut);
-
-/**
- * Write the two components of a vector.
- *
- * @param stream The stream to write to.
- * @param v The vector.
- * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x00292f98
- * @ghidraAddress PAL: 0x0029c960
- */
-PrnStream &operator<<(PrnStream &stream, const Vector2 &v);

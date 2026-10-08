@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+#include "math/sine.h"
 #include "math/vector3.h"
 
 namespace {
@@ -13,18 +14,21 @@ constexpr int kMatRowStride = 4;
 // A quarter turn. The decomposition reports this as the X angle at the gimbal lock limit.
 constexpr float kQuarterTurn = 1.570796251f;
 
+// The quarter turn SinApprox() is advanced by to give a cosine.
+constexpr float kQuarterTurnApprox = 1.57079637f;
+
 // The X row component above which the Y and Z angles cannot be separated.
 constexpr float kGimbalLockLimit = 0.9999998808f;
 
 } // namespace
 
 void Rnd::MakeRotMatrix(const float *pAngles, float *pMat3Rows) {
-    const float flSinZ = sinf(pAngles[2]);
-    const float flCosZ = cosf(pAngles[2]);
-    const float flSinY = sinf(pAngles[1]);
-    const float flCosY = cosf(pAngles[1]);
-    const float flSinX = sinf(pAngles[0]);
-    const float flCosX = cosf(pAngles[0]);
+    const float flSinZ = SinApprox(pAngles[2]);
+    const float flCosZ = SinApprox(pAngles[2] + kQuarterTurnApprox);
+    const float flSinY = SinApprox(pAngles[1]);
+    const float flCosY = SinApprox(pAngles[1] + kQuarterTurnApprox);
+    const float flSinX = SinApprox(pAngles[0]);
+    const float flCosX = SinApprox(pAngles[0] + kQuarterTurnApprox);
 
     pMat3Rows[0] = (flCosY * flCosZ) - ((flSinY * flSinZ) * flSinX);
     pMat3Rows[1] = (flCosY * flSinZ) + ((flCosZ * flSinY) * flSinX);

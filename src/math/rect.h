@@ -3,19 +3,20 @@
 #include "os/prnstream.h"
 
 /**
- * Rectangle of four floats, the left and top edges and the size.
+ * Axis-aligned rectangle given by a corner and a size.
  *
- * The type has no RTTI, and its name is inferred.
+ * The class is not polymorphic and emits no RTTI descriptor, so the name is inferred. The member
+ * titles come from the labels of the text writer.
  */
 struct Rect {
-    float x; /*!< Left edge. */
-    float y; /*!< Top edge. */
-    float w; /*!< Width. */
-    float h; /*!< Height. */
+    float x; /*!< The left edge. */
+    float y; /*!< The top edge. */
+    float w; /*!< The width. */
+    float h; /*!< The height. */
 };
 
 /**
- * Write the four components of a rectangle.
+ * Write a rectangle as `(x: y: w: h:)`.
  *
  * @param stream The stream to write to.
  * @param rect The rectangle.

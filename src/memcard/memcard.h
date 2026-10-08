@@ -3,6 +3,38 @@
 #include "memcard/memcardcbhandler.h"
 #include "memcard/memcarddirentry.h"
 
+/** The number of memory card slots, four multitap slots of the first port. */
+constexpr int kMemcardSlotCount = 4;
+
+/**
+ * Start the memory card library and give slot 0 to port 0 and slot 1 to port 1.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0028b578
+ * @ghidraAddress PAL: 0x00294d78
+ */
+void MemcardInit();
+
+/**
+ * Stop the memory card library.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0028b5a0
+ * @ghidraAddress PAL: 0x00294da0
+ */
+void MemcardTerminate();
+
+/**
+ * Give the memory card slots to the controller ports.
+ *
+ * With bPort0Multitap set, slots 0 to 3 are the four multitap slots of port 0. Otherwise slot 0 is
+ * port 0, slot 1 is port 1 unless bPort1Multitap is set, and the other slots are unused.
+ *
+ * @param bPort0Multitap Whether a multitap is connected to port 0.
+ * @param bPort1Multitap Whether a multitap is connected to port 1.
+ * @ghidraAddress NTSC-U/C: 0x0028bf28
+ * @ghidraAddress PAL: 0x00295878
+ */
+void MemcardAssignSlots(bool bPort0Multitap, bool bPort1Multitap);
+
 /**
  * Advance the memory card command in flight.
  *

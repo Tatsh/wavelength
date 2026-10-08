@@ -12,31 +12,27 @@ class Sphere;
  * Six-plane view volume.
  *
  * The class is not polymorphic and emits no RTTI descriptor, so the name is inferred. The member
- * order and the member titles both come from the dump routine at `0x0054f798`, which walks six
- * consecutive quadwords and writes them under "\n\tfront:", "\n\tback:", "\n\tleft:",
- * "\n\tright:", "\n\ttop:", and "\n\tbottom:". The order is therefore recovered rather than
- * assumed, and it is not the order the per-vertex clip flags of Rnd::DrawVert use.
+ * order and the member titles both come from the text writer, which walks six consecutive
+ * quadwords and writes them under "\n\tfront:", "\n\tback:", "\n\tleft:", "\n\tright:",
+ * "\n\ttop:", and "\n\tbottom:".
  */
 class Frustum {
 public:
     /**
      * Build the six planes of a perspective view volume.
      *
-     * Every plane is expressed in camera space. A caller that needs world space therefore
-     * transforms the result afterwards. Rnd::Cam::UpdateProjection() is the only caller recovered.
-     *
-     * The four side planes pass through the origin unless flFov is zero. A zero flFov gives each
-     * side plane the distance of the unit offset it is built through.
+     * Every plane is expressed in camera space. The four side planes pass through the origin unless
+     * flFov is zero. A zero flFov gives each side plane the distance of the unit offset it is built
+     * through.
      *
      * @param flNear Distance to the near plane.
      * @param flFar Distance to the far plane.
      * @param flFov Field of view in radians.
      * @param flAspect Vertical extent divided by the horizontal extent.
-     * @return This view volume.
-     * @ghidraAddress NTSC-U/C: 0x00550b78
-     * @ghidraAddress PAL: 0x005911b8
+     * @ghidraAddress NTSC-U/C: 0x00290c48
+     * @ghidraAddress PAL: 0x0029a610
      */
-    Frustum &Set(float flNear, float flFar, float flFov, float flAspect);
+    void Set(float flNear, float flFar, float flFov, float flAspect);
 
     Plane mFront;  // +0x00
     Plane mBack;   // +0x10
@@ -45,6 +41,19 @@ public:
     Plane mTop;    // +0x40
     Plane mBottom; // +0x50
 };
+
+/**
+ * Write the six planes of a view volume.
+ *
+ * Each plane goes on its own tab-indented line under its title.
+ *
+ * @param stream The stream to write to.
+ * @param frustum The view volume.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x002904e0
+ * @ghidraAddress PAL: 0x00299ea8
+ */
+PrnStream &operator<<(PrnStream &stream, const Frustum &frustum);
 
 /**
  * Write the six planes of a view volume to a diagnostic sink.
@@ -68,24 +77,23 @@ constexpr int kVu0StatusStickySign = 0x80;
  *
  * Each plane is dotted with the centre and the radius added, on VU0 in macro mode, and the sticky
  * sign bit of the status flag collects a negative sum from every plane. The bit is returned as it
- * stands rather than as a truth value. Rnd::Mesh::PrepareDraw() is the one caller, and it passes
- * the world frustum of the camera.
+ * stands rather than as a truth value.
  *
  * @param sphere The sphere, in the space the planes are expressed in.
  * @param frustum The view volume.
  * @return kVu0StatusStickySign when the whole sphere is behind some plane, and zero otherwise.
- * @ghidraAddress NTSC-U/C: 0x005513a8
- * @ghidraAddress PAL: 0x005919e8
+ * @ghidraAddress NTSC-U/C: 0x00290f90
+ * @ghidraAddress PAL: 0x0029a958
  */
 int IsSphereOutsideFrustum(const Sphere &sphere, const Frustum &frustum);
 
 /**
- * Write the six planes of a view volume.
+ * Report whether a point lies on the inner side of every plane of a view volume.
  *
- * @param stream The stream to write to.
+ * @param point The point, in the space the planes are expressed in.
  * @param frustum The view volume.
- * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x002904e0
- * @ghidraAddress PAL: 0x00299ea8
+ * @return Whether no plane puts the point behind it.
+ * @ghidraAddress NTSC-U/C: 0x00291090
+ * @ghidraAddress PAL: 0x0029aa58
  */
-PrnStream &operator<<(PrnStream &stream, const Frustum &frustum);
+bool IsPointInsideFrustum(const Vector3 &point, const Frustum &frustum);

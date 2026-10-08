@@ -67,14 +67,3 @@ void MakeScale(const Transform &xfm, Vector3 &scale);
  * @ghidraAddress PAL: 0x0029ca68
  */
 PrnStream &operator<<(PrnStream &stream, const Transform &xfm);
-
-/**
- * Write the three components of a vector.
- *
- * @param stream The stream to write to.
- * @param v The vector.
- * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x00292ed8
- * @ghidraAddress PAL: 0x0029c8a0
- */
-PrnStream &operator<<(PrnStream &stream, const Vector3 &v);

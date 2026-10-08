@@ -84,3 +84,8 @@ Vector3 IntersectPlanes(const Plane &first, const Plane &second, const Plane &th
     IntersectSegmentWithPlane(line.mEnds, third, &flT); // Yes, the binary discards the result.
     return PointAlongSegment(line, flT);
 }
+
+PrnStream &operator<<(PrnStream &stream, const Plane &plane) {
+    stream << "(a:" << plane.a << " b:" << plane.b << " c:" << plane.c << " d:" << plane.d << ")";
+    return stream;
+}

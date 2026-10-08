@@ -40,6 +40,7 @@ set(WAVELENGTH_MEMCARD_SRCS
     mcunformatcardtask.cpp
     mcunformattask.cpp
     mcwritetask.cpp
+    memcard.cpp
     memcardconfig.cpp
     memcardserialtask.cpp
     memcardtask.cpp

@@ -11,8 +11,8 @@ extern "C" {
  *
  * @param pDst Receives the inverse, four rows of four floats.
  * @param pSrc The transform to invert, four rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x005e7b08
- * @ghidraAddress PAL: 0x00629cf0
+ * @ghidraAddress NTSC-U/C: 0x00293488
+ * @ghidraAddress PAL: 0x0029ce50
  */
 void InversMatrix(float *pDst, const float *pSrc);
 
@@ -26,8 +26,8 @@ void InversMatrix(float *pDst, const float *pSrc);
  * @param pDst Receives the product, four rows of four floats. It may alias either factor.
  * @param pA The left factor, four rows of four floats.
  * @param pB The right factor, four rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x005e7a58
- * @ghidraAddress PAL: 0x00629c40
+ * @ghidraAddress NTSC-U/C: 0x002933b0
+ * @ghidraAddress PAL: 0x0029cd78
  */
 void sceVu0MulAffineMatrix(float *pDst, const float *pA, const float *pB);
 
@@ -41,8 +41,8 @@ void sceVu0MulAffineMatrix(float *pDst, const float *pA, const float *pB);
  * @param pDst Receives the product, four rows of four floats. It may alias either factor.
  * @param pA The left factor, four rows of four floats.
  * @param pB The right factor, four rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x005e7ab0
- * @ghidraAddress PAL: 0x00629c98
+ * @ghidraAddress NTSC-U/C: 0x00293410
+ * @ghidraAddress PAL: 0x0029cdd8
  */
 void sceVu0MulAffineMatrixXyz(float *pDst, const float *pA, const float *pB);
 
@@ -70,12 +70,13 @@ namespace Rnd {
  * The product is Ry * Rx * Rz, with each factor a rotation about one axis by the matching
  * component and every factor written for row vectors. Mat34DecomposeEulerScale() inverts the same
  * composition and EulerAnglesToQuat() reproduces it as a quaternion. Only nine of the twelve words
- * are written, and the fourth word of each row is untouched.
+ * are written, and the fourth word of each row is untouched. The sines and cosines come from
+ * SinApprox().
  *
  * @param pAngles The three angles in radians, ordered X, Y, and Z.
  * @param pMat3Rows Receives the rotation, three rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x004f0430
- * @ghidraAddress PAL: 0x0052f020
+ * @ghidraAddress NTSC-U/C: 0x00292b38
+ * @ghidraAddress PAL: 0x0029c500
  */
 void MakeRotMatrix(const float *pAngles, float *pMat3Rows);
 
@@ -96,8 +97,8 @@ void MakeRotMatrix(const float *pAngles, float *pMat3Rows);
  * @param pAxisY The direction the Y row takes, four floats.
  * @param pReference The reference direction, three floats.
  * @param pMat3Rows Receives the basis, three rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x004f0538
- * @ghidraAddress PAL: 0x0052f128
+ * @ghidraAddress NTSC-U/C: 0x00292c60
+ * @ghidraAddress PAL: 0x0029c628
  */
 void Mat33BuildOrthonormal(const float *pAxisY, const float *pReference, float *pMat3Rows);
 

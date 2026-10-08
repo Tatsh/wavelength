@@ -9,6 +9,7 @@
 #include "game/remixinfo.h"
 #include "game/songentry.h"
 #include "netflow/netgameparams.h"
+#include "os/scheduler.h"
 #include "os/string.h"
 #include "script/dataarray.h"
 
@@ -83,6 +84,22 @@ public:
      * @ghidraAddress PAL: 0x00277f90
      */
     void Terminate();
+
+    /**
+     * Build TheFxMidi from the `fx_midi_file` entry of the "db" section, and start mSfxScheduler
+     * at the tempo of that file. Init() calls it.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027f8e0
+     */
+    void InitSfx();
+
+    /**
+     * Stop mSfxScheduler and release TheFxMidi. Terminate() calls it.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027f998
+     * @ghidraAddress PAL: 0x00289298
+     */
+    void TerminateSfx();
 
     /**
      * Service the database once per frame.
@@ -756,35 +773,36 @@ public:
                           int nSkillLevel,
                           bool bFirstPlayerOnly);
 
-    int mReserved00;     // +0x00, the player list. The element type is not yet recovered.
-    int mReserved04;     // +0x04, the player list.
-    int mReserved08;     // +0x08, the player list.
-    int mReserved0C;     // +0x0c, the player list.
-    String mSong;        /*!< The song of the game, the "song" entry of the "db" section. */
-    int mLoadRemix;      /*!< `load_remix`, whether a saved remix is played. +0x24 */
-    int mRemixReadOnly;  /*!< Non-zero when the remix may not be saved over. +0x28 */
-    String mRemixName;   /*!< The name of the saved remix played. +0x2c */
-    int mPracticeMode;   /*!< `practice_mode`. +0x40 */
-    int mTutorial;       /*!< Whether the tutorial is played. +0x44 */
-    int mSkillLevel;     /*!< `skill_level`. +0x48 */
-    int mPowerupLevel;   /*!< Index into GameConfig::mPowerupProbMulti. +0x4c */
-    int mRuleSet;        /*!< `rule_set`, one of RuleSet. +0x50 */
-    int mCommunity;      /*!< `community`, one of Community. +0x54 */
-    int mMaxPlayers;     /*!< The number of players an online session takes. +0x58 */
-    String mArena;       /*!< The arena of the game. +0x5c */
-    int mReserved70[6];  // +0x70, not yet recovered.
-    int mWinSequence;    /*!< Whether the campaign win sequence runs. +0x88 */
-    int mReserved8C[2];  // +0x8c, not yet recovered.
-    float mEnergized;    /*!< The value of SetEnergized(). +0x94 */
-    int mFullMixBars;    /*!< The value of SetFullMixBars(). +0x98 */
-    int mBestStreak;     /*!< The value of SetBestStreak(). +0x9c */
-    float mProgress;     /*!< The value of SetProgress(). +0xa0 */
-    int mReservedA4[2];  // +0xa4, not yet recovered.
-    char *mRemixBuffer;  /*!< The packed data of the remix, which SetRemixBuffer() replaces. */
-    int mReservedB0[41]; // +0xb0, not yet recovered.
-    int mNetRemixEnded;  /*!< Whether the remix of an online game has ended. */
-    float mSongTick;     /*!< The running world's position in ticks. +0x158 */
-    float mSongTime;     /*!< The running world's position on its song clock. +0x15c */
+    int mReserved00;         // +0x00, the player list. The element type is not yet recovered.
+    int mReserved04;         // +0x04, the player list.
+    int mReserved08;         // +0x08, the player list.
+    int mReserved0C;         // +0x0c, the player list.
+    String mSong;            /*!< The song of the game, the "song" entry of the "db" section. */
+    int mLoadRemix;          /*!< `load_remix`, whether a saved remix is played. +0x24 */
+    int mRemixReadOnly;      /*!< Non-zero when the remix may not be saved over. +0x28 */
+    String mRemixName;       /*!< The name of the saved remix played. +0x2c */
+    int mPracticeMode;       /*!< `practice_mode`. +0x40 */
+    int mTutorial;           /*!< Whether the tutorial is played. +0x44 */
+    int mSkillLevel;         /*!< `skill_level`. +0x48 */
+    int mPowerupLevel;       /*!< Index into GameConfig::mPowerupProbMulti. +0x4c */
+    int mRuleSet;            /*!< `rule_set`, one of RuleSet. +0x50 */
+    int mCommunity;          /*!< `community`, one of Community. +0x54 */
+    int mMaxPlayers;         /*!< The number of players an online session takes. +0x58 */
+    String mArena;           /*!< The arena of the game. +0x5c */
+    int mReserved70[6];      // +0x70, not yet recovered.
+    int mWinSequence;        /*!< Whether the campaign win sequence runs. +0x88 */
+    int mReserved8C[2];      // +0x8c, not yet recovered.
+    float mEnergized;        /*!< The value of SetEnergized(). +0x94 */
+    int mFullMixBars;        /*!< The value of SetFullMixBars(). +0x98 */
+    int mBestStreak;         /*!< The value of SetBestStreak(). +0x9c */
+    float mProgress;         /*!< The value of SetProgress(). +0xa0 */
+    int mReservedA4[2];      // +0xa4, not yet recovered.
+    char *mRemixBuffer;      /*!< The packed data of the remix, which SetRemixBuffer() replaces. */
+    int mReservedB0[41];     // +0xb0, not yet recovered.
+    int mNetRemixEnded;      /*!< Whether the remix of an online game has ended. */
+    float mSongTick;         /*!< The running world's position in ticks. +0x158 */
+    float mSongTime;         /*!< The running world's position on its song clock. +0x15c */
+    Scheduler mSfxScheduler; /*!< The scheduler the interface sounds play on. +0x160 */
 };
 
 /**

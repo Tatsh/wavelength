@@ -8,6 +8,31 @@
 
 namespace {
 
+// Set a plane to the normal given and the distance that puts point on it.
+inline void SetPlaneThrough(Plane &plane, const Vector3 &normal, const Vector3 &point) {
+    plane.a = normal.x;
+    plane.b = normal.y;
+    plane.c = normal.z;
+    plane.d = -(((normal.x * point.x) + (normal.y * point.y)) + (normal.z * point.z));
+}
+
+// The signed distance of a point from a plane.
+inline float PlaneDistance(const Plane &plane, const Vector3 &point) {
+    return (((plane.a * point.x) + (plane.b * point.y)) + (plane.c * point.z)) + plane.d;
+}
+
+// The six planes in member order.
+inline void GetPlanes(const Frustum &frustum, const Plane *apPlanes[]) {
+    apPlanes[0] = &frustum.mFront;
+    apPlanes[1] = &frustum.mBack;
+    apPlanes[2] = &frustum.mLeft;
+    apPlanes[3] = &frustum.mRight;
+    apPlanes[4] = &frustum.mTop;
+    apPlanes[5] = &frustum.mBottom;
+}
+
+constexpr int kPlaneCount = 6;
+
 // One plane under its title, the way the frustum printer writes each of the six. Every call after
 // the title goes to the sink the previous call returned.
 void PrintPlane(Rnd::Dbg &sink, const char *pszTitle, const Plane &plane) {
@@ -23,17 +48,9 @@ void PrintPlane(Rnd::Dbg &sink, const char *pszTitle, const Plane &plane) {
         ->Print(")");
 }
 
-// Set a plane to the normal given and the distance that puts point on it.
-inline void SetPlaneThrough(Plane &plane, const Vector3 &normal, const Vector3 &point) {
-    plane.a = normal.x;
-    plane.b = normal.y;
-    plane.c = normal.z;
-    plane.d = -(((normal.x * point.x) + (normal.y * point.y)) + (normal.z * point.z));
-}
-
 } // namespace
 
-Frustum &Frustum::Set(float flNear, float flFar, float flFov, float flAspect) {
+void Frustum::Set(float flNear, float flFar, float flFov, float flAspect) {
     SetPlaneThrough(mFront, Vector3{0.0f, 1.0f, 0.0f, 1.0f}, Vector3{0.0f, flNear, 0.0f, 1.0f});
     SetPlaneThrough(mBack, Vector3{0.0f, -1.0f, 0.0f, 1.0f}, Vector3{0.0f, flFar, 0.0f, 1.0f});
 
@@ -57,7 +74,16 @@ Frustum &Frustum::Set(float flNear, float flFar, float flFov, float flAspect) {
         mTop.d = 0.0f;
         mRight.d = 0.0f;
     }
-    return *this;
+}
+
+PrnStream &operator<<(PrnStream &stream, const Frustum &frustum) {
+    stream << "\n\tfront:" << frustum.mFront;
+    stream << "\n\tback:" << frustum.mBack;
+    stream << "\n\tleft:" << frustum.mLeft;
+    stream << "\n\tright:" << frustum.mRight;
+    stream << "\n\ttop:" << frustum.mTop;
+    stream << "\n\tbottom:" << frustum.mBottom;
+    return stream;
 }
 
 Rnd::Dbg &operator<<(Rnd::Dbg &sink, const Frustum &frustum) {
@@ -71,21 +97,25 @@ Rnd::Dbg &operator<<(Rnd::Dbg &sink, const Frustum &frustum) {
 }
 
 int IsSphereOutsideFrustum(const Sphere &sphere, const Frustum &frustum) {
-    const Plane *const apPlanes[] = {&frustum.mFront,
-                                     &frustum.mBack,
-                                     &frustum.mLeft,
-                                     &frustum.mRight,
-                                     &frustum.mTop,
-                                     &frustum.mBottom};
-    const Vector3 &center = sphere.mCenter;
+    const Plane *apPlanes[kPlaneCount];
+    GetPlanes(frustum, apPlanes);
     int nStatus = 0;
     for (const Plane *pPlane : apPlanes) {
-        const float flDistance =
-            (((pPlane->a * center.x) + (pPlane->b * center.y)) + (pPlane->c * center.z)) +
-            pPlane->d;
-        if (flDistance + sphere.mRadius < 0.0f) {
+        if (PlaneDistance(*pPlane, sphere.mCenter) + sphere.mRadius < 0.0f) {
             nStatus = kVu0StatusStickySign;
         }
     }
     return nStatus;
+}
+
+bool IsPointInsideFrustum(const Vector3 &point, const Frustum &frustum) {
+    const Plane *apPlanes[kPlaneCount];
+    GetPlanes(frustum, apPlanes);
+    bool bInside = true;
+    for (const Plane *pPlane : apPlanes) {
+        if (PlaneDistance(*pPlane, point) < 0.0f) {
+            bInside = false;
+        }
+    }
+    return bInside;
 }

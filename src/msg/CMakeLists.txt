@@ -10,6 +10,10 @@ set(WAVELENGTH_MSG_SRCS
     freestylebumppacket.cpp
     freestylepacket.cpp
     fxpacket.cpp
+    joypadanalogstickmsg.cpp
+    joypadconnectionmsg.cpp
+    joypadinputmsg.cpp
+    keyboardkeymsg.cpp
     lobbyconnectionlostmsg.cpp
     message.cpp
     mutevocalspacket.cpp

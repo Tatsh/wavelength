@@ -59,3 +59,8 @@ void ClampColorToUnitRange(const Color &source, Color &result) {
     result.b = ClampComponent(source.b);
     result.a = ClampComponent(source.a);
 }
+
+PrnStream &operator<<(PrnStream &stream, const Color &color) {
+    stream << "(r:" << color.r << " g:" << color.g << " b:" << color.b << " a:" << color.a << ")";
+    return stream;
+}

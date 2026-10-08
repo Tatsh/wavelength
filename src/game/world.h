@@ -519,10 +519,10 @@ public:
     int mLoadStep;                              /*!< One of LoadStep. */
     std::vector<GameEndedMsg *> mGameEndedMsgs; /*!< Copies held until the song starts. */
     std::vector<PlayerAbortedMsg *> mPlayerAbortedMsgs; /*!< Copies held until the song starts. */
-    File *mDemoFile;            /*!< The demo recording being read, or null. */
-    int mDemoSize;              /*!< The size of the demo recording in bytes. */
-    unsigned char *mDemoBuffer; /*!< The demo recording, or null. */
-    int mLeadTicks;             /*!< The ticks the song plays before bar 0. */
+    File *mDemoFile;   /*!< The demo recording being read, or null. */
+    int mDemoSize;     /*!< The size of the demo recording in bytes. */
+    char *mDemoBuffer; /*!< The demo recording, or null. */
+    int mLeadTicks;    /*!< The ticks the song plays before bar 0. */
 
 private:
     /**

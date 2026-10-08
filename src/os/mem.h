@@ -534,3 +534,33 @@ void *PoolMemAlloc(int nSize, const char *pszTag, int nAlign);
  * @ghidraAddress PAL: 0x002a48f0
  */
 void PoolMemFree(void *pBlock);
+
+/**
+ * Set the heaps up from the system configuration.
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0029a820
+ * @ghidraAddress PAL: 0x002a4440
+ */
+void MemConfigureHeaps();
+
+/**
+ * Shut the heaps down.
+ *
+ * The body does nothing. The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0029aa58
+ * @ghidraAddress PAL: 0x002a4678
+ */
+void MemTerminate();
+
+/**
+ * Record the state of every tracked heap, once per frame.
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0029c6c8
+ * @ghidraAddress PAL: 0x002a62f0
+ */
+void MemPoll();

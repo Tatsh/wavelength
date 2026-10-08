@@ -1,7 +1,7 @@
 #include "app/hudhilitebox.h"
 
 #include "game/gamedb.h"
-#include "math/trig.h"
+#include "math/sine.h"
 #include "os/debug.h"
 #include "rnd/blur.h"
 #include "rnd/manager.h"
@@ -200,8 +200,8 @@ void HudHiliteBox::Update(float fTick) {
         Rnd::Transformable *pArrow = mArrow;
         SetTranslation(pArrow, Blend(mFromArrowPos, mToArrowPos, fProgress));
         const float fAngle = (mToArrowAngle - mFromArrowAngle) * fProgress + mFromArrowAngle;
-        const float fCos = Sin(fAngle + kHalfPi);
-        const float fSin = Sin(fAngle);
+        const float fCos = SinApprox(fAngle + kHalfPi);
+        const float fSin = SinApprox(fAngle);
         float (&xfm)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = pArrow->mLocalXfm;
         xfm[kXfmRowBasisX][0] = fCos;
         xfm[kXfmRowBasisX][1] = 0.0f;

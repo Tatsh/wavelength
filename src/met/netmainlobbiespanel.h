@@ -28,22 +28,27 @@ public:
     }
 
     /**
+     * Create a panel from its script description.
+     *
+     * Metagame::RegisterScreenClasses() registers the routine for the entry type
+     * `fn_main_lobbies_panel`.
+     *
+     * @param pData The script description.
+     * @param pszDir The directory of the description file.
+     * @return The new panel.
+     * @ghidraAddress NTSC-U/C: 0x003581b8
+     * @ghidraAddress PAL: 0x003c5568
+     */
+    static UIPanel *New(DataArray *pData, const char *pszDir) {
+        return new NetMainLobbiesPanel(pData, pszDir);
+    }
+
+    /**
      * Destroy the panel.
      *
      * @ghidraAddress NTSC-U/C: 0x003580b0
      */
     ~NetMainLobbiesPanel() override {
-    }
-
-    /**
-     * Create a panel from its script description.
-     *
-     * @param pData The script description.
-     * @param pszDir The directory of the description file.
-     * @return The new panel.
-     */
-    static UIPanel *New(DataArray *pData, const char *pszDir) {
-        return new NetMainLobbiesPanel(pData, pszDir);
     }
 
     /**

@@ -954,7 +954,7 @@ void Ship::PollCrippler(float fTimeDelta, bool bCrippled) {
     if (TheGameDb->IsLocalPlayer(mPlayer) && TheGameDb->mCommunity != GameDb::kCommunityLocal &&
         fTimeDelta != 0.0f) {
         // Yes, the binary shakes the camera of a crippled player here and leaves its particles be.
-        if (RandomFloat() <= sCrippledCamJiggleProbability) {
+        if (RandomFraction() <= sCrippledCamJiggleProbability) {
             pCamFX->Kick(sCrippledCamJiggle);
         }
         return;

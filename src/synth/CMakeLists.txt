@@ -1,5 +1,7 @@
 set(WAVELENGTH_SYNTH_SRCS
     callbackxferbdtoiop.cpp
+    fxmidi.cpp
+    sfxbuilder.cpp
     songspeed.cpp
     synth.cpp
     syntheffects.cpp)

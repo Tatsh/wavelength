@@ -6,8 +6,7 @@
  * Collector of float samples that reports their median.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. The object records the
- * smallest sample, the largest sample, the sum, and every sample. Only the members GameLogic uses
- * are declared.
+ * smallest sample, the largest sample, the sum, and every sample.
  */
 class StatsAccumulator {
 public:
@@ -31,6 +30,9 @@ public:
     /**
      * Report the median of the samples.
      *
+     * The samples are sorted first unless mSorted is set, and mSorted is never set. For an even
+     * count the two samples averaged are those at half the count and the one after it.
+     *
      * @return The median.
      * @ghidraAddress NTSC-U/C: 0x002932f0
      * @ghidraAddress PAL: 0x0029ccb8
@@ -41,4 +43,5 @@ public:
     float mMax;                  /*!< The largest sample. */
     float mSum;                  /*!< The sum of the samples. */
     std::vector<float> mSamples; /*!< Every sample. */
+    bool mSorted;                /*!< Whether mSamples is known to be sorted. */
 };

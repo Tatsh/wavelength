@@ -45,7 +45,7 @@ constexpr int kHostDevice = -1;
 
 // The listing MemcardFileExists() requests.
 constexpr int kMaxListEntries = 16;
-constexpr unsigned int kNewListing = 0;
+constexpr int kNewListing = 0;
 
 // DateTime::mYear counts from 1900 and DateTime::mMonth from 0.
 constexpr int kCenturyYears = 100;
@@ -133,8 +133,9 @@ void MakeUniqueHostName(String &file) {
 // Report whether a file of a name exists on the memory card of a device.
 // NTSC-U/C: 0x00144100, PAL: 0x00145a90
 bool MemcardFileExists(int nDevice, const char *pszName) {
-    int nCount;
-    return MemcardGetDirAndWait(nDevice, pszName, kMaxListEntries, kNewListing, &nCount) > 0;
+    MemcardDirEntry *pEntries;
+    // Yes, the binary tests a result that is always -1.
+    return MemcardGetDirAndWait(nDevice, pszName, kMaxListEntries, kNewListing, &pEntries) > 0;
 }
 
 // Append `_` and a number to a memory card file name until no file of that name exists.
@@ -400,7 +401,7 @@ void World::LoadAssets() {
         mLoadStep = kLoadStepDemo;
         mDemoFile = File::New(TheGameDb->GetDemo(), kOpenRead, kNoOpenFlags);
         mDemoSize = mDemoFile->Size();
-        mDemoBuffer = static_cast<unsigned char *>(MemAlloc(mDemoSize, kDemoBufferTag, 0));
+        mDemoBuffer = static_cast<char *>(MemAlloc(mDemoSize, kDemoBufferTag, 0));
         (void)mDemoFile->ReadAsync(mDemoBuffer, mDemoSize); // Yes, the binary discards the result.
     } else {
         mLoadStep = kLoadStepSong;

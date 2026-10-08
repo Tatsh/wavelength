@@ -226,7 +226,7 @@ void RndMesh::Collide(const Segment &segment, std::list<Collision> &collisions) 
     }
     if (mSphere.mRadius != 0.0f) {
         float fT;
-        if (!Intersect(segment, worldSphere, fT)) {
+        if (!IntersectSegmentSphere(segment, worldSphere, &fT)) {
             return;
         }
     }
@@ -244,7 +244,7 @@ void RndMesh::Collide(const Segment &segment, std::list<Collision> &collisions) 
         Subtract(verts[face.mVerts[2]].mPos, triangle.mOrigin, triangle.mEdge2);
         Cross(triangle.mEdge1, triangle.mEdge2, triangle.mNormal);
         float fT;
-        if (Intersect(local, triangle, nCull, fT)) {
+        if (IntersectSegmentTriangle(local, triangle, static_cast<CullMode>(nCull), &fT)) {
             collisions.push_back(Collision{this, fT});
         }
     }

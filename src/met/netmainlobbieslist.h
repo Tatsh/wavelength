@@ -27,6 +27,22 @@ public:
     }
 
     /**
+     * Create a list from its script description.
+     *
+     * Metagame::RegisterScreenClasses() registers the routine for the entry type
+     * `lobbies_list_comp`.
+     *
+     * @param pData The script description.
+     * @param pszPanel The name of the panel the list belongs to.
+     * @return The new list.
+     * @ghidraAddress NTSC-U/C: 0x00360480
+     * @ghidraAddress PAL: 0x003ce998
+     */
+    static UIComponent *New(DataArray *pData, const char *pszPanel) {
+        return new NetMainLobbiesList(pData, pszPanel);
+    }
+
+    /**
      * Destroy the list.
      *
      * @ghidraAddress NTSC-U/C: 0x00360388

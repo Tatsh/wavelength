@@ -80,7 +80,7 @@ OvyChat::Line::Line(DataArray *pConfig, DataArray *pDefaults, Rnd::Text *pText) 
     mText = pText;
     DataArray *pSlide;
     FindConfigArray(pConfig, pDefaults, "chat_line_slide", &pSlide, true);
-    mSlide = Interpolator::Create(pSlide->Array(1));
+    mSlide = ObjectToInterpolator(pSlide->Array(1));
     if (sSlideTime == kNever) {
         sSlideTime = mSlide->mX1;
     }

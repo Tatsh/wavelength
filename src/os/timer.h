@@ -108,3 +108,38 @@ public:
     const char *mName; /*!< The name Find() matches, or null for an unnamed timer. */
     int mRunning;      /*!< Start count. The timer measures while the count is non-zero. */
 };
+
+/**
+ * Busy-wait on the system clock.
+ *
+ * @param nMs The milliseconds to wait.
+ * @ghidraAddress NTSC-U/C: 0x0028d020
+ * @ghidraAddress PAL: 0x00296a00
+ */
+void TimerSleep(int nMs);
+
+/**
+ * Set the cycle conversion and restart the system clock from zero.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0028d1a0
+ * @ghidraAddress PAL: 0x00296b80
+ */
+void TimerInit();
+
+/**
+ * Build the named timers, one for each symbol of the `timer` block of the system configuration.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0028d268
+ * @ghidraAddress PAL: 0x00296c48
+ */
+void TimerLoadNames();
+
+/**
+ * Shut the timers down.
+ *
+ * The body does nothing.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0028d3a0
+ * @ghidraAddress PAL: 0x00296d80
+ */
+void TimerTerminate();

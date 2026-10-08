@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/vector3.h"
+#include "os/prnstream.h"
 
 /**
  * Plane equation, padded to a PlayStation 2 quadword.
@@ -17,6 +18,17 @@ struct Plane {
     float c;
     float d;
 };
+
+/**
+ * Write a plane as `(a: b: c: d:)`.
+ *
+ * @param stream The stream to write to.
+ * @param plane The plane.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x002906e0
+ * @ghidraAddress PAL: 0x0029a0a8
+ */
+PrnStream &operator<<(PrnStream &stream, const Plane &plane);
 
 /**
  * Move a plane out of the space a transform is expressed in.

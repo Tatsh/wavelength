@@ -47,11 +47,15 @@ argn
 argparse
 arkfile
 arkfiles
+arkhash
 arle
 arrghghghgh
 asyncblock
 asynccallback
+asyncfile
 asyncinfo
+asyncstream
+asynctask
 atgafile
 attachedonly
 atten
@@ -98,12 +102,14 @@ bknm
 blak
 blez
 blit
+blockmgr
 bltz
 bonuspicpanel
 bootscreen
 bossjourneyscreen
 bossunlockscreen
 breug
+breugpad
 bscmake
 bsky
 bstr
@@ -132,8 +138,10 @@ changesectionevent
 chatpanel
 chattextentry
 chcr
+cheatsmanager
 choosememcardscreen
 chpt
+chunkstream
 circbuff
 ckpt
 clippedlines
@@ -152,6 +160,7 @@ collectchildren
 collideable
 collideables
 color
+commandid
 conductorbuilder
 conexant
 constructo
@@ -357,6 +366,7 @@ ftoi
 fullrankedpanel
 fwrapv
 fxmgr
+fxmidi
 fxpacket
 gameconfig
 gamelogic
@@ -381,6 +391,7 @@ graphviz
 gsdoublebuffer
 gszbufaddr
 gtdf
+guidetick
 guideticker
 handoff
 harmonix
@@ -399,6 +410,7 @@ hideablepanel
 highlit
 hilight
 hilite
+hisize
 hlarrow
 hlbox
 hostmode
@@ -461,6 +473,7 @@ intrman
 introscreen
 inttypes
 invers
+invexp
 invisibleatruntime
 iobpreallocmemstream
 iopcontrol
@@ -480,7 +493,9 @@ iwyu
 jalr
 jbox
 jinja
-joypadps
+joypadanalogstickmsg
+joypadconnectionmsg
+joypadinputmsg
 joystickid
 jsonnet
 jsonschema
@@ -489,7 +504,7 @@ jukeboxscreen
 kapsz
 kasson
 keyboardkey
-keyboardmgr
+keyboardkeymsg
 keyboardpanel
 keyboardrequest
 keyboardscreen
@@ -537,6 +552,7 @@ libsd's
 libsdr
 libsdr's
 libsonnet
+libusbkb
 libvifpk
 libvu
 lightanim
@@ -717,6 +733,7 @@ multisetupremixsavescreen
 multiskill
 multisong
 multitap
+multitaps
 multitut
 mulw
 mulx
@@ -872,7 +889,6 @@ packetfactories
 paddh
 padman
 padman's
-padrecord
 paletted
 particlesys
 particlesysanim
@@ -943,6 +959,7 @@ ptsmult
 ptstmp
 ptstmphot
 puptipsscreen
+purplelead
 purplewins
 pushbutton
 pyinstaller
@@ -956,6 +973,7 @@ qwords
 rampanimator
 randu
 rateaverager
+rawdat
 rawip
 raytest
 rbor
@@ -967,6 +985,7 @@ readonlysavescreen
 reax
 recalc
 recomposeonresize
+rect
 redbookplaybackscreen
 redim
 refe
@@ -1038,6 +1057,7 @@ sbclaude
 sbss
 sces
 scesd
+schedulerclock
 schemafile
 scommon
 scratchtrack
@@ -1067,6 +1087,7 @@ setjmp
 setupnamescreen
 setupnewchatroomscreen
 setupremixsavescreen
+sfxbuilder
 shareremixscreen
 shellcheck
 shellformat
@@ -1134,6 +1155,7 @@ srcs
 srxfixup
 ssbd
 startable
+statsaccumulator
 statusline
 statustext
 stcycl
@@ -1180,6 +1202,7 @@ sysclib
 sysex
 sysmem
 sysmenu
+tablelin
 tadr
 tagfile
 targtype
@@ -1208,6 +1231,7 @@ tostring
 totbytes
 toupper
 tpcpyud
+trackbuilder
 trackcapturer
 trackselector
 transanim
@@ -1216,6 +1240,7 @@ transformops
 transitionerrorscreen
 transitionmusic
 transitionscreen
+travelswoosh
 trmopn
 trode
 trodes
@@ -1266,6 +1291,10 @@ uordblks
 updateworldxfm
 uploadnotescreen
 usbd
+usbkb
+usbkbd
+usbkbdata
+usbkbinfo
 usrdll
 vars
 vbext
@@ -1311,6 +1340,7 @@ waittimetask
 wbdc
 wchar
 wctype
+wdangling
 wdelete
 werror
 wextra
@@ -1320,8 +1350,11 @@ wiswa
 wiswa's
 wmaybe
 wnonnull
+worldbeat
+worldbeatbuilder
 worldlogic
 worldmgr
+worldtrack
 writx
 wuninitialized
 wuse

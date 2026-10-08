@@ -28,8 +28,8 @@ public:
      *
      * @param pMat3Rows The rotation, three rows of four floats, treated as orthonormal.
      * @return This quaternion.
-     * @ghidraAddress NTSC-U/C: 0x004ee9c0
-     * @ghidraAddress PAL: 0x0052d568
+     * @ghidraAddress NTSC-U/C: 0x00292710
+     * @ghidraAddress PAL: 0x0029c0d8
      */
     Quat &Set(const float *pMat3Rows);
 
@@ -51,6 +51,17 @@ public:
     float z;
     float w;
 };
+
+/**
+ * Write a quaternion as `x: y: z: w:`.
+ *
+ * @param stream The stream to write to.
+ * @param quat The quaternion.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00292d88
+ * @ghidraAddress PAL: 0x0029c750
+ */
+PrnStream &operator<<(PrnStream &stream, const Quat &quat);
 
 namespace Rnd {
 
@@ -75,11 +86,12 @@ void MakeAxisAngle(const Quat &quat, float *pAxis, float *pflAngle);
  *
  * The composition is the same one Rnd::MakeRotMatrix() produces from three angles. That is, the
  * product is qz * qx * qy, with each factor a rotation about one axis by the matching component.
+ * The sines and cosines come from SinApprox().
  *
  * @param pAngles The three angles in radians, ordered X, Y, and Z.
  * @return The quaternion.
- * @ghidraAddress NTSC-U/C: 0x004f0230
- * @ghidraAddress PAL: 0x0052ee20
+ * @ghidraAddress NTSC-U/C: 0x002925d8
+ * @ghidraAddress PAL: 0x0029bfa0
  */
 Quat EulerAnglesToQuat(const float *pAngles);
 
@@ -117,20 +129,15 @@ Quat QuatRotateByVector(const Quat &quat, const float *pRotVec);
  *
  * A negative dot product flips the second quaternion. The interpolation therefore never takes
  * the long way round. Both endpoint values of the parameter are special cased and copy an
- * endpoint verbatim. Two nearly parallel inputs fall back to a component-wise linear blend,
- * because the sine of the half angle underflows there.
- *
- * The scale factors and the accumulation are double precision. This target has no double
- * precision unit, and the compiler expands them into software calls. The arithmetic is
- * genuinely slower than the surrounding single precision code. The trigonometry is single
- * precision throughout.
+ * endpoint verbatim. Two inputs whose dot product is within 1e-5 of one fall back to a
+ * component-wise linear blend. The sines come from SinApprox().
  *
  * @param from The rotation at a parameter of zero.
  * @param to The rotation at a parameter of one.
  * @param out Receives the interpolation.
  * @param flT The interpolation parameter.
- * @ghidraAddress NTSC-U/C: 0x004eec20
- * @ghidraAddress PAL: 0x0052d7c8
+ * @ghidraAddress NTSC-U/C: 0x00292970
+ * @ghidraAddress PAL: 0x0029c338
  */
 void QuatSlerp(const Quat &from, const Quat &to, Quat &out, float flT);
 
@@ -145,8 +152,8 @@ namespace Rnd {
  *
  * @param quat The rotation, treated as unit length.
  * @param pMat3Rows Receives the rotation, three rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x004f0600
- * @ghidraAddress PAL: 0x0052f1f0
+ * @ghidraAddress NTSC-U/C: 0x00292ce0
+ * @ghidraAddress PAL: 0x0029c6a8
  */
 void MakeRotMatrix(const Quat &quat, float *pMat3Rows);
 
@@ -172,13 +179,12 @@ void MakeEuler(const float *pMat3Rows, float *pAngles);
  * Report the scale each basis row carries.
  *
  * Each scale is the length of its row. The Z scale is negated unless the dot product of the Z row
- * with the cross product of the X and Y rows is positive. Rnd::Transformable::GetDrawXfm() and the
- * routine at `0x00483030` call it.
+ * with the cross product of the X and Y rows is positive.
  *
  * @param pMat3Rows The basis, three rows of four floats.
  * @param pScale Receives the three scales.
- * @ghidraAddress NTSC-U/C: 0x004efed8
- * @ghidraAddress PAL: 0x0052eac8
+ * @ghidraAddress NTSC-U/C: 0x002924f0
+ * @ghidraAddress PAL: 0x0029beb8
  */
 void Mat33ExtractScale(const float *pMat3Rows, float *pScale);
 
@@ -197,14 +203,3 @@ void Mat33ExtractScale(const float *pMat3Rows, float *pScale);
  * @ghidraAddress PAL: 0x0052ebd0
  */
 void LerpEulerAngles(const float *pFrom, const float *pTo, float *pOut, float flT);
-
-/**
- * Write the four components of a quaternion.
- *
- * @param stream The stream to write to.
- * @param quat The quaternion.
- * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x00292d88
- * @ghidraAddress PAL: 0x0029c750
- */
-PrnStream &operator<<(PrnStream &stream, const Quat &quat);

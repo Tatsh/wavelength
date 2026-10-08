@@ -1,7 +1,7 @@
 #include "app/hudflyingbutton.h"
 
 #include "game/gamedb.h"
-#include "math/trig.h"
+#include "math/sine.h"
 #include "os/string.h"
 #include "os/system.h"
 #include "rnd/font.h"
@@ -49,7 +49,7 @@ HudFlyingButton::HudFlyingButton(int nLane) {
     if (nLane == kCurveLane) {
         DataArray *pCurve =
             SystemConfig()->FindArray("gfx", true)->FindArray("button_icon_interp", true);
-        sFlight = Interpolator::Create(pCurve->Array(1));
+        sFlight = ObjectToInterpolator(pCurve->Array(1));
         sFlightTime = sFlight->mX1;
     }
     Reset();
@@ -115,7 +115,7 @@ void HudFlyingButton::Draw() {
     }
     if (mPulse != 0) {
         const float fTick = TheGameDb->mSongTick;
-        const float fWave = SinLookup((fTick + fTick) * kPi * kPulseTurnsPerTick + kHalfPi);
+        const float fWave = FastSin((fTick + fTick) * kPi * kPulseTurnsPerTick + kHalfPi);
         mText->mFont->mMat->SetAlpha(fWave * 0.5f + 0.5f);
     } else {
         mText->mFont->mMat->SetAlpha(1.0f);

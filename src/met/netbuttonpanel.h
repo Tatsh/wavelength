@@ -23,23 +23,28 @@ public:
     }
 
     /**
+     * Create a panel from its script description.
+     *
+     * Metagame::RegisterScreenClasses() registers the routine for the entry type
+     * `fn_button_panel`.
+     *
+     * @param pData The script description.
+     * @param pszDir The directory of the description file.
+     * @return The new panel.
+     * @ghidraAddress NTSC-U/C: 0x00357b30
+     * @ghidraAddress PAL: 0x003c4ee0
+     */
+    static UIPanel *New(DataArray *pData, const char *pszDir) {
+        return new NetButtonPanel(pData, pszDir);
+    }
+
+    /**
      * Destroy the panel.
      *
      * @ghidraAddress NTSC-U/C: 0x00357a88
      * @ghidraAddress PAL: 0x003c4e38
      */
     ~NetButtonPanel() override {
-    }
-
-    /**
-     * Create a panel from its script description.
-     *
-     * @param pData The script description.
-     * @param pszDir The directory of the description file.
-     * @return The new panel.
-     */
-    static UIPanel *New(DataArray *pData, const char *pszDir) {
-        return new NetButtonPanel(pData, pszDir);
     }
 
     /**

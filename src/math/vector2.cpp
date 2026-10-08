@@ -58,3 +58,8 @@ Vector2 Rnd::Intersect(const Ray &first, const Ray &second) {
     crossing.x = secondPoint.x + (flT * secondDirection.x);
     return crossing;
 }
+
+PrnStream &operator<<(PrnStream &stream, const Vector2 &vector) {
+    stream << "(x:" << vector.x << " y:" << vector.y << ")";
+    return stream;
+}

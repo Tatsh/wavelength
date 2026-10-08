@@ -15,12 +15,11 @@ public:
      * Widen this box on each axis where a point falls outside it.
      *
      * An axis whose value is below the lower corner moves only the lower corner, and the upper
-     * corner is tested only when the lower one did not move. Rnd::Mesh::BoundingSphere() and
-     * Rnd::Mesh::BoundingBox() call it. The name is inferred.
+     * corner is tested only when the lower one did not move. The name is inferred.
      *
      * @param point The point to enclose.
-     * @ghidraAddress NTSC-U/C: 0x00551020
-     * @ghidraAddress PAL: 0x00591660
+     * @ghidraAddress NTSC-U/C: 0x00290790
+     * @ghidraAddress PAL: 0x0029a158
      */
     void GrowToContain(const Vector3 &point);
 

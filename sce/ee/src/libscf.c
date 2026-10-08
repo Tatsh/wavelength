@@ -44,17 +44,9 @@ enum {
     kRomVersionReadSize = 14,
 };
 
-// The timezone a tool console reports, in minutes east of UTC.
-// NTSC-U/C: 0x0077fbf0, PAL: 0x007a4678
-static short g_nScfDefaultTimezone = 540;
-
-// The language a tool console reports.
-// NTSC-U/C: 0x0077fbf4, PAL: 0x007a467c
-static unsigned char g_nScfDefaultLanguage = SCE_JAPANESE_LANGUAGE;
-
-// The summer time flag a tool console reports.
-// NTSC-U/C: 0x0077fbf6, PAL: 0x007a467e
-static unsigned char g_nScfDefaultSummerTime = 0;
+// The settings a tool console reports, which sceScfSetT10kConfig() replaces.
+// NTSC-U/C: 0x003c4740
+static sceScfT10kConfig g_scfT10kConfig = {540, {0, 0}, SCE_JAPANESE_LANGUAGE, 0, 0, 0};
 
 // The contents of rom0:ROMVER, empty until the first read.
 // NTSC-U/C: 0x0077fbf8, PAL: 0x007a4680
@@ -237,7 +229,7 @@ int sceScfGetTimezone(void) {
     int nTimezone;
 
     if (sceScfEnsureRomVersionRead() != 0) {
-        return g_nScfDefaultTimezone;
+        return g_scfT10kConfig.nTimezone;
     }
     GetOsdConfigParam(&nConfig);
     nVersion = (nConfig >> kVersionShift) & (unsigned int)kVersionMask;
@@ -249,13 +241,17 @@ int sceScfGetTimezone(void) {
     return nTimezone;
 }
 
+void sceScfSetT10kConfig(const sceScfT10kConfig *pConfig) {
+    g_scfT10kConfig = *pConfig;
+}
+
 int sceScfGetLanguage(void) {
     unsigned int nConfig;
     unsigned int nVersion;
 
     GetOsdConfigParam(&nConfig); // Yes, the binary reads the word before the tool check too.
     if (sceScfEnsureRomVersionRead() != 0) {
-        return g_nScfDefaultLanguage;
+        return g_scfT10kConfig.nLanguage;
     }
     GetOsdConfigParam(&nConfig);
     nVersion = (nConfig >> kVersionShift) & (unsigned int)kVersionMask;
@@ -273,7 +269,7 @@ int sceScfGetSummerTime(void) {
     int nSummer;
 
     if (sceScfEnsureRomVersionRead() != 0) {
-        return g_nScfDefaultSummerTime;
+        return g_scfT10kConfig.nSummerTime;
     }
     GetOsdConfigParam(&nConfig);
     nVersion = (nConfig >> kVersionShift) & (unsigned int)kVersionMask;

@@ -1,15 +1,42 @@
 #pragma once
 
+#include "gs/muse.h"
+#include "os/ptr.h"
+
 /**
  * Bank of interface sounds built from the "fx_midi_file" entry of the "db" configuration section.
  *
- * The class is not polymorphic and has no RTTI. The name is inferred. One instance exists, at the
- * pointer `0x00440d58`, and its members are one sound cue each. Every member below plays or stops
- * one cue of that instance. Only the members its callers here use are declared, and their names are
- * inferred from the events that play them.
+ * The class is not polymorphic and has no RTTI. The name is inferred. The one instance is
+ * TheFxMidi, and its members are one sound cue each, which SFXBuilder fills from the tracks the
+ * names of the members follow. Each routine below plays or stops cues of that instance on the
+ * interface scheduler of GameDb. The constructor at `0x003a5f30` (PAL `0x00414c10`) and the
+ * destructor at `0x003a5a80` (PAL `0x00414760`) are compiler-generated.
  */
 class FxMidi {
 public:
+    /** Entries of mPowerupCatches and mPowerupDeploys. Entry 0 has no cue. */
+    enum Powerup {
+        kPowerupAutocatcher = 1, /*!< The autocatcher. */
+        kPowerupMultiplier = 2,  /*!< The multiplier. */
+        kPowerupSlowdown = 3,    /*!< The slowdown. */
+        kPowerupFreestyler = 4,  /*!< The freestyler. */
+        kPowerupBumper = 5,      /*!< The bumper. */
+        kPowerupCrippler = 6,    /*!< The crippler. */
+        kPowerupCount = 7,       /*!< The number of entries. */
+    };
+
+    /** Entries of mWins and mLeads, the player colours. */
+    enum Color {
+        kColorGreen = 0,  /*!< Green. */
+        kColorPurple = 1, /*!< Purple. */
+        kColorRed = 2,    /*!< Red. */
+        kColorYellow = 3, /*!< Yellow. */
+        kColorCount = 4,  /*!< The number of colours. */
+    };
+
+    /** The number of guide tick cues, and of duel player cues. */
+    static constexpr int kGuideTickCount = 3;
+    static constexpr int kDuelPlayerCount = 2;
     /**
      * Play the sound of the left directional button in the menus.
      *
@@ -157,6 +184,14 @@ public:
      * @ghidraAddress PAL: 0x002897a0
      */
     static void PlayJuiceLowSound();
+
+    /**
+     * Play the `UNLOCK` cue. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027fee8
+     * @ghidraAddress PAL: 0x002897e8
+     */
+    static void PlayUnlock();
 
     /**
      * Play the sound of a power-up a player caught.
@@ -445,4 +480,65 @@ public:
      * @ghidraAddress PAL: 0x0028a270
      */
     static void StopTransition();
+
+    Ptr<Muse> mMiss;                          /*!< `MISS`. */
+    Ptr<Muse> mUncatchable;                   /*!< `UNCATCHABLE`. */
+    Ptr<Muse> mCheckpointCheer;               /*!< `CHECKPOINT_CHEER`. */
+    Ptr<Muse> mCheckpointInsane;              /*!< `CHECKPOINT_INSANE`. */
+    Ptr<Muse> mWinCheer;                      /*!< `WIN_CHEER`. */
+    Ptr<Muse> mWarning;                       /*!< `WARNING`. */
+    Ptr<Muse> mGuideTicks[kGuideTickCount];   /*!< `GUIDETICK1` to `GUIDETICK3`. */
+    Ptr<Muse> mPowerupCatches[kPowerupCount]; /*!< `<POWERUP>_CATCH`, by Powerup. */
+    Ptr<Muse> mPowerupDeploys[kPowerupCount]; /*!< `<POWERUP>_DEPLOY`, by Powerup. */
+    Ptr<Muse> mWrong;                         /*!< `WRONG`. */
+    Ptr<Muse> mSquare;                        /*!< `SQUARE`. */
+    Ptr<Muse> mLazySusan;                     /*!< `LAZYSUSAN`. */
+    Ptr<Muse> mSoloPortal;                    /*!< `SOLOPORTAL`. */
+    Ptr<Muse> mMultiPortal;                   /*!< `MULTIPORTAL`. */
+    Ptr<Muse> mNetPortal;                     /*!< `NETPORTAL`. */
+    Ptr<Muse> mTravelSwoosh;                  /*!< `TRAVELSWOOSH`. */
+    Ptr<Muse> mLeft;                          /*!< `LEFT`. */
+    Ptr<Muse> mRight;                         /*!< `RIGHT`. */
+    Ptr<Muse> mUp;                            /*!< `UP`. */
+    Ptr<Muse> mDown;                          /*!< `DOWN`. */
+    Ptr<Muse> mSelect;                        /*!< `SELECT`. */
+    Ptr<Muse> mBack;                          /*!< `BACK`. */
+    Ptr<Muse> mCheat;                         /*!< `CHEAT`. */
+    Ptr<Muse> mProjector;                     /*!< `PROJECTOR`. */
+    Ptr<Muse> mUnlock;                        /*!< `UNLOCK`. */
+    Ptr<Muse> mWins[kColorCount];             /*!< `<COLOR>WINS`, by Color. */
+    Ptr<Muse> mLeads[kColorCount];            /*!< `<COLOR>LEAD`, by Color. */
+    Ptr<Muse> mDuelPlayers[kDuelPlayerCount]; /*!< `DUEL_PLAYER1` and `DUEL_PLAYER2`. */
+    Ptr<Muse> mKeyboardLeftUp;                /*!< `KEYBOARD_LEFT_UP`. */
+    Ptr<Muse> mKeyboardRightDown;             /*!< `KEYBOARD_RIGHT_DOWN`. */
+    Ptr<Muse> mKeyboardCircle;                /*!< `KEYBOARD_CIRCLE`. */
+    Ptr<Muse> mKeyboardBack;                  /*!< `KEYBOARD_BACK`. */
+    Ptr<Muse> mKeyboardKeyEnter;              /*!< `KEYBOARD_KEYENTER`. */
+    Ptr<Muse> mArenaUnlock;                   /*!< `ARENA_UNLOCK`. */
+    Ptr<Muse> mDuelLayPattern;                /*!< `DUEL_LAYPATT`. */
+    Ptr<Muse> mDuelCatchPattern;              /*!< `DUEL_CATCHPATT`. */
+    Ptr<Muse> mDuelNice;                      /*!< `DUEL_NICE`. */
+    Ptr<Muse> mDuelYouGotIt;                  /*!< `DUEL_YOUGOTIT`. */
+    Ptr<Muse> mDuelAlmost;                    /*!< `DUEL_ALMOST`. */
+    Ptr<Muse> mDuelOneLetter;                 /*!< `DUEL_ONELETTER`. */
+    Ptr<Muse> mDuelAww;                       /*!< `DUEL_AWW`. */
+    Ptr<Muse> mDuelPerfect;                   /*!< `DUEL_PERFECT`. */
+    Ptr<Muse> mDuelYeah;                      /*!< `DUEL_YEAH`. */
+    Ptr<Muse> mDecrypt;                       /*!< `DECRYPT`. */
+    Ptr<Muse> mText;                          /*!< `TEXT`. */
+    Ptr<Muse> mDuelGameTie;                   /*!< `DUEL_GAMETIE`. */
+    Ptr<Muse> mDuelGreenWins;                 /*!< `DUEL_GREENWINS`. */
+    Ptr<Muse> mDuelPurpleWins;                /*!< `DUEL_PURPLEWINS`. */
+    Ptr<Muse> mDuelMiss;                      /*!< `DUEL_MISS`. */
+    Ptr<Muse> mDuelMissThis;                  /*!< `DUEL_MISSTHIS`. */
+    Ptr<Muse> mDuelCheer;                     /*!< `DUEL_CHEER`. */
+    Ptr<Muse> mErase;                         /*!< `ERASE1`. */
+    Ptr<Muse> mEraseSection;                  /*!< `ERASE2`. */
 };
+
+/**
+ * The bank of interface sounds, which GameDb::InitSfx() creates.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00440d58
+ */
+extern FxMidi *TheFxMidi;

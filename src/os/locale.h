@@ -64,3 +64,13 @@ public:
  * @ghidraAddress NTSC-U/C: 0x00515330
  */
 extern Locale TheLocale;
+
+/**
+ * Prepare the locale layer while the system starts.
+ *
+ * The body does nothing. The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00299ac0
+ * @ghidraAddress PAL: 0x002a36c0
+ */
+void LocalePrepare();

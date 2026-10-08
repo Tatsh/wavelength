@@ -19,14 +19,13 @@ struct Ray {
 /**
  * Find where two lines in a plane cross.
  *
- * Parallel lines report the point of the first line. Rnd::String::EmitRibbonVerts() is the one
- * caller.
+ * Parallel lines report the point of the first line.
  *
  * @param first The first line.
  * @param second The second line.
  * @return The crossing point.
- * @ghidraAddress NTSC-U/C: 0x00551190
- * @ghidraAddress PAL: 0x005917d0
+ * @ghidraAddress NTSC-U/C: 0x002907f0
+ * @ghidraAddress PAL: 0x0029a1b8
  */
 Vector2 Intersect(const Ray &first, const Ray &second);
 

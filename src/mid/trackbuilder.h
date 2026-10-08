@@ -50,4 +50,20 @@ public:
     int mTrack;                 /*!< The number of the MIDI track. */
     bool mValidate;             /*!< Check the events for authoring errors. */
     ErrorHandler mErrorHandler; /*!< The routine that reports an error, or null. */
+
+private:
+    /**
+     * Compose a message as `<prefix>(MIDI track <track>, tick <MBT>): <message>`.
+     *
+     * The name is inferred.
+     *
+     * @param prefix The text before the location.
+     * @param nTick The tick, shown at four beats a bar and 480 ticks a beat.
+     * @param nTrack The track.
+     * @param message The text after the location.
+     * @return The message.
+     * @ghidraAddress NTSC-U/C: 0x002809a8
+     * @ghidraAddress PAL: 0x0028a2a8
+     */
+    static String FormatMessage(const String &prefix, int nTick, int nTrack, const String &message);
 };

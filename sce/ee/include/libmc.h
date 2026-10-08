@@ -133,6 +133,15 @@ typedef struct {
 int sceMcInitLibrary(void);
 
 /**
+ * Delete the semaphore sceMcInitLibrary() created.
+ *
+ * @return 1.
+ * @ghidraAddress NTSC-U/C: 0x00313118
+ * @ghidraAddress PAL: 0x0037f7c8
+ */
+int sceMcEnd(void);
+
+/**
  * Start opening a file.
  *
  * @param nPort Port.

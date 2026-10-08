@@ -12,6 +12,15 @@
  */
 class BinStream {
 public:
+    /**
+     * Construct a stream.
+     *
+     * @param bLittleEndian Whether values are stored in the console's byte order.
+     * @ghidraAddress NTSC-U/C: 0x00293f10
+     */
+    explicit BinStream(bool bLittleEndian) : mLittleEndian(bLittleEndian) {
+    }
+
     /** Release the stream. */
     virtual ~BinStream();
 
@@ -71,6 +80,44 @@ public:
     virtual bool Fail() = 0;
 
     /**
+     * Receive a named mark in the data, such as the end of a chunk.
+     *
+     * The base ignores the mark. ChunkStream ends its block at a mark of g_szChunkMark.
+     *
+     * @param pszMark The mark.
+     * @ghidraAddress NTSC-U/C: 0x00339f40
+     */
+    virtual void Mark(const char *pszMark) {
+        (void)pszMark;
+    }
+
+    /**
+     * Read a length-prefixed string into a buffer and terminate it.
+     *
+     * @param pszBuffer Receives the text. The caller provides room for it.
+     * @ghidraAddress NTSC-U/C: 0x00294468
+     */
+    void ReadString(char *pszBuffer);
+
+    /**
+     * Read a length-prefixed string.
+     *
+     * @param text Receives the text.
+     * @ghidraAddress NTSC-U/C: 0x00294408
+     */
+    void ReadString(String &text);
+
+    /**
+     * Write a string with its length first.
+     *
+     * @param pszText The text.
+     * @return This stream.
+     * @ghidraAddress NTSC-U/C: 0x00294390
+     * @ghidraAddress PAL: 0x0029dfd8
+     */
+    BinStream &WriteString(const char *pszText);
+
+    /**
      * Read a value of 2, 4, 8, or 16 bytes, reversing its bytes unless the stream is little endian.
      *
      * @param pData The destination.
@@ -90,33 +137,6 @@ public:
      * @ghidraAddress PAL: 0x0029ddb0
      */
     void WriteEndian(const void *pData, int nBytes);
-
-    /**
-     * Write text as its length followed by its characters, without the terminator.
-     *
-     * @param pszText The text.
-     * @return The stream.
-     * @ghidraAddress NTSC-U/C: 0x00294390
-     * @ghidraAddress PAL: 0x0029dfd8
-     */
-    BinStream &WriteString(const char *pszText);
-
-    /**
-     * Read text WriteString() wrote into a string.
-     *
-     * @param text Receives the text.
-     * @ghidraAddress NTSC-U/C: 0x00294408
-     */
-    void ReadString(String &text);
-
-    /**
-     * Read text WriteString() wrote into a buffer and terminate it.
-     *
-     * @param pszBuffer Receives the text.
-     * @param nBufferSize The size of the buffer. The routine does not check it.
-     * @ghidraAddress NTSC-U/C: 0x00294468
-     */
-    void ReadString(char *pszBuffer, int nBufferSize);
 
 private:
     bool mLittleEndian; /*!< Whether values are stored in the console's byte order. */

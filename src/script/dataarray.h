@@ -18,7 +18,25 @@ public:
     enum NodeType {
         kNodeInt = 0,    /*!< An integer. */
         kNodeSymbol = 1, /*!< A symbol. */
+        kNodeArray = 3,  /*!< A child array. */
     };
+
+    /** A node's value, read as the member its NodeType selects. */
+    union Node {
+        int mInt;            /*!< The value of a kNodeInt node. */
+        const char *mSymbol; /*!< The value of a kNodeSymbol node. */
+        DataArray *mArray;   /*!< The value of a kNodeArray node. */
+    };
+
+    /**
+     * Report a node's value without regard to its kind.
+     *
+     * @param nIndex The node.
+     * @return The value.
+     * @ghidraAddress NTSC-U/C: 0x00296738
+     * @ghidraAddress PAL: 0x002a0350
+     */
+    Node Value(int nIndex) const;
 
     /**
      * Take one more reference.
@@ -244,6 +262,26 @@ public:
     DataArray *Array(int nIndex) const;
 
     /**
+     * Replace a node with a value of a kind.
+     *
+     * @param nIndex The node.
+     * @param nValue The value.
+     * @param nType The kind of the value, one of NodeType.
+     * @ghidraAddress NTSC-U/C: 0x00296820
+     * @ghidraAddress PAL: 0x002a0438
+     */
+    void SetNode(int nIndex, int nValue, int nType);
+
+    /**
+     * Write the array as script text.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00295cb0
+     * @ghidraAddress PAL: 0x0029f8c8
+     */
+    void Print(PrnStream &stream) const;
+
+    /**
      * Build the path of the compiled copy of a data file.
      *
      * The compiled copy is `<directory>/gen/<base>.<extension>.bin`. It is used when the game runs
@@ -268,20 +306,6 @@ public:
     static DataArray *New(int nSize);
 
     /**
-     * Replace a node, taking a reference on an array value and releasing the one an array node
-     * held before.
-     *
-     * A symbol value is interned first.
-     *
-     * @param nIndex The node.
-     * @param nValue The value, which is an integer, a symbol, or an array as eType specifies.
-     * @param eType The kind of the node, one of NodeType.
-     * @ghidraAddress NTSC-U/C: 0x00296820
-     * @ghidraAddress PAL: 0x002a0438
-     */
-    void Set(int nIndex, int nValue, int eType);
-
-    /**
      * Define a script macro, taking a reference on its value.
      *
      * @param pszName The name of the macro.
@@ -297,3 +321,33 @@ public:
     unsigned short mRefs; /*!< Reference count Release() decrements. */
     short mLine;          /*!< The line of mFile the array starts at. */
 };
+
+/**
+ * Reserve the symbol table before the first data file is read.
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00297050
+ * @ghidraAddress PAL: 0x002a0c60
+ */
+void DataReserveSymbols();
+
+/**
+ * Release every array the data layer still retains.
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00297110
+ * @ghidraAddress PAL: 0x002a0d20
+ */
+void DataTerminate();
+
+/**
+ * Make DataArray::Read() use the compiled copy of every data file.
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x00297ed0
+ * @ghidraAddress PAL: 0x002a1ad0
+ */
+void DataSetCompiled();

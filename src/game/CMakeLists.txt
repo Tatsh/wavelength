@@ -41,7 +41,6 @@ set(WAVELENGTH_GAME_SRCS
     helptext.cpp
     inputmap.cpp
     inputmgr.cpp
-    joypadps2.cpp
     juicemeter.cpp
     levelmidibuilder.cpp
     lineartransform.cpp
@@ -51,7 +50,6 @@ set(WAVELENGTH_GAME_SRCS
     multigamelogic.cpp
     netarbiter.cpp
     netfaker.cpp
-    padrecord.cpp
     pitchtrack.cpp
     pitchtrackbuilder.cpp
     pitchtrackdisplay.cpp
@@ -96,8 +94,11 @@ set(WAVELENGTH_GAME_SRCS
     waitinteractivetask.cpp
     waittimetask.cpp
     world.cpp
+    worldbeat.cpp
+    worldbeatbuilder.cpp
     worldlogic.cpp
-    worldmgr.cpp)
+    worldmgr.cpp
+    worldtrack.cpp)
 
 add_library(wavelength_game STATIC ${WAVELENGTH_GAME_SRCS})
 target_link_libraries(wavelength_game PRIVATE wavelength_common)

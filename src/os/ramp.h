@@ -1,5 +1,8 @@
 #pragma once
 
+#include "math/interpolator.h"
+#include "os/command.h"
+#include "os/ptr.h"
 #include "os/scheduler.h"
 
 /**
@@ -77,4 +80,23 @@ public:
      * @ghidraAddress PAL: 0x0028b328
      */
     float GetValue() const;
+
+private:
+    /**
+     * Apply the value of the current tick, and queue the next step until the move ends.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00281a30
+     * @ghidraAddress PAL: 0x0028b330
+     */
+    void Step();
+
+    float mValue;               // The current value.
+    Scheduler *mScheduler;      // The scheduler the steps are queued on.
+    Ptr<Command> mStepCommand;  // The command that runs Step().
+    int mMoving;                // Non-zero while a step is queued.
+    LinearInterpolator mInterp; // The value at each tick of the move.
+    int mEndTick;               // The tick the move ends at, or -1.
+    int mStepTicks;             // The ticks between steps, or -1.
 };

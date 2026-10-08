@@ -186,6 +186,16 @@ public:
     int Find(const char *pszText) const;
 
     /**
+     * Find the first occurrence of a character.
+     *
+     * @param ch The character to find.
+     * @return The position of the occurrence, or npos.
+     * @ghidraAddress NTSC-U/C: 0x0029f1a0
+     * @ghidraAddress PAL: 0x002a8e60
+     */
+    int Find(char ch) const;
+
+    /**
      * Find the first occurrence of a character at or after a position.
      *
      * @param ch The character to find.
@@ -195,6 +205,16 @@ public:
      * @ghidraAddress PAL: 0x002a8eb0
      */
     int Find(char ch, int nPos) const;
+
+    /**
+     * Find the last occurrence of a character.
+     *
+     * @param ch The character to find.
+     * @return The position of the occurrence, or npos.
+     * @ghidraAddress NTSC-U/C: 0x0029f298
+     * @ghidraAddress PAL: 0x002a8f58
+     */
+    int RFind(char ch) const;
 
     /**
      * Copy the characters from a position to the end.
@@ -309,6 +329,15 @@ public:
      * @ghidraAddress PAL: 0x002a88e8
      */
     String operator+(const String &other) const;
+
+    /**
+     * Replace the text with nLength zero bytes.
+     *
+     * @param nLength The new length.
+     * @ghidraAddress NTSC-U/C: 0x0029f120
+     * @ghidraAddress PAL: 0x002a8de0
+     */
+    void Resize(int nLength);
 
     /**
      * Report the text.

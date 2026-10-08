@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+#include "math/sine.h"
 #include "math/vector3.h"
 
 namespace {
@@ -25,6 +26,9 @@ constexpr int kComponentCount = 3;
 // A quarter turn, reported as the X angle at the gimbal lock limit, and the Y row Z component
 // beyond which the Y and Z angles cannot be separated.
 constexpr float kQuarterTurn = 1.570796251f;
+
+// The quarter turn SinApprox() is advanced by to give a cosine.
+constexpr float kQuarterTurnApprox = 1.57079637f;
 constexpr float kGimbalLockLimit = 0.9999998808f;
 
 // Pi and two pi as the image stores them, one unit in the last place below the nearest float.
@@ -72,16 +76,16 @@ void Rnd::MakeAxisAngle(const Quat &quat, float *pAxis, float *pflAngle) {
 }
 
 Quat EulerAnglesToQuat(const float *pAngles) {
-    Vector3 half;
-    half.w = 1.0f;
-    Vec3Scale(pAngles, 0.5f, &half.x);
+    const float flHalfX = pAngles[kX] * 0.5f;
+    const float flHalfY = pAngles[kY] * 0.5f;
+    const float flHalfZ = pAngles[kZ] * 0.5f;
 
-    const float flSinX = sinf(half.x);
-    const float flCosX = cosf(half.x);
-    const float flSinY = sinf(half.y);
-    const float flCosY = cosf(half.y);
-    const float flSinZ = sinf(half.z);
-    const float flCosZ = cosf(half.z);
+    const float flSinX = SinApprox(flHalfX);
+    const float flCosX = SinApprox(flHalfX + kQuarterTurnApprox);
+    const float flSinY = SinApprox(flHalfY);
+    const float flCosY = SinApprox(flHalfY + kQuarterTurnApprox);
+    const float flSinZ = SinApprox(flHalfZ);
+    const float flCosZ = SinApprox(flHalfZ + kQuarterTurnApprox);
 
     // The X rotation composed with the Y rotation. The image builds it in the destination,
     // then folds the Z rotation in on top of it.
@@ -184,33 +188,38 @@ void QuatSlerp(const Quat &from, const Quat &to, Quat &out, float flT) {
         return;
     }
 
-    double dDot = (((from.x * to.x) + (from.y * to.y)) + (from.z * to.z)) + (from.w * to.w);
+    float flDot = (((from.x * to.x) + (from.y * to.y)) + (from.z * to.z)) + (from.w * to.w);
 
     Quat target = to;
-    if (dDot < 0.0) {
+    if (flDot < 0.0f) {
         target.x = -to.x;
         target.y = -to.y;
         target.z = -to.z;
         target.w = -to.w;
-        dDot = 0.0 - dDot; // Yes, the binary subtracts from zero rather than negating.
+        flDot = -flDot;
     }
 
-    double dFromScale;
-    double dToScale;
-    if ((1.0 - dDot) > kSlerpLinearEpsilon) {
-        const double dTheta = acosf(dDot);
-        const double dInvSinTheta = 1.0f / sinf(dTheta);
-        dFromScale = sinf((1.0f - flT) * dTheta) * dInvSinTheta;
-        dToScale = sinf(flT * dTheta) * dInvSinTheta;
+    float flFromScale;
+    float flToScale;
+    if ((1.0f - flDot) > kSlerpLinearEpsilon) {
+        const float flTheta = acosf(flDot);
+        const float flInvSinTheta = 1.0f / SinApprox(flTheta);
+        flFromScale = SinApprox((1.0f - flT) * flTheta) * flInvSinTheta;
+        flToScale = SinApprox(flT * flTheta) * flInvSinTheta;
     } else {
-        dFromScale = 1.0f - flT;
-        dToScale = flT;
+        flFromScale = 1.0f - flT;
+        flToScale = flT;
     }
 
-    out.x = (dFromScale * from.x) + (dToScale * target.x);
-    out.y = (dFromScale * from.y) + (dToScale * target.y);
-    out.z = (dFromScale * from.z) + (dToScale * target.z);
-    out.w = (dFromScale * from.w) + (dToScale * target.w);
+    out.x = (flFromScale * from.x) + (flToScale * target.x);
+    out.y = (flFromScale * from.y) + (flToScale * target.y);
+    out.z = (flFromScale * from.z) + (flToScale * target.z);
+    out.w = (flFromScale * from.w) + (flToScale * target.w);
+}
+
+PrnStream &operator<<(PrnStream &stream, const Quat &quat) {
+    stream << "x:" << quat.x << " y:" << quat.y << " z:" << quat.z << " w:" << quat.w;
+    return stream;
 }
 
 void Rnd::MakeRotMatrix(const Quat &quat, float *pMat3Rows) {

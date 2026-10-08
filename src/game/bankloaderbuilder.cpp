@@ -92,7 +92,7 @@ void BankLoaderBuilder::AddBank(int nTick, const char *pszFile) {
         return;
     }
 
-    String name(FileGetBase(pszFile));
+    String name(FileGetBaseName(pszFile));
     if (IsPermBankName(name)) {
         if (nTick != kFirstTick) {
             Error(nTick, kPermNotFirstError);

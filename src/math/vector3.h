@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/prnstream.h"
+
 /**
  * Three-component vector, padded to a PlayStation 2 quadword.
  *
@@ -15,6 +17,18 @@ struct Vector3 {
     float z;
     float w = 1.0f; // +0x0c Padding for quadword access, set to 1.0 on construction.
 };
+
+/**
+ * Write a vector as `(x: y: z:)`, adding ` w:` before the parenthesis when the stream's
+ * mDumpLevel is kPrnModeFull.
+ *
+ * @param stream The stream to write to.
+ * @param vector The vector.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00292ed8
+ * @ghidraAddress PAL: 0x0029c8a0
+ */
+PrnStream &operator<<(PrnStream &stream, const Vector3 &vector);
 
 namespace Rnd {
 

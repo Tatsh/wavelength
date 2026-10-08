@@ -17,6 +17,25 @@ extern "C" {
 #define SCE_GERMAN_LANGUAGE 4   /*!< German. */
 #define SCE_ITALIAN_LANGUAGE 5  /*!< Italian. */
 
+/** Settings a tool console reports in place of the console configuration. */
+typedef struct {
+    short nTimezone;              /*!< The timezone, in minutes east of UTC. */
+    unsigned char abReserved2[2]; /*!< Undetermined. */
+    unsigned char nLanguage;      /*!< One of the language codes. */
+    unsigned char nReserved5;     /*!< Undetermined. */
+    unsigned char nSummerTime;    /*!< Non-zero while summer time applies. */
+    unsigned char nReserved7;     /*!< Undetermined. */
+} sceScfT10kConfig;
+
+/**
+ * Replace the settings a tool console reports.
+ *
+ * @param pConfig The settings.
+ * @ghidraAddress NTSC-U/C: 0x00315af0
+ * @ghidraAddress PAL: 0x003823a8
+ */
+void sceScfSetT10kConfig(const sceScfT10kConfig *pConfig);
+
 /**
  * Report the console's language setting.
  *

@@ -71,11 +71,12 @@ bool UsingCD();
 void SetUsingCD(bool bUsingCD);
 
 /**
- * Whether the `host_config` command-line option asked for the script files to come from the host.
+ * Non-zero when the `host_config` command-line option asked for the script files to come from the
+ * host.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2234
  */
-extern bool g_bHostConfig;
+extern int g_bHostConfig;
 
 /**
  * Report the language the console is set to.
@@ -114,4 +115,18 @@ inline float SystemMs() {
     gSystemTimer.Split();
     gSystemCycles += gSystemTimer.mCycles;
     return static_cast<float>(gSystemCycles) * gSystemCycles2Ms;
+}
+
+/**
+ * Report the cycles the system clock has measured since it was last reset.
+ *
+ * Every caller expands the body inline, so the image has no out-of-line copy. The name is
+ * inferred.
+ *
+ * @return The elapsed cycles.
+ */
+inline unsigned long long SystemCycles() {
+    gSystemTimer.Split();
+    gSystemCycles += gSystemTimer.mCycles;
+    return gSystemCycles;
 }

@@ -28,22 +28,27 @@ public:
     explicit NetChooseIConfigScreen(DataArray *pData);
 
     /**
+     * Create a screen from its script description.
+     *
+     * Metagame::RegisterScreenClasses() registers the routine for the entry type
+     * `net_config_screen`.
+     *
+     * @param pData The script description.
+     * @return The new screen.
+     * @ghidraAddress NTSC-U/C: 0x00358bc8
+     * @ghidraAddress PAL: 0x003c5f30
+     */
+    static UIScreen *New(DataArray *pData) {
+        return new NetChooseIConfigScreen(pData);
+    }
+
+    /**
      * Release the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00358b08
      * @ghidraAddress PAL: 0x003c5e70
      */
     ~NetChooseIConfigScreen() override {
-    }
-
-    /**
-     * Produce a screen on the heap.
-     *
-     * @param pData The description of the screen.
-     * @return The screen.
-     */
-    static UIScreen *New(DataArray *pData) {
-        return new NetChooseIConfigScreen(pData);
     }
 
     /**

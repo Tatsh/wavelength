@@ -29,23 +29,27 @@ public:
     }
 
     /**
+     * Create a panel from its script description.
+     *
+     * Metagame::RegisterScreenClasses() registers the routine for the entry type `lpad_panel`.
+     *
+     * @param pData The script description.
+     * @param pszDir The directory of the description file.
+     * @return The new panel.
+     * @ghidraAddress NTSC-U/C: 0x00358550
+     * @ghidraAddress PAL: 0x003c5900
+     */
+    static UIPanel *New(DataArray *pData, const char *pszDir) {
+        return new NetHostLPadButtonPanel(pData, pszDir);
+    }
+
+    /**
      * Destroy the panel.
      *
      * @ghidraAddress NTSC-U/C: 0x00358448
      * @ghidraAddress PAL: 0x003c57f8
      */
     ~NetHostLPadButtonPanel() override {
-    }
-
-    /**
-     * Create a panel from its script description.
-     *
-     * @param pData The script description.
-     * @param pszDir The directory of the description file.
-     * @return The new panel.
-     */
-    static UIPanel *New(DataArray *pData, const char *pszDir) {
-        return new NetHostLPadButtonPanel(pData, pszDir);
     }
 
     /**

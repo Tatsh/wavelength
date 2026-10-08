@@ -127,6 +127,9 @@ public:
     int mDumpLevel;
 };
 
+/** The PrnStream::mDumpLevel value that includes the fourth word of a written Vector3. */
+constexpr int kPrnModeFull = 10;
+
 /**
  * Write a list as its size followed by one tab-indented line per element.
  *

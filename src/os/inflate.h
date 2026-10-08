@@ -21,8 +21,8 @@ struct huft;
  * buffer are returned to the staging buffer. The gzip trailer is neither read nor checked.
  *
  * @return kInflateOk, or the failure of the block decoder.
- * @ghidraAddress NTSC-U/C: 0x0063e0b0
- * @ghidraAddress PAL: 0x0067ec40
+ * @ghidraAddress NTSC-U/C: 0x00286cd8
+ * @ghidraAddress PAL: 0x00290588
  */
 int inflate(void);
 
@@ -31,8 +31,8 @@ int inflate(void);
  *
  * inflate() calls it before each block.
  *
- * @ghidraAddress NTSC-U/C: 0x0063e1a8
- * @ghidraAddress PAL: 0x0067ed38
+ * @ghidraAddress NTSC-U/C: 0x00285268
+ * @ghidraAddress PAL: 0x0028eb18
  */
 void HuftReset(void);
 
@@ -44,8 +44,8 @@ void HuftReset(void);
  *
  * @param nEntries The number of entries, including the link entry.
  * @return The table, or null after logging when the pool is exhausted.
- * @ghidraAddress NTSC-U/C: 0x0063e1e0
- * @ghidraAddress PAL: 0x0067ed70
+ * @ghidraAddress NTSC-U/C: 0x002852a0
+ * @ghidraAddress PAL: 0x0028eb50
  */
 struct huft *HuftMalloc(unsigned nEntries);
 

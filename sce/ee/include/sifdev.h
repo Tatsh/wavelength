@@ -505,6 +505,40 @@ int sceLseek(int fd, int offset, int where);
  */
 int sceIoctl(int fd, int req, void *arg);
 
+/** Status of a file sceGetstat() reports. */
+struct sce_stat {
+    unsigned int st_mode;       /*!< File type and access bits. */
+    unsigned int st_attr;       /*!< Device-specific attributes. */
+    unsigned int st_size;       /*!< Size in bytes, low word. */
+    unsigned char st_ctime[8];  /*!< Creation time. */
+    unsigned char st_atime[8];  /*!< Last access time. */
+    unsigned char st_mtime[8];  /*!< Last modification time. */
+    unsigned int st_hisize;     /*!< Size in bytes, high word. */
+    unsigned int st_private[6]; /*!< Device-specific data. */
+};
+
+/**
+ * Report the status of a file.
+ *
+ * @param name Path, with its device prefix.
+ * @param buf Receives the status.
+ * @return Zero, or a negative error code.
+ * @ghidraAddress NTSC-U/C: 0x0031b610
+ * @ghidraAddress PAL: 0x00387f28
+ */
+int sceGetstat(const char *name, struct sce_stat *buf);
+
+/**
+ * Create a directory.
+ *
+ * @param path Path, with its device prefix.
+ * @param mode Access bits.
+ * @return Zero, or a negative error code.
+ * @ghidraAddress NTSC-U/C: 0x0031b448
+ * @ghidraAddress PAL: 0x00387d60
+ */
+int sceMkdir(const char *path, int mode);
+
 #ifdef __cplusplus
 }
 #endif
