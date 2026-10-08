@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00370000` to `0x00380000`
 
-68 of 298 routines done.
+69 of 298 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -250,7 +250,6 @@ preliminary.
 | `RuleSetCondition__EvaluateRuleSetCondition`                          |        :x:         |      0 |      1 | `0x003767c8` | `0x003e4ef8` | `undefined RuleSetCondition__EvaluateRuleSetCondition()`                                                                           |
 | `ScoreCondition__EvaluateScoreCondition`                              |        :x:         |      0 |      1 | `0x00376330` | `0x003e4a60` | `undefined ScoreCondition__EvaluateScoreCondition()`                                                                               |
 | `ShortPtr__GetShortPtrConstOne`                                       |        :x:         |      0 |      1 | `0x0037c850` | `0x003eaf80` | `undefined ShortPtr__GetShortPtrConstOne()`                                                                                        |
-| `ShortPtr__GetShortPtrDefaultScale`                                   |        :x:         |      0 |      1 | `0x0037c858` | `0x003eaf88` | `undefined ShortPtr__GetShortPtrDefaultScale()`                                                                                    |
 | `ShowingCondition__EvaluateShowingCondition`                          |        :x:         |      0 |      1 | `0x00375b38` | `0x003e4268` | `undefined ShowingCondition__EvaluateShowingCondition()`                                                                           |
 | `StreakCondition__EvaluateStreakCondition`                            |        :x:         |      0 |      1 | `0x00375dd8` | `0x003e4508` | `undefined StreakCondition__EvaluateStreakCondition()`                                                                             |
 | `TimeCondition__EvaluateTimeCondition`                                |        :x:         |      0 |      1 | `0x00376260` | `0x003e4990` | `undefined TimeCondition__EvaluateTimeCondition()`                                                                                 |
@@ -280,6 +279,7 @@ preliminary.
 | `RndAnimatable__DestroyRndAnimatableClass`                            | :white_check_mark: |      0 |      1 | `0x0037ed08` | `0x003ed358` | `undefined RndAnimatable__DestroyRndAnimatableClass()`                                                                             |
 | `RndCam__SelectRndCamAsDeferredRenderState`                           | :white_check_mark: |      0 |      1 | `0x0037f230` | `0x003ed948` | `undefined RndCam__SelectRndCamAsDeferredRenderState()`                                                                            |
 | `RndCollideable__DestroyRndCollideableClass`                          | :white_check_mark: |      0 |      1 | `0x0037fb80` | `0x003ee238` | `undefined RndCollideable__DestroyRndCollideableClass()`                                                                           |
+| `ShortPtr__GetShortPtrDefaultScale`                                   | :white_check_mark: |      0 |      1 | `0x0037c858` | `0x003eaf88` | `undefined ShortPtr__GetShortPtrDefaultScale()`                                                                                    |
 | `UIComponent__Focus`                                                  | :white_check_mark: |      0 |      1 | `0x003772d0` | `0x003e5a00` | `undefined UIComponent__Focus()`                                                                                                   |
 | `UIComponent__GetState`                                               | :white_check_mark: |      0 |      1 | `0x003772c0` | `0x003e59f0` | `undefined UIComponent__GetState()`                                                                                                |
 | `UIComponent__IsShowing`                                              | :white_check_mark: |      0 |      1 | `0x003772b0` | `0x003e59e0` | `undefined UIComponent__IsShowing()`                                                                                               |
