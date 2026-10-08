@@ -33,6 +33,9 @@ constexpr int kSharedLoadFlags = 0;
 
 } // namespace
 
+// The unit's static initialiser at NTSC-U/C: 0x0020e580, PAL: 0x00217398, its global
+// constructor at NTSC-U/C: 0x0020e5c0, PAL: 0x002173d8, and its global destructor at
+// NTSC-U/C: 0x0020e5e0, PAL: 0x002173f8, construct and destroy it.
 UIManager TheUI;
 
 float UIManager::sFirstRepeatDelay = 250.0f;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/string.h"
+
 /**
  * Stream of raw bytes, the base of the memory, file, and network streams.
  *
@@ -87,6 +89,46 @@ public:
      */
     void WriteEndian(const void *pData, int nBytes);
 
+    /**
+     * Write text as its length followed by its characters, without the terminator.
+     *
+     * @param pszText The text.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x00294390
+     * @ghidraAddress PAL: 0x0029dfd8
+     */
+    BinStream &WriteString(const char *pszText);
+
+    /**
+     * Read text WriteString() wrote into a string.
+     *
+     * @param text Receives the text.
+     * @ghidraAddress NTSC-U/C: 0x00294408
+     */
+    void ReadString(String &text);
+
+    /**
+     * Read text WriteString() wrote into a buffer and terminate it.
+     *
+     * @param pszBuffer Receives the text.
+     * @param nBufferSize The size of the buffer. The routine does not check it.
+     * @ghidraAddress NTSC-U/C: 0x00294468
+     */
+    void ReadString(char *pszBuffer, int nBufferSize);
+
 private:
     bool mLittleEndian; /*!< Whether values are stored in the console's byte order. */
 };
+
+/**
+ * Read text into a string.
+ *
+ * In the text mode of the string streams the text is read up to its terminator. Otherwise it is
+ * read as BinStream::WriteString() wrote it.
+ *
+ * @param stream The stream to read from.
+ * @param text Receives the text.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0029f868
+ */
+BinStream &operator>>(BinStream &stream, String &text);

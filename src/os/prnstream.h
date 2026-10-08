@@ -1,12 +1,12 @@
 #pragma once
 
+#include <list>
 #include <map>
 
 /**
  * Text output stream.
  *
- * The RTTI includes the class name. One data word precedes the vptr at `+0x04`. The word is not
- * yet identified and is not declared. The vtable runs the type function, the destructor, and
+ * The RTTI includes the class name. The vtable runs the type function, the destructor, and
  * Print().
  *
  * Every insertion operator returns the stream. An insertion chain therefore writes its pieces in
@@ -14,6 +14,14 @@
  */
 class PrnStream {
 public:
+    /**
+     * Construct a stream with a dump level of 0.
+     *
+     * The constructor has no out-of-line copy.
+     */
+    PrnStream() : mDumpLevel(0) {
+    }
+
     /**
      * Release the stream.
      *
@@ -109,7 +117,37 @@ public:
      * @ghidraAddress PAL: 0x002a8118
      */
     PrnStream &operator<<(bool bValue);
+
+    /**
+     * Detail of an object dump. RndObject::DumpText() lists the referrers only above 0.
+     *
+     * The name is inferred.
+     */
+    int mDumpLevel;
 };
+
+/**
+ * Write a list as its size followed by one tab-indented line per element.
+ *
+ * The output starts with "(size:", the element count, and ")". Each element then writes a newline,
+ * its index, a tab, and the element.
+ *
+ * @param stream The stream to write to.
+ * @param list The list to write.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x003901b8
+ * @ghidraAddress PAL: 0x003fe8c0
+ */
+template <typename T>
+PrnStream &operator<<(PrnStream &stream, const std::list<T> &list) {
+    stream << "(size:" << static_cast<unsigned int>(list.size()) << ")";
+    int nIndex = 0;
+    for (const auto &element : list) {
+        stream << "\n" << nIndex << "\t" << element;
+        ++nIndex;
+    }
+    return stream;
+}
 
 /**
  * Write a map as its size followed by one tab-indented key and value line per entry.

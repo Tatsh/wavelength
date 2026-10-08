@@ -7,6 +7,7 @@ set(WAVELENGTH_RND_SRCS
     button.cpp
     cam.cpp
     collideable.cpp
+    dmapacket.cpp
     drawable.cpp
     drawverts.cpp
     environ.cpp
@@ -36,7 +37,14 @@ set(WAVELENGTH_RND_SRCS
     psparticlesys.cpp
     pstex.cpp
     raytest.cpp
+    rndanimatable.cpp
+    rndcollideable.cpp
+    rnddrawable.cpp
+    rndmanager.cpp
+    rndobject.cpp
+    rndrenderer.cpp
     rndtex.cpp
+    rndtransformable.cpp
     stream.cpp
     string.cpp
     text.cpp

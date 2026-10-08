@@ -14,6 +14,19 @@
 const char *FileGetPath(const char *pszPath);
 
 /**
+ * Report the extension of a path.
+ *
+ * The result is the text after the last full stop, or the empty text at the end of a path without
+ * a full stop.
+ *
+ * @param pszPath The path.
+ * @return A pointer into the path.
+ * @ghidraAddress NTSC-U/C: 0x00289d60
+ * @ghidraAddress PAL: 0x00293558
+ */
+const char *FileGetExt(const char *pszPath);
+
+/**
  * Report the file name of a path without its directory and its extension.
  *
  * @param pszPath The path.

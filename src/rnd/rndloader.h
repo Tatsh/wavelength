@@ -2,6 +2,7 @@
 
 #include <list>
 
+#include "os/binstream.h"
 #include "rnd/object.h"
 
 /**
@@ -42,6 +43,29 @@ public:
         virtual ~Callback() {
         }
     };
+
+    /**
+     * Create a loader for a file.
+     *
+     * A synchronous load runs to the end before the constructor returns.
+     *
+     * @param pszFile The file.
+     * @param nFlags The Flags of the load.
+     * @param pCallback The callback consulted for each object, or null.
+     * @param pStream The stream to read instead of the file, or null.
+     * @ghidraAddress NTSC-U/C: 0x0022c6a0
+     * @ghidraAddress PAL: 0x00235368
+     */
+    RndLoader(const char *pszFile, int nFlags, Callback *pCallback, BinStream *pStream);
+
+    /**
+     * Advance the load until a deadline.
+     *
+     * @param fDeadlineMs The system clock time the step must finish by, in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x0022c958
+     * @ghidraAddress PAL: 0x00235620
+     */
+    void Poll(float fDeadlineMs);
 
     /**
      * Destroy the loader and release what it opened.

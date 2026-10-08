@@ -222,6 +222,7 @@ dispinterface
 dmac
 dmacnt
 dmaend
+dmapacket
 docstrings
 dopenssl
 doutput
@@ -310,6 +311,7 @@ finalscorepacket
 findctp
 fini
 flusha
+flushe
 fmacro
 focuschangepanel
 fogcol
@@ -564,6 +566,7 @@ malloc
 marketingscreen
 matanim
 math
+maxms
 maxx
 mbai
 mbcs
@@ -951,11 +954,18 @@ riffer
 ringbuffer
 ripgreprc
 rmode
+rndanimatable
 rndartt
+rndcollideable
+rnddrawable
 rndfile
 rndglobal
+rndmanager
 rndmovie
+rndobject
+rndrenderer
 rndtex
+rndtransformable
 rodata
 romver
 rotateevent
