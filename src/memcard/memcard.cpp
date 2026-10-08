@@ -136,6 +136,16 @@ sceMcTblGetDir gDirTable[kMaxDirEntries] __attribute__((aligned(64)));
 // NTSC-U/C: 0x00481000
 MemcardDirEntry gDirEntries[kMaxDirEntries];
 
+// Clears both dates of every entry of gDirEntries at start-up.
+struct DirEntriesInit {
+    DirEntriesInit() {
+        for (MemcardDirEntry &entry : gDirEntries) {
+            memset(&entry.mCreated, 0, sizeof(entry.mCreated));
+            memset(&entry.mModified, 0, sizeof(entry.mModified));
+        }
+    }
+} gDirEntriesInit;
+
 void CopyDate(DateTime &date, const sceMcStDateTime &card) {
     date.mYear = static_cast<unsigned char>(card.Year - kDateBaseYear);
     date.mMonth = card.Month;

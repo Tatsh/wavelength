@@ -152,11 +152,19 @@ PrnStream &operator<<(PrnStream &stream, const DateTime &date) {
 }
 
 BinStream &operator<<(BinStream &stream, const DateTime &date) {
-    const unsigned char aFields[] = {
-        date.mSecond, date.mMinute, date.mHour, date.mDay, date.mMonth, date.mYear};
-    for (const unsigned char nField : aFields) {
-        stream.Write(&nField, sizeof(nField));
-    }
+    // Each field is copied to its own stack byte just before it is written.
+    const unsigned char nSecond = date.mSecond;
+    stream.Write(&nSecond, sizeof(nSecond));
+    const unsigned char nMinute = date.mMinute;
+    stream.Write(&nMinute, sizeof(nMinute));
+    const unsigned char nHour = date.mHour;
+    stream.Write(&nHour, sizeof(nHour));
+    const unsigned char nDay = date.mDay;
+    stream.Write(&nDay, sizeof(nDay));
+    const unsigned char nMonth = date.mMonth;
+    stream.Write(&nMonth, sizeof(nMonth));
+    const unsigned char nYear = date.mYear;
+    stream.Write(&nYear, sizeof(nYear));
     return stream;
 }
 

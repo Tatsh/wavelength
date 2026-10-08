@@ -114,9 +114,8 @@ Scheduler::Scheduler()
           mTime = kStartTime;
           return pCommands;
       }()),
-      mRecorder(nullptr), mPlaybacker(nullptr), mTickDuration(nullptr), mTick(0),
-      mFrameTime(0.0f), mFrameTick(0),
-      mPrevFrameTime(0.0f), mPrevFrameTick(0), mClock(mTime) {
+      mRecorder(nullptr), mPlaybacker(nullptr), mTickDuration(nullptr), mTick(0), mFrameTime(0.0f),
+      mFrameTick(0), mPrevFrameTime(0.0f), mPrevFrameTick(0), mClock(mTime) {
 }
 
 Scheduler::~Scheduler() {
