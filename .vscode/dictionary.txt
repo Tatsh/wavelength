@@ -25,6 +25,7 @@ afxdll
 afxres
 agfxfile
 agiffile
+ambiently
 amovieset
 andi
 anim
@@ -822,6 +823,7 @@ oleverb
 oneline
 openarkobject
 ordblks
+orthonormalised
 orthonormalize
 otherapphasprio
 outcnt
@@ -956,15 +958,19 @@ ripgreprc
 rmode
 rndanimatable
 rndartt
+rndcam
 rndcollideable
 rnddrawable
 rndfile
 rndglobal
 rndmanager
+rndmat
+rndmatanim
 rndmovie
 rndobject
 rndrenderer
 rndtex
+rndtransanim
 rndtransformable
 rodata
 romver

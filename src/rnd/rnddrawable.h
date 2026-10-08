@@ -39,7 +39,7 @@ public:
      * @param objects The list to add to.
      * @ghidraAddress NTSC-U/C: 0x003809a0
      */
-    virtual void ListObjects(std::list<RndObject *> &objects);
+    virtual void ListDrawObjects(std::list<RndObject *> &objects);
 
     /**
      * Add the drawables to draw this frame to a list.

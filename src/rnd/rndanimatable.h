@@ -540,7 +540,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0021b6a0
      * @ghidraAddress PAL: 0x002244b8
      */
-    virtual void ListObjects(std::list<RndObject *> &objects);
+    virtual void ListAnimObjects(std::list<RndObject *> &objects);
 
     /**
      * Apply a filtered frame to this object alone.

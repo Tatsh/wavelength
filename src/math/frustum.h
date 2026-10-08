@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/plane.h"
+#include "os/prnstream.h"
 
 namespace Rnd {
 class Dbg;
@@ -77,3 +78,14 @@ constexpr int kVu0StatusStickySign = 0x80;
  * @ghidraAddress PAL: 0x005919e8
  */
 int IsSphereOutsideFrustum(const Sphere &sphere, const Frustum &frustum);
+
+/**
+ * Write the six planes of a view volume.
+ *
+ * @param stream The stream to write to.
+ * @param frustum The view volume.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x002904e0
+ * @ghidraAddress PAL: 0x00299ea8
+ */
+PrnStream &operator<<(PrnStream &stream, const Frustum &frustum);

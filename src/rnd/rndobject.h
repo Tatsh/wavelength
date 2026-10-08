@@ -126,6 +126,12 @@ public:
      */
     void RemoveRef(RndObject *pReferrer);
 
+    /** The bit of the Copy() flags that requests a shallow copy, sharing what can be shared. */
+    static constexpr int kCopyShallow = 4;
+
+    /** The bit of the Copy() flags that shares the source's keys rather than copying them. */
+    static constexpr int kCopyShareKeys = 0x100;
+
     /** The bit of the Copy() flags that copies the child lists of the mix-ins. */
     static constexpr int kCopyChildLists = 0x200;
 

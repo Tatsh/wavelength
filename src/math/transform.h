@@ -33,6 +33,19 @@ struct Transform {
 void Multiply(Transform &out, const Transform &first, const Transform &second);
 
 /**
+ * Invert a transform whose basis is orthonormal.
+ *
+ * The basis is transposed and the translation is rotated back and negated. The name is
+ * inferred.
+ *
+ * @param out Receives the inverse. It may not alias the source.
+ * @param xfm The transform.
+ * @ghidraAddress NTSC-U/C: 0x00293488
+ * @ghidraAddress PAL: 0x0029ce50
+ */
+void Invert(Transform &out, const Transform &xfm);
+
+/**
  * Report the length of each basis row, negating the third when the basis is left handed.
  *
  * The name is inferred.

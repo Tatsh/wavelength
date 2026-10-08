@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/prnstream.h"
+
 /**
  * Linear colour with four float components.
  *
@@ -85,3 +87,14 @@ void SubColor(const Color &left, const Color &right, Color &result);
  * @ghidraAddress PAL: 0x00491328
  */
 void ScaleColor(const Color &source, float flScale, Color &result);
+
+/**
+ * Write the four components of a colour.
+ *
+ * @param stream The stream to write to.
+ * @param color The colour.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00292e28
+ * @ghidraAddress PAL: 0x0029c7f0
+ */
+PrnStream &operator<<(PrnStream &stream, const Color &color);

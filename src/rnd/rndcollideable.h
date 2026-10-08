@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "math/segment.h"
+#include "math/plane.h"
 #include "math/vector2.h"
 #include "os/binstream.h"
 #include "os/prnstream.h"

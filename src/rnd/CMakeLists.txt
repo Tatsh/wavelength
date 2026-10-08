@@ -38,12 +38,16 @@ set(WAVELENGTH_RND_SRCS
     pstex.cpp
     raytest.cpp
     rndanimatable.cpp
+    rndcam.cpp
     rndcollideable.cpp
     rnddrawable.cpp
     rndmanager.cpp
+    rndmat.cpp
+    rndmatanim.cpp
     rndobject.cpp
     rndrenderer.cpp
     rndtex.cpp
+    rndtransanim.cpp
     rndtransformable.cpp
     stream.cpp
     string.cpp

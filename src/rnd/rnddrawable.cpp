@@ -11,7 +11,7 @@ RndDrawable::~RndDrawable() {
     ReleaseDrawRefs();
 }
 
-void RndDrawable::ListObjects([[maybe_unused]] std::list<RndObject *> &objects) {
+void RndDrawable::ListDrawObjects([[maybe_unused]] std::list<RndObject *> &objects) {
 }
 
 void RndDrawable::ListDrawables(std::list<RndDrawable *> &drawables) {

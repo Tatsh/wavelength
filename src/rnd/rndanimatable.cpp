@@ -95,9 +95,9 @@ float RndAnimatable::EndFrame() {
     return fEnd;
 }
 
-void RndAnimatable::ListObjects(std::list<RndObject *> &objects) {
+void RndAnimatable::ListAnimObjects(std::list<RndObject *> &objects) {
     for (RndAnimatable *pAnim : mAnims) {
-        pAnim->ListObjects(objects);
+        pAnim->ListAnimObjects(objects);
     }
 }
 

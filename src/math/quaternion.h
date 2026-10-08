@@ -1,5 +1,7 @@
 #pragma once
 
+#include "os/prnstream.h"
+
 /**
  * Rotation quaternion, stored as the vector part followed by the scalar part.
  *
@@ -195,3 +197,14 @@ void Mat33ExtractScale(const float *pMat3Rows, float *pScale);
  * @ghidraAddress PAL: 0x0052ebd0
  */
 void LerpEulerAngles(const float *pFrom, const float *pTo, float *pOut, float flT);
+
+/**
+ * Write the four components of a quaternion.
+ *
+ * @param stream The stream to write to.
+ * @param quat The quaternion.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00292d88
+ * @ghidraAddress PAL: 0x0029c750
+ */
+PrnStream &operator<<(PrnStream &stream, const Quat &quat);
