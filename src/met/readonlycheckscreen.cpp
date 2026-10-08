@@ -9,7 +9,7 @@
 #include "ui/uimanager.h"
 
 ReadOnlyCheckScreen::ReadOnlyCheckScreen(DataArray *pData)
-    : FreqScreen(pData), mNeedsShareWarning(false) {
+    : FreqScreen(pData), mNeedsShareWarning(0) {
     pData->FindString("next_screen", &mNextScreen, true);
     pData->FindBool("needs_share_warning", &mNeedsShareWarning, false);
 }

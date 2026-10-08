@@ -1,5 +1,7 @@
 #pragma once
 
+#include "math/quaternion.h"
+#include "math/transformops.h"
 #include "math/vector3.h"
 #include "os/prnstream.h"
 
@@ -59,42 +61,37 @@ inline void MultiplyVector(const Transform &xfm, const Vector3 &v, Vector3 &out)
 }
 
 /**
- * Concatenate two transforms, applying the second and then the first.
- *
- * The result may not alias the second transform. The name is inferred.
+ * Concatenate two transforms, applying the second and then the first, with
+ * sceVu0MulAffineMatrixXyz().
  *
  * @param out Receives the concatenation.
  * @param first The transform applied last, such as a parent's world transform.
  * @param second The transform applied first, such as a child's local transform.
- * @ghidraAddress NTSC-U/C: 0x00293410
- * @ghidraAddress PAL: 0x0029cdd8
  */
-void Multiply(Transform &out, const Transform &first, const Transform &second);
+inline void Multiply(Transform &out, const Transform &first, const Transform &second) {
+    sceVu0MulAffineMatrixXyz(&out.mBasisX.x, &first.mBasisX.x, &second.mBasisX.x);
+}
 
 /**
- * Invert a transform whose basis is orthonormal.
- *
- * The basis is transposed and the translation is rotated back and negated. The name is
- * inferred.
+ * Invert a transform whose basis is orthonormal, with InversMatrix().
  *
  * @param out Receives the inverse. It may not alias the source.
  * @param xfm The transform.
- * @ghidraAddress NTSC-U/C: 0x00293488
- * @ghidraAddress PAL: 0x0029ce50
  */
-void Invert(Transform &out, const Transform &xfm);
+inline void Invert(Transform &out, const Transform &xfm) {
+    InversMatrix(&out.mBasisX.x, &xfm.mBasisX.x);
+}
 
 /**
- * Report the length of each basis row, negating the third when the basis is left handed.
- *
- * The name is inferred.
+ * Report the length of each basis row, negating the third when the basis is left handed, with
+ * Mat33ExtractScale().
  *
  * @param xfm The transform.
  * @param scale Receives the three lengths.
- * @ghidraAddress NTSC-U/C: 0x002924f0
- * @ghidraAddress PAL: 0x0029beb8
  */
-void MakeScale(const Transform &xfm, Vector3 &scale);
+inline void MakeScale(const Transform &xfm, Vector3 &scale) {
+    Mat33ExtractScale(&xfm.mBasisX.x, &scale.x);
+}
 
 /**
  * Write the four rows of a transform.

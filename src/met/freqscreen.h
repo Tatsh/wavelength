@@ -152,7 +152,7 @@ public:
 
     alignas(16) Vector3 mGizmoOrig; /*!< The position of the projector, `gizmoOrig`. */
     alignas(16) Quat mGizmoRot;     /*!< The orientation of the projector, from `gizmoRot`. */
-    bool mNoGizmo;                  /*!< Whether the projector hides, `no_gizmo`. */
-    bool mNoProjectorSfx;           /*!< Whether entering plays no projector sound. */
-    bool mNeedsTransitionSfx;       /*!< Whether entering plays the transition sound. */
+    int mNoGizmo;                   /*!< Whether the projector hides, `no_gizmo`. */
+    int mNoProjectorSfx;            /*!< Whether entering plays no projector sound. */
+    int mNeedsTransitionSfx;        /*!< Whether entering plays the transition sound. */
 };

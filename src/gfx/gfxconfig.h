@@ -59,14 +59,14 @@ bool FindConfigFloat(
  * @param pConfig The section, or null.
  * @param pDefaults The section of defaults, or null.
  * @param pszName The tag.
- * @param pbValue Receives the flag when the entry exists.
+ * @param pnValue Receives 1 for a non-zero flag and 0 otherwise, when the entry exists.
  * @param bFail Whether to report an entry missing from both sections.
  * @return Whether the entry exists.
  * @ghidraAddress NTSC-U/C: 0x001e2e78
  * @ghidraAddress PAL: 0x001ebc18
  */
 bool FindConfigBool(
-    DataArray *pConfig, DataArray *pDefaults, const char *pszName, bool *pbValue, bool bFail);
+    DataArray *pConfig, DataArray *pDefaults, const char *pszName, int *pnValue, bool bFail);
 
 /**
  * Find a symbol in a configuration section or in its defaults.

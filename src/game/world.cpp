@@ -28,6 +28,8 @@ constexpr char kRecordToMemcardKey[] = "record_to_memcard";
 constexpr char kRecordingSuffixFormat[] = "_%02i%02i%02i_%02i%02i%02i";
 constexpr char kNumberSeparator[] = "_";
 constexpr char kDemoBufferTag[] = "attract file buf";
+// The alignment argument of PoolMemAlloc() that selects the default.
+constexpr int kDefaultAlignment = 0;
 constexpr char kNoMessage[] = "";
 
 // The last random seed a world draws for its logic.
@@ -177,7 +179,7 @@ World::~World() {
     delete TheWorldLogic;
     delete mSong;
     delete mDemoFile;
-    MemFree(mDemoBuffer);
+    PoolMemFree(mDemoBuffer);
     TheWorldLogic = nullptr;
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
         TheNetTransport->SetSink(nullptr);
@@ -210,7 +212,7 @@ void World::Stop() {
     delete mDemoFile;
     mDemoFile = nullptr;
     if (mDemoBuffer != nullptr) {
-        MemFree(mDemoBuffer);
+        PoolMemFree(mDemoBuffer);
         mDemoBuffer = nullptr;
     }
 }
@@ -401,7 +403,8 @@ void World::LoadAssets() {
         mLoadStep = kLoadStepDemo;
         mDemoFile = File::New(TheGameDb->GetDemo(), kOpenRead, kNoOpenFlags);
         mDemoSize = mDemoFile->Size();
-        mDemoBuffer = static_cast<char *>(MemAlloc(mDemoSize, kDemoBufferTag, 0));
+        mDemoBuffer =
+            static_cast<char *>(PoolMemAlloc(mDemoSize, kDemoBufferTag, kDefaultAlignment));
         (void)mDemoFile->ReadAsync(mDemoBuffer, mDemoSize); // Yes, the binary discards the result.
     } else {
         mLoadStep = kLoadStepSong;

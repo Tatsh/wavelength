@@ -48,7 +48,7 @@ constexpr float kFinishQueuedLoadsMs = 1000000.0f;
 constexpr int kFileModeRead = 1;
 constexpr int kFileFlagsNone = 0;
 
-// The alignment argument of MemAlloc(), here the default.
+// The alignment argument of PoolMemAlloc(), here the default.
 constexpr int kDefaultAlignment = 0;
 
 } // namespace
@@ -64,7 +64,7 @@ RndManager::ResourceLoader::ResourceLoader(File *pFile, const char *pszTag) {
     int nUncompressed = pFile->UncompressedSize();
     int nStored = mFile->Size();
     mSize = nStored < nUncompressed ? nUncompressed : nStored;
-    mBuffer = static_cast<char *>(MemAlloc(mSize, mTag, kDefaultAlignment));
+    mBuffer = static_cast<char *>(PoolMemAlloc(mSize, mTag, kDefaultAlignment));
     mCompressed = nUncompressed != 0 ? mBuffer + mSize - nStored : nullptr;
     mFile->ReadAsync(mCompressed != nullptr ? mCompressed : mBuffer, nStored);
     Poll();
@@ -73,7 +73,7 @@ RndManager::ResourceLoader::ResourceLoader(File *pFile, const char *pszTag) {
 
 RndManager::ResourceLoader::~ResourceLoader() {
     if (mBuffer != nullptr) {
-        MemFree(mBuffer);
+        PoolMemFree(mBuffer);
         mBuffer = nullptr;
     }
     delete mFile;
@@ -101,7 +101,7 @@ int RndManager::ResourceLoader::GetData(void **ppData, int *pnSize) {
     }
     *pnSize = mSize;
     if (mRefs >= 2) {
-        *ppData = MemAlloc(mSize, mTag, kDefaultAlignment);
+        *ppData = PoolMemAlloc(mSize, mTag, kDefaultAlignment);
         std::memcpy(*ppData, mBuffer, mSize);
     } else if (mRefs == 1) {
         *ppData = mBuffer;

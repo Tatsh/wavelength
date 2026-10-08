@@ -270,5 +270,5 @@ public:
     std::vector<Transition> mTransitions;               /*!< The transition table. */
     UIScreen *mPrevScreen; /*!< The screen this one is entering from, until the entry finishes. */
     UIScreen *mNextScreen; /*!< The screen this one is exiting to, until the exit finishes. */
-    bool mForceEntryExit;  /*!< Whether the panels skip their animations. */
+    int mForceEntryExit;   /*!< Whether the panels skip their animations. */
 };

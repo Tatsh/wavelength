@@ -218,14 +218,14 @@ public:
     int mScrollStart;         /*!< The first visible character. */
     alignas(16) float mCaretOrigin[Rnd::kXfmRowFloatCount]; /*!< The caret's starting position. */
     alignas(16) float mLastCaretOrigin[Rnd::kXfmRowFloatCount]; /*!< The right edge's position. */
-    bool mScroll;                                               /*!< The `scroll` setting. */
+    int mScroll;                                                /*!< The `scroll` setting. */
     String mVisibleText;                                 /*!< The part of the text that shows. */
     alignas(16) float mCaretPos[Rnd::kXfmRowFloatCount]; /*!< The caret's position. */
     float mMaxEntryWidth;     /*!< The `max_entry_width` setting, or -1 for no limit. */
     int mNumLines;            /*!< The `num_lines` setting. */
     int mMaxNumChars;         /*!< The `max_num_chars` setting, or -1 for no limit. */
     int mWordWrapLines;       /*!< The `word_wrap_lines` setting, or 0 for no wrapping. */
-    bool mPassword;           /*!< The `password` setting, which masks the text. */
+    int mPassword;            /*!< The `password` setting, which masks the text. */
     bool mEditing;            /*!< Whether the caret blinks. */
     float mNextBlink;         /*!< The time the caret next changes. */
     DataArray *mInvalidChars; /*!< The `invalid_chars` array, or null. */

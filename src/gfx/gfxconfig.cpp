@@ -58,8 +58,8 @@ bool FindConfigFloat(
 }
 
 bool FindConfigBool(
-    DataArray *pConfig, DataArray *pDefaults, const char *pszName, bool *pbValue, bool bFail) {
-    return FindConfigValue<bool>(pConfig, pDefaults, pszName, pbValue, bFail, &DataArray::FindBool);
+    DataArray *pConfig, DataArray *pDefaults, const char *pszName, int *pnValue, bool bFail) {
+    return FindConfigValue(pConfig, pDefaults, pszName, pnValue, bFail, &DataArray::FindBool);
 }
 
 bool FindConfigSymbol(DataArray *pConfig,

@@ -5,6 +5,7 @@
 
 #include "math/color.h"
 #include "math/transform.h"
+#include "math/triangle.h"
 #include "os/binstream.h"
 #include "os/mem.h"
 #include "os/prnstream.h"
@@ -34,13 +35,6 @@ public:
         kBlendSrcAlphaOpaque = 11, /*!< Blend by the source alpha and write opaque alpha. */
         kBlendSrcAlphaCutout = 12, /*!< Discard the source below an alpha threshold. */
         kBlendSubtract = 13,       /*!< Subtract the source from the destination. */
-    };
-
-    /** The face winding the rasteriser discards. */
-    enum Cull {
-        kCullCw = 0,   /*!< Discard clockwise faces. */
-        kCullCcw = 1,  /*!< Discard counter-clockwise faces. */
-        kCullNone = 2, /*!< Draw both windings. */
     };
 
     /** How a texture stage produces its texture coordinates. */
@@ -362,7 +356,7 @@ public:
     int mVertEdge;              /*!< Non-zero to take the edge colour from the vertices. */
     int mNormalize;             /*!< Non-zero to normalise the normals. */
     int mBaseAmbient;           /*!< Non-zero to light the base colour ambiently. */
-    int mCull;                  /*!< The Cull of the surface. */
+    int mCull;                  /*!< The CullMode of the surface. */
     int mFlat;                  /*!< Non-zero for flat shading. */
     int mMultiPass;             /*!< The number of extra passes. */
 
@@ -410,17 +404,6 @@ PrnStream &operator<<(PrnStream &stream, RndMat::TexGen eTexGen);
  * @ghidraAddress PAL: 0x00238140
  */
 PrnStream &operator<<(PrnStream &stream, RndMat::TexWrap eWrap);
-
-/**
- * Write the name of a cull mode.
- *
- * @param stream The stream to write to.
- * @param eCull The mode. An unknown mode writes nothing.
- * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x00290448
- * @ghidraAddress PAL: 0x00299e10
- */
-PrnStream &operator<<(PrnStream &stream, RndMat::Cull eCull);
 
 /**
  * Write the stages of a material as their count followed by each stage on its own line.

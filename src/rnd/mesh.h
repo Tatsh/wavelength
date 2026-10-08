@@ -494,8 +494,6 @@ public:
      * inferred.
      *
      * @param flScale The factor.
-     * @ghidraAddress NTSC-U/C: 0x002723a0
-     * @ghidraAddress PAL: 0x0028a830
      */
     void ScaleUniform(float flScale);
 

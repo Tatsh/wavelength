@@ -214,7 +214,7 @@ void RndMesh::Collide(const Segment &segment, std::list<Collision> &collisions) 
     Segment local;
     MultiplyPoint(inverse, segment.mEnds[0], local.mEnds[0]);
     MultiplyPoint(inverse, segment.mEnds[1], local.mEnds[1]);
-    const int nCull = mMat != nullptr ? mMat->mCull : RndMat::kCullCw;
+    const int nCull = mMat != nullptr ? mMat->mCull : kCullClockwise;
     for (const Face &face : mGeomOwner->mFaces) {
         const std::vector<Vert> &verts = mGeomOwner->mVerts;
         Triangle triangle;

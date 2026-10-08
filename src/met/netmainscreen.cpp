@@ -59,9 +59,9 @@ void NetMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void NetMainScreen::Exit(UIScreen *pNextScreen, float fTime) {
     if (pNextScreen != nullptr && dynamic_cast<NetMainScreen *>(pNextScreen) != nullptr) {
-        mForceEntryExit = true;
+        mForceEntryExit = 1;
     } else {
-        mForceEntryExit = false;
+        mForceEntryExit = 0;
         if (mFocusPanel != nullptr) {
             mFocusPanel->SetFocus(nullptr, kPadNone);
         }

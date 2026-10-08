@@ -103,20 +103,6 @@ void MakeRotMatrix(const float *pAngles, float *pMat3Rows);
 void Mat33BuildOrthonormal(const float *pAxisY, const float *pReference, float *pMat3Rows);
 
 /**
- * Measure the scale of a basis.
- *
- * The three components are the lengths of the three rows. The third is negated when the basis is
- * not right-handed, that is, when the X row crossed with the Y row does not point along the Z
- * row.
- *
- * @param pMat3Rows The basis, three rows of four floats.
- * @param pScale Receives the scale, three floats.
- * @ghidraAddress NTSC-U/C: 0x002924f0
- * @ghidraAddress PAL: 0x0029beb8
- */
-void Mat33Scale(const float *pMat3Rows, float *pScale);
-
-/**
  * Rebuild a basis as orthonormal around its Y row.
  *
  * The Y row is normalised. The X row becomes that Y row crossed with the source Z row, normalised,

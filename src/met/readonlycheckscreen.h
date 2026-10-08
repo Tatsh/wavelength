@@ -73,6 +73,6 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
-    String mNextScreen;      /*!< The `next_screen` entry of the description. */
-    bool mNeedsShareWarning; /*!< The `needs_share_warning` entry of the description. */
+    String mNextScreen;     /*!< The `next_screen` entry of the description. */
+    int mNeedsShareWarning; /*!< The `needs_share_warning` entry of the description. */
 };

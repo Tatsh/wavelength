@@ -17,7 +17,7 @@ constexpr int kTransitionScreenIndex = 1;
 } // namespace
 
 UIScreen::UIScreen(DataArray *pData)
-    : mGroup(nullptr), mPrevScreen(nullptr), mNextScreen(nullptr), mForceEntryExit(false) {
+    : mGroup(nullptr), mPrevScreen(nullptr), mNextScreen(nullptr), mForceEntryExit(0) {
     mFocusPanel = nullptr;
     mName = pData->Sym(kNameIndex);
 

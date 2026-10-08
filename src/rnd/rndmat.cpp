@@ -226,7 +226,7 @@ RndMat::RndMat(const char *pszName) : RndObject(pszName) {
     mVertEdge = 0;
     mNormalize = 0;
     mBaseAmbient = 0;
-    mCull = kCullCw;
+    mCull = kCullClockwise;
     mFlat = 0;
     mMultiPass = 0;
 }
@@ -247,7 +247,7 @@ void RndMat::DumpText(PrnStream &stream) {
     stream << "baseColor:" << mBaseColor << "lightColor:" << mLightColor << "\n";
     stream << "edgeColor:" << mEdgeColor << "vertBase:" << (mVertBase != 0) << "\n";
     stream << "vertLight:" << (mVertLight != 0) << " vertEdge:" << (mVertEdge != 0) << "\n";
-    stream << "cull:" << static_cast<Cull>(mCull) << " multiPass:" << mMultiPass
+    stream << "cull:" << static_cast<CullMode>(mCull) << " multiPass:" << mMultiPass
            << " normalize:" << (mNormalize != 0) << " flat:" << (mFlat != 0) << "\n";
 }
 

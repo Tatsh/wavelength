@@ -67,19 +67,6 @@ public:
     int Type(int nIndex) const;
 
     /**
-     * Find the integer that follows a tag and report it as a flag.
-     *
-     * @param pszName The symbol that starts the child array.
-     * @param pbValue Receives whether the integer at index 1 of the child array is non-zero, when
-     *                the child array exists.
-     * @param bFail Passed to FindArray().
-     * @return Whether the child array exists.
-     * @ghidraAddress NTSC-U/C: 0x002963f0
-     * @ghidraAddress PAL: 0x002a0008
-     */
-    bool FindBool(const char *pszName, bool *pbValue, bool bFail) const;
-
-    /**
      * Find the three numbers that follow a tag.
      *
      * The fourth word of the vector is left as it was.

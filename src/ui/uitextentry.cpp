@@ -55,9 +55,8 @@ void PlaceCaret(float *pCaret, const float *pOrigin, const Vector3 &offset) {
 float UITextEntry::sBlinkMs = 450.0f;
 
 UITextEntry::UITextEntry(DataArray *pData, const char *pszPanel)
-    : UIComponent(pData), mMesh(nullptr), mHighlightStyle(nullptr), mScroll(false),
-      mWordWrapLines(0), mPassword(false), mEditing(false), mNextBlink(0.0f),
-      mInvalidChars(nullptr) {
+    : UIComponent(pData), mMesh(nullptr), mHighlightStyle(nullptr), mScroll(0), mWordWrapLines(0),
+      mPassword(0), mEditing(false), mNextBlink(0.0f), mInvalidChars(nullptr) {
     mCursor = 0;
     mMaxEntryWidth = kNoWidthLimit;
     mNumLines = 1;

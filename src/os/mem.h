@@ -121,27 +121,6 @@ void *PoolAlloc(int nSize, int nBlockSize, const char *pszTag, int nUnused);
 void PoolFree(int nBlockSize, void *pBlock);
 
 /**
- * Allocate a block from the heap and bill it to a tag.
- *
- * @param nSize The block size in bytes.
- * @param pszTag The tag to bill the allocation to, normally the class name.
- * @param nLine The caller's line number, or 0.
- * @return The block.
- * @ghidraAddress NTSC-U/C: 0x0029ab68
- * @ghidraAddress PAL: 0x002a4788
- */
-void *MemAlloc(int nSize, const char *pszTag, int nLine);
-
-/**
- * Release a block MemAlloc() handed out.
- *
- * @param pBlock The block, or null.
- * @ghidraAddress NTSC-U/C: 0x0029acd0
- * @ghidraAddress PAL: 0x002a48f0
- */
-void MemFree(void *pBlock);
-
-/**
  * Address the buffer the STL allocator hook bills its allocations to.
  *
  * The buffer is the one MemSetStlTag() formats into, and MemAllocTagged()

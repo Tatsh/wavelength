@@ -704,9 +704,9 @@ void GfxManager::BuildTracks(float fStartTick,
     mTunnelView = FindView(pszTunnelView);
     const char *pszLocalView;
     pGfx->FindSymbol("localview", &pszLocalView, true);
-    bool bSplitScreen = false;
-    FindConfigBool(GetModeGfxConfig(), pGfx, "splitscreen", &bSplitScreen, true);
-    const int nLocalViews = bSplitScreen ? TheGameDb->GetNumPads() : 1;
+    int nSplitScreen = 0;
+    FindConfigBool(GetModeGfxConfig(), pGfx, "splitscreen", &nSplitScreen, true);
+    const int nLocalViews = nSplitScreen != 0 ? TheGameDb->GetNumPads() : 1;
     mLocalViews.clear();
     mLocalViews.reserve(nLocalViews);
     Rnd::View *pTransparent = FindView("tnl transparent");

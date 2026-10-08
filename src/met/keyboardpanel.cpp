@@ -99,10 +99,10 @@ void KeyboardPanel::Enter(bool bForce, float fTime) {
     mEntry->mMaxEntryWidth = static_cast<float>(mRequest.mMaxWidth);
     mEntry->mMaxNumChars = mRequest.mMaxChars;
     if (mRequest.mNumLines != 0) {
-        mEntry->mScroll = true;
+        mEntry->mScroll = 1;
         mEntry->mNumLines = mRequest.mNumLines;
     } else {
-        mEntry->mScroll = false;
+        mEntry->mScroll = 0;
         mEntry->mNumLines = 1;
     }
     if (mRequest.mText.mLength != 0) {

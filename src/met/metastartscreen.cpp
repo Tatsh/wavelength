@@ -64,10 +64,10 @@ void MetaStartScreen::LaunchAttract() {
     // NTSC-U/C: 0x003af88c
     static int sAttractSong = kNoAttractSong;
 
-    bool bEnabled = false;
+    int nEnabled = 0;
     DataArray *pMetagame = SystemConfig()->FindArray("metagame", false);
-    pMetagame->FindBool("attract_enabled", &bEnabled, false);
-    if (!bEnabled) {
+    pMetagame->FindBool("attract_enabled", &nEnabled, false);
+    if (nEnabled == 0) {
         return;
     }
 

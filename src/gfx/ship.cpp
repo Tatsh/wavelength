@@ -534,7 +534,8 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     mArmSizeHigh = mArms[0].mSys->mSizeHigh;
     if (mTrodes[0] != nullptr) {
         float aflScale[kNumComponents];
-        Mat33Scale(&static_cast<Rnd::Transformable *>(mTrodes[0])->mLocalXfm[0][0], aflScale);
+        Mat33ExtractScale(&static_cast<Rnd::Transformable *>(mTrodes[0])->mLocalXfm[0][0],
+                          aflScale);
         mTrodeSize = aflScale[0];
     } else {
         mTrodeSize = 1.0f;
