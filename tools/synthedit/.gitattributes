@@ -1,0 +1,4 @@
+*.dsp text eol=crlf
+*.dsw text eol=crlf
+*.bmp binary
+*.ico binary

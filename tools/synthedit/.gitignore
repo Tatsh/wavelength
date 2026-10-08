@@ -1,0 +1,9 @@
+*.aps
+*.ncb
+*.opt
+*.plg
+/encvag/Debug/
+/encvag/Release/
+/synthedit/Debug/
+/synthedit/Release/
+/utl/DataLex.cpp

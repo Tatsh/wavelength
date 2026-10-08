@@ -1,0 +1,6 @@
+LIBRARY      "ENCVAG.DLL"
+
+EXPORTS
+    EncVagInit @1 NONAME
+    EncVag     @2 NONAME
+    EncVagFin  @3 NONAME
