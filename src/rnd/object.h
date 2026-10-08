@@ -4,6 +4,8 @@
 
 #include "os/hxstr.h"
 
+class GfxArena;
+
 /**
  * The rendering engine.
  *
@@ -41,6 +43,10 @@ constexpr unsigned kCopyChildLists = 0x200;
  * goes away.
  */
 class Object {
+    // GfxArena walks mRefs of a camera, a texture, and an animation to find what uses them, and
+    // the image has no accessor for it.
+    friend class ::GfxArena;
+
 protected:
     /**
      * Tell every referrer to drop its pointer to this object.

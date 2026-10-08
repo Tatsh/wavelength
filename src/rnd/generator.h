@@ -344,6 +344,17 @@ public:
     void SetPath(TransAnim *pPath, float flStartFrame, float flEndFrame);
 
     /**
+     * Create one instance at a frame.
+     *
+     * GenerateAction passes the current filtered frame of the generator.
+     *
+     * @param flFrame The frame.
+     * @ghidraAddress NTSC-U/C: 0x00228520
+     * @ghidraAddress PAL: 0x00231290
+     */
+    void Generate(float flFrame);
+
+    /**
      * Report the path.
      *
      * @return The path, or null.

@@ -5,6 +5,7 @@
 
 #include "math/box.h"
 #include "math/sphere.h"
+#include "math/transform.h"
 #include "math/vector3.h"
 #include "os/hxstr.h"
 #include "rnd/collideable.h"
@@ -44,6 +45,10 @@ namespace Rnd {
  * The compiler-generated `GetTypeInfo()` is at `0x00492528`.
  */
 class Mesh : public Drawable, public Transformable, public Collideable {
+    // ClearMeshSpheres() in gfx/gfxutil.h clears mSphere directly, and the image has no accessor
+    // for it.
+    friend void ::ClearMeshSpheres(Transformable *pRoot);
+
 public:
     /**
      * Creator the registered "Mesh" class builds through.
@@ -495,6 +500,17 @@ public:
     void ScaleUniform(float flScale);
 
     /**
+     * Transform the vertices of mVertsOwner, the points by the whole transform and the normals by
+     * its basis, renormalised.
+     *
+     * The name is inferred.
+     *
+     * @param xfm The transform.
+     * @ghidraAddress NTSC-U/C: 0x00234df8
+     */
+    void TransformVerts(const Transform &xfm);
+
+    /**
      * Append the two triangles of a quad to the faces of mFacesOwner.
      *
      * The triangles are (nV0, nV1, nV2) and (nV2, nV1, nV3). The only out-of-line copy sits in the
@@ -762,6 +778,9 @@ public:
     /*!< Next coarser level of detail, or null at the end of the chain. Public on the same
          evidence: the same routine reads it at `0x004e8444` to hand it back to SetNext(). +0x14c */
     Mesh *mNext;
+    /*!< Whether the geometry changes after loading, the `mutable` of the text dump. Public because
+         TnlSeeker writes it on the mesh it creates, and the image has no accessor for it. */
+    int mMutable;
 };
 
 // NTSC-U/C: 0x002723a0, PAL: 0x0028a830

@@ -104,21 +104,21 @@ public:
      */
     static const char *sLetters;
 
-    float mPulse;                              /*!< The pulse, which fades by 0.1 each poll. */
-    float mPulseFloor;                         /*!< The level the pulse fades to. */
-    int mRevealPending;                        /*!< Whether a reveal waits for the flight. */
-    int mPendingPlayer;                        /*!< The player of the waiting reveal. */
-    int mPendingPoints;                        /*!< The letters of the waiting reveal. */
-    Rnd::View *mView;                          /*!< `<hud> letter_exit.view`. */
-    Rnd::Text *mTexts[kNumSides];              /*!< `<hud> letter_exit<n>.txt` of each side. */
-    Rnd::TransAnim *mAnims[kNumSides];         /*!< `<hud> letter_exit<n>.tnm` of each side. */
-    int mLetters[kNumSides];                   /*!< The letter each side shows. */
-    float mFlightLength;                       /*!< The last frame of the flight paths. */
-    Vector3 mOrigin;                           /*!< The resting position of mView. */
-    Vector3 mFlyBasis[3];                      /*!< The basis of the text that flies. */
-    float mFlightStart;                        /*!< The tick the flight started, or -1e9. */
-    Rnd::TransAnim *mFlight;                   /*!< The path of the flight, or null. */
-    int mFlipped;                              /*!< Whether the flight mirrors its path. */
-    Rnd::TransAnim *mLetterPaths[kNumLetters]; /*!< `<hud> letter_exit <letter>r.tnm`. */
-    int mSecondSidePlayer;                     /*!< The player of the second side, or -1. */
+    float mPulse;                               /*!< The pulse, which fades by 0.1 each poll. */
+    float mPulseFloor;                          /*!< The level the pulse fades to. */
+    int mRevealPending;                         /*!< Whether a reveal waits for the flight. */
+    int mPendingPlayer;                         /*!< The player of the waiting reveal. */
+    int mPendingPoints;                         /*!< The letters of the waiting reveal. */
+    Rnd::View *mView;                           /*!< `<hud> letter_exit.view`. */
+    Rnd::Text *mTexts[kNumSides];               /*!< `<hud> letter_exit<n>.txt` of each side. */
+    Rnd::TransAnim *mAnims[kNumSides];          /*!< `<hud> letter_exit<n>.tnm` of each side. */
+    int mLetters[kNumSides];                    /*!< The letter each side shows. */
+    float mFlightLength;                        /*!< The last frame of the flight paths. */
+    Vector3 mOrigin;                            /*!< The resting position of mView. */
+    float mFlyBasis[3][Rnd::kXfmRowFloatCount]; /*!< The basis of the text that flies. */
+    float mFlightStart;                         /*!< The tick the flight started, or -1e9. */
+    Rnd::TransAnim *mFlight;                    /*!< The path of the flight, or null. */
+    int mFlipped;                               /*!< Whether the flight mirrors its path. */
+    Rnd::TransAnim *mLetterPaths[kNumLetters];  /*!< `<hud> letter_exit <letter>r.tnm`. */
+    int mSecondSidePlayer;                      /*!< The player of the second side, or -1. */
 };

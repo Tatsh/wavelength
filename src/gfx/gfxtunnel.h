@@ -4,12 +4,16 @@
 
 #include "gfx/gfxarena.h"
 #include "gfx/tnlgeom.h"
+#include "gfx/tnltrackrange.h"
+#include "math/color.h"
 #include "math/vector3.h"
 #include "rnd/environ.h"
 #include "rnd/view.h"
 
+// The headers of these classes include this header, so the classes are declared here instead.
 class PlayerCamFX;
 class TnlGem;
+class TnlGems;
 
 /**
  * Tunnel of tracks the players fly down, with the gems, the cameras of the players, and the
@@ -234,6 +238,64 @@ public:
      * @ghidraAddress PAL: 0x001e7f90
      */
     float PanelWidth() const;
+
+    /**
+     * Report the time a capture burst takes to advance eight quarter turns.
+     *
+     * @return The time in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x001df200
+     * @ghidraAddress PAL: 0x001e7fa0
+     */
+    static float BurstSpinPeriod();
+
+    /**
+     * Collect the ticks of the gems of a track between two ticks.
+     *
+     * @param pTicks Receives the ticks after the ticks it already has.
+     * @param nTrack The track.
+     * @param flFromTick The first tick.
+     * @param flToTick The tick the collection stops at.
+     * @ghidraAddress NTSC-U/C: 0x001dd908
+     * @ghidraAddress PAL: 0x001e66a8
+     */
+    void CollectGemTicks(std::vector<float> *pTicks, char nTrack, float flFromTick, float flToTick);
+
+    /**
+     * Start the fire of a captured track with the first free fire effect, or else the one that
+     * started first.
+     *
+     * @param nPlayer The player who captured the track, or -1.
+     * @param nTrack The track.
+     * @param bAuto Whether the capture is automatic.
+     * @param flTick The tick of the capture.
+     * @param flStartTick The first tick of the fire.
+     * @param flEndTick The last tick of the fire.
+     * @param pInnerColor The colour of the inner flames.
+     * @param pOuterColor The colour of the outer flames.
+     * @param pGemTicks The ticks of the gems the fire burns, or null to collect them.
+     * @return Whether a fire effect started.
+     * @ghidraAddress NTSC-U/C: 0x001dde98
+     * @ghidraAddress PAL: 0x001e6c38
+     */
+    bool StartFire(int nPlayer,
+                   char nTrack,
+                   int bAuto,
+                   float flTick,
+                   float flStartTick,
+                   float flEndTick,
+                   const Color *pInnerColor,
+                   const Color *pOuterColor,
+                   const std::vector<float> *pGemTicks);
+
+    /**
+     * Report whether the activator of a player is at rest.
+     *
+     * @param nPlayer The player.
+     * @return Whether the activator is at rest.
+     * @ghidraAddress NTSC-U/C: 0x001de1c8
+     * @ghidraAddress PAL: 0x001e6f68
+     */
+    bool IsActivatorIdle(int nPlayer);
 
     /**
      * Report the particle systems of the tunnel through the debug output.
@@ -682,7 +744,8 @@ public:
      */
     static GfxTunnel *sCurrent;
 
-    // +0x000 to +0x08b are not yet identified.
+    // +0x000 to +0x087 are not yet identified.
+    TnlGems *mGems; /*!< The gems. +0x088 */
     TnlGeom *mGeom; /*!< The geometry of the tracks. +0x08c */
     // +0x090 to +0x14b are not yet identified.
     signed char mCrippledTracks; /*!< One bit for each track whose player is crippled. +0x14c */
@@ -693,9 +756,10 @@ public:
     std::vector<std::vector<Rnd::View *>> mPlayerBurstViews;
     /*!< The views of the bursts of each kind of gem. +0x1a4 */
     std::vector<std::vector<Rnd::View *>> mGemBurstViews;
-    // +0x1b4 to +0x1c3 are not yet identified.
-    int mBossJourneyDone; /*!< Whether the boss journey has ended. +0x1c4 */
-    int mIdle;            /*!< Whether no effect of the tunnel runs. +0x1c8 */
+    // +0x1b4 to +0x1b7 are not yet identified.
+    TnlTrackRange mChangedRange; /*!< The tracks and ticks the last poll changed. +0x1b8 */
+    int mBossJourneyDone;        /*!< Whether the boss journey has ended. +0x1c4 */
+    int mIdle;                   /*!< Whether no effect of the tunnel runs. +0x1c8 */
     // +0x1cc to +0x1db are not yet identified.
     PlayerCamFX *mCamFX; /*!< The camera of the players. +0x1dc */
     // +0x1e0 to +0x23f are not yet identified.

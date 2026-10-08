@@ -7,6 +7,7 @@
 #include "rnd/animatable.h"
 #include "rnd/keychannel.h"
 
+class GfxArena;
 class SongDecryptScreen;
 namespace Rnd {
 class Dbg;
@@ -232,7 +233,9 @@ public:
 
     private:
         friend class MatAnim;
-        // SongDecryptScreen::Poll() reads mTexKeys directly, and the image has no accessor for it.
+        // SongDecryptScreen::Poll() and GfxArena read mTexKeys directly, and the image has no
+        // accessor for it.
+        friend class ::GfxArena;
         friend class ::SongDecryptScreen;
 
         // Channel blended into the last row of the stage transform, which is its translation.
@@ -451,8 +454,9 @@ private:
      */
     void RemoveObjectRefs();
 
-    // SongDecryptScreen::Poll() reads mKeysOwner and mStages directly, and the image has no
-    // accessor for either. The order below is the recovered offset order.
+    // SongDecryptScreen::Poll() and GfxArena read mKeysOwner and mStages directly, and the image
+    // has no accessor for either. The order below is the recovered offset order.
+    friend class ::GfxArena;
     friend class ::SongDecryptScreen;
 
     // The material this animation drives.

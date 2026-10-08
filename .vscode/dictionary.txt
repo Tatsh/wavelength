@@ -31,6 +31,10 @@ amovieset
 andi
 anim
 animatables
+animateaction
+animatetoaction
+animchildaction
+animcondition
 animhelper
 anims
 apalette
@@ -66,6 +70,9 @@ autocatch
 autocatcher
 autohscroll
 autosavedonescreen
+avatarbodyanimateaction
+avatargemcatchaction
+avatarinstrumentaction
 avatarpanel
 avatarpartset
 averager
@@ -79,6 +86,7 @@ axetrack
 axetrackcontourbuilder
 axetrackdata
 axetrackharmonybuilder
+backgroundaction
 backmusic
 backmusicbuilder
 backps
@@ -94,6 +102,7 @@ basenames
 bclr
 bcopy
 bdec
+beamparams
 beis
 bffm
 bgtz
@@ -104,6 +113,7 @@ blez
 blit
 blockmgr
 bltz
+bluraction
 bonuspicpanel
 bootscreen
 bossjourneyscreen
@@ -121,6 +131,7 @@ bvoll
 bvolr
 bzero
 callbackxferbdtoiop
+camslide
 cantlinkinside
 capturepacket
 cardsconnectedscreen
@@ -134,6 +145,8 @@ catchtrackstate
 cdread
 cdreadstm
 cdrom
+changelyricaction
+changescreenaction
 changesectionevent
 chatpanel
 chattextentry
@@ -154,6 +167,7 @@ cmdid
 cmdm
 cmpdf
 coclass
+coeffs
 colclamp
 colclampaddr
 collectchildren
@@ -192,6 +206,7 @@ cxtmodem
 cycl
 daddu
 dashcam
+datafuncaction
 datarootdir
 dbits
 dbuild
@@ -325,6 +340,7 @@ fileversion
 finalscorepacket
 findctp
 fini
+floatlist
 flusha
 flushe
 fmacro
@@ -376,11 +392,15 @@ gametrackselector
 gedf
 gemcatcher
 gemcursor
+gemerasefx
 gemslice
+generateaction
 genpath
+gfxarena
 gfxconfig
 gfxdevice
 gfxmanager
+gfxutil
 ghidra
 giftag
 gimple
@@ -668,6 +688,8 @@ memcpy
 memset
 memstream
 meshanim
+meshgroup
+meshrotation
 metaarenascreen
 metagamearena
 metagameutil
@@ -726,6 +748,7 @@ multigamelogic
 multigamestatspanel
 multiloadfreqscreen
 multimesh
+multimeshes
 multimuse
 multiportal
 multiremix
@@ -748,6 +771,7 @@ mvolr
 mypy
 nameerrorscreen
 nameirx
+nanim
 ndebug
 needsdialogscreen
 netarbiter
@@ -841,6 +865,7 @@ nostartfiles
 nostdlib
 notacquired
 notbuffered
+notecondition
 notemuse
 notemusebase
 notexclusiveacquired
@@ -891,6 +916,9 @@ padman
 padman's
 paletted
 palettization
+particlearm
+particlearms
+particlearmsassembly
 particlesys
 particlesysanim
 partunlockdonescreen
@@ -904,6 +932,7 @@ periodictimer
 pextlb
 pextub
 phdrs
+pickable
 picure
 pidl
 pipx
@@ -917,6 +946,7 @@ pitchtrackriffdata
 pitchtrackriffs
 playbacker
 playbacker's
+playercamfx
 playersearchresultsscreen
 playersearchsetupscreen
 playerupdatepacket
@@ -968,6 +998,7 @@ pyinstaller
 pylock
 pyproject
 qfsrv
+quadraticapproach
 quadword
 quadwords
 quat
@@ -1093,7 +1124,15 @@ selremixuploadscreen
 sema
 semas
 serialiser
+setanimaction
+setbluraction
+setcamaction
+setenvaction
+setgeneratoraction
 setjmp
+setmataction
+setmeshaction
+setparticlesaction
 setupnamescreen
 setupnewchatroomscreen
 setupremixsavescreen
@@ -1104,6 +1143,8 @@ shellformat
 shiftjis
 shipflyin
 shoemake
+showaction
+showingcondition
 sifcmd
 sifdev
 sifdma
@@ -1158,7 +1199,9 @@ spdif
 spewregister
 spewtable
 spindlctrl
+spotlightfx
 sprintf
+spritegroup
 spyramid
 sqwc
 srcs
@@ -1188,6 +1231,7 @@ stmod
 strcat
 strcmp
 strcpy
+streakarrow
 streamqueue
 streamtask
 strequal
@@ -1197,6 +1241,7 @@ strncpy
 strstr
 strtol
 sublang
+substepparticles
 subu
 subx
 suby
@@ -1237,6 +1282,20 @@ timrman
 tipsscreen
 tlid
 tmfc
+tnlconnectorbeam
+tnlcripfx
+tnlcursor
+tnldivider
+tnlflashfx
+tnlgem
+tnlgemcapfx
+tnlgems
+tnlgeom
+tnlseeker
+tnlstreakgemfx
+tnltrackfx
+tnltrackrange
+tnlwave
 tostring
 totbytes
 toupper
@@ -1251,6 +1310,11 @@ transitionerrorscreen
 transitionmusic
 transitionscreen
 travelswoosh
+triggeraction
+triggercondition
+triggerevent
+triggerhandler
+triggermgr
 trmopn
 trode
 trodes

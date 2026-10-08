@@ -431,9 +431,13 @@ public:
     /** Tracking added after every glyph, in the same units as mSize. +0x54 */
     float mSpace;
 
-private:
-    // Characters the atlas supplies, in the reading order of its cells.
-    HxStr mChars; // +0x58
+    /**
+     * Characters the atlas supplies, in the reading order of its cells. +0x58
+     *
+     * Public because TnlStreakGemFX passes it back to SetAtlas() to recolour a font, and the image
+     * has no accessor for it.
+     */
+    HxStr mChars;
 };
 
 /**

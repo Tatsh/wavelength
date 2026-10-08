@@ -1,13 +1,22 @@
 set(WAVELENGTH_GAME_SRCS
+    animateaction.cpp
+    animatetoaction.cpp
+    animchildaction.cpp
+    animcondition.cpp
+    avatarbodyanimateaction.cpp
+    avatargemcatchaction.cpp
+    avatarinstrumentaction.cpp
     avatarpartset.cpp
     axetrack.cpp
     axetrackcontourbuilder.cpp
     axetrackdata.cpp
     axetrackharmonybuilder.cpp
+    backgroundaction.cpp
     backmusic.cpp
     backmusicbuilder.cpp
     bankloader.cpp
     bankloaderbuilder.cpp
+    bluraction.cpp
     campaign.cpp
     catchtrack.cpp
     catchtrackbuilder.cpp
@@ -15,9 +24,12 @@ set(WAVELENGTH_GAME_SRCS
     catchtrackdisplay.cpp
     catchtrackmusic.cpp
     catchtrackstate.cpp
+    changelyricaction.cpp
+    changescreenaction.cpp
     changesectionevent.cpp
     conductorbuilder.cpp
     controllerdisplay.cpp
+    datafuncaction.cpp
     difficultyrating.cpp
     duel.cpp
     duellogic.cpp
@@ -34,6 +46,7 @@ set(WAVELENGTH_GAME_SRCS
     gameconfig.cpp
     gamelogic.cpp
     gametrackselector.cpp
+    generateaction.cpp
     gemcatcher.cpp
     gemcursor.cpp
     gemslice.cpp
@@ -50,6 +63,7 @@ set(WAVELENGTH_GAME_SRCS
     multigamelogic.cpp
     netarbiter.cpp
     netfaker.cpp
+    notecondition.cpp
     pitchtrack.cpp
     pitchtrackbuilder.cpp
     pitchtrackdisplay.cpp
@@ -75,6 +89,16 @@ set(WAVELENGTH_GAME_SRCS
     scripttrackbuilder.cpp
     scripttrackdata.cpp
     sectionboundaries.cpp
+    setanimaction.cpp
+    setbluraction.cpp
+    setcamaction.cpp
+    setenvaction.cpp
+    setgeneratoraction.cpp
+    setmataction.cpp
+    setmeshaction.cpp
+    setparticlesaction.cpp
+    showaction.cpp
+    showingcondition.cpp
     slotgrid.cpp
     sologamelogic.cpp
     song.cpp
@@ -85,6 +109,11 @@ set(WAVELENGTH_GAME_SRCS
     trackcapturer.cpp
     track.cpp
     trackselector.cpp
+    triggeraction.cpp
+    triggercondition.cpp
+    triggerevent.cpp
+    triggerhandler.cpp
+    triggermgr.cpp
     tutorialgamelogic.cpp
     voxtrack.cpp
     voxtrackdisplay.cpp

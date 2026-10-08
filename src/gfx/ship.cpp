@@ -4,12 +4,12 @@
 #include <string.h>
 
 #include "game/gamedb.h"
-#include "gfx/basisinterp.h"
 #include "gfx/beam.h"
 #include "gfx/beampool.h"
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
 #include "gfx/gfxtunnel.h"
+#include "gfx/gfxutil.h"
 #include "gfx/shipflyin.h"
 #include "math/rand.h"
 #include "math/transformops.h"
@@ -23,6 +23,17 @@ namespace {
 
 // The components of a point or of a row of a basis.
 constexpr int kNumComponents = 3;
+
+// Copy the rows of a transform of the camera into the row form the ships work in.
+inline void CopyRows(const Transform &xfm, float (*pRows)[Rnd::kXfmRowFloatCount]) {
+    const Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
+    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
+        pRows[i][0] = rows[i]->x;
+        pRows[i][1] = rows[i]->y;
+        pRows[i][2] = rows[i]->z;
+        pRows[i][kVec3PaddingFloat] = rows[i]->w;
+    }
+}
 
 // The frame and the time of a ship that has not started a measurement.
 constexpr float kUnset = -1.0e9f;
@@ -227,29 +238,6 @@ void ToRows(const Transform &xfm, float (*pRows)[Rnd::kXfmRowFloatCount]) {
         pRows[i][2] = rows[i]->z;
         pRows[i][kVec3PaddingFloat] = rows[i]->w;
     }
-}
-
-// Copy the rows of a matrix into a transform.
-void FromRows(const float (*pRows)[Rnd::kXfmRowFloatCount], Transform *pXfm) {
-    Vector3 *rows[] = {&pXfm->mBasisX, &pXfm->mBasisY, &pXfm->mBasisZ, &pXfm->mTranslation};
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
-        rows[i]->x = pRows[i][0];
-        rows[i]->y = pRows[i][1];
-        rows[i]->z = pRows[i][2];
-        rows[i]->w = pRows[i][kVec3PaddingFloat];
-    }
-}
-
-// Blend the basis of a matrix in place towards the basis of another.
-void BlendBasis(float (*pRows)[Rnd::kXfmRowFloatCount],
-                const float (*pTo)[Rnd::kXfmRowFloatCount],
-                float fBlend) {
-    Transform from;
-    Transform to;
-    FromRows(pRows, &from);
-    FromRows(pTo, &to);
-    InterpBasis(from, to, fBlend, &from);
-    ToRows(from, pRows);
 }
 
 // The geometry of the tracks of the song.
@@ -587,7 +575,7 @@ Ship::Ship(const char *pszColor, int nPlayer) {
         mBumperPs->mSpeed.y += fSpeedOffset;
         mView->RemoveAnim(mBumperPs);
     }
-    ClearMeshScroll(mView);
+    ClearMeshSpheres(mView);
 
     mName = FindObject<Rnd::Text>(FormatString("ship name_%c.txt", nColor));
     if (mName != nullptr) {
@@ -1033,7 +1021,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     const float fTime = TheGameDb->mSongTime;
     const float fVelocity = fTick < kBankStartTick ? 0.0f : pPlayer->mVelocity;
     PlayerCamFX *pCamFX = GfxTunnel::sCurrent->mCamFX;
-    bool bShowThrusters = mMulti != 0 || pCamFX->mZoomOut != 0.0f;
+    bool bShowThrusters = mMulti != 0 || pCamFX->mPullBackLevel != 0.0f;
 
     float fBankTarget = 0.0f;
     if ((mFlags & kFlagBumped) == 0) {
@@ -1084,7 +1072,9 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         }
         Mat33BuildOrthonormal(aflUp, aflForward, &aflBasis[0][0]);
     } else {
-        const float (*pCamXfm)[Rnd::kXfmRowFloatCount] = pCamFX->mXfm;
+        float aflCamXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+        CopyRows(pCamFX->mCamera, aflCamXfm);
+        const float (*pCamXfm)[Rnd::kXfmRowFloatCount] = aflCamXfm;
         XfmPoint(pCamXfm, sOffsetPivot, pPosition);
         // Yes, the binary leaves the fourth word of both rows unset.
         float aflUp[Rnd::kXfmRowFloatCount];
@@ -1104,7 +1094,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         } else if (fBlend != 0.0f) {
             LerpPoint(mXfm[Rnd::kXfmRowCount - 1], pPosition, fBlend, pPosition);
         }
-        BlendBasis(aflBasis, mXfm, fBlend);
+        InterpBasis(aflBasis[0], mXfm[0], aflBasis[0], fBlend);
     } else if (mIntroActive != 0) {
         bShowThrusters = true;
         if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
@@ -1178,7 +1168,9 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
 
 void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kXfmRowFloatCount]) {
     float *pPosition = pXfm[Rnd::kXfmRowCount - 1];
-    const float (*pSlideXfm)[Rnd::kXfmRowFloatCount] = pCamFX->mSlideXfm;
+    float aflSlideXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    CopyRows(pCamFX->mView, aflSlideXfm);
+    const float (*pSlideXfm)[Rnd::kXfmRowFloatCount] = aflSlideXfm;
     Rnd::Transformable *pViewXfm = mView;
     if (sIntroBlendEndTick <= fTick) {
         float fBlend = (sIntroEndTick - fTick) / (sIntroEndTick - sIntroBlendEndTick);
@@ -1211,7 +1203,7 @@ void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kX
     } else {
         LerpPoint(pIntroTranslation, aflIntroPos, fBlend, pPosition);
     }
-    BlendBasis(pXfm, aflIntroXfm, fBlend);
+    InterpBasis(pXfm[0], aflIntroXfm[0], pXfm[0], fBlend);
     // Yes, the binary builds the origin over the intro translation, retaining its fourth word.
     for (int i = 0; i < kNumComponents; ++i) {
         pIntroTranslation[i] = (&sPivot.x)[i] * (1.0f - fBlend);
@@ -1230,14 +1222,16 @@ void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kXfmRo
         return;
     }
     float aflIntroXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-    sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &pCamFX->mSlideXfm[0][0], &mXfm[0][0]);
+    float aflSlideXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    CopyRows(pCamFX->mView, aflSlideXfm);
+    sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &aflSlideXfm[0][0], &mXfm[0][0]);
     float *pIntroTranslation = aflIntroXfm[Rnd::kXfmRowCount - 1];
     if (fBlend == 1.0f) {
         memcpy(pPosition, pIntroTranslation, sizeof(aflIntroXfm[0]));
     } else {
         LerpPoint(pIntroTranslation, pPosition, fBlend, pPosition);
     }
-    BlendBasis(pXfm, aflIntroXfm, fBlend);
+    InterpBasis(pXfm[0], aflIntroXfm[0], pXfm[0], fBlend);
     // Yes, the binary builds the origin over the intro translation, retaining its fourth word.
     for (int i = 0; i < kNumComponents; ++i) {
         pIntroTranslation[i] = (&sPivot.x)[i] * (1.0f - fBlend);

@@ -380,6 +380,33 @@ public:
     virtual void SetAlpha(float flAlpha);
 
     /**
+     * Set the base colour, the red, green, and blue of the colour only.
+     *
+     * @param color The colour.
+     * @ghidraAddress NTSC-U/C: 0x00384e48
+     * @ghidraAddress PAL: 0x003f3550
+     */
+    virtual void SetBaseColor(const Color &color);
+
+    /**
+     * Set the colour of the lighting.
+     *
+     * @param color The colour.
+     * @ghidraAddress NTSC-U/C: 0x00384e68
+     * @ghidraAddress PAL: 0x003f3570
+     */
+    virtual void SetLightColor(const Color &color);
+
+    /**
+     * Set the colour of the edges.
+     *
+     * @param color The colour.
+     * @ghidraAddress NTSC-U/C: 0x00384e78
+     * @ghidraAddress PAL: 0x003f3580
+     */
+    virtual void SetEdgeColor(const Color &color);
+
+    /**
      * Set the specular colour and its alpha.
      *
      * The colour argument is a Color on the same evidence as SetDiffuse(), the specular blend at

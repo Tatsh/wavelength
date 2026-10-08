@@ -28,7 +28,7 @@ public:
     BeamPool(int nCount, Rnd::Drawable *pParent, const char *pszName)
         : FxPool<Beam, bArg>(nCount), mParams(pszName) {
         for (Beam *pBeam = this->mItems; pBeam != this->mItems + this->mCount; ++pBeam) {
-            pParent->AddDraw(pBeam->mDraw, nullptr);
+            pParent->AddDraw(pBeam->mLine, nullptr);
         }
     }
 

@@ -64,8 +64,10 @@ public:
      */
     void Clear();
 
-    int mCapacity;           /*!< The most characters the field takes, plus two. */
-    int mCursor;             /*!< The character the cursor stands before. */
-    int mOverwrite;          /*!< Whether a typed character replaces the one at the cursor. */
+    int mCapacity; /*!< The most characters the field takes, plus two. */
+    int mCursor;   /*!< The character the cursor stands before. */
+    /*!< Whether a typed character goes in before the one at the cursor rather than replacing it.
+         The constructor leaves it unset. */
+    int mInsert;
     std::vector<char> mText; /*!< The terminated text. */
 };

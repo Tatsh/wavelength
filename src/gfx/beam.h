@@ -5,19 +5,21 @@
 #include "gfx/beamparams.h"
 #include "gfx/ship.h"
 #include "math/color.h"
+#include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/drawable.h"
+#include "rnd/line.h"
+#include "rnd/mat.h"
+#include "rnd/transformable.h"
 
 /**
- * Beam a ship fires at a gem.
+ * Beam a ship fires at a gem, a line that two waves ripple along.
  *
- * The RTTI names the class through the beam pools. The object is 0x70 bytes. Only the members the
- * ships and the pools use are declared so far.
+ * The RTTI names the class through the beam pools. The object is 0x70 bytes.
  */
 class Beam {
 public:
     /**
-     * Construct an idle beam.
+     * Construct an idle beam with a line and a material of its own.
      *
      * @ghidraAddress NTSC-U/C: 0x001ed2d0
      * @ghidraAddress PAL: 0x001f6070
@@ -25,7 +27,7 @@ public:
     Beam();
 
     /**
-     * Destroy the beam.
+     * Destroy the line and the material of the beam.
      *
      * @ghidraAddress NTSC-U/C: 0x001ed458
      * @ghidraAddress PAL: 0x001f61f8
@@ -42,7 +44,7 @@ public:
     void Configure(const BeamParams *pParams);
 
     /**
-     * Fire the beam for a ship.
+     * Fire the beam for a ship, with waves of random frequencies and periods.
      *
      * @param pOwner The ship.
      * @param pOwnerList The list of the ship that records the beam.
@@ -54,7 +56,7 @@ public:
     void Start(Ship *pOwner, std::list<Ship::BeamData> *pOwnerList, float fStart, float fEnd);
 
     /**
-     * Stop the beam.
+     * Stop the beam and hide it.
      *
      * @ghidraAddress NTSC-U/C: 0x001ed5c0
      * @ghidraAddress PAL: 0x001f6360
@@ -62,12 +64,12 @@ public:
     void Stop();
 
     /**
-     * Advance the beam.
+     * Ripple the line of the beam between its ends and colour it.
      *
-     * @param direction The direction the beam leaves the ship in.
-     * @param side The direction across the beam.
-     * @param color The colour of the ship.
-     * @return Whether the beam has ended.
+     * @param direction The direction the waves lift the line in.
+     * @param side The direction the second wave moves the line in.
+     * @param color The colour an end of no alpha takes.
+     * @return Whether the beam has ended, in which case nothing is changed.
      * @ghidraAddress NTSC-U/C: 0x001ed608
      * @ghidraAddress PAL: 0x001f63a8
      */
@@ -76,21 +78,25 @@ public:
     /**
      * Move one end of the beam.
      *
-     * @param nEnd The end, 0 at the ship and 1 at the gem.
+     * @param nEnd The end, one of BeamParams::End.
      * @param pPosition The position, four floats.
      * @ghidraAddress NTSC-U/C: 0x001ed9c0
      * @ghidraAddress PAL: 0x001f6760
      */
     void SetEnd(int nEnd, const float *pPosition);
 
-    unsigned char mReserved00[0x30];       // +0x00, not yet recovered.
-    Rnd::Drawable *mDraw;                  /*!< What draws the beam. +0x30 */
-    unsigned char mReserved34[0x04];       // +0x34, not yet recovered.
-    float mStartTime;                      /*!< The time the beam started. +0x38 */
-    unsigned char mReserved3C[0x04];       // +0x3c, not yet recovered.
-    Ship *mOwner;                          /*!< The ship that fired the beam. +0x40 */
-    std::list<Ship::BeamData> *mOwnerList; /*!< The list of the ship that records it. +0x44 */
-    unsigned char mReserved48[0x18];       // +0x48, not yet recovered.
-    Beam *mNextFree;                       /*!< The next beam of the free list of the pool. +0x60 */
-    unsigned char mReserved64[0x0c];       // +0x64, not yet recovered.
+    const BeamParams *mParams;              /*!< The look, or null before Configure(). */
+    unsigned char mReserved04[0x0c];        // +0x04, not yet recovered.
+    float mEnds[2][Rnd::kXfmRowFloatCount]; /*!< The positions of the ends. */
+    Rnd::Line *mLine;                       /*!< The line of the beam. */
+    Rnd::Mat *mMat;                         /*!< The material of the line. */
+    float mStartTime;                       /*!< The time the beam started. */
+    float mEndTime;                         /*!< The time the beam ends. */
+    Ship *mOwner;                           /*!< The ship that fired the beam. */
+    std::list<Ship::BeamData> *mOwnerList;  /*!< The list of the ship that records it. */
+    Vector2 mFrequencies;                   /*!< The waves along the beam of each wave. */
+    Vector2 mTravelPeriods;                 /*!< The period of the travel of each wave. */
+    unsigned char mReserved58[0x08];        // +0x58, not yet recovered.
+    Beam *mNextFree;                        /*!< The next beam of the free list. */
+    unsigned char mReserved64[0x0c];        // +0x64, not yet recovered.
 };

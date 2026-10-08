@@ -2,7 +2,7 @@
 
 #include "app/overlay.h"
 #include "game/gamedb.h"
-#include "gfx/basisinterp.h"
+#include "gfx/gfxutil.h"
 #include "math/transform.h"
 #include "os/string.h"
 #include "rnd/manager.h"
@@ -160,14 +160,20 @@ void HudLetterExit::Poll() {
         } else if (fTicks < 0.0f) {
             fTicks = 0.0f;
         }
-        Transform basis;
-        basis.mBasisX = Vector3{1.0f, 0.0f, 0.0f};
-        basis.mBasisY = Vector3{0.0f, 1.0f, 0.0f};
-        basis.mBasisZ = Vector3{0.0f, 0.0f, 1.0f};
+        // Yes, the binary leaves the fourth words of the identity basis unset.
+        float basis[3][Rnd::kXfmRowFloatCount];
+        basis[kRowX][kColumnX] = 1.0f;
+        basis[kRowX][kColumnY] = 0.0f;
+        basis[kRowX][kColumnZ] = 0.0f;
+        basis[kRowY][kColumnX] = 0.0f;
+        basis[kRowY][kColumnY] = 1.0f;
+        basis[kRowY][kColumnZ] = 0.0f;
+        basis[kRowZ][kColumnX] = 0.0f;
+        basis[kRowZ][kColumnY] = 0.0f;
+        basis[kRowZ][kColumnZ] = 1.0f;
         if (fTicks < kTurnTicks) {
-            const Transform flyBasis{mFlyBasis[0], mFlyBasis[1], mFlyBasis[2], {}};
             // Yes, the binary discards this call's result.
-            InterpBasis(flyBasis, basis, fTicks / kTurnTicks, &basis);
+            InterpBasis(mFlyBasis[0], basis[0], basis[0], fTicks / kTurnTicks);
         }
         const float fFrame =
             mFlight->FilterFrame(fTicks * Overlay::sDuelPointsMoveRate * mFlightLength);
@@ -250,7 +256,9 @@ void HudLetterExit::Fly(int nResult) {
     mTexts[nSide ^ 1]->SetShowing(false);
     Rnd::Transformable *pTextTrans = mTexts[nSide];
     for (int i = kRowX; i <= kRowZ; ++i) {
-        mFlyBasis[i] = ReadRow(pTextTrans->mLocalXfm[i]);
+        for (int j = kColumnX; j <= kColumnW; ++j) {
+            mFlyBasis[i][j] = pTextTrans->mLocalXfm[i][j];
+        }
     }
     mFlightStart = TheGameDb->mSongTick;
     mFlipped = (nSide ^ mSecondSidePlayer) != 0;

@@ -14,7 +14,16 @@
 #include "rnd/particle.h"
 #include "rnd/transformable.h"
 
+class Constructo;
+class MeshGroup;
+class ParticleArm;
+class ParticleArmsAssembly;
+class SetParticlesAction;
 class Ship;
+class SpriteGroup;
+class SubstepParticles;
+class TnlCripFX;
+class TnlTrackFX;
 
 namespace Rnd {
 class Dbg;
@@ -64,6 +73,28 @@ class ParticleSys : public Animatable, public Transformable, public Drawable {
     // of their particles and run SetFrameSelf() on the system clock, and the image has no accessor
     // for any of them.
     friend class ::Ship;
+    // SetParticlesAction reads and writes mLife, mSpeed, mPosLow, and mPosHigh directly, and the
+    // image has no accessor for them.
+    friend class ::SetParticlesAction;
+    // ParticleArmsAssembly writes the parameter block from its configuration, and drives
+    // SetFrameSelf() once for each arm. ParticleArm scales the speed, the emission box, and the
+    // bubble size. The image has no accessor for either.
+    friend class ::ParticleArm;
+    friend class ::ParticleArmsAssembly;
+    // MeshGroup and SpriteGroup size the pool of mParticlesOwner directly, and the image has no
+    // accessor for it.
+    friend class ::MeshGroup;
+    friend class ::SpriteGroup;
+    // TnlTrackFX and TnlCripFX drive SetFrameSelf() of their shared particles directly, and the
+    // image has no accessor for it.
+    friend class ::TnlCripFX;
+    friend class ::TnlTrackFX;
+    // SubstepParticles drives SetFrameSelf() once for each step of an update, and the image has
+    // no accessor for it.
+    friend class ::SubstepParticles;
+    // Constructo turns on mCollide and moves mCollidePlane directly, and the image has no accessor
+    // for either.
+    friend class ::Constructo;
 
 public:
     /**
@@ -276,6 +307,15 @@ public:
     void SetMat(Mat *pMat);
 
     /**
+     * Resize the pool of particles.
+     *
+     * @param nSize The number of particles.
+     * @ghidraAddress NTSC-U/C: 0x0023c8b8
+     * @ghidraAddress PAL: 0x00245438
+     */
+    void SetPoolSize(int nSize);
+
+    /**
      * Draw the particles of another system, or of this one.
      *
      * Releases the object references, stores the owner, and takes the references again. A system
@@ -287,6 +327,27 @@ public:
      * @ghidraAddress PAL: 0x0056c900
      */
     void SetParticlesOwner(ParticleSys *pOwner);
+
+    /**
+     * Return mLastFrame to its unset sentinel, so the next SetFrameSelf() emits nothing.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0023e348
+     * @ghidraAddress PAL: 0x00246e78
+     */
+    void ResetLastFrame();
+
+    /**
+     * Count the particles of the live list.
+     *
+     * The name is inferred.
+     *
+     * @return The number of live particles.
+     * @ghidraAddress NTSC-U/C: 0x0023f930
+     * @ghidraAddress PAL: 0x00248460
+     */
+    int NumLiveParticles() const;
 
     /**
      * Report the head of the live list.

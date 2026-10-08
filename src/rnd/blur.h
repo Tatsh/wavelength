@@ -6,6 +6,7 @@
 #include "rnd/drawable.h"
 #include "rnd/transformable.h"
 
+class SetBlurAction;
 namespace Rnd {
 class Dbg;
 class Mesh;
@@ -37,6 +38,9 @@ namespace Rnd {
  * routines listed below belong to this class.
  */
 class Blur : public Drawable {
+    // SetBlurAction writes mFalloff directly, and the image has no accessor for it.
+    friend class ::SetBlurAction;
+
 public:
     /**
      * One recorded transform.

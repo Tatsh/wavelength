@@ -222,6 +222,18 @@ public:
     bool UpdatePlayer();
 
     /**
+     * Pass a gem catch to the avatar player, when a player draws the set.
+     *
+     * The name is inferred.
+     *
+     * @param nLane The lane of the gem.
+     * @param nCatch The flag the trigger file gave.
+     * @ghidraAddress NTSC-U/C: 0x00272638
+     * @ghidraAddress PAL: 0x0027c1e8
+     */
+    void CatchGem(int nLane, int nCatch);
+
+    /**
      * Choose the animation the avatar player plays, and start it at once when a player draws the
      * set.
      *

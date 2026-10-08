@@ -18,6 +18,7 @@ public:
     enum NodeType {
         kNodeInt = 0,    /*!< An integer. */
         kNodeSymbol = 1, /*!< A symbol. */
+        kNodeFloat = 2,  /*!< A floating-point number. */
         kNodeArray = 3,  /*!< A child array. */
     };
 

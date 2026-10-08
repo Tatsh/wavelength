@@ -672,7 +672,7 @@ int g_nRndMeshLoadVersion;
 Mesh::Mesh(const HxStr &name)
     : Object(name), mZMode(kZModeZReadWrite), mZFunc(kZFuncLess), mMat(nullptr), mVertsOwner(this),
       mFacesOwner(this), mTransOwner(this), mTrans1Owner(nullptr), mTrans2Owner(nullptr),
-      mMaxVerts(-1), mMinScreen(0.0f), mNext(nullptr) {
+      mMaxVerts(-1), mMinScreen(0.0f), mNext(nullptr), mMutable(0) {
     // The centre is written as one quadword, which sets the padding word to 1.0 along with it.
     mSphere.mCenter.x = 0.0f;
     mSphere.mCenter.y = 0.0f;

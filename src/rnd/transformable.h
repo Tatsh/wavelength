@@ -2,9 +2,18 @@
 
 #include <list>
 
+#include "math/transform.h"
 #include "rnd/object.h"
 
 class MetRenderer;
+
+namespace Rnd {
+class Transformable;
+}
+
+void ClearMeshSpheres(Rnd::Transformable *pRoot);
+void ResetXfmTree(Rnd::Transformable *pRoot, bool bReset);
+void ScaleParticleTree(Rnd::Transformable *pTrans, float flScale);
 
 namespace Rnd {
 
@@ -42,6 +51,11 @@ class Transformable : public virtual Object {
     // MetRenderer::AddScreenView() and AddBackgroundView() search mTransList directly before
     // AddTrans(), and the image has no accessor for it.
     friend class ::MetRenderer;
+    // ScaleParticleTree(), ResetXfmTree(), and ClearMeshSpheres() in gfx/gfxutil.h walk mTransList
+    // directly on the same evidence.
+    friend void ::ScaleParticleTree(Transformable *pTrans, float flScale);
+    friend void ::ResetXfmTree(Transformable *pRoot, bool bReset);
+    friend void ::ClearMeshSpheres(Transformable *pRoot);
 
 public:
     /**
@@ -235,6 +249,24 @@ public:
      * @ghidraAddress PAL: 0x0053bb00
      */
     void SetOrigin(const float *pOrigin);
+
+    /**
+     * Replace the local transform and mark the transform dirty.
+     *
+     * Every caller expands it.
+     *
+     * @param xfm The new local transform.
+     */
+    void SetLocalXfm(const Transform &xfm) {
+        const Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
+        for (int i = 0; i < kXfmRowCount; ++i) {
+            mLocalXfm[i][0] = rows[i]->x;
+            mLocalXfm[i][1] = rows[i]->y;
+            mLocalXfm[i][2] = rows[i]->z;
+            mLocalXfm[i][kVec3PaddingFloat] = rows[i]->w;
+        }
+        mDirty = 1;
+    }
 
     /**
      * Build the transform this object draws with and return it.

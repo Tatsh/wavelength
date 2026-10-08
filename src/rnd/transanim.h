@@ -8,14 +8,18 @@
 // Included for kXfmRowFloatCount, which this header uses by value, rather than for Transformable.
 #include "rnd/transformable.h"
 
-struct Vector3;
+class GfxArena;
 class HudLetterExit;
+class TnlDivider;
+struct Vector3;
 
 namespace Rnd {
 class Dbg;
 class Object;
 class Stream;
 } // namespace Rnd
+
+void ScaleTransKeys(const char *pszName, float fScale);
 
 namespace Rnd {
 
@@ -52,6 +56,13 @@ class TransAnim : public Animatable, public Drawable {
     // The HudLetterExit constructor reads the frame of the last translation key of its first
     // letter path, and the image has no accessor for it.
     friend class ::HudLetterExit;
+    // The constructor of TnlDivider scales the keys of two animations directly, and the image has
+    // no accessor for them.
+    friend class ::TnlDivider;
+    // GfxArena finds the camera path by mTrans and scales its keys directly, and ScaleTransKeys()
+    // in gfx/gfxutil.h scales mTransKeys directly. The image has no accessor for either.
+    friend class ::GfxArena;
+    friend void ::ScaleTransKeys(const char *pszName, float fScale);
 
 public:
     /**

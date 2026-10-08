@@ -1,10 +1,42 @@
 set(WAVELENGTH_GFX_SRCS
+    beam.cpp
+    beamparams.cpp
+    camslide.cpp
+    constructo.cpp
+    floatlist.cpp
+    gemerasefx.cpp
+    gfxarena.cpp
     gfxconfig.cpp
     gfxdevice.cpp
     gfxmanager.cpp
+    gfxutil.cpp
     gsdoublebuffer.cpp
+    meshgroup.cpp
+    meshrotation.cpp
+    particlearm.cpp
+    particlearms.cpp
+    particlearmsassembly.cpp
+    playercamfx.cpp
+    quadraticapproach.cpp
     ship.cpp
     shipflyin.cpp
+    spotlightfx.cpp
+    spritegroup.cpp
+    substepparticles.cpp
+    tnlconnectorbeam.cpp
+    tnlcripfx.cpp
+    tnlcursor.cpp
+    tnldivider.cpp
+    tnlflashfx.cpp
+    tnlgem.cpp
+    tnlgemcapfx.cpp
+    tnlgems.cpp
+    tnlgeom.cpp
+    tnlseeker.cpp
+    tnlstreakgemfx.cpp
+    tnltrackfx.cpp
+    tnltrackrange.cpp
+    tnlwave.cpp
     vram.cpp)
 
 # The VU microprograms and the DMA chains that upload them. The DVP assembler builds them. It ships

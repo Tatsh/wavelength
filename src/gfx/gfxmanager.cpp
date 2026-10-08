@@ -912,10 +912,10 @@ int GfxManager::Poll(float fTime) {
             bReady = CheckLoaders();
         }
         mArena->PollLoad(bHudStarted);
-        if (bReady && mArena->mNoMovie == 0) {
+        if (bReady && mArena->mTriggersLoaded == 0) {
             bReady = false;
-            if (mArena->mMovieStream == nullptr) {
-                mArena->LoadMovie();
+            if (mArena->mTriggerStream == nullptr) {
+                mArena->LoadTriggers();
             }
         }
         switch (mLoadStage) {

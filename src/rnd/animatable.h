@@ -4,15 +4,24 @@
 
 #include "rnd/object.h"
 
+class AnimateAction;
+class AnimateToAction;
+class Constructo;
+class GfxArena;
 class HudLetterExit;
 class MetagameArena;
 class MetRenderer;
+class PlayerCamFX;
+class SetAnimAction;
 class Ship;
 class ViewAnimPlayer;
 namespace Rnd {
+class Animatable;
 class Dbg;
 class Stream;
 } // namespace Rnd
+
+void SetFilterScale(Rnd::Animatable *pAnim, float fScale);
 
 namespace Rnd {
 
@@ -62,6 +71,20 @@ class Animatable : public virtual Object {
     // Ship::UpdateTransform() filters the frames of its intro paths before it evaluates them, and
     // the Ship constructor walks mAnims of its view, and the image has no accessor for either.
     friend class ::Ship;
+    // SetAnimAction writes the first of mFilters and reads mFrame, and AnimateAction and
+    // AnimateToAction read mFrame, directly. The image has no accessor for either.
+    friend class ::SetAnimAction;
+    friend class ::AnimateAction;
+    friend class ::AnimateToAction;
+    // PlayerCamFX maps a tick through the filters of its intro animation with FilterFrame().
+    friend class ::PlayerCamFX;
+    // GfxArena and Constructo search mAnims directly before RemoveAnim(), and the image has no
+    // accessor for it.
+    friend class ::Constructo;
+    friend class ::GfxArena;
+    // SetFilterScale() in gfx/gfxutil.h rewrites the first of mFilters to keep mFrame in place,
+    // and the image has no accessor for either.
+    friend void ::SetFilterScale(Animatable *pAnim, float fScale);
 
 public:
     /**
@@ -667,6 +690,10 @@ public:
         virtual void Copy(const Filter *pSource);
 
     private:
+        // PlayerCamFX resets and kicks the spring of its jiggle through all four members, and the
+        // image has no accessor for them.
+        friend class ::PlayerCamFX;
+
         float mLevel;  // +0x04
         float mSpring; // +0x08
         float mDamper; // +0x0c
