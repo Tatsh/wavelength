@@ -640,9 +640,9 @@ __metadata:
   linkType: hard
 
 "@tombi-toml/wasm-lib@npm:^1.5.5":
-  version: 1.6.0
-  resolution: "@tombi-toml/wasm-lib@npm:1.6.0"
-  checksum: 10c0/a533c2ccaaa0ab9b9eec9d7a325a7f9df0304d891ae9b3fb13c996c4cf0238497dad4f7cc48b7d26fed9217128f4472cfa75b6993feffed47d0a32e8b9aa4006
+  version: 1.6.1
+  resolution: "@tombi-toml/wasm-lib@npm:1.6.1"
+  checksum: 10c0/504c22320557635be19b4f260c6f57a36f2d25d158e3ff518390cb23d524d692c33efc9429493d4a12a44eef4884b21215f47f14ccaa491a1df06adc22d8d3de
   languageName: node
   linkType: hard
 
@@ -1108,9 +1108,9 @@ __metadata:
   linkType: hard
 
 "ignore@npm:^7.0.5":
-  version: 7.0.10
-  resolution: "ignore@npm:7.0.10"
-  checksum: 10c0/d3f68f0f89412996795850198ef2465bbf4222de4734273e8f100cbabae79fe5ae3643d6d3bbf43e7ec10e8d5b65be22df0e5084114d375611220b8b8d3d254a
+  version: 7.0.11
+  resolution: "ignore@npm:7.0.11"
+  checksum: 10c0/4be6206eb3b2a9fc7b93cceb0d0f249060127604c752bfa4f96b06d4561b5bfa77c4ff244ecdd5ccc3cbb4a1e1ad9c9c9c215b81ace8ea03c3d0d1f5dc55d2eb
   languageName: node
   linkType: hard
 

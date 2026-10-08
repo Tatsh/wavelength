@@ -7,13 +7,17 @@
 [![License](https://img.shields.io/github/license/Tatsh/wavelength)](https://github.com/Tatsh/wavelength/blob/master/LICENSE.txt)
 [![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/Tatsh/wavelength/v0.0.0/master)](https://github.com/Tatsh/wavelength/compare/v0.0.0...master)
 [![Dependabot](https://img.shields.io/badge/Dependabot-enabled-blue?logo=dependabot)](https://github.com/dependabot)
+[![pages-build-deployment](https://github.com/Tatsh/wavelength/actions/workflows/pages/pages-build-deployment/badge.svg)](https://tatsh.github.io/wavelength/)
 [![Stargazers](https://img.shields.io/github/stars/Tatsh/wavelength?logo=github&style=flat)](https://github.com/Tatsh/wavelength/stargazers)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Tatsh/wavelength/master.svg)](https://results.pre-commit.ci/latest/github/Tatsh/wavelength/master)
 [![CMake](https://img.shields.io/badge/CMake-6E6E6E?logo=cmake)](https://cmake.org/)
 [![Prettier](https://img.shields.io/badge/Prettier-black?logo=prettier)](https://prettier.io/)
 
 [![@Tatsh](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpublic.api.bsky.app%2Fxrpc%2Fapp.bsky.actor.getProfile%2F%3Factor=did%3Aplc%3Auq42idtvuccnmtl57nsucz72&query=%24.followersCount&label=Follow+%40Tatsh&logo=bluesky&style=social)](https://bsky.app/profile/Tatsh.bsky.social)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Tatsh-black?logo=buymeacoffee)](https://buymeacoffee.com/Tatsh)
+[![Libera.Chat](https://img.shields.io/badge/Libera.Chat-Tatsh-black?logo=liberadotchat)](irc://irc.libera.chat/Tatsh)
 [![Mastodon Follow](https://img.shields.io/mastodon/follow/109370961877277568?domain=hostux.social&style=social)](https://hostux.social/@Tatsh)
+[![Patreon](https://img.shields.io/badge/Patreon-Tatsh2-F96854?logo=patreon)](https://www.patreon.com/Tatsh2)
 
 <!-- WISWA-GENERATED-README:STOP -->
 
