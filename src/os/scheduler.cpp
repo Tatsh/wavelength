@@ -108,8 +108,14 @@ void Scheduler::Playbacker::QueueAll() {
 }
 
 Scheduler::Scheduler()
-    : mCommands(new std::multiset<CommandInfo>), mRecorder(nullptr), mPlaybacker(nullptr),
-      mTickDuration(nullptr), mTime(kStartTime), mTick(0), mFrameTime(0.0f), mFrameTick(0),
+    // Retail allocates the set, stores mTime, then stores mCommands.
+    : mCommands([this] {
+          std::multiset<CommandInfo> *pCommands = new std::multiset<CommandInfo>;
+          mTime = kStartTime;
+          return pCommands;
+      }()),
+      mRecorder(nullptr), mPlaybacker(nullptr), mTickDuration(nullptr), mTick(0),
+      mFrameTime(0.0f), mFrameTick(0),
       mPrevFrameTime(0.0f), mPrevFrameTick(0), mClock(mTime) {
 }
 
@@ -215,8 +221,12 @@ void Scheduler::PostAt(Command *pCommand, int nTick, bool bRecordable) {
     PostAt(pCommand, nTick, TheDefaultCommandId, bRecordable);
 }
 
-void Scheduler::PostIn(Command *pCommand, int nDelayTicks, const CommandId &id, bool bRecordable) {
-    PostAt(pCommand, mTick + nDelayTicks, id, bRecordable);
+void Scheduler::PostIn(Command *pCommand,
+                       int nDelayTicks,
+                       [[maybe_unused]] const CommandId &id,
+                       bool bRecordable) {
+    // Yes, the binary posts with TheDefaultCommandId and ignores id.
+    PostAt(pCommand, mTick + nDelayTicks, TheDefaultCommandId, bRecordable);
 }
 
 void Scheduler::PostIn(Command *pCommand, int nDelayTicks, bool bRecordable) {

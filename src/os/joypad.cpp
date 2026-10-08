@@ -188,7 +188,7 @@ int JoypadWait() {
 
 void JoypadPoll() {
     if (gThresholdLoaded == 0) {
-        DebugNotify("Cannot call %s before initialization...", __func__);
+        DebugNotify(" Can't call %s before initialization...", __func__);
         return;
     }
     int nButtons = 0;
@@ -286,6 +286,9 @@ void JoypadInit() {
 }
 
 void JoypadTerminate() {
+    for (int i = 0; i < kJoypadNumPorts; ++i) {
+        // Yes, the binary loops over the ports and does nothing.
+    }
 }
 
 void JoypadSetVibration(int nPad, int nSmallMotor, int nBigMotor) {

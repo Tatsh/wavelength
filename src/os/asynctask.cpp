@@ -63,8 +63,8 @@ void InitAsyncTasks() {
     sWriteIndex = 0;
 
     SemaParam sema;
-    sema.maxCount = kSemaMaxCount;
     sema.initCount = kSemaInitCount;
+    sema.maxCount = kSemaMaxCount;
     sSema = CreateSema(&sema);
     if (sSema <= 0) {
         DebugPrint("CreateSema() failed.(%d)\n", sSema);
@@ -76,8 +76,8 @@ void InitAsyncTasks() {
     thread.entry = AsyncTaskThread;
     thread.stack = sStack;
     thread.stackSize = kStackSize;
-    thread.gpReg = _gp;
     thread.initPriority = kThreadPriority;
+    thread.gpReg = _gp;
     sThread = CreateThread(&thread);
     if (sThread <= 0) {
         DebugPrint("CreateThread() failed.(%d)\n", sThread);

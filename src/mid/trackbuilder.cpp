@@ -18,12 +18,13 @@ constexpr int kTicksPerBeat = 480;
 String
 TrackBuilder::FormatMessage(const String &prefix, int nTick, int nTrack, const String &message) {
     String text;
-    text << prefix.c_str();
-    text << kTrackLabel << nTrack << kTickLabel;
+    text.Print(prefix.c_str());
+    PrnStream &stream = text << kTrackLabel << nTrack << kTickLabel;
     const MBT mbt(nTick, kBeatsPerMeasure, kTicksPerBeat);
-    text << mbt.ToString().c_str();
-    text << kMessageSeparator << message.c_str();
-    return text;
+    stream.Print(mbt.ToString().c_str());
+    (stream << kMessageSeparator).Print(message.c_str());
+    // Yes, the binary copies the text into the result rather than building it in place.
+    return static_cast<const String &>(text);
 }
 
 TrackBuilder::TrackBuilder(int nTrack, bool bValidate, ErrorHandler pfnError)
@@ -34,7 +35,12 @@ TrackBuilder::~TrackBuilder() {
 }
 
 void TrackBuilder::Error(int nTick, const char *pszMessage) {
-    String text = FormatMessage(String(kErrorPrefix), nTick, mTrack, String(pszMessage));
+    // The prefix and the message strings are destroyed before the handler runs.
+    String text = [&] {
+        const String prefix(kErrorPrefix);
+        const String message(pszMessage);
+        return FormatMessage(prefix, nTick, mTrack, message);
+    }();
     if (mErrorHandler != nullptr) {
         mErrorHandler(text);
     } else {

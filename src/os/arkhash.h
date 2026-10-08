@@ -6,8 +6,8 @@
  * Hash table of the names of the files and directories of an archive.
  *
  * The class is not polymorphic and emits no RTTI. The name is taken from the tag of its
- * allocations. The table stores the offset of each name in the string block, and zero marks an
- * empty slot.
+ * allocations. The stream stores the offset of each name in the string block, which Read()
+ * converts in place to a pointer into mStrings. Zero marks an empty slot.
  */
 class ArkHash {
 public:
@@ -41,6 +41,6 @@ public:
     char *mStrings;      /*!< The string block. */
     char *mStringsEnd;   /*!< The end of the string block. */
     char *mStringsLimit; /*!< The end of the allocation of the string block. */
-    int *mTable;         /*!< The offset of each slot's name in mStrings, or 0. */
+    char **mTable;       /*!< The name of each slot, inside mStrings, or null. */
     int mTableSize;      /*!< The number of slots. */
 };

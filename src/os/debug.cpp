@@ -7,11 +7,15 @@
 namespace {
 
 constexpr char kNewline = '\n';
-constexpr char kLogNewline[] = {'\r', '\n'};
 
 } // namespace
 
-Debug::Debug() : mReserved08(0), mReserved0C(0), mEnabled(1), mLog(nullptr), mReserved18(0) {
+Debug::Debug() {
+    mEnabled = 1;
+    mReserved08 = 0;
+    mReserved0C = 0;
+    mLog = nullptr;
+    mReserved18 = 0;
 }
 
 Debug::~Debug() {
@@ -26,9 +30,10 @@ void Debug::Print(const char *pszText) {
         printf("%s", pszText);
         return;
     }
+    const char crlf[] = {'\r', '\n'};
     for (const char *p = pszText; *p != '\0'; ++p) {
         if (*p == kNewline) {
-            mLog->Write(kLogNewline, sizeof(kLogNewline));
+            mLog->Write(crlf, sizeof(crlf));
         } else {
             mLog->Write(p, 1);
         }

@@ -11,8 +11,8 @@ BufStream::BufStream(char *pBuffer, int nSize, bool bLittleEndian) : BinStream(b
 
 void BufStream::Read(void *pData, int nBytes) {
     if (mPosition + nBytes > mSize) {
-        mFail = 1;
         nBytes = mSize - mPosition;
+        mFail = 1;
     }
     memcpy(pData, mBuffer + mPosition, nBytes);
     mPosition += nBytes;

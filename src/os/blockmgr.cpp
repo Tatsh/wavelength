@@ -90,8 +90,8 @@ BlockRequest::BlockRequest(int nBlock, const AsyncTask &task) : mBlockNum(nBlock
 }
 
 void BlockMgr::Init() {
-    mSectorsPerBlock = gBlockSize / kSectorBytes;
     gNextBuffer = 0;
+    mSectorsPerBlock = gBlockSize / kSectorBytes;
     mBlocks.resize(kBlockCount, nullptr);
     mLoading = nullptr;
     for (unsigned int i = 0; i < mBlocks.size(); ++i) {
@@ -230,8 +230,8 @@ int BlockMgr::ReadError() {
 
 bool BlockMgr::Read(int nSector, int nCount, void *pBuffer) {
     sceCdRMode mode;
-    mode.trycount = kReadTryCount;
     mode.spindlctrl = 0;
+    mode.trycount = kReadTryCount;
     mode.datapattern = 0;
     mode.pad = 0;
     return sceCdRead(nSector, nCount, pBuffer, &mode) != 0;

@@ -49,8 +49,9 @@ void SFXBuilder::OnMidi(int nTick,
 }
 
 void SFXBuilder::OnTempo([[maybe_unused]] int nTick, int nMicrosecondsPerBeat) {
-    TheSfxTickDuration = new float(static_cast<float>(nMicrosecondsPerBeat) /
-                                   kMicrosecondsPerMillisecond / kTicksPerBeat);
+    TheSfxTickDuration = new float;
+    *TheSfxTickDuration =
+        static_cast<float>(nMicrosecondsPerBeat) / kMicrosecondsPerMillisecond / kTicksPerBeat;
 }
 
 void SFXBuilder::OnText([[maybe_unused]] int nTick, const char *pszText, unsigned char nType) {

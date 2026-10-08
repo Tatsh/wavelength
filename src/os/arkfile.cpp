@@ -33,11 +33,12 @@ ArkFile::~ArkFile() {
 
 const char *ArkFile::ArchivePath(const char *pszPath) {
     const char *pszNormalized = FileNormalizePath(pszPath);
+    char szPath[kPathSize];
     if (!FileIsAbsolute(pszNormalized)) {
-        char szPath[kPathSize];
         sprintf(szPath, "%s/%s", FileRoot(), pszNormalized);
-        pszNormalized = FileNormalizePath(szPath);
+        pszNormalized = szPath;
     }
+    pszNormalized = FileNormalizePath(pszNormalized); // Yes, an absolute path is normalized twice.
     return FileRelativePath(pszNormalized, FileRoot());
 }
 
@@ -45,7 +46,7 @@ int ArkFile::Read(void *pBuffer, int nBytes) {
     if (!ReadAsync(pBuffer, nBytes)) {
         return 0;
     }
-    int nRead;
+    int nRead = -1;
     while (!ReadDone(&nRead)) {
     }
     return nRead;

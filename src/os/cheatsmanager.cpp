@@ -111,7 +111,7 @@ void CheatsManager::LoadLongCheats(DataArray *pCheats) {
             DebugPrint("Too many buttons in long cheat, max %d\n", kMaxCheatButtons);
             continue;
         }
-        std::vector<int> buttons;
+        LongCheat cheat;
         bool bValid = true;
         for (int j = 0; j < pButtons->Size(); ++j) {
             const int nButton = pButtons->Int(j);
@@ -121,10 +121,11 @@ void CheatsManager::LoadLongCheats(DataArray *pCheats) {
                 DebugPrint("Error in long-cheats: %s is not a valid button\n", nButton);
                 break;
             }
-            buttons.push_back(nButton);
+            cheat.mButtons.push_back(nButton);
         }
         if (bValid) {
-            const LongCheat cheat{buttons, pAction, pEntry->Int(kEntryMarksEntered) != 0};
+            cheat.mAction = pAction;
+            cheat.mMarksEntered = pEntry->Int(kEntryMarksEntered) != 0;
             gCheatsManager->mLongCheats.push_back(cheat);
         }
     }

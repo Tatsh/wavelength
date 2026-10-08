@@ -10,8 +10,9 @@ constexpr float kNormalRate = 1.0f;
 } // namespace
 
 SchedulerClock::SchedulerClock(float fMs)
-    : mStart(0), mElapsed(static_cast<long long>(fMs / gSystemCycles2Ms)), mRunning(0),
-      mRate(kNormalRate) {
+    : mStart(0), mElapsed(static_cast<long long>(fMs / gSystemCycles2Ms)) {
+    mRate = kNormalRate;
+    mRunning = 0;
 }
 
 void SchedulerClock::Start() {

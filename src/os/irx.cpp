@@ -33,12 +33,14 @@ void FormatDirective(char *pszDest, int nSize, const DataArray *pDirective) {
         for (int i = 1; i < pDirective->Size(); ++i) {
             char szPart[kPathSize];
             FormatArgument(szPart, kPathSize, pDirective->Value(i), pDirective->Type(i));
+            (void)strlen(pszDest); // Yes, the binary discards both lengths.
+            (void)strlen(szPart);
             strcat(pszDest, szPart);
         }
     } else if (strcmp(pszCommand, "file") == 0) {
         FormatDevicePath(pszDest, nSize, pDirective->Sym(1));
     } else {
-        DebugWarn("Illegal command in IRX argument parser: %s", pszCommand);
+        DebugWarn("Illegal command in irx argument parser:%s", pszCommand);
     }
 }
 
@@ -46,11 +48,12 @@ void FormatDirective(char *pszDest, int nSize, const DataArray *pDirective) {
 // NTSC-U/C: 0x0028a440, PAL: 0x00293c38
 void FormatArgument(char *pszDest, int nSize, DataArray::Node value, int nType) {
     if (nType == DataArray::kNodeSymbol) {
+        (void)strlen(value.mSymbol); // Yes, the binary discards the length.
         strcpy(pszDest, value.mSymbol);
     } else if (nType == DataArray::kNodeArray) {
         FormatDirective(pszDest, nSize, value.mArray);
     } else {
-        DebugWarn("IRX argument must be either a string or a command");
+        DebugWarn("irx arg must be be either string or command");
     }
 }
 
@@ -77,6 +80,9 @@ int IrxLoadModule(const DataArray *pModule) {
         FormatArgument(szName, kPathSize, pModule->Value(i), pModule->Type(i));
         strcpy(szArguments + nLength, szName);
         nLength += static_cast<int>(strlen(szName)) + 1;
+    }
+    for (int i = nLength; i > 0; --i) {
+        // Yes, the binary spins once for each argument byte.
     }
     const int nResult = sceSifLoadModule(szPath, nLength, nLength != 0 ? szArguments : nullptr);
     SetUsingCD(bUsingCD);

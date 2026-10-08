@@ -394,11 +394,13 @@ public:
     void PostAt(Command *pCommand, int nTick, bool bRecordable);
 
     /**
-     * Run a command a number of ticks from now, with a tag stored beside the entry.
+     * Run a command a number of ticks from now.
+     *
+     * The entry is stored with TheDefaultCommandId, whatever id is.
      *
      * @param pCommand The command.
      * @param nDelayTicks The delay.
-     * @param id The tag stored with the entry.
+     * @param id Not used.
      * @param bRecordable The command is recorded for replay.
      * @ghidraAddress NTSC-U/C: 0x002826b8
      * @ghidraAddress PAL: 0x0028bf70

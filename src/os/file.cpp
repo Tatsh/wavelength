@@ -165,11 +165,11 @@ int FileGetStat(const char *pszPath, FileStat *pStat) {
     }
     sce_stat stat;
     const int nResult = sceGetstat(path.c_str(), &stat);
-    pStat->mMode = static_cast<int>(stat.st_mode);
-    pStat->mSize = static_cast<int>(stat.st_size);
     memcpy(pStat->mCreated, stat.st_ctime, sizeof(pStat->mCreated));
     memcpy(pStat->mAccessed, stat.st_atime, sizeof(pStat->mAccessed));
     memcpy(pStat->mModified, stat.st_mtime, sizeof(pStat->mModified));
+    pStat->mSize = static_cast<int>(stat.st_size);
+    pStat->mMode = static_cast<int>(stat.st_mode);
     return nResult;
 }
 

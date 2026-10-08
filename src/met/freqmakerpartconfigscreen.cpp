@@ -76,6 +76,8 @@ bool ClampStep(int nValue, int nMin, int nLimit, int *pValue) {
 // largest, as for a component that is not a number.
 //
 // NTSC-U/C: 0x001a25d0, PAL: 0x001aa2b0
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 void RgbToHsv(const Color *pRgb, Hsv *pHsv) {
     const float r = pRgb->r;
     const float g = pRgb->g;
@@ -109,6 +111,7 @@ void RgbToHsv(const Color *pRgb, Hsv *pHsv) {
         pHsv->h = pHsv->h + kFullTurn;
     }
 }
+#pragma GCC diagnostic pop
 
 // Convert a hue, saturation, and value to a colour. The alpha is not written.
 //
@@ -255,7 +258,7 @@ void FreqMakerPartConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     TheUI.FindPanel("f_maker_s", false)->SetFocus(mPartButton, kPadNone);
 
     const Color color = pAvatar->PartColor(mPart);
-    Hsv hsv{};
+    Hsv hsv; // Yes, the binary leaves it uninitialised, and RgbToHsv() may read its hue.
     RgbToHsv(&color, &hsv);
     mOriginalColor = color;
 

@@ -6,15 +6,10 @@
 #include "os/system.h"
 #include "script/dataarray.h"
 
-namespace {
-
 // NTSC-U/C: 0x0028d3b0, PAL: 0x00296d90 (static initialiser)
 // NTSC-U/C: 0x0028d460, PAL: 0x00296e40 (constructor call)
 // NTSC-U/C: 0x0028d480, PAL: 0x00296e60 (destructor call)
-// NTSC-U/C: 0x00491a00
-std::vector<Timer> gTimers;
-
-} // namespace
+std::vector<Timer> Timer::sTimers;
 
 // NTSC-U/C: 0x00491a10
 Timer gSystemTimer;
@@ -32,7 +27,7 @@ void TimerSleep(int nMs) {
 }
 
 Timer *Timer::Find(const char *pszName) {
-    for (auto &timer : gTimers) {
+    for (auto &timer : sTimers) {
         if (strcmp(timer.mName, pszName) == 0) {
             return &timer;
         }
@@ -50,9 +45,9 @@ void TimerInit() {
 
 void TimerLoadNames() {
     const DataArray *pConfig = SystemConfig()->FindArray("timer", true);
-    gTimers.resize(pConfig->Size() - 1, Timer());
+    Timer::sTimers.resize(pConfig->Size() - 1, Timer());
     for (int i = 1; i < pConfig->Size(); ++i) {
-        gTimers[i - 1].mName = pConfig->Sym(i);
+        Timer::sTimers[i - 1].mName = pConfig->Sym(i);
     }
 }
 

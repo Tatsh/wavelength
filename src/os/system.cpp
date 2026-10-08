@@ -225,22 +225,28 @@ void PrepareIop() {
 void ChooseLanguage() {
     const DataArray *pSystem = SystemConfig()->FindArray("system", true);
     sceScfT10kConfig config;
+    config.nReserved5 = kToolReserved5;
     config.nTimezone = kToolTimezone;
     config.abReserved2[0] = kToolReserved2;
     config.abReserved2[1] = kToolReserved3;
-    config.nReserved5 = kToolReserved5;
     config.nSummerTime = kToolSummerTime;
     config.nReserved7 = 0;
     const char *pszLanguage = nullptr;
     pSystem->FindSymbol("language", &pszLanguage, false);
-    config.nLanguage = SCE_ENGLISH_LANGUAGE;
-    if (pszLanguage != nullptr) {
-        for (int i = SCE_JAPANESE_LANGUAGE; i <= SCE_ITALIAN_LANGUAGE; ++i) {
-            if (i != SCE_ENGLISH_LANGUAGE && strcmp(kLanguageKeys[i], pszLanguage) == 0) {
-                config.nLanguage = static_cast<unsigned char>(i);
-                break;
-            }
-        }
+    if (pszLanguage == nullptr) {
+        config.nLanguage = SCE_ENGLISH_LANGUAGE;
+    } else if (strcmp(kLanguageKeys[SCE_JAPANESE_LANGUAGE], pszLanguage) == 0) {
+        config.nLanguage = SCE_JAPANESE_LANGUAGE;
+    } else if (strcmp(kLanguageKeys[SCE_FRENCH_LANGUAGE], pszLanguage) == 0) {
+        config.nLanguage = SCE_FRENCH_LANGUAGE;
+    } else if (strcmp(kLanguageKeys[SCE_SPANISH_LANGUAGE], pszLanguage) == 0) {
+        config.nLanguage = SCE_SPANISH_LANGUAGE;
+    } else if (strcmp(kLanguageKeys[SCE_GERMAN_LANGUAGE], pszLanguage) == 0) {
+        config.nLanguage = SCE_GERMAN_LANGUAGE;
+    } else if (strcmp(kLanguageKeys[SCE_ITALIAN_LANGUAGE], pszLanguage) == 0) {
+        config.nLanguage = SCE_ITALIAN_LANGUAGE;
+    } else {
+        config.nLanguage = SCE_ENGLISH_LANGUAGE;
     }
     sceScfSetT10kConfig(&config);
     const int nLanguage = sceScfGetLanguage();

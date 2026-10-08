@@ -106,7 +106,12 @@ void Archive::ReadHeader() {
     int nCount = 0;
     stream.ReadEndian(&nCount, sizeof(nCount));
     mFileEntries.reserve(nCount);
-    mFileEntries.resize(nCount);
-    stream.Read(&mFileEntries[0], nCount * sizeof(FileEntry));
+    FileEntry fill; // Yes, the binary grows the vector with copies of an unset entry.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    mFileEntries.resize(nCount, fill);
+#pragma GCC diagnostic pop
+    stream.Read(mFileEntries.data(), nCount * sizeof(FileEntry));
     mHashTable.Read(stream);
 }

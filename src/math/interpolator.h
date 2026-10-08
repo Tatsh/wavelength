@@ -316,8 +316,8 @@ public:
     /**
      * Construct an interpolator from the numbers of an array.
      *
-     * The end outputs are taken before the table is filled. They are therefore those of the
-     * zeroed table.
+     * The end outputs are taken before the table is filled. mTable and mCount are not cleared
+     * first, and SetSize() reads them as the allocation left them.
      *
      * @param fX0 The start of the input range.
      * @param fX1 The end of the input range.
@@ -386,10 +386,10 @@ public:
      */
     virtual void Update();
 
-    float mStep;     /*!< The input range covered by one entry. */
-    float mInvStep;  /*!< The entries per unit of input, or 1 for a range narrower than 1e-6. */
-    float *mTable{}; /*!< The entries. */
-    int mCount{};    /*!< The entries of mTable. */
+    float mStep;    /*!< The input range covered by one entry. */
+    float mInvStep; /*!< The entries per unit of input, or 1 for a range narrower than 1e-6. */
+    float *mTable;  /*!< The entries. */
+    int mCount;     /*!< The entries of mTable. */
 };
 
 /**

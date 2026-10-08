@@ -137,12 +137,12 @@ sceMcTblGetDir gDirTable[kMaxDirEntries] __attribute__((aligned(64)));
 MemcardDirEntry gDirEntries[kMaxDirEntries];
 
 void CopyDate(DateTime &date, const sceMcStDateTime &card) {
-    date.mSecond = card.Sec;
-    date.mMinute = card.Min;
-    date.mHour = card.Hour;
-    date.mDay = card.Day;
-    date.mMonth = card.Month;
     date.mYear = static_cast<unsigned char>(card.Year - kDateBaseYear);
+    date.mMonth = card.Month;
+    date.mDay = card.Day;
+    date.mHour = card.Hour;
+    date.mMinute = card.Min;
+    date.mSecond = card.Sec;
 }
 
 // Convert the listing of a finished sceMcGetDir() and pass it to the handler.
@@ -152,8 +152,8 @@ inline void FinishGetDir(int nResult) {
         const sceMcTblGetDir &card = gDirTable[i];
         strncpy(
             entry.mName, reinterpret_cast<const char *>(card.EntryName), kMemcardDirEntryNameSize);
-        entry.mSize = static_cast<int>(card.FileSizeByte);
         entry.mAttributes = card.AttrFile;
+        entry.mSize = static_cast<int>(card.FileSizeByte);
         CopyDate(entry.mCreated, card._Create);
         CopyDate(entry.mModified, card._Modify);
     }
@@ -224,7 +224,7 @@ void MemcardPoll() {
         gHandler->OnUnformat(nResult);
         break;
     default:
-        DebugWarn("Bad memcard func: %d", nCommand);
+        DebugWarn(" Bad memcard func: %d", nCommand);
         break;
     }
 }
@@ -359,10 +359,10 @@ void MemcardAssignSlots(bool bPort0Multitap, bool bPort1Multitap) {
         gSlots[1].mSlot = kNoSlot;
         gSlots[1].mPort = kNoSlot;
     }
-    for (int i = 2; i < kMemcardSlotCount; ++i) {
-        gSlots[i].mPort = kNoSlot;
-        gSlots[i].mSlot = kNoSlot;
-    }
+    gSlots[3].mSlot = kNoSlot;
+    gSlots[2].mPort = kNoSlot;
+    gSlots[2].mSlot = kNoSlot;
+    gSlots[3].mPort = kNoSlot;
 }
 
 const char *MemcardGetSlotName(int nPort) {

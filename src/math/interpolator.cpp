@@ -59,41 +59,45 @@ float Interpolator::Eval(float fX) {
 }
 
 Interpolator *ObjectToInterpolator(const DataArray *pArray) {
+    // The braced initialisers evaluate in order after the allocation, as the binary does.
     if (strcmp(pArray->Sym(kConfigType), "linear") == 0) {
-        return new LinearInterpolator(pArray->Float(kConfigY0),
+        return new LinearInterpolator{pArray->Float(kConfigY0),
                                       pArray->Float(kConfigY1),
                                       pArray->Float(kConfigX0),
-                                      pArray->Float(kConfigX1));
+                                      pArray->Float(kConfigX1)};
     }
     if (strcmp(pArray->Sym(kConfigType), "exp") == 0) {
-        const float fY0 = pArray->Float(kConfigY0);
-        const float fY1 = pArray->Float(kConfigY1);
-        const float fX0 = pArray->Float(kConfigX0);
-        const float fX1 = pArray->Float(kConfigX1);
-        return new ExpInterpolator(fY0, fY1, fX0, fX1, ShapeOrDefault(pArray, kDefaultExponent));
+        return new ExpInterpolator{pArray->Float(kConfigY0),
+                                   pArray->Float(kConfigY1),
+                                   pArray->Float(kConfigX0),
+                                   pArray->Float(kConfigX1),
+                                   ShapeOrDefault(pArray, kDefaultExponent)};
     }
     if (strcmp(pArray->Sym(kConfigType), "invexp") == 0) {
-        const float fY0 = pArray->Float(kConfigY0);
-        const float fY1 = pArray->Float(kConfigY1);
-        const float fX0 = pArray->Float(kConfigX0);
-        const float fX1 = pArray->Float(kConfigX1);
-        return new InvExpInterpolator(fY0, fY1, fX0, fX1, ShapeOrDefault(pArray, kDefaultExponent));
+        return new InvExpInterpolator{pArray->Float(kConfigY0),
+                                      pArray->Float(kConfigY1),
+                                      pArray->Float(kConfigX0),
+                                      pArray->Float(kConfigX1),
+                                      ShapeOrDefault(pArray, kDefaultExponent)};
     }
     if (strcmp(pArray->Sym(kConfigType), "atan") == 0) {
-        const float fY0 = pArray->Float(kConfigY0);
-        const float fY1 = pArray->Float(kConfigY1);
-        const float fX0 = pArray->Float(kConfigX0);
-        const float fX1 = pArray->Float(kConfigX1);
-        return new ATanInterpolator(fY0, fY1, fX0, fX1, ShapeOrDefault(pArray, kDefaultSeverity));
+        return new ATanInterpolator{pArray->Float(kConfigY0),
+                                    pArray->Float(kConfigY1),
+                                    pArray->Float(kConfigX0),
+                                    pArray->Float(kConfigX1),
+                                    ShapeOrDefault(pArray, kDefaultSeverity)};
     }
     if (strcmp(pArray->Sym(kConfigType), "table") == 0) {
-        const float fX0 = pArray->Float(kConfigTableX0);
-        return new TableInterpolator(fX0, pArray->Float(kConfigTableX1), pArray, kConfigTableFirst);
+        return new TableInterpolator{pArray->Float(kConfigTableX0),
+                                     pArray->Float(kConfigTableX1),
+                                     pArray,
+                                     kConfigTableFirst};
     }
     if (strcmp(pArray->Sym(kConfigType), "tablelin") == 0) {
-        const float fX0 = pArray->Float(kConfigTableX0);
-        return new TableLinInterpolator(
-            fX0, pArray->Float(kConfigTableX1), pArray, kConfigTableFirst);
+        return new TableLinInterpolator{pArray->Float(kConfigTableX0),
+                                        pArray->Float(kConfigTableX1),
+                                        pArray,
+                                        kConfigTableFirst};
     }
     DebugWarn("unknown interpolator type: %s\nat %d in %s",
               pArray->Sym(kConfigType),
@@ -194,8 +198,8 @@ void ATanInterpolator::Reset(float fY0, float fY1, float fX0, float fX1, float f
     const float fLow = atanf(-fSeverity);
     const float fRange = fY1 - fY0;
     mSeverity = fSeverity;
-    mScale = fRange / (-fLow - fLow);
     mOffset = (fRange * 0.5F) + fY0;
+    mScale = fRange / (-fLow - fLow);
 }
 
 void ATanInterpolator::Reset(float fY0, float fY1, float fX0, float fX1) {
@@ -209,11 +213,14 @@ float ATanInterpolator::Interp(float fX) {
 #pragma mark - TableInterpolator
 
 TableInterpolator::TableInterpolator(int nCount, float fX0, float fX1) {
+    mTable = nullptr;
+    mCount = 0;
     TableInterpolator::SetSize(nCount, fX0, fX1);
     memset(mTable, 0, mCount * sizeof(float));
 }
 
 TableInterpolator::TableInterpolator(float fX0, float fX1, const DataArray *pArray, int nFirst) {
+    // Yes, the binary does not clear mTable and mCount before SetSize() reads them.
     TableInterpolator::SetSize(pArray->Size() - nFirst, fX0, fX1);
     FillTable(this, pArray, nFirst);
 }
@@ -261,6 +268,10 @@ void TableInterpolator::Resample(Interpolator &source, int nCount) {
     Update();
 }
 
+// The constructor from an array inlines this routine on members it never set.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 void TableInterpolator::SetSize(int nCount, float fX0, float fX1) {
     if (mTable == nullptr || nCount != mCount) {
         if (mTable != nullptr) {
@@ -276,6 +287,7 @@ void TableInterpolator::SetSize(int nCount, float fX0, float fX1) {
     mY0 = mTable[0];
     mY1 = mTable[nCount - 1]; // An empty table reads the word before the block.
 }
+#pragma GCC diagnostic pop
 
 void TableInterpolator::Update() {
     const float fRange = mX1 - mX0;

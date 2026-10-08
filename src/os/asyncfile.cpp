@@ -147,10 +147,11 @@ bool AsyncFile::ReadDone(int *pnBytes) {
     }
     if (mBufferOffset + mReadRemaining <= gBufferSize) {
         memcpy(mReadDest, mBuffer + mBufferOffset, mReadRemaining);
-        mReadDone += mReadRemaining;
-        mBufferOffset += mReadRemaining;
-        mTell += mReadRemaining;
+        const int nCopied = mReadRemaining;
         mReadRemaining = 0;
+        mBufferOffset += nCopied;
+        mTell += nCopied;
+        mReadDone += nCopied;
         *pnBytes = mReadDone;
         return true;
     }

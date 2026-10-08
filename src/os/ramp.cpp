@@ -10,8 +10,11 @@ constexpr float kZero = 0.0f;
 } // namespace
 
 Ramp::Ramp(Scheduler *pScheduler, float fValue)
-    : mValue(fValue), mScheduler(pScheduler), mStepCommand(NewMemFunCommand(this, &Ramp::Step)),
-      mMoving(0), mInterp(kZero, kZero, kZero, kZero), mEndTick(kNoTick), mStepTicks(kNoTick) {
+    // Retail stores mScheduler, then mValue, before it builds mStepCommand.
+    : mStepCommand((mScheduler = pScheduler, mValue = fValue, NewMemFunCommand(this, &Ramp::Step))),
+      mMoving(0), mInterp(kZero, kZero, kZero, kZero) {
+    mStepTicks = kNoTick;
+    mEndTick = kNoTick;
 }
 
 Ramp::~Ramp() {

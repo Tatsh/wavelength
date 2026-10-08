@@ -30,17 +30,15 @@ void Rnd::MakeRotMatrix(const float *pAngles, float *pMat3Rows) {
     const float flSinX = SinApprox(pAngles[0]);
     const float flCosX = SinApprox(pAngles[0] + kQuarterTurnApprox);
 
-    pMat3Rows[0] = (flCosY * flCosZ) - ((flSinY * flSinZ) * flSinX);
-    pMat3Rows[1] = (flCosY * flSinZ) + ((flCosZ * flSinY) * flSinX);
-    pMat3Rows[2] = -flSinY * flCosX;
-
-    pMat3Rows[4] = -flCosX * flSinZ;
-    pMat3Rows[5] = flCosX * flCosZ;
     pMat3Rows[6] = flSinX;
-
+    pMat3Rows[10] = flCosY * flCosX;
+    pMat3Rows[2] = -flSinY * flCosX;
+    pMat3Rows[4] = -flCosX * flSinZ;
+    pMat3Rows[1] = (flCosY * flSinZ) + ((flCosZ * flSinY) * flSinX);
+    pMat3Rows[5] = flCosX * flCosZ;
     pMat3Rows[8] = (flCosZ * flSinY) + ((flCosY * flSinZ) * flSinX);
     pMat3Rows[9] = (flSinY * flSinZ) - ((flCosY * flCosZ) * flSinX);
-    pMat3Rows[10] = flCosY * flCosX;
+    pMat3Rows[0] = (flCosY * flCosZ) - ((flSinY * flSinZ) * flSinX);
 }
 
 void Mat33BuildOrthonormal(const float *pAxisY, const float *pReference, float *pMat3Rows) {

@@ -1,5 +1,6 @@
 #include "os/arkhash.h"
 
+#include <cstdint>
 #include <cstring>
 
 #include "math/hash.h"
@@ -19,8 +20,8 @@ ArkHash::ArkHash()
 
 int ArkHash::GetHashValue(const char *pszName) const {
     int nSlot = HashString(pszName, mTableSize);
-    while (mTable[nSlot] != 0) {
-        if (strcmp(mStrings + mTable[nSlot], pszName) == 0) {
+    while (mTable[nSlot] != nullptr) {
+        if (strcmp(mTable[nSlot], pszName) == 0) {
             return nSlot;
         }
         if (++nSlot == mTableSize) {
@@ -40,7 +41,12 @@ void ArkHash::Read(BinStream &stream) {
     mStringsEnd = mStringsLimit;
     stream.Read(mStrings, nStringsSize);
     stream.ReadEndian(&mTableSize, sizeof(mTableSize));
-    mTable = static_cast<int *>(PoolMemAlloc(mTableSize * sizeof(int), "ArkHash", 0));
-    // Retail turns each non-zero offset into a pointer here. GetHashValue() adds mStrings instead.
-    stream.Read(mTable, mTableSize * sizeof(int));
+    mTable = static_cast<char **>(PoolMemAlloc(mTableSize * sizeof(char *), "ArkHash", 0));
+    stream.Read(mTable, mTableSize * sizeof(char *));
+    // The stream stores each name as an offset into mStrings, read here into the pointer slot.
+    for (char **ppName = mTable; ppName != mTable + mTableSize; ++ppName) {
+        if (*ppName != nullptr) {
+            *ppName = mStrings + reinterpret_cast<std::uintptr_t>(*ppName);
+        }
+    }
 }

@@ -39,6 +39,18 @@ inline float MatAt(const float *pMat3Rows, int nRow, int nComponent) {
     return pMat3Rows[(nRow * kMat3RowStride) + nComponent];
 }
 
+// The component of a quaternion that an axis index selects.
+inline float &AxisComponent(Quat &quat, int nAxis) {
+    switch (nAxis) {
+    case kX:
+        return quat.x;
+    case kY:
+        return quat.y;
+    default:
+        return quat.z;
+    }
+}
+
 inline float RowLength(const float *pMat3Rows, int nRow) {
     const float flX = MatAt(pMat3Rows, nRow, kX);
     const float flY = MatAt(pMat3Rows, nRow, kY);
@@ -103,19 +115,15 @@ Quat EulerAnglesToQuat(const float *pAngles) {
 }
 
 Quat &Quat::Set(const float *pMat3Rows) {
-    // The image writes the destination in place and indexes it by axis. Gathering the components
-    // into a local first is indistinguishable from writing in place.
-    float aflQuat[4];
-
     const float flTrace = pMat3Rows[0] + pMat3Rows[5] + pMat3Rows[10];
     if (flTrace > 0.0f) {
         const float flRoot = sqrtf(flTrace + 1.0f);
-        aflQuat[3] = flRoot * 0.5f;
+        w = flRoot * 0.5f;
 
         const float flScale = 0.5f / flRoot;
-        aflQuat[0] = (pMat3Rows[6] - pMat3Rows[9]) * flScale;
-        aflQuat[1] = (pMat3Rows[8] - pMat3Rows[2]) * flScale;
-        aflQuat[2] = (pMat3Rows[1] - pMat3Rows[4]) * flScale;
+        x = (pMat3Rows[6] - pMat3Rows[9]) * flScale;
+        y = (pMat3Rows[8] - pMat3Rows[2]) * flScale;
+        z = (pMat3Rows[1] - pMat3Rows[4]) * flScale;
     } else {
         int nI = (pMat3Rows[0] < pMat3Rows[5]) ? 1 : 0;
         if (pMat3Rows[(nI * kMat3RowStride) + nI] < pMat3Rows[10]) {
@@ -128,26 +136,20 @@ Quat &Quat::Set(const float *pMat3Rows) {
             sqrtf(((pMat3Rows[(nI * kMat3RowStride) + nI] - pMat3Rows[(nJ * kMat3RowStride) + nJ]) -
                    pMat3Rows[(nK * kMat3RowStride) + nK]) +
                   1.0f);
-        aflQuat[nI] = flRoot * 0.5f;
+        AxisComponent(*this, nI) = flRoot * 0.5f;
         if (flRoot != 0.0f) {
             flRoot = 0.5f / flRoot;
         }
 
-        aflQuat[3] =
-            (pMat3Rows[(nJ * kMat3RowStride) + nK] - pMat3Rows[(nK * kMat3RowStride) + nJ]) *
+        w = (pMat3Rows[(nJ * kMat3RowStride) + nK] - pMat3Rows[(nK * kMat3RowStride) + nJ]) *
             flRoot;
-        aflQuat[nJ] =
+        AxisComponent(*this, nJ) =
             (pMat3Rows[(nI * kMat3RowStride) + nJ] + pMat3Rows[(nJ * kMat3RowStride) + nI]) *
             flRoot;
-        aflQuat[nK] =
+        AxisComponent(*this, nK) =
             (pMat3Rows[(nI * kMat3RowStride) + nK] + pMat3Rows[(nK * kMat3RowStride) + nI]) *
             flRoot;
     }
-
-    x = aflQuat[0];
-    y = aflQuat[1];
-    z = aflQuat[2];
-    w = aflQuat[3];
     return *this;
 }
 
@@ -237,17 +239,15 @@ void Rnd::MakeRotMatrix(const Quat &quat, float *pMat3Rows) {
     const float flWy = flY2 * quat.w;
     const float flWz = flZ2 * quat.w;
 
-    pMat3Rows[0] = 1.0f - flYy - flZz;
-    pMat3Rows[1] = flXy + flWz;
-    pMat3Rows[2] = flXz - flWy;
-
     pMat3Rows[4] = flXy - flWz;
-    pMat3Rows[5] = 1.0f - flZz - flXx;
-    pMat3Rows[6] = flYz + flWx;
-
     pMat3Rows[8] = flXz + flWy;
     pMat3Rows[9] = flYz - flWx;
     pMat3Rows[10] = 1.0f - flXx - flYy;
+    pMat3Rows[0] = 1.0f - flYy - flZz;
+    pMat3Rows[5] = 1.0f - flZz - flXx;
+    pMat3Rows[1] = flXy + flWz;
+    pMat3Rows[2] = flXz - flWy;
+    pMat3Rows[6] = flYz + flWx;
 }
 
 void Rnd::MakeEuler(const float *pMat3Rows, float *pAngles) {
