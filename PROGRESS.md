@@ -27,17 +27,17 @@ python3 .wiswa-ci/port/progress.py --write
 | Excluded: Vendored under 3rdparty      |    294 |
 | Excluded: C and compiler runtime       |    227 |
 | To port                                | 10,847 |
-| Done                                   |  5,688 |
-| Stubbed (not counted as done)          |      4 |
-| Declared only (not counted as done)    |    462 |
-| Share done                             | 52.44% |
-| FreQuency annotations left in the tree |  3,304 |
+| Done                                   |  5,692 |
+| Stubbed (not counted as done)          |      0 |
+| Declared only (not counted as done)    |    464 |
+| Share done                             | 52.48% |
+| FreQuency annotations left in the tree |  3,303 |
 
 ## By component
 
 | Component                    | Routines |  Done | Share |
 | ---------------------------- | -------: | ----: | ----: |
-| Game code                    |    6,834 | 4,860 | 71.1% |
+| Game code                    |    6,834 | 4,864 | 71.2% |
 | Sony online library (SCE-RT) |    1,255 |     0 |  0.0% |
 | Sony EE libraries            |      437 |     3 |  0.7% |
 | Compiler-emitted instances   |    2,321 |   825 | 35.5% |
@@ -69,7 +69,7 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00130000.md](progress/game-code-00130000.md)                                   | Game code                    | `0x00130000`-`0x00140000` |      282 |  201 |  71.3% |
 | [game-code-00140000.md](progress/game-code-00140000.md)                                   | Game code                    | `0x00140000`-`0x00150000` |      382 |  379 |  99.2% |
 | [game-code-00150000.md](progress/game-code-00150000.md)                                   | Game code                    | `0x00150000`-`0x00160000` |      381 |  380 |  99.7% |
-| [game-code-00160000.md](progress/game-code-00160000.md)                                   | Game code                    | `0x00160000`-`0x00170000` |      273 |  268 |  98.2% |
+| [game-code-00160000.md](progress/game-code-00160000.md)                                   | Game code                    | `0x00160000`-`0x00170000` |      273 |  271 |  99.3% |
 | [game-code-00170000.md](progress/game-code-00170000.md)                                   | Game code                    | `0x00170000`-`0x00180000` |      276 |  276 | 100.0% |
 | [game-code-00180000.md](progress/game-code-00180000.md)                                   | Game code                    | `0x00180000`-`0x00190000` |      180 |  180 | 100.0% |
 | [game-code-00190000.md](progress/game-code-00190000.md)                                   | Game code                    | `0x00190000`-`0x001a0000` |      248 |  248 | 100.0% |
@@ -82,7 +82,7 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00200000.md](progress/game-code-00200000.md)                                   | Game code                    | `0x00200000`-`0x00210000` |      239 |  232 |  97.1% |
 | [game-code-00210000.md](progress/game-code-00210000.md)                                   | Game code                    | `0x00210000`-`0x00220000` |      204 |   73 |  35.8% |
 | [game-code-00220000.md](progress/game-code-00220000.md)                                   | Game code                    | `0x00220000`-`0x00230000` |      182 |  128 |  70.3% |
-| [game-code-00230000.md](progress/game-code-00230000.md)                                   | Game code                    | `0x00230000`-`0x00240000` |      135 |   96 |  71.1% |
+| [game-code-00230000.md](progress/game-code-00230000.md)                                   | Game code                    | `0x00230000`-`0x00240000` |      135 |   97 |  71.9% |
 | [game-code-00240000.md](progress/game-code-00240000.md)                                   | Game code                    | `0x00240000`-`0x00250000` |      193 |  100 |  51.8% |
 | [game-code-00250000.md](progress/game-code-00250000.md)                                   | Game code                    | `0x00250000`-`0x00260000` |      268 |    0 |   0.0% |
 | [game-code-00260000.md](progress/game-code-00260000.md)                                   | Game code                    | `0x00260000`-`0x00270000` |      373 |    1 |   0.3% |
