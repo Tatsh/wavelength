@@ -21,6 +21,7 @@ public:
     /** The pages Request() takes, as NetLobby::RequestLaunchpads() takes them. */
     enum Page {
         kPageFirst = 0,    /*!< The start of the list. */
+        kPageNext = 1,     /*!< The page after the list. */
         kPageRefresh = 2,  /*!< The list again, from the L1 button. */
         kPagePrevious = 3, /*!< The page before the list. */
     };

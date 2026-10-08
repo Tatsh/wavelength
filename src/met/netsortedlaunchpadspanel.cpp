@@ -104,7 +104,7 @@ bool NetSortedLaunchpadsPanel::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool NetSortedLaunchpadsPanel::HandleLobbyLaunchpads(LobbyLaunchpadsMsg *pMsg) {
-    if (mData == nullptr) {
+    if (!mLoaded) {
         return false;
     }
     int nSelected;

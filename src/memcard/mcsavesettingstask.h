@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game/globalsettings.h"
+#include "game/gameoptions.h"
 #include "memcard/mcchecksavespaceneededtask.h"
 #include "memcard/mccreatesavedirtask.h"
 #include "memcard/mcsavefiletask.h"
@@ -9,7 +9,7 @@
 #include "os/string.h"
 
 /**
- * Work that saves the GlobalSettings to the `settings` file of the Freq directory.
+ * Work that saves the GameOptions to the `settings` file of the Freq directory.
  *
  * The RTTI records the class as deriving from MemcardSerialTask and from SaveSpaceUser at `+0x20`.
  * The object is 0x50 bytes. The steps measure the space, create the directory, and save the file.
@@ -35,7 +35,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001620c0
      * @ghidraAddress PAL: 0x00164dd0
      */
-    void Set(int nPort, GlobalSettings *pSettings, int nOverwrite);
+    void Set(int nPort, GameOptions *pSettings, int nOverwrite);
 
     /**
      * Report the space a save that did not fit needed.

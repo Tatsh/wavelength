@@ -20,14 +20,6 @@ constexpr char kListComponent[] = "list";
 
 constexpr int kNoChange = 0;
 
-// Move a choice one step through a list, wrapping at both ends.
-int StepChoice(int nChoice, int nCount, int nButton) {
-    if (nButton == kPadDLeft) {
-        return nChoice - 1 > -1 ? nChoice - 1 : nCount - 1;
-    }
-    return nChoice + 1 < nCount ? nChoice + 1 : 0;
-}
-
 } // namespace
 
 NetParamsScreen::NetParamsScreen(DataArray *pData) : FreqScreen(pData) {

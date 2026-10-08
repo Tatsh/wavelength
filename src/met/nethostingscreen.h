@@ -9,16 +9,15 @@
 #include "script/dataarray.h"
 #include "ui/uicomponentselectmsg.h"
 #include "ui/uicomponentselectstartmsg.h"
+#include "ui/uiscreen.h"
 
 /**
- * The screen where the host chooses the mode, the skill, the players, the power-ups, and the song
- * of an online game.
+ * Screen where the host of an online game chooses the mode, the skill, the number of players, the
+ * power-ups, and the song, or edits them from the launchpad.
  *
- * The RTTI records the class as deriving from NetParamsScreen. The object is 0x144 bytes and its
- * vtable is at `0x003cdca0`. The metagame registers the class for the screen type
- * `net_hosting_screen`. The description's `is_edit` entry marks the screen that changes the
- * settings of a hosted game from its launchpad. The cross button on `host` starts hosting, or
- * applies the settings.
+ * The RTTI records the class as deriving from NetParamsScreen, and the vtable is at `0x003cdca0`.
+ * The destructor at `0x0035a308` (PAL `0x003c7e58`) is compiler-generated. The description may set
+ * `is_edit` for the screen that edits the game of an open launchpad.
  */
 class NetHostingScreen : public NetParamsScreen {
 public:
@@ -34,8 +33,6 @@ public:
     /**
      * Create a screen from its script description.
      *
-     * The metagame registers the routine for the screen type `net_hosting_screen`.
-     *
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x0035b5c8
@@ -46,7 +43,7 @@ public:
     }
 
     /**
-     * Route the choices and the controller buttons, and pass on every other message.
+     * Route the choices, the left and right buttons, and the controller to their handlers.
      *
      * @param pMsg The message.
      * @return Whether the message was handled.
@@ -56,21 +53,22 @@ public:
     bool DispatchPriv(Message *pMsg) override;
 
     /**
-     * Fill the lists of modes, players, and power-ups, choose the entries of the game database,
-     * and start the entry.
+     * List the modes, the numbers of players, and the power-ups, and choose the settings of the
+     * game database.
      *
-     * The edit screen takes the settings of the hosted game first, and offers no duel to more than
-     * two players.
+     * Entered from `fn_h_lpad` to edit, the screen saves the settings for the triangle button to
+     * restore. A duel is not offered when the session already takes more than two players.
      *
-     * @param pPrevScreen The screen this one replaces, or null.
-     * @param fTime The front-end time in milliseconds.
+     * @param pPrevScreen The screen that is exiting.
+     * @param fTime The time.
      * @ghidraAddress NTSC-U/C: 0x00180610
      * @ghidraAddress PAL: 0x00184850
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
     /**
-     * Show the choices, and enable the power-up and player choices the mode allows.
+     * Label the choices, and disable the power-ups for a mode other than the game and the number
+     * of players for a duel or while editing.
      *
      * @ghidraAddress NTSC-U/C: 0x001834e8
      * @ghidraAddress PAL: 0x00187728
@@ -78,7 +76,7 @@ public:
     void UpdateLabels() override;
 
     /**
-     * Fill the list of skills of the chosen mode, and move the chosen skill along with the list.
+     * List the skills of the chosen mode, keeping the chosen skill where the lists differ.
      *
      * @ghidraAddress NTSC-U/C: 0x00181ab8
      * @ghidraAddress PAL: 0x00185cf8
@@ -86,18 +84,18 @@ public:
     void OnModeChanged() override;
 
     /**
-     * Fill the song list with the random choice, the remix choice, and the songs of the chosen
-     * mode and skill, and select the song chosen before.
+     * List `host_random`, the songs of the chosen mode and skill, and for a game or a remix
+     * `host_custom`, keeping the song already selected or the song of the game database.
      *
-     * @param nReset Non-zero to select the first entry.
+     * @param bReset Non-zero to select the first entry.
      * @ghidraAddress NTSC-U/C: 0x00182900
      * @ghidraAddress PAL: 0x00186b40
      */
-    void OnChoiceChanged(int nReset) override;
+    void OnChoiceChanged(int bReset) override;
 
     /**
-     * Apply the choices to the game database and host, or go to the remix list for the remix
-     * choice. Any other button chosen with the cross button moves the focus back to `host`.
+     * Write the choices to the game database and host the game, or choose a saved remix for
+     * `host_custom`. Any other component moves the focus to `host`.
      *
      * @param pMsg The message.
      * @return The result of NetParamsScreen::HandleSelect().
@@ -107,7 +105,7 @@ public:
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
     /**
-     * Step the number of players and the power-ups with the left and right buttons.
+     * Change the number of players or the power-ups with the left and right buttons.
      *
      * @param pMsg The message.
      * @return The result of NetParamsScreen::HandleSelectStart().
@@ -117,25 +115,23 @@ public:
     bool HandleSelectStart(UIComponentSelectStartMsg *pMsg);
 
     /**
-     * Restore the settings of the hosted game when the edit screen is exited with the triangle
-     * button.
+     * Restore the saved settings when the triangle button leaves the editing screen.
      *
-     * @param pMsg The message of the button.
-     * @return True while the screen moves in or out, otherwise the result of
-     * NetParamsScreen::HandleJoypad().
+     * @param pMsg The message.
+     * @return True while a transition runs, otherwise the result of
+     *         NetParamsScreen::HandleJoypad().
      * @ghidraAddress NTSC-U/C: 0x00183d10
      * @ghidraAddress PAL: 0x00187f50
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    int mReservedB8[2];                  // +0xb8, not yet recovered.
-    int mNetPlayersChoice;               /*!< The chosen entry of mPlayerChoices. */
-    int mLastPlayersChoice;              /*!< The last entry of mPlayerChoices. */
-    int mDuelPlayersChoice;              /*!< The entry of mPlayerChoices a duel uses. */
-    int mCustomChoice;                   /*!< The entry of the remix choice, or -1 for none. */
-    std::vector<String> mPlayerChoices;  /*!< The names of the numbers of players. */
-    int mPowerupChoice;                  /*!< The chosen entry of mPowerupChoices. */
-    std::vector<String> mPowerupChoices; /*!< The names of the power-up levels. */
-    bool mIsEdit;                        /*!< The `is_edit` entry of the description. */
-    NetGameParams mParams;               /*!< The settings of the hosted game, for the edit. */
+    int mNumPlayers;                   /*!< The chosen entry of mPlayerCounts. */
+    int mLastNumPlayers;               /*!< The last entry of mPlayerCounts. */
+    int mDuelNumPlayers;               /*!< The entry of mPlayerCounts for a duel. */
+    int mCustomChoice;                 /*!< The entry of `host_custom` in the songs, or -1. */
+    std::vector<String> mPlayerCounts; /*!< The labels of two, three, and four players. */
+    int mPowerup;                      /*!< The chosen entry of mPowerups. */
+    std::vector<String> mPowerups;     /*!< The labels of the power-up levels. */
+    int mIsEdit;                       /*!< `is_edit`, non-zero to edit an open launchpad. */
+    NetGameParams mSavedParams;        /*!< The settings the triangle button restores. */
 };

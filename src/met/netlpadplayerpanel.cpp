@@ -134,7 +134,7 @@ void NetLPadPlayerPanel::ShowPlayer(NetLaunchpadPlayer *pPlayer) {
 }
 
 void NetLPadPlayerPanel::Focus() {
-    if (mData == nullptr) {
+    if (!mLoaded) {
         return;
     }
     UIPanel::Focus();

@@ -75,6 +75,11 @@ float FreqPanel::sMatEnterStop = 150.0f;
 float FreqPanel::sMatExitStart = 150.0f;
 float FreqPanel::sMatExitStop = 300.0f;
 Vector3 FreqPanel::sGizmoOrigPos;
+
+// The unit's static initialiser constructs sGizmoOffsets, and the global constructor of the unit
+// runs the initialiser.
+// NTSC-U/C: 0x0019e348, PAL: 0x001a6060
+// NTSC-U/C: 0x0019e390, PAL: 0x001a60a8
 Vector3 FreqPanel::sGizmoOffsets[kNumGizmoOffsets];
 
 void FreqPanel::Init(DataArray *pConfig) {

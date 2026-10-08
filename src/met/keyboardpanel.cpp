@@ -7,11 +7,19 @@
 #include "os/debug.h"
 #include "os/joypad.h"
 #include "os/locale.h"
+#include "os/scheduler.h"
 #include "os/string.h"
 #include "os/system.h"
 #include "rnd/manager.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
+
+// The unit's static initialiser constructs and destroys TheMetaScheduler, and the global
+// constructor and the global destructor of the unit run the initialiser.
+// NTSC-U/C: 0x001a9d38, PAL: 0x001b1a38
+// NTSC-U/C: 0x001a9d78, PAL: 0x001b1a78
+// NTSC-U/C: 0x001a9d98, PAL: 0x001b1a98
+Scheduler TheMetaScheduler;
 
 namespace {
 

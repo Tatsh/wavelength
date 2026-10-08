@@ -101,7 +101,7 @@ void MCManager::DeleteRemix(MemcardUser *pUser, int nSlot, const char *pszName) 
 
 void MCManager::SaveSettings(MemcardUser *pUser,
                              int nSlot,
-                             GlobalSettings *pSettings,
+                             GameOptions *pSettings,
                              int nOverwrite) {
     mSaveSettings->Set(nSlot, pSettings, nOverwrite);
     StartTask(mSaveSettings, pUser);
@@ -147,7 +147,7 @@ void MCManager::ClearResults() {
     mProfiles.clear();
     mRemixInfos.clear();
     mReserved80.clear();
-    GlobalSettings settings; // Yes, the binary constructs this local and never reads it.
+    GameOptions settings; // Yes, the binary constructs this local and never reads it.
 }
 
 void MCManager::Poll() {

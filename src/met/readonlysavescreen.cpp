@@ -40,7 +40,7 @@ bool ReadOnlySaveScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen(pszNext, false));
         pSave->SetStartScreen(kGuestLaunchpad);
         pSave->SetDoneScreen(kGuestLaunchpad);
-        pSave->mReservedA0 = 0;
+        pSave->mOverwriteStatus = 0;
         if (TheNetLaunchpad == nullptr) {
             if (TheMetagame.mNetScreenPending != 0) {
                 pSave->SetDoneScreen(TheMetagame.mNetScreen.c_str());

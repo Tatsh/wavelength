@@ -10,7 +10,7 @@ MCLoadSettingsTask::MCLoadSettingsTask() {
     Add(mLoad);
 }
 
-void MCLoadSettingsTask::Set(int nPort, GlobalSettings *pSettings) {
+void MCLoadSettingsTask::Set(int nPort, GameOptions *pSettings) {
     mSettings = pSettings;
     mGetInfo->Set(nullptr, nPort, 0);
     const char *pszExt;

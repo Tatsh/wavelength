@@ -7,15 +7,16 @@
 #include "msg/joypadinputmsg.h"
 #include "script/dataarray.h"
 #include "ui/uicomponentselectmsg.h"
+#include "ui/uiscreen.h"
 
 /**
- * The screen that lists saved remixes to choose one.
+ * The screen that lists saved remixes to choose one to play or to practise.
  *
  * The RTTI records the class as deriving from FreqScreen. The object is 0x90 bytes and its vtable
- * is at `0x003ce718`. The metagame registers the class for the screen type `sel_remix_screen`.
- * The description's `grey_read_only` and `grey_unplayable` grey out the remixes that cannot be
- * changed and the ones that cannot be played. The cross button loads the chosen remix, and in a
- * solo game the square button practises it.
+ * is at `0x003ce718`. The description's `grey_read_only` and `grey_unplayable` grey out the remixes
+ * that cannot be changed and the ones that cannot be played, and greyed remixes cannot be chosen.
+ * The cross button plays the chosen remix and the square button practises it, both through the
+ * `load_remix` screen.
  */
 class RemixSelectScreen : public FreqScreen {
 public:
@@ -29,21 +30,27 @@ public:
     explicit RemixSelectScreen(DataArray *pData);
 
     /**
-     * Create a screen from its script description.
+     * Destroy the screen.
      *
-     * The metagame registers the routine for the screen type `sel_remix_screen`.
+     * @ghidraAddress NTSC-U/C: 0x0035c418
+     * @ghidraAddress PAL: 0x003ca4f0
+     */
+    ~RemixSelectScreen() override {
+    }
+
+    /**
+     * Create a screen from its script description.
      *
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x0035c518
-     * @ghidraAddress PAL: 0x003ca5f0
      */
     static UIScreen *New(DataArray *pData) {
         return new RemixSelectScreen(pData);
     }
 
     /**
-     * Route a chosen remix and the controller buttons, and pass on every other message.
+     * Route the choice and the controller to their handlers.
      *
      * @param pMsg The message.
      * @return Whether the message was handled.
@@ -53,12 +60,12 @@ public:
     bool DispatchPriv(Message *pMsg) override;
 
     /**
-     * Start the entry, and list mRemixes with the first selected.
+     * Enter, list the remixes, and select the first.
      *
-     * The `net_custom_load` screen greys out only the remixes that cannot be played, and none in a
-     * remix game.
+     * The online screen `net_custom_load` greys out only the remixes that cannot be played, and
+     * none in a remix game.
      *
-     * @param pPrevScreen The screen this one replaces, or null.
+     * @param pPrevScreen The screen this one replaces.
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00189938
      * @ghidraAddress PAL: 0x0018fed0
@@ -66,7 +73,9 @@ public:
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
     /**
-     * Replace the listed remixes. Vtable slot 11.
+     * Replace the remixes the screen lists.
+     *
+     * The name is inferred.
      *
      * @param remixes The remixes.
      * @ghidraAddress NTSC-U/C: 0x0035c558
@@ -76,44 +85,49 @@ public:
         mRemixes = remixes;
     }
 
+    std::vector<RemixInfo> mRemixes; /*!< The listed remixes. */
+    int mGreyReadOnly;               /*!< Whether remixes that cannot be changed show greyed out. */
+    int mGreyUnplayable;             /*!< Whether remixes that cannot be played show greyed out. */
+
+private:
     /**
-     * Load the selected remix, or refuse a greyed-out one with the refusal sound.
+     * Load the selected remix into GameDb and go to `load_remix`, or to the read-only checks of
+     * an online game.
      *
-     * The routine sets up the game database and `load_remix`, and goes on to the loading, or
-     * online to the read-only questions first.
+     * Online, the creators of a remix game that can be changed become the players of the game.
+     * The name is inferred.
      *
-     * @param bPractice Whether the remix is practised.
-     * @return 1 for a refused remix, 0 after going to a question, and -1 after going to
+     * @param bPractice Whether the remix is practised rather than played.
+     * @return 1 for a greyed remix, 0 after going to a read-only check, and -1 after going to
      * `load_remix`.
      * @ghidraAddress NTSC-U/C: 0x001899f0
      * @ghidraAddress PAL: 0x0018ff88
      */
-    int LoadSelected(bool bPractice);
+    int LoadSelectedRemix(bool bPractice);
 
     /**
-     * Load the remix chosen with the cross button.
+     * Play the selected remix with the cross button.
+     *
+     * The name is inferred.
      *
      * @param pMsg The message.
-     * @return The result of LoadSelected() unless that is -1, otherwise the result of
-     * UIScreen::HandleSelect().
+     * @return The result of LoadSelectedRemix() unless it went to `load_remix`, otherwise the
+     * result of UIScreen::HandleSelect().
      * @ghidraAddress NTSC-U/C: 0x00189e70
      * @ghidraAddress PAL: 0x00190408
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
     /**
-     * Go back to the hosting screens online with the first controller's triangle button, or
-     * practise the selected remix of a solo game with the square button.
+     * Return to the host screen of an online game with the triangle button, and practise the
+     * selected remix with the square button in a solo game.
      *
-     * @param pMsg The message of the button.
-     * @return True while the screen moves in or out, the result of LoadSelected() unless that is
-     * -1, or the result of UIScreen::HandleJoypad().
+     * The name is inferred.
+     *
+     * @param pMsg The message.
+     * @return True during a transition, otherwise the result of UIScreen::HandleJoypad().
      * @ghidraAddress NTSC-U/C: 0x00189ed0
      * @ghidraAddress PAL: 0x00190468
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
-
-    std::vector<RemixInfo> mRemixes; /*!< The listed remixes. +0x70 */
-    int mGreyReadOnly;   /*!< Whether remixes that cannot be changed show greyed out. +0x80 */
-    int mGreyUnplayable; /*!< Whether remixes that cannot be played show greyed out. +0x84 */
 };

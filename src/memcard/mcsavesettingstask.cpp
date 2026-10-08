@@ -20,7 +20,7 @@ MCSaveSettingsTask::MCSaveSettingsTask() : mName("settings") {
     Add(mSaveFile);
 }
 
-void MCSaveSettingsTask::Set(int nPort, GlobalSettings *pSettings, int nOverwrite) {
+void MCSaveSettingsTask::Set(int nPort, GameOptions *pSettings, int nOverwrite) {
     mPort = nPort;
     mNeeded = 0;
     BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);

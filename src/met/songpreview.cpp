@@ -36,6 +36,12 @@ float SongPreview::sVolume = 0.0f;
 float SongPreview::sFadeRate = 0.0f;
 float SongPreview::sFadeStep = 0.05f;
 int SongPreview::sRestoreMusic = 1;
+
+// The unit's static initialiser constructs and destroys sClip, and the global constructor and the
+// global destructor of the unit run the initialiser.
+// NTSC-U/C: 0x00196b48, PAL: 0x0019e068
+// NTSC-U/C: 0x00196ba8, PAL: 0x0019e0c8
+// NTSC-U/C: 0x00196bc8, PAL: 0x0019e0e8
 String SongPreview::sClip;
 
 void SongPreview::OnMenuRestored([[maybe_unused]] int nArg) {

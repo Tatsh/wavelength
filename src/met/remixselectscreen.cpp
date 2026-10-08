@@ -9,62 +9,70 @@
 #include "os/joypad.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
+#include "ui/uipanel.h"
 
 namespace {
 
+constexpr char kGreyReadOnlyTag[] = "grey_read_only";
+constexpr char kGreyUnplayableTag[] = "grey_unplayable";
 constexpr char kListComponent[] = "list";
-constexpr char kNetLoadScreen[] = "net_custom_load";
+constexpr char kOnlineLoadScreen[] = "net_custom_load";
+constexpr char kLoadRemixScreen[] = "load_remix";
+constexpr char kSoloDoneScreen[] = "pre_solotut2launchseq";
+constexpr char kSoloGameStartScreen[] = "s_g_custom_load";
+constexpr char kSoloRemixStartScreen[] = "s_r_load";
+constexpr char kLocalDoneScreen[] = "pre_multitut2launchseq";
+constexpr char kLocalGameStartScreen[] = "m_g_custom_load";
+constexpr char kLocalRemixStartScreen[] = "m_r_load";
+constexpr char kLaunchpadScreen[] = "fn_h_lpad";
+constexpr char kHostAttemptScreen[] = "net_host_attempt";
+constexpr char kRemixReadOnlyCheckScreen[] = "net_remix_read_only_check";
+constexpr char kReadOnlyCheckScreen[] = "net_read_only_check";
+constexpr char kReadOnlyWarningScreen[] = "net_share_disc_read_only_warning";
+constexpr char kEditHostScreen[] = "edit_host";
+constexpr char kHostingScreen[] = "fn_hosting";
+constexpr char kNoCreator[] = "";
 
-// The longest player name strncpy() copies into a RemixInfo.
-constexpr size_t kCreatorCopyLength = 15;
+// The values LoadSelectedRemix() reports.
+constexpr int kLoadGreyed = 1;
+constexpr int kLoadChecked = 0;
+constexpr int kLoadStarted = -1;
 
-// Only the first controller goes back from the online list.
+// The controller that returns to the host screen.
 constexpr int kFirstPad = 0;
-
-// LoadSelected() reports these.
-constexpr int kRefused = 1;
-constexpr int kQuestion = 0;
-constexpr int kLoading = -1;
 
 } // namespace
 
-RemixSelectScreen::RemixSelectScreen(DataArray *pData) : FreqScreen(pData) {
-    mGreyReadOnly = 0;
-    mGreyUnplayable = 0;
-    bool bGrey = false;
-    if (pData->FindBool("grey_read_only", &bGrey, false)) {
-        mGreyReadOnly = bGrey;
-    }
-    bGrey = false;
-    if (pData->FindBool("grey_unplayable", &bGrey, false)) {
-        mGreyUnplayable = bGrey;
-    }
+RemixSelectScreen::RemixSelectScreen(DataArray *pData)
+    : FreqScreen(pData), mGreyReadOnly(0), mGreyUnplayable(0) {
+    pData->FindBool(kGreyReadOnlyTag, &mGreyReadOnly, false);
+    pData->FindBool(kGreyUnplayableTag, &mGreyUnplayable, false);
 }
 
 void RemixSelectScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     auto *pList = static_cast<RemixLoadList *>(
         TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
-    if (strcmp(mName, kNetLoadScreen) == 0) {
+    if (std::strcmp(mName, kOnlineLoadScreen) == 0) {
         mGreyReadOnly = 0;
-        mGreyUnplayable = TheGameDb->mRuleSet == GameDb::kRuleSetRemix ? 0 : 1;
+        mGreyUnplayable = TheGameDb->mRuleSet != GameDb::kRuleSetRemix;
     }
     pList->SetRemixes(mRemixes, mGreyReadOnly, mGreyUnplayable);
     pList->SetSelected(0);
 }
 
-int RemixSelectScreen::LoadSelected(bool bPractice) {
-    auto *pList = static_cast<RemixLoadList *>(
-        TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
-    RemixInfo info = mRemixes[pList->mSelected];
+int RemixSelectScreen::LoadSelectedRemix(bool bPractice) {
+    UIComponent *pList = TheUI.FindComponent(mFocusPanel->mName, kListComponent, false);
+    RemixInfo info = mRemixes[static_cast<UIList *>(pList)->mSelected];
     if ((mGreyReadOnly != 0 && info.mReadOnly != 0) ||
         (mGreyUnplayable != 0 && info.mPlayable == 0)) {
         FxMidi::PlayWrong();
-        return kRefused;
+        return kLoadGreyed;
     }
     if (bPractice) {
         FxMidi::PlaySquare();
     }
+
     TheGameDb->SetSong(info.mSong);
     TheGameDb->SetPracticeMode(bPractice);
     TheGameDb->SetTutorial(0);
@@ -77,35 +85,38 @@ int RemixSelectScreen::LoadSelected(bool bPractice) {
         TheGameDb->mCommunity != GameDb::kCommunityOnline && info.mReadOnly == 0) {
         for (int i = 0; i < kRemixInfoCreatorCount; ++i) {
             const char *pszCreator =
-                i < TheGameDb->GetNumPlayers() ? TheGameDb->GetPlayerName(i) : "";
-            strncpy(info.mCreators[i], pszCreator, kCreatorCopyLength);
+                i < TheGameDb->GetNumPlayers() ? TheGameDb->GetPlayerName(i) : kNoCreator;
+            std::strncpy(info.mCreators[i], pszCreator, kRemixInfoCreatorSize - 1);
         }
     }
     TheGameDb->SetRemix(&info);
 
-    auto *pLoad = dynamic_cast<LoadRemixScreen *>(TheUI.FindScreen("load_remix", false));
-    const bool bGame = TheGameDb->mRuleSet == GameDb::kRuleSetGame;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        pLoad->SetDoneScreen("pre_solotut2launchseq");
-        pLoad->SetStartScreen(bGame ? "s_g_custom_load" : "s_r_load");
-    } else if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
-        pLoad->SetDoneScreen("pre_multitut2launchseq");
-        pLoad->SetStartScreen(bGame ? "m_g_custom_load" : "m_r_load");
+    auto *pLoad = dynamic_cast<LoadRemixScreen *>(TheUI.FindScreen(kLoadRemixScreen, false));
+    const int nCommunity = TheGameDb->mCommunity;
+    if (nCommunity == GameDb::kCommunitySolo) {
+        pLoad->SetDoneScreen(kSoloDoneScreen);
+        pLoad->SetStartScreen(TheGameDb->mRuleSet == GameDb::kRuleSetGame ? kSoloGameStartScreen :
+                                                                            kSoloRemixStartScreen);
+    } else if (nCommunity == GameDb::kCommunityLocal) {
+        pLoad->SetDoneScreen(kLocalDoneScreen);
+        pLoad->SetStartScreen(TheGameDb->mRuleSet == GameDb::kRuleSetGame ? kLocalGameStartScreen :
+                                                                            kLocalRemixStartScreen);
     } else {
-        pLoad->SetStartScreen(kNetLoadScreen);
-        pLoad->SetDoneScreen(TheNetLaunchpad != nullptr ? "fn_h_lpad" : "net_host_attempt");
-        const bool bRemix = TheGameDb->mRuleSet == GameDb::kRuleSetRemix;
+        pLoad->SetStartScreen(kOnlineLoadScreen);
+        pLoad->SetDoneScreen(TheNetLaunchpad != nullptr ? kLaunchpadScreen : kHostAttemptScreen);
         if (info.mReadOnly == 0) {
-            TheUI.GotoScreen(bRemix ? "net_remix_read_only_check" : "net_read_only_check");
-            return kQuestion;
+            TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetRemix ?
+                                 kRemixReadOnlyCheckScreen :
+                                 kReadOnlyCheckScreen);
+            return kLoadChecked;
         }
-        if (bRemix) {
-            TheUI.GotoScreen("net_share_disc_read_only_warning");
-            return kQuestion;
+        if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+            TheUI.GotoScreen(kReadOnlyWarningScreen);
+            return kLoadChecked;
         }
     }
     TheUI.GotoScreen(pLoad);
-    return kLoading;
+    return kLoadStarted;
 }
 
 bool RemixSelectScreen::DispatchPriv(Message *pMsg) {
@@ -121,8 +132,8 @@ bool RemixSelectScreen::DispatchPriv(Message *pMsg) {
 
 bool RemixSelectScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (pMsg->mButton == kPadCross) {
-        const int nResult = LoadSelected(false);
-        if (nResult != kLoading) {
+        const int nResult = LoadSelectedRemix(false);
+        if (nResult != kLoadStarted) {
             return nResult != 0;
         }
     }
@@ -130,21 +141,19 @@ bool RemixSelectScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool RemixSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
-        if (mNextScreen != nullptr || mPrevScreen != nullptr) {
-            return true;
-        }
-        if (pMsg->mButton == kPadTriangle && pMsg->mPad == kFirstPad &&
-            TheGameDb->mCommunity == GameDb::kCommunityOnline) {
-            TheUI.GotoScreen(TheNetLaunchpad != nullptr ? "edit_host" : "fn_hosting");
-            return UIScreen::HandleJoypad(pMsg);
-        }
+    if (pMsg->mPressed == 0) {
+        return UIScreen::HandleJoypad(pMsg);
     }
-    if (pMsg->mPressed != 0 && pMsg->mButton == kPadSquare &&
-        TheGameDb->mCommunity == GameDb::kCommunitySolo &&
-        TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
-        const int nResult = LoadSelected(true);
-        if (nResult != kLoading) {
+    if (mNextScreen != nullptr || mPrevScreen != nullptr) {
+        return true;
+    }
+    if (pMsg->mButton == kPadTriangle && pMsg->mPad == kFirstPad &&
+        TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        TheUI.GotoScreen(TheNetLaunchpad != nullptr ? kEditHostScreen : kHostingScreen);
+    } else if (pMsg->mButton == kPadSquare && TheGameDb->mCommunity == GameDb::kCommunitySolo &&
+               TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+        const int nResult = LoadSelectedRemix(true);
+        if (nResult != kLoadStarted) {
             return nResult != 0;
         }
     }

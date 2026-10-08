@@ -29,7 +29,7 @@ void SetMeshMat(const char *pszMeshFormat, const char *pszPanel, const char *psz
 } // namespace
 
 void NetSongPanel::Focus() {
-    if (mData == nullptr) {
+    if (!mLoaded) {
         return;
     }
     UIPanel::Focus();
@@ -39,7 +39,7 @@ void NetSongPanel::Focus() {
 }
 
 void NetSongPanel::Unfocus() {
-    if (mData == nullptr) {
+    if (!mLoaded) {
         return;
     }
     static_cast<UIList *>(FindComponent(kListComponent, false))->SetCursorSelected(false);

@@ -63,7 +63,7 @@ void MultiSetupRemixSaveScreen::Proceed() {
 
     auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix", false));
     pSave->SetStartScreen(mName);
-    pSave->mReservedA0 = 0;
+    pSave->mOverwriteStatus = 0;
     if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
         if (mPlayer < TheGameDb->GetNumPlayers()) {
             pSave->SetDoneScreen(FormatString(kSaveFormat, mPlayer + 1));

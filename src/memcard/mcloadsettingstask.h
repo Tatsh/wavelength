@@ -1,12 +1,12 @@
 #pragma once
 
-#include "game/globalsettings.h"
+#include "game/gameoptions.h"
 #include "memcard/mcgetinfotask.h"
 #include "memcard/mcloadfiletask.h"
 #include "memcard/memcardserialtask.h"
 
 /**
- * Work that loads the GlobalSettings from the `settings` file of the directory at g_MemcardPath:
+ * Work that loads the GameOptions from the `settings` file of the directory at g_MemcardPath:
  * read the card information, then load the file.
  *
  * The RTTI records the class as deriving from MemcardSerialTask. The object is 0x2c bytes.
@@ -29,7 +29,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001622f8
      * @ghidraAddress PAL: 0x00165008
      */
-    void Set(int nPort, GlobalSettings *pSettings);
+    void Set(int nPort, GameOptions *pSettings);
 
     /**
      * Decode the loaded file into mSettings.
@@ -38,7 +38,7 @@ public:
      */
     void OnFileLoaded() override;
 
-    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. */
-    MCLoadFileTask *mLoad;     /*!< The work that loads the file. */
-    GlobalSettings *mSettings; /*!< Receives the settings. */
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
+    MCLoadFileTask *mLoad;   /*!< The work that loads the file. */
+    GameOptions *mSettings;  /*!< Receives the settings. */
 };

@@ -114,6 +114,7 @@ bzero
 callbackxferbdtoiop
 cantlinkinside
 capturepacket
+cardsconnectedscreen
 catchpatt
 catchtrack
 catchtrackbuilder
@@ -125,6 +126,8 @@ cdread
 cdreadstm
 cdrom
 changesectionevent
+chatpanel
+chattextentry
 chcr
 choosememcardscreen
 circbuff
@@ -150,6 +153,7 @@ constructo
 controllerconfigscreen
 controllerdisplay
 controllerpanel
+copyfreqscreen
 corefx
 coveragerc
 cpdext
@@ -182,6 +186,8 @@ deactivators
 deci
 defpushbutton
 defsym
+deletefreqscreen
+deleteremixscreen
 demangled
 demangles
 depfile
@@ -313,6 +319,7 @@ forcefeedbackmgrcontroller
 forcefeedbackmgrmotoreffect
 fordblks
 formatmessage
+formatscreen
 foxundermoon
 fplugin
 fprintf
@@ -453,6 +460,7 @@ joystickid
 jsonnet
 jsonschema
 juicemeter
+jukeboxscreen
 kapsz
 kasson
 keyboardkey
@@ -510,8 +518,12 @@ linearanim
 lineartransform
 linkfile
 linkonce
+listremixesscreen
 littlemips
 lmode
+loadfreqscreen
+loadnetconfigsscreen
+loadremixscreen
 lobbyconnectionlostmsg
 localizeerrors
 localplayer
@@ -558,6 +570,7 @@ mbcs
 mccardstatustask
 mccheckremixspaceneededtask
 mcchecksavespaceneededtask
+mccheckscreen
 mcclosetask
 mccreatesavedirtask
 mcdeletefreqtask
@@ -645,6 +658,7 @@ mpfr
 mscal
 mscnt
 msflag
+msgerrorscreen
 msgsink
 msgsource
 msifrpc
@@ -666,6 +680,7 @@ multiendgamescreen
 multifreqselectscreen
 multigamelogic
 multigamestatspanel
+multiloadfreqscreen
 multimesh
 multimuse
 multiportal
@@ -686,11 +701,15 @@ mutevocalspacket
 mvoll
 mvolr
 mypy
+nameerrorscreen
 nameirx
 ndebug
+needsdialogscreen
 netarbiter
+netbuttonpanel
 netchangepassword
 netchangepasswordscreen
+netchooseiconfigscreen
 netcnf
 netcnfif
 netcnfifdata
@@ -710,8 +729,11 @@ netfaker
 netflashupdate
 netflow
 netfoundplayerpanel
+netgetdownloadsscreen
 nethostattemptscreen
 nethostingscreen
+nethostlpadbuttonpanel
+netinetconnect
 netinetdisconnect
 netjoinlpadscreen
 netlaunch
@@ -725,10 +747,19 @@ netloginscreen
 netlpadgamepanel
 netlpadplayerpanel
 netlpadscreen
+netmainlaunchpadslist
+netmainlaunchpadspanel
+netmainlobbieslist
+netmainlobbiespanel
+netmainpanel
+netmainplayerslist
+netmainplayerspanel
+netmainscreen
 netnewchatroomscreen
 netparamsscreen
 netpasswordscreen
 netportal
+netrankedplayerslist
 netrankedplayerspanel
 netrankingscreen
 netreadonlywarnscreen
@@ -737,6 +768,7 @@ netserverlogin
 netserverselscreen
 netsongpanel
 netsorteddatapanel
+netsortedlaunchpadslist
 netsortedlaunchpadspanel
 netsortedscreen
 netswitchlobbyscreen
@@ -826,6 +858,7 @@ playbacker's
 playersearchresultsscreen
 playersearchsetupscreen
 playerupdatepacket
+playlistpanel
 playmap
 playnoteevent
 pmaxh
@@ -885,6 +918,7 @@ readonlysavescreen
 reax
 recalc
 recomposeonresize
+redbookplaybackscreen
 redim
 refe
 reflow
@@ -934,7 +968,10 @@ sampledesc
 sanm
 saturator
 saveeditedfreqscreen
+saveerrorscreen
 savefreqscreen
+saveremixscreen
+savesettingsscreen
 sbclaude
 sbss
 sces
@@ -959,6 +996,8 @@ sectionboundaries
 sectionchangepacket
 selchanged
 selloadedfreqscreen
+selremixdownloadscreen
+selremixuploadscreen
 sema
 semas
 serialiser
@@ -1000,6 +1039,9 @@ soloendgamescreen
 solofreq
 sologamelogic
 sologamestatspanel
+sololoadgame
+sololoadremix
+sololosestatspanel
 sololosetipspanel
 solometa
 soloportal
@@ -1017,6 +1059,7 @@ songspeed
 sonylib
 sonylibs
 sourceimage
+spaceerrorscreen
 spdif
 spewregister
 spewtable
@@ -1107,6 +1150,7 @@ trackselector
 transanim
 transes
 transformops
+transitionerrorscreen
 transitionmusic
 transitionscreen
 trmopn

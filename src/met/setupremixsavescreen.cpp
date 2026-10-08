@@ -147,7 +147,7 @@ void SetupRemixSaveScreen::Proceed() {
     pSave->SetSlot(0);
     pSave->SetStartScreen("s_r_end_remix");
     pSave->SetDoneScreen("s_r_mode");
-    pSave->mReservedA0 = 0;
+    pSave->mOverwriteStatus = 0;
     pSave->mRemixName = title.c_str();
     TheUI.GotoScreen(pSave);
 }

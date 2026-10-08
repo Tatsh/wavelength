@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "game/campaign.h"
-#include "game/globalsettings.h"
+#include "game/gameoptions.h"
 #include "game/remixinfo.h"
 #include "netflow/inetconfig.h"
 
@@ -152,7 +152,7 @@ public:
      * @ghidraAddress PAL: 0x003af340
      */
     virtual void OnSettingsLoaded([[maybe_unused]] int nStatus,
-                                  [[maybe_unused]] GlobalSettings settings) {
+                                  [[maybe_unused]] GameOptions settings) {
     }
 
     /**

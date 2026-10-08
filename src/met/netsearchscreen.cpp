@@ -10,76 +10,72 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "ui/uicomponent.h"
 #include "ui/uimanager.h"
+#include "ui/uipanel.h"
 
 namespace {
 
-constexpr char kListComponent[] = "list";
+constexpr char kModeFormatToken[] = "NET_HOST_MODE";
+constexpr char kGameToken[] = "mode_game";
+constexpr char kDuelToken[] = "mode_duel";
+constexpr char kRemixToken[] = "mode_remix";
+constexpr char kAnyToken[] = "param_any";
+constexpr char kSkillFormatToken[] = "NET_HOST_SKILL";
+constexpr char kDuelEasyToken[] = "duel_easy";
+constexpr char kDuelMediumToken[] = "duel_medium";
+constexpr char kDuelHardToken[] = "duel_hard";
+constexpr char kSkillEasyToken[] = "skill_easy";
+constexpr char kSkillNormalToken[] = "skill_norm";
+constexpr char kSkillExpertToken[] = "skill_exp";
+constexpr char kSkillInsaneToken[] = "skill_insane";
+constexpr char kAllToken[] = "search_all";
 constexpr char kSearchComponent[] = "search";
-constexpr char kAnyChoice[] = "param_any";
+constexpr char kListComponent[] = "list";
+constexpr char kSongPanel[] = "fn_search_song";
+constexpr char kSortedScreen[] = "fn_sorted";
+constexpr char kNoSong[] = "";
 
-constexpr const char *kDuelSkills[] = {"duel_easy", "duel_medium", "duel_hard", kAnyChoice};
-constexpr const char *kSkills[] = {
-    "skill_easy", "skill_norm", "skill_exp", "skill_insane", kAnyChoice};
-
-// The entries of mModes, in their order. The last entry searches every mode.
-enum SearchMode {
-    kSearchModeGame = 0,
-    kSearchModeDuel = 1,
-    kSearchModeRemix = 2,
+// The entries of mModes, which HandleSelect() reads without mDuelMode and mRemixMode.
+enum Mode {
+    kModeGame = 0,
+    kModeDuel = 1,
+    kModeRemix = 2,
 };
 
-// The rule set a search for any mode passes, and the skill a search for any skill passes.
+// The rule set NetSortedScreen::SetSearch() receives for any mode.
 constexpr int kAnyRuleSet = 0;
+
+// The skill entry for any skill of a game, and the skill NetSortedScreen::SetSearch() receives
+// for it.
+constexpr int kAnySkillEntry = 4;
 constexpr int kAnySkill = -1;
 
-// The duel skill entries start one level higher.
+// The skill levels of a duel start one above those of a game.
 constexpr int kDuelSkillOffset = 1;
 
-// A skill entry from this one on moves with the list when the list grows by the extra level.
-constexpr int kLastSharedSkill = 2;
+// The skill entry from which the longer list has one more entry below it.
+constexpr int kSkillShift = 2;
 
-// The song list starts with the choice of every song.
-constexpr int kAllSongsChoiceCount = 1;
+// The entries of the song list before the songs, and the entry of `search_all`.
+constexpr int kChoiceCount = 1;
+constexpr int kAllChoice = 0;
 
-template <size_t N>
-void AddChoices(std::vector<String> *pChoices,
-                const char *pszFormat,
-                const char *const (&tokens)[N]) {
-    for (const char *pszToken : tokens) {
-        String choice(FormatString(pszFormat, TheLocale.Localize(pszToken, true)));
-        pChoices->push_back(choice);
-    }
+void AddLabel(std::vector<String> &labels, const char *pszFormat, const char *pszToken) {
+    labels.push_back(String(FormatString(pszFormat, TheLocale.Localize(pszToken, true))));
 }
 
 } // namespace
 
-NetSearchScreen::NetSearchScreen(DataArray *pData) : NetParamsScreen(pData) {
-}
-
 void NetSearchScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mModes.clear();
-    const char *pszFormat = TheLocale.Localize("NET_HOST_MODE", true);
-    {
-        String mode(FormatString(pszFormat, TheLocale.Localize("mode_game", true)));
-        mModes.push_back(mode);
-    }
-    {
-        String mode(FormatString(pszFormat, TheLocale.Localize("mode_duel", true)));
-        mModes.push_back(mode);
-    }
-    mDuelMode = kSearchModeDuel;
-    {
-        String mode(FormatString(pszFormat, TheLocale.Localize("mode_remix", true)));
-        mModes.push_back(mode);
-    }
-    mRemixMode = kSearchModeRemix;
-    {
-        String mode(FormatString(pszFormat, TheLocale.Localize(kAnyChoice, true)));
-        mModes.push_back(mode);
-    }
-    mLastSkillMode = kSearchModeDuel;
+    const char *pszFormat = TheLocale.Localize(kModeFormatToken, true);
+    AddLabel(mModes, pszFormat, kGameToken);
+    AddLabel(mModes, pszFormat, kDuelToken);
+    mDuelMode = kModeDuel;
+    AddLabel(mModes, pszFormat, kRemixToken);
+    mRemixMode = kModeRemix;
+    AddLabel(mModes, pszFormat, kAnyToken);
+    mLastSkillMode = kModeDuel;
     mMode = static_cast<int>(mModes.size()) - 1;
     OnModeChanged();
     mSkill = static_cast<int>(mSkills.size()) - 1;
@@ -90,37 +86,41 @@ void NetSearchScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 void NetSearchScreen::OnModeChanged() {
     const int nOldCount = static_cast<int>(mSkills.size());
     mSkills.clear();
-    const char *pszFormat = TheLocale.Localize("NET_HOST_SKILL", true);
+    const char *pszFormat = TheLocale.Localize(kSkillFormatToken, true);
     if (mMode == mDuelMode) {
-        AddChoices(&mSkills, pszFormat, kDuelSkills);
+        AddLabel(mSkills, pszFormat, kDuelEasyToken);
+        AddLabel(mSkills, pszFormat, kDuelMediumToken);
+        AddLabel(mSkills, pszFormat, kDuelHardToken);
     } else {
-        AddChoices(&mSkills, pszFormat, kSkills);
+        AddLabel(mSkills, pszFormat, kSkillEasyToken);
+        AddLabel(mSkills, pszFormat, kSkillNormalToken);
+        AddLabel(mSkills, pszFormat, kSkillExpertToken);
+        AddLabel(mSkills, pszFormat, kSkillInsaneToken);
     }
-    const int nNewCount = static_cast<int>(mSkills.size());
-    if (nOldCount == nNewCount) {
-        return;
-    }
-    if (nNewCount < nOldCount) {
-        if (mSkill == nNewCount) {
-            mSkill = nNewCount - 1;
+    AddLabel(mSkills, pszFormat, kAnyToken);
+
+    const int nCount = static_cast<int>(mSkills.size());
+    if (nCount < nOldCount) {
+        if (mSkill == nCount) {
+            mSkill = nCount - 1;
         }
-    } else if (mSkill >= kLastSharedSkill) {
-        ++mSkill;
+    } else if (nOldCount < nCount) {
+        if (mSkill >= kSkillShift) {
+            ++mSkill;
+        }
     }
 }
 
-void NetSearchScreen::OnChoiceChanged([[maybe_unused]] int nReset) {
+void NetSearchScreen::OnChoiceChanged([[maybe_unused]] int bReset) {
     auto *pList =
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
     String selected;
     if (!pList->mSongs.empty()) {
         selected = pList->mSongs[pList->mSelected].c_str();
     }
+
     std::vector<String> choices;
-    {
-        String choice(TheLocale.Localize("search_all", true));
-        choices.push_back(choice);
-    }
+    choices.push_back(String(TheLocale.Localize(kAllToken, true)));
     std::vector<SongEntry> songs;
     if (mMode == mDuelMode) {
         TheGameDb->GetHostSongs(&songs, mSkill, true);
@@ -129,18 +129,17 @@ void NetSearchScreen::OnChoiceChanged([[maybe_unused]] int nReset) {
     } else {
         TheGameDb->GetHostSongs(&songs, mSkill, false);
     }
-    int nSelected = 0;
+
+    int nSelected = kAllChoice;
     for (unsigned int i = 0; i < songs.size(); ++i) {
-        SongEntry song = songs[i];
-        if (strcmp(selected.c_str(), song.GetName()) == 0) {
-            // Yes, the binary adds mChoiceCount before it updates the member.
+        if (std::strcmp(selected.c_str(), songs[i].GetName()) == 0) {
+            // The binary offsets by mChoiceCount before it sets it below.
             nSelected = static_cast<int>(i) + mChoiceCount;
         }
-        String choice(songs[i].GetName());
-        choices.push_back(choice);
+        choices.push_back(String(songs[i].GetName()));
     }
-    mChoiceCount = kAllSongsChoiceCount;
-    pList->SetSongs(choices, kAllSongsChoiceCount);
+    mChoiceCount = kChoiceCount;
+    pList->SetSongs(choices, kChoiceCount);
     pList->SetSelected(nSelected);
 }
 
@@ -155,32 +154,34 @@ bool NetSearchScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (pMsg->mButton != kPadCross) {
         return NetParamsScreen::HandleSelect(pMsg);
     }
-    if (strcmp(pMsg->mComponent->mName, kSearchComponent) != 0) {
-        // The binary also tests for `cursor`, with the same result on both paths.
+    if (std::strcmp(pMsg->mComponent->mName, kSearchComponent) != 0) {
         UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
         pPanel->SetFocus(pPanel->FindComponent(kSearchComponent, false), kPadNone);
         return NetParamsScreen::HandleSelect(pMsg);
     }
 
     auto *pList =
-        static_cast<SongSelList *>(TheUI.FindComponent("fn_search_song", kListComponent, false));
-    auto *pSorted = dynamic_cast<NetSortedScreen *>(TheUI.FindScreen("fn_sorted", false));
+        static_cast<SongSelList *>(TheUI.FindComponent(kSongPanel, kListComponent, false));
+    UIScreen *pScreen = TheUI.FindScreen(kSortedScreen, false);
+    auto *pSorted = pScreen != nullptr ? dynamic_cast<NetSortedScreen *>(pScreen) : nullptr;
+
     int nRuleSet;
-    if (mMode == kSearchModeGame) {
+    if (mMode == kModeGame) {
         nRuleSet = GameDb::kRuleSetGame;
-    } else if (mMode == kSearchModeDuel) {
+    } else if (mMode == kModeDuel) {
         nRuleSet = GameDb::kRuleSetDuel;
-    } else if (mMode == kSearchModeRemix) {
+    } else if (mMode == kModeRemix) {
         nRuleSet = GameDb::kRuleSetRemix;
     } else {
         nRuleSet = kAnyRuleSet;
     }
-    int nSkillLevel = nRuleSet == GameDb::kRuleSetDuel ? mSkill + kDuelSkillOffset : mSkill;
-    if (mSkill == GameDb::kSkillAny) {
-        nSkillLevel = kAnySkill;
+    int nSkill = nRuleSet == GameDb::kRuleSetDuel ? mSkill + kDuelSkillOffset : mSkill;
+    if (mSkill == kAnySkillEntry) {
+        nSkill = kAnySkill;
     }
-    const char *pszArena = pList->mSelected != 0 ? pList->mSongs[pList->mSelected].c_str() : "";
-    pSorted->SetSearch(pszArena, nRuleSet, nSkillLevel);
+    const char *pszSong =
+        pList->mSelected != kAllChoice ? pList->mSongs[pList->mSelected].c_str() : kNoSong;
+    pSorted->SetSearch(pszSong, nRuleSet, nSkill);
     TheUI.GotoScreen(pSorted);
     return NetParamsScreen::HandleSelect(pMsg);
 }

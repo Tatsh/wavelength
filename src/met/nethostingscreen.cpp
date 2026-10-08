@@ -9,132 +9,120 @@
 #include "met/songsellist.h"
 #include "msg/chatmsg.h"
 #include "netflow/netlaunchpad.h"
-#include "os/joypad.h"
 #include "os/locale.h"
 #include "ui/uibutton.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
+#include "ui/uipanel.h"
 
 namespace {
 
-constexpr char kListComponent[] = "list";
-constexpr char kHostComponent[] = "host";
-constexpr char kPlayersComponent[] = "num_players";
-constexpr char kPowerupComponent[] = "powerup";
+constexpr char kIsEditTag[] = "is_edit";
+constexpr char kModeFormatToken[] = "NET_HOST_MODE";
+constexpr char kGameToken[] = "mode_game";
+constexpr char kDuelToken[] = "mode_duel";
+constexpr char kRemixToken[] = "mode_remix";
+constexpr char kSkillFormatToken[] = "NET_HOST_SKILL";
+constexpr char kDuelEasyToken[] = "duel_easy";
+constexpr char kDuelMediumToken[] = "duel_medium";
+constexpr char kDuelHardToken[] = "duel_hard";
+constexpr char kSkillEasyToken[] = "skill_easy";
+constexpr char kSkillNormalToken[] = "skill_norm";
+constexpr char kSkillExpertToken[] = "skill_exp";
+constexpr char kSkillInsaneToken[] = "skill_insane";
+constexpr char kPlayersFormatToken[] = "NET_HOST_PLAYERS";
+constexpr char kPowerupFormatToken[] = "NET_HOST_PUP";
+constexpr char kPowerupLowToken[] = "pup_low";
+constexpr char kPowerupHighToken[] = "pup_hi";
+constexpr char kPowerupOffToken[] = "pup_off";
+constexpr char kRandomToken[] = "host_random";
+constexpr char kCustomToken[] = "host_custom";
+constexpr char kDoneEditToken[] = "host_done_edit_msg";
 constexpr char kLaunchpadScreen[] = "fn_h_lpad";
-constexpr char kRandomChoice[] = "host_random";
-constexpr char kCustomChoice[] = "host_custom";
+constexpr char kHostingPanel[] = "fn_hosting";
+constexpr char kNumPlayersComponent[] = "num_players";
+constexpr char kPowerupComponent[] = "powerup";
+constexpr char kHostComponent[] = "host";
+constexpr char kListComponent[] = "list";
+constexpr char kEditRemixListScreen[] = "load_remix_list_net_edit";
+constexpr char kRemixListScreen[] = "load_remix_list_net";
+constexpr char kHostAttemptScreen[] = "net_host_attempt";
+constexpr char kUntitled[] = "Untitled";
 
-constexpr const char *kDuelSkills[] = {"duel_easy", "duel_medium", "duel_hard"};
-constexpr const char *kSkills[] = {"skill_easy", "skill_norm", "skill_exp", "skill_insane"};
-constexpr const char *kPowerups[] = {"pup_low", "pup_hi", "pup_off"};
+// The fewest and the most players of a session.
+constexpr int kMinPlayers = 2;
+constexpr int kMaxPlayers = 4;
 
-// The player choices run from two to four players.
-constexpr int kMinNetPlayers = 2;
-constexpr int kMaxNetPlayers = 4;
+// The first entry of the song list, which picks a song at random.
+constexpr int kRandomChoice = 0;
 
-// A duel needs exactly two players, and its skill entries start one level higher.
-constexpr int kDuelPlayers = 2;
+// The number of entries before the songs, without and with `host_custom`.
+constexpr int kDuelChoiceCount = 1;
+constexpr int kChoiceCount = 2;
+
+// The entry of `host_custom` after `host_random`.
+constexpr int kCustomAfterRandom = 1;
+constexpr int kNoCustomChoice = -1;
+
+// The skill levels of a duel start one above those of a game.
 constexpr int kDuelSkillOffset = 1;
 
-// A skill entry from this one on moves with the list when the list grows by the extra level.
-constexpr int kLastSharedSkill = 2;
+// The skill entry from which the longer list has one more entry below it.
+constexpr int kSkillShift = 2;
 
-constexpr int kNoDuel = -1;
-constexpr int kNoCustomChoice = -1;
 constexpr int kNoSkill = -1;
-constexpr int kRemixWithoutDuel = 1;
-constexpr int kRemixAfterDuel = 2;
-constexpr int kDuelMode = 1;
-
-// The random choice comes first in the song list, and the remix choice second.
-constexpr int kRandomChoiceCount = 1;
-constexpr int kRandomAndCustomCount = 2;
-
-// The longest name and player name strncpy() copies into a RemixInfo.
-constexpr size_t kNameCopyLength = 29;
-constexpr size_t kCreatorCopyLength = 15;
-
-// The notices of the session go to every console on this channel, and show here too.
 constexpr int kNoticeChannel = 2;
 constexpr int kEveryConsole = 0;
 constexpr int kEcho = 1;
 
-template <size_t N>
-void AddChoices(std::vector<String> *pChoices,
-                const char *pszFormat,
-                const char *const (&tokens)[N]) {
-    for (const char *pszToken : tokens) {
-        String choice(FormatString(pszFormat, TheLocale.Localize(pszToken, true)));
-        pChoices->push_back(choice);
-    }
-}
-
-// Copies the settings of the game database the way the inline copy of the binary does.
-void CopyGameParams(NetGameParams *pParams) {
-    pParams->mSong = TheGameDb->mSong;
-    pParams->mLoadRemix = TheGameDb->mLoadRemix;
-    pParams->mRemixReadOnly = TheGameDb->mRemixReadOnly;
-    pParams->mRemixName = TheGameDb->mRemixName;
-    pParams->mPracticeMode = TheGameDb->mPracticeMode;
-    pParams->mTutorial = TheGameDb->mTutorial;
-    pParams->mSkillLevel = TheGameDb->mSkillLevel;
-    pParams->mPowerupLevel = TheGameDb->mPowerupLevel;
-    pParams->mRuleSet = TheGameDb->mRuleSet;
-    pParams->mCommunity = TheGameDb->mCommunity;
-    pParams->mNetPlayers = TheGameDb->mNetPlayers;
-}
-
-// Enables a choice the mode allows, unless it has the focus.
-void EnableChoice(UIComponent *pComponent) {
-    if (pComponent->GetState() != UIComponent::kStateSelected) {
-        pComponent->SetState(UIComponent::kStateNormal, false);
-    }
-}
-
-int StepEntry(int nEntry, int nCount, int nButton) {
-    if (nButton == kPadDLeft) {
-        return nEntry - 1 > -1 ? nEntry - 1 : nCount - 1;
-    }
-    if (nButton == kPadDRight) {
-        return nEntry + 1 < nCount ? nEntry + 1 : 0;
-    }
-    return nEntry;
+void AddLabel(std::vector<String> &labels, const char *pszFormat, const char *pszToken) {
+    labels.push_back(String(FormatString(pszFormat, TheLocale.Localize(pszToken, true))));
 }
 
 } // namespace
 
-NetHostingScreen::NetHostingScreen(DataArray *pData)
-    : NetParamsScreen(pData), mNetPlayersChoice(0) {
-    pData->FindBool("is_edit", &mIsEdit, false);
+NetHostingScreen::NetHostingScreen(DataArray *pData) : NetParamsScreen(pData) {
+    mNumPlayers = 0;
+    mSavedParams.mPracticeMode = 0;
+    mSavedParams.mTutorial = 0;
+    mSavedParams.mSkillLevel = 0;
+    mSavedParams.mPowerupLevel = 1;
+    mSavedParams.mRuleSet = GameDb::kRuleSetGame;
+    mSavedParams.mCommunity = GameDb::kCommunitySolo;
+    mSavedParams.mMaxPlayers = kMaxPlayers;
+    pData->FindBool(kIsEditTag, &mIsEdit, false);
 }
 
 void NetHostingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mModes.clear();
-    const char *pszModeFormat = TheLocale.Localize("NET_HOST_MODE", true);
-    {
-        String mode(FormatString(pszModeFormat, TheLocale.Localize("mode_game", true)));
-        mModes.push_back(mode);
+    const char *pszModeFormat = TheLocale.Localize(kModeFormatToken, true);
+    AddLabel(mModes, pszModeFormat, kGameToken);
+    if (mIsEdit != 0 && std::strcmp(pPrevScreen->mName, kLaunchpadScreen) == 0) {
+        mSavedParams.mSong = TheGameDb->mSong;
+        mSavedParams.mLoadRemix = TheGameDb->mLoadRemix;
+        mSavedParams.mRemixReadOnly = TheGameDb->mRemixReadOnly;
+        mSavedParams.mRemixName = TheGameDb->mRemixName;
+        mSavedParams.mPracticeMode = TheGameDb->mPracticeMode;
+        mSavedParams.mTutorial = TheGameDb->mTutorial;
+        mSavedParams.mSkillLevel = TheGameDb->mSkillLevel;
+        mSavedParams.mPowerupLevel = TheGameDb->mPowerupLevel;
+        mSavedParams.mRuleSet = TheGameDb->mRuleSet;
+        mSavedParams.mCommunity = TheGameDb->mCommunity;
+        mSavedParams.mMaxPlayers = TheGameDb->mMaxPlayers;
     }
-    if (mIsEdit && strcmp(pPrevScreen->mName, kLaunchpadScreen) != 0) {
-        CopyGameParams(&mParams);
-    }
-    if (mIsEdit && TheGameDb->mRuleSet != GameDb::kRuleSetDuel &&
-        TheGameDb->mNetPlayers > kDuelPlayers) {
-        mDuelMode = kNoDuel;
-        mRemixMode = kRemixWithoutDuel;
+    if (mIsEdit != 0 && TheGameDb->mRuleSet != GameDb::kRuleSetDuel &&
+        TheGameDb->mMaxPlayers > kMinPlayers) {
+        mDuelMode = -1;
+        mRemixMode = 1;
         mLastSkillMode = 0;
     } else {
-        String mode(FormatString(pszModeFormat, TheLocale.Localize("mode_duel", true)));
-        mModes.push_back(mode);
-        mLastSkillMode = kDuelMode;
-        mRemixMode = kRemixAfterDuel;
-        mDuelMode = kDuelMode;
+        AddLabel(mModes, pszModeFormat, kDuelToken);
+        mLastSkillMode = 1;
+        mRemixMode = 2;
+        mDuelMode = 1;
     }
-    {
-        String mode(FormatString(pszModeFormat, TheLocale.Localize("mode_remix", true)));
-        mModes.push_back(mode);
-    }
+    AddLabel(mModes, pszModeFormat, kRemixToken);
+
     if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
         mMode = mDuelMode;
     } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
@@ -150,51 +138,65 @@ void NetHostingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         mSkill -= kDuelSkillOffset;
     }
 
-    mPlayerChoices.clear();
-    const char *pszPlayersFormat = TheLocale.Localize("NET_HOST_PLAYERS", true);
-    for (int nPlayers = kMinNetPlayers; nPlayers <= kMaxNetPlayers; ++nPlayers) {
-        String choice(FormatString(pszPlayersFormat, nPlayers));
-        mPlayerChoices.push_back(choice);
+    mPlayerCounts.clear();
+    const char *pszPlayersFormat = TheLocale.Localize(kPlayersFormatToken, true);
+    for (int nPlayers = kMinPlayers; nPlayers <= kMaxPlayers; ++nPlayers) {
+        mPlayerCounts.push_back(String(FormatString(pszPlayersFormat, nPlayers)));
     }
-    if (mIsEdit) {
-        dynamic_cast<UIButton *>(TheUI.FindComponent("fn_hosting", kPlayersComponent, false))
-            ->SetState(UIComponent::kStateDisabled, false);
+    if (mIsEdit != 0) {
+        UIComponent *pComponent = TheUI.FindComponent(kHostingPanel, kNumPlayersComponent, false);
+        UIButton *pButton = pComponent != nullptr ? dynamic_cast<UIButton *>(pComponent) : nullptr;
+        pButton->SetState(UIComponent::kStateDisabled, false);
     }
 
-    mPowerupChoices.clear();
-    AddChoices(&mPowerupChoices, TheLocale.Localize("NET_HOST_PUP", true), kPowerups);
-    mPowerupChoice = TheGameDb->mPowerupLevel;
+    mPowerups.clear();
+    const char *pszPowerupFormat = TheLocale.Localize(kPowerupFormatToken, true);
+    AddLabel(mPowerups, pszPowerupFormat, kPowerupLowToken);
+    AddLabel(mPowerups, pszPowerupFormat, kPowerupHighToken);
+    AddLabel(mPowerups, pszPowerupFormat, kPowerupOffToken);
+    mPowerup = TheGameDb->mPowerupLevel;
+
     OnChoiceChanged(1);
-    mDuelPlayersChoice = 0;
-    const int nLastPlayersChoice = static_cast<int>(mPlayerChoices.size()) - 1;
-    mLastPlayersChoice = nLastPlayersChoice;
-    mNetPlayersChoice = mIsEdit ? TheGameDb->mNetPlayers - kMinNetPlayers : nLastPlayersChoice;
+    mDuelNumPlayers = 0;
+    mLastNumPlayers = static_cast<int>(mPlayerCounts.size()) - 1;
+    if (mIsEdit != 0) {
+        mNumPlayers = TheGameDb->mMaxPlayers - kMinPlayers;
+    } else {
+        mNumPlayers = static_cast<int>(mPlayerCounts.size()) - 1;
+    }
     NetParamsScreen::Enter(pPrevScreen, fTime);
 }
 
 void NetHostingScreen::OnModeChanged() {
     const int nOldCount = static_cast<int>(mSkills.size());
     mSkills.clear();
-    const char *pszFormat = TheLocale.Localize("NET_HOST_SKILL", true);
+    const char *pszFormat = TheLocale.Localize(kSkillFormatToken, true);
     if (mMode == mDuelMode) {
-        AddChoices(&mSkills, pszFormat, kDuelSkills);
+        AddLabel(mSkills, pszFormat, kDuelEasyToken);
+        AddLabel(mSkills, pszFormat, kDuelMediumToken);
+        AddLabel(mSkills, pszFormat, kDuelHardToken);
     } else {
-        AddChoices(&mSkills, pszFormat, kSkills);
+        AddLabel(mSkills, pszFormat, kSkillEasyToken);
+        AddLabel(mSkills, pszFormat, kSkillNormalToken);
+        AddLabel(mSkills, pszFormat, kSkillExpertToken);
+        AddLabel(mSkills, pszFormat, kSkillInsaneToken);
     }
-    const int nNewCount = static_cast<int>(mSkills.size());
-    if (nOldCount == 0 || nOldCount == nNewCount) {
+    if (nOldCount == 0) {
         return;
     }
-    if (nNewCount < nOldCount) {
-        if (mSkill == nNewCount) {
-            mSkill = nNewCount - 1;
+    const int nCount = static_cast<int>(mSkills.size());
+    if (nCount < nOldCount) {
+        if (mSkill == nCount) {
+            mSkill = nCount - 1;
         }
-    } else if (mSkill >= kLastSharedSkill) {
-        ++mSkill;
+    } else if (nOldCount < nCount) {
+        if (mSkill >= kSkillShift) {
+            ++mSkill;
+        }
     }
 }
 
-void NetHostingScreen::OnChoiceChanged(int nReset) {
+void NetHostingScreen::OnChoiceChanged(int bReset) {
     auto *pList =
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
     String selected;
@@ -203,53 +205,46 @@ void NetHostingScreen::OnChoiceChanged(int nReset) {
     }
 
     std::vector<String> choices;
-    {
-        String choice(TheLocale.Localize(kRandomChoice, true));
-        choices.push_back(choice);
-    }
+    choices.push_back(String(TheLocale.Localize(kRandomToken, true)));
     std::vector<SongEntry> songs;
     mChoiceCount = 0;
     if (mMode == mDuelMode) {
-        mChoiceCount = kRandomChoiceCount;
+        mChoiceCount = kDuelChoiceCount;
         TheGameDb->GetHostSongs(&songs, GameDb::kSkillAny, true);
         mCustomChoice = kNoCustomChoice;
     } else {
-        if (mMode == mRemixMode) {
-            mChoiceCount = kRandomAndCustomCount;
-            TheGameDb->GetHostSongs(&songs, GameDb::kSkillAny, false);
-        } else {
-            TheGameDb->GetHostSongs(&songs, mSkill, false);
-            mChoiceCount = kRandomAndCustomCount;
-        }
+        mChoiceCount = kChoiceCount;
+        TheGameDb->GetHostSongs(
+            &songs, mMode == mRemixMode ? static_cast<int>(GameDb::kSkillAny) : mSkill, false);
         if (songs.empty()) {
             choices.clear();
             mCustomChoice = 0;
         } else {
-            mCustomChoice = kRandomChoiceCount;
+            mCustomChoice = kCustomAfterRandom;
         }
-        String choice(TheLocale.Localize(kCustomChoice, true));
-        choices.push_back(choice);
+        choices.push_back(String(TheLocale.Localize(kCustomToken, true)));
     }
 
-    int nSelected = 0;
+    int nSelected = kRandomChoice;
     for (unsigned int i = 0; i < songs.size(); ++i) {
-        SongEntry song = songs[i];
-        if (strcmp(selected.c_str(), song.GetName()) == 0 ||
-            strcmp(TheGameDb->mSong.c_str(), song.GetName()) == 0) {
+        if (std::strcmp(selected.c_str(), songs[i].GetName()) == 0 ||
+            std::strcmp(TheGameDb->mSong.c_str(), songs[i].GetName()) == 0) {
             nSelected = static_cast<int>(i) + mChoiceCount;
         }
-        String choice(song.GetName());
-        choices.push_back(choice);
+        choices.push_back(String(songs[i].GetName()));
     }
-    if (nReset != 0 || strcmp(selected.c_str(), TheLocale.Localize(kRandomChoice, true)) == 0) {
-        nSelected = 0;
-    } else if (strcmp(selected.c_str(), TheLocale.Localize(kCustomChoice, true)) == 0) {
+    if (bReset != 0) {
+        nSelected = kRandomChoice;
+    } else if (std::strcmp(selected.c_str(), TheLocale.Localize(kRandomToken, true)) == 0) {
+        nSelected = kRandomChoice;
+    } else if (std::strcmp(selected.c_str(), TheLocale.Localize(kCustomToken, true)) == 0) {
         nSelected = mCustomChoice;
     }
+
     pList->SetSongs(choices, mChoiceCount);
     pList->SetSelected(nSelected);
-    mDuelPlayersChoice = 0;
-    mLastPlayersChoice = static_cast<int>(mPlayerChoices.size()) - 1;
+    mDuelNumPlayers = 0;
+    mLastNumPlayers = static_cast<int>(mPlayerCounts.size()) - 1;
 }
 
 void NetHostingScreen::UpdateLabels() {
@@ -258,18 +253,19 @@ void NetHostingScreen::UpdateLabels() {
     UIComponent *pPowerup = pPanel->FindComponent(kPowerupComponent, false);
     if (mMode != 0) {
         pPowerup->SetState(UIComponent::kStateDisabled, false);
-    } else {
-        EnableChoice(pPowerup);
+    } else if (pPowerup->GetState() != UIComponent::kStateSelected) {
+        pPowerup->SetState(UIComponent::kStateNormal, false);
     }
-    UIComponent *pPlayers = pPanel->FindComponent(kPlayersComponent, false);
+
+    UIComponent *pPlayers = pPanel->FindComponent(kNumPlayersComponent, false);
     if (mMode == mDuelMode) {
-        mNetPlayersChoice = mDuelPlayersChoice;
+        mNumPlayers = mDuelNumPlayers;
         pPlayers->SetState(UIComponent::kStateDisabled, false);
-    } else if (!mIsEdit) {
-        EnableChoice(pPlayers);
+    } else if (mIsEdit == 0 && pPlayers->GetState() != UIComponent::kStateSelected) {
+        pPlayers->SetState(UIComponent::kStateNormal, false);
     }
-    pPlayers->SetText(mPlayerChoices[mNetPlayersChoice].c_str());
-    pPowerup->SetText(mPowerupChoices[mPowerupChoice].c_str());
+    pPlayers->SetText(mPlayerCounts[mNumPlayers].c_str());
+    pPowerup->SetText(mPowerups[mPowerup].c_str());
 }
 
 bool NetHostingScreen::DispatchPriv(Message *pMsg) {
@@ -290,8 +286,7 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (pMsg->mButton != kPadCross) {
         return NetParamsScreen::HandleSelect(pMsg);
     }
-    if (strcmp(pMsg->mComponent->mName, kHostComponent) != 0) {
-        // The binary also tests for `cursor`, with the same result on both paths.
+    if (std::strcmp(pMsg->mComponent->mName, kHostComponent) != 0) {
         UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
         pPanel->SetFocus(pPanel->FindComponent(kHostComponent, false), kPadNone);
         return NetParamsScreen::HandleSelect(pMsg);
@@ -310,60 +305,61 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     } else {
         TheGameDb->SetSkillLevel(mSkill);
     }
-    TheGameDb->SetPowerupLevel(mPowerupChoice);
-    TheGameDb->SetNetPlayers(mNetPlayersChoice + kMinNetPlayers);
+    TheGameDb->SetPowerupLevel(mPowerup);
+    TheGameDb->SetMaxPlayers(mNumPlayers + kMinPlayers);
 
     auto *pList =
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
-    int nSelected = pList->mSelected;
-    if (nSelected == mCustomChoice && nSelected < mChoiceCount) {
-        TheUI.GotoScreen(mIsEdit ? "load_remix_list_net_edit" : "load_remix_list_net");
+    int nSong = pList->mSelected;
+    if (nSong == mCustomChoice && nSong < mChoiceCount) {
+        TheUI.GotoScreen(mIsEdit != 0 ? kEditRemixListScreen : kRemixListScreen);
         return NetParamsScreen::HandleSelect(pMsg);
     }
     TheGameDb->SetLoadRemix(false);
-    if (nSelected == 0) {
-        nSelected = RandomInt(mChoiceCount, static_cast<int>(pList->mSongs.size()));
+    if (nSong == kRandomChoice) {
+        nSong = RandomInt(mChoiceCount, static_cast<int>(pList->mSongs.size()));
     }
-    TheGameDb->SetSong(pList->mSongs[nSelected].c_str());
+    TheGameDb->SetSong(pList->mSongs[nSong].c_str());
+
     if (mMode == mRemixMode) {
         RemixInfo info;
-        strncpy(info.mName, "Untitled", kNameCopyLength);
+        std::strncpy(info.mName, kUntitled, kRemixInfoNameSize - 1);
         info.mSource = RemixInfo::kSourceNone;
         info.mDataSize = 0;
         for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
-            strncpy(info.mCreators[i], TheGameDb->GetPlayerName(i), kCreatorCopyLength);
+            std::strncpy(info.mCreators[i], TheGameDb->GetPlayerName(i), kRemixInfoCreatorSize - 1);
         }
         info.mDate.ReadClock();
         info.mReadOnly = 0;
-        strcpy(info.mSong, pList->mSongs[nSelected].c_str());
+        std::strcpy(info.mSong, pList->mSongs[nSong].c_str());
         TheGameDb->SetRemix(&info);
         TheGameDb->SetRemixReadOnly(0);
     }
-    if (mIsEdit) {
+
+    if (mIsEdit != 0) {
         ChatMsg::Send(
-            kNoticeChannel, kEveryConsole, TheLocale.Localize("host_done_edit_msg", true), kEcho);
+            kNoticeChannel, kEveryConsole, TheLocale.Localize(kDoneEditToken, true), kEcho);
         if (TheNetLaunchpad != nullptr) {
             TheNetLaunchpad->EndEdit();
         }
         TheUI.GotoScreen(kLaunchpadScreen);
     } else {
-        TheUI.GotoScreen("net_host_attempt");
+        TheUI.GotoScreen(kHostAttemptScreen);
     }
     return NetParamsScreen::HandleSelect(pMsg);
 }
 
 bool NetHostingScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
     const char *pszComponent = pMsg->mComponent->mName;
-    if (strcmp(pszComponent, kPlayersComponent) == 0) {
-        if (pMsg->mButton == kPadDLeft || pMsg->mButton == kPadDRight) {
-            mNetPlayersChoice = StepEntry(
-                mNetPlayersChoice, static_cast<int>(mPlayerChoices.size()), pMsg->mButton);
+    const int nButton = pMsg->mButton;
+    if (std::strcmp(pszComponent, kNumPlayersComponent) == 0) {
+        if (nButton == kPadDLeft || nButton == kPadDRight) {
+            mNumPlayers = StepChoice(mNumPlayers, static_cast<int>(mPlayerCounts.size()), nButton);
         }
         UpdateLabels();
-    } else if (strcmp(pszComponent, kPowerupComponent) == 0) {
-        if (pMsg->mButton == kPadDLeft || pMsg->mButton == kPadDRight) {
-            mPowerupChoice =
-                StepEntry(mPowerupChoice, static_cast<int>(mPowerupChoices.size()), pMsg->mButton);
+    } else if (std::strcmp(pszComponent, kPowerupComponent) == 0) {
+        if (nButton == kPadDLeft || nButton == kPadDRight) {
+            mPowerup = StepChoice(mPowerup, static_cast<int>(mPowerups.size()), nButton);
         }
         UpdateLabels();
     }
@@ -375,8 +371,8 @@ bool NetHostingScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadTriangle && mIsEdit) {
-            TheGameDb->SetGameParams(&mParams);
+        if (pMsg->mButton == kPadTriangle && mIsEdit != 0) {
+            TheGameDb->SetGameParams(&mSavedParams);
         }
     }
     return NetParamsScreen::HandleJoypad(pMsg);

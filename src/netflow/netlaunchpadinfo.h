@@ -13,5 +13,14 @@ struct NetLaunchpadInfo {
     int mLaunchpadId;      /*!< The first identifier NetJoinLPadScreen joins the session by. */
     int mLaunchpadWorld;   /*!< The second identifier NetJoinLPadScreen joins the session by. */
     NetGameParams mParams; /*!< The settings of the game. */
-    int mReserved58[3];    // +0x58, not yet recovered.
+    int mConnectionType;   /*!< The kind of network connection of the host. */
+    int mPlayerCount;      /*!< The number of players in the session. */
+    int mStatus;           /*!< One of Status. */
+
+    /** Values of mStatus. */
+    enum Status {
+        kStatusOpen = 0, /*!< The session takes players. */
+        kStatusBusy = 1, /*!< The session is playing. */
+        kStatusFull = 2, /*!< The session has no room. */
+    };
 };

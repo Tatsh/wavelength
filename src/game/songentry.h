@@ -76,6 +76,16 @@ public:
     const char *GetArtistShort() const;
 
     /**
+     * Report the localised shortest form of the artist, the token `<name>_ARTIST_SHORTEST`, or
+     * GetArtistShort() when the locale lacks the token.
+     *
+     * @return The shortest artist.
+     * @ghidraAddress NTSC-U/C: 0x0027d120
+     * @ghidraAddress PAL: 0x00286a38
+     */
+    const char *GetArtistShortest() const;
+
+    /**
      * Report the localised biography, the token `<name>_BIO`.
      *
      * @return The biography.

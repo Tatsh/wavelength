@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "game/campaign.h"
-#include "game/globalsettings.h"
+#include "game/gameoptions.h"
 #include "game/remixinfo.h"
 #include "memcard/mccardstatustask.h"
 #include "memcard/mcdeletefreqtask.h"
@@ -174,7 +174,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0015ca40
      * @ghidraAddress PAL: 0x0015e230
      */
-    void SaveSettings(MemcardUser *pUser, int nSlot, GlobalSettings *pSettings, int nOverwrite);
+    void SaveSettings(MemcardUser *pUser, int nSlot, GameOptions *pSettings, int nOverwrite);
 
     /**
      * Start loading the settings into mSettings. MemcardUser::OnSettingsLoaded() learns the
@@ -267,7 +267,7 @@ public:
     MemcardSerialTask *mCurrentTask;       /*!< The running task, or null. */
     std::vector<Campaign> mProfiles;       /*!< The profiles LoadFreqs() loads. */
     std::vector<RemixInfo> mRemixInfos;    /*!< The descriptions ListRemixes() reads. */
-    GlobalSettings mSettings;              /*!< The settings LoadSettings() loads. */
+    GameOptions mSettings;                 /*!< The settings LoadSettings() loads. */
     std::vector<int> mReserved80;          // +0x80, emptied by ClearResults() and never read.
 
 private:

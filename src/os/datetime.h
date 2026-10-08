@@ -49,6 +49,15 @@ public:
      */
     void FormatMonthDay(String &text) const;
 
+    /**
+     * Write the date as "MM/DD/YY". The name is inferred.
+     *
+     * @param text Receives the date.
+     * @ghidraAddress NTSC-U/C: 0x00288b00
+     * @ghidraAddress PAL: 0x002923b0
+     */
+    void FormatShortDate(String &text) const;
+
     unsigned char mSecond; /*!< The second, 0 to 59. */
     unsigned char mMinute; /*!< The minute, 0 to 59. */
     unsigned char mHour;   /*!< The hour, 0 to 23. */

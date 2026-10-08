@@ -34,7 +34,7 @@ public:
     String mName;          /*!< The account name. */
     int mConnectionType;   /*!< The kind of network connection, 0 to 3. */
     int mRank;             /*!< The position in the ranking. */
-    int mReserved20;       // +0x20, not yet identified.
+    int mMuted;            /*!< Non-zero when this console mutes the player's chat. */
     int mReserved24;       // +0x24, not yet identified.
     int mReserved28;       // +0x28, not yet identified. IsNewbie() reads it.
     int mGames;            /*!< The number of online games played. */

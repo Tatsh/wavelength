@@ -161,15 +161,6 @@ public:
     void SetRemixActive(int nActive);
 
     /**
-     * Set mNetPlayers.
-     *
-     * @param nNetPlayers The number of players of an online game.
-     * @ghidraAddress NTSC-U/C: 0x0026ec70
-     * @ghidraAddress PAL: 0x00278810
-     */
-    void SetNetPlayers(int nNetPlayers);
-
-    /**
      * Set mRemixName.
      *
      * @param pszName The name of the saved remix played.
@@ -525,6 +516,15 @@ public:
     void SetCommunity(int nCommunity);
 
     /**
+     * Set mMaxPlayers.
+     *
+     * @param nMaxPlayers The number of players the session takes.
+     * @ghidraAddress NTSC-U/C: 0x0026ec70
+     * @ghidraAddress PAL: 0x00278810
+     */
+    void SetMaxPlayers(int nMaxPlayers);
+
+    /**
      * Choose the demo to play, or none.
      *
      * @param pszDemo The demo recording, or null for none.
@@ -770,7 +770,7 @@ public:
     int mPowerupLevel;   /*!< Index into GameConfig::mPowerupProbMulti. +0x4c */
     int mRuleSet;        /*!< `rule_set`, one of RuleSet. +0x50 */
     int mCommunity;      /*!< `community`, one of Community. +0x54 */
-    int mNetPlayers;     /*!< The number of players of an online game. +0x58 */
+    int mMaxPlayers;     /*!< The number of players an online session takes. +0x58 */
     String mArena;       /*!< The arena of the game. +0x5c */
     int mReserved70[6];  // +0x70, not yet recovered.
     int mWinSequence;    /*!< Whether the campaign win sequence runs. +0x88 */

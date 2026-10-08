@@ -6,13 +6,20 @@ set(WAVELENGTH_MET_SRCS
     bootscreen.cpp
     bossjourneyscreen.cpp
     bossunlockscreen.cpp
+    cardsconnectedscreen.cpp
+    chatpanel.cpp
+    chattextentry.cpp
     choosememcardscreen.cpp
     controllerconfigscreen.cpp
     controllerpanel.cpp
+    copyfreqscreen.cpp
     creditsscreen.cpp
+    deletefreqscreen.cpp
+    deleteremixscreen.cpp
     dialogpanel.cpp
     errorscreen.cpp
     focuschangepanel.cpp
+    formatscreen.cpp
     freestylelaptipscreen.cpp
     freqconfirmscreen.cpp
     freqcopydelscreen.cpp
@@ -31,14 +38,20 @@ set(WAVELENGTH_MET_SRCS
     gizmo.cpp
     helppanel.cpp
     introscreen.cpp
+    jukeboxscreen.cpp
     keyboardkey.cpp
     keyboardpanel.cpp
     keyboardrequest.cpp
     keyboardscreen.cpp
     launchmtvpanel.cpp
     launchscreen.cpp
+    listremixesscreen.cpp
+    loadfreqscreen.cpp
+    loadnetconfigsscreen.cpp
+    loadremixscreen.cpp
     mainoptionsscreen.cpp
     marketingscreen.cpp
+    mccheckscreen.cpp
     mcdialogpanel.cpp
     metaarenascreen.cpp
     metagame.cpp
@@ -53,12 +66,18 @@ set(WAVELENGTH_MET_SRCS
     mixmidibuilder.cpp
     mixtrack.cpp
     modescreen.cpp
+    msgerrorscreen.cpp
     multiendgamescreen.cpp
     multifreqselectscreen.cpp
     multigamestatspanel.cpp
+    multiloadfreqscreen.cpp
     multisetupremixsavescreen.cpp
+    nameerrorscreen.cpp
+    needsdialogscreen.cpp
+    netbuttonpanel.cpp
     netchangepassword.cpp
     netchangepasswordscreen.cpp
+    netchooseiconfigscreen.cpp
     netcreateaccount.cpp
     netcreateconfigscreen.cpp
     netcreateuserscreen.cpp
@@ -69,8 +88,11 @@ set(WAVELENGTH_MET_SRCS
     neteulascreen.cpp
     netflashupdate.cpp
     netfoundplayerpanel.cpp
+    netgetdownloadsscreen.cpp
     nethostattemptscreen.cpp
     nethostingscreen.cpp
+    nethostlpadbuttonpanel.cpp
+    netinetconnect.cpp
     netinetdisconnect.cpp
     netjoinlpadscreen.cpp
     netlaunchpadquitscreen.cpp
@@ -81,9 +103,18 @@ set(WAVELENGTH_MET_SRCS
     netlpadgamepanel.cpp
     netlpadplayerpanel.cpp
     netlpadscreen.cpp
+    netmainlaunchpadslist.cpp
+    netmainlaunchpadspanel.cpp
+    netmainlobbieslist.cpp
+    netmainlobbiespanel.cpp
+    netmainpanel.cpp
+    netmainplayerslist.cpp
+    netmainplayerspanel.cpp
+    netmainscreen.cpp
     netnewchatroomscreen.cpp
     netparamsscreen.cpp
     netpasswordscreen.cpp
+    netrankedplayerslist.cpp
     netrankedplayerspanel.cpp
     netrankingscreen.cpp
     netreadonlywarnscreen.cpp
@@ -92,6 +123,7 @@ set(WAVELENGTH_MET_SRCS
     netserverselscreen.cpp
     netsongpanel.cpp
     netsorteddatapanel.cpp
+    netsortedlaunchpadslist.cpp
     netsortedlaunchpadspanel.cpp
     netsortedscreen.cpp
     netswitchlobbyscreen.cpp
@@ -103,11 +135,14 @@ set(WAVELENGTH_MET_SRCS
     pausescreen.cpp
     playersearchresultsscreen.cpp
     playersearchsetupscreen.cpp
+    playlist.cpp
+    playlistpanel.cpp
     powerupscreen.cpp
     prelaunchscreen.cpp
     puptipsscreen.cpp
     readonlycheckscreen.cpp
     readonlysavescreen.cpp
+    redbookplaybackscreen.cpp
     remixcontrollerscreen.cpp
     remixcopydelscreen.cpp
     remixcreatemodescreen.cpp
@@ -119,21 +154,29 @@ set(WAVELENGTH_MET_SRCS
     remixsongscreen.cpp
     remixtypescreen.cpp
     saveeditedfreqscreen.cpp
+    saveerrorscreen.cpp
     savefreqscreen.cpp
+    saveremixscreen.cpp
+    savesettingsscreen.cpp
     selloadedfreqscreen.cpp
+    selremixdownloadscreen.cpp
+    selremixuploadscreen.cpp
     setupnamescreen.cpp
     setupnewchatroomscreen.cpp
     setupremixsavescreen.cpp
     shareremixscreen.cpp
     soloendgamescreen.cpp
     sologamestatspanel.cpp
+    sololosestatspanel.cpp
     sololosetipspanel.cpp
     solowinstatspanel.cpp
     songdecryptscreen.cpp
     songpicpanel.cpp
     songpreview.cpp
     songsellist.cpp
+    spaceerrorscreen.cpp
     tipsscreen.cpp
+    transitionerrorscreen.cpp
     transitionmusic.cpp
     transitionscreen.cpp
     unlockavatarpanel.cpp

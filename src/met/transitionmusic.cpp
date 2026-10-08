@@ -100,6 +100,11 @@ private:
 // NTSC-U/C: 0x003af8b0
 LagRamp *sLagRamp;
 
+// The unit's static initialiser constructs and destroys sTracks, and the global constructor and
+// the global destructor of the unit run the initialiser.
+// NTSC-U/C: 0x00197468, PAL: 0x0019e988
+// NTSC-U/C: 0x001974c8, PAL: 0x0019e9e8
+// NTSC-U/C: 0x001974e8, PAL: 0x0019ea08
 // NTSC-U/C: 0x004368b8
 std::vector<MixTrack *> sTracks;
 

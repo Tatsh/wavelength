@@ -15,6 +15,18 @@
 namespace {
 
 constexpr char kPanelFormat[] = "m_g_s_f_%dpl_0%d";
+constexpr char kDuelBackScreen[] = "m_mode";
+constexpr char kBackScreen[] = "m_player";
+constexpr char kDefaultNameFormat[] = "default_name_%d";
+constexpr char kNoName[] = "";
+constexpr char kDuelDoneScreen[] = "multifreq2multiskill_duel";
+constexpr char kRemixDoneScreen[] = "multifreq2multimode_remix";
+constexpr char kDoneScreen[] = "multifreq2multiskill";
+
+FreqSelPanel *FindFreqSelPanel(int nPlayer) {
+    const char *pszPanel = FormatString(kPanelFormat, TheGameDb->GetNumPlayers(), nPlayer + 1);
+    return dynamic_cast<FreqSelPanel *>(TheUI.FindPanel(pszPanel, false));
+}
 
 } // namespace
 
@@ -85,24 +97,22 @@ bool MultiFreqSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed != 0 && pMsg->mButton == kPadTriangle) {
         if (mConfirmed[nPad]) {
             mConfirmed[nPad] = false;
-            const char *pszPanel = FormatString(kPanelFormat, TheGameDb->GetNumPlayers(), nPad + 1);
-            dynamic_cast<FreqSelPanel *>(TheUI.FindPanel(pszPanel, false))->SetChosen(false);
+            FindFreqSelPanel(nPad)->SetChosen(false);
             FxMidi::PlayBack();
             return FreqScreen::HandleJoypad(pMsg);
         }
         bool bAnyConfirmed = false;
         for (int i = 0; i < mNumPlayers; ++i) {
-            bAnyConfirmed = bAnyConfirmed || mConfirmed[i];
+            bAnyConfirmed |= mConfirmed[i];
         }
         if (!bAnyConfirmed) {
-            TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetDuel ? "m_mode" : "m_player");
+            TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetDuel ? kDuelBackScreen :
+                                                                           kBackScreen);
         }
         return false;
     }
     if (!mConfirmed[nPad]) {
-        const char *pszPanel = FormatString(kPanelFormat, TheGameDb->GetNumPlayers(), nPad + 1);
-        // Yes, the binary discards the result of the panel's Dispatch().
-        dynamic_cast<FreqSelPanel *>(TheUI.FindPanel(pszPanel, false))->Dispatch(pMsg);
+        FindFreqSelPanel(nPad)->Dispatch(pMsg); // Yes, the binary discards the result.
     }
     return FreqScreen::HandleJoypad(pMsg);
 }
@@ -110,22 +120,24 @@ bool MultiFreqSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 void MultiFreqSelectScreen::CheckDone() {
     bool bAllConfirmed = true;
     for (int i = 0; i < mNumPlayers; ++i) {
-        bAllConfirmed = bAllConfirmed && mConfirmed[i];
+        bAllConfirmed &= mConfirmed[i];
     }
     if (!bAllConfirmed) {
         return;
     }
     for (int i = 0; i < mNumPlayers; ++i) {
-        if (strcmp(TheGameDb->GetProfile(i)->mName.c_str(), "") == 0) {
-            Campaign *pProfile = TheGameDb->GetProfile(i);
-            pProfile->mName = TheLocale.Localize(FormatString("default_name_%d", i + 1), true);
+        if (std::strcmp(TheGameDb->GetProfile(i)->mName.c_str(), kNoName) == 0) {
+            TheGameDb->GetProfile(i)->mName =
+                TheLocale.Localize(FormatString(kDefaultNameFormat, i + 1), true);
         }
     }
+    const char *pszScreen;
     if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
-        TheUI.GotoScreen("multifreq2multiskill_duel");
+        pszScreen = kDuelDoneScreen;
     } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
-        TheUI.GotoScreen("multifreq2multimode_remix");
+        pszScreen = kRemixDoneScreen;
     } else {
-        TheUI.GotoScreen("multifreq2multiskill");
+        pszScreen = kDoneScreen;
     }
+    TheUI.GotoScreen(pszScreen);
 }

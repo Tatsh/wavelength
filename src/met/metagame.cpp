@@ -179,7 +179,6 @@
 // The unit's static initialiser at NTSC-U/C: 0x00169300, PAL: 0x0016c488, and its global
 // constructor at NTSC-U/C: 0x00169340, PAL: 0x0016c4c8, construct and destroy it.
 Metagame TheMetagame;
-Scheduler TheMetaScheduler;
 
 namespace {
 

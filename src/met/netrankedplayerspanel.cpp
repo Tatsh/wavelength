@@ -40,7 +40,7 @@ bool NetRankedPlayersPanel::DispatchPriv(Message *pMsg) {
 }
 
 bool NetRankedPlayersPanel::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
-    if (mData == nullptr) {
+    if (!mLoaded) {
         return false;
     }
 

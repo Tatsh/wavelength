@@ -3,14 +3,15 @@
 #include "met/netparamsscreen.h"
 #include "script/dataarray.h"
 #include "ui/uicomponentselectmsg.h"
+#include "ui/uiscreen.h"
 
 /**
- * The screen where a player chooses the mode, the skill, and the song of the online games to
- * search for.
+ * Screen where the player chooses the mode, the skill, and the song of the online games to search
+ * for, each of which may be any.
  *
- * The RTTI records the class as deriving from NetParamsScreen, and its vtable is at `0x003cdbc8`.
- * The metagame registers the class for the screen type `net_search_screen`. Every list ends with
- * the choice of any entry. The cross button on `search` shows the matching games on `fn_sorted`.
+ * The RTTI records the class as deriving from NetParamsScreen, and the vtable is at `0x003cdbc8`.
+ * The class adds no members. The destructor at `0x0035b6f0` (PAL `0x003c9248`) is
+ * compiler-generated. The search opens `fn_sorted`.
  */
 class NetSearchScreen : public NetParamsScreen {
 public:
@@ -21,12 +22,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001841d8
      * @ghidraAddress PAL: 0x00188418
      */
-    explicit NetSearchScreen(DataArray *pData);
+    explicit NetSearchScreen(DataArray *pData) : NetParamsScreen(pData) {
+    }
 
     /**
      * Create a screen from its script description.
-     *
-     * The metagame registers the routine for the screen type `net_search_screen`.
      *
      * @param pData The script description.
      * @return The new screen.
@@ -38,7 +38,7 @@ public:
     }
 
     /**
-     * Route a chosen button, and pass on every other message.
+     * Route a choice to HandleSelect(), or any other message to NetParamsScreen.
      *
      * @param pMsg The message.
      * @return Whether the message was handled.
@@ -48,17 +48,18 @@ public:
     bool DispatchPriv(Message *pMsg) override;
 
     /**
-     * Fill the list of modes, choose any mode and any skill, and start the entry.
+     * List the modes with `param_any` last, and choose any mode and any skill.
      *
-     * @param pPrevScreen The screen this one replaces, or null.
-     * @param fTime The front-end time in milliseconds.
+     * @param pPrevScreen The screen that is exiting.
+     * @param fTime The time.
      * @ghidraAddress NTSC-U/C: 0x00184210
      * @ghidraAddress PAL: 0x00188450
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
     /**
-     * Fill the list of skills of the chosen mode, and move the chosen skill along with the list.
+     * List the skills of the chosen mode with `param_any` last, keeping the chosen skill where the
+     * lists differ.
      *
      * @ghidraAddress NTSC-U/C: 0x00184ad0
      * @ghidraAddress PAL: 0x00188d10
@@ -66,18 +67,21 @@ public:
     void OnModeChanged() override;
 
     /**
-     * Fill the song list with the choice of every song and the songs of the chosen mode and
-     * skill, and select the song chosen before.
+     * List `search_all` and the songs of the chosen mode and skill, keeping the song already
+     * selected.
      *
-     * @param nReset Not read.
+     * The entry of that song counts the entries before the songs as the previous listing left
+     * them.
+     *
+     * @param bReset Not read.
      * @ghidraAddress NTSC-U/C: 0x00185cb8
      * @ghidraAddress PAL: 0x00189ef8
      */
-    void OnChoiceChanged(int nReset) override;
+    void OnChoiceChanged(int bReset) override;
 
     /**
-     * Give the search to `fn_sorted` and go there when `search` is chosen with the cross button.
-     * Any other button chosen with the cross button moves the focus back to `search`.
+     * Search with the choices from `search`, or move the focus to `search` from any other
+     * component.
      *
      * @param pMsg The message.
      * @return The result of NetParamsScreen::HandleSelect().

@@ -113,12 +113,12 @@ public:
     virtual void AddLadderListener(MsgSink *pSink, int nAccount) = 0;
 
     /**
-     * Mark or unmark a player as a friend.
+     * Mute or unmute the chat of a player.
      *
      * @param nAccount The account of the player.
-     * @param bFriend Whether the player is a friend.
+     * @param bMuted Whether the player is muted.
      */
-    virtual void SetFriend(int nAccount, bool bFriend) = 0;
+    virtual void SetMuted(int nAccount, bool bMuted) = 0;
 
     /**
      * Start listing the launchpads of the lobby.
