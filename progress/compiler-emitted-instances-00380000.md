@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00380000` to `0x00390000`
 
-35 of 163 routines done.
+39 of 163 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -22,7 +22,7 @@ preliminary.
 | `ReadRenderObjectHandleList`                           |        :x:         |      1 |    360 | `0x00387908` | `0x003f6010` | `void * ReadRenderObjectHandleList(void * pStream, void * pListOwner)`                                                 |
 | `ReadRndLightHandleListFromNames`                      |        :x:         |      1 |    360 | `0x00380e68` | `0x003ef580` | `undefined8 ReadRndLightHandleListFromNames(void * pStream, void * pListOwner)`                                        |
 | `ReadDrawableHandleListFromNames`                      | :white_check_mark: |      1 |    360 | `0x00380780` | `0x003eee98` | `undefined8 ReadDrawableHandleListFromNames(undefined8 pStream, undefined8 pListOwner)`                                |
-| `ReadMatCharMapFromStream`                             |        :x:         |      1 |    340 | `0x00382110` | `0x003f0828` | `undefined8 ReadMatCharMapFromStream(undefined8 pStream, undefined8 pTree)`                                            |
+| `ReadMatCharMapFromStream`                             | :white_check_mark: |      1 |    340 | `0x00382110` | `0x003f0828` | `undefined8 ReadMatCharMapFromStream(undefined8 pStream, undefined8 pTree)`                                            |
 | `DeserializeTransformListFromBinary`                   |        :x:         |      1 |    332 | `0x0038ff98` | `0x003fe6a0` | `void * DeserializeTransformListFromBinary(void * pStream, int * pList)`                                               |
 | `WriteRndLinePointVectorBinary`                        |        :x:         |      1 |    312 | `0x00383608` | `0x003f1d10` | `void * WriteRndLinePointVectorBinary(void * pStream, int * pVec)`                                                     |
 | `ReadNestedUshortVectorList`                           |        :x:         |      1 |    304 | `0x0038a4a0` | `0x003f8ba8` | `void * ReadNestedUshortVectorList(void * pStream, void * pVec)`                                                       |
@@ -131,7 +131,7 @@ preliminary.
 | `DeserializeRndMeshVector3RecordBinary`                |        :x:         |      1 |     68 | `0x0038c978` | `0x003fb080` | `void * DeserializeRndMeshVector3RecordBinary(void * pStream, int pRecord)`                                            |
 | `CreateRndMatClone`                                    | :white_check_mark: |      2 |     64 | `0x00384f78` | `0x003f3680` | `void CreateRndMatClone(void * pSrc)`                                                                                  |
 | `InitRndMatAnimKeyframeVectors`                        | :white_check_mark: |      2 |     64 | `0x00388600` | `0x003f6d08` | `void * InitRndMatAnimKeyframeVectors(void * pMatAnim)`                                                                |
-| `CreateRndFontClone`                                   |        :x:         |      1 |     64 | `0x003823b8` | `0x003f0ac0` | `void CreateRndFontClone(undefined8 pSrc)`                                                                             |
+| `CreateRndFontClone`                                   | :white_check_mark: |      1 |     64 | `0x003823b8` | `0x003f0ac0` | `void CreateRndFontClone(undefined8 pSrc)`                                                                             |
 | `TestDrawableListMembership`                           |        :x:         |      3 |     60 | `0x00380230` | `0x003ee948` | `bool TestDrawableListMembership(int pListOwner, int * pValue)`                                                        |
 | `TestRndLightListMembership`                           |        :x:         |      1 |     60 | `0x003811d0` | `0x003ef8e8` | `bool TestRndLightListMembership(int pListOwner, int * pValue)`                                                        |
 | `RndGeneratorInstanceFinalizeStub`                     |        :x:         |      1 |      8 | `0x00382f90` | `0x003f1698` | `void RndGeneratorInstanceFinalizeStub(void)`                                                                          |
@@ -140,8 +140,6 @@ preliminary.
 | `RndCursor__GetRndCursorClassName`                     |        :x:         |      0 |      1 | `0x00380180` | `0x003ee898` | `undefined RndCursor__GetRndCursorClassName()`                                                                         |
 | `RndEnviron__DestroyRndEnvironClass`                   |        :x:         |      0 |      1 | `0x003812c8` | `0x003ef928` | `undefined RndEnviron__DestroyRndEnvironClass()`                                                                       |
 | `RndEnviron__SelectRndEnvironAsActive`                 |        :x:         |      0 |      1 | `0x003812a0` |              | `undefined RndEnviron__SelectRndEnvironAsActive()`                                                                     |
-| `RndFont__DestroyRndFontObject`                        |        :x:         |      0 |      1 | `0x003822f0` | `0x003f0970` | `void RndFont__DestroyRndFontObject(RndObjectBase * pThis, ulong dwFlags)`                                             |
-| `RndFont__GetRndFontClassFactoryDescriptor`            |        :x:         |      0 |      1 | `0x003823a8` |              | `void * RndFont__GetRndFontClassFactoryDescriptor(void)`                                                               |
 | `RndGenerator__DestroyRndGeneratorObject`              |        :x:         |      0 |      1 | `0x00382708` | `0x003f0d48` | `void RndGenerator__DestroyRndGeneratorObject(int * pThis, ulong dwFlags)`                                             |
 | `RndGenerator__GetRndGeneratorClassName`               |        :x:         |      0 |      1 | `0x00382b68` |              | `char * RndGenerator__GetRndGeneratorClassName(void)`                                                                  |
 | `RndLight__GetRndLightClassName`                       |        :x:         |      0 |      1 | `0x00382d48` | `0x003f1450` | `char * RndLight__GetRndLightClassName(void)`                                                                          |
@@ -157,6 +155,8 @@ preliminary.
 | `GetRndMeshClassNamePtr`                               | :white_check_mark: |      0 |      1 | `0x0038b5e8` | `0x003f9cf0` | `char * * GetRndMeshClassNamePtr(void)`                                                                                |
 | `RndDrawableNopVirtual`                                | :white_check_mark: |      0 |      1 | `0x003809a0` |              | `undefined RndDrawableNopVirtual()`                                                                                    |
 | `RndDrawable__DestroyRndDrawableClass`                 | :white_check_mark: |      0 |      1 | `0x003809b8` | `0x003ef060` | `undefined RndDrawable__DestroyRndDrawableClass()`                                                                     |
+| `RndFont__DestroyRndFontObject`                        | :white_check_mark: |      0 |      1 | `0x003822f0` | `0x003f0970` | `void RndFont__DestroyRndFontObject(RndObjectBase * pThis, ulong dwFlags)`                                             |
+| `RndFont__GetRndFontClassFactoryDescriptor`            | :white_check_mark: |      0 |      1 | `0x003823a8` |              | `void * RndFont__GetRndFontClassFactoryDescriptor(void)`                                                               |
 | `RndMatAnim__DestroyRndMatAnimInstance`                | :white_check_mark: |      0 |      1 | `0x003886b0` | `0x003f6d48` | `void RndMatAnim__DestroyRndMatAnimInstance(int * pThis, ulong dwFlags)`                                               |
 | `RndMatAnim__GetRndMatAnimClassName`                   | :white_check_mark: |      0 |      1 | `0x00388ae8` |              | `char * RndMatAnim__GetRndMatAnimClassName(void)`                                                                      |
 | `RndMat__DestroyRndMatObject`                          | :white_check_mark: |      0 |      1 | `0x00384ea8` | `0x003f35b0` | `void RndMat__DestroyRndMatObject(RndObjectBase * pThis, ulong dwFlags)`                                               |
