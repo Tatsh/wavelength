@@ -167,6 +167,32 @@ int GzipDecompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
 int GzipInflatedSize(const void *pSource, int nSourceLength);
 
 /**
+ * Deflate bytes in memory into a gzip member, naming the source `(in-memory)`.
+ *
+ * The name is inferred.
+ *
+ * @param pSource The bytes.
+ * @param nSourceLength The number of bytes.
+ * @param pDest The destination, which may be the source.
+ * @return The length of the member.
+ * @ghidraAddress NTSC-U/C: 0x00283648
+ */
+int GzipCompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
+
+/**
+ * Write the name of the compressed copy of a file.
+ *
+ * The name is inferred.
+ *
+ * @param pszFile The file.
+ * @param bGenerated Non-zero for the copy under `gen` beside the file, `<dir>/gen/<base>.<ext>.gz`.
+ *                   Otherwise the copy is the file with `.gz` appended.
+ * @param pszOut Receives the name.
+ * @ghidraAddress NTSC-U/C: 0x002836b8
+ */
+void GzipFileName(const char *pszFile, int bGenerated, char *pszOut);
+
+/**
  * Report the stored length of a file.
  *
  * The path is opened, measured by seeking to its end, rewound, and closed. A gzip file reports its

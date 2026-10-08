@@ -4,13 +4,42 @@
 #include <strings.h>
 
 #include "os/debug.h"
+#include "os/filestream.h"
 #include "os/fileutil.h"
 #include "os/loadfile.h"
 #include "os/mem.h"
+#include "os/memstream.h"
+#include "os/string.h"
 #include "os/system.h"
+#include "rnd/rndbitmap.h"
 #include "rnd/rndrenderer.h"
 
 namespace {
+
+// The bits per pixel of a bitmap that ResourcePath() widens to 32.
+constexpr int kPackedBpp = 24;
+constexpr int kWideBpp = 32;
+
+// The first mipmap level ResourcePath() looks for.
+constexpr int kFirstMip = 1;
+
+// The longest name of a cached resource.
+constexpr int kResourcePathSize = 256;
+
+// The files beside a bitmap that make its cached copy stale when newer.
+// NTSC-U/C: 0x003b0a08
+const char *sBitmapParts[] = {"a", "m1", "m2", "m3", "m4", "m5", nullptr};
+
+// The name ResourcePath() reports.
+// NTSC-U/C: 0x0043c698
+char sResourcePath[kResourcePathSize];
+
+// Read the modification time of a file as the one 64-bit word the comparisons use.
+unsigned long long ModifiedTime(const FileStat &stat) {
+    unsigned long long nTime;
+    memcpy(&nTime, stat.mModified, sizeof(nTime));
+    return nTime;
+}
 
 // The budget that lets a synchronous load first finish every queued load.
 constexpr float kFinishQueuedLoadsMs = 1000000.0f;
@@ -155,7 +184,52 @@ const char *RndManager::ResourceTag(const char *pszFile) {
 }
 
 const char *RndManager::ResourcePath(const char *pszFile) {
-    return pszFile;
+    if (strcasecmp(FileGetExt(pszFile), "bmp") != 0) {
+        return pszFile;
+    }
+    GzipFileName(pszFile, 1, sResourcePath);
+    if (UsingCD()) {
+        return sResourcePath;
+    }
+    FileStat stat;
+    if (FileGetStat(pszFile, &stat) < 0) {
+        return nullptr;
+    }
+    unsigned long long nNewest = ModifiedTime(stat);
+    const char *pszPath = FileGetPath(pszFile);
+    const char *pszBase = FileGetBaseName(pszFile);
+    FileStat cached;
+    for (const char **ppszPart = sBitmapParts; *ppszPart != nullptr; ++ppszPart) {
+        if (FileGetStat(FormatString("%s/%s_%s.bmp", pszPath, pszBase, *ppszPart), &stat) >= 0) {
+            const unsigned long long nTime = ModifiedTime(stat);
+            nNewest = nNewest < nTime ? nTime : nNewest;
+        }
+    }
+    if (FileGetStat(sResourcePath, &cached) >= 0 && !(ModifiedTime(cached) < nNewest)) {
+        return sResourcePath;
+    }
+    DebugPrint("Caching %s\n", pszFile);
+    RndBitmap bitmap;
+    RndBitmap converted;
+    if (!bitmap.LoadBmp(pszFile)) {
+        return nullptr;
+    }
+    bitmap.LoadAlpha(FormatString("%s/%s_a.bmp", pszPath, pszBase));
+    for (int nMip = kFirstMip;
+         bitmap.LoadMip(FormatString("%s/%s_m%d.bmp", pszPath, pszBase, nMip));
+         ++nMip) {
+    }
+    converted.Create(bitmap,
+                     bitmap.mBpp == kPackedBpp ? kWideBpp : bitmap.mBpp,
+                     RndBitmap::kOrderRGBA | RndBitmap::kOrderGs);
+    MemStream stream(true);
+    converted.Save(stream);
+    const int nSize =
+        GzipCompressRamToRam(stream.mBuffer.data(), stream.mTell, stream.mBuffer.data());
+    FileMkDir(FileGetPath(sResourcePath));
+    FileStream file(sResourcePath, true, true, kFileFlagsNone);
+    file.Write(stream.mBuffer.data(), nSize);
+    return sResourcePath;
 }
 
 bool RndManager::AcquireTexture(const FilePath &path) {

@@ -63,7 +63,6 @@ public:
      * @return The result of UIScreen::HandleJoypad(), or true between screens.
      * @ghidraAddress NTSC-U/C: 0x0016eb78
      * @ghidraAddress PAL: 0x00171db8
-     * @stub
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 

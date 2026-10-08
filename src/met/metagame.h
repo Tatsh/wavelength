@@ -424,7 +424,6 @@ private:
      *
      * @ghidraAddress NTSC-U/C: 0x001634d8
      * @ghidraAddress PAL: 0x00166250
-     * @stub
      */
     static void RegisterScreenClasses();
 

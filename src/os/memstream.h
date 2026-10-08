@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "os/binstream.h"
 
 /**
@@ -76,4 +78,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003ab248
      */
     bool Fail() override;
+
+    int mFail;                 /*!< Whether a transfer failed. */
+    int mTell;                 /*!< The position, which Write() extends the bytes to reach. */
+    std::vector<char> mBuffer; /*!< The bytes. */
 };

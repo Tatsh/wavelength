@@ -204,7 +204,6 @@ public:
      * @return The file to read, or null when the bitmap cannot be converted.
      * @ghidraAddress NTSC-U/C: 0x00239970
      * @ghidraAddress PAL: 0x002424f0
-     * @stub
      */
     const char *ResourcePath(const char *pszFile);
 
