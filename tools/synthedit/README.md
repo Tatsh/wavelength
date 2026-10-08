@@ -30,6 +30,19 @@ Open `synthedit.dsw` in Visual C++ 6.0 and build the `synthedit` project. The wo
   exports the three functions of the original by the same ordinals, and it writes silent blocks.
   A bank saved with it has the correct layout but no audio.
 
+## Add-in
+
+`synthcontrol` is the VBA source of `synthcontrol.xla`, each module as the add-in stores it. The
+add-in has one empty worksheet besides the code. `synthcontrol/build-xla.vbs` builds the add-in
+with Excel:
+
+```shell
+cscript //nologo build-xla.vbs
+```
+
+The script requires the synthedit control to be registered, and Excel must trust access to the VBA
+project object model.
+
 ## Resources
 
 `synthedit/synthedit.odl` is the type library source, from which MIDL writes `synthedit.tlb`.

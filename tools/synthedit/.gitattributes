@@ -1,4 +1,7 @@
+*.bas text eol=crlf
+*.bmp binary
+*.cls text eol=crlf
 *.dsp text eol=crlf
 *.dsw text eol=crlf
-*.bmp binary
 *.ico binary
+*.vbs text eol=crlf
