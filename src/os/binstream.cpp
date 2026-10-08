@@ -98,7 +98,7 @@ void BinStream::ReadString(String &text) {
     Read(text.mBuffer, nLength);
 }
 
-void BinStream::ReadString(char *pszBuffer) {
+void BinStream::ReadString(char *pszBuffer, int /* nSize */) {
     int nLength;
     ReadEndian(&nLength, sizeof(nLength));
     Read(pszBuffer, nLength);

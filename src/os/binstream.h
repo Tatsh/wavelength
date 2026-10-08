@@ -94,10 +94,13 @@ public:
     /**
      * Read a length-prefixed string into a buffer and terminate it.
      *
+     * The length is not checked against the size of the buffer.
+     *
      * @param pszBuffer Receives the text. The caller provides room for it.
+     * @param nSize The size of the buffer.
      * @ghidraAddress NTSC-U/C: 0x00294468
      */
-    void ReadString(char *pszBuffer);
+    void ReadString(char *pszBuffer, int nSize);
 
     /**
      * Read a length-prefixed string.

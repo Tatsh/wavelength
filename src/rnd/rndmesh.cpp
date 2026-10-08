@@ -108,27 +108,6 @@ void SkipStrips(BinStream &stream) {
     }
 }
 
-void MultiplyPoint(const Transform &xfm, const Vector3 &v, Vector3 &out) {
-    const float fX =
-        xfm.mBasisX.x * v.x + xfm.mBasisY.x * v.y + xfm.mBasisZ.x * v.z + xfm.mTranslation.x;
-    const float fY =
-        xfm.mBasisX.y * v.x + xfm.mBasisY.y * v.y + xfm.mBasisZ.y * v.z + xfm.mTranslation.y;
-    const float fZ =
-        xfm.mBasisX.z * v.x + xfm.mBasisY.z * v.y + xfm.mBasisZ.z * v.z + xfm.mTranslation.z;
-    out.x = fX;
-    out.y = fY;
-    out.z = fZ;
-}
-
-void MultiplyVector(const Transform &xfm, const Vector3 &v, Vector3 &out) {
-    const float fX = xfm.mBasisX.x * v.x + xfm.mBasisY.x * v.y + xfm.mBasisZ.x * v.z;
-    const float fY = xfm.mBasisX.y * v.x + xfm.mBasisY.y * v.y + xfm.mBasisZ.y * v.z;
-    const float fZ = xfm.mBasisX.z * v.x + xfm.mBasisY.z * v.y + xfm.mBasisZ.z * v.z;
-    out.x = fX;
-    out.y = fY;
-    out.z = fZ;
-}
-
 // The inverse of a general transform, by the adjugate of the basis. A singular basis inverts to
 // zero.
 void InvertGeneral(const Transform &xfm, Transform &out) {

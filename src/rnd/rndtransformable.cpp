@@ -33,19 +33,6 @@ constexpr int kRevLastUnusedByte = 4;
 // NTSC-U/C: 0x0043c7e0
 Transform sBillboardXfm;
 
-// A point transformed by the basis rows and the translation of a transform.
-void TransformPoint(const Transform &xfm, const Vector3 &v, Vector3 &out) {
-    const float fX =
-        xfm.mBasisX.x * v.x + xfm.mBasisY.x * v.y + xfm.mBasisZ.x * v.z + xfm.mTranslation.x;
-    const float fY =
-        xfm.mBasisX.y * v.x + xfm.mBasisY.y * v.y + xfm.mBasisZ.y * v.z + xfm.mTranslation.y;
-    const float fZ =
-        xfm.mBasisX.z * v.x + xfm.mBasisY.z * v.y + xfm.mBasisZ.z * v.z + xfm.mTranslation.z;
-    out.x = fX;
-    out.y = fY;
-    out.z = fZ;
-}
-
 void Cross(const Vector3 &a, const Vector3 &b, Vector3 &out) {
     const float fX = a.y * b.z - a.z * b.y;
     const float fY = a.z * b.x - a.x * b.z;
@@ -147,7 +134,7 @@ int RndTransformable::UpdateWorldXfm(RndTransformable *pParent, int bForce) {
         if (pParent == nullptr) {
             mWorldXfm = mLocalXfm;
         } else if (mBillboard == kBillboardLocalRotate) {
-            TransformPoint(pParent->mWorldXfm, mLocalXfm.mTranslation, mWorldXfm.mTranslation);
+            MultiplyPoint(pParent->mWorldXfm, mLocalXfm.mTranslation, mWorldXfm.mTranslation);
             mWorldXfm.mBasisX = mLocalXfm.mBasisX;
             mWorldXfm.mBasisY = mLocalXfm.mBasisY;
             mWorldXfm.mBasisZ = mLocalXfm.mBasisZ;
@@ -156,7 +143,7 @@ int RndTransformable::UpdateWorldXfm(RndTransformable *pParent, int bForce) {
         }
         if (mBillboard == kBillboardNone) {
             const Vector3 negated{-mOrigin.x, -mOrigin.y, -mOrigin.z};
-            TransformPoint(mWorldXfm, negated, mWorldXfm.mTranslation);
+            MultiplyPoint(mWorldXfm, negated, mWorldXfm.mTranslation);
         }
         mDirty = 1;
     }
@@ -390,7 +377,7 @@ const Transform &RndTransformable::BillboardXfm() {
         ScaleRow(xfm.mBasisZ, xfm.mBasisZ, scale.z);
     }
     const Vector3 negated{-mOrigin.x, -mOrigin.y, -mOrigin.z};
-    TransformPoint(xfm, negated, xfm.mTranslation);
+    MultiplyPoint(xfm, negated, xfm.mTranslation);
     return xfm;
 }
 

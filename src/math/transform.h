@@ -20,6 +20,45 @@ struct Transform {
 };
 
 /**
+ * Transform a point by the basis rows and the translation of a transform.
+ *
+ * The binary expands the routine inline. The output may alias the point.
+ *
+ * @param xfm The transform.
+ * @param v The point.
+ * @param out Receives the transformed point.
+ */
+inline void MultiplyPoint(const Transform &xfm, const Vector3 &v, Vector3 &out) {
+    const float fX =
+        xfm.mBasisX.x * v.x + xfm.mBasisY.x * v.y + xfm.mBasisZ.x * v.z + xfm.mTranslation.x;
+    const float fY =
+        xfm.mBasisX.y * v.x + xfm.mBasisY.y * v.y + xfm.mBasisZ.y * v.z + xfm.mTranslation.y;
+    const float fZ =
+        xfm.mBasisX.z * v.x + xfm.mBasisY.z * v.y + xfm.mBasisZ.z * v.z + xfm.mTranslation.z;
+    out.x = fX;
+    out.y = fY;
+    out.z = fZ;
+}
+
+/**
+ * Transform a direction by the basis rows of a transform, without the translation.
+ *
+ * The binary expands the routine inline. The output may alias the direction.
+ *
+ * @param xfm The transform.
+ * @param v The direction.
+ * @param out Receives the transformed direction.
+ */
+inline void MultiplyVector(const Transform &xfm, const Vector3 &v, Vector3 &out) {
+    const float fX = xfm.mBasisX.x * v.x + xfm.mBasisY.x * v.y + xfm.mBasisZ.x * v.z;
+    const float fY = xfm.mBasisX.y * v.x + xfm.mBasisY.y * v.y + xfm.mBasisZ.y * v.z;
+    const float fZ = xfm.mBasisX.z * v.x + xfm.mBasisY.z * v.y + xfm.mBasisZ.z * v.z;
+    out.x = fX;
+    out.y = fY;
+    out.z = fZ;
+}
+
+/**
  * Concatenate two transforms, applying the second and then the first.
  *
  * The result may not alias the second transform. The name is inferred.

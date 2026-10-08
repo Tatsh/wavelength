@@ -42,12 +42,17 @@ set(WAVELENGTH_RND_SRCS
     rndcam.cpp
     rndcollideable.cpp
     rnddrawable.cpp
+    rndenviron.cpp
     rndfont.cpp
+    rndlight.cpp
+    rndline.cpp
     rndmanager.cpp
     rndmat.cpp
     rndmatanim.cpp
     rndmesh.cpp
     rndmeshanim.cpp
+    rndmovie.cpp
+    rndmultimesh.cpp
     rndobject.cpp
     rndrenderer.cpp
     rndtex.cpp
