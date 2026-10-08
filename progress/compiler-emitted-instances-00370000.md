@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00370000` to `0x00380000`
 
-66 of 298 routines done.
+68 of 298 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -247,7 +247,6 @@ preliminary.
 | `PsMovie__GetPsMovieDefaultValue`                                     |        :x:         |      0 |      1 | `0x0037ce68` | `0x003eb598` | `undefined PsMovie__GetPsMovieDefaultValue()`                                                                                      |
 | `RandomCondition__EvaluateRandomCondition`                            |        :x:         |      0 |      1 | `0x003754f0` | `0x003e3c20` | `undefined RandomCondition__EvaluateRandomCondition()`                                                                             |
 | `RndBlur__GetRndBlurClassName`                                        |        :x:         |      0 |      1 | `0x0037eff0` | `0x003ed708` | `undefined RndBlur__GetRndBlurClassName()`                                                                                         |
-| `RndCam__SelectRndCamAsDeferredRenderState`                           |        :x:         |      0 |      1 | `0x0037f230` | `0x003ed948` | `undefined RndCam__SelectRndCamAsDeferredRenderState()`                                                                            |
 | `RuleSetCondition__EvaluateRuleSetCondition`                          |        :x:         |      0 |      1 | `0x003767c8` | `0x003e4ef8` | `undefined RuleSetCondition__EvaluateRuleSetCondition()`                                                                           |
 | `ScoreCondition__EvaluateScoreCondition`                              |        :x:         |      0 |      1 | `0x00376330` | `0x003e4a60` | `undefined ScoreCondition__EvaluateScoreCondition()`                                                                               |
 | `ShortPtr__GetShortPtrConstOne`                                       |        :x:         |      0 |      1 | `0x0037c850` | `0x003eaf80` | `undefined ShortPtr__GetShortPtrConstOne()`                                                                                        |
@@ -259,7 +258,6 @@ preliminary.
 | `UiTextEntryCompleteMsg__DestroyUiTextEntryCompleteMsg`               |        :x:         |      0 |      1 | `0x0037c388` | `0x003eaab8` | `undefined UiTextEntryCompleteMsg__DestroyUiTextEntryCompleteMsg()`                                                                |
 | `UiTextEntryInvalidMsg__DestroyUiTextEntryInvalidMsg`                 |        :x:         |      0 |      1 | `0x0037c4e8` | `0x003eac18` | `undefined UiTextEntryInvalidMsg__DestroyUiTextEntryInvalidMsg()`                                                                  |
 | `UiTransitionCompleteMsg__DestroyUiTransitionCompleteMsg`             |        :x:         |      0 |      1 | `0x0037c260` | `0x003ea990` | `undefined UiTransitionCompleteMsg__DestroyUiTransitionCompleteMsg()`                                                              |
-| `UpdateRndCamWorldMatrix`                                             |        :x:         |      0 |      1 | `0x0037f1f0` | `0x003ed908` | `undefined UpdateRndCamWorldMatrix()`                                                                                              |
 | `GetRndAnimatableFilterConstOne`                                      | :white_check_mark: |      0 |      1 | `0x0037e758` |              | `undefined GetRndAnimatableFilterConstOne()`                                                                                       |
 | `GetRndCamClassTypeInfo`                                              | :white_check_mark: |      0 |      1 | `0x0037f268` | `0x003ed980` | `undefined GetRndCamClassTypeInfo()`                                                                                               |
 | `RndAnimatableFirstOrder__CopyRndAnimatableFirstOrderState`           | :white_check_mark: |      0 |      1 | `0x0037eba0` | `0x003ed2b8` | `undefined RndAnimatableFirstOrder__CopyRndAnimatableFirstOrderState()`                                                            |
@@ -280,6 +278,7 @@ preliminary.
 | `RndAnimatableZeroOrder__GetRndAnimatableZeroOrderKind`               | :white_check_mark: |      0 |      1 | `0x0037ea68` |              | `undefined RndAnimatableZeroOrder__GetRndAnimatableZeroOrderKind()`                                                                |
 | `RndAnimatableZeroOrder__SerializeRndAnimatableZeroOrder`             | :white_check_mark: |      0 |      1 | `0x0037e9b8` |              | `undefined RndAnimatableZeroOrder__SerializeRndAnimatableZeroOrder()`                                                              |
 | `RndAnimatable__DestroyRndAnimatableClass`                            | :white_check_mark: |      0 |      1 | `0x0037ed08` | `0x003ed358` | `undefined RndAnimatable__DestroyRndAnimatableClass()`                                                                             |
+| `RndCam__SelectRndCamAsDeferredRenderState`                           | :white_check_mark: |      0 |      1 | `0x0037f230` | `0x003ed948` | `undefined RndCam__SelectRndCamAsDeferredRenderState()`                                                                            |
 | `RndCollideable__DestroyRndCollideableClass`                          | :white_check_mark: |      0 |      1 | `0x0037fb80` | `0x003ee238` | `undefined RndCollideable__DestroyRndCollideableClass()`                                                                           |
 | `UIComponent__Focus`                                                  | :white_check_mark: |      0 |      1 | `0x003772d0` | `0x003e5a00` | `undefined UIComponent__Focus()`                                                                                                   |
 | `UIComponent__GetState`                                               | :white_check_mark: |      0 |      1 | `0x003772c0` | `0x003e59f0` | `undefined UIComponent__GetState()`                                                                                                |
@@ -306,3 +305,4 @@ preliminary.
 | `UiTransitionCompleteMsg__CloneUiTransitionCompleteMsg`               | :white_check_mark: |      0 |      1 | `0x0037c300` | `0x003eaa30` | `undefined UiTransitionCompleteMsg__CloneUiTransitionCompleteMsg()`                                                                |
 | `UiTransitionCompleteMsg__GetUiTransitionCompleteMsgName`             | :white_check_mark: |      0 |      1 | `0x0037c368` | `0x003eaa98` | `undefined UiTransitionCompleteMsg__GetUiTransitionCompleteMsgName()`                                                              |
 | `UiTransitionCompleteMsg__GetUiTransitionCompleteMsgTypeId`           | :white_check_mark: |      0 |      1 | `0x0037c358` | `0x003eaa88` | `undefined UiTransitionCompleteMsg__GetUiTransitionCompleteMsgTypeId()`                                                            |
+| `UpdateRndCamWorldMatrix`                                             | :white_check_mark: |      0 |      1 | `0x0037f1f0` | `0x003ed908` | `undefined UpdateRndCamWorldMatrix()`                                                                                              |
