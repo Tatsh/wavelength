@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00360000` to `0x00370000`
 
-120 of 233 routines done.
+121 of 233 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -220,7 +220,7 @@ preliminary.
 | `OvyTrackLabel__SetFreqTrackTrackLabelVisibilityFlag`     | :white_check_mark: |      1 |     28 | `0x003677d0` | `0x003d5f00` | `void OvyTrackLabel__SetFreqTrackTrackLabelVisibilityFlag(OvyTrackLabel * pPanel, undefined4 nValue)`                              |
 | `SetFreqTrackLaneVisibilityFlag`                          | :white_check_mark: |      0 |     28 | `0x00367298` | `0x003d59c8` | `void SetFreqTrackLaneVisibilityFlag(void * pPanel, undefined4 nValue)`                                                            |
 | `CompareOvyScoreByField28`                                |        :x:         |      1 |     16 | `0x00367330` | `0x003d5a60` | `bool CompareOvyScoreByField28(int pLeft, int pRight)`                                                                             |
-| `NoOpStub367da0`                                          |        :x:         |      3 |      8 | `0x00367da0` | `0x003d64d0` | `void NoOpStub367da0(void)`                                                                                                        |
+| `NoOpStub367da0`                                          | :white_check_mark: |      3 |      8 | `0x00367da0` | `0x003d64d0` | `void NoOpStub367da0(void)`                                                                                                        |
 | `OvyRemixGenericPanel__GetTypeInfo`                       |        :x:         |      2 |      1 | `0x00366e70` |              | `type_info * OvyRemixGenericPanel__GetTypeInfo(void)`                                                                              |
 | `ScreenManagerNopVirtual`                                 |        :x:         |      0 |      1 | `0x00364b00` | `0x003d3278` | `undefined ScreenManagerNopVirtual()`                                                                                              |
 | `CardsConnectedScreen__Title`                             | :white_check_mark: |      0 |      1 | `0x00363e38` |              | `undefined CardsConnectedScreen__Title()`                                                                                          |
