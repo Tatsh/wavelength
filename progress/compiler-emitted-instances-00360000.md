@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00360000` to `0x00370000`
 
-119 of 233 routines done.
+120 of 233 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -139,7 +139,6 @@ preliminary.
 | `ResolveOvyChatPendingMsgListNodePtrDescriptor`           |        :x:         |      2 |     80 | `0x003676b0` | `0x003d5de0` | `void * ResolveOvyChatPendingMsgListNodePtrDescriptor(void)`                                                                       |
 | `ResolveOvyLocalPlayerDoublePtrDescriptor`                |        :x:         |      2 |     80 | `0x003677f0` | `0x003d5f20` | `void * ResolveOvyLocalPlayerDoublePtrDescriptor(void)`                                                                            |
 | `ResolveOvySongPosSectionListNodePtrDescriptor`           |        :x:         |      2 |     80 | `0x003670e8` | `0x003d5818` | `void * ResolveOvySongPosSectionListNodePtrDescriptor(void)`                                                                       |
-| `AllocateMsgSinkDialogViaCtor19c760`                      |        :x:         |      1 |     80 | `0x00360480` | `0x003ce998` | `void AllocateMsgSinkDialogViaCtor19c760(void * pArg1, void * pArg2)`                                                              |
 | `BuildOvyAllPlayerSinglePointerPointee`                   |        :x:         |      1 |     80 | `0x00367b00` | `0x003d6230` | `void * BuildOvyAllPlayerSinglePointerPointee(void)`                                                                               |
 | `BuildOvyLocalPlayerSinglePointerPointee`                 |        :x:         |      1 |     80 | `0x00367ab0` | `0x003d61e0` | `void * BuildOvyLocalPlayerSinglePointerPointee(void)`                                                                             |
 | `BuildRndMatAnimPointeeDescriptor`                        |        :x:         |      1 |     80 | `0x0036c2e0` | `0x003daa10` | `void * BuildRndMatAnimPointeeDescriptor(void)`                                                                                    |
@@ -165,6 +164,7 @@ preliminary.
 | `AllocateMsgSinkDialogViaCtor19b178`                      | :white_check_mark: |      1 |     80 | `0x003600e8` | `0x003ce600` | `void AllocateMsgSinkDialogViaCtor19b178(void * pArg1, void * pArg2)`                                                              |
 | `AllocateMsgSinkDialogViaCtor19b5f0`                      | :white_check_mark: |      1 |     80 | `0x00360230` | `0x003ce748` | `void AllocateMsgSinkDialogViaCtor19b5f0(void * pArg1, void * pArg2)`                                                              |
 | `AllocateMsgSinkDialogViaCtor19bfd8`                      | :white_check_mark: |      1 |     80 | `0x00360338` | `0x003ce850` | `void AllocateMsgSinkDialogViaCtor19bfd8(void * pArg1, void * pArg2)`                                                              |
+| `AllocateMsgSinkDialogViaCtor19c760`                      | :white_check_mark: |      1 |     80 | `0x00360480` | `0x003ce998` | `void AllocateMsgSinkDialogViaCtor19c760(void * pArg1, void * pArg2)`                                                              |
 | `AllocateMsgSinkDialogViaCtor19c9a8`                      | :white_check_mark: |      1 |     80 | `0x003605c8` | `0x003ceae0` | `void AllocateMsgSinkDialogViaCtor19c9a8(void * pArg1, void * pArg2)`                                                              |
 | `AllocateMsgSinkDialogViaCtor19cff8`                      | :white_check_mark: |      1 |     80 | `0x00360740` | `0x003cec58` | `void AllocateMsgSinkDialogViaCtor19cff8(void * pArg1, void * pArg2)`                                                              |
 | `BeamPoolContainer__DestroyOvyEntryVectorWithHeader`      | :white_check_mark: |      1 |     80 | `0x00368000` | `0x003d6730` | `void BeamPoolContainer__DestroyOvyEntryVectorWithHeader(BeamPoolContainer * pObject, ulong flags)`                                |

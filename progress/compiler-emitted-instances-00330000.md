@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00330000` to `0x00340000`
 
-81 of 313 routines done.
+82 of 313 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -281,12 +281,12 @@ preliminary.
 | `Game__HandleChangeSection`                                               | :white_check_mark: |      0 |      8 | `0x00336218` |              | `undefined Game__HandleChangeSection()`                                                                                                               |
 | `Game__PollAssetLoad`                                                     | :white_check_mark: |      0 |      8 | `0x00336230` |              | `undefined Game__PollAssetLoad()`                                                                                                                     |
 | `Game__PollSongLoad`                                                      | :white_check_mark: |      0 |      8 | `0x00336228` |              | `undefined Game__PollSongLoad()`                                                                                                                      |
-| `BinStreamBase__BinStreamBaseNopVirtual`                                  |        :x:         |      0 |      1 | `0x00339f40` |              | `undefined BinStreamBase__BinStreamBaseNopVirtual()`                                                                                                  |
 | `ReturnOneStubA`                                                          |        :x:         |      0 |      1 | `0x00335800` | `0x003a2db0` | `uint ReturnOneStubA(void)`                                                                                                                           |
 | `RemixLogic__GetRemixLogicZeroHandle`                                     |       :memo:       |      0 |      1 | `0x0033f070` | `0x003ac5a8` | `undefined8 RemixLogic__GetRemixLogicZeroHandle(void)`                                                                                                |
 | `RemixLogic__IsRemixLogicStateZero`                                       |       :memo:       |      0 |      1 | `0x0033f088` |              | `bool RemixLogic__IsRemixLogicStateZero(void * pRemixLogic)`                                                                                          |
 | `RemixLogic__RemixLogicNopVirtualA`                                       |       :memo:       |      0 |      1 | `0x0033f078` | `0x003ac5b0` | `undefined RemixLogic__RemixLogicNopVirtualA()`                                                                                                       |
 | `RemixLogic__RemixLogicNopVirtualB`                                       |       :memo:       |      0 |      1 | `0x0033f080` | `0x003ac5b8` | `undefined RemixLogic__RemixLogicNopVirtualB()`                                                                                                       |
+| `BinStreamBase__BinStreamBaseNopVirtual`                                  | :white_check_mark: |      0 |      1 | `0x00339f40` |              | `undefined BinStreamBase__BinStreamBaseNopVirtual()`                                                                                                  |
 | `DuelNopVirtualI`                                                         | :white_check_mark: |      0 |      1 | `0x00334740` | `0x003a1cf0` | `undefined DuelNopVirtualI()`                                                                                                                         |
 | `DuelNopVirtualJ`                                                         | :white_check_mark: |      0 |      1 | `0x00334748` | `0x003a1cf8` | `undefined DuelNopVirtualJ()`                                                                                                                         |
 | `DuelNopVirtualK`                                                         | :white_check_mark: |      0 |      1 | `0x00334850` | `0x003a1e00` | `undefined DuelNopVirtualK()`                                                                                                                         |

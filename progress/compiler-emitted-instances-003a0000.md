@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x003a0000` to `0x003b0000`
 
-4 of 107 routines done.
+9 of 107 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -16,7 +16,7 @@ preliminary.
 | `ConstructGameOverPktCopy`                         |        :x:         |      0 |    272 | `0x003a1c70` | `0x00410950` | `undefined4 * ConstructGameOverPktCopy(undefined4 * pThis, int pSource)`           |
 | `ConstructUpdateRanksPktCopy`                      |        :x:         |      0 |    272 | `0x003a1b60` | `0x00410840` | `undefined4 * ConstructUpdateRanksPktCopy(undefined4 * pThis, int pSource)`        |
 | `DeserializeTriWordStructVector`                   |        :x:         |      1 |    248 | `0x003a4f20` | `0x00413c00` | `undefined8 DeserializeTriWordStructVector(undefined8 pStream, undefined8 pVec)`   |
-| `AdvanceWorldBeatEventCursor`                      |        :x:         |      0 |    204 | `0x003a64d0` | `0x004151b0` | `void AdvanceWorldBeatEventCursor(void * pThis)`                                   |
+| `AdvanceWorldBeatEventCursor`                      | :white_check_mark: |      0 |    204 | `0x003a64d0` | `0x004151b0` | `void AdvanceWorldBeatEventCursor(void * pThis)`                                   |
 | `CopyConstructIntVector`                           |        :x:         |      4 |    200 | `0x003a91a0` | `0x00417f60` | `void * CopyConstructIntVector(void * pThis, int * pSource)`                       |
 | `GetTypeInfoForTableLinDerivedInterp`              |        :x:         |      0 |    164 | `0x003a8950` | `0x00417630` | `undefined GetTypeInfoForTableLinDerivedInterp()`                                  |
 | `DestroyGameOverPktVector`                         |        :x:         |      0 |    156 | `0x003a15f8` | `0x004102d8` | `void DestroyGameOverPktVector(int * pThis, ulong nFlags)`                         |
@@ -48,8 +48,8 @@ preliminary.
 | `ResolveDescriptorForStringOptionObject`           |        :x:         |      0 |    120 | `0x003ab660` | `0x0041a3c0` | `undefined ResolveDescriptorForStringOptionObject()`                               |
 | `JoypadInputMsg__Clone`                            |        :x:         |      1 |    116 | `0x003a7228` | `0x00415eb0` | `void JoypadInputMsg__Clone(int pSrcMsg)`                                          |
 | `DestroyMemStreamObject`                           |        :x:         |      0 |    112 | `0x003ab1a8` | `0x00419f18` | `undefined DestroyMemStreamObject()`                                               |
-| `DestroyJoypadMsgSource`                           |        :x:         |      0 |    108 | `0x003a6fb0` | `0x00415c90` | `void DestroyJoypadMsgSource(void * pThis, ulong nFlags)`                          |
 | `DestroyMsgSinkListObject`                         |        :x:         |      0 |    108 | `0x003ab3d0` | `0x0041a130` | `undefined DestroyMsgSinkListObject()`                                             |
+| `DestroyJoypadMsgSource`                           | :white_check_mark: |      0 |    108 | `0x003a6fb0` | `0x00415c90` | `void DestroyJoypadMsgSource(void * pThis, ulong nFlags)`                          |
 | `CreateRampMidiObject`                             |        :x:         |      1 |    104 | `0x003a6620` | `0x00415300` | `undefined4 * CreateRampMidiObject(undefined4 nValue, undefined8 param2)`          |
 | `GetTypeInfoForAsyncTaskListNodePtr`               |        :x:         |      5 |     80 | `0x003a83e0` | `0x004170c0` | `undefined GetTypeInfoForAsyncTaskListNodePtr()`                                   |
 | `GetTypeInfoForCharPtrListNodePtr`                 |        :x:         |      4 |     80 | `0x003a6de0` | `0x00415ac0` | `undefined GetTypeInfoForCharPtrListNodePtr()`                                     |
@@ -83,8 +83,7 @@ preliminary.
 | `ResolvePointerDescriptorForMsgFactoryEntry`       |        :x:         |      1 |     80 | `0x003ab2a0` | `0x0041a000` | `undefined ResolvePointerDescriptorForMsgFactoryEntry()`                           |
 | `ResolvePointerDescriptorForTaskPtrToPtr`          |        :x:         |      1 |     80 | `0x003ab8a0` |              | `undefined ResolvePointerDescriptorForTaskPtrToPtr()`                              |
 | `DestroyATanInterpolatorVtableThunk`               |        :x:         |      0 |     52 | `0x003a8820` | `0x00417500` | `void DestroyATanInterpolatorVtableThunk(void * pThis, ulong flags)`               |
-| `MatchSchedulerCommandId`                          |        :x:         |      0 |     52 | `0x003a6b38` | `0x00415818` | `bool MatchSchedulerCommandId(int pPred, undefined4 * pNode)`                      |
-| `DestroyArkFileVtableThunk`                        |        :x:         |      0 |     48 | `0x003a7e58` | `0x00416b38` | `void DestroyArkFileVtableThunk(void * pThis, ulong flags)`                        |
+| `MatchSchedulerCommandId`                          | :white_check_mark: |      0 |     52 | `0x003a6b38` | `0x00415818` | `bool MatchSchedulerCommandId(int pPred, undefined4 * pNode)`                      |
 | `DestroyBoolOptionObject`                          |        :x:         |      0 |     48 | `0x003ab520` | `0x0041a280` | `undefined DestroyBoolOptionObject()`                                              |
 | `DestroyBootPkt`                                   |        :x:         |      0 |     48 | `0x003a0f18` | `0x0040fbf8` | `void DestroyBootPkt(undefined4 * pThis, ulong nFlags)`                            |
 | `DestroyClientStatusPkt`                           |        :x:         |      0 |     48 | `0x003a0820` | `0x0040f500` | `void DestroyClientStatusPkt(undefined4 * pThis, ulong nFlags)`                    |
@@ -92,7 +91,6 @@ preliminary.
 | `DestroyInverseExponentialInterpolatorVtableThunk` |        :x:         |      0 |     48 | `0x003a8778` | `0x00417458` | `void DestroyInverseExponentialInterpolatorVtableThunk(void * pThis, ulong flags)` |
 | `DestroyLinearInterpolatorVtableThunk`             |        :x:         |      0 |     48 | `0x003a85f0` | `0x004172d0` | `void DestroyLinearInterpolatorVtableThunk(void * pThis, ulong flags)`             |
 | `DestroyLoadMilestoneMsg`                          |        :x:         |      0 |     48 | `0x003a71a0` | `0x00415e80` | `void DestroyLoadMilestoneMsg(undefined4 * pThis, ulong nFlags)`                   |
-| `DestroyMemcardSyncHandler`                        |        :x:         |      0 |     48 | `0x003a7020` | `0x00415d00` | `void DestroyMemcardSyncHandler(undefined4 * pThis, ulong nFlags)`                 |
 | `DestroyNetTransportObject`                        |        :x:         |      0 |     48 | `0x003a1f90` | `0x00410c70` | `void DestroyNetTransportObject(undefined4 * pThis, ulong nFlags)`                 |
 | `DestroyShareRemixPkt`                             |        :x:         |      0 |     48 | `0x003a1048` | `0x0040fd28` | `void DestroyShareRemixPkt(undefined4 * pThis, ulong nFlags)`                      |
 | `DestroyStringOptionObject`                        |        :x:         |      0 |     48 | `0x003ab550` | `0x0041a2b0` | `undefined DestroyStringOptionObject()`                                            |
@@ -100,6 +98,8 @@ preliminary.
 | `DestroyUpdateRanksPkt`                            |        :x:         |      0 |     48 | `0x003a1768` | `0x00410448` | `void DestroyUpdateRanksPkt(undefined4 * pThis, ulong nFlags)`                     |
 | `DestructJoinFailedPkt`                            |        :x:         |      0 |     48 | `0x003a0448` | `0x0040f128` | `undefined DestructJoinFailedPkt()`                                                |
 | `DestroyBufStreamVtableThunk`                      |       :memo:       |      0 |     48 | `0x003a8ae0` |              | `void DestroyBufStreamVtableThunk(void * pThis, ulong flags)`                      |
+| `DestroyArkFileVtableThunk`                        | :white_check_mark: |      0 |     48 | `0x003a7e58` | `0x00416b38` | `void DestroyArkFileVtableThunk(void * pThis, ulong flags)`                        |
+| `DestroyMemcardSyncHandler`                        | :white_check_mark: |      0 |     48 | `0x003a7020` | `0x00415d00` | `void DestroyMemcardSyncHandler(undefined4 * pThis, ulong nFlags)`                 |
 | `DestroyDerivedMidiReceiverObject`                 |        :x:         |      0 |     40 | `0x003a6458` | `0x00415138` | `void DestroyDerivedMidiReceiverObject(int pThis)`                                 |
 | `DestroyMidiReceiverSubobjectVariantB`             |        :x:         |      0 |     40 | `0x003a66c8` | `0x004153a8` | `void DestroyMidiReceiverSubobjectVariantB(int pThis)`                             |
 | `RegisterBoolOptionParser`                         |        :x:         |      0 |     36 | `0x003ab5f8` | `0x0041a358` | `undefined RegisterBoolOptionParser()`                                             |
