@@ -28,18 +28,6 @@ struct FloatKey {
 void LoadFloatKeys(DataArray *pData, std::vector<FloatKey> *pKeys);
 
 /**
- * Blend the rotations of two transforms through quaternions.
- *
- * @param pFrom The transform at a blend of 0, four rows of four floats.
- * @param pTo The transform at a blend of 1, four rows of four floats.
- * @param pOut Receives the blended rotation, four rows of four floats. It may alias pFrom.
- * @param fBlend The blend.
- * @ghidraAddress NTSC-U/C: 0x001e2b38
- * @ghidraAddress PAL: 0x001eb8d8
- */
-void InterpBasis(const float *pFrom, const float *pTo, float *pOut, float fBlend);
-
-/**
  * Clear the scroll of the textures of every mesh under a transform, recursively.
  *
  * @param pRoot The transform, or null.

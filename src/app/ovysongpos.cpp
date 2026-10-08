@@ -24,8 +24,9 @@ constexpr char kOnlineHudPrefix[] = "HUD1";
 
 } // namespace
 
-Vector3 OvySongPos::sStartPos{0.0f, -90.0f, -3.7e-5f};
-Vector3 OvySongPos::sEndPos{0.0f, 149.0f, -3.7e-5f};
+// Yes, the binary leaves the fourth words of these places at zero.
+Vector3 OvySongPos::sStartPos{0.0f, -90.0f, -3.7e-5f, 0.0f};
+Vector3 OvySongPos::sEndPos{0.0f, 149.0f, -3.7e-5f, 0.0f};
 int OvySongPos::sNumLabels = 0;
 
 OvySongPos::OvySongPos(Rnd::View *pHudView) : HideablePanel(nullptr, nullptr, false) {
@@ -133,13 +134,13 @@ void OvySongPos::Draw() {
             position.y = sEndPos.y * checkpoint.mPos + sStartPos.y * fRest;
             position.z = sEndPos.z * checkpoint.mPos + sStartPos.z * fRest;
         }
+        mCheckpointMesh->mDirty = 1;
         float (&translation)[Rnd::kXfmRowFloatCount] =
             mCheckpointMesh->mLocalXfm[kXfmRowTranslation];
         translation[0] = position.x;
         translation[1] = position.y;
         translation[2] = position.z;
         translation[3] = position.w;
-        mCheckpointMesh->mDirty = 1;
         mCheckpointMesh->UpdateWorldXfm(mFuture, 0);
         mCheckpointMesh->Draw();
         if (checkpoint.mText != nullptr) {

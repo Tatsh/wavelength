@@ -30,9 +30,7 @@ const Color kWhite{1.0f, 1.0f, 1.0f, 1.0f};
 
 } // namespace
 
-OvyRemixGenPanel::OvyRemixGenPanel() {
-    mBackground = nullptr;
-    mPanel = nullptr;
+OvyRemixGenPanel::OvyRemixGenPanel() : mBackground(nullptr), mPanel(nullptr) {
     mFlashTime = kInitialFlashTime;
     mUpArrow = nullptr;
     mDownArrow = nullptr;
@@ -78,8 +76,10 @@ void OvyRemixGenPanel::Load(char chHud,
         }
         auto *pText =
             dynamic_cast<Rnd::Text *>(Clone(FormatString("%s_%02d.txt", pszPrefix, i), nPlayer));
-        mOptions.push_back(Option{pMesh, pText});
-        const Option &option = mOptions.back();
+        mOptions.push_back(Option{nullptr, nullptr});
+        Option &option = mOptions.back();
+        option.mMesh = pMesh;
+        option.mText = pText;
         option.mMesh->AddDraw(option.mText, nullptr);
         option.mMesh->AddTrans(option.mText);
         mBackground->AddDraw(option.mMesh, nullptr);

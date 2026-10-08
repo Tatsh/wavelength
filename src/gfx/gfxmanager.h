@@ -100,9 +100,9 @@ public:
      * Loader of one file of the `load` list of the `gfx` configuration.
      *
      * The RTTI names the class. The object is 0x28 bytes. A file object that already exists is
-     * loaded again only when force_merge lists it, or when it is not a texture or merge_all is set.
-     * A texture that is skipped and is not in the list `merges_always_allowed` is reported once
-     * the file has loaded.
+     * loaded again only when force_merge lists it. A skipped object that is not a texture, with
+     * merge_all clear, is reported once the file has loaded unless the list
+     * `merges_always_allowed` includes it.
      */
     class GfxLoader : public RndLoader::Callback {
     public:

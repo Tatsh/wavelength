@@ -39,12 +39,12 @@ T *FindIndexed(const char *pszFormat, int nIndex) {
 }
 
 void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
+    pTrans->mDirty = 1;
     float (&translation)[Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm[kXfmRowTranslation];
     translation[0] = position.x;
     translation[1] = position.y;
     translation[2] = position.z;
     translation[3] = position.w;
-    pTrans->mDirty = 1;
 }
 
 } // namespace
@@ -54,7 +54,13 @@ float OvyScore::sBarGrowTicks = 480.0f;
 float OvyScore::sStableTicks = 960.0f;
 float OvyScore::sFadeTicks = 480.0f;
 float OvyScore::sMoveOutTicks = 480.0f;
-Vector3 OvyScore::sCheckpointPositions[kNumCheckpointPositions];
+// Yes, the binary leaves these places, fourth words included, at zero until the configuration.
+Vector3 OvyScore::sCheckpointPositions[kNumCheckpointPositions] = {
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f},
+};
 
 OvyScore::OvyScore(int nPlayer, int nIndex, Rnd::View *pHudView)
     : HideablePanel(nullptr, nullptr, false), mPowerup(nullptr), mScoreText(nullptr),
@@ -63,11 +69,11 @@ OvyScore::OvyScore(int nPlayer, int nIndex, Rnd::View *pHudView)
       mBarGrow(0.0f,
                nullptr,
                new InvExpInterpolator(0.0f, 0.0f, 1.0f, 1.0f, kBarGrowPower),
-               kBarGrowSpeed),
-      mCheckpointPos(nullptr) {
+               kBarGrowSpeed) {
     mTopPos.x = 0.0f;
     mTopPos.z = 0.0f;
     mTopPos.y = 0.0f;
+    mCheckpointPos = nullptr;
     mMesh = FindIndexed<Rnd::Drawable>("%s score%d.mesh", nIndex);
     SetObjects(
         FormatString("%s score%d.tnm", Overlay::sHudPrefix, nIndex), mMesh->mName.mStr, false);

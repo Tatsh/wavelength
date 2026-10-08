@@ -21,11 +21,12 @@ constexpr char kHudOnline = 'n';
 
 } // namespace
 
+// Yes, the binary leaves the fourth words of these places at zero.
 Vector3 OvyRemixPanel::sPositions[kNumPositions] = {
-    {-258.0f, 0.0f, 164.0f},
-    {-106.0f, 0.0f, 164.0f},
-    {46.0f, 0.0f, 164.0f},
-    {198.0f, 0.0f, 164.0f},
+    {-258.0f, 0.0f, 164.0f, 0.0f},
+    {-106.0f, 0.0f, 164.0f, 0.0f},
+    {46.0f, 0.0f, 164.0f, 0.0f},
+    {198.0f, 0.0f, 164.0f, 0.0f},
 };
 
 OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, Rnd::Transformable *pParent)
@@ -53,13 +54,12 @@ OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, Rnd::Transformable *pPa
     String prefix(FormatString("HUD%cr_fx%d", chHud, nLayout));
     Load(chHud, prefix.c_str(), nPlayer, pParent);
 
-    Rnd::Transformable *pPanel = mPanel;
     const Vector3 &position = sPositions[nPosition];
-    pPanel->mLocalXfm[kXfmRowTranslation][0] = position.x;
-    pPanel->mLocalXfm[kXfmRowTranslation][1] = position.y;
-    pPanel->mLocalXfm[kXfmRowTranslation][2] = position.z;
-    pPanel->mLocalXfm[kXfmRowTranslation][3] = position.w;
-    pPanel->mDirty = 1;
+    mPanel->mDirty = 1;
+    mPanel->mLocalXfm[kXfmRowTranslation][0] = position.x;
+    mPanel->mLocalXfm[kXfmRowTranslation][1] = position.y;
+    mPanel->mLocalXfm[kXfmRowTranslation][2] = position.z;
+    mPanel->mLocalXfm[kXfmRowTranslation][3] = position.w;
 
     auto *pSlideAnim =
         dynamic_cast<Rnd::TransAnim *>(Clone(FormatString("%s.tnm", prefix.c_str()), nPlayer));

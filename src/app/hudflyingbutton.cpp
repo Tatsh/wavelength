@@ -28,11 +28,18 @@ constexpr float kHalfPi = 1.5707964f;
 constexpr float kPulseTurnsPerTick = 0.002f;
 
 void Place(Rnd::Text *pText, float fX, float fZ) {
-    float (&translation)[Rnd::kXfmRowFloatCount] = pText->mLocalXfm[kXfmRowTranslation];
+    float translation[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
     translation[0] = fX;
     translation[1] = 0.0f;
     translation[2] = fZ;
     pText->mDirty = 1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+        pText->mLocalXfm[kXfmRowTranslation][i] = translation[i];
+    }
+#pragma GCC diagnostic pop
 }
 
 } // namespace
@@ -72,8 +79,8 @@ void HudFlyingButton::Fly(const Vector2 *pFrom, const Vector2 *pTo) {
     mTo = *pTo;
     if (pFrom->x == pTo->x && pFrom->y == pTo->y) {
         Place(mText, mTo.x, mTo.y);
-        SetPulse(true);
         mStartTime = kNoFlight;
+        SetPulse(true);
     } else {
         mStartTime = TheGameDb->mSongTime;
         SetPulse(false);
@@ -101,8 +108,8 @@ void HudFlyingButton::Poll() {
     const float fElapsed = TheGameDb->mSongTime - mStartTime;
     if (sFlight->mX1 <= fElapsed) {
         Place(mText, mTo.x, mTo.y);
-        SetPulse(true);
         mStartTime = kNoFlight;
+        SetPulse(true);
         return;
     }
     const float fProgress = sFlight->Interp(fElapsed);

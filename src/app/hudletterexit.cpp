@@ -2,6 +2,8 @@
 
 #include "app/overlay.h"
 #include "game/gamedb.h"
+#include "gfx/basisinterp.h"
+#include "math/transform.h"
 #include "os/string.h"
 #include "rnd/manager.h"
 
@@ -23,12 +25,16 @@ constexpr float kPulseRest = 0.75f;
 // The value GfxManager::kPendingPointsLost has, which flies the letter of the second side.
 constexpr int kResultLost = 2;
 
+// The ticks over which the flight turns the flying text towards the identity.
+constexpr float kTurnTicks = 250.0f;
+
 // The index of the first letter path, whose length every flight uses.
 constexpr int kFirstLetter = 0;
 
 // The rows of a transform.
 enum XfmRow {
     kRowX = 0,
+    kRowY = 1,
     kRowZ = 2,
     kRowTranslation = 3,
 };
@@ -57,19 +63,46 @@ void WriteRow(float (&row)[Rnd::kXfmRowFloatCount], const Vector3 &value) {
     row[kColumnW] = value.w;
 }
 
-// Write the three basis rows of a local transform and mark it dirty.
-void SetBasis(Rnd::Transformable *pTrans, const Vector3 (&basis)[kRowZ + 1]) {
-    for (int i = kRowX; i <= kRowZ; ++i) {
-        WriteRow(pTrans->mLocalXfm[i], basis[i]);
-    }
-    pTrans->mDirty = 1;
+// A basis that scales by the same factor along x and z. Its fourth words are never written.
+struct ScaleBasis {
+    float mRows[kRowZ + 1][Rnd::kXfmRowFloatCount];
+};
+
+ScaleBasis MakeScaleBasis(float fScale) {
+    ScaleBasis basis;
+    basis.mRows[kRowX][kColumnX] = fScale;
+    basis.mRows[kRowX][kColumnY] = 0.0f;
+    basis.mRows[kRowX][kColumnZ] = 0.0f;
+    basis.mRows[kRowY][kColumnX] = 0.0f;
+    basis.mRows[kRowY][kColumnY] = 1.0f;
+    basis.mRows[kRowY][kColumnZ] = 0.0f;
+    basis.mRows[kRowZ][kColumnX] = 0.0f;
+    basis.mRows[kRowZ][kColumnY] = 0.0f;
+    basis.mRows[kRowZ][kColumnZ] = fScale;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    return basis;
+#pragma GCC diagnostic pop
 }
 
-const Vector3 kIdentityBasis[] = {
-    {1.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f},
-};
+// Copy one row of a basis, including its unset fourth word.
+void CopyBasisRow(Rnd::Transformable *pTrans, const ScaleBasis &basis, int nRow) {
+    for (int i = kColumnX; i <= kColumnW; ++i) {
+        pTrans->mLocalXfm[nRow][i] = basis.mRows[nRow][i];
+    }
+}
+
+// Write the three basis rows of a local transform and mark it dirty.
+void SetBasis(Rnd::Transformable *pTrans, const ScaleBasis &basis) {
+    CopyBasisRow(pTrans, basis, kRowX);
+    CopyBasisRow(pTrans, basis, kRowY);
+    pTrans->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
+    CopyBasisRow(pTrans, basis, kRowZ);
+}
+
+// The scale of an identity basis.
+constexpr float kIdentityScale = 1.0f;
 
 } // namespace
 
@@ -127,11 +160,18 @@ void HudLetterExit::Poll() {
         } else if (fTicks < 0.0f) {
             fTicks = 0.0f;
         }
-        // The binary also turns mFlyBasis towards the identity over the first 250 ticks and
-        // discards the result.
+        Transform basis;
+        basis.mBasisX = Vector3{1.0f, 0.0f, 0.0f};
+        basis.mBasisY = Vector3{0.0f, 1.0f, 0.0f};
+        basis.mBasisZ = Vector3{0.0f, 0.0f, 1.0f};
+        if (fTicks < kTurnTicks) {
+            const Transform flyBasis{mFlyBasis[0], mFlyBasis[1], mFlyBasis[2], {}};
+            // Yes, the binary discards this call's result.
+            InterpBasis(flyBasis, basis, fTicks / kTurnTicks, &basis);
+        }
         const float fFrame =
             mFlight->FilterFrame(fTicks * Overlay::sDuelPointsMoveRate * mFlightLength);
-        float afXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = {};
+        float afXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
         mFlight->EvalFrame(fFrame, &afXfm[0][0], 1);
         if (mFlipped != 0) {
             afXfm[kRowTranslation][kColumnX] = -afXfm[kRowTranslation][kColumnX];
@@ -140,10 +180,12 @@ void HudLetterExit::Poll() {
         afXfm[kRowTranslation][kColumnY] += mOrigin.y;
         afXfm[kRowTranslation][kColumnZ] += mOrigin.z;
         Rnd::Transformable *pViewTrans = mView;
-        for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
+        for (int i = kRowX; i <= kRowZ; ++i) {
             WriteRow(pViewTrans->mLocalXfm[i], ReadRow(afXfm[i]));
         }
+        // Yes, the binary marks the transform before the last row is written.
         pViewTrans->mDirty = 1;
+        WriteRow(pViewTrans->mLocalXfm[kRowTranslation], ReadRow(afXfm[kRowTranslation]));
         if (fTicks == Overlay::sDuelPointsMoveTicks) {
             if (mRevealPending != 0) {
                 const int nPoints = mPendingPoints;
@@ -182,19 +224,19 @@ void HudLetterExit::ShowReveal(int nPlayer, int nPoints, [[maybe_unused]] const 
     mTexts[0]->SetShowing(true);
     mTexts[1]->SetShowing(true);
     Rnd::Transformable *pViewTrans = mView;
-    SetBasis(pViewTrans, kIdentityBasis);
+    SetBasis(pViewTrans, MakeScaleBasis(kIdentityScale));
+    pViewTrans->mDirty = 1;
     WriteRow(pViewTrans->mLocalXfm[kRowTranslation], mOrigin);
     mRevealPending = 0;
 }
 
 void HudLetterExit::ScaleByPulse(Rnd::Transformable *pTrans) {
-    const float fScale = Overlay::sPointsScale * (mPulse * kPulseGain + kPulseRest);
-    const Vector3 basis[] = {
-        {fScale, 0.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, fScale, 0.0f},
-    };
-    SetBasis(pTrans, basis);
+    const ScaleBasis basis =
+        MakeScaleBasis(Overlay::sPointsScale * (mPulse * kPulseGain + kPulseRest));
+    pTrans->mDirty = 1;
+    CopyBasisRow(pTrans, basis, kRowX);
+    CopyBasisRow(pTrans, basis, kRowY);
+    CopyBasisRow(pTrans, basis, kRowZ);
 }
 
 void HudLetterExit::SetTime(float fLevel) {
@@ -213,5 +255,5 @@ void HudLetterExit::Fly(int nResult) {
     mFlightStart = TheGameDb->mSongTick;
     mFlipped = (nSide ^ mSecondSidePlayer) != 0;
     mFlight = mLetterPaths[mLetters[nSide]];
-    SetBasis(pTextTrans, kIdentityBasis);
+    SetBasis(pTextTrans, MakeScaleBasis(kIdentityScale));
 }

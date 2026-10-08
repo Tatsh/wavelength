@@ -24,7 +24,20 @@ public:
         mFree = mItems;
         for (int i = 0; i < nCount; ++i) {
             mFree[i].mNextFree = i == nCount - 1 ? nullptr : &mFree[i + 1];
+            Prepare(&mFree[i]);
         }
+    }
+
+    /**
+     * Prepare a new effect of the pool. The body is empty.
+     *
+     * The title is inferred.
+     *
+     * @param pItem The effect.
+     * @ghidraAddress NTSC-U/C: 0x00367da0
+     * @ghidraAddress PAL: 0x003d64d0
+     */
+    void Prepare([[maybe_unused]] T *pItem) {
     }
 
     /**

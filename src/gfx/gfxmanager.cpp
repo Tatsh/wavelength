@@ -209,8 +209,11 @@ GfxManager TheGfxManager;
 
 #pragma mark - GfxLoader
 
-GfxManager::GfxLoader::GfxLoader(bool bDone, bool bMergeAll, DataArray *pForceMerge)
-    : mLoader(nullptr), mForceMerge(pForceMerge), mDone(bDone), mMergeAll(bMergeAll) {
+GfxManager::GfxLoader::GfxLoader(bool bDone, bool bMergeAll, DataArray *pForceMerge) {
+    mForceMerge = pForceMerge;
+    mDone = bDone;
+    mMergeAll = bMergeAll;
+    mLoader = nullptr;
 }
 
 GfxManager::GfxLoader::~GfxLoader() = default;
@@ -228,7 +231,7 @@ int GfxManager::GfxLoader::ShouldLoad(Rnd::Object *pExisting,
             }
         }
     }
-    if (mMergeAll != 0 || strcmp(pszClass, "Tex") != 0) {
+    if (mMergeAll != 0 || strcmp(pszClass, "Tex") == 0) {
         return 0;
     }
     int i = 1;
@@ -255,20 +258,47 @@ void GfxManager::GfxLoader::Finish() {
             mSkipped.c_str());
     }
     mSkipped.Clear();
-    mForceMerge = nullptr;
+    if (mForceMerge != nullptr) {
+        mForceMerge = nullptr;
+    }
 }
 
 #pragma mark - Construction
 
-GfxManager::GfxManager()
-    : mVortex(nullptr), mVortexAfterViews(0), mLoadStage(kLoadStageHud), mHudLoader(nullptr),
-      mLoaded(0), mLoadStartMs(0.0f), mReserved34(0), mState(kStateIdle), mLastTick(kNoTick),
-      mLastTime(kNoTick), mScrollSpeed(kNoScrollSpeed), mInvScrollSpeed(kNoScrollSpeed),
-      mSongTicks(0.0f), mCamPathScale(kNoScrollSpeed), mVictoryLap(0), mArenaUnlocked(0),
-      mNoArena(0), mMonkeyGems(0), mDrugs(0), mBlackPanels(0), mNoPanels(0), mTunnelShape(0),
-      mHudFlags(kInitialHudFlags), mTunnel(nullptr), mOverlay(nullptr), mArena(nullptr),
-      mTunnelView(nullptr), mMainView(nullptr), mPanelView(nullptr), mLeader(0), mWinnerDrawn(0),
-      mWinner(-1), mMsPerTick(nullptr), mMultiplierFormat(nullptr) {
+// The members are written in the binary's order. mPanelView, mMsPerTick, and mMultiplierFormat
+// are left unwritten, as the binary leaves them.
+GfxManager::GfxManager() {
+    mVortexAfterViews = 0;
+    mLoadStage = kLoadStageHud;
+    mLastTime = kNoTick;
+    mCamPathScale = kNoScrollSpeed;
+    mHudFlags = kInitialHudFlags;
+    mHudLoader = nullptr;
+    mLoaded = 0;
+    mLoadStartMs = 0.0f;
+    mReserved34 = 0;
+    mState = kStateIdle;
+    mLastTick = kNoTick;
+    mScrollSpeed = kNoScrollSpeed;
+    mInvScrollSpeed = kNoScrollSpeed;
+    mSongTicks = 0.0f;
+    mVictoryLap = 0;
+    mArenaUnlocked = 0;
+    mNoArena = 0;
+    mMonkeyGems = 0;
+    mDrugs = 0;
+    mBlackPanels = 0;
+    mNoPanels = 0;
+    mTunnelShape = 0;
+    mTunnel = nullptr;
+    mOverlay = nullptr;
+    mArena = nullptr;
+    mTunnelView = nullptr;
+    mMainView = nullptr;
+    mLeader = 0;
+    mWinnerDrawn = 0;
+    mWinner = -1;
+    mVortex = nullptr;
     for (int i = kMaxPlayers - 1; i >= 0; --i) {
         mShips[i] = nullptr;
     }
@@ -542,8 +572,10 @@ void GfxManager::Load(float fTime) {
     for (int i = 1; i < pPreloads->Size(); ++i) {
         AddPreload(pPreloads->Sym(i));
     }
-    sMergesAlwaysAllowed =
-        SystemConfig()->FindArray("gfx", true)->FindArray("merges_always_allowed", true);
+    DataArray *pGfxAgain = SystemConfig()->FindArray("gfx", true);
+    // Yes, the binary stores the `gfx` section here before the list it looks up in it.
+    sMergesAlwaysAllowed = pGfxAgain;
+    sMergesAlwaysAllowed = pGfxAgain->FindArray("merges_always_allowed", true);
 
     DataArray *pLoad = pGfx->FindArray("load", false);
     if (pLoad != nullptr) {
@@ -726,10 +758,10 @@ void GfxManager::BuildTracks(float fStartTick,
     }
     mVortex->Start(kDefaultPosition, Vortex::kModeOut);
     mVortexAfterViews = 0;
-    for (AsyncStream *pStream : mPreloads) {
-        delete pStream;
+    while (!mPreloads.empty()) {
+        delete mPreloads.front();
+        mPreloads.pop_front();
     }
-    mPreloads.clear();
     mWinner = -1;
     mLeader = 0;
     mWinnerDrawn = 0;
@@ -895,8 +927,9 @@ int GfxManager::Poll(float fTime) {
             if (mHudLoader->IsLoaded()) {
                 DataArray *pMode = GetModeGfxConfig();
                 DataArray *pGfx = GetGfxConfig();
-                mOverlay = new Overlay(pMode, pGfx);
+                Overlay *pOverlay = new Overlay(pMode, pGfx);
                 mHudLoader = nullptr;
+                mOverlay = pOverlay;
                 CamSlide::Init();
                 mMainView = GfxTunnel::CreateMainView();
                 for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {

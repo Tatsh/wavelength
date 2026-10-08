@@ -109,7 +109,8 @@ OvyAvatar::~OvyAvatar() {
 }
 
 void OvyAvatar::UpdateShown() {
-    HideablePanel::Show(mWanted != 0 && IsAvatarShown());
+    const bool bAvatarShown = IsAvatarShown();
+    HideablePanel::Show(mWanted != 0 && bAvatarShown);
 }
 
 void OvyAvatar::Draw() {

@@ -64,13 +64,25 @@ void SetVert(Rnd::Mesh *pMesh, int nVert, float fX, float fZ) {
     point.z = fZ;
 }
 
-void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
+// Copy one row of a transform, including its fourth word.
+void CopyRow(float (&destination)[Rnd::kXfmRowFloatCount],
+             const float (&source)[Rnd::kXfmRowFloatCount]) {
+    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+        destination[i] = source[i];
+    }
+}
+
+void CopyTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
     float (&translation)[Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm[kXfmRowTranslation];
     translation[0] = position.x;
     translation[1] = position.y;
     translation[2] = position.z;
     translation[3] = position.w;
+}
+
+void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
     pTrans->mDirty = 1;
+    CopyTranslation(pTrans, position);
 }
 
 } // namespace
@@ -198,21 +210,30 @@ void HudHiliteBox::Update(float fTick) {
     if ((mChanging & kChangingArrowMove) != 0) {
         const float fProgress = mArrowMove.Interpolator::Eval(fTick);
         Rnd::Transformable *pArrow = mArrow;
-        SetTranslation(pArrow, Blend(mFromArrowPos, mToArrowPos, fProgress));
+        CopyTranslation(pArrow, Blend(mFromArrowPos, mToArrowPos, fProgress));
+        pArrow->mDirty = 1;
         const float fAngle = (mToArrowAngle - mFromArrowAngle) * fProgress + mFromArrowAngle;
         const float fCos = SinApprox(fAngle + kHalfPi);
         const float fSin = SinApprox(fAngle);
-        float (&xfm)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = pArrow->mLocalXfm;
-        xfm[kXfmRowBasisX][0] = fCos;
-        xfm[kXfmRowBasisX][1] = 0.0f;
-        xfm[kXfmRowBasisX][2] = -fSin;
-        xfm[kXfmRowBasisY][0] = 0.0f;
-        xfm[kXfmRowBasisY][1] = 1.0f;
-        xfm[kXfmRowBasisY][2] = 0.0f;
-        xfm[kXfmRowBasisZ][0] = fSin;
-        xfm[kXfmRowBasisZ][1] = 0.0f;
-        xfm[kXfmRowBasisZ][2] = fCos;
-        pArrow->mDirty = 1;
+        // Yes, the binary copies the unset fourth words of the basis.
+        float basis[kXfmRowTranslation][Rnd::kXfmRowFloatCount];
+        basis[kXfmRowBasisX][0] = fCos;
+        basis[kXfmRowBasisX][1] = 0.0f;
+        basis[kXfmRowBasisX][2] = -fSin;
+        basis[kXfmRowBasisY][0] = 0.0f;
+        basis[kXfmRowBasisY][1] = 1.0f;
+        basis[kXfmRowBasisY][2] = 0.0f;
+        basis[kXfmRowBasisZ][0] = fSin;
+        basis[kXfmRowBasisZ][1] = 0.0f;
+        basis[kXfmRowBasisZ][2] = fCos;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+        CopyRow(pArrow->mLocalXfm[kXfmRowBasisX], basis[kXfmRowBasisX]);
+        CopyRow(pArrow->mLocalXfm[kXfmRowBasisY], basis[kXfmRowBasisY]);
+        pArrow->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
+        CopyRow(pArrow->mLocalXfm[kXfmRowBasisZ], basis[kXfmRowBasisZ]);
+#pragma GCC diagnostic pop
         if (mArrowMove.mX1 <= fTick) {
             mChanging &= ~kChangingArrowMove;
         }

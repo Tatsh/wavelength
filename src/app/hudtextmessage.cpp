@@ -12,19 +12,23 @@ namespace {
 // The rows of a transform: three of the basis, then the translation.
 enum XfmRow { kXfmRowBasisX = 0, kXfmRowBasisY = 1, kXfmRowBasisZ = 2, kXfmRowTranslation = 3 };
 
-// Scale the basis of a text's local transform by the same factor along x and z.
-void SetScale(Rnd::Text *pText, float fScale) {
-    float (&xfm)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = pText->mLocalXfm;
-    xfm[kXfmRowBasisX][0] = fScale;
-    xfm[kXfmRowBasisX][1] = 0.0f;
-    xfm[kXfmRowBasisX][2] = 0.0f;
-    xfm[kXfmRowBasisY][0] = 0.0f;
-    xfm[kXfmRowBasisY][1] = 1.0f;
-    xfm[kXfmRowBasisY][2] = 0.0f;
-    xfm[kXfmRowBasisZ][0] = 0.0f;
-    xfm[kXfmRowBasisZ][1] = 0.0f;
-    xfm[kXfmRowBasisZ][2] = fScale;
-    pText->mDirty = 1;
+// The number of rows of the basis of a transform.
+constexpr int kBasisRowCount = 3;
+
+// Copy one row of a transform, including its fourth word.
+void CopyRow(float (&destination)[Rnd::kXfmRowFloatCount],
+             const float (&source)[Rnd::kXfmRowFloatCount]) {
+    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+        destination[i] = source[i];
+    }
+}
+
+// Set the basis of a text's local transform.
+void SetBasis(Rnd::Text *pText, const float (&basis)[kBasisRowCount][Rnd::kXfmRowFloatCount]) {
+    CopyRow(pText->mLocalXfm[kXfmRowBasisX], basis[kXfmRowBasisX]);
+    CopyRow(pText->mLocalXfm[kXfmRowBasisY], basis[kXfmRowBasisY]);
+    pText->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
+    CopyRow(pText->mLocalXfm[kXfmRowBasisZ], basis[kXfmRowBasisZ]);
 }
 
 } // namespace
@@ -70,8 +74,23 @@ void HudTextMessage::Show(const char *pszText,
     if (mShowing != 0) {
         return;
     }
-    SetScale(mText, fScale);
-    SetScale(mSmallText, fScale);
+    // Yes, the binary copies the unset fourth words of the basis and of the translation.
+    float basis[kBasisRowCount][Rnd::kXfmRowFloatCount];
+    basis[kXfmRowBasisX][0] = fScale;
+    basis[kXfmRowBasisX][1] = 0.0f;
+    basis[kXfmRowBasisX][2] = 0.0f;
+    basis[kXfmRowBasisY][0] = 0.0f;
+    basis[kXfmRowBasisY][1] = 1.0f;
+    basis[kXfmRowBasisY][2] = 0.0f;
+    basis[kXfmRowBasisZ][0] = 0.0f;
+    basis[kXfmRowBasisZ][1] = 0.0f;
+    basis[kXfmRowBasisZ][2] = fScale;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    SetBasis(mText, basis);
+    SetBasis(mSmallText, basis);
+#pragma GCC diagnostic pop
     mBlur->mXfms.clear();
     mSmallBlur->mXfms.clear();
     mText->SetText(pszText);
@@ -83,11 +102,16 @@ void HudTextMessage::Show(const char *pszText,
     } else {
         mMat->SetAmbient(*TheGfxManager.GetPlayerColor(nPlayer));
     }
-    Rnd::Transformable *pOffset = mOffsetView;
-    pOffset->mLocalXfm[kXfmRowTranslation][0] = fX;
-    pOffset->mLocalXfm[kXfmRowTranslation][1] = 0.0f;
-    pOffset->mLocalXfm[kXfmRowTranslation][2] = fZ;
-    pOffset->mDirty = 1;
+    float translation[Rnd::kXfmRowFloatCount];
+    translation[0] = fX;
+    translation[1] = 0.0f;
+    translation[2] = fZ;
+    mOffsetView->mDirty = 1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    CopyRow(mOffsetView->mLocalXfm[kXfmRowTranslation], translation);
+#pragma GCC diagnostic pop
     mDuration = fDuration;
     mStartTime = TheGameDb->mSongTime;
     mFlight->SetFrame(0.0f);

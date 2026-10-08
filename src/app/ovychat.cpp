@@ -127,8 +127,18 @@ bool OvyChat::Line::Update(float fTime) {
     if (fRow == translation[kColumnZ]) {
         return false;
     }
-    translation[kColumnZ] = fRow;
+    float position[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
+    position[kColumnX] = translation[kColumnX];
+    position[kColumnY] = translation[kColumnY];
+    position[kColumnZ] = fRow;
     pTrans->mDirty = 1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    for (int i = kColumnX; i <= kColumnW; ++i) {
+        translation[i] = position[i];
+    }
+#pragma GCC diagnostic pop
     return true;
 }
 
@@ -186,8 +196,9 @@ OvyChat::OvyChat(DataArray *pConfig, DataArray *pDefaults, Rnd::View *pHudView)
 OvyChat::~OvyChat() {
     ChatMsg::RemoveSink(kGameChatChannel);
     KeyboardRemoveSink(this);
-    for (Line *pLine : mLines) {
-        delete pLine;
+    for (auto it = mLines.begin(); it != mLines.end();) {
+        delete *it;
+        it = mLines.erase(it);
     }
 }
 
@@ -256,7 +267,14 @@ bool OvyChat::AddLine(ChatMsg *pMsg) {
     if (nPlayer < 0) {
         return false;
     }
-    mPending.push_back(PendingMsg());
+    {
+        PendingMsg pending; // Yes, the binary copies the unset player of this message.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+        mPending.push_back(pending);
+#pragma GCC diagnostic pop
+    }
     mPending.back().mText = pMsg->mText;
     mPending.back().mPlayer = nPlayer;
     mLastActivity = mLastTime;
@@ -317,12 +335,12 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
         }
         const Vector3 position = mEditLine->mText->CharPosition(mEdit.mCursor);
         Rnd::Transformable *pCursor = mCursor;
+        pCursor->mDirty = 1;
         float (&translation)[Rnd::kXfmRowFloatCount] = pCursor->mLocalXfm[kRowTranslation];
         translation[kColumnX] = position.x;
         translation[kColumnY] = position.y;
         translation[kColumnZ] = position.z;
         translation[kColumnW] = position.w;
-        pCursor->mDirty = 1;
     }
     return false;
 }

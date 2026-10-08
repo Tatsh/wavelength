@@ -23,9 +23,16 @@ constexpr int kNoLeader = -1;
 
 HudCommon::HudCommon(Rnd::View *pHudView, DataArray *pConfig, DataArray *pDefaults)
     : mMessage("HUD genmsg.txt", pHudView), mMessage2("HUD genmsg2.txt", pHudView),
-      mTextMessage(pHudView), mSongPos(nullptr), mLetterbox(pHudView), mController(nullptr),
-      mDialog(nullptr), mLeaderAvatar(nullptr), mSections(nullptr), mStick(nullptr), mChat(nullptr),
-      mLetterExit(nullptr), mTrackLabel(nullptr), mPlaying(0) {
+      mTextMessage(pHudView), mSongPos(nullptr), mLetterbox(pHudView) {
+    mPlaying = 0;
+    mController = nullptr;
+    mDialog = nullptr;
+    mLeaderAvatar = nullptr;
+    mSections = nullptr;
+    mStick = nullptr;
+    mChat = nullptr;
+    mLetterExit = nullptr;
+    mTrackLabel = nullptr;
     if (TheGameDb->mRuleSet == GameDb::kRuleSetGame ||
         TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
         mSongPos = new OvySongPos(pHudView);
@@ -47,8 +54,7 @@ HudCommon::HudCommon(Rnd::View *pHudView, DataArray *pConfig, DataArray *pDefaul
             Rnd::TheManager.Find(FormatString("HUD%cr selected font.mnm", chHud))));
         auto *pLetterbox = dynamic_cast<Rnd::View *>(
             Rnd::TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
-        String prefix(FormatString("HUD%cr", chHud));
-        mSections = new OvySectionPanel(chHud, prefix, pLetterbox);
+        mSections = new OvySectionPanel(chHud, String(FormatString("HUD%cr", chHud)), pLetterbox);
         mStick = new HudStick(chHud, pHudView, pLetterbox);
         if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
             mChat = new OvyChat(pConfig, pDefaults, pHudView);

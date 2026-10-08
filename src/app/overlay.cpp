@@ -36,15 +36,6 @@ constexpr float kPerSecondToPerMs = 0.002f;
 constexpr char kHudCam[] = "hud.cam";
 constexpr char kHudEnv[] = "hud.env";
 
-void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
-    float (&translation)[Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm[kXfmRowTranslation];
-    translation[0] = position.x;
-    translation[1] = position.y;
-    translation[2] = position.z;
-    translation[3] = position.w;
-    pTrans->mDirty = 1;
-}
-
 } // namespace
 
 // The static initialiser of the unit, and the two routines that run it to construct and to destroy
@@ -119,9 +110,7 @@ void Overlay::LoadConfig(DataArray *pConfig, DataArray *pDefaults, [[maybe_unuse
     OvyRemixPanel::LoadPositions(pConfig, pDefaults);
 }
 
-Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) {
-    mCommon = nullptr;
-    mStarted = 0;
+Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mCommon(nullptr), mStarted(0) {
     const int nPlayers = TheGameDb->GetNumPlayers();
     HideablePanel::Init();
     SetHudPrefix();
@@ -634,13 +623,20 @@ void Overlay::HideStick() {
 }
 
 void Overlay::SetCameraOffset(const Vector3 *pOffset) {
-    Vector3 position = mCamPos;
-    position.x = pOffset->x + mCamPos.x;
-    position.y = pOffset->y + mCamPos.y;
-    position.z = pOffset->z + mCamPos.z;
-    const float (&current)[Rnd::kXfmRowFloatCount] = mCam->mLocalXfm[kXfmRowTranslation];
-    if (position.x != current[0] || position.y != current[1] || position.z != current[2]) {
-        SetTranslation(mCam, position);
+    float position[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
+    position[0] = pOffset->x + mCamPos.x;
+    position[1] = pOffset->y + mCamPos.y;
+    position[2] = pOffset->z + mCamPos.z;
+    float (&current)[Rnd::kXfmRowFloatCount] = mCam->mLocalXfm[kXfmRowTranslation];
+    if (position[0] != current[0] || position[1] != current[1] || position[2] != current[2]) {
+        mCam->mDirty = 1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+        for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+            current[i] = position[i];
+        }
+#pragma GCC diagnostic pop
     }
 }
 
@@ -707,7 +703,7 @@ void Overlay::ShowResult(bool bWon, [[maybe_unused]] int nMode) {
 void Overlay::Poll(float fFrame, float fSongDelta, float fUnused, float fRealDelta, float fFuture) {
     if (mStarted == 0 && 0.0f < fRealDelta && kShowPartsFrame < fFrame) {
         mStarted = 1;
-        SetPartsShown(true, 0);
+        SetPartsShown(true, 1); // Yes, the binary passes 1 for the unread argument here.
     }
     const float fNow = SystemMs();
     const float fDelta = fNow - mLastTime;

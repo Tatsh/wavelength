@@ -4,7 +4,7 @@
 #include "rnd/animatable.h"
 #include "rnd/mat.h"
 #include "rnd/mesh.h"
-#include "rnd/transformable.h"
+#include "rnd/view.h"
 
 /**
  * Marker on the controller stick diagram of the head-up display, which the tutorial moves.
@@ -29,11 +29,11 @@ public:
      *
      * @param chHud The letter of the head-up display layout.
      * @param pAnims The animation the material animations join.
-     * @param pParent The transform the marker moves with.
+     * @param pParent The view the marker moves with.
      * @ghidraAddress NTSC-U/C: 0x001b8f20
      * @ghidraAddress PAL: 0x001c1cc0
      */
-    HudStick(char chHud, Rnd::Animatable *pAnims, Rnd::Transformable *pParent);
+    HudStick(char chHud, Rnd::Animatable *pAnims, Rnd::View *pParent);
 
     /**
      * Hide the marker.

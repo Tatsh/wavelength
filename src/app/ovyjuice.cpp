@@ -54,8 +54,8 @@ void OvyJuice::Show(bool bShow) {
 void OvyJuice::Reset() {
     mWarningLeft = 0.0f;
     mWarn = 0;
-    mGhostFade.Reset(mWarningLeft, mWarningLeft, kLongAgoStart, kLongAgoEnd);
     mLevel = kNoLevel;
+    mGhostFade.Reset(mWarningLeft, mWarningLeft, kLongAgoStart, kLongAgoEnd);
     mWarning->SetShowing(false);
     mGhost->SetShowing(false);
     mBar->SetShowing(false);

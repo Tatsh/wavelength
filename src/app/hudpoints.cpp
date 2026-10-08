@@ -37,18 +37,45 @@ constexpr float kLostExitStart = 200.0f;
 constexpr float kDuelLostDelay = 200.0f;
 constexpr float kExitLength = 100.0f;
 
+// The number of rows of the basis of a transform.
+constexpr int kBasisRowCount = 3;
+
+// A basis that scales by the same factor along x and z. Its fourth words are never written.
+struct ScaleBasis {
+    float mRows[kBasisRowCount][Rnd::kXfmRowFloatCount];
+};
+
+ScaleBasis MakeScaleBasis(float fScale) {
+    ScaleBasis basis;
+    basis.mRows[kXfmRowBasisX][0] = fScale;
+    basis.mRows[kXfmRowBasisX][1] = 0.0f;
+    basis.mRows[kXfmRowBasisX][2] = 0.0f;
+    basis.mRows[kXfmRowBasisY][0] = 0.0f;
+    basis.mRows[kXfmRowBasisY][1] = 1.0f;
+    basis.mRows[kXfmRowBasisY][2] = 0.0f;
+    basis.mRows[kXfmRowBasisZ][0] = 0.0f;
+    basis.mRows[kXfmRowBasisZ][1] = 0.0f;
+    basis.mRows[kXfmRowBasisZ][2] = fScale;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    return basis;
+#pragma GCC diagnostic pop
+}
+
+// Copy one row of a basis, including its unset fourth word.
+void CopyRow(float (&destination)[Rnd::kXfmRowFloatCount], const ScaleBasis &basis, int nRow) {
+    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+        destination[i] = basis.mRows[nRow][i];
+    }
+}
+
 void SetScale(Rnd::Transformable *pTrans, float fScale) {
-    float (&xfm)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm;
-    xfm[kXfmRowBasisX][0] = fScale;
-    xfm[kXfmRowBasisX][1] = 0.0f;
-    xfm[kXfmRowBasisX][2] = 0.0f;
-    xfm[kXfmRowBasisY][0] = 0.0f;
-    xfm[kXfmRowBasisY][1] = 1.0f;
-    xfm[kXfmRowBasisY][2] = 0.0f;
-    xfm[kXfmRowBasisZ][0] = 0.0f;
-    xfm[kXfmRowBasisZ][1] = 0.0f;
-    xfm[kXfmRowBasisZ][2] = fScale;
-    pTrans->mDirty = 1;
+    const ScaleBasis basis = MakeScaleBasis(fScale);
+    CopyRow(pTrans->mLocalXfm[kXfmRowBasisX], basis, kXfmRowBasisX);
+    CopyRow(pTrans->mLocalXfm[kXfmRowBasisY], basis, kXfmRowBasisY);
+    pTrans->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
+    CopyRow(pTrans->mLocalXfm[kXfmRowBasisZ], basis, kXfmRowBasisZ);
 }
 
 } // namespace
@@ -124,7 +151,12 @@ void HudPoints::Poll([[maybe_unused]] float fUnused, float fDelta) {
 }
 
 void HudPoints::ScaleText(Rnd::Transformable *pText) {
-    SetScale(pText, Overlay::sPointsScale * (mSwell * kSwellPart + kRestPart));
+    const ScaleBasis basis =
+        MakeScaleBasis(Overlay::sPointsScale * (mSwell * kSwellPart + kRestPart));
+    pText->mDirty = 1;
+    CopyRow(pText->mLocalXfm[kXfmRowBasisX], basis, kXfmRowBasisX);
+    CopyRow(pText->mLocalXfm[kXfmRowBasisY], basis, kXfmRowBasisY);
+    CopyRow(pText->mLocalXfm[kXfmRowBasisZ], basis, kXfmRowBasisZ);
 }
 
 void HudPoints::ShowPoints(int nPoints, const char *pszText) {

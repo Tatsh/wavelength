@@ -13,7 +13,7 @@ enum XfmColumn { kXfmColumnX = 0, kXfmColumnY = 1, kXfmColumnZ = 2 };
 
 } // namespace
 
-HudStick::HudStick(char chHud, Rnd::Animatable *pAnims, Rnd::Transformable *pParent) {
+HudStick::HudStick(char chHud, Rnd::Animatable *pAnims, Rnd::View *pParent) {
     mMesh =
         dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("HUD%cr_stick.mesh", chHud)));
     mMats[kDirectionInOut] = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD in_out.mat"));
@@ -33,11 +33,18 @@ void HudStick::Hide() {
 }
 
 void HudStick::Show(int nDirection, const Vector2 *pPosition) {
-    float (&translation)[Rnd::kXfmRowFloatCount] = mMesh->mLocalXfm[kXfmRowTranslation];
+    float translation[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
     translation[kXfmColumnX] = pPosition->x;
     translation[kXfmColumnY] = 0.0f;
     translation[kXfmColumnZ] = pPosition->y;
     mMesh->mDirty = 1;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+        mMesh->mLocalXfm[kXfmRowTranslation][i] = translation[i];
+    }
+#pragma GCC diagnostic pop
     mMesh->SetShowing(true);
     mMesh->SetMat(mMats[nDirection]);
 }
