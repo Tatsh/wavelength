@@ -1,4 +1,11 @@
-set(WAVELENGTH_GFX_SRCS gfxdevice.cpp gsdoublebuffer.cpp vram.cpp)
+set(WAVELENGTH_GFX_SRCS
+    gfxconfig.cpp
+    gfxdevice.cpp
+    gfxmanager.cpp
+    gsdoublebuffer.cpp
+    ship.cpp
+    shipflyin.cpp
+    vram.cpp)
 
 # The VU microprograms and the DMA chains that upload them. The DVP assembler builds them. It ships
 # with the SDK beside the Emotion Engine compiler.

@@ -14,6 +14,8 @@
 #include "rnd/particle.h"
 #include "rnd/transformable.h"
 
+class Ship;
+
 namespace Rnd {
 class Dbg;
 class Mat;
@@ -58,6 +60,11 @@ namespace Rnd {
  * "bubble:", and " readZ:". The dump reads "numParticles:" from the size of the pool.
  */
 class ParticleSys : public Animatable, public Transformable, public Drawable {
+    // The ships of the play field configure the life, the emission box, the speed, and the force
+    // of their particles and run SetFrameSelf() on the system clock, and the image has no accessor
+    // for any of them.
+    friend class ::Ship;
+
 public:
     /**
      * Primitive a system draws each particle as.

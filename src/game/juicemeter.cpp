@@ -46,7 +46,7 @@ float JuiceMeter::GetMax() const {
 
 void JuiceMeter::UpdateDisplay() {
     TheGfxManager.SetEnergy(kFirstPlayer, mValue / mMax);
-    TheGfxManager.BeginLoad(kFirstPlayer, mValue <= 0.0f);
+    TheGfxManager.SetDying(kFirstPlayer, mValue <= 0.0f);
 }
 
 void JuiceMeter::CheckLow(float, float fNew) {

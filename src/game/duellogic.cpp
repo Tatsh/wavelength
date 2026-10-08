@@ -328,15 +328,15 @@ void DuelLogic::Start() {
     StartFirstPhrase();
 
     const SectionBoundaries *pSections = mSong->GetSections();
-    TheGfxManager.AddCheckpoint(kGfxPlayer, 0.0f, kCheckpointOffset, kCheckpointScale);
+    TheGfxManager.AddCheckpoint(nullptr, 0.0f, kCheckpointOffset, kCheckpointScale);
     for (int nSection = 1; nSection < pSections->NumSections(); ++nSection) {
         TheGfxManager.AddCheckpoint(
-            kGfxPlayer,
+            nullptr,
             static_cast<float>(pSections->SectionStart(nSection) * mTicksPerBar),
             kCheckpointOffset,
             kCheckpointScale);
     }
-    TheGfxManager.AddCheckpoint(kGfxPlayer,
+    TheGfxManager.AddCheckpoint(nullptr,
                                 static_cast<float>(mSong->mNumBars * mTicksPerBar),
                                 kCheckpointOffset,
                                 kCheckpointScale);

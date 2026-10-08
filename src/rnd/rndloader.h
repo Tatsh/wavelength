@@ -3,6 +3,7 @@
 #include <list>
 
 #include "os/binstream.h"
+#include "os/string.h"
 #include "rnd/object.h"
 
 /**
@@ -84,6 +85,8 @@ public:
      */
     bool IsLoaded() const;
 
-    // +0x00 to +0x3b are not yet identified.
+    // +0x00 to +0x0b are not yet identified.
+    String mFile; /*!< The file. +0x0c */
+    // +0x20 to +0x3b are not yet identified.
     std::list<Rnd::Object *> mObjects; /*!< The objects the file created. +0x3c */
 };

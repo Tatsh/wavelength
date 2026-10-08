@@ -4,8 +4,10 @@
 
 #include "rnd/object.h"
 
+class HudLetterExit;
 class MetagameArena;
 class MetRenderer;
+class Ship;
 class ViewAnimPlayer;
 namespace Rnd {
 class Dbg;
@@ -54,6 +56,12 @@ class Animatable : public virtual Object {
     friend class ::MetagameArena;
     // ViewAnimPlayer::Poll() walks mAnims directly, and the image has no accessor for it.
     friend class ::ViewAnimPlayer;
+    // HudLetterExit::Poll() filters the frame of its flight before it evaluates the path, and the
+    // image has no accessor for FilterFrame().
+    friend class ::HudLetterExit;
+    // Ship::UpdateTransform() filters the frames of its intro paths before it evaluates them, and
+    // the Ship constructor walks mAnims of its view, and the image has no accessor for either.
+    friend class ::Ship;
 
 public:
     /**

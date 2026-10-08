@@ -2,6 +2,7 @@ set(WAVELENGTH_MATH_SRCS
     box.cpp
     color.cpp
     frustum.cpp
+    interpolator.cpp
     plane.cpp
     quaternion.cpp
     sphere.cpp

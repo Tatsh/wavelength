@@ -50,7 +50,7 @@ public:
     void FormatMonthDay(String &text) const;
 
     /**
-     * Write the date as "MM/DD/YY". The name is inferred.
+     * Write the date as "MM/DD/YY", the year counted from 2000. The name is inferred.
      *
      * @param text Receives the date.
      * @ghidraAddress NTSC-U/C: 0x00288b00

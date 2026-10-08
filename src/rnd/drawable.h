@@ -309,8 +309,14 @@ private:
      */
     void AcquireDrawsRefs();
 
-    int mHighlight;               // +0x08
-    std::list<Drawable *> mDraws; // +0x0c
+    int mHighlight; // +0x08
+
+public:
+    /**
+     * The drawables drawn after this one. Public because Overlay's constructor walks the list of
+     * the head-up display layout directly, and the image has no accessor. +0x0c
+     */
+    std::list<Drawable *> mDraws;
 };
 
 } // namespace Rnd

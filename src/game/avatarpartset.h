@@ -235,6 +235,38 @@ public:
     void SetBaseAnim(const char *pszAnim, int nFlags);
 
     /**
+     * Show a pose on the avatar player, when there is one, and record it in mPoseAnim.
+     *
+     * The name is inferred.
+     *
+     * @param pszPose The pose.
+     * @ghidraAddress NTSC-U/C: 0x00272598
+     * @ghidraAddress PAL: 0x0027c148
+     */
+    void SetPose(const char *pszPose);
+
+    /**
+     * Stop the animations of the avatar player and forget mBaseAnim and mPoseAnim.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00272660
+     * @ghidraAddress PAL: 0x0027c210
+     */
+    void ClearAnims();
+
+    /**
+     * Report whether the animation the avatar player plays is a `win` animation.
+     *
+     * The name is inferred.
+     *
+     * @return Whether mBaseAnim starts with `win`.
+     * @ghidraAddress NTSC-U/C: 0x00272b10
+     * @ghidraAddress PAL: 0x0027c630
+     */
+    bool IsWinAnim() const;
+
+    /**
      * Apply the parts to the avatar and render it into the avatar texture.
      *
      * @param pScreenRect The part of the screen the avatar fills, or null for the projector.

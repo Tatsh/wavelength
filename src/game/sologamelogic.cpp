@@ -639,7 +639,7 @@ void SoloGameLogic::OnFinish(bool bWon) {
                                       kMessageOffset,
                                       kMessageOffset);
         }
-        TheGfxManager.BeginLoad(0, 0);
+        TheGfxManager.SetDying(0, false);
         TheGfxManager.SetWinner(kLocalPlayer);
         TheSongScheduler.PostAt(mSwapMovieCmd.Get(), (nBar + 1) * mTicksPerBar, false);
         if (TheGameDb->mPracticeMode) {

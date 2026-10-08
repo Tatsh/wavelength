@@ -5,12 +5,40 @@ set(WAVELENGTH_APP_SRCS
     apptimetask.cpp
     attachment.cpp
     cutscene.cpp
+    hideablepanel.cpp
+    hudcommon.cpp
+    hudflyingbutton.cpp
+    hudhilitebox.cpp
+    hudletterbox.cpp
+    hudletterexit.cpp
+    hudpoints.cpp
+    hudpowerup.cpp
+    hudstick.cpp
+    hudtextmessage.cpp
+    hudtextnode.cpp
     linearanim.cpp
     longop.cpp
     msgsink.cpp
     msgsource.cpp
+    overlay.cpp
+    ovyallplayer.cpp
     ovyassembly.cpp
+    ovyavatar.cpp
+    ovychat.cpp
+    ovycontroller.cpp
+    ovydialog.cpp
+    ovyduelscore.cpp
+    ovyjuice.cpp
+    ovylocalplayer.cpp
+    ovyremixgenpanel.cpp
+    ovyscore.cpp
+    ovyremixpanel.cpp
+    ovyremixsubpanel.cpp
+    ovysectionpanel.cpp
+    ovysongpos.cpp
+    ovytracklabel.cpp
     playbacker.cpp
+    rampanimator.cpp
     recorder.cpp
     scheduler.cpp
     task.cpp

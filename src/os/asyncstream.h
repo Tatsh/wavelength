@@ -91,6 +91,17 @@ public:
     }
 
     /**
+     * Report the file.
+     *
+     * GfxManager::FindPreload() reads the name in place, and the image has no accessor.
+     *
+     * @return The name of the file.
+     */
+    const char *GetFileName() const {
+        return mFileName.c_str();
+    }
+
+    /**
      * Report whether the position is at the end of the file.
      *
      * @return Whether no byte is left.

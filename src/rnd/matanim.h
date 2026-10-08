@@ -7,6 +7,7 @@
 #include "rnd/animatable.h"
 #include "rnd/keychannel.h"
 
+class SongDecryptScreen;
 namespace Rnd {
 class Dbg;
 class Mat;
@@ -81,8 +82,8 @@ public:
      * " scaleKeys:", " rotKeys:", " texKeys:", and " matAnim:" in offset order.
      *
      * The record has behaviour, so it is a class with private members rather than a plain data
-     * record. Rnd::MatAnim is the only code that touches the four channels, through the nested
-     * access a member of the enclosing class has.
+     * record. Rnd::MatAnim touches the four channels through the nested access a member of the
+     * enclosing class has, and SongDecryptScreen::Poll() reads the texture channel.
      */
     class Stage {
     public:
@@ -231,6 +232,8 @@ public:
 
     private:
         friend class MatAnim;
+        // SongDecryptScreen::Poll() reads mTexKeys directly, and the image has no accessor for it.
+        friend class ::SongDecryptScreen;
 
         // Channel blended into the last row of the stage transform, which is its translation.
         std::list<Vector3Key> mTranslateKeys; // +0x00
@@ -448,8 +451,9 @@ private:
      */
     void RemoveObjectRefs();
 
-    // No class derives from Rnd::MatAnim and no access from outside it is recovered, so every
-    // member is private. The order below is the recovered offset order.
+    // SongDecryptScreen::Poll() reads mKeysOwner and mStages directly, and the image has no
+    // accessor for either. The order below is the recovered offset order.
+    friend class ::SongDecryptScreen;
 
     // The material this animation drives.
     Mat *mMat; // +0x18

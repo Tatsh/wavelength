@@ -32,6 +32,17 @@ public:
     static void AddHandler(int nChannel, MsgSink *pHandler);
 
     /**
+     * Forget the sink of a channel.
+     *
+     * The name is inferred.
+     *
+     * @param nChannel The channel.
+     * @ghidraAddress NTSC-U/C: 0x00252408
+     * @ghidraAddress PAL: 0x0025adb0
+     */
+    static void RemoveSink(int nChannel);
+
+    /**
      * Send a line of chat.
      *
      * The names of the parameters are inferred.

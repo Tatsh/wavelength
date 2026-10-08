@@ -309,6 +309,26 @@ public:
     void SaveFile(const HxStr &path);
 
     /**
+     * Load a `.rnd` file to the end before returning, through a loader that is then destroyed.
+     *
+     * @param pszFile The file to read.
+     * @ghidraAddress NTSC-U/C: 0x00238fb0
+     * @ghidraAddress PAL: 0x00241b30
+     */
+    void LoadFile(const char *pszFile);
+
+    /**
+     * Write the object table to a `.rnd` file by path.
+     *
+     * A path that fails to open for writing produces a notification and writes nothing.
+     *
+     * @param pszFile The file to write.
+     * @ghidraAddress NTSC-U/C: 0x00238fe8
+     * @ghidraAddress PAL: 0x00241b68
+     */
+    void SaveFile(const char *pszFile);
+
+    /**
      * Resolve a loaded object by name.
      *
      * @param name The object name as written in the `.rnd` file.

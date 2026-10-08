@@ -202,6 +202,19 @@ public:
     Vector2 ProjectToUnit(const Vector3 &pt);
 
     /**
+     * Place a world point in the screen rectangle.
+     *
+     * The point is carried through mWorldProject and divided by its depth, then mapped from
+     * -1..1 onto mScreenRect. A point at zero depth skips the division. The title is inferred.
+     *
+     * @param pt The world point.
+     * @param ptScreen Receives the point in the coordinates of mScreenRect.
+     * @ghidraAddress NTSC-U/C: 0x002204b8
+     * @ghidraAddress PAL: 0x00229288
+     */
+    void WorldToScreen(const Vector3 &pt, Vector2 &ptScreen);
+
+    /**
      * Carry a point of the unit square of the projected image onto the far side of the projection.
      *
      * The point is mapped from 0..1 onto -1..1 with a depth of one and carried through
@@ -480,11 +493,15 @@ protected:
     // Protected because Rnd::PsCam writes it when there is no render target.
     float mYRatio; // +0x2ec
 
-protected:
-    // Depth the projected image is mapped into, as a low value in x and a high value in y.
-    Vector2 mZRange; // +0x2f0
-
 public:
+    /**
+     * Depth the projected image is mapped into, as a low value in x and a high value in y.
+     *
+     * Public because Overlay's constructor writes it on the head-up display camera directly, and
+     * the image has no accessor. +0x2f0
+     */
+    Vector2 mZRange;
+
     /**
      * Fraction of the render target the projected image is placed in.
      *
@@ -587,6 +604,21 @@ inline Vector2 Cam::ProjectToUnit(const Vector3 &pt) {
     Vector2 ptUnit;
     Rnd::Multiply(ptShifted, 0.5f, ptUnit);
     return ptUnit;
+}
+
+inline void Cam::WorldToScreen(const Vector3 &pt, Vector2 &ptScreen) {
+    Vector3 ptProjected;
+    XfmPoint(pt, mWorldProject, ptProjected);
+    if (ptProjected.z != 0.0f) {
+        const float flInvDepth = 1.0f / ptProjected.z;
+        ptScreen.x = ptProjected.x * flInvDepth;
+        ptScreen.y = ptProjected.y * flInvDepth;
+    } else {
+        ptScreen.x = ptProjected.x;
+        ptScreen.y = ptProjected.y;
+    }
+    ptScreen.x = mScreenRect.x + (ptScreen.x + 1.0f) * 0.5f * mScreenRect.w;
+    ptScreen.y = mScreenRect.y + (ptScreen.y + 1.0f) * 0.5f * mScreenRect.h;
 }
 
 /**

@@ -334,16 +334,16 @@ float GameLogic::GetProgress() {
 void GameLogic::Start() {
     mState = kStatePlaying;
     SectionBoundaries *pSections = mSong->GetSections();
-    TheGfxManager.AddCheckpoint(0, 0.0f, 0.0f, kCheckpointScale);
+    TheGfxManager.AddCheckpoint(nullptr, 0.0f, 0.0f, kCheckpointScale);
     for (int i = 1; i < pSections->NumSections(); ++i) {
-        TheGfxManager.AddCheckpoint(0,
+        TheGfxManager.AddCheckpoint(nullptr,
                                     static_cast<float>(pSections->SectionStart(i) * mTicksPerBar),
                                     0.0f,
                                     kCheckpointScale);
     }
     if (TheGameDb->mTutorial == 0) {
         TheGfxManager.AddCheckpoint(
-            0, static_cast<float>(mNumBars * mTicksPerBar), 0.0f, kCheckpointScale);
+            nullptr, static_cast<float>(mNumBars * mTicksPerBar), 0.0f, kCheckpointScale);
     }
 
     for (int i = 0; i < mSong->GetNumBackMusic(); ++i) {

@@ -546,13 +546,21 @@ private:
      */
     void AddRefObjects();
 
-    // Declared in recovered offset order. Every member but mWrapWidth and mPreWrapText is private:
-    // each one that the engine changes has a setter, and no call from outside this class arrives at
-    // one of those setters.
+    // Declared in recovered offset order. Every member but mFont, mWrapWidth, and mPreWrapText is
+    // private: each one that the engine changes has a setter, and no call from outside this class
+    // arrives at one of those setters.
 
-    Color mColor;  // +0xd0
-    int mAlign;    // +0xe0
-    Font *mFont;   // +0xe4
+    Color mColor; // +0xd0
+    int mAlign;   // +0xe0
+
+public:
+    /**
+     * Font the glyphs come from. Public because OvyRemixGenPanel::Load() reads it directly, and
+     * the image has no accessor. +0xe4
+     */
+    Font *mFont;
+
+private:
     int mWordWrap; // +0xe8
 
 public:

@@ -50,3 +50,12 @@ int RandomInt(int nLow, int nHigh);
  * @ghidraAddress PAL: 0x0029be38
  */
 float RandomFloat(float fLow, float fHigh);
+
+/**
+ * Draw a floating-point number from 0 to 1 from the shared generator.
+ *
+ * @return The number.
+ * @ghidraAddress NTSC-U/C: 0x00292450
+ * @ghidraAddress PAL: 0x0029be18
+ */
+float RandomFloat();

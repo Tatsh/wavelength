@@ -1,5 +1,8 @@
 #include "met/songdecryptscreen.h"
 
+#include <iterator>
+#include <list>
+
 #include "game/gamedb.h"
 #include "game/songentry.h"
 #include "met/bonuspicpanel.h"
@@ -10,6 +13,16 @@
 #include "rnd/text.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
+
+namespace {
+
+// The reveal is the texture channel of the first stage of the picture's material animation.
+constexpr int kRevealStage = 0;
+
+// The key of the channel that starts the decryption. The key after it ends the decryption.
+constexpr int kDecryptKey = 1;
+
+} // namespace
 
 SongDecryptScreen::SongDecryptScreen(DataArray *pData)
     : FreqScreen(pData), mSong(nullptr), mPicAnim(nullptr) {
@@ -51,13 +64,16 @@ void SongDecryptScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
     const float fFrame = mPicAnim->mFilteredFrame;
     mAnimPlayer.Poll(TheUI.mTime); // Yes, the binary polls with the front-end time.
-    // The retail build compares fFrame with the first and the last key of the material the reveal
-    // drives. The keys are not reachable here, and the reveal's whole span stands in for them.
-    if (!mDecryptPlayed) {
+    // The second texture key of the first stage starts the decryption, and the third ends it.
+    const std::list<Rnd::MatAnim::Stage::TexKey> &keys =
+        mPicAnim->mKeysOwner->mStages[kRevealStage].mTexKeys;
+    auto key = std::next(keys.begin(), kDecryptKey);
+    if (!mDecryptPlayed && key->mFrame <= fFrame) {
         FxMidi::PlayDecrypt();
         mDecryptPlayed = 1;
     }
-    if (mPicAnim->FilteredFrameEnd() <= fFrame) {
+    ++key;
+    if (key->mFrame <= fFrame) {
         TheUI.GotoScreen("song_decrypt_done");
     }
 }

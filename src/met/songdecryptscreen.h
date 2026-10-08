@@ -37,13 +37,12 @@ public:
     }
 
     /**
-     * Play the decrypt sound once the reveal reaches its first key, and move to
-     * `song_decrypt_done` once it reaches its last.
+     * Play the decrypt sound once the reveal reaches the second texture key of the first stage
+     * of its keys, and move to `song_decrypt_done` once it reaches the third.
      *
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00198818
      * @ghidraAddress PAL: 0x0019fd38
-     * @stub
      */
     void Poll(float fTime) override;
 

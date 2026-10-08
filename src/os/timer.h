@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "os/cycles.h"
 
 /**
@@ -83,9 +85,26 @@ public:
         }
     }
 
-    unsigned mStart;    /*!< Counter reading at the start of the current measurement. */
-    unsigned mCycles;   /*!< Cycles of the last completed measurement. */
-    float mLastMs;      /*!< mCycles converted to milliseconds when the timer last stopped. */
-    unsigned mReserved; // +0x0c, not written by any routine recovered so far.
-    int mRunning;       /*!< Start count. The timer measures while the count is non-zero. */
+    /**
+     * Find a timer of the registry of named timers.
+     *
+     * @param pszName The name.
+     * @return The timer, or null when no timer of the registry has the name.
+     * @ghidraAddress NTSC-U/C: 0x0028d128
+     * @ghidraAddress PAL: 0x00296b08
+     */
+    static Timer *Find(const char *pszName);
+
+    /**
+     * The registry of named timers.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00491a00
+     */
+    static std::vector<Timer> sTimers;
+
+    unsigned mStart;   /*!< Counter reading at the start of the current measurement. */
+    unsigned mCycles;  /*!< Cycles of the last completed measurement. */
+    float mLastMs;     /*!< mCycles converted to milliseconds when the timer last stopped. */
+    const char *mName; /*!< The name Find() matches, or null for an unnamed timer. */
+    int mRunning;      /*!< Start count. The timer measures while the count is non-zero. */
 };

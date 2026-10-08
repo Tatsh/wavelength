@@ -144,6 +144,43 @@ public:
     float GetBpm() const;
 
     /**
+     * Report the `tunnel_scale` of the song.
+     *
+     * @return The scale, or 1 when the entry does not specify one.
+     * @ghidraAddress NTSC-U/C: 0x0027cea0
+     * @ghidraAddress PAL: 0x002867b8
+     */
+    float GetTunnelScale() const;
+
+    /**
+     * Report the `song_bars` of the song.
+     *
+     * @return The number of bars.
+     * @ghidraAddress NTSC-U/C: 0x0027d448
+     * @ghidraAddress PAL: 0x00286d60
+     */
+    int GetBars() const;
+
+    /**
+     * Report the `remix_song_bars` of the song.
+     *
+     * @return The number of bars of a remix.
+     * @ghidraAddress NTSC-U/C: 0x0027d478
+     * @ghidraAddress PAL: 0x00286d90
+     */
+    int GetRemixBars() const;
+
+    /**
+     * Report the `duel_song_bars` of the song, or the `remix_song_bars` when the entry does not
+     * specify it.
+     *
+     * @return The number of bars of a duel.
+     * @ghidraAddress NTSC-U/C: 0x0027d4a8
+     * @ghidraAddress PAL: 0x00286dc0
+     */
+    int GetDuelBars() const;
+
+    /**
      * Report the short title of the song.
      *
      * The title is the localized `<name>_TITLE_SHORT`, or the full title when the text table has

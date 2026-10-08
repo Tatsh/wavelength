@@ -9,6 +9,8 @@
 #include "rnd/transformable.h"
 
 struct Vector3;
+class HudLetterExit;
+
 namespace Rnd {
 class Dbg;
 class Object;
@@ -47,6 +49,10 @@ constexpr unsigned kCopyShareFrames = 0x100;
  * before taking ownership.
  */
 class TransAnim : public Animatable, public Drawable {
+    // The HudLetterExit constructor reads the frame of the last translation key of its first
+    // letter path, and the image has no accessor for it.
+    friend class ::HudLetterExit;
+
 public:
     /**
      * Creator the registered "TransAnim" class builds through.
@@ -366,6 +372,19 @@ public:
      * @ghidraAddress PAL: 0x00532f28
      */
     void EvalFrame(float flFrame, float *pXfm, int nResetEmpty);
+
+    /**
+     * Measure the length of the path the translation keys trace between two frames.
+     *
+     * The title is inferred.
+     *
+     * @param flStart The first frame.
+     * @param flEnd The last frame.
+     * @return The length, or 0 for a path of fewer than two keys.
+     * @ghidraAddress NTSC-U/C: 0x00247630
+     * @ghidraAddress PAL: 0x002500d0
+     */
+    float ArcLength(float flStart, float flEnd);
 
     /**
      * Redistribute the frames owner's translation keys to an even speed.

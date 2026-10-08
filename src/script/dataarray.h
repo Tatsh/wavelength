@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/color.h"
+#include "math/vector2.h"
 #include "math/vector3.h"
 #include "os/binstream.h"
 #include "os/string.h"
@@ -72,6 +73,18 @@ public:
      * @ghidraAddress PAL: 0x002a00c0
      */
     bool FindVector(const char *pszName, Vector3 *pValue, bool bFail) const;
+
+    /**
+     * Find the two numbers that follow a tag.
+     *
+     * @param pszName The symbol that starts the child array.
+     * @param pValue Receives the numbers at indices 1 and 2 of the child array when it exists.
+     * @param bFail Passed to FindArray().
+     * @return Whether the child array exists.
+     * @ghidraAddress NTSC-U/C: 0x00296440
+     * @ghidraAddress PAL: 0x002a0058
+     */
+    bool FindVector(const char *pszName, Vector2 *pValue, bool bFail) const;
 
     /**
      * Drop one reference and destroy the array when none remains.
@@ -244,8 +257,43 @@ public:
      */
     static void MakeCompiledPath(char *pszOut, const char *pszPath, bool bCompiled);
 
+    /**
+     * Create an array of nodes with one reference.
+     *
+     * @param nSize The number of nodes.
+     * @return The array.
+     * @ghidraAddress NTSC-U/C: 0x00295e88
+     * @ghidraAddress PAL: 0x0029faa0
+     */
+    static DataArray *New(int nSize);
+
+    /**
+     * Replace a node, taking a reference on an array value and releasing the one an array node
+     * held before.
+     *
+     * A symbol value is interned first.
+     *
+     * @param nIndex The node.
+     * @param nValue The value, which is an integer, a symbol, or an array as eType specifies.
+     * @param eType The kind of the node, one of NodeType.
+     * @ghidraAddress NTSC-U/C: 0x00296820
+     * @ghidraAddress PAL: 0x002a0438
+     */
+    void Set(int nIndex, int nValue, int eType);
+
+    /**
+     * Define a script macro, taking a reference on its value.
+     *
+     * @param pszName The name of the macro.
+     * @param pValue The value of the macro.
+     * @ghidraAddress NTSC-U/C: 0x002973a8
+     * @ghidraAddress PAL: 0x002a0fb8
+     */
+    static void DefineMacro(const char *pszName, DataArray *pValue);
+
     int mReserved00;      // +0x00, the node storage. The node type is not yet recovered.
     const char *mFile;    /*!< The file the array was read from. */
     short mSize;          /*!< Number of nodes. */
     unsigned short mRefs; /*!< Reference count Release() decrements. */
+    short mLine;          /*!< The line of mFile the array starts at. */
 };
