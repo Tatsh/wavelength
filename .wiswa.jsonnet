@@ -86,14 +86,15 @@
   package_json+: {
     cspell+: {
       // The generated progress parts list routine names, not prose.
-      ignorePaths+: ['3rdparty/**', 'progress/**'],
+      ignorePaths+: ['3rdparty/**', 'progress/**', 'tools/synthedit/synthcontrol/*.{bas,cls}'],
     },
     'markdownlint-cli2'+: {
       ignores: ['3rdparty/**'],
     },
   },
   pre_commit_config+: {
-    exclude: '^3rdparty/',
+    // The VBA modules are the add-in's source byte for byte.
+    exclude: '^(3rdparty/|tools/synthedit/synthcontrol/.*\\.(bas|cls)$)',
   },
   gitattributes+: ['/3rdparty/** -text linguist-vendored'],
   // Vendored upstream sources are not reformatted.

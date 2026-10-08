@@ -31,7 +31,8 @@
       "dist/**",
       "man/**",
       "3rdparty/**",
-      "progress/**"
+      "progress/**",
+      "tools/synthedit/synthcontrol/*.{bas,cls}"
     ],
     "language": "en-GB",
     "languageSettings": [

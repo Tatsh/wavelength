@@ -11,7 +11,7 @@ default_install_hook_types:
   - 'pre-push'
   - 'post-checkout'
   - 'post-merge'
-exclude: '^3rdparty/'
+exclude: '^(3rdparty/|tools/synthedit/synthcontrol/.*\.(bas|cls)$)'
 repos:
   - hooks:
       - exclude: "yarn-\\d+.*\\.cjs$"
