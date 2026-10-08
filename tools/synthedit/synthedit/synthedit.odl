@@ -1,0 +1,71 @@
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(B26CEE76-EB96-4863-82AC-A24D7F64CB93), version(1.0),
+  helpfile("synthedit.hlp"),
+  helpstring("synthedit ActiveX Control module"),
+  control ]
+library SYNTHEDITLib
+{
+    importlib(STDOLE_TLB);
+    importlib(STDTYPE_TLB);
+
+    [ uuid(CF0954D2-7680-4670-9D23-14F0A10AF4CE),
+      helpstring("Dispatch interface for Synthedit Control"), hidden ]
+    dispinterface _DSynthedit
+    {
+        properties:
+        methods:
+            [id(1)] long NewBank();
+            [id(2)] long AttachSampleToInstrument(long iBankID, long iSampleID, long iInstrumentID);
+            [id(3)] long DeleteInstrument(long iBankID, long iInstrumentID);
+            [id(4)] long DeleteSample(long iBankID, long iSampleID);
+            [id(5)] long NewInstrument(long iBankID);
+            [id(6)] long NewSample(long iBankID);
+            [id(7)] long RetireBank(long iBankID);
+            [id(8)] long ShutdownSynthCtrl();
+            [id(9)] long MakeSimpleBankFile();
+            [id(10)] long XferSynthData(long iBankID, long iAction, VARIANT* ioLongArray,
+                                        VARIANT* ioStringArray);
+            [id(11)] long DoDebugSomething();
+            [id(12)] long ReadAndSaveBankFile();
+            [id(13)] long SaveBank(long iBankID, long iSaveAs);
+            [id(14)] long NewSamplesFromFolder(long iBankID);
+            [id(15)] long NewInstrumentsFromFolder(long iBankID);
+            [id(16)] long NewSampleDescription(long iBankID, long iInstrumentID, long iSampleIDOptional);
+            [id(17)] long DeleteSampleDescription(long iBankID, long iInstrumentID, long iSampleDescID);
+            [id(18)] long InitSynthControl(BSTR iSystemDirectory);
+            [id(DISPID_ABOUTBOX)] void AboutBox();
+    };
+
+    [ uuid(97F09794-B575-479C-8863-7AAFCE711F52),
+      helpstring("Event interface for Synthedit Control") ]
+    dispinterface _DSyntheditEvents
+    {
+        properties:
+        methods:
+            [id(1)] void UpdateSampleComments(long iBankID, VARIANT* iSampleIDs);
+            [id(2)] void UpdateSampleDescriptionComments(long iBankID, long iSampleID, VARIANT* iSampleDescIDs);
+            [id(3)] void UpdateSampleData(long iBankID, long iSampleID);
+            [id(4)] void UpdateBankData(long iBankID);
+            [id(5)] void UpdateInstrumentData(long iBankID, long iInstrumentID);
+            [id(6)] void UpdateSampleDescData(long iBankID, long iInstrumentID, long iSampleDescID);
+            [id(7)] void UpdateInstrumentComments(long iBankID, long iInstrumentID);
+            [id(8)] void InsertNewSample(long iBankID, long iSampleID);
+            [id(9)] void ProtectWorkSheets(long iBankID, long iYesNo);
+            [id(10)] void InsertNewInstrument(long iBankID, long iInstrumentID);
+            [id(11)] void InsertNewSampleDescription(long iBankID, long iInstrumentID, long iSampleDescID);
+            [id(12)] void DeleteSampleDescription(long iBankID, long iInstrumentID, long iSampleDescID);
+            [id(13)] void DeleteInstrument(long iBankID, long iInstrumentID);
+            [id(14)] void DeleteSample(long iBankID, long iSampleID);
+            [id(15)] void UpdateHyperLinks(long iBankID);
+    };
+
+    [ uuid(3D6CCA5D-9430-4225-BA65-92E3E14D4B48),
+      helpstring("Synthedit Control"), control ]
+    coclass Synthedit
+    {
+        [default] dispinterface _DSynthedit;
+        [default, source] dispinterface _DSyntheditEvents;
+    };
+};
