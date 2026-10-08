@@ -251,6 +251,17 @@ public:
     String &Insert(int nPos, int nCount, char ch);
 
     /**
+     * Insert a copy of another string's text.
+     *
+     * @param nPos The position the text goes before.
+     * @param text The text.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029f768
+     * @ghidraAddress PAL: 0x002a9428
+     */
+    String &Insert(int nPos, const String &text);
+
+    /**
      * Report whether the text sorts before another string's text.
      *
      * @param other The other string.

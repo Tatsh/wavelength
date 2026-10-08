@@ -890,6 +890,7 @@ paddh
 padman
 padman's
 paletted
+palettization
 particlesys
 particlesysanim
 partunlockdonescreen
@@ -898,6 +899,7 @@ pausescreen
 pcgth
 pcpyld
 pdbtype
+pels
 periodictimer
 pextlb
 pextub
@@ -1021,10 +1023,12 @@ ripgreprc
 rmode
 rndanimatable
 rndartt
+rndbitmap
 rndcam
 rndcollideable
 rnddrawable
 rndfile
+rndfont
 rndglobal
 rndmanager
 rndmat
@@ -1035,8 +1039,10 @@ rndmovie
 rndobject
 rndrenderer
 rndtex
+rndtext
 rndtransanim
 rndtransformable
+rndview
 rodata
 romver
 rotateevent

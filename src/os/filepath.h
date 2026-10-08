@@ -30,4 +30,15 @@ public:
      * @ghidraAddress PAL: 0x002a3058
      */
     void Set(const char *pszPath);
+
+    /**
+     * Report the path relative to the root directory.
+     *
+     * The name is inferred.
+     *
+     * @return The path.
+     * @ghidraAddress NTSC-U/C: 0x002994d0
+     * @ghidraAddress PAL: 0x002a30e0
+     */
+    const char *RelativePath() const;
 };

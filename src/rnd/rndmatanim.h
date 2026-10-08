@@ -31,12 +31,12 @@ public:
         /**
          * Construct a stage without keys.
          *
-         * The binary leaves mMatAnim unset. RndMatAnim sets it before use.
+         * mMatAnim is left unset, as the binary leaves it. RndMatAnim sets it before use.
          *
          * @ghidraAddress NTSC-U/C: 0x00388600
          * @ghidraAddress PAL: 0x003f6d08
          */
-        Stage() : mMatAnim(nullptr) {
+        Stage() {
         }
 
         /**
