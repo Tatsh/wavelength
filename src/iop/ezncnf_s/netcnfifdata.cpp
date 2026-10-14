@@ -11,6 +11,7 @@ constexpr unsigned char kUnsetOption = 0xff;
 constexpr unsigned char kDefaultPppOption6 = 4;
 constexpr int kInterfaceDialNumberCount = 10;
 constexpr char kUnknownTypeMessage[] = "[%s] unknown type (%d)\n";
+constexpr char kReadEnvName[] = "sceNetcnfifReadEnv";
 
 } // namespace
 
@@ -172,7 +173,7 @@ int NetcnfifData::ReadEnv(const sceNetCnfEnv *env, int kind) {
     } else if (kind >= SCE_NETCNF_TYPE_INTERFACE && kind <= SCE_NETCNF_TYPE_DEVICE) {
         result = ReadInterface(env->interface, kind);
     } else {
-        printf(kUnknownTypeMessage, __func__, kind);
+        printf(kUnknownTypeMessage, kReadEnvName, kind);
     }
     return result;
 }
