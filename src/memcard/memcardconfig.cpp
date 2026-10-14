@@ -106,10 +106,9 @@ void LoadMemcardConfig() {
         g_MemcardIconSys.Ambient[i] = pAmbient->Float(i + 1);
     }
 
-    const size_t nIconNameSize = strlen(pszIcon) + 1;
-    memcpy(g_MemcardIconSys.FnameView, pszIcon, nIconNameSize);
-    memcpy(g_MemcardIconSys.FnameCopy, pszIcon, nIconNameSize);
-    memcpy(g_MemcardIconSys.FnameDel, pszIcon, nIconNameSize);
+    strcpy(reinterpret_cast<char *>(g_MemcardIconSys.FnameView), pszIcon);
+    strcpy(reinterpret_cast<char *>(g_MemcardIconSys.FnameCopy), pszIcon);
+    strcpy(reinterpret_cast<char *>(g_MemcardIconSys.FnameDel), pszIcon);
 
     g_nMemcardDirKilobytes = BytesToKilobytes(g_nMemcardIconSize);
     g_nMemcardDirKilobytes += BytesToKilobytes(kMemcardDirFileSize);
