@@ -1,11 +1,11 @@
 #pragma once
 
 #include "math/color.h"
-#include "rnd/blur.h"
-#include "rnd/mat.h"
-#include "rnd/text.h"
-#include "rnd/transanim.h"
-#include "rnd/view.h"
+#include "rnd/rndblur.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndview.h"
 
 /**
  * Message of two lines that flies across the head-up display and trails a blur.
@@ -26,7 +26,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001bb000
      * @ghidraAddress PAL: 0x001c3da0
      */
-    explicit HudTextMessage(Rnd::View *pHudView);
+    explicit HudTextMessage(RndView *pHudView);
 
     /**
      * Destroy the message.
@@ -81,18 +81,18 @@ public:
      */
     void Draw();
 
-    Rnd::Blur *mBlur;        /*!< `HUD textmsg.blur`. */
-    Rnd::Blur *mSmallBlur;   /*!< `HUD sm textmsg.blur`. */
-    Rnd::Text *mText;        /*!< `HUD textmsg.txt`, the large line. */
-    Rnd::Text *mSmallText;   /*!< `HUD sm textmsg.txt`, the small line. */
-    Rnd::View *mOffsetView;  /*!< `HUD textmsg offset.view`, which places the message. */
-    Rnd::TransAnim *mFlight; /*!< `<hud> textmsg.tnm`, the flight. */
-    Rnd::Mat *mMat;          /*!< The material of the large line's font. */
-    Color mDefaultColor;     /*!< The colour of mMat when the message started. */
-    float mFrame;            /*!< The frame of the flight. */
-    float mStartTime;        /*!< The song time Show() ran at, or kNotShown. */
-    float mDuration;         /*!< The time the message rests in view. */
-    int mShowing;            /*!< Whether a message shows. Show() does not set it. */
+    RndBlur *mBlur;        /*!< `HUD textmsg.blur`. */
+    RndBlur *mSmallBlur;   /*!< `HUD sm textmsg.blur`. */
+    RndText *mText;        /*!< `HUD textmsg.txt`, the large line. */
+    RndText *mSmallText;   /*!< `HUD sm textmsg.txt`, the small line. */
+    RndView *mOffsetView;  /*!< `HUD textmsg offset.view`, which places the message. */
+    RndTransAnim *mFlight; /*!< `<hud> textmsg.tnm`, the flight. */
+    RndMat *mMat;          /*!< The material of the large line's font. */
+    Color mDefaultColor;   /*!< The colour of mMat when the message started. */
+    float mFrame;          /*!< The frame of the flight. */
+    float mStartTime;      /*!< The song time Show() ran at, or kNotShown. */
+    float mDuration;       /*!< The time the message rests in view. */
+    int mShowing;          /*!< Whether a message shows. Show() does not set it. */
 
     /** The value of mStartTime when no message shows. */
     static constexpr float kNotShown = -1e9f;

@@ -8,7 +8,7 @@
 #include "os/keyboard.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -56,18 +56,9 @@ const Color kYellowLine{1.0f, 0.75f, 0.0f, 1.0f};
 // The colour SetColor() gives a line with no player.
 constexpr int kNoPlayer = -1;
 
-// The translation row of a transform, and the columns of a row.
-constexpr int kRowTranslation = 3;
-enum XfmColumn {
-    kColumnX = 0,
-    kColumnY = 1,
-    kColumnZ = 2,
-    kColumnW = 3,
-};
-
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -76,7 +67,7 @@ float OvyChat::Line::sSlideTime = kNever;
 
 #pragma mark - Line
 
-OvyChat::Line::Line(DataArray *pConfig, DataArray *pDefaults, Rnd::Text *pText) {
+OvyChat::Line::Line(DataArray *pConfig, DataArray *pDefaults, RndText *pText) {
     mText = pText;
     DataArray *pSlide;
     FindConfigArray(pConfig, pDefaults, "chat_line_slide", &pSlide, true);
@@ -122,62 +113,51 @@ void OvyChat::Line::SetColor(int nPlayer) {
 
 bool OvyChat::Line::Update(float fTime) {
     const float fRow = mSlide->Eval(fTime);
-    Rnd::Transformable *pTrans = mText;
-    float (&translation)[Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm[kRowTranslation];
-    if (fRow == translation[kColumnZ]) {
+    RndTransformable *pTrans = mText;
+    Vector3 &translation = pTrans->mLocalXfm.mTranslation;
+    if (fRow == translation.z) {
         return false;
     }
-    float position[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
-    position[kColumnX] = translation[kColumnX];
-    position[kColumnY] = translation[kColumnY];
-    position[kColumnZ] = fRow;
     pTrans->mDirty = 1;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-    for (int i = kColumnX; i <= kColumnW; ++i) {
-        translation[i] = position[i];
-    }
-#pragma GCC diagnostic pop
+    // The binary also copies an unset fourth word, which is left as it was here.
+    translation.z = fRow;
     return true;
 }
 
 #pragma mark - OvyChat
 
-OvyChat::OvyChat(DataArray *pConfig, DataArray *pDefaults, Rnd::View *pHudView)
+OvyChat::OvyChat(DataArray *pConfig, DataArray *pDefaults, RndView *pHudView)
     : mSlide(kHiddenPosition, nullptr, nullptr, kInitialSlideSpeed), mLastActivity(kNever),
       mEditLine(nullptr), mEdit(kMaxLineLength) {
     mLastTime = kNever;
     mHiddenPosition = kHiddenPosition;
     mShownPosition = kShownPosition;
     const char *pszChat = "HUDnr_chat";
-    mDrawable = FindObject<Rnd::Drawable>(FormatString("%s_mask.mesh", pszChat));
-    Rnd::Transformable *pPanel =
-        FindObject<Rnd::Transformable>(FormatString("%s_panel.mesh", pszChat));
-    FindObject<Rnd::Transformable>(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix))
+    mDrawable = FindObject<RndDrawable>(FormatString("%s_mask.mesh", pszChat));
+    RndTransformable *pPanel = FindObject<RndTransformable>(FormatString("%s_panel.mesh", pszChat));
+    FindObject<RndTransformable>(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix))
         ->AddTrans(pPanel);
-    mTypeBox = FindObject<Rnd::Drawable>("HUDnr_chat_04.mesh");
-    mRule = FindObject<Rnd::Drawable>("HUDnr_chat_hr.mesh");
-    mCursor = FindObject<Rnd::Mesh>(FormatString("%s_cursor.mesh", pszChat));
-    mSlide.SetAnim(FindObject<Rnd::Animatable>(FormatString("%s.tnm", pszChat)));
+    mTypeBox = FindObject<RndDrawable>("HUDnr_chat_04.mesh");
+    mRule = FindObject<RndDrawable>("HUDnr_chat_hr.mesh");
+    mCursor = FindObject<RndMesh>(FormatString("%s_cursor.mesh", pszChat));
+    mSlide.SetAnim(FindObject<RndAnimatable>(FormatString("%s.tnm", pszChat)));
     mSlide.SetSpeed(kSlideSpeed);
-    Rnd::Animatable *pCursorAnim = FindObject<Rnd::Animatable>("HUD cursor.mnm");
+    RndAnimatable *pCursorAnim = FindObject<RndAnimatable>("HUD cursor.mnm");
     if (pCursorAnim != nullptr) {
-        static_cast<Rnd::Animatable *>(pHudView)->AddAnim(pCursorAnim);
+        static_cast<RndAnimatable *>(pHudView)->AddAnim(pCursorAnim);
     }
     for (int i = kFirstLine;; ++i) {
-        Rnd::Text *pText = FindObject<Rnd::Text>(FormatString("%s_%02d.txt", pszChat, i));
+        RndText *pText = FindObject<RndText>(FormatString("%s_%02d.txt", pszChat, i));
         if (pText == nullptr) {
             break;
         }
         mLines.push_back(new Line(pConfig, pDefaults, pText));
-        static_cast<Rnd::Transformable *>(pText)->RemoveTrans(mCursor);
+        static_cast<RndTransformable *>(pText)->RemoveTrans(mCursor);
     }
     mRows.resize(mLines.size() + 1, 0.0f);
     std::vector<float>::iterator pRow = mRows.begin();
     for (Line *pLine : mLines) {
-        *pRow++ =
-            static_cast<Rnd::Transformable *>(pLine->mText)->mLocalXfm[kRowTranslation][kColumnZ];
+        *pRow++ = static_cast<RndTransformable *>(pLine->mText)->mLocalXfm.mTranslation.z;
     }
     const int nLast = static_cast<int>(mRows.size()) - 1;
     mRows[nLast] = mRows[nLast - 1] + mRows[nLast - 1] - mRows[nLast - 2];
@@ -218,7 +198,7 @@ void OvyChat::Reset() {
     mLastActivity = kNever;
     mEdit.Clear();
     if (mEditLine != nullptr) {
-        static_cast<Rnd::Transformable *>(mEditLine->mText)->RemoveTrans(mCursor);
+        static_cast<RndTransformable *>(mEditLine->mText)->RemoveTrans(mCursor);
     }
     mEditLine = nullptr;
 }
@@ -314,7 +294,7 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
         mCursor->SetShowing(bEditing);
         if (bEditing) {
             mEditLine = mLines.front();
-            static_cast<Rnd::Transformable *>(mEditLine->mText)->AddTrans(mCursor);
+            static_cast<RndTransformable *>(mEditLine->mText)->AddTrans(mCursor);
             mLines.front()->mText->SetText("");
             mLines.front()->SetColor(kNoPlayer);
             Layout(false);
@@ -325,7 +305,7 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
             } else {
                 Collapse();
             }
-            static_cast<Rnd::Transformable *>(mEditLine->mText)->RemoveTrans(mCursor);
+            static_cast<RndTransformable *>(mEditLine->mText)->RemoveTrans(mCursor);
             mEditLine = nullptr;
         }
     }
@@ -334,13 +314,9 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
             mEditLine->mText->SetText(mEdit.GetText());
         }
         const Vector3 position = mEditLine->mText->CharPosition(mEdit.mCursor);
-        Rnd::Transformable *pCursor = mCursor;
+        RndTransformable *pCursor = mCursor;
         pCursor->mDirty = 1;
-        float (&translation)[Rnd::kXfmRowFloatCount] = pCursor->mLocalXfm[kRowTranslation];
-        translation[kColumnX] = position.x;
-        translation[kColumnY] = position.y;
-        translation[kColumnZ] = position.z;
-        translation[kColumnW] = position.w;
+        pCursor->mLocalXfm.mTranslation = position;
     }
     return false;
 }

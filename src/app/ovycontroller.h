@@ -1,11 +1,11 @@
 #pragma once
 
 #include "app/hideablepanel.h"
-#include "rnd/animatable.h"
-#include "rnd/drawable.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndview.h"
 
 /**
  * Picture of the controller on the head-up display, with the buttons the tutorial points at.
@@ -28,8 +28,8 @@ public:
          */
         void Load(const char *pszName);
 
-        Rnd::Animatable *mAnim; /*!< `HUD controller map <name>.tnm`. */
-        Rnd::Drawable *mMesh;   /*!< `HUD controller map <name>.mesh`. */
+        RndAnimatable *mAnim; /*!< `HUD controller map <name>.tnm`. */
+        RndDrawable *mMesh;   /*!< `HUD controller map <name>.mesh`. */
     };
 
     /** The materials of the picture, the indices of mMats. */
@@ -46,7 +46,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001c01a0
      * @ghidraAddress PAL: 0x001c8f40
      */
-    explicit OvyController(Rnd::View *pHudView);
+    explicit OvyController(RndView *pHudView);
 
     /**
      * Destroy the picture.
@@ -83,9 +83,9 @@ public:
      */
     void ShowButton(int nButton, bool bShow);
 
-    Button mButtons[kNumButtons];    /*!< The buttons, indexed by JoypadButton. */
-    Rnd::View *mView;                /*!< `HUD controller map.view`. */
-    Rnd::Mat *mMats[kNumHighlights]; /*!< The materials, indexed by Highlight. */
-    Rnd::Mesh *mMesh;                /*!< `HUD controller map.mesh`. */
-    Rnd::Animatable *mPosAnim;       /*!< `HUD controller map pos.tnm`. */
+    Button mButtons[kNumButtons];  /*!< The buttons, indexed by JoypadButton. */
+    RndView *mView;                /*!< `HUD controller map.view`. */
+    RndMat *mMats[kNumHighlights]; /*!< The materials, indexed by Highlight. */
+    RndMesh *mMesh;                /*!< `HUD controller map.mesh`. */
+    RndAnimatable *mPosAnim;       /*!< `HUD controller map pos.tnm`. */
 };

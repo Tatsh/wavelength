@@ -5,7 +5,7 @@
 #include "gfx/gfxutil.h"
 #include "math/transform.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -36,7 +36,6 @@ enum XfmRow {
     kRowX = 0,
     kRowY = 1,
     kRowZ = 2,
-    kRowTranslation = 3,
 };
 
 // The columns of a row of a transform.
@@ -49,23 +48,24 @@ enum XfmColumn {
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
-Vector3 ReadRow(const float (&row)[Rnd::kXfmRowFloatCount]) {
-    return Vector3{row[kColumnX], row[kColumnY], row[kColumnZ], row[kColumnW]};
-}
-
-void WriteRow(float (&row)[Rnd::kXfmRowFloatCount], const Vector3 &value) {
-    row[kColumnX] = value.x;
-    row[kColumnY] = value.y;
-    row[kColumnZ] = value.z;
-    row[kColumnW] = value.w;
+// The basis row of a transform with an index of XfmRow.
+Vector3 &XfmRowAt(Transform &xfm, int nRow) {
+    switch (nRow) {
+    case kRowX:
+        return xfm.mBasisX;
+    case kRowY:
+        return xfm.mBasisY;
+    default:
+        return xfm.mBasisZ;
+    }
 }
 
 // A basis that scales by the same factor along x and z. Its fourth words are never written.
 struct ScaleBasis {
-    float mRows[kRowZ + 1][Rnd::kXfmRowFloatCount];
+    float mRows[HudLetterExit::kBasisRows][HudLetterExit::kRowFloats];
 };
 
 ScaleBasis MakeScaleBasis(float fScale) {
@@ -87,14 +87,16 @@ ScaleBasis MakeScaleBasis(float fScale) {
 }
 
 // Copy one row of a basis, including its unset fourth word.
-void CopyBasisRow(Rnd::Transformable *pTrans, const ScaleBasis &basis, int nRow) {
-    for (int i = kColumnX; i <= kColumnW; ++i) {
-        pTrans->mLocalXfm[nRow][i] = basis.mRows[nRow][i];
-    }
+void CopyBasisRow(RndTransformable *pTrans, const ScaleBasis &basis, int nRow) {
+    Vector3 &row = XfmRowAt(pTrans->mLocalXfm, nRow);
+    row.x = basis.mRows[nRow][kColumnX];
+    row.y = basis.mRows[nRow][kColumnY];
+    row.z = basis.mRows[nRow][kColumnZ];
+    row.w = basis.mRows[nRow][kColumnW];
 }
 
 // Write the three basis rows of a local transform and mark it dirty.
-void SetBasis(Rnd::Transformable *pTrans, const ScaleBasis &basis) {
+void SetBasis(RndTransformable *pTrans, const ScaleBasis &basis) {
     CopyBasisRow(pTrans, basis, kRowX);
     CopyBasisRow(pTrans, basis, kRowY);
     pTrans->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
@@ -113,7 +115,7 @@ HudLetterExit::HudLetterExit() {
     mFlipped = 0;
     mSecondSidePlayer = -1;
     mFlightStart = kNoFlight;
-    mView = FindObject<Rnd::View>(FormatString("%s letter_exit.view", Overlay::sHudPrefix));
+    mView = FindObject<RndView>(FormatString("%s letter_exit.view", Overlay::sHudPrefix));
     for (int i = 0; i < kNumSides; ++i) {
         int nSide = 0;
         if (TheGameDb->GetPlayerSlot(i) != 0) {
@@ -121,21 +123,21 @@ HudLetterExit::HudLetterExit() {
             nSide = 1;
         }
         mTexts[i] =
-            FindObject<Rnd::Text>(FormatString("%s letter_exit%d.txt", Overlay::sHudPrefix, nSide));
-        mAnims[i] = FindObject<Rnd::TransAnim>(
+            FindObject<RndText>(FormatString("%s letter_exit%d.txt", Overlay::sHudPrefix, nSide));
+        mAnims[i] = FindObject<RndTransAnim>(
             FormatString("%s letter_exit%d.tnm", Overlay::sHudPrefix, nSide));
     }
     for (int i = 0; i < kNumLetters; ++i) {
-        mLetterPaths[i] = FindObject<Rnd::TransAnim>(
+        mLetterPaths[i] = FindObject<RndTransAnim>(
             FormatString("%s letter_exit %cr.tnm", Overlay::sHudPrefix, sLetters[i]));
     }
-    mOrigin = ReadRow(static_cast<Rnd::Transformable *>(mView)->mLocalXfm[kRowTranslation]);
-    mFlightLength = mLetterPaths[kFirstLetter]->mFramesOwner->mTransKeys.back().mFrame;
+    mOrigin = static_cast<RndTransformable *>(mView)->mLocalXfm.mTranslation;
+    mFlightLength = mLetterPaths[kFirstLetter]->mFramesOwner->mTransKeys.back().frame;
     Reset();
 }
 
 void HudLetterExit::Reset() {
-    static_cast<Rnd::Drawable *>(mView)->SetShowing(false);
+    static_cast<RndDrawable *>(mView)->SetShowing(false);
     mPulse = 0.0f;
     mFlightStart = kNoFlight;
     mPendingPlayer = 0;
@@ -161,7 +163,7 @@ void HudLetterExit::Poll() {
             fTicks = 0.0f;
         }
         // Yes, the binary leaves the fourth words of the identity basis unset.
-        float basis[3][Rnd::kXfmRowFloatCount];
+        float basis[kBasisRows][kRowFloats];
         basis[kRowX][kColumnX] = 1.0f;
         basis[kRowX][kColumnY] = 0.0f;
         basis[kRowX][kColumnZ] = 0.0f;
@@ -177,21 +179,21 @@ void HudLetterExit::Poll() {
         }
         const float fFrame =
             mFlight->FilterFrame(fTicks * Overlay::sDuelPointsMoveRate * mFlightLength);
-        float afXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-        mFlight->EvalFrame(fFrame, &afXfm[0][0], 1);
+        Transform xfm;
+        mFlight->MakeTransform(fFrame, xfm, 1);
         if (mFlipped != 0) {
-            afXfm[kRowTranslation][kColumnX] = -afXfm[kRowTranslation][kColumnX];
+            xfm.mTranslation.x = -xfm.mTranslation.x;
         }
-        afXfm[kRowTranslation][kColumnX] += mOrigin.x;
-        afXfm[kRowTranslation][kColumnY] += mOrigin.y;
-        afXfm[kRowTranslation][kColumnZ] += mOrigin.z;
-        Rnd::Transformable *pViewTrans = mView;
-        for (int i = kRowX; i <= kRowZ; ++i) {
-            WriteRow(pViewTrans->mLocalXfm[i], ReadRow(afXfm[i]));
-        }
+        xfm.mTranslation.x += mOrigin.x;
+        xfm.mTranslation.y += mOrigin.y;
+        xfm.mTranslation.z += mOrigin.z;
+        RndTransformable *pViewTrans = mView;
+        pViewTrans->mLocalXfm.mBasisX = xfm.mBasisX;
+        pViewTrans->mLocalXfm.mBasisY = xfm.mBasisY;
+        pViewTrans->mLocalXfm.mBasisZ = xfm.mBasisZ;
         // Yes, the binary marks the transform before the last row is written.
         pViewTrans->mDirty = 1;
-        WriteRow(pViewTrans->mLocalXfm[kRowTranslation], ReadRow(afXfm[kRowTranslation]));
+        pViewTrans->mLocalXfm.mTranslation = xfm.mTranslation;
         if (fTicks == Overlay::sDuelPointsMoveTicks) {
             if (mRevealPending != 0) {
                 const int nPoints = mPendingPoints;
@@ -226,17 +228,17 @@ void HudLetterExit::ShowReveal(int nPlayer, int nPoints, [[maybe_unused]] const 
     mTexts[nPlayer]->SetText(szLetter);
     mLetters[nPlayer] = nLetter;
     mPulseFloor = 0.0f;
-    static_cast<Rnd::Drawable *>(mView)->SetShowing(true);
+    static_cast<RndDrawable *>(mView)->SetShowing(true);
     mTexts[0]->SetShowing(true);
     mTexts[1]->SetShowing(true);
-    Rnd::Transformable *pViewTrans = mView;
+    RndTransformable *pViewTrans = mView;
     SetBasis(pViewTrans, MakeScaleBasis(kIdentityScale));
     pViewTrans->mDirty = 1;
-    WriteRow(pViewTrans->mLocalXfm[kRowTranslation], mOrigin);
+    pViewTrans->mLocalXfm.mTranslation = mOrigin;
     mRevealPending = 0;
 }
 
-void HudLetterExit::ScaleByPulse(Rnd::Transformable *pTrans) {
+void HudLetterExit::ScaleByPulse(RndTransformable *pTrans) {
     const ScaleBasis basis =
         MakeScaleBasis(Overlay::sPointsScale * (mPulse * kPulseGain + kPulseRest));
     pTrans->mDirty = 1;
@@ -254,11 +256,13 @@ void HudLetterExit::Fly(int nResult) {
     const int nSide = nResult == kResultLost;
     mTexts[nSide]->SetShowing(true);
     mTexts[nSide ^ 1]->SetShowing(false);
-    Rnd::Transformable *pTextTrans = mTexts[nSide];
+    RndTransformable *pTextTrans = mTexts[nSide];
     for (int i = kRowX; i <= kRowZ; ++i) {
-        for (int j = kColumnX; j <= kColumnW; ++j) {
-            mFlyBasis[i][j] = pTextTrans->mLocalXfm[i][j];
-        }
+        const Vector3 &row = XfmRowAt(pTextTrans->mLocalXfm, i);
+        mFlyBasis[i][kColumnX] = row.x;
+        mFlyBasis[i][kColumnY] = row.y;
+        mFlyBasis[i][kColumnZ] = row.z;
+        mFlyBasis[i][kColumnW] = row.w;
     }
     mFlightStart = TheGameDb->mSongTick;
     mFlipped = (nSide ^ mSecondSidePlayer) != 0;

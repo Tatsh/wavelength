@@ -3,7 +3,7 @@
 #include "app/ovyavatar.h"
 #include "app/ovyduelscore.h"
 #include "app/ovyscore.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 
 /**
  * Parts of the head-up display every player has: the score and the avatar.
@@ -25,7 +25,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001c28b0
      * @ghidraAddress PAL: 0x001cb650
      */
-    OvyAllPlayer(int nPlayer, int nIndex, Rnd::View *pHudView);
+    OvyAllPlayer(int nPlayer, int nIndex, RndView *pHudView);
 
     /**
      * Destroy the parts.

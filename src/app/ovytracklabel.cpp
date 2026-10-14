@@ -3,7 +3,7 @@
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
 #include "os/locale.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -28,8 +28,8 @@ OvyTrackLabel::OvyTrackLabel()
     : HideablePanel("HUD track label.tnm", "HUD track label.view", false) {
     mWanted = 0;
     mHasText = 0;
-    mText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("HUD track label.txt"));
-    mMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD track label.mat"));
+    mText = dynamic_cast<RndText *>(TheManager.Find("HUD track label.txt"));
+    mMat = dynamic_cast<RndMat *>(TheManager.Find("HUD track label.mat"));
     for (mPlayer = 0; mPlayer < TheGameDb->GetNumPlayers(); ++mPlayer) {
         if (TheGameDb->IsLocalPlayer(mPlayer)) {
             break;
@@ -56,7 +56,7 @@ void OvyTrackLabel::SetTrack(int nPlayer, int nInstrument, int nTrackKind) {
             nInstrument < GfxManager::kNumInstruments) {
             pszLabel = TheLocale.Localize(kInstrumentLabels[nInstrument], true);
         }
-        mMat->SetAmbient(*TheGfxManager.GetInstrumentBgColor(nInstrument));
+        mMat->SetBaseColor(*TheGfxManager.GetInstrumentBgColor(nInstrument));
     }
     if (pszLabel != nullptr) {
         mText->SetText(pszLabel);

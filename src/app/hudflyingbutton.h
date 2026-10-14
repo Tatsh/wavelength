@@ -2,8 +2,8 @@
 
 #include "math/interpolator.h"
 #include "math/vector2.h"
-#include "rnd/blur.h"
-#include "rnd/text.h"
+#include "rnd/rndblur.h"
+#include "rnd/rndtext.h"
 
 /**
  * Button icon of a lane that flies to a place on the screen and pulses there.
@@ -98,8 +98,8 @@ public:
      */
     static Interpolator *sFlight;
 
-    Rnd::Text *mText; /*!< `HUD flying button <n>.txt`, the glyph of the button. */
-    Rnd::Blur *mBlur; /*!< `HUD flying button <n>.blur`. */
+    RndText *mText;   /*!< `HUD flying button <n>.txt`, the glyph of the button. */
+    RndBlur *mBlur;   /*!< `HUD flying button <n>.blur`. */
     int mPulse;       /*!< Whether the icon pulses. */
     float mStartTime; /*!< The song time the flight started at, or a sentinel. */
     Vector2 mFrom;    /*!< The place the flight starts at. */

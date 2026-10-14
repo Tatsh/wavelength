@@ -5,13 +5,16 @@
 #include "gfx/gfxmanager.h"
 #include "math/color.h"
 #include "os/string.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
-// The rows of a transform: three of the basis, then the translation.
+// The rows of a basis.
 enum XfmRow { kXfmRowBasisX = 0, kXfmRowBasisY = 1, kXfmRowBasisZ = 2 };
+
+// The words of a row: three components and the padding.
+constexpr int kRowFloatCount = 4;
 
 // The speed of the exit animation, in frames per unit of time.
 constexpr float kExitSpeed = 0.1f;
@@ -42,7 +45,7 @@ constexpr int kBasisRowCount = 3;
 
 // A basis that scales by the same factor along x and z. Its fourth words are never written.
 struct ScaleBasis {
-    float mRows[kBasisRowCount][Rnd::kXfmRowFloatCount];
+    float mRows[kBasisRowCount][kRowFloatCount];
 };
 
 ScaleBasis MakeScaleBasis(float fScale) {
@@ -64,18 +67,19 @@ ScaleBasis MakeScaleBasis(float fScale) {
 }
 
 // Copy one row of a basis, including its unset fourth word.
-void CopyRow(float (&destination)[Rnd::kXfmRowFloatCount], const ScaleBasis &basis, int nRow) {
-    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
-        destination[i] = basis.mRows[nRow][i];
-    }
+void CopyRow(Vector3 &destination, const ScaleBasis &basis, int nRow) {
+    destination.x = basis.mRows[nRow][0];
+    destination.y = basis.mRows[nRow][1];
+    destination.z = basis.mRows[nRow][2];
+    destination.w = basis.mRows[nRow][3];
 }
 
-void SetScale(Rnd::Transformable *pTrans, float fScale) {
+void SetScale(RndTransformable *pTrans, float fScale) {
     const ScaleBasis basis = MakeScaleBasis(fScale);
-    CopyRow(pTrans->mLocalXfm[kXfmRowBasisX], basis, kXfmRowBasisX);
-    CopyRow(pTrans->mLocalXfm[kXfmRowBasisY], basis, kXfmRowBasisY);
+    CopyRow(pTrans->mLocalXfm.mBasisX, basis, kXfmRowBasisX);
+    CopyRow(pTrans->mLocalXfm.mBasisY, basis, kXfmRowBasisY);
     pTrans->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
-    CopyRow(pTrans->mLocalXfm[kXfmRowBasisZ], basis, kXfmRowBasisZ);
+    CopyRow(pTrans->mLocalXfm.mBasisZ, basis, kXfmRowBasisZ);
 }
 
 } // namespace
@@ -87,27 +91,27 @@ HudPoints::HudPoints(int nIndex)
         nIndex = 0;
         pszHud = kOnlineHudPrefix;
     }
-    mExitBlur = dynamic_cast<Rnd::Blur *>(
-        Rnd::TheManager.Find(FormatString("%s pts_exit%d.blur", pszHud, nIndex)));
-    mExitView = dynamic_cast<Rnd::View *>(
-        Rnd::TheManager.Find(FormatString("%s pts_exit%d.view", pszHud, nIndex)));
-    auto *pExitText = dynamic_cast<Rnd::Text *>(
-        Rnd::TheManager.Find(FormatString("%s pts_exit%d.txt", pszHud, nIndex)));
+    mExitBlur = dynamic_cast<RndBlur *>(
+        TheManager.Find(FormatString("%s pts_exit%d.blur", pszHud, nIndex)));
+    mExitView = dynamic_cast<RndView *>(
+        TheManager.Find(FormatString("%s pts_exit%d.view", pszHud, nIndex)));
+    auto *pExitText =
+        dynamic_cast<RndText *>(TheManager.Find(FormatString("%s pts_exit%d.txt", pszHud, nIndex)));
     mExitText = pExitText;
     SetScale(pExitText, Overlay::sPointsScale);
     mExit.SetAnim(mExitView);
-    mPointsText = dynamic_cast<Rnd::Text *>(
-        Rnd::TheManager.Find(FormatString("%s pts%d.txt", pszHud, nIndex)));
-    mMultText = dynamic_cast<Rnd::Text *>(
-        Rnd::TheManager.Find(FormatString("%s ptsmult%d.txt", pszHud, nIndex)));
+    mPointsText =
+        dynamic_cast<RndText *>(TheManager.Find(FormatString("%s pts%d.txt", pszHud, nIndex)));
+    mMultText =
+        dynamic_cast<RndText *>(TheManager.Find(FormatString("%s ptsmult%d.txt", pszHud, nIndex)));
     if (mPointsText->mFont != nullptr) {
         mPointsMat = mPointsText->mFont->mMat;
     }
     if (mMultText->mFont != nullptr) {
         mMultMat = mMultText->mFont->mMat;
     }
-    mColdMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD ptstmp.mat"));
-    mHotMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD ptstmphot.mat"));
+    mColdMat = dynamic_cast<RndMat *>(TheManager.Find("HUD ptstmp.mat"));
+    mHotMat = dynamic_cast<RndMat *>(TheManager.Find("HUD ptstmphot.mat"));
     Reset();
 }
 
@@ -122,7 +126,7 @@ void HudPoints::Reset() {
     mExit.Jump(kExitRestFrame, kExitRestFrame);
     mPointsText->SetShowing(false);
     mMultText->SetShowing(false);
-    static_cast<Rnd::Drawable *>(mExitView)->SetShowing(false);
+    static_cast<RndDrawable *>(mExitView)->SetShowing(false);
 }
 
 void HudPoints::SetEnabled(bool bEnabled) {
@@ -135,11 +139,11 @@ void HudPoints::Poll([[maybe_unused]] float fUnused, float fDelta) {
         return;
     }
     mExit.Update(fDelta, false);
-    static_cast<Rnd::Drawable *>(mExitView)->SetShowing(mExit.mValue != mExit.mInterp->mY1);
+    static_cast<RndDrawable *>(mExitView)->SetShowing(mExit.mValue != mExit.mInterp->mY1);
     ScaleText(mPointsText);
     const float fGlow = mGlow * 0.5f + 0.5f;
-    mMultMat->SetAmbient(Color{fGlow, fGlow, fGlow, 1.0f});
-    mPointsMat->SetAmbient((mHot != 0 ? mHotMat : mColdMat)->mAmbient);
+    mMultMat->SetBaseColor(Color{fGlow, fGlow, fGlow, 1.0f});
+    mPointsMat->SetBaseColor((mHot != 0 ? mHotMat : mColdMat)->mBaseColor);
     mGlow -= kGlowStep;
     if (mGlow < 0.0f) {
         mGlow = 0.0f;
@@ -150,13 +154,13 @@ void HudPoints::Poll([[maybe_unused]] float fUnused, float fDelta) {
     }
 }
 
-void HudPoints::ScaleText(Rnd::Transformable *pText) {
+void HudPoints::ScaleText(RndTransformable *pText) {
     const ScaleBasis basis =
         MakeScaleBasis(Overlay::sPointsScale * (mSwell * kSwellPart + kRestPart));
     pText->mDirty = 1;
-    CopyRow(pText->mLocalXfm[kXfmRowBasisX], basis, kXfmRowBasisX);
-    CopyRow(pText->mLocalXfm[kXfmRowBasisY], basis, kXfmRowBasisY);
-    CopyRow(pText->mLocalXfm[kXfmRowBasisZ], basis, kXfmRowBasisZ);
+    CopyRow(pText->mLocalXfm.mBasisX, basis, kXfmRowBasisX);
+    CopyRow(pText->mLocalXfm.mBasisY, basis, kXfmRowBasisY);
+    CopyRow(pText->mLocalXfm.mBasisZ, basis, kXfmRowBasisZ);
 }
 
 void HudPoints::ShowPoints(int nPoints, const char *pszText) {

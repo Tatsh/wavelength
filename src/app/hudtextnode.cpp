@@ -1,13 +1,13 @@
 #include "app/hudtextnode.h"
 
-#include "rnd/font.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
 
-HudTextNode::HudTextNode(const char *pszText, Rnd::View *pHudView) {
+HudTextNode::HudTextNode(const char *pszText, RndView *pHudView) {
     mText = nullptr;
-    mText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(pszText));
-    static_cast<Rnd::Drawable *>(pHudView)->RemoveDraw(mText);
+    mText = dynamic_cast<RndText *>(TheManager.Find(pszText));
+    static_cast<RndDrawable *>(pHudView)->RemoveDraw(mText);
     mText->SetShowing(false);
 }
 

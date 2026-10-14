@@ -3,7 +3,7 @@
 #include "math/interpolator.h"
 #include "os/debug.h"
 #include "os/string.h"
-#include "rnd/transanim.h"
+#include "rnd/rndtransanim.h"
 
 namespace {
 
@@ -36,7 +36,7 @@ OvyRemixSubPanel::OvyRemixSubPanel(int nType, char chHud, int nPlayer)
     }
     String prefix(FormatString("HUD%cr_fxs_%s", chHud, pszName));
     Load(chHud, prefix.c_str(), nPlayer, nullptr);
-    auto *pSlideAnim = dynamic_cast<Rnd::TransAnim *>(
+    auto *pSlideAnim = dynamic_cast<RndTransAnim *>(
         Clone(FormatString("HUD%cr_fxs.tnm", chHud), nPlayer + nType * kTypeCloneStride));
     pSlideAnim->SetTrans(mPanel);
     mSlide.SetAnim(pSlideAnim);

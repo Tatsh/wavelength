@@ -4,11 +4,11 @@
 
 #include "app/hideablepanel.h"
 #include "os/string.h"
-#include "rnd/drawable.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * List of the sections of the song on the remix head-up display, with the current one lit.
@@ -20,9 +20,9 @@ class OvySectionPanel : public HideablePanel {
 public:
     /** One section entry. */
     struct Section {
-        String mLabel;    /*!< The label, kept for the shared-screen layout. */
-        Rnd::Text *mText; /*!< The text the label shows in. */
-        Rnd::Mesh *mMesh; /*!< The mesh behind the entry, which the cursor materials go on. */
+        String mLabel;  /*!< The label, kept for the shared-screen layout. */
+        RndText *mText; /*!< The text the label shows in. */
+        RndMesh *mMesh; /*!< The mesh behind the entry, which the cursor materials go on. */
     };
 
     /**
@@ -38,7 +38,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b8490
      * @ghidraAddress PAL: 0x001c1230
      */
-    OvySectionPanel(char chHud, const String &prefix, Rnd::Transformable *pParent);
+    OvySectionPanel(char chHud, const String &prefix, RndTransformable *pParent);
 
     /**
      * Destroy the list.
@@ -94,9 +94,9 @@ public:
 
     std::vector<String> mUnused;    /*!< Constructed and destroyed only. */
     std::vector<Section> mSections; /*!< The entries, one per section. */
-    Rnd::Mat *mCursorOffMat;        /*!< The material of an entry that is not lit. */
-    Rnd::Mat *mCursorOnMat;         /*!< The material of the lit entry. */
-    Rnd::Drawable *mBackground;     /*!< `<prefix>_sect_bg.mesh`, the root of the drawing. */
-    Rnd::Transformable *mPanel;     /*!< `<prefix>_sect_panel.mesh`. */
+    RndMat *mCursorOffMat;          /*!< The material of an entry that is not lit. */
+    RndMat *mCursorOnMat;           /*!< The material of the lit entry. */
+    RndDrawable *mBackground;       /*!< `<prefix>_sect_bg.mesh`, the root of the drawing. */
+    RndTransformable *mPanel;       /*!< `<prefix>_sect_panel.mesh`. */
     char mHud;                      /*!< The letter of the head-up display layout. */
 };

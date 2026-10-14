@@ -4,14 +4,11 @@
 #include "math/sine.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
 
 namespace {
-
-// The row of a transform that holds the translation.
-constexpr int kXfmRowTranslation = 3;
 
 // The value of mStartTime when no flight runs.
 constexpr float kNoFlight = -1e9f;
@@ -27,19 +24,12 @@ constexpr float kPi = 3.1415927f;
 constexpr float kHalfPi = 1.5707964f;
 constexpr float kPulseTurnsPerTick = 0.002f;
 
-void Place(Rnd::Text *pText, float fX, float fZ) {
-    float translation[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
-    translation[0] = fX;
-    translation[1] = 0.0f;
-    translation[2] = fZ;
+void Place(RndText *pText, float fX, float fZ) {
     pText->mDirty = 1;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
-        pText->mLocalXfm[kXfmRowTranslation][i] = translation[i];
-    }
-#pragma GCC diagnostic pop
+    // The binary also copies an unset fourth word, which is left as it was here.
+    pText->mLocalXfm.mTranslation.x = fX;
+    pText->mLocalXfm.mTranslation.y = 0.0f;
+    pText->mLocalXfm.mTranslation.z = fZ;
 }
 
 } // namespace
@@ -48,11 +38,11 @@ float HudFlyingButton::sFlightTime = 0.0f;
 Interpolator *HudFlyingButton::sFlight = nullptr;
 
 HudFlyingButton::HudFlyingButton(int nLane) {
-    mText = dynamic_cast<Rnd::Text *>(
-        Rnd::TheManager.Find(FormatString("HUD flying button %d.txt", nLane)));
+    mText =
+        dynamic_cast<RndText *>(TheManager.Find(FormatString("HUD flying button %d.txt", nLane)));
     mText->SetText(kLaneGlyphs[nLane]);
-    mBlur = dynamic_cast<Rnd::Blur *>(
-        Rnd::TheManager.Find(FormatString("HUD flying button %d.blur", nLane)));
+    mBlur =
+        dynamic_cast<RndBlur *>(TheManager.Find(FormatString("HUD flying button %d.blur", nLane)));
     if (nLane == kCurveLane) {
         DataArray *pCurve =
             SystemConfig()->FindArray("gfx", true)->FindArray("button_icon_interp", true);

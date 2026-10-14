@@ -6,7 +6,7 @@
 #include "app/ovyremixgenpanel.h"
 #include "app/ovyremixsubpanel.h"
 #include "math/vector3.h"
-#include "rnd/transformable.h"
+#include "rnd/rndtransformable.h"
 #include "script/dataarray.h"
 
 /**
@@ -33,7 +33,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b7b40
      * @ghidraAddress PAL: 0x001c08e0
      */
-    OvyRemixPanel(int nPlayer, int nPosition, Rnd::Transformable *pParent);
+    OvyRemixPanel(int nPlayer, int nPosition, RndTransformable *pParent);
 
     /**
      * Destroy the display and its effect panels.

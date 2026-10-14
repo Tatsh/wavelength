@@ -5,12 +5,12 @@
 #include "app/rampanimator.h"
 #include "math/interpolator.h"
 #include "math/vector3.h"
-#include "rnd/drawable.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 /**
  * Score of a player on the head-up display, with the bar a shared-screen game shows at each
@@ -48,7 +48,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001bd080
      * @ghidraAddress PAL: 0x001c5e20
      */
-    OvyScore(int nPlayer, int nIndex, Rnd::View *pHudView);
+    OvyScore(int nPlayer, int nIndex, RndView *pHudView);
 
     /**
      * Destroy the score, its slide, and its power-up icon.
@@ -159,19 +159,19 @@ public:
     static Vector3 sCheckpointPositions[kNumCheckpointPositions];
 
     HudPowerup *mPowerup;          /*!< The power-up icon, or null. */
-    Rnd::Text *mScoreText;         /*!< `<hud> score<n>.txt`. */
+    RndText *mScoreText;           /*!< `<hud> score<n>.txt`. */
     float mScoreTime;              /*!< The song time of the last score, or a sentinel. */
     int mScore;                    /*!< The last score. */
-    Rnd::Mat *mBackgroundMat;      /*!< `HUD score<n> bg.mat`, or null. */
+    RndMat *mBackgroundMat;        /*!< `HUD score<n> bg.mat`, or null. */
     signed char mPlayer;           /*!< The player. */
     RampAnimator *mPointsSlide;    /*!< The slide of `<hud> pts<n>.mesh`, or null. */
     signed char mState;            /*!< The stage of the checkpoint display, one of State. */
-    Rnd::Transformable *mTop;      /*!< `<hud> score top<n>.view`, which moves, or null. */
-    Rnd::Drawable *mMesh;          /*!< `<hud> score<n>.mesh`, or null. */
+    RndTransformable *mTop;        /*!< `<hud> score top<n>.view`, which moves, or null. */
+    RndDrawable *mMesh;            /*!< `<hud> score<n>.mesh`, or null. */
     LinearInterpolator mMove;      /*!< The move, and then the fade, against the tick. */
     float mStableEnd;              /*!< The tick at which the bar starts to fade. */
-    Rnd::Mesh *mBar;               /*!< `<hud> score bar<n>.mesh`, or null. */
-    Rnd::Mat *mBarMat;             /*!< `HUD score bar<n>.mat`, or null. */
+    RndMesh *mBar;                 /*!< `<hud> score bar<n>.mesh`, or null. */
+    RndMat *mBarMat;               /*!< `HUD score bar<n>.mat`, or null. */
     RampAnimator mBarGrow;         /*!< The growth of the bar. */
     Vector3 mTopPos;               /*!< The place of mTop outside a checkpoint. */
     const Vector3 *mCheckpointPos; /*!< The place mTop moves to, or null. */

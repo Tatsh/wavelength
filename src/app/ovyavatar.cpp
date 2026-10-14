@@ -7,7 +7,7 @@
 #include "gfx/gfxmanager.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -52,38 +52,38 @@ void ClearAllAnims(AvatarPartSet *pSoloAvatar) {
 float OvyAvatar::sLeaderSwingTime = 250.0f;
 Vector2 OvyAvatar::sDepthRange{0.02f, 0.05f};
 
-OvyAvatar::OvyAvatar(int nPlayer, int nIndex, Rnd::View *pHudView)
+OvyAvatar::OvyAvatar(int nPlayer, int nIndex, RndView *pHudView)
     : HideablePanel(FormatString("%s freq %d.tnm", Overlay::sHudPrefix, nIndex), nullptr, false),
       mWanted(0), mPlayer(kNoPlayer), mAvatar(nullptr), mView(nullptr), mName(nullptr),
       mNameColor(kNoNameColor), mBackgroundColor(kNoBackgroundColor), mNameMat(nullptr),
       mSwing(0.0f, nullptr, nullptr, kInitialSwingSpeed), mNextPlayer(kNoChange) {
-    mPlaceholder = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("freq placeholder %d.mesh", nIndex)));
-    mView = dynamic_cast<Rnd::View *>(
-        Rnd::TheManager.Find(FormatString("%s freq %d.view", Overlay::sHudPrefix, nIndex)));
+    mPlaceholder =
+        dynamic_cast<RndMesh *>(TheManager.Find(FormatString("freq placeholder %d.mesh", nIndex)));
+    mView = dynamic_cast<RndView *>(
+        TheManager.Find(FormatString("%s freq %d.view", Overlay::sHudPrefix, nIndex)));
     if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel ||
         TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        mName = dynamic_cast<Rnd::Text *>(
-            Rnd::TheManager.Find(FormatString("%s track%d.txt", Overlay::sHudPrefix, nIndex)));
+        mName = dynamic_cast<RndText *>(
+            TheManager.Find(FormatString("%s track%d.txt", Overlay::sHudPrefix, nIndex)));
     }
-    mBackgroundMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD freq_background.mat"));
+    mBackgroundMat = dynamic_cast<RndMat *>(TheManager.Find("HUD freq_background.mat"));
     if (nPlayer < 0 || TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        mBackgroundColor = mBackgroundMat->mAmbient;
+        mBackgroundColor = mBackgroundMat->mBaseColor;
     } else {
         mBackgroundColor = *TheGfxManager.GetPlayerColor(nPlayer);
     }
-    mNameMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD freq track.mat"));
+    mNameMat = dynamic_cast<RndMat *>(TheManager.Find("HUD freq track.mat"));
     if (mName != nullptr) {
         mName->SetText("");
-        mNameColor = mNameMat->mAmbient;
+        mNameColor = mNameMat->mBaseColor;
         mNameColor.a = kNameAlpha;
     }
-    static_cast<Rnd::Drawable *>(pHudView)->RemoveDraw(mView);
-    static_cast<Rnd::Drawable *>(mView)->SetShowing(true);
+    static_cast<RndDrawable *>(pHudView)->RemoveDraw(mView);
+    static_cast<RndDrawable *>(mView)->SetShowing(true);
     if (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
         TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
-        auto *pSwingAnim = dynamic_cast<Rnd::Animatable *>(
-            Rnd::TheManager.Find(FormatString("%s freq %d fx.tnm", Overlay::sHudPrefix, nIndex)));
+        auto *pSwingAnim = dynamic_cast<RndAnimatable *>(
+            TheManager.Find(FormatString("%s freq %d fx.tnm", Overlay::sHudPrefix, nIndex)));
         if (pSwingAnim != nullptr) {
             mSwing.SetAnim(pSwingAnim);
             mSwing.SetSpeed(kSwingEnd / sLeaderSwingTime);
@@ -95,7 +95,7 @@ OvyAvatar::OvyAvatar(int nPlayer, int nIndex, Rnd::View *pHudView)
         mPlayer = static_cast<signed char>(nPlayer);
     } else {
         mPlaceholder->SetShowing(false);
-        auto *pLeaderLabel = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("HUDm lead0.txt"));
+        auto *pLeaderLabel = dynamic_cast<RndText *>(TheManager.Find("HUDm lead0.txt"));
         pLeaderLabel->SetText(TheLocale.Localize("LEADER_AVATAR_LABEL", true));
         mNameColor.a = kLeaderLabelAlpha;
     }
@@ -126,11 +126,11 @@ void OvyAvatar::Draw() {
         TheGfxManager.mWinnerDrawn = TheGfxManager.mWinner == mPlayer;
     }
     if (mNameMat != nullptr) {
-        mNameMat->SetAmbient(mNameColor);
+        mNameMat->SetBaseColor(mNameColor);
         mNameMat->SetAlpha(mNameColor.a);
     }
-    mBackgroundMat->SetAmbient(mBackgroundColor);
-    static_cast<Rnd::Drawable *>(mView)->Draw();
+    mBackgroundMat->SetBaseColor(mBackgroundColor);
+    static_cast<RndDrawable *>(mView)->Draw();
 }
 
 void OvyAvatar::Poll(float fDelta) {

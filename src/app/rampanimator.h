@@ -1,7 +1,7 @@
 #pragma once
 
 #include "math/interpolator.h"
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 
 /**
  * Value that moves toward a target along an interpolator, and poses an animation on the value.
@@ -22,7 +22,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e41c8
      * @ghidraAddress PAL: 0x001ecf68
      */
-    RampAnimator(float fValue, Rnd::Animatable *pAnim, Interpolator *pInterp, float fSpeed);
+    RampAnimator(float fValue, RndAnimatable *pAnim, Interpolator *pInterp, float fSpeed);
 
     /**
      * Destroy the animator and its curve.
@@ -39,7 +39,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e42d0
      * @ghidraAddress PAL: 0x001ed070
      */
-    void SetAnim(Rnd::Animatable *pAnim);
+    void SetAnim(RndAnimatable *pAnim);
 
     /**
      * Set the speed of a move.
@@ -80,9 +80,9 @@ public:
      */
     bool Update(float fDelta, bool bForce);
 
-    float mValue;           /*!< The current value. */
-    float mElapsed;         /*!< The time since the move started. */
-    float mTimePerUnit;     /*!< The time per unit of change, or 0. */
-    Interpolator *mInterp;  /*!< The curve the value follows. */
-    Rnd::Animatable *mAnim; /*!< The animation posed on the value, or null. */
+    float mValue;          /*!< The current value. */
+    float mElapsed;        /*!< The time since the move started. */
+    float mTimePerUnit;    /*!< The time per unit of change, or 0. */
+    Interpolator *mInterp; /*!< The curve the value follows. */
+    RndAnimatable *mAnim;  /*!< The animation posed on the value, or null. */
 };

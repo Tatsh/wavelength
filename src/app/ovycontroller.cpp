@@ -2,7 +2,7 @@
 
 #include "app/overlay.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -29,29 +29,27 @@ const char *const kButtonNames[] = {
 } // namespace
 
 void OvyController::Button::Load(const char *pszName) {
-    mAnim = dynamic_cast<Rnd::Animatable *>(
-        Rnd::TheManager.Find(FormatString("HUD controller map %s.tnm", pszName)));
-    mMesh = dynamic_cast<Rnd::Drawable *>(
-        Rnd::TheManager.Find(FormatString("HUD controller map %s.mesh", pszName)));
+    mAnim = dynamic_cast<RndAnimatable *>(
+        TheManager.Find(FormatString("HUD controller map %s.tnm", pszName)));
+    mMesh = dynamic_cast<RndDrawable *>(
+        TheManager.Find(FormatString("HUD controller map %s.mesh", pszName)));
 }
 
-OvyController::OvyController(Rnd::View *pHudView) : HideablePanel(nullptr, nullptr, false) {
+OvyController::OvyController(RndView *pHudView) : HideablePanel(nullptr, nullptr, false) {
     for (Button &button : mButtons) {
         button.mAnim = nullptr;
         button.mMesh = nullptr;
     }
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("HUD controller map.view"));
-    mMats[kHighlightOff] =
-        dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD controller map no.mat"));
-    mMats[kHighlightOn] =
-        dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD controller map hi.mat"));
-    mMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("HUD controller map.mesh"));
-    mPosAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("HUD controller map pos.tnm"));
+    mView = dynamic_cast<RndView *>(TheManager.Find("HUD controller map.view"));
+    mMats[kHighlightOff] = dynamic_cast<RndMat *>(TheManager.Find("HUD controller map no.mat"));
+    mMats[kHighlightOn] = dynamic_cast<RndMat *>(TheManager.Find("HUD controller map hi.mat"));
+    mMesh = dynamic_cast<RndMesh *>(TheManager.Find("HUD controller map.mesh"));
+    mPosAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("HUD controller map pos.tnm"));
     SetObjects("HUD controller map.tnm", "HUD controller map.view", false);
-    auto *pMessage = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find("HUD genmsg.txt"));
-    auto *pLetterbox = dynamic_cast<Rnd::Transformable *>(
-        Rnd::TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
-    static_cast<Rnd::Drawable *>(pHudView)->AddDraw(mView, pMessage);
+    auto *pMessage = dynamic_cast<RndDrawable *>(TheManager.Find("HUD genmsg.txt"));
+    auto *pLetterbox = dynamic_cast<RndTransformable *>(
+        TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
+    static_cast<RndDrawable *>(pHudView)->AddDraw(mView, pMessage);
     pLetterbox->AddTrans(mView);
     pHudView->AddAnim(mView);
     for (int i = 0; i < kNumButtons; ++i) {

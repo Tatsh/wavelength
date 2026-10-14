@@ -4,9 +4,7 @@
 
 class HxStr;
 
-namespace Rnd {
-class Animatable;
-} // namespace Rnd
+class RndAnimatable;
 
 /**
  * Animation of the head-up display posed by a ramp.
@@ -19,7 +17,7 @@ class Animatable;
  */
 class OvyAssembly {
 private:
-    Rnd::Animatable *mAnim;
+    RndAnimatable *mAnim;
 
 public:
     /**

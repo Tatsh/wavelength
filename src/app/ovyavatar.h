@@ -4,10 +4,10 @@
 #include "app/rampanimator.h"
 #include "game/avatarpartset.h"
 #include "math/color.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * Avatar of a player beside the tracks, with the name of the track or player under it.
@@ -37,7 +37,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ba388
      * @ghidraAddress PAL: 0x001c3128
      */
-    OvyAvatar(int nPlayer, int nIndex, Rnd::View *pHudView);
+    OvyAvatar(int nPlayer, int nIndex, RndView *pHudView);
 
     /**
      * Stop the animations of the avatars and move the avatar camera back to `bust`.
@@ -137,16 +137,16 @@ public:
      */
     static Vector2 sDepthRange;
 
-    int mWanted;              /*!< Whether Show() asked for the display. */
-    signed char mPlayer;      /*!< The player shown, or kNoPlayer. */
-    AvatarPartSet *mAvatar;   /*!< The avatar of mPlayer, or null. */
-    Rnd::View *mView;         /*!< `<hud> freq <n>.view`. */
-    Rnd::Mesh *mPlaceholder;  /*!< `freq placeholder <n>.mesh`, which the avatar renders into. */
-    Rnd::Text *mName;         /*!< `<hud> track<n>.txt`, or null. */
-    Color mNameColor;         /*!< The colour of `HUD freq track.mat`. */
-    Color mBackgroundColor;   /*!< The colour of `HUD freq_background.mat`. */
-    Rnd::Mat *mBackgroundMat; /*!< `HUD freq_background.mat`. */
-    Rnd::Mat *mNameMat;       /*!< `HUD freq track.mat`. */
-    RampAnimator mSwing;      /*!< The swing to a new player, from 0 to 500. */
-    signed char mNextPlayer;  /*!< The player the swing swaps to, or kNoChange. */
+    int mWanted;             /*!< Whether Show() asked for the display. */
+    signed char mPlayer;     /*!< The player shown, or kNoPlayer. */
+    AvatarPartSet *mAvatar;  /*!< The avatar of mPlayer, or null. */
+    RndView *mView;          /*!< `<hud> freq <n>.view`. */
+    RndMesh *mPlaceholder;   /*!< `freq placeholder <n>.mesh`, which the avatar renders into. */
+    RndText *mName;          /*!< `<hud> track<n>.txt`, or null. */
+    Color mNameColor;        /*!< The colour of `HUD freq track.mat`. */
+    Color mBackgroundColor;  /*!< The colour of `HUD freq_background.mat`. */
+    RndMat *mBackgroundMat;  /*!< `HUD freq_background.mat`. */
+    RndMat *mNameMat;        /*!< `HUD freq track.mat`. */
+    RampAnimator mSwing;     /*!< The swing to a new player, from 0 to 500. */
+    signed char mNextPlayer; /*!< The player the swing swaps to, or kNoChange. */
 };

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "app/rampanimator.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * Icon of the power-up a player holds, with its name.
@@ -39,7 +39,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001bc730
      * @ghidraAddress PAL: 0x001c54d0
      */
-    HudPowerup(int nIndex, Rnd::View *pHudView);
+    HudPowerup(int nIndex, RndView *pHudView);
 
     /**
      * Empty the icon and move it out of sight at once.
@@ -78,11 +78,11 @@ public:
      */
     void UpdateSlide();
 
-    Rnd::View *mIcons[kNumIcons]; /*!< The icon of each power-up, indexed by Icon. */
-    Rnd::View *mView;             /*!< `<hud> pup<n>.view`, which draws the icon shown. */
-    Rnd::Text *mName;             /*!< `<hud> pup<n> name.txt`. */
-    Rnd::Mesh *mMesh;             /*!< `<hud> pup<n>.mesh`. */
-    RampAnimator mSlide;          /*!< The slide, from 0 (in view) to kHiddenFrame. */
-    int mHolding;                 /*!< Whether a power-up is held. */
-    int mEnabled;                 /*!< Whether the icon may slide into view. */
+    RndView *mIcons[kNumIcons]; /*!< The icon of each power-up, indexed by Icon. */
+    RndView *mView;             /*!< `<hud> pup<n>.view`, which draws the icon shown. */
+    RndText *mName;             /*!< `<hud> pup<n> name.txt`. */
+    RndMesh *mMesh;             /*!< `<hud> pup<n>.mesh`. */
+    RampAnimator mSlide;        /*!< The slide, from 0 (in view) to kHiddenFrame. */
+    int mHolding;               /*!< Whether a power-up is held. */
+    int mEnabled;               /*!< Whether the icon may slide into view. */
 };

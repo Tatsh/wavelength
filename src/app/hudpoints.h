@@ -1,11 +1,11 @@
 #pragma once
 
 #include "app/rampanimator.h"
-#include "rnd/blur.h"
-#include "rnd/mat.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndblur.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 /**
  * Points a player is building on the current phrase, and the points that fly off when the phrase
@@ -74,7 +74,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001be9f8
      * @ghidraAddress PAL: 0x001c7798
      */
-    void ScaleText(Rnd::Transformable *pText);
+    void ScaleText(RndTransformable *pText);
 
     /**
      * Show the pending points.
@@ -126,22 +126,22 @@ public:
      */
     void End(int nResult);
 
-    float mGlow;            /*!< The glow of the pending points, from 1 down to 0. */
-    float mSwell;           /*!< The swell of the pending points. */
-    float mMinSwell;        /*!< The swell the points shrink back to. */
-    int mMultiplier;        /*!< The multiplier of the pending points. */
-    int mPoints;            /*!< The pending points. */
-    int mPending;           /*!< Whether points are pending. */
-    int mHot;               /*!< Whether the points take the hot colour. */
-    int mEnabled;           /*!< Whether the display is enabled. */
-    Rnd::View *mExitView;   /*!< `<hud> pts_exit<n>.view`, the flight of the exiting points. */
-    Rnd::Text *mExitText;   /*!< `<hud> pts_exit<n>.txt`. */
-    Rnd::Blur *mExitBlur;   /*!< `<hud> pts_exit<n>.blur`, or null. */
-    Rnd::Text *mPointsText; /*!< `<hud> pts<n>.txt`. */
-    Rnd::Text *mMultText;   /*!< `<hud> ptsmult<n>.txt`. */
-    Rnd::Mat *mPointsMat;   /*!< The material of the points' font. */
-    Rnd::Mat *mMultMat;     /*!< The material of the multiplier's font. */
-    Rnd::Mat *mColdMat;     /*!< `HUD ptstmp.mat`, the colour of plain points. */
-    Rnd::Mat *mHotMat;      /*!< `HUD ptstmphot.mat`, the colour of hot points. */
-    RampAnimator mExit;     /*!< The flight of the exiting points. */
+    float mGlow;          /*!< The glow of the pending points, from 1 down to 0. */
+    float mSwell;         /*!< The swell of the pending points. */
+    float mMinSwell;      /*!< The swell the points shrink back to. */
+    int mMultiplier;      /*!< The multiplier of the pending points. */
+    int mPoints;          /*!< The pending points. */
+    int mPending;         /*!< Whether points are pending. */
+    int mHot;             /*!< Whether the points take the hot colour. */
+    int mEnabled;         /*!< Whether the display is enabled. */
+    RndView *mExitView;   /*!< `<hud> pts_exit<n>.view`, the flight of the exiting points. */
+    RndText *mExitText;   /*!< `<hud> pts_exit<n>.txt`. */
+    RndBlur *mExitBlur;   /*!< `<hud> pts_exit<n>.blur`, or null. */
+    RndText *mPointsText; /*!< `<hud> pts<n>.txt`. */
+    RndText *mMultText;   /*!< `<hud> ptsmult<n>.txt`. */
+    RndMat *mPointsMat;   /*!< The material of the points' font. */
+    RndMat *mMultMat;     /*!< The material of the multiplier's font. */
+    RndMat *mColdMat;     /*!< `HUD ptstmp.mat`, the colour of plain points. */
+    RndMat *mHotMat;      /*!< `HUD ptstmphot.mat`, the colour of hot points. */
+    RampAnimator mExit;   /*!< The flight of the exiting points. */
 };

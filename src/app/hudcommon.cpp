@@ -3,7 +3,7 @@
 #include "app/overlay.h"
 #include "game/gamedb.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -21,7 +21,7 @@ constexpr int kNoLeader = -1;
 
 } // namespace
 
-HudCommon::HudCommon(Rnd::View *pHudView, DataArray *pConfig, DataArray *pDefaults)
+HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults)
     : mMessage("HUD genmsg.txt", pHudView), mMessage2("HUD genmsg2.txt", pHudView),
       mTextMessage(pHudView), mSongPos(nullptr), mLetterbox(pHudView) {
     mPlaying = 0;
@@ -50,10 +50,10 @@ HudCommon::HudCommon(Rnd::View *pHudView, DataArray *pConfig, DataArray *pDefaul
         if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
             chHud = TheGameDb->mCommunity == GameDb::kCommunityOnline ? kHudOnline : kHudLocal;
         }
-        pHudView->AddAnim(dynamic_cast<Rnd::Animatable *>(
-            Rnd::TheManager.Find(FormatString("HUD%cr selected font.mnm", chHud))));
-        auto *pLetterbox = dynamic_cast<Rnd::View *>(
-            Rnd::TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
+        pHudView->AddAnim(dynamic_cast<RndAnimatable *>(
+            TheManager.Find(FormatString("HUD%cr selected font.mnm", chHud))));
+        auto *pLetterbox = dynamic_cast<RndView *>(
+            TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
         mSections = new OvySectionPanel(chHud, String(FormatString("HUD%cr", chHud)), pLetterbox);
         mStick = new HudStick(chHud, pHudView, pLetterbox);
         if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
@@ -67,7 +67,7 @@ HudCommon::HudCommon(Rnd::View *pHudView, DataArray *pConfig, DataArray *pDefaul
         TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
         mTrackLabel = new OvyTrackLabel();
     }
-    mMaterialAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("mat_2d_always.anim"));
+    mMaterialAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("mat_2d_always.anim"));
 }
 
 HudCommon::~HudCommon() {
@@ -144,7 +144,7 @@ void HudCommon::DrawText() {
         mChat->mDrawable->Draw();
     }
     mTextMessage.Draw();
-    static_cast<Rnd::Drawable *>(mLetterbox.mView)->Draw();
+    static_cast<RndDrawable *>(mLetterbox.mView)->Draw();
     mMessage.Draw();
     mMessage2.Draw();
 }

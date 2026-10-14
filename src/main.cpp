@@ -8,9 +8,8 @@
 #include "os/locale.h"
 #include "os/mem.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/object.h"
 #include "rnd/rndmanager.h"
+#include "rnd/rndobject.h"
 #include "rnd/rndrenderer.h"
 #include "script/scriptfunction.h"
 #include "synth/synth.h"
@@ -41,7 +40,7 @@ bool g_bRndHeapCompactStrict = false;
 // NTSC-U/C: 0x00100200, PAL: 0x00100200
 void CheckLeftoverObjects() {
     bool bLeftover = false;
-    for (const auto &entry : Rnd::TheManager.mObjects) {
+    for (const auto &entry : TheManager.mObjects) {
         if (entry.second->mInternal == 0) {
             bLeftover = true;
             break;
@@ -51,12 +50,12 @@ void CheckLeftoverObjects() {
         return;
     }
 
-    TheDebug << "Freq2 main: Flushing "
-             << static_cast<unsigned int>(Rnd::TheManager.mObjects.size()) << " objects.\n";
+    TheDebug << "Freq2 main: Flushing " << static_cast<unsigned int>(TheManager.mObjects.size())
+             << " objects.\n";
     TheDebug << "THIS IS BAD.  THERE SHOULD BE NONE,\n"
              << "aside from internal default objects,\n"
-             << "such as \"[default cam\"].\nLeftovers:\n    " << Rnd::TheManager.mObjects << "\n";
-    Rnd::TheManager.DeleteLoadedObjects();
+             << "such as \"[default cam\"].\nLeftovers:\n    " << TheManager.mObjects << "\n";
+    TheManager.DeleteLoadedObjects();
 }
 
 // NTSC-U/C: 0x00100318, PAL: 0x00100318
@@ -206,7 +205,7 @@ void UpdateAppFrame() {
     TheWorldMgr->UpdateTime();
     TheSynth->UpdateTime();
     SystemPoll();
-    Rnd::TheManager.PollLoaders(kLoaderBudgetMs);
+    TheManager.PollLoaders(kLoaderBudgetMs);
     PollNetSubsystem();
 
     const int nMetagameEvent = TheMetagame.Update();
@@ -235,7 +234,7 @@ void UpdateAppFrame() {
 // NTSC-U/C: 0x001009e0
 void InitializeAppSubsystems(int argc, char **argv) {
     SystemInit(argc, argv, kConfigFile);
-    ::TheManager.Init();
+    TheManager.Init();
     TheRnd->Init();
     TheMetagame.ShowLoadingScreen();
     Synth::Create();
@@ -259,7 +258,7 @@ void TerminateAppSubsystems() {
     TerminateNetSubsystem();
     CheckLeftoverObjects();
     TheRnd->Terminate();
-    Rnd::TheManager.DeleteLoadedObjects();
+    TheManager.DeleteLoadedObjects();
     Synth::Destroy();
 }
 

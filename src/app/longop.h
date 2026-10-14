@@ -40,7 +40,5 @@ extern LongOperationProc g_pfnLongOperationPollProc;
 
 /**
  * The installed draw callback, or null.
- *
- * Rnd::Manager::Read() tests and calls it directly rather than through RunLongOperationDrawProc().
  */
 extern LongOperationProc g_pfnLongOperationDrawProc;

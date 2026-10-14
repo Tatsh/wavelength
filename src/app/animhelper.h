@@ -1,8 +1,6 @@
 #pragma once
 
-namespace Rnd {
-class Animatable;
-} // namespace Rnd
+class RndAnimatable;
 
 /**
  * One run of an animation between two frames, played against a running time.
@@ -27,7 +25,7 @@ public:
      *
      * @param pAnim The animation to play.
      */
-    void SetAnim(Rnd::Animatable *pAnim);
+    void SetAnim(RndAnimatable *pAnim);
 
     /**
      * Arm a run between two frames.
@@ -50,8 +48,8 @@ public:
 
 private:
     // When the run started. -1 marks the range idle and 0 marks a run not yet started.
-    float mStart;           // +0x00
-    float mFrom;            // +0x04
-    float mTo;              // +0x08
-    Rnd::Animatable *mAnim; // +0x0c
+    float mStart;         // +0x00
+    float mFrom;          // +0x04
+    float mTo;            // +0x08
+    RndAnimatable *mAnim; // +0x0c
 };

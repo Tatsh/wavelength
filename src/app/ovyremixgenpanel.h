@@ -3,12 +3,12 @@
 #include <list>
 #include <vector>
 
-#include "rnd/font.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/object.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndobject.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * List of labelled options on the remix head-up display, one of which a cursor selects.
@@ -21,8 +21,8 @@ class OvyRemixGenPanel {
 public:
     /** One option: the mesh behind it and its label. */
     struct Option {
-        Rnd::Mesh *mMesh; /*!< The mesh behind the option, which the cursor materials go on. */
-        Rnd::Text *mText; /*!< The label. */
+        RndMesh *mMesh; /*!< The mesh behind the option, which the cursor materials go on. */
+        RndText *mText; /*!< The label. */
     };
 
     /** The indices of mFonts. */
@@ -84,7 +84,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b6c40
      * @ghidraAddress PAL: 0x001bf9e0
      */
-    void Load(char chHud, const char *pszPrefix, int nPlayer, Rnd::Transformable *pParent);
+    void Load(char chHud, const char *pszPrefix, int nPlayer, RndTransformable *pParent);
 
     /**
      * Clone one object of the loaded scene as `<name> pl <player>`, and own the clone.
@@ -95,7 +95,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b74e0
      * @ghidraAddress PAL: 0x001c0280
      */
-    Rnd::Object *Clone(const char *pszName, int nPlayer);
+    RndObject *Clone(const char *pszName, int nPlayer);
 
     /**
      * Set the label of an option.
@@ -134,16 +134,16 @@ public:
      */
     void SetLit(int nIndex, bool bLit);
 
-    Rnd::Mesh *mBackground;           /*!< `<prefix>_bg.mesh`, the root of the drawing. */
-    Rnd::Mesh *mPanel;                /*!< `<prefix>_panel.mesh`. */
-    std::vector<Option> mOptions;     /*!< The options, in order. */
-    std::list<Rnd::Object *> mClones; /*!< Every object the panel cloned and owns. */
-    Rnd::Mat *mCursorOffMat;          /*!< The material of an option the cursor is not on. */
-    Rnd::Mat *mCursorOnMat;           /*!< The material of the option the cursor is on. */
-    Rnd::Font *mFonts[kNumFonts];     /*!< The label fonts, indexed by FontIndex. */
-    Rnd::Mesh *mUpArrow;              /*!< `<prefix>_up.mesh`, or null. */
-    Rnd::Mesh *mDownArrow;            /*!< `<prefix>_down.mesh`, or null. */
-    Rnd::Mesh *mRule;                 /*!< `<prefix>_hr.mesh`, or null. */
-    Option *mSelected;                /*!< The option the cursor is on, or null. */
-    float mFlashTime;                 /*!< The song time Flash() ran at, or kNoFlash. */
+    RndMesh *mBackground;           /*!< `<prefix>_bg.mesh`, the root of the drawing. */
+    RndMesh *mPanel;                /*!< `<prefix>_panel.mesh`. */
+    std::vector<Option> mOptions;   /*!< The options, in order. */
+    std::list<RndObject *> mClones; /*!< Every object the panel cloned and owns. */
+    RndMat *mCursorOffMat;          /*!< The material of an option the cursor is not on. */
+    RndMat *mCursorOnMat;           /*!< The material of the option the cursor is on. */
+    RndFont *mFonts[kNumFonts];     /*!< The label fonts, indexed by FontIndex. */
+    RndMesh *mUpArrow;              /*!< `<prefix>_up.mesh`, or null. */
+    RndMesh *mDownArrow;            /*!< `<prefix>_down.mesh`, or null. */
+    RndMesh *mRule;                 /*!< `<prefix>_hr.mesh`, or null. */
+    Option *mSelected;              /*!< The option the cursor is on, or null. */
+    float mFlashTime;               /*!< The song time Flash() ran at, or kNoFlash. */
 };

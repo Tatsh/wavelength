@@ -10,10 +10,10 @@
 #include "msg/chatmsg.h"
 #include "msg/keyboardkeymsg.h"
 #include "os/string.h"
-#include "rnd/drawable.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -41,7 +41,7 @@ public:
          * @ghidraAddress NTSC-U/C: 0x001c1e98
          * @ghidraAddress PAL: 0x001cac38
          */
-        Line(DataArray *pConfig, DataArray *pDefaults, Rnd::Text *pText);
+        Line(DataArray *pConfig, DataArray *pDefaults, RndText *pText);
 
         /**
          * Destroy the slide, and forget the length of the slides.
@@ -88,7 +88,7 @@ public:
          */
         static float sSlideTime;
 
-        Rnd::Text *mText;     /*!< The text. */
+        RndText *mText;       /*!< The text. */
         Interpolator *mSlide; /*!< The position of the text over time. */
     };
 
@@ -110,7 +110,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001c0ac8
      * @ghidraAddress PAL: 0x001c9868
      */
-    OvyChat(DataArray *pConfig, DataArray *pDefaults, Rnd::View *pHudView);
+    OvyChat(DataArray *pConfig, DataArray *pDefaults, RndView *pHudView);
 
     /**
      * Unregister the chat and destroy its lines.
@@ -186,10 +186,10 @@ public:
     std::list<Line *> mLines;       /*!< The lines, from the bottom row up. */
     std::vector<float> mRows;       /*!< The position of each row. */
     std::list<PendingMsg> mPending; /*!< The lines that wait for the top of the panel. */
-    Rnd::Drawable *mDrawable;       /*!< `HUDnr_chat_mask.mesh`, the drawing of the chat. */
-    Rnd::Drawable *mTypeBox;        /*!< `HUDnr_chat_04.mesh`, shown while typing. */
-    Rnd::Drawable *mRule;           /*!< `HUDnr_chat_hr.mesh`, shown while typing. */
-    Rnd::Mesh *mCursor;             /*!< `HUDnr_chat_cursor.mesh`. */
+    RndDrawable *mDrawable;         /*!< `HUDnr_chat_mask.mesh`, the drawing of the chat. */
+    RndDrawable *mTypeBox;          /*!< `HUDnr_chat_04.mesh`, shown while typing. */
+    RndDrawable *mRule;             /*!< `HUDnr_chat_hr.mesh`, shown while typing. */
+    RndMesh *mCursor;               /*!< `HUDnr_chat_cursor.mesh`. */
     RampAnimator mSlide;            /*!< The slide of the panel, `HUDnr_chat.tnm`. */
     float mHiddenPosition;          /*!< The frame of mSlide with the panel hidden. */
     float mShownPosition;           /*!< The frame of mSlide with the panel shown. */

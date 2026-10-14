@@ -1,7 +1,7 @@
 #include "app/hudletterbox.h"
 
 #include "gfx/gfxmanager.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -13,11 +13,11 @@ constexpr float kFramesPerPart = 100.0f;
 
 } // namespace
 
-HudLetterbox::HudLetterbox(Rnd::View *pHudView) : mSlide(0.0f, nullptr, nullptr, kSlideSpeed) {
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("HUD letterbox.view"));
-    static_cast<Rnd::Drawable *>(pHudView)->RemoveDraw(mView);
+HudLetterbox::HudLetterbox(RndView *pHudView) : mSlide(0.0f, nullptr, nullptr, kSlideSpeed) {
+    mView = dynamic_cast<RndView *>(TheManager.Find("HUD letterbox.view"));
+    static_cast<RndDrawable *>(pHudView)->RemoveDraw(mView);
     mSlide.SetAnim(mView);
-    static_cast<Rnd::Drawable *>(mView)->SetShowing(false);
+    static_cast<RndDrawable *>(mView)->SetShowing(false);
 }
 
 void HudLetterbox::Poll(float fDelta, float fDeltaTicks) {
@@ -25,7 +25,7 @@ void HudLetterbox::Poll(float fDelta, float fDeltaTicks) {
         fDelta = fDeltaTicks / *TheGfxManager.mMsPerTick;
     }
     if (mSlide.Update(fDelta, false)) {
-        static_cast<Rnd::Drawable *>(mView)->SetShowing(mSlide.mValue != 0.0f);
+        static_cast<RndDrawable *>(mView)->SetShowing(mSlide.mValue != 0.0f);
     }
 }
 

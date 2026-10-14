@@ -1,10 +1,10 @@
 #pragma once
 
 #include "math/vector3.h"
-#include "rnd/text.h"
-#include "rnd/transanim.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 /**
  * Banner of the letters of `AMPLITUDE` a duel player has won, which flies to the player's score.
@@ -19,6 +19,12 @@ public:
 
     /** The number of sides of a duel. */
     static constexpr int kNumSides = 2;
+
+    /** The rows of a basis. */
+    static constexpr int kBasisRows = 3;
+
+    /** The words of a row of a transform: three components and the padding. */
+    static constexpr int kRowFloats = 4;
 
     /**
      * Construct an empty banner from `<hud> letter_exit.view`, the letters and the paths of each
@@ -76,7 +82,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001bf518
      * @ghidraAddress PAL: 0x001c82b8
      */
-    void ScaleByPulse(Rnd::Transformable *pTrans);
+    void ScaleByPulse(RndTransformable *pTrans);
 
     /**
      * Start a pulse that fades to a level.
@@ -104,21 +110,21 @@ public:
      */
     static const char *sLetters;
 
-    float mPulse;                               /*!< The pulse, which fades by 0.1 each poll. */
-    float mPulseFloor;                          /*!< The level the pulse fades to. */
-    int mRevealPending;                         /*!< Whether a reveal waits for the flight. */
-    int mPendingPlayer;                         /*!< The player of the waiting reveal. */
-    int mPendingPoints;                         /*!< The letters of the waiting reveal. */
-    Rnd::View *mView;                           /*!< `<hud> letter_exit.view`. */
-    Rnd::Text *mTexts[kNumSides];               /*!< `<hud> letter_exit<n>.txt` of each side. */
-    Rnd::TransAnim *mAnims[kNumSides];          /*!< `<hud> letter_exit<n>.tnm` of each side. */
-    int mLetters[kNumSides];                    /*!< The letter each side shows. */
-    float mFlightLength;                        /*!< The last frame of the flight paths. */
-    Vector3 mOrigin;                            /*!< The resting position of mView. */
-    float mFlyBasis[3][Rnd::kXfmRowFloatCount]; /*!< The basis of the text that flies. */
-    float mFlightStart;                         /*!< The tick the flight started, or -1e9. */
-    Rnd::TransAnim *mFlight;                    /*!< The path of the flight, or null. */
-    int mFlipped;                               /*!< Whether the flight mirrors its path. */
-    Rnd::TransAnim *mLetterPaths[kNumLetters];  /*!< `<hud> letter_exit <letter>r.tnm`. */
-    int mSecondSidePlayer;                      /*!< The player of the second side, or -1. */
+    float mPulse;                            /*!< The pulse, which fades by 0.1 each poll. */
+    float mPulseFloor;                       /*!< The level the pulse fades to. */
+    int mRevealPending;                      /*!< Whether a reveal waits for the flight. */
+    int mPendingPlayer;                      /*!< The player of the waiting reveal. */
+    int mPendingPoints;                      /*!< The letters of the waiting reveal. */
+    RndView *mView;                          /*!< `<hud> letter_exit.view`. */
+    RndText *mTexts[kNumSides];              /*!< `<hud> letter_exit<n>.txt` of each side. */
+    RndTransAnim *mAnims[kNumSides];         /*!< `<hud> letter_exit<n>.tnm` of each side. */
+    int mLetters[kNumSides];                 /*!< The letter each side shows. */
+    float mFlightLength;                     /*!< The last frame of the flight paths. */
+    Vector3 mOrigin;                         /*!< The resting position of mView. */
+    float mFlyBasis[kBasisRows][kRowFloats]; /*!< The basis of the text that flies. */
+    float mFlightStart;                      /*!< The tick the flight started, or -1e9. */
+    RndTransAnim *mFlight;                   /*!< The path of the flight, or null. */
+    int mFlipped;                            /*!< Whether the flight mirrors its path. */
+    RndTransAnim *mLetterPaths[kNumLetters]; /*!< `<hud> letter_exit <letter>r.tnm`. */
+    int mSecondSidePlayer;                   /*!< The player of the second side, or -1. */
 };

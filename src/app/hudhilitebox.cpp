@@ -3,14 +3,16 @@
 #include "game/gamedb.h"
 #include "math/sine.h"
 #include "os/debug.h"
-#include "rnd/blur.h"
-#include "rnd/manager.h"
-#include "rnd/meshvert.h"
+#include "rnd/rndblur.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
 // The rows of a transform: three of the basis, then the translation.
 enum XfmRow { kXfmRowBasisX = 0, kXfmRowBasisY = 1, kXfmRowBasisZ = 2, kXfmRowTranslation = 3 };
+
+// The words of a row: three components and the padding.
+constexpr int kRowFloatCount = 4;
 
 // The display coordinates of the unit square of the screen: x runs from -299 to 299, and y from
 // 210 at the top down to -210.
@@ -57,30 +59,26 @@ Vector3 Blend(const Vector3 &from, const Vector3 &to, float fProgress) {
 }
 
 // Place a vertex of a mesh on the plane of the display.
-void SetVert(Rnd::Mesh *pMesh, int nVert, float fX, float fZ) {
-    Vector3 &point = pMesh->mVertsOwner->mVerts[nVert].mPoint;
+void SetVert(RndMesh *pMesh, int nVert, float fX, float fZ) {
+    Vector3 &point = pMesh->mGeomOwner->mVerts[nVert].mPos;
     point.x = fX;
     point.y = 0.0f;
     point.z = fZ;
 }
 
 // Copy one row of a transform, including its fourth word.
-void CopyRow(float (&destination)[Rnd::kXfmRowFloatCount],
-             const float (&source)[Rnd::kXfmRowFloatCount]) {
-    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
-        destination[i] = source[i];
-    }
+void CopyRow(Vector3 &destination, const float (&source)[kRowFloatCount]) {
+    destination.x = source[0];
+    destination.y = source[1];
+    destination.z = source[2];
+    destination.w = source[3];
 }
 
-void CopyTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
-    float (&translation)[Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm[kXfmRowTranslation];
-    translation[0] = position.x;
-    translation[1] = position.y;
-    translation[2] = position.z;
-    translation[3] = position.w;
+void CopyTranslation(RndTransformable *pTrans, const Vector3 &position) {
+    pTrans->mLocalXfm.mTranslation = position;
 }
 
-void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
+void SetTranslation(RndTransformable *pTrans, const Vector3 &position) {
     pTrans->mDirty = 1;
     CopyTranslation(pTrans, position);
 }
@@ -90,25 +88,25 @@ void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
 HudHiliteBox::HudHiliteBox()
     : mBoxMove(1.0f, 1.0f, 0.0f, 1.0f), mBoxFade(0.0f, 0.0f, 0.0f, 1.0f),
       mArrowFade(0.0f, 0.0f, 0.0f, 1.0f), mArrowMove(1.0f, 1.0f, 0.0f, 1.0f, kArrowMoveSeverity) {
-    mBox = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("HUD hilite_box.mesh"));
-    mBoxMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD hilite_box.mat"));
-    dynamic_cast<Rnd::Blur *>(Rnd::TheManager.Find("HUD hilite_box.blur"))->SetShowing(true);
-    mArrow = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("HUD hilite arrow.view"));
-    mArrowMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD hilite arrow.mat"));
-    static_cast<Rnd::Drawable *>(mArrow)->SetShowing(false);
+    mBox = dynamic_cast<RndMesh *>(TheManager.Find("HUD hilite_box.mesh"));
+    mBoxMat = dynamic_cast<RndMat *>(TheManager.Find("HUD hilite_box.mat"));
+    dynamic_cast<RndBlur *>(TheManager.Find("HUD hilite_box.blur"))->SetShowing(true);
+    mArrow = dynamic_cast<RndView *>(TheManager.Find("HUD hilite arrow.view"));
+    mArrowMat = dynamic_cast<RndMat *>(TheManager.Find("HUD hilite arrow.mat"));
+    static_cast<RndDrawable *>(mArrow)->SetShowing(false);
     mArrowMat->SetAlpha(0.0f);
     for (int i = 0; i < kNumBoxVerts; ++i) {
         mBoxVerts[i] = kBoxVerts[i];
     }
-    const std::vector<Rnd::MeshVert> &verts = mBox->mVertsOwner->mVerts;
-    mCornerSize.x = verts[kCornerFarVert].mPoint.x - verts[kCornerNearVert].mPoint.x;
-    mCornerSize.y = verts[kCornerFarVert].mPoint.z - verts[kCornerNearVert].mPoint.z;
+    const std::vector<RndMesh::Vert> &verts = mBox->mGeomOwner->mVerts;
+    mCornerSize.x = verts[kCornerFarVert].mPos.x - verts[kCornerNearVert].mPos.x;
+    mCornerSize.y = verts[kCornerFarVert].mPos.z - verts[kCornerNearVert].mPos.z;
     Reset();
 }
 
 void HudHiliteBox::Reset() {
     mBox->SetShowing(false);
-    static_cast<Rnd::Drawable *>(mArrow)->SetShowing(false);
+    static_cast<RndDrawable *>(mArrow)->SetShowing(false);
     mBoxMove.Reset(1.0f, 1.0f, 0.0f, 1.0f);
     mBoxFade.Reset(0.0f, 0.0f, 0.0f, 1.0f);
     mArrowFade.Reset(0.0f, 0.0f, 0.0f, 1.0f);
@@ -142,11 +140,7 @@ void HudHiliteBox::SetBoxRect(float fX0, float fY0, float fX1, float fY1, float 
     if (!(mCornerSize.y + mCornerSize.y < fHeight)) {
         DebugNotify("too short.\n");
     }
-    const float (&current)[Rnd::kXfmRowFloatCount] = mBox->mLocalXfm[kXfmRowTranslation];
-    mFromPos.x = current[0];
-    mFromPos.y = current[1];
-    mFromPos.z = current[2];
-    mFromPos.w = current[3];
+    mFromPos = mBox->mLocalXfm.mTranslation;
     mToPos.x = (fX0 + fX1) * 0.5f;
     mToPos.z = (fY0 + fY1) * 0.5f;
     mToPos.y = 0.0f;
@@ -202,21 +196,21 @@ void HudHiliteBox::Update(float fTick) {
     if ((mChanging & kChangingArrowFade) != 0) {
         const float fAlpha = mArrowFade.Interpolator::Eval(fTick);
         mArrowMat->SetAlpha(fAlpha);
-        static_cast<Rnd::Drawable *>(mArrow)->SetShowing(fAlpha != 0.0f);
+        static_cast<RndDrawable *>(mArrow)->SetShowing(fAlpha != 0.0f);
         if (mArrowFade.mX1 <= fTick) {
             mChanging &= ~kChangingArrowFade;
         }
     }
     if ((mChanging & kChangingArrowMove) != 0) {
         const float fProgress = mArrowMove.Interpolator::Eval(fTick);
-        Rnd::Transformable *pArrow = mArrow;
+        RndTransformable *pArrow = mArrow;
         CopyTranslation(pArrow, Blend(mFromArrowPos, mToArrowPos, fProgress));
         pArrow->mDirty = 1;
         const float fAngle = (mToArrowAngle - mFromArrowAngle) * fProgress + mFromArrowAngle;
         const float fCos = SinApprox(fAngle + kHalfPi);
         const float fSin = SinApprox(fAngle);
         // Yes, the binary copies the unset fourth words of the basis.
-        float basis[kXfmRowTranslation][Rnd::kXfmRowFloatCount];
+        float basis[kXfmRowTranslation][kRowFloatCount];
         basis[kXfmRowBasisX][0] = fCos;
         basis[kXfmRowBasisX][1] = 0.0f;
         basis[kXfmRowBasisX][2] = -fSin;
@@ -229,10 +223,10 @@ void HudHiliteBox::Update(float fTick) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-        CopyRow(pArrow->mLocalXfm[kXfmRowBasisX], basis[kXfmRowBasisX]);
-        CopyRow(pArrow->mLocalXfm[kXfmRowBasisY], basis[kXfmRowBasisY]);
+        CopyRow(pArrow->mLocalXfm.mBasisX, basis[kXfmRowBasisX]);
+        CopyRow(pArrow->mLocalXfm.mBasisY, basis[kXfmRowBasisY]);
         pArrow->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
-        CopyRow(pArrow->mLocalXfm[kXfmRowBasisZ], basis[kXfmRowBasisZ]);
+        CopyRow(pArrow->mLocalXfm.mBasisZ, basis[kXfmRowBasisZ]);
 #pragma GCC diagnostic pop
         if (mArrowMove.mX1 <= fTick) {
             mChanging &= ~kChangingArrowMove;
@@ -267,5 +261,5 @@ void HudHiliteBox::Update(float fTick) {
             SetVert(mBox, mBoxVerts[nRow * kVertsPerRow + nColumn], afX[nColumn], afZ[nRow]);
         }
     }
-    mBox->Sync();
+    mBox->Sync(RndMesh::kSyncPositions);
 }

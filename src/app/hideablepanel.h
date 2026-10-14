@@ -1,8 +1,8 @@
 #pragma once
 
 #include "app/rampanimator.h"
-#include "rnd/animatable.h"
-#include "rnd/drawable.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rnddrawable.h"
 
 /**
  * Part of the head-up display that slides in and out of view.
@@ -135,7 +135,7 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x003af910
      */
-    static Rnd::Animatable *sMaterialAnim;
+    static RndAnimatable *sMaterialAnim;
 
     /**
      * The frame PoseMaterials() poses sMaterialAnim at.
@@ -144,6 +144,6 @@ public:
      */
     static float sMaterialFrame;
 
-    RampAnimator mSlide;      /*!< The slide, from 0 (hidden) to kShownFrame (shown). */
-    Rnd::Drawable *mDrawable; /*!< The drawable shown with the panel, or null. */
+    RampAnimator mSlide;    /*!< The slide, from 0 (hidden) to kShownFrame (shown). */
+    RndDrawable *mDrawable; /*!< The drawable shown with the panel, or null. */
 };

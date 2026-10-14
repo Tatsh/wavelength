@@ -3,9 +3,9 @@
 #include "math/interpolator.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/view.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndview.h"
 
 /**
  * Highlight the tutorial draws round a part of the screen, and an arrow that points at a place.
@@ -108,10 +108,10 @@ public:
      */
     void Update(float fTick);
 
-    Rnd::View *mArrow;                     /*!< `HUD hilite arrow.view`. */
-    Rnd::Mat *mArrowMat;                   /*!< `HUD hilite arrow.mat`. */
-    Rnd::Mesh *mBox;                       /*!< `HUD hilite_box.mesh`. */
-    Rnd::Mat *mBoxMat;                     /*!< `HUD hilite_box.mat`. */
+    RndView *mArrow;                       /*!< `HUD hilite arrow.view`. */
+    RndMat *mArrowMat;                     /*!< `HUD hilite arrow.mat`. */
+    RndMesh *mBox;                         /*!< `HUD hilite_box.mesh`. */
+    RndMat *mBoxMat;                       /*!< `HUD hilite_box.mat`. */
     int mReserved10[5];                    // +0x10, not written by any routine recovered so far.
     unsigned char mBoxVerts[kNumBoxVerts]; /*!< The vertex of the box at each place, row by row. */
     Vector2 mCornerSize;                   /*!< The width and depth of a corner of the box. */

@@ -4,53 +4,56 @@
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
 #include "os/string.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
-// The rows of a transform: three of the basis, then the translation.
-enum XfmRow { kXfmRowBasisX = 0, kXfmRowBasisY = 1, kXfmRowBasisZ = 2, kXfmRowTranslation = 3 };
+// The rows of a basis.
+enum XfmRow { kXfmRowBasisX = 0, kXfmRowBasisY = 1, kXfmRowBasisZ = 2 };
+
+// The words of a row: three components and the padding.
+constexpr int kRowFloatCount = 4;
 
 // The number of rows of the basis of a transform.
 constexpr int kBasisRowCount = 3;
 
 // Copy one row of a transform, including its fourth word.
-void CopyRow(float (&destination)[Rnd::kXfmRowFloatCount],
-             const float (&source)[Rnd::kXfmRowFloatCount]) {
-    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
-        destination[i] = source[i];
-    }
+void CopyRow(Vector3 &destination, const float (&source)[kRowFloatCount]) {
+    destination.x = source[0];
+    destination.y = source[1];
+    destination.z = source[2];
+    destination.w = source[3];
 }
 
 // Set the basis of a text's local transform.
-void SetBasis(Rnd::Text *pText, const float (&basis)[kBasisRowCount][Rnd::kXfmRowFloatCount]) {
-    CopyRow(pText->mLocalXfm[kXfmRowBasisX], basis[kXfmRowBasisX]);
-    CopyRow(pText->mLocalXfm[kXfmRowBasisY], basis[kXfmRowBasisY]);
+void SetBasis(RndText *pText, const float (&basis)[kBasisRowCount][kRowFloatCount]) {
+    CopyRow(pText->mLocalXfm.mBasisX, basis[kXfmRowBasisX]);
+    CopyRow(pText->mLocalXfm.mBasisY, basis[kXfmRowBasisY]);
     pText->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
-    CopyRow(pText->mLocalXfm[kXfmRowBasisZ], basis[kXfmRowBasisZ]);
+    CopyRow(pText->mLocalXfm.mBasisZ, basis[kXfmRowBasisZ]);
 }
 
 } // namespace
 
-HudTextMessage::HudTextMessage(Rnd::View *pHudView) {
+HudTextMessage::HudTextMessage(RndView *pHudView) {
     mFrame = 0.0f;
     mShowing = 0;
     mStartTime = kNotShown;
-    mBlur = dynamic_cast<Rnd::Blur *>(Rnd::TheManager.Find("HUD textmsg.blur"));
-    mText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("HUD textmsg.txt"));
-    mSmallBlur = dynamic_cast<Rnd::Blur *>(Rnd::TheManager.Find("HUD sm textmsg.blur"));
-    mSmallText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("HUD sm textmsg.txt"));
+    mBlur = dynamic_cast<RndBlur *>(TheManager.Find("HUD textmsg.blur"));
+    mText = dynamic_cast<RndText *>(TheManager.Find("HUD textmsg.txt"));
+    mSmallBlur = dynamic_cast<RndBlur *>(TheManager.Find("HUD sm textmsg.blur"));
+    mSmallText = dynamic_cast<RndText *>(TheManager.Find("HUD sm textmsg.txt"));
     mMat = mText->mFont->mMat;
-    mFlight = dynamic_cast<Rnd::TransAnim *>(
-        Rnd::TheManager.Find(FormatString("%s textmsg.tnm", Overlay::sHudPrefix)));
-    mOffsetView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("HUD textmsg offset.view"));
-    mDefaultColor = mMat->mAmbient;
+    mFlight = dynamic_cast<RndTransAnim *>(
+        TheManager.Find(FormatString("%s textmsg.tnm", Overlay::sHudPrefix)));
+    mOffsetView = dynamic_cast<RndView *>(TheManager.Find("HUD textmsg offset.view"));
+    mDefaultColor = mMat->mBaseColor;
     mText->SetShowing(false);
     mSmallText->SetShowing(false);
     mBlur->SetShowing(true);
     mSmallBlur->SetShowing(true);
-    Rnd::Drawable *pHudDrawable = pHudView;
+    RndDrawable *pHudDrawable = pHudView;
     pHudDrawable->RemoveDraw(mBlur);
     pHudDrawable->RemoveDraw(mSmallBlur);
 }
@@ -74,8 +77,8 @@ void HudTextMessage::Show(const char *pszText,
     if (mShowing != 0) {
         return;
     }
-    // Yes, the binary copies the unset fourth words of the basis and of the translation.
-    float basis[kBasisRowCount][Rnd::kXfmRowFloatCount];
+    // Yes, the binary copies the unset fourth words of the basis.
+    float basis[kBasisRowCount][kRowFloatCount];
     basis[kXfmRowBasisX][0] = fScale;
     basis[kXfmRowBasisX][1] = 0.0f;
     basis[kXfmRowBasisX][2] = 0.0f;
@@ -98,20 +101,15 @@ void HudTextMessage::Show(const char *pszText,
     mText->SetShowing(true);
     mSmallText->SetShowing(true);
     if (nPlayer < 0) {
-        mMat->SetAmbient(mDefaultColor);
+        mMat->SetBaseColor(mDefaultColor);
     } else {
-        mMat->SetAmbient(*TheGfxManager.GetPlayerColor(nPlayer));
+        mMat->SetBaseColor(*TheGfxManager.GetPlayerColor(nPlayer));
     }
-    float translation[Rnd::kXfmRowFloatCount];
-    translation[0] = fX;
-    translation[1] = 0.0f;
-    translation[2] = fZ;
     mOffsetView->mDirty = 1;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-    CopyRow(mOffsetView->mLocalXfm[kXfmRowTranslation], translation);
-#pragma GCC diagnostic pop
+    // The binary also copies an unset fourth word, which is left as it was here.
+    mOffsetView->mLocalXfm.mTranslation.x = fX;
+    mOffsetView->mLocalXfm.mTranslation.y = 0.0f;
+    mOffsetView->mLocalXfm.mTranslation.z = fZ;
     mDuration = fDuration;
     mStartTime = TheGameDb->mSongTime;
     mFlight->SetFrame(0.0f);

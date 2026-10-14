@@ -2,9 +2,9 @@
 
 #include "app/hideablepanel.h"
 #include "math/interpolator.h"
-#include "rnd/animatable.h"
-#include "rnd/drawable.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndview.h"
 
 /**
  * Energy bar of the solo head-up display.
@@ -105,16 +105,16 @@ public:
      */
     static float sBlinkLeft;
 
-    Rnd::View *mView;                /*!< `HUD energy.view`, posed on the level. */
-    Rnd::Animatable *mColorAnim;     /*!< `HUD energy.mnm`, posed on the colour. */
-    Rnd::Drawable *mBar;             /*!< `HUD energy bar draw.view`. */
-    Rnd::Drawable *mWarning;         /*!< `HUD ! bg.mesh`. */
-    Rnd::Drawable *mGhost;           /*!< `HUD energy ghost.mesh`. */
-    Rnd::Animatable *mGhostAnim;     /*!< `HUD energy ghost.msnm`, posed on the old level. */
-    Rnd::Animatable *mGhostFadeAnim; /*!< `HUD energy ghost fade.mnm`. */
-    LinearInterpolator mGhostFade;   /*!< The fade of the ghost against the song time. */
-    float mLevel;                    /*!< The level, or -1 after Reset(). */
-    int mWarn;                       /*!< Whether the warning blinks. */
-    int mHideBar;                    /*!< Whether the bar is hidden. Reset() clears it. */
-    float mWarningLeft;              /*!< The part of the warning's blink still to run. */
+    RndView *mView;                /*!< `HUD energy.view`, posed on the level. */
+    RndAnimatable *mColorAnim;     /*!< `HUD energy.mnm`, posed on the colour. */
+    RndDrawable *mBar;             /*!< `HUD energy bar draw.view`. */
+    RndDrawable *mWarning;         /*!< `HUD ! bg.mesh`. */
+    RndDrawable *mGhost;           /*!< `HUD energy ghost.mesh`. */
+    RndAnimatable *mGhostAnim;     /*!< `HUD energy ghost.msnm`, posed on the old level. */
+    RndAnimatable *mGhostFadeAnim; /*!< `HUD energy ghost fade.mnm`. */
+    LinearInterpolator mGhostFade; /*!< The fade of the ghost against the song time. */
+    float mLevel;                  /*!< The level, or -1 after Reset(). */
+    int mWarn;                     /*!< Whether the warning blinks. */
+    int mHideBar;                  /*!< Whether the bar is hidden. Reset() clears it. */
+    float mWarningLeft;            /*!< The part of the warning's blink still to run. */
 };

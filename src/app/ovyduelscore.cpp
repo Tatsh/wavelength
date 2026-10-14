@@ -4,7 +4,7 @@
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -19,20 +19,18 @@ constexpr float kFlashTime = 960.0f;
 OvyDuelScore::OvyDuelScore(int nIndex) : HideablePanel(nullptr, nullptr, false) {
     mLitCount = 0;
     mFlashTime = kNoFlash;
-    mView = dynamic_cast<Rnd::View *>(
-        Rnd::TheManager.Find(FormatString("HUDd letters %d.view", nIndex)));
+    mView = dynamic_cast<RndView *>(TheManager.Find(FormatString("HUDd letters %d.view", nIndex)));
     SetObjects(FormatString("HUDd letters %d.tnm", nIndex),
-               static_cast<Rnd::Drawable *>(mView)->mName.mStr,
+               static_cast<RndDrawable *>(mView)->mName.c_str(),
                false);
-    mFlashAnim = dynamic_cast<Rnd::Animatable *>(
-        Rnd::TheManager.Find(FormatString("HUDd letter hi %d.mnm", nIndex)));
-    mFonts[kLetterFontNormal] =
-        dynamic_cast<Rnd::Font *>(Rnd::TheManager.Find("HUDd letter no.font"));
-    mFonts[kLetterFontNew] = dynamic_cast<Rnd::Font *>(
-        Rnd::TheManager.Find(FormatString("HUDd letter hi %d.font", nIndex)));
+    mFlashAnim = dynamic_cast<RndAnimatable *>(
+        TheManager.Find(FormatString("HUDd letter hi %d.mnm", nIndex)));
+    mFonts[kLetterFontNormal] = dynamic_cast<RndFont *>(TheManager.Find("HUDd letter no.font"));
+    mFonts[kLetterFontNew] =
+        dynamic_cast<RndFont *>(TheManager.Find(FormatString("HUDd letter hi %d.font", nIndex)));
     for (int i = 0; i < kNumLetters; ++i) {
-        mLetters[i] = dynamic_cast<Rnd::Text *>(
-            Rnd::TheManager.Find(FormatString("HUDd letter%d %d.txt", i, nIndex)));
+        mLetters[i] = dynamic_cast<RndText *>(
+            TheManager.Find(FormatString("HUDd letter%d %d.txt", i, nIndex)));
     }
     Reset();
 }
@@ -57,7 +55,7 @@ void OvyDuelScore::Poll() {
         return;
     }
     mFlashTime = kNoFlash;
-    for (Rnd::Text *pLetter : mLetters) {
+    for (RndText *pLetter : mLetters) {
         pLetter->SetFont(mFonts[kLetterFontNormal]);
     }
 }
@@ -69,12 +67,12 @@ void OvyDuelScore::Reset() {
 
 void OvyDuelScore::ShowLetters(int nCount, bool bSetFonts) {
     for (int i = 0; i < kNumLetters; ++i) {
-        Rnd::Text *pLetter = mLetters[i];
+        RndText *pLetter = mLetters[i];
         pLetter->SetShowing(i < nCount);
         if (!bSetFonts) {
             continue;
         }
-        Rnd::Font *pFont = mFonts[i < mLitCount ? kLetterFontNormal : kLetterFontNew];
+        RndFont *pFont = mFonts[i < mLitCount ? kLetterFontNormal : kLetterFontNew];
         if (pFont != pLetter->mFont) {
             pLetter->SetFont(pFont);
         }

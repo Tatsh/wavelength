@@ -2,7 +2,7 @@
 
 #include "game/gamedb.h"
 
-OvyAllPlayer::OvyAllPlayer(int nPlayer, int nIndex, Rnd::View *pHudView) {
+OvyAllPlayer::OvyAllPlayer(int nPlayer, int nIndex, RndView *pHudView) {
     mPlayer = nPlayer;
     mScore = nullptr;
     mDuelScore = nullptr;

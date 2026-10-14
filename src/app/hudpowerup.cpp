@@ -6,7 +6,7 @@
 #include "gfx/gfxmanager.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -18,35 +18,35 @@ constexpr char kOnlineHudPrefix[] = "HUD1";
 
 template <typename T>
 T *FindIndexed(const char *pszFormat, const char *pszHud, int nIndex) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(FormatString(pszFormat, pszHud, nIndex)));
+    return dynamic_cast<T *>(TheManager.Find(FormatString(pszFormat, pszHud, nIndex)));
 }
 
 } // namespace
 
-HudPowerup::HudPowerup(int nIndex, Rnd::View *pHudView)
+HudPowerup::HudPowerup(int nIndex, RndView *pHudView)
     : mView(nullptr), mSlide(kHiddenFrame, nullptr, nullptr, kSlideSpeed) {
     mEnabled = 1;
     mHolding = TheGameDb->mTutorial;
     const char *pszHud =
         TheGameDb->mCommunity == GameDb::kCommunityOnline ? kOnlineHudPrefix : Overlay::sHudPrefix;
-    mSlide.SetAnim(FindIndexed<Rnd::Animatable>("%s pup%d hide.tnm", pszHud, nIndex));
-    mMesh = FindIndexed<Rnd::Mesh>("%s pup%d.mesh", pszHud, nIndex);
-    mView = FindIndexed<Rnd::View>("%s pup%d.view", pszHud, nIndex);
-    mName = FindIndexed<Rnd::Text>("%s pup%d name.txt", pszHud, nIndex);
-    mIcons[kIconAutocatcher] = FindIndexed<Rnd::View>("%s pup auto%d.view", pszHud, nIndex);
-    mIcons[kIconSlowdown] = FindIndexed<Rnd::View>("%s pup slow%d.view", pszHud, nIndex);
-    mIcons[kIconBumper] = FindIndexed<Rnd::View>("%s pup bump%d.view", pszHud, nIndex);
-    mIcons[kIconCrippler] = FindIndexed<Rnd::View>("%s pup crip%d.view", pszHud, nIndex);
-    mIcons[kIconFreestyle] = FindIndexed<Rnd::View>("%s pup free%d.view", pszHud, nIndex);
-    mIcons[kIconMultiplier] = FindIndexed<Rnd::View>("%s pup mult%d.view", pszHud, nIndex);
+    mSlide.SetAnim(FindIndexed<RndAnimatable>("%s pup%d hide.tnm", pszHud, nIndex));
+    mMesh = FindIndexed<RndMesh>("%s pup%d.mesh", pszHud, nIndex);
+    mView = FindIndexed<RndView>("%s pup%d.view", pszHud, nIndex);
+    mName = FindIndexed<RndText>("%s pup%d name.txt", pszHud, nIndex);
+    mIcons[kIconAutocatcher] = FindIndexed<RndView>("%s pup auto%d.view", pszHud, nIndex);
+    mIcons[kIconSlowdown] = FindIndexed<RndView>("%s pup slow%d.view", pszHud, nIndex);
+    mIcons[kIconBumper] = FindIndexed<RndView>("%s pup bump%d.view", pszHud, nIndex);
+    mIcons[kIconCrippler] = FindIndexed<RndView>("%s pup crip%d.view", pszHud, nIndex);
+    mIcons[kIconFreestyle] = FindIndexed<RndView>("%s pup free%d.view", pszHud, nIndex);
+    mIcons[kIconMultiplier] = FindIndexed<RndView>("%s pup mult%d.view", pszHud, nIndex);
     mMesh->SetShowing(false);
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
-        auto *pFirstMesh = dynamic_cast<Rnd::Mesh *>(
-            Rnd::TheManager.Find(FormatString("%s pup0.mesh", Overlay::sHudPrefix)));
-        auto *pLetterbox = dynamic_cast<Rnd::Transformable *>(
-            Rnd::TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
-        auto *pPanel = FindIndexed<Rnd::Transformable>("%s pup%d panel.mesh", pszHud, nIndex);
-        static_cast<Rnd::Drawable *>(pHudView)->AddDraw(mMesh, pFirstMesh);
+        auto *pFirstMesh = dynamic_cast<RndMesh *>(
+            TheManager.Find(FormatString("%s pup0.mesh", Overlay::sHudPrefix)));
+        auto *pLetterbox = dynamic_cast<RndTransformable *>(
+            TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
+        auto *pPanel = FindIndexed<RndTransformable>("%s pup%d panel.mesh", pszHud, nIndex);
+        static_cast<RndDrawable *>(pHudView)->AddDraw(mMesh, pFirstMesh);
         pHudView->AddAnim(mView);
         pLetterbox->AddTrans(pPanel);
     }
@@ -60,10 +60,10 @@ void HudPowerup::Reset() {
 }
 
 void HudPowerup::ShowPowerup(int nPowerup) {
-    static_cast<Rnd::Drawable *>(mView)->RemoveAllDraws();
+    static_cast<RndDrawable *>(mView)->ClearDraws();
     mView->RemoveAllAnims();
-    static_cast<Rnd::Transformable *>(mView)->RemoveAllTranses();
-    Rnd::View *pIcon = nullptr;
+    static_cast<RndTransformable *>(mView)->ClearTrans();
+    RndView *pIcon = nullptr;
     const char *pszLabel = nullptr;
     switch (nPowerup) {
     case GameLogic::kPowerupAutocatcher:
@@ -105,10 +105,10 @@ void HudPowerup::ShowPowerup(int nPowerup) {
         mHolding = 1;
         UpdateSlide();
     }
-    Rnd::Drawable *pIconDrawable = pIcon;
+    RndDrawable *pIconDrawable = pIcon;
     pIconDrawable->SetShowing(true);
-    static_cast<Rnd::Drawable *>(mView)->AddDraw(pIconDrawable, nullptr);
-    static_cast<Rnd::Transformable *>(mView)->AddTrans(pIcon);
+    static_cast<RndDrawable *>(mView)->AddDraw(pIconDrawable, nullptr);
+    static_cast<RndTransformable *>(mView)->AddTrans(pIcon);
     mView->AddAnim(pIcon);
     mName->SetText(TheLocale.Localize(pszLabel, true));
     mName->SetShowing(true);

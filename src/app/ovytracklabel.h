@@ -1,8 +1,8 @@
 #pragma once
 
 #include "app/hideablepanel.h"
-#include "rnd/mat.h"
-#include "rnd/text.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndtext.h"
 
 /**
  * Label of the instrument of the track the local player is on.
@@ -70,9 +70,9 @@ public:
      */
     void UpdateShown();
 
-    int mWanted;      /*!< Whether Show() asked for the label. */
-    int mHasText;     /*!< Whether the label has a text. */
-    int mPlayer;      /*!< The player the label follows, the first local player. */
-    Rnd::Text *mText; /*!< `HUD track label.txt`. */
-    Rnd::Mat *mMat;   /*!< `HUD track label.mat`, which takes the instrument's colour. */
+    int mWanted;    /*!< Whether Show() asked for the label. */
+    int mHasText;   /*!< Whether the label has a text. */
+    int mPlayer;    /*!< The player the label follows, the first local player. */
+    RndText *mText; /*!< `HUD track label.txt`. */
+    RndMat *mMat;   /*!< `HUD track label.mat`, which takes the instrument's colour. */
 };

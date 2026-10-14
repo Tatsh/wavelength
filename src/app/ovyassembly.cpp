@@ -1,11 +1,11 @@
 #include "app/ovyassembly.h"
 
 #include "os/hxstr.h"
-#include "rnd/animatable.h"
-#include "rnd/manager.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmanager.h"
 
 OvyAssembly::OvyAssembly(const HxStr &name, float flFrom, float flTo, float flDuration) {
-    mAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find(name));
+    mAnim = dynamic_cast<RndAnimatable *>(TheManager.Find(name.mStr));
     mAnim->SetFrame(0.0f);
     mRamp.SetParams(flFrom, flTo, flDuration);
 }

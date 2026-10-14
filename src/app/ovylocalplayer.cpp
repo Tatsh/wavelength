@@ -3,7 +3,7 @@
 #include "app/overlay.h"
 #include "game/gamedb.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 OvyLocalPlayer::OvyLocalPlayer(int nPlayer, int nPosition) {
     mPlayer = nPlayer;
@@ -13,8 +13,8 @@ OvyLocalPlayer::OvyLocalPlayer(int nPlayer, int nPosition) {
     mReserved10[0] = 0;
     mReserved10[1] = 0;
     if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix && TheGameDb->IsLocalPlayer(nPlayer)) {
-        auto *pLetterbox = dynamic_cast<Rnd::Transformable *>(
-            Rnd::TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
+        auto *pLetterbox = dynamic_cast<RndTransformable *>(
+            TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
         mRemix = new OvyRemixPanel(nPlayer, nPosition, pLetterbox);
     }
     if (TheGameDb->mRuleSet == GameDb::kRuleSetGame) {

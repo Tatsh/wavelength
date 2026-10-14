@@ -2,7 +2,7 @@
 
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -30,14 +30,13 @@ float OvyJuice::sBlinkLeft = 0.0f;
 OvyJuice::OvyJuice()
     : HideablePanel("HUD1 energy.tnm", "HUD energy.view", false),
       mGhostFade(0.0f, 0.0f, kLongAgoStart, kLongAgoEnd) {
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("HUD energy.view"));
-    mBar = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find("HUD energy bar draw.view"));
-    mGhost = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find("HUD energy ghost.mesh"));
-    mGhostAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("HUD energy ghost.msnm"));
-    mGhostFadeAnim =
-        dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("HUD energy ghost fade.mnm"));
-    mColorAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("HUD energy.mnm"));
-    mWarning = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find("HUD ! bg.mesh"));
+    mView = dynamic_cast<RndView *>(TheManager.Find("HUD energy.view"));
+    mBar = dynamic_cast<RndDrawable *>(TheManager.Find("HUD energy bar draw.view"));
+    mGhost = dynamic_cast<RndDrawable *>(TheManager.Find("HUD energy ghost.mesh"));
+    mGhostAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("HUD energy ghost.msnm"));
+    mGhostFadeAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("HUD energy ghost fade.mnm"));
+    mColorAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("HUD energy.mnm"));
+    mWarning = dynamic_cast<RndDrawable *>(TheManager.Find("HUD ! bg.mesh"));
     Reset();
 }
 

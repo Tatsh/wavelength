@@ -9,16 +9,14 @@
 #include "game/remixinfo.h"
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
+#include "gfx/gfxutil.h"
 #include "math/interpolator.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/manager.h"
 #include "rnd/ps.h"
+#include "rnd/rndmanager.h"
 
 namespace {
-
-// The row of a transform that holds the translation.
-constexpr int kXfmRowTranslation = 3;
 
 // The song position, in ticks, after which the parts of the display show.
 constexpr float kShowPartsFrame = -3840.0f;
@@ -114,24 +112,20 @@ Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mCommon(nullptr), m
     const int nPlayers = TheGameDb->GetNumPlayers();
     HideablePanel::Init();
     SetHudPrefix();
-    mHudView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("hud.view"));
+    mHudView = dynamic_cast<RndView *>(TheManager.Find("hud.view"));
     auto *pLayout =
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString("_hud%c.view", sHudLetter)));
-    mHudView->AddView(pLayout);
-    pLayout->RemoveView(
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString("%s test.anim", sHudPrefix))));
-    for (Rnd::Drawable *pChild : static_cast<Rnd::Drawable *>(pLayout)->mDraws) {
-        const char *pszName = pChild->mName.mStr;
+        dynamic_cast<RndView *>(TheManager.Find(FormatString("_hud%c.view", sHudLetter)));
+    AttachView(mHudView, pLayout);
+    DetachView(pLayout,
+               dynamic_cast<RndView *>(TheManager.Find(FormatString("%s test.anim", sHudPrefix))));
+    for (RndDrawable *pChild : static_cast<RndDrawable *>(pLayout)->mDraws) {
+        const char *pszName = pChild->mName.c_str();
         if (std::strcmp(pszName, kHudCam) != 0 && std::strcmp(pszName, kHudEnv) != 0) {
             pChild->SetShowing(false);
         }
     }
-    mCam = dynamic_cast<Rnd::Cam *>(Rnd::TheManager.Find(kHudCam));
-    const float (&camPos)[Rnd::kXfmRowFloatCount] = mCam->mLocalXfm[kXfmRowTranslation];
-    mCamPos.x = camPos[0];
-    mCamPos.y = camPos[1];
-    mCamPos.z = camPos[2];
-    mCamPos.w = camPos[3];
+    mCam = dynamic_cast<RndCam *>(TheManager.Find(kHudCam));
+    mCamPos = mCam->mLocalXfm.mTranslation;
     mCam->mZRange = sHudZ;
     if (TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
         int nPosition = 0;
@@ -186,7 +180,7 @@ bool Overlay::DispatchPriv(Message *pMsg) {
 
 void Overlay::CreateTutorialParts() {
     auto *pLayout =
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString("_hud%c.view", sHudLetter)));
+        dynamic_cast<RndView *>(TheManager.Find(FormatString("_hud%c.view", sHudLetter)));
     if (TheGameDb->mTutorial == 0) {
         return;
     }
@@ -623,20 +617,16 @@ void Overlay::HideStick() {
 }
 
 void Overlay::SetCameraOffset(const Vector3 *pOffset) {
-    float position[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
-    position[0] = pOffset->x + mCamPos.x;
-    position[1] = pOffset->y + mCamPos.y;
-    position[2] = pOffset->z + mCamPos.z;
-    float (&current)[Rnd::kXfmRowFloatCount] = mCam->mLocalXfm[kXfmRowTranslation];
-    if (position[0] != current[0] || position[1] != current[1] || position[2] != current[2]) {
+    const float fX = pOffset->x + mCamPos.x;
+    const float fY = pOffset->y + mCamPos.y;
+    const float fZ = pOffset->z + mCamPos.z;
+    Vector3 &current = mCam->mLocalXfm.mTranslation;
+    if (fX != current.x || fY != current.y || fZ != current.z) {
         mCam->mDirty = 1;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-        for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
-            current[i] = position[i];
-        }
-#pragma GCC diagnostic pop
+        // The binary also copies an unset fourth word, which is left as it was here.
+        current.x = fX;
+        current.y = fY;
+        current.z = fZ;
     }
 }
 
@@ -724,9 +714,9 @@ void Overlay::Poll(float fFrame, float fSongDelta, float fUnused, float fRealDel
 
 void Overlay::Draw() {
     TheGfxManager.mWinnerDrawn = 0;
-    static_cast<Rnd::Transformable *>(mHudView)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndTransformable *>(mHudView)->UpdateWorldXfm(nullptr, 0);
     HideablePanel::PoseMaterials();
-    static_cast<Rnd::Drawable *>(mHudView)->Draw();
+    static_cast<RndDrawable *>(mHudView)->Draw();
     mCommon->Draw();
     for (OvyLocalPlayer *pLocal : mLocals) {
         pLocal->DrawHud();

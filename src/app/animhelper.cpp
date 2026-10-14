@@ -1,6 +1,6 @@
 #include "app/animhelper.h"
 
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 
 namespace {
 
@@ -15,7 +15,7 @@ constexpr float kNotStarted = 0.0f;
 AnimHelper::AnimHelper() : mStart(kIdle), mAnim(nullptr) {
 }
 
-void AnimHelper::SetAnim(Rnd::Animatable *pAnim) {
+void AnimHelper::SetAnim(RndAnimatable *pAnim) {
     mAnim = pAnim;
     mAnim->SetFrame(0.0f);
 }

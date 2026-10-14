@@ -15,8 +15,8 @@
 #include "app/ovysectionpanel.h"
 #include "app/ovysongpos.h"
 #include "app/ovytracklabel.h"
-#include "rnd/animatable.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -39,7 +39,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001c2ba8
      * @ghidraAddress PAL: 0x001cb948
      */
-    HudCommon(Rnd::View *pHudView, DataArray *pConfig, DataArray *pDefaults);
+    HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults);
 
     /**
      * Destroy the parts.
@@ -118,6 +118,6 @@ public:
     OvyChat *mChat;                       /*!< The chat of an online remix, or null. */
     HudLetterExit *mLetterExit;           /*!< The letter banner of a duel, or null. */
     OvyTrackLabel *mTrackLabel;           /*!< The track label, or null. */
-    Rnd::Animatable *mMaterialAnim;       /*!< `mat_2d_always.anim`, posed on the song time. */
+    RndAnimatable *mMaterialAnim;         /*!< `mat_2d_always.anim`, posed on the song time. */
     unsigned char mPlaying;               /*!< A bit per player who plays. */
 };

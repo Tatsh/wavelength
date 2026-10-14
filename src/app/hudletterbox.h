@@ -1,7 +1,7 @@
 #pragma once
 
 #include "app/rampanimator.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 
 /**
  * Bars that close in over the top and the bottom of the screen.
@@ -17,7 +17,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001bf718
      * @ghidraAddress PAL: 0x001c84b8
      */
-    explicit HudLetterbox(Rnd::View *pHudView);
+    explicit HudLetterbox(RndView *pHudView);
 
     /**
      * Advance the bars, and show them while they are not open.
@@ -38,6 +38,6 @@ public:
      */
     void SetClosed(float fClosed);
 
-    Rnd::View *mView;    /*!< `HUD letterbox.view`. */
+    RndView *mView;      /*!< `HUD letterbox.view`. */
     RampAnimator mSlide; /*!< The bars, from 0 (open) to 100 (closed). */
 };

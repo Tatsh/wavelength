@@ -1,9 +1,9 @@
 #pragma once
 
 #include "app/hideablepanel.h"
-#include "rnd/animatable.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * Panel of text the tutorial opens over the head-up display.
@@ -19,7 +19,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001c0728
      * @ghidraAddress PAL: 0x001c94c8
      */
-    explicit OvyDialog(Rnd::View *pHudView);
+    explicit OvyDialog(RndView *pHudView);
 
     /**
      * Destroy the panel.
@@ -61,7 +61,7 @@ public:
      */
     void Close();
 
-    Rnd::Text *mText;           /*!< `HUD dialog.txt`. */
-    Rnd::Animatable *mSizeAnim; /*!< `HUD dialog panel size.msnm`. */
-    Rnd::Animatable *mPosAnim;  /*!< `HUD dialog pos.tnm`. */
+    RndText *mText;           /*!< `HUD dialog.txt`. */
+    RndAnimatable *mSizeAnim; /*!< `HUD dialog panel size.msnm`. */
+    RndAnimatable *mPosAnim;  /*!< `HUD dialog pos.tnm`. */
 };

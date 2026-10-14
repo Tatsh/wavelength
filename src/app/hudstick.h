@@ -1,10 +1,10 @@
 #pragma once
 
 #include "math/vector2.h"
-#include "rnd/animatable.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndview.h"
 
 /**
  * Marker on the controller stick diagram of the head-up display, which the tutorial moves.
@@ -33,7 +33,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b8f20
      * @ghidraAddress PAL: 0x001c1cc0
      */
-    HudStick(char chHud, Rnd::Animatable *pAnims, Rnd::View *pParent);
+    HudStick(char chHud, RndAnimatable *pAnims, RndView *pParent);
 
     /**
      * Hide the marker.
@@ -61,6 +61,6 @@ public:
      */
     void Show(int nDirection, const Vector2 *pPosition);
 
-    Rnd::Mesh *mMesh;                /*!< The marker. */
-    Rnd::Mat *mMats[kNumDirections]; /*!< The materials, indexed by Direction. */
+    RndMesh *mMesh;                /*!< The marker. */
+    RndMat *mMats[kNumDirections]; /*!< The materials, indexed by Direction. */
 };

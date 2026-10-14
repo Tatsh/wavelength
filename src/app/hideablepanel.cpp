@@ -1,7 +1,7 @@
 #include "app/hideablepanel.h"
 
 #include "os/system.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "script/dataarray.h"
 
 namespace {
@@ -13,7 +13,7 @@ constexpr float kSlideSpeed = 0.5f;
 
 int HideablePanel::sSnap = 0;
 float HideablePanel::sDeltaTime = 0.0f;
-Rnd::Animatable *HideablePanel::sMaterialAnim = nullptr;
+RndAnimatable *HideablePanel::sMaterialAnim = nullptr;
 float HideablePanel::sMaterialFrame = 0.0f;
 
 HideablePanel::HideablePanel(const char *pszAnim, const char *pszDrawable, bool bShown)
@@ -24,10 +24,10 @@ HideablePanel::HideablePanel(const char *pszAnim, const char *pszDrawable, bool 
 
 void HideablePanel::SetObjects(const char *pszAnim, const char *pszDrawable, bool bShown) {
     if (pszAnim != nullptr) {
-        mSlide.SetAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find(pszAnim)));
+        mSlide.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find(pszAnim)));
     }
     if (pszDrawable != nullptr) {
-        mDrawable = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find(pszDrawable));
+        mDrawable = dynamic_cast<RndDrawable *>(TheManager.Find(pszDrawable));
     }
     ShowNow(bShown);
 }
@@ -66,7 +66,7 @@ void HideablePanel::Init() {
         pUi->FindArray("panel_enter_exit", true)
             ->FindFloat("enter_stop_frame", &sMaterialFrame, true);
     }
-    sMaterialAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("mat_2d_EE.anim"));
+    sMaterialAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("mat_2d_EE.anim"));
     ClearSnap();
 }
 

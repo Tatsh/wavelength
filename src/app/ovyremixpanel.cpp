@@ -7,12 +7,9 @@
 #include "gfx/gfxmanager.h"
 #include "os/debug.h"
 #include "os/string.h"
-#include "rnd/transanim.h"
+#include "rnd/rndtransanim.h"
 
 namespace {
-
-// The row of a transform that holds the translation.
-constexpr int kXfmRowTranslation = 3;
 
 // The layout letters of the remix displays.
 constexpr char kHudSolo = 's';
@@ -29,7 +26,7 @@ Vector3 OvyRemixPanel::sPositions[kNumPositions] = {
     {198.0f, 0.0f, 164.0f, 0.0f},
 };
 
-OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, Rnd::Transformable *pParent)
+OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, RndTransformable *pParent)
     : HideablePanel(nullptr, nullptr, false) {
     mShownSubPanel = nullptr;
     mNextSubPanel = nullptr;
@@ -56,16 +53,13 @@ OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, Rnd::Transformable *pPa
 
     const Vector3 &position = sPositions[nPosition];
     mPanel->mDirty = 1;
-    mPanel->mLocalXfm[kXfmRowTranslation][0] = position.x;
-    mPanel->mLocalXfm[kXfmRowTranslation][1] = position.y;
-    mPanel->mLocalXfm[kXfmRowTranslation][2] = position.z;
-    mPanel->mLocalXfm[kXfmRowTranslation][3] = position.w;
+    mPanel->mLocalXfm.mTranslation = position;
 
     auto *pSlideAnim =
-        dynamic_cast<Rnd::TransAnim *>(Clone(FormatString("%s.tnm", prefix.c_str()), nPlayer));
+        dynamic_cast<RndTransAnim *>(Clone(FormatString("%s.tnm", prefix.c_str()), nPlayer));
     pSlideAnim->SetTrans(mPanel);
     String unused(FormatString("HUD%cr", chHud)); // Yes, the binary builds this and never reads it.
-    SetObjects(pSlideAnim->mName.mStr, nullptr, false);
+    SetObjects(pSlideAnim->mName.c_str(), nullptr, false);
 
     mSubPanels.push_back(new OvyRemixSubPanel(GfxManager::kRemixSubPanelChorus, chHud, nPlayer));
     mSubPanels.push_back(new OvyRemixSubPanel(GfxManager::kRemixSubPanelStutter, chHud, nPlayer));

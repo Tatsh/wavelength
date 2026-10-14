@@ -1,25 +1,14 @@
 #include "app/hudstick.h"
 
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
-namespace {
-
-// The row of a transform that holds the translation.
-constexpr int kXfmRowTranslation = 3;
-
-// The components of a row of a transform.
-enum XfmColumn { kXfmColumnX = 0, kXfmColumnY = 1, kXfmColumnZ = 2 };
-
-} // namespace
-
-HudStick::HudStick(char chHud, Rnd::Animatable *pAnims, Rnd::View *pParent) {
-    mMesh =
-        dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("HUD%cr_stick.mesh", chHud)));
-    mMats[kDirectionInOut] = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD in_out.mat"));
-    mMats[kDirectionUpDown] = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("HUD up_dn.mat"));
-    pAnims->AddAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("HUD in_out.mnm")));
-    pAnims->AddAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("HUD up_dn.mnm")));
+HudStick::HudStick(char chHud, RndAnimatable *pAnims, RndView *pParent) {
+    mMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("HUD%cr_stick.mesh", chHud)));
+    mMats[kDirectionInOut] = dynamic_cast<RndMat *>(TheManager.Find("HUD in_out.mat"));
+    mMats[kDirectionUpDown] = dynamic_cast<RndMat *>(TheManager.Find("HUD up_dn.mat"));
+    pAnims->AddAnim(dynamic_cast<RndAnimatable *>(TheManager.Find("HUD in_out.mnm")));
+    pAnims->AddAnim(dynamic_cast<RndAnimatable *>(TheManager.Find("HUD up_dn.mnm")));
     pParent->AddTrans(mMesh);
     Reset();
 }
@@ -33,18 +22,11 @@ void HudStick::Hide() {
 }
 
 void HudStick::Show(int nDirection, const Vector2 *pPosition) {
-    float translation[Rnd::kXfmRowFloatCount]; // Yes, the binary copies the unset fourth word.
-    translation[kXfmColumnX] = pPosition->x;
-    translation[kXfmColumnY] = 0.0f;
-    translation[kXfmColumnZ] = pPosition->y;
     mMesh->mDirty = 1;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
-        mMesh->mLocalXfm[kXfmRowTranslation][i] = translation[i];
-    }
-#pragma GCC diagnostic pop
+    // The binary also copies an unset fourth word, which is left as it was here.
+    mMesh->mLocalXfm.mTranslation.x = pPosition->x;
+    mMesh->mLocalXfm.mTranslation.y = 0.0f;
+    mMesh->mLocalXfm.mTranslation.z = pPosition->y;
     mMesh->SetShowing(true);
     mMesh->SetMat(mMats[nDirection]);
 }

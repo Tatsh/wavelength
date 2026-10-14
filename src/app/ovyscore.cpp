@@ -5,12 +5,9 @@
 #include "gfx/gfxmanager.h"
 #include "math/color.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
-
-// The row of a transform that holds the translation.
-constexpr int kXfmRowTranslation = 3;
 
 // The sentinels of mScoreTime: no score yet, and a score already shown.
 constexpr float kNoScoreTime = -1e9f;
@@ -34,17 +31,12 @@ constexpr float kPointsHiddenFrame = 480.0f;
 
 template <typename T>
 T *FindIndexed(const char *pszFormat, int nIndex) {
-    return dynamic_cast<T *>(
-        Rnd::TheManager.Find(FormatString(pszFormat, Overlay::sHudPrefix, nIndex)));
+    return dynamic_cast<T *>(TheManager.Find(FormatString(pszFormat, Overlay::sHudPrefix, nIndex)));
 }
 
-void SetTranslation(Rnd::Transformable *pTrans, const Vector3 &position) {
+void SetTranslation(RndTransformable *pTrans, const Vector3 &position) {
     pTrans->mDirty = 1;
-    float (&translation)[Rnd::kXfmRowFloatCount] = pTrans->mLocalXfm[kXfmRowTranslation];
-    translation[0] = position.x;
-    translation[1] = position.y;
-    translation[2] = position.z;
-    translation[3] = position.w;
+    pTrans->mLocalXfm.mTranslation = position;
 }
 
 } // namespace
@@ -62,7 +54,7 @@ Vector3 OvyScore::sCheckpointPositions[kNumCheckpointPositions] = {
     {0.0f, 0.0f, 0.0f, 0.0f},
 };
 
-OvyScore::OvyScore(int nPlayer, int nIndex, Rnd::View *pHudView)
+OvyScore::OvyScore(int nPlayer, int nIndex, RndView *pHudView)
     : HideablePanel(nullptr, nullptr, false), mPowerup(nullptr), mScoreText(nullptr),
       mPlayer(static_cast<signed char>(nPlayer)), mPointsSlide(nullptr), mState(kStateIdle),
       mTop(nullptr), mMesh(nullptr), mMove(0.0f, 0.0f, 0.0f, 1.0f), mBar(nullptr), mBarMat(nullptr),
@@ -74,37 +66,33 @@ OvyScore::OvyScore(int nPlayer, int nIndex, Rnd::View *pHudView)
     mTopPos.z = 0.0f;
     mTopPos.y = 0.0f;
     mCheckpointPos = nullptr;
-    mMesh = FindIndexed<Rnd::Drawable>("%s score%d.mesh", nIndex);
+    mMesh = FindIndexed<RndDrawable>("%s score%d.mesh", nIndex);
     SetObjects(
-        FormatString("%s score%d.tnm", Overlay::sHudPrefix, nIndex), mMesh->mName.mStr, false);
-    mScoreText = FindIndexed<Rnd::Text>("%s score%d.txt", nIndex);
-    auto *pPoints = FindIndexed<Rnd::Mesh>("%s pts%d.mesh", nIndex);
+        FormatString("%s score%d.tnm", Overlay::sHudPrefix, nIndex), mMesh->mName.c_str(), false);
+    mScoreText = FindIndexed<RndText>("%s score%d.txt", nIndex);
+    auto *pPoints = FindIndexed<RndMesh>("%s pts%d.mesh", nIndex);
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
         TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
         mMesh = nullptr;
         mTop = nullptr;
     } else {
-        mTop = FindIndexed<Rnd::Transformable>("%s score top%d.view", nIndex);
-        mBar = FindIndexed<Rnd::Mesh>("%s score bar%d.mesh", nIndex);
-        mBarMat = dynamic_cast<Rnd::Mat *>(
-            Rnd::TheManager.Find(FormatString("HUD score bar%d.mat", nIndex)));
-        mBarGrow.SetAnim(FindIndexed<Rnd::Animatable>("%s score bar%d.anim", nIndex));
+        mTop = FindIndexed<RndTransformable>("%s score top%d.view", nIndex);
+        mBar = FindIndexed<RndMesh>("%s score bar%d.mesh", nIndex);
+        mBarMat =
+            dynamic_cast<RndMat *>(TheManager.Find(FormatString("HUD score bar%d.mat", nIndex)));
+        mBarGrow.SetAnim(FindIndexed<RndAnimatable>("%s score bar%d.anim", nIndex));
         mBar->SetShowing(false);
-        const float (&translation)[Rnd::kXfmRowFloatCount] = mTop->mLocalXfm[kXfmRowTranslation];
-        mTopPos.x = translation[0];
-        mTopPos.y = translation[1];
-        mTopPos.z = translation[2];
-        mTopPos.w = translation[3];
-        mBackgroundMat = dynamic_cast<Rnd::Mat *>(
-            Rnd::TheManager.Find(FormatString("HUD score%d bg.mat", nIndex)));
+        mTopPos = mTop->mLocalXfm.mTranslation;
+        mBackgroundMat =
+            dynamic_cast<RndMat *>(TheManager.Find(FormatString("HUD score%d bg.mat", nIndex)));
         const Color *pColor = TheGfxManager.GetPlayerBgColor(nPlayer);
-        mBackgroundMat->SetAmbient(*pColor);
-        mBarMat->SetAmbient(*pColor);
-        static_cast<Rnd::Drawable *>(pHudView)->RemoveDraw(mMesh);
+        mBackgroundMat->SetBaseColor(*pColor);
+        mBarMat->SetBaseColor(*pColor);
+        static_cast<RndDrawable *>(pHudView)->RemoveDraw(mMesh);
     }
     if (TheGameDb->mRuleSet == GameDb::kRuleSetGame &&
         TheGameDb->mCommunity == GameDb::kCommunityLocal) {
-        auto *pPointsAnim = FindIndexed<Rnd::Animatable>("%s pts%d hide.tnm", nIndex);
+        auto *pPointsAnim = FindIndexed<RndAnimatable>("%s pts%d hide.tnm", nIndex);
         pPoints->SetShowing(true);
         mPointsSlide = new RampAnimator(0.0f, pPointsAnim, nullptr, kPointsSlideSpeed);
     } else if (pPoints != nullptr) {
@@ -206,7 +194,7 @@ void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
         }
         break;
     case kStateFade: {
-        Color color = mBarMat->mEmissive;
+        Color color = mBarMat->mEdgeColor;
         if (mMove.mX1 <= fTick) {
             mState = kStateMoveOut;
             mMove.Reset(1.0f, 0.0f, mMove.mX1, mMove.mX1 + sMoveOutTicks);
@@ -215,7 +203,7 @@ void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
         } else {
             color.a = mMove.LinearInterpolator::Interp(fTick);
         }
-        mBarMat->SetEmissive(color);
+        mBarMat->SetEdgeColor(color);
         mBarMat->SetAlpha(color.a);
         break;
     }
@@ -250,9 +238,9 @@ void OvyScore::ShowCheckpoint(float fShare, int nPlace) {
     mBarGrow.Update(0.0f, true);
     mCheckpointPos = &sCheckpointPositions[nPlace];
     mStableEnd = mMove.mX1 + sBarGrowTicks + sStableTicks;
-    Color color = mBarMat->mEmissive;
+    Color color = mBarMat->mEdgeColor;
     color.a = 1.0f;
-    mBarMat->SetEmissive(color);
+    mBarMat->SetEdgeColor(color);
     mBarMat->SetAlpha(color.a);
     if (mPowerup != nullptr) {
         mPowerup->mEnabled = 0;

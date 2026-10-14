@@ -4,12 +4,12 @@
 
 #include "app/hideablepanel.h"
 #include "math/vector3.h"
-#include "rnd/animatable.h"
-#include "rnd/drawable.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 /**
  * Bar of the song's progress on the head-up display, with a marker per checkpoint.
@@ -32,8 +32,8 @@ public:
             return mPos < fPos;
         }
 
-        float mPos;       /*!< The place on the bar, from 0 (start) to 1 (end). */
-        Rnd::Text *mText; /*!< The label of the checkpoint, which the bar owns, or null. */
+        float mPos;     /*!< The place on the bar, from 0 (start) to 1 (end). */
+        RndText *mText; /*!< The label of the checkpoint, which the bar owns, or null. */
     };
 
     /**
@@ -48,7 +48,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001b9230
      * @ghidraAddress PAL: 0x001c1fd0
      */
-    explicit OvySongPos(Rnd::View *pHudView);
+    explicit OvySongPos(RndView *pHudView);
 
     /**
      * Destroy the bar and its checkpoint labels.
@@ -132,11 +132,11 @@ public:
      */
     static int sNumLabels;
 
-    Rnd::View *mView;                /*!< The view of the bar. */
-    Rnd::Mesh *mCheckpointMesh;      /*!< The marker drawn at every checkpoint. */
-    Rnd::Transformable *mFuture;     /*!< The future part, which the markers are placed under. */
-    Rnd::Drawable *mShip;            /*!< The ship on the bar. */
-    Rnd::Animatable *mFutureAnim;    /*!< The animation of the future part. */
-    Rnd::Text *mLabelTemplate;       /*!< The label the checkpoint labels copy, or null. */
+    RndView *mView;                  /*!< The view of the bar. */
+    RndMesh *mCheckpointMesh;        /*!< The marker drawn at every checkpoint. */
+    RndTransformable *mFuture;       /*!< The future part, which the markers are placed under. */
+    RndDrawable *mShip;              /*!< The ship on the bar. */
+    RndAnimatable *mFutureAnim;      /*!< The animation of the future part. */
+    RndText *mLabelTemplate;         /*!< The label the checkpoint labels copy, or null. */
     std::list<Section> mCheckpoints; /*!< The checkpoints, in order of place. */
 };

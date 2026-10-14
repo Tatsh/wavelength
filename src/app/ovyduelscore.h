@@ -1,10 +1,10 @@
 #pragma once
 
 #include "app/hideablepanel.h"
-#include "rnd/animatable.h"
-#include "rnd/font.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * Score of a duel player: the letters of `AMPLITUDE` the player has lit.
@@ -77,10 +77,10 @@ public:
      */
     void ShowLetters(int nCount, bool bSetFonts);
 
-    int mLitCount;                      /*!< The number of lit letters. */
-    Rnd::View *mView;                   /*!< `HUDd letters <n>.view`. */
-    Rnd::Text *mLetters[kNumLetters];   /*!< The letters. */
-    float mFlashTime;                   /*!< The song time the flash starts at, or a sentinel. */
-    Rnd::Animatable *mFlashAnim;        /*!< `HUDd letter hi <n>.mnm`. */
-    Rnd::Font *mFonts[kNumLetterFonts]; /*!< The fonts, indexed by LetterFont. */
+    int mLitCount;                    /*!< The number of lit letters. */
+    RndView *mView;                   /*!< `HUDd letters <n>.view`. */
+    RndText *mLetters[kNumLetters];   /*!< The letters. */
+    float mFlashTime;                 /*!< The song time the flash starts at, or a sentinel. */
+    RndAnimatable *mFlashAnim;        /*!< `HUDd letter hi <n>.mnm`. */
+    RndFont *mFonts[kNumLetterFonts]; /*!< The fonts, indexed by LetterFont. */
 };

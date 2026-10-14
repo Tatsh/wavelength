@@ -5,12 +5,9 @@
 #include "app/overlay.h"
 #include "game/gamedb.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
-
-// The row of a transform that holds the translation.
-constexpr int kXfmRowTranslation = 3;
 
 // The places of the ends of the bar.
 constexpr float kStart = 0.0f;
@@ -29,7 +26,7 @@ Vector3 OvySongPos::sStartPos{0.0f, -90.0f, -3.7e-5f, 0.0f};
 Vector3 OvySongPos::sEndPos{0.0f, 149.0f, -3.7e-5f, 0.0f};
 int OvySongPos::sNumLabels = 0;
 
-OvySongPos::OvySongPos(Rnd::View *pHudView) : HideablePanel(nullptr, nullptr, false) {
+OvySongPos::OvySongPos(RndView *pHudView) : HideablePanel(nullptr, nullptr, false) {
     bool bLetterbox = false;
     const char *pszHud;
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
@@ -47,17 +44,16 @@ OvySongPos::OvySongPos(Rnd::View *pHudView) : HideablePanel(nullptr, nullptr, fa
         pszSlide = FormatString("%s songpos.tnm", pszHud);
     }
     SetObjects(pszSlide, nullptr, false);
-    mView =
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString("%s songpos.view", pszHud)));
-    mCheckpointMesh = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("%s songpos chpt.mesh", pszHud)));
-    mLabelTemplate = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("HUDr songpos chpt.txt"));
-    mFuture = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("%s songpos future.mesh", pszHud)));
-    mShip = dynamic_cast<Rnd::Drawable *>(
-        Rnd::TheManager.Find(FormatString("%s songpos ship.mesh", pszHud)));
-    mFutureAnim = dynamic_cast<Rnd::Animatable *>(
-        Rnd::TheManager.Find(FormatString("%s songpos future.msnm", pszHud)));
+    mView = dynamic_cast<RndView *>(TheManager.Find(FormatString("%s songpos.view", pszHud)));
+    mCheckpointMesh =
+        dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s songpos chpt.mesh", pszHud)));
+    mLabelTemplate = dynamic_cast<RndText *>(TheManager.Find("HUDr songpos chpt.txt"));
+    mFuture =
+        dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s songpos future.mesh", pszHud)));
+    mShip =
+        dynamic_cast<RndDrawable *>(TheManager.Find(FormatString("%s songpos ship.mesh", pszHud)));
+    mFutureAnim = dynamic_cast<RndAnimatable *>(
+        TheManager.Find(FormatString("%s songpos future.msnm", pszHud)));
     mCheckpointMesh->RemoveDraw(mLabelTemplate);
     mCheckpointMesh->RemoveTrans(mLabelTemplate);
     mLabelTemplate->SetText("");
@@ -69,8 +65,8 @@ OvySongPos::OvySongPos(Rnd::View *pHudView) : HideablePanel(nullptr, nullptr, fa
     mView->RemoveDraw(mShip);
     mView->SetShowing(true);
     if (bLetterbox) {
-        auto *pLetterbox = dynamic_cast<Rnd::Transformable *>(
-            Rnd::TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
+        auto *pLetterbox = dynamic_cast<RndTransformable *>(
+            TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
         pLetterbox->AddTrans(mView);
     }
     Reset();
@@ -85,8 +81,8 @@ void OvySongPos::AddCheckpoint(float fPos, const char *pszLabel) {
     if (pszLabel == nullptr || mLabelTemplate == nullptr) {
         return;
     }
-    it->mText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Create(
-        Rnd::g_textClassName.mStr, FormatString("HUDr songpos ckpt %0xd.txt", ++sNumLabels)));
+    it->mText = dynamic_cast<RndText *>(TheManager.Create(
+        RndText::sClassName, FormatString("HUDr songpos ckpt %0xd.txt", ++sNumLabels)));
     it->mText->Copy(mLabelTemplate, 0);
     it->mText->SetText(pszLabel);
 }
@@ -120,7 +116,7 @@ void OvySongPos::Draw() {
     if (mSlide.mValue == 0.0f) {
         return;
     }
-    static_cast<Rnd::Drawable *>(mView)->Draw();
+    static_cast<RndDrawable *>(mView)->Draw();
     for (const Section &checkpoint : mCheckpoints) {
         Vector3 position;
         if (checkpoint.mPos == kStart) {
@@ -135,12 +131,7 @@ void OvySongPos::Draw() {
             position.z = sEndPos.z * checkpoint.mPos + sStartPos.z * fRest;
         }
         mCheckpointMesh->mDirty = 1;
-        float (&translation)[Rnd::kXfmRowFloatCount] =
-            mCheckpointMesh->mLocalXfm[kXfmRowTranslation];
-        translation[0] = position.x;
-        translation[1] = position.y;
-        translation[2] = position.z;
-        translation[3] = position.w;
+        mCheckpointMesh->mLocalXfm.mTranslation = position;
         mCheckpointMesh->UpdateWorldXfm(mFuture, 0);
         mCheckpointMesh->Draw();
         if (checkpoint.mText != nullptr) {

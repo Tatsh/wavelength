@@ -15,10 +15,7 @@ constexpr float kInstantDuration = 1.0f;
 
 } // namespace
 
-RampAnimator::RampAnimator(float fValue,
-                           Rnd::Animatable *pAnim,
-                           Interpolator *pInterp,
-                           float fSpeed)
+RampAnimator::RampAnimator(float fValue, RndAnimatable *pAnim, Interpolator *pInterp, float fSpeed)
     : mValue(fValue), mElapsed(0.0f), mInterp(pInterp) {
     if (pInterp == nullptr) {
         mInterp = new LinearInterpolator(
@@ -33,7 +30,7 @@ RampAnimator::~RampAnimator() {
     delete mInterp;
 }
 
-void RampAnimator::SetAnim(Rnd::Animatable *pAnim) {
+void RampAnimator::SetAnim(RndAnimatable *pAnim) {
     mAnim = pAnim;
     if (pAnim != nullptr) {
         pAnim->SetFrame(mValue);

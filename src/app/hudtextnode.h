@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * Line of text on the head-up display, drawn on its own over the rest.
@@ -18,7 +18,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001bf8c0
      * @ghidraAddress PAL: 0x001c8660
      */
-    HudTextNode(const char *pszText, Rnd::View *pHudView);
+    HudTextNode(const char *pszText, RndView *pHudView);
 
     /**
      * Show a line, or hide the line for a null or empty text.
@@ -45,5 +45,5 @@ public:
      */
     void Draw();
 
-    Rnd::Text *mText; /*!< The text object. */
+    RndText *mText; /*!< The text object. */
 };

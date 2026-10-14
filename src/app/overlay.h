@@ -9,8 +9,8 @@
 #include "math/vector2.h"
 #include "math/vector3.h"
 #include "msg/message.h"
-#include "rnd/cam.h"
-#include "rnd/view.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -755,8 +755,8 @@ public:
     static float sDuelPointsMoveRate;
 
     HudCommon *mCommon;                    /*!< The parts of the whole game. */
-    Rnd::View *mHudView;                   /*!< `hud.view`. */
-    Rnd::Cam *mCam;                        /*!< `hud.cam`. */
+    RndView *mHudView;                     /*!< `hud.view`. */
+    RndCam *mCam;                          /*!< `hud.cam`. */
     Vector3 mCamPos;                       /*!< The place of mCam in the layout. */
     float mLastTime;                       /*!< The system time of the last poll. */
     int mStarted;                          /*!< Whether the parts show since the song started. */
