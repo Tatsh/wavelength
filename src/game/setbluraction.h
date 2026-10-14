@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/blur.h"
+#include "rnd/rndblur.h"
 #include "script/dataarray.h"
 
 /**
@@ -46,7 +46,7 @@ private:
     };
 
     int mFlags;
-    Rnd::Blur *mBlur;
+    RndBlur *mBlur;
     int mLength;
     int mRate;
     float mFalloff;

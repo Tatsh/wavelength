@@ -10,7 +10,7 @@ const char *const kTexTags[] = {"tex1", "tex2", "tex3"};
 } // namespace
 
 SetMatAction::SetMatAction(DataArray *pAction) {
-    mMat = FindObject<Rnd::Mat>(pAction, pAction->Sym(1));
+    mMat = FindObject<RndMat>(pAction, pAction->Sym(1));
     mFlags = 0;
     if (pAction->FindColor("base_color", &mBaseColor, false)) {
         mFlags |= kFlagBaseColor;
@@ -33,7 +33,7 @@ SetMatAction::SetMatAction(DataArray *pAction) {
     for (int i = 0; i < kNumStages; ++i) {
         const char *pszTex;
         if (pAction->FindSymbol(kTexTags[i], &pszTex, false)) {
-            mTex[i] = FindObject<Rnd::Tex>(pAction, pszTex);
+            mTex[i] = FindObject<RndTex>(pAction, pszTex);
             mFlags |= kFlagTex1 << i;
             CheckStage(pAction, i + 1);
         }
@@ -66,7 +66,7 @@ void SetMatAction::Exec() {
     }
     for (int i = 0; i < kNumStages; ++i) {
         if ((mFlags & (kFlagBlend1 << i)) != 0) {
-            mMat->mStages[i].mBlend = static_cast<Rnd::Mat::BlendMode>(mBlend[i]);
+            mMat->mStages[i].mBlend = mBlend[i];
         }
     }
     for (int i = 0; i < kNumStages; ++i) {

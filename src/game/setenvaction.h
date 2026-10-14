@@ -2,7 +2,7 @@
 
 #include "game/triggeraction.h"
 #include "math/color.h"
-#include "rnd/environ.h"
+#include "rnd/rndenviron.h"
 #include "script/dataarray.h"
 
 /**
@@ -49,7 +49,7 @@ private:
     };
 
     int mFlags;
-    Rnd::Environ *mEnviron;
+    RndEnviron *mEnviron;
     float mFogStart;
     float mFogEnd;
     float mFogDensity;

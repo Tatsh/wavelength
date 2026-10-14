@@ -2,7 +2,7 @@
 
 #include "game/triggeraction.h"
 #include "math/interpolator.h"
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 #include "script/dataarray.h"
 
 /**
@@ -57,7 +57,7 @@ private:
         kCurveATan = 2,
     };
 
-    Rnd::Animatable *mAnim;
+    RndAnimatable *mAnim;
     float mTarget;
     float mDuration;
     Interpolator *mCurve;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 #include "script/dataarray.h"
 
 /**
@@ -42,6 +42,6 @@ public:
 
 private:
     int mAdd;
-    Rnd::Animatable *mChild;
-    Rnd::Animatable *mParent;
+    RndAnimatable *mChild;
+    RndAnimatable *mParent;
 };

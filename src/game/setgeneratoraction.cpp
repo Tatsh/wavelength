@@ -8,12 +8,12 @@ constexpr float kWholePath = -1.0f;
 } // namespace
 
 SetGeneratorAction::SetGeneratorAction(DataArray *pAction) {
-    mGenerator = FindObject<Rnd::Generator>(pAction, pAction->Sym(1));
+    mGenerator = FindObject<RndGenerator>(pAction, pAction->Sym(1));
     mFlags = 0;
     const char *pszPath;
     if (pAction->FindSymbol("path", &pszPath, false)) {
         mFlags |= kFlagPath;
-        mPath = FindObject<Rnd::TransAnim>(pAction, pszPath);
+        mPath = FindObject<RndTransAnim>(pAction, pszPath);
     }
     if (pAction->FindVector("rate", &mRate, false)) {
         mFlags |= kFlagRate;
@@ -31,12 +31,16 @@ void SetGeneratorAction::Exec() {
         mGenerator->SetPath(mPath, kWholePath, kWholePath);
     }
     if ((mFlags & kFlagRate) != 0) {
-        mGenerator->SetRateGen(mRate.x, mRate.y);
+        mGenerator->mRateGenLow = mRate.x;
+        mGenerator->mRateGenHigh = mRate.y;
     }
     if ((mFlags & kFlagScale) != 0) {
-        mGenerator->SetScaleGen(mScale.x, mScale.y);
+        mGenerator->mScaleGenLow = mScale.x;
+        mGenerator->mScaleGenHigh = mScale.y;
     }
     if ((mFlags & kFlagPathVar) != 0) {
-        mGenerator->SetPathVarMax(mPathVar.x, mPathVar.y, mPathVar.z);
+        mGenerator->mPathVarMax[0] = mPathVar.x;
+        mGenerator->mPathVarMax[1] = mPathVar.y;
+        mGenerator->mPathVarMax[2] = mPathVar.z;
     }
 }

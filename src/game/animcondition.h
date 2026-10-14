@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggercondition.h"
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 #include "script/dataarray.h"
 
 /**
@@ -47,7 +47,7 @@ public:
     }
 
 private:
-    Rnd::Animatable *mAnim;
+    RndAnimatable *mAnim;
     float mFrame;
     float mLastFrame;
 };

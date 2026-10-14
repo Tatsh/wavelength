@@ -3,8 +3,8 @@
 #include "game/triggeraction.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/mat.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndparticlesys.h"
 #include "script/dataarray.h"
 
 /**
@@ -71,7 +71,7 @@ private:
     };
 
     int mFlags;
-    Rnd::ParticleSys *mParticleSys;
+    RndParticleSys *mParticleSys;
     int mMaxParticles;
     float mDuration;
     float mStartTime;
@@ -85,5 +85,5 @@ private:
     Vector2 mStartEmitRate;
     alignas(16) Vector3 mPos[kNumCorners];
     alignas(16) Vector3 mStartPos[kNumCorners];
-    Rnd::Mat *mMat;
+    RndMat *mMat;
 };

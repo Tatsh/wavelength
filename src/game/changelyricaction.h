@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/text.h"
+#include "rnd/rndtext.h"
 #include "script/dataarray.h"
 
 /**
@@ -37,5 +37,5 @@ public:
     void Exec() override;
 
 private:
-    Rnd::Text *mText;
+    RndText *mText;
 };

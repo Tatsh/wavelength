@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggercondition.h"
-#include "rnd/drawable.h"
+#include "rnd/rnddrawable.h"
 #include "script/dataarray.h"
 
 /**
@@ -37,9 +37,9 @@ public:
      * @ghidraAddress PAL: 0x003e4268
      */
     bool Test() override {
-        return mDrawable->GetShowing() != 0;
+        return mDrawable->mShowing != 0;
     }
 
 private:
-    Rnd::Drawable *mDrawable;
+    RndDrawable *mDrawable;
 };

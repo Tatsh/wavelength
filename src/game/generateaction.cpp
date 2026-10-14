@@ -1,7 +1,7 @@
 #include "game/generateaction.h"
 
 GenerateAction::GenerateAction(DataArray *pAction) {
-    mGenerator = FindObject<Rnd::Generator>(pAction, pAction->Sym(1));
+    mGenerator = FindObject<RndGenerator>(pAction, pAction->Sym(1));
 }
 
 void GenerateAction::Exec() {

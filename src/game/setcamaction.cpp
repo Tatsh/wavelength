@@ -8,7 +8,7 @@ constexpr float kDegreesPerHalfTurn = 180.0f;
 } // namespace
 
 SetCamAction::SetCamAction(DataArray *pAction) {
-    mCam = FindObject<Rnd::Cam>(pAction, pAction->Sym(1));
+    mCam = FindObject<RndCam>(pAction, pAction->Sym(1));
     mFlags = 0;
     if (pAction->FindFloat("near", &mNear, false)) {
         mFlags |= kFlagNear;
@@ -26,8 +26,8 @@ void SetCamAction::Exec() {
     if (mFlags == 0) {
         return;
     }
-    const float flNear = (mFlags & kFlagNear) != 0 ? mNear : mCam->GetNearPlane();
-    const float flFar = (mFlags & kFlagFar) != 0 ? mFar : mCam->GetFarPlane();
-    const float flFov = (mFlags & kFlagFov) != 0 ? mFov : mCam->GetFov();
+    const float flNear = (mFlags & kFlagNear) != 0 ? mNear : mCam->mNearPlane;
+    const float flFar = (mFlags & kFlagFar) != 0 ? mFar : mCam->mFarPlane;
+    const float flFov = (mFlags & kFlagFov) != 0 ? mFov : mCam->mFov;
     mCam->SetFrustum(flNear, flFar, flFov);
 }

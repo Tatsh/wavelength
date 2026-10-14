@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/generator.h"
+#include "rnd/rndgenerator.h"
 #include "script/dataarray.h"
 
 /**
@@ -38,5 +38,5 @@ public:
     void Exec() override;
 
 private:
-    Rnd::Generator *mGenerator;
+    RndGenerator *mGenerator;
 };

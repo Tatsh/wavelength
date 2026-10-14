@@ -1,12 +1,12 @@
 #include "game/setmeshaction.h"
 
 SetMeshAction::SetMeshAction(DataArray *pAction) {
-    mMesh = FindObject<Rnd::Mesh>(pAction, pAction->Sym(1));
+    mMesh = FindObject<RndMesh>(pAction, pAction->Sym(1));
     mFlags = 0;
     const char *pszMat;
     if (pAction->FindSymbol("mat", &pszMat, false)) {
         mFlags |= kFlagMat;
-        mMat = FindObject<Rnd::Mat>(pAction, pszMat);
+        mMat = FindObject<RndMat>(pAction, pszMat);
     }
 }
 

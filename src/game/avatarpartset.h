@@ -5,8 +5,8 @@
 #include "game/avatar.h"
 #include "math/color.h"
 #include "os/binstream.h"
-#include "rnd/cam.h"
-#include "rnd/tex.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndtex.h"
 #include "script/dataarray.h"
 
 /**
@@ -412,4 +412,4 @@ private:
  *
  * @ghidraAddress NTSC-U/C: 0x003b14cc
  */
-extern Rnd::Tex *g_pAvatarTex;
+extern RndTex *g_pAvatarTex;

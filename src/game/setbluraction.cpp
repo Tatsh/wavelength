@@ -1,7 +1,7 @@
 #include "game/setbluraction.h"
 
 SetBlurAction::SetBlurAction(DataArray *pAction) {
-    mBlur = FindObject<Rnd::Blur>(pAction, pAction->Sym(1));
+    mBlur = FindObject<RndBlur>(pAction, pAction->Sym(1));
     mFlags = 0;
     if (pAction->FindInt("length", &mLength, false)) {
         mFlags |= kFlagLength;

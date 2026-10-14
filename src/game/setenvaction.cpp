@@ -1,7 +1,7 @@
 #include "game/setenvaction.h"
 
 SetEnvAction::SetEnvAction(DataArray *pAction) {
-    mEnviron = FindObject<Rnd::Environ>(pAction, pAction->Sym(1));
+    mEnviron = FindObject<RndEnviron>(pAction, pAction->Sym(1));
     mFlags = 0;
     if (pAction->FindFloat("fog_start", &mFogStart, false)) {
         mFlags |= kFlagFogStart;

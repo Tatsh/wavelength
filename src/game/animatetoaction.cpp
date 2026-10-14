@@ -27,7 +27,7 @@ inline float WrapFrame(float flFrame, float flLength) {
 } // namespace
 
 AnimateToAction::AnimateToAction(DataArray *pAction) {
-    mAnim = FindObject<Rnd::Animatable>(pAction, pAction->Sym(1));
+    mAnim = FindObject<RndAnimatable>(pAction, pAction->Sym(1));
     mTarget = pAction->Float(2);
     mDuration = pAction->Float(3);
     switch (pAction->Int(4)) {

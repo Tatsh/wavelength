@@ -2,8 +2,8 @@
 
 #include "game/triggeraction.h"
 #include "math/color.h"
-#include "rnd/mat.h"
-#include "rnd/tex.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndtex.h"
 #include "script/dataarray.h"
 
 /**
@@ -65,11 +65,11 @@ private:
     void CheckStage(DataArray *pAction, int nStage);
 
     int mFlags;
-    Rnd::Mat *mMat;
+    RndMat *mMat;
     alignas(16) Color mBaseColor;
     alignas(16) Color mLightColor;
     alignas(16) Color mEdgeColor;
     float mAlpha;
     int mBlend[kNumStages];
-    Rnd::Tex *mTex[kNumStages];
+    RndTex *mTex[kNumStages];
 };

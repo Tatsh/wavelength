@@ -1,8 +1,8 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "script/dataarray.h"
 
 /**
@@ -44,6 +44,6 @@ private:
     };
 
     int mFlags;
-    Rnd::Mesh *mMesh;
-    Rnd::Mat *mMat;
+    RndMesh *mMesh;
+    RndMat *mMat;
 };

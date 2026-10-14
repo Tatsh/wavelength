@@ -3,8 +3,8 @@
 #include "game/triggeraction.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/generator.h"
-#include "rnd/transanim.h"
+#include "rnd/rndgenerator.h"
+#include "rnd/rndtransanim.h"
 #include "script/dataarray.h"
 
 /**
@@ -52,8 +52,8 @@ private:
     };
 
     int mFlags;
-    Rnd::Generator *mGenerator;
-    Rnd::TransAnim *mPath;
+    RndGenerator *mGenerator;
+    RndTransAnim *mPath;
     Vector2 mRate;
     Vector2 mScale;
     alignas(16) Vector3 mPathVar;

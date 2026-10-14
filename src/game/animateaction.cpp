@@ -9,7 +9,7 @@ constexpr int kMinSizeWithStart = 4;
 } // namespace
 
 AnimateAction::AnimateAction(DataArray *pAction) {
-    mAnim = FindObject<Rnd::Animatable>(pAction, pAction->Sym(1));
+    mAnim = FindObject<RndAnimatable>(pAction, pAction->Sym(1));
     mDuration = pAction->Float(2);
     mHasStart = pAction->Size() >= kMinSizeWithStart;
     if (mHasStart != 0) {

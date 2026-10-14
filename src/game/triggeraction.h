@@ -1,7 +1,7 @@
 #pragma once
 
 #include "os/debug.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "script/dataarray.h"
 
 /**
@@ -78,7 +78,7 @@ protected:
      */
     template <class T>
     static T *FindObject(DataArray *pAction, const char *pszName) {
-        T *pObject = dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+        T *pObject = dynamic_cast<T *>(TheManager.Find(pszName));
         if (pObject == nullptr) {
             DebugWarn("Couldn't find '%s' object (file %s, line %d)",
                       pszName,

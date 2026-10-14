@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 #include "script/dataarray.h"
 
 /**
@@ -48,7 +48,7 @@ public:
     bool Poll() override;
 
 private:
-    Rnd::Animatable *mAnim;
+    RndAnimatable *mAnim;
     float mStart;
     float mDuration;
     float mStartTime;

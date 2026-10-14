@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/cam.h"
+#include "rnd/rndcam.h"
 #include "script/dataarray.h"
 
 /**
@@ -46,7 +46,7 @@ private:
     };
 
     int mFlags;
-    Rnd::Cam *mCam;
+    RndCam *mCam;
     float mNear;
     float mFar;
     float mFov; // In radians.

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "game/triggeraction.h"
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 #include "script/dataarray.h"
 
 /**
@@ -55,7 +55,7 @@ private:
     void CheckFirstFilter(DataArray *pAction, int nType, const char *pszType);
 
     int mFlags;
-    Rnd::Animatable *mAnim;
+    RndAnimatable *mAnim;
     float mScale;
     float mOffset;
     float mMin;
