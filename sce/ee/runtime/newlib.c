@@ -20,9 +20,15 @@ struct __lock {
 };
 
 enum {
+    kMaxDynamicLocks = 16,
     kNoSema = -1,
     kNoOwner = -1,
 };
+
+// The game takes all of the C library's free heap once its memory manager starts. The library still
+// creates a lock for each unbuffered print after that. Those locks come from this pool first.
+static struct __lock g_lockPool[kMaxDynamicLocks];
+static int g_lockPoolUsed[kMaxDynamicLocks];
 
 #define STATIC_LOCK(name) struct __lock __lock_##name = {kNoSema, kNoOwner, 0}
 
@@ -69,16 +75,32 @@ static void LockRelease(struct __lock *lock) {
 }
 
 void __retarget_lock_init_recursive(_LOCK_T *lock) {
-    *lock = calloc(1, sizeof(struct __lock));
+    const int enabled = DIntr();
+    int i;
+
+    for (i = 0; i < kMaxDynamicLocks && g_lockPoolUsed[i]; ++i) {
+    }
+    if (i < kMaxDynamicLocks) {
+        g_lockPoolUsed[i] = 1;
+    }
+    if (enabled) {
+        EIntr();
+    }
+    *lock = i < kMaxDynamicLocks ? &g_lockPool[i] : calloc(1, sizeof(struct __lock));
     (*lock)->sema = kNoSema;
     (*lock)->owner = kNoOwner;
+    (*lock)->depth = 0;
 }
 
 void __retarget_lock_close_recursive(_LOCK_T lock) {
     if (lock->sema != kNoSema) {
         DeleteSema(lock->sema);
     }
-    free(lock);
+    if (lock >= g_lockPool && lock < &g_lockPool[kMaxDynamicLocks]) {
+        g_lockPoolUsed[lock - g_lockPool] = 0;
+    } else {
+        free(lock);
+    }
 }
 
 void __retarget_lock_acquire(_LOCK_T lock) {

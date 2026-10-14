@@ -9,7 +9,9 @@
 #include <eekernel.h>
 
 enum {
+    kMaxConds = 16,
     kMaxKeys = 32,
+    kMaxMutexes = 64,
     kMaxThreads = 256, // Thread identifiers the kernel hands out.
     kSemaMax = 0x7fffffff,
 };
@@ -38,6 +40,14 @@ static struct {
 
 static struct pthread_key_t_ g_keyHandles[kMaxKeys];
 
+// The game takes all of the C library's free heap once its memory manager starts, and the runtime
+// first locks some of its static mutexes after that. Their objects therefore come from these pools.
+// The heap serves a lock only when a pool is exhausted.
+static struct pthread_mutex_t_ g_mutexPool[kMaxMutexes];
+static int g_mutexPoolUsed;
+static struct pthread_cond_t_ g_condPool[kMaxConds];
+static int g_condPoolUsed;
+
 static int NewSema(int initCount, int maxCount) {
     struct SemaParam param = {0};
 
@@ -54,7 +64,8 @@ static struct pthread_mutex_t_ *MutexOf(pthread_mutex_t *mutex) {
 
     if (*mutex == PTHREAD_MUTEX_INITIALIZER || *mutex == PTHREAD_RECURSIVE_MUTEX_INITIALIZER ||
         *mutex == PTHREAD_ERRORCHECK_MUTEX_INITIALIZER) {
-        pMutex = calloc(1, sizeof(*pMutex));
+        pMutex = g_mutexPoolUsed < kMaxMutexes ? &g_mutexPool[g_mutexPoolUsed++] :
+                                                 calloc(1, sizeof(*pMutex));
         pMutex->sema = NewSema(1, 1);
         pMutex->owner = -1;
         pMutex->recursive = (*mutex == PTHREAD_RECURSIVE_MUTEX_INITIALIZER);
@@ -78,7 +89,10 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex) {
     if (*mutex != PTHREAD_MUTEX_INITIALIZER && *mutex != PTHREAD_RECURSIVE_MUTEX_INITIALIZER &&
         *mutex != PTHREAD_ERRORCHECK_MUTEX_INITIALIZER) {
         DeleteSema((*mutex)->sema);
-        free(*mutex);
+        // A pool entry is not reused; the runtime destroys its few mutexes only at exit.
+        if (*mutex < g_mutexPool || *mutex >= &g_mutexPool[kMaxMutexes]) {
+            free(*mutex);
+        }
     }
     *mutex = PTHREAD_MUTEX_INITIALIZER;
     return 0;
@@ -114,7 +128,8 @@ static struct pthread_cond_t_ *CondOf(pthread_cond_t *cond) {
     const int enabled = DIntr();
 
     if (*cond == PTHREAD_COND_INITIALIZER) {
-        pCond = calloc(1, sizeof(*pCond));
+        pCond =
+            g_condPoolUsed < kMaxConds ? &g_condPool[g_condPoolUsed++] : calloc(1, sizeof(*pCond));
         pCond->sema = NewSema(0, kSemaMax);
         *cond = pCond;
     }
