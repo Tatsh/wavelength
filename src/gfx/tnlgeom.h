@@ -814,6 +814,13 @@ public:
      */
     static Transform sIdentity;
 
+    /**
+     * Set to 7 in each component and never read.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0043b2c0
+     */
+    static Vector3 sReserved2c0;
+
     int mNumBars;        /*!< The bars of each track in the ring of built panels. */
     int mReserved04;     // +0x04 Starts at 2, the nDetail of Init(), not yet read.
     float mSlabDepth;    /*!< The depth of a slab under the panels. */

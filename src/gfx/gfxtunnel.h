@@ -1363,7 +1363,7 @@ public:
     static float sFadeToBlackDuration;
 
     /**
-     * `preview_cam_change_time`, which is never read.
+     * `preview_cam_change_time`, the milliseconds BlendToArenaPath() blends the path over.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa68
      */

@@ -209,6 +209,9 @@ SetTriangle(Triangle *pTri, const Vector3 &origin, const Vector3 &first, const V
 // The static initialiser of the unit, and the routine that runs it to construct the identity.
 // NTSC-U/C: 0x001d34f0, PAL: 0x001dc290
 // NTSC-U/C: 0x001d3590, PAL: 0x001dc330
+Vector3 TnlGeom::sReserved2c0{7.0f, 7.0f, 7.0f, 7.0f};
+
+// The binary copies the fourth word of each row from stack bytes it never writes.
 Transform TnlGeom::sIdentity = {Vector3{1.0f, 0.0f, 0.0f},
                                 Vector3{0.0f, 1.0f, 0.0f},
                                 Vector3{0.0f, 0.0f, 1.0f},

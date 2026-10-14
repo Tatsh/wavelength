@@ -127,9 +127,8 @@ constexpr int kNameLength = 32;
 
 constexpr const char *kTriggersFile = "Tunnel/triggers.txt";
 
-// The camera blend algorithm and length of BlendToArenaPath().
+// The camera blend algorithm of BlendToArenaPath().
 constexpr char kArenaBlendAlgorithm[] = "multi";
-constexpr float kArenaBlendMs = 1000.0f;
 constexpr float kArenaBlendOn = 1.0f;
 constexpr float kArenaBlendOff = 0.0f;
 
@@ -2258,7 +2257,7 @@ void GfxTunnel::BlendToArenaPath(bool bArena) {
     mPathBlendCurve.Reset(mPathBlendCurve.Eval(flTime),
                           bArena ? kArenaBlendOn : kArenaBlendOff,
                           flTime,
-                          flTime + kArenaBlendMs);
+                          flTime + sPreviewCamChangeTime);
     mCamFX->SetBlendAlgorithm(kArenaBlendAlgorithm, mPathBlendCurve.mY0);
     mPathBlending = 1;
 }
