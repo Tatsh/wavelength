@@ -359,7 +359,10 @@ void LobbyRT::EncodePlayer(String *pText, const LobbyPlayer *pPlayer) {
     BufStream stream(avatar, kAvatarBufferSize, true);
     pPlayer->mAvatar.Save(stream);
     int nEncoded;
-    EncodeBase64(&szText[nLength], &nEncoded, avatar, stream.Tell());
+    Base64Encode(&szText[nLength],
+                 &nEncoded,
+                 reinterpret_cast<const unsigned char *>(avatar),
+                 stream.Tell());
     const int nPadding = kAvatarTextSize - nEncoded;
     nLength += nEncoded;
     memset(&szText[nLength], kAvatarPadding, nPadding);
@@ -420,7 +423,7 @@ void LobbyRT::DecodePlayer(LobbyPlayer *pPlayer, const char *pszText) {
 
     char avatar[kAvatarBufferSize];
     int nSize;
-    DecodeBase64(avatar, &nSize, pszCursor, nRemaining);
+    Base64Decode(reinterpret_cast<unsigned char *>(avatar), &nSize, pszCursor, nRemaining);
     if (nSize >= kMinAvatarSize) {
         BufStream stream(avatar, kAvatarBufferSize, true);
         pPlayer->mAvatar.Load(stream);

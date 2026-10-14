@@ -38,6 +38,7 @@ afxres
 agfxfile
 agiffile
 allocatebuffertask
+allocinfo
 ambiently
 amovieset
 andi
@@ -74,6 +75,7 @@ asyncinfo
 asyncstream
 asynctask
 atgafile
+atst
 attachedonly
 atten
 audiodec
@@ -99,6 +101,7 @@ axetrack
 axetrackcontourbuilder
 axetrackdata
 axetrackharmonybuilder
+backgrnd
 backgroundaction
 backmusic
 backmusicbuilder
@@ -128,9 +131,12 @@ blak
 blez
 blit
 blockmgr
+blockpool
+blockstattable
 bltz
 bluraction
 bonuspicpanel
+booloption
 bootscreen
 bossjourneyscreen
 bossunlockscreen
@@ -218,6 +224,7 @@ cripplerpacket
 crtbegin
 crtend
 crti
+crtmd
 crtn
 cscript
 ctype
@@ -225,7 +232,9 @@ cxtmdm
 cxtmodem
 daddu
 dashcam
+dataarray
 datafuncaction
+datalex
 datarootdir
 dbits
 dbuild
@@ -261,6 +270,7 @@ diprop
 dipropdword
 dipropheader
 diproprange
+directhl
 directoryvolume
 discardable
 discl
@@ -270,6 +280,7 @@ dispid
 dispinterface
 dmac
 dmacnt
+dmadebug
 dmaend
 dmapacket
 docstrings
@@ -281,6 +292,7 @@ dpadd
 dpadl
 dpadr
 dpadu
+dpms
 dpsm
 drumnbass
 dsay
@@ -311,6 +323,8 @@ elfclass
 elfdata
 elfio
 elif
+emoda
+emodc
 enableok
 enablew
 encvag
@@ -333,6 +347,8 @@ etext
 evfid
 evoll
 evolr
+exbp
+exbw
 expressionstick
 ezmidi
 ezmpeg
@@ -343,6 +359,7 @@ eznet
 eznetcnf
 eznetctl
 faild
+fbmsk
 fbrst
 fbss
 fcand
@@ -370,9 +387,12 @@ findctp
 findplayertask
 fini
 finishupdategameparamstask
+fixedsizealloc
+flusha
 flushe
 fmacro
 focuschangepanel
+fogcol
 forcefeedbackmgr
 forcefeedbackmgrcontroller
 forcefeedbackmgrmotoreffect
@@ -383,6 +403,7 @@ foxundermoon
 fplugin
 fprintf
 fram
+freestore
 freestyl
 freestylebumppacket
 freestylelaptipscreen
@@ -457,6 +478,7 @@ hblanks
 hblkhd
 hblks
 heapnum
+heaptracker
 heff
 helppanel
 helpstring
@@ -474,6 +496,8 @@ hlbox
 hostmode
 hostpadrt
 hresult
+hsint
+hsmsk
 hsyn
 httplib
 hudcommon
@@ -488,6 +512,7 @@ hudtextmessage
 hudtextnode
 huft
 hufts
+hwreg
 hxchunkheader
 hxchunkname
 hxidatachunk
@@ -513,6 +538,7 @@ imagebuilder
 immediates
 inbuf
 incompleteeffect
+indeterminant
 inetctl
 inete
 ineteventqueue
@@ -585,6 +611,7 @@ koff
 kprintf
 kputchar
 kputs
+labid
 labl
 ladderlisttask
 ladderposition
@@ -683,7 +710,9 @@ maddq
 maddw
 maddz
 madr
+magh
 magick
+magv
 mainoptionsscreen
 mainpage
 malloc
@@ -691,6 +720,8 @@ marketingscreen
 matanim
 math
 maxms
+maxu
+maxv
 maxx
 mbai
 mbcs
@@ -755,11 +786,15 @@ memcardtask
 memclr
 memcmp
 memcpy
+memhandle
+memmgr
 memset
 memstream
+memtrack
 meshanim
 meshgroup
 meshrotation
+messagefactory
 metaarenascreen
 metagamearena
 metagameutil
@@ -784,6 +819,8 @@ midivalidator
 midl
 minii
 miniw
+minu
+minv
 mipsel
 miptbp
 missthis
@@ -792,6 +829,7 @@ mixtrack
 mktemp
 mktg
 mktyplib
+mmag
 mmix
 modalframe
 modescreen
@@ -800,6 +838,7 @@ movt
 mpfn
 mpfr
 mscal
+mscalf
 mscnt
 msflag
 msgerrorscreen
@@ -850,6 +889,7 @@ mutevocalspacket
 mvoll
 mvolr
 mypy
+namedobjectregistry
 nameerrorscreen
 nameirx
 nanim
@@ -950,6 +990,7 @@ nonexclusive
 noone
 noreorder
 normalkey
+noscroll
 nostartfiles
 nostdlib
 notacquired
@@ -961,6 +1002,7 @@ notexclusiveacquired
 nounistd
 nowbdc
 noyywrap
+nulled
 nullptr
 numplayersscreen
 numpydoc
@@ -968,6 +1010,7 @@ objc
 objcopy
 objs
 obstream
+occurence
 ohgb
 olecreate
 olectl
@@ -977,6 +1020,7 @@ oletypelib
 oleverb
 oneline
 openarkobject
+optionprocessor
 ordblks
 orthonormalised
 orthonormalize
@@ -1014,7 +1058,9 @@ partunlockdonescreen
 partunlockscreen
 pausescreen
 pcgth
+pcmct
 pcpyld
+pcrtc
 pdbtype
 pels
 periodictimer
@@ -1059,8 +1105,10 @@ preceeding
 prelaunchscreen
 previewpacket
 primaddr
+prmode
 prmodecont
 prmodecontaddr
+prnstream
 productversion
 profil
 propnoeffect
@@ -1072,7 +1120,9 @@ psmat
 psmct
 psmesh
 psmovie
+psmt
 psmultimesh
+psmz
 psparticlesys
 psrah
 psrlh
@@ -1113,6 +1163,7 @@ reax
 recalc
 recomposeonresize
 rect
+rectangluar
 redbookplaybackscreen
 redim
 refe
@@ -1202,6 +1253,8 @@ saveremixscreen
 savesettingsscreen
 sbclaude
 sbss
+scax
+scay
 sces
 scesd
 schedulerclock
@@ -1211,6 +1264,7 @@ scratchtrack
 scratchtrackbuilder
 scratchtrackdata
 screendump
+scriptfunction
 scripttask
 scripttemplatemap
 scripttrackbuilder
@@ -1230,6 +1284,7 @@ selremixuploadscreen
 sema
 semas
 serialiser
+serialtasks
 sessionbegintask
 sessionendtask
 setanimaction
@@ -1262,6 +1317,9 @@ sifdma
 sifinit
 sifman
 sifrpc
+sigblid
+siglblid
+slbg
 slerp
 slotgrid
 slti
@@ -1270,8 +1328,10 @@ sltu
 smartscm
 smblks
 smflag
+smph
 smpl
 smpte
+smpv
 snapcraft
 sndb
 sndbank
@@ -1308,21 +1368,25 @@ sonylibs
 sourceimage
 spaceerrorscreen
 spdif
+specication
 spewregister
 spewtable
 spindlctrl
 spotlightfx
 sprintf
 spritegroup
+spsm
 spyramid
 sqwc
 srcs
 srxfixup
+ssay
 ssbd
 startable
 statsaccumulator
 statusline
 statustext
+stcol
 stcycl
 stdalign
 stdarg
@@ -1349,9 +1413,11 @@ streamqueue
 streamtask
 strequal
 stringop
+stringoption
 stringtable
 strncmp
 strncpy
+strow
 strstr
 strtol
 subi
@@ -1386,6 +1452,8 @@ testaaddr
 testb
 testbaddr
 texa
+texclut
+texflush
 texs
 textfiltertask
 tgmath
@@ -1459,6 +1527,8 @@ tunnelseekstrip
 tunnelview
 tutorialgamelogic
 tvel
+txfr'd
+txls
 typelib
 uchar
 udnl
@@ -1511,6 +1581,7 @@ vendored
 venv
 versioninfo
 versionservertask
+vesa
 vibuf
 victorylap
 viewanimplayer
@@ -1535,6 +1606,8 @@ voxtrack
 voxtrackdisplay
 voxtrackmusic
 vrsqrt
+vsint
+vsmsk
 vtable
 vudata
 vutext
@@ -1553,6 +1626,7 @@ wdangling
 wdelete
 werror
 wextra
+wffmd
 winarena
 winget
 wiswa

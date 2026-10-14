@@ -78,12 +78,6 @@ constexpr int kMemLogPathSize = 0x40;
 constexpr int kAccountingLineSize = 0x80;
 constexpr unsigned kAccountingReportMargin = 0x40;
 
-// The tag the untagged array allocation path bills to.
-constexpr char kUntaggedTag[] = "UNK[]";
-
-// The tag the untagged single-object allocation path bills to.
-constexpr char kScalarTag[] = "UNK";
-
 // The tag the STL allocator hook is rewound to after every tagged allocation.
 constexpr char kStlUnknownTag[] = "stl_unk";
 
@@ -284,22 +278,6 @@ inline void LogStackUse() {
 
 } // namespace
 
-void *operator new[](size_t nSize) {
-    size_t nRequest = (nSize != 0) ? nSize : 1;
-    void *pBlock = HeapAlloc(nRequest);
-
-    if (bMemCountEnabled != 0) {
-        ChargeTagTotal(kUntaggedTag, nRequest);
-    }
-    if (bEnabled != 0) {
-        fprintf(fpLog, "new(UNK[],%d,%p)\n", nRequest, pBlock);
-    }
-    if (pBlock == nullptr) {
-        Fatal("NEW[] ALLOCATION FAILURE, size: %d\n", nRequest);
-    }
-    return pBlock;
-}
-
 void *MemAllocTagged(size_t nSize, const char *pszTag, int nLine) {
     void *pBlock = HeapAlloc(nSize);
 
@@ -312,22 +290,6 @@ void *MemAllocTagged(size_t nSize, const char *pszTag, int nLine) {
     }
     if (pBlock == nullptr) {
         Fatal("MEMORY ALLOCATION FAILURE, file: %s, line: %d, size: %d\n", pszTag, nLine, nSize);
-    }
-    return pBlock;
-}
-
-void *operator new(size_t nSize) {
-    size_t nRequest = (nSize != 0) ? nSize : 1;
-    void *pBlock = HeapAlloc(nRequest);
-
-    if (bMemCountEnabled != 0) {
-        ChargeTagTotal(kScalarTag, nRequest);
-    }
-    if (bEnabled != 0) {
-        fprintf(fpLog, "new(UNK,%d,%p)\n", nRequest, pBlock);
-    }
-    if (pBlock == nullptr) {
-        Fatal("NEW ALLOCATION FAILURE, size: %d\n", nRequest);
     }
     return pBlock;
 }
@@ -346,22 +308,6 @@ void *AllocateTaggedMemory(size_t nSize, const char *pszClass) {
         Fatal("NEW ALLOCATION FAILURE, class: %s, size: %d\n", pszClass, nRequest);
     }
     return pBlock;
-}
-
-// The image, built as C++98, has no sized overload to pair with this one.
-void operator delete[](void *pBlock) noexcept {
-    if (bEnabled != 0) {
-        fprintf(fpLog, "del(UNK[],%p)\n", pBlock);
-    }
-    HeapFree(pBlock);
-}
-
-// The image, built as C++98, has no sized overload to pair with this one.
-void operator delete(void *pBlock) noexcept {
-    if (bEnabled != 0) {
-        fprintf(fpLog, "del(UNK,%p)\n", pBlock);
-    }
-    HeapFree(pBlock);
 }
 
 void OperatorDeleteOverride(void *pBlock, const char *pszClass) {

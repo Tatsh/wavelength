@@ -78,7 +78,18 @@ public:
      */
     int UnpackSigned(int nBits);
 
-    void *mBuffer; /*!< The buffer. */
-    int mBitPos;   /*!< The position of the next bit. */
-    int mSize;     /*!< The buffer size in bytes. */
+    unsigned char *mBuffer; /*!< The buffer. */
+    unsigned int mBitPos;   /*!< The position of the next bit. */
+    int mSize;              /*!< The buffer size in bytes. */
+
+private:
+    /**
+     * Append the low bits of a value, clearing the buffer first when the stream is empty.
+     *
+     * @param nValue The value.
+     * @param nBits The number of bits to append.
+     * @ghidraAddress NTSC-U/C: 0x00296ef0
+     * @ghidraAddress PAL: 0x002a0b00
+     */
+    void Write(unsigned int nValue, unsigned int nBits);
 };

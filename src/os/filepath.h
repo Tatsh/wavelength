@@ -9,8 +9,7 @@
  * Path of a file, kept relative to a shared root directory.
  *
  * The RTTI records the class as deriving from String, and the class adds no member. The vtable is
- * at `0x003cc948`. Only the members the front end uses are declared, and the routines are not
- * reconstructed.
+ * at `0x003cc948`.
  */
 class FilePath : public String {
 public:
@@ -46,7 +45,10 @@ public:
     const char *RelativePath() const;
 
     /**
-     * The root directory that relative paths resolve against.
+     * The root directory that relative paths resolve against, `.` until SetRoot() runs.
+     *
+     * One routine at 0x002994f8 constructs and destroys it, called by the static construction and
+     * destruction entries at 0x00299548 and 0x00299568.
      *
      * @ghidraAddress NTSC-U/C: 0x00515318
      */

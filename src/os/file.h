@@ -13,6 +13,14 @@
 constexpr int kImageFirstWord = 0;
 
 /**
+ * The word at `0x00100004`.
+ *
+ * The memory tracker and its allocator of development memory work only while the word is
+ * non-zero. A retail image has zero there.
+ */
+constexpr int kImageSecondWord = 0;
+
+/**
  * Open file of the host or the disc.
  *
  * The RTTI includes the class name. The class is polymorphic, each kind of storage implements it,

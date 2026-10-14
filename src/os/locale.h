@@ -55,7 +55,7 @@ public:
     const char *Localize(const char *pszToken, bool bFail);
 
     DataArray *mStrings; /*!< The text table Init() built, or null. */
-    int mReserved04;     // +0x04, cleared by the constructor and not yet identified.
+    int mFileCount;      /*!< The number of files the language of Init() lists. */
 };
 
 /**

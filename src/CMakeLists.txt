@@ -19,6 +19,7 @@ target_include_directories(wavelength_common INTERFACE "${CMAKE_SOURCE_DIR}/src"
 
 set(WAVELENGTH_SUBSYSTEMS
     app
+    dmadebug
     game
     gfx
     gs

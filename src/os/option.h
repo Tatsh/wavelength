@@ -43,3 +43,10 @@ public:
 
     const char *mName; /*!< The name, without the leading `-`. */
 };
+
+/**
+ * The arguments OptionProcessor::Process() received, which the options read.
+ *
+ * @ghidraAddress NTSC-U/C: 0x005155e8
+ */
+extern char **g_pCommandLineArgv;

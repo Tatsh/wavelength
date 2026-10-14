@@ -70,6 +70,16 @@ public:
     PrnStream &operator<<(char ch);
 
     /**
+     * Write a short integer in decimal.
+     *
+     * @param nValue The value.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e268
+     * @ghidraAddress PAL: 0x002a7f30
+     */
+    PrnStream &operator<<(short nValue);
+
+    /**
      * Write an integer in decimal.
      *
      * @param nValue The value.
@@ -90,6 +100,16 @@ public:
     PrnStream &operator<<(unsigned char nValue);
 
     /**
+     * Write an unsigned short integer in decimal.
+     *
+     * @param nValue The value.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e318
+     * @ghidraAddress PAL: 0x002a7fe0
+     */
+    PrnStream &operator<<(unsigned short nValue);
+
+    /**
      * Write an unsigned integer in decimal.
      *
      * @param nValue The value.
@@ -98,16 +118,6 @@ public:
      * @ghidraAddress PAL: 0x002a8018
      */
     PrnStream &operator<<(unsigned int nValue);
-
-    /**
-     * Write a short number in decimal.
-     *
-     * @param nValue The value.
-     * @return The stream.
-     * @ghidraAddress NTSC-U/C: 0x0029e268
-     * @ghidraAddress PAL: 0x002a7f30
-     */
-    PrnStream &operator<<(short nValue);
 
     /**
      * Write an unsigned 64-bit number in decimal.
@@ -138,6 +148,17 @@ public:
      * @ghidraAddress PAL: 0x002a8118
      */
     PrnStream &operator<<(bool bValue);
+
+    /**
+     * Write a number of spaces, one Print() call each.
+     *
+     * The name is inferred.
+     *
+     * @param nCount The number of spaces.
+     * @ghidraAddress NTSC-U/C: 0x0029e4a8
+     * @ghidraAddress PAL: 0x002a8170
+     */
+    void Space(int nCount);
 
     /**
      * Detail of an object dump. RndObject::DumpText() lists the referrers only above 0.

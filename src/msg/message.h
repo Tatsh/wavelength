@@ -150,29 +150,15 @@ public:
     virtual void restoreGuts(BinStream &stream);
 
     /**
-     * Write this message to a diagnostic stream as `{GetName() PrintExtra()}`.
-     *
-     * The payload comes from PrintExtra(). PrintMuseMsgTickObj() is the one caller, and it discards
-     * the result.
-     *
-     * @param stream The stream to write to.
-     * @return The stream.
-     * @ghidraAddress NTSC-U/C: 0x00556290
-     * @ghidraAddress PAL: 0x00596918
-     */
-    std::ostream &Print(std::ostream &stream) const;
-
-    /**
      * Produce a message of the identified class through the factory list.
      *
      * The list is searched with a binary search on the identity, and a hit calls the factory a
-     * MessageFactory registered. The shipped program does not call it, and
-     * `operator>>(IBStream &, Message *&)` expands the same search inline.
+     * MessageFactory registered.
      *
      * @param nType The identity to construct for.
      * @return The new message, or null when the identity is unregistered.
-     * @ghidraAddress NTSC-U/C: 0x005563d0
-     * @ghidraAddress PAL: 0x00596a58
+     * @ghidraAddress NTSC-U/C: 0x0029cfb0
+     * @ghidraAddress PAL: 0x002a6c78
      */
     static Message *NewMessage(int nType);
 };

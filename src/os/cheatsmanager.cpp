@@ -32,7 +32,7 @@ CheatsManager::CheatsManager() {
 void CheatsManager::RunAction(DataArray *pAction, int nPad) {
     DataArray *pController = pAction->FindArray("controller", false);
     if (pController != nullptr) {
-        pController->SetNode(kControllerValue, nPad, DataArray::kNodeInt);
+        pController->SetNode(kControllerValue, DataArray::Node{nPad}, DataArray::kNodeInt);
     }
     ScriptFunction::Dispatch(pAction);
 }

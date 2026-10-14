@@ -7,12 +7,12 @@
  * StreamBuffer that a file fills with asynchronous reads.
  *
  * The RTTI includes the class name and records StreamBuffer as the base. The object is 0x38
- * bytes. Only the members its callers here use are declared.
+ * bytes.
  */
 class FileStreamBuffer : public StreamBuffer {
 public:
     /**
-     * Open a file and start filling the buffer.
+     * Open a file and start the first read.
      *
      * @param pszPath The path of the file.
      * @param nFlags The open flags passed to File::New().
@@ -22,12 +22,30 @@ public:
     FileStreamBuffer(const char *pszPath, int nFlags);
 
     /**
-     * Close the file.
+     * Close the file and free the read buffer.
      *
      * @ghidraAddress NTSC-U/C: 0x00299a40
      * @ghidraAddress PAL: 0x002a3640
      */
     ~FileStreamBuffer() override;
+
+    /**
+     * Append the bytes of a finished read, then read as many bytes as the buffer has room for.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00299838
+     * @ghidraAddress PAL: 0x002a3438
+     */
+    void Poll() override;
+
+    /**
+     * Seek the file back to its start and clear mInputDone.
+     *
+     * The heads stay where they are.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00299918
+     * @ghidraAddress PAL: 0x002a3518
+     */
+    void Rewind() override;
 
     /**
      * Report whether the file failed to open.
@@ -38,9 +56,9 @@ public:
      */
     bool IsClosed() const;
 
-    int mReserved24;   // +0x24, not yet identified.
+    int mDelivered;    /*!< Non-zero once the bytes of the last read went to the buffer. */
     File *mFile;       /*!< The file, or null when it did not open. */
     char *mReadBuffer; /*!< The buffer each read fills. */
-    int mReserved30;   // +0x30, not yet identified.
-    int mReserved34;   // +0x34, not yet identified.
+    int mReserved30;   // +0x30, cleared by the constructor and not yet identified.
+    int mReserved34;   // +0x34, cleared by the constructor and not yet identified.
 };

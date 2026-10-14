@@ -16,6 +16,7 @@ set(WAVELENGTH_MSG_SRCS
     keyboardkeymsg.cpp
     lobbyconnectionlostmsg.cpp
     message.cpp
+    messagefactory.cpp
     mutevocalspacket.cpp
     packetfactories.cpp
     playerupdatepacket.cpp

@@ -1,12 +1,14 @@
 #pragma once
 
+#include <vector>
+
+#include "os/string.h"
 #include "script/dataarray.h"
 
 /**
  * Registry of the C++ routines a script command can call by name.
  *
- * Each entry is 0x1c bytes, a 0x14-byte string with the command name followed by the handler and
- * the user value. The entries live in one vector at `0x005152e8`. The class name is inferred.
+ * The class name is inferred.
  */
 class ScriptFunction {
 public:
@@ -51,4 +53,15 @@ public:
      * @ghidraAddress PAL: 0x002a2210
      */
     static bool Dispatch(DataArray *pCommand);
+
+private:
+    // One registered command.
+    struct Entry {
+        String mName;     // The command name.
+        Handler mHandler; // The routine the command calls.
+        void *mUserData;  // The value passed back to the handler.
+    };
+
+    // The registered commands, in the order Register() added them.
+    static std::vector<Entry> sFunctions;
 };

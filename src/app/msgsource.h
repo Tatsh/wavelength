@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <list>
 
 class Message;
 class MsgSink;
@@ -8,26 +8,25 @@ class MsgSink;
 /**
  * Sender of engine messages, which stores the list of sinks that receive them.
  *
- * Its RTTI descriptor is at `0x0086f6b0`. It has no base. One data word sits ahead of the vector.
- * The compiler places the vptr after both at `+0x10`, and the subobject is 0x14 bytes. Around
- * thirty classes derive from it, among them Player, InputMap, Renderer, and MsgQueue. MsgQueue
- * derives from both this class and MsgSink, and its MsgSink subobject therefore sits at `+0x14`.
- *
- * The vector is three pointers, measured from the destructor and from both accessors: `+0x04`
- * start, `+0x08` finish, `+0x0c` end of storage. Every operation on it is inlined apart from the
- * reallocating half of push_back() at `0x00549e08`. The vector is private. Only members of this
- * class address it.
- *
- * The class declares no constructor, and the two the compiler generates are emitted once each, in
- * the Gamer unit. The default constructor at `0x00115cc0` empties the vector and writes the vptr,
- * and AutoRiffer, AxeFX, and the other derived constructors call it. The copy constructor at
- * `0x00115860` copies the word at `+0x00` and the vector.
+ * The RTTI includes the class name and records no base. The data members precede the vptr, which
+ * sits at `+0x0c`. A sink removed while a message is being delivered is first cleared, and the
+ * delivery loop removes the cleared entry.
  */
 class MsgSource {
 public:
     /**
-     * @ghidraAddress NTSC-U/C: 0x0054a168
-     * @ghidraAddress PAL: 0x0058a698
+     * Construct a source with no sinks.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0029d150
+     * @ghidraAddress PAL: 0x002a6e18
+     */
+    MsgSource();
+
+    /**
+     * Release the list of sinks.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab3d0
+     * @ghidraAddress PAL: 0x0041a130
      */
     virtual ~MsgSource();
 
@@ -35,40 +34,30 @@ public:
      * Register a sink, ignoring a sink that is already registered.
      *
      * @param pSink The sink to register.
-     * @ghidraAddress NTSC-U/C: 0x0054a270
-     * @ghidraAddress PAL: 0x0058a7a0
+     * @ghidraAddress NTSC-U/C: 0x0029d1d8
+     * @ghidraAddress PAL: 0x002a6ea0
      */
     virtual void AddSink(MsgSink *pSink);
 
     /**
      * Unregister the first occurrence of a sink.
      *
-     * A sink that is not registered is ignored.
+     * During a delivery the entry is cleared instead. A sink that is not registered is ignored.
      *
      * @param pSink The sink to unregister.
-     * @ghidraAddress NTSC-U/C: 0x0054a2f0
-     * @ghidraAddress PAL: 0x0058a820
+     * @ghidraAddress NTSC-U/C: 0x0029d2a8
+     * @ghidraAddress PAL: 0x002a6f70
      */
     virtual void RemoveSink(MsgSink *pSink);
 
     /**
      * Deliver a message to every registered sink, in registration order.
      *
-     * The member is not virtual. This class's own table is at `0x008299f0` and runs to its
-     * terminator after RemoveSink(), and every one of the hundreds of call sites is a direct call.
-     * The table at `0x00829b18`, recorded here previously, belongs to the MsgSource subobject of
-     * MsgQueue rather than to this class. The conclusion holds for either table, because neither
-     * has a further entry.
-     *
-     * The loop reloads the vector's finish pointer on each iteration. A sink that registers a
-     * further sink while receiving the message is therefore still included. Delivery to one sink
-     * goes through MsgSink::Dispatch(), table slot 2.
-     *
      * @param pMsg The message to deliver.
-     * @ghidraAddress NTSC-U/C: 0x0054a370
-     * @ghidraAddress PAL: 0x0058a8a0
+     * @ghidraAddress NTSC-U/C: 0x0029d338
+     * @ghidraAddress PAL: 0x002a7000
      */
-    void Send(Message *pMsg) const;
+    void Send(Message *pMsg);
 
     /**
      * Deliver a message to the registered sinks in registration order until one handles it.
@@ -80,25 +69,7 @@ public:
      */
     bool SendUntilHandled(Message *pMsg);
 
-    /**
-     * Unregister every sink.
-     *
-     * GrooveWorld::DestroyGraphs() at `0x0018da60` calls it. An identical copy sits at
-     * `0x001fedb0`.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0054a218
-     * @ghidraAddress PAL: 0x0058a748
-     */
-    void ClearSinks();
-
-    /**
-     * A word no member of this class reads. +0x00
-     *
-     * Public because GrooveWorld::BuildGraphs() stores 1 into it on the new InputMap at
-     * `0x0018ce18`, and the image has no accessor.
-     */
-    int mGraphBuilt;
-
 private:
-    std::vector<MsgSink *> mSinks; // +0x04
+    int mDispatchDepth;          // The deliveries in progress.
+    std::list<MsgSink *> mSinks; // The sinks, with null entries removed by the next delivery.
 };

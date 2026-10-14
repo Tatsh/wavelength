@@ -161,6 +161,16 @@ public:
     String &operator+=(const char *pszText);
 
     /**
+     * Append a character.
+     *
+     * @param ch The character.
+     * @return The string.
+     * @ghidraAddress NTSC-U/C: 0x0029ee20
+     * @ghidraAddress PAL: 0x002a8ae0
+     */
+    String &operator+=(char ch);
+
+    /**
      * Compare a run of characters with a C string.
      *
      * @param nPos The first character of the run.
@@ -375,3 +385,15 @@ public:
  * @ghidraAddress PAL: 0x002a8608
  */
 const char *FormatString(const char *pszFormat, ...);
+
+/**
+ * Make `operator>>(BinStream &, String &)` read text up to its terminator, or read a string as
+ * BinStream::WriteString() wrote it.
+ *
+ * The name is inferred.
+ *
+ * @param bText Non-zero to read text up to its terminator.
+ * @ghidraAddress NTSC-U/C: 0x0029f858
+ * @ghidraAddress PAL: 0x002a9518
+ */
+void SetStringReadsText(int bText);

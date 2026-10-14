@@ -1,48 +1,62 @@
 #include "app/msgsource.h"
 
+#include <algorithm>
+
 #include "app/msgsink.h"
 #include "msg/message.h"
 
-namespace {
-
-// Nesting depth of Send(). No instruction outside Send() touches the word. Nothing therefore acts
-// on the depth, and the counter survives only as a debugging aid.
-// NTSC-U/C: 0x00723208, PAL: 0x00766df8
-int gMsgIndentLevel;
-
-} // namespace
+MsgSource::MsgSource() : mDispatchDepth(0) {
+}
 
 MsgSource::~MsgSource() {
 }
 
-void MsgSource::ClearSinks() {
-    mSinks.clear();
-}
-
 void MsgSource::AddSink(MsgSink *pSink) {
-    for (std::vector<MsgSink *>::iterator it = mSinks.begin(); it != mSinks.end(); ++it) {
-        if (*it == pSink) {
-            return;
-        }
+    if (std::find(mSinks.begin(), mSinks.end(), pSink) == mSinks.end()) {
+        mSinks.push_back(pSink);
     }
-    mSinks.push_back(pSink);
 }
 
 void MsgSource::RemoveSink(MsgSink *pSink) {
-    for (std::vector<MsgSink *>::iterator it = mSinks.begin(); it != mSinks.end(); ++it) {
+    for (auto it = mSinks.begin(); it != mSinks.end(); ++it) {
         if (*it == pSink) {
-            mSinks.erase(it);
+            if (mDispatchDepth != 0) {
+                *it = nullptr;
+            } else {
+                mSinks.erase(it);
+            }
             return;
         }
     }
 }
 
-void MsgSource::Send(Message *pMsg) const {
-    // The increment is compiled into the branch delay slot of the empty-vector test. It therefore
-    // runs whether or not the loop below is entered.
-    ++gMsgIndentLevel;
-    for (std::vector<MsgSink *>::const_iterator it = mSinks.begin(); it != mSinks.end(); ++it) {
-        (*it)->Dispatch(pMsg);
+void MsgSource::Send(Message *pMsg) {
+    ++mDispatchDepth;
+    for (auto it = mSinks.begin(); it != mSinks.end();) {
+        if (*it != nullptr) {
+            (*it)->Dispatch(pMsg);
+            ++it;
+        } else {
+            it = mSinks.erase(it);
+        }
     }
-    --gMsgIndentLevel;
+    --mDispatchDepth;
+}
+
+bool MsgSource::SendUntilHandled(Message *pMsg) {
+    ++mDispatchDepth;
+    bool bHandled = false;
+    for (auto it = mSinks.begin(); it != mSinks.end();) {
+        if (*it != nullptr) {
+            bHandled = (*it)->Dispatch(pMsg);
+            ++it;
+            if (bHandled) {
+                break;
+            }
+        } else {
+            it = mSinks.erase(it);
+        }
+    }
+    --mDispatchDepth;
+    return bHandled;
 }

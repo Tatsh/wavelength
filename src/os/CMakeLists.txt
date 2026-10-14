@@ -1,5 +1,6 @@
 set(WAVELENGTH_OS_SRCS
     acircbuff.cpp
+    allocinfo.cpp
     archive.cpp
     arkfile.cpp
     arkhash.cpp
@@ -9,8 +10,13 @@ set(WAVELENGTH_OS_SRCS
     asyncstream.cpp
     asynctask.cpp
     backtrace.cpp
+    base64.cpp
     binstream.cpp
+    bitstream.cpp
     blockmgr.cpp
+    blockpool.cpp
+    booloption.cpp
+    blockstattable.cpp
     breugpad.cpp
     bufstream.cpp
     cheatsmanager.cpp
@@ -23,9 +29,15 @@ set(WAVELENGTH_OS_SRCS
     devconsole.cpp
     file.cpp
     filelog.cpp
+    filepath.cpp
+    filestreambuffer.cpp
     fileutil.cpp
+    fixedsizealloc.cpp
     formatmessage.cpp
+    freestore.cpp
     genpath.cpp
+    heap.cpp
+    heaptracker.cpp
     hostmode.cpp
     hxstr.cpp
     inflate.c
@@ -34,18 +46,30 @@ set(WAVELENGTH_OS_SRCS
     joypad.cpp
     keyboard.cpp
     loadfile.cpp
+    locale.cpp
     log.cpp
     mem.cpp
+    memhandle.cpp
+    memmgr.cpp
+    memtrack.cpp
+    namedobjectregistry.cpp
     openarkobject.cpp
+    option.cpp
+    optionprocessor.cpp
+    prnstream.cpp
     ramp.cpp
     random.cpp
     scheduler.cpp
     schedulerclock.cpp
     seccache.cpp
+    serialtasks.cpp
     spewregister.cpp
     spewtable.cpp
+    streambuffer.cpp
+    stringoption.cpp
     string.cpp
     system.cpp
+    task.cpp
     timer.cpp
     zone.cpp)
 

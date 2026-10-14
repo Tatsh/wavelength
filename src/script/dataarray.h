@@ -1,9 +1,14 @@
 #pragma once
 
+#include <stddef.h>
+#include <vector>
+
 #include "math/color.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
 #include "os/binstream.h"
+#include "os/mem.h"
+#include "os/prnstream.h"
 #include "os/string.h"
 
 /**
@@ -14,7 +19,7 @@
  */
 class DataArray {
 public:
-    /** Kinds of node Type() reports. The other values are not yet identified. */
+    /** Kinds of node Type() reports, two bits each. */
     enum NodeType {
         kNodeInt = 0,    /*!< An integer. */
         kNodeSymbol = 1, /*!< A symbol. */
@@ -24,10 +29,108 @@ public:
 
     /** A node's value, read as the member its NodeType selects. */
     union Node {
-        int mInt;            /*!< The value of a kNodeInt node. */
+        int mInt;            /*!< The value of a kNodeInt node, and a word of node kinds. */
         const char *mSymbol; /*!< The value of a kNodeSymbol node. */
+        float mFloat;        /*!< The value of a kNodeFloat node. */
         DataArray *mArray;   /*!< The value of a kNodeArray node. */
     };
+
+    /**
+     * Construct an array of cleared integer nodes with one reference.
+     *
+     * @param nSize The number of nodes.
+     * @ghidraAddress NTSC-U/C: 0x002965b8
+     * @ghidraAddress PAL: 0x002a01d0
+     */
+    explicit DataArray(int nSize);
+
+    /**
+     * Read an array the compiler wrote, with one reference.
+     *
+     * @param stream The stream.
+     * @param files The files the array and its children name by index.
+     * @ghidraAddress NTSC-U/C: 0x00296c08
+     * @ghidraAddress PAL: 0x002a0820
+     */
+    DataArray(BinStream &stream, const std::vector<const char *> &files);
+
+    /**
+     * Release the child arrays and the node storage.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00296638
+     * @ghidraAddress PAL: 0x002a0250
+     */
+    ~DataArray();
+
+    /**
+     * Allocate an array from the pool of 16-byte blocks.
+     *
+     * @return The block.
+     */
+    static void *operator new(size_t) {
+        return PoolAlloc(sizeof(DataArray), sizeof(DataArray), "DataArray", 0);
+    }
+
+    /**
+     * Return an array to the pool of 16-byte blocks.
+     *
+     * @param pBlock The block.
+     */
+    static void operator delete(void *pBlock) {
+        PoolFree(sizeof(DataArray), pBlock);
+    }
+
+    /**
+     * Join the nodes of several arrays into a new array.
+     *
+     * @param arrays The arrays, in order.
+     * @param bRelease Whether each array loses a reference once its nodes are copied.
+     * @return The new array, with one reference.
+     * @ghidraAddress NTSC-U/C: 0x002968e8
+     * @ghidraAddress PAL: 0x002a0500
+     */
+    static DataArray *Concat(const std::vector<DataArray *> &arrays, bool bRelease);
+
+    /**
+     * Add the child arrays of another array whose tags this array lacks, and merge the children
+     * whose tags both have.
+     *
+     * @param pOther The other array, or null.
+     * @ghidraAddress NTSC-U/C: 0x00296a18
+     * @ghidraAddress PAL: 0x002a0630
+     */
+    void Merge(const DataArray *pOther);
+
+    /**
+     * Record the file and the line the array was read from.
+     *
+     * @param pszFile The file, interned as a symbol.
+     * @param nLine The line.
+     * @ghidraAddress NTSC-U/C: 0x00296b08
+     * @ghidraAddress PAL: 0x002a0720
+     */
+    void SetFileLine(const char *pszFile, int nLine);
+
+    /**
+     * Sort the child arrays by the value of their first nodes, and mark the array as sorted.
+     *
+     * FindArray() then searches the array by halves.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00296bc0
+     * @ghidraAddress PAL: 0x002a07d8
+     */
+    void SortByKey();
+
+    /**
+     * Change the number of nodes, releasing the child arrays of the nodes removed.
+     *
+     * New nodes are cleared integers.
+     *
+     * @param nSize The number of nodes.
+     * @ghidraAddress NTSC-U/C: 0x00295ed0
+     * @ghidraAddress PAL: 0x0029fae8
+     */
+    void Resize(int nSize);
 
     /**
      * Report a node's value without regard to its kind.
@@ -266,12 +369,16 @@ public:
      * Replace a node with a value of a kind.
      *
      * @param nIndex The node.
-     * @param nValue The value.
+     * The child array a node replaces loses a reference and a new child array gains one. Symbol
+     * text is interned.
+     *
+     * @param nIndex The node.
+     * @param value The value.
      * @param nType The kind of the value, one of NodeType.
      * @ghidraAddress NTSC-U/C: 0x00296820
      * @ghidraAddress PAL: 0x002a0438
      */
-    void SetNode(int nIndex, int nValue, int nType);
+    void SetNode(int nIndex, Node value, int nType);
 
     /**
      * Write the array as script text.
@@ -316,11 +423,66 @@ public:
      */
     static void DefineMacro(const char *pszName, DataArray *pValue);
 
-    int mReserved00;      // +0x00, the node storage. The node type is not yet recovered.
+    /**
+     * Find the value of a script macro.
+     *
+     * @param pszName The name of the macro.
+     * @return The value, or null when no macro has the name.
+     * @ghidraAddress NTSC-U/C: 0x002974b0
+     * @ghidraAddress PAL: 0x002a10c0
+     */
+    static DataArray *FindMacro(const char *pszName);
+
+    /**
+     * The node storage, mSize values followed by the words of node kinds, sixteen kinds a word.
+     */
+    Node *mNodes;
     const char *mFile;    /*!< The file the array was read from. */
     short mSize;          /*!< Number of nodes. */
     unsigned short mRefs; /*!< Reference count Release() decrements. */
     short mLine;          /*!< The line of mFile the array starts at. */
+    short mSorted;        /*!< Non-zero once SortByKey() has sorted the child arrays. */
+
+private:
+    /**
+     * Write one node as script text.
+     *
+     * @param stream The stream to write to.
+     * @param nIndex The node.
+     * @ghidraAddress NTSC-U/C: 0x00295ba8
+     * @ghidraAddress PAL: 0x0029f7c0
+     */
+    void PrintNode(PrnStream &stream, int nIndex) const;
+
+    /**
+     * Report whether a node is a child array.
+     *
+     * @return Whether any node is a child array.
+     * @ghidraAddress NTSC-U/C: 0x00295e10
+     * @ghidraAddress PAL: 0x0029fa28
+     */
+    bool HasArray() const;
+
+    /**
+     * Set the kind of a node without changing its value.
+     *
+     * @param nIndex The node.
+     * @param nType One of NodeType.
+     * @ghidraAddress NTSC-U/C: 0x002967d8
+     * @ghidraAddress PAL: 0x002a03f0
+     */
+    void SetType(int nIndex, int nType);
+
+    /**
+     * Order two child arrays by the value of their first nodes, for qsort().
+     *
+     * @param pFirst The first node, a child array.
+     * @param pSecond The second node, a child array.
+     * @return -1, 0, or 1.
+     * @ghidraAddress NTSC-U/C: 0x00296b60
+     * @ghidraAddress PAL: 0x002a0778
+     */
+    static int CompareKeys(const void *pFirst, const void *pSecond);
 };
 
 /**

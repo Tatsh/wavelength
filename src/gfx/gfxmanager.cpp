@@ -461,7 +461,7 @@ void GfxManager::LoadConfig(bool bReload) {
     if (!bReload) {
         for (int i = kInstrumentDrum; i < kNumInstruments; ++i) {
             DataArray *pValue = DataArray::New(1);
-            pValue->SetNode(0, i, DataArray::kNodeInt);
+            pValue->SetNode(0, DataArray::Node{i}, DataArray::kNodeInt);
             DataArray::DefineMacro(kInstrumentMacros[i], pValue);
             pValue->Release();
         }

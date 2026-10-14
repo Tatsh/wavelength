@@ -5,6 +5,10 @@
 #include <stdio.h>
 
 #ifdef __cplusplus
+#include "os/prnstream.h"
+#endif
+
+#ifdef __cplusplus
 /**
  * The number of per-tag accounting records.
  *
@@ -34,32 +38,26 @@ constexpr int kMemStlTagSize = 128;
 
 #ifdef __cplusplus
 /**
- * Allocate a block for an array, the game's replacement global `operator new[]`.
+ * Allocate a block for an array from the pool heaps, the game's global `operator new[]`.
  *
- * The request is raised to one byte when it is zero. The allocation is billed
- * to the tag `UNK[]`, and a failure is fatal. Its exception tables carry the
- * `throw(std::bad_alloc)` specification.
+ * The allocation is billed to the tag `new[]`.
  *
  * @param nSize The block size in bytes.
  * @return The block.
- * @ghidraAddress NTSC-U/C: 0x004a8380
- * @ghidraAddress PAL: 0x004e6490
+ * @ghidraAddress NTSC-U/C: 0x0029b1f0
+ * @ghidraAddress PAL: 0x002a4e10
  */
 void *operator new[](size_t nSize);
 
 /**
- * Allocate a block for a single object, the game's replacement global `operator new`.
+ * Allocate a block for a single object from the pool heaps, the game's global `operator new`.
  *
- * The request is raised to one byte when it is zero. The allocation is billed
- * to the tag `UNK`, and a failure is fatal. The log line and the failure
- * message both omit a tag, and the message reads
- * `NEW ALLOCATION FAILURE, size: %d`. Its exception tables carry the
- * `throw(std::bad_alloc)` specification.
+ * The allocation is billed to the tag `new`.
  *
  * @param nSize The block size in bytes.
  * @return The block.
- * @ghidraAddress NTSC-U/C: 0x004a81e0
- * @ghidraAddress PAL: 0x004e62f0
+ * @ghidraAddress NTSC-U/C: 0x0029b1a8
+ * @ghidraAddress PAL: 0x002a4dc8
  */
 void *operator new(size_t nSize);
 #endif
@@ -98,12 +96,14 @@ void *AllocateTaggedMemory(size_t nSize, const char *pszClass);
 void OperatorDeleteOverride(void *pBlock, const char *pszClass);
 
 /**
- * Allocate a block from the pool of fixed-size blocks and bill it to a tag.
+ * Allocate a block from the small-block pool and bill it to a tag.
  *
- * @param nSize The block size in bytes.
- * @param nBlockSize The block size of the pool to draw from.
+ * The pool is created on first use.
+ *
+ * @param nSize The block size in bytes, which selects the node size of the pool.
+ * @param nBlockSize Not used.
  * @param pszTag The tag to bill the allocation to.
- * @param nUnused Ignored.
+ * @param nUnused Not used.
  * @return The block.
  * @ghidraAddress NTSC-U/C: 0x0029e010
  * @ghidraAddress PAL: 0x002a7cd8
@@ -111,14 +111,185 @@ void OperatorDeleteOverride(void *pBlock, const char *pszClass);
 void *PoolAlloc(int nSize, int nBlockSize, const char *pszTag, int nUnused);
 
 /**
- * Return a block to the pool of fixed-size blocks.
+ * Return a block to the small-block pool.
  *
- * @param nBlockSize The block size of the pool the block came from.
+ * @param nSize The block size given to PoolAlloc().
  * @param pBlock The block.
  * @ghidraAddress NTSC-U/C: 0x0029e0a8
  * @ghidraAddress PAL: 0x002a7d70
  */
-void PoolFree(int nBlockSize, void *pBlock);
+void PoolFree(int nSize, void *pBlock);
+
+/**
+ * Write the use of the small-block pool.
+ *
+ * The name is inferred.
+ *
+ * @param stream The stream to write to.
+ * @ghidraAddress NTSC-U/C: 0x0029e100
+ * @ghidraAddress PAL: 0x002a7dc8
+ */
+void PoolReport(PrnStream &stream);
+
+/**
+ * Report the heap that PoolMemAlloc() allocates from, the top of the heap stack.
+ *
+ * The name is inferred.
+ *
+ * @return The index of the heap.
+ * @ghidraAddress NTSC-U/C: 0x00299de0
+ * @ghidraAddress PAL: 0x002a39e0
+ */
+int MemGetHeap();
+
+/**
+ * Report the free blocks of a heap.
+ *
+ * The name is inferred.
+ *
+ * @param nHeap The index of the heap.
+ * @param pnBlocks Receives the number of free blocks.
+ * @param pnFreeBytes Receives the free bytes.
+ * @param pnBiggest Receives the bytes of the biggest free block.
+ * @ghidraAddress NTSC-U/C: 0x00299e08
+ * @ghidraAddress PAL: 0x002a3a08
+ */
+void MemHeapInfo(int nHeap, int *pnBlocks, int *pnFreeBytes, int *pnBiggest);
+
+/**
+ * Add a heap to the table.
+ *
+ * The name is inferred.
+ *
+ * @param pszName The name of the heap.
+ * @param pStart The region of the heap.
+ * @param nSizeWords The size of the region in words.
+ * @param bHandles Non-zero for a heap of handle blocks.
+ * @return The index of the heap.
+ * @ghidraAddress NTSC-U/C: 0x00299eb0
+ * @ghidraAddress PAL: 0x002a3ad0
+ */
+int MemRegisterHeap(const char *pszName, int *pStart, int nSizeWords, int bHandles);
+
+/**
+ * Change the size of a heap.
+ *
+ * The name is inferred.
+ *
+ * @param nHeap The index of the heap.
+ * @param nSizeWords The size in words.
+ * @ghidraAddress NTSC-U/C: 0x00299f10
+ * @ghidraAddress PAL: 0x002a3b30
+ */
+void MemSetHeapSize(int nHeap, int nSizeWords);
+
+/**
+ * Make a heap the one PoolMemAlloc() allocates from, until MemPopHeap().
+ *
+ * The depth of the stack is not checked. The name is inferred.
+ *
+ * @param nHeap The index of the heap.
+ * @ghidraAddress NTSC-U/C: 0x0029a728
+ * @ghidraAddress PAL: 0x002a4348
+ */
+void MemPushHeap(int nHeap);
+
+/**
+ * Undo the latest MemPushHeap().
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0029a750
+ * @ghidraAddress PAL: 0x002a4370
+ */
+void MemPopHeap();
+
+/**
+ * Take the memory from the end of the C library's heap to 0x1f70000 as the heap `main`, and start
+ * the memory tracker when it is available.
+ *
+ * PoolMemAlloc() calls this before the first allocation. The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0029a768
+ * @ghidraAddress PAL: 0x002a4388
+ */
+void MemInit();
+
+/**
+ * Shrink a block in place.
+ *
+ * A size of 0 frees the block. A block outside every heap is returned as it is.
+ *
+ * @param pBlock The block, or null.
+ * @param nBytes The size in bytes.
+ * @return The block, or null after a free.
+ * @ghidraAddress NTSC-U/C: 0x0029aa60
+ * @ghidraAddress PAL: 0x002a4680
+ */
+void *MemRealloc(void *pBlock, int nBytes);
+
+/**
+ * Report the number of heaps.
+ *
+ * The name is inferred.
+ *
+ * @return The number of heaps.
+ * @ghidraAddress NTSC-U/C: 0x0029ae18
+ * @ghidraAddress PAL: 0x002a4a38
+ */
+int MemNumHeaps();
+
+/**
+ * Write each block of a heap.
+ *
+ * The name is inferred.
+ *
+ * @param nHeap The index of the heap.
+ * @param stream The stream to write to.
+ * @ghidraAddress NTSC-U/C: 0x0029ae30
+ * @ghidraAddress PAL: 0x002a4a50
+ */
+void MemPrintHeap(int nHeap, PrnStream &stream);
+
+/**
+ * Non-zero while the memory tracker records allocations.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b23b4
+ */
+extern int g_nMemTrackingEnabled;
+
+/**
+ * Non-zero when the memory tracker bills STL allocations to their container, from `track_stl`.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b23b8
+ */
+extern int g_nTrackStl;
+
+/**
+ * Allocate a block of up to 128 bytes from the pool of fixed-size blocks, and a larger block from
+ * the pool heaps.
+ *
+ * The name is inferred.
+ *
+ * @param nSize The block size in bytes.
+ * @param pszTag The tag to bill the allocation to.
+ * @return The block, or null for a size of 0.
+ * @ghidraAddress NTSC-U/C: 0x0029e128
+ * @ghidraAddress PAL: 0x002a7df0
+ */
+void *MemOrPoolAlloc(int nSize, const char *pszTag);
+
+/**
+ * Return a block MemOrPoolAlloc() handed out.
+ *
+ * A null block is ignored. The name is inferred.
+ *
+ * @param nSize The size MemOrPoolAlloc() was given.
+ * @param pBlock The block.
+ * @ghidraAddress NTSC-U/C: 0x0029e170
+ * @ghidraAddress PAL: 0x002a7e38
+ */
+void MemOrPoolFree(int nSize, void *pBlock);
 
 /**
  * Address the buffer the STL allocator hook bills its allocations to.
@@ -171,27 +342,20 @@ void *MemAllocTagged(size_t nSize, const char *pszTag, int nLine);
 
 #ifdef __cplusplus
 /**
- * Release an array block, the game's replacement global `operator delete[]`.
- *
- * The log line identifies the path as `del(UNK[],%p)`. Its exception tables include the empty
- * `throw()` specification.
+ * Release an array block through PoolMemFree(), the game's global `operator delete[]`.
  *
  * @param pBlock The block to release.
- * @ghidraAddress NTSC-U/C: 0x004a92c8
- * @ghidraAddress PAL: 0x004e73d8
+ * @ghidraAddress NTSC-U/C: 0x0029b218
+ * @ghidraAddress PAL: 0x002a4e38
  */
 void operator delete[](void *pBlock) noexcept;
 
 /**
- * Release a single object, the game's replacement global `operator delete`.
- *
- * The log line identifies the path as `del(UNK,%p)`. HxStr::Alloc() is the one
- * caller inside the string class, in the NTSC-U/C build only. The PAL build's HxStr::Alloc()
- * calls `operator delete[]`. Its exception tables include the empty `throw()` specification.
+ * Release a single object through PoolMemFree(), the game's global `operator delete`.
  *
  * @param pBlock The block to release.
- * @ghidraAddress NTSC-U/C: 0x004a9230
- * @ghidraAddress PAL: 0x004e7340
+ * @ghidraAddress NTSC-U/C: 0x0029b1d0
+ * @ghidraAddress PAL: 0x002a4df0
  */
 void operator delete(void *pBlock) noexcept;
 #endif
