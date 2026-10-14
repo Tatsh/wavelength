@@ -72,7 +72,7 @@ void GameOptions::ApplyOutputMode() {
         TheSynth->SetSurround(true);
         break;
     default:
-        DebugWarn("Bad audio setting!!!");
+        DebugWarn(" Bad audio setting!!!");
         break;
     }
 }

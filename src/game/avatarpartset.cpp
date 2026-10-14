@@ -229,7 +229,7 @@ int AvatarPartSet::FindPartType(int nPart, const char *pszType) {
             return i - kFirstType;
         }
     }
-    DebugWarn("Could not find type %s", pszType);
+    DebugWarn("Couldn't find type %s", pszType);
     return -1;
 }
 
@@ -240,7 +240,7 @@ int AvatarPartSet::FindEmblem(const char *pszEmblem) {
             return i - kFirstType;
         }
     }
-    DebugWarn("Could not find emblem %s", pszEmblem);
+    DebugWarn("Couldn't find emblem %s", pszEmblem);
     return -1;
 }
 
