@@ -75,7 +75,7 @@ TnlCripFX::TnlCripFX(int nIndex) {
     sParticles = dynamic_cast<RndParticleSys *>(TheManager.Find("crippler.part"));
     ScaleParticles(sParticles, TheGfxManager.mScrollSpeed);
     sParticleFrame = 0.0f;
-    sParticles->RndParticleSys::SetFrameSelf(sParticleFrame);
+    sParticles->SetEmitFrame(sParticleFrame);
     sParticles->FreeAllParticles();
     mView->RemoveAnim(sParticles);
 }
@@ -202,7 +202,7 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();
     sParticleFrame += mDelta;
-    sParticles->RndParticleSys::SetFrameSelf(sParticleFrame);
+    sParticles->SetEmitFrame(sParticleFrame);
     if (!(sFlyTime <= flElapsed)) {
         return;
     }

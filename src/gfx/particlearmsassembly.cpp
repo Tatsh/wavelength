@@ -198,7 +198,7 @@ void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
         pSys->UpdateWorldXfm(nullptr, 0);
 
         mTick += flDelta;
-        pSys->RndParticleSys::SetFrameSelf(mTick);
+        pSys->SetEmitFrame(mTick);
     }
     pSys->SetFrame(mTick);
 }

@@ -88,7 +88,7 @@ TnlTrackFX::TnlTrackFX(char nTrack)
         sSpew = FindObject<RndParticleSys>("autocapture spew.part");
         ScaleParticles(sSpew, TheGfxManager.mScrollSpeed);
         sSpewFrame = 0.0f;
-        sSpew->RndParticleSys::SetFrameSelf(sSpewFrame);
+        sSpew->SetEmitFrame(sSpewFrame);
         sSpew->FreeAllParticles();
     }
     RndMat *pBase = FindObject<RndMat>("panel enable.mat");
@@ -208,7 +208,7 @@ void TnlTrackFX::Capture(GfxTunnel *pTunnel, float flTick) {
     sSpew->mDirty = 1;
     sSpew->UpdateWorldXfm(nullptr, 0);
     sSpewFrame += kSpewFrames;
-    sSpew->RndParticleSys::SetFrameSelf(sSpewFrame);
+    sSpew->SetEmitFrame(sSpewFrame);
 
     mGemTicks.clear();
     pTunnel->CollectGemTicks(&mGemTicks, mTrack, TheGameDb->mSongTick, flTick);

@@ -95,7 +95,7 @@ Freestylus::Freestylus(GfxTunnel *, int nType)
         ->SetFrame((nType == kTypeScratch) ? kScratchFrame : 0.0f);
     mParticles = FindObject<RndParticleSys>("freestylus.part");
     mButton.mSys = FindObject<RndParticleSys>("freestylus button 0.part");
-    mButton.mSys->SetFrameSelf(mTime);
+    mButton.mSys->SetEmitFrame(mTime);
     mButton.mSys->FreeAllParticles();
     mBasis[0].x = 1.0f;
     mBasis[0].z = 0.0f;
@@ -173,9 +173,9 @@ void Freestylus::Flash() {
 
 void Freestylus::ClearParticles() {
     const float flTime = TheGameDb->mSongTime;
-    mParticles->SetFrameSelf(flTime);
+    mParticles->SetEmitFrame(flTime);
     mParticles->FreeAllParticles();
-    mArm.mSys->SetFrameSelf(flTime);
+    mArm.mSys->SetEmitFrame(flTime);
     mArm.mSys->FreeAllParticles();
 }
 
@@ -207,8 +207,8 @@ void Freestylus::Draw(RndTransformable *pParent, int) {
     mTempo->SetFrame(TheGameDb->mSongTick);
     mView->UpdateWorldXfm(pParent, 1);
     mFlash->UpdateWorldXfm(pParent, 1);
-    mParticles->SetFrameSelf(flTime);
-    mArm.mSys->SetFrameSelf(flTime);
+    mParticles->SetEmitFrame(flTime);
+    mArm.mSys->SetEmitFrame(flTime);
     mButton.Update(flTime, mTime);
     mBeams->SetShowing(mBeamGrow.mValue != 0.0f);
     mView->Draw();

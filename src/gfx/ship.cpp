@@ -575,7 +575,7 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     const float fSpeedOffset = TheGfxManager.mCamPathScale / fScrollSpeed;
     mCripplerPs = FindObject<RndParticleSys>(FormatString("ship crippler_%c.part", nColor));
     if (mCripplerPs != nullptr) {
-        mCripplerPs->SetFrameSelf(mCripplerTime);
+        mCripplerPs->SetEmitFrame(mCripplerTime);
         static_cast<RndDrawable *>(mCripplerPs)->SetShowing(1);
         mCripplerPs->FreeAllParticles();
         mView->RemoveAnim(mCripplerPs);
@@ -591,7 +591,7 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     }
     mBumperPs = FindObject<RndParticleSys>(FormatString("ship bumper_%c.ps", nColor));
     if (mBumperPs != nullptr) {
-        mBumperPs->SetFrameSelf(mBumperTime);
+        mBumperPs->SetEmitFrame(mBumperTime);
         static_cast<RndDrawable *>(mBumperPs)->SetShowing(1);
         mBumperPs->FreeAllParticles();
         ScaleParticles(mBumperPs, sScale);
@@ -1013,7 +1013,7 @@ void Ship::PollBump(float fTimeDelta) {
     }
     if (TheGameDb->mCommunity == GameDb::kCommunityLocal || !TheGameDb->IsLocalPlayer(mPlayer)) {
         mBumperTime += fTimeDelta;
-        mBumperPs->SetFrameSelf(mBumperTime);
+        mBumperPs->SetEmitFrame(mBumperTime);
     }
 }
 
@@ -1035,7 +1035,7 @@ void Ship::PollCrippler(float fTimeDelta, bool bCrippled) {
     }
     if (mCripplerPs != nullptr) {
         mCripplerTime += fTimeDelta;
-        mCripplerPs->SetFrameSelf(mCripplerTime);
+        mCripplerPs->SetEmitFrame(mCripplerTime);
     }
 }
 

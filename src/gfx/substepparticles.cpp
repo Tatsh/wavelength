@@ -50,7 +50,7 @@ void SubstepParticles::Update(float fFrame, float fTime) {
             local.mTranslation = pos;
             mSys->mDirty = 1;
             mSys->UpdateWorldXfm(nullptr, 0);
-            mSys->SetFrameSelf(mLastTime);
+            mSys->SetEmitFrame(mLastTime);
             pos.x += delta[0];
             pos.y += delta[1];
             pos.z += delta[2];
