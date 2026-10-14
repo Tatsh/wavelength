@@ -92,6 +92,11 @@ SECTIONS {
     PROVIDE(end = .);
 
     /DISCARD/ : {
+        /*
+         * The MIPS linker can reserve dynamic relocations in a static executable and leave them as
+         * R_MIPS_NONE records. The executable has no dynamic loader to read them.
+         */
+        *(.rel.dyn)
         *(.MIPS.abiflags)
         *(.comment)
         *(.pdr)
