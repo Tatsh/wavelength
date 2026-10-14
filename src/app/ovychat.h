@@ -75,11 +75,12 @@ public:
          * Move the text to the position the slide has at a time.
          *
          * @param fTime The time, in milliseconds.
+         * @param fDelta The milliseconds since the last poll. The routine does not read it.
          * @return Whether the text moved.
          * @ghidraAddress NTSC-U/C: 0x001c2180
          * @ghidraAddress PAL: 0x001caf20
          */
-        bool Update(float fTime);
+        bool Update(float fTime, float fDelta);
 
         /**
          * The length of a slide, the end of the input range of the first slide built, or -1e9.

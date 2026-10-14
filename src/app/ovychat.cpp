@@ -111,7 +111,7 @@ void OvyChat::Line::SetColor(int nPlayer) {
     mText->SetColor(color);
 }
 
-bool OvyChat::Line::Update(float fTime) {
+bool OvyChat::Line::Update(float fTime, [[maybe_unused]] float fDelta) {
     const float fRow = mSlide->Eval(fTime);
     RndTransformable *pTrans = mText;
     Vector3 &translation = pTrans->mLocalXfm.mTranslation;
@@ -217,7 +217,7 @@ void OvyChat::Poll() {
     }
     bool bMoved = false;
     for (Line *pLine : mLines) {
-        if (pLine->Update(fNow)) {
+        if (pLine->Update(fNow, fDelta)) {
             bMoved = true;
         }
     }
