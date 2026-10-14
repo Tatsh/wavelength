@@ -6,7 +6,7 @@
 
 #include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/songrecord.h"
+#include "game/songstats.h"
 #include "met/metagame.h"
 #include "met/metagameutil.h"
 #include "met/songpicpanel.h"
@@ -296,8 +296,8 @@ void MetaSongScreen::SetUpSongButton(SongEntry *pSong, int nIndex, bool bLocked)
         TheGameDb->GetProfile(0)->IsSongFinished(pSong->GetName(), TheGameDb->mSkillLevel);
     if (pSong->GetType() != kSongTypeTutorial && TheGameDb->mCommunity == GameDb::kCommunitySolo &&
         bFinished) {
-        SongRecord record;
-        TheGameDb->GetProfile(0)->GetSongRecord(pSong->GetName(), TheGameDb->mSkillLevel, &record);
+        SongStats record;
+        TheGameDb->GetProfile(0)->GetSongStats(pSong->GetName(), TheGameDb->mSkillLevel, &record);
         String token(FormatString("%s_%s", mBandPanel->mName, pScore->mName));
         pScore->SetText(FormatString(TheLocale.Localize(token.c_str(), true), record.mScore));
         pScore->SetShowing(true);

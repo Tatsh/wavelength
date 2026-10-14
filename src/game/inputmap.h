@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "os/binstream.h"
 #include "script/dataarray.h"
 
 /**
@@ -35,6 +36,12 @@ public:
      * @ghidraAddress PAL: 0x00287018
      */
     InputMap(const InputMap &other);
+
+    /**
+     * @ghidraAddress NTSC-U/C: 0x0027d908
+     * @ghidraAddress PAL: 0x00287220
+     */
+    ~InputMap();
 
     /**
      * Copy the button and stick bindings of another map.
@@ -116,7 +123,51 @@ public:
      */
     void LoadDefaults();
 
+    /**
+     * Write the number of buttons, the button bindings, the number of sticks, and the stick
+     * bindings.
+     *
+     * @param stream The stream.
+     * @ghidraAddress NTSC-U/C: 0x0027dcd0
+     * @ghidraAddress PAL: 0x002875e8
+     */
+    void Save(BinStream &stream) const;
+
+    /**
+     * Read the bindings Save() wrote.
+     *
+     * The stick bindings are written to the stream rather than read from it, and the sticks keep
+     * their bindings.
+     *
+     * @param stream The stream.
+     * @ghidraAddress NTSC-U/C: 0x0027de38
+     * @ghidraAddress PAL: 0x00287750
+     */
+    void Load(BinStream &stream);
+
 private:
     std::vector<int> mButtons; // The action of each button, indexed by button.
     std::vector<int> mSticks;  // The action of each stick, indexed by stick.
 };
+
+/**
+ * Write a map as InputMap::Save() does.
+ *
+ * @param stream The stream.
+ * @param map The map.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0027e040
+ * @ghidraAddress PAL: 0x00287958
+ */
+BinStream &operator<<(BinStream &stream, const InputMap &map);
+
+/**
+ * Read a map as InputMap::Load() does.
+ *
+ * @param stream The stream.
+ * @param map Receives the map.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0027e070
+ * @ghidraAddress PAL: 0x00287988
+ */
+BinStream &operator>>(BinStream &stream, InputMap &map);

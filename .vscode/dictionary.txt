@@ -415,6 +415,7 @@ gameable
 gameconfig
 gamedb
 gamelogic
+gameoptions
 gameoptionsscreen
 gametie
 gametrackselector
@@ -779,6 +780,7 @@ mgclsessionendtask
 midichannelstate
 midieventqueue
 midireader
+midivalidator
 midl
 minii
 miniw
@@ -840,6 +842,7 @@ multitut
 mulw
 mulx
 mulz
+musebuilder
 musefactory
 muselooper
 mutablenotemuse
@@ -1129,6 +1132,7 @@ remixdownloadlist
 remixer
 remixerupdatepacket
 remixhud
+remixinfo
 remixloadlist
 remixorfreqscreen
 remixselectscreen
@@ -1298,6 +1302,7 @@ songpos
 songpreview
 songsellist
 songspeed
+songstats
 sonylib
 sonylibs
 sourceimage

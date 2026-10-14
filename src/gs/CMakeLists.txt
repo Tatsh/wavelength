@@ -4,6 +4,7 @@ set(WAVELENGTH_GS_SRCS
     axer.cpp
     midichannelstate.cpp
     multimuse.cpp
+    musebuilder.cpp
     musefactory.cpp
     muselooper.cpp
     mutablenotemuse.cpp

@@ -47,6 +47,7 @@ set(WAVELENGTH_GAME_SRCS
     gameconfig.cpp
     gamedb.cpp
     gamelogic.cpp
+    gameoptions.cpp
     gametrackselector.cpp
     generateaction.cpp
     gemcatcher.cpp
@@ -80,6 +81,7 @@ set(WAVELENGTH_GAME_SRCS
     points.cpp
     rateaverager.cpp
     remix.cpp
+    remixinfo.cpp
     remixhud.cpp
     remixtutorial.cpp
     remoteplayer.cpp
@@ -104,6 +106,7 @@ set(WAVELENGTH_GAME_SRCS
     slotgrid.cpp
     sologamelogic.cpp
     song.cpp
+    songstats.cpp
     stats.cpp
     streamqueue.cpp
     streamtask.cpp

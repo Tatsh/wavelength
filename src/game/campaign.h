@@ -4,26 +4,47 @@
 
 #include "game/avatarpartset.h"
 #include "game/inputmap.h"
-#include "game/songrecord.h"
+#include "game/songstats.h"
 #include "game/unlockableitem.h"
 #include "os/binstream.h"
 #include "os/datetime.h"
 #include "os/string.h"
+#include "script/dataarray.h"
 
 /**
  * Saved settings and progress of one player, among them the controller bindings.
  *
- * The class is not polymorphic. The name comes from the RTTI of the vectors that hold it. Each
- * player entry of GameDb
- * stores one at `+0x10`. The object is 0xf8 bytes. This header declares only the members its
- * callers here use.
+ * The class is not polymorphic. The name comes from the RTTI of the vectors that store it. Each
+ * player entry of GameDb stores one at `+0x10`. The object is 0xf8 bytes.
  */
 class Campaign {
 public:
+    /** Bits of mFlags. The names are inferred. */
+    enum Flag {
+        kFlagAutocatcher = 0,  /*!< The `autocatcher` power-up was granted. */
+        kFlagMultiplier = 1,   /*!< The `multiplier` power-up was granted. */
+        kFlagSlowdown = 2,     /*!< The `slowdown` power-up was granted. */
+        kFlagFreestyle = 3,    /*!< The `freestyle` power-up was granted. */
+        kFlagFreestyleTip = 4, /*!< The tip about the freestyle lap has shown. */
+        kFlagNone = 5,         /*!< The bit GetPowerupBit() reports for an unknown power-up. */
+    };
+
+    /**
+     * Values of GetMedal() and GetMedalForScore(), one more than the goals of the `score_goal` of
+     * the song a score passes. The names are inferred.
+     */
+    enum Medal {
+        kMedalNone = 0,     /*!< The song was not finished, or it has no goals. */
+        kMedalFinished = 1, /*!< The song was finished below the first goal. */
+        kMedalFirst = 2,    /*!< The score passed the first goal. */
+        kMedalSecond = 3,   /*!< The score passed the second goal. */
+        kMedalThird = 4,    /*!< The score passed the third goal. */
+    };
+
     /**
      * Report whether a song is the one song of its campaign tier the player has not yet won.
      *
-     * The name is inferred.
+     * Bonus songs and secret songs do not count. The name is inferred.
      *
      * @param pszSong The song.
      * @param nSkillLevel The skill level.
@@ -36,7 +57,7 @@ public:
     /**
      * Report the controller bindings.
      *
-     * @return The bindings, which the profile stores at `+0xd8`.
+     * @return The bindings.
      * @ghidraAddress NTSC-U/C: 0x0027afc8
      * @ghidraAddress PAL: 0x00284a58
      */
@@ -69,7 +90,9 @@ public:
     void SetSeenFreestyleTip();
 
     /**
-     * Report the first song of a skill level the player has not finished.
+     * Report the first song of the unlocked arenas the player has not finished at a skill level.
+     *
+     * Bonus songs and secret songs do not count.
      *
      * @param nSkillLevel The skill level.
      * @return The song, or null when every song is finished.
@@ -80,6 +103,8 @@ public:
 
     /**
      * Report which songs of a group the player has cleared at a skill level.
+     *
+     * Only the songs of type SongEntry::kTypeNormal available at the skill level count.
      *
      * @param nSkillLevel The skill level.
      * @param pszGroup The group, the name of an arena.
@@ -92,8 +117,10 @@ public:
     /**
      * Report whether the player has unlocked an item at a skill level.
      *
+     * An item unlocked for every skill level counts at each.
+     *
      * @param pszItem The item.
-     * @param nSkillLevel The skill level.
+     * @param nSkillLevel The skill level, or GameDb::kSkillAny for any.
      * @return Whether the item is unlocked.
      * @ghidraAddress NTSC-U/C: 0x0027aee8
      * @ghidraAddress PAL: 0x00284978
@@ -189,7 +216,7 @@ public:
     static void UnlockAllSongs();
 
     /**
-     * Construct a profile with the default settings.
+     * Construct a profile with the default settings and the unlocks of the `always` entries.
      *
      * @ghidraAddress NTSC-U/C: 0x00276e68
      * @ghidraAddress PAL: 0x002808f8
@@ -240,7 +267,7 @@ public:
 
     /**
      * Report whether the player has beaten the game at a skill level, the symbol `beat_game` among
-     * the records of that level. Every level counts while the unlock-all setting is on. The name
+     * the unlocks of that level. Every level counts while the unlock-all setting is on. The name
      * is inferred.
      *
      * @param nSkillLevel The skill level.
@@ -261,7 +288,9 @@ public:
     int GetHighestBeatenSkillLevel();
 
     /**
-     * Copy the record of a song at a skill level. The record does not change when there is none.
+     * Copy the record of a song at a skill level.
+     *
+     * Without a record, the copy is a cleared record of the song and the skill level.
      *
      * @param pszSong The song.
      * @param nSkillLevel The skill level.
@@ -269,19 +298,19 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00279a48
      * @ghidraAddress PAL: 0x002834d8
      */
-    void GetSongRecord(const char *pszSong, int nSkillLevel, SongRecord *pRecord);
+    void GetSongStats(const char *pszSong, int nSkillLevel, SongStats *pRecord);
 
     /**
      * Record the result of a song and collect the items it unlocks.
      *
-     * While the unlock-all-songs cheat is on, nothing is recorded and the list is emptied.
+     * While the unlock-all-songs cheat is on, the result is not recorded and the list is emptied.
      *
      * @param pRecord The result.
      * @param pUnlocks Receives the items the result unlocks.
      * @ghidraAddress NTSC-U/C: 0x002778e8
      * @ghidraAddress PAL: 0x00281378
      */
-    void RecordResult(const SongRecord *pRecord, std::vector<UnlockableItem> *pUnlocks);
+    void RecordResult(const SongStats *pRecord, std::vector<UnlockableItem> *pUnlocks);
 
     /**
      * Report the sum of the best scores of the songs of an arena. The name is inferred.
@@ -312,7 +341,7 @@ public:
      *
      * @param pszSong The song.
      * @param nSkillLevel The skill level.
-     * @return The medal.
+     * @return One of Medal.
      * @ghidraAddress NTSC-U/C: 0x0027ab98
      * @ghidraAddress PAL: 0x00284628
      */
@@ -325,7 +354,7 @@ public:
      * @param nSkillLevel The skill level.
      * @param nScore The score.
      * @param nPercent The share of the song played, in percent. Only 100 earns a medal.
-     * @return The medal, or 0.
+     * @return One of Medal.
      * @ghidraAddress NTSC-U/C: 0x0027ac08
      * @ghidraAddress PAL: 0x00284698
      */
@@ -361,20 +390,141 @@ public:
      */
     void SetModified(int nModified);
 
-    int mReserved00[12];   // +0x00, not yet recovered.
-    String mName;          /*!< The player's name. +0x30 */
-    DateTime mBorn;        /*!< The date the Freq was created. +0x44 */
-    String mPassword;      /*!< The online password, or empty when it is not saved. +0x4c */
-    int mNameLocked;       /*!< Non-zero when the player may not rename the Freq. +0x60 */
-    int mReserved64[4];    // +0x64, not yet recovered.
-    AvatarPartSet mAvatar; /*!< The Freq's parts and colours. +0x74 */
-    int mModified;         /*!< Non-zero when the profile changed since it was saved. +0xb0 */
-    int mCustom; /*!< Non-zero for a player's own profile rather than a default one. +0xb4 */
-    const char *mPendingPowerup; /*!< The power-up TakePendingPowerup() grants, or null. +0xb8 */
-    int mReservedBC[5];          // +0xbc, not yet recovered.
-    int mSoloOption;             /*!< The value GetSoloOption() reports. +0xd0 */
-    int mOnlineOption;           /*!< The value GetOnlineOption() reports. +0xd4 */
-    int mReservedD8[8];          // +0xd8, not yet recovered.
+    /**
+     * Write the profile, at version 6.
+     *
+     * @param stream The stream.
+     * @ghidraAddress NTSC-U/C: 0x0027b058
+     * @ghidraAddress PAL: 0x00284ae8
+     */
+    void Save(BinStream &stream) const;
+
+    /**
+     * Read a profile Save() wrote, and rebuild the unlocks from the records.
+     *
+     * Versions before 4 take the bindings of the `input_map` of the "db" section, versions before
+     * 5 clear mFlags, and versions before 6 reset the last unlock of each kind.
+     *
+     * @param stream The stream.
+     * @ghidraAddress NTSC-U/C: 0x0027b1e8
+     * @ghidraAddress PAL: 0x00284c48
+     */
+    void Load(BinStream &stream);
+
+private:
+    // Add a result to the records, keeping the best of each statistic.
+    // NTSC-U/C: 0x00277590, PAL: 0x00281020
+    void AddRecord(const SongStats *pRecord);
+
+    // Collect the unlocks of every `campaign` entry the records now pass at a skill level.
+    // NTSC-U/C: 0x002777f8, PAL: 0x00281288
+    void UpdateUnlocks(std::vector<UnlockableItem> *pUnlocks, int nSkillLevel);
+
+    // Apply one `campaign` entry once its condition passes.
+    // NTSC-U/C: 0x00277980, PAL: 0x00281410
+    void ProcessEntry(DataArray *pEntry,
+                      int nSkillLevel,
+                      int nEntry,
+                      std::vector<UnlockableItem> *pUnlocks);
+
+    // Evaluate a `beat_num`, `beat_songs`, `beat_score`, or `always` condition.
+    // NTSC-U/C: 0x00277ae8, PAL: 0x00281578
+    bool CheckCondition(DataArray *pCondition, int nSkillLevel);
+
+    // Report whether a number of songs other than the tutorial were finished.
+    // NTSC-U/C: 0x00277ca8, PAL: 0x00281738
+    bool CheckBeatNum(int nCount, int nSkillLevel);
+
+    // List the songs a `filter`, `all_except`, or `songs` clause selects.
+    // NTSC-U/C: 0x00277d78, PAL: 0x00281808
+    void ParseFilter(DataArray *pFilter, int nSkillLevel, std::vector<const char *> *pSongs);
+
+    // List the available songs of an arena, or of `all`, of one type, or of every type for 5.
+    // NTSC-U/C: 0x00277f40, PAL: 0x002819d0
+    void BuildFiltered(int nType,
+                       const char *pszArena,
+                       int nSkillLevel,
+                       std::vector<const char *> *pSongs);
+
+    // List the available songs of an arena, or of `all`, not of one type.
+    // NTSC-U/C: 0x00278218, PAL: 0x00281ca8
+    void
+    ExceptType(int nType, const char *pszArena, int nSkillLevel, std::vector<const char *> *pSongs);
+
+    // List the available songs of an arena, or of `all`, of neither of two types.
+    // NTSC-U/C: 0x002784f8, PAL: 0x00281f88
+    void ExceptTwoTypes(int nType,
+                        int nOtherType,
+                        const char *pszArena,
+                        int nSkillLevel,
+                        std::vector<const char *> *pSongs);
+
+    // List the available songs a `songs` clause specifies.
+    // NTSC-U/C: 0x002787f0, PAL: 0x00282280
+    void FromList(DataArray *pList, int nSkillLevel, std::vector<const char *> *pSongs);
+
+    // Report whether every song was finished.
+    // NTSC-U/C: 0x00278a58, PAL: 0x002824e8
+    bool CheckAllBeaten(const std::vector<const char *> *pSongs, int nSkillLevel);
+
+    // Report whether the best scores of the songs add up to a total.
+    // NTSC-U/C: 0x00278b10, PAL: 0x002825a0
+    bool CheckScoreTotal(const std::vector<const char *> *pSongs, int nSkillLevel, int nTotal);
+
+    // Unlock an item once at a skill level, or at every level for GameDb::kSkillAny.
+    // NTSC-U/C: 0x00278bb8, PAL: 0x00282648
+    void RecordUnlock(int nKind,
+                      const char *pszItem,
+                      int nSkillLevel,
+                      std::vector<UnlockableItem> *pUnlocks);
+
+    // Apply an `unlock` or `skill_unlock` clause.
+    // NTSC-U/C: 0x00278f50, PAL: 0x002829e0
+    void ApplyUnlockNode(DataArray *pNode, int nSkillLevel, std::vector<UnlockableItem> *pUnlocks);
+
+    // Apply a `prefab_unlock` clause.
+    // NTSC-U/C: 0x00279090, PAL: 0x00282b20
+    void PrefabUnlock(DataArray *pNode, std::vector<UnlockableItem> *pUnlocks);
+
+    // Unlock the parts of a prefabricated Freq of the "metagame" section.
+    // NTSC-U/C: 0x002791a0, PAL: 0x00282c30
+    void ExpandPrefab(const char *pszPrefab, std::vector<UnlockableItem> *pUnlocks);
+
+    // Unlock one part of a prefabricated Freq, and the emblem of a torso.
+    // NTSC-U/C: 0x00279330, PAL: 0x00282dc0
+    void RecordPrefabPart(DataArray *pPart, std::vector<UnlockableItem> *pUnlocks);
+
+    // NTSC-U/C: 0x0027ad70, PAL: 0x00284800
+    int GetFlagBit(int nFlag);
+
+    // NTSC-U/C: 0x0027ad80, PAL: 0x00284810
+    void SetFlagBit(int nFlag);
+
+    // Report the Flag of a power-up.
+    // NTSC-U/C: 0x0027ad98, PAL: 0x00284828
+    int GetPowerupBit(const char *pszPowerup);
+
+public:
+    std::vector<const char *> mUnlocks; /*!< The items unlocked at every skill level. */
+    /** The items unlocked at each skill level. */
+    std::vector<std::vector<const char *>> mSkillUnlocks;
+    /** One bit for each skill level at which each `campaign` entry has passed. */
+    std::vector<unsigned char> mPassedEntries;
+    String mName;                    /*!< The player's name. */
+    DateTime mBorn;                  /*!< The date the Freq was created. */
+    String mPassword;                /*!< The online password, or empty when it is not saved. */
+    int mNameLocked;                 /*!< Non-zero when the player may not rename the Freq. */
+    std::vector<SongStats> mRecords; /*!< The best result of each song at each skill level. */
+    AvatarPartSet mAvatar;           /*!< The Freq's parts and colours. */
+    int mModified;                   /*!< Non-zero when the profile changed since it was saved. */
+    int mCustom;                     /*!< Non-zero for a player's own profile, not a default one. */
+    const char *mPendingPowerup;     /*!< The power-up TakePendingPowerup() grants, or null. */
+    /** The last item unlocked of each UnlockableItem::Kind. */
+    std::vector<const char *> mLastUnlocks;
+    unsigned char mFlags; /*!< Bits of Flag. */
+    int mSoloOption;      /*!< The value GetSoloOption() reports. */
+    int mOnlineOption;    /*!< The value GetOnlineOption() reports. */
+    InputMap mInputMap;   /*!< The controller bindings. */
 };
 
 /**
@@ -398,6 +548,13 @@ BinStream &operator<<(BinStream &stream, const Campaign &profile);
  * @ghidraAddress PAL: 0x00285068
  */
 BinStream &operator>>(BinStream &stream, Campaign &profile);
+
+/**
+ * Non-zero when every song counts as unlocked and finished.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b1504
+ */
+extern unsigned int g_dwUnlockAllSongs;
 
 /**
  * Non-zero when every avatar part and emblem counts as unlocked.

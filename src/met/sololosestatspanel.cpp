@@ -1,7 +1,7 @@
 #include "met/sololosestatspanel.h"
 
 #include "game/gamedb.h"
-#include "game/songrecord.h"
+#include "game/songstats.h"
 #include "os/string.h"
 #include "ui/uicomponent.h"
 
@@ -17,10 +17,10 @@ constexpr float kPercent = 100.0f;
 
 void SoloLoseStatsPanel::Refresh() {
     SoloGameStatsPanel::Refresh();
-    SongRecord record;
+    SongStats record;
     // Yes, the binary fetches the record and never reads it.
     TheGameDb->GetProfile(kLocalPlayer)
-        ->GetSongRecord(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel, &record);
+        ->GetSongStats(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel, &record);
     FindComponent(kProgressComponent, false)
         ->SetText(
             FormatString(kPercentFormat, static_cast<int>(TheGameDb->GetProgress() * kPercent)));

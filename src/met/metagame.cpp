@@ -11,7 +11,7 @@
 #include "game/gamedb.h"
 #include "game/remixinfo.h"
 #include "game/songentry.h"
-#include "game/songrecord.h"
+#include "game/songstats.h"
 #include "game/triggermgr.h"
 #include "gfx/gfxmanager.h"
 #include "math/color.h"
@@ -1259,7 +1259,7 @@ void Metagame::RecordCampaignResult() {
         return;
     }
 
-    SongRecord record;
+    SongStats record;
     const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
     record.mSong = entry.GetName();
     record.mScore = static_cast<unsigned short>(TheGameDb->GetPlayerScore(0));
@@ -1405,7 +1405,7 @@ void Metagame::ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUs
 }
 
 void Metagame::RecordPracticeResult() {
-    SongRecord record;
+    SongStats record;
     const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
     record.mSong = entry.GetName();
     // Yes, the binary records a score of 100 for a practice song.

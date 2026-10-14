@@ -2,7 +2,7 @@
 
 #include "game/campaign.h"
 #include "game/gamedb.h"
-#include "game/songrecord.h"
+#include "game/songstats.h"
 #include "met/metagameutil.h"
 #include "os/locale.h"
 #include "os/string.h"
@@ -54,8 +54,8 @@ void SoloWinStatsPanel::Exit(bool bForce, float fTime) {
 
 void SoloWinStatsPanel::Refresh() {
     SoloGameStatsPanel::Refresh();
-    SongRecord record;
-    TheGameDb->GetProfile(0)->GetSongRecord(
+    SongStats record;
+    TheGameDb->GetProfile(0)->GetSongStats(
         TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel, &record);
 
     SetLabel(kScoreLabel, FormatString(kNumberFormat, TheGameDb->GetPlayerScore(0)));

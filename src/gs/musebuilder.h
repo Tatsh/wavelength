@@ -11,7 +11,6 @@
  *
  * The RTTI includes the class name and records TrackBuilder as the base. The object is 0x8c
  * bytes. At the end of the track the builder stores the piece through the owner it was given.
- * The routines with an address in the binary are not reconstructed.
  */
 class MuseBuilder : public TrackBuilder {
 public:

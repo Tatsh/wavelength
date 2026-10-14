@@ -20,7 +20,7 @@ constexpr int kRemixInfoCreatorSize = 16;
  * Description of a saved remix. A remix file stores one ahead of the remix.
  *
  * The class is not polymorphic. The name comes from the type information the standard library
- * containers of the class record. The object is 0xa0 bytes. Members its callers here do not use
+ * containers of the class record. The object is 0xa0 bytes. Members whose purpose is unknown
  * are reserved.
  */
 class RemixInfo {
@@ -48,6 +48,18 @@ public:
     static int WireSize();
 
     /**
+     * Make a key for a new remix from the clock reading and a random number.
+     *
+     * The clock reading in seconds fills the upper word and the random number the lower one. The
+     * name is inferred.
+     *
+     * @return The key.
+     * @ghidraAddress NTSC-U/C: 0x0027eb78
+     * @ghidraAddress PAL: 0x00288460
+     */
+    static unsigned long long MakeKey();
+
+    /**
      * Show the description in the labels `genre`, `date`, `rating`, `creator_1` to `creator_4`,
      * and `read_only` of a panel, and the band picture of the song in the panel.
      *
@@ -65,7 +77,7 @@ public:
         kSourceMemcard = 3, /*!< On a memory card. */
     };
 
-    int mReserved00[2];             // +0x00, not yet recovered.
+    unsigned long long mKey;        /*!< The key MakeKey() made for the remix. +0x00 */
     char mName[kRemixInfoNameSize]; /*!< The name the remix is saved under. +0x08 */
     char mSong[kRemixInfoSongSize]; /*!< The song the remix is made from, a symbol. +0x26 */
     int mSource;                    /*!< One of Source. +0x44 */

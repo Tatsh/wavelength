@@ -18,6 +18,7 @@ struct UnlockableItem {
         kKindSong = 1,        /*!< A song. */
         kKindBossSong = 2,    /*!< The song of a boss arena. */
         kKindBonusSong = 3,   /*!< A song beyond the campaign. */
+        kKindPowerup = 4,     /*!< A power-up. Campaign also offers it as mPendingPowerup. */
         kKindCampaignEnd = 5, /*!< The end of the campaign at a skill level. */
         kKindHead = 7,        /*!< A head. */
         kKindTorso = 8,       /*!< A torso. */

@@ -1,5 +1,6 @@
 set(WAVELENGTH_MID_SRCS
     mbt.cpp
+    midivalidator.cpp
     midireader.cpp
     tick.cpp
     trackbuilder.cpp)
