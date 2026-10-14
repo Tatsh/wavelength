@@ -2,8 +2,8 @@
 
 #include "gfx/ship.h"
 #include "math/interpolator.h"
-#include "rnd/transanim.h"
-#include "rnd/transformable.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * Flight of the ship of the tutorial onto the tracks, `ship tutorial fly-in.tnm`.
@@ -40,7 +40,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001cb2e0
      * @ghidraAddress PAL: 0x001d4080
      */
-    bool Poll(float fTick, float fTime, float (*pXfm)[Rnd::kXfmRowFloatCount]);
+    bool Poll(float fTick, float fTime, float (*pXfm)[kTransformRowFloatCount]);
 
     /**
      * Start the flight the first time the ship is shown.
@@ -55,5 +55,5 @@ public:
     Ship *mShip;              /*!< The ship. */
     int mStarted;             /*!< Whether the flight has started. */
     LinearInterpolator mPath; /*!< The frame of the flight over the ticks of the song. */
-    Rnd::TransAnim *mAnim;    /*!< `ship tutorial fly-in.tnm`. */
+    RndTransAnim *mAnim;      /*!< `ship tutorial fly-in.tnm`. */
 };

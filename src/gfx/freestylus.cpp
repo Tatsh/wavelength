@@ -6,7 +6,7 @@
 #include "gfx/gfxmanager.h"
 #include "gfx/gfxutil.h"
 #include "math/sine.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -32,12 +32,9 @@ constexpr float kPoseFrames = 1000.0f;
 // A quarter turn, which turns a sine into a cosine.
 constexpr float kQuarterTurn = 1.5707964f;
 
-// The rows of a basis.
-constexpr int kBasisRows = 3;
-
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 // Apply three basis rows to a direction, keeping the fourth word of the direction.
@@ -58,12 +55,17 @@ inline void Normalize(Vector3 *pVec) {
 }
 
 // Write the three basis rows of a transform as a uniform scale, keeping the translation.
-inline void SetScaleBasis(Rnd::Transformable *pTrans, float flScale) {
-    for (int i = 0; i < kBasisRows; ++i) {
-        for (int j = 0; j < kBasisRows; ++j) {
-            pTrans->mLocalXfm[i][j] = (i == j) ? flScale : 0.0f;
-        }
-    }
+inline void SetScaleBasis(RndTransformable *pTrans, float flScale) {
+    Transform &xfm = pTrans->mLocalXfm;
+    xfm.mBasisX.x = flScale;
+    xfm.mBasisX.y = 0.0f;
+    xfm.mBasisX.z = 0.0f;
+    xfm.mBasisY.x = 0.0f;
+    xfm.mBasisY.y = flScale;
+    xfm.mBasisY.z = 0.0f;
+    xfm.mBasisZ.x = 0.0f;
+    xfm.mBasisZ.y = 0.0f;
+    xfm.mBasisZ.z = flScale;
     pTrans->mDirty = 1;
 }
 
@@ -73,26 +75,26 @@ float Freestylus::sTumbleAnglePerMs = 0.001f;
 
 Freestylus::Freestylus(GfxTunnel *, int nType)
     : mBeamGrow(kBeamGrowStart,
-                FindObject<Rnd::Animatable>("freestylus beamgrow.mnm"),
+                FindObject<RndAnimatable>("freestylus beamgrow.mnm"),
                 nullptr,
                 kPoseSpeed),
       mSample(
-          kSampleStart, FindObject<Rnd::Animatable>("freestylus sample.tnm"), nullptr, kPoseSpeed),
+          kSampleStart, FindObject<RndAnimatable>("freestylus sample.tnm"), nullptr, kPoseSpeed),
       mButton(kButtonSteps, nullptr) {
     mTime = 0.0f;
     mFlashTime = kNoFlash;
     mScale = kNotSetUp;
-    mView = FindObject<Rnd::View>("freestylus.view");
-    mTempo = FindObject<Rnd::View>("freestylus tempo.view");
-    mTumble = FindObject<Rnd::View>("freestylus tumble.view");
-    mBeams = FindObject<Rnd::View>("freestylus beams.view");
-    mPitch = FindObject<Rnd::Animatable>("freestylus pitch.view");
-    mColor = FindObject<Rnd::Animatable>("freestylus color.mnm");
-    mFlash = FindObject<Rnd::View>("freestylus flash.view");
-    FindObject<Rnd::Animatable>("freestylus axe to scratch.mnm")
+    mView = FindObject<RndView>("freestylus.view");
+    mTempo = FindObject<RndView>("freestylus tempo.view");
+    mTumble = FindObject<RndView>("freestylus tumble.view");
+    mBeams = FindObject<RndView>("freestylus beams.view");
+    mPitch = FindObject<RndAnimatable>("freestylus pitch.view");
+    mColor = FindObject<RndAnimatable>("freestylus color.mnm");
+    mFlash = FindObject<RndView>("freestylus flash.view");
+    FindObject<RndAnimatable>("freestylus axe to scratch.mnm")
         ->SetFrame((nType == kTypeScratch) ? kScratchFrame : 0.0f);
-    mParticles = FindObject<Rnd::ParticleSys>("freestylus.part");
-    mButton.mSys = FindObject<Rnd::ParticleSys>("freestylus button 0.part");
+    mParticles = FindObject<RndParticleSys>("freestylus.part");
+    mButton.mSys = FindObject<RndParticleSys>("freestylus button 0.part");
     mButton.mSys->SetFrameSelf(mTime);
     mButton.mSys->FreeAllParticles();
     mBasis[0].x = 1.0f;
@@ -116,7 +118,7 @@ void Freestylus::Setup(float flScale) {
     const float flSize = flScale * TheGfxManager.mScrollSpeed;
     mButtonForce = mButton.mSys->mForce;
     ScaleParticles(mButton.mSys, flSize);
-    mArm.Init(FindObject<Rnd::ParticleSys>("freestylus2.part"), mView, flSize);
+    mArm.Init(FindObject<RndParticleSys>("freestylus2.part"), mView, flSize);
     mArm.Scale(mParticles, flSize);
     mView->RemoveDraw(mArm.mSys);
     SetScaleBasis(mFlash, TheGfxManager.mScrollSpeed);
@@ -159,12 +161,9 @@ void Freestylus::Spin(float flTime, float flTumbleX, float flTumbleY) {
     CrossVec3(&mBasis[1].x, &mBasis[2].x, &mBasis[0].x);
     Normalize(&mBasis[0]);
     CrossVec3(&mBasis[0].x, &mBasis[1].x, &mBasis[2].x);
-    for (int i = 0; i < kBasisRows; ++i) {
-        mTumble->mLocalXfm[i][0] = mBasis[i].x;
-        mTumble->mLocalXfm[i][1] = mBasis[i].y;
-        mTumble->mLocalXfm[i][2] = mBasis[i].z;
-        mTumble->mLocalXfm[i][kVec3PaddingFloat] = mBasis[i].w;
-    }
+    mTumble->mLocalXfm.mBasisX = mBasis[0];
+    mTumble->mLocalXfm.mBasisY = mBasis[1];
+    mTumble->mLocalXfm.mBasisZ = mBasis[2];
     mTumble->mDirty = 1;
 }
 
@@ -189,7 +188,7 @@ void Freestylus::Update(bool bPlaying, float, float flTime, float flScale) {
     SetScaleBasis(mView, flScale * mScale);
 }
 
-void Freestylus::Draw(Rnd::Transformable *pParent, int) {
+void Freestylus::Draw(RndTransformable *pParent, int) {
     bool bFlash = false;
     const float flTime = TheGameDb->mSongTime;
     if (mFlashTime != kNoFlash) {
@@ -201,10 +200,8 @@ void Freestylus::Draw(Rnd::Transformable *pParent, int) {
             bFlash = true;
         }
     }
-    const float (&world)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = pParent->mWorldXfm;
-    const Vector3 basis[] = {Vector3{world[0][0], world[0][1], world[0][2], world[0][3]},
-                             Vector3{world[1][0], world[1][1], world[1][2], world[1][3]},
-                             Vector3{world[2][0], world[2][1], world[2][2], world[2][3]}};
+    const Transform &world = pParent->mWorldXfm;
+    const Vector3 basis[] = {world.mBasisX, world.mBasisY, world.mBasisZ};
     mButton.mSys->mForce = RotateDir(basis, mButtonForce);
     mView->SetFrame(TheGameDb->mSongTime);
     mTempo->SetFrame(TheGameDb->mSongTick);

@@ -6,7 +6,7 @@
 #include "game/gamedb.h"
 #include "gfx/gfxtunnel.h"
 #include "gfx/tnlgeom.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -24,7 +24,7 @@ constexpr int kNoBar = INT_MAX;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -37,8 +37,8 @@ TnlGrid::GridLine::GridLine() : mScale(nullptr) {
 
 TnlGrid::GridLine::~GridLine() = default;
 
-void TnlGrid::GridLine::Attach(const Vector3 *pScale, Rnd::MultiMesh *pMesh) {
-    std::list<Transform> &instances = pMesh->GetTransforms();
+void TnlGrid::GridLine::Attach(const Vector3 *pScale, RndMultiMesh *pMesh) {
+    std::list<Transform> &instances = pMesh->mTransforms;
     Transform xfm; // Yes, the binary adds a transform it never set. Place() sets it.
     instances.insert(instances.begin(), xfm);
     mScale = pScale;
@@ -64,13 +64,13 @@ void TnlGrid::GridLine::Place(TnlGeom *pGeom, int nTrack, int nTick) {
 }
 
 void TnlGrid::GridLine::SetShowing(bool bShowing,
-                                   Rnd::MultiMesh *pMesh,
+                                   RndMultiMesh *pMesh,
                                    std::list<Transform> &hidden) {
     if (bShowing == mShowing) {
         return;
     }
 
-    std::list<Transform> &instances = pMesh->GetTransforms();
+    std::list<Transform> &instances = pMesh->mTransforms;
     if (bShowing) {
         instances.splice(instances.begin(), hidden, mInstance);
         mInstance = instances.begin();
@@ -89,9 +89,9 @@ TnlGrid::TnlGrid(GfxTunnel *pTunnel, int nCam) : mTrack(0), mTunnel(pTunnel), mM
         return;
     }
 
-    mMesh = FindObject<Rnd::MultiMesh>("grid.mm");
+    mMesh = FindObject<RndMultiMesh>("grid.mm");
     if (nCam == kFirstCam) {
-        mMesh->GetTransforms().clear(); // Yes, the binary does not check for a missing mesh.
+        mMesh->mTransforms.clear(); // Yes, the binary does not check for a missing mesh.
     }
     mLines.resize(kNumLines, GridLine());
 
@@ -112,7 +112,7 @@ TnlGrid::TnlGrid(GfxTunnel *pTunnel, int nCam) : mTrack(0), mTunnel(pTunnel), mM
 
 TnlGrid::~TnlGrid() {
     if (mMesh != nullptr) {
-        mMesh->GetTransforms().clear();
+        mMesh->mTransforms.clear();
     }
 }
 

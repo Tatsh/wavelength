@@ -12,7 +12,7 @@
 #include "math/rand.h"
 #include "math/transform.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -88,7 +88,7 @@ TnlConnectorBeam::TnlConnectorBeam(GfxTunnel *pTunnel,
     mTunnel = pTunnel;
     mNumSpans = 0;
     auto *pLine =
-        dynamic_cast<Rnd::Line *>(Rnd::TheManager.Find(FormatString("sabre_%c.str", pszColor[0])));
+        dynamic_cast<RndLine *>(TheManager.Find(FormatString("sabre_%c.str", pszColor[0])));
     mGlowSize = 0.0f;
     mGlowBoost = 0.0f;
     mEnergyLevel = 0.0f;
@@ -100,12 +100,12 @@ TnlConnectorBeam::TnlConnectorBeam(GfxTunnel *pTunnel,
     mEndTick = kNoTick;
     mPulseTick = kNoTick;
     mTrack = kNoTrack;
-    auto *pGlow = dynamic_cast<Rnd::ParticleSys *>(
-        Rnd::TheManager.Find(FormatString("gem_glow%d.ps", nPlayer)));
+    auto *pGlow =
+        dynamic_cast<RndParticleSys *>(TheManager.Find(FormatString("gem_glow%d.ps", nPlayer)));
     mMultiplier = 0;
     mGlow = pGlow;
-    mLineMat = mLine->GetMat();
-    mMultiplierMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("mult fx gem.mat"));
+    mLineMat = mLine->Mat();
+    mMultiplierMat = dynamic_cast<RndMat *>(TheManager.Find("mult fx gem.mat"));
     mExcludedType = nExcludedType;
     mOtherExcludedType = nOtherExcludedType;
     mLine->SetShowing(0);
@@ -211,7 +211,7 @@ void TnlConnectorBeam::SetWindow(char nTrack, TnlGems *pGems, float flStartTick,
     RebuildSpans();
 }
 
-void TnlConnectorBeam::AddGem(float flTick, float flLateral, Rnd::Particle *pParticle) {
+void TnlConnectorBeam::AddGem(float flTick, float flLateral, Particle *pParticle) {
     int nOwnParticle;
     if (mMultiplier) {
         if (pParticle != nullptr) {
@@ -410,7 +410,7 @@ void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
                 for (auto &gem : mGems) {
                     if (gem.mParticle != nullptr) {
                         gem.mParticle->mSize = flSize;
-                        gem.mParticle->mCol = mMultiplierMat->mAmbient;
+                        gem.mParticle->mCol = mMultiplierMat->mBaseColor;
                     }
                 }
             }
@@ -514,7 +514,7 @@ void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
         mLine->SetShowing(0);
         return;
     }
-    const Vector3 &lastPoint = mLine->mPoints[nPoint + 1].mPos;
+    const Vector3 &lastPoint = mLine->mPoints[nPoint + 1].mPoint;
     for (; nPoint >= 0; --nPoint) {
         mLine->SetPoint(nPoint, lastPoint);
     }

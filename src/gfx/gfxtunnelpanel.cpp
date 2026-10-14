@@ -82,7 +82,7 @@ void GfxTunnelPanel::Apply() {
     pGeom->SetPanelState(
         mTrack, mBar, static_cast<char>(mTransparent), mCheckpointMat, mPickable, true, mColor);
     if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix && mTrack == kCheckpointTrack) {
-        Rnd::Mat *pMat = nullptr;
+        RndMat *pMat = nullptr;
         if ((mFlags & GfxTunnel::kBarFlagCheckpoint) != 0) {
             pMat = mTunnel->mCheckpointMat;
         }

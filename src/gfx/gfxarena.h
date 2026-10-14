@@ -6,15 +6,15 @@
 #include "math/key.h"
 #include "os/asyncstream.h"
 #include "os/string.h"
-#include "rnd/animatable.h"
-#include "rnd/mat.h"
-#include "rnd/matanim.h"
-#include "rnd/movie.h"
+#include "rnd/rndanimatable.h"
 #include "rnd/rndenviron.h"
 #include "rnd/rndloader.h"
-#include "rnd/tex.h"
-#include "rnd/transanim.h"
-#include "rnd/view.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmatanim.h"
+#include "rnd/rndmovie.h"
+#include "rnd/rndtex.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -28,9 +28,9 @@ class GfxArena {
 public:
     /** A material stage that shows the texture of a movie, 0xc bytes. */
     struct MovieMat {
-        Rnd::Mat *mMat; /*!< The material. */
-        Rnd::Tex *mTex; /*!< The texture of the movie the stage shows when nothing replaces it. */
-        char mStage;    /*!< The stage of mMat that shows the texture, or -1. */
+        RndMat *mMat; /*!< The material. */
+        RndTex *mTex; /*!< The texture of the movie the stage shows when nothing replaces it. */
+        char mStage;  /*!< The stage of mMat that shows the texture, or -1. */
     };
 
     /** The bits of mPanelFlags, in order of precedence from the last. */
@@ -131,7 +131,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ec6f8
      * @ghidraAddress PAL: 0x001f5498
      */
-    void SetCamPath(Rnd::TransAnim *pPath);
+    void SetCamPath(RndTransAnim *pPath);
 
     /**
      * Return the panels to their resting look.
@@ -190,10 +190,10 @@ public:
     DataArray *mConfig;          /*!< The `arena_paths` entry of the arena. */
     AsyncStream *mTriggerStream; /*!< The stream of the triggers, or null. */
     RndLoader *mLoader;          /*!< The loader of the file of the arena, or null. */
-    Rnd::View *mView;            /*!< The top view of the arena, or null. */
+    RndView *mView;              /*!< The top view of the arena, or null. */
     int mOwnsView;               /*!< Whether mView is the placeholder the arena created. */
-    Rnd::TransAnim *mCamPath;    /*!< The path of the camera. */
-    Rnd::Tex *mFrequencyTex;     /*!< `fbase_freq.tex`. */
+    RndTransAnim *mCamPath;      /*!< The path of the camera. */
+    RndTex *mFrequencyTex;       /*!< `fbase_freq.tex`. */
     float mFrameScale;           /*!< The frames of the camera path per tick. */
     float mFrameOffset;          /*!< The frame of the camera path at tick 0. */
     float mLength;               /*!< The ticks the camera path covers, `length`. */
@@ -206,11 +206,11 @@ public:
     char mPanelFlags; /*!< The look of the panels, a set of PanelFlag. */
     int mResultShown; /*!< Whether ShowResult() ran. */
     int mWon;         /*!< Whether the song was won. */
-    std::list<Rnd::MatAnim *> mMatAnims; /*!< The material animations of the movie textures. */
-    std::list<MovieMat> mMovieMats;      /*!< The material stages that show the movies. */
-    std::vector<Rnd::Movie *> mMovies;   /*!< `movie1.mov` to `movie4.mov`. */
-    float mBeatTick;                     /*!< The tick the last beat started. */
-    Rnd::Movie *mSnow;                   /*!< `snow.ipu`. */
+    std::list<RndMatAnim *> mMatAnims; /*!< The material animations of the movie textures. */
+    std::list<MovieMat> mMovieMats;    /*!< The material stages that show the movies. */
+    std::vector<RndMovie *> mMovies;   /*!< `movie1.mov` to `movie4.mov`. */
+    float mBeatTick;                   /*!< The tick the last beat started. */
+    RndMovie *mSnow;                   /*!< `snow.ipu`. */
 
 private:
     /**
@@ -221,7 +221,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001ea080
      * @ghidraAddress PAL: 0x001f2e20
      */
-    static void CollectMovieMats(Rnd::Tex *pTex, std::list<MovieMat> *pMats);
+    static void CollectMovieMats(RndTex *pTex, std::list<MovieMat> *pMats);
 
     /**
      * Record every material animation that switches a stage to a texture.
@@ -233,7 +233,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001ea240
      * @ghidraAddress PAL: 0x001f2fe0
      */
-    static void CollectMatAnims(Rnd::Tex *pTex, std::list<Rnd::MatAnim *> *pAnims);
+    static void CollectMatAnims(RndTex *pTex, std::list<RndMatAnim *> *pAnims);
 
     /**
      * Take an animation out of the animation lists of everything that drives it.
@@ -242,7 +242,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001e9f98
      * @ghidraAddress PAL: 0x001f2d38
      */
-    static void DetachAnim(Rnd::Animatable *pAnim);
+    static void DetachAnim(RndAnimatable *pAnim);
 
     /**
      * Stretch the keys of a camera path from the length it was made for to the length of the
@@ -252,7 +252,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001ec668
      * @ghidraAddress PAL: 0x001f5408
      */
-    void FitCamPath(Rnd::TransAnim *pPath);
+    void FitCamPath(RndTransAnim *pPath);
 
     /**
      * Turn panel flags on or off, and show the texture of the flags on every movie stage.
@@ -272,5 +272,5 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001ece18
      * @ghidraAddress PAL: 0x001f5bb8
      */
-    static void ShowTexture(const MovieMat *pMat, Rnd::Tex *pTex);
+    static void ShowTexture(const MovieMat *pMat, RndTex *pTex);
 };

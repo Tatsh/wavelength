@@ -5,7 +5,7 @@
 #include "math/interpolator.h"
 #include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 
 /**
  * A burst of a captured or erased gem, an animated view that spins along its track.
@@ -49,7 +49,7 @@ public:
      */
     void Start(GfxTunnel *pTunnel,
                char nTrack,
-               Rnd::View *pView,
+               RndView *pView,
                float flTick,
                float flLateral,
                const Vector3 *pScale,
@@ -104,7 +104,7 @@ public:
     static float sTravels[2];
 
     char mTrack;                    /*!< The track of the burst, or -1 for an idle burst. */
-    Rnd::View *mView;               /*!< The view the burst animates. */
+    RndView *mView;                 /*!< The view the burst animates. */
     Transform mSpin;                /*!< The turn and the scale of the burst. */
     Transform mXfm;                 /*!< The placed transform of the burst. */
     float mLateral;                 /*!< The position of the burst across its track. */

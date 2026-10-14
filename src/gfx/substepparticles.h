@@ -1,7 +1,7 @@
 #pragma once
 
 #include "math/vector3.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndparticlesys.h"
 
 /**
  * Particle system that emits in several steps along the path its transform moved since the last
@@ -19,7 +19,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e3978
      * @ghidraAddress PAL: 0x001ec718
      */
-    SubstepParticles(int nSteps, Rnd::ParticleSys *pSys);
+    SubstepParticles(int nSteps, RndParticleSys *pSys);
 
     /**
      * Forget the last update, so the next one only records the position.
@@ -48,9 +48,9 @@ public:
      */
     void Update(float fFrame, float fTime);
 
-    Rnd::ParticleSys *mSys; /*!< The particle system. */
-    float mLastTime;        /*!< The time of the last update, or -1e9 for none. */
-    Vector3 mLastPos;       /*!< The world position of the system at the last update. */
-    int mSteps;             /*!< The number of steps of an update. */
-    float mInvSteps;        /*!< One over mSteps. */
+    RndParticleSys *mSys; /*!< The particle system. */
+    float mLastTime;      /*!< The time of the last update, or -1e9 for none. */
+    Vector3 mLastPos;     /*!< The world position of the system at the last update. */
+    int mSteps;           /*!< The number of steps of an update. */
+    float mInvSteps;      /*!< One over mSteps. */
 };

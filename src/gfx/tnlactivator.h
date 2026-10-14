@@ -3,7 +3,7 @@
 #include "gfx/gfxtunnel.h"
 #include "gfx/tnlcatcher.h"
 #include "math/interpolator.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -117,10 +117,10 @@ public:
     void Update(float flDelta);
 
     int mPlayer;                    /*!< The player. */
-    Rnd::View *mRot;                /*!< `activator rot<n>`. */
-    Rnd::View *mView;               /*!< `activator<n>.view`. */
+    RndView *mRot;                  /*!< `activator rot<n>`. */
+    RndView *mView;                 /*!< `activator<n>.view`. */
     int mReserved0c;                // +0x0c Not yet read or written.
-    Rnd::View *mFx;                 /*!< `activator fx<n>`, which the catcher hangs from. */
+    RndView *mFx;                   /*!< `activator fx<n>`, which the catcher hangs from. */
     unsigned char mReserved14[0xc]; // +0x14 to +0x1f are not yet identified.
     TnlCatcher mCatcher;            /*!< The catcher. */
     unsigned char mReserved88[0x8]; // +0x88 to +0x8f are not yet identified.

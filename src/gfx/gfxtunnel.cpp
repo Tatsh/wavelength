@@ -39,17 +39,16 @@
 #include "os/string.h"
 #include "os/system.h"
 #include "os/timer.h"
-#include "rnd/cam.h"
-#include "rnd/environ.h"
-#include "rnd/light.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/matanim.h"
-#include "rnd/mesh.h"
-#include "rnd/particle.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndenviron.h"
+#include "rnd/rndlight.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmatanim.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndparticlesys.h"
 #include "rnd/rndrenderer.h"
-#include "rnd/transanim.h"
+#include "rnd/rndtransanim.h"
 #include "script/dataarray.h"
 #include "script/scriptfunction.h"
 
@@ -160,10 +159,6 @@ constexpr float kDividerShrink = 1.1f;
 // The meshes `HUD <kind>_gem<n>.mesh` of each kind of powerup gem.
 constexpr int kNumHudGemMeshes = 4;
 
-// The rows of the basis of a transform, and the components of a row a scale changes.
-constexpr int kBasisRows = 3;
-constexpr int kRowComponents = 3;
-
 // The kind of panel of `panel mat highlight.mat`, below every kind, which sets the default.
 constexpr int kHighlightPanelKind = -999;
 
@@ -195,7 +190,7 @@ constexpr int kEndAlphaArg = 7;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 // The horizontal normal of a segment of the cross section, its direction crossed with the up
@@ -307,13 +302,17 @@ void GfxTunnel::LayoutDividers(const std::vector<Segment> *pSegments, float flSc
 void GfxTunnel::ScaleHudGemMeshes(const Vector3 *pScale, const char *pszKind) {
     for (int i = 0; i < kNumHudGemMeshes; ++i) {
         // Yes, the binary does not test the mesh for null.
-        Rnd::Mesh *pMesh = FindObject<Rnd::Mesh>(FormatString("HUD %s_gem%d.mesh", pszKind, i));
-        const float scales[] = {pScale->x, pScale->y, pScale->z};
-        for (int row = 0; row < kBasisRows; ++row) {
-            for (int c = 0; c < kRowComponents; ++c) {
-                pMesh->mLocalXfm[row][c] *= scales[row];
-            }
-        }
+        RndMesh *pMesh = FindObject<RndMesh>(FormatString("HUD %s_gem%d.mesh", pszKind, i));
+        Transform &xfm = pMesh->mLocalXfm;
+        xfm.mBasisX.x *= pScale->x;
+        xfm.mBasisX.y *= pScale->x;
+        xfm.mBasisX.z *= pScale->x;
+        xfm.mBasisY.x *= pScale->y;
+        xfm.mBasisY.y *= pScale->y;
+        xfm.mBasisY.z *= pScale->y;
+        xfm.mBasisZ.x *= pScale->z;
+        xfm.mBasisZ.y *= pScale->z;
+        xfm.mBasisZ.z *= pScale->z;
         pMesh->mDirty = 1;
     }
 }
@@ -540,10 +539,10 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     timer.Start();
     loadTimer.Start();
 
-    mTransparentView = FindObject<Rnd::View>("tnl transparent");
-    mGridView = FindObject<Rnd::View>("grid1.view");
+    mTransparentView = FindObject<RndView>("tnl transparent");
+    mGridView = FindObject<RndView>("grid1.view");
     if (mArena->mCamPath == nullptr) {
-        mArena->SetCamPath(FindObject<Rnd::TransAnim>("tunnel path"));
+        mArena->SetCamPath(FindObject<RndTransAnim>("tunnel path"));
     }
     mSlowdown = new TnlSlowdownFX("slowdown_shell", this);
     mWinShell = new TnlWinShell();
@@ -567,25 +566,25 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
 
     // Yes, the binary multiplies and divides by the same number.
     const float flMsPerTick = (*TheGfxManager.mMsPerTick * kTicksPerBeat) / kTicksPerBeat;
-    SetFilterScale(FindObject<Rnd::Animatable>("realtime.view"), flMsPerTick);
+    SetFilterScale(FindObject<RndAnimatable>("realtime.view"), flMsPerTick);
     mGeom->SetMoveLength(kMoveLengthMs / flMsPerTick);
 
-    Rnd::View *pTestDraw = FindObject<Rnd::View>("tnl test draw");
+    RndView *pTestDraw = FindObject<RndView>("tnl test draw");
     if (pTestDraw != nullptr) {
         pTestDraw->SetShowing(0);
     }
-    Rnd::View *pTunnelView = FindObject<Rnd::View>("tnl.view");
-    pTunnelView->RemoveAnim(FindObject<Rnd::Animatable>("test anim"));
-    Rnd::Cam *pTestCam = FindObject<Rnd::Cam>("test cam");
+    RndView *pTunnelView = FindObject<RndView>("tnl.view");
+    pTunnelView->RemoveAnim(FindObject<RndAnimatable>("test anim"));
+    RndCam *pTestCam = FindObject<RndCam>("test cam");
     if (pTestCam != nullptr) {
         pTunnelView->RemoveTrans(pTestCam);
         pTunnelView->RemoveDraw(pTestCam);
     }
-    Rnd::View *pSlide = FindObject<Rnd::View>("tnl cam slide1");
-    pSlide->RemoveTrans(FindObject<Rnd::Transformable>("flare gem test.view"));
+    RndView *pSlide = FindObject<RndView>("tnl cam slide1");
+    pSlide->RemoveTrans(FindObject<RndTransformable>("flare gem test.view"));
 
     for (int i = BuildOuterCams(); i < kMaxLocalViews; ++i) {
-        FindObject<Rnd::View>(FormatString("tnl local%d.view", i + 1))->SetShowing(0);
+        FindObject<RndView>(FormatString("tnl local%d.view", i + 1))->SetShowing(0);
     }
 
     DataArray *pMaxGems;
@@ -598,7 +597,7 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
         pMaxGems->Int((nSolo == GameDb::kCommunityLocal) ? kMaxGemsLocalIndex : kMaxGemsIndex);
     mArena->mView->SetShowing(1);
 
-    Rnd::ParticleSys *pFlashSys = FindObject<Rnd::ParticleSys>("gem_flash.ps");
+    RndParticleSys *pFlashSys = FindObject<RndParticleSys>("gem_flash.ps");
     mFlashes.resize(kNumFlashes);
     for (unsigned i = 0; i < mFlashes.size(); ++i) {
         mFlashes[i] = new TnlFlashFX(pFlashSys);
@@ -635,16 +634,16 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     }
 
     LoadTrackColors();
-    mCheckpointMat = FindObject<Rnd::Mat>("panel ckpt.mat");
-    mCheckpointFinishMat = FindObject<Rnd::Mat>("panel ckpt finish.mat");
-    mFadeMesh = FindObject<Rnd::Mesh>("tunnel fade.mesh");
+    mCheckpointMat = FindObject<RndMat>("panel ckpt.mat");
+    mCheckpointFinishMat = FindObject<RndMat>("panel ckpt finish.mat");
+    mFadeMesh = FindObject<RndMesh>("tunnel fade.mesh");
     mFadeMesh->SetShowing(1);
     mGeom->SetNumPlayers(TheGameDb->GetNumPlayers());
     for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
         TnlGeom::Player *pPlayer = mGeom->GetPlayer(i);
-        Rnd::Transformable *pCamSlide =
-            FindObject<Rnd::Transformable>(FormatString("tnl cam slide%d", i + 1));
-        Rnd::View *pActivator = FindObject<Rnd::View>(FormatString("activator%d.view", i));
+        RndTransformable *pCamSlide =
+            FindObject<RndTransformable>(FormatString("tnl cam slide%d", i + 1));
+        RndView *pActivator = FindObject<RndView>(FormatString("activator%d.view", i));
         pPlayer->SetCamSlide(pCamSlide);
         pPlayer->SetActivator(pActivator);
     }
@@ -664,22 +663,22 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
         }
     }
 
-    FindObject<Rnd::Drawable>("boundary msg")->SetShowing(1);
-    FindObject<Rnd::Drawable>("boundary_ring.mesh")->SetShowing(1);
-    Rnd::Environ *pShown;
-    Rnd::Environ *pHidden;
+    FindObject<RndDrawable>("boundary msg")->SetShowing(1);
+    FindObject<RndDrawable>("boundary_ring.mesh")->SetShowing(1);
+    RndEnviron *pShown;
+    RndEnviron *pHidden;
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        pHidden = FindObject<Rnd::Environ>("tunnel multi.env");
-        pShown = FindObject<Rnd::Environ>("tunnel solo.env");
-        mTrackColorLight = FindObject<Rnd::Light>("tunnel track color.lit");
+        pHidden = FindObject<RndEnviron>("tunnel multi.env");
+        pShown = FindObject<RndEnviron>("tunnel solo.env");
+        mTrackColorLight = FindObject<RndLight>("tunnel track color.lit");
         for (mTrackColorPlayer = 0; mTrackColorPlayer < TheGameDb->GetNumPlayers() &&
                                     !TheGameDb->IsLocalPlayer(mTrackColorPlayer);
              ++mTrackColorPlayer) {
         }
         (void)TheGameDb->GetNumPlayers(); // Yes, the binary discards this call's result.
     } else {
-        pShown = FindObject<Rnd::Environ>("tunnel multi.env");
-        pHidden = FindObject<Rnd::Environ>("tunnel solo.env");
+        pShown = FindObject<RndEnviron>("tunnel multi.env");
+        pHidden = FindObject<RndEnviron>("tunnel solo.env");
         mTrackColorLight = nullptr;
         mTrackColorPlayer = -1;
     }
@@ -715,13 +714,13 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     mGems->ClearInstances("gem_neut");
     mMissGemGroup = mGems->AddMeshGroups("gem_miss", nullptr, 0.0f);
     bool bRotateSlots = false;
-    Rnd::Drawable *pSlots;
+    RndDrawable *pSlots;
     if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
         mSlotGemGroup = mGems->AddMeshGroups("gem_duel_slot", nullptr, 0.0f);
-        pSlots = FindObject<Rnd::Drawable>("gem_duel_slot0.mm");
+        pSlots = FindObject<RndDrawable>("gem_duel_slot0.mm");
     } else {
         mSlotGemGroup = mGems->AddMeshGroups("gem_slot", nullptr, 0.0f);
-        pSlots = FindObject<Rnd::Drawable>("gem_slot0.mm");
+        pSlots = FindObject<RndDrawable>("gem_slot0.mm");
         bRotateSlots = true;
     }
     mInstrumentGemGroups.resize(GfxManager::kNumInstruments);
@@ -733,7 +732,7 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     mInstrumentGemGroups[GfxManager::kInstrumentFx] = mGems->AddSpriteGroup("gem_fx");
     mGems->ApplyRenderScales();
 
-    Rnd::Animatable *pRealtime = FindObject<Rnd::Animatable>("realtime.view");
+    RndAnimatable *pRealtime = FindObject<RndAnimatable>("realtime.view");
     mGems->AddRotations(mGemGroup,
                         kRotationKeys,
                         kRotationLoops,
@@ -772,17 +771,17 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
                             sGemRotatePeriod,
                             kFullTurn);
     }
-    (void)FindObject<Rnd::View>("tnl.view"); // Yes, the binary discards the view it finds.
-    Rnd::Drawable *pMisses = FindObject<Rnd::Drawable>("gem_miss0.mm");
+    (void)FindObject<RndView>("tnl.view"); // Yes, the binary discards the view it finds.
+    RndDrawable *pMisses = FindObject<RndDrawable>("gem_miss0.mm");
     mTransparentView->AddDraw(pSlots, pMisses);
     if (TheGfxManager.mMonkeyGems != 0) {
-        Rnd::Drawable *pMonkeys = FindObject<Rnd::Drawable>("monkey0.mm");
-        FindObject<Rnd::Drawable>("tnl opaque")->AddDraw(pMonkeys, nullptr);
+        RndDrawable *pMonkeys = FindObject<RndDrawable>("monkey0.mm");
+        FindObject<RndDrawable>("tnl opaque")->AddDraw(pMonkeys, nullptr);
     }
     mTrackGemGroups.resize(mNumTracks);
     UpdateTrackGemGroups();
     if (TheGfxManager.mBlackPanels != 0) {
-        FindObject<Rnd::Mesh>("panel mat scale.mesh")->SetShowing(0);
+        FindObject<RndMesh>("panel mat scale.mesh")->SetShowing(0);
     }
 
     int nMainPlayer = -1;
@@ -842,29 +841,29 @@ int GfxTunnel::BuildOuterCams() {
     if (sSplitScreen != 0) {
         nCams = TheGameDb->GetNumPads();
     }
-    Rnd::Cam *pOuterTemplate = FindObject<Rnd::Cam>("outer 1.cam");
-    Rnd::Cam *pTemplate = FindObject<Rnd::Cam>(FormatString("tnl cam%d", nCams));
-    mOverlayCam = FindObject<Rnd::Cam>("tnl overlay.cam");
+    RndCam *pOuterTemplate = FindObject<RndCam>("outer 1.cam");
+    RndCam *pTemplate = FindObject<RndCam>(FormatString("tnl cam%d", nCams));
+    mOverlayCam = FindObject<RndCam>("tnl overlay.cam");
     // Yes, the field of view is the radians LoadConfig() left in sCameraFov, and the outer clip
     // distances are not scaled by the scroll speed.
     const float flFov = sCameraFov;
-    const float flFar = pTemplate->GetFarPlane() * TheGfxManager.mScrollSpeed;
-    const float flNear = pTemplate->GetNearPlane() * TheGfxManager.mScrollSpeed;
-    const float flOuterFar = pOuterTemplate->GetFarPlane();
-    const float flOuterNear = pOuterTemplate->GetNearPlane();
-    Rnd::Cam::Rect rect = pTemplate->mScreenRect;
+    const float flFar = pTemplate->mFarPlane * TheGfxManager.mScrollSpeed;
+    const float flNear = pTemplate->mNearPlane * TheGfxManager.mScrollSpeed;
+    const float flOuterFar = pOuterTemplate->mFarPlane;
+    const float flOuterNear = pOuterTemplate->mNearPlane;
+    Rect rect = pTemplate->mScreenRect;
     mOuterCams.clear();
     mOuterCams.reserve(nCams * kCamsPerPlayer);
 
     int i;
     for (i = 0; i < nCams; ++i) {
         const int n = i + 1;
-        Rnd::Cam *pCam = FindObject<Rnd::Cam>(FormatString("tnl cam%d", n));
-        Rnd::Cam *pCamZ = FindObject<Rnd::Cam>(FormatString("tnl cam%dz", n));
-        Rnd::Cam *pWinCam = FindObject<Rnd::Cam>(FormatString("tnl win cam%d", n));
-        Rnd::Cam *pOuter = FindObject<Rnd::Cam>(FormatString("outer %d.cam", n));
-        Rnd::Cam *pOuterNear = FindObject<Rnd::Cam>(FormatString("outer near %d.cam", n));
-        Rnd::View *pLocal = FindObject<Rnd::View>(FormatString("tnl local%d.view", n));
+        RndCam *pCam = FindObject<RndCam>(FormatString("tnl cam%d", n));
+        RndCam *pCamZ = FindObject<RndCam>(FormatString("tnl cam%dz", n));
+        RndCam *pWinCam = FindObject<RndCam>(FormatString("tnl win cam%d", n));
+        RndCam *pOuter = FindObject<RndCam>(FormatString("outer %d.cam", n));
+        RndCam *pOuterNear = FindObject<RndCam>(FormatString("outer near %d.cam", n));
+        RndView *pLocal = FindObject<RndView>(FormatString("tnl local%d.view", n));
         mOuterCams.push_back(pCam);
         mOuterCams.push_back(pCamZ);
         mOuterCams.push_back(pWinCam);
@@ -886,7 +885,7 @@ int GfxTunnel::BuildOuterCams() {
         mOverlayCam->mScreenRect = rect;
         mOverlayCam->UpdateProjection();
 
-        pWinCam->SetFrustum(pWinCam->GetNearPlane(), pWinCam->GetFarPlane(), flFov);
+        pWinCam->SetFrustum(pWinCam->mNearPlane, pWinCam->mFarPlane, flFov);
         pWinCam->mScreenRect = rect;
         pWinCam->UpdateProjection();
         pWinCam->mZRange = Vector2{sTnlzZ.y, sTnlzZ.y};
@@ -909,21 +908,21 @@ int GfxTunnel::BuildOuterCams() {
     return i;
 }
 
-Rnd::View *GfxTunnel::CreateMainView() {
+RndView *GfxTunnel::CreateMainView() {
     DataArray *pConfig = GetModeGfxConfig();
     DataArray *pDefaults = GetGfxConfig();
     // Yes, the binary loads `camera_fov` again in degrees over the radians LoadConfig() left.
     FindConfigFloat(pConfig, pDefaults, "camera_fov", &sCameraFov, true);
     FindConfigVector2(pConfig, pDefaults, "tnlz_z", &sTnlzZ, true);
-    Rnd::Cam *pCam = FindObject<Rnd::Cam>("tnl cam1");
+    RndCam *pCam = FindObject<RndCam>("tnl cam1");
     const float flFov = DegreesToRadians(sCameraFov);
-    const float flNear = pCam->GetNearPlane() * TheGfxManager.mScrollSpeed;
-    const float flFar = pCam->GetFarPlane() * TheGfxManager.mScrollSpeed;
-    Rnd::Cam::Rect rect = pCam->mScreenRect;
-    Rnd::Cam *pCamZ = FindObject<Rnd::Cam>("tnl cam1z");
-    Rnd::View *pLocal = FindObject<Rnd::View>("tnl local1.view");
-    Rnd::View *pSlide = FindObject<Rnd::View>("tnl cam slide1");
-    Rnd::View *pCamFX = FindObject<Rnd::View>("tnl cam fx1");
+    const float flNear = pCam->mNearPlane * TheGfxManager.mScrollSpeed;
+    const float flFar = pCam->mFarPlane * TheGfxManager.mScrollSpeed;
+    Rect rect = pCam->mScreenRect;
+    RndCam *pCamZ = FindObject<RndCam>("tnl cam1z");
+    RndView *pLocal = FindObject<RndView>("tnl local1.view");
+    RndView *pSlide = FindObject<RndView>("tnl cam slide1");
+    RndView *pCamFX = FindObject<RndView>("tnl cam fx1");
 
     rect.x = 0.0f;
     rect.y = 0.0f;
@@ -936,17 +935,19 @@ Rnd::View *GfxTunnel::CreateMainView() {
                              Vector3{0.0f, 1.0f, 0.0f},
                              Vector3{0.0f, 0.0f, 1.0f},
                              Vector3{0.0f, 0.0f, 0.0f}};
-    pSlide->SetLocalXfm(identity);
-    pCamFX->SetLocalXfm(identity);
+    pSlide->mLocalXfm = identity;
+    pSlide->mDirty = 1;
+    pCamFX->mLocalXfm = identity;
+    pCamFX->mDirty = 1;
     TnlPlayer::LoadCamXfm(pConfig, pDefaults, pCam);
     (void)pSlide->UpdateWorldXfm(nullptr, 0); // Yes, the binary discards this call's result.
     pLocal->SetShowing(1);
     return pLocal;
 }
 
-void GfxTunnel::LoadViews(std::vector<Rnd::View *> *pViews, const char *pszFormat) {
+void GfxTunnel::LoadViews(std::vector<RndView *> *pViews, const char *pszFormat) {
     for (int i = 1;; ++i) {
-        Rnd::View *pView = FindObject<Rnd::View>(FormatString(pszFormat, i));
+        RndView *pView = FindObject<RndView>(FormatString(pszFormat, i));
         if (pView == nullptr) {
             break;
         }
@@ -992,9 +993,9 @@ void GfxTunnel::LoadTrackColors() {
             DebugWarn("unknown instrument: %d", i);
             break;
         }
-        Rnd::Mat *pMat =
-            FindObject<Rnd::Mat>(FormatString("panel mat %s%s.mat", pszInstrument, pszSuffix));
-        mInstrumentColors[i] = pMat->mAmbient;
+        RndMat *pMat =
+            FindObject<RndMat>(FormatString("panel mat %s%s.mat", pszInstrument, pszSuffix));
+        mInstrumentColors[i] = pMat->mBaseColor;
         mInstrumentColors[i].a = 1.0f;
     }
     mTrackColors.resize(mNumTracks);
@@ -1072,8 +1073,8 @@ void GfxTunnel::SetShowActivator(int bShow) {
     const char colors[] = {'g', 'p', 'r', 'y'};
     for (int c = 0; c < kNumTargetColors; ++c) {
         for (int n = 0; n < kNumTargetSteps; ++n) {
-            Rnd::Drawable *pTarget =
-                FindObject<Rnd::Drawable>(FormatString("target %d_%c.mesh", n, colors[c]));
+            RndDrawable *pTarget =
+                FindObject<RndDrawable>(FormatString("target %d_%c.mesh", n, colors[c]));
             if (pTarget != nullptr) {
                 pTarget->SetShowing(bShow);
             }
@@ -1081,7 +1082,7 @@ void GfxTunnel::SetShowActivator(int bShow) {
     }
 }
 
-void GfxTunnel::BuildPanels(int bResetPanels, Rnd::TransAnim *pCamPath) {
+void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
     // Yes, the timer is started and never stopped.
     Timer timer;
     timer.Start();
@@ -1172,9 +1173,9 @@ void GfxTunnel::BuildPanels(int bResetPanels, Rnd::TransAnim *pCamPath) {
         Rnd::Normalize(sTrackPoints[i], sTrackPoints[i]);
     }
 
-    mGeom->SetPanelMat(FindObject<Rnd::Mat>("panel mat highlight.mat"), kHighlightPanelKind);
+    mGeom->SetPanelMat(FindObject<RndMat>("panel mat highlight.mat"), kHighlightPanelKind);
     for (int i = 0; i < kNumIntroPanels; ++i) {
-        mGeom->SetPanelMat(FindObject<Rnd::Mat>(FormatString("panel intro %d.mat", i + 1)), i);
+        mGeom->SetPanelMat(FindObject<RndMat>(FormatString("panel intro %d.mat", i + 1)), i);
     }
     const char *pszSuffix;
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
@@ -1188,9 +1189,9 @@ void GfxTunnel::BuildPanels(int bResetPanels, Rnd::TransAnim *pCamPath) {
         TheGameDb->mCommunity == GameDb::kCommunitySolo) {
         flSlabDepth += flSlabDepth;
     }
-    Rnd::Mat *pBassMat = FindObject<Rnd::Mat>(FormatString("panel mat bass%s.mat", pszSuffix));
-    Rnd::MatAnim *pBassAnim =
-        FindObject<Rnd::MatAnim>(FormatString("panel mat bass serge%s.mnm", pszSuffix));
+    RndMat *pBassMat = FindObject<RndMat>(FormatString("panel mat bass%s.mat", pszSuffix));
+    RndMatAnim *pBassAnim =
+        FindObject<RndMatAnim>(FormatString("panel mat bass serge%s.mnm", pszSuffix));
     // Yes, the binary discards whether the geometry has a track.
     (void)mGeom->Init(&sSegments,
                       sTunnelBars,
@@ -1293,9 +1294,9 @@ void GfxTunnel::CollectGemTicks(std::vector<float> *pTicks,
     }
 }
 
-Rnd::Particle *GfxTunnel::Flash(const Vector3 *pPos, float flSize, float flGrowth) {
+Particle *GfxTunnel::Flash(const Vector3 *pPos, float flSize, float flGrowth) {
     for (auto it = mFlashes.begin(); it != mFlashes.end(); ++it) {
-        Rnd::Particle *pParticle = (*it)->Start(pPos, flSize, flGrowth);
+        Particle *pParticle = (*it)->Start(pPos, flSize, flGrowth);
         if (pParticle != nullptr) {
             return pParticle;
         }
@@ -1303,12 +1304,9 @@ Rnd::Particle *GfxTunnel::Flash(const Vector3 *pPos, float flSize, float flGrowt
     return nullptr;
 }
 
-bool GfxTunnel::Burst(const std::vector<Rnd::View *> *pViews,
-                      char nTrack,
-                      bool bErase,
-                      float flTick,
-                      float flLateral) {
-    Rnd::View *pView = (*pViews)[RandomInt(0, static_cast<int>(pViews->size()))];
+bool GfxTunnel::Burst(
+    const std::vector<RndView *> *pViews, char nTrack, bool bErase, float flTick, float flLateral) {
+    RndView *pView = (*pViews)[RandomInt(0, static_cast<int>(pViews->size()))];
     for (auto it = mGemCaps.begin(); it != mGemCaps.end(); ++it) {
         if ((*it)->IsIdle()) {
             (*it)->Start(this, nTrack, pView, flTick, flLateral, &sBurstScale, bErase);
@@ -1606,7 +1604,7 @@ void GfxTunnel::SetLetterbox(float fLetterbox) {
     mLetterbox = fLetterbox;
     const float flFov = ((sLetterboxFov - sCameraFov) * fLetterbox) + sCameraFov;
     for (auto it = mOuterCams.begin(); it != mOuterCams.end(); ++it) {
-        (*it)->SetFrustum((*it)->GetNearPlane(), (*it)->GetFarPlane(), flFov);
+        (*it)->SetFrustum((*it)->mNearPlane, (*it)->mFarPlane, flFov);
     }
 }
 
@@ -1625,8 +1623,8 @@ void GfxTunnel::DrawBackground() {
 
 void GfxTunnel::DrawTracks() {
     mGems->DrawComposites();
-    static_cast<Rnd::Drawable *>(mGridView)->Draw();
-    static_cast<Rnd::Drawable *>(mTransparentView)->Draw();
+    static_cast<RndDrawable *>(mGridView)->Draw();
+    static_cast<RndDrawable *>(mTransparentView)->Draw();
     mSpotLights->Draw();
     for (auto it = mGemCaps.begin(); it != mGemCaps.end(); ++it) {
         (void)(*it)->Draw(mGeom); // Yes, the binary discards whether the burst ended.
@@ -1637,7 +1635,7 @@ void GfxTunnel::DrawTracks() {
     for (auto it = mCrippleFX.begin(); it != mCrippleFX.end(); ++it) {
         (*it)->Draw(this);
     }
-    static_cast<Rnd::Drawable *>(Ship::sBeamView)->Draw();
+    static_cast<RndDrawable *>(Ship::sBeamView)->Draw();
     TnlCripFX::DrawParticles();
 }
 
@@ -1649,7 +1647,7 @@ void GfxTunnel::DrawCameras() {
 }
 
 void GfxTunnel::DrawForeground() {
-    static_cast<Rnd::Drawable *>(mOverlayCam)->Draw();
+    static_cast<RndDrawable *>(mOverlayCam)->Draw();
     for (auto track = mTracks.begin(); track != mTracks.end(); ++track) {
         for (auto it = track->mPlayers.end(); it != track->mPlayers.begin();) {
             --it;
@@ -1659,7 +1657,7 @@ void GfxTunnel::DrawForeground() {
     const float flOpacity = mFadeCurve.Eval(SystemMs());
     if (flOpacity != 0.0f) {
         mFadeMesh->mMat->SetAlpha(flOpacity);
-        static_cast<Rnd::Drawable *>(mFadeMesh)->Draw();
+        static_cast<RndDrawable *>(mFadeMesh)->Draw();
         TheGfxManager.mVortexAfterViews = 1;
     }
     mSlowdown->Draw();
@@ -1689,10 +1687,10 @@ float GfxTunnel::BurstSpinPeriod() {
     return sGemRotatePeriod;
 }
 
-void GfxTunnel::ScaleLights(Rnd::Environ *pEnviron) {
+void GfxTunnel::ScaleLights(RndEnviron *pEnviron) {
     for (auto it = pEnviron->mLights.begin(); it != pEnviron->mLights.end(); ++it) {
         const float flScale = TheGfxManager.mInvScrollSpeed;
-        const Color &diffuse = (*it)->mDiffuse;
+        const Color &diffuse = (*it)->mColor;
         const Color color{
             diffuse.r * flScale, diffuse.g * flScale, diffuse.b * flScale, diffuse.a * flScale};
         (*it)->SetColor(color);
@@ -1705,7 +1703,7 @@ void GfxTunnel::OnBlendToPath(DataArray *pCommand, void *pUserData) {
         return;
     }
     const float flLength = pCommand->Float(1);
-    Rnd::TransAnim *pAnim = FindObject<Rnd::TransAnim>(pCommand->Sym(2));
+    RndTransAnim *pAnim = FindObject<RndTransAnim>(pCommand->Sym(2));
     const float flFrame = pCommand->Float(3);
     int bLoop = 0;
     float flLoopStart = 0.0f;
@@ -1748,7 +1746,7 @@ void GfxTunnel::OnArenaDoneIn(DataArray *pCommand, void *pUserData) {
 
 void GfxTunnel::OnSetParticlePlayerColor(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
     // Yes, the binary does not test the particle system for null.
-    Rnd::ParticleSys *pSys = FindObject<Rnd::ParticleSys>(pCommand->Sym(1));
+    RndParticleSys *pSys = FindObject<RndParticleSys>(pCommand->Sym(1));
     DataArray *pColor =
         pCommand->Array(TheGameDb->GetPlayerSlot(TheTriggerMgr.mPlayer) + kFirstSlotColorArg);
     Color color{pColor->Float(0), pColor->Float(1), pColor->Float(2), 1.0f};
@@ -2019,7 +2017,7 @@ void GfxTunnel::ShowGemResult(
         mGeom->CellXfm(nTrack, &xfm, false, true, flTick, flLateral);
         (void)Flash(&xfm.mTranslation, sGemHitFlashSize, sGemHitFlashGrowth);
         pPlayer->mCursor.Pulse(flTick);
-        const std::vector<Rnd::View *> *pViews;
+        const std::vector<RndView *> *pViews;
         if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
             // The bursts of a duel take the colour of the other player.
             pViews = &mPlayerBurstViews[nPlayer ^ 1];

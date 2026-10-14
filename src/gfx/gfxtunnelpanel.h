@@ -2,7 +2,7 @@
 
 #include "gfx/gfxtunnel.h"
 #include "math/color.h"
-#include "rnd/mat.h"
+#include "rnd/rndmat.h"
 
 /**
  * The look of one bar of a track waiting to be applied to its panel, either once the track is no
@@ -74,19 +74,19 @@ public:
      */
     bool Update(GfxTunnel *pTunnel, float flTick);
 
-    GfxTunnel *mTunnel;       /*!< The tunnel. */
-    int mTrack;               /*!< The track. */
-    int mBar;                 /*!< The bar of the track. */
-    float mTick;              /*!< The tick the bar starts at. */
-    int mOwner;               /*!< The player who owns the bar, or -1. */
-    int mFlags;               /*!< The flags of the bar, a set of GfxTunnel::BarFlag. */
-    int mInSong;              /*!< Whether the bar maps to a bar of the song. */
-    int mDeferred;            /*!< Whether the panel waits until its track is not captured. */
-    Rnd::Mat *mCheckpointMat; /*!< The checkpoint material of the panel, or null. */
-    const Color *mColor;      /*!< The colour of the panel. */
-    int mTransparent;         /*!< Whether the panel does not write depth. */
-    int mPickable;            /*!< Whether picks test the panel. */
-    float mRevealTick;        /*!< The tick the reveal starts at. */
-    int mRevealTicks;         /*!< The ticks of a running reveal, or 0 before it starts. */
-    int mReserved38;          // +0x38 Cleared by the constructor and Update(), never read.
+    GfxTunnel *mTunnel;     /*!< The tunnel. */
+    int mTrack;             /*!< The track. */
+    int mBar;               /*!< The bar of the track. */
+    float mTick;            /*!< The tick the bar starts at. */
+    int mOwner;             /*!< The player who owns the bar, or -1. */
+    int mFlags;             /*!< The flags of the bar, a set of GfxTunnel::BarFlag. */
+    int mInSong;            /*!< Whether the bar maps to a bar of the song. */
+    int mDeferred;          /*!< Whether the panel waits until its track is not captured. */
+    RndMat *mCheckpointMat; /*!< The checkpoint material of the panel, or null. */
+    const Color *mColor;    /*!< The colour of the panel. */
+    int mTransparent;       /*!< Whether the panel does not write depth. */
+    int mPickable;          /*!< Whether picks test the panel. */
+    float mRevealTick;      /*!< The tick the reveal starts at. */
+    int mRevealTicks;       /*!< The ticks of a running reveal, or 0 before it starts. */
+    int mReserved38;        // +0x38 Cleared by the constructor and Update(), never read.
 };

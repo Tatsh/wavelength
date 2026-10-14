@@ -3,8 +3,8 @@
 #include "math/color.h"
 #include "math/vector2.h"
 #include "os/string.h"
-#include "rnd/line.h"
-#include "rnd/mat.h"
+#include "rnd/rndline.h"
+#include "rnd/rndmat.h"
 #include "script/dataarray.h"
 
 /**
@@ -57,7 +57,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ed210
      * @ghidraAddress PAL: 0x001f5fb0
      */
-    void Apply(Rnd::Line *pLine, Rnd::Mat *pMat) const;
+    void Apply(RndLine *pLine, RndMat *pMat) const;
 
     /**
      * Report the colour of an end of a beam.
@@ -74,7 +74,7 @@ public:
     int mPoints;              /*!< The points of the line, or -1 before Load(). */
     float mWidth;             /*!< The width of the line. */
     float mFoldAngle;         /*!< The fold of the line, in degrees. */
-    Rnd::Mat *mMat;           /*!< The material each beam copies. */
+    RndMat *mMat;             /*!< The material each beam copies. */
     Color mColors[2];         /*!< The colour of each end, one of End. */
     float mAmplitudes[2];     /*!< The size of the waves at each end. */
     Vector2 mMinFrequency;    /*!< The fewest waves along a beam, of the two waves. */

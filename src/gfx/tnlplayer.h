@@ -7,9 +7,9 @@
 #include "gfx/tnlgeom.h"
 #include "gfx/tnlgrid.h"
 #include "math/color.h"
-#include "rnd/cam.h"
-#include "rnd/transanim.h"
-#include "rnd/view.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -61,7 +61,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001d6b48
      * @ghidraAddress PAL: 0x001df8e8
      */
-    static void LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, Rnd::Cam *pCam);
+    static void LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, RndCam *pCam);
 
     /**
      * Load the settings of the graphics of the player and the colours of its track.
@@ -106,9 +106,9 @@ public:
     void UpdateTrail();
 
     int mCamNumber;                  /*!< The camera plus one, the number of its views. */
-    Rnd::Cam *mCam;                  /*!< `tnl cam<n>`, or null. */
-    Rnd::TransAnim *mIntro;          /*!< `tnl cam intro<players>.tnm`, or null. */
-    Rnd::View *mLocalView;           /*!< `tnl local<n>.view`, or null. */
+    RndCam *mCam;                    /*!< `tnl cam<n>`, or null. */
+    RndTransAnim *mIntro;            /*!< `tnl cam intro<players>.tnm`, or null. */
+    RndView *mLocalView;             /*!< `tnl local<n>.view`, or null. */
     GfxTunnel *mTunnel;              /*!< The tunnel. */
     TnlGeom *mGeom;                  /*!< The geometry of the tunnel. */
     int mReserved18;                 // +0x18 Cleared, not yet read.

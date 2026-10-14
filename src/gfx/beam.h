@@ -7,9 +7,9 @@
 #include "math/color.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/line.h"
-#include "rnd/mat.h"
-#include "rnd/transformable.h"
+#include "rnd/rndline.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * Beam a ship fires at a gem, a line that two waves ripple along.
@@ -85,18 +85,18 @@ public:
      */
     void SetEnd(int nEnd, const float *pPosition);
 
-    const BeamParams *mParams;              /*!< The look, or null before Configure(). */
-    unsigned char mReserved04[0x0c];        // +0x04, not yet recovered.
-    float mEnds[2][Rnd::kXfmRowFloatCount]; /*!< The positions of the ends. */
-    Rnd::Line *mLine;                       /*!< The line of the beam. */
-    Rnd::Mat *mMat;                         /*!< The material of the line. */
-    float mStartTime;                       /*!< The time the beam started. */
-    float mEndTime;                         /*!< The time the beam ends. */
-    Ship *mOwner;                           /*!< The ship that fired the beam. */
-    std::list<Ship::BeamData> *mOwnerList;  /*!< The list of the ship that records it. */
-    Vector2 mFrequencies;                   /*!< The waves along the beam of each wave. */
-    Vector2 mTravelPeriods;                 /*!< The period of the travel of each wave. */
-    unsigned char mReserved58[0x08];        // +0x58, not yet recovered.
-    Beam *mNextFree;                        /*!< The next beam of the free list. */
-    unsigned char mReserved64[0x0c];        // +0x64, not yet recovered.
+    const BeamParams *mParams;               /*!< The look, or null before Configure(). */
+    unsigned char mReserved04[0x0c];         // +0x04, not yet recovered.
+    float mEnds[2][kTransformRowFloatCount]; /*!< The positions of the ends. */
+    RndLine *mLine;                          /*!< The line of the beam. */
+    RndMat *mMat;                            /*!< The material of the line. */
+    float mStartTime;                        /*!< The time the beam started. */
+    float mEndTime;                          /*!< The time the beam ends. */
+    Ship *mOwner;                            /*!< The ship that fired the beam. */
+    std::list<Ship::BeamData> *mOwnerList;   /*!< The list of the ship that records it. */
+    Vector2 mFrequencies;                    /*!< The waves along the beam of each wave. */
+    Vector2 mTravelPeriods;                  /*!< The period of the travel of each wave. */
+    unsigned char mReserved58[0x08];         // +0x58, not yet recovered.
+    Beam *mNextFree;                         /*!< The next beam of the free list. */
+    unsigned char mReserved64[0x0c];         // +0x64, not yet recovered.
 };

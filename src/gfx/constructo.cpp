@@ -5,8 +5,8 @@
 
 #include "os/debug.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndview.h"
 
 namespace {
 
@@ -21,19 +21,11 @@ constexpr int kFileNode = 1;
 constexpr char kAxisX = 'x';
 constexpr char kAxisY = 'y';
 
-// The rows of a world transform.
-enum XfmRow {
-    kRowX,
-    kRowY,
-    kRowZ,
-    kRowTranslation,
-};
-
 constexpr int kPrefixLength = 10;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -72,7 +64,7 @@ void Constructo::SetSongTicks(float fSongTicks) {
     if (mLevel == kLevelBoss) {
         return;
     }
-    Rnd::View *pView = FindObject<Rnd::View>("Group_buildingV08.view");
+    RndView *pView = FindObject<RndView>("Group_buildingV08.view");
     if (pView == nullptr) {
         DebugPrint("Constructo warning: couldn't find custom collision\n"
                    "anim parent Group_buildingV08.view in\n%s",
@@ -81,7 +73,7 @@ void Constructo::SetSongTicks(float fSongTicks) {
     }
     for (int i = kFirstPart; i < kEndPart; ++i) {
         String name(FormatString("buildV08_%02d.part", i));
-        Rnd::ParticleSys *pParticles = FindObject<Rnd::ParticleSys>(name.c_str());
+        RndParticleSys *pParticles = FindObject<RndParticleSys>(name.c_str());
         if (pParticles == nullptr) {
             DebugPrint("Constructo warning: couldn't find custom collision\nParticleSys %s in\n%s",
                        name.c_str(),
@@ -89,7 +81,7 @@ void Constructo::SetSongTicks(float fSongTicks) {
             return;
         }
         name = FormatString("collideBall%02d.mesh", i);
-        Rnd::Transformable *pPlane = FindObject<Rnd::Transformable>(name.c_str());
+        RndTransformable *pPlane = FindObject<RndTransformable>(name.c_str());
         if (pPlane == nullptr) {
             DebugPrint(
                 "Constructo warning: couldn't find custom collision\nTransformable %s in\n%s",
@@ -100,8 +92,8 @@ void Constructo::SetSongTicks(float fSongTicks) {
         if (std::find(pView->mAnims.begin(), pView->mAnims.end(), pParticles) ==
             pView->mAnims.end()) {
             DebugNotify("couldn't find %s in\nanim list of %s, in file\n%s",
-                        pParticles->mName.mStr,
-                        pView->mName.mStr,
+                        pParticles->mName.c_str(),
+                        pView->mName.c_str(),
                         mConfig->Sym(kFileNode));
             continue;
         }
@@ -121,19 +113,19 @@ void Constructo::Poll(float fTick, float fTime) {
 }
 
 void Constructo::MovingPSPlane::Update(float fFrame) {
-    const float *pNormal;
+    const Vector3 *pNormal;
     if (mAxis == kAxisX) {
-        pNormal = mPlane->mWorldXfm[kRowX];
+        pNormal = &mPlane->mWorldXfm.mBasisX;
     } else if (mAxis == kAxisY) {
-        pNormal = mPlane->mWorldXfm[kRowY];
+        pNormal = &mPlane->mWorldXfm.mBasisY;
     } else {
-        pNormal = mPlane->mWorldXfm[kRowZ];
+        pNormal = &mPlane->mWorldXfm.mBasisZ;
     }
-    const float *pOrigin = mPlane->mWorldXfm[kRowTranslation];
+    const Vector3 &origin = mPlane->mWorldXfm.mTranslation;
     mParticles->mCollidePlane =
-        Plane{pNormal[0],
-              pNormal[1],
-              pNormal[2],
-              -((pNormal[0] * pOrigin[0]) + (pNormal[1] * pOrigin[1]) + (pNormal[2] * pOrigin[2]))};
+        Plane{pNormal->x,
+              pNormal->y,
+              pNormal->z,
+              -((pNormal->x * origin.x) + (pNormal->y * origin.y) + (pNormal->z * origin.z))};
     mParticles->SetFrame(fFrame);
 }

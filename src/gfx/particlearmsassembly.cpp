@@ -6,9 +6,9 @@
 #include "math/vector2.h"
 #include "math/vector3.h"
 #include "os/debug.h"
-#include "rnd/drawable.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
 
 namespace {
 
@@ -48,12 +48,12 @@ inline Vector2 ToRadians(const Vector2 &degrees) {
 ParticleArmsAssembly::ParticleArmsAssembly(DataArray *pData)
     : mPath(nullptr), mTicksAhead(nullptr), mNumArms(1), mRotationSpeed(0.0f), mArmLength(1.0f),
       mTick(0.0f), mAngle(0.0f) {
-    mSys = dynamic_cast<Rnd::ParticleSys *>(
-        Rnd::TheManager.Create(Rnd::g_particleSysClassName.mStr, pData->Sym(0)));
-    mSys->mMode = Rnd::ParticleSys::kModeSprite;
+    mSys = dynamic_cast<RndParticleSys *>(
+        TheManager.Create(RndParticleSys::sClassName, pData->Sym(0)));
+    mSys->mMode = RndParticleSys::kModeSprite;
     const char *pszParent = kDefaultDrawParent;
     pData->FindSymbol("draw_parent", &pszParent, false);
-    dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find(pszParent))->AddDraw(mSys, nullptr);
+    dynamic_cast<RndDrawable *>(TheManager.Find(pszParent))->AddDraw(mSys, nullptr);
     LoadConfig(pData);
 }
 
@@ -64,8 +64,8 @@ ParticleArmsAssembly::~ParticleArmsAssembly() {
 
 void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
     mSys->FreeAllParticles();
-    mSys->mEmitRateHigh = 0.0f;
-    mSys->mEmitRateLow = 0.0f;
+    mSys->mEmitRate.y = 0.0f;
+    mSys->mEmitRate.x = 0.0f;
     delete mTicksAhead;
     DataArray *pTicksAhead = pData->FindArray("ticks_ahead", false);
     if (pTicksAhead != nullptr) {
@@ -83,7 +83,7 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
     if (!pData->FindSymbol("path", &pszName, false)) {
         mPath = nullptr;
     } else {
-        mPath = dynamic_cast<Rnd::TransAnim *>(Rnd::TheManager.Find(pszName));
+        mPath = dynamic_cast<RndTransAnim *>(TheManager.Find(pszName));
     }
 
     DataArray *pSys = pData->FindArray("particle_sys", true);
@@ -91,19 +91,19 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
         return;
     }
     if (pSys->FindSymbol("mat", &pszName, false)) {
-        mSys->SetMat(dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszName)));
+        mSys->SetMat(dynamic_cast<RndMat *>(TheManager.Find(pszName)));
     }
     int nValue;
     if (pSys->FindSymbol("particles_owner", &pszName, false)) {
-        mSys->SetParticlesOwner(dynamic_cast<Rnd::ParticleSys *>(Rnd::TheManager.Find(pszName)));
+        mSys->SetParticlesOwner(dynamic_cast<RndParticleSys *>(TheManager.Find(pszName)));
     } else if (pSys->FindInt("max_particles", &nValue, false)) {
-        mSys->SetPoolSize(nValue);
+        mSys->SetNumParticles(nValue);
     }
 
     Vector2 range;
     if (pSys->FindVector("emit_rate", &range, false)) {
-        mSys->mEmitRateLow = range.x;
-        mSys->mEmitRateHigh = range.y;
+        mSys->mEmitRate.x = range.x;
+        mSys->mEmitRate.y = range.y;
     }
     if (pSys->FindVector("life", &range, false)) {
         mSys->mLife = range;
@@ -118,8 +118,8 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
         mSys->mYaw = ToRadians(range);
     }
     if (pSys->FindVector("size", &range, false)) {
-        mSys->mSizeLow = range.x;
-        mSys->mSizeHigh = range.y;
+        mSys->mSize.x = range.x;
+        mSys->mSize.y = range.y;
     }
 
     DataArray *pRange = pSys->FindArray("pos", false);
@@ -163,11 +163,10 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
 }
 
 void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
-    Rnd::ParticleSys *pSys = mSys;
-    if (pSys->GetLiveParticles() == nullptr && pSys->mEmitRateLow == 0.0f &&
-        pSys->mEmitRateHigh == 0.0f) {
+    RndParticleSys *pSys = mSys;
+    if (pSys->mLiveParticles == nullptr && pSys->mEmitRate.x == 0.0f && pSys->mEmitRate.y == 0.0f) {
         mTick = flTick;
-        pSys->ResetLastFrame();
+        pSys->ResetEmitFrame();
         return;
     }
 
@@ -175,7 +174,7 @@ void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
     mAngle += flDelta * mRotationSpeed;
     Transform base;
     if (mPath != nullptr) {
-        mPath->EvalFrame(mTicksAhead->Eval(flTick), &base.mBasisX.x, 1);
+        mPath->MakeTransform(mTicksAhead->Eval(flTick), base, 1);
     } else {
         pGeom->PathXfm(&base, flTick + mTicksAhead->Eval(flTick));
     }
@@ -193,11 +192,13 @@ void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
         arm.mTranslation = Vector3{flSin * mArmLength, mArmLength * 0.0f, flCos * mArmLength};
         sceVu0MulAffineMatrixXyz(&arm.mBasisX.x, &base.mBasisX.x, &arm.mBasisX.x);
 
-        pSys->SetLocalXfm(arm);
+        pSys->mLocalXfm = arm;
+
+        pSys->mDirty = 1;
         pSys->UpdateWorldXfm(nullptr, 0);
 
         mTick += flDelta;
-        pSys->Rnd::ParticleSys::SetFrameSelf(mTick);
+        pSys->RndParticleSys::SetFrameSelf(mTick);
     }
     pSys->SetFrame(mTick);
 }
@@ -207,15 +208,15 @@ void ParticleArmsAssembly::Move(float flFromTicks, float flToTicks, float flTick
 }
 
 void ParticleArmsAssembly::Report() {
-    const char *pszName = mSys->mName.mStr;
+    const char *pszName = mSys->mName.c_str();
     const int nLive = mSys->NumLiveParticles();
-    Rnd::ParticleSys *pOwner = mSys->mParticlesOwner;
-    const int nPool = static_cast<int>(pOwner->mParticles.size());
-    const char *pszOwner = (pOwner == mSys) ? "self" : pOwner->mName.mStr;
+    RndParticleSys *pOwner = mSys->mParticlesOwner;
+    const int nPool = pOwner->mNumParticles;
+    const char *pszOwner = (pOwner == mSys) ? "self" : pOwner->mName.c_str();
     DebugPrint(
         "particle arm %s: %d particles of %d (owner: %s)\n", pszName, nLive, nPool, pszOwner);
 }
 
 const char *ParticleArmsAssembly::Name() const {
-    return mSys->mName.mStr;
+    return mSys->mName.c_str();
 }

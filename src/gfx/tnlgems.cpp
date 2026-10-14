@@ -10,11 +10,11 @@
 #include "gfx/meshrotation.h"
 #include "os/debug.h"
 #include "os/string.h"
-#include "rnd/drawable.h"
-#include "rnd/manager.h"
-#include "rnd/meshanim.h"
-#include "rnd/multimesh.h"
-#include "rnd/particlesys.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmeshanim.h"
+#include "rnd/rndmultimesh.h"
+#include "rnd/rndparticlesys.h"
 
 namespace {
 
@@ -45,7 +45,7 @@ float sSpriteScale = 1.0f;
 // NTSC-U/C: 0x001f6228, PAL: 0x001fefc8
 
 // NTSC-U/C: 0x0043b650
-std::map<Rnd::Object *, float> sRenderScales;
+std::map<RndObject *, float> sRenderScales;
 
 } // namespace
 
@@ -89,12 +89,12 @@ void TnlGems::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *, 
     FindConfigFloat(pConfig, pDefaults, "sprite_gem_scale", &sSpriteScale, true);
 }
 
-void TnlGems::SetRenderScale(Rnd::Object *pObject, float flScale) {
+void TnlGems::SetRenderScale(RndObject *pObject, float flScale) {
     sRenderScales[pObject] = flScale;
 }
 
-void TnlGems::SetRenderScale(Rnd::Mesh *pMesh, float flScale) {
-    sRenderScales[pMesh->mVertsOwner] = flScale;
+void TnlGems::SetRenderScale(RndMesh *pMesh, float flScale) {
+    sRenderScales[pMesh->mGeomOwner] = flScale;
 }
 
 void TnlGems::ApplyRenderScales(float flWorldScale) {
@@ -104,64 +104,67 @@ void TnlGems::ApplyRenderScales(float flWorldScale) {
     scale.mBasisZ = Vector3{0.0f, 0.0f, 1.0f};
     scale.mTranslation = Vector3{0.0f, 0.0f, 0.0f};
     for (auto it = sRenderScales.begin(); it != sRenderScales.end(); ++it) {
-        Rnd::Object *pObject = it->first;
-        if (auto *pMesh = dynamic_cast<Rnd::Mesh *>(pObject)) {
+        RndObject *pObject = it->first;
+        if (auto *pMesh = dynamic_cast<RndMesh *>(pObject)) {
             const float flScale = it->second * flWorldScale;
             scale.mBasisZ.z = flWorldScale;
             scale.mBasisX.x = flScale;
             scale.mBasisY.y = flScale;
             pMesh->TransformVerts(scale);
-        } else if (auto *pSys = dynamic_cast<Rnd::ParticleSys *>(pObject)) {
-            pSys->mSizeLow = (pSys->mSizeLow * it->second) * flWorldScale;
-            pSys->mSizeHigh = (pSys->mSizeHigh * it->second) * flWorldScale;
+        } else if (auto *pSys = dynamic_cast<RndParticleSys *>(pObject)) {
+            pSys->mSize.x = (pSys->mSize.x * it->second) * flWorldScale;
+            pSys->mSize.y = (pSys->mSize.y * it->second) * flWorldScale;
         } else {
-            DebugWarn("unkown object type: %s", pObject->ClassName().mStr);
+            DebugWarn("unkown object type: %s", pObject->ClassName());
         }
     }
     sRenderScales.clear();
 }
 
-void TnlGems::AddRotation(Rnd::Mesh *pMesh,
-                          std::list<Rnd::Object *> *pObjects,
+void TnlGems::AddRotation(RndMesh *pMesh,
+                          std::list<RndObject *> *pObjects,
                           int nKeys,
                           int bLoop,
-                          Rnd::Animatable *pParent,
+                          RndAnimatable *pParent,
                           float flStartFrame,
                           float flStartAngle,
                           float flEndFrame,
                           float flEndAngle) {
-    const char *pszName = FormatString("%s rot.msnm", pMesh->mName.mStr);
-    if (dynamic_cast<Rnd::MeshAnim *>(Rnd::TheManager.Find(pszName)) != nullptr) {
+    const char *pszName = FormatString("%s rot.msnm", pMesh->mName.c_str());
+    if (dynamic_cast<RndMeshAnim *>(TheManager.Find(pszName)) != nullptr) {
         return;
     }
-    auto *pAnim = dynamic_cast<Rnd::MeshAnim *>(
-        Rnd::TheManager.Create(Rnd::g_meshAnimClassName.mStr, pszName));
+    auto *pAnim = dynamic_cast<RndMeshAnim *>(TheManager.Create(RndMeshAnim::sClassName, pszName));
     pObjects->push_back(pAnim);
     pAnim->SetMesh(pMesh);
     AddRotationKeys(pMesh, pAnim, nKeys, flStartFrame, flStartAngle, flEndFrame, flEndAngle);
     if (bLoop) {
-        pAnim->AddMinMaxLoop(flStartFrame, flEndFrame, kLoopRotation);
+        auto *pLoop = new RndAnimatable::MinMaxLoop;
+        pLoop->mMin = flStartFrame;
+        pLoop->mMax = flEndFrame;
+        pLoop->mLoop = kLoopRotation;
+        pAnim->mFilters.push_back(pLoop);
     }
     pParent->AddAnim(pAnim);
 }
 
 char TnlGems::AddMeshGroups(const char *pszName, const char *pszDrawParent, float flLookahead) {
     const int nFirstType = static_cast<int>(mMeshGroups.size());
-    Rnd::Drawable *pParent = nullptr;
+    RndDrawable *pParent = nullptr;
     if (pszDrawParent != nullptr) {
-        pParent = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find(pszDrawParent));
+        pParent = dynamic_cast<RndDrawable *>(TheManager.Find(pszDrawParent));
     }
     MeshGroup *pPrev = nullptr;
     for (int n = 0;; ++n) {
-        auto *pMultiMesh = dynamic_cast<Rnd::MultiMesh *>(
-            Rnd::TheManager.Find(FormatString("%s%d.mm", pszName, n)));
+        auto *pMultiMesh =
+            dynamic_cast<RndMultiMesh *>(TheManager.Find(FormatString("%s%d.mm", pszName, n)));
         if (pMultiMesh == nullptr) {
             break;
         }
         if (pParent != nullptr) {
             pParent->AddDraw(pMultiMesh, nullptr);
         }
-        SetRenderScale(pMultiMesh->GetMesh(), sMeshScale);
+        SetRenderScale(pMultiMesh->mMesh, sMeshScale);
         auto *pGroup =
             new MeshGroup(pMultiMesh, nullptr, nullptr, &mTransforms, mMaxGems, flLookahead);
         mMeshGroups.push_back(pGroup);
@@ -177,15 +180,15 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
                                      const char *pszDrawParent,
                                      float flLookahead) {
     const int nFirstType = static_cast<int>(mMeshGroups.size());
-    Rnd::Drawable *pParent = nullptr;
+    RndDrawable *pParent = nullptr;
     if (pszDrawParent != nullptr) {
-        pParent = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find(pszDrawParent));
+        pParent = dynamic_cast<RndDrawable *>(TheManager.Find(pszDrawParent));
     }
-    std::list<Rnd::Mesh *> meshes;
+    std::list<RndMesh *> meshes;
     MeshGroup *pPrev = nullptr;
     for (int n = 0;; ++n) {
-        auto *pMultiMesh = dynamic_cast<Rnd::MultiMesh *>(
-            Rnd::TheManager.Find(FormatString("%s_%d.mm", pszName, n)));
+        auto *pMultiMesh =
+            dynamic_cast<RndMultiMesh *>(TheManager.Find(FormatString("%s_%d.mm", pszName, n)));
         if (pMultiMesh == nullptr) {
             break;
         }
@@ -193,8 +196,8 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
             pParent->AddDraw(pMultiMesh, nullptr);
         }
         for (char nLetter = kFirstCompositeLetter;; ++nLetter) {
-            auto *pMesh = dynamic_cast<Rnd::Mesh *>(
-                Rnd::TheManager.Find(FormatString("%s%c_%d.mesh", pszName, nLetter, n)));
+            auto *pMesh = dynamic_cast<RndMesh *>(
+                TheManager.Find(FormatString("%s%c_%d.mesh", pszName, nLetter, n)));
             if (pMesh == nullptr) {
                 break;
             }
@@ -202,9 +205,9 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
             meshes.push_back(pMesh);
         }
         auto *pSys =
-            dynamic_cast<Rnd::ParticleSys *>(Rnd::TheManager.Find(FormatString("%s.ps", pszName)));
+            dynamic_cast<RndParticleSys *>(TheManager.Find(FormatString("%s.ps", pszName)));
         if (pSys != nullptr) {
-            SetRenderScale(static_cast<Rnd::Object *>(pSys), sMeshScale);
+            SetRenderScale(static_cast<RndObject *>(pSys), sMeshScale);
         }
         auto *pGroup =
             new MeshGroup(pMultiMesh, &meshes, pSys, &mTransforms, mMaxGems, flLookahead);
@@ -221,9 +224,9 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
 char TnlGems::AddSpriteGroup(const char *pszName) {
     const int nType = static_cast<int>(mSpriteGroups.size()) + TnlGem::kTypeSprite;
     mSpriteGroups.push_back(new SpriteGroup(pszName, mMaxGems));
-    Rnd::ParticleSys *pSys = mSpriteGroups.back()->mParticles;
+    RndParticleSys *pSys = mSpriteGroups.back()->mParticles;
     if (pSys != nullptr) {
-        SetRenderScale(static_cast<Rnd::Object *>(pSys), sSpriteScale);
+        SetRenderScale(static_cast<RndObject *>(pSys), sSpriteScale);
     }
     return static_cast<char>(nType);
 }
@@ -231,14 +234,14 @@ char TnlGems::AddSpriteGroup(const char *pszName) {
 void TnlGems::AddRotations(char nType,
                            int nKeys,
                            int bLoop,
-                           Rnd::Animatable *pParent,
+                           RndAnimatable *pParent,
                            float flStartFrame,
                            float flStartAngle,
                            float flEndFrame,
                            float flEndAngle) {
     for (MeshGroup *pGroup = GetMeshGroup(nType); pGroup != nullptr; pGroup = pGroup->mNext) {
         if (pGroup->mMeshes.empty()) {
-            AddRotation(pGroup->mMultiMesh->GetMesh(),
+            AddRotation(pGroup->mMultiMesh->mMesh,
                         &mObjects,
                         nKeys,
                         bLoop,
@@ -265,12 +268,12 @@ void TnlGems::AddRotations(char nType,
 
 void TnlGems::ClearInstances(const char *pszName) {
     for (int n = 0;; ++n) {
-        auto *pMultiMesh = dynamic_cast<Rnd::MultiMesh *>(
-            Rnd::TheManager.Find(FormatString("%s%d.mm", pszName, n)));
+        auto *pMultiMesh =
+            dynamic_cast<RndMultiMesh *>(TheManager.Find(FormatString("%s%d.mm", pszName, n)));
         if (pMultiMesh == nullptr) {
             break;
         }
-        pMultiMesh->GetTransforms().clear();
+        pMultiMesh->mTransforms.clear();
     }
 }
 
@@ -383,7 +386,7 @@ void TnlGems::DrawComposites() {
         if (pGroup->mMeshes.empty()) {
             continue;
         }
-        Rnd::MultiMesh *pMultiMesh = pGroup->mMultiMesh;
+        RndMultiMesh *pMultiMesh = pGroup->mMultiMesh;
         auto it = pGroup->mMeshes.begin();
         pMultiMesh->SetMesh(*it);
         pMultiMesh->Draw();

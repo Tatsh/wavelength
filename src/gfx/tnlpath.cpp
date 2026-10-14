@@ -1,10 +1,10 @@
 #include "gfx/tnlpath.h"
 
 #include <cmath>
-#include <iterator>
-#include <list>
+#include <vector>
 
 #include "gfx/gfxutil.h"
+#include "math/key.h"
 #include "math/vector3.h"
 
 namespace {
@@ -22,25 +22,20 @@ constexpr float kEndTangentFar = 0.25f;
 constexpr Vector3 kNoTangent{0.0f, 1.0f, 0.0f};
 
 // The tangent of the translation spline at its first key.
-inline Vector3 FirstKeyTangent(const std::list<Rnd::TransAnim::TransKey> &keys) {
+inline Vector3 FirstKeyTangent(const std::vector<Key<Vector3>> &keys) {
     if (keys.size() < 2) {
         return kNoTangent;
     }
-    auto it = keys.begin();
-    const float *pFirst = it->mValue;
-    const float *pSecond = (++it)->mValue;
-    Vector3 tangent{
-        pSecond[0] - pFirst[0], pSecond[1] - pFirst[1], pSecond[2] - pFirst[2], pSecond[3]};
+    const Vector3 &first = keys[0].value;
+    const Vector3 &second = keys[1].value;
+    Vector3 tangent{second.x - first.x, second.y - first.y, second.z - first.z, second.w};
     if (keys.size() == 2) {
         return tangent;
     }
-    const float *pThird = (++it)->mValue;
-    tangent.x =
-        ((pSecond[0] - pFirst[0]) * kEndTangentNear) - ((pThird[0] - pFirst[0]) * kEndTangentFar);
-    tangent.y =
-        ((pSecond[1] - pFirst[1]) * kEndTangentNear) - ((pThird[1] - pFirst[1]) * kEndTangentFar);
-    tangent.z =
-        ((pSecond[2] - pFirst[2]) * kEndTangentNear) - ((pThird[2] - pFirst[2]) * kEndTangentFar);
+    const Vector3 &third = keys[2].value;
+    tangent.x = ((second.x - first.x) * kEndTangentNear) - ((third.x - first.x) * kEndTangentFar);
+    tangent.y = ((second.y - first.y) * kEndTangentNear) - ((third.y - first.y) * kEndTangentFar);
+    tangent.z = ((second.z - first.z) * kEndTangentNear) - ((third.z - first.z) * kEndTangentFar);
     return tangent;
 }
 
@@ -49,7 +44,7 @@ inline Vector3 FirstKeyTangent(const std::list<Rnd::TransAnim::TransKey> &keys) 
 TnlPath::TnlPath() : mBlend(kBlendDone, kBlendDone, kBlendStart, kBlendDone) {
 }
 
-void TnlPath::Set(Rnd::TransAnim *pAnim,
+void TnlPath::Set(RndTransAnim *pAnim,
                   int bLoop,
                   int bUseTime,
                   float flStart,
@@ -67,7 +62,7 @@ void TnlPath::Set(Rnd::TransAnim *pAnim,
     mBlend.Reset(kBlendDone, kBlendDone, kBlendStart, kBlendDone);
 }
 
-void TnlPath::BlendTo(Rnd::TransAnim *pAnim,
+void TnlPath::BlendTo(RndTransAnim *pAnim,
                       int bLoop,
                       int bUseTime,
                       float flLength,
@@ -126,17 +121,16 @@ void TnlPath::Segment::Xfm(float flTick, float flTime, Transform *pXfm) const {
     }
     flFrame = mAnim->FilterFrame(flFrame);
 
-    const std::list<Rnd::TransAnim::TransKey> &keys = mAnim->GetFramesOwner()->mTransKeys;
-    const float flFirst = keys.front().mFrame;
+    const std::vector<Key<Vector3>> &keys = mAnim->mFramesOwner->mTransKeys;
+    const float flFirst = keys.front().frame;
     if (!(flFrame < flFirst)) {
-        mAnim->EvalFrame(flFrame, &pXfm->mBasisX.x, 1);
+        mAnim->MakeTransform(flFrame, *pXfm, 1);
         return;
     }
-    mAnim->EvalFrame(flFirst, &pXfm->mBasisX.x, 1);
+    mAnim->MakeTransform(flFirst, *pXfm, 1);
     // Yes, a channel of one key divides by the frame of the key after its last.
-    const float flSpan = std::next(keys.begin())->mFrame - flFirst;
-    const float *pValue = keys.front().mValue;
-    pXfm->mTranslation = Vector3{pValue[0], pValue[1], pValue[2], pValue[3]};
+    const float flSpan = keys[1].frame - flFirst;
+    pXfm->mTranslation = keys.front().value;
     Vector3 tangent = FirstKeyTangent(keys);
     const float flScale = (flFrame - flFirst) / flSpan;
     tangent.x *= flScale;

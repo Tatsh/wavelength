@@ -2,7 +2,7 @@
 
 #include "game/gamedb.h"
 #include "math/transformops.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -12,22 +12,22 @@ constexpr float kFlightTicks = 1920.0f;
 } // namespace
 
 ShipFlyIn::ShipFlyIn(Ship *pShip) : mShip(pShip), mStarted(0), mPath(0.0f, 0.0f, 0.0f, 1.0f) {
-    mAnim = dynamic_cast<Rnd::TransAnim *>(Rnd::TheManager.Find("ship tutorial fly-in.tnm"));
+    mAnim = dynamic_cast<RndTransAnim *>(TheManager.Find("ship tutorial fly-in.tnm"));
     mShip->SetShown(false);
 }
 
 bool ShipFlyIn::Poll(float fTick,
                      [[maybe_unused]] float fTime,
-                     float (*pXfm)[Rnd::kXfmRowFloatCount]) {
+                     float (*pXfm)[kTransformRowFloatCount]) {
     if (mStarted == 0) {
         return false;
     }
     if (mPath.mX1 <= fTick) {
         return true;
     }
-    float aflFlight[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-    mAnim->EvalFrame(mPath.Interp(fTick), &aflFlight[0][0], 1);
-    sceVu0MulAffineMatrixXyz(&pXfm[0][0], &pXfm[0][0], &aflFlight[0][0]);
+    Transform flight;
+    mAnim->MakeTransform(mPath.Interp(fTick), flight, 1);
+    sceVu0MulAffineMatrixXyz(&pXfm[0][0], &pXfm[0][0], &flight.mBasisX.x);
     return false;
 }
 

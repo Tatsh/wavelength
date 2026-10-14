@@ -9,8 +9,8 @@
 #include "math/transform.h"
 #include "os/string.h"
 #include "os/timer.h"
-#include "rnd/manager.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndview.h"
 
 namespace {
 
@@ -35,9 +35,6 @@ constexpr float kMinGlideDistance = 0.001f;
 // than kMaxTrailTicks.
 constexpr float kMaxLeadTicks = 15360.0f;
 constexpr float kMaxTrailTicks = 960.0f;
-
-// Every part of the mesh changes when the frame moves, except the texture coordinates.
-constexpr int kSyncShape = Rnd::Mesh::kSyncTexs - 1;
 
 // The sizes of the mesh beyond those of the divisions of the rails. Vertex 0 of a quarter is the
 // inner corner of the far prong.
@@ -88,14 +85,14 @@ TnlSeeker::TnlSeeker(TnlGeom *pGeom, int, const char *pszColor)
       mMultiplier(0), mMultiplierStartTime(kNoTick), mMultiplierFade(0.0f, 0.0f, 0.0f, 1.0f) {
     const char nLetter =
         (TheGameDb->mCommunity == GameDb::kCommunitySolo) ? kSoloLetter : pszColor[0];
-    mMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(FormatString("seeker_%c.mat", nLetter)));
+    mMat = dynamic_cast<RndMat *>(TheManager.Find(FormatString("seeker_%c.mat", nLetter)));
     mMultiplierMat =
-        dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(FormatString("seeker mult_%c.mat", nLetter)));
-    mMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Create(
-        Rnd::Mesh::sClassName.mStr, FormatString("seeker %s.mesh", pszColor)));
+        dynamic_cast<RndMat *>(TheManager.Find(FormatString("seeker mult_%c.mat", nLetter)));
+    mMesh = dynamic_cast<RndMesh *>(
+        TheManager.Create(RndMesh::sClassName, FormatString("seeker %s.mesh", pszColor)));
     mMesh->SetMat(mMat);
-    mMesh->mVertsOwner->mMutable = 1;
-    dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("tnl opaque"))->AddDraw(mMesh, nullptr);
+    mMesh->mGeomOwner->mMutable = 1;
+    dynamic_cast<RndView *>(TheManager.Find("tnl opaque"))->AddDraw(mMesh, nullptr);
     mMesh->SetShowing(0);
 }
 
@@ -130,19 +127,20 @@ void TnlSeeker::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *
     sMultiFrameHeight *= TheGfxManager.mScrollSpeed;
 
     mSectionVerts = (sDivisions * 2) + kExtraSectionVerts;
-    std::vector<Rnd::MeshVert> &verts = mMesh->mVertsOwner->mVerts;
-    verts = std::vector<Rnd::MeshVert>();
-    Rnd::MeshVert vert;
-    vert.mPoint = Vector3{0.0f, 0.0f, 0.0f};
+    std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
+    verts = std::vector<RndMesh::Vert>();
+    RndMesh::Vert vert;
+    vert.mPos = Vector3{0.0f, 0.0f, 0.0f};
     vert.mNorm = Vector3{0.0f, 0.0f, 0.0f};
     vert.mColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
-    vert.mTex1 = Vector2{0.0f, 0.0f};
-    vert.mTex2 = Vector2{0.0f, 0.0f};
+    vert.mTex = Vector2{0.0f, 0.0f};
+    vert.mWeight1 = 0.0f;
+    vert.mWeight2 = 0.0f;
     verts.resize(mSectionVerts * 4, vert);
 
     mNumQuads = (sDivisions * kQuadsPerDivision) + kExtraQuads;
-    std::vector<Rnd::MeshFace> &faces = mMesh->mFacesOwner->mFaces;
-    faces = std::vector<Rnd::MeshFace>();
+    std::vector<RndMesh::Face> &faces = mMesh->mGeomOwner->mFaces;
+    faces = std::vector<RndMesh::Face>();
     faces.reserve(mNumQuads * 2);
 
     // n is the number of divisions and N the vertices of a quarter. The quarters are the inner
@@ -204,10 +202,10 @@ void TnlSeeker::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *
         SetTexCoords(verts, nRailInner++, kTexRim, flRailV, kTexEdge, flRailV);
         flRailV += flRailStep;
     }
-    mMesh->SyncChanged(Rnd::Mesh::kSyncTexs);
+    mMesh->Sync(RndMesh::kSyncFaces);
 }
 
-void TnlSeeker::AddStrip(std::vector<Rnd::MeshFace> &faces,
+void TnlSeeker::AddStrip(std::vector<RndMesh::Face> &faces,
                          int nRowA,
                          int nRowB,
                          int nStepA,
@@ -221,18 +219,22 @@ void TnlSeeker::AddStrip(std::vector<Rnd::MeshFace> &faces,
     for (int i = 0; i < nCount; ++i) {
         const int nNextA = nRowA + nStepA;
         const int nNextB = nRowB + nStepB;
-        faces.push_back(Rnd::MeshFace{static_cast<unsigned short>(nRowA),
-                                      static_cast<unsigned short>(nRowB),
-                                      static_cast<unsigned short>(nNextA)});
-        faces.push_back(Rnd::MeshFace{static_cast<unsigned short>(nNextA),
-                                      static_cast<unsigned short>(nRowB),
-                                      static_cast<unsigned short>(nNextB)});
+        RndMesh::Face first;
+        first.mVerts[0] = static_cast<unsigned short>(nRowA);
+        first.mVerts[1] = static_cast<unsigned short>(nRowB);
+        first.mVerts[2] = static_cast<unsigned short>(nNextA);
+        faces.push_back(first);
+        RndMesh::Face second;
+        second.mVerts[0] = static_cast<unsigned short>(nNextA);
+        second.mVerts[1] = static_cast<unsigned short>(nRowB);
+        second.mVerts[2] = static_cast<unsigned short>(nNextB);
+        faces.push_back(second);
         nRowA = nNextA;
         nRowB = nNextB;
     }
 }
 
-void TnlSeeker::SetTexCoords(std::vector<Rnd::MeshVert> &verts,
+void TnlSeeker::SetTexCoords(std::vector<RndMesh::Vert> &verts,
                              int nIndex,
                              float flInnerU,
                              float flInnerV,
@@ -241,13 +243,13 @@ void TnlSeeker::SetTexCoords(std::vector<Rnd::MeshVert> &verts,
     const Vector2 inner{flInnerU, flInnerV};
     const Vector2 outer{flOuterU, flOuterV};
     const int nSecondSide = mSectionVerts * 2;
-    verts[nIndex].mTex1 = inner;
-    verts[nSecondSide + nIndex].mTex1 = inner;
-    verts[mSectionVerts + nIndex].mTex1 = outer;
-    verts[nSecondSide + mSectionVerts + nIndex].mTex1 = outer;
+    verts[nIndex].mTex = inner;
+    verts[nSecondSide + nIndex].mTex = inner;
+    verts[mSectionVerts + nIndex].mTex = outer;
+    verts[nSecondSide + mSectionVerts + nIndex].mTex = outer;
 }
 
-void TnlSeeker::SetSection(std::vector<Rnd::MeshVert> &verts,
+void TnlSeeker::SetSection(std::vector<RndMesh::Vert> &verts,
                            int nIndex,
                            float flTrack,
                            float flLateral,
@@ -257,27 +259,27 @@ void TnlSeeker::SetSection(std::vector<Rnd::MeshVert> &verts,
     Transform xfm;
 
     mGeom->BlendCell(&xfm, false, true, flTrack, flTick, flLateral);
-    Rnd::MeshVert &outer = verts[mSectionVerts + nIndex];
-    outer.mPoint = xfm.mTranslation;
+    RndMesh::Vert &outer = verts[mSectionVerts + nIndex];
+    outer.mPos = xfm.mTranslation;
     outer.mNorm = xfm.mBasisZ;
-    Rnd::MeshVert &inner = verts[nIndex];
+    RndMesh::Vert &inner = verts[nIndex];
     inner.mNorm = xfm.mBasisZ;
-    inner.mPoint.x = xfm.mTranslation.x + (xfm.mBasisZ.x * flHeight);
-    inner.mPoint.y = xfm.mTranslation.y + (xfm.mBasisZ.y * flHeight);
-    inner.mPoint.z = xfm.mTranslation.z + (xfm.mBasisZ.z * flHeight);
+    inner.mPos.x = xfm.mTranslation.x + (xfm.mBasisZ.x * flHeight);
+    inner.mPos.y = xfm.mTranslation.y + (xfm.mBasisZ.y * flHeight);
+    inner.mPos.z = xfm.mTranslation.z + (xfm.mBasisZ.z * flHeight);
 
     mGeom->BlendCell(&xfm, false, true, flTrack, flTick, 1.0f - flLateral);
-    Rnd::MeshVert &otherOuter = verts[nSecondSide + mSectionVerts + nIndex];
-    otherOuter.mPoint = xfm.mTranslation;
+    RndMesh::Vert &otherOuter = verts[nSecondSide + mSectionVerts + nIndex];
+    otherOuter.mPos = xfm.mTranslation;
     otherOuter.mNorm = xfm.mBasisZ;
-    Rnd::MeshVert &otherInner = verts[nSecondSide + nIndex];
+    RndMesh::Vert &otherInner = verts[nSecondSide + nIndex];
     otherInner.mNorm = xfm.mBasisZ;
-    otherInner.mPoint.x = xfm.mTranslation.x + (xfm.mBasisZ.x * flHeight);
-    otherInner.mPoint.y = xfm.mTranslation.y + (xfm.mBasisZ.y * flHeight);
-    otherInner.mPoint.z = xfm.mTranslation.z + (xfm.mBasisZ.z * flHeight);
+    otherInner.mPos.x = xfm.mTranslation.x + (xfm.mBasisZ.x * flHeight);
+    otherInner.mPos.y = xfm.mTranslation.y + (xfm.mBasisZ.y * flHeight);
+    otherInner.mPos.z = xfm.mTranslation.z + (xfm.mBasisZ.z * flHeight);
 }
 
-void TnlSeeker::Layout(std::vector<Rnd::MeshVert> &verts,
+void TnlSeeker::Layout(std::vector<RndMesh::Vert> &verts,
                        float flTrack,
                        float flStartTick,
                        float flEndTick) {
@@ -427,8 +429,8 @@ void TnlSeeker::Poll(float, float) {
             if (kMaxTrailTicks < flTick - mEndTick) {
                 mMesh->SetShowing(0);
             } else {
-                Layout(mMesh->mVertsOwner->mVerts, mTrack, mStartTick, mEndTick);
-                mMesh->SyncChanged(kSyncShape);
+                Layout(mMesh->mGeomOwner->mVerts, mTrack, mStartTick, mEndTick);
+                mMesh->Sync(RndMesh::kSyncVertexData);
                 mMesh->SetShowing(1);
             }
         } else {

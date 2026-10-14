@@ -3,7 +3,7 @@
 #include "gfx/beam.h"
 #include "gfx/beamparams.h"
 #include "gfx/fxpool.h"
-#include "rnd/drawable.h"
+#include "rnd/rnddrawable.h"
 #include "script/dataarray.h"
 
 /**
@@ -25,7 +25,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00367f58
      * @ghidraAddress PAL: 0x003d6688
      */
-    BeamPool(int nCount, Rnd::Drawable *pParent, const char *pszName)
+    BeamPool(int nCount, RndDrawable *pParent, const char *pszName)
         : FxPool<Beam, bArg>(nCount), mParams(pszName) {
         for (Beam *pBeam = this->mItems; pBeam != this->mItems + this->mCount; ++pBeam) {
             pParent->AddDraw(pBeam->mLine, nullptr);

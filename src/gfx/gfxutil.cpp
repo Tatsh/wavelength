@@ -5,9 +5,8 @@
 #include "math/quaternion.h"
 #include "math/transformops.h"
 #include "os/debug.h"
-#include "rnd/collectchildren.h"
-#include "rnd/manager.h"
-#include "rnd/transanim.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtransanim.h"
 
 namespace {
 
@@ -16,9 +15,6 @@ constexpr float kDegreesPerHalfTurn = 180.0f;
 
 // The share of a track width the middle point of an even number of points sits left of centre.
 constexpr float kHalf = 0.5f;
-
-// The components of a translation key.
-constexpr int kNumComponents = 3;
 
 // The nodes of a `(value frame)` pair.
 constexpr int kPairFrameNode = 0;
@@ -52,26 +48,26 @@ inline int KeyIndex(const std::vector<FloatKey> &keys, float fFrame) {
 
 } // namespace
 
-void DetachView(Rnd::View *pParent, Rnd::View *pChild) {
+void DetachView(RndView *pParent, RndView *pChild) {
     pParent->RemoveDraw(pChild);
     pParent->RemoveAnim(pChild);
     pParent->RemoveTrans(pChild);
     pParent->RemoveCollide(pChild);
 }
 
-void AttachView(Rnd::View *pParent, Rnd::View *pChild) {
+void AttachView(RndView *pParent, RndView *pChild) {
     pParent->AddDraw(pChild, nullptr);
     pParent->AddAnim(pChild);
     pParent->AddTrans(pChild);
 }
 
-void SetFilterScale(Rnd::Animatable *pAnim, float fScale) {
-    Rnd::Animatable::ScaleOffset *pFilter = nullptr;
+void SetFilterScale(RndAnimatable *pAnim, float fScale) {
+    RndAnimatable::ScaleOffset *pFilter = nullptr;
     if (!pAnim->mFilters.empty()) {
-        pFilter = dynamic_cast<Rnd::Animatable::ScaleOffset *>(pAnim->mFilters.front());
+        pFilter = dynamic_cast<RndAnimatable::ScaleOffset *>(pAnim->mFilters.front());
     }
     if (pFilter == nullptr) {
-        DebugWarn("%s must have scale-offset filter in slot 1", pAnim->mName.mStr);
+        DebugWarn("%s must have scale-offset filter in slot 1", pAnim->mName.c_str());
         return;
     }
     const float fFrame = pAnim->mFrame;
@@ -129,40 +125,39 @@ void BuildTrackArc(std::vector<Vector2> *pPoints, DataArray *pConfig) {
     }
 }
 
-void ResetXfmTree(Rnd::Transformable *pRoot, bool bReset) {
+void ResetXfmTree(RndTransformable *pRoot, bool bReset) {
     if (bReset) {
-        pRoot->SetLocalXfm(Transform{Vector3{1.0f, 0.0f, 0.0f},
+        pRoot->mLocalXfm = Transform{Vector3{1.0f, 0.0f, 0.0f},
                                      Vector3{0.0f, 1.0f, 0.0f},
                                      Vector3{0.0f, 0.0f, 1.0f},
-                                     Vector3{0.0f, 0.0f, 0.0f, 1.0f}});
+                                     Vector3{0.0f, 0.0f, 0.0f, 1.0f}};
+        pRoot->mDirty = 1;
     }
-    for (Rnd::Transformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->mTransList) {
         ResetXfmTree(pChild, true);
     }
 }
 
-void SetZModeTree(Rnd::Transformable *pRoot, Rnd::Mesh::ZMode zMode, Rnd::Mesh::ZFunc zFunc) {
-    std::list<Rnd::Object *> objects;
-    objects.push_back(pRoot);
-    Rnd::CollectChildren(objects, pRoot);
-    for (Rnd::Object *pObject : objects) {
-        Rnd::Mesh *pMesh = (pObject != nullptr) ? dynamic_cast<Rnd::Mesh *>(pObject) : nullptr;
-        if (pMesh != nullptr) {
-            pMesh->mZFunc = zFunc;
-            pMesh->mZMode = zMode;
-        }
+void SetZModeTree(RndTransformable *pRoot, RndMesh::ZMode zMode, RndMesh::ZFunc zFunc) {
+    RndMesh *pMesh = (pRoot != nullptr) ? dynamic_cast<RndMesh *>(pRoot) : nullptr;
+    if (pMesh != nullptr) {
+        pMesh->mZFunc = zFunc;
+        pMesh->mZMode = zMode;
+    }
+    for (RndTransformable *pChild : pRoot->mTransList) {
+        SetZModeTree(pChild, zMode, zFunc);
     }
 }
 
-void ClearMeshSpheres(Rnd::Transformable *pRoot) {
-    Rnd::Mesh *pMesh = (pRoot != nullptr) ? dynamic_cast<Rnd::Mesh *>(pRoot) : nullptr;
+void ClearMeshSpheres(RndTransformable *pRoot) {
+    RndMesh *pMesh = (pRoot != nullptr) ? dynamic_cast<RndMesh *>(pRoot) : nullptr;
     if (pMesh != nullptr) {
         pMesh->mSphere.mCenter.x = 0.0f;
         pMesh->mSphere.mCenter.y = 0.0f;
         pMesh->mSphere.mCenter.z = 0.0f;
         pMesh->mSphere.mRadius = 0.0f;
     }
-    for (Rnd::Transformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->mTransList) {
         ClearMeshSpheres(pChild);
     }
 }
@@ -179,11 +174,15 @@ void LoadFloatKeys(DataArray *pData, std::vector<FloatKey> *pKeys) {
 }
 
 void ScaleTransKeys(const char *pszName, float fScale) {
-    Rnd::TransAnim *pAnim = dynamic_cast<Rnd::TransAnim *>(Rnd::TheManager.Find(pszName));
-    for (Rnd::TransAnim::TransKey &key : pAnim->GetFramesOwner()->mTransKeys) {
-        for (int i = 0; i < kNumComponents; ++i) {
-            key.mValue[i] *= fScale;
-        }
+    RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(TheManager.Find(pszName));
+    ScaleKeys(pAnim->mFramesOwner->mTransKeys, fScale);
+}
+
+void ScaleKeys(std::vector<Key<Vector3>> &keys, float fScale) {
+    for (Key<Vector3> &key : keys) {
+        key.value.x *= fScale;
+        key.value.y *= fScale;
+        key.value.z *= fScale;
     }
 }
 
@@ -196,24 +195,24 @@ void InterpBasis(const float *pFrom, const float *pTo, float *pOut, float fBlend
     Rnd::MakeRotMatrix(from, pOut);
 }
 
-void ScaleParticles(Rnd::ParticleSys *pSys, float fScale) {
-    pSys->mSizeLow *= fScale;
-    pSys->mSizeHigh *= fScale;
-    Vector3 &force = pSys->GetForce();
+void ScaleParticles(RndParticleSys *pSys, float fScale) {
+    pSys->mSize.x *= fScale;
+    pSys->mSize.y *= fScale;
+    Vector3 &force = pSys->mForce;
     force.x *= fScale;
     force.y *= fScale;
     force.z *= fScale;
 }
 
-void ScaleParticleTree(Rnd::Transformable *pRoot, float fScale) {
+void ScaleParticleTree(RndTransformable *pRoot, float fScale) {
     if (pRoot == nullptr) {
         return;
     }
-    Rnd::ParticleSys *pSys = dynamic_cast<Rnd::ParticleSys *>(pRoot);
+    RndParticleSys *pSys = dynamic_cast<RndParticleSys *>(pRoot);
     if (pSys != nullptr) {
         ScaleParticles(pSys, fScale);
     }
-    for (Rnd::Transformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->mTransList) {
         ScaleParticleTree(pChild, fScale);
     }
 }

@@ -5,7 +5,7 @@
 #include "gfx/ship.h"
 #include "gfx/tnlgeom.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -22,23 +22,23 @@ constexpr float kBlinkAlpha = 0.5f;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
 
 TnlActivator::TnlActivator(GfxTunnel *pTunnel, int nPlayer, int, const char *pszColor)
-    : mPlayer(nPlayer), mRot(FindObject<Rnd::View>(FormatString("activator rot%d", nPlayer))),
-      mView(FindObject<Rnd::View>(FormatString("activator%d.view", nPlayer))),
-      mFx(FindObject<Rnd::View>(FormatString("activator fx%d", nPlayer))),
+    : mPlayer(nPlayer), mRot(FindObject<RndView>(FormatString("activator rot%d", nPlayer))),
+      mView(FindObject<RndView>(FormatString("activator%d.view", nPlayer))),
+      mFx(FindObject<RndView>(FormatString("activator fx%d", nPlayer))),
       mCatcher(pszColor, pTunnel), mBlinking(0), mMoving(0), mPlace(0.0f, 0.0f, 0.0f, 1.0f),
       mScale(1.0f, 1.0f, 0.0f, 1.0f) {
     mTunnel = pTunnel;
     mPosition = 0.0f;
     SetRotShowing(1);
     mTunnel->mGeom->GetPlayer(mPlayer)->SetActivator(mView);
-    mFx->RemoveAllTranses();
-    mFx->RemoveAllDraws();
+    mFx->ClearTrans();
+    mFx->ClearDraws();
     mCatcher.AttachTo(mFx);
     mTunnel->mGeom->GetPlayer(mPlayer)->SetActivatorPosition(0.0f);
 }

@@ -8,7 +8,7 @@
 #include "gfx/tnltrackrange.h"
 #include "math/color.h"
 #include "math/transform.h"
-#include "rnd/particle.h"
+#include "rnd/rndparticlesys.h"
 
 class TnlGems;
 
@@ -141,7 +141,7 @@ public:
     MeshGroup *mMeshGroup = nullptr;           /*!< The group that draws a mesh gem, or null. */
     SpriteGroup *mSpriteGroup = nullptr;       /*!< The group that draws a sprite gem, or null. */
     std::list<Transform>::iterator mTransform; /*!< The instance of the gem in mMeshGroup. */
-    Rnd::Particle *mParticle = nullptr;        /*!< The particle of the gem, or null. */
+    Particle *mParticle = nullptr;             /*!< The particle of the gem, or null. */
 
 private:
     /**

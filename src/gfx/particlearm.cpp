@@ -2,25 +2,9 @@
 
 #include "gfx/camslide.h"
 #include "math/transform.h"
-#include "rnd/cam.h"
+#include "rnd/rndcam.h"
 
 namespace {
-
-// The components of a position.
-constexpr int kNumComponents = 3;
-
-// Read the four rows of a transform out of a row array.
-inline Transform ToTransform(const float (*pRows)[Rnd::kXfmRowFloatCount]) {
-    Transform xfm;
-    Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
-        rows[i]->x = pRows[i][0];
-        rows[i]->y = pRows[i][1];
-        rows[i]->z = pRows[i][2];
-        rows[i]->w = pRows[i][kVec3PaddingFloat];
-    }
-    return xfm;
-}
 
 // Invert a transform whose basis rows are orthogonal but need not be of unit length.
 inline Transform InvertScaled(const Transform &xfm) {
@@ -46,7 +30,7 @@ inline Transform InvertScaled(const Transform &xfm) {
 
 ParticleArm::~ParticleArm() = default;
 
-void ParticleArm::Init(Rnd::ParticleSys *pSys, Rnd::Transformable *pTrans, float fScale) {
+void ParticleArm::Init(RndParticleSys *pSys, RndTransformable *pTrans, float fScale) {
     mSys = pSys;
     mTrans = pTrans;
     pTrans->RemoveTrans(pSys);
@@ -59,9 +43,9 @@ void ParticleArm::SetScale(float fScale) {
     Scale(mSys, fScale);
 }
 
-void ParticleArm::Scale(Rnd::ParticleSys *pSys, float fScale) {
-    pSys->mSizeLow *= fScale;
-    pSys->mSizeHigh *= fScale;
+void ParticleArm::Scale(RndParticleSys *pSys, float fScale) {
+    pSys->mSize.x *= fScale;
+    pSys->mSize.y *= fScale;
     pSys->mSpeed.x *= fScale;
     pSys->mSpeed.y *= fScale;
     pSys->mPosLow.x *= fScale;
@@ -72,32 +56,34 @@ void ParticleArm::Scale(Rnd::ParticleSys *pSys, float fScale) {
     pSys->mPosHigh.z *= fScale;
     pSys->mBubbleSize.x *= fScale;
     pSys->mBubbleSize.y *= fScale;
-    for (int i = 0; i < kNumComponents; ++i) {
-        pSys->mLocalXfm[Rnd::kXfmRowCount - 1][i] *= fScale;
-    }
+    pSys->mLocalXfm.mTranslation.x *= fScale;
+    pSys->mLocalXfm.mTranslation.y *= fScale;
+    pSys->mLocalXfm.mTranslation.z *= fScale;
     pSys->mDirty = 1;
 }
 
 void ParticleArm::Draw() {
-    Rnd::Cam *pCam = Rnd::Cam::sCurrent;
+    RndCam *pCam = RndCam::sCurrent;
     if (pCam == nullptr) {
         return;
     }
-    Transform arm = ToTransform(mTrans->mWorldXfm);
+    Transform arm = mTrans->mWorldXfm;
     Vector3 *basis[] = {&arm.mBasisX, &arm.mBasisY, &arm.mBasisZ};
     for (Vector3 *pRow : basis) {
         pRow->x *= mInvScale;
         pRow->y *= mInvScale;
         pRow->z *= mInvScale;
     }
-    const Transform saved = ToTransform(pCam->mLocalXfm);
+    const Transform saved = pCam->mLocalXfm;
     Transform armToCam;
-    Multiply(armToCam, InvertScaled(ToTransform(pCam->mWorldXfm)), arm);
-    pCam->SetLocalXfm(InvertScaled(armToCam));
+    Multiply(armToCam, InvertScaled(pCam->mWorldXfm), arm);
+    pCam->mLocalXfm = InvertScaled(armToCam);
+    pCam->mDirty = 1;
     pCam->UpdateWorldXfm(nullptr, 0);
     pCam->Draw();
-    static_cast<Rnd::Drawable *>(mSys)->Draw();
-    pCam->SetLocalXfm(saved);
+    static_cast<RndDrawable *>(mSys)->Draw();
+    pCam->mLocalXfm = saved;
+    pCam->mDirty = 1;
     CamSlide::sSlide->UpdateWorldXfm(nullptr, 0);
     pCam->Draw();
 }

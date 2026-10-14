@@ -7,10 +7,10 @@
 #include "math/transform.h"
 #include "math/vector3.h"
 #include "os/string.h"
-#include "rnd/animatable.h"
-#include "rnd/cam.h"
-#include "rnd/transanim.h"
-#include "rnd/transformable.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndtransformable.h"
 #include "script/dataarray.h"
 
 /**
@@ -145,32 +145,32 @@ public:
      */
     void SetBlend(float flBlend);
 
-    int mPlayer;                          /*!< The player the camera follows. */
-    int mSkipIntro;                       /*!< Whether the intro is not played. */
-    Rnd::Transformable *mFx;              /*!< The jiggle transformable, `tnl cam fx1`. */
-    Rnd::Transformable *mSlide;           /*!< The view transformable, `tnl cam slide1`. */
-    Rnd::Cam *mCam;                       /*!< The camera, `tnl cam1`. */
-    Rnd::TransAnim *mIntro;               /*!< The intro fly-in animation. */
-    float mIntroTilt;                     /*!< The tilt of the view over the intro, in radians. */
-    Transform mCamera;                    /*!< The camera the algorithm places. */
-    Transform mView;                      /*!< The camera after the pull back and the intro. */
-    ATanInterpolator mPullBackCurve;      /*!< The pull back over song time. */
-    float mPullBackLevel;                 /*!< The pull back, which scales sPullBack. */
-    int mPullingBack;                     /*!< Whether mPullBackCurve runs. */
-    float mZoom;                          /*!< The pull back as a multiple of the far one, or 0. */
-    int mZoomedOut;                       /*!< Whether the far pull back is selected. */
-    ATanInterpolator mTrackCurve;         /*!< The move to a new track of the `multi` algorithm. */
-    char mFocusPlayer;                    /*!< The player the `multi` algorithm follows, or -1. */
-    float mFromTrack;                     /*!< The track the `multi` algorithm moves from. */
-    float mTrack;                         /*!< The track of the `multi` algorithm. */
-    float mCenterTrack;                   /*!< The track at the centre of the tunnel. */
-    Vector3 mJiggleAxis;                  /*!< The unit axis of the jiggle of the view. */
-    Vector3 mScreenJiggleAxis;            /*!< The unit axis of the jiggle across the screen. */
-    Rnd::Animatable::SecondOrder mJiggle; /*!< The spring of the jiggle. */
-    Vector3 mScreenJiggle;                /*!< The jiggle across the screen. */
-    int mSliding;                         /*!< Whether the view slides towards mSlideXfm. */
-    float mSlideBlend;                    /*!< How far the view slides. */
-    Transform mSlideXfm;                  /*!< The transform the view slides towards. */
+    int mPlayer;                        /*!< The player the camera follows. */
+    int mSkipIntro;                     /*!< Whether the intro is not played. */
+    RndTransformable *mFx;              /*!< The jiggle transformable, `tnl cam fx1`. */
+    RndTransformable *mSlide;           /*!< The view transformable, `tnl cam slide1`. */
+    RndCam *mCam;                       /*!< The camera, `tnl cam1`. */
+    RndTransAnim *mIntro;               /*!< The intro fly-in animation. */
+    float mIntroTilt;                   /*!< The tilt of the view over the intro, in radians. */
+    Transform mCamera;                  /*!< The camera the algorithm places. */
+    Transform mView;                    /*!< The camera after the pull back and the intro. */
+    ATanInterpolator mPullBackCurve;    /*!< The pull back over song time. */
+    float mPullBackLevel;               /*!< The pull back, which scales sPullBack. */
+    int mPullingBack;                   /*!< Whether mPullBackCurve runs. */
+    float mZoom;                        /*!< The pull back as a multiple of the far one, or 0. */
+    int mZoomedOut;                     /*!< Whether the far pull back is selected. */
+    ATanInterpolator mTrackCurve;       /*!< The move to a new track of the `multi` algorithm. */
+    char mFocusPlayer;                  /*!< The player the `multi` algorithm follows, or -1. */
+    float mFromTrack;                   /*!< The track the `multi` algorithm moves from. */
+    float mTrack;                       /*!< The track of the `multi` algorithm. */
+    float mCenterTrack;                 /*!< The track at the centre of the tunnel. */
+    Vector3 mJiggleAxis;                /*!< The unit axis of the jiggle of the view. */
+    Vector3 mScreenJiggleAxis;          /*!< The unit axis of the jiggle across the screen. */
+    RndAnimatable::SecondOrder mJiggle; /*!< The spring of the jiggle. */
+    Vector3 mScreenJiggle;              /*!< The jiggle across the screen. */
+    int mSliding;                       /*!< Whether the view slides towards mSlideXfm. */
+    float mSlideBlend;                  /*!< How far the view slides. */
+    Transform mSlideXfm;                /*!< The transform the view slides towards. */
     std::map<String, Algorithm>::iterator mAlgorithm; /*!< The algorithm, `camera_alg`. */
     Algorithm mBlendAlgorithm;                        /*!< The second algorithm, or null. */
     float mBlend;                                     /*!< The blend towards mBlendAlgorithm. */

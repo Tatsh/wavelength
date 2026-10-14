@@ -1,16 +1,18 @@
 #include "gfx/gfxarena.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "game/gamedb.h"
 #include "game/triggermgr.h"
 #include "gfx/constructo.h"
 #include "gfx/gfxmanager.h"
+#include "math/key.h"
 #include "math/vector2.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/cam.h"
-#include "rnd/manager.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -50,7 +52,7 @@ constexpr int kTriggersNode = 2;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 // Insert a key where AtFrame() places its frame, after any key of the same frame.
@@ -64,9 +66,9 @@ inline void AddKey(std::vector<Key<float>> &keys, float fValue, float fFrame) {
 
 // Stretch the frames of keys by a scale and an offset.
 template <class K>
-void FitKeys(std::list<K> &keys, float fScale, float fOffset) {
+void FitKeys(std::vector<K> &keys, float fScale, float fOffset) {
     for (K &key : keys) {
-        key.mFrame = (key.mFrame * fScale) + fOffset;
+        key.frame = (key.frame * fScale) + fOffset;
     }
 }
 
@@ -110,8 +112,8 @@ GfxArena::GfxArena(const char *pszName) : mName(pszName) {
     sLowEnergy = blinkRange.y;
     if (mConfig->Sym(kFileNode)[0] == '\0') {
         mOwnsView = 1;
-        mView = dynamic_cast<Rnd::View *>(
-            Rnd::TheManager.Create(Rnd::g_viewClassName.mStr, "arena view placeholder"));
+        mView = dynamic_cast<RndView *>(
+            TheManager.Create(RndView::sClassName, "arena view placeholder"));
         mLoaded = 1;
     }
 
@@ -179,10 +181,10 @@ void GfxArena::PollLoad(bool bHudLoaded) {
                 mEnviron = dynamic_cast<RndEnviron *>(pObject);
             }
         }
-        Rnd::Cam *pCam = FindObject<Rnd::Cam>("outer 1.cam");
+        RndCam *pCam = FindObject<RndCam>("outer 1.cam");
         if ((pCam != nullptr) && (mCamPath == nullptr)) {
-            for (Rnd::Object *pRef : pCam->mRefs) {
-                Rnd::TransAnim *pAnim = dynamic_cast<Rnd::TransAnim *>(pRef);
+            for (RndObject *pRef : pCam->mRefs) {
+                RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(pRef);
                 if ((pAnim == nullptr) || (pAnim->mTrans != pCam)) {
                     continue;
                 }
@@ -192,22 +194,23 @@ void GfxArena::PollLoad(bool bHudLoaded) {
                                    Vector3{0.0f, 1.0f, 0.0f},
                                    Vector3{0.0f, 0.0f, 1.0f},
                                    Vector3{0.0f, 0.0f, 0.0f, 1.0f}};
-                pCam->SetLocalXfm(identity);
+                pCam->mLocalXfm = identity;
+                pCam->mDirty = 1;
                 break;
             }
         }
         if (mView == nullptr) {
-            mView = FindObject<Rnd::View>("arena top.view");
+            mView = FindObject<RndView>("arena top.view");
         }
-        mSnow = FindObject<Rnd::Movie>("snow.ipu");
+        mSnow = FindObject<RndMovie>("snow.ipu");
         mMovies.resize(kNumMovies, nullptr);
         for (int i = 0; i < kNumMovies; ++i) {
-            mMovies[i] = FindObject<Rnd::Movie>(FormatString("movie%d.mov", i + 1));
+            mMovies[i] = FindObject<RndMovie>(FormatString("movie%d.mov", i + 1));
             CollectMovieMats(mMovies[i]->mTex, &mMovieMats);
             CollectMatAnims(mMovies[i]->mTex, &mMatAnims);
             DetachAnim(mMovies[i]);
         }
-        for (Rnd::MatAnim *pAnim : mMatAnims) {
+        for (RndMatAnim *pAnim : mMatAnims) {
             DetachAnim(pAnim);
         }
         mLoaded = 1;
@@ -224,7 +227,7 @@ void GfxArena::PollLoad(bool bHudLoaded) {
     mTriggerStream = nullptr;
 }
 
-void GfxArena::SetCamPath(Rnd::TransAnim *pPath) {
+void GfxArena::SetCamPath(RndTransAnim *pPath) {
     if (mCamPath == nullptr) {
         mCamPath = pPath;
     }
@@ -243,7 +246,7 @@ void GfxArena::SetSongTicks(float fSongTicks) {
             FitCamPath(mCamPath);
         }
     }
-    mFrequencyTex = FindObject<Rnd::Tex>("fbase_freq.tex");
+    mFrequencyTex = FindObject<RndTex>("fbase_freq.tex");
 }
 
 void GfxArena::Poll(float fTick, float fTime) {
@@ -255,14 +258,14 @@ void GfxArena::Poll(float fTick, float fTime) {
     const float fSongTick = TheGameDb->mSongTick;
     SetPanelFlags(kPanelFrequency, TheGfxManager.mWinnerDrawn != 0);
     if (mPanelFlags == 0) {
-        for (Rnd::MatAnim *pAnim : mMatAnims) {
+        for (RndMatAnim *pAnim : mMatAnims) {
             pAnim->SetFrame(fSongTick);
         }
     } else if ((mPanelFlags & kPanelBeat) != 0) {
         mMovies[kBeatMovie]->SetFrame(fSongTick - mBeatTick);
     }
     if ((mPanelFlags & kPanelBeat) == 0) {
-        for (Rnd::Movie *pMovie : mMovies) {
+        for (RndMovie *pMovie : mMovies) {
             pMovie->SetFrame(fTick);
         }
     }
@@ -301,9 +304,9 @@ void GfxArena::HandleBeat(signed char nEvent) {
     }
 }
 
-void GfxArena::CollectMovieMats(Rnd::Tex *pTex, std::list<MovieMat> *pMats) {
-    for (Rnd::Object *pRef : pTex->mRefs) {
-        Rnd::Mat *pMat = (pRef != nullptr) ? dynamic_cast<Rnd::Mat *>(pRef) : nullptr;
+void GfxArena::CollectMovieMats(RndTex *pTex, std::list<MovieMat> *pMats) {
+    for (RndObject *pRef : pTex->mRefs) {
+        RndMat *pMat = (pRef != nullptr) ? dynamic_cast<RndMat *>(pRef) : nullptr;
         if (pMat == nullptr) {
             continue;
         }
@@ -321,18 +324,18 @@ void GfxArena::CollectMovieMats(Rnd::Tex *pTex, std::list<MovieMat> *pMats) {
     }
 }
 
-void GfxArena::CollectMatAnims(Rnd::Tex *pTex, std::list<Rnd::MatAnim *> *pAnims) {
-    for (Rnd::Object *pRef : pTex->mRefs) {
-        Rnd::MatAnim *pAnim = (pRef != nullptr) ? dynamic_cast<Rnd::MatAnim *>(pRef) : nullptr;
+void GfxArena::CollectMatAnims(RndTex *pTex, std::list<RndMatAnim *> *pAnims) {
+    for (RndObject *pRef : pTex->mRefs) {
+        RndMatAnim *pAnim = (pRef != nullptr) ? dynamic_cast<RndMatAnim *>(pRef) : nullptr;
         if (pAnim == nullptr) {
             continue;
         }
         if (std::find(pAnims->begin(), pAnims->end(), pAnim) != pAnims->end()) {
             continue;
         }
-        for (const Rnd::MatAnim::Stage &stage : pAnim->mKeysOwner->mStages) {
-            for (const Rnd::MatAnim::Stage::TexKey &key : stage.mTexKeys) {
-                if (key.mValue == pTex) {
+        for (const RndMatAnim::Stage &stage : pAnim->mKeysOwner->mStages) {
+            for (const Key<RndTex *> &key : stage.mTexKeys) {
+                if (key.value == pTex) {
                     pAnims->push_back(pAnim);
                     break;
                 }
@@ -341,13 +344,13 @@ void GfxArena::CollectMatAnims(Rnd::Tex *pTex, std::list<Rnd::MatAnim *> *pAnims
     }
 }
 
-void GfxArena::DetachAnim(Rnd::Animatable *pAnim) {
+void GfxArena::DetachAnim(RndAnimatable *pAnim) {
     bool bRemoved = true;
     while (bRemoved) {
         bRemoved = false;
-        for (Rnd::Object *pRef : pAnim->mRefs) {
-            Rnd::Animatable *pParent =
-                (pRef != nullptr) ? dynamic_cast<Rnd::Animatable *>(pRef) : nullptr;
+        for (RndObject *pRef : pAnim->mRefs) {
+            RndAnimatable *pParent =
+                (pRef != nullptr) ? dynamic_cast<RndAnimatable *>(pRef) : nullptr;
             if (pParent == nullptr) {
                 continue;
             }
@@ -361,10 +364,10 @@ void GfxArena::DetachAnim(Rnd::Animatable *pAnim) {
     }
 }
 
-void GfxArena::FitCamPath(Rnd::TransAnim *pPath) {
+void GfxArena::FitCamPath(RndTransAnim *pPath) {
     const float fScale = (mSongTicks - kPathStartTick) / (mLength - kPathStartTick);
     const float fOffset = kPathStartTick - (fScale * kPathStartTick);
-    Rnd::TransAnim *pOwner = pPath->GetFramesOwner();
+    RndTransAnim *pOwner = pPath->mFramesOwner;
     FitKeys(pOwner->mTransKeys, fScale, fOffset);
     FitKeys(pOwner->mRotKeys, fScale, fOffset);
     FitKeys(pOwner->mScaleKeys, fScale, fOffset);
@@ -380,7 +383,7 @@ void GfxArena::SetPanelFlags(char nFlags, bool bOn) {
     if (nOld == mPanelFlags) {
         return;
     }
-    Rnd::Tex *pTex;
+    RndTex *pTex;
     if ((mPanelFlags & kPanelFrequency) != 0) {
         pTex = mFrequencyTex;
     } else if ((mPanelFlags & kPanelLowEnergy) != 0) {
@@ -395,7 +398,7 @@ void GfxArena::SetPanelFlags(char nFlags, bool bOn) {
     }
 }
 
-void GfxArena::ShowTexture(const MovieMat *pMat, Rnd::Tex *pTex) {
+void GfxArena::ShowTexture(const MovieMat *pMat, RndTex *pTex) {
     if (pTex == nullptr) {
         pTex = pMat->mTex;
     }

@@ -8,8 +8,8 @@
 #include "math/rand.h"
 #include "math/sine.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 
 namespace {
 
@@ -19,9 +19,6 @@ constexpr float kAnglePerTickPerTurn = 6.2831855f / 1920.0f;
 // A random sweep of a sample covers this share of mSweep, at the least and at the most.
 constexpr float kWobbleLow = 0.3f;
 constexpr float kWobbleHigh = 0.6f;
-
-// The row of a transform that holds the translation.
-constexpr int kTranslationRow = 3;
 
 // The points of the needle, at its base and at its tip.
 constexpr int kNeedleBase = 0;
@@ -34,7 +31,7 @@ constexpr int kColorHigh = 2;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 // Blend two colours, all four components.
@@ -57,27 +54,24 @@ TnlSabreTrail::TnlSabreTrail(int nPlayer, Ship *pShip)
       mState(kStateHidden), mRestart(0), mSweeping(0), mNewSegment(0), mSampling(0),
       mStopPending(0), mNumPoints(0), mHead(kNoHead) {
     mRibbon = pShip->mScratchRibbon;
-    Rnd::Mesh *pMesh = FindObject<Rnd::Mesh>(FormatString("[%s_mesh]", mRibbon->mName.mStr));
+    RndMesh *pMesh = FindObject<RndMesh>(FormatString("[%s_mesh]", mRibbon->mName.c_str()));
     if (pMesh != nullptr) {
-        pMesh->mZMode = Rnd::Mesh::kZModeDisable;
-        pMesh->mZFunc = Rnd::Mesh::kZFuncAlways;
+        pMesh->mZMode = RndMesh::kZModeDisable;
+        pMesh->mZFunc = RndMesh::kZFuncAlways;
     }
-    float (&local)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount] = mRibbon->mLocalXfm;
-    mRibbonOffset = Vector3{local[kTranslationRow][0],
-                            local[kTranslationRow][1],
-                            local[kTranslationRow][2],
-                            local[kTranslationRow][kVec3PaddingFloat]};
-    local[kTranslationRow][0] = 0.0f;
-    local[kTranslationRow][1] = 0.0f;
-    local[kTranslationRow][2] = 0.0f;
+    Vector3 &translation = mRibbon->mLocalXfm.mTranslation;
+    mRibbonOffset = translation;
+    translation.x = 0.0f;
+    translation.y = 0.0f;
+    translation.z = 0.0f;
     mRibbon->mDirty = 1;
     mRibbon->UpdateWorldXfm(nullptr, 0);
     mColor = *TheGfxManager.GetPlayerColor(nPlayer);
     for (int i = 0; i < 3; ++i) {
-        mPointColors[i] = *mRibbon->PointColor(i);
+        mPointColors[i] = mRibbon->mPoints[i].mColor;
     }
     mColor.a = mPointColors[kColorMiddle].a;
-    mNumPoints = mRibbon->NumPoints();
+    mNumPoints = static_cast<int>(mRibbon->mPoints.size());
 }
 
 TnlSabreTrail::~TnlSabreTrail() = default;
@@ -87,7 +81,7 @@ void TnlSabreTrail::LoadConfig(DataArray *pConfig, DataArray *pDefaults) {
     FindConfigArray(pConfig, pDefaults, "scratch_ribbon", &pSection, true);
     float flWidth;
     pSection->FindFloat("width", &flWidth, true);
-    mRibbon->SetWidth(flWidth * TheGfxManager.mScrollSpeed);
+    mRibbon->mWidth = flWidth * TheGfxManager.mScrollSpeed;
     pSection->FindFloat("sweep", &mSweep, true);
     pSection->FindFloat("sample_envelope_frequency", &sSampleFrequency, true);
     sSampleFrequency *= kAnglePerTickPerTurn;
@@ -102,7 +96,7 @@ void TnlSabreTrail::LoadConfig(DataArray *pConfig, DataArray *pDefaults) {
     mRibbon->SetNumPoints(mNumPoints);
     for (int i = 0; i < mNumPoints; ++i) {
         mRibbon->SetPointColor(i, mPointColors[kColorMiddle]);
-        mRibbon->SetPointPos(i, Vector3{0.0f, 0.0f, 0.0f});
+        mRibbon->SetPoint(i, Vector3{0.0f, 0.0f, 0.0f});
     }
     mRibbon->SetShowing(1);
     if ((mNumPoints - 2) < mHead) {
@@ -122,13 +116,13 @@ void TnlSabreTrail::AddSegment(const Vector3 *pPos) {
         mHead = kFirstSegmentPoint;
     }
     if (pPos != nullptr) {
-        mRibbon->SetPointPos(nOld, *pPos);
-        mRibbon->SetPointPos(mHead, *pPos);
-        mRibbon->SetPointPos(mHead + 1, *pPos);
+        mRibbon->SetPoint(nOld, *pPos);
+        mRibbon->SetPoint(mHead, *pPos);
+        mRibbon->SetPoint(mHead + 1, *pPos);
         return;
     }
-    mRibbon->SetPointPos(mHead, *mRibbon->GetPointPos(nOld));
-    mRibbon->SetPointPos(mHead + 1, *mRibbon->GetPointPos(nOld));
+    mRibbon->SetPoint(mHead, mRibbon->mPoints[nOld].mPoint);
+    mRibbon->SetPoint(mHead + 1, mRibbon->mPoints[nOld].mPoint);
 }
 
 void TnlSabreTrail::Start() {
@@ -151,13 +145,13 @@ void TnlSabreTrail::Stop(bool bForce) {
         return;
     }
     mState = kStateShown;
-    mRibbon->SetPointPos(kNeedleTip, *mRibbon->GetPointPos(kNeedleBase));
+    mRibbon->SetPoint(kNeedleTip, mRibbon->mPoints[kNeedleBase].mPoint);
     mNeedle.Reset(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void TnlSabreTrail::Clear() {
     for (int i = 0; i < mNumPoints; ++i) {
-        mRibbon->SetPointPos(i, Vector3{0.0f, 0.0f, 0.0f});
+        mRibbon->SetPoint(i, Vector3{0.0f, 0.0f, 0.0f});
     }
 }
 
@@ -229,9 +223,7 @@ float TnlSabreTrail::UpdateSample() {
     return mNeedle.Eval(flTick);
 }
 
-void TnlSabreTrail::Update(float flBlend,
-                           const float (*pXfm)[Rnd::kXfmRowFloatCount],
-                           const Vector3 *) {
+void TnlSabreTrail::Update(float flBlend, const Transform &xfm, const Vector3 *) {
     if (mState != kStateDrawing) {
         return;
     }
@@ -242,15 +234,12 @@ void TnlSabreTrail::Update(float flBlend,
     } else {
         color = Lerp(mPointColors[kColorMiddle], mPointColors[kColorHigh], flBlend);
     }
-    const auto place = [&](int i) {
-        return (pXfm[0][i] * mRibbonOffset.x) + (pXfm[1][i] * mRibbonOffset.y) +
-               (pXfm[2][i] * mRibbonOffset.z) + pXfm[kTranslationRow][i];
-    };
-    const Vector3 base{place(0), place(1), place(2)};
+    Vector3 base;
+    MultiplyPoint(xfm, mRibbonOffset, base);
     const float flNeedle = -mNeedleLength;
-    const Vector3 tip{(pXfm[1][0] * flNeedle) + base.x,
-                      (pXfm[1][1] * flNeedle) + base.y,
-                      (pXfm[1][2] * flNeedle) + base.z};
+    const Vector3 tip{(xfm.mBasisY.x * flNeedle) + base.x,
+                      (xfm.mBasisY.y * flNeedle) + base.y,
+                      (xfm.mBasisY.z * flNeedle) + base.z};
     if (mNewSegment && !mRestart) {
         AddSegment(&tip);
         mNewSegment = 0;
@@ -268,14 +257,14 @@ void TnlSabreTrail::Update(float flBlend,
     }
     mRibbon->SetPointColor(kNeedleBase, color);
     mRibbon->SetPointColor(kNeedleTip, color);
-    mRibbon->SetPointPos(kNeedleBase, base);
-    mRibbon->SetPointPos(kNeedleTip, tip);
-    mRibbon->SetPointPos(mHead, tip);
+    mRibbon->SetPoint(kNeedleBase, base);
+    mRibbon->SetPoint(kNeedleTip, tip);
+    mRibbon->SetPoint(mHead, tip);
     mRibbon->SetPointColor(mHead, color);
     mRibbon->SetPointColor(mHead + 1, color);
     if (mRestart) {
         mRestart = 0;
-        mRibbon->SetPointPos(mHead + 1, tip);
+        mRibbon->SetPoint(mHead + 1, tip);
     }
 }
 

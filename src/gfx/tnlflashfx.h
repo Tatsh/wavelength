@@ -1,8 +1,7 @@
 #pragma once
 
 #include "math/vector3.h"
-#include "rnd/particle.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndparticlesys.h"
 
 /**
  * A flash at a gem, one particle that shrinks away.
@@ -19,7 +18,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ef6b8
      * @ghidraAddress PAL: 0x001f8458
      */
-    explicit TnlFlashFX(Rnd::ParticleSys *pSys);
+    explicit TnlFlashFX(RndParticleSys *pSys);
 
     /**
      * Return the particle of a running flash.
@@ -39,7 +38,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ef728
      * @ghidraAddress PAL: 0x001f84c8
      */
-    Rnd::Particle *Start(const Vector3 *pPos, float flSize, float flShrink);
+    Particle *Start(const Vector3 *pPos, float flSize, float flShrink);
 
     /**
      * Stop the flash at once.
@@ -58,7 +57,7 @@ public:
      */
     void Poll(float flDelta);
 
-    Rnd::ParticleSys *mSys;   /*!< The particle system the flash draws with. */
-    Rnd::Particle *mParticle; /*!< The particle of a running flash, or null. */
-    float mShrink;            /*!< The size the flash loses per unit of time. */
+    RndParticleSys *mSys; /*!< The particle system the flash draws with. */
+    Particle *mParticle;  /*!< The particle of a running flash, or null. */
+    float mShrink;        /*!< The size the flash loses per unit of time. */
 };

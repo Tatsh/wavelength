@@ -2,9 +2,9 @@
 
 #include "gfx/gfxtunnel.h"
 #include "math/interpolator.h"
-#include "rnd/animatable.h"
-#include "rnd/mesh.h"
-#include "rnd/transanim.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtransanim.h"
 #include "script/dataarray.h"
 
 /**
@@ -84,9 +84,9 @@ public:
     void Draw();
 
     GfxTunnel *mTunnel;         /*!< The tunnel. */
-    Rnd::Animatable *mAnim;     /*!< The animation of the material, `slowdown overlay.mnm`. */
+    RndAnimatable *mAnim;       /*!< The animation of the material, `slowdown overlay.mnm`. */
     LinearInterpolator mFrames; /*!< The frame of mAnim at each tick, 0 to 1000. */
-    Rnd::TransAnim *mTransAnim; /*!< The animation of the mesh, `slowdown overlay.tnm`. */
-    Rnd::Mesh *mMesh;           /*!< The mesh, `slowdown overlay.mesh`. */
+    RndTransAnim *mTransAnim;   /*!< The animation of the mesh, `slowdown overlay.tnm`. */
+    RndMesh *mMesh;             /*!< The mesh, `slowdown overlay.mesh`. */
     const char *mName;          /*!< The entry of the overlay in the configuration. */
 };

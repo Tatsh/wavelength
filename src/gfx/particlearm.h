@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rnd/particlesys.h"
-#include "rnd/transformable.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * Particle system that hangs from a transform and is drawn as a reflection of it.
@@ -28,7 +28,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e3310
      * @ghidraAddress PAL: 0x001ec0b0
      */
-    void Init(Rnd::ParticleSys *pSys, Rnd::Transformable *pTrans, float fScale);
+    void Init(RndParticleSys *pSys, RndTransformable *pTrans, float fScale);
 
     /**
      * Record the reciprocal of a scale and scale the particle system by it.
@@ -47,7 +47,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e33e8
      * @ghidraAddress PAL: 0x001ec188
      */
-    void Scale(Rnd::ParticleSys *pSys, float fScale);
+    void Scale(RndParticleSys *pSys, float fScale);
 
     /**
      * Draw the particle system through the current camera.
@@ -57,7 +57,7 @@ public:
      */
     void Draw();
 
-    Rnd::ParticleSys *mSys;     /*!< The particle system. */
-    Rnd::Transformable *mTrans; /*!< The transform the system hangs from. */
-    float mInvScale;            /*!< The reciprocal of the scale. */
+    RndParticleSys *mSys;     /*!< The particle system. */
+    RndTransformable *mTrans; /*!< The transform the system hangs from. */
+    float mInvScale;          /*!< The reciprocal of the scale. */
 };

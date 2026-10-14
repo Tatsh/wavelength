@@ -9,9 +9,9 @@
 #include "math/color.h"
 #include "math/interpolator.h"
 #include "math/vector2.h"
-#include "rnd/animatable.h"
-#include "rnd/environ.h"
-#include "rnd/manager.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndenviron.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -37,31 +37,19 @@ Vector3 sSpotScale{1.0f, 1.0f, 1.0f};
 // NTSC-U/C: 0x0043b630
 Vector3 sGlowScale{1.0f, 1.0f, 1.0f};
 
-// Set the local transform of a transformable and mark it dirty.
-inline void SetLocalXfm(Rnd::Transformable *pTrans, const Transform &xfm) {
-    const Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
-        pTrans->mLocalXfm[i][0] = rows[i]->x;
-        pTrans->mLocalXfm[i][1] = rows[i]->y;
-        pTrans->mLocalXfm[i][2] = rows[i]->z;
-        pTrans->mLocalXfm[i][kVec3PaddingFloat] = rows[i]->w;
-    }
-    pTrans->mDirty = 1;
-}
-
 } // namespace
 
 SpotLightFX::SpotLightFX() {
-    mMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("gem spotlight.mesh"));
-    auto *pGlowMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("gem base glow.mesh"));
-    mSpots = dynamic_cast<Rnd::MultiMesh *>(
-        Rnd::TheManager.Create(Rnd::g_multiMeshClassName.mStr, "gem spotlight.mm"));
+    mMesh = dynamic_cast<RndMesh *>(TheManager.Find("gem spotlight.mesh"));
+    auto *pGlowMesh = dynamic_cast<RndMesh *>(TheManager.Find("gem base glow.mesh"));
+    mSpots = dynamic_cast<RndMultiMesh *>(
+        TheManager.Create(RndMultiMesh::sClassName, "gem spotlight.mm"));
     mSpots->SetMesh(mMesh);
-    mGlows = dynamic_cast<Rnd::MultiMesh *>(
-        Rnd::TheManager.Create(Rnd::g_multiMeshClassName.mStr, "gem base glow.mm"));
+    mGlows = dynamic_cast<RndMultiMesh *>(
+        TheManager.Create(RndMultiMesh::sClassName, "gem base glow.mm"));
     mGlows->SetMesh(pGlowMesh);
-    auto *pSpotAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("gem spotlight.mnm"));
-    dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("tnl.view"))->AddAnim(pSpotAnim);
+    auto *pSpotAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("gem spotlight.mnm"));
+    dynamic_cast<RndAnimatable *>(TheManager.Find("tnl.view"))->AddAnim(pSpotAnim);
 
     Transform scale;
     scale.mBasisX = Vector3{sGlowScale.x, 0.0f, 0.0f};
@@ -69,8 +57,8 @@ SpotLightFX::SpotLightFX() {
     scale.mBasisZ = Vector3{0.0f, 0.0f, sGlowScale.z};
     scale.mTranslation = Vector3{0.0f, 0.0f, 0.0f};
     pGlowMesh->TransformVerts(scale);
-    auto *pGlowAnim = dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("gem base glow.mnm"));
-    dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("realtime.view"))->AddAnim(pGlowAnim);
+    auto *pGlowAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("gem base glow.mnm"));
+    dynamic_cast<RndAnimatable *>(TheManager.Find("realtime.view"))->AddAnim(pGlowAnim);
     // The original fills the pool from an uninitialised temporary.
     mTransforms.resize(kInitialTransforms, Transform());
 }
@@ -114,25 +102,26 @@ void SpotLightFX::Draw() {
     }
     mGlows->Draw();
 
-    Rnd::Environ *pEnviron = Rnd::Environ::sCurrent;
-    const Color ambient = pEnviron->mAmbient;
+    RndEnviron *pEnviron = RndEnviron::sCurrent;
+    const Color ambient = pEnviron->mAmbientColor;
     for (it = mLights.begin(); it != mLights.end() && it->mTick < flFadeEnd; ++it) {
         if (it->mSpotActive) {
             DetachSpot(it);
         }
         if (flFadeStart < it->mTick) {
             const float flLevel = fade.LinearInterpolator::Interp(it->mTick);
-            pEnviron->mAmbient = Color{flLevel, flLevel, flLevel, 1.0f};
+            pEnviron->mAmbientColor = Color{flLevel, flLevel, flLevel, 1.0f};
             pEnviron->Draw();
-            SetLocalXfm(mMesh, *it->mSpot);
+            mMesh->mLocalXfm = *it->mSpot;
+            mMesh->mDirty = 1;
             mMesh->UpdateWorldXfm(nullptr, 0);
             mMesh->Draw();
         }
     }
-    pEnviron->mAmbient = Color{1.0f, 1.0f, 1.0f, 1.0f};
+    pEnviron->mAmbientColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
     pEnviron->Draw();
     mSpots->Draw();
-    pEnviron->mAmbient = ambient;
+    pEnviron->mAmbientColor = ambient;
     pEnviron->Draw();
 }
 
@@ -152,8 +141,8 @@ void SpotLightFX::AddLight(char nTrack, TnlGeom *pGeom, float flTick, float flLa
     it->mTick = flTick;
     it->mTrack = nTrack;
     it->mLateral = flLateral;
-    std::list<Transform> &glows = mGlows->GetTransforms();
-    std::list<Transform> &spots = mSpots->GetTransforms();
+    std::list<Transform> &glows = mGlows->mTransforms;
+    std::list<Transform> &spots = mSpots->mTransforms;
     glows.splice(glows.begin(), mTransforms, mTransforms.begin());
     spots.splice(spots.begin(), mTransforms, mTransforms.begin());
     it->mGlow = glows.begin();
@@ -197,9 +186,9 @@ void SpotLightFX::UpdateRange(TnlGeom *pGeom, const TnlTrackRange *pRange) {
 }
 
 void SpotLightFX::Release(std::list<LightPos>::iterator light) {
-    mTransforms.splice(mTransforms.end(), mGlows->GetTransforms(), light->mGlow);
+    mTransforms.splice(mTransforms.end(), mGlows->mTransforms, light->mGlow);
     if (light->mSpotActive) {
-        mTransforms.splice(mTransforms.end(), mSpots->GetTransforms(), light->mSpot);
+        mTransforms.splice(mTransforms.end(), mSpots->mTransforms, light->mSpot);
         light->mSpot = std::prev(mTransforms.end());
         light->mSpotActive = 0;
     }
@@ -207,7 +196,7 @@ void SpotLightFX::Release(std::list<LightPos>::iterator light) {
 
 void SpotLightFX::DetachSpot(std::list<LightPos>::iterator light) {
     if (light->mSpotActive) {
-        mTransforms.splice(mTransforms.end(), mSpots->GetTransforms(), light->mSpot);
+        mTransforms.splice(mTransforms.end(), mSpots->mTransforms, light->mSpot);
         light->mSpot = std::prev(mTransforms.end());
         light->mSpotActive = 0;
     }

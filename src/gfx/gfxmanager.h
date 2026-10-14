@@ -15,7 +15,7 @@
 #include "os/prnstream.h"
 #include "os/string.h"
 #include "rnd/rndloader.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -140,7 +140,7 @@ public:
          * Start to load a file.
          *
          * @param pszFile The file.
-         * @param nFlags The load flags of Rnd::Manager::AddLoader().
+         * @param nFlags The load flags of RndManager::AddLoader().
          * @ghidraAddress NTSC-U/C: 0x001b1328
          * @ghidraAddress PAL: 0x001ba0c8
          */
@@ -168,11 +168,11 @@ public:
      * `<view><n> part3`, and `<view><n> part4` for the `localview` name of the configuration.
      */
     struct LocalViews {
-        Rnd::View *mArena; /*!< The view of the arena. */
-        Rnd::View *mMain;  /*!< The main view. */
-        Rnd::View *mPart2; /*!< The view drawn before the tracks. */
-        Rnd::View *mPart3; /*!< The view drawn before the cameras of the players. */
-        Rnd::View *mPart4; /*!< The view drawn before the layer in front of the tracks. */
+        RndView *mArena; /*!< The view of the arena. */
+        RndView *mMain;  /*!< The main view. */
+        RndView *mPart2; /*!< The view drawn before the tracks. */
+        RndView *mPart3; /*!< The view drawn before the cameras of the players. */
+        RndView *mPart4; /*!< The view drawn before the layer in front of the tracks. */
     };
 
     /**
@@ -1695,10 +1695,10 @@ public:
     GfxTunnel *mTunnel;                  /*!< The tunnel of tracks, or null. */
     Overlay *mOverlay;                   /*!< The head-up display, or null. */
     GfxArena *mArena;                    /*!< The arena, or null. */
-    Rnd::View *mTunnelView;              /*!< The `tunnelview` view, or null. */
-    Rnd::View *mMainView;                /*!< The main view of the tunnel, or null. */
+    RndView *mTunnelView;                /*!< The `tunnelview` view, or null. */
+    RndView *mMainView;                  /*!< The main view of the tunnel, or null. */
     std::vector<LocalViews> mLocalViews; /*!< The views of each player. */
-    Rnd::View *mPanelView;               /*!< `panel mat render.view`, or null. */
+    RndView *mPanelView;                 /*!< `panel mat render.view`, or null. */
     Ship *mShips[kMaxPlayers];           /*!< The ship of each player, or null. */
     int mLeader;                         /*!< The leading player. */
     int mWinnerDrawn;                    /*!< Whether the winner's avatar was drawn this frame. */

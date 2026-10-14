@@ -28,7 +28,7 @@ void GemEraseFX::Poll() {
     auto it = mGems.begin();
     while (it != mGems.end()) {
         if (it->mTime <= flTime) {
-            const std::vector<Rnd::View *> *pViews;
+            const std::vector<RndView *> *pViews;
             if (it->mPlayer >= 0) {
                 pViews = &mTunnel->mPlayerBurstViews[it->mPlayer];
             } else {

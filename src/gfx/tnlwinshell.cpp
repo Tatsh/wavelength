@@ -4,21 +4,21 @@
 #include "game/triggermgr.h"
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "synth/fxmidi.h"
 
 namespace {
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
 
 TnlWinShell::TnlWinShell() : mView(nullptr), mStartTick(kNoTick), mDuration(0.0f), mPath(kNoPath) {
-    mView = FindObject<Rnd::View>("win_shell.view");
-    FindObject<Rnd::View>("win_arms.view")->AddDraw(mView, nullptr);
+    mView = FindObject<RndView>("win_shell.view");
+    FindObject<RndView>("win_arms.view")->AddDraw(mView, nullptr);
     Reset();
 }
 

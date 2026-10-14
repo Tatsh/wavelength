@@ -3,9 +3,9 @@
 #include "gfx/gfxtunnel.h"
 #include "math/interpolator.h"
 #include "math/transform.h"
-#include "rnd/mat.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * The arrow that marks the next gem of a streak on a track, with a text, which blinks out of its
@@ -119,10 +119,10 @@ public:
 
     int mTrack;         /*!< The track. */
     unsigned char mBit; /*!< The bit of the arrow in sShownMask. */
-    Rnd::View *mView;   /*!< The view of the arrow, `streakarrow.view`. */
-    Rnd::Text *mText;   /*!< The text of the arrows, `streakarrow.txt`. */
-    Rnd::Mat *mMat;     /*!< The material of the arrow in the colour of the player. */
-    Rnd::Mat *mFontMat; /*!< The material of the text in the colour of the player. */
+    RndView *mView;     /*!< The view of the arrow, `streakarrow.view`. */
+    RndText *mText;     /*!< The text of the arrows, `streakarrow.txt`. */
+    RndMat *mMat;       /*!< The material of the arrow in the colour of the player. */
+    RndMat *mFontMat;   /*!< The material of the text in the colour of the player. */
     float mAlpha;       /*!< The blink, from 0 to 1. */
     float mBlinkRate;   /*!< The change of mAlpha per millisecond. */
     float mTick;        /*!< The tick of the gem. */

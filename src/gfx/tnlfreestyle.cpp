@@ -310,8 +310,8 @@ void TnlFreestyle::Poll(float flTicks, float flTime) {
     }
     const bool bPlaying = mPlaying && (mType != Freestylus::kTypeScratch);
     sFreestylus->Update(bPlaying, flTicks, flTime, flAssembly);
-    Rnd::TransAnim *pAnim = (mVictory && bShip) ? Ship::sWinFlyOff : nullptr;
-    float shipXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    RndTransAnim *pAnim = (mVictory && bShip) ? Ship::sWinFlyOff : nullptr;
+    float shipXfm[kTransformRowCount][kTransformRowFloatCount];
     Transform camXfm;
     ComputeXfms(
         bCam != 0, pAnim, &stick, shipXfm, &camXfm, flAbsTime, flAbsTicks, flTick - mStartTick);
@@ -352,7 +352,7 @@ void TnlFreestyle::UpdateTrail() {
     } else if (flBlend < -1.0f) {
         flBlend = -1.0f;
     }
-    mTrail->Update(flBlend, static_cast<Rnd::Transformable *>(mShip->mView)->mWorldXfm, &mPathAxis);
+    mTrail->Update(flBlend, static_cast<RndTransformable *>(mShip->mView)->mWorldXfm, &mPathAxis);
 }
 
 void TnlFreestyle::Draw() {
@@ -366,9 +366,9 @@ void TnlFreestyle::Draw() {
 }
 
 void TnlFreestyle::ComputeXfms(bool bCam,
-                               Rnd::TransAnim *pAnim,
+                               RndTransAnim *pAnim,
                                const Vector3 *pStick,
-                               float (*pShipXfm)[Rnd::kXfmRowFloatCount],
+                               float (*pShipXfm)[kTransformRowFloatCount],
                                Transform *pCamXfm,
                                float flTime,
                                float,
@@ -453,9 +453,9 @@ void TnlFreestyle::ComputeXfms(bool bCam,
     }
 
     if (pAnim != nullptr) {
-        float animXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-        pAnim->EvalFrame(pAnim->FilterFrame(flElapsed), &animXfm[0][0], 1);
-        sceVu0MulAffineMatrixXyz(&pShipXfm[0][0], &pShipXfm[0][0], &animXfm[0][0]);
+        Transform animXfm;
+        pAnim->MakeTransform(pAnim->FilterFrame(flElapsed), animXfm, 1);
+        sceVu0MulAffineMatrixXyz(&pShipXfm[0][0], &pShipXfm[0][0], &animXfm.mBasisX.x);
     }
     for (int i = 0; i < kBasisRows; ++i) {
         pShipXfm[kTranslationRow][i] *= TheGfxManager.mScrollSpeed;

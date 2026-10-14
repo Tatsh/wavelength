@@ -5,10 +5,10 @@
 #include "gfx/particlearm.h"
 #include "gfx/substepparticles.h"
 #include "math/vector3.h"
-#include "rnd/animatable.h"
-#include "rnd/particlesys.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 /**
  * The freestylus, the instrument a ship becomes for a freestyle.
@@ -117,7 +117,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e81f8
      * @ghidraAddress PAL: 0x001f0f98
      */
-    void Draw(Rnd::Transformable *pParent, int bAssembled);
+    void Draw(RndTransformable *pParent, int bAssembled);
 
     /**
      * The angle of the tumble per unit of its rate, `tumble_angle_per_ms`.
@@ -126,23 +126,23 @@ public:
      */
     static float sTumbleAnglePerMs;
 
-    Rnd::View *mView;             /*!< `freestylus.view`. */
-    Rnd::View *mTempo;            /*!< `freestylus tempo.view`. */
-    Rnd::Animatable *mPitch;      /*!< `freestylus pitch.view`. */
-    Rnd::Animatable *mColor;      /*!< `freestylus color.mnm`. */
-    Rnd::View *mTumble;           /*!< `freestylus tumble.view`. */
-    Rnd::View *mBeams;            /*!< `freestylus beams.view`. */
-    RampAnimator mBeamGrow;       /*!< `freestylus beamgrow.mnm`. */
-    RampAnimator mSample;         /*!< `freestylus sample.tnm`. */
-    ParticleArm mArm;             /*!< `freestylus2.part` on the view. */
-    Rnd::ParticleSys *mParticles; /*!< `freestylus.part`. */
-    SubstepParticles mButton;     /*!< `freestylus button 0.part`. */
-    Vector3 mButtonForce;         /*!< The force of the button particles before the tumble. */
-    float mTime;                  /*!< The time the button particles have run. */
-    Rnd::View *mFlash;            /*!< `freestylus flash.view`. */
-    float mFlashTime;             /*!< The time the flash started, or kNoFlash. */
-    Vector3 mBasis[3];            /*!< The basis of the tumble. */
-    float mScale;                 /*!< The scale Setup() gave, or kNotSetUp. */
+    RndView *mView;             /*!< `freestylus.view`. */
+    RndView *mTempo;            /*!< `freestylus tempo.view`. */
+    RndAnimatable *mPitch;      /*!< `freestylus pitch.view`. */
+    RndAnimatable *mColor;      /*!< `freestylus color.mnm`. */
+    RndView *mTumble;           /*!< `freestylus tumble.view`. */
+    RndView *mBeams;            /*!< `freestylus beams.view`. */
+    RampAnimator mBeamGrow;     /*!< `freestylus beamgrow.mnm`. */
+    RampAnimator mSample;       /*!< `freestylus sample.tnm`. */
+    ParticleArm mArm;           /*!< `freestylus2.part` on the view. */
+    RndParticleSys *mParticles; /*!< `freestylus.part`. */
+    SubstepParticles mButton;   /*!< `freestylus button 0.part`. */
+    Vector3 mButtonForce;       /*!< The force of the button particles before the tumble. */
+    float mTime;                /*!< The time the button particles have run. */
+    RndView *mFlash;            /*!< `freestylus flash.view`. */
+    float mFlashTime;           /*!< The time the flash started, or kNoFlash. */
+    Vector3 mBasis[3];          /*!< The basis of the tumble. */
+    float mScale;               /*!< The scale Setup() gave, or kNotSetUp. */
 
     /** The value of mFlashTime while no flash plays. */
     static constexpr float kNoFlash = -1e9f;

@@ -13,9 +13,9 @@
 #include "os/locale.h"
 #include "os/system.h"
 #include "os/timer.h"
-#include "rnd/environ.h"
-#include "rnd/manager.h"
 #include "rnd/ps.h"
+#include "rnd/rndenviron.h"
+#include "rnd/rndmanager.h"
 #include "rnd/rndrenderer.h"
 #include "script/scriptfunction.h"
 #include "synth/fxmidi.h"
@@ -138,21 +138,21 @@ void WarnUnrecognized(DataArray *pCommand, const char *pszSubCommand) {
 }
 
 // Draw a drawable that may be null, as the display draws the current camera and environment.
-void DrawIfSet(Rnd::Drawable *pDraw) {
+void DrawIfSet(RndDrawable *pDraw) {
     if (pDraw != nullptr) {
         pDraw->Draw();
     }
 }
 
 // Bring a view's transforms up to date and draw it.
-void DrawView(Rnd::View *pView) {
-    static_cast<Rnd::Transformable *>(pView)->UpdateWorldXfm(nullptr, 0);
-    static_cast<Rnd::Drawable *>(pView)->Draw();
+void DrawView(RndView *pView) {
+    static_cast<RndTransformable *>(pView)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndDrawable *>(pView)->Draw();
 }
 
 // Find a view of the scene.
-Rnd::View *FindView(const char *pszName) {
-    return dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(pszName));
+RndView *FindView(const char *pszName) {
+    return dynamic_cast<RndView *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -245,7 +245,7 @@ int GfxManager::GfxLoader::ShouldLoad(RndObject *pExisting,
 }
 
 void GfxManager::GfxLoader::Start(const char *pszFile, int nFlags) {
-    mLoader = Rnd::TheManager.AddLoader(pszFile, nFlags, this, nullptr);
+    mLoader = TheManager.AddLoader(pszFile, nFlags, this, nullptr);
 }
 
 void GfxManager::GfxLoader::Finish() {
@@ -494,7 +494,7 @@ void GfxManager::Init() {
     SystemConfig()
         ->FindArray("gfx", true)
         ->FindSymbol("texture_cache_file", &pszTextureCache, true);
-    Rnd::TheManager.LoadFile(pszTextureCache);
+    TheManager.LoadFile(pszTextureCache);
     ScriptFunction::Register(OnHandleBeat, "gfx_handle_beat", nullptr);
     ScriptFunction::Register(OnDebug, "gfx", nullptr);
     ScriptFunction::Register(OnCheat, "gfx_cheat", nullptr);
@@ -709,14 +709,14 @@ void GfxManager::BuildTracks(float fStartTick,
     const int nLocalViews = nSplitScreen != 0 ? TheGameDb->GetNumPads() : 1;
     mLocalViews.clear();
     mLocalViews.reserve(nLocalViews);
-    Rnd::View *pTransparent = FindView("tnl transparent");
+    RndView *pTransparent = FindView("tnl transparent");
     for (int i = 0; i < nLocalViews; ++i) {
         const int nView = i + kFirstLocalView;
         LocalViews views;
         views.mArena = FindView(FormatString(pszLocalView, nView, " arena"));
         views.mMain = FindView(FormatString(pszLocalView, nView, ""));
         views.mPart2 = FindView(FormatString(pszLocalView, nView, " part2"));
-        static_cast<Rnd::Drawable *>(views.mPart2)->RemoveDraw(pTransparent);
+        static_cast<RndDrawable *>(views.mPart2)->RemoveDraw(pTransparent);
         views.mPart3 = FindView(FormatString(pszLocalView, nView, " part3"));
         views.mPart4 = FindView(FormatString(pszLocalView, nView, " part4"));
         mLocalViews.push_back(views);
@@ -735,10 +735,10 @@ void GfxManager::BuildTracks(float fStartTick,
     GfxTunnel::sCurrent = mTunnel;
     if (mSongTicks > 0.0f) {
         const float fDataLength = mArena->mCamPathLength;
-        const float fLength = mArena->mCamPath->ArcLength(kPreSongTick, mArena->mSongTicks);
+        const float fLength = mArena->mCamPath->PathLength(kPreSongTick, mArena->mSongTicks);
         if (fabsf(fDataLength - fLength) > kCamPathTolerance) {
             DebugNotify("Arena cam path length (%f) different from data (%f)",
-                        mArena->mCamPath->ArcLength(kPreSongTick, mArena->mSongTicks),
+                        mArena->mCamPath->PathLength(kPreSongTick, mArena->mSongTicks),
                         mArena->mCamPathLength);
         }
     }
@@ -966,12 +966,12 @@ int GfxManager::Poll(float fTime) {
         mOverlay->SetCameraOffset(mTunnel->GetHudOffset());
         mOverlay->Poll(fTick, fTicks, fSongTime, fTimeDelta, fTime);
         mTunnel->SetLetterbox(mOverlay->GetLetterbox());
-        static_cast<Rnd::Animatable *>(mTunnelView)->SetFrame(fTick);
+        static_cast<RndAnimatable *>(mTunnelView)->SetFrame(fTick);
         for (int i = TheGameDb->GetNumPlayers() - 1; i >= 0; --i) {
             mShips[i]->Poll(fTicks, fTimeDelta);
         }
         mTunnel->PollCameras(fTicks, fTimeDelta);
-        static_cast<Rnd::Transformable *>(mTunnelView)->UpdateWorldXfm(nullptr, 0);
+        static_cast<RndTransformable *>(mTunnelView)->UpdateWorldXfm(nullptr, 0);
         break;
     }
     case kStateUnloading:
@@ -995,7 +995,7 @@ void GfxManager::Draw([[maybe_unused]] float fTick) {
     case kStateLoading:
         mVortex->Draw();
         if (mLoadStage >= kLoadStageObjects) {
-            static_cast<Rnd::Drawable *>(mMainView)->Draw();
+            static_cast<RndDrawable *>(mMainView)->Draw();
             Ship::DrawShared();
             for (int i = TheGameDb->GetNumPlayers() - 1; i >= 0; --i) {
                 mShips[i]->DrawTrack();
@@ -1021,9 +1021,9 @@ void GfxManager::DrawLocalViews(bool bDrawVortex) {
     for (unsigned i = 0; i < mLocalViews.size(); ++i) {
         DrawView(mLocalViews[i].mArena);
         if (mPanelView != nullptr) {
-            Rnd::Cam *pCam = Rnd::Cam::sCurrent;
-            Rnd::Environ *pEnviron = Rnd::Environ::sCurrent;
-            static_cast<Rnd::Drawable *>(mPanelView)->Draw();
+            RndCam *pCam = RndCam::sCurrent;
+            RndEnviron *pEnviron = RndEnviron::sCurrent;
+            static_cast<RndDrawable *>(mPanelView)->Draw();
             DrawIfSet(pCam);
             DrawIfSet(pEnviron);
         }
@@ -1037,8 +1037,8 @@ void GfxManager::DrawLocalViews(bool bDrawVortex) {
         DrawView(mLocalViews[i].mPart3);
         mTunnel->DrawCameras();
         if (bDrawVortex && mVortexAfterViews == 0) {
-            Rnd::Cam *pCam = Rnd::Cam::sCurrent;
-            Rnd::Environ *pEnviron = Rnd::Environ::sCurrent;
+            RndCam *pCam = RndCam::sCurrent;
+            RndEnviron *pEnviron = RndEnviron::sCurrent;
             mVortex->Draw();
             DrawIfSet(pCam);
             DrawIfSet(pEnviron);
@@ -1169,7 +1169,7 @@ void GfxManager::Debug(DataArray *pCommand) {
     const char *pszCommand = pCommand->Sym(kArg1);
     if (strcmp(pszCommand, "save") == 0) {
         *this << "Saving RND state to " << pCommand->Sym(kArg2) << "...\n";
-        Rnd::TheManager.SaveFile(pCommand->Sym(kArg2));
+        TheManager.SaveFile(pCommand->Sym(kArg2));
     } else if (strcmp(pszCommand, "vortex_in") == 0) {
         StartIntro(kDefaultPosition);
     } else if (strcmp(pszCommand, "vortex_out") == 0) {

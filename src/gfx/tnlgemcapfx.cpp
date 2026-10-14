@@ -46,7 +46,7 @@ TnlGemCapFX::~TnlGemCapFX() = default;
 
 void TnlGemCapFX::Start(GfxTunnel *,
                         char nTrack,
-                        Rnd::View *pView,
+                        RndView *pView,
                         float flTick,
                         float flLateral,
                         const Vector3 *pScale,
@@ -113,7 +113,8 @@ bool TnlGemCapFX::Draw(TnlGeom *pGeom) {
     mXfm.mBasisX = axisX;
     mXfm.mBasisY = axisY;
     mXfm.mBasisZ = axisZ;
-    mView->SetLocalXfm(mXfm);
+    mView->mLocalXfm = mXfm;
+    mView->mDirty = 1;
     mView->SetFrame(mFrameCurve.Interp(flNow));
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();

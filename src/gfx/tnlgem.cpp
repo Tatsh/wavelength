@@ -92,7 +92,7 @@ void TnlGem::Update(TnlGems *pGems, GfxTunnel *pTunnel, const TnlTrackRange *pRa
             mParticle->mCol = mSpriteGroup->mParticles->mStartColorLow;
         }
         mParticle->mPos = xfm.mTranslation;
-        mParticle->mSize = mSpriteGroup->mParticles->mSizeLow;
+        mParticle->mSize = mSpriteGroup->mParticles->mSize.x;
     } else if (pRange != nullptr && pRange->Contains(mTrack, mTick)) {
         const float flLateral = Lateral();
         const char nTrack = mTrack;

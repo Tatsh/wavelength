@@ -2,12 +2,14 @@
 
 #include <vector>
 
+#include "math/key.h"
 #include "math/vector2.h"
-#include "rnd/animatable.h"
-#include "rnd/mesh.h"
-#include "rnd/particlesys.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "math/vector3.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 // Helpers the display shares between its effects. The names are inferred.
@@ -20,7 +22,7 @@
  * @ghidraAddress NTSC-U/C: 0x001e1988
  * @ghidraAddress PAL: 0x001ea728
  */
-void DetachView(Rnd::View *pParent, Rnd::View *pChild);
+void DetachView(RndView *pParent, RndView *pChild);
 
 /**
  * Add a view to the draws, the animations, and the transforms of another.
@@ -30,7 +32,7 @@ void DetachView(Rnd::View *pParent, Rnd::View *pChild);
  * @ghidraAddress NTSC-U/C: 0x001e19f0
  * @ghidraAddress PAL: 0x001ea790
  */
-void AttachView(Rnd::View *pParent, Rnd::View *pChild);
+void AttachView(RndView *pParent, RndView *pChild);
 
 /**
  * Change the rate of the scale-offset filter in the first slot of an animation, keeping the
@@ -43,7 +45,7 @@ void AttachView(Rnd::View *pParent, Rnd::View *pChild);
  * @ghidraAddress NTSC-U/C: 0x001e1a50
  * @ghidraAddress PAL: 0x001ea7f0
  */
-void SetFilterScale(Rnd::Animatable *pAnim, float fScale);
+void SetFilterScale(RndAnimatable *pAnim, float fScale);
 
 /**
  * Turn a point about the origin.
@@ -77,7 +79,7 @@ void BuildTrackArc(std::vector<Vector2> *pPoints, DataArray *pConfig);
  * @ghidraAddress NTSC-U/C: 0x001e1e48
  * @ghidraAddress PAL: 0x001eabe8
  */
-void ResetXfmTree(Rnd::Transformable *pRoot, bool bReset);
+void ResetXfmTree(RndTransformable *pRoot, bool bReset);
 
 /**
  * Set the depth test of every mesh under a transform, recursively.
@@ -88,7 +90,7 @@ void ResetXfmTree(Rnd::Transformable *pRoot, bool bReset);
  * @ghidraAddress NTSC-U/C: 0x001e1f10
  * @ghidraAddress PAL: 0x001eacb0
  */
-void SetZModeTree(Rnd::Transformable *pRoot, Rnd::Mesh::ZMode zMode, Rnd::Mesh::ZFunc zFunc);
+void SetZModeTree(RndTransformable *pRoot, RndMesh::ZMode zMode, RndMesh::ZFunc zFunc);
 
 /**
  * Scale the translation keys of a transform animation.
@@ -99,6 +101,15 @@ void SetZModeTree(Rnd::Transformable *pRoot, Rnd::Mesh::ZMode zMode, Rnd::Mesh::
  * @ghidraAddress PAL: 0x001ec9a8
  */
 void ScaleTransKeys(const char *pszName, float fScale);
+
+/**
+ * Scale the values of position keys. The frames are unchanged. The name is inferred.
+ *
+ * @param keys The keys.
+ * @param fScale The scale.
+ * @ghidraAddress NTSC-U/C: 0x00370bb8
+ */
+void ScaleKeys(std::vector<Key<Vector3>> &keys, float fScale);
 
 /**
  * One key of a curve of floats, sorted by frame.
@@ -139,7 +150,7 @@ void InterpBasis(const float *pFrom, const float *pTo, float *pOut, float fBlend
  * @ghidraAddress NTSC-U/C: 0x001e1fc8
  * @ghidraAddress PAL: 0x001ead68
  */
-void ClearMeshSpheres(Rnd::Transformable *pRoot);
+void ClearMeshSpheres(RndTransformable *pRoot);
 
 /**
  * Scale the size and the force of the particles of a particle system.
@@ -149,7 +160,7 @@ void ClearMeshSpheres(Rnd::Transformable *pRoot);
  * @ghidraAddress NTSC-U/C: 0x001e2138
  * @ghidraAddress PAL: 0x001eaed8
  */
-void ScaleParticles(Rnd::ParticleSys *pSys, float fScale);
+void ScaleParticles(RndParticleSys *pSys, float fScale);
 
 /**
  * Scale every particle system of a transform tree with ScaleParticles().
@@ -159,4 +170,4 @@ void ScaleParticles(Rnd::ParticleSys *pSys, float fScale);
  * @ghidraAddress NTSC-U/C: 0x001e2088
  * @ghidraAddress PAL: 0x001eae28
  */
-void ScaleParticleTree(Rnd::Transformable *pRoot, float fScale);
+void ScaleParticleTree(RndTransformable *pRoot, float fScale);

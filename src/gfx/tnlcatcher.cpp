@@ -7,7 +7,7 @@
 #include "gfx/tnlactivator.h"
 #include "math/transform.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -38,7 +38,7 @@ constexpr float kRiseFrames = 100.0f;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -54,11 +54,11 @@ TnlCatcher::TnlCatcher(const char *pszColor, GfxTunnel *pTunnel)
       mMultiplied(0), mBumping(0) {
     const char cLetter =
         (TheGameDb->mCommunity == GameDb::kCommunitySolo) ? kSoloLetter : pszColor[0];
-    mView = FindObject<Rnd::View>(FormatString("catcher_%c", pszColor[0]));
-    mView->RemoveAllDraws();
+    mView = FindObject<RndView>(FormatString("catcher_%c", pszColor[0]));
+    mView->ClearDraws();
     const float flPanelWidth = pTunnel->PanelWidth();
     for (int i = 0; i < kNumTargets; ++i) {
-        mTargets[i] = FindObject<Rnd::View>(FormatString("target %d_%c.view", i, cLetter));
+        mTargets[i] = FindObject<RndView>(FormatString("target %d_%c.view", i, cLetter));
         mView->AddDraw(mTargets[i], nullptr);
         mView->AddTrans(mTargets[i]);
         ResetXfmTree(mTargets[i], false);
@@ -67,27 +67,27 @@ TnlCatcher::TnlCatcher(const char *pszColor, GfxTunnel *pTunnel)
                             Vector3{0.0f, sTargetSize, 0.0f},
                             Vector3{0.0f, 0.0f, 1.0f},
                             Vector3{flX * flPanelWidth, 0.0f, sTargetOffset}};
-        mTargets[i]->SetLocalXfm(xfm);
+        mTargets[i]->mLocalXfm = xfm;
+        mTargets[i]->mDirty = 1;
         mTargets[i]->UpdateWorldXfm(nullptr, 0);
         mTargetHits[i] =
-            FindObject<Rnd::Animatable>(FormatString("target hit %d_%c.tnm", i, cLetter));
+            FindObject<RndAnimatable>(FormatString("target hit %d_%c.tnm", i, cLetter));
         mHitTimes[i] = kNoHit;
     }
 
-    mBumpFlare = FindObject<Rnd::MatAnim>(FormatString("target bump flare_%c.mnm", cLetter));
+    mBumpFlare = FindObject<RndMatAnim>(FormatString("target bump flare_%c.mnm", cLetter));
     if (mBumpFlare != nullptr) {
-        sBumpEndTime = mBumpFlare->mKeysOwner->mAlphaKeys.back().mFrame;
+        sBumpEndTime = mBumpFlare->mKeysOwner->mAlphaKeys.back().frame;
     }
-    mBumpFlareMesh =
-        FindObject<Rnd::Drawable>(FormatString("target bump flare 0_%c.mesh", cLetter));
+    mBumpFlareMesh = FindObject<RndDrawable>(FormatString("target bump flare 0_%c.mesh", cLetter));
     if (mBumpFlare != nullptr) {
-        mColor = mBumpFlare->mKeysOwner->mDiffuseKeys.back().mValue;
+        mColor = mBumpFlare->mKeysOwner->mBaseKeys.back().value;
     }
-    mAmbient = FindObject<Rnd::Animatable>(FormatString("target ambient_%c.view", cLetter));
-    mAnim.SetAnim(FindObject<Rnd::Animatable>(FormatString("target anim_%c.view", cLetter)));
+    mAmbient = FindObject<RndAnimatable>(FormatString("target ambient_%c.view", cLetter));
+    mAnim.SetAnim(FindObject<RndAnimatable>(FormatString("target anim_%c.view", cLetter)));
     if (sTargetsOnTop) {
         for (auto *pTarget : mTargets) {
-            SetZModeTree(pTarget, Rnd::Mesh::kZModeDisable, Rnd::Mesh::kZFuncLess);
+            SetZModeTree(pTarget, RndMesh::kZModeDisable, RndMesh::kZFuncLess);
         }
     }
     SetMultiplied(0);
@@ -103,7 +103,7 @@ void TnlCatcher::SetMultiplied(int bMultiplied) {
     mMultiplied = bMultiplied;
 }
 
-void TnlCatcher::AttachTo(Rnd::View *pParent) {
+void TnlCatcher::AttachTo(RndView *pParent) {
     pParent->AddTrans(mView);
     pParent->AddDraw(mView, nullptr);
     if (mBumpFlareMesh != nullptr) {
@@ -112,7 +112,7 @@ void TnlCatcher::AttachTo(Rnd::View *pParent) {
 }
 
 void TnlCatcher::Hit(int nTarget) {
-    if (mView->GetShowing()) {
+    if (mView->mShowing) {
         mHitTimes[nTarget] = TheGameDb->mSongTime;
     }
 }
@@ -144,7 +144,7 @@ void TnlCatcher::StartBump(const TnlActivator *pAttacker, TnlGeom *pGeom, int nP
         return;
     }
     mAnim.Jump(kPoseRest, kPoseRest);
-    mBumpFlare->mKeysOwner->mDiffuseKeys.back().mValue = pAttacker->mCatcher.mColor;
+    mBumpFlare->mKeysOwner->mBaseKeys.back().value = pAttacker->mCatcher.mColor;
     mBumpFlareMesh->SetShowing(1);
     pGeom->GetPlayer(nPlayer)->mHoldCam = 1;
     mBumping = 1;

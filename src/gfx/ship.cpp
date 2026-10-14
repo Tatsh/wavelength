@@ -15,8 +15,8 @@
 #include "math/transformops.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/cam.h"
-#include "rnd/manager.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndmanager.h"
 #include "rnd/rndrenderer.h"
 
 namespace {
@@ -25,9 +25,9 @@ namespace {
 constexpr int kNumComponents = 3;
 
 // Copy the rows of a transform of the camera into the row form the ships work in.
-inline void CopyRows(const Transform &xfm, float (*pRows)[Rnd::kXfmRowFloatCount]) {
+inline void CopyRows(const Transform &xfm, float (*pRows)[kTransformRowFloatCount]) {
     const Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
+    for (int i = 0; i < kTransformRowCount; ++i) {
         pRows[i][0] = rows[i]->x;
         pRows[i][1] = rows[i]->y;
         pRows[i][2] = rows[i]->z;
@@ -133,7 +133,7 @@ constexpr float kArrowPulseGrowth = 1.5f;
 constexpr float kArrowPulseBrighten = 2.0f;
 
 // Transform a point by a transform.
-void XfmPoint(const float (*pXfm)[Rnd::kXfmRowFloatCount], const Vector3 &point, float *pOut) {
+void XfmPoint(const float (*pXfm)[kTransformRowFloatCount], const Vector3 &point, float *pOut) {
     for (int i = 0; i < kNumComponents; ++i) {
         pOut[i] =
             (point.x * pXfm[0][i]) + (point.y * pXfm[1][i]) + (point.z * pXfm[2][i]) + pXfm[3][i];
@@ -150,20 +150,39 @@ void LerpPoint(const float *pTo, const float *pFrom, float fBlend, float *pOut) 
 }
 
 // Copy a transform into the local transform of an object and mark it for recomposing.
-void SetLocalXfm(Rnd::Transformable *pTrans, const float (*pXfm)[Rnd::kXfmRowFloatCount]) {
-    memcpy(pTrans->mLocalXfm, pXfm, sizeof(pTrans->mLocalXfm));
+void SetLocalXfm(RndTransformable *pTrans, const float (*pXfm)[kTransformRowFloatCount]) {
+    Vector3 *rows[] = {&pTrans->mLocalXfm.mBasisX,
+                       &pTrans->mLocalXfm.mBasisY,
+                       &pTrans->mLocalXfm.mBasisZ,
+                       &pTrans->mLocalXfm.mTranslation};
+    for (int i = 0; i < kTransformRowCount; ++i) {
+        rows[i]->x = pXfm[i][0];
+        rows[i]->y = pXfm[i][1];
+        rows[i]->z = pXfm[i][2];
+        rows[i]->w = pXfm[i][kVec3PaddingFloat];
+    }
     pTrans->mDirty = 1;
+}
+
+// Set the three components of each basis row of a transform, leaving the fourth words.
+void SetBasis(Transform &xfm, const float (*pRows)[kTransformRowFloatCount]) {
+    Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ};
+    for (int i = 0; i < kNumComponents; ++i) {
+        rows[i]->x = pRows[i][0];
+        rows[i]->y = pRows[i][1];
+        rows[i]->z = pRows[i][2];
+    }
 }
 
 // Fill a transform with the identity, leaving the fourth word of each basis row unset as the
 // binary does.
-void BuildIdentity(float (*pXfm)[Rnd::kXfmRowFloatCount]) {
+void BuildIdentity(float (*pXfm)[kTransformRowFloatCount]) {
     for (int i = 0; i < kNumComponents; ++i) {
         for (int j = 0; j < kNumComponents; ++j) {
             pXfm[i][j] = i == j ? 1.0f : 0.0f;
         }
     }
-    float *pTranslation = pXfm[Rnd::kXfmRowCount - 1];
+    float *pTranslation = pXfm[kTransformRowCount - 1];
     for (int j = 0; j < kNumComponents; ++j) {
         pTranslation[j] = 0.0f;
     }
@@ -181,15 +200,15 @@ void BuildZeroPoints(float *pLow, float *pHigh) {
 }
 
 // Give the basis of an object's local transform a uniform scale and no rotation. The binary copies
-// whole rows whose fourth words it leaves unset.
-void SetLocalScale(Rnd::Transformable *pTrans, float fScale) {
-    float aflBasis[kNumComponents][Rnd::kXfmRowFloatCount];
+// whole rows whose fourth words it leaves unset, and the fourth words here are not written.
+void SetLocalScale(RndTransformable *pTrans, float fScale) {
+    float aflBasis[kNumComponents][kTransformRowFloatCount];
     for (int i = 0; i < kNumComponents; ++i) {
         for (int j = 0; j < kNumComponents; ++j) {
             aflBasis[i][j] = i == j ? fScale : 0.0f;
         }
     }
-    memcpy(pTrans->mLocalXfm, aflBasis, sizeof(aflBasis));
+    SetBasis(pTrans->mLocalXfm, aflBasis);
     pTrans->mDirty = 1;
 }
 
@@ -226,13 +245,13 @@ float KeyValue(const std::vector<FloatKey> &keys, float fFrame) {
 // Find a scene object of a class by name.
 template <class T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 // Copy a transform into the rows of a matrix.
-void ToRows(const Transform &xfm, float (*pRows)[Rnd::kXfmRowFloatCount]) {
+void ToRows(const Transform &xfm, float (*pRows)[kTransformRowFloatCount]) {
     const Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
+    for (int i = 0; i < kTransformRowCount; ++i) {
         pRows[i][0] = rows[i]->x;
         pRows[i][1] = rows[i]->y;
         pRows[i][2] = rows[i]->z;
@@ -290,58 +309,58 @@ float Ship::sIntroTrodeEnd = -1920.0f;
 BeamPool<false> *Ship::sMissBeams;
 BeamPool<false> *Ship::sHitBeams;
 BeamPool<false> *Ship::sHit2Beams;
-Rnd::View *Ship::sBeamView;
-Rnd::Environ *Ship::sEnviron;
-Rnd::View *Ship::sLoadingView;
-Rnd::TransAnim *Ship::sWinFlyOff;
-Rnd::Animatable *Ship::sAllAnim;
-Rnd::Animatable *Ship::sIntroAnim;
-Rnd::Mesh *Ship::sArrowMesh;
+RndView *Ship::sBeamView;
+RndEnviron *Ship::sEnviron;
+RndView *Ship::sLoadingView;
+RndTransAnim *Ship::sWinFlyOff;
+RndAnimatable *Ship::sAllAnim;
+RndAnimatable *Ship::sIntroAnim;
+RndMesh *Ship::sArrowMesh;
 
 #pragma mark - Configuration
 
-void Ship::ConfigureCrippler(Rnd::ParticleSys *pSys, int nPlayer) {
+void Ship::ConfigureCrippler(RndParticleSys *pSys, int nPlayer) {
     const int nCommunity = TheGameDb->mCommunity;
     if (nCommunity != GameDb::kCommunityLocal) {
         if (nCommunity != GameDb::kCommunityOnline || TheGameDb->IsLocalPlayer(nPlayer)) {
             return;
         }
     }
-    pSys->mEmitRateHigh = kRemoteCripplerRate;
-    pSys->mEmitRateLow = kRemoteCripplerRate;
+    pSys->mEmitRate.y = kRemoteCripplerRate;
+    pSys->mEmitRate.x = kRemoteCripplerRate;
     pSys->SetNumParticles(kRemoteCripplerParticles);
-    float aflPosLow[Rnd::kXfmRowFloatCount];
-    float aflPosHigh[Rnd::kXfmRowFloatCount];
+    float aflPosLow[kTransformRowFloatCount];
+    float aflPosHigh[kTransformRowFloatCount];
     BuildZeroPoints(aflPosLow, aflPosHigh);
     pSys->mLife.y = kRemoteCripplerLife;
     memcpy(&pSys->mPosHigh, aflPosHigh, sizeof(aflPosHigh));
     pSys->mSpeed.x = kRemoteCripplerSpeedLow;
     pSys->mSpeed.y = kRemoteCripplerSpeedHigh;
-    pSys->mSizeHigh = kRemoteCripplerSize;
+    pSys->mSize.y = kRemoteCripplerSize;
     memcpy(&pSys->mPosLow, aflPosLow, sizeof(aflPosLow));
     pSys->mLife.x = kRemoteCripplerLife;
-    pSys->mSizeLow = kRemoteCripplerSize;
+    pSys->mSize.x = kRemoteCripplerSize;
 }
 
-void Ship::ConfigureArm(Rnd::ParticleSys *pSys, int nPlayer) {
+void Ship::ConfigureArm(RndParticleSys *pSys, int nPlayer) {
     const int nCommunity = TheGameDb->mCommunity;
     if (nCommunity != GameDb::kCommunityLocal) {
         if (nCommunity != GameDb::kCommunityOnline || TheGameDb->IsLocalPlayer(nPlayer)) {
             return;
         }
     }
-    pSys->mEmitRateHigh = kRemoteArmRate;
-    pSys->mEmitRateLow = kRemoteArmRate;
+    pSys->mEmitRate.y = kRemoteArmRate;
+    pSys->mEmitRate.x = kRemoteArmRate;
     pSys->SetNumParticles(kRemoteArmParticles);
-    float aflPosLow[Rnd::kXfmRowFloatCount];
-    float aflPosHigh[Rnd::kXfmRowFloatCount];
+    float aflPosLow[kTransformRowFloatCount];
+    float aflPosHigh[kTransformRowFloatCount];
     BuildZeroPoints(aflPosLow, aflPosHigh);
     pSys->mLife.x = kRemoteArmLifeLow;
     memcpy(&pSys->mPosHigh, aflPosHigh, sizeof(aflPosHigh));
     pSys->mLife.y = kRemoteArmLifeHigh;
     pSys->mSpeed.y = kRemoteArmSpeed;
-    pSys->mSizeLow = kRemoteArmSizeLow;
-    pSys->mSizeHigh = kRemoteArmSizeHigh;
+    pSys->mSize.x = kRemoteArmSizeLow;
+    pSys->mSize.y = kRemoteArmSizeHigh;
     memcpy(&pSys->mPosLow, aflPosLow, sizeof(aflPosLow));
     pSys->mSpeed.x = kRemoteArmSpeed;
 }
@@ -429,8 +448,7 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
         sHit2Beams->LoadConfig(pConfig, pDefaults, bReload, fBeamScale);
     }
     if (sBeamView == nullptr) {
-        sBeamView =
-            dynamic_cast<Rnd::View *>(Rnd::TheManager.Create("View", "ship beam draw.view"));
+        sBeamView = dynamic_cast<RndView *>(TheManager.Create("View", "ship beam draw.view"));
     }
 }
 
@@ -457,12 +475,15 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     mArrowStart = kUnset;
     mAttackTime = kFarFuture;
     mMulti = TheGameDb->mCommunity != GameDb::kCommunitySolo;
-    mBank = new Rnd::Animatable::SecondOrder(0.0f, sBankSpring, sBankDamper);
+    mBank = new RndAnimatable::SecondOrder;
+    mBank->mLevel = 0.0f;
+    mBank->mSpring = sBankSpring;
+    mBank->mDamper = sBankDamper;
     mFlyIn = nullptr;
 
     const float fScrollSpeed = TheGfxManager.mScrollSpeed;
     const int nBeams = TheGameDb->GetNumPlayers() + kSpareBeams;
-    Rnd::Drawable *pBeamParent = sBeamView;
+    RndDrawable *pBeamParent = sBeamView;
     if (sMissBeams == nullptr) {
         sMissBeams = new BeamPool<false>(nBeams, pBeamParent, "ship_miss");
         sMissBeams->LoadConfig(GetModeGfxConfig(), GetGfxConfig(), false, fScrollSpeed);
@@ -477,64 +498,64 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     }
 
     const int nColor = mMulti ? pszColor[0] : kSoloColor;
-    mView = FindObject<Rnd::View>(FormatString("ship_%c.view", nColor));
-    mMesh = FindObject<Rnd::Mesh>(FormatString("ship_%c.mesh", nColor));
-    mPsAnim = dynamic_cast<Rnd::View *>(
-        Rnd::TheManager.Create("View", FormatString("ship ps anim %c.view", nColor)));
-    mBackPsAnim = dynamic_cast<Rnd::View *>(
-        Rnd::TheManager.Create("View", FormatString("ship backps anim %c.view", nColor)));
-    mFxView = FindObject<Rnd::View>(FormatString("ship fx_%c.view", nColor));
-    mMat = FindObject<Rnd::Mat>(FormatString("ship_%c.mat", nColor));
+    mView = FindObject<RndView>(FormatString("ship_%c.view", nColor));
+    mMesh = FindObject<RndMesh>(FormatString("ship_%c.mesh", nColor));
+    mPsAnim = dynamic_cast<RndView *>(
+        TheManager.Create("View", FormatString("ship ps anim %c.view", nColor)));
+    mBackPsAnim = dynamic_cast<RndView *>(
+        TheManager.Create("View", FormatString("ship backps anim %c.view", nColor)));
+    mFxView = FindObject<RndView>(FormatString("ship fx_%c.view", nColor));
+    mMat = FindObject<RndMat>(FormatString("ship_%c.mat", nColor));
     if (mMulti != 0) {
-        mLeaderMat = FindObject<Rnd::Mat>(FormatString("ship leader_%c.mat", nColor));
+        mLeaderMat = FindObject<RndMat>(FormatString("ship leader_%c.mat", nColor));
     }
-    mBumperAttack = FindObject<Rnd::View>("bumper attack.view");
-    mBumperFly = FindObject<Rnd::TransAnim>("bumper fly.tnm");
-    mScratchRibbon = FindObject<Rnd::String>(FormatString("scratch ribbon_%c.line", nColor));
-    mIntroFlyIn = FindObject<Rnd::TransAnim>(FormatString("ship intro fly-in_%c.tnm", nColor));
-    mIntro = FindObject<Rnd::TransAnim>(FormatString("ship intro_%c.tnm", nColor));
-    mBumperBlur = FindObject<Rnd::Blur>(FormatString("ship bumper_%c.blur", nColor));
+    mBumperAttack = FindObject<RndView>("bumper attack.view");
+    mBumperFly = FindObject<RndTransAnim>("bumper fly.tnm");
+    mScratchRibbon = FindObject<RndLine>(FormatString("scratch ribbon_%c.line", nColor));
+    mIntroFlyIn = FindObject<RndTransAnim>(FormatString("ship intro fly-in_%c.tnm", nColor));
+    mIntro = FindObject<RndTransAnim>(FormatString("ship intro_%c.tnm", nColor));
+    mBumperBlur = FindObject<RndBlur>(FormatString("ship bumper_%c.blur", nColor));
 
-    Rnd::Drawable *pViewDraw = mView;
+    RndDrawable *pViewDraw = mView;
     if (mBumperBlur != nullptr) {
         pViewDraw->RemoveDraw(mBumperBlur);
     }
     pViewDraw->RemoveDraw(mMesh);
-    static_cast<Rnd::Transformable *>(mFxView)->RemoveTrans(mScratchRibbon);
-    float aflIdentity[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    static_cast<RndTransformable *>(mFxView)->RemoveTrans(mScratchRibbon);
+    float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
     BuildIdentity(aflIdentity);
     SetLocalXfm(mFxView, aflIdentity);
-    static_cast<Rnd::Drawable *>(mScratchRibbon)->SetShowing(0);
+    static_cast<RndDrawable *>(mScratchRibbon)->SetShowing(0);
 
     for (int i = 0; i < kNumArms; ++i) {
         const char *pszArm = kArmNames[i];
         mArmAnims[i] =
-            FindObject<Rnd::Animatable>(FormatString("ship arm %s_%c.tnm", pszArm, nColor));
-        mArmXfms[i] = FindObject<Rnd::Transformable>(FormatString("ship %s_%c", pszArm, nColor));
-        Rnd::ParticleSys *pSys =
-            FindObject<Rnd::ParticleSys>(FormatString("ship %s_%c.ps", pszArm, nColor));
+            FindObject<RndAnimatable>(FormatString("ship arm %s_%c.tnm", pszArm, nColor));
+        mArmXfms[i] = FindObject<RndTransformable>(FormatString("ship %s_%c", pszArm, nColor));
+        RndParticleSys *pSys =
+            FindObject<RndParticleSys>(FormatString("ship %s_%c.ps", pszArm, nColor));
         ConfigureArm(pSys, mPlayer);
         mArms[i].Init(pSys, mArmXfms[i], sScale);
         pViewDraw->RemoveDraw(mArms[i].mSys);
         mTrodes[i] =
-            FindObject<Rnd::Mesh>(FormatString("ship trode core %s_%c.mesh", pszArm, nColor));
+            FindObject<RndMesh>(FormatString("ship trode core %s_%c.mesh", pszArm, nColor));
         if (mTrodes[i] != nullptr) {
             mTrodeMats[i] = mTrodes[i]->mMat;
             pViewDraw->RemoveDraw(mTrodes[i]);
         } else {
             mTrodeMats[i] = nullptr;
         }
-        Rnd::ParticleSys *pArmSys = mArms[i].mSys;
+        RndParticleSys *pArmSys = mArms[i].mSys;
         mArmColors[i][kArmColorStartLow] = pArmSys->mStartColorLow;
         mArmColors[i][kArmColorStartHigh] = pArmSys->mStartColorHigh;
         mArmColors[i][kArmColorEndLow] = pArmSys->mEndColorLow;
         mArmColors[i][kArmColorEndHigh] = pArmSys->mEndColorHigh;
     }
-    mArmSizeLow = mArms[0].mSys->mSizeLow;
-    mArmSizeHigh = mArms[0].mSys->mSizeHigh;
+    mArmSizeLow = mArms[0].mSys->mSize.x;
+    mArmSizeHigh = mArms[0].mSys->mSize.y;
     if (mTrodes[0] != nullptr) {
         float aflScale[kNumComponents];
-        Mat33ExtractScale(&static_cast<Rnd::Transformable *>(mTrodes[0])->mLocalXfm[0][0],
+        Mat33ExtractScale(&static_cast<RndTransformable *>(mTrodes[0])->mLocalXfm.mBasisX.x,
                           aflScale);
         mTrodeSize = aflScale[0];
     } else {
@@ -542,34 +563,34 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     }
     SetEnergy(1.0f, kZoneHigh, 1.0f);
 
-    Rnd::ParticleSys *pThrusterSys =
-        FindObject<Rnd::ParticleSys>(FormatString("ship ass_%c.part", nColor));
-    Rnd::Transformable *pThrusterXfm =
-        FindObject<Rnd::Transformable>(FormatString("ship_%c.mesh", nColor));
+    RndParticleSys *pThrusterSys =
+        FindObject<RndParticleSys>(FormatString("ship ass_%c.part", nColor));
+    RndTransformable *pThrusterXfm =
+        FindObject<RndTransformable>(FormatString("ship_%c.mesh", nColor));
     ConfigureCrippler(pThrusterSys, mPlayer);
     mThruster.Init(pThrusterSys, pThrusterXfm, sScale);
     pViewDraw->RemoveDraw(mThruster.mSys);
     const float fSpeedOffset = TheGfxManager.mCamPathScale / fScrollSpeed;
-    mCripplerPs = FindObject<Rnd::ParticleSys>(FormatString("ship crippler_%c.part", nColor));
+    mCripplerPs = FindObject<RndParticleSys>(FormatString("ship crippler_%c.part", nColor));
     if (mCripplerPs != nullptr) {
         mCripplerPs->SetFrameSelf(mCripplerTime);
-        static_cast<Rnd::Drawable *>(mCripplerPs)->SetShowing(1);
+        static_cast<RndDrawable *>(mCripplerPs)->SetShowing(1);
         mCripplerPs->FreeAllParticles();
         mView->RemoveAnim(mCripplerPs);
         mThruster.Scale(mCripplerPs, sScale);
     }
-    mThruster2 = FindObject<Rnd::ParticleSys>(FormatString("ship ass_%c2.part", nColor));
+    mThruster2 = FindObject<RndParticleSys>(FormatString("ship ass_%c2.part", nColor));
     if (mThruster2 != nullptr) {
         mThruster.Scale(mThruster2, sScale);
     }
-    mThruster3 = FindObject<Rnd::ParticleSys>(FormatString("ship ass_%c3.part", nColor));
+    mThruster3 = FindObject<RndParticleSys>(FormatString("ship ass_%c3.part", nColor));
     if (mThruster3 != nullptr) {
         mThruster.Scale(mThruster3, sScale);
     }
-    mBumperPs = FindObject<Rnd::ParticleSys>(FormatString("ship bumper_%c.ps", nColor));
+    mBumperPs = FindObject<RndParticleSys>(FormatString("ship bumper_%c.ps", nColor));
     if (mBumperPs != nullptr) {
         mBumperPs->SetFrameSelf(mBumperTime);
-        static_cast<Rnd::Drawable *>(mBumperPs)->SetShowing(1);
+        static_cast<RndDrawable *>(mBumperPs)->SetShowing(1);
         mBumperPs->FreeAllParticles();
         ScaleParticles(mBumperPs, sScale);
         mBumperPs->mSpeed.x += fSpeedOffset;
@@ -578,43 +599,43 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     }
     ClearMeshSpheres(mView);
 
-    mName = FindObject<Rnd::Text>(FormatString("ship name_%c.txt", nColor));
+    mName = FindObject<RndText>(FormatString("ship name_%c.txt", nColor));
     if (mName != nullptr) {
-        Rnd::Transformable *pNameXfm = mName;
-        // Yes, the binary flattens the basis of the name to nothing, from rows whose fourth words
-        // it leaves unset.
-        float aflZero[kNumComponents][Rnd::kXfmRowFloatCount];
+        RndTransformable *pNameXfm = mName;
+        // Yes, the binary flattens the basis of the name to nothing. It copies rows whose fourth
+        // words it leaves unset, and the fourth words here are not written.
+        float aflZero[kNumComponents][kTransformRowFloatCount];
         for (int i = 0; i < kNumComponents; ++i) {
             for (int j = 0; j < kNumComponents; ++j) {
                 aflZero[i][j] = 0.0f;
             }
         }
-        memcpy(pNameXfm->mLocalXfm, aflZero, sizeof(aflZero));
+        SetBasis(pNameXfm->mLocalXfm, aflZero);
         pNameXfm->mDirty = 1;
         mName->SetText(TheGameDb->GetPlayerName(mPlayer));
     }
 
     if (mPlayer == 0) {
-        sAllAnim = FindObject<Rnd::Animatable>("ship all.anim");
-        sIntroAnim = FindObject<Rnd::Animatable>("ship intro.anim");
-        sEnviron = FindObject<Rnd::Environ>("ship.env");
-        sLoadingView = FindObject<Rnd::View>("ship loading.view");
+        sAllAnim = FindObject<RndAnimatable>("ship all.anim");
+        sIntroAnim = FindObject<RndAnimatable>("ship intro.anim");
+        sEnviron = FindObject<RndEnviron>("ship.env");
+        sLoadingView = FindObject<RndView>("ship loading.view");
         if (mMulti != 0) {
-            sArrowMesh = FindObject<Rnd::Mesh>("ship arrow.mesh");
+            sArrowMesh = FindObject<RndMesh>("ship arrow.mesh");
         }
-        sWinFlyOff = FindObject<Rnd::TransAnim>("ship win fly-off.tnm");
+        sWinFlyOff = FindObject<RndTransAnim>("ship win fly-off.tnm");
         GfxTunnel::ScaleLights(sEnviron);
     }
-    static_cast<Rnd::Transformable *>(mView)->SetOrigin(&sPivot.x);
+    static_cast<RndTransformable *>(mView)->SetOrigin(sPivot);
 
     // Move the particle systems the view animates to the two views that animate them on the
     // system clock, the thrusters behind the ship and the arms in front of it.
     bool bMoved;
     do {
         bMoved = false;
-        Rnd::Animatable *pViewAnim = mView;
-        for (Rnd::Animatable *pAnim : pViewAnim->mAnims) {
-            Rnd::ParticleSys *pSys = dynamic_cast<Rnd::ParticleSys *>(pAnim);
+        RndAnimatable *pViewAnim = mView;
+        for (RndAnimatable *pAnim : pViewAnim->mAnims) {
+            RndParticleSys *pSys = dynamic_cast<RndParticleSys *>(pAnim);
             if (pSys == nullptr) {
                 continue;
             }
@@ -689,18 +710,18 @@ void Ship::Reset() {
         Geom()->GetPlayer(mPlayer)->mMoveTime = 1.0f;
     }
     mFlags &= ~kFlagBumped;
-    float aflIdentity[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
     BuildIdentity(aflIdentity);
     SetLocalXfm(mFxView, aflIdentity);
 }
 
 void Ship::SetEnergy(float fEnergy, int nZone, [[maybe_unused]] float fZoneFraction) {
     // Yes, the binary leaves the fourth word of the force unset.
-    float aflForce[Rnd::kXfmRowFloatCount];
+    float aflForce[kTransformRowFloatCount];
     aflForce[0] = 0.0f;
     aflForce[1] = 0.0f;
     aflForce[2] = 0.0f;
-    Rnd::Mat *pTrodeMat = nullptr;
+    RndMat *pTrodeMat = nullptr;
     const Color *pColors;
     Color sputter[kNumArmColors];
     if (fEnergy <= 0.0f) {
@@ -734,12 +755,12 @@ void Ship::SetEnergy(float fEnergy, int nZone, [[maybe_unused]] float fZoneFract
     if (mTrodes[0] == nullptr) {
         return;
     }
-    for (Rnd::Mesh *pTrode : mTrodes) {
+    for (RndMesh *pTrode : mTrodes) {
         if (pTrodeMat != nullptr) {
             pTrode->SetMat(pTrodeMat);
-            static_cast<Rnd::Drawable *>(pTrode)->SetShowing(1);
+            static_cast<RndDrawable *>(pTrode)->SetShowing(1);
         } else {
-            static_cast<Rnd::Drawable *>(pTrode)->SetShowing(0);
+            static_cast<RndDrawable *>(pTrode)->SetShowing(0);
         }
     }
 }
@@ -748,20 +769,20 @@ void Ship::ScaleArms(float fScale) {
     const float fSizeLow = fScale * mArmSizeLow;
     const float fSizeHigh = fScale * mArmSizeHigh;
     for (ParticleArm &arm : mArms) {
-        arm.mSys->mSizeLow = fSizeLow;
-        arm.mSys->mSizeHigh = fSizeHigh;
+        arm.mSys->mSize.x = fSizeLow;
+        arm.mSys->mSize.y = fSizeHigh;
     }
     if (mTrodes[0] == nullptr) {
         return;
     }
-    for (Rnd::Mesh *pTrode : mTrodes) {
+    for (RndMesh *pTrode : mTrodes) {
         SetLocalScale(pTrode, fScale * mTrodeSize);
     }
 }
 
 void Ship::ScaleArm(int nArm, float fScale) {
-    mArms[nArm].mSys->mSizeLow = fScale * mArmSizeLow;
-    mArms[nArm].mSys->mSizeHigh = fScale * mArmSizeHigh;
+    mArms[nArm].mSys->mSize.x = fScale * mArmSizeLow;
+    mArms[nArm].mSys->mSize.y = fScale * mArmSizeHigh;
     if (mTrodes[0] == nullptr) {
         return;
     }
@@ -779,16 +800,16 @@ void Ship::SetShown(bool bShown) {
         bShown = mFlyIn->Start(bShown);
     }
     mShown = bShown;
-    static_cast<Rnd::Drawable *>(mView)->SetShowing(bShown && mHidden == 0);
+    static_cast<RndDrawable *>(mView)->SetShowing(bShown && mHidden == 0);
 }
 
 void Ship::SetHidden(bool bHidden) {
     mHidden = bHidden;
-    static_cast<Rnd::Drawable *>(mView)->SetShowing(mShown != 0 && !bHidden);
+    static_cast<RndDrawable *>(mView)->SetShowing(mShown != 0 && !bHidden);
     ClearBeams();
 }
 
-void Ship::SetOverride(const float (*pXfm)[Rnd::kXfmRowFloatCount], float fBlend) {
+void Ship::SetOverride(const float (*pXfm)[kTransformRowFloatCount], float fBlend) {
     if (pXfm == nullptr) {
         mHasOverride = 0;
         return;
@@ -858,13 +879,13 @@ void Ship::AddBeam(std::list<BeamData> *pList,
         pBeam->mOwner = this;
         pBeam->mOwnerList = pList;
     }
-    pBeam->SetEnd(0, mArmXfms[nSlot]->mWorldXfm[Rnd::kXfmRowCount - 1]);
-    float aflCell[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    pBeam->SetEnd(0, &mArmXfms[nSlot]->mWorldXfm.mTranslation.x);
+    float aflCell[kTransformRowCount][kTransformRowFloatCount];
     const float fOffset = (static_cast<float>(nSlot) * kSlotSpacing) + kSlotOffset;
     Transform cell;
     Geom()->CellXfm(nTrack, &cell, false, true, fTick, fOffset);
     ToRows(cell, aflCell);
-    pBeam->SetEnd(1, aflCell[Rnd::kXfmRowCount - 1]);
+    pBeam->SetEnd(1, aflCell[kTransformRowCount - 1]);
 }
 
 void Ship::ClearBeams() {
@@ -898,18 +919,18 @@ void Ship::Fire(int nSlot, signed char nTrack, bool bHit) {
 
 void Ship::UpdateBeams(std::list<BeamData> *pList,
                        BeamPool<false> *pPool,
-                       const float (*pXfm)[Rnd::kXfmRowFloatCount],
+                       const float (*pXfm)[kTransformRowFloatCount],
                        const Color *pColor,
                        bool bMoveStart,
                        bool bMoveEnd) {
     const float fTick = TheGameDb->mSongTick;
     int nCellSlot = -1;
-    float aflCell[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    float aflCell[kTransformRowCount][kTransformRowFloatCount];
     std::list<BeamData>::iterator it = pList->begin();
     while (it != pList->end()) {
         Beam *pBeam = it->mBeam;
         if (bMoveStart) {
-            pBeam->SetEnd(0, mArmXfms[it->mSlot]->mWorldXfm[Rnd::kXfmRowCount - 1]);
+            pBeam->SetEnd(0, &mArmXfms[it->mSlot]->mWorldXfm.mTranslation.x);
         }
         if (bMoveEnd) {
             // Yes, the binary rebuilds the cell only when the button changes, not the track.
@@ -920,7 +941,7 @@ void Ship::UpdateBeams(std::list<BeamData> *pList,
                 Geom()->CellXfm(it->mTrack, &cell, false, true, fTick, fOffset);
                 ToRows(cell, aflCell);
             }
-            pBeam->SetEnd(1, aflCell[Rnd::kXfmRowCount - 1]);
+            pBeam->SetEnd(1, aflCell[kTransformRowCount - 1]);
         }
         Vector3 direction{0.0f, 0.0f, 0.0f};
         if (it->mSlot == kSlotLeft) {
@@ -974,14 +995,14 @@ void Ship::PollBump(float fTimeDelta) {
             fFrame = kBumpFrames - fFrame;
         }
     }
-    Rnd::Transformable *pFxXfm = mFxView;
+    RndTransformable *pFxXfm = mFxView;
     // Yes, the binary copies a whole row whose fourth word it leaves unset.
-    float aflTranslation[Rnd::kXfmRowFloatCount];
+    float aflTranslation[kTransformRowFloatCount];
     aflTranslation[0] = 0.0f;
     aflTranslation[1] = 0.0f;
     aflTranslation[2] = mBumpHeight;
     pFxXfm->mDirty = 1;
-    memcpy(pFxXfm->mLocalXfm[Rnd::kXfmRowCount - 1], aflTranslation, sizeof(aflTranslation));
+    memcpy(&pFxXfm->mLocalXfm.mTranslation, aflTranslation, sizeof(aflTranslation));
     mBumperFly->SetTrans(mFxView);
     mBumperFly->SetFrame(fFrame);
     mBumperFly->SetTrans(nullptr);
@@ -1034,7 +1055,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     }
     const float fBank = mBank->Apply(fBankTarget);
     // Yes, the binary leaves the fourth word of the force unset.
-    float aflForce[Rnd::kXfmRowFloatCount];
+    float aflForce[kTransformRowFloatCount];
     aflForce[0] = sBankForce * fBank;
     aflForce[1] = 0.0f;
     aflForce[2] = 0.0f;
@@ -1044,8 +1065,8 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         memcpy(&mThruster3->mForce, aflForce, sizeof(aflForce));
     }
 
-    float aflBasis[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-    float *pPosition = aflBasis[Rnd::kXfmRowCount - 1];
+    float aflBasis[kTransformRowCount][kTransformRowFloatCount];
+    float *pPosition = aflBasis[kTransformRowCount - 1];
     if (mMulti != 0) {
         const float fSpread = mSpread < 1.0f ? mSpread : 1.0f;
         Vector3 offset;
@@ -1059,27 +1080,27 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         if (TheGameDb->mCommunity != GameDb::kCommunityLocal && 1.0f < mSpread) {
             offset.y *= ((mSpread - 1.0f) * kSpreadLift) + 1.0f;
         }
-        float aflCell[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+        float aflCell[kTransformRowCount][kTransformRowFloatCount];
         Transform cell;
         Geom()->BlendCell(&cell, true, false, pPlayer->mPosition, fTick, kCellCentre);
         ToRows(cell, aflCell);
         XfmPoint(aflCell, offset, pPosition);
         // Yes, the binary leaves the fourth word of both rows unset.
-        float aflUp[Rnd::kXfmRowFloatCount];
-        float aflForward[Rnd::kXfmRowFloatCount];
+        float aflUp[kTransformRowFloatCount];
+        float aflForward[kTransformRowFloatCount];
         for (int i = 0; i < kNumComponents; ++i) {
             aflUp[i] = aflCell[1][i] + (aflCell[2][i] * sTilt);
             aflForward[i] = aflCell[2][i] + (aflCell[0][i] * fBank);
         }
         Mat33BuildOrthonormal(aflUp, aflForward, &aflBasis[0][0]);
     } else {
-        float aflCamXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+        float aflCamXfm[kTransformRowCount][kTransformRowFloatCount];
         CopyRows(pCamFX->mCamera, aflCamXfm);
-        const float (*pCamXfm)[Rnd::kXfmRowFloatCount] = aflCamXfm;
+        const float (*pCamXfm)[kTransformRowFloatCount] = aflCamXfm;
         XfmPoint(pCamXfm, sOffsetPivot, pPosition);
         // Yes, the binary leaves the fourth word of both rows unset.
-        float aflUp[Rnd::kXfmRowFloatCount];
-        float aflForward[Rnd::kXfmRowFloatCount];
+        float aflUp[kTransformRowFloatCount];
+        float aflForward[kTransformRowFloatCount];
         for (int i = 0; i < kNumComponents; ++i) {
             const float fEye = pCamXfm[3][i] + (pCamXfm[1][i] * sViewDistance);
             aflUp[i] = fEye - pPosition[i];
@@ -1091,9 +1112,9 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     if (mHasOverride != 0) {
         const float fBlend = mOverrideBlend;
         if (fBlend == 1.0f) {
-            memcpy(pPosition, mXfm[Rnd::kXfmRowCount - 1], sizeof(mXfm[0]));
+            memcpy(pPosition, mXfm[kTransformRowCount - 1], sizeof(mXfm[0]));
         } else if (fBlend != 0.0f) {
-            LerpPoint(mXfm[Rnd::kXfmRowCount - 1], pPosition, fBlend, pPosition);
+            LerpPoint(mXfm[kTransformRowCount - 1], pPosition, fBlend, pPosition);
         }
         InterpBasis(aflBasis[0], mXfm[0], aflBasis[0], fBlend);
     } else if (mIntroActive != 0) {
@@ -1145,13 +1166,13 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     if (bShowThrusters) {
         mBackPsAnim->SetFrame(fNow);
     }
-    static_cast<Rnd::Drawable *>(mThruster.mSys)->SetShowing(nShowThrusters);
+    static_cast<RndDrawable *>(mThruster.mSys)->SetShowing(nShowThrusters);
     if (mMulti == 0) {
-        static_cast<Rnd::Drawable *>(mThruster2)->SetShowing(nShowThrusters);
-        static_cast<Rnd::Drawable *>(mThruster3)->SetShowing(nShowThrusters);
+        static_cast<RndDrawable *>(mThruster2)->SetShowing(nShowThrusters);
+        static_cast<RndDrawable *>(mThruster3)->SetShowing(nShowThrusters);
     }
     mPsAnim->SetFrame(fNow);
-    static_cast<Rnd::Transformable *>(mView)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndTransformable *>(mView)->UpdateWorldXfm(nullptr, 0);
 
     UpdateBeams(
         &mMissBeams, sMissBeams, aflBasis, &mColor, sMoveMissBeams[0] != 0, sMoveMissBeams[1] != 0);
@@ -1167,21 +1188,21 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     }
 }
 
-void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kXfmRowFloatCount]) {
-    float *pPosition = pXfm[Rnd::kXfmRowCount - 1];
-    float aflSlideXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformRowFloatCount]) {
+    float *pPosition = pXfm[kTransformRowCount - 1];
+    float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
     CopyRows(pCamFX->mView, aflSlideXfm);
-    const float (*pSlideXfm)[Rnd::kXfmRowFloatCount] = aflSlideXfm;
-    Rnd::Transformable *pViewXfm = mView;
+    const float (*pSlideXfm)[kTransformRowFloatCount] = aflSlideXfm;
+    RndTransformable *pViewXfm = mView;
     if (sIntroBlendEndTick <= fTick) {
         float fBlend = (sIntroEndTick - fTick) / (sIntroEndTick - sIntroBlendEndTick);
         fBlend = fBlend > 1.0f ? 1.0f : (fBlend < 0.0f ? 0.0f : fBlend);
-        pViewXfm->SetOrigin(&sPivot.x);
+        pViewXfm->SetOrigin(sPivot);
         if (fBlend <= 0.0f) {
             mIntroActive = 0;
             return;
         }
-        float aflIntroPos[Rnd::kXfmRowFloatCount];
+        float aflIntroPos[kTransformRowFloatCount];
         XfmPoint(pSlideXfm, sIntroPos, aflIntroPos);
         if (fBlend == 1.0f) {
             memcpy(pPosition, aflIntroPos, sizeof(aflIntroPos));
@@ -1192,11 +1213,11 @@ void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kX
     }
     float fBlend = (sIntroBlendEndTick - fTick) / (sIntroBlendEndTick - kIntroStartTick);
     fBlend = fBlend > 1.0f ? 1.0f : (fBlend < 0.0f ? 0.0f : fBlend);
-    float aflIntroXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
     sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &pSlideXfm[0][0], &mXfm[0][0]);
-    float aflIntroPos[Rnd::kXfmRowFloatCount];
+    float aflIntroPos[kTransformRowFloatCount];
     XfmPoint(pSlideXfm, sIntroPos, aflIntroPos);
-    float *pIntroTranslation = aflIntroXfm[Rnd::kXfmRowCount - 1];
+    float *pIntroTranslation = aflIntroXfm[kTransformRowCount - 1];
     if (fBlend == 0.0f) {
         memcpy(pPosition, aflIntroPos, sizeof(aflIntroPos));
     } else if (fBlend == 1.0f) {
@@ -1206,27 +1227,28 @@ void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kX
     }
     InterpBasis(pXfm[0], aflIntroXfm[0], pXfm[0], fBlend);
     // Yes, the binary builds the origin over the intro translation, retaining its fourth word.
-    for (int i = 0; i < kNumComponents; ++i) {
-        pIntroTranslation[i] = (&sPivot.x)[i] * (1.0f - fBlend);
-    }
-    pViewXfm->SetOrigin(pIntroTranslation);
+    const Vector3 origin{sPivot.x * (1.0f - fBlend),
+                         sPivot.y * (1.0f - fBlend),
+                         sPivot.z * (1.0f - fBlend),
+                         pIntroTranslation[kVec3PaddingFloat]};
+    pViewXfm->SetOrigin(origin);
 }
 
-void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kXfmRowFloatCount]) {
-    float *pPosition = pXfm[Rnd::kXfmRowCount - 1];
-    Rnd::Transformable *pViewXfm = mView;
+void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformRowFloatCount]) {
+    float *pPosition = pXfm[kTransformRowCount - 1];
+    RndTransformable *pViewXfm = mView;
     // Yes, the binary leaves this blend unclamped above 1.
     const float fBlend = (sIntroBlendEndTick - fTick) / (sIntroBlendEndTick - kIntroStartTick);
     if (fBlend <= 0.0f) {
         mIntroActive = 0;
-        pViewXfm->SetOrigin(&sPivot.x);
+        pViewXfm->SetOrigin(sPivot);
         return;
     }
-    float aflIntroXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-    float aflSlideXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
+    float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
     CopyRows(pCamFX->mView, aflSlideXfm);
     sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &aflSlideXfm[0][0], &mXfm[0][0]);
-    float *pIntroTranslation = aflIntroXfm[Rnd::kXfmRowCount - 1];
+    float *pIntroTranslation = aflIntroXfm[kTransformRowCount - 1];
     if (fBlend == 1.0f) {
         memcpy(pPosition, pIntroTranslation, sizeof(aflIntroXfm[0]));
     } else {
@@ -1234,10 +1256,11 @@ void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[Rnd::kXfmRo
     }
     InterpBasis(pXfm[0], aflIntroXfm[0], pXfm[0], fBlend);
     // Yes, the binary builds the origin over the intro translation, retaining its fourth word.
-    for (int i = 0; i < kNumComponents; ++i) {
-        pIntroTranslation[i] = (&sPivot.x)[i] * (1.0f - fBlend);
-    }
-    pViewXfm->SetOrigin(pIntroTranslation);
+    const Vector3 origin{sPivot.x * (1.0f - fBlend),
+                         sPivot.y * (1.0f - fBlend),
+                         sPivot.z * (1.0f - fBlend),
+                         pIntroTranslation[kVec3PaddingFloat]};
+    pViewXfm->SetOrigin(origin);
 }
 
 void Ship::UpdateTransform() {
@@ -1247,9 +1270,13 @@ void Ship::UpdateTransform() {
     }
     const float fElapsed = fNow - mStartMs;
     mIntroActive = 1;
-    mIntroFlyIn->EvalFrame(mIntroFlyIn->FilterFrame(fElapsed), &mXfm[0][0], 1);
-    float aflIntro[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
-    mIntro->EvalFrame(mIntro->FilterFrame(fElapsed), &aflIntro[0][0], 1);
+    Transform flyIn;
+    mIntroFlyIn->MakeTransform(mIntroFlyIn->FilterFrame(fElapsed), flyIn, 1);
+    memcpy(mXfm, &flyIn, sizeof(mXfm));
+    float aflIntro[kTransformRowCount][kTransformRowFloatCount];
+    Transform intro;
+    mIntro->MakeTransform(mIntro->FilterFrame(fElapsed), intro, 1);
+    memcpy(aflIntro, &intro, sizeof(aflIntro));
     sceVu0MulAffineMatrixXyz(&mXfm[0][0], &mXfm[0][0], &aflIntro[0][0]);
 
     // Yes, the binary builds the scaled basis over the intro transform, retaining its fourth words.
@@ -1259,60 +1286,56 @@ void Ship::UpdateTransform() {
         }
     }
     // Yes, the binary scales the translation of mXfm in place, unlike its basis.
-    float *pTranslation = mXfm[Rnd::kXfmRowCount - 1];
+    float *pTranslation = mXfm[kTransformRowCount - 1];
     for (int j = 0; j < kNumComponents; ++j) {
         pTranslation[j] *= sScale;
     }
-    memcpy(aflIntro[Rnd::kXfmRowCount - 1], pTranslation, sizeof(aflIntro[0]));
+    memcpy(aflIntro[kTransformRowCount - 1], pTranslation, sizeof(aflIntro[0]));
     SetLocalXfm(mView, aflIntro);
-    // Yes, the binary leaves the fourth word of the origin unset.
-    float aflOrigin[Rnd::kXfmRowFloatCount];
-    for (int i = 0; i < kNumComponents; ++i) {
-        aflOrigin[i] = 0.0f;
-    }
-    static_cast<Rnd::Transformable *>(mView)->SetOrigin(aflOrigin);
+    // The binary leaves the fourth word of the origin unset.
+    const Vector3 origin{0.0f, 0.0f, 0.0f};
+    static_cast<RndTransformable *>(mView)->SetOrigin(origin);
     mView->SetFrame(fNow);
     mPsAnim->SetFrame(fNow);
     mBackPsAnim->SetFrame(fNow);
-    static_cast<Rnd::Transformable *>(mView)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndTransformable *>(mView)->UpdateWorldXfm(nullptr, 0);
     if (mPlayer != 0) {
         return;
     }
     sAllAnim->SetFrame(fNow);
     sLoadingView->SetFrame(fNow);
-    static_cast<Rnd::Transformable *>(sLoadingView)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndTransformable *>(sLoadingView)->UpdateWorldXfm(nullptr, 0);
 }
 
 #pragma mark - Drawing
 
 void Ship::DrawShared() {
-    static_cast<Rnd::Drawable *>(sEnviron)->Draw();
+    static_cast<RndDrawable *>(sEnviron)->Draw();
 }
 
 void Ship::DrawTrack() {
-    Rnd::Drawable *pViewDraw = mView;
+    RndDrawable *pViewDraw = mView;
     if (pViewDraw->mShowing == 0) {
         return;
     }
-    const float *pTranslation =
-        static_cast<Rnd::Transformable *>(mView)->mWorldXfm[Rnd::kXfmRowCount - 1];
-    const Vector3 position{pTranslation[0], pTranslation[1], pTranslation[2]};
-    Rnd::Cam::sCurrent->WorldToScreen(position, mScreenPos);
+    const Vector3 &translation = static_cast<RndTransformable *>(mView)->mWorldXfm.mTranslation;
+    const Vector3 position{translation.x, translation.y, translation.z};
+    RndCam::sCurrent->WorldToScreen(position, mScreenPos);
     if ((mFlags & kFlagBumped) != 0) {
-        static_cast<Rnd::Drawable *>(mBumperBlur)->Draw();
+        static_cast<RndDrawable *>(mBumperBlur)->Draw();
     } else {
-        static_cast<Rnd::Drawable *>(mMesh)->Draw();
+        static_cast<RndDrawable *>(mMesh)->Draw();
     }
     pViewDraw->Draw();
 }
 
 void Ship::DrawEffects() {
-    if (static_cast<Rnd::Drawable *>(mView)->mShowing == 0) {
+    if (static_cast<RndDrawable *>(mView)->mShowing == 0) {
         return;
     }
     if (mTrodes[0] != nullptr) {
-        for (Rnd::Mesh *pTrode : mTrodes) {
-            static_cast<Rnd::Drawable *>(pTrode)->Draw();
+        for (RndMesh *pTrode : mTrodes) {
+            static_cast<RndDrawable *>(pTrode)->Draw();
         }
     }
     for (ParticleArm &arm : mArms) {
@@ -1327,14 +1350,14 @@ void Ship::DrawEffects() {
         mFlags &= ~kFlagAttacking;
         return;
     }
-    float aflCell[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    float aflCell[kTransformRowCount][kTransformRowFloatCount];
     Transform cell;
     Geom()->CellXfm(mAttackTrack, &cell, true, false, TheGameDb->mSongTick, kCellCentre);
     ToRows(cell, aflCell);
     mBumperAttack->SetFrame((fSinceAttack * kBumpFrames) / sBumpAttackTime);
     SetLocalXfm(mBumperAttack, aflCell);
-    static_cast<Rnd::Transformable *>(mBumperAttack)->UpdateWorldXfm(nullptr, 0);
-    static_cast<Rnd::Drawable *>(mBumperAttack)->Draw();
+    static_cast<RndTransformable *>(mBumperAttack)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndDrawable *>(mBumperAttack)->Draw();
 }
 
 void Ship::DrawArrow() {
@@ -1367,11 +1390,11 @@ void Ship::DrawArrow() {
         fX = ((fX - kArrowCentreX) * fScale) + kArrowCentreX;
     }
     const float fAspect = TheRnd->AspectRatio();
-    float aflXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    float aflXfm[kTransformRowCount][kTransformRowFloatCount];
     float *pRight = aflXfm[0];
     float *pUp = aflXfm[1];
     float *pDirection = aflXfm[2];
-    float *pPosition = aflXfm[Rnd::kXfmRowCount - 1];
+    float *pPosition = aflXfm[kTransformRowCount - 1];
     pDirection[0] = -(fX - kArrowCentreX);
     pDirection[1] = 0.0f;
     pDirection[2] = fY - kArrowCentreY;
@@ -1384,16 +1407,16 @@ void Ship::DrawArrow() {
     pUp[2] = 0.0f;
     CrossVec3(pUp, pDirection, pRight);
 
-    Rnd::Mat *pMat = sArrowMesh->mMat;
+    RndMat *pMat = sArrowMesh->mMat;
     const float fSinceArrow = TheGameDb->mSongTime - mArrowStart;
     if (kArrowPulseTime < fSinceArrow || fSinceArrow < 0.0f) {
-        pMat->SetAmbient(mColor);
+        pMat->SetBaseColor(mColor);
     } else {
         float fPulse = 1.0f - (fSinceArrow * kArrowPulseRate);
         fPulse *= fPulse;
         const float fBrighten = fPulse * kArrowPulseBrighten;
         const Color pulse{mColor.r + fBrighten, mColor.g + fBrighten, mColor.b + fBrighten, 1.0f};
-        pMat->SetAmbient(pulse);
+        pMat->SetBaseColor(pulse);
         const float fScale = (fPulse * kArrowPulseGrowth) + 1.0f;
         for (int i = 0; i < kNumComponents; ++i) {
             for (int j = 0; j < kNumComponents; ++j) {
@@ -1402,6 +1425,6 @@ void Ship::DrawArrow() {
         }
     }
     SetLocalXfm(sArrowMesh, aflXfm);
-    static_cast<Rnd::Transformable *>(sArrowMesh)->UpdateWorldXfm(nullptr, 0);
-    static_cast<Rnd::Drawable *>(sArrowMesh)->Draw();
+    static_cast<RndTransformable *>(sArrowMesh)->UpdateWorldXfm(nullptr, 0);
+    static_cast<RndDrawable *>(sArrowMesh)->Draw();
 }

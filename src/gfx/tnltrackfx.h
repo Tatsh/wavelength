@@ -8,8 +8,8 @@
 #include "gfx/tnlgeom.h"
 #include "math/interpolator.h"
 #include "math/vector2.h"
-#include "rnd/mat.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndparticlesys.h"
 #include "script/dataarray.h"
 
 /**
@@ -171,7 +171,7 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x003afb6c
      */
-    static Rnd::ParticleSys *sSpew;
+    static RndParticleSys *sSpew;
 
     /**
      * The frame of sSpew, which each capture advances.
@@ -184,7 +184,7 @@ public:
     char mTrack;                     /*!< The track. */
     char mPhase;                     /*!< The step of the effect, from 1, or 0 for none. */
     float mStartTime;                /*!< The time the effect started, in milliseconds. */
-    Rnd::Mat *mMat;                  /*!< The material drawn over the track. */
+    RndMat *mMat;                    /*!< The material drawn over the track. */
     LinearInterpolator mEnableCurve; /*!< The step of the enable effect over time. */
     InvExpInterpolator mDropCurve;   /*!< The drop of a capture over time. */
     ExpInterpolator mFallCurve;      /*!< The fall of a capture over time. */

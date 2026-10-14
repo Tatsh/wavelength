@@ -9,7 +9,7 @@
 #include "gfx/playercamfx.h"
 #include "gfx/tnlgeom.h"
 #include "math/sine.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -62,20 +62,20 @@ float TnlCripFX::sHeightAcceleration = -9.99999975e-05f;
 float TnlCripFX::sImpactCamJiggle = 0.1f;
 float TnlCripFX::sMaxTwist = 0.174532935f;
 float TnlCripFX::sTwistFreq = 0.00654498488f;
-Rnd::ParticleSys *TnlCripFX::sParticles = nullptr;
+RndParticleSys *TnlCripFX::sParticles = nullptr;
 float TnlCripFX::sParticleFrame = 0.0f;
 
 TnlCripFX::TnlCripFX(int nIndex) {
     mState = kStateIdle;
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("crippler.view"));
-    mShadow = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("crippler shadow.view"));
+    mView = dynamic_cast<RndView *>(TheManager.Find("crippler.view"));
+    mShadow = dynamic_cast<RndView *>(TheManager.Find("crippler shadow.view"));
     if (nIndex != 0) {
         return;
     }
-    sParticles = dynamic_cast<Rnd::ParticleSys *>(Rnd::TheManager.Find("crippler.part"));
+    sParticles = dynamic_cast<RndParticleSys *>(TheManager.Find("crippler.part"));
     ScaleParticles(sParticles, TheGfxManager.mScrollSpeed);
     sParticleFrame = 0.0f;
-    sParticles->Rnd::ParticleSys::SetFrameSelf(sParticleFrame);
+    sParticles->RndParticleSys::SetFrameSelf(sParticleFrame);
     sParticles->FreeAllParticles();
     mView->RemoveAnim(sParticles);
 }
@@ -179,7 +179,8 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
         const float flElapsed = TheGameDb->mSongTime - mStartTime;
         if (flElapsed <= sFadeTime) {
             mView->SetFrame(flElapsed + sFlyTime);
-            mView->SetLocalXfm(mXfm);
+            mView->mLocalXfm = mXfm;
+            mView->mDirty = 1;
             mView->UpdateWorldXfm(nullptr, 0);
             mView->Draw();
         }
@@ -191,15 +192,17 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
     const float flElapsed = TheGameDb->mSongTime - mStartTime;
     Transform shadow = mXfm;
     shadow.mTranslation = mShadowPos;
-    mShadow->SetLocalXfm(shadow);
+    mShadow->mLocalXfm = shadow;
+    mShadow->mDirty = 1;
     mShadow->UpdateWorldXfm(nullptr, 0);
     mShadow->Draw();
     mView->SetFrame(flElapsed);
-    mView->SetLocalXfm(mXfm);
+    mView->mLocalXfm = mXfm;
+    mView->mDirty = 1;
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();
     sParticleFrame += mDelta;
-    sParticles->Rnd::ParticleSys::SetFrameSelf(sParticleFrame);
+    sParticles->RndParticleSys::SetFrameSelf(sParticleFrame);
     if (!(sFlyTime <= flElapsed)) {
         return;
     }

@@ -8,12 +8,12 @@
 #include "math/interpolator.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/animatable.h"
-#include "rnd/mesh.h"
-#include "rnd/particlesys.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 /**
  * The boundary across the tunnel at the start of each section of a song, with the name of the
@@ -146,17 +146,17 @@ public:
      */
     static Vector3 sOffset;
 
-    Rnd::View *mView;                 /*!< `boundary.view`. */
-    Rnd::View *mTransparentView;      /*!< `boundary transparent.view`, which draws the text. */
-    Rnd::View *mTopView;              /*!< `boundary top.view`, placed on the path. */
-    Rnd::View *mTextScaleView;        /*!< `boundary text scale.view`. */
-    Rnd::View *mConditionView;        /*!< `boundary_condition.view`. */
-    Rnd::Animatable *mMessageAnim;    /*!< `boundary msg.tnm`. */
-    Rnd::ParticleSys *mParticles[2];  /*!< `boundary.part` and `boundary add.part`. */
+    RndView *mView;                   /*!< `boundary.view`. */
+    RndView *mTransparentView;        /*!< `boundary transparent.view`, which draws the text. */
+    RndView *mTopView;                /*!< `boundary top.view`, placed on the path. */
+    RndView *mTextScaleView;          /*!< `boundary text scale.view`. */
+    RndView *mConditionView;          /*!< `boundary_condition.view`. */
+    RndAnimatable *mMessageAnim;      /*!< `boundary msg.tnm`. */
+    RndParticleSys *mParticles[2];    /*!< `boundary.part` and `boundary add.part`. */
     Vector2 mEmitRates[2];            /*!< The emission rates of mParticles as loaded. */
     Vector2 mSizes[2];                /*!< The sizes of mParticles as loaded. */
-    Rnd::Text *mText;                 /*!< `boundary msg`. */
-    Rnd::Mesh *mFlashMesh;            /*!< `boundary flash.mesh`. */
+    RndText *mText;                   /*!< `boundary msg`. */
+    RndMesh *mFlashMesh;              /*!< `boundary flash.mesh`. */
     RampAnimator mFlash;              /*!< The flash, animating `boundary flash fade.tnm`. */
     float mConditionFrame;            /*!< The frame of mConditionView. */
     LinearInterpolator mParticleFade; /*!< The emission over the ticks since the boundary. */
@@ -185,5 +185,5 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001ee0e8
      * @ghidraAddress PAL: 0x001f6e88
      */
-    static void PlaceOnPath(Rnd::Transformable *pTrans, TnlGeom *pGeom, float flTick);
+    static void PlaceOnPath(RndTransformable *pTrans, TnlGeom *pGeom, float flTick);
 };

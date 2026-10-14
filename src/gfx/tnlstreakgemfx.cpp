@@ -6,9 +6,9 @@
 #include "gfx/gfxmanager.h"
 #include "gfx/tnlgem.h"
 #include "os/string.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 
 namespace {
 
@@ -36,20 +36,19 @@ TnlStreakGemFX::TnlStreakGemFX(int nTrack, int nPlayer) {
     mTrack = nTrack;
     mBit = static_cast<unsigned char>(1 << nTrack);
     mTick = kNoTick;
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("streakarrow.view"));
-    mText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("streakarrow.txt"));
-    Rnd::Mesh *pMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("streakarrow.mesh"));
+    mView = dynamic_cast<RndView *>(TheManager.Find("streakarrow.view"));
+    mText = dynamic_cast<RndText *>(TheManager.Find("streakarrow.txt"));
+    RndMesh *pMesh = dynamic_cast<RndMesh *>(TheManager.Find("streakarrow.mesh"));
     const char nColor = (TheGameDb->mCommunity == GameDb::kCommunitySolo) ?
                             kSoloColor :
                             TheGameDb->GetPlayerColor(nPlayer)[0];
-    mMat =
-        dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(FormatString("streakarrow_%c.mat", nColor)));
-    mFontMat = dynamic_cast<Rnd::Mat *>(
-        Rnd::TheManager.Find(FormatString("streakarrow font_%c.mat", nColor)));
+    mMat = dynamic_cast<RndMat *>(TheManager.Find(FormatString("streakarrow_%c.mat", nColor)));
+    mFontMat =
+        dynamic_cast<RndMat *>(TheManager.Find(FormatString("streakarrow font_%c.mat", nColor)));
     pMesh->SetMat(mMat);
-    Rnd::Font *pFont = mText->GetFont();
-    pFont->SetAtlas(
-        mFontMat, pFont->mChars, pFont->mRows, pFont->mCols, pFont->mSize, pFont->mSpace);
+    RndFont *pFont = mText->mFont;
+    pFont->Set(
+        mFontMat, pFont->mChars.c_str(), pFont->mRows, pFont->mCols, pFont->mSize, pFont->mSpace);
 }
 
 TnlStreakGemFX::~TnlStreakGemFX() = default;
@@ -129,11 +128,12 @@ void TnlStreakGemFX::Draw() {
         return;
     }
     mFontMat->SetAlpha(flAlpha);
-    Color emissive = mMat->mEmissive;
-    emissive.a = flAlpha;
-    mMat->SetEmissive(emissive);
+    Color edge = mMat->mEdgeColor;
+    edge.a = flAlpha;
+    mMat->SetEdgeColor(edge);
     mMat->SetAlpha(flAlpha);
-    mView->SetLocalXfm(mXfm);
+    mView->mLocalXfm = mXfm;
+    mView->mDirty = 1;
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();
 }

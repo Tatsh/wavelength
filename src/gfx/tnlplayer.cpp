@@ -6,8 +6,8 @@
 #include "math/sine.h"
 #include "math/transform.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/transformable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtransformable.h"
 
 namespace {
 
@@ -23,7 +23,7 @@ constexpr float kQuarterTurn = 1.5707964f;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -50,17 +50,15 @@ TnlPlayer::TnlPlayer(int nPlayer,
         mIntro = nullptr;
         return;
     }
-    mCam = FindObject<Rnd::Cam>(FormatString("tnl cam%d", mCamNumber));
-    mLocalView = FindObject<Rnd::View>(FormatString("tnl local%d.view", mCamNumber));
-    pPlayer->SetCamSlide(
-        FindObject<Rnd::Transformable>(FormatString("tnl cam slide%d", mCamNumber)));
-    mIntro =
-        FindObject<Rnd::TransAnim>(FormatString("tnl cam intro%d.tnm", TheGameDb->GetNumPads()));
+    mCam = FindObject<RndCam>(FormatString("tnl cam%d", mCamNumber));
+    mLocalView = FindObject<RndView>(FormatString("tnl local%d.view", mCamNumber));
+    pPlayer->SetCamSlide(FindObject<RndTransformable>(FormatString("tnl cam slide%d", mCamNumber)));
+    mIntro = FindObject<RndTransAnim>(FormatString("tnl cam intro%d.tnm", TheGameDb->GetNumPads()));
 }
 
 TnlPlayer::~TnlPlayer() = default;
 
-void TnlPlayer::LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, Rnd::Cam *pCam) {
+void TnlPlayer::LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, RndCam *pCam) {
     float flPitch;
     FindConfigFloat(pConfig, pDefaults, "player_cam_base_pitch", &flPitch, true);
     Vector3 offset;
@@ -75,7 +73,8 @@ void TnlPlayer::LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, Rnd::Cam *p
                         Vector3{0.0f, flCos, flSin},
                         Vector3{0.0f, -flSin, flCos},
                         offset};
-    pCam->SetLocalXfm(xfm);
+    pCam->mLocalXfm = xfm;
+    pCam->mDirty = 1;
 }
 
 void TnlPlayer::LoadConfig(

@@ -6,7 +6,7 @@
 #include "math/rand.h"
 #include "math/sine.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -43,10 +43,10 @@ Beam::Beam() {
     mTravelPeriods.x = 1.0f;
     // The names only have to be unique, and the address of the beam makes them so.
     const unsigned int nId = static_cast<unsigned int>(reinterpret_cast<std::uintptr_t>(this));
-    mMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Create(
-        Rnd::Mat::sClassName.mStr, FormatString("beam mat 0x%08x.mat", nId)));
-    mLine = dynamic_cast<Rnd::Line *>(Rnd::TheManager.Create(
-        Rnd::Line::sClassName.mStr, FormatString("beam line 0x%08x.mat", nId)));
+    mMat = dynamic_cast<RndMat *>(
+        TheManager.Create(RndMat::sClassName, FormatString("beam mat 0x%08x.mat", nId)));
+    mLine = dynamic_cast<RndLine *>(
+        TheManager.Create(RndLine::sClassName, FormatString("beam line 0x%08x.mat", nId)));
     mLine->SetMat(mMat);
     mLine->SetShowing(0);
 }
@@ -139,7 +139,7 @@ bool Beam::Update(const Vector3 &direction, const Vector3 &side, const Color &co
                         (pFinish->b * fT) + (pStart->b * fKeep),
                         (pFinish->a * fT) + (pStart->a * fKeep)};
     mMat->SetAlpha(blended.a);
-    mMat->SetAmbient(blended);
+    mMat->SetBaseColor(blended);
     mLine->SetPoint(0,
                     Vector3{mEnds[BeamParams::kEndStart][0],
                             mEnds[BeamParams::kEndStart][1],
@@ -150,7 +150,7 @@ bool Beam::Update(const Vector3 &direction, const Vector3 &side, const Color &co
 }
 
 void Beam::SetEnd(int nEnd, const float *pPosition) {
-    for (int i = 0; i < Rnd::kXfmRowFloatCount; ++i) {
+    for (int i = 0; i < kTransformRowFloatCount; ++i) {
         mEnds[nEnd][i] = pPosition[i];
     }
 }

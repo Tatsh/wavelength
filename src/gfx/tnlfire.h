@@ -8,12 +8,12 @@
 #include "math/transform.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/multimesh.h"
-#include "rnd/particlesys.h"
-#include "rnd/transanim.h"
-#include "rnd/view.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndmultimesh.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndview.h"
 
 /**
  * The fire of a captured track, flames that burn along the track and chunks of its panels that fly
@@ -60,7 +60,7 @@ public:
          * @ghidraAddress NTSC-U/C: 0x001d4330
          * @ghidraAddress PAL: 0x001dd0d0
          */
-        void Init(Rnd::ParticleSys *pSys, GfxTunnel *pTunnel);
+        void Init(RndParticleSys *pSys, GfxTunnel *pTunnel);
 
         /**
          * Colour the flames.
@@ -99,7 +99,7 @@ public:
          */
         void Stop();
 
-        Rnd::ParticleSys *mSys;     /*!< The system, or null. */
+        RndParticleSys *mSys;       /*!< The system, or null. */
         float mEmitRateLow;         /*!< The low end of the saved emission rate. */
         float mEmitRateHigh;        /*!< The high end of the saved emission rate. */
         alignas(16) Vector3 mForce; /*!< The saved force, scaled to the panels. */
@@ -136,10 +136,10 @@ public:
          */
         void CreateMultiMesh();
 
-        float mWeight;              /*!< The chance of the model against the other models. */
-        Rnd::MultiMesh *mMultiMesh; /*!< The instances of the mesh, one for each flying chunk. */
-        Rnd::TransAnim *mTransAnim; /*!< The tumble of a chunk over its life. */
-        Rnd::Mesh *mMesh;           /*!< The mesh. */
+        float mWeight;            /*!< The chance of the model against the other models. */
+        RndMultiMesh *mMultiMesh; /*!< The instances of the mesh, one for each flying chunk. */
+        RndTransAnim *mTransAnim; /*!< The tumble of a chunk over its life. */
+        RndMesh *mMesh;           /*!< The mesh. */
     };
 
     /**
@@ -236,7 +236,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001d5190
      * @ghidraAddress PAL: 0x001ddf30
      */
-    static void Disable(const char *pszName, Rnd::View *pParent);
+    static void Disable(const char *pszName, RndView *pParent);
 
     /**
      * Start the fire on a track, unless it burns or another fire's chunks still fly.
@@ -409,9 +409,9 @@ public:
     std::vector<ChunkModel> mModels; /*!< The models of `capture_chunks`. */
     float mTotalWeight;              /*!< The sum of the weights of the models. */
     std::list<Transform> mFreeXfms;  /*!< The instance transforms of the idle chunks. */
-    Rnd::Mat *mMat;                  /*!< The material of the chunks. */
+    RndMat *mMat;                    /*!< The material of the chunks. */
     GfxTunnel *mTunnel;              /*!< The tunnel. */
-    Rnd::View *mView;                /*!< The view of the fire, placed at the head. */
+    RndView *mView;                  /*!< The view of the fire, placed at the head. */
     alignas(16) Emitter mInner;      /*!< The inner flames, `<name>.ps`. */
     Emitter mOuter;                  /*!< The outer flames, `<name>a.ps`. */
     float mStartTick;                /*!< The tick the head starts at. */

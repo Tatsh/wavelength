@@ -3,8 +3,8 @@
 #include "gfx/gfxtunnel.h"
 #include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/particlesys.h"
-#include "rnd/view.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndview.h"
 
 /**
  * The crippler one player sends at another, which flies down the track of the victim and then
@@ -137,14 +137,14 @@ public:
     /** The radians per tick of the twist. @ghidraAddress NTSC-U/C: 0x003afb68 */
     static float sTwistFreq;
     /** The particles of the cripplers, `crippler.part`. @ghidraAddress NTSC-U/C: 0x003afb8c */
-    static Rnd::ParticleSys *sParticles;
+    static RndParticleSys *sParticles;
     /** The frame of sParticles. @ghidraAddress NTSC-U/C: 0x003afb90 */
     static float sParticleFrame;
 
     char mState;        /*!< The phase, one of State. */
     char mVictim;       /*!< The crippled player. */
-    Rnd::View *mView;   /*!< The view of the crippler, `crippler.view`. */
-    Rnd::View *mShadow; /*!< The view of its shadow, `crippler shadow.view`. */
+    RndView *mView;     /*!< The view of the crippler, `crippler.view`. */
+    RndView *mShadow;   /*!< The view of its shadow, `crippler shadow.view`. */
     Transform mXfm;     /*!< The placed transform of the crippler. */
     Vector3 mShadowPos; /*!< The position of the shadow on the track. */
     union {

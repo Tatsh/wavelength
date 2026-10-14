@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rnd/transformable.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * Slide of the camera of the tunnel, `tnl cam slide1`.
@@ -31,5 +31,5 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x003afa88
      */
-    static Rnd::Transformable *sSlide;
+    static RndTransformable *sSlide;
 };

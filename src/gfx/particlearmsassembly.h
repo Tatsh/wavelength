@@ -2,8 +2,8 @@
 
 #include "gfx/tnlgeom.h"
 #include "math/interpolator.h"
-#include "rnd/particlesys.h"
-#include "rnd/transanim.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtransanim.h"
 #include "script/dataarray.h"
 
 /**
@@ -80,8 +80,8 @@ public:
      */
     const char *Name() const;
 
-    Rnd::ParticleSys *mSys;    /*!< The particle system. */
-    Rnd::TransAnim *mPath;     /*!< The path the arms follow, `path`, or null. */
+    RndParticleSys *mSys;      /*!< The particle system. */
+    RndTransAnim *mPath;       /*!< The path the arms follow, `path`, or null. */
     Interpolator *mTicksAhead; /*!< The ticks ahead of the song the arms turn at, over ticks. */
     int mNumArms;              /*!< The number of arms, `num_arms`. */
     float mRotationSpeed;      /*!< The turn of the arms per tick, in radians. */

@@ -6,7 +6,7 @@
 #include "math/transform.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/string.h"
+#include "rnd/rndline.h"
 #include "script/dataarray.h"
 
 /**
@@ -134,12 +134,12 @@ public:
      * Place the needle at the ship and draw the segment the needle is in.
      *
      * @param flBlend The colour across the stick, from -1 to 1.
-     * @param pXfm The rows of the world transform of the ship.
+     * @param xfm The world transform of the ship.
      * @param pAxis The first axis of the path, which the trail does not read.
      * @ghidraAddress NTSC-U/C: 0x001e72e8
      * @ghidraAddress PAL: 0x001f0088
      */
-    void Update(float flBlend, const float (*pXfm)[Rnd::kXfmRowFloatCount], const Vector3 *pAxis);
+    void Update(float flBlend, const Transform &xfm, const Vector3 *pAxis);
 
     /**
      * Report the place a sweep ends at, the other side from the place it starts at.
@@ -189,7 +189,7 @@ public:
     unsigned char mReserved08[0x8]; // +0x08 to +0x0f are not yet identified.
     Color mColor;                   /*!< The colour of the player. */
     Color mPointColors[3];          /*!< The colours at the ends and the middle of the stick. */
-    Rnd::String *mRibbon;           /*!< The scratch ribbon of the ship. */
+    RndLine *mRibbon;               /*!< The scratch ribbon of the ship. */
     Vector3 mRibbonOffset;          /*!< The translation the ribbon had. */
     LinearInterpolator mNeedle;     /*!< The place of the needle over the ticks of a sweep. */
     int mState;                     /*!< One of State. */

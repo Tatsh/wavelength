@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gfx/gfxtunnel.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -74,7 +74,7 @@ public:
      */
     void Update();
 
-    Rnd::View *mView; /*!< The view, `win_shell.view`. */
+    RndView *mView;   /*!< The view, `win_shell.view`. */
     float mStartTick; /*!< The tick the shell started at, or kNoTick. */
     float mDuration;  /*!< The ticks the shell plays, `duration`. */
     float mFrameRate; /*!< The frames of the view per tick, `anim_length` over mDuration. */

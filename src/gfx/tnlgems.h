@@ -10,9 +10,9 @@
 #include "gfx/tnlgem.h"
 #include "gfx/tnltrackrange.h"
 #include "math/transform.h"
-#include "rnd/animatable.h"
-#include "rnd/mesh.h"
-#include "rnd/object.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndobject.h"
 #include "script/dataarray.h"
 
 /**
@@ -112,7 +112,7 @@ public:
     void AddRotations(char nType,
                       int nKeys,
                       int bLoop,
-                      Rnd::Animatable *pParent,
+                      RndAnimatable *pParent,
                       float flStartFrame,
                       float flStartAngle,
                       float flEndFrame,
@@ -250,7 +250,7 @@ public:
     std::list<Transform> mTransforms;         /*!< The pool of free instance transforms. */
     std::vector<MeshGroup *> mMeshGroups;     /*!< The first mesh group of each type. */
     std::vector<SpriteGroup *> mSpriteGroups; /*!< The sprite group of each sprite type. */
-    std::list<Rnd::Object *> mObjects;        /*!< The animations the gems created. */
+    std::list<RndObject *> mObjects;          /*!< The animations the gems created. */
     std::list<TnlGem> mGems;                  /*!< The gems, sorted by tick. */
     float mTrailTicks;                        /*!< The ticks a gem stays behind the song. */
     int mMaxGems;                             /*!< The most gems placed at once. */
@@ -266,7 +266,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001f3688
      * @ghidraAddress PAL: 0x001fc428
      */
-    static void SetRenderScale(Rnd::Object *pObject, float flScale);
+    static void SetRenderScale(RndObject *pObject, float flScale);
 
     /**
      * Set the render scale of the geometry a mesh draws.
@@ -276,7 +276,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001f3750
      * @ghidraAddress PAL: 0x001fc4f0
      */
-    static void SetRenderScale(Rnd::Mesh *pMesh, float flScale);
+    static void SetRenderScale(RndMesh *pMesh, float flScale);
 
     /**
      * Scale each object with a render scale, and forget the scales.
@@ -305,11 +305,11 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001f3a28
      * @ghidraAddress PAL: 0x001fc7c8
      */
-    static void AddRotation(Rnd::Mesh *pMesh,
-                            std::list<Rnd::Object *> *pObjects,
+    static void AddRotation(RndMesh *pMesh,
+                            std::list<RndObject *> *pObjects,
                             int nKeys,
                             int bLoop,
-                            Rnd::Animatable *pParent,
+                            RndAnimatable *pParent,
                             float flStartFrame,
                             float flStartAngle,
                             float flEndFrame,

@@ -10,8 +10,8 @@
 #include "math/transform.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/transanim.h"
-#include "rnd/transformable.h"
+#include "rnd/rndtransanim.h"
+#include "rnd/rndtransformable.h"
 #include "script/dataarray.h"
 
 /**
@@ -158,9 +158,9 @@ public:
      * @ghidraAddress PAL: 0x001f2310
      */
     void ComputeXfms(bool bCam,
-                     Rnd::TransAnim *pAnim,
+                     RndTransAnim *pAnim,
                      const Vector3 *pStick,
-                     float (*pShipXfm)[Rnd::kXfmRowFloatCount],
+                     float (*pShipXfm)[kTransformRowFloatCount],
                      Transform *pCamXfm,
                      float flTime,
                      float flTicks,

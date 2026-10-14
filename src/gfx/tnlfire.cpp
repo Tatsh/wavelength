@@ -8,7 +8,7 @@
 #include "math/rand.h"
 #include "math/transformops.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "script/dataarray.h"
 
 namespace {
@@ -33,7 +33,7 @@ constexpr int kGemTicksReserve = 12;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -57,22 +57,22 @@ TnlFire::Emitter::Emitter() : mSys(nullptr) {
 
 TnlFire::Emitter::~Emitter() {
     if (mSys != nullptr) {
-        mSys->mEmitRateLow = mEmitRateLow;
-        mSys->mEmitRateHigh = mEmitRateHigh;
+        mSys->mEmitRate.x = mEmitRateLow;
+        mSys->mEmitRate.y = mEmitRateHigh;
         mSys->mForce = mForce;
     }
 }
 
-void TnlFire::Emitter::Init(Rnd::ParticleSys *pSys, GfxTunnel *) {
+void TnlFire::Emitter::Init(RndParticleSys *pSys, GfxTunnel *) {
     mSys = pSys;
     const float flScale = sPanelSize;
-    mEmitRateLow = pSys->mEmitRateLow;
-    mEmitRateHigh = pSys->mEmitRateHigh;
+    mEmitRateLow = pSys->mEmitRate.x;
+    mEmitRateHigh = pSys->mEmitRate.y;
     mForce.x = pSys->mForce.x * flScale;
     mForce.z = pSys->mForce.z * flScale;
     mForce.y = pSys->mForce.y * flScale;
-    mSys->mSizeLow *= flScale;
-    mSys->mSizeHigh *= flScale;
+    mSys->mSize.x *= flScale;
+    mSys->mSize.y *= flScale;
     mSys->mSpeed.x *= flScale;
     mSys->mSpeed.y *= flScale;
     Vector3 &low = mSys->mPosLow;
@@ -120,16 +120,16 @@ void TnlFire::Emitter::Start() {
         return;
     }
     mSys->FreeAllParticles();
-    mSys->mEmitRateHigh = mEmitRateHigh;
-    mSys->mEmitRateLow = mEmitRateLow;
+    mSys->mEmitRate.y = mEmitRateHigh;
+    mSys->mEmitRate.x = mEmitRateLow;
 }
 
 void TnlFire::Emitter::Stop() {
     if (mSys == nullptr) {
         return;
     }
-    mSys->mEmitRateHigh = 0.0f;
-    mSys->mEmitRateLow = 0.0f;
+    mSys->mEmitRate.y = 0.0f;
+    mSys->mEmitRate.x = 0.0f;
 }
 
 TnlFire::ChunkModel::~ChunkModel() {
@@ -137,8 +137,8 @@ TnlFire::ChunkModel::~ChunkModel() {
 }
 
 void TnlFire::ChunkModel::CreateMultiMesh() {
-    mMultiMesh = dynamic_cast<Rnd::MultiMesh *>(Rnd::TheManager.Create(
-        Rnd::g_multiMeshClassName.mStr, FormatString("tnlfire chunk 0x%08x.mm", this)));
+    mMultiMesh = dynamic_cast<RndMultiMesh *>(
+        TheManager.Create(RndMultiMesh::sClassName, FormatString("tnlfire chunk 0x%08x.mm", this)));
     mMultiMesh->SetMesh(mMesh);
 }
 
@@ -185,13 +185,13 @@ void TnlFire::Chunk::Spawn(ChunkModel *pModel,
     mXfm.mBasisZ.z = pCellXfm->mBasisZ.z * scale.z;
     mXfm.mBasisZ.y = pCellXfm->mBasisZ.y * scale.z;
 
-    std::list<Transform> &instances = pModel->mMultiMesh->GetTransforms();
+    std::list<Transform> &instances = pModel->mMultiMesh->mTransforms;
     instances.splice(instances.begin(), *pFreeXfms, pFreeXfms->begin());
     mInstance = instances.begin();
 }
 
 void TnlFire::Chunk::Reset(std::list<Transform> *pFreeXfms) {
-    pFreeXfms->splice(pFreeXfms->end(), mModel->mMultiMesh->GetTransforms(), mInstance);
+    pFreeXfms->splice(pFreeXfms->end(), mModel->mMultiMesh->mTransforms, mInstance);
     mModel = nullptr;
     mStartTick = kUnsetTick;
 }
@@ -209,9 +209,9 @@ bool TnlFire::Chunk::Update(float flTicks) {
     pos.y += mVelocity.y * flTicks;
     pos.z += mVelocity.z * flTicks;
 
-    Rnd::TransAnim *pAnim = mModel->mTransAnim;
+    RndTransAnim *pAnim = mModel->mTransAnim;
     Transform tumble;
-    pAnim->EvalFrame(pAnim->FilterFrame(flTick - mStartTick), &tumble.mBasisX.x, 1);
+    pAnim->MakeTransform(pAnim->FilterFrame(flTick - mStartTick), tumble, 1);
     sceVu0MulAffineMatrixXyz(&mInstance->mBasisX.x, &mXfm.mBasisX.x, &tumble.mBasisX.x);
     return false;
 }
@@ -227,17 +227,17 @@ TnlFire::TnlFire(const char *pszName, int nPlayer, GfxTunnel *pTunnel, bool bChu
         mTotalWeight = 0.0f;
         if ((TheGameDb->mCommunity == GameDb::kCommunitySolo) ||
             (TheGameDb->mRuleSet != GameDb::kRuleSetGame)) {
-            mMat = FindObject<Rnd::Mat>("panelchunk nrg.mat");
+            mMat = FindObject<RndMat>("panelchunk nrg.mat");
         } else {
-            mMat = FindObject<Rnd::Mat>("panelchunk multi.mat");
+            mMat = FindObject<RndMat>("panelchunk multi.mat");
         }
         for (int i = 1; i < pChunks->Size(); ++i) {
             ChunkModel &model = mModels[i - 1];
             DataArray *pEntry = pChunks->Array(i);
             model.mWeight = pEntry->Float(0);
             mTotalWeight += model.mWeight;
-            model.mMesh = FindObject<Rnd::Mesh>(pEntry->Sym(1));
-            model.mTransAnim = FindObject<Rnd::TransAnim>(pEntry->Sym(2));
+            model.mMesh = FindObject<RndMesh>(pEntry->Sym(1));
+            model.mTransAnim = FindObject<RndTransAnim>(pEntry->Sym(2));
             model.CreateMultiMesh();
             model.mMesh->SetMat(mMat);
         }
@@ -246,22 +246,22 @@ TnlFire::TnlFire(const char *pszName, int nPlayer, GfxTunnel *pTunnel, bool bChu
             mFreeXfms.push_back(Transform());
         }
     }
-    mView = FindObject<Rnd::View>(FormatString("%s.view", pszName));
-    mInner.Init(FindObject<Rnd::ParticleSys>(FormatString("%s.ps", pszName)), pTunnel);
+    mView = FindObject<RndView>(FormatString("%s.view", pszName));
+    mInner.Init(FindObject<RndParticleSys>(FormatString("%s.ps", pszName)), pTunnel);
     if (nPlayer == kChunkPlayer) {
-        mOuter.Init(FindObject<Rnd::ParticleSys>(FormatString("%sa.ps", pszName)), pTunnel);
+        mOuter.Init(FindObject<RndParticleSys>(FormatString("%sa.ps", pszName)), pTunnel);
     }
     mGemTicks.reserve(kGemTicksReserve);
 }
 
-void TnlFire::Disable(const char *pszName, Rnd::View *pParent) {
-    Rnd::View *pView = FindObject<Rnd::View>(FormatString("%s.view", pszName));
-    Rnd::ParticleSys *pSys = FindObject<Rnd::ParticleSys>(FormatString("%s.ps", pszName));
-    pView->RemoveAllDraws();
-    pView->RemoveAllTranses();
+void TnlFire::Disable(const char *pszName, RndView *pParent) {
+    RndView *pView = FindObject<RndView>(FormatString("%s.view", pszName));
+    RndParticleSys *pSys = FindObject<RndParticleSys>(FormatString("%s.ps", pszName));
+    pView->ClearDraws();
+    pView->ClearTrans();
     pView->RemoveAllAnims();
     pParent->RemoveDraw(pView);
-    pSys->SetPoolSize(0);
+    pSys->SetNumParticles(0);
 }
 
 bool TnlFire::Start(int nPlayer,
@@ -361,7 +361,8 @@ void TnlFire::Update(float flTicks, float) {
     }
     Transform cellXfm;
     mTunnel->mGeom->CellXfm(mTrack, &cellXfm, true, true, flHead, kMiddle);
-    mView->SetLocalXfm(cellXfm);
+    mView->mLocalXfm = cellXfm;
+    mView->mDirty = 1;
 
     while (mNextChunkTick <= flHead) {
         const std::vector<float>::iterator gem =
@@ -401,7 +402,7 @@ void TnlFire::Draw() {
     if (mChunks.empty()) {
         return;
     }
-    mMat->SetAmbient(mTrackColor);
+    mMat->SetBaseColor(mTrackColor);
     for (const ChunkModel &model : mModels) {
         model.mMultiMesh->Draw();
     }

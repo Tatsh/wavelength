@@ -13,7 +13,7 @@
 #include "math/vector2.h"
 #include "os/debug.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -143,13 +143,9 @@ inline Vector3 RotateByBasis(const Transform &xfm, const Vector3 &vec) {
 }
 
 // Set the translation of the local transform of a transformable and mark it dirty.
-inline void SetLocalTranslation(Rnd::Transformable *pTrans, const Vector3 &pos) {
+inline void SetLocalTranslation(RndTransformable *pTrans, const Vector3 &pos) {
     pTrans->mDirty = 1;
-    float *pRow = pTrans->mLocalXfm[Rnd::kXfmRowCount - 1];
-    pRow[0] = pos.x;
-    pRow[1] = pos.y;
-    pRow[2] = pos.z;
-    pRow[kVec3PaddingFloat] = pos.w;
+    pTrans->mLocalXfm.mTranslation = pos;
 }
 
 inline void Register(const char *pszName, PlayerCamFX::Algorithm algorithm) {
@@ -166,16 +162,16 @@ PlayerCamFX::PlayerCamFX(int nPlayer, int nNumTracks, bool bBoss)
       mJiggleAxis{0.0f, 0.0f, 1.0f}, mScreenJiggleAxis{0.0f, 0.0f, 1.0f},
       mScreenJiggle{0.0f, 0.0f, 0.0f}, mSliding(0), mSlideBlend(0.0f), mAlgorithm(),
       mBlendAlgorithm(nullptr), mBlend(0.0f) {
-    mFx = dynamic_cast<Rnd::Transformable *>(
-        Rnd::TheManager.Find(FormatString("tnl cam fx%d", kCameraIndex)));
-    mCam = dynamic_cast<Rnd::Cam *>(Rnd::TheManager.Find(FormatString("tnl cam%d", kCameraIndex)));
-    mSlide = dynamic_cast<Rnd::Transformable *>(
-        Rnd::TheManager.Find(FormatString("tnl cam slide%d", kCameraIndex)));
+    mFx = dynamic_cast<RndTransformable *>(
+        TheManager.Find(FormatString("tnl cam fx%d", kCameraIndex)));
+    mCam = dynamic_cast<RndCam *>(TheManager.Find(FormatString("tnl cam%d", kCameraIndex)));
+    mSlide = dynamic_cast<RndTransformable *>(
+        TheManager.Find(FormatString("tnl cam slide%d", kCameraIndex)));
     if (bBoss) {
-        mIntro = dynamic_cast<Rnd::TransAnim *>(Rnd::TheManager.Find("tnl cam boss fly-in_s.tnm"));
+        mIntro = dynamic_cast<RndTransAnim *>(TheManager.Find("tnl cam boss fly-in_s.tnm"));
         mIntroTilt = sBossIntroTilt;
     } else {
-        mIntro = dynamic_cast<Rnd::TransAnim *>(Rnd::TheManager.Find("tnl cam fly-in_s.tnm"));
+        mIntro = dynamic_cast<RndTransAnim *>(TheManager.Find("tnl cam fly-in_s.tnm"));
         mIntroTilt = sIntroTilt;
     }
     const float flCenter = static_cast<float>(nNumTracks - 1) * kCenterLateral;
@@ -243,7 +239,8 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel, float flTick, float flTime) {
         BlendPosition(mView.mTranslation, mSlideXfm.mTranslation, mSlideBlend);
         InterpBasis(&mView.mBasisX.x, &mSlideXfm.mBasisX.x, &mView.mBasisX.x, mSlideBlend);
     }
-    mSlide->SetLocalXfm(mView);
+    mSlide->mLocalXfm = mView;
+    mSlide->mDirty = 1;
 
     float flJiggle = mJiggle.Apply(0.0f);
     if (flJiggle < kMinJiggle) {
@@ -257,10 +254,10 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel, float flTick, float flTime) {
     mScreenJiggle.x = mScreenJiggleAxis.x * flScreenJiggleScale;
     mScreenJiggle.z = mScreenJiggleAxis.z * flScreenJiggleScale;
     mScreenJiggle.y = mScreenJiggleAxis.y * flScreenJiggleScale;
-    const float *pTranslation = mFx->mLocalXfm[Rnd::kXfmRowCount - 1];
-    jiggle.x += pTranslation[0];
-    jiggle.y += pTranslation[1];
-    jiggle.z += pTranslation[2];
+    const Vector3 &translation = mFx->mLocalXfm.mTranslation;
+    jiggle.x += translation.x;
+    jiggle.y += translation.y;
+    jiggle.z += translation.z;
     SetLocalTranslation(mFx, jiggle);
 }
 
@@ -276,7 +273,7 @@ void PlayerCamFX::SetSlide(const Transform *pXfm, float flBlend) {
 
 void PlayerCamFX::PlayIntro(float flTick) {
     Transform anim;
-    mIntro->EvalFrame(mIntro->FilterFrame(flTick), &anim.mBasisX.x, 1);
+    mIntro->MakeTransform(mIntro->FilterFrame(flTick), anim, 1);
     sceVu0MulAffineMatrixXyz(&mCamera.mBasisX.x, &mCamera.mBasisX.x, &anim.mBasisX.x);
     const float flTilt = sIntroCurve.Eval(flTick) * mIntroTilt;
     RotateBasisAboutX(mCamera, flTilt, mView);
@@ -424,7 +421,8 @@ void PlayerCamFX::Reset(bool bNearPullBack) {
     identity.mBasisY = Vector3{0.0f, 1.0f, 0.0f};
     identity.mBasisZ = Vector3{0.0f, 0.0f, 1.0f};
     identity.mTranslation = Vector3{0.0f, 0.0f, 0.0f};
-    mFx->SetLocalXfm(identity);
+    mFx->mLocalXfm = identity;
+    mFx->mDirty = 1;
     mFx->UpdateWorldXfm(nullptr, 0);
 
     if (TheGameDb->mTutorial) {

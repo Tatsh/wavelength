@@ -3,9 +3,9 @@
 #include <list>
 
 #include "math/transform.h"
-#include "rnd/mesh.h"
-#include "rnd/multimesh.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndmultimesh.h"
+#include "rnd/rndparticlesys.h"
 
 class TnlGem;
 
@@ -30,9 +30,9 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001f4168
      * @ghidraAddress PAL: 0x001fcf08
      */
-    MeshGroup(Rnd::MultiMesh *pMultiMesh,
-              std::list<Rnd::Mesh *> *pMeshes,
-              Rnd::ParticleSys *pParticles,
+    MeshGroup(RndMultiMesh *pMultiMesh,
+              std::list<RndMesh *> *pMeshes,
+              RndParticleSys *pParticles,
               std::list<Transform> *pTransforms,
               int nMaxGems,
               float flLookahead);
@@ -67,9 +67,9 @@ public:
      */
     void TakeGem(MeshGroup *pFrom, TnlGem *pGem);
 
-    Rnd::MultiMesh *mMultiMesh;        /*!< The multimesh that draws the instances. */
-    Rnd::ParticleSys *mParticles;      /*!< The glow particles of the gems, or null. */
-    std::list<Rnd::Mesh *> mMeshes;    /*!< The meshes of a composite group. */
+    RndMultiMesh *mMultiMesh;          /*!< The multimesh that draws the instances. */
+    RndParticleSys *mParticles;        /*!< The glow particles of the gems, or null. */
+    std::list<RndMesh *> mMeshes;      /*!< The meshes of a composite group. */
     std::list<Transform> *mTransforms; /*!< The pool of free instance transforms. */
     float mLookahead;                  /*!< The farthest ticks ahead the group draws. */
     MeshGroup *mNext;                  /*!< The group of the next distance, or null. */

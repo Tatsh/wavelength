@@ -11,7 +11,7 @@
 #include "math/color.h"
 #include "math/vector3.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -55,7 +55,7 @@ constexpr int kNoPlayer = -1;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 inline void ScaleBasis(Transform *pXfm, float flScale) {
@@ -77,7 +77,7 @@ float TnlTrackFX::sCaptureSpewTicks = 120.0f;
 float TnlTrackFX::sCaptureCamJiggle = 0.1f;
 float TnlTrackFX::sCaptureBrightness = 0.6f;
 Vector2 TnlTrackFX::sFlareSize{0.1f, 0.3f};
-Rnd::ParticleSys *TnlTrackFX::sSpew = nullptr;
+RndParticleSys *TnlTrackFX::sSpew = nullptr;
 float TnlTrackFX::sSpewFrame = 0.0f;
 
 TnlTrackFX::TnlTrackFX(char nTrack)
@@ -85,18 +85,18 @@ TnlTrackFX::TnlTrackFX(char nTrack)
       mEnableCurve(0.0f, 0.0f, 0.0f, 1.0f), mDropCurve(0.0f, 0.0f, 0.0f, 1.0f, kCurvePower),
       mFallCurve(0.0f, 0.0f, 0.0f, 1.0f, kCurvePower) {
     if (nTrack == 0) {
-        sSpew = FindObject<Rnd::ParticleSys>("autocapture spew.part");
+        sSpew = FindObject<RndParticleSys>("autocapture spew.part");
         ScaleParticles(sSpew, TheGfxManager.mScrollSpeed);
         sSpewFrame = 0.0f;
-        sSpew->Rnd::ParticleSys::SetFrameSelf(sSpewFrame);
+        sSpew->RndParticleSys::SetFrameSelf(sSpewFrame);
         sSpew->FreeAllParticles();
     }
-    Rnd::Mat *pBase = FindObject<Rnd::Mat>("panel enable.mat");
+    RndMat *pBase = FindObject<RndMat>("panel enable.mat");
     if (nTrack == 0) {
         mMat = pBase;
     } else {
-        mMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Create(
-            Rnd::Mat::sClassName.mStr, FormatString("panel enable trk %d.mat", nTrack)));
+        mMat = dynamic_cast<RndMat *>(
+            TheManager.Create(RndMat::sClassName, FormatString("panel enable trk %d.mat", nTrack)));
         mMat->Copy(pBase, 0);
     }
     mGemTicks.reserve(kReservedGemTicks);
@@ -183,7 +183,7 @@ void TnlTrackFX::Enable(GfxTunnel *pTunnel) {
     mState = kStateEnable;
     mStartTime = TheGameDb->mSongTime;
     mEnableCurve.Reset(0.0f, 1.0f, mStartTime, mStartTime + sEnableTimes[0]);
-    mMat->mBlend = Rnd::Mat::kBlendModeSrcAlphaAdd;
+    mMat->mBlend = RndMat::kBlendSrcAlphaAdd;
     pTunnel->mGeom->SetTrackOverlay(mTrack, mMat, kOverlayEnabling);
     mPhase = kPhaseRise;
 }
@@ -196,18 +196,19 @@ void TnlTrackFX::Capture(GfxTunnel *pTunnel, float flTick) {
     mCaptureTick = flTick;
     mStartTime = TheGameDb->mSongTime;
     mDropCurve.Reset(0.0f, 1.0f, mStartTime, mStartTime + sCaptureTimes[0]);
-    mMat->mBlend = Rnd::Mat::kBlendModeSrcAlphaAdd;
-    mMat->mStages[0].mBlend = Rnd::Mat::kBlendModeSrcAlphaAdd;
+    mMat->mBlend = RndMat::kBlendSrcAlphaAdd;
+    mMat->mStages[0].mBlend = RndMat::kBlendSrcAlphaAdd;
     pTunnel->mGeom->SetTrackOverlay(mTrack, mMat, kOverlayNormal);
 
     Transform xfm;
     pTunnel->mGeom->CellXfm(
         mTrack, &xfm, false, true, TheGameDb->mSongTick + sCaptureSpewTicks, kSpewLateral);
     ScaleBasis(&xfm, TheGfxManager.mScrollSpeed);
-    sSpew->SetLocalXfm(xfm);
+    sSpew->mLocalXfm = xfm;
+    sSpew->mDirty = 1;
     sSpew->UpdateWorldXfm(nullptr, 0);
     sSpewFrame += kSpewFrames;
-    sSpew->Rnd::ParticleSys::SetFrameSelf(sSpewFrame);
+    sSpew->RndParticleSys::SetFrameSelf(sSpewFrame);
 
     mGemTicks.clear();
     pTunnel->CollectGemTicks(&mGemTicks, mTrack, TheGameDb->mSongTick, flTick);
@@ -230,7 +231,7 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
     case kStateEnable: {
         const float flNow = TheGameDb->mSongTime;
         float flAlpha;
-        Rnd::Mat::BlendMode stageBlend = Rnd::Mat::kBlendModeSrcAlpha;
+        int stageBlend = RndMat::kBlendSrcAlpha;
         if (mPhase == kPhaseRise) {
             const char nTrack = mTrack;
             Vector3 offset{0.0f, 0.0f, 0.0f};
@@ -253,11 +254,11 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
                 flAlpha = 0.0f;
                 mEnableCurve.Reset(
                     1.0f, flAlpha, mEnableCurve.mX1, mEnableCurve.mX1 + sEnableTimes[2]);
-                mMat->mBlend = Rnd::Mat::kBlendModeSrcAlpha;
+                mMat->mBlend = RndMat::kBlendSrcAlpha;
             } else {
                 flAlpha = mEnableCurve.Interp(flNow);
             }
-            stageBlend = Rnd::Mat::kBlendModeSrcAlphaAdd;
+            stageBlend = RndMat::kBlendSrcAlphaAdd;
         } else if (mPhase == kPhaseFade) {
             if (mEnableCurve.mX1 <= flNow) {
                 mPhase = kPhaseNone;
@@ -351,7 +352,7 @@ void TnlTrackFX::RestoreGlowSizes(std::list<TnlGem> *pGems, char nTrack) {
             continue;
         }
         if (gem.mParticle != nullptr) {
-            gem.mParticle->mSize = gem.mMeshGroup->mParticles->mSizeLow;
+            gem.mParticle->mSize = gem.mMeshGroup->mParticles->mSize.x;
         }
     }
 }

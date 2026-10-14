@@ -3,8 +3,8 @@
 #include <list>
 
 #include "gfx/gfxarena.h"
-#include "rnd/particlesys.h"
-#include "rnd/transformable.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndtransformable.h"
 
 /**
  * Arena of the Constructo levels, whose building parts collide with planes that move with the
@@ -39,8 +39,8 @@ public:
          */
         void Update(float fFrame);
 
-        Rnd::ParticleSys *mParticles; /*!< The particles. */
-        Rnd::Transformable *mPlane;   /*!< The transformable the plane moves with. */
+        RndParticleSys *mParticles; /*!< The particles. */
+        RndTransformable *mPlane;   /*!< The transformable the plane moves with. */
         char mAxis; /*!< The world axis of mPlane that is the normal, `x`, `y`, or `z`. */
     };
 

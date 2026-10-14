@@ -2,7 +2,7 @@
 
 #include "math/interpolator.h"
 #include "math/transform.h"
-#include "rnd/transanim.h"
+#include "rnd/rndtransanim.h"
 
 /**
  * The path the tunnel follows through the world, a transform animation that blends into the next.
@@ -42,12 +42,12 @@ public:
          */
         void Xfm(float flTick, float flTime, Transform *pXfm) const;
 
-        Rnd::TransAnim *mAnim; /*!< The animation, or null for no path. */
-        int mLoop;             /*!< Whether the animation loops between mLoopStart and mLoopEnd. */
-        int mUseTime;          /*!< Whether the frame follows the time rather than the tick. */
-        float mOffset;         /*!< The frame of the animation at tick or time 0. */
-        float mLoopStart;      /*!< The first frame of the loop. */
-        float mLoopEnd;        /*!< The frame the loop wraps at. */
+        RndTransAnim *mAnim; /*!< The animation, or null for no path. */
+        int mLoop;           /*!< Whether the animation loops between mLoopStart and mLoopEnd. */
+        int mUseTime;        /*!< Whether the frame follows the time rather than the tick. */
+        float mOffset;       /*!< The frame of the animation at tick or time 0. */
+        float mLoopStart;    /*!< The first frame of the loop. */
+        float mLoopEnd;      /*!< The frame the loop wraps at. */
     };
 
     /**
@@ -71,7 +71,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001cbf60
      * @ghidraAddress PAL: 0x001d4d00
      */
-    void Set(Rnd::TransAnim *pAnim,
+    void Set(RndTransAnim *pAnim,
              int bLoop,
              int bUseTime,
              float flStart,
@@ -93,7 +93,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001cc010
      * @ghidraAddress PAL: 0x001d4db0
      */
-    void BlendTo(Rnd::TransAnim *pAnim,
+    void BlendTo(RndTransAnim *pAnim,
                  int bLoop,
                  int bUseTime,
                  float flLength,

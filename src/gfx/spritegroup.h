@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rnd/particlesys.h"
+#include "rnd/rndparticlesys.h"
 
 /**
  * The sprite gems of one type, drawn as the particles of a particle system.
@@ -19,5 +19,5 @@ public:
      */
     SpriteGroup(const char *pszName, int nMaxGems);
 
-    Rnd::ParticleSys *mParticles; /*!< The particle system. */
+    RndParticleSys *mParticles; /*!< The particle system. */
 };

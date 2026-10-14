@@ -7,8 +7,8 @@
 #include "gfx/tnltrackrange.h"
 #include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/mesh.h"
-#include "rnd/multimesh.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndmultimesh.h"
 #include "script/dataarray.h"
 
 /**
@@ -143,9 +143,9 @@ public:
     void UpdateRange(TnlGeom *pGeom, const TnlTrackRange *pRange);
 
     std::list<Transform> mTransforms; /*!< The pool of free instance transforms. */
-    Rnd::Mesh *mMesh;                 /*!< The spotlight, `gem spotlight.mesh`. */
-    Rnd::MultiMesh *mSpots;           /*!< The spotlights, `gem spotlight.mm`. */
-    Rnd::MultiMesh *mGlows;           /*!< The glows, `gem base glow.mm`. */
+    RndMesh *mMesh;                   /*!< The spotlight, `gem spotlight.mesh`. */
+    RndMultiMesh *mSpots;             /*!< The spotlights, `gem spotlight.mm`. */
+    RndMultiMesh *mGlows;             /*!< The glows, `gem base glow.mm`. */
     std::list<LightPos> mLights;      /*!< The lights, sorted by tick. */
 
 private:

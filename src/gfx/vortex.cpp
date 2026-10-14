@@ -6,7 +6,7 @@
 #include "math/vector3.h"
 #include "os/joypad.h"
 #include "os/system.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -24,14 +24,14 @@ constexpr int kBasisRows = 3;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 // Find the view an entry of the configuration identifies.
-Rnd::View *FindView(DataArray *pConfig, const char *pszEntry) {
+RndView *FindView(DataArray *pConfig, const char *pszEntry) {
     const char *pszName;
     pConfig->FindSymbol(pszEntry, &pszName, true);
-    return FindObject<Rnd::View>(pszName);
+    return FindObject<RndView>(pszName);
 }
 
 } // namespace
@@ -73,7 +73,7 @@ Vortex::~Vortex() {
 void Vortex::Load() {
     const char *pszFile;
     mConfig->FindSymbol("rnd", &pszFile, true);
-    mLoader = Rnd::TheManager.AddLoader(pszFile, RndLoader::kDeleteObjects, nullptr, nullptr);
+    mLoader = TheManager.AddLoader(pszFile, RndLoader::kDeleteObjects, nullptr, nullptr);
     mTopView = FindView(mConfig, "top_view");
     mWiggle = FindView(mConfig, "wiggle");
     mWiggleXAnim = FindView(mConfig, "wiggle_x_anim");
@@ -171,12 +171,9 @@ void Vortex::Draw() {
     const Vector3 forward{0.0f, 0.0f, 1.0f};
     Vector3 basis[kBasisRows];
     Mat33BuildOrthonormal(&up.x, &forward.x, &basis[0].x);
-    for (int i = 0; i < kBasisRows; ++i) {
-        mWiggle->mLocalXfm[i][0] = basis[i].x;
-        mWiggle->mLocalXfm[i][1] = basis[i].y;
-        mWiggle->mLocalXfm[i][2] = basis[i].z;
-        mWiggle->mLocalXfm[i][kVec3PaddingFloat] = basis[i].w;
-    }
+    mWiggle->mLocalXfm.mBasisX = basis[0];
+    mWiggle->mLocalXfm.mBasisY = basis[1];
+    mWiggle->mLocalXfm.mBasisZ = basis[2];
     mWiggle->mDirty = 1;
     // Yes, the binary drives the X animation with both axes and never the Y animation.
     mWiggleXAnim->SetFrame(mStick.x * kWiggleFrames);

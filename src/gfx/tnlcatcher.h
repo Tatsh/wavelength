@@ -4,10 +4,10 @@
 #include "gfx/gfxtunnel.h"
 #include "gfx/tnlgeom.h"
 #include "math/color.h"
-#include "rnd/animatable.h"
-#include "rnd/drawable.h"
-#include "rnd/matanim.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmatanim.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 // The activator includes this header, so the class is declared here instead.
@@ -68,7 +68,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001e5c18
      * @ghidraAddress PAL: 0x001ee9b8
      */
-    void AttachTo(Rnd::View *pParent);
+    void AttachTo(RndView *pParent);
 
     /**
      * Start the hit animation of a target, if the catcher is shown.
@@ -199,19 +199,19 @@ public:
      */
     static float sBumpEndTime;
 
-    Color mColor;                              /*!< The colour of the flare a bump shows. */
-    Rnd::View *mView;                          /*!< `catcher_<c>`. */
-    int mShown;                                /*!< Whether the catcher is shown. */
-    int mEnabled;                              /*!< Whether the catcher may be shown. */
-    Rnd::View *mTargets[kNumTargets];          /*!< `target <n>_<c>.view`. */
-    Rnd::Animatable *mTargetHits[kNumTargets]; /*!< `target hit <n>_<c>.tnm`. */
-    Rnd::Drawable *mBumpFlareMesh;             /*!< `target bump flare 0_<c>.mesh`. */
-    Rnd::MatAnim *mBumpFlare;                  /*!< `target bump flare_<c>.mnm`. */
-    float mHitTimes[kNumTargets];              /*!< The time of the last hit, or kNoHit. */
-    Rnd::Animatable *mAmbient;                 /*!< `target ambient_<c>.view`. */
-    RampAnimator mAnim;                        /*!< The pose, `target anim_<c>.view`. */
-    int mMultiplied;                           /*!< Whether the multiplier is raised. */
-    int mBumping;                              /*!< Whether the bump flare shows. */
+    Color mColor;                            /*!< The colour of the flare a bump shows. */
+    RndView *mView;                          /*!< `catcher_<c>`. */
+    int mShown;                              /*!< Whether the catcher is shown. */
+    int mEnabled;                            /*!< Whether the catcher may be shown. */
+    RndView *mTargets[kNumTargets];          /*!< `target <n>_<c>.view`. */
+    RndAnimatable *mTargetHits[kNumTargets]; /*!< `target hit <n>_<c>.tnm`. */
+    RndDrawable *mBumpFlareMesh;             /*!< `target bump flare 0_<c>.mesh`. */
+    RndMatAnim *mBumpFlare;                  /*!< `target bump flare_<c>.mnm`. */
+    float mHitTimes[kNumTargets];            /*!< The time of the last hit, or kNoHit. */
+    RndAnimatable *mAmbient;                 /*!< `target ambient_<c>.view`. */
+    RampAnimator mAnim;                      /*!< The pose, `target anim_<c>.view`. */
+    int mMultiplied;                         /*!< Whether the multiplier is raised. */
+    int mBumping;                            /*!< Whether the bump flare shows. */
 
     /** The value of mHitTimes for a target that is not hit. */
     static constexpr float kNoHit = -1e9f;

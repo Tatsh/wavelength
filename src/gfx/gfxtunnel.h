@@ -11,8 +11,10 @@
 #include "math/interpolator.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/environ.h"
-#include "rnd/view.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndenviron.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndview.h"
 
 // The headers of these classes include this header, so the classes are declared here instead.
 class DataArray;
@@ -168,7 +170,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001db6b8
      * @ghidraAddress PAL: 0x001e4458
      */
-    static Rnd::View *CreateMainView();
+    static RndView *CreateMainView();
 
     /**
      * Load the settings of the tunnel and of the effects it draws, and with a tunnel rebuild its
@@ -208,7 +210,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001dbaa8
      * @ghidraAddress PAL: 0x001e4848
      */
-    void LoadViews(std::vector<Rnd::View *> *pViews, const char *pszFormat);
+    void LoadViews(std::vector<RndView *> *pViews, const char *pszFormat);
 
     /**
      * Load the colour of each instrument from its panel material and colour each track.
@@ -265,7 +267,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001dca10
      * @ghidraAddress PAL: 0x001e57b0
      */
-    void BuildPanels(int bResetPanels, Rnd::TransAnim *pCamPath);
+    void BuildPanels(int bResetPanels, RndTransAnim *pCamPath);
 
     /**
      * Fit the boundaries between the sections to the bounds of a cross section.
@@ -405,7 +407,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ddd00
      * @ghidraAddress PAL: 0x001e6aa0
      */
-    Rnd::Particle *Flash(const Vector3 *pPos, float flSize, float flGrowth);
+    Particle *Flash(const Vector3 *pPos, float flSize, float flGrowth);
 
     /**
      * Start a capture burst at a gem with the first free burst effect, through a random view.
@@ -419,7 +421,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ddd90
      * @ghidraAddress PAL: 0x001e6b30
      */
-    bool Burst(const std::vector<Rnd::View *> *pViews,
+    bool Burst(const std::vector<RndView *> *pViews,
                char nTrack,
                bool bErase,
                float flTick,
@@ -1155,7 +1157,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001df218
      * @ghidraAddress PAL: 0x001e7fb8
      */
-    static void ScaleLights(Rnd::Environ *pEnviron);
+    static void ScaleLights(RndEnviron *pEnviron);
 
     /**
      * The tunnel of the song, or null.
@@ -1499,12 +1501,12 @@ public:
     std::vector<TnlStreakGemFX *> mStreakGems; /*!< The arrow of each track, or none. */
     TnlGems *mGems;                            /*!< The gems. */
     TnlGeom *mGeom;                            /*!< The geometry of the tracks. */
-    Rnd::View *mTransparentView;               /*!< `tnl transparent`. */
-    Rnd::View *mGridView;                      /*!< `grid1.view`. */
+    RndView *mTransparentView;                 /*!< `tnl transparent`. */
+    RndView *mGridView;                        /*!< `grid1.view`. */
     GfxArena *mArena;                          /*!< The arena. */
-    Rnd::Light *mTrackColorLight;        /*!< `tunnel track color.lit` of a solo game, or null. */
+    RndLight *mTrackColorLight;          /*!< `tunnel track color.lit` of a solo game, or null. */
     int mTrackColorPlayer;               /*!< The player mTrackColorLight follows, or -1. */
-    Rnd::Mesh *mFadeMesh;                /*!< `tunnel fade.mesh`. */
+    RndMesh *mFadeMesh;                  /*!< `tunnel fade.mesh`. */
     LinearInterpolator mFadeCurve;       /*!< The fade of mFadeMesh. */
     std::vector<TnlPlayer *> mPlayers;   /*!< The graphics of each player. */
     alignas(16) Color mSavedClearColor;  /*!< The clear colour of the renderer to restore. */
@@ -1521,16 +1523,16 @@ public:
     int mNumTracks;                 /*!< The number of tracks. */
     std::vector<Color> mInstrumentColors; /*!< The colour of each instrument. */
     std::vector<Color> mTrackColors;      /*!< The colour of each track. */
-    Rnd::Mat *mCheckpointMat;             /*!< `panel ckpt.mat`. */
-    Rnd::Mat *mCheckpointFinishMat;       /*!< `panel ckpt finish.mat`. */
-    Rnd::Cam *mOverlayCam;                /*!< `tnl overlay.cam`. */
+    RndMat *mCheckpointMat;               /*!< `panel ckpt.mat`. */
+    RndMat *mCheckpointFinishMat;         /*!< `panel ckpt finish.mat`. */
+    RndCam *mOverlayCam;                  /*!< `tnl overlay.cam`. */
     /*!< The cameras BuildOuterCams() fits, five for each player. */
-    std::vector<Rnd::Cam *> mOuterCams;
+    std::vector<RndCam *> mOuterCams;
     float mLetterbox; /*!< How far the letterbox is closed, from 0 to 1. */
     /*!< The views of the capture bursts of each player. */
-    std::vector<std::vector<Rnd::View *>> mPlayerBurstViews;
+    std::vector<std::vector<RndView *>> mPlayerBurstViews;
     /*!< The views of the bursts of each GemBurst. */
-    std::vector<std::vector<Rnd::View *>> mGemBurstViews;
+    std::vector<std::vector<RndView *>> mGemBurstViews;
     /*!< Whether the gems and the panels react to the captures of the tracks. Always set. */
     int mCaptureReveals;
     TnlTrackRange mChangedRange; /*!< The tracks and ticks the last poll changed. */

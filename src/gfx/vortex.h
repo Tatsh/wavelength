@@ -3,7 +3,7 @@
 #include "math/interpolator.h"
 #include "math/vector2.h"
 #include "rnd/rndloader.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -112,12 +112,12 @@ public:
 
     DataArray *mConfig;         /*!< The entry of `gfx vortices`. */
     RndLoader *mLoader;         /*!< The loader of the file of the configuration, or null. */
-    Rnd::View *mTopView;        /*!< The view Draw() draws, `top_view`. */
-    Rnd::View *mTransitionView; /*!< The view the frame of the run drives, `transition_view`. */
-    Rnd::View *mAmbientView;    /*!< The view the time of the run drives, `ambient_view`. */
-    Rnd::View *mWiggle;         /*!< The view the left stick tilts, `wiggle`. */
-    Rnd::View *mWiggleXAnim;    /*!< The view the left stick drives, `wiggle_x_anim`. */
-    Rnd::View *mWiggleYAnim;    /*!< `wiggle_y_anim`, found and never driven. */
+    RndView *mTopView;          /*!< The view Draw() draws, `top_view`. */
+    RndView *mTransitionView;   /*!< The view the frame of the run drives, `transition_view`. */
+    RndView *mAmbientView;      /*!< The view the time of the run drives, `ambient_view`. */
+    RndView *mWiggle;           /*!< The view the left stick tilts, `wiggle`. */
+    RndView *mWiggleXAnim;      /*!< The view the left stick drives, `wiggle_x_anim`. */
+    RndView *mWiggleYAnim;      /*!< `wiggle_y_anim`, found and never driven. */
     int mMode;                  /*!< The run in progress, one of Mode. */
     int mPrevMode;              /*!< The run at the start of the last Poll(). */
     LinearInterpolator mInterp; /*!< The frame of the run over the system clock. */

@@ -2,7 +2,7 @@
 
 #include "math/color.h"
 
-TnlFlashFX::TnlFlashFX(Rnd::ParticleSys *pSys) : mSys(pSys), mParticle(nullptr), mShrink(0.0f) {
+TnlFlashFX::TnlFlashFX(RndParticleSys *pSys) : mSys(pSys), mParticle(nullptr), mShrink(0.0f) {
 }
 
 TnlFlashFX::~TnlFlashFX() {
@@ -11,7 +11,7 @@ TnlFlashFX::~TnlFlashFX() {
     }
 }
 
-Rnd::Particle *TnlFlashFX::Start(const Vector3 *pPos, float flSize, float flShrink) {
+Particle *TnlFlashFX::Start(const Vector3 *pPos, float flSize, float flShrink) {
     if (mParticle != nullptr) {
         return nullptr;
     }

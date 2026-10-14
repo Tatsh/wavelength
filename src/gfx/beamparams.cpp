@@ -1,7 +1,7 @@
 #include "gfx/beamparams.h"
 
 #include "gfx/gfxconfig.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -52,7 +52,7 @@ void BeamParams::Load(DataArray *pConfig, DataArray *pDefaults, bool, float fSca
     mWidth *= fScale;
     const char *pszMat;
     FindConfigSymbol(pConfig, pDefaults, "mat", &pszMat, true);
-    mMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszMat));
+    mMat = dynamic_cast<RndMat *>(TheManager.Find(pszMat));
     FindConfigColor(pConfig, pDefaults, "start_color", &mColors[kEndStart], true);
     FindConfigColor(pConfig, pDefaults, "finish_color", &mColors[kEndFinish], true);
     FindConfigFloat(pConfig, pDefaults, "start_amplitude", &mAmplitudes[kEndStart], true);
@@ -65,7 +65,7 @@ void BeamParams::Load(DataArray *pConfig, DataArray *pDefaults, bool, float fSca
     FindConfigVector2(pConfig, pDefaults, "max_travel_period", &mMaxTravelPeriod, true);
 }
 
-void BeamParams::Apply(Rnd::Line *pLine, Rnd::Mat *pMat) const {
+void BeamParams::Apply(RndLine *pLine, RndMat *pMat) const {
     if (mPoints < 0) {
         return;
     }

@@ -8,10 +8,9 @@
 #include "gfx/tnltrackrange.h"
 #include "gfx/tnlwave.h"
 #include "math/vector3.h"
-#include "rnd/line.h"
-#include "rnd/mat.h"
-#include "rnd/particle.h"
-#include "rnd/particlesys.h"
+#include "rnd/rndline.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndparticlesys.h"
 #include "script/dataarray.h"
 
 /**
@@ -26,10 +25,10 @@ class TnlConnectorBeam {
 public:
     /** A gem the beam links, 0x10 bytes. */
     struct Gem {
-        Rnd::Particle *mParticle; /*!< The glow particle, or null. */
-        int mOwnParticle;         /*!< Whether mParticle came from mGlow rather than the gem. */
-        float mTick;              /*!< The tick of the gem. */
-        float mLateral;           /*!< The position across the track, from 0 to 1. */
+        Particle *mParticle; /*!< The glow particle, or null. */
+        int mOwnParticle;    /*!< Whether mParticle came from mGlow rather than the gem. */
+        float mTick;         /*!< The tick of the gem. */
+        float mLateral;      /*!< The position across the track, from 0 to 1. */
     };
 
     /** A straight piece of the beam between two points, 0x50 bytes. */
@@ -208,8 +207,8 @@ public:
     std::list<Span> mSpans;   /*!< The spans between the linked gems, in tick order. */
     unsigned char mNumSpans;  /*!< The number of spans. */
     GfxTunnel *mTunnel;       /*!< The tunnel. */
-    Rnd::Line *mLine;         /*!< The line, `sabre_<letter>.str`. */
-    Rnd::Mat *mLineMat;       /*!< The material of mLine. */
+    RndLine *mLine;           /*!< The line, `sabre_<letter>.str`. */
+    RndMat *mLineMat;         /*!< The material of mLine. */
     char mExcludedType;       /*!< A gem type the beam never links. */
     char mOtherExcludedType;  /*!< A second gem type the beam never links. */
     char mTrack;              /*!< The track of the window, or -1. */
@@ -222,8 +221,8 @@ public:
     float mGlowBoost;         /*!< The boost of the glow size, which falls back to 0. */
     float mEnergyLevel;       /*!< The output of the energy model. */
     float mEnergy;            /*!< The energy of the sway, which falls at mDecayRate. */
-    Rnd::ParticleSys *mGlow;  /*!< The glow particles, `gem_glow<player>.ps`. */
-    Rnd::Mat *mMultiplierMat; /*!< The material whose colour the glows take under a multiplier. */
+    RndParticleSys *mGlow;    /*!< The glow particles, `gem_glow<player>.ps`. */
+    RndMat *mMultiplierMat;   /*!< The material whose colour the glows take under a multiplier. */
     int mMultiplier;          /*!< Whether the glows have the multiplier colouring. */
     float mMultiplierEndTick; /*!< The tick the multiplier colouring ends at. */
 
@@ -237,7 +236,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001fa560
      * @ghidraAddress PAL: 0x00203300
      */
-    void AddGem(float flTick, float flLateral, Rnd::Particle *pParticle);
+    void AddGem(float flTick, float flLateral, Particle *pParticle);
 
     /**
      * Rebuild the spans between the linked gems, and move the glows onto the gems.

@@ -6,10 +6,8 @@
 #include "gfx/tnlgeom.h"
 #include "gfx/tnltrackrange.h"
 #include "math/interpolator.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/meshface.h"
-#include "rnd/meshvert.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "script/dataarray.h"
 
 /**
@@ -126,7 +124,7 @@ public:
     static float sFadeSpeed;
 
     TnlGeom *mGeom;                     /*!< The geometry of the tunnel. */
-    Rnd::Mesh *mMesh;                   /*!< The mesh, `seeker <colour>.mesh`. */
+    RndMesh *mMesh;                     /*!< The mesh, `seeker <colour>.mesh`. */
     InvExpInterpolator *mTrackCurve;    /*!< The glide across the tracks, over song time. */
     InvExpInterpolator *mDepthCurve;    /*!< The glide along the track, over song time. */
     float mFromTrack;                   /*!< The track the glide started from, or -1. */
@@ -144,8 +142,8 @@ public:
     int mSectionVerts;                  /*!< The vertices in each quarter of the mesh. */
     int mNumQuads;                      /*!< The quads of the mesh. */
     int mDirty;                         /*!< Whether the mesh needs rebuilding. */
-    Rnd::Mat *mMat;                     /*!< The material, `seeker_<letter>.mat`. */
-    Rnd::Mat *mMultiplierMat;           /*!< The multiplier material, `seeker mult_<letter>.mat`. */
+    RndMat *mMat;                       /*!< The material, `seeker_<letter>.mat`. */
+    RndMat *mMultiplierMat;             /*!< The multiplier material, `seeker mult_<letter>.mat`. */
     int mMultiplier;                    /*!< Whether the multiplier material is on. */
     float mMultiplierStartTime;         /*!< The song time the multiplier started at. */
     LinearInterpolator mMultiplierFade; /*!< The fraction of the multiplier passed, over ticks. */
@@ -166,7 +164,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001f97f0
      * @ghidraAddress PAL: 0x00202590
      */
-    static void AddStrip(std::vector<Rnd::MeshFace> &faces,
+    static void AddStrip(std::vector<RndMesh::Face> &faces,
                          int nRowA,
                          int nRowB,
                          int nStepA,
@@ -188,7 +186,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001fc470
      * @ghidraAddress PAL: 0x00205210
      */
-    void SetTexCoords(std::vector<Rnd::MeshVert> &verts,
+    void SetTexCoords(std::vector<RndMesh::Vert> &verts,
                       int nIndex,
                       float flInnerU,
                       float flInnerV,
@@ -210,7 +208,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001fc520
      * @ghidraAddress PAL: 0x002052c0
      */
-    void SetSection(std::vector<Rnd::MeshVert> &verts,
+    void SetSection(std::vector<RndMesh::Vert> &verts,
                     int nIndex,
                     float flTrack,
                     float flLateral,
@@ -230,5 +228,5 @@ private:
      * @ghidraAddress PAL: 0x002054c0
      */
     void
-    Layout(std::vector<Rnd::MeshVert> &verts, float flTrack, float flStartTick, float flEndTick);
+    Layout(std::vector<RndMesh::Vert> &verts, float flTrack, float flStartTick, float flEndTick);
 };

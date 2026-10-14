@@ -5,7 +5,7 @@
 
 #include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/multimesh.h"
+#include "rnd/rndmultimesh.h"
 
 class GfxTunnel;
 class TnlGeom;
@@ -56,7 +56,7 @@ public:
          * @ghidraAddress NTSC-U/C: 0x001d3a10
          * @ghidraAddress PAL: 0x001dc7b0
          */
-        void Attach(const Vector3 *pScale, Rnd::MultiMesh *pMesh);
+        void Attach(const Vector3 *pScale, RndMultiMesh *pMesh);
 
         /**
          * Place the line across the middle of a track at a tick, just below the surface, scale
@@ -80,7 +80,7 @@ public:
          * @ghidraAddress NTSC-U/C: 0x001d3be0
          * @ghidraAddress PAL: 0x001dc980
          */
-        void SetShowing(bool bShowing, Rnd::MultiMesh *pMesh, std::list<Transform> &hidden);
+        void SetShowing(bool bShowing, RndMultiMesh *pMesh, std::list<Transform> &hidden);
 
         const Vector3 *mScale;                    /*!< The scale of the basis rows. */
         bool mShowing;                            /*!< Whether the transform is an instance. */
@@ -181,7 +181,7 @@ public:
     std::vector<GridLine> mLines; /*!< The lines. */
     int mTrack;                   /*!< The track the lines lie across. */
     GfxTunnel *mTunnel;           /*!< The tunnel. */
-    Rnd::MultiMesh *mMesh;        /*!< The `grid.mm` multi-mesh, shared by every grid. */
+    RndMultiMesh *mMesh;          /*!< The `grid.mm` multi-mesh, shared by every grid. */
     std::list<Transform> mHidden; /*!< The transforms of the hidden lines. */
     bool mRefresh;                /*!< Whether the next update reconsiders every line. */
     bool mShowLines;              /*!< Whether the lines may show, for the first player only. */
