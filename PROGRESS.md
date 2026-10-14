@@ -28,19 +28,19 @@ python3 .wiswa-ci/port/progress.py --write
 | Excluded: C and compiler runtime       |    342 |
 | Excluded: Vendored under 3rdparty      |    296 |
 | To port                                |  8,613 |
-| Done                                   |  7,565 |
+| Done                                   |  7,972 |
 | Stubbed (not counted as done)          |      0 |
-| Declared only (not counted as done)    |     83 |
-| Share done                             | 87.83% |
+| Declared only (not counted as done)    |    127 |
+| Share done                             | 92.56% |
 | FreQuency annotations left in the tree |      0 |
 
 ## By component
 
-| Component                    | Routines |  Done | Share |
-| ---------------------------- | -------: | ----: | ----: |
-| Game code                    |    6,807 | 6,803 | 99.9% |
-| Sony online library (SCE-RT) |    1,257 |   299 | 23.8% |
-| Sony EE libraries            |      549 |   463 | 84.3% |
+| Component                    | Routines |  Done |  Share |
+| ---------------------------- | -------: | ----: | -----: |
+| Game code                    |    6,807 | 6,807 | 100.0% |
+| Sony online library (SCE-RT) |    1,257 |   702 |  55.8% |
+| Sony EE libraries            |      549 |   463 |  84.3% |
 
 ## IOP modules
 
@@ -88,11 +88,11 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00260000.md](progress/game-code-00260000.md)                                   | Game code                    | `0x00260000`-`0x00270000` |      389 |  389 | 100.0% |
 | [game-code-00270000.md](progress/game-code-00270000.md)                                   | Game code                    | `0x00270000`-`0x00280000` |      254 |  254 | 100.0% |
 | [game-code-00280000.md](progress/game-code-00280000.md)                                   | Game code                    | `0x00280000`-`0x00290000` |      332 |  332 | 100.0% |
-| [game-code-00290000.md](progress/game-code-00290000.md)                                   | Game code                    | `0x00290000`-`0x002a0000` |      429 |  425 |  99.1% |
-| [sony-online-library-sce-rt-002a0000.md](progress/sony-online-library-sce-rt-002a0000.md) | Sony online library (SCE-RT) | `0x002a0000`-`0x002b0000` |      143 |    0 |   0.0% |
+| [game-code-00290000.md](progress/game-code-00290000.md)                                   | Game code                    | `0x00290000`-`0x002a0000` |      429 |  429 | 100.0% |
+| [sony-online-library-sce-rt-002a0000.md](progress/sony-online-library-sce-rt-002a0000.md) | Sony online library (SCE-RT) | `0x002a0000`-`0x002b0000` |      143 |   59 |  41.3% |
 | [game-code-002a0000.md](progress/game-code-002a0000.md)                                   | Game code                    | `0x002a0000`-`0x002b0000` |       67 |   67 | 100.0% |
-| [sony-online-library-sce-rt-002b0000.md](progress/sony-online-library-sce-rt-002b0000.md) | Sony online library (SCE-RT) | `0x002b0000`-`0x002c0000` |      211 |    0 |   0.0% |
-| [sony-online-library-sce-rt-002c0000.md](progress/sony-online-library-sce-rt-002c0000.md) | Sony online library (SCE-RT) | `0x002c0000`-`0x002d0000` |      261 |    0 |   0.0% |
+| [sony-online-library-sce-rt-002b0000.md](progress/sony-online-library-sce-rt-002b0000.md) | Sony online library (SCE-RT) | `0x002b0000`-`0x002c0000` |      211 |   83 |  39.3% |
+| [sony-online-library-sce-rt-002c0000.md](progress/sony-online-library-sce-rt-002c0000.md) | Sony online library (SCE-RT) | `0x002c0000`-`0x002d0000` |      261 |  261 | 100.0% |
 | [sony-online-library-sce-rt-002e0000.md](progress/sony-online-library-sce-rt-002e0000.md) | Sony online library (SCE-RT) | `0x002e0000`-`0x002f0000` |      163 |    0 |   0.0% |
 | [sony-online-library-sce-rt-002f0000.md](progress/sony-online-library-sce-rt-002f0000.md) | Sony online library (SCE-RT) | `0x002f0000`-`0x00300000` |      180 |    0 |   0.0% |
 | [sony-online-library-sce-rt-00300000.md](progress/sony-online-library-sce-rt-00300000.md) | Sony online library (SCE-RT) | `0x00300000`-`0x00310000` |      299 |  299 | 100.0% |
