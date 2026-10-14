@@ -117,13 +117,16 @@ struct alignas(kCacheLineSize) IopNotify {
     unsigned char mRest[kCacheLineSize - sizeof(int)];
 };
 
-struct SynthInitCommand {
+// The SIF DMA that sends a command reads it from the stack, which needs a quadword boundary.
+constexpr int kQwordSize = 16;
+
+struct alignas(kQwordSize) SynthInitCommand {
     IopNotify *mTransferDone;
     IopNotify *mCoreFxDone;
     int mVerbose;
 };
 
-struct SoftFxInitCommand {
+struct alignas(kQwordSize) SoftFxInitCommand {
     int mVerbose;
     IopNotify *mStreamStatus;
 };
