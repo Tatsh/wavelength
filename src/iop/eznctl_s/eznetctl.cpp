@@ -152,7 +152,7 @@ int EzNetCtl::Finalize() {
 }
 
 unsigned int EzNetCtl::AlarmHandler(void *common) {
-    iReleaseWaitThread(*static_cast<int *>(common));
+    iReleaseWaitThread(reinterpret_cast<int>(common));
     return 0;
 }
 
@@ -184,12 +184,13 @@ int EzNetCtl::Connect(NetcnfifEnv *env) {
     }
     SysClock timeout;
     USec2SysClock(kConnectTimeoutMicroseconds, &timeout);
-    SetAlarm(&timeout, AlarmHandler, &sThread);
+    // Yes, the binary passes the thread identifier itself as the alarm argument.
+    SetAlarm(&timeout, AlarmHandler, reinterpret_cast<void *>(sThread));
     unsigned int bits;
     if (WaitEventFlag(sEventFlag, kInterfaceStartedBit, WEF_CLEAR, &bits) == KE_RELEASE_WAIT) {
         return -1;
     }
-    CancelAlarm(AlarmHandler, &sThread);
+    CancelAlarm(AlarmHandler, reinterpret_cast<void *>(sThread));
     return static_cast<unsigned short>(bits >> kInterfaceIdShift);
 }
 

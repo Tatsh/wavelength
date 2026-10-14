@@ -109,7 +109,7 @@ private:
     /**
      * Alarm handler. End the wait of Connect().
      *
-     * @param common Address of the thread identifier to release.
+     * @param common Identifier of the thread to release.
      * @return Zero, to stop the alarm.
      * @ghidraAddress NTSC-U/C: 0x0000064c
      * @ghidraAddress PAL: 0x00000644
