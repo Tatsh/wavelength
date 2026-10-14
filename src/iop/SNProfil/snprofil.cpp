@@ -22,7 +22,7 @@ constexpr char kRpcServerMessage[] = "rpc_server(%08x, %08X, %08x)\n";
 alignas(16) ProfileBuffer ProfBuffer;
 
 // NTSC-U/C: 0x000083e0
-unsigned char buffer[kRpcBufferSize];
+alignas(16) unsigned char buffer[kRpcBufferSize];
 
 // NTSC-U/C: 0x00000148
 void *rpc_server(unsigned int function, void *data, int size) {
