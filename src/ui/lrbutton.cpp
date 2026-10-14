@@ -4,7 +4,7 @@
 
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "ui/uicomponentselectmsg.h"
 #include "ui/uicomponentselectstartmsg.h"
 #include "ui/uimanager.h"
@@ -24,13 +24,13 @@ LRButton::LRButton(DataArray *pData, const char *pszPanel) : UIButton(pData, psz
     mArrowFlashDone = true;
     mArrowStyle = TheUI.FindStyle(pData->Sym(kArrowStyleIndex), false);
     const char *pszBase = pData->Sym(kBaseIndex);
-    mLeftArrow = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("%s_%s_left.mesh", pszPanel, pszBase)));
+    mLeftArrow = dynamic_cast<RndMesh *>(
+        TheManager.Find(FormatString("%s_%s_left.mesh", pszPanel, pszBase)));
     if (mLeftArrow != nullptr) {
         mLeftArrow->SetMat(mStyle->GetMat(mState)); // The button's style, not mArrowStyle.
     }
-    mRightArrow = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("%s_%s_right.mesh", pszPanel, pszBase)));
+    mRightArrow = dynamic_cast<RndMesh *>(
+        TheManager.Find(FormatString("%s_%s_right.mesh", pszPanel, pszBase)));
     if (mRightArrow != nullptr) {
         mRightArrow->SetMat(mStyle->GetMat(mState));
     }

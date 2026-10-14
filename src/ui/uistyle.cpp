@@ -1,6 +1,6 @@
 #include "ui/uistyle.h"
 
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "ui/uicomponent.h"
 
 namespace {
@@ -10,9 +10,9 @@ constexpr int kStateMatIndex = 1;
 constexpr int kStateFontIndex = 2;
 
 // Resolve the material and the font a state array lists.
-void FindStateObjects(DataArray *pState, Rnd::Mat **ppMat, Rnd::Font **ppFont) {
-    *ppMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pState->Sym(kStateMatIndex)));
-    *ppFont = dynamic_cast<Rnd::Font *>(Rnd::TheManager.Find(pState->Sym(kStateFontIndex)));
+void FindStateObjects(DataArray *pState, RndMat **ppMat, RndFont **ppFont) {
+    *ppMat = dynamic_cast<RndMat *>(TheManager.Find(pState->Sym(kStateMatIndex)));
+    *ppFont = dynamic_cast<RndFont *>(TheManager.Find(pState->Sym(kStateFontIndex)));
 }
 
 } // namespace
@@ -22,8 +22,8 @@ UIStyle::UIStyle(DataArray *pData)
       mSelectedFont(nullptr), mGreyFont(nullptr) {
     mName = pData->Sym(1);
 
-    Rnd::Mat *pMat;
-    Rnd::Font *pFont;
+    RndMat *pMat;
+    RndFont *pFont;
     DataArray *pState = pData->FindArray("normal", false);
     if (pState != nullptr) {
         FindStateObjects(pState, &pMat, &pFont);
@@ -41,7 +41,7 @@ UIStyle::UIStyle(DataArray *pData)
     }
 }
 
-Rnd::Mat *UIStyle::GetMat(int nState) const {
+RndMat *UIStyle::GetMat(int nState) const {
     if (nState == UIComponent::kStateNormal) {
         return mNormalMat;
     }
@@ -51,7 +51,7 @@ Rnd::Mat *UIStyle::GetMat(int nState) const {
     return mGreyMat;
 }
 
-Rnd::Font *UIStyle::GetFont(int nState) const {
+RndFont *UIStyle::GetFont(int nState) const {
     if (nState == UIComponent::kStateNormal) {
         return mNormalFont;
     }
@@ -61,17 +61,17 @@ Rnd::Font *UIStyle::GetFont(int nState) const {
     return mGreyFont;
 }
 
-void UIStyle::SetNormal(Rnd::Mat *pMat, Rnd::Font *pFont) {
+void UIStyle::SetNormal(RndMat *pMat, RndFont *pFont) {
     mNormalFont = pFont;
     mNormalMat = pMat;
 }
 
-void UIStyle::SetSelected(Rnd::Mat *pMat, Rnd::Font *pFont) {
+void UIStyle::SetSelected(RndMat *pMat, RndFont *pFont) {
     mSelectedFont = pFont;
     mSelectedMat = pMat;
 }
 
-void UIStyle::SetGrey(Rnd::Mat *pMat, Rnd::Font *pFont) {
+void UIStyle::SetGrey(RndMat *pMat, RndFont *pFont) {
     mGreyFont = pFont;
     mGreyMat = pMat;
 }

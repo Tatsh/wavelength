@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rnd/font.h"
-#include "rnd/mat.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmat.h"
 #include "script/dataarray.h"
 
 /**
@@ -44,7 +44,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020bf80
      * @ghidraAddress PAL: 0x00214d80
      */
-    Rnd::Mat *GetMat(int nState) const;
+    RndMat *GetMat(int nState) const;
 
     /**
      * Report the font of a state.
@@ -55,7 +55,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020bfa8
      * @ghidraAddress PAL: 0x00214da8
      */
-    Rnd::Font *GetFont(int nState) const;
+    RndFont *GetFont(int nState) const;
 
     /**
      * Set the material and the font of the normal state.
@@ -65,7 +65,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020bfd0
      * @ghidraAddress PAL: 0x00214dd0
      */
-    void SetNormal(Rnd::Mat *pMat, Rnd::Font *pFont);
+    void SetNormal(RndMat *pMat, RndFont *pFont);
 
     /**
      * Set the material and the font of the selected state.
@@ -75,7 +75,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020bfe0
      * @ghidraAddress PAL: 0x00214de0
      */
-    void SetSelected(Rnd::Mat *pMat, Rnd::Font *pFont);
+    void SetSelected(RndMat *pMat, RndFont *pFont);
 
     /**
      * Set the material and the font of the disabled state.
@@ -85,7 +85,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020bff0
      * @ghidraAddress PAL: 0x00214df0
      */
-    void SetGrey(Rnd::Mat *pMat, Rnd::Font *pFont);
+    void SetGrey(RndMat *pMat, RndFont *pFont);
 
     /**
      * Create a style from its script description.
@@ -101,11 +101,11 @@ public:
         return new UIStyle(pData);
     }
 
-    const char *mName;        /*!< The name, a symbol. */
-    Rnd::Mat *mNormalMat;     /*!< The material of the normal state. */
-    Rnd::Mat *mSelectedMat;   /*!< The material of the selected state. */
-    Rnd::Mat *mGreyMat;       /*!< The material of the disabled state. */
-    Rnd::Font *mNormalFont;   /*!< The font of the normal state. */
-    Rnd::Font *mSelectedFont; /*!< The font of the selected state. */
-    Rnd::Font *mGreyFont;     /*!< The font of the disabled state. */
+    const char *mName;      /*!< The name, a symbol. */
+    RndMat *mNormalMat;     /*!< The material of the normal state. */
+    RndMat *mSelectedMat;   /*!< The material of the selected state. */
+    RndMat *mGreyMat;       /*!< The material of the disabled state. */
+    RndFont *mNormalFont;   /*!< The font of the normal state. */
+    RndFont *mSelectedFont; /*!< The font of the selected state. */
+    RndFont *mGreyFont;     /*!< The font of the disabled state. */
 };

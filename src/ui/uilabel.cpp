@@ -1,7 +1,7 @@
 #include "ui/uilabel.h"
 
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -19,8 +19,7 @@ UILabel::UILabel(DataArray *pData, const char *pszPanel) : UIComponent(pData) {
         mStyle = nullptr;
     }
     const char *pszBase = pData->Size() > kBaseIndex ? pData->Sym(kBaseIndex) : mName;
-    mText = dynamic_cast<Rnd::Text *>(
-        Rnd::TheManager.Find(FormatString("%s_%s.txt", pszPanel, pszBase)));
+    mText = dynamic_cast<RndText *>(TheManager.Find(FormatString("%s_%s.txt", pszPanel, pszBase)));
     if (mText != nullptr && mStyle != nullptr) {
         mText->SetFont(mStyle->GetFont(mState));
     }
@@ -32,7 +31,7 @@ void UILabel::SetShowing(bool bShowing) {
 }
 
 const char *UILabel::Text() const {
-    return mText->mPreWrapText.mStr;
+    return mText->mPreWrapText.c_str();
 }
 
 void UILabel::SetText(const char *pszText) {
@@ -59,6 +58,6 @@ void UILabel::SetState(int nState, bool bForce) {
 void UILabel::Print(PrnStream &stream) {
     stream << "{UILabel " << mName << "\n";
     stream << "   visible: " << mShowing << "\n";
-    stream << "   RndText object: " << mText->mName.mStr << "\n";
+    stream << "   RndText object: " << mText->mName.c_str() << "\n";
     stream << "}\n";
 }

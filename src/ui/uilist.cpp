@@ -1,13 +1,13 @@
 #include "ui/uilist.h"
 
-#include <cstring>
-
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/collectchildren.h"
-#include "rnd/drawable.h"
-#include "rnd/manager.h"
-#include "rnd/object.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndcollideable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndobject.h"
+#include "rnd/rndtransformable.h"
 #include "ui/uimanager.h"
 #include "ui/uipanel.h"
 
@@ -23,8 +23,6 @@ constexpr int kRowPitchIndex = 5;
 constexpr unsigned kRowCloneFlags = 0x200;
 
 // The transform row that holds the translation, and the axis the rows are spaced along.
-constexpr int kTranslationRow = Rnd::kXfmRowCount - 1;
-constexpr int kRowAxis = 1;
 
 // Find the cells of a row.
 std::list<std::vector<UIList::Cell> >::iterator
@@ -43,47 +41,45 @@ UIList::UIList(DataArray *pData, const char *pszPanel)
       mRowPitch(0), mPanelName(pszPanel), mShowUpArrow(false), mShowDownArrow(false) {
     mStyle = TheUI.FindStyle(pData->Sym(kStyleIndex), false);
 
-    Rnd::Object *pObject =
-        Rnd::TheManager.Find(FormatString("%s_%s_row.view", pszPanel, pData->Sym(1)));
-    Rnd::View *pTemplate = pObject != nullptr ? dynamic_cast<Rnd::View *>(pObject) : nullptr;
+    RndObject *pObject = TheManager.Find(FormatString("%s_%s_row.view", pszPanel, pData->Sym(1)));
+    RndView *pTemplate = pObject != nullptr ? dynamic_cast<RndView *>(pObject) : nullptr;
     mRowCount = pData->Int(kRowCountIndex);
     mColumnCount = pData->Int(kColumnCountIndex);
-    (void)pTemplate->GetDraws().size(); // Yes, the binary counts the template's draws and discards
-                                        // the count.
+    (void)pTemplate->mDraws.size(); // Yes, the binary counts the template's draws and discards
+                                    // the count.
     mRowPitch = pData->Int(kRowPitchIndex);
 
-    pObject = Rnd::TheManager.Find(FormatString("%s_%s_cursor.mesh", mPanelName, pData->Sym(1)));
-    mCursor = pObject != nullptr ? dynamic_cast<Rnd::Mesh *>(pObject) : nullptr;
+    pObject = TheManager.Find(FormatString("%s_%s_cursor.mesh", mPanelName, pData->Sym(1)));
+    mCursor = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
     // Yes, the binary copies the cursor's transform without testing the cursor.
-    std::memcpy(mCursorXfm, mCursor->mLocalXfm, sizeof(mCursorXfm));
+    mCursorXfm = mCursor->mLocalXfm;
 
-    std::list<Rnd::Drawable *> &templateDraws = pTemplate->GetDraws();
-    for (std::list<Rnd::Drawable *>::iterator it = templateDraws.begin(); it != templateDraws.end();
+    std::list<RndDrawable *> &templateDraws = pTemplate->mDraws;
+    for (std::list<RndDrawable *>::iterator it = templateDraws.begin(); it != templateDraws.end();
          ++it) {
         (*it)->SetShowing(1);
     }
 
     mRows.resize(mRowCount, nullptr);
     for (int i = 0; i < mRowCount; ++i) {
-        Rnd::View *pRow = CloneRow(i, pTemplate);
-        float translation[Rnd::kXfmRowFloatCount];
-        std::memcpy(translation, pTemplate->mLocalXfm[kTranslationRow], sizeof(translation));
-        translation[kRowAxis] -= mRowPitch * i;
+        RndView *pRow = CloneRow(i, pTemplate);
+        Vector3 translation = pTemplate->mLocalXfm.mTranslation;
+        translation.y -= mRowPitch * i;
         pRow->mDirty = 1;
-        std::memcpy(pRow->mLocalXfm[kTranslationRow], translation, sizeof(translation));
+        pRow->mLocalXfm.mTranslation = translation;
         BuildRowCells(pRow);
         mRows[i] = pRow;
     }
 
     pTemplate->SetShowing(0);
 
-    pObject = Rnd::TheManager.Find(FormatString("%s_%s_up.mesh", mPanelName, pData->Sym(1)));
-    mUpArrow = pObject != nullptr ? dynamic_cast<Rnd::Mesh *>(pObject) : nullptr;
+    pObject = TheManager.Find(FormatString("%s_%s_up.mesh", mPanelName, pData->Sym(1)));
+    mUpArrow = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
     if (mUpArrow != nullptr) {
         mUpArrow->SetShowing(0);
     }
-    pObject = Rnd::TheManager.Find(FormatString("%s_%s_down.mesh", mPanelName, pData->Sym(1)));
-    mDownArrow = pObject != nullptr ? dynamic_cast<Rnd::Mesh *>(pObject) : nullptr;
+    pObject = TheManager.Find(FormatString("%s_%s_down.mesh", mPanelName, pData->Sym(1)));
+    mDownArrow = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
     if (mDownArrow != nullptr) {
         mDownArrow->SetShowing(0);
     }
@@ -91,38 +87,38 @@ UIList::UIList(DataArray *pData, const char *pszPanel)
 
 UIList::~UIList() {
     for (int i = 0; i < mRowCount; ++i) {
-        Rnd::Object *pObject =
-            Rnd::TheManager.Find(FormatString("v_%02d_%s_%s_row.view", i, mPanelName, mName));
-        Rnd::View *pRow = pObject != nullptr ? dynamic_cast<Rnd::View *>(pObject) : nullptr;
+        RndObject *pObject =
+            TheManager.Find(FormatString("v_%02d_%s_%s_row.view", i, mPanelName, mName));
+        RndView *pRow = pObject != nullptr ? dynamic_cast<RndView *>(pObject) : nullptr;
 
-        std::list<Rnd::Object *> objects;
-        Rnd::CollectChildren(objects, static_cast<Rnd::Animatable *>(pRow));
-        Rnd::CollectChildren(objects, static_cast<Rnd::Collideable *>(pRow));
-        Rnd::CollectChildren(objects, static_cast<Rnd::Drawable *>(pRow));
-        Rnd::CollectChildren(objects, static_cast<Rnd::Transformable *>(pRow));
+        std::list<RndObject *> objects;
+        RndAnimatable::CollectChildren(objects, pRow);
+        RndCollideable::CollectChildren(objects, pRow);
+        RndDrawable::CollectChildren(objects, pRow);
+        RndTransformable::CollectChildren(objects, pRow);
         objects.sort();
         objects.unique();
-        for (std::list<Rnd::Object *>::iterator it = objects.begin(); it != objects.end(); ++it) {
+        for (std::list<RndObject *>::iterator it = objects.begin(); it != objects.end(); ++it) {
             delete *it;
         }
-        delete static_cast<Rnd::Object *>(pRow);
+        delete static_cast<RndObject *>(pRow);
     }
 }
 
-Rnd::View *UIList::CloneRow(int nRow, Rnd::View *pTemplate) {
+RndView *UIList::CloneRow(int nRow, RndView *pTemplate) {
     const char *pszPrefix = FormatString("v_%02d_", nRow);
-    std::list<Rnd::Object *> clones;
-    Rnd::TheManager.Clone(pTemplate, pszPrefix, &clones, kRowCloneFlags, 1, 1);
-    Rnd::Object *pClone = clones.front();
-    return pClone != nullptr ? dynamic_cast<Rnd::View *>(pClone) : nullptr;
+    std::list<RndObject *> clones;
+    TheManager.Clone(pTemplate, pszPrefix, &clones, kRowCloneFlags, 1, 1);
+    RndObject *pClone = clones.front();
+    return pClone != nullptr ? dynamic_cast<RndView *>(pClone) : nullptr;
 }
 
-void UIList::BuildRowCells(Rnd::View *pRow) {
+void UIList::BuildRowCells(RndView *pRow) {
     std::vector<Cell> cells;
-    std::list<Rnd::Drawable *> &draws = pRow->GetDraws();
-    for (std::list<Rnd::Drawable *>::iterator it = draws.begin(); it != draws.end(); ++it) {
-        Rnd::Text *pText = *it != nullptr ? dynamic_cast<Rnd::Text *>(*it) : nullptr;
-        Rnd::Mesh *pMesh = *it != nullptr ? dynamic_cast<Rnd::Mesh *>(*it) : nullptr;
+    std::list<RndDrawable *> &draws = pRow->mDraws;
+    for (std::list<RndDrawable *>::iterator it = draws.begin(); it != draws.end(); ++it) {
+        RndText *pText = *it != nullptr ? dynamic_cast<RndText *>(*it) : nullptr;
+        RndMesh *pMesh = *it != nullptr ? dynamic_cast<RndMesh *>(*it) : nullptr;
         if (pText != nullptr) {
             cells.push_back(Cell{pText, nullptr});
             pText->SetText("");
@@ -138,7 +134,7 @@ void UIList::BuildRowCells(Rnd::View *pRow) {
 void UIList::Print([[maybe_unused]] PrnStream &stream) {
 }
 
-void UIList::SetCellMat(int nRow, int nColumn, Rnd::Mat *pMat) {
+void UIList::SetCellMat(int nRow, int nColumn, RndMat *pMat) {
     std::vector<Cell> cells = *FindRowCells(mRowCells, nRow); // Yes, the binary copies the row.
     Cell cell = cells[nColumn];
     if (cell.mMesh != nullptr) {
@@ -155,14 +151,14 @@ void UIList::SetCellText(int nRow, int nColumn, const char *pszText) {
     }
 }
 
-void UIList::SetCellFont(int nRow, int nColumn, Rnd::Font *pFont) {
+void UIList::SetCellFont(int nRow, int nColumn, RndFont *pFont) {
     Cell cell = (*FindRowCells(mRowCells, nRow))[nColumn];
     if (cell.mText != nullptr) {
         cell.mText->SetFont(pFont);
     }
 }
 
-void UIList::SetRowFont(int nRow, Rnd::Font *pFont) {
+void UIList::SetRowFont(int nRow, RndFont *pFont) {
     std::list<std::vector<Cell> >::iterator it = FindRowCells(mRowCells, nRow);
     for (int i = 0; i < mColumnCount; ++i) {
         Cell cell = (*it)[i];
@@ -253,11 +249,10 @@ void UIList::UpdateCursor() {
         SetCursorSelected(false);
         return;
     }
-    float translation[Rnd::kXfmRowFloatCount];
-    std::memcpy(translation, mCursorXfm[kTranslationRow], sizeof(translation));
-    translation[kRowAxis] -= mCursorRow * mRowPitch;
+    Vector3 translation = mCursorXfm.mTranslation;
+    translation.y -= mCursorRow * mRowPitch;
     mCursor->mDirty = 1;
-    std::memcpy(mCursor->mLocalXfm[kTranslationRow], translation, sizeof(translation));
+    mCursor->mLocalXfm.mTranslation = translation;
     mCursor->SetMat(mStyle->GetMat(kStateSelected));
     SetCursorSelected(true);
 }

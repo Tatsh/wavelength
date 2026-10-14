@@ -3,9 +3,9 @@
 #include "msg/keyboardkeymsg.h"
 #include "os/prnstream.h"
 #include "os/string.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uistyle.h"
@@ -208,22 +208,22 @@ public:
      */
     bool HandleKeyMsg(KeyboardKeyMsg *pMsg);
 
-    String mText;             /*!< The text the player has entered. */
-    Rnd::Text *mTextObj;      /*!< The text object that shows the text. */
-    Rnd::Text *mCaret;        /*!< The caret. */
-    Rnd::Text *mLastCaret;    /*!< The marker of the field's right edge. */
-    Rnd::Mesh *mMesh;         /*!< The highlight mesh, or null. */
-    UIStyle *mHighlightStyle; /*!< The style of the mesh and the text. */
-    int mCursor;              /*!< The caret's position in mText. */
-    int mScrollStart;         /*!< The first visible character. */
-    alignas(16) float mCaretOrigin[Rnd::kXfmRowFloatCount]; /*!< The caret's starting position. */
-    alignas(16) float mLastCaretOrigin[Rnd::kXfmRowFloatCount]; /*!< The right edge's position. */
-    int mScroll;                                                /*!< The `scroll` setting. */
-    String mVisibleText;                                 /*!< The part of the text that shows. */
-    alignas(16) float mCaretPos[Rnd::kXfmRowFloatCount]; /*!< The caret's position. */
-    float mMaxEntryWidth;     /*!< The `max_entry_width` setting, or -1 for no limit. */
-    int mNumLines;            /*!< The `num_lines` setting. */
-    int mMaxNumChars;         /*!< The `max_num_chars` setting, or -1 for no limit. */
+    String mText;                         /*!< The text the player has entered. */
+    RndText *mTextObj;                    /*!< The text object that shows the text. */
+    RndText *mCaret;                      /*!< The caret. */
+    RndText *mLastCaret;                  /*!< The marker of the field's right edge. */
+    RndMesh *mMesh;                       /*!< The highlight mesh, or null. */
+    UIStyle *mHighlightStyle;             /*!< The style of the mesh and the text. */
+    int mCursor;                          /*!< The caret's position in mText. */
+    int mScrollStart;                     /*!< The first visible character. */
+    alignas(16) Vector3 mCaretOrigin;     /*!< The caret's starting position. */
+    alignas(16) Vector3 mLastCaretOrigin; /*!< The right edge's position. */
+    int mScroll;                          /*!< The `scroll` setting. */
+    String mVisibleText;                  /*!< The part of the text that shows. */
+    alignas(16) Vector3 mCaretPos;        /*!< The caret's position. */
+    float mMaxEntryWidth;                 /*!< The `max_entry_width` setting, or -1 for no limit. */
+    int mNumLines;                        /*!< The `num_lines` setting. */
+    int mMaxNumChars;                     /*!< The `max_num_chars` setting, or -1 for no limit. */
     int mWordWrapLines;       /*!< The `word_wrap_lines` setting, or 0 for no wrapping. */
     int mPassword;            /*!< The `password` setting, which masks the text. */
     bool mEditing;            /*!< Whether the caret blinks. */

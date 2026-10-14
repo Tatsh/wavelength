@@ -2,8 +2,8 @@
 
 #include "msg/joypadinputmsg.h"
 #include "os/prnstream.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uistyle.h"
@@ -184,7 +184,7 @@ public:
     int mNormalState;   /*!< The state of the normal phase. */
     int mSelectedState; /*!< The state of the selected phase. */
     int mRevertState;   /*!< The state to restore when the flash ends. */
-    Rnd::Mesh *mMesh;   /*!< The mesh, or null when the file has none of that name. */
-    Rnd::Text *mText;   /*!< The text object, or null when the file has none of that name. */
+    RndMesh *mMesh;     /*!< The mesh, or null when the file has none of that name. */
+    RndText *mText;     /*!< The text object, or null when the file has none of that name. */
     UIStyle *mStyle;    /*!< The style. */
 };

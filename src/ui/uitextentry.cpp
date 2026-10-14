@@ -1,9 +1,7 @@
 #include "ui/uitextentry.h"
 
-#include <algorithm>
-
-#include "rnd/font.h"
-#include "rnd/manager.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
 #include "ui/uimanager.h"
 #include "ui/uitextentrycompletemsg.h"
 #include "ui/uitextentryinvalidmsg.h"
@@ -28,26 +26,18 @@ constexpr int kQuoteGlyph = -80;
 constexpr float kNoWidthLimit = -1.0f;
 constexpr int kNoCharLimit = -1;
 
-// The row of a transform that holds the translation.
-constexpr int kTranslationRow = 3;
-
-// Components of a position.
-constexpr int kAxisX = 0;
-constexpr int kAxisY = 1;
-constexpr int kAxisZ = 2;
-
 constexpr char kMaskChar = '*';
 
-Rnd::Text *FindText(const char *pszName) {
-    return dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(pszName));
+RndText *FindText(const char *pszName) {
+    return dynamic_cast<RndText *>(TheManager.Find(pszName));
 }
 
 // Set the three components of a caret position to an origin moved by an offset. The fourth
 // component is left as it was.
-void PlaceCaret(float *pCaret, const float *pOrigin, const Vector3 &offset) {
-    pCaret[kAxisX] = pOrigin[kAxisX] + offset.x;
-    pCaret[kAxisY] = pOrigin[kAxisY] + offset.y;
-    pCaret[kAxisZ] = pOrigin[kAxisZ] + offset.z;
+void PlaceCaret(Vector3 &caret, const Vector3 &origin, const Vector3 &offset) {
+    caret.x = origin.x + offset.x;
+    caret.y = origin.y + offset.y;
+    caret.z = origin.z + offset.z;
 }
 
 } // namespace
@@ -69,8 +59,7 @@ UITextEntry::UITextEntry(DataArray *pData, const char *pszPanel)
     pData->FindBool("password", &mPassword, false);
     mInvalidChars = pData->FindArray("invalid_chars", false);
 
-    mMesh = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("%s_%s.mesh", pszPanel, mName)));
+    mMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_%s.mesh", pszPanel, mName)));
     if (mMesh != nullptr) {
         const char *pszStyle = "";
         pData->FindSymbol("hilight_style", &pszStyle, true);
@@ -81,20 +70,20 @@ UITextEntry::UITextEntry(DataArray *pData, const char *pszPanel)
     mTextObj->SetText("");
     mCaret = FindText(FormatString("%s_%s_cursor.txt", pszPanel, mName));
     mCaret->SetShowing(false);
-    std::copy_n(mCaret->mLocalXfm[kTranslationRow], Rnd::kXfmRowFloatCount, mCaretOrigin);
+    mCaretOrigin = mCaret->mLocalXfm.mTranslation;
     mLastCaret = FindText(FormatString("%s_%s_lastcursor.txt", pszPanel, mName));
     mLastCaret->SetText("");
-    std::copy_n(mLastCaret->mLocalXfm[kTranslationRow], Rnd::kXfmRowFloatCount, mLastCaretOrigin);
+    mLastCaretOrigin = mLastCaret->mLocalXfm.mTranslation;
     if (mWordWrapLines != 0) {
         mMaxEntryWidth = mTextObj->mWrapWidth;
     }
     if (mMaxEntryWidth == kNoWidthLimit && !mScroll) {
-        mMaxEntryWidth = mLastCaretOrigin[kAxisX] - mCaretOrigin[kAxisX];
+        mMaxEntryWidth = mLastCaretOrigin.x - mCaretOrigin.x;
     }
     mLastCaret->SetShowing(false);
     mVisibleText = "";
     mScrollStart = 0;
-    std::copy_n(mCaretOrigin, Rnd::kXfmRowFloatCount, mCaretPos);
+    mCaretPos = mCaretOrigin;
 }
 
 UITextEntry::~UITextEntry() {
@@ -109,11 +98,11 @@ String UITextEntry::MaskText(const char *pszText) const {
 }
 
 float UITextEntry::CharWidth(int nIndex) {
-    Rnd::Font *pFont = mTextObj->GetFont();
-    float fWidth = pFont->GetCharAdvance(kMaskChar);
+    RndFont *pFont = mTextObj->mFont;
+    float fWidth = pFont->CharWidth(kMaskChar);
     const float fSpace = pFont->mSpace;
     if (!mPassword) {
-        fWidth = pFont->GetCharAdvance(mText[nIndex]);
+        fWidth = pFont->CharWidth(mText[nIndex]);
     }
     return fSpace + fWidth;
 }
@@ -201,41 +190,41 @@ void UITextEntry::Layout() {
         return;
     }
 
-    Rnd::Font *pFont = mTextObj->GetFont();
+    RndFont *pFont = mTextObj->mFont;
     const float fSpace = pFont->mSpace;
-    const float fMaskWidth = pFont->GetCharAdvance(kMaskChar);
+    const float fMaskWidth = pFont->CharWidth(kMaskChar);
 
-    if (0.0f < mCaretPos[kAxisX] - mLastCaretOrigin[kAxisX] &&
+    if (0.0f < mCaretPos.x - mLastCaretOrigin.x &&
         static_cast<unsigned int>(mScrollStart) < static_cast<unsigned int>(mText.mLength)) {
         do {
-            mCaretPos[kAxisX] -= CharWidth(mScrollStart);
+            mCaretPos.x -= CharWidth(mScrollStart);
             ++mScrollStart;
-        } while (0.0f < mCaretPos[kAxisX] - mLastCaretOrigin[kAxisX] &&
+        } while (0.0f < mCaretPos.x - mLastCaretOrigin.x &&
                  static_cast<unsigned int>(mScrollStart) <
                      static_cast<unsigned int>(mText.mLength));
     }
-    if (0.0f < mCaretOrigin[kAxisX] - mCaretPos[kAxisX] && mScrollStart > 0) {
+    if (0.0f < mCaretOrigin.x - mCaretPos.x && mScrollStart > 0) {
         do {
             // Yes, the binary measures the character at mScrollStart before stepping back to it.
-            mCaretPos[kAxisX] += CharWidth(mScrollStart);
+            mCaretPos.x += CharWidth(mScrollStart);
             --mScrollStart;
-        } while (0.0f < mCaretOrigin[kAxisX] - mCaretPos[kAxisX] && mScrollStart > 0);
+        } while (0.0f < mCaretOrigin.x - mCaretPos.x && mScrollStart > 0);
     }
 
     mVisibleText = mText;
     mVisibleText.Erase(0, mScrollStart);
     float fWidth = 0.0f;
     int nCount = 0;
-    if (0.0f < mLastCaretOrigin[kAxisX] - mCaretOrigin[kAxisX] && mVisibleText.mLength != 0) {
+    if (0.0f < mLastCaretOrigin.x - mCaretOrigin.x && mVisibleText.mLength != 0) {
         do {
             fWidth += fSpace;
             if (mPassword) {
                 fWidth += fMaskWidth;
             } else {
-                fWidth += pFont->GetCharAdvance(mVisibleText[nCount]);
+                fWidth += pFont->CharWidth(mVisibleText[nCount]);
             }
             ++nCount;
-        } while (fWidth < mLastCaretOrigin[kAxisX] - mCaretOrigin[kAxisX] &&
+        } while (fWidth < mLastCaretOrigin.x - mCaretOrigin.x &&
                  static_cast<unsigned int>(nCount) <
                      static_cast<unsigned int>(mVisibleText.mLength));
     }
@@ -246,7 +235,7 @@ void UITextEntry::Layout() {
 
 void UITextEntry::UpdateCaret() {
     mCaret->mDirty = 1;
-    std::copy_n(mCaretPos, Rnd::kXfmRowFloatCount, mCaret->mLocalXfm[kTranslationRow]);
+    mCaret->mLocalXfm.mTranslation = mCaretPos;
 }
 
 bool UITextEntry::ProcessKey(int nKey) {
@@ -260,7 +249,7 @@ bool UITextEntry::ProcessKey(int nKey) {
             const float fWidth = CharWidth(mCursor - 1);
             mText.Erase(mCursor - 1, 1);
             --mCursor;
-            mCaretPos[kAxisX] -= fWidth;
+            mCaretPos.x -= fWidth;
             Layout();
         }
         return true;
@@ -269,7 +258,7 @@ bool UITextEntry::ProcessKey(int nKey) {
         if (mCursor > 0) {
             const float fWidth = CharWidth(mCursor - 1);
             --mCursor;
-            mCaretPos[kAxisX] -= fWidth;
+            mCaretPos.x -= fWidth;
             Layout();
         }
         return true;
@@ -278,7 +267,7 @@ bool UITextEntry::ProcessKey(int nKey) {
         if (static_cast<unsigned int>(mCursor) < static_cast<unsigned int>(mText.mLength)) {
             const float fWidth = CharWidth(mCursor);
             ++mCursor;
-            mCaretPos[kAxisX] += fWidth;
+            mCaretPos.x += fWidth;
             Layout();
         }
         return true;
@@ -311,13 +300,13 @@ bool UITextEntry::ProcessKey(int nKey) {
 
     bool bFits;
     if (mScroll || mWordWrapLines != 0) {
-        mVisibleText = mTextObj->mPreWrapText.mStr;
+        mVisibleText = mTextObj->mPreWrapText;
         mTextObj->SetWordWrap(1);
         mTextObj->SetWrapWidth(mMaxEntryWidth);
         String text(mText);
         text.Insert(mCursor, 1, ch);
         mTextObj->SetText(text.c_str());
-        const int nLines = mTextObj->CountLines();
+        const int nLines = mTextObj->NumLines();
         if (mScroll) {
             mTextObj->SetWordWrap(0);
             bFits = !(mNumLines < nLines);
@@ -336,7 +325,7 @@ bool UITextEntry::ProcessKey(int nKey) {
         } else {
             const Vector3 end = mTextObj->CharPosition(mText.mLength);
             char glyph = ch;
-            const float fWidth = mTextObj->GetFontWidth(&glyph, 1);
+            const float fWidth = mTextObj->MeasureWidth(&glyph, 1);
             bFits = static_cast<float>(static_cast<int>(end.x + fWidth)) < mMaxEntryWidth;
         }
         if (bFits && mMaxNumChars != kNoCharLimit) {
@@ -351,7 +340,7 @@ bool UITextEntry::ProcessKey(int nKey) {
         return true;
     }
     mText.Insert(mCursor++, 1, ch);
-    mCaretPos[kAxisX] += CharWidth(mCursor - 1);
+    mCaretPos.x += CharWidth(mCursor - 1);
     Layout();
     return true;
 }

@@ -5,12 +5,12 @@
 
 #include "msg/joypadinputmsg.h"
 #include "os/prnstream.h"
-#include "rnd/font.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uistyle.h"
@@ -35,8 +35,8 @@ public:
 
     /** One cell of a row. Exactly one of the two pointers is set. */
     struct Cell {
-        Rnd::Text *mText; /*!< The text of the cell, or null. */
-        Rnd::Mesh *mMesh; /*!< The mesh of the cell, or null. */
+        RndText *mText; /*!< The text of the cell, or null. */
+        RndMesh *mMesh; /*!< The mesh of the cell, or null. */
     };
 
     /**
@@ -156,7 +156,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00205fd0
      * @ghidraAddress PAL: 0x0020ed88
      */
-    Rnd::View *CloneRow(int nRow, Rnd::View *pTemplate);
+    RndView *CloneRow(int nRow, RndView *pTemplate);
 
     /**
      * Record the cells of a row, emptying each text and hiding each mesh.
@@ -165,7 +165,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002060e0
      * @ghidraAddress PAL: 0x0020ee98
      */
-    void BuildRowCells(Rnd::View *pRow);
+    void BuildRowCells(RndView *pRow);
 
     /**
      * Show the mesh of a cell with a material.
@@ -176,7 +176,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00206848
      * @ghidraAddress PAL: 0x0020f600
      */
-    void SetCellMat(int nRow, int nColumn, Rnd::Mat *pMat);
+    void SetCellMat(int nRow, int nColumn, RndMat *pMat);
 
     /**
      * Set the text of a cell.
@@ -198,7 +198,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00206be0
      * @ghidraAddress PAL: 0x0020f998
      */
-    void SetCellFont(int nRow, int nColumn, Rnd::Font *pFont);
+    void SetCellFont(int nRow, int nColumn, RndFont *pFont);
 
     /**
      * Set the font of every text of a row.
@@ -208,7 +208,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00206c88
      * @ghidraAddress PAL: 0x0020fa40
      */
-    void SetRowFont(int nRow, Rnd::Font *pFont);
+    void SetRowFont(int nRow, RndFont *pFont);
 
     /**
      * Select an item, keeping the number of items.
@@ -239,15 +239,13 @@ public:
     int mSelected;                           /*!< The selected item. */
     int mRowPitch;                           /*!< The distance between rows. */
     std::list<std::vector<Cell> > mRowCells; /*!< The cells of each row. */
-    std::vector<Rnd::View *> mRows;          /*!< The row clones. */
-    std::vector<Rnd::Text *> mTextCells;     /*!< The text cells of every row. */
+    std::vector<RndView *> mRows;            /*!< The row clones. */
+    std::vector<RndText *> mTextCells;       /*!< The text cells of every row. */
     const char *mPanelName;                  /*!< The name of the panel the list belongs to. */
-    Rnd::Mesh *mCursor;                      /*!< The cursor, or null. */
-    Rnd::Mesh *mUpArrow;                     /*!< The arrow above the rows, or null. */
-    Rnd::Mesh *mDownArrow;                   /*!< The arrow below the rows, or null. */
-    alignas(
-        16) float mCursorXfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount]; /*!< The cursor's transform
-                                                                            on the first row. */
+    RndMesh *mCursor;                        /*!< The cursor, or null. */
+    RndMesh *mUpArrow;                       /*!< The arrow above the rows, or null. */
+    RndMesh *mDownArrow;                     /*!< The arrow below the rows, or null. */
+    alignas(16) Transform mCursorXfm;        /*!< The cursor's transform on the first row. */
     bool mShowUpArrow;   /*!< Whether the up arrow shows even when no item lies above. */
     bool mShowDownArrow; /*!< Whether the down arrow shows even when no item lies below. */
 };

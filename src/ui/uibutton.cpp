@@ -4,7 +4,7 @@
 
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "ui/uicomponentselectmsg.h"
 #include "ui/uicomponentselectstartmsg.h"
 #include "ui/uimanager.h"
@@ -21,13 +21,11 @@ UIButton::UIButton(DataArray *pData, const char *pszPanel) : UIComponent(pData) 
     mFlashDone = true;
     mStyle = TheUI.FindStyle(pData->Sym(kStyleIndex), false);
     const char *pszBase = pData->Size() > kBaseIndex ? pData->Sym(kBaseIndex) : mName;
-    mText = dynamic_cast<Rnd::Text *>(
-        Rnd::TheManager.Find(FormatString("%s_%s.txt", pszPanel, pszBase)));
+    mText = dynamic_cast<RndText *>(TheManager.Find(FormatString("%s_%s.txt", pszPanel, pszBase)));
     if (mText != nullptr) {
         mText->SetFont(mStyle->GetFont(mState));
     }
-    mMesh = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("%s_%s.mesh", pszPanel, pszBase)));
+    mMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_%s.mesh", pszPanel, pszBase)));
     if (mMesh != nullptr) {
         mMesh->SetMat(mStyle->GetMat(mState));
     }
@@ -37,7 +35,7 @@ UIButton::~UIButton() {
 }
 
 const char *UIButton::Text() const {
-    return mText->mPreWrapText.mStr;
+    return mText->mPreWrapText.c_str();
 }
 
 void UIButton::SetText(const char *pszText) {

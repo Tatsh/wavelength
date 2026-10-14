@@ -1,7 +1,7 @@
 #pragma once
 
 #include "msg/joypadinputmsg.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmesh.h"
 #include "script/dataarray.h"
 #include "ui/uibutton.h"
 #include "ui/uistyle.h"
@@ -149,11 +149,11 @@ public:
      */
     bool HandleSelect(JoypadInputMsg *pMsg);
 
-    Rnd::Mesh *mLeftArrow;  /*!< The left arrow, or null. */
-    Rnd::Mesh *mRightArrow; /*!< The right arrow, or null. */
-    int mArrowButton;       /*!< The directional button whose arrow flashes, or kPadNone. */
-    bool mArrowFlashDone;   /*!< Whether no arrow flashes. */
-    UIStyle *mArrowStyle;   /*!< The style of the arrows. */
+    RndMesh *mLeftArrow;  /*!< The left arrow, or null. */
+    RndMesh *mRightArrow; /*!< The right arrow, or null. */
+    int mArrowButton;     /*!< The directional button whose arrow flashes, or kPadNone. */
+    bool mArrowFlashDone; /*!< Whether no arrow flashes. */
+    UIStyle *mArrowStyle; /*!< The style of the arrows. */
 
 private:
     /**

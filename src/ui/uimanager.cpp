@@ -7,7 +7,7 @@
 #include "os/fileutil.h"
 #include "os/joypad.h"
 #include "os/system.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "script/symbol.h"
 #include "ui/lrbutton.h"
 #include "ui/uibutton.h"
@@ -100,7 +100,7 @@ void UIManager::Init() {
         mCallback = new Callback(pConfig);
         for (int i = 1; i < pShared->Size(); ++i) {
             RndLoader *pLoader =
-                Rnd::TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback, nullptr);
+                TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback, nullptr);
             for (RndObject *pObject : pLoader->mObjects) {
                 mSharedObjects.push_back(pObject);
             }
@@ -394,7 +394,7 @@ void UIManager::LoadFile(const char *pszFile, bool bLoadAll) {
     }
     for (const auto &entry : mScreens) {
         entry.second->Load();
-        Rnd::TheManager.PollLoaders(kLoadAllBudgetMs);
+        TheManager.PollLoaders(kLoadAllBudgetMs);
         (void)entry.second->IsLoaded(); // Yes, the binary discards the result.
     }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "os/prnstream.h"
-#include "rnd/text.h"
+#include "rnd/rndtext.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uistyle.h"
@@ -114,6 +114,6 @@ public:
      */
     void SetStyle(UIStyle *pStyle);
 
-    Rnd::Text *mText; /*!< The text object, or null when the file has none of that name. */
-    UIStyle *mStyle;  /*!< The style, or null when the description lists none. */
+    RndText *mText;  /*!< The text object, or null when the file has none of that name. */
+    UIStyle *mStyle; /*!< The style, or null when the description lists none. */
 };
