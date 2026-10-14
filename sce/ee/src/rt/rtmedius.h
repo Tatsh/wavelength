@@ -14,8 +14,8 @@ extern "C" {
  * message without a known entry point is named by its place in the registration order.
  */
 
-/** Non-zero once rtMediusInitialize() has run. NTSC-U/C: 0x003c25c8. */
-extern int g_nMediusInitialized;
+/** 1 once rtMediusInitialize() has run. NTSC-U/C: 0x003c25c8. */
+extern short g_nMediusInitialized;
 
 /** The connection to the lobby server, or negative. NTSC-U/C: 0x003c25cc. */
 extern int g_nMediusConnection;
@@ -335,11 +335,147 @@ extern rtMediusCallback g_pfnMediusUniverseNewsCallback;
 /** The receiver of message 202, or null. NTSC-U/C: 0x003c26e4. */
 extern rtMediusCallback g_pfnMediusUniverseStatusListCallback;
 
+/** The registered type of message 0. NTSC-U/C: 0x00435900. */
+extern int g_nMediusWorldReportType;
+
+/** The registered type of message 1. NTSC-U/C: 0x004358fc. */
+extern int g_nMediusPlayerReportType;
+
+/** The registered type of message 2. NTSC-U/C: 0x00435904. */
+extern int g_nMediusEndGameReportType;
+
+/** The registered type of message 3. NTSC-U/C: 0x00435874. */
+extern int g_nMediusSessionBeginType;
+
+/** The registered type of message 5. NTSC-U/C: 0x00435878. */
+extern int g_nMediusSessionEndType;
+
+/** The registered type of message 7. NTSC-U/C: 0x0043587c. */
+extern int g_nMediusAccountLoginType;
+
+/** The registered type of message 9. NTSC-U/C: 0x00435888. */
+extern int g_nMediusAccountRegistrationType;
+
+/** The registered type of message 15. NTSC-U/C: 0x0043588c. */
+extern int g_nMediusChangePasswordType;
+
+/** The registered type of message 17. NTSC-U/C: 0x00435890. */
+extern int g_nMediusUpdateStatsType;
+
+/** The registered type of message 19. NTSC-U/C: 0x00435898. */
+extern int g_nMediusAccountDeleteType;
+
+/** The registered type of message 23. NTSC-U/C: 0x00435928. */
+extern int g_nMediusAccountGetIdType;
+
+/** The registered type of message 25. NTSC-U/C: 0x0043589c. */
+extern int g_nMediusAnonymousLoginType;
+
+/** The registered type of message 31. NTSC-U/C: 0x00435868. */
+extern int g_nMediusMessage031Type;
+
+/** The registered type of message 33. NTSC-U/C: 0x004358a8. */
+extern int g_nMediusCreateChannelType;
+
+/** The registered type of message 35. NTSC-U/C: 0x00435864. */
+extern int g_nMediusJoinGameType;
+
+/** The registered type of message 37. NTSC-U/C: 0x004358ac. */
+extern int g_nMediusJoinChannelType;
+
+/** The registered type of message 41. NTSC-U/C: 0x004358b0. */
+extern int g_nMediusGameListType;
+
+/** The registered type of message 43. NTSC-U/C: 0x004358b4. */
+extern int g_nMediusChannelListType;
+
+/** The registered type of message 45. NTSC-U/C: 0x004358b8. */
+extern int g_nMediusChannelPlayersType;
+
+/** The registered type of message 47. NTSC-U/C: 0x004358bc. */
+extern int g_nMediusGamePlayersType;
+
+/** The registered type of message 49. NTSC-U/C: 0x004358c0. */
+extern int g_nMediusPlayerInfoType;
+
+/** The registered type of message 53. NTSC-U/C: 0x004358c8. */
+extern int g_nMediusChannelInfoType;
+
+/** The registered type of message 57. NTSC-U/C: 0x004358cc. */
+extern int g_nMediusFindPlayerType;
+
+/** The registered type of message 59. NTSC-U/C: 0x004358d4. */
+extern int g_nMediusChatMessageType;
+
+/** The registered type of message 71. NTSC-U/C: 0x004358f8. */
+extern int g_nMediusGetPolicyType;
+
+/** The registered type of message 73. NTSC-U/C: 0x00435870. */
+extern int g_nMediusUpdateUserStateType;
+
+/** The registered type of message 75. NTSC-U/C: 0x00435908. */
+extern int g_nMediusGetAnnouncementsType;
+
+/** The registered type of message 78. NTSC-U/C: 0x00435910. */
+extern int g_nMediusSetGameListFilterType;
+
+/** The registered type of message 80. NTSC-U/C: 0x00435914. */
+extern int g_nMediusClearGameListFilterType;
+
+/** The registered type of message 134. NTSC-U/C: 0x0043586c. */
+extern int g_nMediusVersionServerType;
+
+/** The registered type of message 138. NTSC-U/C: 0x00435924. */
+extern int g_nMediusBanPlayerType;
+
+/** The registered type of message 146. NTSC-U/C: 0x00435934. */
+extern int g_nMediusLadderPositionType;
+
+/** The registered type of message 148. NTSC-U/C: 0x0043593c. */
+extern int g_nMediusLadderListType;
+
+/** The registered type of message 152. NTSC-U/C: 0x004358a4. */
+extern int g_nMediusTextFilterType;
+
+/** The registered type of message 165. NTSC-U/C: 0x00435830. */
+extern int g_nMediusFileCreateType;
+
+/** The registered type of message 167. NTSC-U/C: 0x00435834. */
+extern int g_nMediusFileUploadType;
+
+/** The registered type of message 170. NTSC-U/C: 0x00435838. */
+extern int g_nMediusFileCloseType;
+
+/** The registered type of message 172. NTSC-U/C: 0x0043583c. */
+extern int g_nMediusFileDownloadType;
+
+/** The registered type of message 176. NTSC-U/C: 0x00435844. */
+extern int g_nMediusFileDeleteType;
+
+/** The registered type of message 178. NTSC-U/C: 0x00435848. */
+extern int g_nMediusFileListType;
+
+/** The registered type of message 182. NTSC-U/C: 0x00435850. */
+extern int g_nMediusFileGetAttributesType;
+
+/** The registered type of message 204. NTSC-U/C: 0x00435938. */
+extern int g_nMediusLadderPositionFastType;
+
+/**
+ * Register the message types of the lobby server with their receivers.
+ *
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002fbef8
+ * @ghidraAddress PAL: 0x00305f90
+ */
+int rtMediusRegisterMessages(void);
+
 /**
  * Store the address of the lobby server a login reports.
  *
  * @param address The address.
  * @ghidraAddress NTSC-U/C: 0x002f98b8
+ * @ghidraAddress PAL: 0x003038b8
  */
 void rtMediusSetServerAddress(const rtNetAddress *address);
 
@@ -1926,6 +2062,18 @@ int rtMediusOnUniverseStatusListResponse(int connection,
  * @ghidraAddress NTSC-U/C: 0x00302d08
  */
 int rtMediusOnFileUploadServerReq(int connection, int type, int sender, rtDmeMessage *message);
+
+// Routines of the DME core that the DME core headers do not declare yet.
+
+/**
+ * Report the time of this console in milliseconds, taking the lock of the library.
+ *
+ * @param time Receives the time.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8b30
+ * @ghidraAddress PAL: 0x002b2aa0
+ */
+int rtDmeGetTimestamp(unsigned int *time);
 
 #ifdef __cplusplus
 }

@@ -1,10 +1,11 @@
-#ifndef LIBRTDMEDEV_H
-#define LIBRTDMEDEV_H
+#ifndef RTDMEDEVICE_H
+#define RTDMEDEVICE_H
 
-#include <librtcodec.h>
-#include <librtimage.h>
-#include <librtnet.h>
-#include <librtreasm.h>
+#include "rt/rtcodec.h"
+#include "rt/rtimage.h"
+#include "rt/rtreassembler.h"
+#include "rt/rtsocket.h"
+#include "rt/rtupnp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -327,7 +328,7 @@ struct rtDmeDevice {
     unsigned int audioDecodeLength;                      /*!< The bytes in audioDecodeBuffer. */
     unsigned char audioEncodeBuffer[RT_DME_AUDIO_ENCODE_BUFFER_SIZE]; /*!< Audio to encode. */
     unsigned char audioDecodeBuffer[RT_DME_AUDIO_DECODE_BUFFER_SIZE]; /*!< Audio to decode. */
-    rtNetSocket *socket;                                              /*!< The socket, or null. */
+    RtSocket *socket;                                                 /*!< The socket, or null. */
     int audioCodec;                       /*!< The codec of the last captured audio. */
     int activeConnectionId;               /*!< The selected connection, or 0. */
     int width;                            /*!< The width of the video in pixels. */
@@ -339,8 +340,8 @@ struct rtDmeDevice {
     rtImage *displayU;                    /*!< The first chroma plane of decoded video. */
     rtImage *displayV;                    /*!< The second chroma plane of decoded video. */
     int upnpState;                        /*!< One of the RT_DME_UPNP_ states. */
-    struct rtUpnpContext *upnp;           /*!< The port mapping request, or null. */
-    int upnpResult;                       /*!< The result of the port mapping. */
+    RtUpnpContext *upnp;                  /*!< The port mapping request, or null. */
+    int upnpResult;                       /*!< The service the port mapping reported. */
     char upnpHost[RT_DME_UPNP_HOST_SIZE]; /*!< The dotted address of the router. */
     unsigned short upnpPort;              /*!< The port of the router. */
     rtDmePortMappedFunc onPortMapped;     /*!< Receives the public address, or null. */
@@ -611,49 +612,6 @@ rtDmeEndpointNode *rtDmeEndpointNodeCreate(rtDmePeer *peer);
  */
 void rtDmeEndpointNodeDestroy(rtDmeEndpointNode *node);
 
-// Routines of the DME core that the DME core headers do not declare yet.
-
-/** A port mapping request to a router. */
-typedef struct rtUpnpContext rtUpnpContext;
-
-/**
- * Receiver of the result of a port mapping request.
- *
- * @param context The request.
- * @param status 0 for success.
- * @param result The result the router reported.
- * @param address The dotted public address.
- * @param port The public port.
- * @param owner The device that started the request.
- */
-typedef void (*rtUpnpPortMappingCallback)(rtUpnpContext *context,
-                                          int status,
-                                          int result,
-                                          const char *address,
-                                          unsigned short port,
-                                          rtDmeDevice *owner);
-
-/**
- * Allocate a cleared block from the allocator of the library.
- *
- * @param block Receives the block, or null.
- * @param size The size of the block in bytes.
- * @return 0, or 1 when the allocation fails.
- * @ghidraAddress NTSC-U/C: 0x002aa464
- * @ghidraAddress PAL: 0x002b43d4
- */
-int rtDmeAllocZeroed(void **block, int size);
-
-/**
- * Release a block of the allocator of the library and clear the pointer.
- *
- * @param block The pointer to the block.
- * @return 0.
- * @ghidraAddress NTSC-U/C: 0x002aa4c8
- * @ghidraAddress PAL: 0x002b4438
- */
-int rtDmeFree(void **block);
-
 /**
  * Parse a dotted address.
  *
@@ -673,58 +631,6 @@ unsigned int rtNetParseAddress(const char *text);
  * @ghidraAddress PAL: 0x002b993c
  */
 void rtNetFormatAddress(unsigned int address, char *text);
-
-/**
- * Create a port mapping request.
- *
- * @param context Receives the request.
- * @param socket The socket of the request.
- * @param port The local port to map.
- * @param owner The device that receives the result.
- * @return 0, or an error code.
- * @ghidraAddress NTSC-U/C: 0x002ccb08
- * @ghidraAddress PAL: 0x002d6a78
- */
-int rtUpnpCreate(rtUpnpContext **context,
-                 rtNetSocket *socket,
-                 unsigned short port,
-                 rtDmeDevice *owner);
-
-/**
- * Release a port mapping request.
- *
- * @param context The request.
- * @return 0, or an error code.
- * @ghidraAddress NTSC-U/C: 0x002ccbf8
- * @ghidraAddress PAL: 0x002d6b68
- */
-int rtUpnpDestroy(rtUpnpContext *context);
-
-/**
- * Send a port mapping request to a router.
- *
- * @param context The request.
- * @param host The dotted address of the router.
- * @param port The port of the router.
- * @param callback Receives the result.
- * @return 0, or an error code.
- * @ghidraAddress NTSC-U/C: 0x002cd6a0
- * @ghidraAddress PAL: 0x002d7610
- */
-int rtUpnpBeginPortMapping(rtUpnpContext *context,
-                           const char *host,
-                           unsigned short port,
-                           rtUpnpPortMappingCallback callback);
-
-/**
- * Advance a port mapping request.
- *
- * @param context The request.
- * @return 0, or an error code.
- * @ghidraAddress NTSC-U/C: 0x002cd7c8
- * @ghidraAddress PAL: 0x002d7738
- */
-int rtUpnpUpdate(rtUpnpContext *context);
 
 #ifdef __cplusplus
 }

@@ -1,10 +1,11 @@
+#include "rt/rtcodec.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <librtcodec.h>
-#include <librtdmedev.h>
-#include <librtlpc10.h>
+#include "rt/rtlpc10.h"
+#include "rt/rtmemory.h"
 
 enum {
     // Linear prediction coder.
@@ -61,7 +62,7 @@ enum {
     kLpcPitchFromNext = 1,
     kLpcPitchFromPrevious = 3,
 
-    // Directions of PackSpeechParameterBits().
+    // Directions of rtLpc10Chanwr().
     kLpcPackWrite = 0,
     kLpcPackRead = 1,
 
@@ -415,8 +416,8 @@ static void rtLpcRingExchange(const float *input, float *output, int count) {
 }
 
 void rtLpcReset(void) {
-    ResetSpeechCodecState();
-    InitSpeechAnalysisBuffers();
+    rtLpc10ResetState();
+    rtLpc10ResetAnalysis();
 }
 
 // NTSC-U/C: 0x002ebfe4, PAL: 0x002f5f54
@@ -527,12 +528,12 @@ int rtLpcEncode(const short *samples, unsigned char *packed) {
     for (i = 0; i < kLpcFrameSamples; ++i) {
         g_afLpcEncodeSpeech[i] = (float)samples[i] * 0x1p-15f;
     }
-    ApplyPreemphasisBiquadCascade(g_afLpcEncodeSpeech);
-    ProcessSpeechAnalysisFrame(g_afLpcEncodeSpeech,
-                               g_anLpcEncodeVoice,
-                               &g_nLpcEncodePitch,
-                               &g_fLpcEncodeRms,
-                               g_afLpcEncodeRc);
+    rtLpc10Hp100(g_afLpcEncodeSpeech);
+    rtLpc10Analys(g_afLpcEncodeSpeech,
+                  g_anLpcEncodeVoice,
+                  &g_nLpcEncodePitch,
+                  &g_fLpcEncodeRms,
+                  g_afLpcEncodeRc);
     memset(g_anLpcEncodeBits, 0, sizeof(g_anLpcEncodeBits));
     memset(packed, 0, RT_LPC_PACKED_SIZE);
     rtLpcQuantize(g_anLpcEncodeVoice,
@@ -542,11 +543,11 @@ int rtLpcEncode(const short *samples, unsigned char *packed) {
                   &g_nLpcEncodePitchCode,
                   &g_nLpcEncodeRmsCode,
                   g_anLpcEncodeRcCode);
-    PackSpeechParameterBits(kLpcPackWrite,
-                            &g_nLpcEncodePitchCode,
-                            &g_nLpcEncodeRmsCode,
-                            g_anLpcEncodeRcCode,
-                            g_anLpcEncodeBits);
+    rtLpc10Chanwr(kLpcPackWrite,
+                  &g_nLpcEncodePitchCode,
+                  &g_nLpcEncodeRmsCode,
+                  g_anLpcEncodeRcCode,
+                  g_anLpcEncodeBits);
     // Yes, the binary rewrites all 40 bytes the 320 bits cover, past the 7 bytes of the frame.
     for (g_nFrameBitIndex = 0; g_nFrameBitIndex < kLpcFrameBits; ++g_nFrameBitIndex) {
         packed[g_nFrameBitIndex >> 3] |=
@@ -630,10 +631,11 @@ static void rtLpcDequantize(
         g_wLpcFirstFrame = 0;
     } else {
         if ((correction & g_anLpcCorrectionBits[kLpcCorrectParity]) != 0) {
+            // Yes, the binary passes the count to the Hamming decoder, which never updates it.
             errors = 0;
             lsb = g_anLpcRmsHistory[1] & 1;
             index = (int)((g_aanLpcRcHistory[1][7] << 4) + g_anLpcRmsHistory[1] * 0.5);
-            DecodeParityCheckedSymbol(index, &corrected, &errors);
+            rtLpc10Ham84(index, &corrected);
             g_anLpcRmsHistory[1] = g_anLpcRmsHistory[2];
             if (corrected >= 0) {
                 g_anLpcRmsHistory[1] = (corrected << 1) + lsb;
@@ -646,7 +648,7 @@ static void rtLpcDequantize(
                 }
                 lsb = g_aanLpcRcHistory[1][4 - i] & 1;
                 index = (int)((code << 4) + (g_aanLpcRcHistory[1][4 - i] & 31) * 0.5);
-                DecodeParityCheckedSymbol(index, &corrected, &errors);
+                rtLpc10Ham84(index, &corrected);
                 if (corrected >= 0) {
                     corrected = (corrected << 1) + lsb;
                     if ((corrected & 16) != 0) {
@@ -779,27 +781,27 @@ rtLpcSynthesizeFrame(int *voice, int *pitch, float *rms, float *rc, float *speec
         rc[i] = (clamped > -0.99f) ? clamped : -0.99f;
     }
     *count = 0;
-    InterpolateSubframeLpcParameters(voice,
-                                     pitch,
-                                     rms,
-                                     rc,
-                                     g_anLpcEpochVoicing,
-                                     g_anLpcEpochPitch,
-                                     g_afLpcEpochRms,
-                                     g_aafLpcEpochRc,
-                                     &epochs,
-                                     &ratio);
+    rtLpc10Pitsyn(voice,
+                  pitch,
+                  rms,
+                  rc,
+                  g_anLpcEpochVoicing,
+                  g_anLpcEpochPitch,
+                  g_afLpcEpochRms,
+                  g_aafLpcEpochRc,
+                  &epochs,
+                  &ratio);
     if (epochs > 0) {
         for (j = 0; j < epochs; ++j) {
-            ConvertReflectionToLpcCoeffs(g_aafLpcEpochRc, g_afLpcPredictor, &gain, j, 0.7f);
-            SynthesizeExcitationFrame(g_afLpcPredictor,
-                                      g_anLpcEpochPitch[j],
-                                      g_anLpcEpochVoicing[j],
-                                      g_afLpcSynthBuffer,
-                                      g_afLpcEpochRms[j],
-                                      ratio,
-                                      gain);
-            ApplyDeemphasisFilter(g_afLpcSynthBuffer, g_anLpcEpochPitch[j]);
+            rtLpc10Irc2pc(g_aafLpcEpochRc, g_afLpcPredictor, &gain, j, 0.7f);
+            rtLpc10Bsynz(g_afLpcPredictor,
+                         g_anLpcEpochPitch[j],
+                         g_anLpcEpochVoicing[j],
+                         g_afLpcSynthBuffer,
+                         g_afLpcEpochRms[j],
+                         ratio,
+                         gain);
+            rtLpc10Deemp(g_afLpcSynthBuffer, g_anLpcEpochPitch[j]);
             for (i = 0; i < g_anLpcEpochPitch[j]; ++i) {
                 ++*count;
                 speech[*count - 1] = g_afLpcSynthBuffer[i] * 0x1p-12f;
@@ -818,11 +820,11 @@ int rtLpcDecode(const unsigned char *packed, short *samples) {
         g_anLpcDecodeBits[g_nDecodeBitIndex] =
             (packed[g_nDecodeBitIndex >> 3] >> (g_nDecodeBitIndex & 7)) & 1;
     }
-    PackSpeechParameterBits(kLpcPackRead,
-                            &g_nLpcDecodePitchCode,
-                            &g_nLpcDecodeRmsCode,
-                            g_anLpcDecodeRcCode,
-                            g_anLpcDecodeBits);
+    rtLpc10Chanwr(kLpcPackRead,
+                  &g_nLpcDecodePitchCode,
+                  &g_nLpcDecodeRmsCode,
+                  g_anLpcDecodeRcCode,
+                  g_anLpcDecodeBits);
     rtLpcDequantize(g_nLpcDecodePitchCode,
                     &g_nLpcDecodeRmsCode,
                     g_anLpcDecodeRcCode,
@@ -1156,7 +1158,7 @@ int rtSpeechDecode(const unsigned char *packed, short *samples) {
 // NTSC-U/C: 0x002ed70c, PAL: 0x002f767c
 static void rtSpeechCodecFreeBuffer(rtSpeechCodec *codec) {
     if (codec->buffer != NULL) {
-        rtDmeFree(&codec->buffer);
+        RtFreeBlock(&codec->buffer);
         codec->buffer = NULL;
         codec->bufferSize = 0;
     }
@@ -1167,6 +1169,6 @@ void rtSpeechDestroy(rtSpeechCodec *codec) {
 
     if (codec != NULL) {
         rtSpeechCodecFreeBuffer(codec);
-        rtDmeFree(&block);
+        RtFreeBlock(&block);
     }
 }

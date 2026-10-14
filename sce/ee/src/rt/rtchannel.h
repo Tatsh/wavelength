@@ -3,6 +3,7 @@
 
 #include "rt/rtlargeint.h"
 #include "rt/rtringbuffer.h"
+#include "rt/rtsocket.h"
 #include "rt/rttime.h"
 
 #ifdef __cplusplus
@@ -95,7 +96,7 @@ typedef struct {
     unsigned short uChannel;                 /*!< The channel. */
     char szAddress[RT_CHANNEL_ADDRESS_SIZE]; /*!< The address of a datagram link. */
     unsigned short uPort;                    /*!< The port of a datagram link. */
-    int nSocket;                             /*!< The socket. */
+    RtSocket *pSocket;                       /*!< The socket. */
     RtTime lastSend;                         /*!< When the link last sent. */
     RtTime lastReceive;                      /*!< When the link last received. */
     unsigned int uKeepaliveInterval;         /*!< The milliseconds between keep-alives, or 0. */

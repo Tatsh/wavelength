@@ -1,5 +1,5 @@
-#ifndef LIBRTREASM_H
-#define LIBRTREASM_H
+#ifndef RTREASSEMBLER_H
+#define RTREASSEMBLER_H
 
 #ifdef __cplusplus
 extern "C" {

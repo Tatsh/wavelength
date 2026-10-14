@@ -205,17 +205,15 @@ int RtLargeIntIsZero(const RtLargeInt *pValue);
 int RtLargeIntIsOne(const RtLargeInt *pValue);
 
 /**
- * Subtract one integer from another into a third.
+ * Subtract one integer from another.
  *
- * @param pDifference Receives the difference.
  * @param pMinuend The integer subtracted from.
  * @param pSubtrahend The integer subtracted.
+ * @return The difference, wrapping below zero.
  * @ghidraAddress NTSC-U/C: 0x002eded0
  * @ghidraAddress PAL: 0x002f7e40
  */
-void RtLargeIntDifference(RtLargeInt *pDifference,
-                          const RtLargeInt *pMinuend,
-                          const RtLargeInt *pSubtrahend);
+RtLargeInt RtLargeIntDifference(const RtLargeInt *pMinuend, const RtLargeInt *pSubtrahend);
 
 /**
  * Divide one integer by another.
@@ -233,29 +231,32 @@ void RtLargeIntDivide(const RtLargeInt *pDividend,
                       RtLargeInt *pRemainder);
 
 /**
- * Generate a random prime.
+ * Generate a random probable prime. The prime has the requested bits, with its two highest bits
+ * set.
  *
- * @param pPrime Receives the prime.
  * @param uBits The bits of the prime.
+ * @return The prime.
  * @ghidraAddress NTSC-U/C: 0x002eeddc
  * @ghidraAddress PAL: 0x002f8d4c
  */
-void RtLargeIntRandomPrime(RtLargeInt *pPrime, unsigned int uBits);
+RtLargeInt RtLargeIntRandomPrime(unsigned int uBits);
 
 /**
- * Raise an integer to a power modulo another.
+ * Raise an integer to a power modulo an odd modulus with Montgomery multiplication.
  *
- * @param pResult Receives the result.
+ * A zero modulus fails an assertion and returns the modulus. An even modulus fails an assertion
+ * and falls back to plain modular exponentiation.
+ *
  * @param pBase The base.
  * @param pExponent The exponent.
  * @param pModulus The modulus.
+ * @return The power modulo the modulus.
  * @ghidraAddress NTSC-U/C: 0x002ef0c0
  * @ghidraAddress PAL: 0x002f9030
  */
-void RtLargeIntModPower(RtLargeInt *pResult,
-                        const RtLargeInt *pBase,
-                        const RtLargeInt *pExponent,
-                        const RtLargeInt *pModulus);
+RtLargeInt RtLargeIntModPower(const RtLargeInt *pBase,
+                              const RtLargeInt *pExponent,
+                              const RtLargeInt *pModulus);
 
 #ifdef __cplusplus
 }

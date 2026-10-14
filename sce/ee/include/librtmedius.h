@@ -103,11 +103,11 @@ typedef void (*rtMediusChatHandler)(int connection,
 
 /** The parameters of rtMediusInitialize(). 0x14 bytes. */
 typedef struct {
-    rtMediusChatHandler onChat; /*!< Receives the lines of chat. */
-    int reserved04;             /* +0x04, the game leaves it zero. */
-    rtMediusCallback onNotice;  /*!< Receives the notices of the server. */
-    int reserved0C;             /* +0x0c, the game leaves it zero. */
-    int timeoutMs;              /*!< The wait for an answer of the server, in milliseconds. */
+    rtMediusChatHandler onChat;    /*!< Receives the lines of chat. */
+    rtMediusCallback onMessage069; /*!< Receives message 69 of the server, or null. */
+    rtMediusCallback onNotice;     /*!< Receives the notices of the server. */
+    rtMediusCallback onMessage154; /*!< Receives message 154 of the server, or null. */
+    int timeoutMs;                 /*!< The interval of the keep-alive, in milliseconds. */
 } rtMediusInitParams;
 
 /**
@@ -120,16 +120,17 @@ typedef void (*rtMediusConnectCallback)(int connection);
 /** The parameters of rtMediusConnect(). 0x100 bytes. */
 typedef struct {
     rtNetConnectionInfo info;          /*!< The lobby server to connect to. */
-    char reserved9C[0x54];             /* +0x9c, set by rtMediusSetConnectParams(). */
+    rtDmeVoiceSettings voice;          /*!< The voice settings of the connection. */
     int maxPlayers;                    /*!< The players of the connection. */
-    rtMediusConnectCallback onConnect; /*!< Receives the result. */
-    int reservedF8;                    /* +0xf8, the game leaves it zero. */
-    int reservedFC;                    /* +0xfc, the game leaves it zero. */
+    rtMediusConnectCallback onConnect; /*!< Receives the result, or null to connect at once. */
+    rtDmeClientCallback onClientJoin;  /*!< Receives a peer that joined, or null. */
+    rtDmeClientCallback onClientLeave; /*!< Receives a peer that left, or null. */
 } rtMediusConnectParams;
 
 /** The status rtMediusConnect() fills. 8 bytes. */
 typedef struct {
-    int reserved[2]; /* +0x00, not read by the game. */
+    int connection; /*!< The connection, or -1 when the connection failed. */
+    int result;     /*!< 0, or an error code. */
 } rtMediusConnectStatus;
 
 /** The request of rtMediusSessionBegin(). 0x1c bytes. */
@@ -756,15 +757,18 @@ int rtMediusUpdate(void);
  * Fill the parameters of rtMediusConnect() for a server address.
  *
  * @param params The parameters.
- * @param reserved Zero.
+ * @param sessionKey The key of the session, or null for none.
  * @param address The address of the server.
  * @param port The port of the server.
  * @param worldId The world of the server.
- * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fbd10
+ * @ghidraAddress PAL: 0x00305d10
  */
-int rtMediusSetConnectParams(
-    rtMediusConnectParams *params, int reserved, const char *address, int port, int worldId);
+void rtMediusSetConnectParams(rtMediusConnectParams *params,
+                              const char *sessionKey,
+                              const char *address,
+                              int port,
+                              int worldId);
 
 /**
  * Start connecting to the lobby server.
@@ -958,6 +962,36 @@ int rtMediusSendChatMessage(rtMediusChatRequest *request);
  * @ghidraAddress NTSC-U/C: 0x002fb850
  */
 int rtMediusBanPlayer(rtMediusBanPlayerRequest *request, rtMediusCallback callback);
+
+/** The error codes of the entry points. */
+#define RT_MEDIUS_ERROR_INITIALIZING (-1)              /*!< MediusErrorInitializing. */
+#define RT_MEDIUS_ERROR_CONNECTING (-2)                /*!< MediusErrorConnecting. */
+#define RT_MEDIUS_ERROR_DISCONNECTING (-3)             /*!< MediusErrorDisconnecting. */
+#define RT_MEDIUS_ERROR_CLOSING (-4)                   /*!< MediusErrorClosing. */
+#define RT_MEDIUS_ERROR_SENDING_MESSAGE (-5)           /*!< MediusErrorSendingMessage. */
+#define RT_MEDIUS_ERROR_FILE_NOT_FOUND (-6)            /*!< MediusErrorFileNotFound. */
+#define RT_MEDIUS_ERROR_DEVICE_NOT_FOUND (-7)          /*!< MediusErrorDeviceNotFound. */
+#define RT_MEDIUS_ERROR_DIRECTORY_NOT_FOUND (-8)       /*!< MediusErrorDirectoryNotFound. */
+#define RT_MEDIUS_ERROR_GENERAL (-10)                  /*!< MediusErrorGeneral. */
+#define RT_MEDIUS_ERROR_SESSION_INACTIVE (-11)         /*!< MediusErrorSessionInactive. */
+#define RT_MEDIUS_ERROR_ITEM_NOT_FOUND (-12)           /*!< MediusErrorItemNotFound. */
+#define RT_MEDIUS_ERROR_ITEM_ALREADY_EXISTS (-13)      /*!< MediusErrorItemAlreadyExists. */
+#define RT_MEDIUS_ERROR_NO_RESULT (-14)                /*!< MediusErrorNoResult. */
+#define RT_MEDIUS_ERROR_NOT_INITIALIZED (-15)          /*!< MediusErrorNotInitialized. */
+#define RT_MEDIUS_ERROR_NOT_CONNECTED (-16)            /*!< MediusErrorNotConnected. */
+#define RT_MEDIUS_ERROR_ALREADY_CONNECTED (-17)        /*!< MediusErrorAlreadyConnected. */
+#define RT_MEDIUS_ERROR_CLOSE_BEFORE_REINIT (-18)      /*!< Close before initializing again. */
+#define RT_MEDIUS_ERROR_CLOSE_BARE_BEFORE_REINIT (-19) /*!< Close before initializing again. */
+#define RT_MEDIUS_WORLD_CREATED_SIZE_REDUCED 3 /*!< The game was created with fewer players. */
+
+/**
+ * Report the name of an error code of the entry points.
+ *
+ * @param error The error code.
+ * @return The name, or "UNKNOWN MEDIUSERRORCODE".
+ * @ghidraAddress NTSC-U/C: 0x002fbb98
+ */
+const char *rtMediusGetErrorString(int error);
 
 #ifdef __cplusplus
 }

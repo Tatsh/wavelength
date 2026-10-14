@@ -32,8 +32,10 @@ afxres
 alalc
 allocatebuffertask
 allocinfo
+alphax
 ambiently
 amdf
+analys
 andi
 anim
 animatables
@@ -43,6 +45,7 @@ animchildaction
 animcondition
 anims
 anonymouslogintask
+apcm
 apdx
 apfn
 apsz
@@ -133,6 +136,7 @@ breugpad
 bscmake
 bsky
 bstr
+bsynz
 buildinfo
 buildsystems
 bumperpacket
@@ -159,6 +163,7 @@ changelyricaction
 changescreenaction
 changesectionevent
 channelinfotask
+chanwr
 chatmsg
 chatpanel
 chattextentry
@@ -227,10 +232,12 @@ datalex
 datarootdir
 dbits
 dbuild
+dcbias
 dcmake
 deactivator
 deactivators
 deci
+deemp
 deemphasis
 defpushbutton
 defsym
@@ -241,6 +248,7 @@ demangles
 depfile
 dequantisation
 dequantize
+dequantized
 dialing
 dialog
 dialogpanel
@@ -304,6 +312,7 @@ dvcpkg
 dvideo
 dwavelength
 dxguid
+dyptrk
 ecossin
 edata
 editfield
@@ -331,6 +340,7 @@ endpara
 endx
 enterexit
 envx
+ephase
 erasebarpacket
 erasesectionpacket
 eret
@@ -342,6 +352,7 @@ etext
 evfid
 evoll
 evolr
+ewin
 exbp
 exbw
 expressionstick
@@ -557,6 +568,9 @@ isce
 isub
 isubiu
 itof
+ivbuf
+ivfilt
+ivrc
 iwyu
 jalr
 jbox
@@ -594,6 +608,7 @@ laypatt
 lazyfilestream
 lazysusan
 lbits
+lbuf
 ldimage
 letterboxed
 levelmidibuilder
@@ -621,19 +636,9 @@ libnetconfig
 libosd
 libpad
 libpath
-librtbigint
-librtcodec
 librtdme
-librtdmedev
-librtimage
-librtinet
-librtlpc
 librtmedius
 librtmgcl
-librtnet
-librtpitch
-librtreasm
-librtvlc
 libscf
 libsd
 libsdr
@@ -660,6 +665,7 @@ lpcdideviceinstance
 lpcitemidlist
 lpdi
 lpdipropheader
+lpfilt
 lpfn
 lpsz
 lrbutton
@@ -747,6 +753,7 @@ mdfile
 medius
 mediusconnecttask
 mediusdisconnecttask
+mediuserrorcode
 mediusjoingametask
 mediussendplayerreporttask
 mediussendworldreporttask
@@ -984,6 +991,7 @@ numpydoc
 objc
 objcopy
 objs
+obound
 occurence
 olecreate
 olectl
@@ -1029,6 +1037,7 @@ pcmct
 pcpyld
 pcrtc
 pdbtype
+pebuf
 pels
 periodictimer
 pextlb
@@ -1047,6 +1056,9 @@ pitchtrackmusic
 pitchtrackplaygems
 pitchtrackriffdata
 pitchtrackriffs
+pitsyn
+placea
+placev
 playbacker
 playercamfx
 playerinfotask
@@ -1068,6 +1080,7 @@ ppacb
 ppsz
 preapproved
 preceeding
+preemp
 prelaunchscreen
 previewpacket
 primaddr
@@ -1120,6 +1133,7 @@ rawdat
 rawip
 rbor
 rbsr
+rcchk
 rdparty
 rdtsc
 readonlycheckscreen
@@ -1205,20 +1219,28 @@ rsqrt
 rtchannel
 rtchannelapi
 rtclock
+rtcodec
 rtdme
 rtdmeapi
+rtdmedevice
 rtdmemain
 rtdmemessage
 rtdmeobjects
 rtdmevoice
+rtgsm
+rtimage
+rtinet
 rtlargeint
 rtlargeintcore
+rtlpc
 rtmedius
 rtmediushandlers
 rtmemory
 rtmutex
+rtpitch
 rtrandom
 rtrc
+rtreassembler
 rtrecord
 rtringbuffer
 rtrsa
@@ -1232,6 +1254,7 @@ rttime
 rttitle
 rtupnp
 rtupnpxml
+rtvlc
 safn
 sampledesc
 sanm
@@ -1435,6 +1458,7 @@ tadr
 tagfile
 targtype
 tatsh
+tbdm
 testa
 testaaddr
 testb
@@ -1575,6 +1599,8 @@ vmixel
 vmixer
 vmixl
 vmixr
+voibuf
+voicin
 voll
 volr
 volxl
@@ -1613,6 +1639,7 @@ wextra
 wffmd
 winarena
 winget
+winv
 wiswa
 wiswa's
 wmaybe

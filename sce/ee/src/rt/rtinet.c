@@ -1,10 +1,12 @@
+#include "rt/rtinet.h"
+
 #include <stdint.h>
 #include <string.h>
 
 #include <libnet.h>
-#include <librtinet.h>
-#include <librtnet.h>
 #include <msifrpc.h>
+
+#include "rt/rttime.h"
 
 // Error codes of the driver.
 enum {
@@ -76,7 +78,7 @@ static int g_anNetworkRpcBuffer[kClientBufferSize / sizeof(int)]
 
 // NTSC-U/C: 0x002f8ef8, PAL: 0x00302e68
 static int rtNetInetWaitForInterface(void) {
-    rtNetTime start;
+    RtTime start;
     unsigned int elapsed = 0;
     int flags;
     int count;
@@ -89,7 +91,7 @@ static int rtNetInetWaitForInterface(void) {
     if (count <= 0) {
         return kErrorFailed;
     }
-    if (rtNetTimeNow(&start) != 0) {
+    if (RtReadTime(&start) != 0) {
         return kErrorFailed;
     }
     for (;;) {
@@ -112,13 +114,13 @@ static int rtNetInetWaitForInterface(void) {
         if (found) {
             return 0;
         }
-        if (rtNetTimeSince(&start, &elapsed) != 0) {
+        if (RtGetMillisecondsSince(&start, &elapsed) != 0) {
             return kErrorFailed;
         }
         if (elapsed > kInterfaceTimeout) {
             return kErrorFailed;
         }
-        if (rtNetTimeSpinMs(kInterfacePollInterval) != 0) {
+        if (RtSpinMilliseconds(kInterfacePollInterval) != 0) {
             return kErrorFailed;
         }
     }
@@ -211,7 +213,7 @@ int rtNetInetShutdown(void) {
 int rtNetInetOpen(LibnetAsyncHandle **connection,
                   const char *address,
                   unsigned short port,
-                  const rtNetSocketOptions *options) {
+                  const RtSocketOptions *options) {
     LibnetAsyncParam param;
     LibnetAsyncHandle *handle = NULL;
     int controlValue;
@@ -228,14 +230,14 @@ int rtNetInetOpen(LibnetAsyncHandle **connection,
     if (options == NULL) {
         return kErrorArgument;
     }
-    if (options->type == RT_NET_SOCKET_STREAM && address == NULL) {
+    if (options->nType == RT_SOCKET_STREAM && address == NULL) {
         return kErrorArgument;
     }
-    if (options->type != RT_NET_SOCKET_LISTEN && port == 0) {
+    if (options->nType != RT_SOCKET_LISTEN && port == 0) {
         return kErrorArgument;
     }
     memset(&param, 0, sizeof(param));
-    if (options->type == RT_NET_SOCKET_STREAM) {
+    if (options->nType == RT_SOCKET_STREAM) {
         if (address == NULL) {
             return kErrorArgument;
         }
@@ -252,19 +254,19 @@ int rtNetInetOpen(LibnetAsyncHandle **connection,
                                 0) < 0) {
             return kErrorFailed;
         }
-    } else if (options->type == RT_NET_SOCKET_DATAGRAM) {
+    } else if (options->nType == RT_SOCKET_DATAGRAM) {
         if (address != NULL) {
             return kErrorArgument;
         }
         timeout = kOpenTimeout;
-        if (options->bufferSize <= 0) {
+        if (options->nBufferSize <= 0) {
             return kErrorArgument;
         }
         param.inet.localPort = port;
-        param.maxPacketSize = options->bufferSize;
+        param.maxPacketSize = options->nBufferSize;
         param.inet.remotePort = 0;
         param.inet.type = sceINETT_DGRAM;
-    } else if (options->type == RT_NET_SOCKET_LISTEN) {
+    } else if (options->nType == RT_SOCKET_LISTEN) {
         if (address != NULL) {
             return kErrorArgument;
         }
@@ -278,7 +280,7 @@ int rtNetInetOpen(LibnetAsyncHandle **connection,
             0) {
             return kErrorFailed;
         }
-    } else if (options->type == RT_NET_SOCKET_STREAM_ACCEPTED) {
+    } else if (options->nType == RT_SOCKET_STREAM_ACCEPTED) {
         if (address != NULL) {
             return kErrorArgument;
         }
@@ -301,11 +303,11 @@ int rtNetInetOpen(LibnetAsyncHandle **connection,
     }
     result = LibnetAsyncOpen(&g_NetworkClient, g_anNetworkRpcBuffer, handle, timeout);
     if (result != 0 &&
-        (result != kInetErrorTimeout || options->type != RT_NET_SOCKET_STREAM_ACCEPTED)) {
+        (result != kInetErrorTimeout || options->nType != RT_SOCKET_STREAM_ACCEPTED)) {
         LibnetAsyncClose(&g_NetworkClient, g_anNetworkRpcBuffer, handle, kCloseTimeout);
         return kErrorFailed;
     }
-    if (options->type == RT_NET_SOCKET_STREAM || options->type == RT_NET_SOCKET_STREAM_ACCEPTED) {
+    if (options->nType == RT_SOCKET_STREAM || options->nType == RT_SOCKET_STREAM_ACCEPTED) {
         controlValue = kControlStreamOptionValue;
         if (LibnetAsyncControl(&g_NetworkClient,
                                g_anNetworkRpcBuffer,

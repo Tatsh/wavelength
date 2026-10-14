@@ -1,9 +1,11 @@
-#ifndef LIBRTINET_H
-#define LIBRTINET_H
+#ifndef RTINET_H
+#define RTINET_H
 
 #include <stdbool.h>
 
 #include <libnet.h>
+
+#include "rt/rtsocket.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,19 +16,6 @@ extern "C" {
  *
  * The names of the routines and their parameters are inferred.
  */
-
-/** Kinds of sockets, the values of rtNetSocketOptions::type. */
-#define RT_NET_SOCKET_STREAM 0          /*!< A stream socket that connects to an address. */
-#define RT_NET_SOCKET_DATAGRAM 1        /*!< A datagram socket. */
-#define RT_NET_SOCKET_STREAM_ACCEPTED 2 /*!< A stream socket that waits for a peer. */
-#define RT_NET_SOCKET_LISTEN 3          /*!< A raw socket that exchanges two-byte markers. */
-#define RT_NET_SOCKET_TYPE_COUNT 4      /*!< The number of kinds of sockets. */
-
-/** The options of a socket. */
-typedef struct {
-    int type;       /*!< One of the RT_NET_SOCKET_ kinds. */
-    int bufferSize; /*!< The largest datagram of a RT_NET_SOCKET_DATAGRAM socket in bytes. */
-} rtNetSocketOptions;
 
 /**
  * Bind the libnetb client, wait for an interface to come up, and read its addresses.
@@ -50,9 +39,9 @@ int rtNetInetShutdown(void);
  * Create and open a connection.
  *
  * @param connection Receives the connection, or null on failure.
- * @param address The dotted address to connect a RT_NET_SOCKET_STREAM socket to, otherwise null.
- * @param port The port, the remote one of a RT_NET_SOCKET_STREAM socket and the local one
- * otherwise. Not read for a RT_NET_SOCKET_LISTEN socket.
+ * @param address The dotted address to connect a RT_SOCKET_STREAM socket to, otherwise null.
+ * @param port The port, the remote one of a RT_SOCKET_STREAM socket and the local one otherwise.
+ * Not read for a RT_SOCKET_LISTEN socket.
  * @param options The options.
  * @return 0, 1 on failure, 2 for a bad argument, 3 for an unknown kind, or 5 when the driver is not
  * started.
@@ -62,7 +51,7 @@ int rtNetInetShutdown(void);
 int rtNetInetOpen(LibnetAsyncHandle **connection,
                   const char *address,
                   unsigned short port,
-                  const rtNetSocketOptions *options);
+                  const RtSocketOptions *options);
 
 /**
  * Close a connection.
@@ -111,7 +100,7 @@ int rtNetInetSendTo(LibnetAsyncHandle *connection,
                     unsigned short *sent);
 
 /**
- * Queue a two-byte marker on a RT_NET_SOCKET_LISTEN connection.
+ * Queue a two-byte marker on a RT_SOCKET_LISTEN connection.
  *
  * @param connection The connection.
  * @param sent Receives true when the marker was queued.
@@ -164,7 +153,7 @@ int rtNetInetReceiveFrom(LibnetAsyncHandle *connection,
                          unsigned short *received);
 
 /**
- * Take the next two-byte marker a RT_NET_SOCKET_LISTEN connection has received.
+ * Take the next two-byte marker a RT_SOCKET_LISTEN connection has received.
  *
  * @param connection The connection.
  * @param received Receives true when a marker was taken.

@@ -1,4 +1,4 @@
-#include <librtpitch.h>
+#include "rt/rtpitch.h"
 
 enum {
     // Values at or below this limit normalise to 0.
@@ -67,21 +67,21 @@ void rtLpc10Difmag(const float *speech,
     *minIndex = 1;
     *maxIndex = 1;
     for (i = 1; i <= lagCount; ++i) {
-        first = (int)((double)(maxLag - tau[i]) * 0.5 + 1.0);
+        first = (int)((double)(maxLag - tau[i - 1]) * 0.5 + 1.0);
         last = first + kDifmagWindowSpan;
         sum = 0.0f;
         for (j = first; j <= last; j += kDifmagStride) {
-            difference = speech[j] - speech[j + tau[i]];
+            difference = speech[j - 1] - speech[j - 1 + tau[i - 1]];
             if (difference < 0.0) {
                 difference = 0.0 - difference;
             }
             sum += (float)difference;
         }
-        amdf[i] = sum;
-        if (sum < amdf[*minIndex]) {
+        amdf[i - 1] = sum;
+        if (sum < amdf[*minIndex - 1]) {
             *minIndex = i;
         }
-        if (amdf[i] > amdf[*maxIndex]) {
+        if (amdf[i - 1] > amdf[*maxIndex - 1]) {
             *maxIndex = i;
         }
     }

@@ -1,5 +1,5 @@
-#ifndef LIBRTVLC_H
-#define LIBRTVLC_H
+#ifndef RTVLC_H
+#define RTVLC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +37,8 @@ void rtVlcDecoderInit(int mode);
  *
  * @param block The coefficients.
  * @param out Receives the complete bytes of the code.
- * @return The bytes written.
+ * @return The bytes written, or 0 when the encoder is not in the picture mode or its accumulator
+ * overflows.
  * @ghidraAddress NTSC-U/C: 0x002f2c14
  * @ghidraAddress PAL: 0x002fcb84
  */
@@ -58,7 +59,8 @@ int rtVlcEncoderFlush(unsigned char *out);
  *
  * @param block Receives the coefficients.
  * @param in The code.
- * @return The bytes read.
+ * @return The bytes read, 0 when the decoder is not in the picture mode, or -1 when the code is
+ * invalid.
  * @ghidraAddress NTSC-U/C: 0x002f31c8
  * @ghidraAddress PAL: 0x002fd138
  */

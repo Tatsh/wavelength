@@ -1,6 +1,10 @@
 #ifndef RTSOCKET_H
 #define RTSOCKET_H
 
+#include <stdbool.h>
+
+#include <libnet.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -10,15 +14,27 @@ extern "C" {
 /** The size of the text of an IPv4 address, the terminator included. */
 #define RT_SOCKET_ADDRESS_SIZE 16
 
-/** Kinds of sockets. */
-#define RT_SOCKET_STREAM 0   /*!< A connected stream. */
-#define RT_SOCKET_DATAGRAM 1 /*!< Datagrams to and from any address. */
+/** Kinds of sockets, the values of RtSocketOptions::nType. */
+#define RT_SOCKET_STREAM 0          /*!< A stream socket that connects to an address. */
+#define RT_SOCKET_DATAGRAM 1        /*!< Datagrams to and from any address. */
+#define RT_SOCKET_STREAM_ACCEPTED 2 /*!< A stream socket that waits for a peer. */
+#define RT_SOCKET_LISTEN 3          /*!< A raw socket that exchanges two-byte markers. */
+#define RT_SOCKET_TYPE_COUNT 4      /*!< The number of kinds of sockets. */
 
 /** The options of a new socket. */
 typedef struct {
     int nType;       /*!< The kind of socket, an RT_SOCKET_ value. */
-    int nBufferSize; /*!< The size of the buffers of the socket. */
+    int nBufferSize; /*!< The largest datagram of a RT_SOCKET_DATAGRAM socket in bytes. */
 } RtSocketOptions;
+
+/** A socket. */
+typedef struct {
+    unsigned char allocated;       /*!< 1 while the record is in use. */
+    unsigned char open;            /*!< 1 while the connection of the IOP stack is open. */
+    LibnetAsyncHandle *connection; /*!< The connection of the IOP stack. */
+    RtSocketOptions options;       /*!< The options the socket was opened with. */
+    unsigned short port;           /*!< The local port. */
+} RtSocket;
 
 /**
  * Start the socket layer, counting the starts.
@@ -41,66 +57,69 @@ int RtSocketShutdown(void);
 /**
  * Create a socket. A stream connects to the address, and a datagram socket binds to the port.
  *
- * @param pnSocket Receives the socket.
- * @param pszAddress The address to connect to, or null.
+ * @param ppSocket Receives the socket, or null on failure.
+ * @param pszAddress The address a RT_SOCKET_STREAM socket connects to, otherwise null.
  * @param uPort The port.
- * @param pOptions The options, or null for the defaults.
+ * @param pOptions The options, or null for a RT_SOCKET_STREAM socket.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002ef8a8
  * @ghidraAddress PAL: 0x002f9818
  */
-int RtSocketCreate(int *pnSocket,
+int RtSocketCreate(RtSocket **ppSocket,
                    const char *pszAddress,
                    unsigned short uPort,
                    const RtSocketOptions *pOptions);
 
 /**
- * Close a socket.
+ * Close a socket and release its record.
  *
- * @param nSocket The socket.
+ * @param pSocket The socket.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002ef998
  * @ghidraAddress PAL: 0x002f9908
  */
-int RtSocketClose(int nSocket);
+int RtSocketClose(RtSocket *pSocket);
 
 /**
  * Send bytes on a stream.
  *
- * @param nSocket The socket.
+ * @param pSocket The socket.
  * @param pData The bytes.
  * @param uSize The number of bytes.
- * @param pnSent Receives the bytes sent.
+ * @param puSent Receives the bytes sent.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002efa00
  * @ghidraAddress PAL: 0x002f9970
  */
-int RtSocketSend(int nSocket, const void *pData, unsigned short uSize, short *pnSent);
+int RtSocketSend(RtSocket *pSocket,
+                 const void *pData,
+                 unsigned short uSize,
+                 unsigned short *puSent);
 
 /**
  * Send a datagram.
  *
- * @param nSocket The socket.
+ * @param pSocket The socket.
  * @param pszAddress The address to send to.
  * @param uPort The port to send to.
  * @param pData The bytes.
  * @param uSize The number of bytes.
- * @param pnSent Receives the bytes sent.
+ * @param puSent Receives the bytes sent.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002efaa8
  * @ghidraAddress PAL: 0x002f9a18
  */
-int RtSocketSendTo(int nSocket,
+int RtSocketSendTo(RtSocket *pSocket,
                    const char *pszAddress,
                    unsigned short uPort,
                    const void *pData,
                    unsigned short uSize,
-                   short *pnSent);
+                   unsigned short *puSent);
 
 /**
  * Receive bytes from a stream without waiting.
  *
- * @param nSocket The socket.
+ * @param pSocket The socket.
  * @param pBuffer Receives the bytes.
  * @param uSize The size of the buffer.
  * @param puReceived Receives the bytes received.
@@ -108,59 +127,59 @@ int RtSocketSendTo(int nSocket,
  * @ghidraAddress NTSC-U/C: 0x002efc18
  * @ghidraAddress PAL: 0x002f9b88
  */
-int RtSocketReceive(int nSocket, void *pBuffer, unsigned short uSize, unsigned short *puReceived);
+int RtSocketReceive(RtSocket *pSocket,
+                    void *pBuffer,
+                    unsigned short uSize,
+                    unsigned short *puReceived);
 
 /**
  * Receive a datagram without waiting.
  *
- * @param nSocket The socket.
+ * @param pSocket The socket.
  * @param pszAddress Receives the address of the sender.
  * @param puPort Receives the port of the sender.
  * @param pBuffer Receives the bytes.
  * @param uSize The size of the buffer.
- * @param pnReceived Receives the bytes received.
+ * @param puReceived Receives the bytes received, 0 when no datagram is waiting.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002efcc0
  * @ghidraAddress PAL: 0x002f9c30
  */
-int RtSocketReceiveFrom(int nSocket,
+int RtSocketReceiveFrom(RtSocket *pSocket,
                         char *pszAddress,
                         unsigned short *puPort,
                         void *pBuffer,
                         unsigned short uSize,
-                        short *pnReceived);
+                        unsigned short *puReceived);
 
 /**
- * Check a listening socket for a peer at an address.
+ * Queue a two-byte marker on a RT_SOCKET_LISTEN socket.
  *
- * @param nSocket The listening socket.
- * @param pbReady Receives non-zero when the peer is there.
+ * @param pSocket The socket.
+ * @param pbReady Receives true once the marker was queued.
  * @param pszAddress The address of the peer.
- * @param uPort The port of the peer.
+ * @param uPort The marker, the port of the peer.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002efb70
  * @ghidraAddress PAL: 0x002f9ae0
  */
-int RtSocketPollListener(int nSocket,
-                         unsigned char *pbReady,
+int RtSocketPollListener(RtSocket *pSocket,
+                         bool *pbReady,
                          const char *pszAddress,
                          unsigned short uPort);
 
 /**
- * Accept the next peer of a listening socket without waiting.
+ * Take the next two-byte marker a RT_SOCKET_LISTEN socket has received, without waiting.
  *
- * @param nSocket The listening socket.
- * @param pbAccepted Receives 1 when a peer was accepted.
+ * @param pSocket The socket.
+ * @param pbAccepted Receives true when a marker arrived.
  * @param pszAddress Receives the address of the peer.
- * @param puPort Receives the port of the peer.
+ * @param puPort Receives the marker, the port of the peer.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002efd88
  * @ghidraAddress PAL: 0x002f9cf8
  */
-int RtSocketAccept(int nSocket,
-                   unsigned char *pbAccepted,
-                   char *pszAddress,
-                   unsigned short *puPort);
+int RtSocketAccept(RtSocket *pSocket, bool *pbAccepted, char *pszAddress, unsigned short *puPort);
 
 /**
  * Write the address of this console as text.

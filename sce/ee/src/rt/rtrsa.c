@@ -26,10 +26,10 @@ void RtRsaGenerateKeyPair(RtKey *pModulus, RtKey *pPrivateExponent) {
     RtLargeInt n;
 
     RtLargeIntSet(&d, 0);
-    RtLargeIntRandomPrime(&q, kRsaPrimeBits);
+    q = RtLargeIntRandomPrime(kRsaPrimeBits);
     do {
         p = q;
-        RtLargeIntRandomPrime(&q, kRsaKeyBits / 2);
+        q = RtLargeIntRandomPrime(kRsaKeyBits / 2);
         RtLargeIntMultiply(&n, &p, &q);
         RtLargeIntSet(&phi, 1);
         RtLargeIntAdd(&phi, &n);
@@ -40,7 +40,7 @@ void RtRsaGenerateKeyPair(RtKey *pModulus, RtKey *pPrivateExponent) {
         r1 = e;
         RtLargeIntDivide(&phi, &e, &x2, &r2);
         RtLargeIntAdd(&x2, &x1);
-        RtLargeIntDifference(&r2, &e, &r2);
+        r2 = RtLargeIntDifference(&e, &r2);
         for (;;) {
             if (RtLargeIntIsGreater(&r1, &r2)) {
                 if (RtLargeIntIsLess(&x1, &x2)) {
@@ -89,7 +89,7 @@ RtRsaTransformBlock(const RtKey *pModulus, const RtKey *pExponent, const RtKey *
     memset(&modulus.aHalves[1], 0, sizeof(RtKey));
     base.aHalves[0] = *pIn;
     memset(&base.aHalves[1], 0, sizeof(RtKey));
-    RtLargeIntModPower(&result, &base, &exponent, &modulus);
+    result = RtLargeIntModPower(&base, &exponent, &modulus);
     *pOut = result.aHalves[0];
 }
 

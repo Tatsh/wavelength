@@ -1,5 +1,5 @@
-#ifndef LIBRTCODEC_H
-#define LIBRTCODEC_H
+#ifndef RTCODEC_H
+#define RTCODEC_H
 
 #ifdef __cplusplus
 extern "C" {

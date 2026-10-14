@@ -1,10 +1,12 @@
+#include "rt/rtimage.h"
+
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
 
-#include <librtdmedev.h>
-#include <librtimage.h>
-#include <librtvlc.h>
+#include "rt/rtgsm.h"
+#include "rt/rtmemory.h"
+#include "rt/rtvlc.h"
 
 enum {
     // The upper four bits of the first byte of a sub-band frame.
@@ -192,7 +194,7 @@ rtImage *rtImageCreate(int width, int height) {
     int rows = (height + kBlockSide - 1) & -kBlockSide;
     int size = rows * stride;
 
-    rtDmeAllocZeroed(&block, size + (int)sizeof(rtImage));
+    RtAllocZeroedBlock(&block, size + (int)sizeof(rtImage));
     image = block;
     if (image != NULL) {
         image->size = size;
@@ -208,7 +210,7 @@ void rtImageDestroy(rtImage *image) {
     void *block = image;
 
     if (image != NULL) {
-        rtDmeFree(&block);
+        RtFreeBlock(&block);
     }
 }
 
@@ -553,7 +555,7 @@ rtImage *rtImageCreateSurface(int width, int height) {
     int stride = width * kPixelBytes;
     int size = height * stride;
 
-    rtDmeAllocZeroed(&block, size + (int)sizeof(rtImage));
+    RtAllocZeroedBlock(&block, size + (int)sizeof(rtImage));
     surface = block;
     if (surface != NULL) {
         surface->size = size;
@@ -568,7 +570,7 @@ void rtImageDestroySurface(rtImage *surface) {
     void *block = surface;
 
     if (surface != NULL) {
-        rtDmeFree(&block);
+        RtFreeBlock(&block);
     }
 }
 

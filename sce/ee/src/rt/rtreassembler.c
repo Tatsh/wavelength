@@ -1,8 +1,9 @@
+#include "rt/rtreassembler.h"
+
 #include <stddef.h>
 #include <string.h>
 
-#include <librtdmedev.h>
-#include <librtreasm.h>
+#include "rt/rtmemory.h"
 
 enum {
     kSlotIndexMask = RT_REASSEMBLER_SLOT_COUNT - 1,
@@ -15,7 +16,7 @@ rtReassembler *rtReassemblerCreate(struct rtDmePeer *owner) {
     rtReassembler *reassembler = NULL;
     unsigned int i;
 
-    rtDmeAllocZeroed((void **)&reassembler, sizeof(rtReassembler));
+    RtAllocZeroedBlock((void **)&reassembler, sizeof(rtReassembler));
     if (reassembler == NULL) {
         return reassembler;
     }
@@ -32,7 +33,7 @@ rtReassembler *rtReassemblerCreate(struct rtDmePeer *owner) {
 
 void rtReassemblerDestroy(rtReassembler *reassembler) {
     if (reassembler != NULL) {
-        rtDmeFree((void **)&reassembler);
+        RtFreeBlock((void **)&reassembler);
     }
 }
 

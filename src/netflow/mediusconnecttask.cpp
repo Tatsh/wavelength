@@ -31,11 +31,11 @@ void MediusConnectTask::OnStart() {
     rtMediusConnectParams params;
     memset(&params, 0, sizeof(params));
     if (mServer != kServerLocation) {
-        (void)rtMediusSetConnectParams(&params,
-                                       0,
-                                       TheLobbyRT->mServerAddress.c_str(),
-                                       TheLobbyRT->mServerPort,
-                                       kLobbyServerWorld);
+        rtMediusSetConnectParams(&params,
+                                 nullptr,
+                                 TheLobbyRT->mServerAddress.c_str(),
+                                 TheLobbyRT->mServerPort,
+                                 kLobbyServerWorld);
         if (TheLobbyRT->mSecure != 0) {
             unsigned char key[RT_NET_SERVER_KEY_SIZE];
             (void)rtMgclGetServerKey(key);
@@ -46,8 +46,8 @@ void MediusConnectTask::OnStart() {
     }
     params.maxPlayers = kMaxPlayers;
     params.onConnect = OnConnect;
-    params.reservedF8 = 0;
-    params.reservedFC = 0;
+    params.onClientJoin = nullptr;
+    params.onClientLeave = nullptr;
     rtMediusConnectStatus status;
     memset(&status, 0, sizeof(status));
     sTask = this;

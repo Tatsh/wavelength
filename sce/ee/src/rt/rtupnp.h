@@ -129,7 +129,7 @@ typedef void (*RtUpnpMappingCallback)(struct RtUpnpContext *pContext,
 
 /** The state of the request in progress. */
 typedef struct {
-    int nSocket;                           /*!< The socket of the request. */
+    RtSocket *pSocket;                     /*!< The socket of the request. */
     RtUpnpXmlParser *pParser;              /*!< The parser of the reply. */
     int nService;                          /*!< The service the request is for. */
     int nStep;                             /*!< The next step of a port mapping request. */
@@ -169,7 +169,7 @@ typedef struct {
 
 /** A port mapping client. */
 typedef struct RtUpnpContext {
-    int nSocket;                                    /*!< The datagram socket to map. */
+    RtSocket *pSocket;                              /*!< The datagram socket to map. */
     char szLocalAddress[RT_SOCKET_ADDRESS_SIZE];    /*!< The address of this console. */
     char szExternalAddress[RT_SOCKET_ADDRESS_SIZE]; /*!< The address the gateway shows. */
     unsigned short uPort;                           /*!< The port of the socket. */
@@ -185,14 +185,17 @@ typedef struct RtUpnpContext {
  * Create a port mapping client for a socket.
  *
  * @param ppContext Receives the client.
- * @param nSocket The datagram socket to map.
+ * @param pSocket The datagram socket to map.
  * @param uPort The port of the socket.
  * @param pUser The value for the RtUpnpMappingCallback.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002ccb08
  * @ghidraAddress PAL: 0x002d6a78
  */
-int RtUpnpCreateContext(RtUpnpContext **ppContext, int nSocket, unsigned short uPort, void *pUser);
+int RtUpnpCreateContext(RtUpnpContext **ppContext,
+                        RtSocket *pSocket,
+                        unsigned short uPort,
+                        void *pUser);
 
 /**
  * Destroy a port mapping client.

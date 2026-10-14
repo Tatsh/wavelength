@@ -165,8 +165,8 @@ static int RtUpnpFreeRequest(RtUpnpContext *pContext);
 static inline void RtUpnpCloseRequest(RtUpnpRequest *pRequest) {
     RtXmlParserDestroy(pRequest->pParser);
     pRequest->pParser = NULL;
-    RtSocketClose(pRequest->nSocket);
-    pRequest->nSocket = 0;
+    RtSocketClose(pRequest->pSocket);
+    pRequest->pSocket = NULL;
     memset(&pRequest->header, 0, sizeof(RtUpnpHttpHeader));
 }
 
@@ -420,7 +420,7 @@ static int RtUpnpReceiveHttpBody(RtUpnpContext *pContext, unsigned char *pbDone)
     int nResult;
 
     pRequest = pContext->pRequest;
-    nResult = RtSocketReceive(pRequest->nSocket, acBuffer, kHttpBufferSize, &uSize);
+    nResult = RtSocketReceive(pRequest->pSocket, acBuffer, kHttpBufferSize, &uSize);
     if (nResult != 0) {
         *pbDone = 1;
         if (nResult == kSocketClosed) {
@@ -477,19 +477,26 @@ static int RtUpnpReceiveDiscoveryReply(RtUpnpContext *pContext, unsigned char *p
     char szSender[RT_SOCKET_ADDRESS_SIZE];
     char acBuffer[kHttpBufferSize];
     unsigned short uPort;
-    short nSize;
+    // Yes, the binary reads the size the socket wrote as signed.
+    union {
+        unsigned short uSize;
+        short nSize;
+    } received;
     unsigned int uElapsed;
     const char *pszServiceType;
 
     uPort = 0;
-    nSize = 0;
-    if (RtSocketReceiveFrom(
-            pContext->pRequest->nSocket, szSender, &uPort, acBuffer, kHttpBufferSize, &nSize) !=
-        0) {
+    received.nSize = 0;
+    if (RtSocketReceiveFrom(pContext->pRequest->pSocket,
+                            szSender,
+                            &uPort,
+                            acBuffer,
+                            kHttpBufferSize,
+                            &received.uSize) != 0) {
         *pbDone = 1;
         return RT_UPNP_RESULT_NO_SOCKET;
     }
-    if (nSize <= 0) {
+    if (received.nSize <= 0) {
         (void)RtGetMillisecondsSince(&pContext->pRequest->startTime, &uElapsed);
         if (uElapsed <= kDiscoveryTimeout) {
             return 0;
@@ -498,9 +505,9 @@ static int RtUpnpReceiveDiscoveryReply(RtUpnpContext *pContext, unsigned char *p
         return RT_UPNP_RESULT_TIMEOUT;
     }
     *pbDone = 1;
-    acBuffer[nSize] = '\0';
-    nSize = RtUpnpParseHttpHeader(acBuffer, &pContext->pRequest->discoveryHeader);
-    if (nSize != kHttpOk) {
+    acBuffer[received.nSize] = '\0';
+    received.nSize = RtUpnpParseHttpHeader(acBuffer, &pContext->pRequest->discoveryHeader);
+    if (received.nSize != kHttpOk) {
         return RT_UPNP_RESULT_HTTP_ERROR;
     }
     switch (pContext->pRequest->nService) {
@@ -534,7 +541,7 @@ RtUpnpConnect(RtUpnpRequest *pRequest, const char *pszHost, unsigned short uPort
     memset(&options, 0, sizeof(options));
     options.nBufferSize = kSocketBufferSize;
     options.nType = RT_SOCKET_STREAM;
-    if (RtSocketCreate(&pRequest->nSocket, pszHost, uPort, &options) != 0) {
+    if (RtSocketCreate(&pRequest->pSocket, pszHost, uPort, &options) != 0) {
         RtXmlParserDestroy(pRequest->pParser);
         return RT_UPNP_RESULT_NO_SOCKET;
     }
@@ -543,13 +550,17 @@ RtUpnpConnect(RtUpnpRequest *pRequest, const char *pszHost, unsigned short uPort
 
 // Send the request built in a buffer on the stream of a request.
 static inline int RtUpnpSendMessage(RtUpnpRequest *pRequest, const char *pszMessage) {
-    short nSent;
+    // Yes, the binary reads the count the socket wrote as signed.
+    union {
+        unsigned short uSent;
+        short nSent;
+    } sent;
 
-    if (RtSocketSend(pRequest->nSocket, pszMessage, strlen(pszMessage), &nSent) == 0 &&
-        strlen(pszMessage) == (unsigned int)nSent) {
+    if (RtSocketSend(pRequest->pSocket, pszMessage, strlen(pszMessage), &sent.uSent) == 0 &&
+        strlen(pszMessage) == (unsigned int)sent.nSent) {
         return 0;
     }
-    RtSocketClose(pRequest->nSocket);
+    RtSocketClose(pRequest->pSocket);
     RtXmlParserDestroy(pRequest->pParser);
     return RT_UPNP_RESULT_SEND_FAILED;
 }
@@ -690,9 +701,9 @@ static int RtUpnpEndDescription(RtUpnpContext *pContext) {
     RtXmlParserDestroy(pContext->pRequest->pParser);
     pRequest = pContext->pRequest;
     pRequest->pParser = NULL;
-    RtSocketClose(pRequest->nSocket);
+    RtSocketClose(pRequest->pSocket);
     pRequest = pContext->pRequest;
-    pRequest->nSocket = 0;
+    pRequest->pSocket = NULL;
     pRequest->pfnDescribed(pContext, nResult, pRequest->nService);
     pContext->pRequest->pfnDescribed = NULL;
     memset(&pContext->pRequest->header, 0, sizeof(RtUpnpHttpHeader));
@@ -735,9 +746,9 @@ static int RtUpnpEndScpd(RtUpnpContext *pContext) {
     RtXmlParserDestroy(pContext->pRequest->pParser);
     pRequest = pContext->pRequest;
     pRequest->pParser = NULL;
-    RtSocketClose(pRequest->nSocket);
+    RtSocketClose(pRequest->pSocket);
     pRequest = pContext->pRequest;
-    pRequest->nSocket = 0;
+    pRequest->pSocket = NULL;
     pRequest->pfnScpdRead(pContext, nResult, pRequest->nService);
     pContext->pRequest->pfnScpdRead = NULL;
     memset(&pContext->pRequest->header, 0, sizeof(RtUpnpHttpHeader));
@@ -1136,17 +1147,17 @@ static int RtUpnpCheckNatProbe(RtUpnpContext *pContext) {
     char szSender[RT_SOCKET_ADDRESS_SIZE];
     unsigned char abRequest[kProbeRequestSize];
     unsigned short uSenderPort;
-    short nSize;
-    short nSent;
+    unsigned short uSize;
+    unsigned short uSent;
     unsigned int uElapsed;
     int nResult;
 
     nResult = 0;
     uSenderPort = 0;
-    nSize = 0;
+    uSize = 0;
     if (RtSocketReceiveFrom(
-            pContext->nSocket, szSender, &uSenderPort, &reply, kProbeReplySize, &nSize) == 0 &&
-        nSize == kProbeReplySize) {
+            pContext->pSocket, szSender, &uSenderPort, &reply, kProbeReplySize, &uSize) == 0 &&
+        uSize == kProbeReplySize) {
         if (strncmp(szSender, pContext->probe.szGateway, RT_SOCKET_ADDRESS_SIZE) != 0 ||
             uSenderPort != pContext->probe.uPort) {
             nResult = RT_UPNP_RESULT_RECEIVE_FAILED;
@@ -1178,14 +1189,14 @@ static int RtUpnpCheckNatProbe(RtUpnpContext *pContext) {
     }
     // Yes, the binary sends the bytes other than the opcode uninitialised.
     abRequest[kProbeOpcodeIndex] = PROBE_OPCODE;
-    nSent = 0;
-    if (RtSocketSendTo(pContext->nSocket,
+    uSent = 0;
+    if (RtSocketSendTo(pContext->pSocket,
                        pContext->probe.szGateway,
                        pContext->probe.uPort,
                        abRequest,
                        kProbeRequestSize,
-                       &nSent) == 0 &&
-        nSent == kProbeRequestSize) {
+                       &uSent) == 0 &&
+        uSent == kProbeRequestSize) {
         RtReadClock(&pContext->probe.time);
         ++pContext->probe.nAttempts;
         return nResult;
@@ -1198,10 +1209,10 @@ static int RtUpnpCheckNatProbe(RtUpnpContext *pContext) {
 // NTSC-U/C: 0x002cc540, PAL: 0x002d64b0
 static int RtUpnpSendNatKeepAlive(RtUpnpContext *pContext) {
     unsigned char abRequest[kProbeRequestSize];
-    short nSent;
+    unsigned short uSent;
     unsigned int uElapsed;
 
-    nSent = 0;
+    uSent = 0;
     if (!pContext->probe.bKeepAlive) {
         return 0;
     }
@@ -1211,12 +1222,12 @@ static int RtUpnpSendNatKeepAlive(RtUpnpContext *pContext) {
     }
     // Yes, the binary sends the bytes other than the opcode uninitialised.
     abRequest[kKeepAliveOpcodeIndex] = KEEP_ALIVE_OPCODE;
-    RtSocketSendTo(pContext->nSocket,
+    RtSocketSendTo(pContext->pSocket,
                    pContext->probe.szGateway,
                    pContext->probe.uPort,
                    abRequest,
                    kProbeRequestSize,
-                   &nSent);
+                   &uSent);
     RtReadClock(&pContext->probe.time);
     return 0;
 }
@@ -1333,9 +1344,13 @@ RtUpnpStartDiscovery(RtUpnpContext *pContext, int nService, RtUpnpStepCallback p
     char szMessage[kHttpUrlSize];
     RtSocketOptions options;
     const char *pszServiceType;
-    short nSent;
+    // Yes, the binary reads the count the socket wrote as signed.
+    union {
+        unsigned short uSent;
+        short nSent;
+    } sent;
 
-    nSent = 0;
+    sent.nSent = 0;
     if (pContext == NULL) {
         return RT_UPNP_RESULT_INVALID;
     }
@@ -1375,17 +1390,17 @@ RtUpnpStartDiscovery(RtUpnpContext *pContext, int nService, RtUpnpStepCallback p
         memset(&options, 0, sizeof(options));
         options.nType = RT_SOCKET_DATAGRAM;
         options.nBufferSize = kSocketBufferSize;
-        if (RtSocketCreate(&pContext->pRequest->nSocket, NULL, kSsdpPort, &options) != 0) {
+        if (RtSocketCreate(&pContext->pRequest->pSocket, NULL, kSsdpPort, &options) != 0) {
             return RT_UPNP_RESULT_NO_SOCKET;
         }
-        if (RtSocketSendTo(pContext->pRequest->nSocket,
+        if (RtSocketSendTo(pContext->pRequest->pSocket,
                            SSDP_ADDRESS,
                            kSsdpPort,
                            szMessage,
                            strlen(szMessage),
-                           &nSent) != 0 ||
-            strlen(szMessage) != (unsigned int)nSent) {
-            RtSocketClose(pContext->pRequest->nSocket);
+                           &sent.uSent) != 0 ||
+            strlen(szMessage) != (unsigned int)sent.nSent) {
+            RtSocketClose(pContext->pRequest->pSocket);
             return RT_UPNP_RESULT_SEND_FAILED;
         }
     }
@@ -1651,9 +1666,9 @@ static int RtUpnpStartNatProbe(RtUpnpContext *pContext,
                                unsigned short uPort,
                                RtUpnpProbeCallback pfnProbed) {
     unsigned char abRequest[kProbeRequestSize];
-    short nSent;
+    unsigned short uSent;
 
-    nSent = 0;
+    uSent = 0;
     if (pContext == NULL) {
         return RT_UPNP_RESULT_INVALID;
     }
@@ -1673,13 +1688,13 @@ static int RtUpnpStartNatProbe(RtUpnpContext *pContext,
     pContext->pRequest->pfnProbed = pfnProbed;
     // Yes, the binary sends the bytes other than the opcode uninitialised.
     abRequest[kProbeOpcodeIndex] = PROBE_OPCODE;
-    if (RtSocketSendTo(pContext->nSocket,
+    if (RtSocketSendTo(pContext->pSocket,
                        pContext->probe.szGateway,
                        uPort,
                        abRequest,
                        kProbeRequestSize,
-                       &nSent) != 0 ||
-        nSent != kProbeRequestSize) {
+                       &uSent) != 0 ||
+        uSent != kProbeRequestSize) {
         RtUpnpFreeRequest(pContext);
         return RT_UPNP_RESULT_SEND_FAILED;
     }
@@ -1756,7 +1771,10 @@ static int RtUpnpAdvanceStep(RtUpnpContext *pContext) {
     return nResult;
 }
 
-int RtUpnpCreateContext(RtUpnpContext **ppContext, int nSocket, unsigned short uPort, void *pUser) {
+int RtUpnpCreateContext(RtUpnpContext **ppContext,
+                        RtSocket *pSocket,
+                        unsigned short uPort,
+                        void *pUser) {
     RtUpnpContext *pContext;
 
     pContext = NULL;
@@ -1764,7 +1782,7 @@ int RtUpnpCreateContext(RtUpnpContext **ppContext, int nSocket, unsigned short u
         return RT_UPNP_RESULT_INVALID;
     }
     *ppContext = NULL;
-    if (nSocket == 0) {
+    if (pSocket == NULL) {
         return RT_UPNP_RESULT_INVALID;
     }
     if (RtAllocZeroedBlock((void **)&pContext, sizeof(RtUpnpContext)) != 0) {
@@ -1780,7 +1798,7 @@ int RtUpnpCreateContext(RtUpnpContext **ppContext, int nSocket, unsigned short u
         return RT_UPNP_RESULT_NO_SOCKET;
     }
     pContext->uPort = uPort;
-    pContext->nSocket = nSocket;
+    pContext->pSocket = pSocket;
     pContext->pUser = pUser;
     *ppContext = pContext;
     return 0;
@@ -1791,7 +1809,7 @@ int RtUpnpDestroyContext(RtUpnpContext *pContext) {
         return RT_UPNP_RESULT_INVALID;
     }
     if (pContext->pRequest != NULL) {
-        RtSocketClose(pContext->pRequest->nSocket);
+        RtSocketClose(pContext->pRequest->pSocket);
         RtFreeBlock((void **)&pContext->pRequest);
     }
     RtFreeBlock((void **)&pContext);
@@ -1861,9 +1879,9 @@ int RtUpnpPollRequest(RtUpnpContext *pContext) {
             }
             g_nDiscoveryResult = nResult;
             g_bDiscoveryDone = 1;
-            RtSocketClose(pContext->pRequest->nSocket);
+            RtSocketClose(pContext->pRequest->pSocket);
             pRequest = pContext->pRequest;
-            pRequest->nSocket = 0;
+            pRequest->pSocket = NULL;
             pRequest->pfnDiscovered(pContext, nResult, pRequest->nService);
         } else {
             pRequest = pContext->pRequest;

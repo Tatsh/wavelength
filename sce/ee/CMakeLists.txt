@@ -38,14 +38,6 @@ set(WAVELENGTH_SONYLIB_SRCS
     src/libmtap.c
     src/libosd.c
     src/libpad.c
-    src/librtbigint.c
-    src/librtcodec.c
-    src/librtdmedev.c
-    src/librtimage.c
-    src/librtinet.c
-    src/librtnet.c
-    src/librtpitch.c
-    src/librtreasm.c
     src/libscf.c
     src/libsdr.c
     src/libusbkb.c
@@ -67,28 +59,40 @@ set(WAVELENGTH_RT_SRCS
     src/rt/rtchannel.c
     src/rt/rtchannelapi.c
     src/rt/rtclock.c
+    src/rt/rtcodec.c
     src/rt/rtdmeapi.c
+    src/rt/rtdmedevice.c
     src/rt/rtdmemain.c
     src/rt/rtdmemessage.c
     src/rt/rtdmeobjects.c
     src/rt/rtdmevoice.c
+    src/rt/rtgsm.c
+    src/rt/rtimage.c
+    src/rt/rtinet.c
+    src/rt/rtlargeint.c
     src/rt/rtlargeintcore.c
+    src/rt/rtlpc10.c
+    src/rt/rtmedius.c
     src/rt/rtmediushandlers.c
     src/rt/rtmemory.c
     src/rt/rtmutex.c
+    src/rt/rtpitch.c
     src/rt/rtrandom.c
     src/rt/rtrc4.c
+    src/rt/rtreassembler.c
     src/rt/rtrecord.c
     src/rt/rtringbuffer.c
     src/rt/rtrsa.c
     src/rt/rtsecurity.c
     src/rt/rtsha1.c
+    src/rt/rtsocket.c
     src/rt/rtstats.c
     src/rt/rtstream.c
     src/rt/rttime.c
     src/rt/rttitle.c
     src/rt/rtupnp.c
-    src/rt/rtupnpxml.c)
+    src/rt/rtupnpxml.c
+    src/rt/rtvlc.c)
 
 add_library(wavelength_sonylibs STATIC ${WAVELENGTH_SONYLIB_SRCS} ${WAVELENGTH_RT_SRCS})
 target_link_libraries(wavelength_sonylibs PRIVATE wavelength_common)
@@ -96,10 +100,12 @@ target_link_libraries(wavelength_sonylibs PRIVATE wavelength_common)
 target_compile_options(wavelength_sonylibs PRIVATE -UNDEBUG)
 # The game server client copies its fixed texts with the full size of their fields, as retail does.
 set_source_files_properties(src/rt/mgcl.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
+# The lobby client copies the texts of the connection with the length of the source, as retail does.
+set_source_files_properties(src/rt/rtmedius.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
 # Most receivers of the lobby messages only report the size of the record.
 set_source_files_properties(src/rt/rtmediushandlers.c PROPERTIES COMPILE_OPTIONS -Wno-unused-parameter)
 # The device copies the address of the router with the full size of its field, as retail does.
-set_source_files_properties(src/librtdmedev.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
+set_source_files_properties(src/rt/rtdmedevice.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
 target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include"
                                                       "${CMAKE_SOURCE_DIR}/sce/ee/src"
                                                       "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse")

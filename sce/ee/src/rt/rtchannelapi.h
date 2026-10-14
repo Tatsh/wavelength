@@ -1,6 +1,8 @@
 #ifndef RTCHANNELAPI_H
 #define RTCHANNELAPI_H
 
+#include <stdbool.h>
+
 #include "rt/rtchannel.h"
 #include "rt/rtsecurity.h"
 #include "rt/rtstream.h"
@@ -212,14 +214,14 @@ int RtChannelApiSendDatagram(const char *pszAddress,
 /**
  * Check the listening socket for a peer at an address.
  *
- * @param pbReady Receives non-zero when the peer is there.
+ * @param pbReady Receives true when the peer is there.
  * @param pszAddress The address.
  * @param uPort The port.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002c0b80
  * @ghidraAddress PAL: 0x002caaf0
  */
-int RtChannelApiPollListener(unsigned char *pbReady, const char *pszAddress, unsigned short uPort);
+int RtChannelApiPollListener(bool *pbReady, const char *pszAddress, unsigned short uPort);
 
 /**
  * Write the address of this console as text.

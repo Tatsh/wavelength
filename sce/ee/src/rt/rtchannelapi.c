@@ -61,7 +61,7 @@ enum {
 // The datagram service.
 typedef struct {
     unsigned char bStarted;
-    int nStream;
+    RtSocket *pStream;
     unsigned short uPort;
     unsigned int uFlushInterval;
     unsigned int uSendSize;
@@ -75,7 +75,7 @@ typedef struct {
 // The listening socket. Nothing opens it in this program.
 typedef struct {
     unsigned char bOpen;
-    int nSocket;
+    RtSocket *pSocket;
     RtChannelAcceptFunc pfnAccept;
 } RtChannelListener;
 
@@ -156,7 +156,7 @@ static int RtChannelDoCloseListener(void) {
     if (g_channelListener.bOpen != 1) {
         return RT_CHANNEL_RESULT_NOT_STARTED;
     }
-    RtSocketClose(g_channelListener.nSocket);
+    RtSocketClose(g_channelListener.pSocket);
     g_channelListener.bOpen = 0;
     return 0;
 }
@@ -220,7 +220,7 @@ static int RtChannelDoStartService(const RtChannelServiceConfig *pConfig) {
         return RT_CHANNEL_API_RESULT_STREAM;
     }
     // Yes, the binary never stores the flush interval, so the stream gets 0.
-    if (RtStreamOpen(&g_channelService.nStream,
+    if (RtStreamOpen(&g_channelService.pStream,
                      pConfig->uPort,
                      pConfig->uPeerTimeout,
                      g_channelService.uSendSize,
@@ -338,7 +338,7 @@ static int RtChannelDoOpen(unsigned short *puId, const RtChannelConfig *pConfig)
         options.nType = RT_SOCKET_DATAGRAM;
         options.nBufferSize = RT_CHANNEL_MAX_PACKET;
         nResult = RtChannelMapSocketResult(
-            RtSocketCreate(&pLink->nSocket, NULL, pConfig->uLocalPort, &options));
+            RtSocketCreate(&pLink->pSocket, NULL, pConfig->uLocalPort, &options));
         if (nResult != 0) {
             return nResult;
         }
@@ -355,7 +355,7 @@ static int RtChannelDoOpen(unsigned short *puId, const RtChannelConfig *pConfig)
         options.nType = RT_SOCKET_STREAM;
         options.nBufferSize = 0;
         nResult = RtChannelMapSocketResult(
-            RtSocketCreate(&pLink->nSocket, pConfig->szAddress, pConfig->uPort, &options));
+            RtSocketCreate(&pLink->pSocket, pConfig->szAddress, pConfig->uPort, &options));
         if (nResult != 0) {
             return nResult;
         }
@@ -434,7 +434,7 @@ static int RtChannelDoClose(unsigned short uId) {
         for (i = 0; i < RT_CHANNEL_LINK_COUNT; ++i) {
             pLink = pChannel->apLinks[i];
             if (pLink != NULL) {
-                RtSocketClose(pLink->nSocket);
+                RtSocketClose(pLink->pSocket);
             }
         }
         (void)RtChannelSetState(pChannel, kStateClosed);
@@ -664,14 +664,14 @@ static int RtChannelDoReceiveDatagrams(unsigned char bDeliver) {
     if (g_channelService.bStarted != 1) {
         return RT_CHANNEL_API_RESULT_NO_SERVICE;
     }
-    if (RtStreamTick(g_channelService.nStream) != 0) {
+    if (RtStreamTick(g_channelService.pStream) != 0) {
         return RT_CHANNEL_API_RESULT_STREAM;
     }
     if (bDeliver != 1) {
         return 0;
     }
     do {
-        if (RtStreamReceive(g_channelService.nStream,
+        if (RtStreamReceive(g_channelService.pStream,
                             szAddress,
                             &nPort,
                             g_pbChannelScratch,
@@ -697,17 +697,17 @@ static int RtChannelDoReceiveDatagrams(unsigned char bDeliver) {
 static int RtChannelDoAcceptPeers(void) {
     char szAddress[kAddressSize];
     unsigned short uPort;
-    unsigned char bAccepted;
+    bool bAccepted;
     int nResult;
 
     uPort = 0;
-    bAccepted = 0;
+    bAccepted = false;
     if (g_bChannelsStarted != 1 || g_channelListener.bOpen != 1) {
         return RT_CHANNEL_RESULT_NOT_STARTED;
     }
     do {
         nResult = RtChannelMapSocketResult(
-            RtSocketAccept(g_channelListener.nSocket, &bAccepted, szAddress, &uPort));
+            RtSocketAccept(g_channelListener.pSocket, &bAccepted, szAddress, &uPort));
         if (nResult != 0) {
             return nResult;
         }
@@ -812,7 +812,7 @@ static int RtChannelDoSendDatagram(const char *pszAddress,
         uSize > RT_CHANNEL_PACKET_DATA) {
         return RT_CHANNEL_RESULT_INVALID;
     }
-    if (RtStreamSend(g_channelService.nStream, nFlags, pszAddress, uPort, pData, uSize, &uSent) !=
+    if (RtStreamSend(g_channelService.pStream, nFlags, pszAddress, uPort, pData, uSize, &uSent) !=
         0) {
         return RT_CHANNEL_API_RESULT_STREAM;
     }
@@ -826,12 +826,11 @@ static int RtChannelDoSendDatagram(const char *pszAddress,
 }
 
 // NTSC-U/C: 0x002c1d90, PAL: 0x002cbd00
-static int
-RtChannelDoPollListener(unsigned char *pbReady, const char *pszAddress, unsigned short uPort) {
+static int RtChannelDoPollListener(bool *pbReady, const char *pszAddress, unsigned short uPort) {
     if (pbReady == NULL) {
         return RT_CHANNEL_RESULT_INVALID;
     }
-    *pbReady = 0;
+    *pbReady = false;
     if (g_bChannelsStarted != 1 || g_channelListener.bOpen != 1) {
         return RT_CHANNEL_RESULT_NOT_STARTED;
     }
@@ -839,7 +838,7 @@ RtChannelDoPollListener(unsigned char *pbReady, const char *pszAddress, unsigned
         return RT_CHANNEL_RESULT_INVALID;
     }
     return RtChannelMapSocketResult(
-        RtSocketPollListener(g_channelListener.nSocket, pbReady, pszAddress, uPort));
+        RtSocketPollListener(g_channelListener.pSocket, pbReady, pszAddress, uPort));
 }
 
 // NTSC-U/C: 0x002c1ea0, PAL: 0x002cbe10
@@ -934,7 +933,7 @@ static int RtChannelDoDropPeer(const char *pszAddress, unsigned short uPort) {
     if (pszAddress == NULL || strlen(pszAddress) >= kAddressSize) {
         return RT_CHANNEL_RESULT_INVALID;
     }
-    if (RtStreamDisconnect(g_channelService.nStream, pszAddress, uPort, 0) != 0) {
+    if (RtStreamDisconnect(g_channelService.pStream, pszAddress, uPort, 0) != 0) {
         return RT_CHANNEL_API_RESULT_STREAM;
     }
     return 0;
@@ -942,8 +941,8 @@ static int RtChannelDoDropPeer(const char *pszAddress, unsigned short uPort) {
 
 // NTSC-U/C: 0x002c21c0, PAL: 0x002cc130
 static void
-RtChannelOnMapPort(int nStream, const char *pszAddress, unsigned short uPort, int nFailed) {
-    (void)nStream;
+RtChannelOnMapPort(RtSocket *pStream, const char *pszAddress, unsigned short uPort, int nFailed) {
+    (void)pStream;
     if (g_channelService.bStarted == 1 && g_channelService.pfnMap != NULL) {
         g_channelService.pfnMap(pszAddress, uPort, nFailed != 0 ? RT_CHANNEL_API_RESULT_STREAM : 0);
     }
@@ -962,7 +961,7 @@ RtChannelDoMapPort(const char *pszGateway, unsigned short uPort, RtChannelMapFun
         return RT_CHANNEL_RESULT_INVALID;
     }
     g_channelService.pfnMap = pfnDone;
-    if (RtStreamMapPort(g_channelService.nStream, pszGateway, uPort, RtChannelOnMapPort) != 0) {
+    if (RtStreamMapPort(g_channelService.pStream, pszGateway, uPort, RtChannelOnMapPort) != 0) {
         return RT_CHANNEL_API_RESULT_STREAM;
     }
     return 0;
@@ -974,7 +973,7 @@ static int RtChannelStopService(void) {
         return RT_CHANNEL_API_RESULT_NO_SERVICE;
     }
     g_channelService.bStarted = 0;
-    if (RtStreamClose(g_channelService.nStream) != 0) {
+    if (RtStreamClose(g_channelService.pStream) != 0) {
         return RT_CHANNEL_API_RESULT_STREAM;
     }
     memset(&g_channelService, 0, sizeof(g_channelService));
@@ -1181,7 +1180,7 @@ int RtChannelApiSendDatagram(const char *pszAddress,
     return RtChannelApiLeave(RtChannelDoSendDatagram(pszAddress, uPort, nFlags, pData, uSize));
 }
 
-int RtChannelApiPollListener(unsigned char *pbReady, const char *pszAddress, unsigned short uPort) {
+int RtChannelApiPollListener(bool *pbReady, const char *pszAddress, unsigned short uPort) {
     int nResult;
 
     nResult = RtChannelApiEnter();

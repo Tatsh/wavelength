@@ -1,8 +1,12 @@
+#include "rt/rtsocket.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <librtdmedev.h>
-#include <librtnet.h>
+#include "rt/rtdmedevice.h"
+#include "rt/rtinet.h"
+#include "rt/rtmemory.h"
+#include "rt/rttime.h"
 
 // Error codes of the socket layer.
 enum {
@@ -31,58 +35,58 @@ typedef struct {
     unsigned int count; // The transfers since the last update of the rate.
     float rate;         // The transfers per second over the last interval.
     float peak;         // The highest rate.
-} rtNetRateCounter;
+} RtNetRateCounter;
 
 typedef struct {
-    rtNetTime resetTime; // The start of the current interval.
-    rtNetRateCounter packetsSent;
-    rtNetRateCounter bytesSent;
-    rtNetRateCounter packetsReceived;
-    rtNetRateCounter bytesReceived;
-} rtNetStats;
+    RtTime resetTime; // The start of the current interval.
+    RtNetRateCounter packetsSent;
+    RtNetRateCounter bytesSent;
+    RtNetRateCounter packetsReceived;
+    RtNetRateCounter bytesReceived;
+} RtNetStats;
 
 // NTSC-U/C: 0x003bfa50
 static int g_nNetSocketUsers = 0;
 
 // NTSC-U/C: 0x00528e18
-static rtNetStats g_netStats;
+static RtNetStats g_netStats;
 
 // NTSC-U/C: 0x00528e50
-static rtNetTime g_qwNetStatsLastSampleTime;
+static RtTime g_qwNetStatsLastSampleTime;
 
 // NTSC-U/C: 0x002f0238, PAL: 0x002fa1a8
-static int rtNetDriverInit(void) {
+static int RtNetDriverInit(void) {
     return rtNetInetInit();
 }
 
 // NTSC-U/C: 0x002f0250, PAL: 0x002fa1c0
-static int rtNetDriverShutdown(void) {
+static int RtNetDriverShutdown(void) {
     return rtNetInetShutdown();
 }
 
 // NTSC-U/C: 0x002f0268, PAL: 0x002fa1d8
-static int rtNetDriverOpen(LibnetAsyncHandle **connection,
+static int RtNetDriverOpen(LibnetAsyncHandle **connection,
                            const char *address,
                            unsigned short port,
-                           const rtNetSocketOptions *options) {
+                           const RtSocketOptions *options) {
     return rtNetInetOpen(connection, address, port, options);
 }
 
 // NTSC-U/C: 0x002f0280, PAL: 0x002fa1f0
-static int rtNetDriverClose(LibnetAsyncHandle *connection) {
+static int RtNetDriverClose(LibnetAsyncHandle *connection) {
     return rtNetInetClose(connection);
 }
 
 // NTSC-U/C: 0x002f0298, PAL: 0x002fa208
-static int rtNetDriverSendStream(LibnetAsyncHandle *connection,
-                                 const void *data,
-                                 unsigned short length,
-                                 unsigned short *sent) {
+static int RtNetDriverWriteStream(LibnetAsyncHandle *connection,
+                                  const void *data,
+                                  unsigned short length,
+                                  unsigned short *sent) {
     return rtNetInetSendStream(connection, data, length, sent);
 }
 
 // NTSC-U/C: 0x002f02b0, PAL: 0x002fa220
-static int rtNetDriverSendTo(LibnetAsyncHandle *connection,
+static int RtNetDriverSendTo(LibnetAsyncHandle *connection,
                              const char *address,
                              unsigned short port,
                              const void *data,
@@ -92,7 +96,7 @@ static int rtNetDriverSendTo(LibnetAsyncHandle *connection,
 }
 
 // NTSC-U/C: 0x002f02d0, PAL: 0x002fa240
-static int rtNetDriverListen(LibnetAsyncHandle *connection,
+static int RtNetDriverListen(LibnetAsyncHandle *connection,
                              bool *listening,
                              const char *address,
                              unsigned short port) {
@@ -100,15 +104,15 @@ static int rtNetDriverListen(LibnetAsyncHandle *connection,
 }
 
 // NTSC-U/C: 0x002f02e8, PAL: 0x002fa258
-static int rtNetDriverReceiveStream(LibnetAsyncHandle *connection,
-                                    void *buffer,
-                                    unsigned short size,
-                                    unsigned short *received) {
+static int RtNetDriverReadStream(LibnetAsyncHandle *connection,
+                                 void *buffer,
+                                 unsigned short size,
+                                 unsigned short *received) {
     return rtNetInetReceiveStream(connection, buffer, size, received);
 }
 
 // NTSC-U/C: 0x002f0300, PAL: 0x002fa270
-static int rtNetDriverReceiveFrom(LibnetAsyncHandle *connection,
+static int RtNetDriverReceiveFrom(LibnetAsyncHandle *connection,
                                   char *address,
                                   unsigned short *port,
                                   void *buffer,
@@ -118,7 +122,7 @@ static int rtNetDriverReceiveFrom(LibnetAsyncHandle *connection,
 }
 
 // NTSC-U/C: 0x002f0318, PAL: 0x002fa288
-static int rtNetDriverAccept(LibnetAsyncHandle *connection,
+static int RtNetDriverAccept(LibnetAsyncHandle *connection,
                              bool *accepted,
                              char *address,
                              unsigned short *port) {
@@ -126,19 +130,19 @@ static int rtNetDriverAccept(LibnetAsyncHandle *connection,
 }
 
 // NTSC-U/C: 0x002f0338, PAL: 0x002fa2a8
-static int rtNetDriverCopyLocalAddress(char *address) {
+static int RtNetDriverCopyLocalAddress(char *address) {
     return rtNetInetCopyLocalAddress(address);
 }
 
 // NTSC-U/C: 0x002efe90, PAL: 0x002f9e00
-static int rtNetSocketAlloc(rtNetSocket **socket) {
-    rtNetSocket *block = NULL;
+static int RtSocketRecordAlloc(RtSocket **socket) {
+    RtSocket *block = NULL;
 
     if (socket == NULL) {
         return kErrorArgument;
     }
     *socket = NULL;
-    if (rtDmeAllocZeroed((void **)&block, sizeof(rtNetSocket)) != 0) {
+    if (RtAllocZeroedBlock((void **)&block, sizeof(RtSocket)) != 0) {
         return kErrorNoMemory;
     }
     if (block == NULL) {
@@ -150,17 +154,17 @@ static int rtNetSocketAlloc(rtNetSocket **socket) {
 }
 
 // NTSC-U/C: 0x002eff00, PAL: 0x002f9e70
-static int rtNetSocketFree(rtNetSocket *socket) {
+static int RtSocketRecordFree(RtSocket *socket) {
     void *block = socket;
 
     if (socket == NULL) {
         return kErrorArgument;
     }
-    return rtDmeFree(&block) != 0;
+    return RtFreeBlock(&block) != 0;
 }
 
 // NTSC-U/C: 0x002eff30, PAL: 0x002f9ea0
-static int rtNetSocketLookup(rtNetSocket *socket, rtNetSocket **entry) {
+static int RtSocketRecordLookup(RtSocket *socket, RtSocket **entry) {
     if (entry == NULL) {
         return kErrorArgument;
     }
@@ -169,34 +173,34 @@ static int rtNetSocketLookup(rtNetSocket *socket, rtNetSocket **entry) {
 }
 
 // NTSC-U/C: 0x002eff98, PAL: 0x002f9f08
-static bool rtNetSocketIsValid(const rtNetSocket *socket) {
+static bool RtSocketRecordIsValid(const RtSocket *socket) {
     return socket != NULL && socket->allocated != 0 && socket->open != 0 &&
-           (unsigned int)socket->options.type < RT_NET_SOCKET_TYPE_COUNT;
+           (unsigned int)socket->options.nType < RT_SOCKET_TYPE_COUNT;
 }
 
 // NTSC-U/C: 0x002eff48, PAL: 0x002f9eb8
-static int rtNetSocketResolve(rtNetSocket *socket, rtNetSocket **entry) {
+static int RtSocketRecordResolve(RtSocket *socket, RtSocket **entry) {
     if (entry == NULL) {
         return kErrorArgument;
     }
-    if (rtNetSocketLookup(socket, entry) != 0) {
+    if (RtSocketRecordLookup(socket, entry) != 0) {
         return kErrorBadSocket;
     }
-    return rtNetSocketIsValid(*entry) ? 0 : kErrorBadSocket;
+    return RtSocketRecordIsValid(*entry) ? 0 : kErrorBadSocket;
 }
 
 // NTSC-U/C: 0x002effc8, PAL: 0x002f9f38
-static int rtNetSocketOptionsReset(rtNetSocketOptions *options) {
+static int RtSocketOptionsReset(RtSocketOptions *options) {
     if (options == NULL) {
         return kErrorArgument;
     }
     // Yes, the binary sets only the kind. The buffer size stays as the allocator cleared it.
-    options->type = RT_NET_SOCKET_STREAM;
+    options->nType = RT_SOCKET_STREAM;
     return 0;
 }
 
 // NTSC-U/C: 0x002f0188, PAL: 0x002fa0f8
-static int rtNetRateCounterUpdate(rtNetRateCounter *counter, unsigned int elapsed) {
+static int RtNetRateCounterUpdate(RtNetRateCounter *counter, unsigned int elapsed) {
     if (counter == NULL) {
         return kErrorArgument;
     }
@@ -213,7 +217,7 @@ static int rtNetRateCounterUpdate(rtNetRateCounter *counter, unsigned int elapse
 }
 
 // NTSC-U/C: 0x002effe0, PAL: 0x002f9f50
-static int rtNetStatsReset(void) {
+static int RtNetStatsReset(void) {
     g_netStats.packetsSent.count = 0;
     g_netStats.packetsSent.rate = 0.0f;
     g_netStats.packetsSent.peak = 0.0f;
@@ -226,7 +230,7 @@ static int rtNetStatsReset(void) {
     g_netStats.bytesReceived.count = 0;
     g_netStats.bytesReceived.rate = 0.0f;
     g_netStats.bytesReceived.peak = 0.0f;
-    if (rtNetTimeNow(&g_netStats.resetTime) != 0) {
+    if (RtReadTime(&g_netStats.resetTime) != 0) {
         return kErrorFailed;
     }
     g_qwNetStatsLastSampleTime = g_netStats.resetTime;
@@ -234,36 +238,36 @@ static int rtNetStatsReset(void) {
 }
 
 // NTSC-U/C: 0x002f00e0, PAL: 0x002fa050
-static int rtNetStatsUpdate(void) {
+static int RtNetStatsRefreshRates(void) {
     unsigned int elapsed;
     int result;
 
-    if (rtNetTimeElapsedMs(&g_netStats.resetTime, &elapsed) != 0) {
+    if (RtMeasureMillisecondsSince(&g_netStats.resetTime, &elapsed) != 0) {
         return kErrorFailed;
     }
     if (elapsed <= kStatsInterval) {
         return 0;
     }
-    if ((result = rtNetRateCounterUpdate(&g_netStats.packetsSent, elapsed)) != 0) {
+    if ((result = RtNetRateCounterUpdate(&g_netStats.packetsSent, elapsed)) != 0) {
         return result;
     }
-    if ((result = rtNetRateCounterUpdate(&g_netStats.bytesSent, elapsed)) != 0) {
+    if ((result = RtNetRateCounterUpdate(&g_netStats.bytesSent, elapsed)) != 0) {
         return result;
     }
-    if ((result = rtNetRateCounterUpdate(&g_netStats.packetsReceived, elapsed)) != 0) {
+    if ((result = RtNetRateCounterUpdate(&g_netStats.packetsReceived, elapsed)) != 0) {
         return result;
     }
-    if ((result = rtNetRateCounterUpdate(&g_netStats.bytesReceived, elapsed)) != 0) {
+    if ((result = RtNetRateCounterUpdate(&g_netStats.bytesReceived, elapsed)) != 0) {
         return result;
     }
-    if (rtNetTimeNow(&g_netStats.resetTime) != 0) {
+    if (RtReadTime(&g_netStats.resetTime) != 0) {
         return kErrorFailed;
     }
     return 0;
 }
 
 // NTSC-U/C: 0x002f0068, PAL: 0x002f9fd8
-static int rtNetStatsRecord(unsigned int sent, unsigned int received, unsigned int overhead) {
+static int RtNetStatsRecord(unsigned int sent, unsigned int received, unsigned int overhead) {
     if (sent != 0) {
         ++g_netStats.packetsSent.count;
         g_netStats.bytesSent.count += sent + overhead;
@@ -272,17 +276,17 @@ static int rtNetStatsRecord(unsigned int sent, unsigned int received, unsigned i
         ++g_netStats.packetsReceived.count;
         g_netStats.bytesReceived.count += received + overhead;
     }
-    return rtNetStatsUpdate();
+    return RtNetStatsRefreshRates();
 }
 
-int rtNetSocketInit(void) {
+int RtSocketStartup(void) {
     int result;
 
     if (g_nNetSocketUsers == 0) {
-        if ((result = rtNetDriverInit()) != 0) {
+        if ((result = RtNetDriverInit()) != 0) {
             return result;
         }
-        if ((result = rtNetStatsReset()) != 0) {
+        if ((result = RtNetStatsReset()) != 0) {
             return result;
         }
     }
@@ -290,32 +294,32 @@ int rtNetSocketInit(void) {
     return 0;
 }
 
-int rtNetSocketShutdown(void) {
+int RtSocketShutdown(void) {
     if (g_nNetSocketUsers <= 0) {
         return kErrorNotStarted;
     }
     if (--g_nNetSocketUsers != 0) {
         return 0;
     }
-    return rtNetDriverShutdown();
+    return RtNetDriverShutdown();
 }
 
-int rtNetSocketCreate(rtNetSocket **socket,
-                      const char *address,
-                      unsigned short port,
-                      const rtNetSocketOptions *options) {
-    rtNetSocket *created;
-    rtNetSocket *entry = NULL;
+int RtSocketCreate(RtSocket **socket,
+                   const char *address,
+                   unsigned short port,
+                   const RtSocketOptions *options) {
+    RtSocket *created;
+    RtSocket *entry = NULL;
     int result;
 
     if (socket == NULL) {
         return kErrorArgument;
     }
     *socket = NULL;
-    if ((result = rtNetSocketAlloc(&created)) != 0) {
+    if ((result = RtSocketRecordAlloc(&created)) != 0) {
         return result;
     }
-    if ((result = rtNetSocketLookup(created, &entry)) != 0) {
+    if ((result = RtSocketRecordLookup(created, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
@@ -323,10 +327,10 @@ int rtNetSocketCreate(rtNetSocket **socket,
     }
     if (options != NULL) {
         entry->options = *options;
-    } else if ((result = rtNetSocketOptionsReset(&entry->options)) != 0) {
+    } else if ((result = RtSocketOptionsReset(&entry->options)) != 0) {
         return result;
     }
-    if ((result = rtNetDriverOpen(&entry->connection, address, port, &entry->options)) != 0) {
+    if ((result = RtNetDriverOpen(&entry->connection, address, port, &entry->options)) != 0) {
         return result;
     }
     entry->port = port;
@@ -335,29 +339,26 @@ int rtNetSocketCreate(rtNetSocket **socket,
     return 0;
 }
 
-int rtNetSocketClose(rtNetSocket *socket) {
-    rtNetSocket *entry = NULL;
+int RtSocketClose(RtSocket *socket) {
+    RtSocket *entry = NULL;
     int result;
 
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if ((result = rtNetDriverClose(entry->connection)) != 0) {
+    if ((result = RtNetDriverClose(entry->connection)) != 0) {
         return result;
     }
     entry->open = 0;
     entry->allocated = 0;
-    return rtNetSocketFree(socket);
+    return RtSocketRecordFree(socket);
 }
 
-int rtNetSocketSendStream(rtNetSocket *socket,
-                          const void *data,
-                          unsigned short length,
-                          unsigned short *sent) {
-    rtNetSocket *entry = NULL;
+int RtSocketSend(RtSocket *socket, const void *data, unsigned short length, unsigned short *sent) {
+    RtSocket *entry = NULL;
     int result;
 
     if (sent == NULL) {
@@ -367,29 +368,29 @@ int rtNetSocketSendStream(rtNetSocket *socket,
     if (data == NULL) {
         return kErrorArgument;
     }
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if (entry->options.type != RT_NET_SOCKET_STREAM &&
-        entry->options.type != RT_NET_SOCKET_STREAM_ACCEPTED) {
+    if (entry->options.nType != RT_SOCKET_STREAM &&
+        entry->options.nType != RT_SOCKET_STREAM_ACCEPTED) {
         return kErrorSocketType;
     }
-    if ((result = rtNetDriverSendStream(entry->connection, data, length, sent)) != 0) {
+    if ((result = RtNetDriverWriteStream(entry->connection, data, length, sent)) != 0) {
         return result;
     }
-    return rtNetStatsRecord(*sent, 0, kStreamOverhead);
+    return RtNetStatsRecord(*sent, 0, kStreamOverhead);
 }
 
-int rtNetSocketSendTo(rtNetSocket *socket,
-                      const char *address,
-                      unsigned short port,
-                      const void *data,
-                      unsigned short length,
-                      unsigned short *sent) {
-    rtNetSocket *entry = NULL;
+int RtSocketSendTo(RtSocket *socket,
+                   const char *address,
+                   unsigned short port,
+                   const void *data,
+                   unsigned short length,
+                   unsigned short *sent) {
+    RtSocket *entry = NULL;
     int result;
 
     if (address == NULL || sent == NULL) {
@@ -399,26 +400,26 @@ int rtNetSocketSendTo(rtNetSocket *socket,
     if (data == NULL) {
         return kErrorArgument;
     }
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if (entry->options.type != RT_NET_SOCKET_DATAGRAM) {
+    if (entry->options.nType != RT_SOCKET_DATAGRAM) {
         return kErrorSocketType;
     }
-    if ((result = rtNetDriverSendTo(entry->connection, address, port, data, length, sent)) != 0) {
+    if ((result = RtNetDriverSendTo(entry->connection, address, port, data, length, sent)) != 0) {
         return result;
     }
-    return rtNetStatsRecord(*sent, 0, kDatagramOverhead);
+    return RtNetStatsRecord(*sent, 0, kDatagramOverhead);
 }
 
-int rtNetSocketListen(rtNetSocket *socket,
-                      bool *listening,
-                      const char *address,
-                      unsigned short port) {
-    rtNetSocket *entry = NULL;
+int RtSocketPollListener(RtSocket *socket,
+                         bool *listening,
+                         const char *address,
+                         unsigned short port) {
+    RtSocket *entry = NULL;
     int result;
 
     if (listening == NULL) {
@@ -428,26 +429,23 @@ int rtNetSocketListen(rtNetSocket *socket,
     if (address == NULL) {
         return kErrorArgument;
     }
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if (entry->options.type != RT_NET_SOCKET_LISTEN) {
+    if (entry->options.nType != RT_SOCKET_LISTEN) {
         return kErrorSocketType;
     }
-    if ((result = rtNetDriverListen(entry->connection, listening, address, port)) != 0) {
+    if ((result = RtNetDriverListen(entry->connection, listening, address, port)) != 0) {
         return result;
     }
-    return rtNetStatsRecord(kDatagramOverhead, 0, 0);
+    return RtNetStatsRecord(kDatagramOverhead, 0, 0);
 }
 
-int rtNetSocketReceiveStream(rtNetSocket *socket,
-                             void *buffer,
-                             unsigned short size,
-                             unsigned short *received) {
-    rtNetSocket *entry = NULL;
+int RtSocketReceive(RtSocket *socket, void *buffer, unsigned short size, unsigned short *received) {
+    RtSocket *entry = NULL;
     int result;
 
     if (received == NULL) {
@@ -457,29 +455,29 @@ int rtNetSocketReceiveStream(rtNetSocket *socket,
     if (buffer == NULL) {
         return kErrorArgument;
     }
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if (entry->options.type != RT_NET_SOCKET_STREAM &&
-        entry->options.type != RT_NET_SOCKET_STREAM_ACCEPTED) {
+    if (entry->options.nType != RT_SOCKET_STREAM &&
+        entry->options.nType != RT_SOCKET_STREAM_ACCEPTED) {
         return kErrorSocketType;
     }
-    if ((result = rtNetDriverReceiveStream(entry->connection, buffer, size, received)) != 0) {
+    if ((result = RtNetDriverReadStream(entry->connection, buffer, size, received)) != 0) {
         return result;
     }
-    return rtNetStatsRecord(0, *received, kStreamOverhead);
+    return RtNetStatsRecord(0, *received, kStreamOverhead);
 }
 
-int rtNetSocketReceiveFrom(rtNetSocket *socket,
-                           char *address,
-                           unsigned short *port,
-                           void *buffer,
-                           unsigned short size,
-                           unsigned short *received) {
-    rtNetSocket *entry = NULL;
+int RtSocketReceiveFrom(RtSocket *socket,
+                        char *address,
+                        unsigned short *port,
+                        void *buffer,
+                        unsigned short size,
+                        unsigned short *received) {
+    RtSocket *entry = NULL;
     int result;
 
     if (address == NULL || received == NULL) {
@@ -489,24 +487,24 @@ int rtNetSocketReceiveFrom(rtNetSocket *socket,
     if (buffer == NULL) {
         return kErrorArgument;
     }
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if (entry->options.type != RT_NET_SOCKET_DATAGRAM) {
+    if (entry->options.nType != RT_SOCKET_DATAGRAM) {
         return kErrorSocketType;
     }
-    if ((result = rtNetDriverReceiveFrom(
+    if ((result = RtNetDriverReceiveFrom(
              entry->connection, address, port, buffer, size, received)) != 0) {
         return result;
     }
-    return rtNetStatsRecord(0, *received, kDatagramOverhead);
+    return RtNetStatsRecord(0, *received, kDatagramOverhead);
 }
 
-int rtNetSocketAccept(rtNetSocket *socket, bool *accepted, char *address, unsigned short *port) {
-    rtNetSocket *entry = NULL;
+int RtSocketAccept(RtSocket *socket, bool *accepted, char *address, unsigned short *port) {
+    RtSocket *entry = NULL;
     int result;
 
     if (accepted == NULL) {
@@ -516,32 +514,32 @@ int rtNetSocketAccept(rtNetSocket *socket, bool *accepted, char *address, unsign
     if (address == NULL || port == NULL) {
         return kErrorArgument;
     }
-    if ((result = rtNetSocketResolve(socket, &entry)) != 0) {
+    if ((result = RtSocketRecordResolve(socket, &entry)) != 0) {
         return result;
     }
     if (entry == NULL) {
         return kErrorNullSocket;
     }
-    if (entry->options.type != RT_NET_SOCKET_LISTEN) {
+    if (entry->options.nType != RT_SOCKET_LISTEN) {
         return kErrorSocketType;
     }
-    if ((result = rtNetDriverAccept(entry->connection, accepted, address, port)) != 0) {
+    if ((result = RtNetDriverAccept(entry->connection, accepted, address, port)) != 0) {
         return result;
     }
     if (!*accepted) {
         return 0;
     }
-    return rtNetStatsRecord(0, kDatagramOverhead, 0);
+    return RtNetStatsRecord(0, kDatagramOverhead, 0);
 }
 
-int rtNetGetLocalAddress(char *address) {
-    return rtNetDriverCopyLocalAddress(address);
+int RtSocketGetLocalAddress(char *address) {
+    return RtNetDriverCopyLocalAddress(address);
 }
 
 rtDmeEndpointNode *rtDmeEndpointNodeCreate(rtDmePeer *peer) {
     rtDmeEndpointNode *node = NULL;
 
-    rtDmeAllocZeroed((void **)&node, sizeof(rtDmeEndpointNode));
+    RtAllocZeroedBlock((void **)&node, sizeof(rtDmeEndpointNode));
     if (node == NULL) {
         return NULL;
     }
@@ -555,6 +553,6 @@ void rtDmeEndpointNodeDestroy(rtDmeEndpointNode *node) {
     void *block = node;
 
     if (node != NULL) {
-        rtDmeFree(&block);
+        RtFreeBlock(&block);
     }
 }

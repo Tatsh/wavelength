@@ -110,18 +110,18 @@ typedef void (*RtStreamTimeoutFunc)(const char *pszAddress, unsigned short uPort
 /**
  * Receiver of the result of RtStreamMapPort().
  *
- * @param nStream Always 0.
+ * @param pStream Always 0.
  * @param pszAddress The address the gateway shows, or empty.
  * @param uPort The port the gateway shows, or 0.
  * @param nFailed Non-zero when the mapping failed.
  */
-typedef void (*RtStreamMappingFunc)(int nStream,
+typedef void (*RtStreamMappingFunc)(RtSocket *pStream,
                                     const char *pszAddress,
                                     unsigned short uPort,
                                     int nFailed);
 
 /** The datagram socket. */
-extern int g_nStreamSocket;
+extern RtSocket *g_pStreamSocket;
 /** The UPnP client that maps the port of the socket. */
 extern RtUpnpContext *g_pStreamUpnp;
 /** The receiver of the result of RtStreamMapPort(). */
@@ -212,17 +212,17 @@ int RtStreamTakeDatagram(char *pszAddress,
 /**
  * Report the room left in the queue of datagrams to send.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @return The room in bytes.
  * @ghidraAddress NTSC-U/C: 0x002c6098
  * @ghidraAddress PAL: 0x002d0008
  */
-int RtStreamGetTxRoom(int nStream);
+int RtStreamGetTxRoom(RtSocket *pStream);
 
 /**
  * Queue records to send, appending them to a queued datagram to the same peer when they fit.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @param pszAddress The peer.
  * @param uPort The port of the peer.
  * @param uFlags The flags of the records.
@@ -232,7 +232,7 @@ int RtStreamGetTxRoom(int nStream);
  * @ghidraAddress NTSC-U/C: 0x002c60c0
  * @ghidraAddress PAL: 0x002d0030
  */
-int RtStreamQueueTx(int nStream,
+int RtStreamQueueTx(RtSocket *pStream,
                     const char *pszAddress,
                     unsigned short uPort,
                     unsigned char uFlags,
@@ -252,16 +252,16 @@ void RtStreamRemoveTx(unsigned char *pbSpan, int nSize);
 /**
  * Send the queued datagrams until the socket takes one only in part.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @ghidraAddress NTSC-U/C: 0x002c6410
  * @ghidraAddress PAL: 0x002d0380
  */
-void RtStreamFlushTx(int nStream);
+void RtStreamFlushTx(RtSocket *pStream);
 
 /**
  * Queue records to send, and send the queue when it is due.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @param pszAddress The peer.
  * @param uPort The port of the peer.
  * @param uFlags The flags of the records.
@@ -271,7 +271,7 @@ void RtStreamFlushTx(int nStream);
  * @ghidraAddress NTSC-U/C: 0x002c6550
  * @ghidraAddress PAL: 0x002d04c0
  */
-void RtStreamSendTx(int nStream,
+void RtStreamSendTx(RtSocket *pStream,
                     const char *pszAddress,
                     unsigned short uPort,
                     unsigned char uFlags,
@@ -292,7 +292,7 @@ void RtStreamMerge(const void *pData, int nSize);
 /**
  * Queue the records merged as one datagram to a peer.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @param pszAddress The peer.
  * @param uPort The port of the peer.
  * @param uFlags The flags of the records.
@@ -300,8 +300,10 @@ void RtStreamMerge(const void *pData, int nSize);
  * @ghidraAddress NTSC-U/C: 0x002c6668
  * @ghidraAddress PAL: 0x002d05d8
  */
-unsigned short
-RtStreamFlushMerge(int nStream, const char *pszAddress, unsigned short uPort, unsigned char uFlags);
+unsigned short RtStreamFlushMerge(RtSocket *pStream,
+                                  const char *pszAddress,
+                                  unsigned short uPort,
+                                  unsigned char uFlags);
 
 /**
  * Report the sequence after another, wrapping before 0xfffe.
@@ -366,7 +368,7 @@ int RtStreamCleanup(void);
 /**
  * Open the socket, the UPnP client, and the queues of the transport.
  *
- * @param pnStream Receives the stream, always 0.
+ * @param ppStream Receives the stream, always null.
  * @param nPort The port of the socket.
  * @param nPeerTimeout The milliseconds a peer may stay silent, or 0 for 45000.
  * @param nTxQueueSize The size of the queue of datagrams to send, at least 16384.
@@ -377,7 +379,7 @@ int RtStreamCleanup(void);
  * @ghidraAddress NTSC-U/C: 0x002c6880
  * @ghidraAddress PAL: 0x002d07f0
  */
-int RtStreamOpen(int *pnStream,
+int RtStreamOpen(RtSocket **ppStream,
                  int nPort,
                  int nPeerTimeout,
                  int nTxQueueSize,
@@ -388,39 +390,39 @@ int RtStreamOpen(int *pnStream,
 /**
  * Run the transport for half a second, then release it.
  *
- * @param nStream The stream.
+ * @param pStream The stream.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002c6b18
  * @ghidraAddress PAL: 0x002d0a88
  */
-int RtStreamClose(int nStream);
+int RtStreamClose(RtSocket *pStream);
 
 /**
  * Note a peer as heard.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @param pszAddress The peer.
  * @param uPort The port of the peer.
  * @ghidraAddress NTSC-U/C: 0x002c7ee8
  * @ghidraAddress PAL: 0x002d1e58
  */
-void RtStreamTouchPeer(int nStream, const char *pszAddress, unsigned short uPort);
+void RtStreamTouchPeer(RtSocket *pStream, const char *pszAddress, unsigned short uPort);
 
 /**
  * Update the statistics, advance the port mapping, send the queue when it is due, query the
  * unacknowledged records, time out silent peers, and read the socket.
  *
- * @param nStream The stream.
+ * @param pStream The stream.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002c8048
  * @ghidraAddress PAL: 0x002d1fb8
  */
-int RtStreamTick(int nStream);
+int RtStreamTick(RtSocket *pStream);
 
 /**
  * Forget the records and the datagrams of a peer.
  *
- * @param nStream The stream.
+ * @param pStream The stream.
  * @param pszAddress The peer.
  * @param nPort The port of the peer.
  * @param bKeep Non-zero to forget nothing.
@@ -428,12 +430,12 @@ int RtStreamTick(int nStream);
  * @ghidraAddress NTSC-U/C: 0x002c80f0
  * @ghidraAddress PAL: 0x002d2060
  */
-int RtStreamDisconnect(int nStream, const char *pszAddress, int nPort, unsigned char bKeep);
+int RtStreamDisconnect(RtSocket *pStream, const char *pszAddress, int nPort, unsigned char bKeep);
 
 /**
  * Send a record to a peer, by the delivery its flags ask for.
  *
- * @param nStream The stream.
+ * @param pStream The stream.
  * @param nFlags The RT_STREAM_FLAG_ bits.
  * @param pszAddress The peer.
  * @param nPort The port of the peer.
@@ -444,7 +446,7 @@ int RtStreamDisconnect(int nStream, const char *pszAddress, int nPort, unsigned 
  * @ghidraAddress NTSC-U/C: 0x002c85d0
  * @ghidraAddress PAL: 0x002d2540
  */
-int RtStreamSend(int nStream,
+int RtStreamSend(RtSocket *pStream,
                  int nFlags,
                  const char *pszAddress,
                  int nPort,
@@ -455,7 +457,7 @@ int RtStreamSend(int nStream,
 /**
  * Deliver the data received, from the records in order or from the next queued datagram.
  *
- * @param nStream The stream.
+ * @param pStream The stream.
  * @param pszAddress Receives the sender.
  * @param pnPort Receives the port of the sender.
  * @param pBuffer Receives the data.
@@ -465,7 +467,7 @@ int RtStreamSend(int nStream,
  * @ghidraAddress NTSC-U/C: 0x002c9748
  * @ghidraAddress PAL: 0x002d36b8
  */
-int RtStreamReceive(int nStream,
+int RtStreamReceive(RtSocket *pStream,
                     char *pszAddress,
                     int *pnPort,
                     void *pBuffer,
@@ -475,7 +477,7 @@ int RtStreamReceive(int nStream,
 /**
  * Map the port of the socket on the gateway.
  *
- * @param nStream Not read.
+ * @param pStream Not read.
  * @param pszGateway The address of the gateway.
  * @param nPort The port of the gateway.
  * @param pfnDone Receives the result.
@@ -483,7 +485,10 @@ int RtStreamReceive(int nStream,
  * @ghidraAddress NTSC-U/C: 0x002c99c0
  * @ghidraAddress PAL: 0x002d3930
  */
-int RtStreamMapPort(int nStream, const char *pszGateway, int nPort, RtStreamMappingFunc pfnDone);
+int RtStreamMapPort(RtSocket *pStream,
+                    const char *pszGateway,
+                    int nPort,
+                    RtStreamMappingFunc pfnDone);
 
 #ifdef __cplusplus
 }

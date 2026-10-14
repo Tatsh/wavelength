@@ -1,13 +1,17 @@
+#include "rt/rtdmedevice.h"
+
 #include <stddef.h>
 #include <string.h>
 
 #include <eekernel.h>
-#include <librtcodec.h>
 #include <librtdme.h>
-#include <librtdmedev.h>
-#include <librtimage.h>
-#include <librtnet.h>
-#include <librtreasm.h>
+
+#include "rt/rtcodec.h"
+#include "rt/rtimage.h"
+#include "rt/rtmemory.h"
+#include "rt/rtreassembler.h"
+#include "rt/rtsocket.h"
+#include "rt/rtupnp.h"
 
 // Bits of rtDmeDevice::flags.
 enum {
@@ -131,12 +135,12 @@ static void rtDmeSleep(int ticks);
 static int rtDmeDeviceSendVideoFrame(rtDmeDevice *device, const unsigned char *frame, int length);
 static rtDmeConnection *rtDmeDeviceGetActiveConnection(rtDmeDevice *device);
 static rtDmeConnection *rtDmeDeviceGetSelectedConnection(rtDmeDevice *device);
-static void rtDmeDeviceOnPortMapped(rtUpnpContext *context,
+static void rtDmeDeviceOnPortMapped(RtUpnpContext *context,
                                     int status,
-                                    int result,
+                                    int service,
                                     const char *address,
                                     unsigned short port,
-                                    rtDmeDevice *device);
+                                    void *owner);
 static rtDmeConnection *rtDmeConnectionCreate(rtDmeDevice *device, int id, int maxPeers);
 static void rtDmeConnectionDestroy(rtDmeConnection *connection);
 static unsigned int rtDmeConnectionNextSequence(rtDmeConnection *connection);
@@ -277,7 +281,7 @@ rtDmeDevice *rtDmeDeviceCreate(void) {
     void *block = NULL;
     rtDmeDevice *device;
 
-    rtDmeAllocZeroed(&block, sizeof(rtDmeDevice));
+    RtAllocZeroedBlock(&block, sizeof(rtDmeDevice));
     device = block;
     if (device != NULL) {
         memset(device, 0, sizeof(rtDmeDevice));
@@ -341,10 +345,10 @@ static void rtDmeDeviceFree(rtDmeDevice *device) {
     }
     rtDmePeerListClear(&device->peers);
     if (device->socket != NULL) {
-        rtNetSocketClose(device->socket);
+        RtSocketClose(device->socket);
         device->socket = NULL;
     }
-    rtNetSocketShutdown();
+    RtSocketShutdown();
     rtDmeSlotTableDestroy(device->slotTable);
     device->slotTable = NULL;
     if (device->captureY != NULL) {
@@ -372,11 +376,11 @@ static void rtDmeDeviceFree(rtDmeDevice *device) {
         device->displayV = NULL;
     }
     if (device->upnp != NULL) {
-        rtUpnpDestroy(device->upnp);
+        RtUpnpDestroyContext(device->upnp);
         device->upnp = NULL;
     }
     device->flags = 0;
-    rtDmeFree(&block);
+    RtFreeBlock(&block);
 }
 
 void rtDmeDeviceDestroy(rtDmeDevice *device) {
@@ -403,7 +407,7 @@ unsigned int rtDmeDeviceNextVideoSequence(rtDmeDevice *device) {
 
 int rtDmeDeviceInit(rtDmeDevice *device, const rtDmeDeviceParams *params) {
     char localAddress[RT_NET_ADDRESS_SIZE];
-    rtNetSocketOptions options;
+    RtSocketOptions options;
     rtDmePeerInfo info;
 
     if (device->flags & kDeviceFlagInitialized) {
@@ -432,17 +436,16 @@ int rtDmeDeviceInit(rtDmeDevice *device, const rtDmeDeviceParams *params) {
         device->displayU = rtImageCreate(device->width / 2, device->height / 2);
         device->displayV = rtImageCreate(device->width / 2, device->height / 2);
     }
-    if (rtNetSocketInit() != 0) {
+    if (RtSocketStartup() != 0) {
         return -1;
     }
-    options.type = kSocketType;
-    options.bufferSize = kSocketBufferSize;
+    options.nType = kSocketType;
+    options.nBufferSize = kSocketBufferSize;
     localAddress[0] = '\0';
-    rtNetGetLocalAddress(localAddress);
+    RtSocketGetLocalAddress(localAddress);
     device->localAddress = rtNetParseAddress(localAddress);
     device->localPort = params->port;
-    if (rtNetSocketCreate(&device->socket, NULL, (unsigned short)device->localPort, &options) !=
-        0) {
+    if (RtSocketCreate(&device->socket, NULL, (unsigned short)device->localPort, &options) != 0) {
         return -1;
     }
     memset(&info, 0, sizeof(info));
@@ -478,13 +481,13 @@ int rtDmeDeviceMapPort(rtDmeDevice *device,
     }
     strncpy(device->upnpHost, host, RT_DME_UPNP_HOST_SIZE);
     device->upnpPort = port;
-    if (rtUpnpCreate(&device->upnp, device->socket, (unsigned short)device->localPort, device) !=
-        0) {
+    if (RtUpnpCreateContext(
+            &device->upnp, device->socket, (unsigned short)device->localPort, device) != 0) {
         return -1;
     }
     device->onPortMapped = onPortMapped;
     device->upnpState = RT_DME_UPNP_PENDING;
-    if (rtUpnpBeginPortMapping(
+    if (RtUpnpBeginMapping(
             device->upnp, device->upnpHost, device->upnpPort, rtDmeDeviceOnPortMapped) != 0) {
         device->upnpState = RT_DME_UPNP_IDLE;
         return -1;
@@ -515,12 +518,12 @@ rtDmeDeviceReceive(rtDmeDevice *device, void *buffer, int size, unsigned int *ad
     *address = 0;
     *port = 0;
     // Yes, the binary has the receive write a 16-bit port into the low half of the int.
-    if (rtNetSocketReceiveFrom(device->socket,
-                               text,
-                               (unsigned short *)port,
-                               buffer,
-                               (unsigned short)size,
-                               &received) != 0) {
+    if (RtSocketReceiveFrom(device->socket,
+                            text,
+                            (unsigned short *)port,
+                            buffer,
+                            (unsigned short)size,
+                            &received) != 0) {
         return -1;
     }
     if (received == 0) {
@@ -541,7 +544,7 @@ static int rtDmeDeviceSendDatagram(
     unsigned short sent = 0;
 
     rtNetFormatAddress(address, text);
-    if (rtNetSocketSendTo(
+    if (RtSocketSendTo(
             device->socket, text, (unsigned short)port, data, (unsigned short)length, &sent) != 0) {
         g_dwDeviceBytesUnsent += length;
         return -1;
@@ -1048,7 +1051,7 @@ int rtDmeDeviceUpdate(rtDmeDevice *device) {
     (void)rtDmeGetTime(); // Yes, the binary discards the time.
     codec = 0;
     if (device->upnp != NULL) {
-        rtUpnpUpdate(device->upnp);
+        RtUpnpPollRequest(device->upnp);
         if (device->upnpState == RT_DME_UPNP_PENDING) {
             return 0;
         }
@@ -1412,12 +1415,14 @@ static void rtDmeDeviceResetSpeech(rtDmeDevice *device) {
 }
 
 // NTSC-U/C: 0x002e7194, PAL: 0x002f1104
-static void rtDmeDeviceOnPortMapped(rtUpnpContext *context,
+static void rtDmeDeviceOnPortMapped(RtUpnpContext *context,
                                     int status,
-                                    int result,
+                                    int service,
                                     const char *address,
                                     unsigned short port,
-                                    rtDmeDevice *device) {
+                                    void *owner) {
+    rtDmeDevice *device = owner;
+
     if (device == NULL) {
         return;
     }
@@ -1425,7 +1430,7 @@ static void rtDmeDeviceOnPortMapped(rtUpnpContext *context,
         return;
     }
     if (status == 0) {
-        device->upnpResult = result;
+        device->upnpResult = service;
         device->publicAddress = rtNetParseAddress(address);
         device->publicPort = port;
         device->localPeer->info.publicAddress = device->publicAddress;
@@ -1478,7 +1483,7 @@ static rtDmeConnection *rtDmeConnectionCreate(rtDmeDevice *device, int id, int m
     unsigned int now;
     unsigned int i;
 
-    rtDmeAllocZeroed(&block, sizeof(rtDmeConnection));
+    RtAllocZeroedBlock(&block, sizeof(rtDmeConnection));
     connection = block;
     if (connection == NULL) {
         return NULL;
@@ -1498,8 +1503,8 @@ static rtDmeConnection *rtDmeConnectionCreate(rtDmeDevice *device, int id, int m
     connection->talkTime = now;
     connection->maxPeers = maxPeers;
     connection->slotCount = connection->maxPeers != 0 ? connection->maxPeers : kDefaultSlotCount;
-    rtDmeAllocZeroed((void **)&connection->slots,
-                     connection->slotCount * sizeof(rtDmeConnectionSlot));
+    RtAllocZeroedBlock((void **)&connection->slots,
+                       connection->slotCount * sizeof(rtDmeConnectionSlot));
     for (i = 0; i < connection->slotCount; ++i) {
         connection->slots[i].lastHeard = now;
     }
@@ -1518,11 +1523,11 @@ static void rtDmeConnectionDestroy(rtDmeConnection *connection) {
     }
     rtDmeEndpointListClear(&connection->peers);
     if (connection->slots != NULL) {
-        rtDmeFree((void **)&connection->slots);
+        RtFreeBlock((void **)&connection->slots);
         connection->slots = NULL;
         connection->slotCount = 0;
     }
-    rtDmeFree(&block);
+    RtFreeBlock(&block);
 }
 
 // NTSC-U/C: 0x002e7530, PAL: 0x002f14a0
@@ -1634,8 +1639,8 @@ static int rtDmeConnectionGrowSlots(rtDmeConnection *connection) {
     }
     now = rtDmeGetTime();
     previous = connection->slots;
-    rtDmeAllocZeroed((void **)&connection->slots,
-                     connection->slotCount * kSlotGrowth * sizeof(rtDmeConnectionSlot));
+    RtAllocZeroedBlock((void **)&connection->slots,
+                       connection->slotCount * kSlotGrowth * sizeof(rtDmeConnectionSlot));
     if (connection->slots == NULL) {
         connection->slots = previous;
         return -1;
@@ -1644,7 +1649,7 @@ static int rtDmeConnectionGrowSlots(rtDmeConnection *connection) {
     for (i = 0; i < connection->slotCount; ++i) {
         connection->slots[i] = previousSlots[i];
     }
-    rtDmeFree(&previous);
+    RtFreeBlock(&previous);
     connection->slotCount *= kSlotGrowth;
     for (; i < connection->slotCount; ++i) {
         memset(&connection->slots[i], 0, sizeof(connection->slots[i]));
@@ -2335,7 +2340,7 @@ static rtDmePeer *rtDmePeerCreate(const rtDmePeerInfo *info) {
     void *block = NULL;
     rtDmePeer *peer;
 
-    rtDmeAllocZeroed(&block, sizeof(rtDmePeer));
+    RtAllocZeroedBlock(&block, sizeof(rtDmePeer));
     peer = block;
     if (peer == NULL) {
         return NULL;
@@ -2360,7 +2365,7 @@ static void rtDmePeerDestroy(rtDmePeer *peer) {
         rtReassemblerDestroy(peer->videoFragments);
         peer->videoFragments = NULL;
     }
-    rtDmeFree(&block);
+    RtFreeBlock(&block);
 }
 
 // NTSC-U/C: 0x002e8f70, PAL: 0x002f2ee0
@@ -2540,7 +2545,7 @@ static rtDmeSlotTable *rtDmeSlotTableCreate(rtDmeDevice *device) {
     rtDmeSlotTable *table;
     unsigned int i;
 
-    rtDmeAllocZeroed(&block, sizeof(rtDmeSlotTable));
+    RtAllocZeroedBlock(&block, sizeof(rtDmeSlotTable));
     table = block;
     if (table == NULL) {
         return NULL;
@@ -2563,7 +2568,7 @@ static void rtDmeSlotTableDestroy(rtDmeSlotTable *table) {
     void *block = table;
 
     if (table != NULL) {
-        rtDmeFree(&block);
+        RtFreeBlock(&block);
     }
 }
 
@@ -2702,7 +2707,7 @@ static int rtDmeSlotTableRead(rtDmeSlotTable *table, int *codec, void *buffer, i
 static rtSubbandCodec *rtDmeSubbandCodecCreate(void) {
     void *block = NULL;
 
-    rtDmeAllocZeroed(&block, sizeof(rtSubbandCodec));
+    RtAllocZeroedBlock(&block, sizeof(rtSubbandCodec));
     if (block != NULL) {
         rtDmeSubbandCodecReset(block);
     }
@@ -2714,7 +2719,7 @@ static void rtDmeSubbandCodecDestroy(rtSubbandCodec *codec) {
     void *block = codec;
 
     if (codec != NULL) {
-        rtDmeFree(&block);
+        RtFreeBlock(&block);
     }
 }
 

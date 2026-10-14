@@ -318,15 +318,15 @@ static int RtChannelMeasureRecords(const unsigned char *pbData,
 static int RtChannelSendLink(RtChannelLink *pLink,
                              const unsigned char *pbData,
                              unsigned int uSize,
-                             short *pnSent) {
+                             unsigned short *puSent) {
     unsigned int uChunk;
     int nResult;
 
     uChunk = 0;
-    if (pnSent == NULL) {
+    if (puSent == NULL) {
         return RT_CHANNEL_RESULT_INVALID;
     }
-    *pnSent = 0;
+    *puSent = 0;
     if (RtChannelLinkIsValid(pLink) != 1 || pbData == NULL) {
         return RT_CHANNEL_RESULT_INVALID;
     }
@@ -335,7 +335,7 @@ static int RtChannelSendLink(RtChannelLink *pLink,
         if (uSize > kStreamReadSize) {
             uChunk = kStreamReadSize;
         }
-        nResult = RtSocketSend(pLink->nSocket, pbData, uChunk, pnSent);
+        nResult = RtSocketSend(pLink->pSocket, pbData, uChunk, puSent);
     } else if (pLink->nTransport == RT_CHANNEL_TRANSPORT_DATAGRAM) {
         nResult = RtChannelMeasureRecords(pbData, uSize, RT_CHANNEL_MAX_PACKET, &uChunk);
         if (nResult != 0) {
@@ -345,7 +345,7 @@ static int RtChannelSendLink(RtChannelLink *pLink,
             return 0;
         }
         nResult =
-            RtSocketSendTo(pLink->nSocket, pLink->szAddress, pLink->uPort, pbData, uChunk, pnSent);
+            RtSocketSendTo(pLink->pSocket, pLink->szAddress, pLink->uPort, pbData, uChunk, puSent);
     } else {
         return RT_CHANNEL_RESULT_UNKNOWN_RECORD;
     }
@@ -1554,12 +1554,12 @@ int RtChannelSendBlocking(RtChannelLink *pLink,
     const unsigned char *pbData;
     RtTime start;
     unsigned int uElapsed;
-    short nSent;
+    unsigned short uSent;
     int nResult;
 
     pbData = pData;
     uElapsed = 0;
-    nSent = 0;
+    uSent = 0;
     if (g_bChannelsStarted != 1) {
         return RT_CHANNEL_RESULT_NOT_STARTED;
     }
@@ -1570,12 +1570,12 @@ int RtChannelSendBlocking(RtChannelLink *pLink,
         return RT_CHANNEL_RESULT_CLOCK;
     }
     do {
-        nResult = RtChannelSendLink(pLink, pbData, uSize, &nSent);
+        nResult = RtChannelSendLink(pLink, pbData, uSize, &uSent);
         if (nResult != 0) {
             return nResult;
         }
-        pbData += (unsigned short)nSent;
-        uSize -= (unsigned short)nSent;
+        pbData += uSent;
+        uSize -= uSent;
         if (RtGetMillisecondsSince(&start, &uElapsed) != 0) {
             return RT_CHANNEL_RESULT_CLOCK;
         }
@@ -1590,12 +1590,12 @@ int RtChannelFlushSend(RtChannelLink *pLink) {
     unsigned char *pbData;
     unsigned int uReadable;
     unsigned char bWrapped;
-    short nSent;
+    unsigned short uSent;
     int nResult;
 
     pbData = NULL;
     uReadable = 0;
-    nSent = 0;
+    uSent = 0;
     if (g_bChannelsStarted != 1) {
         return RT_CHANNEL_RESULT_NOT_STARTED;
     }
@@ -1627,31 +1627,28 @@ int RtChannelFlushSend(RtChannelLink *pLink) {
         if (RtGetRingBufferReadPointer(&pLink->send, &pbData) != 0) {
             return RT_CHANNEL_RESULT_RING;
         }
-        nSent = 0;
-        nResult = RtChannelSendLink(pLink, pbData, uReadable, &nSent);
+        uSent = 0;
+        nResult = RtChannelSendLink(pLink, pbData, uReadable, &uSent);
         if (nResult != 0) {
             return nResult;
         }
-        if (nSent != 0 && RtReadTime(&pLink->lastSend) != 0) {
+        if (uSent != 0 && RtReadTime(&pLink->lastSend) != 0) {
             return RT_CHANNEL_RESULT_CLOCK;
         }
-        if (RtConsumeRingBuffer(&pLink->send, (unsigned short)nSent) != 0) {
+        if (RtConsumeRingBuffer(&pLink->send, uSent) != 0) {
             return RT_CHANNEL_RESULT_RING;
         }
         if (RtGetRingBufferReadable(&pLink->send, &uReadable) != 0) {
             return RT_CHANNEL_RESULT_RING;
         }
-        if (uReadable == 0 || nSent == 0) {
+        if (uReadable == 0 || uSent == 0) {
             return 0;
         }
     }
 }
 
 int RtChannelReceive(RtChannelLink *pLink) {
-    union {
-        unsigned short uSize;
-        short nSize;
-    } received;
+    unsigned short uReceived;
     unsigned char *pbWrite;
     unsigned int uRoom;
     char szSender[RT_CHANNEL_ADDRESS_SIZE];
@@ -1662,7 +1659,7 @@ int RtChannelReceive(RtChannelLink *pLink) {
 
     pbWrite = NULL;
     uRoom = 0;
-    received.uSize = 0;
+    uReceived = 0;
     if (g_bChannelsStarted != 1) {
         return RT_CHANNEL_RESULT_NOT_STARTED;
     }
@@ -1679,7 +1676,7 @@ int RtChannelReceive(RtChannelLink *pLink) {
         return 0;
     }
     do {
-        received.uSize = 0;
+        uReceived = 0;
         bFull = 0;
         if (RtGetRingBufferWritePointer(&pLink->receive, &pbWrite) != 0) {
             return RT_CHANNEL_RESULT_RING;
@@ -1690,28 +1687,28 @@ int RtChannelReceive(RtChannelLink *pLink) {
                 uChunk = uRoom;
             }
             nResult = RtChannelMapSocketResult(
-                RtSocketReceive(pLink->nSocket, pbWrite, uChunk, &received.uSize));
+                RtSocketReceive(pLink->pSocket, pbWrite, uChunk, &uReceived));
             if (nResult != 0) {
                 return nResult;
             }
-            if (received.uSize == uChunk) {
+            if (uReceived == uChunk) {
                 bFull = 1;
             }
         } else if (pLink->nTransport == RT_CHANNEL_TRANSPORT_DATAGRAM) {
             if (uRoom >= RT_CHANNEL_MAX_PACKET) {
-                nResult = RtChannelMapSocketResult(RtSocketReceiveFrom(pLink->nSocket,
+                nResult = RtChannelMapSocketResult(RtSocketReceiveFrom(pLink->pSocket,
                                                                        szSender,
                                                                        &uSenderPort,
                                                                        pbWrite,
                                                                        RT_CHANNEL_MAX_PACKET,
-                                                                       &received.nSize));
+                                                                       &uReceived));
                 if (nResult != 0) {
                     return nResult;
                 }
-                if (received.uSize != 0) {
+                if (uReceived != 0) {
                     // Datagrams from another sender are dropped.
                     if (uSenderPort != pLink->uPort || strcmp(szSender, pLink->szAddress) != 0) {
-                        received.uSize = 0;
+                        uReceived = 0;
                     }
                     bFull = 1;
                 } else {
@@ -1721,11 +1718,11 @@ int RtChannelReceive(RtChannelLink *pLink) {
         } else {
             return RT_CHANNEL_RESULT_UNKNOWN_RECORD;
         }
-        if (received.uSize != 0) {
+        if (uReceived != 0) {
             if (RtReadTime(&pLink->lastReceive) != 0) {
                 return RT_CHANNEL_RESULT_CLOCK;
             }
-            if (RtCommitRingBuffer(&pLink->receive, received.uSize) != 0) {
+            if (RtCommitRingBuffer(&pLink->receive, uReceived) != 0) {
                 return RT_CHANNEL_RESULT_RING;
             }
         }

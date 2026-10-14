@@ -54,7 +54,7 @@ void InitRTTask::OnStart() {
                 params.timeoutMs = kMediusTimeoutMs;
                 params.onChat = ChatMsg::OnLobbyChat;
                 params.onNotice = OnNotice;
-                params.reserved04 = 0;
+                params.onMessage069 = nullptr;
                 int nStatus;
                 memset(&nStatus, 0, sizeof(nStatus));
                 nError = rtMediusInitialize(&params, &nStatus);

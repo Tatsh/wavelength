@@ -71,7 +71,7 @@ static unsigned char *g_pbStreamWork;
 // NTSC-U/C: 0x00521434
 static int g_nStreamWorkUsed;
 // NTSC-U/C: 0x00521438
-int g_nStreamSocket;
+RtSocket *g_pStreamSocket;
 // NTSC-U/C: 0x0052143c
 static unsigned short g_uStreamPort;
 // NTSC-U/C: 0x00521440
@@ -136,8 +136,8 @@ static void RtStreamRemoveWork(unsigned char *pbSpan, int nSize) {
 }
 
 // NTSC-U/C: 0x002c6d50, PAL: 0x002d0cc0
-static int RtStreamGetScratchRoom(int nStream) {
-    (void)nStream;
+static int RtStreamGetScratchRoom(RtSocket *pStream) {
+    (void)pStream;
     return kStreamScratchSize - g_nStreamScratchUsed;
 }
 
@@ -159,10 +159,10 @@ static void RtStreamRemoveScratch(unsigned char *pbSpan, int nSize) {
 }
 
 // NTSC-U/C: 0x002c6e08, PAL: 0x002d0d78
-static unsigned char *RtStreamAppendScratch(int nStream, const void *pData, int nSize) {
+static unsigned char *RtStreamAppendScratch(RtSocket *pStream, const void *pData, int nSize) {
     unsigned char *pbDest;
 
-    (void)nStream;
+    (void)pStream;
     pbDest = &g_pbStreamScratch[g_nStreamScratchUsed];
     if (nSize <= 0 || pData == NULL || g_nStreamScratchUsed + nSize > kStreamScratchSize) {
         return NULL;
@@ -173,10 +173,10 @@ static unsigned char *RtStreamAppendScratch(int nStream, const void *pData, int 
 }
 
 // NTSC-U/C: 0x002c6e90, PAL: 0x002d0e00
-static unsigned char *RtStreamAppendWork(int nStream, const void *pData, int nSize) {
+static unsigned char *RtStreamAppendWork(RtSocket *pStream, const void *pData, int nSize) {
     unsigned char *pbDest;
 
-    (void)nStream;
+    (void)pStream;
     pbDest = &g_pbStreamWork[g_nStreamWorkUsed];
     if (nSize <= 0 || pData == NULL || g_nStreamWorkUsed + nSize > kStreamWorkSize) {
         return NULL;
@@ -187,12 +187,14 @@ static unsigned char *RtStreamAppendWork(int nStream, const void *pData, int nSi
 }
 
 // NTSC-U/C: 0x002c6f10, PAL: 0x002d0e80
-static RtStreamSlot *
-RtStreamFindSlot(int nStream, unsigned int uDirection, const RtIpv4Address *pAddress, int nPort) {
+static RtStreamSlot *RtStreamFindSlot(RtSocket *pStream,
+                                      unsigned int uDirection,
+                                      const RtIpv4Address *pAddress,
+                                      int nPort) {
     RtStreamSlot *pSlot;
     int i;
 
-    (void)nStream;
+    (void)pStream;
     if (uDirection >= kStreamDirections || pAddress == NULL || nPort <= 0) {
         return NULL;
     }
@@ -206,8 +208,9 @@ RtStreamFindSlot(int nStream, unsigned int uDirection, const RtIpv4Address *pAdd
 }
 
 // NTSC-U/C: 0x002c6f88, PAL: 0x002d0ef8
-static RtStreamSlot *RtStreamGetSlot(int nStream, unsigned int uDirection, unsigned int uIndex) {
-    (void)nStream;
+static RtStreamSlot *
+RtStreamGetSlot(RtSocket *pStream, unsigned int uDirection, unsigned int uIndex) {
+    (void)pStream;
     if (uDirection >= kStreamDirections || uIndex >= RT_STREAM_MAX_PEERS) {
         return NULL;
     }
@@ -215,8 +218,10 @@ static RtStreamSlot *RtStreamGetSlot(int nStream, unsigned int uDirection, unsig
 }
 
 // NTSC-U/C: 0x002c6fc0, PAL: 0x002d0f30
-static RtStreamSlot *
-RtStreamAllocSlot(int nStream, unsigned int uDirection, const RtIpv4Address *pAddress, int nPort) {
+static RtStreamSlot *RtStreamAllocSlot(RtSocket *pStream,
+                                       unsigned int uDirection,
+                                       const RtIpv4Address *pAddress,
+                                       int nPort) {
     RtStreamSlot *pSlot;
     unsigned int uNow;
     int i;
@@ -225,7 +230,7 @@ RtStreamAllocSlot(int nStream, unsigned int uDirection, const RtIpv4Address *pAd
         return NULL;
     }
     RtGetMilliseconds(&uNow);
-    pSlot = RtStreamGetSlot(nStream, uDirection, g_anStreamSlotCount[uDirection]++);
+    pSlot = RtStreamGetSlot(pStream, uDirection, g_anStreamSlotCount[uDirection]++);
     if (pSlot == NULL) {
         return NULL;
     }
@@ -243,7 +248,7 @@ RtStreamAllocSlot(int nStream, unsigned int uDirection, const RtIpv4Address *pAd
 }
 
 // NTSC-U/C: 0x002c70b8, PAL: 0x002d1028
-static RtStreamSlot *RtStreamGetOrAllocSlot(int nStream,
+static RtStreamSlot *RtStreamGetOrAllocSlot(RtSocket *pStream,
                                             unsigned int uDirection,
                                             const RtIpv4Address *pAddress,
                                             int nPort) {
@@ -252,20 +257,22 @@ static RtStreamSlot *RtStreamGetOrAllocSlot(int nStream,
     if (uDirection >= kStreamDirections || pAddress == NULL || nPort <= 0) {
         return NULL;
     }
-    pSlot = RtStreamFindSlot(nStream, uDirection, pAddress, nPort);
+    pSlot = RtStreamFindSlot(pStream, uDirection, pAddress, nPort);
     if (pSlot == NULL) {
-        pSlot = RtStreamAllocSlot(nStream, uDirection, pAddress, nPort);
+        pSlot = RtStreamAllocSlot(pStream, uDirection, pAddress, nPort);
     }
     return pSlot;
 }
 
 // NTSC-U/C: 0x002c7138, PAL: 0x002d10a8
-static RtStreamLatest *
-RtStreamFindLatest(int nStream, unsigned int uDirection, const RtIpv4Address *pAddress, int nPort) {
+static RtStreamLatest *RtStreamFindLatest(RtSocket *pStream,
+                                          unsigned int uDirection,
+                                          const RtIpv4Address *pAddress,
+                                          int nPort) {
     RtStreamLatest *pLatest;
     int i;
 
-    (void)nStream;
+    (void)pStream;
     if (uDirection >= kStreamDirections || pAddress == NULL || nPort <= 0) {
         return NULL;
     }
@@ -279,7 +286,7 @@ RtStreamFindLatest(int nStream, unsigned int uDirection, const RtIpv4Address *pA
 }
 
 // NTSC-U/C: 0x002c71b8, PAL: 0x002d1128
-static int RtStreamClearLatest(int nStream, const RtIpv4Address *pAddress, int nPort) {
+static int RtStreamClearLatest(RtSocket *pStream, const RtIpv4Address *pAddress, int nPort) {
     RtStreamLatest *pLatest;
     unsigned int uDirection;
 
@@ -287,7 +294,7 @@ static int RtStreamClearLatest(int nStream, const RtIpv4Address *pAddress, int n
         return 1;
     }
     for (uDirection = 0; uDirection < kStreamDirections; ++uDirection) {
-        pLatest = RtStreamFindLatest(nStream, uDirection, pAddress, nPort);
+        pLatest = RtStreamFindLatest(pStream, uDirection, pAddress, nPort);
         if (pLatest != NULL) {
             pLatest->uSequence = 0;
             memset(&pLatest->address, 0, sizeof(RtIpv4Address));
@@ -315,8 +322,8 @@ static int RtStreamResetLatest(void) {
 
 // NTSC-U/C: 0x002c72a0, PAL: 0x002d1210
 static RtStreamLatest *
-RtStreamGetLatest(int nStream, unsigned int uDirection, unsigned int uIndex) {
-    (void)nStream;
+RtStreamGetLatest(RtSocket *pStream, unsigned int uDirection, unsigned int uIndex) {
+    (void)pStream;
     if (uDirection >= kStreamDirections || uIndex >= RT_STREAM_MAX_PEERS) {
         return NULL;
     }
@@ -324,8 +331,10 @@ RtStreamGetLatest(int nStream, unsigned int uDirection, unsigned int uIndex) {
 }
 
 // NTSC-U/C: 0x002c72d8, PAL: 0x002d1248
-static RtStreamLatest *
-RtStreamAddLatest(int nStream, unsigned int uDirection, const RtIpv4Address *pAddress, int nPort) {
+static RtStreamLatest *RtStreamAddLatest(RtSocket *pStream,
+                                         unsigned int uDirection,
+                                         const RtIpv4Address *pAddress,
+                                         int nPort) {
     RtStreamLatest *pLatest;
     int bFound;
     int i;
@@ -343,7 +352,7 @@ RtStreamAddLatest(int nStream, unsigned int uDirection, const RtIpv4Address *pAd
         }
     }
     if (!bFound) {
-        pLatest = RtStreamGetLatest(nStream, uDirection, g_anStreamLatestCount[uDirection]++);
+        pLatest = RtStreamGetLatest(pStream, uDirection, g_anStreamLatestCount[uDirection]++);
     }
     if (pLatest == NULL) {
         return NULL;
@@ -355,7 +364,7 @@ RtStreamAddLatest(int nStream, unsigned int uDirection, const RtIpv4Address *pAd
 }
 
 // NTSC-U/C: 0x002c73d8, PAL: 0x002d1348
-static RtStreamLatest *RtStreamGetOrAddLatest(int nStream,
+static RtStreamLatest *RtStreamGetOrAddLatest(RtSocket *pStream,
                                               unsigned int uDirection,
                                               const RtIpv4Address *pAddress,
                                               int nPort) {
@@ -364,9 +373,9 @@ static RtStreamLatest *RtStreamGetOrAddLatest(int nStream,
     if (uDirection >= kStreamDirections || pAddress == NULL || nPort <= 0) {
         return NULL;
     }
-    pLatest = RtStreamFindLatest(nStream, uDirection, pAddress, nPort);
+    pLatest = RtStreamFindLatest(pStream, uDirection, pAddress, nPort);
     if (pLatest == NULL) {
-        pLatest = RtStreamAddLatest(nStream, uDirection, pAddress, nPort);
+        pLatest = RtStreamAddLatest(pStream, uDirection, pAddress, nPort);
     }
     return pLatest;
 }
@@ -389,7 +398,7 @@ static void RtStreamRemoveReceived(RtStreamSlot *pSlot, unsigned int uIndex) {
     pSlot->apbData[uIndex] = NULL;
     pSlot->anSize[uIndex] = 0;
     for (i = 0; i < g_anStreamSlotCount[kStreamReceive]; ++i) {
-        pOther = RtStreamGetSlot(g_nStreamSocket, kStreamReceive, i);
+        pOther = RtStreamGetSlot(g_pStreamSocket, kStreamReceive, i);
         for (j = 0; j < RT_STREAM_MAX_RECORDS; ++j) {
             if (pbData < pOther->apbData[j]) {
                 pOther->apbData[j] -= nSize;
@@ -414,7 +423,7 @@ static void RtStreamReleaseSent(RtStreamSlot *pSlot, unsigned int uIndex) {
     pbData = pSlot->apbData[uIndex];
     RtStreamRemoveScratch(pbData, nSize);
     for (i = 0; i < g_anStreamSlotCount[kStreamSend]; ++i) {
-        pOther = RtStreamGetSlot(g_nStreamSocket, kStreamSend, i);
+        pOther = RtStreamGetSlot(g_pStreamSocket, kStreamSend, i);
         for (j = 0; j < pOther->nRecordCount; ++j) {
             if (pbData < pOther->apbData[j]) {
                 pOther->apbData[j] -= nSize;
@@ -521,8 +530,10 @@ RtStreamKeepSent(RtStreamSlot *pSlot, unsigned char *pbData, int nSize, unsigned
 }
 
 // NTSC-U/C: 0x002c78f0, PAL: 0x002d1860
-static void
-RtStreamFindOldestOfAll(RtStreamSlot **ppSlot, int *pnIndex, int nStream, unsigned int uDirection) {
+static void RtStreamFindOldestOfAll(RtStreamSlot **ppSlot,
+                                    int *pnIndex,
+                                    RtSocket *pStream,
+                                    unsigned int uDirection) {
     RtStreamSlot *pSlot;
     unsigned int uOldest;
     int i;
@@ -535,7 +546,7 @@ RtStreamFindOldestOfAll(RtStreamSlot **ppSlot, int *pnIndex, int nStream, unsign
     *ppSlot = NULL;
     *pnIndex = 0;
     for (i = 0; i < RT_STREAM_MAX_PEERS; ++i) {
-        pSlot = RtStreamGetSlot(nStream, uDirection, i);
+        pSlot = RtStreamGetSlot(pStream, uDirection, i);
         if (pSlot == NULL || pSlot->nRecordCount == 0) {
             continue;
         }
@@ -590,7 +601,7 @@ static void RtStreamRemoveSendSlot(RtStreamSlot *pSlot) {
 
 // Query each peer whose records wait for acknowledgement, at most once an interval.
 // NTSC-U/C: 0x002c7b10, PAL: 0x002d1a80
-static void RtStreamQueryUnacknowledged(int nStream) {
+static void RtStreamQueryUnacknowledged(RtSocket *pStream) {
     RtStreamSlot *pSlot;
     RtStreamListHeader header;
     char szAddress[RT_STREAM_ADDRESS_SIZE];
@@ -602,7 +613,7 @@ static void RtStreamQueryUnacknowledged(int nStream) {
 
     RtGetMilliseconds(&uNow);
     for (i = 0; i < RT_STREAM_MAX_PEERS; ++i) {
-        pSlot = RtStreamGetSlot(nStream, kStreamSend, i);
+        pSlot = RtStreamGetSlot(pStream, kStreamSend, i);
         if (pSlot == NULL || pSlot->nRecordCount == 0) {
             continue;
         }
@@ -632,7 +643,7 @@ static void RtStreamQueryUnacknowledged(int nStream) {
             }
         }
         if (g_nStreamMergeSize != 0) {
-            RtStreamFlushMerge(g_nStreamSocket, szAddress, uPort, 0);
+            RtStreamFlushMerge(g_pStreamSocket, szAddress, uPort, 0);
             pSlot->uLastQuery = uNow;
         }
     }
@@ -669,10 +680,10 @@ static void RtStreamRemovePeer(const char *pszAddress, int nPort) {
 }
 
 // NTSC-U/C: 0x002c7e08, PAL: 0x002d1d78
-static void RtStreamAddPeer(int nStream, const char *pszAddress, int nPort) {
+static void RtStreamAddPeer(RtSocket *pStream, const char *pszAddress, int nPort) {
     int i;
 
-    (void)nStream;
+    (void)pStream;
     if (pszAddress == NULL || strlen(pszAddress) == 0 || nPort == 0) {
         return;
     }
@@ -689,10 +700,10 @@ static void RtStreamAddPeer(int nStream, const char *pszAddress, int nPort) {
     }
 }
 
-void RtStreamTouchPeer(int nStream, const char *pszAddress, unsigned short uPort) {
+void RtStreamTouchPeer(RtSocket *pStream, const char *pszAddress, unsigned short uPort) {
     unsigned int uIndex;
 
-    (void)nStream;
+    (void)pStream;
     if (pszAddress == NULL || strlen(pszAddress) == 0 || uPort == 0) {
         return;
     }
@@ -703,11 +714,11 @@ void RtStreamTouchPeer(int nStream, const char *pszAddress, unsigned short uPort
 }
 
 // NTSC-U/C: 0x002c7f60, PAL: 0x002d1ed0
-static void RtStreamTimeOutPeers(int nStream) {
+static void RtStreamTimeOutPeers(RtSocket *pStream) {
     unsigned int uElapsed;
     int i;
 
-    (void)nStream;
+    (void)pStream;
     for (i = 0; i < RT_STREAM_MAX_PEERS; ++i) {
         if (g_aStreamPeers[i].szAddress[0] == '\0' || g_aStreamPeers[i].nPort == 0) {
             continue;
@@ -723,7 +734,7 @@ static void RtStreamTimeOutPeers(int nStream) {
     }
 }
 
-int RtStreamTick(int nStream) {
+int RtStreamTick(RtSocket *pStream) {
     unsigned int uElapsed;
     int nResult;
 
@@ -737,15 +748,15 @@ int RtStreamTick(int nStream) {
     (void)RtUpnpPollRequest(g_pStreamUpnp); // Yes, the binary discards the result.
     (void)RtGetMillisecondsSince(&g_streamLastFlush, &uElapsed);
     if (g_uStreamFlushCount != 0 || g_uStreamFlushInterval < uElapsed) {
-        RtStreamFlushTx(nStream);
+        RtStreamFlushTx(pStream);
     }
-    RtStreamQueryUnacknowledged(nStream);
-    RtStreamTimeOutPeers(nStream);
+    RtStreamQueryUnacknowledged(pStream);
+    RtStreamTimeOutPeers(pStream);
     RtStreamReadDatagrams();
     return 0;
 }
 
-int RtStreamDisconnect(int nStream, const char *pszAddress, int nPort, unsigned char bKeep) {
+int RtStreamDisconnect(RtSocket *pStream, const char *pszAddress, int nPort, unsigned char bKeep) {
     RtIpv4Address address;
     RtStreamSlot *pSlot;
     int nResult;
@@ -760,15 +771,15 @@ int RtStreamDisconnect(int nStream, const char *pszAddress, int nPort, unsigned 
         return 0;
     }
     RtStreamParseAddress(&address, pszAddress);
-    pSlot = RtStreamFindSlot(nStream, kStreamSend, &address, nPort);
+    pSlot = RtStreamFindSlot(pStream, kStreamSend, &address, nPort);
     if (pSlot != NULL) {
         RtStreamRemoveSendSlot(pSlot);
     }
-    pSlot = RtStreamFindSlot(nStream, kStreamReceive, &address, nPort);
+    pSlot = RtStreamFindSlot(pStream, kStreamReceive, &address, nPort);
     if (pSlot != NULL) {
         RtStreamRemoveReceiveSlot(pSlot);
     }
-    nResult = RtStreamClearLatest(nStream, &address, nPort);
+    nResult = RtStreamClearLatest(pStream, &address, nPort);
     if (nResult != 0) {
         return nResult;
     }
@@ -782,7 +793,7 @@ int RtStreamDisconnect(int nStream, const char *pszAddress, int nPort, unsigned 
 }
 
 // NTSC-U/C: 0x002c8208, PAL: 0x002d2178
-static int RtStreamSendReliable(int nStream,
+static int RtStreamSendReliable(RtSocket *pStream,
                                 unsigned char uFlags,
                                 const char *pszAddress,
                                 int nPort,
@@ -803,7 +814,7 @@ static int RtStreamSendReliable(int nStream,
         return RT_STREAM_RESULT_TOO_LARGE;
     }
     RtStreamParseAddress(&address, pszAddress);
-    pSlot = RtStreamGetOrAllocSlot(nStream, kStreamSend, &address, nPort);
+    pSlot = RtStreamGetOrAllocSlot(pStream, kStreamSend, &address, nPort);
     if (pSlot == NULL) {
         return RT_STREAM_RESULT_NO_SLOT;
     }
@@ -813,18 +824,18 @@ static int RtStreamSendReliable(int nStream,
     header.uSize = uSize;
     RtStreamMerge(&header, sizeof(header));
     RtStreamMerge(pData, uSize);
-    if (RtStreamFlushMerge(g_nStreamSocket, pszAddress, nPort, uFlags) == 0) {
+    if (RtStreamFlushMerge(g_pStreamSocket, pszAddress, nPort, uFlags) == 0) {
         *puSent = 0;
         return RT_STREAM_RESULT_NOT_SENT;
     }
-    while (RtStreamGetScratchRoom(nStream) < uSize) {
-        RtStreamFindOldestOfAll(&pOldestSlot, &nOldest, nStream, kStreamSend);
+    while (RtStreamGetScratchRoom(pStream) < uSize) {
+        RtStreamFindOldestOfAll(&pOldestSlot, &nOldest, pStream, kStreamSend);
         if (pOldestSlot == NULL) {
             break;
         }
         RtStreamRemoveSent(pOldestSlot, nOldest);
     }
-    pbKept = RtStreamAppendScratch(nStream, pData, uSize);
+    pbKept = RtStreamAppendScratch(pStream, pData, uSize);
     if (pbKept == NULL) {
         *puSent = 0;
         return RT_STREAM_RESULT_NOT_SENT;
@@ -835,7 +846,7 @@ static int RtStreamSendReliable(int nStream,
 }
 
 // NTSC-U/C: 0x002c83b8, PAL: 0x002d2328
-static int RtStreamSendSequenced(int nStream,
+static int RtStreamSendSequenced(RtSocket *pStream,
                                  unsigned char uFlags,
                                  const char *pszAddress,
                                  int nPort,
@@ -854,7 +865,7 @@ static int RtStreamSendSequenced(int nStream,
         return RT_STREAM_RESULT_TOO_LARGE;
     }
     RtStreamParseAddress(&address, pszAddress);
-    pLatest = RtStreamGetOrAddLatest(nStream, kStreamSend, &address, nPort);
+    pLatest = RtStreamGetOrAddLatest(pStream, kStreamSend, &address, nPort);
     if (pLatest == NULL) {
         return RT_STREAM_RESULT_NO_SLOT;
     }
@@ -866,7 +877,7 @@ static int RtStreamSendSequenced(int nStream,
     header.uSize = uSize;
     RtStreamMerge(&header, sizeof(header));
     RtStreamMerge(pData, uSize);
-    if (RtStreamFlushMerge(g_nStreamSocket, pszAddress, nPort, uFlags) != 0) {
+    if (RtStreamFlushMerge(g_pStreamSocket, pszAddress, nPort, uFlags) != 0) {
         *puSent = uSize;
         return 0;
     }
@@ -875,7 +886,7 @@ static int RtStreamSendSequenced(int nStream,
 }
 
 // NTSC-U/C: 0x002c84f0, PAL: 0x002d2460
-static int RtStreamSendPlain(int nStream,
+static int RtStreamSendPlain(RtSocket *pStream,
                              unsigned char uFlags,
                              const char *pszAddress,
                              int nPort,
@@ -884,7 +895,7 @@ static int RtStreamSendPlain(int nStream,
                              unsigned short *puSent) {
     RtStreamRecordHeader header;
 
-    (void)nStream;
+    (void)pStream;
     if (pszAddress == NULL || nPort <= 0 || pData == NULL || uSize == 0 || puSent == NULL) {
         return RT_STREAM_RESULT_INVALID;
     }
@@ -896,7 +907,7 @@ static int RtStreamSendPlain(int nStream,
     header.uSize = uSize;
     RtStreamMerge(&header, sizeof(header));
     RtStreamMerge(pData, uSize);
-    if (RtStreamFlushMerge(g_nStreamSocket, pszAddress, nPort, uFlags) != 0) {
+    if (RtStreamFlushMerge(g_pStreamSocket, pszAddress, nPort, uFlags) != 0) {
         *puSent = uSize;
         return 0;
     }
@@ -904,7 +915,7 @@ static int RtStreamSendPlain(int nStream,
     return RT_STREAM_RESULT_NOT_SENT;
 }
 
-int RtStreamSend(int nStream,
+int RtStreamSend(RtSocket *pStream,
                  int nFlags,
                  const char *pszAddress,
                  int nPort,
@@ -927,13 +938,13 @@ int RtStreamSend(int nStream,
         ++g_uStreamFlushCount;
     }
     if ((nFlags & RT_STREAM_FLAG_GUARANTEED) != 0) {
-        RtStreamAddPeer(nStream, pszAddress, nPort);
-        nResult = RtStreamSendReliable(nStream, nFlags, pszAddress, nPort, pData, uSize, puSent);
+        RtStreamAddPeer(pStream, pszAddress, nPort);
+        nResult = RtStreamSendReliable(pStream, nFlags, pszAddress, nPort, pData, uSize, puSent);
     } else if ((nFlags & RT_STREAM_FLAG_ORDERED) != 0) {
-        RtStreamAddPeer(nStream, pszAddress, nPort);
-        nResult = RtStreamSendSequenced(nStream, nFlags, pszAddress, nPort, pData, uSize, puSent);
+        RtStreamAddPeer(pStream, pszAddress, nPort);
+        nResult = RtStreamSendSequenced(pStream, nFlags, pszAddress, nPort, pData, uSize, puSent);
     } else {
-        nResult = RtStreamSendPlain(nStream, nFlags, pszAddress, nPort, pData, uSize, puSent);
+        nResult = RtStreamSendPlain(pStream, nFlags, pszAddress, nPort, pData, uSize, puSent);
     }
     if (nResult != 0) {
         return nResult;
@@ -975,12 +986,12 @@ static void RtStreamDeliverInOrder(RtStreamSlot *pSlot) {
 }
 
 // NTSC-U/C: 0x002c8880, PAL: 0x002d27f0
-static int RtStreamDeliverAny(int nStream, char *pszAddress, int *pnPort) {
+static int RtStreamDeliverAny(RtSocket *pStream, char *pszAddress, int *pnPort) {
     RtStreamSlot *pSlot;
     unsigned int uRoom;
     int i;
 
-    (void)nStream;
+    (void)pStream;
     uRoom = g_uStreamOutRoom;
     if (pszAddress == NULL || pnPort == NULL) {
         return 0;
@@ -1042,7 +1053,7 @@ static int RtStreamKeepOutOfOrder(const unsigned char *pbDatagram,
                                   const unsigned int *puOffset,
                                   unsigned short uSize,
                                   int nIndex,
-                                  int nStream,
+                                  RtSocket *pStream,
                                   RtStreamSlot *pSlot,
                                   const RtStreamRecordHeader *pHeader) {
     unsigned char *pbKept;
@@ -1057,7 +1068,7 @@ static int RtStreamKeepOutOfOrder(const unsigned char *pbDatagram,
         pSlot->uSequence = pSlot->auSequence[nHighest];
         RtStreamRemoveReceived(pSlot, nHighest);
     }
-    pbKept = RtStreamAppendWork(nStream, &pbDatagram[*puOffset], pHeader->uSize);
+    pbKept = RtStreamAppendWork(pStream, &pbDatagram[*puOffset], pHeader->uSize);
     if (pbKept == NULL) {
         return RT_STREAM_RESULT_NO_SLOT;
     }
@@ -1070,7 +1081,7 @@ static int RtStreamKeepOutOfOrder(const unsigned char *pbDatagram,
 static int RtStreamHandleReliable(const unsigned char *pbDatagram,
                                   unsigned int *puOffset,
                                   unsigned short uSize,
-                                  int nStream,
+                                  RtSocket *pStream,
                                   RtIpv4Address address,
                                   unsigned short uPort,
                                   RtStreamSlot **ppSlot,
@@ -1089,7 +1100,7 @@ static int RtStreamHandleReliable(const unsigned char *pbDatagram,
     if (pHeader == NULL) {
         return RT_STREAM_RESULT_INVALID;
     }
-    pSlot = RtStreamGetOrAllocSlot(nStream, kStreamReceive, &address, uPort);
+    pSlot = RtStreamGetOrAllocSlot(pStream, kStreamReceive, &address, uPort);
     *ppSlot = pSlot;
     if (pSlot == NULL) {
         return RT_STREAM_RESULT_NO_SLOT;
@@ -1132,7 +1143,7 @@ static int RtStreamHandleReliable(const unsigned char *pbDatagram,
     RtGetMilliseconds(&pSlot->auTime[nIndex]);
     if ((pHeader->uFlags & RT_STREAM_FLAG_ORDERED) != 0 && !bInOrder) {
         return RtStreamKeepOutOfOrder(
-            pbDatagram, puOffset, uSize, nIndex, nStream, *ppSlot, pHeader);
+            pbDatagram, puOffset, uSize, nIndex, pStream, *ppSlot, pHeader);
     }
     memcpy(g_pbStreamOut, &pbDatagram[*puOffset], pHeader->uSize);
     g_pbStreamOut += pHeader->uSize;
@@ -1144,7 +1155,7 @@ static int RtStreamHandleReliable(const unsigned char *pbDatagram,
 static int RtStreamHandleLatest(const unsigned char *pbDatagram,
                                 const unsigned int *puOffset,
                                 unsigned short uSize,
-                                int nStream,
+                                RtSocket *pStream,
                                 RtIpv4Address address,
                                 unsigned short uPort,
                                 const RtStreamRecordHeader *pHeader) {
@@ -1154,7 +1165,7 @@ static int RtStreamHandleLatest(const unsigned char *pbDatagram,
     if (pHeader == NULL) {
         return RT_STREAM_RESULT_INVALID;
     }
-    pLatest = RtStreamGetOrAddLatest(nStream, kStreamReceive, &address, uPort);
+    pLatest = RtStreamGetOrAddLatest(pStream, kStreamReceive, &address, uPort);
     if (pLatest == NULL) {
         return RT_STREAM_RESULT_NO_SLOT;
     }
@@ -1171,7 +1182,7 @@ static int RtStreamHandleLatest(const unsigned char *pbDatagram,
 static int RtStreamHandleData(const unsigned char *pbDatagram,
                               unsigned int *puOffset,
                               unsigned short uSize,
-                              int nStream,
+                              RtSocket *pStream,
                               const char *pszAddress,
                               unsigned short uPort,
                               RtStreamSlot **ppSlot,
@@ -1195,10 +1206,10 @@ static int RtStreamHandleData(const unsigned char *pbDatagram,
     }
     if ((header.uFlags & RT_STREAM_FLAG_GUARANTEED) != 0) {
         nResult = RtStreamHandleReliable(
-            pbDatagram, puOffset, uSize, nStream, address, uPort, ppSlot, &header, pbDeliver);
+            pbDatagram, puOffset, uSize, pStream, address, uPort, ppSlot, &header, pbDeliver);
     } else {
         nResult =
-            RtStreamHandleLatest(pbDatagram, puOffset, uSize, nStream, address, uPort, &header);
+            RtStreamHandleLatest(pbDatagram, puOffset, uSize, pStream, address, uPort, &header);
     }
     if (nResult != 0) {
         return nResult;
@@ -1212,7 +1223,7 @@ static int RtStreamHandleData(const unsigned char *pbDatagram,
 static int RtStreamHandleAck(const unsigned char *pbDatagram,
                              unsigned int *puOffset,
                              unsigned short uSize,
-                             int nStream,
+                             RtSocket *pStream,
                              const char *pszAddress,
                              unsigned short uPort) {
     RtStreamListHeader header;
@@ -1239,7 +1250,7 @@ static int RtStreamHandleAck(const unsigned char *pbDatagram,
     // Yes, the binary does not check that the list fits the buffer.
     memcpy(g_auStreamAcked, &pbDatagram[*puOffset], header.uValue * sizeof(g_auStreamAcked[0]));
     *puOffset += header.uValue * sizeof(g_auStreamAcked[0]);
-    pSlot = RtStreamFindSlot(nStream, kStreamSend, &address, uPort);
+    pSlot = RtStreamFindSlot(pStream, kStreamSend, &address, uPort);
     if (pSlot == NULL) {
         return 0;
     }
@@ -1261,7 +1272,7 @@ static int RtStreamHandleAck(const unsigned char *pbDatagram,
 static int RtStreamHandleQuery(const unsigned char *pbDatagram,
                                unsigned int *puOffset,
                                unsigned short uSize,
-                               int nStream,
+                               RtSocket *pStream,
                                const char *pszAddress,
                                unsigned short uPort) {
     RtStreamListHeader header;
@@ -1289,7 +1300,7 @@ static int RtStreamHandleQuery(const unsigned char *pbDatagram,
         *puOffset = uSize;
         return 0;
     }
-    pSlot = RtStreamGetOrAllocSlot(nStream, kStreamReceive, &address, uPort);
+    pSlot = RtStreamGetOrAllocSlot(pStream, kStreamReceive, &address, uPort);
     if (pSlot == NULL) {
         return 0;
     }
@@ -1318,7 +1329,7 @@ static int RtStreamHandleQuery(const unsigned char *pbDatagram,
         }
         RtStreamMerge(&reply, sizeof(reply));
         RtStreamMerge(g_auStreamHeld, nHeld * sizeof(g_auStreamHeld[0]));
-        RtStreamFlushMerge(nStream, pszAddress, uPort, 0);
+        RtStreamFlushMerge(pStream, pszAddress, uPort, 0);
     }
     for (i = 0; i < header.uValue; ++i) {
         bHeld = 0;
@@ -1335,7 +1346,7 @@ static int RtStreamHandleQuery(const unsigned char *pbDatagram,
         nak.uType = RT_STREAM_RECORD_NAK;
         nak.uValue = g_auStreamQueried[i];
         RtStreamMerge(&nak, sizeof(nak));
-        RtStreamFlushMerge(nStream, pszAddress, uPort, 0);
+        RtStreamFlushMerge(pStream, pszAddress, uPort, 0);
     }
     return 0;
 }
@@ -1345,7 +1356,7 @@ static int RtStreamHandleQuery(const unsigned char *pbDatagram,
 static int RtStreamHandleNak(const unsigned char *pbDatagram,
                              unsigned int *puOffset,
                              unsigned short uSize,
-                             int nStream,
+                             RtSocket *pStream,
                              const char *pszAddress,
                              unsigned short uPort) {
     RtStreamListHeader nak;
@@ -1369,7 +1380,7 @@ static int RtStreamHandleNak(const unsigned char *pbDatagram,
         *puOffset = uSize;
         return 0;
     }
-    pSlot = RtStreamFindSlot(nStream, kStreamSend, &address, uPort);
+    pSlot = RtStreamFindSlot(pStream, kStreamSend, &address, uPort);
     if (pSlot == NULL) {
         return 0;
     }
@@ -1391,13 +1402,13 @@ static int RtStreamHandleNak(const unsigned char *pbDatagram,
         }
         RtStreamMerge(&header, sizeof(header));
         RtStreamMerge(pbData, pSlot->anSize[i]);
-        RtStreamFlushMerge(nStream, pszAddress, uPort, 0);
+        RtStreamFlushMerge(pStream, pszAddress, uPort, 0);
         return 0;
     }
     return 0;
 }
 
-int RtStreamReceive(int nStream,
+int RtStreamReceive(RtSocket *pStream,
                     char *pszAddress,
                     int *pnPort,
                     void *pBuffer,
@@ -1432,7 +1443,7 @@ int RtStreamReceive(int nStream,
     g_uStreamOutRoom = uSize;
     *puReceived = 0;
     *pnPort = g_uStreamPort;
-    if (RtStreamDeliverAny(nStream, pszAddress, &port.nPort)) {
+    if (RtStreamDeliverAny(pStream, pszAddress, &port.nPort)) {
         *puReceived = uSize - g_uStreamOutRoom;
         return 0;
     }
@@ -1449,11 +1460,11 @@ int RtStreamReceive(int nStream,
             nResult = RtStreamHandlePlain(g_abStreamDatagram, &uOffset, uDatagramSize);
             break;
         case RT_STREAM_RECORD_DATA:
-            RtStreamAddPeer(nStream, pszAddress, uSender);
+            RtStreamAddPeer(pStream, pszAddress, uSender);
             nResult = RtStreamHandleData(g_abStreamDatagram,
                                          &uOffset,
                                          uDatagramSize,
-                                         nStream,
+                                         pStream,
                                          pszAddress,
                                          uSender,
                                          &pSlot,
@@ -1461,15 +1472,15 @@ int RtStreamReceive(int nStream,
             break;
         case RT_STREAM_RECORD_QUERY:
             nResult = RtStreamHandleQuery(
-                g_abStreamDatagram, &uOffset, uDatagramSize, nStream, pszAddress, uSender);
+                g_abStreamDatagram, &uOffset, uDatagramSize, pStream, pszAddress, uSender);
             break;
         case RT_STREAM_RECORD_ACK:
             nResult = RtStreamHandleAck(
-                g_abStreamDatagram, &uOffset, uDatagramSize, nStream, pszAddress, uSender);
+                g_abStreamDatagram, &uOffset, uDatagramSize, pStream, pszAddress, uSender);
             break;
         case RT_STREAM_RECORD_NAK:
             nResult = RtStreamHandleNak(
-                g_abStreamDatagram, &uOffset, uDatagramSize, nStream, pszAddress, uSender);
+                g_abStreamDatagram, &uOffset, uDatagramSize, pStream, pszAddress, uSender);
             break;
         default:
             nResult = 0;
@@ -1488,8 +1499,11 @@ int RtStreamReceive(int nStream,
     return 0;
 }
 
-int RtStreamMapPort(int nStream, const char *pszGateway, int nPort, RtStreamMappingFunc pfnDone) {
-    (void)nStream;
+int RtStreamMapPort(RtSocket *pStream,
+                    const char *pszGateway,
+                    int nPort,
+                    RtStreamMappingFunc pfnDone) {
+    (void)pStream;
     if (pszGateway == NULL || nPort <= 0 || pfnDone == NULL) {
         return RT_STREAM_RESULT_INVALID;
     }
@@ -1509,7 +1523,7 @@ int RtStreamMapPort(int nStream, const char *pszGateway, int nPort, RtStreamMapp
     return 0;
 }
 
-int RtStreamOpen(int *pnStream,
+int RtStreamOpen(RtSocket **ppStream,
                  int nPort,
                  int nPeerTimeout,
                  int nTxQueueSize,
@@ -1519,7 +1533,7 @@ int RtStreamOpen(int *pnStream,
     RtSocketOptions options;
     int nResult;
 
-    if (pnStream == NULL || nPort <= 0) {
+    if (ppStream == NULL || nPort <= 0) {
         return RT_STREAM_RESULT_INVALID;
     }
     if (g_bStreamOpen == 1) {
@@ -1534,11 +1548,11 @@ int RtStreamOpen(int *pnStream,
     memset(&options, 0, sizeof(options));
     options.nType = RT_SOCKET_DATAGRAM;
     options.nBufferSize = RT_STREAM_DATAGRAM_SIZE;
-    if (RtSocketCreate(&g_nStreamSocket, NULL, nPort, &options) != 0) {
+    if (RtSocketCreate(&g_pStreamSocket, NULL, nPort, &options) != 0) {
         return RT_STREAM_RESULT_FAILED;
     }
     g_uStreamPort = nPort;
-    if (RtUpnpCreateContext(&g_pStreamUpnp, g_nStreamSocket, nPort, NULL) != 0) {
+    if (RtUpnpCreateContext(&g_pStreamUpnp, g_pStreamSocket, nPort, NULL) != 0) {
         return RT_STREAM_RESULT_FAILED;
     }
     if (RtAllocZeroedBlock((void **)&g_apStreamLatest[kStreamSend],
@@ -1583,7 +1597,7 @@ int RtStreamOpen(int *pnStream,
         return RT_STREAM_RESULT_FAILED;
     }
     g_pbStreamTxQueueEnd = g_pbStreamTxQueue;
-    *pnStream = 0;
+    *ppStream = NULL;
     g_bStreamOpen = 1;
     return 0;
 }
@@ -1596,7 +1610,7 @@ static inline int RtStreamFree(void **ppBlock) {
     return 0;
 }
 
-int RtStreamClose(int nStream) {
+int RtStreamClose(RtSocket *pStream) {
     RtTime start;
     unsigned int uElapsed;
     unsigned int uDirection;
@@ -1606,7 +1620,7 @@ int RtStreamClose(int nStream) {
     }
     RtReadClock(&start);
     do {
-        RtStreamTick(nStream);
+        RtStreamTick(pStream);
         RtGetMillisecondsSince(&start, &uElapsed);
     } while (uElapsed < kStreamCloseMilliseconds);
     if (RtStreamFree((void **)&g_pbStreamScratch) || RtStreamFree((void **)&g_pbStreamWork) ||
@@ -1630,7 +1644,7 @@ int RtStreamClose(int nStream) {
         }
     }
     RtUpnpDestroyContext(g_pStreamUpnp);
-    RtSocketClose(g_nStreamSocket);
+    RtSocketClose(g_pStreamSocket);
     g_bStreamOpen = 0;
     return 0;
 }
@@ -1639,7 +1653,7 @@ int RtStreamClose(int nStream) {
 typedef struct {
     char szAddress[RT_STREAM_ADDRESS_SIZE];
     unsigned short uPort;
-    short nSize; // Read unsigned.
+    unsigned short uSize;
 } RtStreamRxEntry;
 
 // The header of a datagram in the queue of datagrams to send.
@@ -1671,11 +1685,11 @@ void RtStreamOnMapping(struct RtUpnpContext *pContext,
                        void *pUser) {
     (void)pUser;
     if (pContext == g_pStreamUpnp && nResult == 0) {
-        g_pfnStreamMapping(0, pszAddress, uPort, 0);
+        g_pfnStreamMapping(NULL, pszAddress, uPort, 0);
         g_nStreamMappedService = nService;
         return;
     }
-    g_pfnStreamMapping(0, "", 0, 1);
+    g_pfnStreamMapping(NULL, "", 0, 1);
 }
 
 void RtStreamReadDatagrams(void) {
@@ -1692,16 +1706,15 @@ void RtStreamReadDatagrams(void) {
             kStreamRxRoom) {
             return;
         }
-        if (RtSocketReceiveFrom(g_nStreamSocket,
+        if (RtSocketReceiveFrom(g_pStreamSocket,
                                 entry.szAddress,
                                 &entry.uPort,
                                 &pbEnd[sizeof(entry)],
                                 RT_STREAM_DATAGRAM_SIZE,
-                                &entry.nSize) != 0) {
+                                &entry.uSize) != 0) {
             return;
         }
-        if ((unsigned short)entry.nSize == 0 ||
-            (unsigned short)entry.nSize > RT_STREAM_DATAGRAM_SIZE) {
+        if (entry.uSize == 0 || entry.uSize > RT_STREAM_DATAGRAM_SIZE) {
             return;
         }
         if (strlen(entry.szAddress) == 0 || entry.uPort == 0) {
@@ -1714,8 +1727,8 @@ void RtStreamReadDatagrams(void) {
             return;
         }
         memcpy(g_pbStreamRxQueueEnd, &entry, sizeof(entry));
-        g_pbStreamRxQueueEnd = &g_pbStreamRxQueueEnd[(unsigned short)entry.nSize + sizeof(entry)];
-        RtStreamTouchPeer(0, entry.szAddress, entry.uPort);
+        g_pbStreamRxQueueEnd = &g_pbStreamRxQueueEnd[entry.uSize + sizeof(entry)];
+        RtStreamTouchPeer(NULL, entry.szAddress, entry.uPort);
     }
 }
 
@@ -1731,7 +1744,7 @@ void RtStreamDropDatagrams(const char *pszAddress, unsigned short uPort) {
     pbEntry = g_pbStreamRxQueue;
     while (pbEntry < g_pbStreamRxQueueEnd) {
         memcpy(&entry, pbEntry, sizeof(entry));
-        uEntrySize = (unsigned short)entry.nSize + sizeof(entry);
+        uEntrySize = entry.uSize + sizeof(entry);
         if (strcmp(entry.szAddress, pszAddress) == 0 && entry.uPort == uPort) {
             memmove(
                 pbEntry, &pbEntry[uEntrySize], (g_pbStreamRxQueueEnd - pbEntry) - (int)uEntrySize);
@@ -1769,27 +1782,26 @@ int RtStreamTakeDatagram(char *pszAddress,
     }
     memcpy(&entry, pbEntry, sizeof(entry));
     pbEntry = &pbEntry[sizeof(entry)];
-    if (g_pbStreamRxQueueEnd - pbEntry < (unsigned short)entry.nSize) {
+    if (g_pbStreamRxQueueEnd - pbEntry < entry.uSize) {
         g_pbStreamRxQueueEnd = g_pbStreamRxQueue;
         return kStreamResultTruncated;
     }
-    memcpy(pbData, pbEntry, (unsigned short)entry.nSize);
+    memcpy(pbData, pbEntry, entry.uSize);
     memcpy(pszAddress, entry.szAddress, RT_STREAM_ADDRESS_SIZE);
     *puPort = entry.uPort;
-    *puSize = entry.nSize;
-    pbEntry = &pbEntry[(unsigned short)entry.nSize];
+    *puSize = entry.uSize;
+    pbEntry = &pbEntry[entry.uSize];
     memmove(g_pbStreamRxQueue, pbEntry, g_pbStreamRxQueueEnd - pbEntry);
-    g_pbStreamRxQueueEnd =
-        &g_pbStreamRxQueueEnd[-(int)((unsigned short)entry.nSize + sizeof(entry))];
+    g_pbStreamRxQueueEnd = &g_pbStreamRxQueueEnd[-(int)(entry.uSize + sizeof(entry))];
     return g_pbStreamRxQueueEnd < g_pbStreamRxQueue ? kStreamResultUnderflow : 0;
 }
 
-int RtStreamGetTxRoom(int nStream) {
-    (void)nStream;
+int RtStreamGetTxRoom(RtSocket *pStream) {
+    (void)pStream;
     return &g_pbStreamTxQueue[g_nStreamTxQueueSize] - g_pbStreamTxQueueEnd;
 }
 
-int RtStreamQueueTx(int nStream,
+int RtStreamQueueTx(RtSocket *pStream,
                     const char *pszAddress,
                     unsigned short uPort,
                     unsigned char uFlags,
@@ -1808,7 +1820,7 @@ int RtStreamQueueTx(int nStream,
     if (g_pbStreamTxQueueEnd < pbEntry) {
         return 0;
     }
-    while (pbEntry < g_pbStreamTxQueueEnd && RtStreamGetTxRoom(nStream) >= nSize) {
+    while (pbEntry < g_pbStreamTxQueueEnd && RtStreamGetTxRoom(pStream) >= nSize) {
         memcpy(&queued, pbEntry, sizeof(queued));
         pbNext = &pbEntry[queued.nSize + sizeof(queued)];
         if (queued.nSize + nSize <= kStreamMergeLimit &&
@@ -1827,9 +1839,9 @@ int RtStreamQueueTx(int nStream,
         }
         pbEntry = pbNext;
     }
-    if (RtStreamGetTxRoom(nStream) < nSize + (int)sizeof(entry)) {
-        RtStreamFlushTx(nStream);
-        if (RtStreamGetTxRoom(nStream) < nSize + (int)sizeof(entry)) {
+    if (RtStreamGetTxRoom(pStream) < nSize + (int)sizeof(entry)) {
+        RtStreamFlushTx(pStream);
+        if (RtStreamGetTxRoom(pStream) < nSize + (int)sizeof(entry)) {
             return 0;
         }
     }
@@ -1860,12 +1872,12 @@ void RtStreamRemoveTx(unsigned char *pbSpan, int nSize) {
     g_pbStreamTxQueueEnd = &g_pbStreamTxQueueEnd[-nSize];
 }
 
-void RtStreamFlushTx(int nStream) {
+void RtStreamFlushTx(RtSocket *pStream) {
     RtStreamTxEntry entry;
-    short nSent;
+    unsigned short uSent;
     int bStopped;
 
-    (void)nStream;
+    (void)pStream;
     bStopped = 0;
     if (g_pbStreamTxQueue >= g_pbStreamTxQueueEnd) {
         return;
@@ -1876,17 +1888,17 @@ void RtStreamFlushTx(int nStream) {
         }
         memcpy(&entry, g_pbStreamTxQueue, sizeof(entry));
         // Yes, the binary discards the result and looks only at the bytes sent.
-        (void)RtSocketSendTo(g_nStreamSocket,
+        (void)RtSocketSendTo(g_pStreamSocket,
                              entry.szAddress,
                              entry.uPort,
                              &g_pbStreamTxQueue[sizeof(entry)],
                              entry.nSize,
-                             &nSent);
-        if ((unsigned short)nSent == entry.nSize) {
+                             &uSent);
+        if (uSent == entry.nSize) {
             if (((signed char)entry.uFlags & RT_STREAM_FLAG_FLUSH) != 0) {
                 --g_uStreamFlushCount;
             }
-            RtStreamRemoveTx(g_pbStreamTxQueue, (unsigned short)nSent + sizeof(entry));
+            RtStreamRemoveTx(g_pbStreamTxQueue, uSent + sizeof(entry));
             RtReadClock(&g_streamLastFlush);
         } else {
             bStopped = 1;
@@ -1894,7 +1906,7 @@ void RtStreamFlushTx(int nStream) {
     } while (g_pbStreamTxQueue < g_pbStreamTxQueueEnd && !bStopped);
 }
 
-void RtStreamSendTx(int nStream,
+void RtStreamSendTx(RtSocket *pStream,
                     const char *pszAddress,
                     unsigned short uPort,
                     unsigned char uFlags,
@@ -1903,14 +1915,14 @@ void RtStreamSendTx(int nStream,
                     unsigned short *puQueued) {
     unsigned int uElapsed;
 
-    if (RtStreamQueueTx(nStream, pszAddress, uPort, uFlags, nSize, pData) != 0) {
+    if (RtStreamQueueTx(pStream, pszAddress, uPort, uFlags, nSize, pData) != 0) {
         *puQueued = nSize;
     } else {
         *puQueued = 0;
     }
     (void)RtGetMillisecondsSince(&g_streamLastFlush, &uElapsed); // Yes, the binary discards it.
     if (g_uStreamFlushCount != 0 || g_uStreamFlushInterval < uElapsed) {
-        RtStreamFlushTx(nStream);
+        RtStreamFlushTx(pStream);
     }
 }
 
@@ -1925,7 +1937,7 @@ void RtStreamMerge(const void *pData, int nSize) {
     g_nStreamMergeSize += nSize;
 }
 
-unsigned short RtStreamFlushMerge(int nStream,
+unsigned short RtStreamFlushMerge(RtSocket *pStream,
                                   const char *pszAddress,
                                   unsigned short uPort,
                                   unsigned char uFlags) {
@@ -1934,7 +1946,7 @@ unsigned short RtStreamFlushMerge(int nStream,
     uQueued = 0;
     if (g_nStreamMergeSize != 0) {
         RtStreamSendTx(
-            nStream, pszAddress, uPort, uFlags, g_abStreamMerge, g_nStreamMergeSize, &uQueued);
+            pStream, pszAddress, uPort, uFlags, g_abStreamMerge, g_nStreamMergeSize, &uQueued);
         g_nStreamMergeSize = 0;
     }
     return uQueued;

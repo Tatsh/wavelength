@@ -1,5 +1,5 @@
-#ifndef LIBRTPITCH_H
-#define LIBRTPITCH_H
+#ifndef RTPITCH_H
+#define RTPITCH_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,16 +22,16 @@ int rtGsmNorm(int value);
 /**
  * Compute the average magnitude difference function of the LPC-10 pitch search for a set of lags.
  *
- * Every array is indexed from 1, the way the LPC-10 analysis passes them. Each sum spans 156
- * samples at a stride of four, starting half the gap between @p maxLag and the lag past the start.
+ * Every array is indexed from zero. Each sum spans 156 samples at a stride of four, starting half
+ * the gap between @p maxLag and the lag past the start.
  *
  * @param speech The speech samples.
- * @param tau The lags, entries 1 to @p lagCount.
+ * @param tau The @p lagCount lags.
  * @param lagCount The number of lags.
  * @param maxLag The largest lag of the search.
- * @param amdf Receives the difference sum of each lag, entries 1 to @p lagCount.
- * @param minIndex Receives the index of the smallest sum.
- * @param maxIndex Receives the index of the largest sum.
+ * @param amdf Receives the difference sum of each lag.
+ * @param minIndex Receives the position of the smallest sum, counted from 1.
+ * @param maxIndex Receives the position of the largest sum, counted from 1.
  * @ghidraAddress NTSC-U/C: 0x002f921c
  * @ghidraAddress PAL: 0x0030318c
  */
