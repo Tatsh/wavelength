@@ -53,6 +53,14 @@ T *FindObject(const char *pszName) {
 } // namespace
 
 float TnlDivider::sFlashTime = 500.0f;
+
+// The static initialiser of the unit, and the routines that run it to construct and to destroy the
+// statics of the boundaries. The same initialiser constructs TnlTrackFX::sFlareSize and
+// TnlStreakGemFX::sDistanceFade.
+// NTSC-U/C: 0x001f1f10, PAL: 0x001facb0
+// NTSC-U/C: 0x001f1ff8, PAL: 0x001fad98
+// NTSC-U/C: 0x001f2018, PAL: 0x001fadb8
+
 Vector3 TnlDivider::sScale{1.0f, 1.0f, 1.0f};
 Vector3 TnlDivider::sOffset{0.0f, 0.0f, 0.0f};
 

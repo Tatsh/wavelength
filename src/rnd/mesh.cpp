@@ -1080,6 +1080,9 @@ void Mesh::SetMat(Mat *pMat) {
     }
 }
 
+void Mesh::DrawFaces([[maybe_unused]] const Transform &xfm) {
+}
+
 void Mesh::SetTrans1Owner(Transformable *pOwner) {
     if (mTrans1Owner != nullptr) {
         mTrans1Owner->RemoveRef(this);

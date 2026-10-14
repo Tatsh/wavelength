@@ -15,6 +15,11 @@ public:
     /** One transform animation of the path, 0x18 bytes. */
     class Segment {
     public:
+        /** Construct a clear segment. The TnlPath constructor inlines it. */
+        Segment() {
+            Reset();
+        }
+
         /**
          * Clear the segment.
          *
@@ -26,8 +31,8 @@ public:
         /**
          * Work out the transform of the segment.
          *
-         * A looping segment wraps the frame into its loop, and a frame past the last key extends
-         * the last move in a straight line.
+         * A looping segment wraps a frame past mLoopStart into its loop. A filtered frame before
+         * the first translation key extends the path from that key along its tangent.
          *
          * @param flTick The tick of the song.
          * @param flTime The time of the song in milliseconds.

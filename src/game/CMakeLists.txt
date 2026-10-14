@@ -86,6 +86,7 @@ set(WAVELENGTH_GAME_SRCS
     remix.cpp
     remixinfo.cpp
     remixhud.cpp
+    remixlogic.cpp
     remixtutorial.cpp
     remoteplayer.cpp
     rotateevent.cpp

@@ -31,6 +31,12 @@ const char *NameOrNull(const UIScreen *pScreen) {
 
 } // namespace
 
+// The static initialiser of the unit, and the routines that run it to construct and to destroy
+// TheTriggerMgr.
+// NTSC-U/C: 0x001ff5d0, PAL: 0x00208370
+// NTSC-U/C: 0x001ff610, PAL: 0x002083b0
+// NTSC-U/C: 0x001ff630, PAL: 0x002083d0
+
 // NTSC-U/C: 0x0043b700
 TriggerMgr TheTriggerMgr;
 

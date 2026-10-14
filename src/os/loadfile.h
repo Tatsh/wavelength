@@ -154,6 +154,20 @@ extern "C" void GzipDecompressFdToRam(int nFile, void *pBuffer);
 int GzipDecompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
 
 /**
+ * Inflate a gzip member in memory into a buffer.
+ *
+ * The name is inferred.
+ *
+ * @param pSource The stored bytes.
+ * @param nLength The number of bytes the inflate may read.
+ * @param pDest The destination.
+ * @return The status of the inflate.
+ * @ghidraAddress NTSC-U/C: 0x002835b0
+ * @ghidraAddress PAL: 0x0028ce60
+ */
+int InflateMemoryBuffer(const void *pSource, int nLength, void *pDest);
+
+/**
  * Report the uncompressed length a gzip member in memory records in its trailer.
  *
  * The length is the last four bytes of the member, read without regard to alignment.

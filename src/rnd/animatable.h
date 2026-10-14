@@ -17,6 +17,7 @@ class Ship;
 class TnlFire;
 class TnlFreestyle;
 class TnlGeom;
+class TnlPath;
 class ViewAnimPlayer;
 namespace Rnd {
 class Animatable;
@@ -87,6 +88,8 @@ class Animatable : public virtual Object {
     friend class ::TnlFreestyle;
     // TnlGeom::Init() copies the filters of a material animation into the animations it creates.
     friend class ::TnlGeom;
+    // TnlPath::Segment::Xfm() filters the frame of its path before it evaluates the path.
+    friend class ::TnlPath;
     // GfxArena and Constructo search mAnims directly before RemoveAnim(), and the image has no
     // accessor for it.
     friend class ::Constructo;

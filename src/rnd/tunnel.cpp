@@ -67,6 +67,9 @@ enum LanePanel {
 // BuildLaneMeshes() gives each lane one flat grid of four rows instead of three panels, and its
 // end caps these texture ranges.
 constexpr int kFlatLaneRows = 4;
+
+// The vertices of a row of a tunnel mesh lie next to each other.
+constexpr int kRowStride = 1;
 constexpr float kFlatLaneCapFirstU = 0.666f;
 constexpr float kFlatLaneCapStepU = 0.334f;
 constexpr float kFlatLaneCap2FirstU = 0.333f;
@@ -847,11 +850,12 @@ void Tunnel::BuildSliceMeshes() {
                 // The coarsest level spans the lane with one strip, from the first row of the left
                 // wall to the second row of the right wall.
                 const int nRightWall = nBase + kLanePanelRightWall * nPanelVerts;
-                pMesh->AddQuadStrip(nBase, nRightWall + nColumns, nColumns, nStep);
+                pMesh->AddQuadStrip(nBase, nRightWall + nColumns, nColumns, kRowStride, nStep);
             } else {
                 for (int nPanel = 0; nPanel < kLaneSegmentCount; ++nPanel) {
                     const int nPanelStart = nBase + nPanel * nPanelVerts;
-                    pMesh->AddQuadStrip(nPanelStart, nPanelStart + nColumns, nColumns, nStep);
+                    pMesh->AddQuadStrip(
+                        nPanelStart, nPanelStart + nColumns, nColumns, kRowStride, nStep);
                 }
             }
             const int nCap = nBase + nCapStart;
@@ -896,10 +900,11 @@ void Tunnel::BuildLaneMeshes() {
         const int nStep = 1 << nLevel;
         Mesh *pMesh = first[nLevel];
         if (nLevel == first.size() - 1) {
-            pMesh->AddQuadStrip(0, (kFlatLaneRows - 1) * nColumns, nColumns, nStep);
+            pMesh->AddQuadStrip(0, (kFlatLaneRows - 1) * nColumns, nColumns, kRowStride, nStep);
         } else {
             for (int nRow = 0; nRow < kFlatLaneRows - 1; ++nRow) {
-                pMesh->AddQuadStrip(nRow * nColumns, (nRow + 1) * nColumns, nColumns, nStep);
+                pMesh->AddQuadStrip(
+                    nRow * nColumns, (nRow + 1) * nColumns, nColumns, kRowStride, nStep);
             }
         }
         pMesh->AddQuad(nCapStart, nCapStart + 1, nCapStart + 2, nCapStart + 3);
@@ -938,7 +943,7 @@ void Tunnel::BuildCellMeshes() {
     LodMesh &first = mCellChains.front();
     for (unsigned nLevel = 0; nLevel < first.size(); ++nLevel) {
         RunLongOperationDrawProc();
-        first[nLevel]->AddQuadStrip(0, nColumns, nColumns, 1 << nLevel);
+        first[nLevel]->AddQuadStrip(0, nColumns, nColumns, kRowStride, 1 << nLevel);
     }
     for (unsigned nCell = 1; nCell < mCellChains.size(); ++nCell) {
         RunLongOperationDrawProc();

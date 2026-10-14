@@ -1248,6 +1248,16 @@ public:
     void SetScrollSpeed(float fSpeed);
 
     /**
+     * Blend the camera of the tunnel towards the arena path or back.
+     *
+     * The name is inferred.
+     *
+     * @param bArena Blend towards the arena path.
+     * @ghidraAddress NTSC-U/C: 0x001b60c8
+     */
+    void BlendToArenaPath(bool bArena);
+
+    /**
      * Show or hide the ship of a player.
      *
      * @param nPlayer The player's index.

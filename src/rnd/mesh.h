@@ -4,8 +4,10 @@
 #include <vector>
 
 #include "math/box.h"
+#include "math/color.h"
 #include "math/sphere.h"
 #include "math/transform.h"
+#include "math/vector2.h"
 #include "math/vector3.h"
 #include "os/hxstr.h"
 #include "rnd/collideable.h"
@@ -251,6 +253,17 @@ public:
      * @ghidraAddress PAL: 0x004d1928
      */
     void SetMat(Mat *pMat);
+
+    /**
+     * Send the faces of the mesh to the GS with the material selected last, as the PlayStation 2
+     * mesh does, without selecting the material of the mesh.
+     *
+     * TnlGeom draws the passes of its standard panel with it.
+     *
+     * @param xfm The transform the vertices are placed by.
+     * @stub
+     */
+    void DrawFaces(const Transform &xfm);
 
     /**
      * Point the mesh at the transform it draws with.
@@ -512,14 +525,14 @@ public:
      * Append the two triangles of a quad to the faces of mFacesOwner.
      *
      * The triangles are (nV0, nV1, nV2) and (nV2, nV1, nV3). The only out-of-line copy sits in the
-     * Rnd::Tunnel unit, and every caller is a Rnd::Tunnel routine.
+     * TnlGeom unit, where the panel meshes are built.
      *
      * @param nV0 The first corner.
      * @param nV1 The corner after nV0 along the first row.
      * @param nV2 The corner of the second row beside nV0.
      * @param nV3 The corner of the second row beside nV1.
-     * @ghidraAddress NTSC-U/C: 0x00466528
-     * @ghidraAddress PAL: 0x004a3f58
+     * @ghidraAddress NTSC-U/C: 0x001cb608
+     * @ghidraAddress PAL: 0x001d43a8
      */
     void AddQuad(unsigned short nV0, unsigned short nV1, unsigned short nV2, unsigned short nV3) {
         std::vector<MeshFace> &faces = mFacesOwner->mFaces;
@@ -530,23 +543,82 @@ public:
     /**
      * Append the quads between two rows of vertices with AddQuad().
      *
-     * Each row holds nCount vertices, and a quad spans nStep of them. The only out-of-line copy
-     * sits in the Rnd::Tunnel unit.
+     * Each row holds nCount vertices nStride apart, and a quad spans nStep of them. The only
+     * out-of-line copy sits in the TnlGeom unit.
      *
      * @param nRowA The first vertex of the first row.
      * @param nRowB The first vertex of the second row.
      * @param nCount The vertices in each row.
+     * @param nStride The distance between two neighbouring vertices of a row.
      * @param nStep The vertices a quad spans.
-     * @ghidraAddress NTSC-U/C: 0x00476598
-     * @ghidraAddress PAL: 0x004b4210
+     * @ghidraAddress NTSC-U/C: 0x001cba30
+     * @ghidraAddress PAL: 0x001d47d0
      */
-    void AddQuadStrip(int nRowA, int nRowB, int nCount, int nStep) {
+    void AddQuadStrip(int nRowA, int nRowB, int nCount, int nStride, int nStep) {
+        const int nOffset = nStep * nStride;
         for (int i = 0; i < nCount - 1; i += nStep) {
-            AddQuad(nRowA, nRowA + nStep, nRowB, nRowB + nStep);
-            nRowA += nStep;
-            nRowB += nStep;
+            AddQuad(nRowA, nRowA + nOffset, nRowB, nRowB + nOffset);
+            nRowA += nOffset;
+            nRowB += nOffset;
         }
     }
+
+    /**
+     * Fill two edges of vertices of mVertsOwner, each running in a straight line between two
+     * corners.
+     *
+     * The vertices of an edge lie nStride apart, and the point, the colour, and both texture
+     * coordinates of each one blend from its first corner to its last. Every vertex of an edge
+     * takes the one normal of that edge. The vertex vector grows to twice nCount first when it is
+     * shorter. The only out-of-line copy sits in the TnlGeom unit.
+     *
+     * @param nEdgeA The first vertex of the first edge.
+     * @param nEdgeB The first vertex of the second edge.
+     * @param nCount The vertices of each edge, at least 2.
+     * @param nStride The distance between two neighbouring vertices of an edge.
+     * @param pointA0 The point of the first vertex of the first edge.
+     * @param pointB0 The point of the first vertex of the second edge.
+     * @param pointA1 The point of the last vertex of the first edge.
+     * @param pointB1 The point of the last vertex of the second edge.
+     * @param texA0 The first texture coordinate at the start of the first edge.
+     * @param texB0 The first texture coordinate at the start of the second edge.
+     * @param texA1 The first texture coordinate at the end of the first edge.
+     * @param texB1 The first texture coordinate at the end of the second edge.
+     * @param tex2A0 The second texture coordinate at the start of the first edge.
+     * @param tex2B0 The second texture coordinate at the start of the second edge.
+     * @param tex2A1 The second texture coordinate at the end of the first edge.
+     * @param tex2B1 The second texture coordinate at the end of the second edge.
+     * @param colorA0 The colour at the start of the first edge.
+     * @param colorB0 The colour at the start of the second edge.
+     * @param colorA1 The colour at the end of the first edge.
+     * @param colorB1 The colour at the end of the second edge.
+     * @param normA The normal of the first edge.
+     * @param normB The normal of the second edge.
+     * @ghidraAddress NTSC-U/C: 0x001cbac8
+     * @ghidraAddress PAL: 0x001d4868
+     */
+    void FillEdges(int nEdgeA,
+                   int nEdgeB,
+                   int nCount,
+                   int nStride,
+                   const Vector3 &pointA0,
+                   const Vector3 &pointB0,
+                   const Vector3 &pointA1,
+                   const Vector3 &pointB1,
+                   const Vector2 &texA0,
+                   const Vector2 &texB0,
+                   const Vector2 &texA1,
+                   const Vector2 &texB1,
+                   const Vector2 &tex2A0,
+                   const Vector2 &tex2B0,
+                   const Vector2 &tex2A1,
+                   const Vector2 &tex2B1,
+                   const Color &colorA0,
+                   const Color &colorB0,
+                   const Color &colorA1,
+                   const Color &colorB1,
+                   const Vector3 &normA,
+                   const Vector3 &normB);
 
     /**
      * Decide whether this mesh draws, and yield its world bounding sphere.

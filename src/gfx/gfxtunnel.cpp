@@ -128,6 +128,12 @@ constexpr int kNameLength = 32;
 
 constexpr const char *kTriggersFile = "Tunnel/triggers.txt";
 
+// The camera blend algorithm and length of BlendToArenaPath().
+constexpr char kArenaBlendAlgorithm[] = "multi";
+constexpr float kArenaBlendMs = 1000.0f;
+constexpr float kArenaBlendOn = 1.0f;
+constexpr float kArenaBlendOff = 0.0f;
+
 constexpr float kPi = 3.1415927f;
 constexpr float kHalfTurnDegrees = 180.0f;
 
@@ -816,7 +822,7 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     SetShowPanels(sShowPanels);
     SetShowDividers(sShowDividers);
     SetShowActivator(sShowActivator);
-    mGeom->mReserved3c = kLeadInBar;
+    mGeom->mMinFirstBar = kLeadInBar;
     if (1.0f <= fSongTicks) {
         mGeom->mEndBar = static_cast<int>(floorf(fSongTicks * mGeom->mBarsPerTick)) + 1;
     }
@@ -2248,6 +2254,16 @@ int GfxTunnel::GetOption() {
 
 void GfxTunnel::SetZoom(float flZoom) {
     mCamFX->SetZoom(flZoom);
+}
+
+void GfxTunnel::BlendToArenaPath(bool bArena) {
+    const float flTime = TheGameDb->mSongTime;
+    mPathBlendCurve.Reset(mPathBlendCurve.Eval(flTime),
+                          bArena ? kArenaBlendOn : kArenaBlendOff,
+                          flTime,
+                          flTime + kArenaBlendMs);
+    mCamFX->SetBlendAlgorithm(kArenaBlendAlgorithm, mPathBlendCurve.mY0);
+    mPathBlending = 1;
 }
 
 void GfxTunnel::SetCatcherShown(int nPlayer, bool bShown) {

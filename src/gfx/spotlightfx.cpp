@@ -24,6 +24,12 @@ constexpr float kTrailTicks = 960.0f;
 float sFadeEndTicks = 960.0f;
 // NTSC-U/C: 0x003afb9c
 float sFadeStartTicks = 480.0f;
+
+// The static initialiser of the unit, and the routine that runs it to construct the scales of the
+// spotlights.
+// NTSC-U/C: 0x001f3518, PAL: 0x001fc2b8
+// NTSC-U/C: 0x001f3580, PAL: 0x001fc320
+
 // The scale of the spotlight transforms on each axis.
 // NTSC-U/C: 0x0043b620
 Vector3 sSpotScale{1.0f, 1.0f, 1.0f};

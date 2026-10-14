@@ -73,6 +73,13 @@ float sViewDistance = 2.0f;
 float sTrailingFrames = 1000.0f;
 // NTSC-U/C: 0x003afc08
 int sSkewCorrection = 1;
+
+// The static initialiser of the unit, and the routines that run it to construct and to destroy the
+// statics of the player cameras.
+// NTSC-U/C: 0x001f9528, PAL: 0x002022c8
+// NTSC-U/C: 0x001f96b0, PAL: 0x00202450
+// NTSC-U/C: 0x001f96d0, PAL: 0x00202470
+
 // NTSC-U/C: 0x0043b670
 Vector3 sPullBack{0.0f, 0.0f, 0.0f};
 // Maps a tick of the intro to how far its tilt remains.

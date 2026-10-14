@@ -1679,6 +1679,10 @@ void GfxManager::SetScrollSpeed(float fSpeed) {
     mTunnel->SetZoom(fSpeed);
 }
 
+void GfxManager::BlendToArenaPath(bool bArena) {
+    mTunnel->BlendToArenaPath(bArena);
+}
+
 void GfxManager::SetPlayerShown(int nPlayer, bool bShown) {
     mShips[nPlayer]->SetShown(bShown);
 }

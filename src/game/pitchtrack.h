@@ -287,6 +287,8 @@ public:
     void EraseSection(int nBar);
 
 private:
+    friend class RemixLogic; // SaveRemix() rates mGems.
+
     /**
      * Show the gems of the track again in place of a previewed pattern.
      *

@@ -722,6 +722,10 @@ void Mat::Refresh() {
     }
 }
 
+int Mat::Select([[maybe_unused]] int nPass) {
+    return 0;
+}
+
 void Mat::SetAmbient(const Color &color) {
     mAmbient = color;
 }

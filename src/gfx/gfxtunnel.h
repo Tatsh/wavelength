@@ -1113,6 +1113,16 @@ public:
     void SetZoom(float flZoom);
 
     /**
+     * Blend the camera towards the arena path or back over one second from the current blend.
+     *
+     * The name is inferred.
+     *
+     * @param bArena Blend towards the arena path.
+     * @ghidraAddress NTSC-U/C: 0x001e1008
+     */
+    void BlendToArenaPath(bool bArena);
+
+    /**
      * Show or hide the catcher of a player.
      *
      * @param nPlayer The player.

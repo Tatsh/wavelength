@@ -63,6 +63,13 @@ float sHeight = 0.04f;
 float sParticleBaseSize = 0.4f;
 // NTSC-U/C: 0x003afc2c
 float sParticleMultiplierBaseSize = 0.7f;
+
+// The static initialiser of the unit, and the routines that run it to construct and to destroy the
+// falloff of the beams. The same initialiser computes the inner prong width of the seekers.
+// NTSC-U/C: 0x001fd5f8, PAL: 0x00206398
+// NTSC-U/C: 0x001fd678, PAL: 0x00206418
+// NTSC-U/C: 0x001fd698, PAL: 0x00206438
+
 // NTSC-U/C: 0x0043b6e0
 Polynomial sLineEnergyFalloff;
 // Alternate spans round the number of points to the nearest and down, which spreads the rounding.

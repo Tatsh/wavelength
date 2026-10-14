@@ -84,12 +84,15 @@ public:
     void NotifyPitch();
 
     /**
-     * Report to TheGameCallback that looping was switched on.
+     * Report to TheGameCallback that looping was switched on or off.
      *
+     * GameCallback::OnLoop() does not receive the flag.
+     *
+     * @param bLooping Whether looping was switched on.
      * @ghidraAddress NTSC-U/C: 0x00136f98
      * @ghidraAddress PAL: 0x001387f8
      */
-    void NotifyLoop();
+    void NotifyLoop(bool bLooping);
 
     /**
      * Report a section change to TheGameCallback.
@@ -129,9 +132,9 @@ public:
     void ClearGems();
 
     /**
-     * Open the remix menu.
+     * Focus or release the remix menu of the first controller.
      *
-     * @param bEnable Ignored.
+     * @param bEnable Focus the menu.
      * @ghidraAddress NTSC-U/C: 0x001371d0
      * @ghidraAddress PAL: 0x00138a30
      */
@@ -362,10 +365,10 @@ public:
     bool mSectionChangeEnabled; /*!< Cleared by "disable_section_change". */
     bool mHudEnabled;           /*!< Cleared by "disable_hud". */
     bool mErasingEnabled;       /*!< Cleared by "disable_erasing". */
-    int mReserved5C;            // +0x5c, cleared by the constructor and not yet identified.
-    int mReserved60;            // +0x60, cleared by the constructor and not yet identified.
-    int mReserved64;            // +0x64, cleared by the constructor and not yet identified.
-    int mReserved68;            // +0x68, cleared by the constructor and not yet identified.
+    int mPreviewEnabled;        /*!< Whether the remix starts or stops a preview. Always 0. */
+    int mStick2Enabled;         /*!< Whether the remix passes on a StickEvent<2>. Always 0. */
+    int mStick6Enabled;         /*!< Whether the remix passes on a StickEvent<6>. Always 0. */
+    int mButton10Enabled;       /*!< Whether the remix passes on a BtnEvent<10>. Always 0. */
     bool mBurnPatterns;         /*!< Set by "burn_patterns". */
     bool mShowPatterns;         /*!< Set by "show_patterns". */
     bool mTempoChangeAllowed;   /*!< Set by "allow_tempo_change". */

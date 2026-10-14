@@ -454,6 +454,18 @@ public:
     virtual void Refresh();
 
     /**
+     * Select one pass of the material for the GS, as the PlayStation 2 material does before a mesh
+     * draws its faces directly.
+     *
+     * TnlGeom selects the passes of its standard panel with it.
+     *
+     * @param nPass The pass.
+     * @return Whether the pass was selected.
+     * @stub
+     */
+    int Select(int nPass);
+
+    /**
      * Set the multi-pass count.
      *
      * @param nMultiPass The new count.

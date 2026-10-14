@@ -178,6 +178,17 @@ public:
     void SetRemixActive(int nActive);
 
     /**
+     * Report the flag SetRemixActive() set.
+     *
+     * The name is inferred.
+     *
+     * @return The flag.
+     * @ghidraAddress NTSC-U/C: 0x0026e190
+     * @ghidraAddress PAL: 0x00277d30
+     */
+    int GetRemixActive() const;
+
+    /**
      * Set mRemixName.
      *
      * @param pszName The name of the saved remix played.
@@ -803,15 +814,6 @@ public:
      * @ghidraAddress PAL: 0x00277b30
      */
     bool FindSongById(DataArray **ppSong, int nId);
-
-    /**
-     * Report the flag SetRemixActive() sets.
-     *
-     * @return The flag.
-     * @ghidraAddress NTSC-U/C: 0x0026e190
-     * @ghidraAddress PAL: 0x00277d30
-     */
-    int GetRemixActive() const;
 
     std::vector<PlayerInfo *> mPlayers; /*!< The players, which the database allocates. */
     String mSong;            /*!< The song of the game, the "song" entry of the "db" section. */

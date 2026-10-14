@@ -40,6 +40,7 @@ set(WAVELENGTH_GFX_SRCS
     tnlgems.cpp
     tnlgeom.cpp
     tnlgrid.cpp
+    tnlpath.cpp
     tnlplayer.cpp
     tnlsabretrail.cpp
     tnlseeker.cpp

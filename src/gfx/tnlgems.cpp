@@ -37,6 +37,13 @@ constexpr int kLoopRotation = 1;
 float sMeshScale = 1.0f;
 // NTSC-U/C: 0x003afbbc
 float sSpriteScale = 1.0f;
+
+// The static initialiser of the unit, and the routines that run it to construct and to destroy the
+// render scales of the gems.
+// NTSC-U/C: 0x001f6100, PAL: 0x001feea0
+// NTSC-U/C: 0x001f6208, PAL: 0x001fefa8
+// NTSC-U/C: 0x001f6228, PAL: 0x001fefc8
+
 // NTSC-U/C: 0x0043b650
 std::map<Rnd::Object *, float> sRenderScales;
 

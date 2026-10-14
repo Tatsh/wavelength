@@ -31,7 +31,7 @@ constexpr int kActionsAfterValue = 2;
 constexpr int kFirstCondition = 1;
 
 constexpr int kFlagSet = 1;
-constexpr float kMillisecondsPerSecond = 1000.0f;
+constexpr float kMsPerSecond = 1000.0f;
 
 } // namespace
 
@@ -55,7 +55,7 @@ void WaitInteractiveRemixTask::OnPoll() {
     DataArray *pCondition = mStep->FindArray(kIdleCondition, false);
     if (pCondition != nullptr) {
         const float fNow = TheSongScheduler.mTime;
-        if (mIdleTime + pCondition->Float(kConditionValue) * kMillisecondsPerSecond < fNow) {
+        if (mIdleTime + pCondition->Float(kConditionValue) * kMsPerSecond < fNow) {
             mIdleTime = fNow;
             RunActions(pCondition, kActionsAfterValue);
         }
@@ -64,7 +64,7 @@ void WaitInteractiveRemixTask::OnPoll() {
     pCondition = mStep->FindArray(kIdle2Condition, false);
     if (pCondition != nullptr) {
         const float fNow = TheSongScheduler.mTime;
-        if (mIdle2Time + pCondition->Float(kConditionValue) * kMillisecondsPerSecond < fNow) {
+        if (mIdle2Time + pCondition->Float(kConditionValue) * kMsPerSecond < fNow) {
             mIdle2Time = fNow;
             RunActions(pCondition, kActionsAfterValue);
         }

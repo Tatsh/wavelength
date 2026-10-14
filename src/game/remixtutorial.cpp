@@ -73,8 +73,9 @@ constexpr int kLoopingLane = 0;
 // A "show_patterns" style command acts only on this exact argument.
 constexpr int kCommandOn = 1;
 
-// The unit's static initialiser at NTSC-U/C: 0x001372c0, PAL: 0x00138b20, and its global
-// constructor at NTSC-U/C: 0x00137300, PAL: 0x00138b60, construct and destroy it.
+// The unit's static initialiser at NTSC-U/C: 0x001372c0, PAL: 0x00138b20, its global constructor
+// at NTSC-U/C: 0x00137300, PAL: 0x00138b60, and its global destructor at NTSC-U/C: 0x00137320,
+// PAL: 0x00138b80, construct and destroy it.
 // NTSC-U/C: 0x00436148
 InputMap gSavedInputMap;
 
@@ -178,10 +179,10 @@ RemixTutorial::RemixTutorial(RemixLogic *pLogic) {
     mSectionChangeEnabled = false;
     mHudEnabled = false;
     mErasingEnabled = false;
-    mReserved5C = 0;
-    mReserved60 = 0;
-    mReserved64 = 0;
-    mReserved68 = 0;
+    mPreviewEnabled = 0;
+    mStick2Enabled = 0;
+    mStick6Enabled = 0;
+    mButton10Enabled = 0;
     mBurnPatterns = false;
     mShowPatterns = false;
     mTempoChangeAllowed = false;
@@ -278,7 +279,7 @@ void RemixTutorial::NotifyPitch() {
     }
 }
 
-void RemixTutorial::NotifyLoop() {
+void RemixTutorial::NotifyLoop([[maybe_unused]] bool bLooping) {
     if (TheGameCallback != nullptr) {
         TheGameCallback->OnLoop();
     }
@@ -319,8 +320,8 @@ void RemixTutorial::ClearGems() {
     mLogic->ClearGems();
 }
 
-void RemixTutorial::EnableMenu([[maybe_unused]] bool bEnable) {
-    mLogic->OpenMenu(); // Yes, the binary opens the menu whatever the argument.
+void RemixTutorial::EnableMenu(bool bEnable) {
+    mLogic->EnableMenu(bEnable);
 }
 
 void RemixTutorial::OpenTempo(bool bOpen) {
