@@ -95,15 +95,6 @@ typedef struct {
     char text[RT_MEDIUS_CHAT_TEXT_SIZE];       /*!< The text. */
 } rtMediusChatMessage;
 
-/** The request of rtMediusSendChat(). 0x70 bytes. */
-typedef struct {
-    char messageId[RT_MEDIUS_MESSAGE_ID_SIZE]; /*!< The identifier, which the game fills itself. */
-    char sessionKey[RT_MEDIUS_SESSION_KEY_SIZE]; /*!< The key of the lobby session. */
-    int messageType;                             /*!< 0 for the chat room, 1 for one account. */
-    int targetId;                                /*!< The account of a line for one account. */
-    char text[RT_MEDIUS_CHAT_TEXT_SIZE];         /*!< The text. */
-} rtMediusChatRequest;
-
 /** Receiver of the lines of chat. */
 typedef void (*rtMediusChatHandler)(int connection,
                                     int type,
@@ -714,6 +705,19 @@ typedef struct {
 } rtMediusBanPlayerRequest;
 
 /**
+ * The request of rtMediusSendChatMessage(). 0x70 bytes.
+ *
+ * The game fills the identifier of the header with the kind of line, the channel, and the name of
+ * the sender, in the layout of the first fields of rtMediusChatMessage.
+ */
+typedef struct {
+    rtMediusRequest header;              /*!< The kind, the channel, the sender, and the session. */
+    int toAccount;                       /*!< 1 to send to targetAccountId alone, otherwise 0. */
+    int targetAccountId;                 /*!< The account that receives the line. */
+    char text[RT_MEDIUS_CHAT_TEXT_SIZE]; /*!< The text. */
+} rtMediusChatRequest;
+
+/**
  * Start the library.
  *
  * @param params The parameters.
@@ -890,16 +894,6 @@ int rtMediusFileList(rtMediusFileListRequest *request, rtMediusFileCallback call
 int rtMediusFileDelete(rtMediusFileRequest *request, rtMediusFileDeleteCallback callback);
 
 /**
- * Send a line of chat.
- *
- * @param request The request.
- * @return 0, or an error code.
- * @ghidraAddress NTSC-U/C: 0x002fb328
- * @ghidraAddress PAL: 0x00305328
- */
-int rtMediusSendChat(rtMediusChatRequest *request);
-
-/**
  * Join a game.
  *
  * @param request The request.
@@ -944,6 +938,16 @@ int rtMediusPlayerReport(rtMediusPlayerReportData *report);
  * @ghidraAddress NTSC-U/C: 0x002fb5b8
  */
 int rtMediusEndGameReport(rtMediusEndGameReportData *report);
+
+/**
+ * Send a line of chat through the lobby server.
+ *
+ * @param request The request.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002fb328
+ * @ghidraAddress PAL: 0x00305328
+ */
+int rtMediusSendChatMessage(rtMediusChatRequest *request);
 
 /**
  * Ban a player from a game.

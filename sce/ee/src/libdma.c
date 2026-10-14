@@ -49,13 +49,13 @@
 // The interrupt enable word occupies 0x1000F590.
 #define DMA_ENABLEW (*(volatile unsigned int *)(uintptr_t)0x1000F590U)
 // Maps a stall source channel number to its D_CTRL STS field value.
-// NTSC-U/C: 0x0077fc70, PAL: 0x00768e00
+// NTSC-U/C: 0x00431dd0
 static const unsigned char STALL_SOURCE_TABLE[] = {0, 0, 0, 3, 0, 1, 0, 0, 2, 0};
 // Maps a stall drain channel number to its D_CTRL STD field value.
-// NTSC-U/C: 0x0077fc80, PAL: 0x00768e10
+// NTSC-U/C: 0x00431de0
 static const unsigned char STALL_DRAIN_TABLE[] = {0, 1, 2, 0, 0, 0, 3, 0, 0, 0};
 // Maps an MFIFO drain channel number to its D_CTRL MFD field value.
-// NTSC-U/C: 0x0077fc90, PAL: 0x00768e20
+// NTSC-U/C: 0x00431df0
 static const unsigned char MFIFO_DRAIN_TABLE[] = {0, 2, 3, 0, 0, 0, 0, 0, 0, 0};
 
 // Spin budgets bound the busy waits.
@@ -86,7 +86,7 @@ typedef struct {
 } DmaChannelRegs;
 
 // The register block of each channel, VIF0 through the scratchpad input.
-// NTSC-U/C: 0x0077fc08, PAL: 0x00768d98
+// NTSC-U/C: 0x003c2ac0
 static DmaChannelRegs *dch[kChannelCount] = {(DmaChannelRegs *)(uintptr_t)0x10008000U,
                                              (DmaChannelRegs *)(uintptr_t)0x10009000U,
                                              (DmaChannelRegs *)(uintptr_t)0x1000A000U,
@@ -100,11 +100,11 @@ static DmaChannelRegs *dch[kChannelCount] = {(DmaChannelRegs *)(uintptr_t)0x1000
 
 // Whether the reset clears each channel. The three SIF channels are excluded, as the IOP link
 // runs over them.
-// NTSC-U/C: 0x0077fc48, PAL: 0x00768dd8
+// NTSC-U/C: 0x00431da8
 static int g_anDmacChannelEnabled[kChannelCount] = {1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
 
 // The environment sceDmaPutEnv() last applied, which sceDmaGetEnv() copies out.
-// NTSC-U/C: 0x0077fca0, PAL: 0x00768e30
+// NTSC-U/C: 0x0052f358
 static sceDmaEnv sceDmaCurrentEnv;
 
 // Raw environment view. Offsets match the image. Members expose every byte the put path validates.
@@ -154,7 +154,7 @@ typedef struct {
     unsigned long long mHigh; // The high word resides at offset 0x08.
 } DmaTag;
 
-// NTSC-U/C: 0x005f36b8, PAL: 0x00596dd8
+// NTSC-U/C: 0x003119d0, PAL: 0x0037df80
 // Clears a byte range one byte at a time.
 static void memclr(unsigned char *pBytes, int nCount) {
     while (nCount-- > 0) {

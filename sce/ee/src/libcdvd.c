@@ -26,6 +26,7 @@ enum {
     kSCmdFuncGetDiskType = 3,
     kSCmdFuncGetError = 4,
     kSCmdFuncTrayReq = 5,
+    kSCmdFuncPowerOff = 33,
     kSCmdFuncMmode = 34,
 
     // The command each caller records while it has an N-command or S-command semaphore.
@@ -39,6 +40,7 @@ enum {
     kSCmdGetError = 3,
     kSCmdReadClock = 15,
     kSCmdTrayReq = 26,
+    kSCmdPowerOff = 33,
     kSCmdMmode = 34,
 
     // Stream commands of the N-command server's stream function.
@@ -96,6 +98,8 @@ enum {
     kReplyInitServerVersion = 2,
     kReplyInitDebug = 3,
     kReplyTrayWords = 2,
+    kReplyPowerOffStatus = 1,
+    kReplyPowerOffWords = 2,
     kReplyClockWords = 4,
     kReplyInitWords = 4,
 };
@@ -105,7 +109,15 @@ typedef struct {
     sceCdlFILE mFile;
     char mName[kSearchNameSize];
     void *pDest;
+    int nLayer;
 } CdSearchFilePacket;
+
+// The S-command call sceCdMmode() makes. The binary reads the function and the sizes from data.
+typedef struct {
+    unsigned int nFunction;
+    int nSendSize;
+    int nReceiveSize;
+} CdSCmdCall;
 
 // The unaligned head and tail of a read. The server delivers them here instead of into the
 // destination, and the completion copies them out.
@@ -142,27 +154,49 @@ typedef union {
     CdStreamPacket mStream;
 } CdNCmdPacket;
 
+// NTSC-U/C: 0x003c2b90
 static int g_nCdDebug;
+// NTSC-U/C: 0x003c2b94
 static int g_nCdCallbackThreadId;
+// NTSC-U/C: 0x003c2b98
 static int g_nCdSCmdCurrent;
+// NTSC-U/C: 0x003c2b9c
 static int g_nCdNCmdCurrent;
+// NTSC-U/C: 0x003c2ba0
 static int g_nCdCallbackSemaId = kNoSemaphore;
-// Nonzero while sceCdInit() or the handler installation runs. The power-off notice is ignored then.
+// NTSC-U/C: 0x003c2ba4. Nonzero while sceCdInit() or the handler installation runs. The power-off
+// notice is ignored then.
 static volatile int g_bCdPOffBlocked;
+// NTSC-U/C: 0x003c2ba8
 static int g_nCdNCmdSemaId = kNoSemaphore;
+// NTSC-U/C: 0x003c2bac
 static int g_nCdSCmdSemaId = kNoSemaphore;
-// Nonzero from the start of an asynchronous N-command until its callback has run.
+// NTSC-U/C: 0x003c2bb0
+static int g_nCdDiskReadySemaId = kNoSemaphore;
+// NTSC-U/C: 0x003c2bb4. Nonzero from the start of an asynchronous N-command until its callback
+// has run.
 static volatile int g_bCdCallbackPending;
-// Only sceCdInit() writes the read mode, and it writes zero.
+// NTSC-U/C: 0x003c2bb8. Only sceCdInit() writes the read mode, and it writes zero.
 static int g_nCdEeReadMode;
+// NTSC-U/C: 0x003c2bbc
 static int g_nCdNCmdBound = kUnbound;
+// NTSC-U/C: 0x003c2bc0
 static int g_nCdPOffInstalled = kUnbound;
+// NTSC-U/C: 0x003c2bc4
 static int g_nCdSearchFileBound = kUnbound;
+// NTSC-U/C: 0x003c2bc8
 static int g_nCdDiskReadyBound = kUnbound;
+// NTSC-U/C: 0x003c2bcc
 static int g_nCdSCmdBound = kUnbound;
+// NTSC-U/C: 0x003c2bd0
 static int g_nCdInitBound = kUnbound;
+// NTSC-U/C: 0x003c2bd4
 static int g_nCdInitCount;
+// NTSC-U/C: 0x003c2bd8
+static CdSCmdCall g_cdMmodeCall = {kSCmdFuncMmode, sizeof(unsigned int), sizeof(unsigned int)};
+// NTSC-U/C: 0x003c2be4
 static volatile int g_nCdCallbackFunction;
+// NTSC-U/C: 0x003c2be8
 static volatile int g_nCdCallbackReport;
 
 // SIF DMA moves whole quadwords from an aligned address. Retail places the RPC send and receive
@@ -174,26 +208,39 @@ static CdNCmdPacket g_cdNCmdSend __attribute__((aligned(kCacheLine)));
 static CdReadEdges g_cdReadEdges __attribute__((aligned(kCacheLine)));
 static volatile unsigned int g_nCdReadProgress __attribute__((aligned(kCacheLine)));
 static sceSifClientData g_cdNCmdClient __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x003c3d80
 static unsigned int g_anCdSCmdReceive[kCacheLine / sizeof(unsigned int)]
     __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x003c41c0
 static unsigned int g_nCdSCmdSend __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x003c4600
+static unsigned int g_anCdDiskReadyReceive[kCacheLine / sizeof(unsigned int)]
+    __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x003c4700
 static sceSifClientData g_cdSCmdClient __attribute__((aligned(kCacheLine)));
 
+// NTSC-U/C: 0x00530dc0
 static sceCdCBFunc g_pfnCdCallback;
+// NTSC-U/C: 0x00530dc4
 static sceCdPOffFunc g_pfnCdPOffCallback;
+// NTSC-U/C: 0x00530dc8
 static void *g_pCdPOffArgument;
-// Cleared when the callback thread ends. It is never read.
-static int g_nCdCallbackThreadEnded;
+// NTSC-U/C: 0x00530dd0
 static int g_nCdCallerThreadId;
+// NTSC-U/C: 0x00530dd8
 static struct ThreadParam g_cdCallerThreadParam;
-static struct ThreadParam g_cdCallbackThreadParam;
+// NTSC-U/C: 0x00530e40
 static CdSearchFilePacket g_cdSearchFilePacket __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x00530f80
 static unsigned int g_anCdSearchFileReceive[kCacheLine / sizeof(unsigned int)]
     __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x00530fc0
 static sceSifClientData g_cdSearchFileClient __attribute__((aligned(kCacheLine)));
 static sceSifClientData g_cdInitClient __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x00531010
 static sceSifClientData g_cdDiskReadyClient __attribute__((aligned(kCacheLine)));
 static unsigned int g_nCdInitSend __attribute__((aligned(kCacheLine)));
+// NTSC-U/C: 0x00531050
 static unsigned int g_nCdDiskReadySend __attribute__((aligned(kCacheLine)));
 
 static int g_nCdStreamActive;
@@ -226,7 +273,7 @@ static inline int sceCdReceivedWord(unsigned int *pReceive) {
     return *(volatile int *)UNCACHED_SEG(pReceive);
 }
 
-// NTSC-U/C: 0x004ff030, PAL: 0x0053dde0
+// NTSC-U/C: 0x00313ea8, PAL: 0x00380538
 static void sceCdAlarmWake(int nAlarm, unsigned short nTime, void *pSema) {
     (void)nAlarm;
     (void)nTime;
@@ -234,7 +281,7 @@ static void sceCdAlarmWake(int nAlarm, unsigned short nTime, void *pSema) {
     ExitHandler();
 }
 
-// NTSC-U/C: 0x004ff058, PAL: 0x0053de08
+// NTSC-U/C: 0x00313ed0, PAL: 0x00380560
 static void sceCdDelayThread(unsigned short nTicks) {
     struct SemaParam sema;
     int nSemaId;
@@ -248,20 +295,7 @@ static void sceCdDelayThread(unsigned short nTicks) {
     DeleteSema(nSemaId);
 }
 
-sceCdCBFunc sceCdCallback(sceCdCBFunc func) {
-    sceCdCBFunc pfnPrevious;
-
-    if (sceCdSync(SCECdNonblock) != 0) {
-        return NULL;
-    }
-    DIntr();
-    pfnPrevious = g_pfnCdCallback;
-    g_pfnCdCallback = func;
-    EIntr();
-    return pfnPrevious;
-}
-
-// NTSC-U/C: 0x004ff118, PAL: 0x0053dec8
+// NTSC-U/C: 0x00313f40
 // Runs in interrupt context when an asynchronous N-command ends.
 static void sceCdRpcEnd(void *pFunction) {
     g_nCdCallbackFunction = *(volatile int *)pFunction;
@@ -280,66 +314,43 @@ static void sceCdRpcEnd(void *pFunction) {
     g_nCdCallbackFunction = 0;
 }
 
-// NTSC-U/C: 0x004ff1b8, PAL: 0x0053df68
-static void sceCdCallbackThread(void *pArgument) {
-    (void)pArgument;
-    for (;;) {
-        WaitSema(g_nCdCallbackSemaId);
-        if (g_nCdCallbackFunction == kCdFuncExitThread) {
-            g_bCdCallbackPending = 0;
-            g_nCdCallbackFunction = 0;
-            g_nCdCallbackThreadId = 0;
-            g_nCdCallbackThreadEnded = 0;
-            ExitDeleteThread();
-        }
-        if (g_nCdDebug > 0) {
-            scePrintf(
-                "sceCdCbfunc= %d sceCdCbfunc_num= %d\n", (int)g_pfnCdCallback, g_nCdCallbackReport);
-        }
-        if (g_pfnCdCallback != NULL && g_nCdCallbackReport != 0) {
-            g_pfnCdCallback(g_nCdCallbackReport);
-        }
-        g_bCdCallbackPending = 0;
-    }
+// Copies the bytes of a read edge to the uncached and the cached alias of their destination.
+static inline void
+CdCopyEdge(unsigned char *pDest, const volatile unsigned char *pSource, int nIndex) {
+    unsigned char nValue = pSource[nIndex];
+
+    ((unsigned char *)UNCACHED_SEG(pDest))[nIndex] = nValue;
+    pDest[nIndex] = nValue;
 }
 
-int sceCdInitEeCB(int priority, void *stack, int stacksize) {
-    if (g_nCdCallbackThreadId != 0) {
-        ChangeThreadPriority(g_nCdCallbackThreadId, priority);
-        return 0;
-    }
-    g_nCdCallerThreadId = GetThreadId();
-    ReferThreadStatus(g_nCdCallerThreadId, &g_cdCallerThreadParam);
-    g_cdCallbackThreadParam.stackSize = stacksize;
-    g_cdCallbackThreadParam.gpReg = _gp;
-    g_cdCallbackThreadParam.entry = sceCdCallbackThread;
-    g_cdCallbackThreadParam.stack = stack;
-    g_cdCallbackThreadParam.initPriority = priority;
-    g_nCdCallbackThreadId = CreateThread(&g_cdCallbackThreadParam);
-    StartThread(g_nCdCallbackThreadId, NULL);
-    return 1;
-}
-
-// NTSC-U/C: 0x004ff350, PAL: 0x0053e100
+// NTSC-U/C: 0x00313ff0, PAL: 0x003805c8
 // Runs in interrupt context when sceCdRead() ends.
 static void cd_read_intr(void *pEdges) {
     volatile CdReadEdges *pUncached = UNCACHED_SEG(pEdges);
+    unsigned char *pDest;
     int i;
 
-    for (i = 0; i < pUncached->nHeadSize; ++i) {
-        pUncached->pHeadDest[i] = pUncached->mHead[i];
+    if (pUncached->nHeadSize > 0) {
+        pDest = pUncached->pHeadDest;
+        for (i = 0; i < pUncached->nHeadSize; ++i) {
+            CdCopyEdge(pDest, pUncached->mHead, i);
+        }
     }
-    for (i = 0; i < pUncached->nTailSize; ++i) {
-        pUncached->pTailDest[i] = pUncached->mTail[i];
+    if (pUncached->nTailSize > 0) {
+        pDest = pUncached->pTailDest;
+        for (i = 0; i < pUncached->nTailSize; ++i) {
+            CdCopyEdge(pDest, pUncached->mTail, i);
+        }
     }
     sceCdRpcEnd((void *)&g_nCdCallbackFunction);
 }
 
-// NTSC-U/C: 0x004ff3f0, PAL: 0x0053e1a0
+// NTSC-U/C: 0x003140a8, PAL: 0x00380728
 static void cmd_sem_init(void) {
     struct SemaParam sema;
 
-    if (g_nCdNCmdSemaId != kNoSemaphore && g_nCdSCmdSemaId != kNoSemaphore) {
+    if (g_nCdNCmdSemaId != kNoSemaphore && g_nCdSCmdSemaId != kNoSemaphore &&
+        g_nCdDiskReadySemaId != kNoSemaphore) {
         return;
     }
     sema.option = 0;
@@ -347,26 +358,32 @@ static void cmd_sem_init(void) {
     sema.initCount = 1;
     g_nCdNCmdSemaId = CreateSema(&sema);
     g_nCdSCmdSemaId = CreateSema(&sema);
+    g_nCdDiskReadySemaId = CreateSema(&sema);
     sema.initCount = 0;
     g_nCdCallbackSemaId = CreateSema(&sema);
     g_bCdCallbackPending = 0;
 }
 
-// NTSC-U/C: 0x004ff488, PAL: 0x0053e238
+// NTSC-U/C: 0x00314160, PAL: 0x003807e0
 static void sceCdSemaExit(void) {
+    int bInterrupts;
+
     if (g_nCdCallbackThreadId != 0) {
         g_nCdCallbackFunction = kCdFuncExitThread;
         SignalSema(g_nCdCallbackSemaId);
     }
     DeleteSema(g_nCdNCmdSemaId);
     DeleteSema(g_nCdSCmdSemaId);
+    DeleteSema(g_nCdDiskReadySemaId);
     DeleteSema(g_nCdCallbackSemaId);
-    DIntr();
+    bInterrupts = DIntr();
     sceSifRemoveCmdHandler(kCdPOffCommand);
-    EIntr();
+    if (bInterrupts) {
+        EIntr();
+    }
 }
 
-// NTSC-U/C: 0x004ff578, PAL: 0x0053e328
+// NTSC-U/C: 0x00314278
 static void sceCdPOffHandler(void *pPacket, void *pData) {
     (void)pPacket;
     (void)pData;
@@ -375,12 +392,16 @@ static void sceCdPOffHandler(void *pPacket, void *pData) {
     }
 }
 
-// NTSC-U/C: 0x004ff5b8, PAL: 0x0053e368
+// NTSC-U/C: 0x003142b8, PAL: 0x00380958
 static int sceCdPOffHandlerInstall(void) {
+    int bInterrupts;
+
     g_bCdPOffBlocked = 1;
-    DIntr();
+    bInterrupts = DIntr();
     sceSifAddCmdHandler(kCdPOffCommand, sceCdPOffHandler, NULL);
-    EIntr();
+    if (bInterrupts) {
+        EIntr();
+    }
     g_bCdPOffBlocked = 0;
     g_nCdPOffInstalled = 1;
     return 1;
@@ -388,19 +409,22 @@ static int sceCdPOffHandlerInstall(void) {
 
 sceCdPOffFunc sceCdPOffCallback(sceCdPOffFunc func, void *addr) {
     sceCdPOffFunc pfnPrevious;
+    int bInterrupts;
 
     if (g_nCdPOffInstalled < 0) {
         sceCdPOffHandlerInstall();
     }
-    DIntr();
+    bInterrupts = DIntr();
     pfnPrevious = g_pfnCdPOffCallback;
     g_pCdPOffArgument = addr;
     g_pfnCdPOffCallback = func;
-    EIntr();
+    if (bInterrupts) {
+        EIntr();
+    }
     return pfnPrevious;
 }
 
-int sceCdSearchFile(sceCdlFILE *fp, const char *name) {
+int sceCdLayerSearchFile(sceCdlFILE *fp, const char *name, int layer) {
     int nResult;
     int i;
 
@@ -430,10 +454,11 @@ int sceCdSearchFile(sceCdlFILE *fp, const char *name) {
     if (i == kSearchNameSize) {
         g_cdSearchFilePacket.mName[kSearchNameSize - 1] = '\0';
     }
-    g_cdSearchFilePacket.pDest = &g_cdSearchFilePacket;
     if (g_nCdDebug > 0) {
         scePrintf("ee call cmd search %s\n", g_cdSearchFilePacket.mName);
     }
+    g_cdSearchFilePacket.nLayer = layer;
+    g_cdSearchFilePacket.pDest = &g_cdSearchFilePacket;
     sceSifWriteBackDCache(&g_cdSearchFilePacket, sizeof(g_cdSearchFilePacket));
     if (sceSifCallRpc(&g_cdSearchFileClient,
                       0,
@@ -458,7 +483,11 @@ int sceCdSearchFile(sceCdlFILE *fp, const char *name) {
     return nResult;
 }
 
-// NTSC-U/C: 0x004ff920, PAL: 0x0053e6d0
+int sceCdSearchFile(sceCdlFILE *fp, const char *name) {
+    return sceCdLayerSearchFile(fp, name, 0);
+}
+
+// NTSC-U/C: 0x00314668, PAL: 0x00380d08
 // Takes the N-command semaphore for a command and binds the server on first use.
 static int ncmd_prechk(int nCommand) {
     cmd_sem_init();
@@ -482,7 +511,7 @@ static int ncmd_prechk(int nCommand) {
     return 1;
 }
 
-// NTSC-U/C: 0x004ffa90, PAL: 0x0053e840
+// NTSC-U/C: 0x003147d8, PAL: 0x00380e78
 // The drive check the N-commands run first. It reports SCECdComplete or SCECdNotReady.
 static int sceCdNCmdDiskReady(void) {
     int nResult;
@@ -536,7 +565,7 @@ int sceCdSyncS(int mode) {
     return sceSifCheckStatRpc(&g_cdSCmdClient.rpcd);
 }
 
-// NTSC-U/C: 0x004ffc38, PAL: 0x0053e9e8
+// NTSC-U/C: 0x00314980, PAL: 0x00381020
 // Takes the S-command semaphore for a command and binds the server on first use.
 static int scmd_prechk(int nCommand) {
     cmd_sem_init();
@@ -641,40 +670,37 @@ int sceCdDiskReady(int mode) {
     int nResult;
 
     if (g_nCdDebug > 0) {
-        scePrintf("DiskReady 0\n");
+        scePrintf("NEW DiskReady Call\n");
     }
     cmd_sem_init();
-    if (PollSema(g_nCdSCmdSemaId) != g_nCdSCmdSemaId) {
-        return SCECdNotReady;
+    if (PollSema(g_nCdDiskReadySemaId) != g_nCdDiskReadySemaId) {
+        return (mode == kDiskReadyModeReportBusy) ? kDiskReadyBusy : SCECdNotReady;
     }
-    if (sceCdSyncS(SCECdNonblock) == 0) {
-        sceSifInitRpc(0);
-        if (g_nCdDiskReadyBound < 0) {
-            sceCdBindServer(
-                &g_cdDiskReadyClient, kCdServerDiskReady, "Libcdvd bind err CdDiskReady\n");
-            g_nCdDiskReadyBound = kBound;
-        }
-        g_nCdDiskReadySend = (unsigned int)mode;
-        sceSifWriteBackDCache(&g_nCdDiskReadySend, sizeof(g_nCdDiskReadySend));
-        if (sceSifCallRpc(&g_cdDiskReadyClient,
-                          0,
-                          0,
-                          &g_nCdDiskReadySend,
-                          sizeof(g_nCdDiskReadySend),
-                          g_anCdSCmdReceive,
-                          sizeof(g_anCdSCmdReceive[0]),
-                          NULL,
-                          NULL) >= 0) {
-            if (g_nCdDebug > 0) {
-                scePrintf("DiskReady ended\n");
-            }
-            nResult = sceCdReceivedWord(g_anCdSCmdReceive);
-            SignalSema(g_nCdSCmdSemaId);
-            return nResult;
-        }
+    sceSifInitRpc(0);
+    if (g_nCdDiskReadyBound < 0) {
+        sceCdBindServer(&g_cdDiskReadyClient, kCdServerDiskReady, "Libcdvd bind err CdDiskReady\n");
+        g_nCdDiskReadyBound = kBound;
     }
-    SignalSema(g_nCdSCmdSemaId);
-    return (mode == kDiskReadyModeReportBusy) ? kDiskReadyBusy : SCECdNotReady;
+    g_nCdDiskReadySend = (unsigned int)mode;
+    sceSifWriteBackDCache(&g_nCdDiskReadySend, sizeof(g_nCdDiskReadySend));
+    if (sceSifCallRpc(&g_cdDiskReadyClient,
+                      0,
+                      0,
+                      &g_nCdDiskReadySend,
+                      sizeof(g_nCdDiskReadySend),
+                      g_anCdDiskReadyReceive,
+                      sizeof(g_anCdDiskReadyReceive[0]),
+                      NULL,
+                      NULL) < 0) {
+        SignalSema(g_nCdDiskReadySemaId);
+        return (mode == kDiskReadyModeReportBusy) ? kDiskReadyBusy : SCECdNotReady;
+    }
+    if (g_nCdDebug > 0) {
+        scePrintf("DiskReady ended\n");
+    }
+    nResult = sceCdReceivedWord(g_anCdDiskReadyReceive);
+    SignalSema(g_nCdDiskReadySemaId);
+    return nResult;
 }
 
 // Sends an S-command whose reply begins with the result word.
@@ -698,9 +724,10 @@ int sceCdMmode(int media) {
     }
     g_nCdSCmdSend = (unsigned int)media;
     sceSifWriteBackDCache(&g_nCdSCmdSend, sizeof(g_nCdSCmdSend));
-    if (sceCdSCmdCall(
-            kSCmdFuncMmode, &g_nCdSCmdSend, sizeof(g_nCdSCmdSend), sizeof(g_anCdSCmdReceive[0])) <
-        0) {
+    if (sceCdSCmdCall(g_cdMmodeCall.nFunction,
+                      &g_nCdSCmdSend,
+                      g_cdMmodeCall.nSendSize,
+                      g_cdMmodeCall.nReceiveSize) < 0) {
         SignalSema(g_nCdSCmdSemaId);
         return 0;
     }
@@ -733,17 +760,6 @@ static int sceCdNCmdCallAsync(unsigned int nServerFunction,
         return 0;
     }
     return 1;
-}
-
-int sceCdStop(void) {
-    if (sceCdNCmdDiskReady() == SCECdNotReady) {
-        return 0;
-    }
-    if (ncmd_prechk(kNCmdStop) == 0) {
-        return 0;
-    }
-    return sceCdNCmdCallAsync(
-        kNCmdFuncStop, SCECdFuncStop, NULL, 0, sceCdRpcEnd, (void *)&g_nCdCallbackFunction);
 }
 
 int sceCdGetDiskType(void) {
@@ -832,23 +848,6 @@ int sceCdRead(unsigned int lsn, unsigned int sectors, void *buf, sceCdRMode *mod
     return nStarted;
 }
 
-int sceCdSeek(unsigned int lsn) {
-    if (sceCdNCmdDiskReady() == SCECdNotReady) {
-        return 0;
-    }
-    if (ncmd_prechk(kNCmdSeek) == 0) {
-        return 0;
-    }
-    g_cdNCmdSend.nSeekLsn = lsn;
-    sceSifWriteBackDCache(&g_cdNCmdSend.nSeekLsn, sizeof(g_cdNCmdSend.nSeekLsn));
-    return sceCdNCmdCallAsync(kNCmdFuncSeek,
-                              SCECdFuncSeek,
-                              &g_cdNCmdSend.nSeekLsn,
-                              sizeof(g_cdNCmdSend.nSeekLsn),
-                              sceCdRpcEnd,
-                              (void *)&g_nCdCallbackFunction);
-}
-
 int sceCdGetError(void) {
     int nResult;
 
@@ -859,6 +858,23 @@ int sceCdGetError(void) {
         SignalSema(g_nCdSCmdSemaId);
         return -1;
     }
+    nResult = sceCdReceivedWord(g_anCdSCmdReceive);
+    SignalSema(g_nCdSCmdSemaId);
+    return nResult;
+}
+
+int sceCdPowerOff(int *stat) {
+    int nResult;
+
+    if (scmd_prechk(kSCmdPowerOff) == 0) {
+        return 0;
+    }
+    if (sceCdSCmdCall(
+            kSCmdFuncPowerOff, NULL, 0, kReplyPowerOffWords * sizeof(g_anCdSCmdReceive[0])) < 0) {
+        SignalSema(g_nCdSCmdSemaId);
+        return 0;
+    }
+    *stat = sceCdReceivedWord(&g_anCdSCmdReceive[kReplyPowerOffStatus]);
     nResult = sceCdReceivedWord(g_anCdSCmdReceive);
     SignalSema(g_nCdSCmdSemaId);
     return nResult;
@@ -887,7 +903,7 @@ int sceCdReadClock(sceCdCLOCK *rtc) {
     return nResult;
 }
 
-// NTSC-U/C: 0x00612038, PAL: 0x00652bc8
+// NTSC-U/C: 0x00315878, PAL: 0x00382130
 // Sends one stream command. The reply packs the sector count in the low half and the drive error
 // in the high half.
 static int sceCdStream(
@@ -945,14 +961,6 @@ int sceCdStStart(unsigned int lsn, sceCdRMode *mode) {
     return sceCdStream(lsn, 0, NULL, kStreamStart, mode);
 }
 
-int sceCdStSeekF(unsigned int lsn) {
-    return sceCdStream(lsn, 0, NULL, kStreamSeekF, &g_cdStreamDefaultMode);
-}
-
-int sceCdStSeek(unsigned int lsn) {
-    return sceCdStream(lsn, 0, NULL, kStreamSeek, &g_cdStreamDefaultMode);
-}
-
 int sceCdStStop(void) {
     g_nCdStreamActive = 0;
     return sceCdStream(0, 0, NULL, kStreamStop, &g_cdStreamDefaultMode);
@@ -1002,27 +1010,4 @@ int sceCdStRead(unsigned int size, unsigned int *buf, unsigned int mode, unsigne
     }
     *err = nLastError;
     return (int)nRead;
-}
-
-int sceCdStPause(void) {
-    g_nCdStreamActive = 0;
-    if (g_nCdDebug > 0) {
-        scePrintf("sceCdStPause call\n");
-    }
-    return sceCdStream(0, 0, NULL, kStreamPause, &g_cdStreamDefaultMode);
-}
-
-int sceCdStResume(void) {
-    g_nCdStreamActive = 1;
-    if (g_nCdDebug > 0) {
-        scePrintf("sceCdStResume call\n");
-    }
-    return sceCdStream(0, 0, NULL, kStreamResume, &g_cdStreamDefaultMode);
-}
-
-int sceCdStStat(void) {
-    if (g_nCdDebug > 0) {
-        scePrintf("sceCdStStat call\n");
-    }
-    return sceCdStream(0, 0, NULL, kStreamStat, &g_cdStreamDefaultMode);
 }

@@ -1,4 +1,4 @@
-# The alarm extension the game installs in the kernel. InstallSyscallPatch() copies the patch to
+# The alarm extension the game installs in the kernel. InitAlarm() copies the patch to
 # kAlarmPatchBase and the handler trampoline to kAlarmHandlerTrampoline. Every address the patch
 # uses is the address of the copy. The alarms count horizontal blanks on timer 3.
 
@@ -56,7 +56,7 @@
     .data
     .align 3
 
-# NTSC-U/C: 0x007690b8, PAL: 0x007ace10
+# NTSC-U/C: 0x003c5060
     .globl g_alarmPatch
 g_alarmPatch:
 AlarmPatchStart:
@@ -594,7 +594,7 @@ AlarmReturnFromHandler:
     .word kSyscallAlarmReturn, kAlarmPatchBase + kAlarmReturnFromHandlerOffset
     .org AlarmPatchStart + kAlarmPatchSize
 
-# NTSC-U/C: 0x007697f8, PAL: 0x007ad550
+# NTSC-U/C: 0x003c57a0
 # Calls an alarm handler in user mode on its own stack and returns to the kernel afterwards.
     .globl g_alarmTrampoline
 g_alarmTrampoline:

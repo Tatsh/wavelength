@@ -4,6 +4,13 @@
 
 #include "os/bufstream.h"
 
+// This file's copies of kBankExtension and kAudioDataExtension are constructed and destroyed by one
+// routine at 0x00251740. The image's static construction and destruction entries at 0x002517b0 and
+// 0x002517d0 call it.
+// NTSC-U/C: 0x00251740, PAL: 0x0025a0e8
+// NTSC-U/C: 0x002517b0, PAL: 0x0025a158
+// NTSC-U/C: 0x002517d0, PAL: 0x0025a178
+
 namespace {
 
 // The data of a read of the audio data file is padded to a multiple of this size.

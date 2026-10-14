@@ -16,14 +16,14 @@ public:
     /** Values of mResult. */
     enum Result {
         kResultSuccess = 0,              /*!< The connection is up. */
-        kResultFailed = -100,            /*!< The configuration could not be opened. */
+        kResultOpenFailed = -100,        /*!< The configuration could not be opened. */
         kResultConfigNotFound = -99,     /*!< The configuration is missing from the card. */
         kResultConfigWrongConsole = -98, /*!< The configuration belongs to another console. */
         kResultConfigError = -97,        /*!< The configuration cannot be read. */
-        kResultNoConfig = -96,           /*!< The configuration number is not on the card. */
+        kResultNoCombination = -96,      /*!< The list has no combination of that number. */
         kResultHardwareError = -95,      /*!< The network adaptor failed. */
         kResultTimeout = -94,            /*!< The connection timed out. */
-        kResultInterfaceDown = -93,      /*!< The interface went down while connecting. */
+        kResultFailed = -93,             /*!< The interface reported a failure. */
     };
 
     /**

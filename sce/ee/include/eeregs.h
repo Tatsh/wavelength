@@ -1,6 +1,8 @@
 #ifndef EEREGS_H
 #define EEREGS_H
 
+#include <eetypes.h>
+
 /**
  * Emotion Engine and GS hardware registers. Each macro is a pointer to its register, as in
  * `*D_STAT = value`.
@@ -15,8 +17,16 @@
 
 /** IPU command register, which also reads back the data of the last command. */
 #define IPU_CMD ((volatile unsigned int *)0x10002000)
+/** IPU command register read whole, with the busy bit at bit 63 above the data of the command. */
+#define IPU_CMD_DATA ((volatile unsigned long long *)0x10002000)
 /** IPU control register. */
 #define IPU_CTRL ((volatile unsigned int *)0x10002010)
+/** IPU bitstream position register. */
+#define IPU_BP ((volatile unsigned int *)0x10002020)
+/** IPU register of the next 32 bitstream bits, with the busy bit at bit 63. */
+#define IPU_TOP ((volatile unsigned long long *)0x10002030)
+/** IPU input FIFO, written a whole quadword at a time. */
+#define IPU_IN_FIFO ((volatile u_long128 *)0x10007010)
 
 /** DMA channel 0 (VIF0) control register. */
 #define D0_CHCR ((volatile unsigned int *)0x10008000)
@@ -44,8 +54,24 @@
 #define D4_QWC ((volatile unsigned int *)0x1000b420)
 /** DMA channel 4 (to the IPU) tag address register. */
 #define D4_TADR ((volatile unsigned int *)0x1000b430)
+/** DMA channel 8 (from the scratchpad) control register. */
+#define D8_CHCR ((volatile unsigned int *)0x1000d000)
 /** DMA channel 8 (from the scratchpad) memory address register. */
 #define D8_MADR ((volatile unsigned int *)0x1000d010)
+/** DMA channel 8 (from the scratchpad) quadword count register. */
+#define D8_QWC ((volatile unsigned int *)0x1000d020)
+/** DMA channel 8 (from the scratchpad) scratchpad address register. */
+#define D8_SADR ((volatile unsigned int *)0x1000d080)
+/** DMA channel 9 (to the scratchpad) control register. */
+#define D9_CHCR ((volatile unsigned int *)0x1000d400)
+/** DMA channel 9 (to the scratchpad) memory address register. */
+#define D9_MADR ((volatile unsigned int *)0x1000d410)
+/** DMA channel 9 (to the scratchpad) quadword count register. */
+#define D9_QWC ((volatile unsigned int *)0x1000d420)
+/** DMA channel 9 (to the scratchpad) tag address register. */
+#define D9_TADR ((volatile unsigned int *)0x1000d430)
+/** DMA channel 9 (to the scratchpad) scratchpad address register. */
+#define D9_SADR ((volatile unsigned int *)0x1000d480)
 /** DMA controller control register. */
 #define D_CTRL ((volatile unsigned int *)0x1000e000)
 /** The low byte of the DMA controller control register, which holds the MFIFO and stall fields. */
@@ -56,6 +82,8 @@
 #define D_RBSR ((volatile unsigned int *)0x1000e040)
 /** DMA controller MFIFO ring base register. */
 #define D_RBOR ((volatile unsigned int *)0x1000e050)
+/** DMA controller read register of the hold state of every channel. */
+#define D_ENABLER ((volatile unsigned int *)0x1000f520)
 /** DMA controller write register of the hold state of every channel. */
 #define D_ENABLEW ((volatile unsigned int *)0x1000f590)
 

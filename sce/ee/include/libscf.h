@@ -42,19 +42,41 @@ void sceScfSetT10kConfig(const sceScfT10kConfig *pConfig);
  * A tool console reports a fixed default instead.
  *
  * @return One of the language codes.
- * @ghidraAddress PAL: 0x005a59f0
+ * @ghidraAddress NTSC-U/C: 0x00315a90
+ * @ghidraAddress PAL: 0x00382348
  */
 int sceScfGetLanguage(void);
 
 /**
+ * Report the console's time zone.
+ *
+ * A tool console reports a fixed default instead, and a version 0 configuration Tokyo time.
+ *
+ * @return The offset from UTC in minutes.
+ * @ghidraAddress NTSC-U/C: 0x00315b18
+ * @ghidraAddress PAL: 0x003823d0
+ */
+int sceScfGetTimeZone(void);
+
+/**
+ * Report whether summer time applies.
+ *
+ * A tool console reports a fixed default instead, and a version 0 configuration zero.
+ *
+ * @return 1 while summer time applies, otherwise 0.
+ * @ghidraAddress NTSC-U/C: 0x00315b70
+ * @ghidraAddress PAL: 0x00382428
+ */
+int sceScfGetSummerTime(void);
+
+/**
  * Convert a clock from the console's Japan-time RTC to local time, in place.
  *
- * Applies the configured time-zone offset and summer-time setting. The binary does not include the
- * name, and its null-argument assertion records only the file, "libscf.c".
+ * Applies the configured time-zone offset and summer-time setting.
  *
  * @param pClock A clock sceCdReadClock() read.
- * @ghidraAddress NTSC-U/C: 0x005f3650
- * @ghidraAddress PAL: 0x005a6258
+ * @ghidraAddress NTSC-U/C: 0x00315f40
+ * @ghidraAddress PAL: 0x003827f8
  */
 void sceScfGetLocalTimefromRTC(sceCdCLOCK *pClock);
 

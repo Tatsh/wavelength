@@ -13,44 +13,24 @@ enum {
 enum {
     kHeapFunctionAlloc = 1,
     kHeapFunctionFree = 2,
-    kHeapFunctionLoad = 3,
-    kHeapFunctionAllocSysMemory = 4,
 
-    kHeapPathSize = 252,
     kBindRetryDelay = 0x100000,
 };
 
-// The argument of kHeapFunctionAllocSysMemory, in the order of the IOP allocator.
-typedef struct {
-    unsigned int nSize;
-    int nType;
-    void *pAddr;
-} HeapAllocSysMemoryArgs;
-
-// The argument of kHeapFunctionLoad. Only the path up to its terminator is sent.
-typedef struct {
-    void *pAddr;
-    char szPath[kHeapPathSize];
-} HeapLoadArgs;
-
-// NTSC-U/C: 0x0077d68c, PAL: 0x007c1484, negative until the client is bound.
+// NTSC-U/C: 0x003c486c, negative until the client is bound.
 static int _bind = -1;
 
-// NTSC-U/C: 0x008e5180, PAL: 0x0092a180
+// NTSC-U/C: 0x00536ac0
 static sceSifClientData g_heapClient __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e51c0, PAL: 0x0092a1c0. SIF DMA needs the 64-byte alignment retail gives it.
+// NTSC-U/C: 0x00536b00. SIF DMA needs the 64-byte alignment retail gives it.
 static int g_nHeapReceive __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e5200, PAL: 0x0092a200. SIF DMA needs the 64-byte alignment retail gives it.
+// NTSC-U/C: 0x00536b40. SIF DMA needs the 64-byte alignment retail gives it.
 static union {
     unsigned int nSize;
     void *pAddr;
-    HeapAllocSysMemoryArgs allocSysMemory;
 } g_heapSend __attribute__((aligned(64)));
-
-// NTSC-U/C: 0x008e5240, PAL: 0x0092a240. SIF DMA needs the 64-byte alignment retail gives it.
-static HeapLoadArgs g_heapLoad __attribute__((aligned(64)));
 
 int sceSifInitIopHeap(void) {
     int nDelay;
@@ -89,27 +69,6 @@ void *sceSifAllocIopHeap(unsigned int size) {
     return (void *)(uintptr_t)g_nHeapReceive;
 }
 
-void *sceSifAllocSysMemory(int type, unsigned int size, void *addr) {
-    if (_bind < 0) {
-        return NULL;
-    }
-    g_heapSend.allocSysMemory.nSize = size;
-    g_heapSend.allocSysMemory.nType = type;
-    g_heapSend.allocSysMemory.pAddr = addr;
-    if (sceSifCallRpc(&g_heapClient,
-                      kHeapFunctionAllocSysMemory,
-                      0,
-                      &g_heapSend,
-                      sizeof(g_heapSend.allocSysMemory),
-                      &g_nHeapReceive,
-                      sizeof(g_nHeapReceive),
-                      NULL,
-                      NULL) < 0) {
-        return NULL;
-    }
-    return (void *)(uintptr_t)g_nHeapReceive;
-}
-
 int sceSifFreeIopHeap(void *addr) {
     if (_bind < 0) {
         return 0;
@@ -131,35 +90,4 @@ int sceSifFreeIopHeap(void *addr) {
 
 int sceSifFreeSysMemory(void *addr) {
     return sceSifFreeIopHeap(addr);
-}
-
-int sceSifLoadIopHeap(const char *filename, void *addr) {
-    int nLength;
-
-    if (_bind < 0) {
-        return 0;
-    }
-    for (nLength = 0; nLength < kHeapPathSize; ++nLength) {
-        g_heapLoad.szPath[nLength] = filename[nLength];
-        if (filename[nLength] == '\0') {
-            break;
-        }
-    }
-    if (nLength == kHeapPathSize) {
-        nLength = kHeapPathSize - 1;
-    }
-    g_heapLoad.pAddr = addr;
-    g_heapLoad.szPath[kHeapPathSize - 1] = '\0';
-    if (sceSifCallRpc(&g_heapClient,
-                      kHeapFunctionLoad,
-                      0,
-                      &g_heapLoad,
-                      (int)(offsetof(HeapLoadArgs, szPath) + nLength + 1),
-                      &g_nHeapReceive,
-                      sizeof(g_nHeapReceive),
-                      NULL,
-                      NULL) < 0) {
-        return -1;
-    }
-    return g_nHeapReceive;
 }

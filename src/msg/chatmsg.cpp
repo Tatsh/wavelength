@@ -1,8 +1,10 @@
 #include "msg/chatmsg.h"
 
-#include <cstring>
 #include <list>
+#include <string.h>
 #include <vector>
+
+#include <librtmedius.h>
 
 #include "netflow/launchpadrt.h"
 #include "netflow/lobbyrt.h"
@@ -11,64 +13,75 @@
 #include "os/string.h"
 #include "os/system.h"
 
-// The sink of one channel of chat.
+namespace {
+
+// The identifier of a sender outside a session.
+constexpr int kNoPlayer = -2;
+
+// The first letter of the channel letters.
+constexpr char kChannelBase = 'a';
+
+// Kinds of chat line, the first character of the identifier of a request.
+constexpr char kLineFinal = 'f';
+constexpr char kLinePart = 'p';
+constexpr char kLinePowerOff = 'd';
+
+// The channel whose senders the local player can mute.
+constexpr int kMutableChannel = 1;
+
+// The characters of one part of a line.
+constexpr int kPartLength = 32;
+
+// The characters of the sender's name a request carries.
+constexpr int kRequestNameLength = 19;
+
+// The flood level above which a line is refused, the level a line adds, and the drain per second.
+constexpr float kFloodLimit = 4.0f;
+constexpr float kFloodPerLine = 1.0f;
+constexpr float kFloodDrainPerSecond = -0.33f;
+
+// Seconds per millisecond.
+constexpr float kSecondsPerMs = 0.001f;
+
+// The sink of one channel.
 struct ChatHandler {
     int mChannel;   // The channel.
     MsgSink *mSink; // The sink.
 };
 
-// The text received so far of a line that arrives in parts.
+// A line from the lobby server whose remaining parts have not arrived.
 struct PartialMsg {
-    int mAccountId; // The sender.
+    int mAccountId; // The sender's account.
     int mChannel;   // The channel.
-    String mText;   // The parts received.
+    String mText;   // The parts so far.
 };
-
-namespace {
-
-// The rate of the sent lines AllowSend() lets through. The level of the bucket drains by
-// kDrainPerSecond each second, rises by kLineCost with each line, and blocks a line above
-// kMaxLevel.
-constexpr float kMillisecondsToSeconds = 0.001f;
-constexpr float kDrainPerSecond = -0.33f;
-constexpr float kLineCost = 1.0f;
-constexpr float kMaxLevel = 4.0f;
-
-// The characters of each part of a line.
-constexpr int kPartLength = 32;
-
-// The kinds of line, the first character of the identifier of a request.
-constexpr char kKindFinal = 'f';
-constexpr char kKindPartial = 'p';
-constexpr char kKindPowerOff = 'd';
-
-// The first channel, the second character of the identifier of a request.
-constexpr char kChannelBase = 'a';
-
-// The characters of the identifier of a request before the name of the sender, and the size of
-// the name there.
-constexpr int kSenderNameOffset = 2;
-constexpr int kSenderNameSize = 19;
-
-// The message types of a request.
-constexpr int kMessageTypeChannel = 0;
-constexpr int kMessageTypeAccount = 1;
-
-// The recipient of a line to the chat room.
-constexpr int kNoTarget = 0;
 
 } // namespace
 
+// NTSC-U/C: 0x003b0aac
+// How many lines were sent recently, draining with time.
+static float sFloodLevel = 0.0f;
+
+// NTSC-U/C: 0x003b0ab0
+// The seconds of the system clock at the last line sent.
+static float sLastLineSeconds = 0.0f;
+
+// The two vectors below are constructed and destroyed by one routine at 0x002532d0. The image's
+// static construction and destruction entries at 0x002533f8 and 0x00253418 call it.
+// NTSC-U/C: 0x002532d0, PAL: 0x0025bc78
+// NTSC-U/C: 0x002533f8, PAL: 0x0025bda0
+// NTSC-U/C: 0x00253418, PAL: 0x0025bdc0
+
 // NTSC-U/C: 0x0043ca48
 // The sink of each channel.
-static std::vector<ChatHandler> gHandlers;
+static std::vector<ChatHandler> sHandlers;
 
 // NTSC-U/C: 0x0043ca58
-// The lines that arrived in part.
-static std::vector<PartialMsg> gPartials;
+// The lines waiting for their remaining parts.
+static std::vector<PartialMsg> sPartials;
 
-MsgSink *ChatMsg::FindSink(int nChannel) {
-    for (const ChatHandler &handler : gHandlers) {
+MsgSink *ChatMsg::FindHandler(int nChannel) {
+    for (const auto &handler : sHandlers) {
         if (handler.mChannel == nChannel) {
             return handler.mSink;
         }
@@ -77,164 +90,142 @@ MsgSink *ChatMsg::FindSink(int nChannel) {
 }
 
 void ChatMsg::AddHandler(int nChannel, MsgSink *pHandler) {
-    (void)FindSink(nChannel); // Yes, the binary discards the sink already registered.
-    gHandlers.push_back(ChatHandler{nChannel, pHandler});
+    (void)FindHandler(nChannel); // Yes, the binary discards the result.
+    sHandlers.push_back(ChatHandler{nChannel, pHandler});
 }
 
 void ChatMsg::RemoveSink(int nChannel) {
-    for (auto it = gHandlers.begin(); it != gHandlers.end(); ++it) {
+    for (auto it = sHandlers.begin(); it != sHandlers.end(); ++it) {
         if (it->mChannel == nChannel) {
-            gHandlers.erase(it);
+            sHandlers.erase(it);
             return;
         }
     }
 }
 
-bool ChatMsg::AllowSend() {
-    // NTSC-U/C: 0x003b0aac
-    static float sLevel;
-    // NTSC-U/C: 0x003b0ab0
-    static float sLastSeconds;
-    const float fSeconds = SystemMs() * kMillisecondsToSeconds;
-    float fLevel = sLevel + (fSeconds - sLastSeconds) * kDrainPerSecond;
+bool ChatMsg::AllowLine() {
+    const float fSeconds = SystemMs() * kSecondsPerMs;
+    float fLevel = sFloodLevel + (fSeconds - sLastLineSeconds) * kFloodDrainPerSecond;
     if (fLevel < 0.0f) {
         fLevel = 0.0f;
     }
-    if (kMaxLevel < fLevel) {
+    if (kFloodLimit < fLevel) {
         return false;
     }
-    sLastSeconds = fSeconds;
-    sLevel = fLevel + kLineCost;
+    sLastLineSeconds = fSeconds;
+    sFloodLevel = fLevel + kFloodPerLine;
     return true;
 }
 
 void ChatMsg::SendPrivate(int nChannel, int nAccountId, const char *pszText) {
     rtMediusChatRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.sessionKey, TheLobbyRT->mSessionKey.c_str());
-    request.messageId[1] = static_cast<char>(kChannelBase + nChannel);
-    request.targetId = nAccountId;
-    request.messageType = kMessageTypeAccount;
+    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    request.header.messageId[1] = static_cast<char>(nChannel + kChannelBase);
+    request.targetAccountId = nAccountId;
+    request.toAccount = 1;
+    request.header.messageId[0] = kLineFinal;
     (void)strlen(pszText); // Yes, the binary discards the length.
-    request.messageId[0] = kKindFinal;
     strcpy(request.text, pszText);
-    (void)rtMediusSendChat(&request);
+    rtMediusSendChatMessage(&request);
 }
 
 bool ChatMsg::Send(int nChannel, int nRecipient, const char *pszText, int nEcho) {
-    if (!AllowSend()) {
+    if (!AllowLine()) {
         return false;
     }
     const char *pszName = TheLobbyRT->GetName();
-    if (nEcho != 0) {
-        MsgSink *pSink = FindSink(nChannel);
-        int nPlayer = LaunchpadRT::kNoId;
+    if (nEcho) {
+        MsgSink *pSink = FindHandler(nChannel);
+        int nPlayer = kNoPlayer;
         if (TheLaunchpadRT != nullptr) {
             nPlayer = TheLaunchpadRT->mLocalId;
         }
         ChatMsg msg(TheLobbyRT->mLocalPlayer.mId, nPlayer, pszText, TheLobbyRT->GetName());
         pSink->Dispatch(&msg); // Yes, the binary does not test for a missing sink.
     }
-
     rtMediusChatRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     // NTSC-U/C: 0x0043ca30
-    static std::vector<int> sRecipients;
-    sRecipients.clear();
+    // The function-local vector is destroyed at exit by the routine at 0x00252618.
+    // NTSC-U/C: 0x00252618, PAL: 0x0025afc0
+    static std::vector<int> recipients;
+    recipients.clear();
     if (nRecipient != 0) {
-        request.messageType = kMessageTypeChannel;
-        sRecipients.push_back(kNoTarget);
-    } else {
-        request.messageType = kMessageTypeAccount;
-        if (TheLaunchpadRT != nullptr) {
-            const std::list<NetLaunchpadPlayer> players = *TheLaunchpadRT->GetPlayers();
-            for (const NetLaunchpadPlayer &player : players) {
-                if (player.mPlayer.mId != TheLobbyRT->mLocalPlayer.mId) {
-                    sRecipients.push_back(player.mPlayer.mId);
-                }
+        request.toAccount = 0;
+        recipients.push_back(0);
+    } else if (TheLaunchpadRT != nullptr) {
+        request.toAccount = 1;
+        const std::list<NetLaunchpadPlayer> players = *TheLaunchpadRT->GetPlayers();
+        for (const auto &player : players) {
+            if (player.mPlayer.mId != TheLobbyRT->mLocalPlayer.mId) {
+                recipients.push_back(player.mPlayer.mId);
             }
         }
     }
-
-    if (sRecipients.size() != 0) {
+    if (recipients.size() != 0) {
         const String text(pszText);
-        const int nLength = text.mLength;
-        for (int nPos = 0; nPos < nLength; nPos += kPartLength) {
-            request.messageId[0] = nPos + kPartLength < nLength ? kKindPartial : kKindFinal;
-            request.messageId[1] = static_cast<char>(kChannelBase + nChannel);
-            // The name fills the rest of the identifier, as retail does.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-            strncpy(&request.messageId[kSenderNameOffset], pszName, kSenderNameSize);
-#pragma GCC diagnostic pop
-            strcpy(request.text, text.Substring(nPos, kPartLength).c_str());
-            for (const int *pTarget = sRecipients.data();
-                 pTarget < sRecipients.data() + sRecipients.size();
-                 ++pTarget) {
-                request.targetId = *pTarget;
-                (void)rtMediusSendChat(&request);
+        for (int nOffset = 0; nOffset < text.mLength; nOffset += kPartLength) {
+            request.header.messageId[0] =
+                nOffset + kPartLength < text.mLength ? kLinePart : kLineFinal;
+            request.header.messageId[1] = static_cast<char>(nChannel + kChannelBase);
+            strncpy(&request.header.messageId[2], pszName, kRequestNameLength);
+            strcpy(request.text, text.Substring(nOffset, kPartLength).c_str());
+            for (const int nAccount : recipients) {
+                request.targetAccountId = nAccount;
+                rtMediusSendChatMessage(&request);
             }
         }
     }
     return true;
 }
 
-void ChatMsg::ClearPartialLines() {
-    gPartials.clear();
+void ChatMsg::ClearPartialMessages() {
+    sPartials.clear();
 }
 
-void ChatMsg::OnLobbyChat(int nConnection,
-                          int nType,
-                          int nSize,
-                          const rtMediusChatMessage *pMessage) {
-    (void)nConnection;
-    (void)nType;
-    (void)nSize;
-    if (pMessage->messageType == kKindPowerOff) {
-        TheNetInet->PowerOff();
+void ChatMsg::OnLobbyChat(int, int, int, const rtMediusChatMessage *pMessage) {
+    if (pMessage->messageType == kLinePowerOff) {
+        TheNetInet->RequestPowerOff();
     }
     const int nChannel = pMessage->channel - kChannelBase;
-    const bool bPartial = pMessage->messageType == kKindPartial;
-    const int nSender = pMessage->senderAccountId;
-    const char *pszSender = pMessage->senderName;
-    auto it = gPartials.begin();
-    while (it != gPartials.end() && it->mAccountId != nSender) {
-        ++it;
+    const bool bPart = pMessage->messageType == kLinePart;
+    const int nAccountId = pMessage->senderAccountId;
+    auto partial = sPartials.begin();
+    while (partial != sPartials.end() && partial->mAccountId != nAccountId) {
+        ++partial;
     }
-
-    if (nChannel == kChannelLobby && TheLobbyRT->IsMuted(nSender)) {
-        if (it != gPartials.end()) {
-            gPartials.erase(it);
+    if (nChannel == kMutableChannel && TheLobbyRT->IsMuted(nAccountId)) {
+        if (partial != sPartials.end()) {
+            sPartials.erase(partial);
         }
         return;
     }
-
-    if (bPartial) {
-        if (it == gPartials.end()) {
-            gPartials.push_back(PartialMsg{nSender, nChannel, String(pMessage->text)});
+    if (bPart) {
+        if (partial == sPartials.end()) {
+            sPartials.push_back(PartialMsg{nAccountId, nChannel, String(pMessage->text)});
         } else {
-            it->mText += pMessage->text;
+            partial->mText += pMessage->text;
         }
         return;
     }
-
-    MsgSink *pSink = FindSink(nChannel);
-    int nPlayer = LaunchpadRT::kNoId;
+    MsgSink *pSink = FindHandler(nChannel);
+    int nPlayer = kNoPlayer;
     if (TheLaunchpadRT != nullptr) {
-        nPlayer = TheLaunchpadRT->FindIdByAccount(nSender);
+        nPlayer = TheLaunchpadRT->FindIdByAccount(nAccountId);
     }
-    if (it == gPartials.end()) {
+    if (partial == sPartials.end()) {
         if (pSink != nullptr) {
-            ChatMsg msg(nSender, nPlayer, pMessage->text, pszSender);
+            ChatMsg msg(nAccountId, nPlayer, pMessage->text, pMessage->senderName);
             pSink->Dispatch(&msg);
         }
         return;
     }
     if (pSink != nullptr) {
-        it->mText += pMessage->text;
-        ChatMsg msg(nSender, nPlayer, it->mText.c_str(), pszSender);
+        partial->mText += pMessage->text;
+        ChatMsg msg(nAccountId, nPlayer, partial->mText.c_str(), pMessage->senderName);
         pSink->Dispatch(&msg);
     }
-    gPartials.erase(it);
+    sPartials.erase(partial);
 }

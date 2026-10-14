@@ -101,9 +101,9 @@ typedef struct {
 /**
  * Bind the sdrdrv server.
  *
- * @return Zero.
- * @ghidraAddress NTSC-U/C: 0x00576fe0
- * @ghidraAddress PAL: 0x005b74a8
+ * @return Zero, or -1 when the bind request cannot be sent.
+ * @ghidraAddress NTSC-U/C: 0x00315f88
+ * @ghidraAddress PAL: 0x00382840
  */
 int sceSdRemoteInit(void);
 
@@ -111,9 +111,10 @@ int sceSdRemoteInit(void);
  * Send one libsd call to the IOP.
  *
  * @param arg Nonzero to wait for the result. An rSd command and the call's arguments follow.
- * @return The call's result when @p arg is nonzero.
- * @ghidraAddress NTSC-U/C: 0x00577120
- * @ghidraAddress PAL: 0x005b75e8
+ * @return The call's result when @p arg is nonzero, or the previous handler for the commands
+ * that install an interrupt handler.
+ * @ghidraAddress NTSC-U/C: 0x00316038
+ * @ghidraAddress PAL: 0x003828f0
  */
 int sceSdRemote(int arg, ...);
 

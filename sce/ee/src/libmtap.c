@@ -1,10 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stddef.h>
 
+#include <eekernel.h>
 #include <libmtap.h>
 #include <sifrpc.h>
-
-#include "os/log.h"
 
 enum {
     kMtapServerId = 0x80000901,
@@ -20,7 +18,6 @@ enum {
     kMtapClientCount = 5,
     kMtapRpcFunction = 1,
     kMtapBindDelay = 0x10000,
-    kMtapBindFailedStatus = -1,
     kMtapModVersionMajor = 3,
     kMtapModVersionMinor = 0,
     kMtapVersionShift = 8,
@@ -35,23 +32,18 @@ typedef union {
         int nResult;
     } port;
     struct {
-        int nFirstPriority;
-        int nSecondPriority;
-        int nResult;
-    } priority;
-    struct {
         int nVersion;
     } version;
     unsigned char abRaw[kMtapRpcBufferSize];
 } __attribute__((aligned(64))) MtapRpcBuffer;
 
-// NTSC-U/C: 0x0089e080, PAL: 0x008e3040
+// NTSC-U/C: 0x0052f640
 static sceSifClientData g_aMtapClients[kMtapClientCount] __attribute__((aligned(64)));
 // SIF DMA moves whole quadwords. The buffer retains retail's 64-byte placement.
-// NTSC-U/C: 0x0089e180, PAL: 0x008e3140
+// NTSC-U/C: 0x0052f740
 static MtapRpcBuffer g_mtapRpc __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x0053a598, PAL: 0x00579fe0
+// NTSC-U/C: 0x00312b40, PAL: 0x0037f1d8
 static void DPRINT(const char *pszFormat, ...) {
     (void)pszFormat; // Yes, the binary's library prints its RPC errors through an empty routine.
 }
@@ -78,7 +70,7 @@ int sceMtapInit(void) {
         for (;;) {
             if (sceSifBindRpc(&g_aMtapClients[k], kMtapServerId + k, 0) < 0) {
                 DPRINT("libmtap: bind failed\n");
-                exit(kMtapBindFailedStatus);
+                return 0;
             }
             if (g_aMtapClients[k].serve != NULL) {
                 break;
@@ -91,12 +83,12 @@ int sceMtapInit(void) {
 
     nVersion = sceMtapGetModVersion();
     if ((nVersion >> kMtapVersionShift) != kMtapModVersionMajor) {
-        printf("libmtap: Module version mismatch ");
-        printf("[libmtap.a = %d.%d, mtapman.irx = %d.%d]\n",
-               kMtapModVersionMajor,
-               kMtapModVersionMinor,
-               nVersion >> kMtapVersionShift,
-               nVersion & kMtapVersionMinorMask);
+        scePrintf("libmtap: Module version mismatch ");
+        scePrintf("[libmtap.a = %d.%d, mtapman.irx = %d.%d]\n",
+                  kMtapModVersionMajor,
+                  kMtapModVersionMinor,
+                  nVersion >> kMtapVersionShift,
+                  nVersion & kMtapVersionMinorMask);
         return 0;
     }
     return 1;
@@ -127,16 +119,6 @@ int sceMtapGetConnection(int nPort) {
         return 0;
     }
     return g_mtapRpc.port.nResult;
-}
-
-int sceMtapChangeThreadPriority(int nFirstPriority, int nSecondPriority) {
-    g_mtapRpc.priority.nFirstPriority = nFirstPriority;
-    g_mtapRpc.priority.nSecondPriority = nSecondPriority;
-    if (MtapCall(kMtapClientChangePriority) < 0) {
-        DPRINT("sceMtapChangeThreadPriority: rpc error\n");
-        return 0;
-    }
-    return g_mtapRpc.priority.nResult;
 }
 
 int sceMtapGetModVersion(void) {

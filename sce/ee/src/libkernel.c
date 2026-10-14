@@ -12,17 +12,6 @@ enum {
     kT3ModeCompareInterrupt = 0x100,
     kSioIsrTxFull = 0x8000,
 
-    kSyscallAlarmReturn = 8,
-    kSyscallKernelCopy = 90,
-    kSyscallGetEntryAddress = 91,
-    kSyscallSetAlarm = 252,
-    kSyscallReleaseAlarm = 253,
-    kSyscallISetAlarm = 254,
-    kSyscallIReleaseAlarm = 255,
-    kSyscallAlarmInterrupt = 300,
-    kSyscallTableSize = 8,
-    kSyscallTableFirstLookup = 2,
-
     kDCacheLineSize = 64,
     kDCacheIndexEnd = 4096,
     kDCacheTagAddressMask = 0xfffff000,
@@ -69,16 +58,6 @@ enum {
     kShiftCountMask = 63,
 };
 
-// The kernel addresses the alarm patch and its handler trampoline are copied to.
-#define kAlarmPatchBase ((void *)0x80076000)
-#define kAlarmHandlerTrampoline ((void *)0x00082000)
-
-// One entry of the table InstallSyscallPatch() works through.
-typedef struct {
-    int nSyscall;
-    void *pAddress;
-} SyscallEntry;
-
 // A thread request an interrupt handler passes to the helper thread.
 typedef struct {
     unsigned char nType;
@@ -97,34 +76,19 @@ typedef void (*PutCharFunction)(int c);
 // The fraction printfloat() prints has six digits.
 static const double kFractionScale = 1000000.0;
 
-// NTSC-U/C: 0x00769820, PAL: 0x007ad578
-static SyscallEntry g_syscallPatchTable[kSyscallTableSize] = {
-    {kSyscallKernelCopy, KernelCopyHandler},
-    {kSyscallGetEntryAddress, kAlarmPatchBase},
-    {kSyscallSetAlarm, NULL},
-    {kSyscallISetAlarm, NULL},
-    {kSyscallReleaseAlarm, NULL},
-    {kSyscallIReleaseAlarm, NULL},
-    {kSyscallAlarmInterrupt, NULL},
-    {kSyscallAlarmReturn, NULL},
-};
-
-// NTSC-U/C: 0x006fc33c, PAL: 0x0073fd1c
-static int g_libcSemaphores[2];
-
-// NTSC-U/C: 0x0077f988, PAL: 0x007c3778
+// NTSC-U/C: 0x003c47bc
 static int topId;
 
-// NTSC-U/C: 0x008e5350, PAL: 0x0092a350
+// NTSC-U/C: 0x00532ba0
 static unsigned char g_helperStack[kHelperStackSize] __attribute__((aligned(16)));
 
-// NTSC-U/C: 0x008e5750, PAL: 0x0092a750
+// NTSC-U/C: 0x00532fa0
 static int topSema;
 
-// NTSC-U/C: 0x008e5758, PAL: 0x0092a758
+// NTSC-U/C: 0x00532fa8
 static ThreadRequestQueue topArg;
 
-// NTSC-U/C: 0x008e6950, PAL: 0x0092b950
+// NTSC-U/C: 0x00536f28
 static unsigned char g_deci2WorkArea[kDeci2WorkAreaSize] __attribute__((aligned(16)));
 
 static inline int InterruptsEnabled(void) {
@@ -224,54 +188,7 @@ int EnableDmac(int channel) {
     return result;
 }
 
-int KernelCopyHandler(unsigned int *dest, const unsigned int *src, unsigned int size) {
-    unsigned int nWords = size >> 2;
-    unsigned int i;
-
-    for (i = 0; i < nWords; ++i) {
-        *dest++ = *src++;
-    }
-    return 0;
-}
-
-void InstallSyscallPatch(void) {
-    int i;
-
-    if ((*T3_MODE & kT3ModeCompareInterrupt) != 0) {
-        return;
-    }
-    SetSyscall(g_syscallPatchTable[0].nSyscall, g_syscallPatchTable[0].pAddress);
-    KernelCopy(kAlarmPatchBase, g_alarmPatch, kAlarmPatchSize);
-    KernelCopy(kAlarmHandlerTrampoline, g_alarmTrampoline, kAlarmTrampolineSize);
-    FlushCache(WRITEBACK_DCACHE);
-    FlushCache(INVALIDATE_ICACHE);
-    SetSyscall(g_syscallPatchTable[1].nSyscall, g_syscallPatchTable[1].pAddress);
-    for (i = kSyscallTableFirstLookup; i < kSyscallTableSize; ++i) {
-        SetSyscall(g_syscallPatchTable[i].nSyscall,
-                   GetEntryAddress(g_syscallPatchTable[i].nSyscall));
-    }
-}
-
-// NTSC-U/C: 0x004b8f98, PAL: 0x004f6f10
-static void InitLibcSemas(void) {
-    struct SemaParam first;
-    struct SemaParam second;
-
-    first.maxCount = 1;
-    first.initCount = 1;
-    second.maxCount = 1;
-    second.initCount = 1;
-    g_libcSemaphores[0] = CreateSema(&first);
-    g_libcSemaphores[1] = CreateSema(&second);
-}
-
-void _InitSys(void) {
-    InitLibcSemas();
-    InstallSyscallPatch();
-    (void)InitThread();
-}
-
-// NTSC-U/C: 0x005f1fb0, PAL: 0x006340f8
+// NTSC-U/C: 0x00317ac0, PAL: 0x003843d8
 static void topThread(void *arg) {
     ThreadRequestQueue *pQueue = (ThreadRequestQueue *)arg;
 
@@ -348,7 +265,7 @@ int iWakeupThread(int thid) {
     return nSelf;
 }
 
-// NTSC-U/C: 0x00620730, PAL: 0x006612c0
+// NTSC-U/C: 0x003176c0, PAL: 0x00383fd8
 // Writes back every data cache line whose tag lies in the range. Cache operation 0x10 loads the tag
 // of a line into TagLo, and 0x14 writes the line back and invalidates it. Bit 0 of the index
 // selects the way.
@@ -386,6 +303,49 @@ void SyncDCache(void *start, void *end) {
         DIntr();
     }
     _sceSDC((uintptr_t)start & ~(uintptr_t)(kDCacheLineSize - 1),
+            (uintptr_t)end & ~(uintptr_t)(kDCacheLineSize - 1));
+    if (bEnabled) {
+        EIntr();
+    }
+}
+
+// NTSC-U/C: 0x003177f0, PAL: 0x00384108
+// Discards every data cache line whose tag lies in the range without writing it back. Cache
+// operation 0x16 invalidates the line at the index.
+static void _sceIDC(uintptr_t start, uintptr_t end) {
+    unsigned int nIndex;
+
+    for (nIndex = 0; nIndex < kDCacheIndexEnd; nIndex += kDCacheLineSize) {
+        uintptr_t line;
+        unsigned int tag;
+
+        __asm__ volatile("sync.l\n\tcache 0x10, 0(%1)\n\tsync.l\n\tmfc0 %0, $28"
+                         : "=r"(tag)
+                         : "r"(nIndex)
+                         : "memory");
+        line = (tag & kDCacheTagAddressMask) + nIndex;
+        if (!(line < start) && !(end < line)) {
+            __asm__ volatile("sync.l\n\tcache 0x16, 0(%0)\n\tsync.l" : : "r"(nIndex) : "memory");
+        }
+        __asm__ volatile("sync.l\n\tcache 0x10, 1(%1)\n\tsync.l\n\tmfc0 %0, $28"
+                         : "=r"(tag)
+                         : "r"(nIndex)
+                         : "memory");
+        line = (tag & kDCacheTagAddressMask) + nIndex;
+        if (!(line < start) && !(end < line)) {
+            __asm__ volatile("sync.l\n\tcache 0x16, 1(%0)\n\tsync.l" : : "r"(nIndex) : "memory");
+        }
+        SyncL();
+    }
+}
+
+void InvalidDCache(void *start, void *end) {
+    int bEnabled = InterruptsEnabled();
+
+    if (bEnabled) {
+        DIntr();
+    }
+    _sceIDC((uintptr_t)start & ~(uintptr_t)(kDCacheLineSize - 1),
             (uintptr_t)end & ~(uintptr_t)(kDCacheLineSize - 1));
     if (bEnabled) {
         EIntr();
@@ -444,10 +404,10 @@ int kputs(char *s) {
     return Deci2Call(kDeci2Kputs, args);
 }
 
-// NTSC-U/C: 0x008e5bf8, PAL: 0x0092abf8
+// NTSC-U/C: 0x00533780
 static char linebuf[kConsoleLineSize];
 
-// NTSC-U/C: 0x00780dc0, PAL: 0x007c4ad8
+// NTSC-U/C: 0x003c47c0
 static int count;
 
 int kputchar(int c) {
@@ -457,7 +417,7 @@ int kputchar(int c) {
     return c;
 }
 
-// NTSC-U/C: 0x005fa8f8, PAL: 0x0063b608
+// NTSC-U/C: 0x00318268, PAL: 0x00384b80
 // Collects a line for the DECI2 kernel console. A long line is sent in parts.
 static void PutConsoleLineChar(int c) {
     int nLength;
@@ -479,7 +439,7 @@ static void PutConsoleLineChar(int c) {
     linebuf[nLength] = (char)c;
 }
 
-// NTSC-U/C: 0x005fa9a8, PAL: 0x0063b6b8
+// NTSC-U/C: 0x00318318, PAL: 0x00384c30
 static void serialPutchar(int c) {
     if (c == '\n') {
         kputchar('\r');
@@ -489,10 +449,10 @@ static void serialPutchar(int c) {
     kputchar(c);
 }
 
-// NTSC-U/C: 0x00780dc4, PAL: 0x007c4adc
+// NTSC-U/C: 0x003c47c4
 static PutCharFunction _putchar = serialPutchar;
 
-// NTSC-U/C: 0x005fa9e0, PAL: 0x0063b6f0
+// NTSC-U/C: 0x00318350, PAL: 0x00384c68
 // Converts the bits of a double to an integer. A fraction of three quarters or more rounds up, and
 // a value of 2^13 or more returns 9999.
 static int ftoi(unsigned long long bits) {
@@ -521,7 +481,7 @@ static int ftoi(unsigned long long bits) {
     return (int)mantissa;
 }
 
-// NTSC-U/C: 0x005faa70, PAL: 0x0063b780
+// NTSC-U/C: 0x003183e0, PAL: 0x00384cf8
 // Prints a value as 0.digits and a power of ten.
 static void printfloat(double value) {
     int nExponent = 0;
@@ -565,10 +525,12 @@ static const char *ApplyPadding(const char *pDigits, const char *pPad) {
     return pDigits;
 }
 
-// NTSC-U/C: 0x005fabd8, PAL: 0x0063b8e8
+// NTSC-U/C: 0x00318548, PAL: 0x00384e60
+// Interrupts stay disabled while the line is printed.
 static void _printf(const char *pszFormat, va_list args) {
     char szDigits[kPrintfBufferSize];
     const char *p = pszFormat;
+    int bInterrupts = DIntr();
 
     while (*p != '\0') {
         char *pPad = NULL;
@@ -705,6 +667,9 @@ static void _printf(const char *pszFormat, va_list args) {
             ++p;
             break;
         }
+    }
+    if (bInterrupts) {
+        EIntr();
     }
 }
 

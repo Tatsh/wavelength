@@ -1,25 +1,26 @@
-#include <assert.h>
-#include <stdio.h>
-
 #include <eekernel.h>
 #include <libcdvd.h>
 #include <libscf.h>
 #include <sifdev.h>
-
-#include "os/log.h"
 
 enum {
     // Minutes in one hour.
     kMinutesPerHour = 60,
     // Minutes in nine hours of Tokyo time, the baseline the RTC keeps.
     kTokyoMinutes = 540,
-    // Half the minutes in one day define the largest accepted offset magnitude.
-    kHalfDayMinutes = 1440,
-    // Twice the largest magnitude plus one gives the accepted range width.
-    kOffsetRangeWidth = 2881,
     // The lowest minute total that carries into the hour field. A total of exactly 60 stays in the
     // minute field, as in the binary.
     kHourThreshold = 61,
+    kHoursPerDay = 24,
+    kMonthsPerYear = 12,
+    kLastYear = 99,
+    kFebruary = 1,
+    kLeapFebruaryDays = 29,
+    kLeapYearMask = 3,
+    kDecimalBase = 10,
+    // A packed BCD byte holds the tens in its high nibble.
+    kBcdTensShift = 4,
+    kBcdNibbleGap = 6,
     // The version field starts after this many bits in the configuration word.
     kVersionShift = 13,
     // The version field uses this mask after the shift.
@@ -34,6 +35,9 @@ enum {
     kTimezoneShift = 21,
     // The daylight flag starts after this many bits in the detail byte.
     kDaylightShift = 4,
+    // The detail byte of the extended configuration.
+    kDetailOffset = 1,
+    kDetailSize = 1,
 };
 
 // The ROM region letter of a tool console. A tool console reports the defaults below rather than
@@ -44,16 +48,14 @@ enum {
     kRomVersionReadSize = 14,
 };
 
-// The settings a tool console reports, which sceScfSetT10kConfig() replaces.
-// NTSC-U/C: 0x003c4740
+// NTSC-U/C: 0x003c4740, the settings a tool console reports, which sceScfSetT10kConfig() replaces.
 static sceScfT10kConfig g_scfT10kConfig = {540, {0, 0}, SCE_JAPANESE_LANGUAGE, 0, 0, 0};
 
-// The contents of rom0:ROMVER, empty until the first read.
-// NTSC-U/C: 0x0077fbf8, PAL: 0x007a4680
+// NTSC-U/C: 0x003c4748, the contents of rom0:ROMVER, empty until the first read.
 static char g_szScfRomVersion[16];
 
-// Month lengths for the day arithmetic below, read from the image.
-static const unsigned char kMonthLengths[12] = {
+// NTSC-U/C: 0x00432458, month lengths for the day arithmetic below.
+static const signed char kMonthLengths[kMonthsPerYear] = {
     31,
     28,
     31,
@@ -68,181 +70,27 @@ static const unsigned char kMonthLengths[12] = {
     31,
 };
 
-// NTSC-U/C: 0x005f2d08, PAL: 0x005a5910
-char *sceScfReadRomVersion(void) {
+// NTSC-U/C: 0x003159e0, PAL: 0x00382298
+static char *GetRomName(void) {
     int fd;
 
-    if (g_szScfRomVersion[0] != '\0') {
-        return g_szScfRomVersion;
+    if (g_szScfRomVersion[0] == '\0') {
+        fd = sceOpen("rom0:ROMVER", SCE_RDONLY);
+        if (fd >= 0) {
+            sceRead(fd, g_szScfRomVersion, kRomVersionReadSize);
+            sceClose(fd);
+        }
     }
-    fd = sceOpen("rom0:ROMVER", SCE_RDONLY);
-    if (fd == -1) {
-        printf("Can't open rom0:ROMVER\n");
-    }
-    // The binary reads even when the open failed.
-    if (sceRead(fd, g_szScfRomVersion, kRomVersionReadSize) == -1) {
-        printf("Can't read rom error\n");
-    }
-    sceClose(fd);
     return g_szScfRomVersion;
 }
 
-// NTSC-U/C: 0x005f2da8, PAL: 0x005a59b0
+// NTSC-U/C: 0x00315a50, PAL: 0x00382308
 // Reports whether the console runs a tool ROM, reading the ROM version first if needed.
-int sceScfEnsureRomVersionRead(void) {
+static int IsT10K(void) {
     if (g_szScfRomVersion[0] == '\0') {
-        sceScfReadRomVersion();
+        GetRomName();
     }
     return g_szScfRomVersion[kRomRegionIndex] == kRomRegionTool;
-}
-
-// NTSC-U/C: 0x005f3138, PAL: 0x005a5d40
-int sceScfBcdToBinary(int nValue) {
-    unsigned int value = (unsigned int)nValue & 0xffu;
-
-    assert(value <= 0x99u);
-    return (int)((value - ((value >> 4) * 6u)) & 0xffu);
-}
-
-// NTSC-U/C: 0x005f30d0, PAL: 0x005a5cd8
-int sceScfBinaryToBcd(int nValue) {
-    unsigned int value = (unsigned int)nValue & 0xffu;
-
-    assert(value <= 99u);
-    // The image guards a divide by zero against the constant divisor, which cannot fire.
-    return (int)((value / 10u) * 6u + value);
-}
-
-// NTSC-U/C: 0x005f32a0, PAL: 0x005a5ea8
-void sceScfAdvanceDay(sceCdCLOCK *pClock) {
-    unsigned char monthLengths[12];
-    int i;
-
-    assert(pClock != NULL);
-    for (i = 0; i < 12; ++i) {
-        monthLengths[i] = kMonthLengths[i];
-    }
-    pClock->day++;
-    if ((pClock->year & 3) == 0) {
-        monthLengths[1] = 0x1d;
-    }
-    if (pClock->day <= monthLengths[pClock->month - 1]) {
-        return;
-    }
-    pClock->day = 1;
-    pClock->month++;
-    if (pClock->month != 0xd) {
-        return;
-    }
-    if (pClock->year != 0x63) {
-        pClock->year++;
-        return;
-    }
-    pClock->year = 0;
-    pClock->month = 1;
-}
-
-// NTSC-U/C: 0x005f3388, PAL: 0x005a5f90
-void sceScfRewindDay(sceCdCLOCK *pClock) {
-    unsigned char monthLengths[12];
-    int i;
-
-    assert(pClock != NULL);
-    for (i = 0; i < 12; ++i) {
-        monthLengths[i] = kMonthLengths[i];
-    }
-    pClock->day--;
-    if ((pClock->year & 3) == 0) {
-        monthLengths[1] = 0x1d;
-    }
-    if (pClock->day != 0) {
-        return;
-    }
-    pClock->month--;
-    if (pClock->month != 0) {
-        pClock->day = monthLengths[pClock->month - 1];
-        return;
-    }
-    if (pClock->year != 0) {
-        pClock->year--;
-    } else {
-        pClock->year = 0x63;
-    }
-    pClock->month = 0xc;
-    pClock->day = monthLengths[11];
-}
-
-// NTSC-U/C: 0x005f3190, PAL: 0x005a5d98
-void sceScfClockFromBcd(sceCdCLOCK *pClock) {
-    assert(pClock != NULL);
-    pClock->year = (unsigned char)sceScfBcdToBinary(pClock->year);
-    pClock->month = (unsigned char)sceScfBcdToBinary(pClock->month);
-    pClock->day = (unsigned char)sceScfBcdToBinary(pClock->day);
-    pClock->hour = (unsigned char)sceScfBcdToBinary(pClock->hour);
-    pClock->minute = (unsigned char)sceScfBcdToBinary(pClock->minute);
-    pClock->second = (unsigned char)sceScfBcdToBinary(pClock->second);
-}
-
-// NTSC-U/C: 0x005f3218, PAL: 0x005a5e20
-void sceScfClockToBcd(sceCdCLOCK *pClock) {
-    assert(pClock != NULL);
-    pClock->year = (unsigned char)sceScfBinaryToBcd(pClock->year);
-    pClock->month = (unsigned char)sceScfBinaryToBcd(pClock->month);
-    pClock->day = (unsigned char)sceScfBinaryToBcd(pClock->day);
-    pClock->hour = (unsigned char)sceScfBinaryToBcd(pClock->hour);
-    pClock->minute = (unsigned char)sceScfBinaryToBcd(pClock->minute);
-    pClock->second = (unsigned char)sceScfBinaryToBcd(pClock->second);
-}
-
-// NTSC-U/C: 0x005f3460, PAL: 0x005a6068
-void sceScfAdvanceHour(sceCdCLOCK *pClock) {
-    unsigned int hour;
-
-    assert(pClock != NULL);
-    hour = (unsigned int)pClock->hour + 1u;
-    if ((hour & 0xffu) != 0x18u) {
-        pClock->hour = (unsigned char)hour;
-        return;
-    }
-    pClock->hour = 0;
-    sceScfAdvanceDay(pClock);
-}
-
-// NTSC-U/C: 0x005f34d0, PAL: 0x005a60d8
-void sceScfRewindHour(sceCdCLOCK *pClock) {
-    unsigned int hour;
-
-    assert(pClock != NULL);
-    hour = pClock->hour;
-    if (hour == 0) {
-        pClock->hour = 0x17;
-        sceScfRewindDay(pClock);
-        return;
-    }
-    pClock->hour = (unsigned char)(hour - 1u);
-}
-
-// NTSC-U/C: 0x005f2ee8, PAL: 0x005a5af0
-int sceScfGetTimezone(void) {
-    unsigned int nConfig;
-    unsigned int nVersion;
-    int nTimezone;
-
-    if (sceScfEnsureRomVersionRead() != 0) {
-        return g_scfT10kConfig.nTimezone;
-    }
-    GetOsdConfigParam(&nConfig);
-    nVersion = (nConfig >> kVersionShift) & (unsigned int)kVersionMask;
-    if (nVersion == 0u) {
-        return kTokyoMinutes;
-    }
-    nTimezone = (int)nConfig >> kTimezoneShift;
-    printf("Timezone=%d\n", nTimezone);
-    return nTimezone;
-}
-
-void sceScfSetT10kConfig(const sceScfT10kConfig *pConfig) {
-    g_scfT10kConfig = *pConfig;
 }
 
 int sceScfGetLanguage(void) {
@@ -250,7 +98,7 @@ int sceScfGetLanguage(void) {
     unsigned int nVersion;
 
     GetOsdConfigParam(&nConfig); // Yes, the binary reads the word before the tool check too.
-    if (sceScfEnsureRomVersionRead() != 0) {
+    if (IsT10K()) {
         return g_scfT10kConfig.nLanguage;
     }
     GetOsdConfigParam(&nConfig);
@@ -261,58 +109,160 @@ int sceScfGetLanguage(void) {
     return (int)((nConfig >> kLanguageShift) & (unsigned int)kLanguageMask);
 }
 
-// NTSC-U/C: 0x005f2fd0, PAL: 0x005a5bd8
+void sceScfSetT10kConfig(const sceScfT10kConfig *pConfig) {
+    g_scfT10kConfig = *pConfig;
+}
+
+int sceScfGetTimeZone(void) {
+    unsigned int nConfig;
+
+    if (IsT10K()) {
+        return g_scfT10kConfig.nTimezone;
+    }
+    GetOsdConfigParam(&nConfig);
+    if (((nConfig >> kVersionShift) & (unsigned int)kVersionMask) == 0u) {
+        return kTokyoMinutes;
+    }
+    return (int)nConfig >> kTimezoneShift;
+}
+
 int sceScfGetSummerTime(void) {
     unsigned int nConfig;
     unsigned char nDetail;
-    unsigned int nVersion;
-    int nSummer;
 
-    if (sceScfEnsureRomVersionRead() != 0) {
+    if (IsT10K()) {
         return g_scfT10kConfig.nSummerTime;
     }
     GetOsdConfigParam(&nConfig);
-    nVersion = (nConfig >> kVersionShift) & (unsigned int)kVersionMask;
-    if (nVersion == 0u) {
+    if (((nConfig >> kVersionShift) & (unsigned int)kVersionMask) == 0u) {
         return 0;
     }
-    GetOsdConfigParam2(&nDetail, 1, 1);
-    nSummer = (nDetail >> kDaylightShift) & 1;
-    printf("SummerTime=%d\n", nSummer);
-    return nSummer;
+    GetOsdConfigParam2(&nDetail, kDetailSize, kDetailOffset);
+    return (nDetail >> kDaylightShift) & 1;
 }
 
-// NTSC-U/C: 0x005f3538, PAL: 0x005a6140
-void sceScfApplyMinuteOffset(sceCdCLOCK *pClock, int nMinutes) {
+// NTSC-U/C: 0x00315bd8, PAL: 0x00382490
+static unsigned char tobcd(unsigned char nValue) {
+    return (unsigned char)((nValue / kDecimalBase) * kBcdNibbleGap + nValue);
+}
+
+// NTSC-U/C: 0x00315c08, PAL: 0x003824c0
+static unsigned char frombcd(unsigned char nValue) {
+    return (unsigned char)(nValue - (nValue >> kBcdTensShift) * kBcdNibbleGap);
+}
+
+// NTSC-U/C: 0x00315c28, PAL: 0x003824e0
+static void convertfrombcd(sceCdCLOCK *pClock) {
+    pClock->year = frombcd(pClock->year);
+    pClock->month = frombcd(pClock->month);
+    pClock->day = frombcd(pClock->day);
+    pClock->hour = frombcd(pClock->hour);
+    pClock->minute = frombcd(pClock->minute);
+    pClock->second = frombcd(pClock->second);
+}
+
+// NTSC-U/C: 0x00315c90, PAL: 0x00382548
+static void converttobcd(sceCdCLOCK *pClock) {
+    pClock->year = tobcd(pClock->year);
+    pClock->month = tobcd(pClock->month);
+    pClock->day = tobcd(pClock->day);
+    pClock->hour = tobcd(pClock->hour);
+    pClock->minute = tobcd(pClock->minute);
+    pClock->second = tobcd(pClock->second);
+}
+
+// NTSC-U/C: 0x00315cf8, PAL: 0x003825b0
+static void adddate(sceCdCLOCK *pClock) {
+    signed char anMonthLengths[kMonthsPerYear];
+    int i;
+
+    ++pClock->day;
+    for (i = 0; i < kMonthsPerYear; ++i) {
+        anMonthLengths[i] = kMonthLengths[i];
+    }
+    if ((pClock->year & kLeapYearMask) == 0) {
+        anMonthLengths[kFebruary] = kLeapFebruaryDays;
+    }
+    if (anMonthLengths[pClock->month - 1] < pClock->day) {
+        pClock->day = 1;
+        ++pClock->month;
+        if (pClock->month == kMonthsPerYear + 1) {
+            if (pClock->year == kLastYear) {
+                pClock->year = 0;
+            } else {
+                ++pClock->year;
+            }
+            pClock->month = 1;
+        }
+    }
+}
+
+// NTSC-U/C: 0x00315db0, PAL: 0x00382668
+static void subdate(sceCdCLOCK *pClock) {
+    signed char anMonthLengths[kMonthsPerYear];
+    int i;
+
+    --pClock->day;
+    for (i = 0; i < kMonthsPerYear; ++i) {
+        anMonthLengths[i] = kMonthLengths[i];
+    }
+    if ((pClock->year & kLeapYearMask) == 0) {
+        anMonthLengths[kFebruary] = kLeapFebruaryDays;
+    }
+    if (pClock->day != 0) {
+        return;
+    }
+    --pClock->month;
+    if (pClock->month == 0) {
+        pClock->year = pClock->year == 0 ? kLastYear : pClock->year - 1;
+        pClock->month = kMonthsPerYear;
+    }
+    pClock->day = (unsigned char)anMonthLengths[pClock->month - 1];
+}
+
+// NTSC-U/C: 0x00315e58, PAL: 0x00382710
+static void addhour(sceCdCLOCK *pClock) {
+    ++pClock->hour;
+    if (pClock->hour == kHoursPerDay) {
+        pClock->hour = 0;
+        adddate(pClock);
+    }
+}
+
+// NTSC-U/C: 0x00315e88, PAL: 0x00382740
+static void subhour(sceCdCLOCK *pClock) {
+    if (pClock->hour == 0) {
+        pClock->hour = kHoursPerDay - 1;
+        subdate(pClock);
+        return;
+    }
+    --pClock->hour;
+}
+
+// NTSC-U/C: 0x00315eb0, PAL: 0x00382768
+static void AdjustTime(sceCdCLOCK *pClock, int nMinutes) {
     int nTotal;
 
-    assert(pClock != NULL);
-    assert((unsigned int)(nMinutes + kHalfDayMinutes) < (unsigned int)kOffsetRangeWidth);
-    sceScfClockFromBcd(pClock);
+    convertfrombcd(pClock);
     nTotal = pClock->minute + nMinutes;
     if (nTotal < 0) {
         do {
             nTotal += kMinutesPerHour;
-            sceScfRewindHour(pClock);
+            subhour(pClock);
         } while (nTotal < 0);
-        pClock->minute = (unsigned char)nTotal;
-    } else if (nTotal < kHourThreshold) {
-        pClock->minute = (unsigned char)nTotal;
-    } else {
+    } else if (nTotal >= kHourThreshold) {
         do {
+            addhour(pClock);
             nTotal -= kMinutesPerHour;
-            sceScfAdvanceHour(pClock);
         } while (nTotal >= kHourThreshold);
-        pClock->minute = (unsigned char)nTotal;
     }
-    sceScfClockToBcd(pClock);
+    pClock->minute = (unsigned char)nTotal;
+    converttobcd(pClock);
 }
 
 void sceScfGetLocalTimefromRTC(sceCdCLOCK *pClock) {
-    int nTimezone = sceScfGetTimezone();
+    int nTimezone = sceScfGetTimeZone();
     int nSummer = sceScfGetSummerTime();
-    int nOffset = nTimezone + nSummer * kMinutesPerHour - kTokyoMinutes;
 
-    assert(pClock != NULL);
-    sceScfApplyMinuteOffset(pClock, nOffset);
+    AdjustTime(pClock, nTimezone + nSummer * kMinutesPerHour - kTokyoMinutes);
 }

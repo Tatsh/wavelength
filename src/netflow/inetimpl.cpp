@@ -1,17 +1,21 @@
 #include "netflow/inetimpl.h"
 
 #include <algorithm>
-#include <cstdio>
-#include <cstring>
+#include <list>
+#include <stdio.h>
+#include <string.h>
 #include <vector>
 
 #include <eekernel.h>
 #include <libcdvd.h>
 #include <libezctl.h>
+#include <libeznetcnf.h>
 #include <sifdev.h>
 
+#include "app/msgsink.h"
 #include "msg/inetdisconnectresultmsg.h"
 #include "netflow/inetcheckconnectionresultmsg.h"
+#include "netflow/inetconfig.h"
 #include "netflow/inetconfigsresultmsg.h"
 #include "netflow/inetconnectresultmsg.h"
 #include "netflow/inetconnectstatusmsg.h"
@@ -25,95 +29,118 @@
 
 namespace {
 
-// One IOP module of the network configuration.
-struct Mod {
-    // Report whether two records name the same module file.
-    bool operator==(const Mod &other) const {
-        return strcmp(mName, other.mName) == 0;
-    }
+// The milliseconds a connection may take before Connect() is configured.
+constexpr float kDefaultTimeout = 20000.0f;
 
-    const char *mName; // The file of the module.
-    int mId;           // The identifier of the loaded module.
-};
+// The milliseconds a modem and an Ethernet adaptor may take to connect.
+constexpr float kModemTimeout = 120000.0f;
+constexpr float kEthernetTimeout = 30000.0f;
 
-// The wait for progress of an interface before the first configuration sets it, and the waits of
-// an Ethernet adaptor and of a modem, in milliseconds.
-constexpr float kDefaultTimeoutMs = 20000.0f;
-constexpr float kEthernetTimeoutMs = 30000.0f;
-constexpr float kModemTimeoutMs = 120000.0f;
+// The link status that differs from every report.
+constexpr int kNoLinkStatus = 999;
 
-// The modules each list reserves room for.
-constexpr int kModuleReserve = 10;
+// The capacity each module vector reserves.
+constexpr int kModuleCapacity = 10;
 
-// The memory card the configurations are read from.
-const char *const kConfigFile = "mc0:";
+// The interface that DownInterface() and ConnectTask() switch.
+constexpr int kInterface = 0;
 
-// The error of the configuration server for a configuration of another console.
-constexpr int kNetCnfErrorWrongConsole = -15;
+// The configuration file on the memory card.
+const char kConfigPath[] = "mc0:";
 
-// The link states and interface states of the control server.
-constexpr int kLinkInvalid = 0;
-constexpr int kLinkValid = 1;
+// The error of ezNetCnfGetList() and ezNetCnfLoadEntry() for a configuration of another console.
+constexpr int kNetCnfWrongConsole = -15;
+
+// The value of interfaceType and deviceType that selects PPP and a modem.
+constexpr int kInterfaceTypePpp = 2;
+constexpr int kDeviceTypeModem = 2;
+
+// The values of pppoe that mean PPP over Ethernet is off.
+constexpr unsigned char kPppoeOff = 0;
+constexpr unsigned char kPppoeUnset = 255;
+
+// The vendor of the Sony network adaptor, and the characters of the vendor compared.
+const char kSonyVendor[] = "SCE";
+constexpr unsigned int kVendorLength = 3;
+
+// The states of ezNetCtlStatus_t that Poll() handles.
 constexpr int kInterfaceStarting = 2;
 constexpr int kInterfaceUp = 3;
 constexpr int kInterfaceFailed = 5;
 
-// A link state the control server never reports, which makes the first status a change.
-constexpr int kLinkUnknown = 999;
+// The link status values of ezNetCtlStatus_t.
+constexpr int kLinkInvalid = 0;
+constexpr int kLinkValid = 1;
 
-// The interface type of a PPP configuration and the device type of a modem.
-constexpr int kInterfaceTypePpp = 2;
-constexpr int kDeviceTypeModem = 2;
+// Results that CheckConnection() and LookupHost() report.
+constexpr int kCheckFailed = -91;
+constexpr int kLookupFailed = -90;
 
-// The values of the PPPoE setting that mean no PPPoE.
-constexpr unsigned char kPppoeOff = 0;
-constexpr unsigned char kPppoeUnset = 255;
+// The request of sceDevctl() that turns the network adaptor off.
+constexpr int kDev9PowerOff = 0x4402;
 
-// The vendor of the adaptors Sony makes, and the length the comparison reads.
-const char *const kSonyVendor = "SCE";
-constexpr int kSonyVendorLength = 3;
+// The argument count LaunchConfigTool() passes.
+constexpr int kLaunchArgCount = 1;
 
-// The device and the request that switch the network adaptor off.
-const char *const kAdaptorDevice = "dev9x:";
-constexpr int kDevctlAdaptorOff = 0x4402;
+// An IOP module the connection uses.
+class Mod {
+public:
+    const char *mName; // The file name.
+    int mId;           // The identifier of the loaded module, or 0 before it loads.
 
-// The interface the control server brings up and down.
-constexpr int kInterfaceId = 0;
-
-// The configurations of the memory card.
-ezNetCnfCombinationList_t gCombinations;
-
-// The configuration Connect() loads.
-ezNetCnfData_t gNetCnfData;
-
-// The last state the control server reported.
-ezNetCtlStatus_t gStatus;
-
-// The arguments the network configuration program starts with.
-char *gArgv[1];
-
-// The IOP modules loaded, and the ones the configuration needs.
-std::vector<Mod> gLoadedMods;
-std::vector<Mod> gWantedMods;
+    // Compare the file names.
+    bool operator==(const Mod &other) const {
+        return strcmp(mName, other.mName) == 0;
+    }
+};
 
 } // namespace
 
-// NTSC-U/C: 0x003b0ab4
-NetInet *TheNetInet;
-
-// NTSC-U/C: 0x003b0ab8
 InetImpl *InetImpl::sInstance;
 
+NetInet *TheNetInet;
+
+// NTSC-U/C: 0x0043ca80
+// The arguments LaunchConfigTool() passes.
+static char *sLaunchArgs[kLaunchArgCount];
+
+// NTSC-U/C: 0x0043cac0
+// The combinations of the configuration file.
+static ezNetCnfCombinationList_t sConfigList;
+
+// NTSC-U/C: 0x0043cf00
+// The configuration ConnectTask() loads.
+static ezNetCnfData_t sConfigData;
+
+// NTSC-U/C: 0x0043e240
+// The state of the interface.
+static ezNetCtlStatus_t sStatus;
+
+// The two vectors below are constructed and destroyed by one routine at 0x00254b48. The image's
+// static construction and destruction entries at 0x00254c50 and 0x00254c70 call it.
+// NTSC-U/C: 0x00254b48, PAL: 0x0025da60
+// NTSC-U/C: 0x00254c50, PAL: 0x0025db68
+// NTSC-U/C: 0x00254c70, PAL: 0x0025db88
+
+// NTSC-U/C: 0x0043ca88
+// The modules loaded.
+static std::vector<Mod> sLoadedModules;
+
+// NTSC-U/C: 0x0043ca98
+// The modules the configuration needs.
+static std::vector<Mod> sWantedModules;
+
 InetImpl::InetImpl()
-    : mState(kStateIdle), mStartMs(0.0f), mTimeoutMs(kDefaultTimeoutMs),
-      mConnectionType(kConnectionNone), mPowerOff(0), mLookupPending(0), mConnectSink(nullptr),
-      mLookupSink(nullptr), mCheckSink(nullptr), mConfigsSink(nullptr), mDisconnectSink(nullptr) {
+    : mState(kStateIdle), mStartTime(0.0f), mTimeout(kDefaultTimeout),
+      mConnectionType(kConnectionOffline), mPowerOffRequested(0), mLookupPending(0),
+      mConnectSink(nullptr), mLookupSink(nullptr), mCheckSink(nullptr), mConfigsSink(nullptr),
+      mDisconnectSink(nullptr) {
     TheNetInet = this;
     sInstance = this;
     ezNetCnfInit();
     ezNetCtlInit();
-    gLoadedMods.reserve(kModuleReserve);
-    gWantedMods.reserve(kModuleReserve);
+    sLoadedModules.reserve(kModuleCapacity);
+    sWantedModules.reserve(kModuleCapacity);
 }
 
 InetImpl::~InetImpl() {
@@ -121,128 +148,125 @@ InetImpl::~InetImpl() {
     sInstance = nullptr;
 }
 
-int InetImpl::StopInterface() {
-    (void)ezNetCtlDownInterface(kInterfaceId);
-    sInstance->mConnectionType = kConnectionNone;
+int InetImpl::DownInterface() {
+    ezNetCtlDownInterface(kInterface);
+    sInstance->mConnectionType = kConnectionOffline;
     sInstance->mState = kStateIdle;
     return 0;
 }
 
 void InetImpl::LaunchConfigTool() {
-    const char *pszTool;
-    switch (sceCdGetDiskType()) {
-    case SCECdPS2CD:
-        pszTool = "cdrom0:\\NETGUI\\NTGUICD.ELF;1";
-        break;
-    case SCECdNODISC:
-        pszTool = "host0:cdbuild/netgui/ntguihost.elf";
-        break;
-    default:
-        pszTool = "cdrom0:\\NETGUI\\NTGUIDVD.ELF;1";
-        break;
+    const char *pszPath;
+    const int nType = sceCdGetDiskType();
+    if (nType == SCECdPS2CD) {
+        pszPath = "cdrom0:\\NETGUI\\NTGUICD.ELF;1";
+    } else if (nType == SCECdNODISC) {
+        pszPath = "host0:cdbuild/netgui/ntguihost.elf";
+    } else {
+        pszPath = "cdrom0:\\NETGUI\\NTGUIDVD.ELF;1";
     }
     String bootPath;
     MakeDevicePath(bootPath, FileBootExecutable());
-    gArgv[0] = bootPath.mBuffer;
+    sLaunchArgs[0] = const_cast<char *>(bootPath.c_str());
     sceCdInit(SCECdEXIT);
-    LoadExecPS2(pszTool, 1, gArgv);
+    LoadExecPS2(pszPath, kLaunchArgCount, sLaunchArgs);
 }
 
 void InetImpl::RequestConfigs(MsgSink *pSink) {
-    if (mConfigsSink != nullptr) {
-        return;
+    if (mConfigsSink == nullptr) {
+        mConfigsSink = pSink;
+        EnqueueAsyncTask(ConfigsTask, OnConfigsTaskDone);
     }
-    mConfigsSink = pSink;
-    EnqueueAsyncTask(ListConfigs, OnConfigsListed);
 }
 
-int InetImpl::ListConfigs() {
-    gCombinations.listLength = 0;
-    return ezNetCnfGetList(kConfigFile, 0, &gCombinations);
+int InetImpl::ConfigsTask() {
+    sConfigList.listLength = 0;
+    return ezNetCnfGetList(kConfigPath, 0, &sConfigList);
 }
 
-void InetImpl::OnConfigsListed(int nResult) {
+void InetImpl::OnConfigsTaskDone(int nResult) {
     if (sInstance != nullptr) {
-        sInstance->ReportConfigs(nResult);
+        sInstance->DeliverConfigs(nResult);
     }
 }
 
-void InetImpl::ReportConfigs(int nResult) {
-    int nMsgResult = 0;
+void InetImpl::DeliverConfigs(int nResult) {
+    int nCode = 0;
     if (nResult <= 0) {
         DebugPrint("get combolist error:%d\n", nResult);
-        if (nResult == kNetCnfErrorWrongConsole) {
-            nMsgResult = InetConnectResultMsg::kResultConfigWrongConsole;
+        if (nResult == kNetCnfWrongConsole) {
+            nCode = InetConnectResultMsg::kResultConfigWrongConsole;
         } else if (nResult != 0) {
-            nMsgResult = InetConnectResultMsg::kResultConfigError;
+            nCode = InetConnectResultMsg::kResultConfigError;
         } else {
-            nMsgResult = InetConnectResultMsg::kResultConfigNotFound;
+            nCode = InetConnectResultMsg::kResultConfigNotFound;
         }
     }
-    InetConfigsResultMsg msg(nMsgResult);
-    for (int i = 1; i <= gCombinations.listLength; ++i) {
-        const ezNetCnfCombination_t *pCombination = ezNetCnfGetCombination(&gCombinations, i);
-        if (pCombination == nullptr || pCombination->status < 0) {
-            continue;
+    InetConfigsResultMsg msg(nCode);
+    std::list<InetConfig> unused; // Yes, the binary builds and frees an unused list.
+    for (int i = 1; i <= sConfigList.listLength; ++i) {
+        const ezNetCnfCombination_t *pCombination = ezNetCnfGetCombination(&sConfigList, i);
+        if (pCombination != nullptr && pCombination->status >= 0) {
+            InetConfig config;
+            config.mId = i;
+            config.mDescription = String(pCombination->deviceName);
+            config.mName = String(pCombination->interfaceName);
+            config.mDefault = sConfigList.defaultNumber == i;
+            msg.mConfigs.push_back(config);
         }
-        const InetConfig config = {i,
-                                   String(pCombination->deviceName),
-                                   String(pCombination->interfaceName),
-                                   gCombinations.defaultNumber == i};
-        msg.mConfigs.push_back(config);
     }
     mConfigsSink->Dispatch(&msg);
     mConfigsSink = nullptr;
 }
 
 void InetImpl::Connect(MsgSink *pSink, int nConfig) {
-    (void)StopInterface();
+    DownInterface();
     mConnectSink = pSink;
-    mConfig = nConfig;
-    mState = kStateConnecting;
-    EnqueueAsyncTask(OpenConfig, OnConfigOpened);
+    mConfigId = nConfig;
+    mState = kStateStarting;
+    EnqueueAsyncTask(ConnectTask, OnConnectTaskDone);
 }
 
-int InetImpl::OpenConfig() {
-    int nError = InetConnectResultMsg::kResultFailed;
-    int nResult = 0;
+int InetImpl::ConnectTask() {
+    int nFailure;
+    int nStatus = 0;
     const ezNetCnfCombination_t *pCombination =
-        ezNetCnfGetCombination(&gCombinations, sInstance->mConfig);
+        ezNetCnfGetCombination(&sConfigList, sInstance->mConfigId);
     if (pCombination == nullptr) {
-        nError = InetConnectResultMsg::kResultNoConfig;
-        nResult = -1;
+        nFailure = InetConnectResultMsg::kResultNoCombination;
+        nStatus = -1;
     }
-    if (nResult >= 0) {
-        nResult = ezNetCnfLoadEntry(kConfigFile, pCombination->name, &gNetCnfData);
-        nError = nResult == kNetCnfErrorWrongConsole ?
-                     InetConnectResultMsg::kResultConfigWrongConsole :
-                     InetConnectResultMsg::kResultConfigNotFound;
-        if (nResult >= 0) {
-            nError = InetConnectResultMsg::kResultHardwareError;
-            nResult = SetupModules(&gNetCnfData);
-            if (nResult >= 0) {
-                nResult = ezNetCtlSetProperties(&gNetCnfData);
-                if (nResult >= 0) {
-                    nResult = ezNetCtlUpInterface(kInterfaceId);
+    if (nStatus >= 0) {
+        nStatus = ezNetCnfLoadEntry(kConfigPath, pCombination->name, &sConfigData);
+        nFailure = nStatus == kNetCnfWrongConsole ?
+                       InetConnectResultMsg::kResultConfigWrongConsole :
+                       InetConnectResultMsg::kResultConfigNotFound;
+        if (nStatus >= 0) {
+            nFailure = InetConnectResultMsg::kResultHardwareError;
+            nStatus = SelectModules(&sConfigData);
+            if (nStatus >= 0) {
+                nStatus = ezNetCtlSetProperties(&sConfigData);
+                if (nStatus >= 0) {
+                    nStatus = ezNetCtlUpInterface(kInterface);
                 }
             }
         }
     }
-    return nResult < 0 ? nError : 0;
+    return nStatus < 0 ? nFailure : 0;
 }
 
-void InetImpl::OnConfigOpened(int nResult) {
+void InetImpl::OnConnectTaskDone(int nResult) {
     if (nResult == 0) {
-        sInstance->mState = kStateStarting;
-        sInstance->mStartMs = SystemMs();
-        sInstance->mLinkStatus = kLinkUnknown;
-        sInstance->mMessage = "";
+        sInstance->mState = kStateConnecting;
+        const float fNow = SystemMs();
+        sInstance->mLinkStatus = kNoLinkStatus;
+        sInstance->mStartTime = fNow;
+        sInstance->mStatusText = "";
         return;
     }
-    MsgSink *pSink = sInstance->mConnectSink;
     sInstance->mState = kStateIdle;
     InetConnectResultMsg msg(nResult);
-    pSink->Dispatch(&msg);
+    sInstance->mConnectSink->Dispatch(&msg);
     sInstance->mConnectSink = nullptr;
 }
 
@@ -255,30 +279,31 @@ void InetImpl::ClearPending() {
 }
 
 void InetImpl::LookupHost(MsgSink *pSink, const char *pszHost) {
-    if (mLookupPending != 0) {
-        InetDNSLookupResultMsg msg(InetDNSLookupResultMsg::kResultFailed, "");
+    if (mLookupPending) {
+        InetDNSLookupResultMsg msg(kLookupFailed, "");
         pSink->Dispatch(&msg);
         return;
     }
     mLookupSink = pSink;
-    mHostName = pszHost;
+    mHost = pszHost;
     mLookupPending = 1;
-    EnqueueAsyncTask(LookUpName, OnNameLookedUp);
+    EnqueueAsyncTask(LookupTask, OnLookupTaskDone);
 }
 
-int InetImpl::LookUpName() {
-    return ezNetCtlLookUpName(sInstance->mHostName.c_str());
+int InetImpl::LookupTask() {
+    return ezNetCtlLookUpName(sInstance->mHost.c_str());
 }
 
-void InetImpl::OnNameLookedUp(int nResult) {
-    if (sInstance->mLookupSink != nullptr) {
+void InetImpl::OnLookupTaskDone(int nResult) {
+    MsgSink *pSink = sInstance->mLookupSink;
+    if (pSink != nullptr) {
         if (nResult != 0) {
-            InetDNSLookupResultMsg msg(InetDNSLookupResultMsg::kResultFailed, "");
-            sInstance->mLookupSink->Dispatch(&msg);
+            InetDNSLookupResultMsg msg(kLookupFailed, "");
+            pSink->Dispatch(&msg);
         } else {
             const char *pszAddress = ezNetCtlGetNameBuffer();
             if (pszAddress[0] == '\0') {
-                InetDNSLookupResultMsg msg(InetDNSLookupResultMsg::kResultFailed, "");
+                InetDNSLookupResultMsg msg(kLookupFailed, "");
                 sInstance->mLookupSink->Dispatch(&msg);
             } else {
                 InetDNSLookupResultMsg msg(0, pszAddress);
@@ -291,191 +316,173 @@ void InetImpl::OnNameLookedUp(int nResult) {
 }
 
 void InetImpl::CheckConnection(MsgSink *pSink) {
-    if (mState != kStateUp) {
-        InetCheckConnectionResultMsg msg(InetCheckConnectionResultMsg::kResultDown);
+    if (mState != kStateConnected) {
+        InetCheckConnectionResultMsg msg(kCheckFailed);
         pSink->Dispatch(&msg);
         return;
     }
     mCheckSink = pSink;
-    EnqueueAsyncTask(ReadStatus, OnStatusRead);
+    EnqueueAsyncTask(StatusTask, OnStatusTaskDone);
 }
 
-int InetImpl::ReadStatus() {
-    return ezNetCtlGetStatus(&gStatus);
+int InetImpl::StatusTask() {
+    return ezNetCtlGetStatus(&sStatus);
 }
 
-void InetImpl::OnStatusRead(int nResult) {
-    (void)nResult;
-    int nCheck = 0;
-    if (gStatus.state != kInterfaceUp) {
-        (void)StopInterface();
-        nCheck = InetCheckConnectionResultMsg::kResultDown;
+void InetImpl::OnStatusTaskDone(int) {
+    int nResult = 0;
+    if (sStatus.state != kInterfaceUp) {
+        DownInterface();
+        nResult = kCheckFailed;
     }
-    InetCheckConnectionResultMsg msg(nCheck);
+    InetCheckConnectionResultMsg msg(nResult);
     sInstance->mCheckSink->Dispatch(&msg);
     sInstance->mCheckSink = nullptr;
 }
 
-void InetImpl::PowerOff() {
-    mPowerOff = 1;
+void InetImpl::RequestPowerOff() {
+    mPowerOffRequested = 1;
 }
 
 void InetImpl::Poll() {
-    if (mCheckSink != nullptr || mLookupPending != 0) {
+    if (mCheckSink != nullptr || mLookupPending) {
         return;
     }
-    if (mDisconnectSink != nullptr && mState != kStateConnecting) {
-        (void)StopInterface();
+    if (mDisconnectSink != nullptr && mState != kStateStarting) {
+        DownInterface();
         InetDisconnectResultMsg msg;
         mDisconnectSink->Dispatch(&msg);
         mDisconnectSink = nullptr;
         mConnectSink = nullptr;
     }
-    if (mState == kStateStarting) {
+    if (mState == kStateConnecting) {
         int nResult = 0;
-        (void)ezNetCtlGetStatus(&gStatus);
-        if (gStatus.interfaceId < 0) {
+        ezNetCtlGetStatus(&sStatus);
+        if (sStatus.interfaceId < 0) {
             mState = kStateIdle;
             nResult = InetConnectResultMsg::kResultHardwareError;
         }
         const float fNow = SystemMs();
-        if (mTimeoutMs < fNow - mStartMs) {
+        if (mTimeout < fNow - mStartTime) {
             mState = kStateIdle;
-            (void)StopInterface();
+            DownInterface();
             nResult = InetConnectResultMsg::kResultTimeout;
-        } else {
-            switch (gStatus.state) {
-            case kInterfaceUp:
-                mState = kStateUp;
-                nResult = 0;
-                break;
-            case kInterfaceStarting:
-                mStartMs = fNow;
-                break;
-            case kInterfaceFailed:
-                mState = kStateIdle;
-                nResult = InetConnectResultMsg::kResultInterfaceDown;
-                break;
-            default:
-                break;
-            }
+        } else if (sStatus.state == kInterfaceUp) {
+            mState = kStateConnected;
+            nResult = 0;
+        } else if (sStatus.state == kInterfaceStarting) {
+            mStartTime = fNow;
+        } else if (sStatus.state == kInterfaceFailed) {
+            mState = kStateIdle;
+            nResult = InetConnectResultMsg::kResultFailed;
         }
-        if (mLinkStatus != gStatus.linkStatus || mMessage != gStatus.message) {
+        if (mLinkStatus != sStatus.linkStatus || mStatusText != sStatus.message) {
             String text;
-            switch (gStatus.linkStatus) {
-            case kLinkInvalid:
+            if (sStatus.linkStatus == kLinkInvalid) {
                 text += "Invalid Ethernet link\n";
-                break;
-            case kLinkValid:
+            } else if (sStatus.linkStatus == kLinkValid) {
                 text += "Valid Ethernet link\n";
-                break;
-            default:
-                break;
             }
-            text += gStatus.message;
+            text += sStatus.message;
             InetConnectStatusMsg msg(text);
             mConnectSink->Dispatch(&msg);
-            mLinkStatus = gStatus.linkStatus;
-            mMessage = gStatus.message;
+            mLinkStatus = sStatus.linkStatus;
+            mStatusText = sStatus.message;
         }
-        if (mState != kStateStarting) {
+        if (mState != kStateConnecting) {
             InetConnectResultMsg msg(nResult);
             mConnectSink->Dispatch(&msg);
             mConnectSink = nullptr;
         }
     }
-    if (mPowerOff == 0) {
-        return;
-    }
-    mPowerOff = 0;
-    printf("Powering off now\n");
-    (void)StopInterface();
-    while (sceDevctl(kAdaptorDevice, kDevctlAdaptorOff, nullptr, 0, nullptr, 0) < 0) {
-    }
-    printf("dev9 off\n");
-    unsigned int nTrayCount;
-    sceCdTrayReq(SCECdTrayClose, &nTrayCount);
-    while (sceCdDiskReady(SCECdBlock) == SCECdNotReady) {
-    }
-    printf("cd drive closed\n");
-    int nDriveResult = 0;
-    while (sceCdPowerOff(&nDriveResult) == 0 || nDriveResult != 0) {
+    if (mPowerOffRequested) {
+        mPowerOffRequested = 0;
+        printf("Powering off now\n");
+        DownInterface();
+        while (sceDevctl("dev9x:", kDev9PowerOff, nullptr, 0, nullptr, 0) < 0) {
+        }
+        printf("dev9 off\n");
+        unsigned int nTray;
+        sceCdTrayReq(SCECdTrayClose, &nTray);
+        while (sceCdDiskReady(SCECdBlock) == SCECdNotReady) {
+        }
+        printf("cd drive closed\n");
+        int nStat = 0;
+        while (sceCdPowerOff(&nStat) == 0 || nStat != 0) {
+        }
     }
 }
 
-void InetImpl::WantModule(const char *pszName) {
-    gWantedMods.push_back(Mod{pszName, 0});
+void InetImpl::AddModule(const char *pszName) {
+    sWantedModules.push_back(Mod{pszName, 0});
 }
 
-int InetImpl::SyncModules() {
-    for (int i = static_cast<int>(gLoadedMods.size()) - 1; i >= 0; --i) {
-        const Mod &mod = gLoadedMods[i];
-        if (std::find(gWantedMods.begin(), gWantedMods.end(), mod) != gWantedMods.end()) {
-            continue;
+int InetImpl::LoadModules() {
+    for (int i = static_cast<int>(sLoadedModules.size()) - 1; i >= 0; --i) {
+        const Mod &mod = sLoadedModules[i];
+        if (std::find(sWantedModules.begin(), sWantedModules.end(), mod) == sWantedModules.end()) {
+            int nResult;
+            if (sceSifStopModule(mod.mId, 0, nullptr, &nResult) >= 0 &&
+                sceSifUnloadModule(mod.mId) >= 0) {
+                sLoadedModules.erase(sLoadedModules.begin() + i);
+            }
         }
-        int nStopResult;
-        if (sceSifStopModule(mod.mId, 0, nullptr, &nStopResult) < 0) {
-            continue;
-        }
-        if (sceSifUnloadModule(mod.mId) < 0) {
-            continue;
-        }
-        gLoadedMods.erase(gLoadedMods.begin() + i);
     }
     const DataArray *pModules =
         SystemConfig()->FindArray("net", true)->FindArray("optional_modules", true);
-    for (unsigned int i = 0; i < gWantedMods.size(); ++i) {
-        const Mod &mod = gWantedMods[i];
-        if (std::find(gLoadedMods.begin(), gLoadedMods.end(), mod) != gLoadedMods.end()) {
-            continue;
+    for (unsigned int i = 0; i < sWantedModules.size(); ++i) {
+        const Mod &mod = sWantedModules[i];
+        if (std::find(sLoadedModules.begin(), sLoadedModules.end(), mod) == sLoadedModules.end()) {
+            const int nId = IrxLoadMatching(pModules, mod.mName);
+            if (nId < 0) {
+                return nId;
+            }
+            sLoadedModules.push_back(mod);
+            sLoadedModules.back().mId = nId;
         }
-        const int nId = IrxLoadMatching(pModules, mod.mName);
-        if (nId < 0) {
-            return nId;
-        }
-        gLoadedMods.push_back(mod);
-        gLoadedMods.back().mId = nId;
     }
     return 0;
 }
 
-int InetImpl::SetupModules(const ezNetCnfData_t *pData) {
-    gWantedMods.clear();
+int InetImpl::SelectModules(const ezNetCnfData_t *pData) {
+    sWantedModules.clear();
     if (pData->interfaceType == kInterfaceTypePpp) {
-        WantModule("ppp.irx");
+        AddModule("ppp.irx");
         if (pData->pppoe != kPppoeOff && pData->pppoe != kPppoeUnset) {
-            WantModule("pppoe.irx");
+            AddModule("pppoe.irx");
         }
     }
-    const bool bSony = strncmp(pData->vendor, kSonyVendor, kSonyVendorLength) == 0;
+    int nType;
+    float fTimeout;
     if (pData->deviceType == kDeviceTypeModem &&
         (pData->pppoe == kPppoeOff || pData->pppoe == kPppoeUnset)) {
-        if (bSony) {
-            WantModule("dev9.irx");
-            WantModule("spduart.irx");
+        if (strncmp(pData->vendor, kSonyVendor, kVendorLength) == 0) {
+            AddModule("dev9.irx");
+            AddModule("spduart.irx");
         } else {
-            WantModule("cxtmdm.irx");
+            AddModule("cxtmdm.irx");
         }
-        sInstance->mConnectionType = kConnectionSlow;
-        sInstance->mTimeoutMs = kModemTimeoutMs;
+        nType = kConnectionSlow;
+        fTimeout = kModemTimeout;
     } else {
-        if (bSony) {
-            WantModule("dev9.irx");
-            WantModule("smap.irx");
+        if (strncmp(pData->vendor, kSonyVendor, kVendorLength) == 0) {
+            AddModule("dev9.irx");
+            AddModule("smap.irx");
         } else {
-            WantModule("an986.irx");
+            AddModule("an986.irx");
         }
-        sInstance->mConnectionType = kConnectionFast;
-        sInstance->mTimeoutMs = kEthernetTimeoutMs;
+        nType = kConnectionFast;
+        fTimeout = kEthernetTimeout;
     }
-    if (strncmp(pData->vendor, kSonyVendor, kSonyVendorLength) == 0) {
-        sInstance->mPowerOff = 0;
-        (void)sceCdPOffCallback(OnPowerOffButton, nullptr);
+    sInstance->mConnectionType = nType;
+    sInstance->mTimeout = fTimeout;
+    if (strncmp(pData->vendor, kSonyVendor, kVendorLength) == 0) {
+        sInstance->mPowerOffRequested = 0;
+        sceCdPOffCallback(OnPowerOff, nullptr);
     }
-    return SyncModules();
+    return LoadModules();
 }
 
-void InetImpl::OnPowerOffButton(void *pArg) {
-    (void)pArg;
-    sInstance->mPowerOff = 1;
+void InetImpl::OnPowerOff(void *) {
+    sInstance->mPowerOffRequested = 1;
 }

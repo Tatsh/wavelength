@@ -7,6 +7,7 @@
 #include <sys/lock.h>
 
 #include <eekernel.h>
+#include <libcconsole.h>
 
 // The C library's locks. A lock takes its semaphore on first use, because the library locks some of
 // them before the kernel is ready.
@@ -31,8 +32,6 @@ STATIC_LOCK(__env_recursive_mutex);
 STATIC_LOCK(__malloc_recursive_mutex);
 STATIC_LOCK(__sfp_recursive_mutex);
 STATIC_LOCK(__tz_mutex);
-
-extern char _end[];
 
 static void LockAcquire(struct __lock *lock) {
     const int self = GetThreadId();
@@ -96,17 +95,9 @@ void __retarget_lock_release_recursive(_LOCK_T lock) {
     LockRelease(lock);
 }
 
-// The heap runs from the end of .bss to the limit the kernel reports.
+// The heap runs from the end of .bss to the limit the kernel reports, through the kernel library.
 void *_sbrk(ptrdiff_t increment) {
-    static char *s_pBreak = _end;
-    char *pOld = s_pBreak;
-
-    if (&s_pBreak[increment] > (char *)EndOfHeap()) {
-        errno = ENOMEM;
-        return (void *)-1;
-    }
-    s_pBreak = &s_pBreak[increment];
-    return pOld;
+    return sbrk(increment);
 }
 
 void _exit(int status) {

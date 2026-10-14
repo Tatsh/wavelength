@@ -51,32 +51,32 @@ typedef struct {
     int *pSoftwareRegisters;
 } SifCmdState;
 
-// NTSC-U/C: 0x0077b4d4, PAL: 0x007bf2a4
+// NTSC-U/C: 0x003c47c8
 static int g_nCmdInitialized = 0;
 
-// NTSC-U/C: 0x008e4b00, PAL: 0x00929b00, where the SIF0 channel delivers each packet from the IOP.
+// NTSC-U/C: 0x00533800, where the SIF0 channel delivers each packet from the IOP.
 // SIF DMA needs the 64-byte alignment retail gives it.
 static SifCmdPacket g_cmdReceiveBuffer __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e4b80, PAL: 0x00929b80
+// NTSC-U/C: 0x00533880
 static unsigned char g_abCmdUnusedBuffer[kUnusedBufferSize] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e4bc0, PAL: 0x00929bc0. SIF DMA needs the 64-byte alignment retail gives it.
+// NTSC-U/C: 0x005338c0. SIF DMA needs the 64-byte alignment retail gives it.
 static sceSifCmdCSData g_cmdInitPacket __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e4bd4, PAL: 0x00929bd4
+// NTSC-U/C: 0x005338d4
 static int sif0_handleid;
 
-// NTSC-U/C: 0x008e4bd8, PAL: 0x00929bd8
+// NTSC-U/C: 0x005338d8
 static SifCmdState _data_table;
 
-// NTSC-U/C: 0x008e4c00, PAL: 0x00929c00
+// NTSC-U/C: 0x00533900
 static sceSifCmdData g_aSystemHandlers[kSystemHandlerCount];
 
-// NTSC-U/C: 0x008e4d00, PAL: 0x00929d00
+// NTSC-U/C: 0x00533a00
 static int soft_reg[kSoftwareRegisterCount];
 
-// NTSC-U/C: 0x005d3558, PAL: 0x006155c0
+// NTSC-U/C: 0x00318bd0, PAL: 0x003854e8
 static void _set_sreg(void *pPacket, void *pData) {
     const sceSifCmdSRData *pRequest = pPacket;
     SifCmdState *pState = pData;
@@ -84,7 +84,7 @@ static void _set_sreg(void *pPacket, void *pData) {
     pState->pSoftwareRegisters[pRequest->rno] = (int)pRequest->value;
 }
 
-// NTSC-U/C: 0x005d3578, PAL: 0x006155e0
+// NTSC-U/C: 0x00318bf0, PAL: 0x00385508
 static void changeAddressHandler(void *pPacket, void *pData) {
     const sceSifCmdCSData *pRequest = pPacket;
     SifCmdState *pState = pData;
@@ -92,7 +92,7 @@ static void changeAddressHandler(void *pPacket, void *pData) {
     pState->nIopBuffer = pRequest->newaddr;
 }
 
-// NTSC-U/C: 0x005d3ac8, PAL: 0x00615b30
+// NTSC-U/C: 0x003190f0, PAL: 0x00385a08
 // Runs for every packet the IOP sends. The packet is copied out so the channel can take the next
 // one before the handler runs.
 static int cmdInterruptHandler(int nChannel) {
@@ -136,7 +136,7 @@ static int cmdInterruptHandler(int nChannel) {
     return 0;
 }
 
-// NTSC-U/C: 0x005d3910, PAL: 0x00615978
+// NTSC-U/C: 0x00318f38, PAL: 0x00385850
 // The common body of sceSifSendCmd() and isceSifSendCmd(). The extra data travels in the same DMA
 // chain, ahead of the packet.
 static unsigned int _sceSifSendCmd(unsigned int fcode,
@@ -183,11 +183,6 @@ static unsigned int _sceSifSendCmd(unsigned int fcode,
 
 int sceSifGetSreg(int reg) {
     return soft_reg[reg];
-}
-
-int sceSifSetSreg(int reg, int value) {
-    soft_reg[reg] = value;
-    return value;
 }
 
 void sceSifInitCmd(void) {
@@ -255,22 +250,6 @@ void sceSifExitCmd(void) {
     DisableDmac(DMAC_SIF0);
     RemoveDmacHandler(DMAC_SIF0, sif0_handleid);
     g_nCmdInitialized = 0;
-}
-
-sceSifCmdData *sceSifSetCmdBuffer(sceSifCmdData *db, int size) {
-    sceSifCmdData *pPrevious = _data_table.pUserHandlers;
-
-    _data_table.nUserHandlerCount = size;
-    _data_table.pUserHandlers = db;
-    return pPrevious;
-}
-
-sceSifCmdData *sceSifSetSysCmdBuffer(sceSifCmdData *db, int size) {
-    sceSifCmdData *pPrevious = _data_table.pSystemHandlers;
-
-    _data_table.nSystemHandlerCount = size;
-    _data_table.pSystemHandlers = db;
-    return pPrevious;
 }
 
 void sceSifAddCmdHandler(unsigned int fcode, sceSifCmdHandler handler, void *data) {

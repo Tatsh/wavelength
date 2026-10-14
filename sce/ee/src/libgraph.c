@@ -1,16 +1,11 @@
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
 
 #include <eekernel.h>
 #include <eetypes.h>
 #include <libgraph.h>
-
-#include "os/log.h"
-
-// Plain C reconstruction of the Sony libgraph entry points used by the game,
-// translated from the disassembly. Register words are packed exactly as the
-// machine code packs them, while kernel services go through ps2sdk.
+#include <sifdev.h>
 
 // The VIF1 channel control register. Bit 8 reports a running transfer.
 #define VIF1_CHCR (*(volatile unsigned int *)(uintptr_t)0x10009000U)
@@ -18,8 +13,6 @@
 #define VIF1_MADR (*(volatile unsigned int *)(uintptr_t)0x10009010U)
 // The VIF1 channel quadword count register.
 #define VIF1_QWC (*(volatile unsigned int *)(uintptr_t)0x10009020U)
-// The VIF1 channel tag address register.
-#define VIF1_TADR (*(volatile unsigned int *)(uintptr_t)0x10009030U)
 // The VIF1 status register.
 #define VIF1_STAT (*(volatile unsigned int *)(uintptr_t)0x10003C00U)
 // The VIF1 force break register.
@@ -38,8 +31,6 @@
 #define GIF_MADR (*(volatile unsigned int *)(uintptr_t)0x1000A010U)
 // The GIF channel quadword count register.
 #define GIF_QWC (*(volatile unsigned int *)(uintptr_t)0x1000A020U)
-// The GIF channel tag address register.
-#define GIF_TADR (*(volatile unsigned int *)(uintptr_t)0x1000A030U)
 // The interrupt controller status register. Writing a set bit acknowledges the matching cause.
 #define INTC_STAT (*(volatile unsigned int *)(uintptr_t)0x1000F000U)
 // The graphics synthesiser status register.
@@ -74,7 +65,7 @@ typedef union {
     u_long128 mQuads[2];
 } Vif1InitPacket;
 
-// NTSC-U/C: 0x007848d0, PAL: 0x007c85f0
+// NTSC-U/C: 0x003c29b0
 static const Vif1InitPacket g_dwVif1InitPacket = {{0x01000404U,
                                                    0x20000000U,
                                                    0U,
@@ -84,7 +75,7 @@ static const Vif1InitPacket g_dwVif1InitPacket = {{0x01000404U,
                                                    0x02000000U,
                                                    0x04000000U}};
 
-// NTSC-U/C: 0x00784900, PAL: 0x007ac150
+// NTSC-U/C: 0x003c2a60
 static GsState g_GsStateBlock = {1, 2, 1, 3, NULL, 0};
 
 // Mode words of the state block, and the vertical blank start bit of the interrupt controller.
@@ -94,26 +85,97 @@ enum {
     kGsFrameMode = 1,
     kGsNtsc = 2,
     kGsPal = 3,
+    kGsDtv480p = 0x50,
     kIntcVblankStartBit = 4
 };
 
 // The spin budget every libgraph busy wait shares.
 enum { kChannelSpinLimit = 0x1000000 };
 
-// NTSC-U/C: 0x006004c8, PAL: 0x005c55f8
+// Bits of the VU control registers. FBRST resets VU1 and enables the debug break of both units,
+// and VPU_STAT reports VU1 running.
+enum {
+    kFbrstResetVu1 = 0x200,
+    kFbrstDebugEnable = 0x404,
+    kVpuStatVu1Running = 0x100,
+};
+
+// The ROM version the display offsets of the newer consoles first appeared in, as YYYYMMDD.
+enum {
+    kRomDateWithDxDyOffset = 20010608,
+    kRomVersionSize = 256,
+    // The date starts this many characters before the terminator of rom0:ROMVER.
+    kRomDateFromEnd = 9,
+};
+
+// The display adjustments _GetGsDxDyOffset() reports.
+typedef struct {
+    int nDx;
+    int nDy;
+    int nDw;
+    int nDh;
+} GsDxDyOffset;
+
+// NTSC-U/C: 0x0030f378, PAL: 0x0037b928
 // Returns the shared graphics state block.
 static GsState *sceGsGetGParam(void) {
     return &g_GsStateBlock;
 }
 
-void VSync(void) {
-    INTC_STAT = kIntcVblankStartBit;
-    while ((INTC_STAT & kIntcVblankStartBit) == 0U) {
+// NTSC-U/C: 0x0030f388, PAL: 0x0037b938
+// Reports whether the console's ROM is newer than the first ROM with display offsets.
+static int checkModelVersion(void) {
+    char szVersion[kRomVersionSize];
+    int fd = sceOpen("rom0:ROMVER", SCE_RDONLY);
+    int i;
+
+    if (fd < 0) {
+        return -1;
     }
-    INTC_STAT = kIntcVblankStartBit;
+    for (i = 0; i < kRomVersionSize; ++i) {
+        sceRead(fd, &szVersion[i], 1);
+        if (szVersion[i] == '\0') {
+            break;
+        }
+    }
+    sceClose(fd);
+    return atoi(&szVersion[i - kRomDateFromEnd]) > kRomDateWithDxDyOffset;
 }
 
-// NTSC-U/C: 0x00596420, PAL: 0x005d9828
+// NTSC-U/C: 0x0030f428, PAL: 0x0037b9d8
+// Reads the display offsets of an output mode from the kernel.
+static void _GetGsDxDyOffset(int nMode, int *pDx, int *pDy, int *pDw, int *pDh) {
+    register int a0 __asm__("$4") = nMode;
+    register int *a1 __asm__("$5") = pDx;
+    register int *a2 __asm__("$6") = pDy;
+    register int *a3 __asm__("$7") = pDw;
+    register int *t0 __asm__("$8") = pDh;
+
+    __asm__ volatile("li $3, 128\n\tsyscall"
+                     : "+r"(a0), "+r"(a1), "+r"(a2), "+r"(a3), "+r"(t0)
+                     :
+                     : "$2", "$3", "memory");
+}
+
+// Acknowledges the vertical blank start interrupt with interrupts disabled.
+static inline void AcknowledgeVblankStart(void) {
+    int bInterrupts = DIntr();
+
+    INTC_STAT = kIntcVblankStartBit;
+    __asm__ volatile("sync" ::: "memory");
+    if (bInterrupts) {
+        EIntr();
+    }
+}
+
+void VSync(void) {
+    AcknowledgeVblankStart();
+    while ((INTC_STAT & kIntcVblankStartBit) == 0U) {
+    }
+    AcknowledgeVblankStart();
+}
+
+// NTSC-U/C: 0x00317440, PAL: 0x00383d00
 // Waits for the next vertical blank while a handler is installed and returns the GS status word
 // the kernel captured at the blank. Bit 13 of the word records the field the blank began.
 static unsigned long long VSync2(void) {
@@ -121,18 +183,18 @@ static unsigned long long VSync2(void) {
     unsigned long long status;
 
     SetVSyncFlag(&flag, &status);
-    INTC_STAT = kIntcVblankStartBit;
+    AcknowledgeVblankStart();
     while ((INTC_STAT & kIntcVblankStartBit) == 0U) {
         __asm__ volatile("" ::: "memory");
         if (flag != 0U) {
             break;
         }
     }
-    INTC_STAT = kIntcVblankStartBit;
+    AcknowledgeVblankStart();
     return status; // The binary returns the word unread when the interrupt bit ends the wait.
 }
 
-// NTSC-U/C: 0x0062f318, PAL: 0x0066fea8
+// NTSC-U/C: 0x00310550, PAL: 0x0037cb00
 // Returns the frame buffer page count of a width and height pair. The count is also the base page
 // of a depth buffer placed after the frame buffer. Sixteen-bit formats count rows in 64-pixel
 // units, and the other formats in 32-pixel units. Only interlaced field mode retains a single
@@ -176,15 +238,20 @@ void sceGsPutDispEnv(const sceGsDispEnv *pDisp) {
 }
 
 void sceGsResetPath(void) {
-    unsigned int clip = 0U;
+    unsigned int fbrst = 0U;
+    unsigned int vpuStat;
 
     VIF1_FBRST = 1U;
     VIF1_ERR = 2U;
     __asm__ volatile("sync" ::: "memory");
-    __asm__ volatile("cfc2 %0, $vi28" : "=r"(clip));
-    clip |= 0x200U;
-    __asm__ volatile("ctc2 %0, $vi28" ::"r"(clip));
+    __asm__ volatile("cfc2 %0, $vi28\n\tnop" : "=r"(fbrst));
+    fbrst |= kFbrstResetVu1;
+    __asm__ volatile("ctc2 %0, $vi28" ::"r"(fbrst));
     __asm__ volatile("sync.p" ::: "memory");
+    do {
+        __asm__ volatile("cfc2 %0, $vi29\n\tnop\n\tnop\n\tnop\n\tnop" : "=r"(vpuStat));
+    } while ((vpuStat & kVpuStatVu1Running) != 0U);
+    __asm__ volatile("ctc2 %0, $vi28\n\tnop" ::"r"(kFbrstDebugEnable));
     ee_store_quadword(VIF1_FIFO, g_dwVif1InitPacket.mQuads[0]);
     ee_store_quadword(VIF1_FIFO, g_dwVif1InitPacket.mQuads[1]);
     GIF_CTRL = 1U;
@@ -267,6 +334,7 @@ int sceGsSetDefAlphaEnv(sceGsAlphaEnv *pAlpha, short nPabe) {
 // Packs the DISPLAY register for one video standard. Interlaced output uses the interlaced vertical
 // offset and doubles the shown height in frame mode. Progressive output shows the height unchanged.
 static unsigned long long MakeDisplayWord(const GsState *state,
+                                          const GsDxDyOffset *pOffset,
                                           short nWidth,
                                           short nHeight,
                                           short nDx,
@@ -275,32 +343,60 @@ static unsigned long long MakeDisplayWord(const GsState *state,
                                           int nOffsetYInterlaced,
                                           int nOffsetYProgressive) {
     int factor = (nWidth + 0x9FF) / nWidth;
-    unsigned long long across = (unsigned long long)((nDx * factor + nOffsetX) & 0xFFF);
+    unsigned long long across =
+        (unsigned long long)((nDx * factor + pOffset->nDx + nOffsetX) & 0xFFF);
     unsigned long long magnify = (unsigned long long)(factor - 1) << 23;
     unsigned long long width = (unsigned long long)(long long)(factor * nWidth - 1) << 32;
     unsigned long long down;
     unsigned long long lines;
 
     if (state->interlaceMode == kGsInterlace) {
-        down = (unsigned long long)((nDy + nOffsetYInterlaced) & 0xFFF) << 12;
+        down = (unsigned long long)((nDy + pOffset->nDy + nOffsetYInterlaced) & 0xFFF) << 12;
         lines =
             (unsigned long long)(long long)(state->fieldMode == 0 ? nHeight - 1 : nHeight * 2 - 1);
     } else {
-        down = (unsigned long long)((nDy + nOffsetYProgressive) & 0xFFF) << 12;
+        down = (unsigned long long)((nDy + pOffset->nDy + nOffsetYProgressive) & 0xFFF) << 12;
         lines = (unsigned long long)(long long)(nHeight - 1);
     }
     return across | down | magnify | width | (lines << 44);
 }
 
+// Packs the DISPLAY register for 480p digital television output. The picture is centred in a
+// 720-pixel line at twice the horizontal resolution.
+static unsigned long long
+MakeDtvDisplayWord(const GsDxDyOffset *pOffset, short nWidth, short nHeight, short nDx, short nDy) {
+    unsigned long long across =
+        (unsigned long long)((((720 - nWidth) / 2) * 2 + pOffset->nDx + nDx * 2 + 232) & 0xFFF);
+    unsigned long long down = (unsigned long long)((nDy + pOffset->nDy + 35) & 0xFFF) << 12;
+    unsigned long long magnify = 1ULL << 23;
+    unsigned long long width = (unsigned long long)(long long)(nWidth * 2 - 1) << 32;
+    unsigned long long lines = (unsigned long long)(long long)(nHeight - 1) << 44;
+
+    return lines | width | across | magnify | down;
+}
+
 void sceGsSetDefDispEnv(
     sceGsDispEnv *pDisp, short nPsm, short nWidth, short nHeight, short nDx, short nDy) {
     GsState *state = sceGsGetGParam();
+    GsDxDyOffset offset;
     long long width = nWidth;
-    int interlace = state->interlaceMode;
-    int output = state->outputMode;
-    int field = state->fieldMode;
+    int interlace;
+    int output;
+    int field;
     unsigned long long buffer;
 
+    if (state->outputMode == kGsNtsc || state->outputMode == kGsPal || checkModelVersion() == 0) {
+        offset.nDh = 0;
+        offset.nDw = 0;
+        offset.nDy = 0;
+        offset.nDx = 0;
+    } else {
+        // Yes, the binary takes the offsets when checkModelVersion() fails with -1 too.
+        _GetGsDxDyOffset(state->outputMode, &offset.nDx, &offset.nDy, &offset.nDw, &offset.nDh);
+    }
+    interlace = state->interlaceMode;
+    output = state->outputMode;
+    field = state->fieldMode;
     pDisp->pmode = 0x66ULL;
     if (interlace == 0) {
         pDisp->smode2 = 2ULL;
@@ -313,11 +409,15 @@ void sceGsSetDefDispEnv(
              ((((unsigned long long)(width + 0x3F) >> 6) & 0x3FULL) << 9);
     pDisp->dispfb = buffer;
     if (output == kGsNtsc) {
-        pDisp->display = MakeDisplayWord(state, nWidth, nHeight, nDx, nDy, 0x27C, 0x32, 0x19);
+        pDisp->display =
+            MakeDisplayWord(state, &offset, nWidth, nHeight, nDx, nDy, 0x27C, 0x32, 0x19);
     } else if (output == kGsPal) {
-        pDisp->display = MakeDisplayWord(state, nWidth, nHeight, nDx, nDy, 0x290, 0x48, 0x24);
+        pDisp->display =
+            MakeDisplayWord(state, &offset, nWidth, nHeight, nDx, nDy, 0x290, 0x48, 0x24);
+    } else if (output == kGsDtv480p) {
+        pDisp->display = MakeDtvDisplayWord(&offset, nWidth, nHeight, nDx, nDy);
     } else {
-        printf("sceGsDefDispEnv:Not support displaymode for %d!!\n", output);
+        scePrintf("sceGsDefDispEnv:Not support displaymode for 0x%x!!\n", output);
     }
     pDisp->bgcolor = 0ULL;
 }
@@ -482,7 +582,7 @@ int sceGsPutDrawEnv(sceGifTag *pGifTag) {
         spins = 0U;
         while ((GIF_CHCR & 0x100U) != 0U) {
             if (kChannelSpinLimit < spins) {
-                printf("sceGsPutDrawEnv: DMA Ch.2 does not terminate\r\n");
+                scePrintf("sceGsPutDrawEnv: DMA Ch.2 does not terminate\r\n");
                 return -1;
             }
             spins++;
@@ -492,122 +592,6 @@ int sceGsPutDrawEnv(sceGifTag *pGifTag) {
     address = (unsigned int)(uintptr_t)pGifTag;
     count = (unsigned int)(first & 0x7FFFULL) + 1U;
     GIF_QWC = count;
-    if ((address & 0x70000000U) == 0x70000000U) {
-        GIF_MADR = (address & 0x0FFFFFFFU) | 0x80000000U;
-    } else {
-        GIF_MADR = address & 0x0FFFFFFFU;
-    }
-    GIF_CHCR = 0x101U;
-    return 0;
-}
-
-int sceGsSetDefLoadImage(sceGsLoadImage *pLoadImage,
-                         short nTbp,
-                         short nTbw,
-                         short nPsm,
-                         short nSsx,
-                         short nSsy,
-                         short nRrw,
-                         short nRrh) {
-    int count = 0;
-    unsigned long long buffer;
-    unsigned long long position;
-    unsigned long long size;
-
-    // The format table routes each storage format to its quadword count.
-    if (nPsm < 0x3B) {
-        switch (nPsm) {
-        case 0x00:
-        case 0x30:
-            count = (nRrw * nRrh) >> 2;
-            break;
-        case 0x01:
-        case 0x31:
-            count = ((nRrw * nRrh) << 1) + (nRrw * nRrh);
-            count >>= 4;
-            break;
-        case 0x02:
-        case 0x0A:
-        case 0x32:
-        case 0x3A:
-            count = (nRrw * nRrh) >> 3;
-            break;
-        case 0x13:
-        case 0x1B:
-            count = (nRrw * nRrh) >> 4;
-            break;
-        case 0x14:
-        case 0x24:
-        case 0x2C:
-            count = (nRrw * nRrh) >> 5;
-            break;
-        default:
-            break;
-        }
-    }
-    if (0x7FFF < count) {
-        printf("sceGsSetDefLoadImage: too big size\r\n");
-        return 0;
-    }
-    // The hardware clears both tag slots before the masked words go in.
-    pLoadImage->mWords[10] = 0ULL;
-    pLoadImage->mWords[11] = 0ULL;
-    pLoadImage->mWords[0] = 0ULL;
-    pLoadImage->mWords[1] = 0ULL;
-    pLoadImage->mWords[10] =
-        (((unsigned long long)(count & 0x7FFF)) | 0x8000ULL) & 0xF3FFFFFFFFFFFFFFULL;
-    pLoadImage->mWords[10] |= 0x0800000000000000ULL;
-    buffer = (((unsigned long long)nTbp) << 32) | (((unsigned long long)nTbw) << 48);
-    buffer |= ((unsigned long long)nPsm) << 56;
-    pLoadImage->mWords[2] = buffer;
-    position = (((unsigned long long)nSsx) << 32) | (((unsigned long long)nSsy) << 48);
-    pLoadImage->mWords[4] = position;
-    size = ((unsigned long long)nRrw) | (((unsigned long long)nRrh) << 32);
-    pLoadImage->mWords[6] = size;
-    // The first tag has no end-of-packet bit; only the image tag in word ten sets it.
-    pLoadImage->mWords[0] = 0x1000000000000004ULL;
-    pLoadImage->mWords[1] = 0xEULL;
-    pLoadImage->mWords[3] = 0x50ULL;
-    pLoadImage->mWords[5] = 0x51ULL;
-    pLoadImage->mWords[7] = 0x52ULL;
-    pLoadImage->mWords[9] = 0x53ULL;
-    pLoadImage->mWords[8] = 0ULL;
-    __asm__ volatile("sync" ::: "memory");
-    return 6;
-}
-
-int sceGsExecLoadImage(sceGsLoadImage *pLoadImage, const void *pSource) {
-    unsigned int spins = 0U;
-    unsigned int address;
-    unsigned int count;
-
-    if ((GIF_CHCR & 0x100U) != 0U) {
-        while ((GIF_CHCR & 0x100U) != 0U) {
-            if (kChannelSpinLimit < spins) {
-                printf("sceGsExecLoadImage: DMA Ch.2 does not terminate\r\n");
-                return -1;
-            }
-            spins++;
-        }
-    }
-    GIF_QWC = 6U;
-    address = (unsigned int)(uintptr_t)pLoadImage;
-    if ((address & 0x70000000U) == 0x70000000U) {
-        GIF_MADR = (address & 0x0FFFFFFFU) | 0x80000000U;
-    } else {
-        GIF_MADR = address & 0x0FFFFFFFU;
-    }
-    GIF_CHCR = 0x101U;
-    while ((GIF_CHCR & 0x100U) != 0U) {
-        if (kChannelSpinLimit < spins) {
-            printf("sceGsExecLoadImage: DMA Ch.2 does not terminate\r\n");
-            return -1;
-        }
-        spins++;
-    }
-    count = (unsigned int)(pLoadImage->mWords[10] & 0x7FFFULL);
-    GIF_QWC = count;
-    address = (unsigned int)(uintptr_t)pSource;
     if ((address & 0x70000000U) == 0x70000000U) {
         GIF_MADR = (address & 0x0FFFFFFFU) | 0x80000000U;
     } else {
@@ -664,7 +648,7 @@ int sceGsSetDefStoreImage(sceGsStoreImage *pStoreImage,
 static inline int StoreImageWaitFifo(int *pSpins) {
     while ((VIF1_STAT & 0x1F000000U) == 0U) {
         if ((unsigned int)kChannelSpinLimit < (unsigned int)*pSpins) {
-            printf("sceGsExecStoreImage: Enough data does not reach VIF1\n");
+            scePrintf("sceGsExecStoreImage: Enough data does not reach VIF1\n");
             GS_CSR = 0x100ULL;
             GS_BUSDIR = 0ULL;
             GIF_CTRL = 1U;
@@ -679,7 +663,7 @@ static inline int StoreImageWaitFifo(int *pSpins) {
 int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
     // The MSKPATH3 code restored to the VIF1 FIFO after image store work, padded with three NOP
     // codes.
-    // NTSC-U/C: 0x007729c0, PAL: 0x007b6bb0
+    // NTSC-U/C: 0x003c2a70
     static const u_long128 init_mp3 = 0x06000000U;
 
     volatile unsigned long long *words = (volatile unsigned long long *)pStoreImage;
@@ -780,7 +764,7 @@ int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
     if ((VIF1_CHCR & 0x100U) != 0U) {
         while ((VIF1_CHCR & 0x100U) != 0U) {
             if ((unsigned int)kChannelSpinLimit < (unsigned int)spins) {
-                printf("sceGsExecStoreImage: DMA Ch.1 does not terminate\r\n");
+                scePrintf("sceGsExecStoreImage: DMA Ch.1 does not terminate\r\n");
                 return -1;
             }
             spins++;
@@ -798,7 +782,7 @@ int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
     VIF1_CHCR = 0x101U;
     while ((VIF1_CHCR & 0x100U) != 0U) {
         if ((unsigned int)kChannelSpinLimit < (unsigned int)spins) {
-            printf("sceGsExecStoreImage: DMA Ch.1 does not terminate\r\n");
+            scePrintf("sceGsExecStoreImage: DMA Ch.1 does not terminate\r\n");
             return -1;
         }
         spins++;
@@ -806,7 +790,7 @@ int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
     if ((GS_CSR & 2ULL) == 0ULL) {
         while ((GS_CSR & 2ULL) == 0ULL) {
             if ((unsigned int)kChannelSpinLimit < (unsigned int)spins) {
-                printf("sceGsExecStoreImage: GS does not terminate\r\n");
+                scePrintf("sceGsExecStoreImage: GS does not terminate\r\n");
                 ee_store_quadword(VIF1_FIFO, init_mp3);
                 return -1;
             }
@@ -825,7 +809,7 @@ int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
         VIF1_CHCR = 0x100U;
         while ((VIF1_CHCR & 0x100U) != 0U) {
             if ((unsigned int)kChannelSpinLimit < (unsigned int)spins) {
-                printf("sceGsExecStoreImage: DMA Ch.1 (GS->MEM) does not terminate\r\n");
+                scePrintf("sceGsExecStoreImage: DMA Ch.1 (GS->MEM) does not terminate\r\n");
                 GS_CSR = 0x100ULL;
                 GS_BUSDIR = 0ULL;
                 GIF_CTRL = 1U;
@@ -878,110 +862,28 @@ int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
 }
 
 int sceGsSyncPath(int nMode, unsigned short nTimeout) {
-    unsigned int spins = 0U;
     unsigned int vuStatus;
-    const char *stage;
     int mask;
 
+    (void)nMode;
     (void)nTimeout;
-    if (nMode != 0) {
+    do {
         mask = (VIF1_CHCR & 0x100U) != 0U ? 1 : 0;
         if ((GIF_CHCR & 0x100U) != 0U) {
             mask |= 2;
         }
-        if ((VIF1_STAT & 0x1F000003U) != 0U) {
+        if ((VIF1_STAT & 3U) != 0U) {
             mask |= 4;
         }
         __asm__ volatile("cfc2 %0, $vi29" : "=r"(vuStatus));
-        if ((vuStatus & 0x100U) != 0U) {
+        if ((vuStatus & kVpuStatVu1Running) != 0U) {
             mask |= 8;
         }
         if ((GIF_STAT & 0xC00U) != 0U) {
             mask |= 0x10;
         }
-        return mask;
-    }
-
-    while ((VIF1_CHCR & 0x100U) != 0U) {
-        if (spins++ > kChannelSpinLimit) {
-            stage = "sceGsSyncPath: DMA Ch.1 does not terminate\r\n";
-            goto timeout;
-        }
-    }
-    while ((GIF_CHCR & 0x100U) != 0U) {
-        if (spins++ > kChannelSpinLimit) {
-            stage = "sceGsSyncPath: DMA Ch.2 does not terminate\r\n";
-            goto timeout;
-        }
-    }
-    while ((VIF1_STAT & 0x1F000003U) != 0U) {
-        if (spins++ > kChannelSpinLimit) {
-            stage = "sceGsSyncPath: VIF1 does not terminate\r\n";
-            goto timeout;
-        }
-    }
-    for (;;) {
-        __asm__ volatile("cfc2 %0, $vi29" : "=r"(vuStatus));
-        if ((vuStatus & 0x100U) == 0U) {
-            break;
-        }
-        if (spins++ > kChannelSpinLimit) {
-            stage = "sceGsSyncPath: VU1 does not terminate\r\n";
-            goto timeout;
-        }
-    }
-    while ((GIF_STAT & 0xC00U) != 0U) {
-        if (spins++ > kChannelSpinLimit) {
-            stage = "sceGsSyncPath: GIF does not terminate\r\n";
-            goto timeout;
-        }
-    }
+    } while (mask != 0);
     return 0;
-
-timeout:
-    printf(stage);
-    printf("\t<D1_CHCR=%08x:", VIF1_CHCR);
-    printf("D1_TADR=%08x:", VIF1_TADR);
-    printf("D1_MADR=%08x:", VIF1_MADR);
-    printf("D1_QWC=%08x>\r\n", VIF1_QWC);
-    printf("\t<D2_CHCR=%08x:", GIF_CHCR);
-    printf("D2_TADR=%08x:", GIF_TADR);
-    printf("D2_MADR=%08x:", GIF_MADR);
-    printf("D2_QWC=%08x>\r\n", GIF_QWC);
-    printf("\t<VIF1_STAT=%08x:", VIF1_STAT);
-    printf("GIF_STAT=%08x>\r\n", GIF_STAT);
-    return -1;
-}
-
-void sceGsSetHalfOffset(void *pDrawEnv, int nOffsetX, int nOffsetY, int nField) {
-    volatile unsigned long long *words = (volatile unsigned long long *)pDrawEnv;
-    unsigned long long scissor = words[6];
-    long long shownX = (long long)((scissor >> 16) & 0x7FFULL);
-    long long shownY = (long long)((scissor >> 48) & 0x7FFULL);
-    long long deltaX = (long long)(short)nOffsetX - ((shownX + 1) >> 1);
-    long long deltaY = (long long)(short)nOffsetY - ((shownY + 1) >> 1);
-    unsigned long long across = (unsigned long long)deltaX << 4;
-    unsigned long long down = (unsigned long long)deltaY << 4;
-
-    if ((short)nField == 0) {
-        words[4] = across | (down << 32);
-    } else {
-        words[4] = across | ((down + 8ULL) << 32);
-    }
-}
-
-void sceGsSwapDBuff(sceGsDBuff *pDBuff, int nField) {
-    int field = nField & 1;
-    unsigned char *base = (unsigned char *)pDBuff;
-    const sceGsDispEnv *shown;
-
-    shown = (const sceGsDispEnv *)(base + (unsigned int)(field * 0x28));
-    sceGsPutDispEnv(shown);
-    if (field == 0) {
-        sceGsPutDrawEnv(&pDBuff->giftag0);
-    } else {
-        sceGsPutDrawEnv(&pDBuff->giftag1);
-    }
 }
 
 int (*sceGsSyncVCallback(int (*pfnHandler)(int)))(int) {

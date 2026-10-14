@@ -14,9 +14,9 @@ class NetInet {
 public:
     /** Values GetConnectionType() reports. */
     enum ConnectionType {
-        kConnectionSlow = 1, /*!< A modem, which the game gives more time per packet. */
-        kConnectionFast = 2, /*!< An Ethernet adaptor. */
-        kConnectionNone = 3, /*!< No connection is up. */
+        kConnectionSlow = 1,    /*!< A modem, which the game gives more time per packet. */
+        kConnectionFast = 2,    /*!< An Ethernet adaptor. */
+        kConnectionOffline = 3, /*!< No interface is up. */
     };
 
     /**
@@ -50,7 +50,7 @@ public:
     virtual void Connect(MsgSink *pSink, int nConfig) = 0;
 
     /**
-     * Vtable slot 5. Request that the connection go down.
+     * Vtable slot 5. Take the interface down once no connection is starting.
      *
      * @param pSink The receiver of the InetDisconnectResultMsg.
      */
@@ -82,13 +82,13 @@ public:
     virtual int GetConnectionType() = 0;
 
     /**
-     * Vtable slot 10. Request that the next poll switch the console off.
+     * Vtable slot 10. Turn the console off at the next poll.
      *
      * The default does nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x00397500
      */
-    virtual void PowerOff() {
+    virtual void RequestPowerOff() {
     }
 };
 

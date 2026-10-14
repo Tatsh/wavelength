@@ -1,4 +1,7 @@
 
+#include <errno.h>
+#include <stddef.h>
+
 #include <deci2.h>
 #include <eekernel.h>
 #include <libcconsole.h>
@@ -23,7 +26,12 @@ enum {
     kConsoleInput = 0,
     kConsoleOutput = 1,
     kConsoleError = 2,
+
+    kStatusEie = 0x10000,
 };
+
+// The end of the program image, where the heap starts.
+extern char _end[];
 
 // A DECI2 packet, a header and the TTY payload.
 typedef struct {
@@ -57,21 +65,24 @@ typedef struct {
     TtyQueue *pQueue;
 } TtyState;
 
-// NTSC-U/C: 0x008e7e50, PAL: 0x0092ce50
+// NTSC-U/C: 0x005334d0
 static TtyState tinfo;
 
-// NTSC-U/C: 0x008e7e80, PAL: 0x0092ce80
+// NTSC-U/C: 0x00533500
 static TtyPacket g_ttySendPacket __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e7fc0, PAL: 0x0092cfc0
+// NTSC-U/C: 0x00533640
 static TtyPacket g_ttyReceivePacket __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x0076f014, PAL: 0x007b2d74
+// NTSC-U/C: 0x003c47b4
 static int ttyinit;
 
-// NTSC-U/C: 0x006277d8, PAL: 0x00668368
+// NTSC-U/C: 0x003c47b8, the end of the heap sbrk() has handed out.
+static char *g_pHeapBreak = _end;
+
+// NTSC-U/C: 0x00317d10, PAL: 0x00384628
 static TtyQueue *QueueInit(int nCapacity) {
-    // NTSC-U/C: 0x008e7d40, PAL: 0x0092cd40
+    // NTSC-U/C: 0x005333c0
     static TtyQueue q;
 
     q.nCapacity = nCapacity;
@@ -81,7 +92,7 @@ static TtyQueue *QueueInit(int nCapacity) {
     return &q;
 }
 
-// NTSC-U/C: 0x00627800, PAL: 0x00668390
+// NTSC-U/C: 0x00317d38, PAL: 0x00384650
 static void QueuePeekWriteDone(TtyQueue *pQueue) {
     ++pQueue->nCount;
     ++pQueue->pTail;
@@ -90,7 +101,7 @@ static void QueuePeekWriteDone(TtyQueue *pQueue) {
     }
 }
 
-// NTSC-U/C: 0x00627840, PAL: 0x006683d0
+// NTSC-U/C: 0x00317d78, PAL: 0x00384690
 static void QueuePeekReadDone(TtyQueue *pQueue) {
     --pQueue->nCount;
     ++pQueue->pHead;
@@ -99,7 +110,7 @@ static void QueuePeekReadDone(TtyQueue *pQueue) {
     }
 }
 
-// NTSC-U/C: 0x00627880, PAL: 0x00668410
+// NTSC-U/C: 0x00317db8, PAL: 0x003846d0
 static void sceTtyHandler(int nEvent, int nParam, void *pOpt) {
     TtyState *pState = (TtyState *)pOpt;
     int nDone;
@@ -149,7 +160,7 @@ static void sceTtyHandler(int nEvent, int nParam, void *pOpt) {
     }
 }
 
-// NTSC-U/C: 0x00627c38, PAL: 0x006687c8
+// NTSC-U/C: 0x00318170, PAL: 0x00384a88
 static int sceTtyInit(void) {
     TtyPacket *pSend;
 
@@ -173,7 +184,7 @@ static int sceTtyInit(void) {
     return 1;
 }
 
-// NTSC-U/C: 0x00627a18, PAL: 0x006685a8
+// NTSC-U/C: 0x00317f50, PAL: 0x00384868
 // Converts each newline to a carriage return and newline, and returns the number of source bytes
 // that fitted in the packet.
 static int TtyWrite(const char *pBuffer, int nLength) {
@@ -215,7 +226,7 @@ static int TtyWrite(const char *pBuffer, int nLength) {
     return nConsumed;
 }
 
-// NTSC-U/C: 0x00627b68, PAL: 0x006686f8
+// NTSC-U/C: 0x003180a0, PAL: 0x003849b8
 // Returns once a newline or a carriage return arrives, or when the buffer is full.
 static int sceTtyRead(char *pBuffer, int nLength) {
     int nRead = 0;
@@ -284,6 +295,37 @@ int LibcConsoleLseek(int nFile, int nOffset, int nOrigin) {
     (void)nOffset;
     (void)nOrigin;
     return -1;
+}
+
+void *sbrk(ptrdiff_t nIncrement) {
+    unsigned int bEnabled;
+    char *pOld;
+    char *pNew;
+
+    __asm__ volatile("mfc0 %0, $12" : "=r"(bEnabled));
+    bEnabled &= kStatusEie;
+    if (bEnabled) {
+        unsigned int nStatus;
+
+        do {
+            __asm__ volatile("di\n\tsync.p" ::: "memory");
+            __asm__ volatile("mfc0 %0, $12" : "=r"(nStatus));
+        } while ((nStatus & kStatusEie) != 0);
+    }
+    pNew = g_pHeapBreak + nIncrement;
+    if ((char *)EndOfHeap() < pNew) {
+        errno = ENOMEM;
+        if (bEnabled) {
+            __asm__ volatile("ei" ::: "memory");
+        }
+        return (void *)-1;
+    }
+    pOld = g_pHeapBreak;
+    g_pHeapBreak = pNew;
+    if (bEnabled) {
+        __asm__ volatile("ei" ::: "memory");
+    }
+    return pOld;
 }
 
 int LibcConsoleIsatty(int nFile) {

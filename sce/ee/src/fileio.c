@@ -17,6 +17,7 @@
 enum {
     kFsServerId = 0x80000001,
     kFsCompletionCommand = 0x80000011,
+    kFsDeferredCommand = 0x80000013,
 
     kFsFunctionOpen = 0,
     kFsFunctionClose = 1,
@@ -24,12 +25,21 @@ enum {
     kFsFunctionWrite = 3,
     kFsFunctionLseek = 4,
     kFsFunctionIoctl = 5,
+    kFsFunctionMkdir = 7,
+    kFsFunctionGetstat = 12,
+    kFsFunctionDevctl = 23,
     kFsFunctionInit = 0xff,
+
+    // A server that reports this in the second word of its reply to the initialisation call
+    // selects the result area of each completion.
+    kFsServerMultipleResultAreas = 2,
+    kFsResultAreaCount = 2,
 
     kFsHandleCount = 32,
     kFsPendingCount = 32,
     kFsPathSize = 0x400,
     kFsIoctlArgSize = 0x400,
+    kFsDevctlArgSize = 0x400,
     kFsWriteHeadSize = 16,
     kFsReadEdgeSize = 64,
     kFsStatSize = 0x40,
@@ -59,6 +69,7 @@ enum {
 
     kFsErrorNotBound = -1,
     kFsErrorBadHandle = -9,
+    kFsErrorInvalidArgument = -22,
     kFsErrorRpc = -11,
     kFsErrorNoHandle = -19,
     kFsErrorInitRpc = -0x10001,
@@ -134,6 +145,28 @@ typedef struct {
     int nArgSize;
 } FsIoctlPacket;
 
+typedef struct {
+    FsCallHeader mHeader;
+    int mMode;
+    char mName[kFsPathSize];
+} FsMkdirPacket;
+
+typedef struct {
+    FsCallHeader mHeader;
+    struct sce_stat *pStat;
+    char mName[kFsPathSize];
+} FsGetstatPacket;
+
+typedef struct {
+    FsCallHeader mHeader;
+    char mName[kFsPathSize];
+    unsigned char mArg[kFsDevctlArgSize];
+    int mCommand;
+    unsigned int nArgSize;
+    void *pBuffer;
+    unsigned int nBufferSize;
+} FsDevctlPacket;
+
 typedef union {
     FsCallHeader mHeader;
     FsOpenPacket mOpen;
@@ -142,6 +175,9 @@ typedef union {
     FsWritePacket mWrite;
     FsLseekPacket mLseek;
     FsIoctlPacket mIoctl;
+    FsMkdirPacket mMkdir;
+    FsGetstatPacket mGetstat;
+    FsDevctlPacket mDevctl;
 } FsPacket;
 
 // The completion the server writes. A negative semaphore marks a call made without waiting, whose
@@ -176,60 +212,79 @@ typedef struct {
     } mBody;
 } FsResult;
 
-// NTSC-U/C: 0x0071ea7c, PAL: 0x007624fc, the version the library reports, the last four bytes of
-// its build tag.
-static const char g_abFsLibraryVersion[4] = {'2', '3', '0', '0'};
+// A callback the server requests with kFsDeferredCommand, run in the command interrupt.
+typedef struct {
+    void (*pfnCallback)(void *pArg);
+    void *pArg;
+} FsDeferredCallback;
 
-// NTSC-U/C: 0x0082cad8, PAL: 0x0086f728, a second server version the check accepts.
+// NTSC-U/C: 0x003c47b0, the version the library reports, the last four bytes of its build tag.
+static const char g_abFsLibraryVersion[4] = {'2', '6', '0', '0'};
+
+// NTSC-U/C: 0x004327c8, a second server version the check accepts.
 static const char g_abFsAltVersion[4] = {'.', '.', '.', '.'};
 
-// NTSC-U/C: 0x00762c18, PAL: 0x007a5bb0
+// NTSC-U/C: 0x003c4868
 static const char *g_pFsAltVersion = g_abFsAltVersion;
 
-// NTSC-U/C: 0x00762b88, PAL: 0x007a5b20, the semaphores of calls made without waiting, or -1 for
-// a free slot.
+// NTSC-U/C: 0x003c47d0, the semaphores of calls made without waiting, or -1 for a free slot.
 static int g_anFsPending[kFsPendingCount] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                              -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                              -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-// NTSC-U/C: 0x00762c08, PAL: 0x007a5ba0
+// NTSC-U/C: 0x003c4850, the result area the last completion used.
+static int g_nFsLastResultArea;
+
+// NTSC-U/C: 0x003c4854
 static int g_bFsBound;
 
-// NTSC-U/C: 0x00762c0c, PAL: 0x007a5ba4, serialises calls.
+// NTSC-U/C: 0x003c4858, set when the server writes each completion to the area it selects.
+static int g_bFsMultipleResultAreas;
+
+// NTSC-U/C: 0x003c485c, serialises calls.
 static int g_nFsCallSema = -1;
 
-// NTSC-U/C: 0x00762c10, PAL: 0x007a5ba8, guards the handle records.
+// NTSC-U/C: 0x003c4860, guards the handle records.
 static int g_nFsHandleSema = -1;
 
-// NTSC-U/C: 0x00762c14, PAL: 0x007a5bac, guards the pending slots.
+// NTSC-U/C: 0x003c4864, guards the pending slots.
 static int g_nFsPendingSema = -1;
 
-// NTSC-U/C: 0x008e28c0, PAL: 0x00927c40
+// NTSC-U/C: 0x005352c0, the result areas sceFsInit() reports to the server.
+static FsResult *g_apFsResultAreas[kFsResultAreaCount] __attribute__((aligned(64)));
+
+// NTSC-U/C: 0x005352c8
 static void *g_pFsIoctlArg;
 
-// NTSC-U/C: 0x008e2900, PAL: 0x00927c80
+// NTSC-U/C: 0x00535300
 static FsPacket g_fsPacket __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e3540, PAL: 0x009288c0, the word the server returns when it accepts a call.
+// NTSC-U/C: 0x00535f40, the words the server returns when it accepts a call.
 static int g_anFsReceive[16] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e3580, PAL: 0x00928900
-static FsResult g_fsResult __attribute__((aligned(64)));
+// NTSC-U/C: 0x00535f80
+static FsResult g_aFsResults[kFsResultAreaCount] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e39c0, PAL: 0x00928d40
+// NTSC-U/C: 0x00536800
 static FsHandle g_aFsHandles[kFsHandleCount] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e3bc0, PAL: 0x00928f40
+// NTSC-U/C: 0x00536a00
 static sceSifClientData g_fsClient __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e3be8, PAL: 0x00928f68, the version the server reported when the client bound it.
+// NTSC-U/C: 0x00536a28, the version the server reported when the client bound it.
 static char g_abFsServerVersion[4];
+
+// NTSC-U/C: 0x00536a40, registered with the completion handler, which never reads it.
+static unsigned char g_abFsCompletionData[64] __attribute__((aligned(64)));
+
+// NTSC-U/C: 0x00536a80
+static FsDeferredCallback g_fsDeferredCallback;
 
 static int FsReceivedWord(void) {
     return *(volatile int *)UNCACHED_SEG(&g_anFsReceive[0]);
 }
 
-// NTSC-U/C: 0x0056aa08, PAL: 0x005aaed0
+// NTSC-U/C: 0x0031a1c8, PAL: 0x00386ae0
 static void FsCreateCallSema(void) {
     struct SemaParam param;
 
@@ -242,7 +297,7 @@ static void FsCreateCallSema(void) {
     g_nFsCallSema = CreateSema(&param);
 }
 
-// NTSC-U/C: 0x0056a4f0, PAL: 0x005aa9b8
+// NTSC-U/C: 0x00319cc8, PAL: 0x003865e0
 static void FsCreateTableSemaphores(void) {
     struct SemaParam param;
 
@@ -256,7 +311,7 @@ static void FsCreateTableSemaphores(void) {
     g_nFsPendingSema = CreateSema(&param);
 }
 
-// NTSC-U/C: 0x0056aa58, PAL: 0x005aaf20
+// NTSC-U/C: 0x0031a218, PAL: 0x00386b30
 // The binary passes the function number of each call, which the lock does not read.
 static int FsLock(int nFunction) {
     (void)nFunction;
@@ -265,12 +320,12 @@ static int FsLock(int nFunction) {
     return 0;
 }
 
-// NTSC-U/C: 0x0056aa88, PAL: 0x005aaf50
+// NTSC-U/C: 0x0031a248
 static int FsUnlock(void) {
     return SignalSema(g_nFsCallSema);
 }
 
-// NTSC-U/C: 0x0056a550, PAL: 0x005aaa18
+// NTSC-U/C: 0x00319d28, PAL: 0x00386640
 static FsHandle *FsAllocHandle(void) {
     FsHandle *pHandle;
 
@@ -287,7 +342,7 @@ static FsHandle *FsAllocHandle(void) {
     return NULL;
 }
 
-// NTSC-U/C: 0x0056a5d8, PAL: 0x005aaaa0
+// NTSC-U/C: 0x00319db0, PAL: 0x003866c8
 static FsHandle *FsFindHandle(int nDescriptor) {
     FsCreateTableSemaphores();
     WaitSema(g_nFsHandleSema);
@@ -303,27 +358,49 @@ static int FsHandleIndex(const FsHandle *pHandle) {
     return (int)(pHandle - g_aFsHandles);
 }
 
-// NTSC-U/C: 0x0056a648, PAL: 0x005aab10
-static void FsCompletionHandler(void *pData, void *pArg) {
-    volatile FsResult *pResult = (volatile FsResult *)UNCACHED_SEG(&g_fsResult);
-    int nSema = pResult->mSema;
-    int nKind = pResult->mKind;
-    void *pDest = pResult->pDest;
-    int nDestSize = pResult->nDestSize;
+// Stores a byte through the uncached and the cached alias of the destination.
+static void FsStoreBoth(unsigned char *pDest, int nIndex, unsigned char nValue) {
+    ((unsigned char *)UNCACHED_SEG(pDest))[nIndex] = nValue;
+    pDest[nIndex] = nValue;
+}
+
+// NTSC-U/C: 0x00319e20, PAL: 0x00386738
+static void _sceFs_Rcv_Intr(void *pData, void *pArg) {
+    volatile FsResult *pResult;
+    int nArea = 0;
+    int nSema;
+    int nKind;
+    void *pDest;
+    int nDestSize;
+    unsigned char *pEdge;
     int i;
 
-    (void)pData;
     (void)pArg;
+    if (g_bFsMultipleResultAreas) {
+        nArea = (int)((sceSifCmdHdr *)pData)->opt;
+    }
+    g_nFsLastResultArea = nArea;
+    pResult = (volatile FsResult *)UNCACHED_SEG(&g_aFsResults[nArea]);
+    nSema = pResult->mSema;
+    nKind = pResult->mKind;
+    pDest = pResult->pDest;
+    nDestSize = pResult->nDestSize;
     if (nSema >= 0) {
         memcpy(pDest, (const void *)pResult->mBody.mData, (size_t)nDestSize);
     }
     switch (nKind) {
     case kFsKindRead:
-        for (i = 0; i < pResult->mBody.mRead.nHeadSize; ++i) {
-            pResult->mBody.mRead.pHead[i] = pResult->mBody.mRead.mHead[i];
+        if (pResult->mBody.mRead.nHeadSize > 0) {
+            pEdge = pResult->mBody.mRead.pHead;
+            for (i = 0; i < pResult->mBody.mRead.nHeadSize; ++i) {
+                FsStoreBoth(pEdge, i, pResult->mBody.mRead.mHead[i]);
+            }
         }
-        for (i = 0; i < pResult->mBody.mRead.nTailSize; ++i) {
-            pResult->mBody.mRead.pTail[i] = pResult->mBody.mRead.mTail[i];
+        if (pResult->mBody.mRead.nTailSize > 0) {
+            pEdge = pResult->mBody.mRead.pTail;
+            for (i = 0; i < pResult->mBody.mRead.nTailSize; ++i) {
+                FsStoreBoth(pEdge, i, pResult->mBody.mRead.mTail[i]);
+            }
         }
         break;
     case kFsKindDirent:
@@ -360,20 +437,35 @@ static void FsCompletionHandler(void *pData, void *pArg) {
     }
 }
 
-// NTSC-U/C: 0x0056aa98, PAL: 0x005aaf60
-static int FsBind(void) {
+// NTSC-U/C: 0x0031a258, PAL: 0x00386b60
+static void FsInvokeDeferredCallback(void *pData, void *pArg) {
+    FsDeferredCallback *pDeferred = (FsDeferredCallback *)pArg;
+
+    (void)pData;
+    if (pDeferred->pfnCallback != NULL) {
+        pDeferred->pfnCallback(pDeferred->pArg);
+    }
+    // Yes, the binary enables interrupts on the way out of the command handler.
+    __asm__ volatile("sync\n\tei" ::: "memory");
+}
+
+// NTSC-U/C: 0x0031a288, PAL: 0x00386ba0
+int sceFsInit(void) {
     FsHandle *pHandle;
-    // SIF DMA moves whole quadwords from an aligned address, and the send buffer must start on
-    // one. The binary places it 16 bytes into its frame.
-    FsResult *pResultArea __attribute__((aligned(16))) = &g_fsResult;
+    int bInterrupts;
     int nBound;
     int nDelay;
+    int nAreas;
 
     sceSifInitRpc(0);
-    DIntr();
-    // The binary passes a buffer at 0x008e3c00 the handler never reads.
-    sceSifAddCmdHandler(kFsCompletionCommand, FsCompletionHandler, NULL);
-    EIntr();
+    g_fsDeferredCallback.pfnCallback = NULL;
+    g_fsDeferredCallback.pArg = NULL;
+    bInterrupts = DIntr();
+    sceSifAddCmdHandler(kFsCompletionCommand, _sceFs_Rcv_Intr, g_abFsCompletionData);
+    sceSifAddCmdHandler(kFsDeferredCommand, FsInvokeDeferredCallback, &g_fsDeferredCallback);
+    if (bInterrupts) {
+        EIntr();
+    }
     for (;;) {
         nBound = sceSifBindRpc(&g_fsClient, kFsServerId, 0);
         if (nBound < 0) {
@@ -392,23 +484,27 @@ static int FsBind(void) {
         pHandle->mFlags = 0;
     }
     SignalSema(g_nFsHandleSema);
+    g_apFsResultAreas[0] = &g_aFsResults[0];
+    g_apFsResultAreas[1] = &g_aFsResults[1];
     if (sceSifCallRpc(&g_fsClient,
                       kFsFunctionInit,
                       0,
-                      &pResultArea,
-                      sizeof(pResultArea),
+                      g_apFsResultAreas,
+                      sizeof(g_apFsResultAreas),
                       g_anFsReceive,
-                      sizeof(g_anFsReceive[0]),
+                      2 * sizeof(g_anFsReceive[0]),
                       NULL,
                       NULL) < 0) {
         return kFsErrorInitRpc;
     }
     memcpy(g_abFsServerVersion, (const void *)UNCACHED_SEG(&g_anFsReceive[0]), 4);
+    memcpy(&nAreas, (const void *)UNCACHED_SEG(&g_anFsReceive[1]), sizeof(nAreas));
     g_bFsBound = 1;
+    g_bFsMultipleResultAreas = nAreas == kFsServerMultipleResultAreas;
     return 0;
 }
 
-// NTSC-U/C: 0x0056ac38, PAL: 0x005ab100
+// NTSC-U/C: 0x0031a490, PAL: 0x00386da8
 // Reports a mismatch only when the server matches neither accepted version and the two accepted
 // versions also differ from each other.
 static int FsVersionMismatch(void) {
@@ -494,7 +590,7 @@ int sceOpen(const char *pszPath, int nFlags, ...) {
 
     FsLock(kFsFunctionOpen);
     if (g_bFsBound == 0) {
-        FsBind();
+        sceFsInit();
     }
     if (FsVersionMismatch()) {
         FsUnlock();
@@ -660,8 +756,6 @@ int sceRead(int nDescriptor, void *pBuffer, int nBytes) {
     if ((nFlags & kFsHandleNoWriteBack) == 0) {
         sceSifWriteBackDCache(pBuffer, nBytes);
     }
-    // 0xa4 bytes cover the read's head and tail blocks.
-    sceSifWriteBackDCache(&g_fsResult, 0xa4);
     sceSifWriteBackDCache(&g_fsPacket, sizeof(FsReadPacket));
     return FsCall(
         kFsFunctionRead, sizeof(FsReadPacket), nSema, (nFlags & kFsHandleNoWait) != 0, &nResult);
@@ -722,7 +816,7 @@ int sceIoctl(int nDescriptor, int nRequest, void *pArg) {
     FsLock(kFsFunctionIoctl);
     g_pFsIoctlArg = pArg;
     if (g_bFsBound == 0) {
-        FsBind();
+        sceFsInit();
     }
     if (pHandle == NULL || pHandle->mFlags == 0) {
         FsUnlock();
@@ -731,13 +825,14 @@ int sceIoctl(int nDescriptor, int nRequest, void *pArg) {
     g_fsPacket.mIoctl.mReplyBuffer = 0;
     g_fsPacket.mIoctl.mReplySize = 0;
     if (nRequest == kFsIoctlLastResult) {
-        *(int *)pArg = *(volatile int *)UNCACHED_SEG(&g_fsResult.mBody.mData[0]);
+        *(int *)pArg =
+            *(volatile int *)UNCACHED_SEG(&g_aFsResults[g_nFsLastResultArea].mBody.mData[0]);
         FsUnlock();
         return 0;
     }
     if (nRequest == kFsIoctlLastResultWide) {
-        *(unsigned long long *)pArg =
-            *(volatile unsigned long long *)UNCACHED_SEG(&g_fsResult.mBody.mData[0]);
+        *(unsigned long long *)pArg = *(volatile unsigned long long *)UNCACHED_SEG(
+            &g_aFsResults[g_nFsLastResultArea].mBody.mData[0]);
         FsUnlock();
         return 0;
     }
@@ -767,6 +862,102 @@ int sceIoctl(int nDescriptor, int nRequest, void *pArg) {
     g_fsPacket.mHeader.mSema = nSema;
     sceSifWriteBackDCache(&g_fsPacket, sizeof(FsIoctlPacket));
     return FsCall(kFsFunctionIoctl, sizeof(FsIoctlPacket), nSema, 0, &nResult);
+}
+
+// Copies a path into a packet, truncating it to the packet's field. Returns the length copied.
+static int FsCopyPath(char *pDest, const char *pszPath) {
+    int i;
+
+    for (i = 0; i < kFsPathSize; ++i) {
+        pDest[i] = pszPath[i];
+        if (pszPath[i] == '\0') {
+            break;
+        }
+    }
+    if (i == kFsPathSize) {
+        pDest[kFsPathSize - 1] = '\0';
+        i = kFsPathSize - 1;
+    }
+    return i;
+}
+
+int sceMkdir(const char *path, int mode) {
+    int nLength;
+    int nSema;
+    int nResult;
+
+    FsLock(kFsFunctionMkdir);
+    if (g_bFsBound == 0) {
+        sceFsInit();
+    }
+    nLength = FsCopyPath(g_fsPacket.mMkdir.mName, path);
+    g_fsPacket.mMkdir.mMode = mode;
+    nSema = FsCreateCallSemaphore();
+    g_fsPacket.mHeader.pResult = &nResult;
+    g_fsPacket.mHeader.mSema = nSema;
+    g_fsPacket.mHeader.nResultSize = sizeof(nResult);
+    return FsCall(
+        kFsFunctionMkdir, (int)offsetof(FsMkdirPacket, mName) + nLength + 1, nSema, 0, &nResult);
+}
+
+int sceGetstat(const char *name, struct sce_stat *buf) {
+    int nLength;
+    int nSema;
+    int nResult;
+
+    FsLock(kFsFunctionGetstat);
+    if (g_bFsBound == 0) {
+        sceFsInit();
+    }
+    nLength = FsCopyPath(g_fsPacket.mGetstat.mName, name);
+    g_fsPacket.mGetstat.pStat = buf;
+    nSema = FsCreateCallSemaphore();
+    g_fsPacket.mHeader.pResult = &nResult;
+    g_fsPacket.mHeader.mSema = nSema;
+    g_fsPacket.mHeader.nResultSize = sizeof(nResult);
+    return FsCall(kFsFunctionGetstat,
+                  (int)offsetof(FsGetstatPacket, mName) + nLength + 1,
+                  nSema,
+                  0,
+                  &nResult);
+}
+
+int sceDevctl(
+    const char *name, int cmd, void *arg, unsigned int arglen, void *bufp, unsigned int buflen) {
+    unsigned int i;
+    int nSema;
+    int nResult;
+
+    FsLock(kFsFunctionDevctl);
+    if (g_bFsBound == 0) {
+        sceFsInit();
+    }
+    for (i = 0; i < kFsPathSize; ++i) {
+        g_fsPacket.mDevctl.mName[i] = name[i];
+        if (name[i] == '\0') {
+            break;
+        }
+    }
+    if (i == kFsPathSize) {
+        g_fsPacket.mDevctl.mName[kFsPathSize - 1] = '\0';
+    }
+    if (arglen > kFsDevctlArgSize || buflen > kFsDevctlArgSize) {
+        FsUnlock();
+        return kFsErrorInvalidArgument;
+    }
+    for (i = 0; i < arglen; ++i) {
+        g_fsPacket.mDevctl.mArg[i] = ((const unsigned char *)arg)[i];
+    }
+    g_fsPacket.mDevctl.nArgSize = arglen;
+    g_fsPacket.mDevctl.mCommand = cmd;
+    nSema = FsCreateCallSemaphore();
+    g_fsPacket.mDevctl.nBufferSize = buflen;
+    g_fsPacket.mHeader.pResult = &nResult;
+    g_fsPacket.mHeader.nResultSize = sizeof(nResult);
+    g_fsPacket.mDevctl.pBuffer = bufp;
+    g_fsPacket.mHeader.mSema = nSema;
+    sceSifWriteBackDCache(&g_fsPacket, sizeof(FsDevctlPacket));
+    return FsCall(kFsFunctionDevctl, sizeof(FsDevctlPacket), nSema, 0, &nResult);
 }
 
 int sceFsReset(void) {

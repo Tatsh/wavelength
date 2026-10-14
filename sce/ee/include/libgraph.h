@@ -11,18 +11,13 @@ extern "C" {
  */
 
 /**
- * Image upload descriptor, 96 bytes.
+ * Image download descriptor, 112 bytes.
  *
- * An opening GIFtag, four register-and-tag pairs for BITBLTBUF, TRXPOS, TRXREG, and TRXDIR, and a
- * closing GIFtag.
+ * Four VIF codes, a GIFtag, and five register-and-address pairs for BITBLTBUF, TRXPOS, TRXREG,
+ * FINISH, and TRXDIR.
  */
 typedef struct {
-    unsigned long long mWords[12]; /*!< The descriptor words. */
-} sceGsLoadImage __attribute__((aligned(16)));
-
-/** Image download descriptor, with the same 96-byte layout as sceGsLoadImage. */
-typedef struct {
-    unsigned long long mWords[12]; /*!< The descriptor words. */
+    unsigned long long mWords[14]; /*!< The descriptor words. */
 } sceGsStoreImage __attribute__((aligned(16)));
 
 /**
@@ -134,8 +129,10 @@ typedef struct {
 /**
  * Reset VIF1, VU1, and the GIF, and prime VIF1 through its FIFO.
  *
- * @ghidraAddress NTSC-U/C: 0x006002d0
- * @ghidraAddress PAL: 0x00641060
+ * Waits for VU1 to stop after the reset.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0030ea90
+ * @ghidraAddress PAL: 0x0037b040
  */
 void sceGsResetPath(void);
 
@@ -149,8 +146,8 @@ void sceGsResetPath(void);
  * @param nInterlace Interlace setting.
  * @param nOutputMode Video output mode.
  * @param nFieldMode Field or frame mode.
- * @ghidraAddress NTSC-U/C: 0x00600338
- * @ghidraAddress PAL: 0x005c5468
+ * @ghidraAddress NTSC-U/C: 0x0030f1e8
+ * @ghidraAddress PAL: 0x0037b798
  */
 void sceGsResetGraph(short nMode, short nInterlace, short nOutputMode, short nFieldMode);
 
@@ -159,19 +156,19 @@ void sceGsResetGraph(short nMode, short nInterlace, short nOutputMode, short nFi
  *
  * @param nMode The wait mode.
  * @return The field the vertical blank began. Progressive modes report field 1.
- * @ghidraAddress NTSC-U/C: 0x00596708
- * @ghidraAddress PAL: 0x005d9b10
+ * @ghidraAddress NTSC-U/C: 0x0030fc48
+ * @ghidraAddress PAL: 0x0037c1f8
  */
 int sceGsSyncV(int nMode);
 
 /**
  * Acknowledge the vertical blank start interrupt, spin until it is raised again, and acknowledge it
- * once more.
+ * once more. Interrupts are disabled around each acknowledgement.
  *
  * sceGsSyncV() and the game both call it.
  *
- * @ghidraAddress NTSC-U/C: 0x005963e0
- * @ghidraAddress PAL: 0x005d97e8
+ * @ghidraAddress NTSC-U/C: 0x003173b0
+ * @ghidraAddress PAL: 0x00383c70
  */
 void VSync(void);
 
@@ -189,7 +186,8 @@ int sceGsSetDefAlphaEnv(sceGsAlphaEnv *pAlpha, short nPabe);
 /**
  * Fill the five display registers.
  *
- * The output mode selects the timing. An unknown mode only reports an error.
+ * The output mode selects the timing (NTSC, PAL, or 480p). An unknown mode only reports an error.
+ * Modes other than NTSC and PAL add the display offsets the kernel of a newer console reports.
  *
  * @param pDisp The registers.
  * @param nPsm Pixel storage format.
@@ -197,8 +195,8 @@ int sceGsSetDefAlphaEnv(sceGsAlphaEnv *pAlpha, short nPabe);
  * @param nHeight Height in pixels.
  * @param nDx Horizontal display offset.
  * @param nDy Vertical display offset.
- * @ghidraAddress NTSC-U/C: 0x006217c8
- * @ghidraAddress PAL: 0x00662358
+ * @ghidraAddress NTSC-U/C: 0x0030f438
+ * @ghidraAddress PAL: 0x0037b9e8
  */
 void sceGsSetDefDispEnv(
     sceGsDispEnv *pDisp, short nPsm, short nWidth, short nHeight, short nDx, short nDy);
@@ -225,8 +223,8 @@ void sceGsPutDispEnv(const sceGsDispEnv *pDisp);
  * @param nZTest Depth test.
  * @param nZPsm Pixel storage format of the depth buffer.
  * @return 8, the pair count.
- * @ghidraAddress NTSC-U/C: 0x00621a38
- * @ghidraAddress PAL: 0x006625c8
+ * @ghidraAddress NTSC-U/C: 0x0030f870
+ * @ghidraAddress PAL: 0x0037be20
  */
 int sceGsSetDefDrawEnv(
     sceGsDrawEnv1 *pDraw, short nPsm, short nWidth, short nHeight, short nZTest, short nZPsm);
@@ -249,8 +247,8 @@ int sceGsSetDefDrawEnv(
  * @param nAlpha Alpha of the clear colour.
  * @param nZ Depth of the clear.
  * @return 6, the pair count.
- * @ghidraAddress NTSC-U/C: 0x00622508
- * @ghidraAddress PAL: 0x00664970
+ * @ghidraAddress NTSC-U/C: 0x0030fa58
+ * @ghidraAddress PAL: 0x0037c008
  */
 int sceGsSetDefClear(sceGsClear *pClear,
                      short nZTest,
@@ -295,49 +293,10 @@ int sceGsSetDefDBuff(sceGsDBuff *pDBuff,
  *
  * @param pGifTag The GIFtag that opens the packet.
  * @return 0, or -1 when the wait expires.
- * @ghidraAddress NTSC-U/C: 0x00612600
- * @ghidraAddress PAL: 0x00653190
+ * @ghidraAddress NTSC-U/C: 0x0030fb60
+ * @ghidraAddress PAL: 0x0037c110
  */
 int sceGsPutDrawEnv(sceGifTag *pGifTag);
-
-/**
- * Fill an image upload descriptor.
- *
- * An oversized transfer only reports an error.
- *
- * @param pLoadImage The descriptor.
- * @param nTbp Destination buffer base pointer.
- * @param nTbw Destination buffer width.
- * @param nPsm Pixel storage format.
- * @param nSsx Left edge of the destination.
- * @param nSsy Top edge of the destination.
- * @param nRrw Width of the transfer in pixels.
- * @param nRrh Height of the transfer in pixels.
- * @return 6, the register count, or 0 for an oversized transfer.
- * @ghidraAddress NTSC-U/C: 0x005e4948
- * @ghidraAddress PAL: 0x00626b08
- */
-int sceGsSetDefLoadImage(sceGsLoadImage *pLoadImage,
-                         short nTbp,
-                         short nTbw,
-                         short nPsm,
-                         short nSsx,
-                         short nSsy,
-                         short nRrw,
-                         short nRrh);
-
-/**
- * Send an image upload descriptor, then stream the source pixels behind it.
- *
- * Both busy waits share one spin budget.
- *
- * @param pLoadImage The descriptor.
- * @param pSource The pixels.
- * @return 0, or -1 when the budget runs out.
- * @ghidraAddress NTSC-U/C: 0x005e2a08
- * @ghidraAddress PAL: 0x00624b18
- */
-int sceGsExecLoadImage(sceGsLoadImage *pLoadImage, const void *pSource);
 
 /**
  * Fill an image download descriptor.
@@ -353,8 +312,8 @@ int sceGsExecLoadImage(sceGsLoadImage *pLoadImage, const void *pSource);
  * @param nRrw Width of the transfer in pixels.
  * @param nRrh Height of the transfer in pixels.
  * @return 7, the register count.
- * @ghidraAddress NTSC-U/C: 0x005e4808
- * @ghidraAddress PAL: 0x006269c8
+ * @ghidraAddress NTSC-U/C: 0x0030fce0
+ * @ghidraAddress PAL: 0x0037c290
  */
 int sceGsSetDefStoreImage(sceGsStoreImage *pStoreImage,
                           short nSbp,
@@ -374,59 +333,29 @@ int sceGsSetDefStoreImage(sceGsStoreImage *pStoreImage,
  * @param pStoreImage The descriptor.
  * @param pDest Receives the pixels.
  * @return 0, or -1 when a wait times out.
- * @ghidraAddress NTSC-U/C: 0x005a3550
- * @ghidraAddress PAL: 0x005e6658
+ * @ghidraAddress NTSC-U/C: 0x0030fe20
+ * @ghidraAddress PAL: 0x0037c3d0
  */
 int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest);
 
 /**
- * Synchronise the graphics path.
+ * Wait until VIF1, the GIF, and VU1 are idle, without a time limit.
  *
- * Mode 0 waits for VIF1, the GIF, and VU1 with one spin budget shared across every wait, and dumps
- * the channel registers when the budget runs out. Other modes report the busy units as a mask.
- *
- * @param nMode 0 to wait, any other value to poll.
+ * @param nMode Not used.
  * @param nTimeout Not used.
- * @return The busy mask when polling, 0 after a wait, or -1 when the budget runs out.
- * @ghidraAddress NTSC-U/C: 0x00552270
- * @ghidraAddress PAL: 0x005928b0
+ * @return 0.
+ * @ghidraAddress NTSC-U/C: 0x0030eb30
+ * @ghidraAddress PAL: 0x0037b0e0
  */
 int sceGsSyncPath(int nMode, unsigned short nTimeout);
-
-/**
- * Recentre the half-pixel offset on the scissor extent.
- *
- * The odd field gains half a dot of vertical offset.
- *
- * @param pDrawEnv The draw environment.
- * @param nOffsetX Horizontal offset.
- * @param nOffsetY Vertical offset.
- * @param nField The field.
- * @ghidraAddress NTSC-U/C: 0x0062dca0
- * @ghidraAddress PAL: 0x0066e830
- */
-void sceGsSetHalfOffset(void *pDrawEnv, int nOffsetX, int nOffsetY, int nField);
-
-/**
- * Present one half of a double buffer.
- *
- * The display registers of the selected field go to the privileged registers, and the matching
- * GIFtag and draw environment go through the GIF channel.
- *
- * @param pDBuff The double buffer.
- * @param nField The field, selecting the half.
- * @ghidraAddress NTSC-U/C: 0x0062d998
- * @ghidraAddress PAL: 0x0066e528
- */
-void sceGsSwapDBuff(sceGsDBuff *pDBuff, int nField);
 
 /**
  * Install pfnHandler on the vertical blank start interrupt, replacing the previous handler.
  *
  * @param pfnHandler The handler, or null to remove the handler.
  * @return The previous handler.
- * @ghidraAddress NTSC-U/C: 0x005e8558
- * @ghidraAddress PAL: 0x0058fb90
+ * @ghidraAddress NTSC-U/C: 0x003104b0
+ * @ghidraAddress PAL: 0x0037ca60
  */
 int (*sceGsSyncVCallback(int (*pfnHandler)(int)))(int);
 

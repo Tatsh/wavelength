@@ -121,8 +121,8 @@ typedef void (*sceCdPOffFunc)(void *addr);
  * @param init_mode #SCECdINIT, #SCECdINoD, or #SCECdEXIT.
  * @return 1 on success, 2 when the IOP modules predate version 2, and 0 when the drive is busy or
  * the call fails.
- * @ghidraAddress NTSC-U/C: 0x004ffda8
- * @ghidraAddress PAL: 0x0053eb58
+ * @ghidraAddress NTSC-U/C: 0x00314af0
+ * @ghidraAddress PAL: 0x00381190
  */
 int sceCdInit(int init_mode);
 
@@ -131,8 +131,8 @@ int sceCdInit(int init_mode);
  *
  * @param media #SCECdCD or #SCECdDVD.
  * @return 1 on success, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00500280
- * @ghidraAddress PAL: 0x0053f030
+ * @ghidraAddress NTSC-U/C: 0x00314fb8
+ * @ghidraAddress PAL: 0x00381c38
  */
 int sceCdMmode(int media);
 
@@ -141,8 +141,8 @@ int sceCdMmode(int media);
  *
  * @param mode #SCECdBlock to wait, #SCECdNonblock to report.
  * @return 0 when the server is free, 1 while a command runs.
- * @ghidraAddress NTSC-U/C: 0x004ffb28
- * @ghidraAddress PAL: 0x0053e8d8
+ * @ghidraAddress NTSC-U/C: 0x00314870
+ * @ghidraAddress PAL: 0x00380f10
  */
 int sceCdSync(int mode);
 
@@ -151,8 +151,8 @@ int sceCdSync(int mode);
  *
  * @param mode #SCECdBlock to wait, #SCECdNonblock to report.
  * @return 0 when the server is free, nonzero while a command runs.
- * @ghidraAddress NTSC-U/C: 0x004ffbc8
- * @ghidraAddress PAL: 0x0053e978
+ * @ghidraAddress NTSC-U/C: 0x00314910
+ * @ghidraAddress PAL: 0x00380fb0
  */
 int sceCdSyncS(int mode);
 
@@ -160,10 +160,10 @@ int sceCdSyncS(int mode);
  * Report whether the drive can take a command.
  *
  * @param mode #SCECdBlock to wait for the drive, #SCECdNonblock to report at once.
- * @return #SCECdComplete or #SCECdNotReady. A busy library reports #SCECdNotReady, or -1 for
- * mode 8.
- * @ghidraAddress NTSC-U/C: 0x00500088
- * @ghidraAddress PAL: 0x0053ee38
+ * @return #SCECdComplete or #SCECdNotReady. A busy library or a failed call reports
+ * #SCECdNotReady, or -1 for mode 8.
+ * @ghidraAddress NTSC-U/C: 0x00314dd0
+ * @ghidraAddress PAL: 0x00381470
  */
 int sceCdDiskReady(int mode);
 
@@ -171,8 +171,8 @@ int sceCdDiskReady(int mode);
  * Report the type of the disc in the drive.
  *
  * @return One of the SCECdNODISC family of values, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00545bd0
- * @ghidraAddress PAL: 0x00586100
+ * @ghidraAddress NTSC-U/C: 0x00315268
+ * @ghidraAddress PAL: 0x00381a50
  */
 int sceCdGetDiskType(void);
 
@@ -180,8 +180,8 @@ int sceCdGetDiskType(void);
  * Report the error of the last drive command.
  *
  * @return One of the SCECdEr values, or -1 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x005e0270
- * @ghidraAddress PAL: 0x006222d8
+ * @ghidraAddress NTSC-U/C: 0x00315300
+ * @ghidraAddress PAL: 0x00381ae8
  */
 int sceCdGetError(void);
 
@@ -191,10 +191,20 @@ int sceCdGetError(void);
  * @param param #SCECdTrayOpen, #SCECdTrayClose, or #SCECdTrayCheck.
  * @param traycnt Receives the tray movement report, or null.
  * @return 1 on success, 0 when the drive refused, or -1 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00558c20
- * @ghidraAddress PAL: 0x00599d78
+ * @ghidraAddress NTSC-U/C: 0x00315548
+ * @ghidraAddress PAL: 0x00381e00
  */
 int sceCdTrayReq(int param, unsigned int *traycnt);
+
+/**
+ * Turn the console off.
+ *
+ * @param stat Receives the error status of the drive, 0 on success.
+ * @return 1 when the request was sent, otherwise 0.
+ * @ghidraAddress NTSC-U/C: 0x00315398
+ * @ghidraAddress PAL: 0x00381b80
+ */
+int sceCdPowerOff(int *stat);
 
 /**
  * Start reading sectors. Completion is reported through sceCdSync() and the callback.
@@ -204,37 +214,18 @@ int sceCdTrayReq(int param, unsigned int *traycnt);
  * @param buf Destination in main memory.
  * @param mode Read mode.
  * @return 1 when the read started, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x0059bdf8
- * @ghidraAddress PAL: 0x005df290
+ * @ghidraAddress NTSC-U/C: 0x00315088
+ * @ghidraAddress PAL: 0x00381870
  */
 int sceCdRead(unsigned int lsn, unsigned int sectors, void *buf, sceCdRMode *mode);
-
-/**
- * Start moving the head to a sector. Completion is reported through sceCdSync() and the callback.
- *
- * @param lsn Target sector.
- * @return 1 when the seek started, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x005ae998
- * @ghidraAddress PAL: 0x005f0f00
- */
-int sceCdSeek(unsigned int lsn);
-
-/**
- * Start stopping the spindle. Completion is reported through sceCdSync() and the callback.
- *
- * @return 1 when the stop started, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00519928
- * @ghidraAddress PAL: 0x00559cd8
- */
-int sceCdStop(void);
 
 /**
  * Read the real-time clock.
  *
  * @param rtc Receives the clock.
  * @return 1 on success, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x005fc468
- * @ghidraAddress PAL: 0x0063d178
+ * @ghidraAddress NTSC-U/C: 0x00315450
+ * @ghidraAddress PAL: 0x00381d08
  */
 int sceCdReadClock(sceCdCLOCK *rtc);
 
@@ -244,32 +235,22 @@ int sceCdReadClock(sceCdCLOCK *rtc);
  * @param fp Receives the file record.
  * @param name Path on the disc, at most 256 bytes.
  * @return 1 when found, or 0 when absent, when the drive is busy, or when the call fails.
- * @ghidraAddress NTSC-U/C: 0x004ff620
- * @ghidraAddress PAL: 0x0053e3d0
+ * @ghidraAddress NTSC-U/C: 0x00314648
+ * @ghidraAddress PAL: 0x00380ce8
  */
 int sceCdSearchFile(sceCdlFILE *fp, const char *name);
 
 /**
- * Start the thread that runs the completion callback, or change its priority when it exists.
+ * Look up a file on one layer of a dual-layer disc.
  *
- * @param priority Thread priority.
- * @param stack Lowest address of the thread stack.
- * @param stacksize Stack size in bytes.
- * @return 1 when the thread was created, 0 when only its priority changed.
- * @ghidraAddress NTSC-U/C: 0x004ff278
- * @ghidraAddress PAL: 0x0053e028
+ * @param fp Receives the file record.
+ * @param name Path on the disc, at most 256 bytes.
+ * @param layer The layer, or 0.
+ * @return 1 when found, or 0 when absent, when the drive is busy, or when the call fails.
+ * @ghidraAddress NTSC-U/C: 0x00314330
+ * @ghidraAddress PAL: 0x003809d0
  */
-int sceCdInitEeCB(int priority, void *stack, int stacksize);
-
-/**
- * Register the completion callback. It runs on the thread sceCdInitEeCB() starts.
- *
- * @param func Callback, or null.
- * @return The previous callback, or null when a command is in flight and the callback is unchanged.
- * @ghidraAddress NTSC-U/C: 0x004ff0c0
- * @ghidraAddress PAL: 0x0053de70
- */
-sceCdCBFunc sceCdCallback(sceCdCBFunc func);
+int sceCdLayerSearchFile(sceCdlFILE *fp, const char *name, int layer);
 
 /**
  * Register the callback the IOP's power-off notice runs.
@@ -277,20 +258,9 @@ sceCdCBFunc sceCdCallback(sceCdCBFunc func);
  * @param func Callback, or null.
  * @param addr Argument the callback receives.
  * @return The previous callback.
- * @ghidraAddress NTSC-U/C: 0x004ff508
- * @ghidraAddress PAL: 0x0053e2b8
+ * @ghidraAddress NTSC-U/C: 0x00314200
  */
 sceCdPOffFunc sceCdPOffCallback(sceCdPOffFunc func, void *addr);
-
-/**
- * Switch the console off.
- *
- * @param result Receives the status of the drive.
- * @return 1 when the request was sent, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x00315398
- * @ghidraAddress PAL: 0x00381b80
- */
-int sceCdPowerOff(int *result);
 
 /**
  * Prepare sector streaming into a ring buffer in IOP memory.
@@ -299,8 +269,8 @@ int sceCdPowerOff(int *result);
  * @param bankmax Number of banks the ring divides into.
  * @param iop_bufaddr IOP address of the ring buffer.
  * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611cc0
- * @ghidraAddress PAL: 0x00652850
+ * @ghidraAddress NTSC-U/C: 0x00315638
+ * @ghidraAddress PAL: 0x00381ef0
  */
 int sceCdStInit(unsigned int bufmax, unsigned int bankmax, unsigned int iop_bufaddr);
 
@@ -310,37 +280,17 @@ int sceCdStInit(unsigned int bufmax, unsigned int bankmax, unsigned int iop_bufa
  * @param lsn First sector.
  * @param mode Read mode.
  * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611cf0
- * @ghidraAddress PAL: 0x00652880
+ * @ghidraAddress NTSC-U/C: 0x00315668
+ * @ghidraAddress PAL: 0x00381f20
  */
 int sceCdStStart(unsigned int lsn, sceCdRMode *mode);
-
-/**
- * Move the stream to a sector without discarding the buffered sectors.
- *
- * @param lsn Target sector.
- * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611d28
- * @ghidraAddress PAL: 0x006528b8
- */
-int sceCdStSeekF(unsigned int lsn);
-
-/**
- * Move the stream to a sector.
- *
- * @param lsn Target sector.
- * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611d58
- * @ghidraAddress PAL: 0x006528e8
- */
-int sceCdStSeek(unsigned int lsn);
 
 /**
  * Stop streaming.
  *
  * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611d88
- * @ghidraAddress PAL: 0x00652918
+ * @ghidraAddress NTSC-U/C: 0x003156b0
+ * @ghidraAddress PAL: 0x00381f68
  */
 int sceCdStStop(void);
 
@@ -352,37 +302,10 @@ int sceCdStStop(void);
  * @param mode #STMNBLK or #STMBLK.
  * @param err Receives the drive error, or 0.
  * @return Number of sectors copied.
- * @ghidraAddress NTSC-U/C: 0x00611dc0
- * @ghidraAddress PAL: 0x00652950
+ * @ghidraAddress NTSC-U/C: 0x003156e8
+ * @ghidraAddress PAL: 0x00381fa0
  */
 int sceCdStRead(unsigned int size, unsigned int *buf, unsigned int mode, unsigned int *err);
-
-/**
- * Pause streaming.
- *
- * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611f48
- * @ghidraAddress PAL: 0x00652ad8
- */
-int sceCdStPause(void);
-
-/**
- * Resume streaming after sceCdStPause().
- *
- * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611f98
- * @ghidraAddress PAL: 0x00652b28
- */
-int sceCdStResume(void);
-
-/**
- * Report the number of sectors buffered in the stream.
- *
- * @return The server's reply, or 0 when the drive is busy or the call fails.
- * @ghidraAddress NTSC-U/C: 0x00611ff0
- * @ghidraAddress PAL: 0x00652b80
- */
-int sceCdStStat(void);
 
 #ifdef __cplusplus
 }

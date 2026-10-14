@@ -340,7 +340,7 @@ extern "C" int _isatty(int nFile) {
 
 // Every descriptor reports a character device. The C library then queries isatty() before it
 // buffers a stream by line, and Python's modification time lookup succeeds for an archive stream.
-// NTSC-U/C: 0x00596670, PAL: 0x005d9a78
+// NTSC-U/C: 0x003176a8, PAL: 0x00383f90
 extern "C" int _fstat(int /* nFile */, struct stat *pStat) {
     memset(pStat, 0, sizeof(*pStat));
     pStat->st_mode = S_IFCHR;

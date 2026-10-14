@@ -128,6 +128,14 @@ struct SoftFxInitCommand {
     IopNotify *mStreamStatus;
 };
 
+// This file's copies of kBankExtension and kAudioDataExtension, g_abSynthSweepFilter, and
+// g_abSynthBankLoadTimer are constructed by one routine at 0x00250ed0. The routine also destroys
+// the two strings. The image's static construction and destruction entries at 0x00250f70 and
+// 0x00250f90 call it.
+// NTSC-U/C: 0x00250ed0, PAL: 0x00259880
+// NTSC-U/C: 0x00250f70, PAL: 0x00259920
+// NTSC-U/C: 0x00250f90, PAL: 0x00259940
+
 // NTSC-U/C: 0x0043c870
 OnePoleFilter g_abSynthSweepFilter;
 

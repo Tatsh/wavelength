@@ -76,8 +76,8 @@ int sceDmaSync(sceDmaChan *pChannel, int nMode, int nTimeout);
  *
  * @param nMode 1 to enable the controller afterwards.
  * @return The previous enable state.
- * @ghidraAddress NTSC-U/C: 0x005f3718
- * @ghidraAddress PAL: 0x00596e38
+ * @ghidraAddress NTSC-U/C: 0x00311a08
+ * @ghidraAddress PAL: 0x0037dfb8
  */
 int sceDmaReset(int nMode);
 
@@ -96,8 +96,8 @@ sceDmaEnv *sceDmaGetEnv(sceDmaEnv *pEnv);
  *
  * @param pEnv The settings.
  * @return 0, or -1 through -4 for the first field out of range.
- * @ghidraAddress NTSC-U/C: 0x005f3808
- * @ghidraAddress PAL: 0x00596f28
+ * @ghidraAddress NTSC-U/C: 0x00311ae8
+ * @ghidraAddress PAL: 0x0037e098
  */
 int sceDmaPutEnv(sceDmaEnv *pEnv);
 

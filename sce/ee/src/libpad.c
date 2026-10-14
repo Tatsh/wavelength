@@ -1,13 +1,10 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <eekernel.h>
 #include <libpad.h>
 #include <sifdev.h>
 #include <sifrpc.h>
-
-#include "os/log.h"
 
 enum {
     kPadServerId = 0x80000100,
@@ -31,20 +28,11 @@ enum {
     kPadCommandSetMainMode = 6,
     kPadCommandSetActAlign = 8,
     kPadCommandSetButtonInfo = 10,
-    kPadCommandSetVrefParam = 11,
-    kPadCommandGetPortMax = 12,
-    kPadCommandGetSlotMax = 13,
-    kPadCommandClose = 14,
-    kPadCommandEnd = 15,
     kPadCommandInit = 16,
     kPadCommandGetModVersion = 18,
-    kPadCommandSetWarningLevel = 20,
-    kPadCloseMode = 1,
     kPadResultAccepted = 1,
-    kPadEndStopped = 1,
     kPadDirectCommandActuators = 1,
     kPadActuatorByteCount = 6,
-    kPadVrefByteCount = 12,
     // nCurrentTask once padman has read the mode and actuator tables.
     kPadTaskReady = 1,
     // nModeConfig when the controller has no mode table, and the least value with actuators.
@@ -57,7 +45,6 @@ enum {
     kPadModeIdShift = 4,
     kPadPressureMaskAll = 0x3ffff,
     kPadPressureButtonsAll = 0xfff,
-    kPadPressureButtonsNone = 0,
     kPadInfoIndexCount = -1,
     kBitsPerByte = 8,
 };
@@ -68,16 +55,11 @@ typedef struct {
     int nCommand;
     int nSize;
     unsigned char abData[20];
-} PadDirectPacket;
-
-typedef struct {
-    PadDirectPacket packet;
-    unsigned char abPadding[sizeof(PadDirectPacket)];
-} __attribute__((aligned(64))) PadDirectBlock;
+} __attribute__((aligned(32))) PadDirectPacket;
 
 typedef struct {
     scePadDmaFrame *pFrames;
-    PadDirectBlock *pDirect;
+    PadDirectPacket *pDirect;
     unsigned int nIopAddress; // The pair of direct packet buffers on the IOP.
     unsigned int nDmaId;
     int nOpen;
@@ -88,8 +70,8 @@ typedef struct {
 // The server reads its arguments from and writes its reply to the same 128 bytes.
 typedef struct {
     int nCommand;
-    int nPort; // Also the level scePadSetWarningLevel() sends.
-    int nSlot; // Also the result scePadSetWarningLevel() receives.
+    int nPort;
+    int nSlot;
     union {
         struct {
             int nResult;
@@ -113,35 +95,23 @@ typedef struct {
             int nMask;
             int nResult;
         } buttonInfo;
-        struct {
-            unsigned char abParam[kPadVrefByteCount];
-            int nReserved;
-            int nResult;
-        } vref;
         unsigned char abRaw[116];
     };
 } __attribute__((aligned(64))) PadRpcBuffer;
 
-// NTSC-U/C: 0x00770298, PAL: 0x007a46a0
+// NTSC-U/C: 0x003c2af8
 static int isInit = 0;
-// NTSC-U/C: 0x0077029c, PAL: 0x007a46a4
+// NTSC-U/C: 0x003c2afc
 static int isWarning = 1;
 
-// NTSC-U/C: 0x007702a0, PAL: 0x007a46a8
-static const char *const g_apszPadStateNames[] = {
-    "DISCONNECT", "", "FINDCTP1", "", "", "EXECCMD", "STABLE", "ERROR"};
-// NTSC-U/C: 0x007702c0, PAL: 0x007a46c8
-static const char *const g_apszPadReqStateNames[] = {
-    "COMPLETE", "FAILED", "BUSY", NULL}; // Yes, the binary's table ends in a null entry.
-
-// NTSC-U/C: 0x008e4280, PAL: 0x00926740
+// NTSC-U/C: 0x0052f380
 static sceSifClientData g_aPadClients[kPadClientCount] __attribute__((aligned(64)));
-// NTSC-U/C: 0x008e42d0, PAL: 0x00926790
+// NTSC-U/C: 0x0052f3d0
 static PadPortState g_aaPadPorts[kPadPortCount][kPadSlotCount];
-// SIF DMA moves whole quadwords. The two buffers below retain retail's 64-byte placement.
-// NTSC-U/C: 0x008e43c0, PAL: 0x00926880
-static PadDirectBlock g_aaPadDirect[kPadPortCount][kPadSlotCount] __attribute__((aligned(64)));
-// NTSC-U/C: 0x008e45c0, PAL: 0x00926a80
+// SIF DMA moves whole quadwords. The two buffers below retain retail's placement.
+// NTSC-U/C: 0x0052f4c0
+static PadDirectPacket g_aaPadDirect[kPadPortCount][kPadSlotCount] __attribute__((aligned(64)));
+// NTSC-U/C: 0x0052f5c0
 static PadRpcBuffer g_padRpc __attribute__((aligned(64)));
 
 static inline int PadCall(void) {
@@ -164,30 +134,32 @@ static inline int PadAccepted(int nPort, int nSlot, const int *pnResult) {
     return *pnResult;
 }
 
-// NTSC-U/C: 0x0059bfd8, PAL: 0x005a62c0
-static void _send_to_iop(int nPort, int nSlot) {
+// NTSC-U/C: 0x00311cf0, PAL: 0x0037e2a0
+// Returns 1 once the packet is queued, or zero when the previous packet is still in flight or the
+// transfer could not be queued.
+static int _send_to_iop(int nPort, int nSlot) {
     PadPortState *pState = &g_aaPadPorts[nPort][nSlot];
-    PadDirectBlock *pDirect = pState->pDirect;
+    PadDirectPacket *pDirect = pState->pDirect;
     sceSifDmaData dma;
     unsigned int nDmaId;
 
-    if (sceSifDmaStat(pState->nDmaId) >= 0) {
-        if (isWarning) {
-            printf("libpad: tPadDma Structure Invalid\n");
+    if (pState->nDmaId == 0 || sceSifDmaStat(pState->nDmaId) < 0) {
+        ++pDirect->nCount;
+        SyncDCache(pDirect, pDirect + 1);
+        dma.data = (uintptr_t)pDirect;
+        dma.addr = pState->nIopAddress + (pDirect->nCount & 1) * sizeof(PadDirectPacket);
+        dma.size = sizeof(PadDirectPacket);
+        dma.mode = 0;
+        nDmaId = sceSifSetDma(&dma, 1);
+        if (nDmaId != 0) {
+            g_aaPadPorts[nPort][nSlot].nDmaId = nDmaId;
+            return 1;
         }
-        return;
     }
-    ++pDirect->packet.nCount;
-    SyncDCache(&pDirect->packet, &pDirect->abPadding[0]);
-    dma.data = (uintptr_t)&pDirect->packet;
-    dma.addr = pState->nIopAddress + (pDirect->packet.nCount & 1) * sizeof(PadDirectPacket);
-    dma.size = sizeof(PadDirectPacket);
-    dma.mode = 0;
-    nDmaId = sceSifSetDma(&dma, 1);
-    if (nDmaId == 0 && isWarning) {
-        printf("libpad: tPadDma Structure Invalid\n");
+    if (isWarning) {
+        scePrintf("libpad: sceSifSetDma faild\n");
     }
-    pState->nDmaId = nDmaId;
+    return 0;
 }
 
 int scePadInit(int nMode) {
@@ -211,12 +183,12 @@ int scePadInit(int nMode) {
     nVersion = scePadGetModVersion();
     if ((nVersion >> kPadVersionShift) != kPadModVersionMajor) {
         if (isWarning) {
-            printf("libpad: Module version mismatch ");
-            printf("[libpad.a = %d.%d, padman.irx = %d.%d]\n",
-                   kPadModVersionMajor,
-                   kPadModVersionMinor,
-                   nVersion >> kPadVersionShift,
-                   nVersion & kPadVersionMinorMask);
+            scePrintf("libpad: Module version mismatch ");
+            scePrintf("[libpad.a = %d.%d, padman.irx = %d.%d]\n",
+                      kPadModVersionMajor,
+                      kPadModVersionMinor,
+                      nVersion >> kPadVersionShift,
+                      nVersion & kPadVersionMinorMask);
         }
         return 0;
     }
@@ -243,32 +215,21 @@ int scePadInit2(int nMode) {
     return g_padRpc.status.nResult;
 }
 
-int scePadEnd(void) {
-    g_padRpc.nCommand = kPadCommandEnd;
-    if (PadCall() < 0) {
-        return 0;
-    }
-    if (g_padRpc.status.nResult == kPadEndStopped) {
-        isInit = 0;
-    }
-    return g_padRpc.status.nResult;
-}
-
 int scePadPortOpen(int nPort, int nSlot, scePadDmaFrame *pFrames) {
     PadPortState *pState;
     int i;
 
     if (((uintptr_t)pFrames & kPadFrameAlignMask) != 0) {
         if (isWarning) {
-            printf("libpad: buffer addr is not 64 byte align. %08x\n",
-                   (unsigned int)(uintptr_t)pFrames);
+            scePrintf("libpad: buffer addr is not 64 byte align. %08x\n",
+                      (unsigned int)(uintptr_t)pFrames);
         }
         return 0;
     }
     pState = &g_aaPadPorts[nPort][nSlot];
     if (pState->nOpen == 1) {
         if (isWarning) {
-            printf("libpad: pad port is already open [%d][%d]\n", nPort, nSlot);
+            scePrintf("libpad: pad port is already open [%d][%d]\n", nPort, nSlot);
         }
         return 0;
     }
@@ -293,25 +254,8 @@ int scePadPortOpen(int nPort, int nSlot, scePadDmaFrame *pFrames) {
     pState->nIopAddress = g_padRpc.open.nIopAddress;
     pState->pFrames = pFrames;
     pState->pDirect = &g_aaPadDirect[nPort][nSlot];
-    g_aaPadDirect[nPort][nSlot].packet.nCount = 0;
+    g_aaPadDirect[nPort][nSlot].nCount = 0;
     return g_padRpc.open.nResult;
-}
-
-int scePadPortClose(int nPort, int nSlot) {
-    PadPortState *pState = &g_aaPadPorts[nPort][nSlot];
-
-    if (pState->nOpen == 0) {
-        return 0;
-    }
-    g_padRpc.nCommand = kPadCommandClose;
-    g_padRpc.nPort = nPort;
-    g_padRpc.nSlot = nSlot;
-    g_padRpc.status.nMode = kPadCloseMode;
-    if (PadCall() < 0) {
-        return 0;
-    }
-    pState->nOpen = 0;
-    return g_padRpc.status.nResult;
 }
 
 scePadDmaFrame *scePadGetDmaStr(int nPort, int nSlot) {
@@ -319,13 +263,6 @@ scePadDmaFrame *scePadGetDmaStr(int nPort, int nSlot) {
 
     SyncDCache(pFrames, &pFrames[kPadFrameCount]);
     return &pFrames[pFrames[0].nFrame < pFrames[1].nFrame];
-}
-
-unsigned int scePadGetFrameCount(int nPort, int nSlot) {
-    if (g_aaPadPorts[nPort][nSlot].nOpen == 0) {
-        return 0;
-    }
-    return scePadGetDmaStr(nPort, nSlot)->nFrame;
 }
 
 int scePadRead(int nPort, int nSlot, unsigned char *pData) {
@@ -352,14 +289,6 @@ int scePadGetState(int nPort, int nSlot) {
     return pFrame->nState;
 }
 
-void scePadStateIntToStr(int nState, char *pszName) {
-    if ((unsigned int)nState < sizeof(g_apszPadStateNames) / sizeof(g_apszPadStateNames[0])) {
-        strcpy(pszName, g_apszPadStateNames[nState]);
-        return;
-    }
-    pszName[0] = '\0';
-}
-
 int scePadSetReqState(int nPort, int nSlot, int nState) {
     if (g_aaPadPorts[nPort][nSlot].nOpen == 0) {
         return 0;
@@ -373,14 +302,6 @@ int scePadGetReqState(int nPort, int nSlot) {
         return 0;
     }
     return scePadGetDmaStr(nPort, nSlot)->nReqState;
-}
-
-void scePadReqIntToStr(int nState, char *pszName) {
-    if ((unsigned int)nState < sizeof(g_apszPadReqStateNames) / sizeof(g_apszPadReqStateNames[0])) {
-        strcpy(pszName, g_apszPadReqStateNames[nState]);
-        return;
-    }
-    pszName[0] = '\0';
 }
 
 // The frame of an open port whose actuator tables padman has read, or null.
@@ -415,25 +336,6 @@ int scePadInfoAct(int nPort, int nSlot, int nActuator, int nTerm) {
     default:
         return 0;
     }
-}
-
-int scePadInfoComb(int nPort, int nSlot, int nList, int nOffset) {
-    const scePadDmaFrame *pFrame = PadActuatorFrame(nPort, nSlot);
-
-    if (pFrame == NULL) {
-        return 0;
-    }
-    if (nList == kPadInfoIndexCount) {
-        return pFrame->nCombinationCount;
-    }
-    if (nList >= pFrame->nCombinationCount) {
-        return 0;
-    }
-    // Byte 0 of an entry is its member count, and the members follow.
-    if (nOffset < kPadInfoIndexCount || nOffset >= (int)sizeof(pFrame->aabCombInfo[0]) - 1) {
-        return 0;
-    }
-    return pFrame->aabCombInfo[nList][nOffset - kPadInfoIndexCount];
 }
 
 int scePadInfoMode(int nPort, int nSlot, int nTerm, int nOffset) {
@@ -498,14 +400,13 @@ int scePadSetActDirect(int nPort, int nSlot, const unsigned char *pData) {
     if (scePadGetDmaStr(nPort, nSlot)->nCurrentTask != kPadTaskReady) {
         return 0;
     }
-    pPacket = &g_aaPadPorts[nPort][nSlot].pDirect->packet;
+    pPacket = g_aaPadPorts[nPort][nSlot].pDirect;
     for (i = 0; i < kPadActuatorByteCount; ++i) {
         pPacket->abData[i] = pData[i];
     }
     pPacket->nCommand = kPadDirectCommandActuators;
     pPacket->nSize = kPadActuatorByteCount;
-    _send_to_iop(nPort, nSlot);
-    return 1;
+    return _send_to_iop(nPort, nSlot) == 1;
 }
 
 int scePadSetActAlign(int nPort, int nSlot, const unsigned char *pData) {
@@ -562,54 +463,10 @@ int scePadEnterPressMode(int nPort, int nSlot) {
     return scePadSetButtonInfo(nPort, nSlot, kPadPressureButtonsAll);
 }
 
-int scePadExitPressMode(int nPort, int nSlot) {
-    if (g_aaPadPorts[nPort][nSlot].nOpen == 0) {
-        return 0;
-    }
-    return scePadSetButtonInfo(nPort, nSlot, kPadPressureButtonsNone);
-}
-
-int scePadSetVrefParam(int nPort, int nSlot, const unsigned char *pParam) {
-    g_padRpc.nPort = nPort;
-    g_padRpc.nCommand = kPadCommandSetVrefParam;
-    g_padRpc.nSlot = nSlot;
-    memcpy(g_padRpc.vref.abParam, pParam, sizeof(g_padRpc.vref.abParam));
-    if (PadCall() < 0) {
-        return 0;
-    }
-    return PadAccepted(nPort, nSlot, &g_padRpc.vref.nResult);
-}
-
-int scePadGetPortMax(void) {
-    g_padRpc.nCommand = kPadCommandGetPortMax;
-    if (PadCall() < 0) {
-        return 0;
-    }
-    return g_padRpc.status.nResult;
-}
-
-int scePadGetSlotMax(int nPort) {
-    g_padRpc.nPort = nPort;
-    g_padRpc.nCommand = kPadCommandGetSlotMax;
-    if (PadCall() < 0) {
-        return 0;
-    }
-    return g_padRpc.status.nResult;
-}
-
 int scePadGetModVersion(void) {
     g_padRpc.nCommand = kPadCommandGetModVersion;
     if (PadCall() < 0) {
         return 0;
     }
     return g_padRpc.status.nResult;
-}
-
-int scePadSetWarningLevel(int nLevel) {
-    g_padRpc.nPort = nLevel;
-    g_padRpc.nCommand = kPadCommandSetWarningLevel;
-    if (PadCall() < 0) {
-        return 0;
-    }
-    return g_padRpc.nSlot;
 }

@@ -22,6 +22,8 @@ enum {
     kRpcInitSoftwareRegister = 0,
 
     kRetryDelay = 0x100000,
+    // The horizontal blanks before a refused end of a data request is sent again.
+    kRetryAlarmDelay = 10,
 
     kRpcErrorNoPacket = -1,
     kRpcErrorSend = -2,
@@ -74,12 +76,23 @@ typedef struct {
     void *pCbuff;
 } RpcEndPacket;
 
+// SIF_CMDC_RPC_END for a data request. The packet also keeps the transfer for a retry.
+typedef struct {
+    RpcPacketHeader header;
+    sceSifRpcData *pRequest;
+    unsigned int nCommand;
+    void *pSrc;
+    void *pDest;
+    int nSize;
+} RpcDataEndPacket;
+
 typedef union {
     RpcPacketHeader header;
     RpcBindPacket bind;
     RpcCallPacket call;
     RpcDataPacket data;
     RpcEndPacket end;
+    RpcDataEndPacket dataEnd;
     unsigned char abBytes[kRpcPacketSize];
 } RpcPacket;
 
@@ -99,25 +112,25 @@ typedef struct {
     sceSifQueueData *pQueues;
 } RpcState;
 
-// NTSC-U/C: 0x0076171c, PAL: 0x007a464c
+// NTSC-U/C: 0x003c47cc
 static int g_nRpcInitialized = 0;
 
-// NTSC-U/C: 0x008de940, PAL: 0x00923900, the packets of requests this side makes.
+// NTSC-U/C: 0x00533a80, the packets of requests this side makes.
 // SIF DMA needs the 64-byte alignment retail gives it.
 static RpcPacket g_aRpcPackets[kRpcPacketCount] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008df140, PAL: 0x00924100, the ring of replies to requests the IOP makes.
+// NTSC-U/C: 0x00534280, the ring of replies to requests the IOP makes.
 // SIF DMA needs the 64-byte alignment retail gives it.
 static RpcPacket g_aRpcReplies[kRpcPacketCount] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008df940, PAL: 0x00924900, the replies to calls the IOP made from its request table.
+// NTSC-U/C: 0x00534a80, the replies to calls the IOP made from its request table.
 // SIF DMA needs the 64-byte alignment retail gives it.
 static RpcPacket g_aRpcClientPackets[kRpcPacketCount] __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x008e0140, PAL: 0x00925100
+// NTSC-U/C: 0x00535280
 static RpcState _data_table;
 
-// NTSC-U/C: 0x00564c50, PAL: 0x005a33c0
+// NTSC-U/C: 0x00319490, PAL: 0x00385da8
 static RpcPacket *getPacket(RpcState *pState) {
     RpcPacket *pPacket = pState->pPackets;
     int nId;
@@ -145,13 +158,13 @@ static RpcPacket *getPacket(RpcState *pState) {
     return NULL;
 }
 
-// NTSC-U/C: 0x00564cf8, PAL: 0x005a3468
+// NTSC-U/C: 0x00319538, PAL: 0x00385e50
 static void freePacket(RpcPacket *pPacket) {
     pPacket->header.nId = 0;
     pPacket->header.nRecord &= ~(unsigned int)kRecordAllocated;
 }
 
-// NTSC-U/C: 0x00564d18, PAL: 0x005a3488
+// NTSC-U/C: 0x00319558, PAL: 0x00385e70
 static RpcPacket *nextReplyPacket(RpcState *pState) {
     int nIndex = pState->nNextReply % pState->nReplyCount;
 
@@ -159,7 +172,7 @@ static RpcPacket *nextReplyPacket(RpcState *pState) {
     return &pState->pReplies[nIndex];
 }
 
-// NTSC-U/C: 0x00564d48, PAL: 0x005a34b8
+// NTSC-U/C: 0x00319588, PAL: 0x00385ea0
 static RpcPacket *_sceRpcGetFPacket2(RpcState *pState, int nIndex) {
     if (nIndex >= 0 && nIndex < pState->nClientPacketCount) {
         return &pState->pClientPackets[nIndex];
@@ -167,7 +180,7 @@ static RpcPacket *_sceRpcGetFPacket2(RpcState *pState, int nIndex) {
     return nextReplyPacket(pState);
 }
 
-// NTSC-U/C: 0x00564d88, PAL: 0x005a34f8
+// NTSC-U/C: 0x003195c8, PAL: 0x00385ee0
 static void _request_end(void *pPacket, void *pData) {
     const RpcEndPacket *pEnd = pPacket;
     sceSifRpcData *pRequest = pEnd->pRequest;
@@ -190,19 +203,47 @@ static void _request_end(void *pPacket, void *pData) {
     pRequest->paddr = NULL;
 }
 
-// NTSC-U/C: 0x00564e40, PAL: 0x005a35b0
-static void _request_rdata(void *pPacket, void *pData) {
-    const RpcDataPacket *pRequest = pPacket;
-    RpcPacket *pReply = nextReplyPacket(pData);
+// NTSC-U/C: 0x00319680, PAL: 0x00385f98
+// Sends the end of a data request again, from an alarm, until the command buffer accepts it.
+static void RetrySendDataEnd(int nId, unsigned short nTime, void *pArg) {
+    RpcDataEndPacket *pReply = pArg;
 
-    pReply->end.header.pPacket = pRequest->header.pPacket;
-    pReply->end.pRequest = pRequest->pRequest;
-    pReply->end.nCommand = SIF_CMDC_RPC_RDATA;
-    isceSifSendCmd(
-        SIF_CMDC_RPC_END, pReply, kRpcPacketSize, pRequest->pSrc, pRequest->pDest, pRequest->nSize);
+    (void)nId;
+    (void)nTime;
+    if (isceSifSendCmd(
+            SIF_CMDC_RPC_END, pReply, kRpcPacketSize, pReply->pSrc, pReply->pDest, pReply->nSize) ==
+        0) {
+        iSetAlarm(kRetryAlarmDelay, RetrySendDataEnd, pReply);
+    }
 }
 
-// NTSC-U/C: 0x00564ff8, PAL: 0x005a3768
+// NTSC-U/C: 0x003196e0, PAL: 0x00385ff8
+static void _request_rdata(void *pPacket, void *pData) {
+    const RpcDataPacket *pRequest = pPacket;
+    RpcPacket *pReply;
+
+    if ((pRequest->header.nRecord & kRecordIndexed) != 0) {
+        pReply = _sceRpcGetFPacket2(pData, (int)(pRequest->header.nRecord >> kRecordIndexShift));
+    } else {
+        pReply = nextReplyPacket(pData);
+    }
+    pReply->dataEnd.header.pPacket = pRequest->header.pPacket;
+    pReply->dataEnd.pRequest = pRequest->pRequest;
+    pReply->dataEnd.nCommand = SIF_CMDC_RPC_RDATA;
+    pReply->dataEnd.pSrc = pRequest->pSrc;
+    pReply->dataEnd.pDest = pRequest->pDest;
+    pReply->dataEnd.nSize = pRequest->nSize;
+    if (isceSifSendCmd(SIF_CMDC_RPC_END,
+                       pReply,
+                       kRpcPacketSize,
+                       pRequest->pSrc,
+                       pRequest->pDest,
+                       pRequest->nSize) == 0) {
+        iSetAlarm(kRetryAlarmDelay, RetrySendDataEnd, &pReply->dataEnd);
+    }
+}
+
+// NTSC-U/C: 0x003197b0, PAL: 0x003860c8
 static sceSifServeData *_search_svdata(unsigned int nCommand, RpcState *pState) {
     sceSifQueueData *pQueue;
     sceSifServeData *pServe;
@@ -217,7 +258,7 @@ static sceSifServeData *_search_svdata(unsigned int nCommand, RpcState *pState) 
     return NULL;
 }
 
-// NTSC-U/C: 0x00565048, PAL: 0x005a37b8
+// NTSC-U/C: 0x00319800, PAL: 0x00386118
 static void _request_bind(void *pPacket, void *pData) {
     const RpcBindPacket *pRequest = pPacket;
     RpcState *pState = pData;
@@ -240,7 +281,7 @@ static void _request_bind(void *pPacket, void *pData) {
     isceSifSendCmd(SIF_CMDC_RPC_END, pReply, kRpcPacketSize, NULL, NULL, 0);
 }
 
-// NTSC-U/C: 0x00565238, PAL: 0x005a39a8
+// NTSC-U/C: 0x003199f0, PAL: 0x00386308
 // Queues the call on its server and wakes the queue's thread when it is idle.
 static void _request_call(void *pPacket, void *pData) {
     const RpcCallPacket *pRequest = pPacket;
@@ -313,44 +354,6 @@ void sceSifInitRpc(unsigned int mode) {
 void sceSifExitRpc(void) {
     sceSifExitCmd();
     g_nRpcInitialized = 0;
-}
-
-int sceSifGetOtherData(sceSifReceiveData *rd, void *src, void *dest, int size, unsigned int mode) {
-    struct SemaParam sema = {0};
-    RpcPacket *pPacket = getPacket(&_data_table);
-
-    if (pPacket == NULL) {
-        return kRpcErrorNoPacket;
-    }
-    rd->rpcd.paddr = pPacket;
-    rd->rpcd.pid = pPacket->header.nId;
-    pPacket->data.pSrc = src;
-    pPacket->data.pDest = dest;
-    pPacket->data.nSize = size;
-    pPacket->data.pRequest = &rd->rpcd;
-    if ((mode & SIF_RPCM_NOWAIT) != 0) {
-        rd->rpcd.tid = -1;
-        if (sceSifSendCmd(SIF_CMDC_RPC_RDATA, pPacket, kRpcPacketSize, NULL, NULL, 0) == 0) {
-            freePacket(pPacket);
-            return kRpcErrorSend;
-        }
-        return 0;
-    }
-    sema.maxCount = 1;
-    sema.initCount = 0;
-    rd->rpcd.tid = CreateSema(&sema);
-    if (rd->rpcd.tid < 0) {
-        freePacket(pPacket);
-        return kRpcErrorSema;
-    }
-    if (sceSifSendCmd(SIF_CMDC_RPC_RDATA, pPacket, kRpcPacketSize, NULL, NULL, 0) == 0) {
-        freePacket(pPacket);
-        DeleteSema(rd->rpcd.tid);
-        return kRpcErrorSend;
-    }
-    WaitSema(rd->rpcd.tid);
-    DeleteSema(rd->rpcd.tid);
-    return 0;
 }
 
 int sceSifBindRpc(sceSifClientData *bd, unsigned int command, unsigned int mode) {
@@ -464,174 +467,4 @@ int sceSifCheckStatRpc(sceSifRpcData *cd) {
         return 0;
     }
     return 1;
-}
-
-void sceSifSetRpcQueue(sceSifQueueData *qd, int key) {
-    sceSifQueueData *pLast;
-
-    DIntr();
-    qd->key = key;
-    qd->active = 0;
-    qd->link = NULL;
-    qd->start = NULL;
-    qd->end = NULL;
-    qd->next = NULL;
-    if (_data_table.pQueues == NULL) {
-        _data_table.pQueues = qd;
-    } else {
-        for (pLast = _data_table.pQueues; pLast->next != NULL; pLast = pLast->next) {
-        }
-        pLast->next = qd;
-    }
-    EIntr();
-}
-
-void sceSifRegisterRpc(sceSifServeData *sd,
-                       unsigned int command,
-                       sceSifRpcFunc func,
-                       void *buff,
-                       sceSifRpcFunc cfunc,
-                       void *cbuff,
-                       sceSifQueueData *qd) {
-    sceSifServeData *pLast;
-
-    DIntr();
-    sd->next = NULL;
-    sd->link = NULL;
-    sd->command = command;
-    sd->func = func;
-    sd->buff = buff;
-    sd->cfunc = cfunc;
-    sd->cbuff = cbuff;
-    sd->base = qd;
-    if (qd->link == NULL) {
-        qd->link = sd;
-    } else {
-        for (pLast = qd->link; pLast->link != NULL; pLast = pLast->link) {
-        }
-        pLast->link = sd;
-    }
-    EIntr();
-}
-
-sceSifServeData *sceSifRemoveRpc(sceSifServeData *sd, sceSifQueueData *qd) {
-    sceSifServeData *pServe;
-
-    DIntr();
-    pServe = qd->link;
-    if (pServe == sd) {
-        qd->link = pServe->link;
-    } else {
-        while (pServe != NULL && pServe->link != sd) {
-            pServe = pServe->link;
-        }
-        if (pServe != NULL) {
-            pServe->link = sd->link;
-        }
-    }
-    EIntr();
-    return pServe;
-}
-
-sceSifQueueData *sceSifRemoveRpcQueue(sceSifQueueData *qd) {
-    sceSifQueueData *pQueue;
-
-    DIntr();
-    pQueue = _data_table.pQueues;
-    if (pQueue == qd) {
-        _data_table.pQueues = pQueue->next;
-    } else {
-        while (pQueue != NULL && pQueue->next != qd) {
-            pQueue = pQueue->next;
-        }
-        if (pQueue != NULL) {
-            pQueue->next = qd->next;
-        }
-    }
-    EIntr();
-    return pQueue;
-}
-
-sceSifServeData *sceSifGetNextRequest(sceSifQueueData *qd) {
-    sceSifServeData *pServe;
-
-    DIntr();
-    pServe = qd->start;
-    if (pServe != NULL) {
-        qd->active = 1;
-        qd->start = pServe->next;
-    } else {
-        qd->active = 0;
-    }
-    EIntr();
-    return pServe;
-}
-
-void sceSifExecRequest(sceSifServeData *sd) {
-    sceSifDmaData aTransfers[2];
-    RpcPacket *pReply;
-    void *pResult;
-    int nReplySize = 0;
-    int nCount = 0;
-    int nDelay;
-
-    pResult = sd->func(sd->fno, sd->buff, sd->size);
-    if (pResult != NULL) {
-        nReplySize = sd->rsize;
-    }
-    if (sd->size > 0) {
-        sceSifWriteBackDCache(sd->buff, sd->size);
-    }
-    if (nReplySize > 0) {
-        sceSifWriteBackDCache(pResult, nReplySize);
-    }
-
-    DIntr();
-    if ((sd->rid & kRecordIndexed) != 0) {
-        pReply = _sceRpcGetFPacket2(&_data_table, (int)(sd->rid >> kRecordIndexShift));
-    } else {
-        pReply = nextReplyPacket(&_data_table);
-    }
-    EIntr();
-
-    pReply->end.nCommand = SIF_CMDC_RPC_CALL;
-    pReply->end.pRequest = &sd->client->rpcd;
-    if (sd->rmode != 0) {
-        while (sceSifSendCmd(
-                   SIF_CMDC_RPC_END, pReply, kRpcPacketSize, pResult, sd->receive, nReplySize) ==
-               0) {
-        }
-        return;
-    }
-
-    pReply->header.nId = 0;
-    pReply->header.nRecord = 0;
-    if (nReplySize > 0) {
-        aTransfers[0].data = (unsigned int)(uintptr_t)pResult;
-        aTransfers[0].addr = (unsigned int)(uintptr_t)sd->receive;
-        aTransfers[0].size = (unsigned int)nReplySize;
-        aTransfers[0].mode = 0;
-        nCount = 1;
-    }
-    aTransfers[nCount].data = (unsigned int)(uintptr_t)pReply;
-    aTransfers[nCount].addr = (unsigned int)(uintptr_t)sd->paddr;
-    aTransfers[nCount].size = kRpcPacketSize;
-    aTransfers[nCount].mode = 0;
-    ++nCount;
-    while (sceSifSetDma(aTransfers, nCount) == 0) {
-        for (nDelay = kRetryDelay; nDelay != -1; --nDelay) {
-            __asm__ volatile("nop");
-        }
-    }
-}
-
-void sceSifRpcLoop(sceSifQueueData *qd) {
-    sceSifServeData *pServe;
-
-    for (;;) {
-        while ((pServe = sceSifGetNextRequest(qd)) != NULL) {
-            sceSifExecRequest(pServe);
-        }
-        SleepThread();
-    }
 }

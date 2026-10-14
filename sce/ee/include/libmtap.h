@@ -10,11 +10,9 @@ extern "C" {
 /**
  * Bind the five mtapman servers and check the mtapman version.
  *
- * Exits the program when a bind request cannot be sent.
- *
- * @return 1, or zero on a version mismatch.
- * @ghidraAddress NTSC-U/C: 0x0053a5c0
- * @ghidraAddress PAL: 0x0057a008
+ * @return 1, or zero when a bind request cannot be sent or on a version mismatch.
+ * @ghidraAddress NTSC-U/C: 0x00312b68
+ * @ghidraAddress PAL: 0x0037f200
  */
 int sceMtapInit(void);
 
@@ -23,8 +21,8 @@ int sceMtapInit(void);
  *
  * @param nPort Port.
  * @return mtapman's result, or zero when the call failed.
- * @ghidraAddress NTSC-U/C: 0x0053a840
- * @ghidraAddress PAL: 0x0057a288
+ * @ghidraAddress NTSC-U/C: 0x00312da8
+ * @ghidraAddress PAL: 0x0037f440
  */
 int sceMtapPortOpen(int nPort);
 
@@ -33,8 +31,8 @@ int sceMtapPortOpen(int nPort);
  *
  * @param nPort Port.
  * @return mtapman's result, or zero when the call failed.
- * @ghidraAddress NTSC-U/C: 0x0053a8b0
- * @ghidraAddress PAL: 0x0057a2f8
+ * @ghidraAddress NTSC-U/C: 0x00312e18
+ * @ghidraAddress PAL: 0x0037f4b0
  */
 int sceMtapPortClose(int nPort);
 
@@ -43,29 +41,18 @@ int sceMtapPortClose(int nPort);
  *
  * @param nPort Port.
  * @return 1 when a multitap is connected, or zero when none is or the call failed.
- * @ghidraAddress NTSC-U/C: 0x0053a920
- * @ghidraAddress PAL: 0x0057a368
+ * @ghidraAddress NTSC-U/C: 0x00312e88
+ * @ghidraAddress PAL: 0x0037f520
  */
 int sceMtapGetConnection(int nPort);
-
-/**
- * Change the priorities of the mtapman threads.
- *
- * @param nFirstPriority Priority of the first thread.
- * @param nSecondPriority Priority of the second thread.
- * @return mtapman's result, or zero when the call failed.
- * @ghidraAddress NTSC-U/C: 0x0053a990
- * @ghidraAddress PAL: 0x0057a3d8
- */
-int sceMtapChangeThreadPriority(int nFirstPriority, int nSecondPriority);
 
 /**
  * Report the mtapman version.
  *
  * @return The major version in bits 8 to 15 and the minor in bits 0 to 7, or zero when the call
  * failed.
- * @ghidraAddress NTSC-U/C: 0x0053aa00
- * @ghidraAddress PAL: 0x0057a448
+ * @ghidraAddress NTSC-U/C: 0x00312ef8
+ * @ghidraAddress PAL: 0x0037f590
  */
 int sceMtapGetModVersion(void);
 

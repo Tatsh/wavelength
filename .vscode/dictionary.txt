@@ -21,6 +21,7 @@ acircbuff
 adcb
 adce
 adda
+addhour
 addi
 addin
 addiu
@@ -53,6 +54,7 @@ anims
 anonymouslogintask
 apalette
 apdx
+apfn
 apolygon
 appactivefilter
 appticktask
@@ -125,7 +127,11 @@ bdec
 beamgrow
 beamparams
 beis
+beql
+beqz
+beqzl
 bffm
+bgez
 bgtz
 bitbltbuf
 bknm
@@ -137,6 +143,8 @@ blockpool
 blockstattable
 bltz
 bluraction
+bnel
+bnez
 bonuspicpanel
 booloption
 bootscreen
@@ -211,6 +219,8 @@ constructo
 controllerconfigscreen
 controllerdisplay
 controllerpanel
+convertfrombcd
+converttobcd
 copyfreqscreen
 corefx
 coveragerc
@@ -302,9 +312,12 @@ dpsm
 drawdummy
 drumnbass
 dsay
+dsll
 dsllv
 dsmcc
 dsource
+dsra
+dsrl
 dsrlv
 dsubu
 dthe
@@ -347,6 +360,7 @@ erasebarpacket
 erasesectionpacket
 eret
 errorscreen
+errr
 esac
 esbenp
 etext
@@ -389,7 +403,6 @@ filesubtype
 fileuploadtask
 fileversion
 finalscorepacket
-findctp
 findplayertask
 fini
 finishupdategameparamstask
@@ -428,6 +441,7 @@ freqmakerpartconfigscreen
 freqpanel
 freqscreen
 freqselpanel
+frombcd
 frustrum
 fsand
 fsmblks
@@ -555,6 +569,7 @@ inett
 inited
 initmgcltask
 initrttask
+initsys
 innm
 inptr
 inputlost
@@ -585,6 +600,7 @@ ioputil
 ipubp
 ipuctrl
 ipudma
+ipuinit
 ipum
 irqa
 isce
@@ -658,6 +674,7 @@ libnet
 libnetb
 libnetb's
 libnetconfig
+libosd
 libpad
 libpath
 librtdme
@@ -862,7 +879,10 @@ mtap
 mtapman
 mtapman's
 mtba
+mthi
 mtir
+mtlo
+mtsa
 mtsab
 mula
 mulaq
@@ -1206,6 +1226,7 @@ remixsongscreen
 remixtutorial
 remixtypescreen
 remoteplayer
+repbuf
 reserv
 reservedfc
 rgbaq
@@ -1275,6 +1296,7 @@ scesd
 schedulerclock
 schemafile
 scommon
+scratchpad
 scratchtrack
 scratchtrackbuilder
 scratchtrackdata
@@ -1308,6 +1330,7 @@ setcamaction
 setenvaction
 setgamelistfiltertask
 setgeneratoraction
+setiq
 setiv
 setjmp
 setmataction
@@ -1317,6 +1340,7 @@ setuplocalplayertask
 setupnamescreen
 setupnewchatroomscreen
 setupremixsavescreen
+setvq
 sfxbuilder
 shareremixscreen
 shellcheck
@@ -1437,6 +1461,7 @@ strncpy
 strow
 strstr
 strtol
+subhour
 subi
 sublang
 substepparticles
@@ -1484,6 +1509,11 @@ timeclock
 timedcommand
 timrman
 tipsscreen
+tlbfunc
+tlbp
+tlbr
+tlbwi
+tlbwr
 tlid
 tmfc
 tnlactivator
@@ -1512,6 +1542,7 @@ tnltrackrange
 tnlwave
 tnlwinshell
 tnlz
+tobcd
 torsopart
 tostring
 totbytes
@@ -1595,6 +1626,7 @@ usrdll
 usrname
 vars
 vbext
+vblank
 vcallms
 vdec
 vendored
@@ -1659,7 +1691,6 @@ worldlogic
 worldmgr
 worldtrack
 writx
-wstringop
 wuninitialized
 wuse
 xdir

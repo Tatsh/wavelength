@@ -16,6 +16,9 @@ extern "C" {
 /** Bit of a key code that marks a key with no character. */
 #define USBKB_RAWDAT 0x8000
 
+/** Bit of a key code that marks a key of the numeric keypad. */
+#define USBKB_KEYPAD 0x4000
+
 /** One report of key presses. */
 typedef struct {
     unsigned int led;                           /*!< The lit indicators. */
@@ -88,7 +91,7 @@ int sceUsbKbSetLEDMode(unsigned int nNo, int nMode);
  * @param nNo The keyboard.
  * @param nStart The delay before the first repeat.
  * @param nInterval The delay between repeats.
- * @return Zero on success.
+ * @return Zero, -11 for a negative @p nStart, or -12 for a negative @p nInterval.
  * @ghidraAddress NTSC-U/C: 0x00310b68
  * @ghidraAddress PAL: 0x0037d118
  */
@@ -147,6 +150,20 @@ int sceUsbKbSetReadMode(unsigned int nNo, int nMode);
  * @ghidraAddress PAL: 0x0037de90
  */
 int sceUsbKbClearRbuf(unsigned int nNo);
+
+/**
+ * Convert a USB key usage to a character of a keyboard layout.
+ *
+ * @param arrange The layout.
+ * @param mkey The modifier keys held.
+ * @param led The lit indicators.
+ * @param rawcode The key usage.
+ * @return The character, the usage with #USBKB_RAWDAT for a key with no character, or the usage
+ * unchanged when it is 256 or more.
+ * @ghidraAddress NTSC-U/C: 0x003116a8
+ * @ghidraAddress PAL: 0x0037dc58
+ */
+unsigned short sceUsbKbCnvRawCode(int arrange, int mkey, int led, unsigned short rawcode);
 
 #ifdef __cplusplus
 }

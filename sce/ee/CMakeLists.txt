@@ -14,30 +14,41 @@ target_include_directories(wavelength_eznet PUBLIC "${CMAKE_SOURCE_DIR}/sce/ee/i
 # The Sony library reconstructions. Each unit lists its sources explicitly, as the subsystem
 # libraries do. libdma is absent until its routines are recovered.
 set(WAVELENGTH_SONYLIB_SRCS
+    src/alarm.c
+    src/exit.c
     src/fileio.c
+    src/initsys.c
     src/iopcontrol.c
     src/iopheap.c
+    src/ipuinit.c
     src/libcdvd.c
     src/libdev.c
     src/libdma.c
     src/libgifpk.c
     src/libgraph.c
+    src/libipu.c
     src/libkernel.c
     src/libkernel_alarm.s
+    src/libkernel_exec.s
     src/libkernel_syscalls.s
+    src/libkernel_tlb.s
     src/libmc.c
     src/libmpeg.c
     src/libmtap.c
+    src/libosd.c
     src/libpad.c
+    src/libscf.c
     src/libsdr.c
+    src/libusbkb.c
     src/libvifpk.c
     src/libvu0.c
     src/loadfile.c
+    src/msifrpc.c
     src/msin.c
-    src/libscf.c
     src/sifcmd.c
     src/sifdma.c
     src/sifrpc.c
+    src/tlbfunc.c
     src/tty.c)
 
 add_library(wavelength_sonylibs STATIC ${WAVELENGTH_SONYLIB_SRCS})
