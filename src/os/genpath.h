@@ -5,9 +5,6 @@
  *
  * ConvertNameToGenerated() inserts it in front of a file name. External linkage makes every use
  * load the pointer, as the image does.
- *
- * @ghidraAddress NTSC-U/C: 0x00725840
- * @ghidraAddress PAL: 0x007694e0
  */
 extern const char *dirpath;
 
@@ -23,8 +20,6 @@ extern const char *dirpath;
  * @param pszPath The path, rewritten in place. The buffer must take the longer result.
  * @param pszExtension The extension to append.
  * @return pszPath.
- * @ghidraAddress NTSC-U/C: 0x005585a8
- * @ghidraAddress PAL: 0x00599700
  */
 char *ConvertNameToGenerated(char *pszPath, const char *pszExtension);
 
@@ -36,8 +31,6 @@ char *ConvertNameToGenerated(char *pszPath, const char *pszExtension);
  *
  * @param pszPath The original bitmap path.
  * @return Non-zero when the ".abm.gz" file opens.
- * @ghidraAddress NTSC-U/C: 0x00558538
- * @ghidraAddress PAL: 0x00599690
  */
 int LoadBitmapFileFromPath(const char *pszPath);
 
@@ -48,7 +41,5 @@ int LoadBitmapFileFromPath(const char *pszPath);
  *
  * @param pszPath The path, rewritten in place. The buffer must take the longer result.
  * @param pszExtension The extension to insert.
- * @ghidraAddress NTSC-U/C: 0x005586b0
- * @ghidraAddress PAL: 0x00599808
  */
 void AppendName(char *pszPath, const char *pszExtension);

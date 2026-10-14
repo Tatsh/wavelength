@@ -33,17 +33,11 @@ class Drawable : public virtual Object {
 public:
     /**
      * Construct a visible drawable with no children.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005066f8
-     * @ghidraAddress PAL: 0x005455b8
      */
     Drawable();
 
     /**
      * Drop this object's references on its children.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00506590
-     * @ghidraAddress PAL: 0x00545450
      */
     virtual ~Drawable();
 
@@ -52,9 +46,6 @@ public:
      *
      * Draws nothing when mShowing is clear, and skips the children when DrawShowing() reports that
      * the subtree is invisible.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00506920
-     * @ghidraAddress PAL: 0x005457e8
      */
     void Draw();
 
@@ -66,8 +57,6 @@ public:
      * parent in the draw hierarchy rather than a plain cast.
      *
      * @return The parent drawable, or null when no referrer draws this one.
-     * @ghidraAddress NTSC-U/C: 0x00502d78
-     * @ghidraAddress PAL: 0x00541ba0
      */
     Drawable *Parent();
 
@@ -79,8 +68,6 @@ public:
      *
      * @param pDraw The drawable to add.
      * @param pBefore The drawable to insert in front of.
-     * @ghidraAddress NTSC-U/C: 0x00503188
-     * @ghidraAddress PAL: 0x00541fb0
      */
     void AddDraw(Drawable *pDraw, Drawable *pBefore);
 
@@ -88,8 +75,6 @@ public:
      * Insert pDraw at the front of mDraws.
      *
      * @param pDraw The drawable to add.
-     * @ghidraAddress NTSC-U/C: 0x005064e0
-     * @ghidraAddress PAL: 0x005453a0
      */
     void AddDraw(Drawable *pDraw);
 
@@ -99,16 +84,11 @@ public:
      * Drops this object's reference on pDraw first. A pDraw absent from mDraws does nothing.
      *
      * @param pDraw The drawable to remove.
-     * @ghidraAddress NTSC-U/C: 0x00503360
-     * @ghidraAddress PAL: 0x00542188
      */
     void RemoveDraw(Drawable *pDraw);
 
     /**
      * Empty mDraws, dropping this object's reference on every entry.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00503420
-     * @ghidraAddress PAL: 0x00542248
      */
     void RemoveAllDraws();
 
@@ -121,8 +101,6 @@ public:
      *
      * @param pDraw The drawable to move.
      * @param nSteps The number of places to move it.
-     * @ghidraAddress NTSC-U/C: 0x005034b8
-     * @ghidraAddress PAL: 0x005422e0
      */
     void MoveDraw(Drawable *pDraw, int nSteps);
 
@@ -132,8 +110,6 @@ public:
      * Drawable vtable slot 1.
      *
      * @param nShowing Non-zero to draw.
-     * @ghidraAddress NTSC-U/C: 0x005066d8
-     * @ghidraAddress PAL: 0x00545598
      */
     virtual void SetShowing(int nShowing);
 
@@ -145,8 +121,6 @@ public:
      * FreqAppearance::AttachToBurnSlot() expands the first level of the recursion.
      *
      * @param nShowing Non-zero to draw.
-     * @ghidraAddress NTSC-U/C: 0x00174480
-     * @ghidraAddress PAL: 0x00176e58
      */
     void SetShowingRecursive(int nShowing) {
         SetShowing(nShowing);
@@ -161,8 +135,6 @@ public:
      * Drawable vtable slot 2.
      *
      * @param nHighlight Non-zero to highlight.
-     * @ghidraAddress NTSC-U/C: 0x00506c88
-     * @ghidraAddress PAL: 0x00545b50
      */
     virtual void SetHighlight(int nHighlight);
 
@@ -170,8 +142,6 @@ public:
      * Report the highlight flag.
      *
      * @return Non-zero when this object draws with its highlight treatment.
-     * @ghidraAddress NTSC-U/C: 0x005066e0
-     * @ghidraAddress PAL: 0x005455a0
      */
     int GetHighlight() const {
         return mHighlight;
@@ -183,8 +153,6 @@ public:
      * The out-of-line copy has no callers. Rnd::LodMesh::Draw() inlines it.
      *
      * @return Non-zero when this object draws at all.
-     * @ghidraAddress NTSC-U/C: 0x00506520
-     * @ghidraAddress PAL: 0x005453e0
      */
     int GetShowing() const {
         return mShowing;
@@ -198,8 +166,6 @@ public:
      *
      * @param name The registry key to resolve.
      * @return The drawable, or null.
-     * @ghidraAddress NTSC-U/C: 0x00506528
-     * @ghidraAddress PAL: 0x005453e8
      */
     static Drawable *Find(const HxStr &name);
 
@@ -207,8 +173,6 @@ public:
      * Report the child list.
      *
      * @return The list of drawables this object draws after itself.
-     * @ghidraAddress NTSC-U/C: 0x005066e8
-     * @ghidraAddress PAL: 0x005455a8
      */
     std::list<Drawable *> &GetDraws() {
         return mDraws;
@@ -222,8 +186,6 @@ public:
      * routine therefore produces no output on this target either way.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x005069a8
-     * @ghidraAddress PAL: 0x00545870
      */
     virtual void DumpText(Dbg &sink);
 
@@ -231,8 +193,6 @@ public:
      * Write the revision, the showing flag as one byte, and the draw list.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x00506b28
-     * @ghidraAddress PAL: 0x005459f0
      */
     virtual void Save(Stream &stream);
 
@@ -244,8 +204,6 @@ public:
      *
      * @param pFrom The object to replace.
      * @param pTo The replacement, which only counts when it is a Drawable.
-     * @ghidraAddress NTSC-U/C: 0x00502e40
-     * @ghidraAddress PAL: 0x00541c68
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -256,8 +214,6 @@ public:
      *
      * @param pSource The drawable to copy from.
      * @param nFlags The copy flags.
-     * @ghidraAddress NTSC-U/C: 0x00506a88
-     * @ghidraAddress PAL: 0x00545950
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -267,8 +223,6 @@ public:
      * A revision newer than this build supports is reported and aborts the load.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x00503020
-     * @ghidraAddress PAL: 0x00541e48
      */
     virtual void Load(Stream &stream);
 
@@ -285,8 +239,6 @@ protected:
      * are still to be drawn. Only Draw() invokes it.
      *
      * @return Non-zero when the children are to be drawn as well.
-     * @ghidraAddress NTSC-U/C: 0x005066f0
-     * @ghidraAddress PAL: 0x005455b0
      */
     virtual int DrawShowing();
 
@@ -294,18 +246,12 @@ protected:
      * Drop this object's reference on every mDraws entry without emptying the list.
      *
      * Every derived destructor invokes this before its own teardown.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00506ba8
-     * @ghidraAddress PAL: 0x00545a70
      */
     void ReleaseDrawsRefs();
 
 private:
     /**
      * Only Copy() and Load() invoke this.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00506c18
-     * @ghidraAddress PAL: 0x00545ae0
      */
     void AcquireDrawsRefs();
 

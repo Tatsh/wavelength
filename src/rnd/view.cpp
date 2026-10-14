@@ -27,38 +27,32 @@ constexpr int kCameraRefRevision = 3;
 
 } // namespace
 
-// NTSC-U/C: 0x00702b20, PAL: 0x007465c0
 HxStr g_viewClassName("View");
 
-// NTSC-U/C: 0x004e32a0, PAL: 0x00521b58
 // The thunk registered against the "View" key. The null test is the conversion of a View pointer
 // to its virtual Rnd::Object base rather than a check the source asks for.
 static Object *NewViewObject(const HxStr &name) {
     return View::NewView(name);
 }
 
-// NTSC-U/C: 0x004e3458, PAL: 0x00521d10
 static Object *NewAnimatableView(const HxStr &name) {
     View *pView = View::NewView(name);
     pView->mAnimatable = 1;
     return pView;
 }
 
-// NTSC-U/C: 0x004e3378, PAL: 0x00521c30
 static Object *NewTransformableView(const HxStr &name) {
     View *pView = View::NewView(name);
     pView->mTransformable = 1;
     return pView;
 }
 
-// NTSC-U/C: 0x004e3538, PAL: 0x00521df0
 static Object *NewDrawableView(const HxStr &name) {
     View *pView = View::NewView(name);
     pView->mDrawable = 1;
     return pView;
 }
 
-// NTSC-U/C: 0x004e3618, PAL: 0x00521ed0
 static Object *NewCollideableView(const HxStr &name) {
     View *pView = View::NewView(name);
     pView->mCollideable = 1;

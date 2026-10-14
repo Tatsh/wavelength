@@ -56,9 +56,6 @@ public:
      * Registered class name of Rnd::MatAnim, the string "MatAnim".
      *
      * A static constructor fills the string from the literal at `0x00822e68`.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00700428
-     * @ghidraAddress PAL: 0x00743e50
      */
     static HxStr sClassName;
 
@@ -122,9 +119,6 @@ public:
          *
          * The compiler generates the body. mOwner is left as it was, and Rnd::MatAnim writes it
          * after every resize.
-         *
-         * @ghidraAddress NTSC-U/C: 0x004dbe38
-         * @ghidraAddress PAL: 0x0051a3d8
          */
         Stage() = default;
 
@@ -135,8 +129,6 @@ public:
          * `0x004d84f8` and the texture channel through `0x004d85e8`.
          *
          * @param other The stage animation to copy.
-         * @ghidraAddress NTSC-U/C: 0x004d86d8
-         * @ghidraAddress PAL: 0x00516bf0
          */
         Stage(const Stage &other) = default;
 
@@ -145,9 +137,6 @@ public:
          *
          * The compiler generates the body, which destroys the channels in reverse order and frees
          * the record when the in-charge flag asks it to. The textures keep their references.
-         *
-         * @ghidraAddress NTSC-U/C: 0x004dbd88
-         * @ghidraAddress PAL: 0x0051a328
          */
         ~Stage() = default;
 
@@ -166,8 +155,6 @@ public:
          * operator and then the texture channel, each texture as its name.
          *
          * @param stream The stream to write to.
-         * @ghidraAddress NTSC-U/C: 0x004dd500
-         * @ghidraAddress PAL: 0x0051baa0
          */
         void Save(Stream &stream);
 
@@ -180,8 +167,6 @@ public:
          * three vector channels follow. From revision 2 the texture channel follows as keys.
          *
          * @param stream The stream to read from.
-         * @ghidraAddress NTSC-U/C: 0x004d4068
-         * @ghidraAddress PAL: 0x00512558
          */
         void Load(Stream &stream);
 
@@ -189,8 +174,6 @@ public:
          * Write the four channels and the owner to the engine text sink.
          *
          * @param sink The text sink.
-         * @ghidraAddress NTSC-U/C: 0x004d3f70
-         * @ghidraAddress PAL: 0x00512460
          */
         void Dump(Dbg &sink);
 
@@ -203,8 +186,6 @@ public:
          *
          * @param pTex The texture, or null.
          * @param flFrame The frame of the new key.
-         * @ghidraAddress NTSC-U/C: 0x004d3d30
-         * @ghidraAddress PAL: 0x00512220
          */
         void AddTexKey(Tex *pTex, float flFrame);
 
@@ -215,8 +196,6 @@ public:
          * routine has no caller in the shipped build. The name is inferred.
          *
          * @param nIndex The position of the key.
-         * @ghidraAddress NTSC-U/C: 0x004d3e30
-         * @ghidraAddress PAL: 0x00512320
          */
         void RemoveTexKey(int nIndex);
 
@@ -228,8 +207,6 @@ public:
          *
          * @param nIndex The position of the key.
          * @param flFrame The new frame.
-         * @ghidraAddress NTSC-U/C: 0x004dd4a0
-         * @ghidraAddress PAL: 0x0051ba40
          */
         void SetTexKeyFrame(int nIndex, float flFrame);
 
@@ -265,16 +242,11 @@ public:
      * The animation owns its keys from the start, so mKeysOwner is this object.
      *
      * @param name The object name, passed to the Rnd::Object constructor.
-     * @ghidraAddress NTSC-U/C: 0x004dc4f0
-     * @ghidraAddress PAL: 0x0051aa90
      */
     MatAnim(const HxStr &name);
 
     /**
      * Drop every reference this animation holds and every reference held on it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004dc0c8
-     * @ghidraAddress PAL: 0x0051a668
      */
     virtual ~MatAnim();
 
@@ -286,8 +258,6 @@ public:
      * while the dump level of the sink is not positive.
      *
      * @param sink The text sink.
-     * @ghidraAddress NTSC-U/C: 0x004d33b8
-     * @ghidraAddress PAL: 0x00511858
      */
     virtual void DumpText(Dbg &sink);
 
@@ -298,8 +268,6 @@ public:
      * mKeysOwner as a name, and finally the five channels.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004d35d0
-     * @ghidraAddress PAL: 0x00511a70
      */
     virtual void Save(Stream &stream);
 
@@ -313,8 +281,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The replacement, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x004d30c8
-     * @ghidraAddress PAL: 0x00511568
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -322,8 +288,6 @@ public:
      * Report the registered class name, "MatAnim".
      *
      * @return The class name.
-     * @ghidraAddress NTSC-U/C: 0x004dc4e0
-     * @ghidraAddress PAL: 0x0051aa80
      */
     virtual const HxStr &ClassName() const;
 
@@ -337,8 +301,6 @@ public:
      *
      * @param pSource The object to copy from.
      * @param nFlags The set of fields to copy.
-     * @ghidraAddress NTSC-U/C: 0x004dd388
-     * @ghidraAddress PAL: 0x0051b928
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -350,8 +312,6 @@ public:
      * and nothing more is read. The five channels are present from revision 2.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x004d38e8
-     * @ghidraAddress PAL: 0x00511d88
      */
     virtual void Load(Stream &stream);
 
@@ -365,8 +325,6 @@ public:
      * selected values prove that each pair is a call.
      *
      * @return The last frame.
-     * @ghidraAddress NTSC-U/C: 0x004d42f0
-     * @ghidraAddress PAL: 0x005127e0
      */
     virtual float FilteredFrameEnd();
 
@@ -378,8 +336,6 @@ public:
      * own material this way before every frame. The title is inferred.
      *
      * @param pMat The new material, or null.
-     * @ghidraAddress NTSC-U/C: 0x004dd2d8
-     * @ghidraAddress PAL: 0x0051b878
      */
     void SetMat(Mat *pMat);
 
@@ -391,8 +347,6 @@ public:
      * shipped build. The name is inferred.
      *
      * @param pOwner The new keys owner, or null.
-     * @ghidraAddress NTSC-U/C: 0x004dd328
-     * @ghidraAddress PAL: 0x0051b8c8
      */
     void SetKeysOwner(MatAnim *pOwner);
 
@@ -404,8 +358,6 @@ public:
      * the shipped build. The name is inferred.
      *
      * @param nCount The new stage count.
-     * @ghidraAddress NTSC-U/C: 0x004d3b58
-     * @ghidraAddress PAL: 0x00512048
      */
     void SetNumStages(int nCount);
 
@@ -425,8 +377,6 @@ protected:
      * interpolates linearly rather than on VU0. Any empty channel leaves its target as it was.
      *
      * @param flFrame The frame to apply.
-     * @ghidraAddress NTSC-U/C: 0x004d4820
-     * @ghidraAddress PAL: 0x00512d10
      */
     virtual void SetFrameSelf(float flFrame);
 
@@ -435,26 +385,17 @@ private:
      * Empty every channel of this animation, and its stage vector, unless it owns its own keys.
      *
      * The test on mKeysOwner is the first thing the body does.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004d2fe0
-     * @ghidraAddress PAL: 0x00511480
      */
     void ClearKeys();
 
     /**
      * Take a reference on the material, on the keys owner, and on every texture of every stage
      * channel, and record this animation in each stage.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004d3818
-     * @ghidraAddress PAL: 0x00511cb8
      */
     void AddObjectRefs();
 
     /**
      * Drop the references AddObjectRefs() took.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004d3750
-     * @ghidraAddress PAL: 0x00511bf0
      */
     void RemoveObjectRefs();
 
@@ -493,8 +434,6 @@ private:
  *
  * @param name The object name.
  * @return The new animation, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x004dcb00
- * @ghidraAddress PAL: 0x0051b0a0
  */
 Object *CreateRegisteredMatAnim(const HxStr &name);
 
@@ -505,8 +444,6 @@ Object *CreateRegisteredMatAnim(const HxStr &name);
  *
  * @param name The object name.
  * @return The new animation.
- * @ghidraAddress NTSC-U/C: 0x004dbfb0
- * @ghidraAddress PAL: 0x0051a550
  */
 MatAnim *NewMatAnim(const HxStr &name);
 
@@ -516,9 +453,6 @@ MatAnim *NewMatAnim(const HxStr &name);
  * No call site survives in the shipped program.
  *
  * Rnd::Manager::Init() also expands this inline.
- *
- * @ghidraAddress NTSC-U/C: 0x004dbf80
- * @ghidraAddress PAL: 0x0051a520
  */
 void RegisterMatAnimClass();
 

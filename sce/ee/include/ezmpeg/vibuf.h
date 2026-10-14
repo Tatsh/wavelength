@@ -61,8 +61,6 @@ typedef struct {
  * @param firstSize Receives the length of the first span.
  * @param secondPut Receives the second writable span, or null when the span does not wrap.
  * @param secondSize Receives the length of the second span, or zero when the span does not wrap.
- * @ghidraAddress NTSC-U/C: 0x006134e8
- * @ghidraAddress PAL: 0x00654078
  */
 void viBufBeginPut(ViBuf *buffer,
                    unsigned char **firstPut,
@@ -77,8 +75,6 @@ void viBufBeginPut(ViBuf *buffer,
  *
  * @param buffer The buffer written to.
  * @param size The number of bytes written.
- * @ghidraAddress NTSC-U/C: 0x006135e0
- * @ghidraAddress PAL: 0x00654170
  */
 void viBufEndPut(ViBuf *buffer, int size);
 
@@ -93,8 +89,6 @@ void viBufEndPut(ViBuf *buffer, int size);
  * @param buffer The buffer owning the stamp ring.
  * @param timeStamp The stamp to queue.
  * @return One when the stamp was queued or carried no time, zero when the ring is full.
- * @ghidraAddress NTSC-U/C: 0x00613638
- * @ghidraAddress PAL: 0x006541c8
  */
 int viBufPutTs(ViBuf *buffer, ViTimeStamp *timeStamp);
 
@@ -105,8 +99,6 @@ int viBufPutTs(ViBuf *buffer, ViTimeStamp *timeStamp);
  *
  * @param buffer The buffer to measure.
  * @return The number of bytes currently buffered.
- * @ghidraAddress NTSC-U/C: 0x00613748
- * @ghidraAddress PAL: 0x006542d8
  */
 int viBufCount(ViBuf *buffer);
 
@@ -128,8 +120,6 @@ int viBufCount(ViBuf *buffer);
  * @param nTagSize Tag size. Inferred.
  * @param pTimeStamps Staged stamp pointer. Inferred.
  * @param nTimeStamps Stamp count. Inferred.
- * @ghidraAddress NTSC-U/C: 0x00613388
- * @ghidraAddress PAL: 0x00653f18
  */
 void sceDmaCreateQueueSemaphore(
     ViBuf *buffer, void *pData, void *pTag, int nTagSize, void *pTimeStamps, int nTimeStamps);
@@ -141,8 +131,6 @@ void sceDmaCreateQueueSemaphore(
  *
  * @param buffer The input record.
  * @return 1.
- * @ghidraAddress NTSC-U/C: 0x00613400
- * @ghidraAddress PAL: 0x00653f90
  */
 int sceDmaDeleteQueueSemaphore(ViBuf *buffer);
 
@@ -151,8 +139,6 @@ int sceDmaDeleteQueueSemaphore(ViBuf *buffer);
  *
  * @param buffer The input record.
  * @return 1.
- * @ghidraAddress NTSC-U/C: 0x006126e8
- * @ghidraAddress PAL: 0x00653278
  */
 int viBufReset(ViBuf *buffer);
 
@@ -161,8 +147,6 @@ int viBufReset(ViBuf *buffer);
  *
  * @param buffer The input record.
  * @return 1, or 0 when the queue is not active.
- * @ghidraAddress NTSC-U/C: 0x00612890
- * @ghidraAddress PAL: 0x00653420
  */
 int viBufAddDMA(ViBuf *buffer);
 
@@ -171,8 +155,6 @@ int viBufAddDMA(ViBuf *buffer);
  *
  * @param buffer The input record.
  * @return 1.
- * @ghidraAddress NTSC-U/C: 0x00612b40
- * @ghidraAddress PAL: 0x006536d0
  */
 int viBufStopDMA(ViBuf *buffer);
 
@@ -185,8 +167,6 @@ int viBufStopDMA(ViBuf *buffer);
  *
  * @param buffer The input record.
  * @return 1.
- * @ghidraAddress NTSC-U/C: 0x00612cc0
- * @ghidraAddress PAL: 0x00653850
  */
 int viBufRestartDMA(ViBuf *buffer);
 
@@ -196,8 +176,6 @@ int viBufRestartDMA(ViBuf *buffer);
  * @param buffer The input record.
  * @param pStamps Receives the two stamp words, -1 when no stamp covers the span.
  * @return 1.
- * @ghidraAddress NTSC-U/C: 0x006131e0
- * @ghidraAddress PAL: 0x00653d70
  */
 int viBufGetTs(ViBuf *buffer, long long *pStamps);
 
@@ -206,8 +184,6 @@ int viBufGetTs(ViBuf *buffer, long long *pStamps);
  *
  * @param buffer The input record.
  * @param timeStamp The stamp about to be queued.
- * @ghidraAddress NTSC-U/C: 0x00613088
- * @ghidraAddress PAL: 0x00653c18
  */
 void viBufModifyPts(ViBuf *buffer, ViTimeStamp *timeStamp);
 
@@ -215,8 +191,6 @@ void viBufModifyPts(ViBuf *buffer, ViTimeStamp *timeStamp);
  * Round the buffered byte count up to a whole sector so the DMA moves the flushed bytes.
  *
  * @param buffer The input record.
- * @ghidraAddress NTSC-U/C: 0x00613798
- * @ghidraAddress PAL: 0x00654328
  */
 void viBufFlush(ViBuf *buffer);
 

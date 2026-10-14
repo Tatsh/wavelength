@@ -3,15 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// NTSC-U/C: 0x007b88d8, PAL: 0x007fc5d8
 // Edge examinations counted across the search, statistics only.
 static int eq = 0;
 
-// NTSC-U/C: 0x007b88dc, PAL: 0x007fc5dc
 // Augmentations applied, statistics only.
 static int eex = 0;
 
-// NTSC-U/C: 0x007b88e0, PAL: 0x007fc5e0
 // Head of the free U queue, 2500 when the queue is empty.
 static int iUnmatched = 0;
 
@@ -22,21 +19,17 @@ struct netflow_queue_entry {
     int v_vertex; // V vertex used to arrive at this slot.
 };
 
-// NTSC-U/C: 0x007b88e8, PAL: 0x007fc5e8
 // The search queue, 2500 slots of twelve bytes.
 static struct netflow_queue_entry queue[NETFLOW_MAX_VERTICES];
 
-// NTSC-U/C: 0x007bfe18, PAL: 0x00803b18
 // The U vertices on the current search path.
 static unsigned char visited[NETFLOW_MAX_VERTICES];
 
-// NTSC-U/C: 0x00610880, PAL: 0x006514f0
 // Reports an empty edge pool and returns.
 static void Barf(const char *message) {
     fprintf(stderr, "%s\n", message);
 }
 
-// NTSC-U/C: 0x00610840, PAL: 0x006514b0
 // Allocates an edge record, reporting an empty pool. The image routes the request through the
 // shared reentrancy allocator; the toolchain allocator serves the same pool here.
 static void *Alloc(unsigned size) {
@@ -47,7 +40,6 @@ static void *Alloc(unsigned size) {
     return memory;
 }
 
-// NTSC-U/C: 0x00569c38, PAL: 0x005aa100
 // Matches every U vertex with its first free neighbour and reports the count.
 static void GreedyMatch(struct netflow_graph *graph, struct netflow_v_side *side) {
     int matched = 0;
@@ -66,7 +58,6 @@ static void GreedyMatch(struct netflow_graph *graph, struct netflow_v_side *side
     printf("%d vertices in U were initially matched (%.1f%%).\n", matched, percent);
 }
 
-// NTSC-U/C: 0x0062be30, PAL: 0x0066c9c0
 // Clears the search statistics and queues every unmatched U vertex.
 static void Inits(struct netflow_graph *graph, struct netflow_v_side *side) {
     (void)side;
@@ -84,7 +75,6 @@ static void Inits(struct netflow_graph *graph, struct netflow_v_side *side) {
     iUnmatched = slot;
 }
 
-// NTSC-U/C: 0x0062bb38, PAL: 0x0066c6c8
 // Grows the matching along augmenting paths from every queued U vertex.
 static void FindPaths(struct netflow_graph *graph, struct netflow_v_side *side) {
     while (iUnmatched < NETFLOW_MAX_VERTICES) {

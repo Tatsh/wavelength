@@ -36,9 +36,6 @@ public:
      * Construct a seeker with no tunnel.
      *
      * mTransFrameOffset starts at -500. mSavedFlag is not set.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00477768
-     * @ghidraAddress PAL: 0x004b53e0
      */
     TunnelSeeker();
 
@@ -46,9 +43,6 @@ public:
      * Release the transformable and mesh references and clear the strip.
      *
      * The two pointers are not cleared.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004777c0
-     * @ghidraAddress PAL: 0x004b5438
      */
     void ReleaseRefs();
 
@@ -60,8 +54,6 @@ public:
      *
      * @param pTunnel The tunnel.
      * @param nIndex The index of the seeker in the tunnel.
-     * @ghidraAddress NTSC-U/C: 0x00477830
-     * @ghidraAddress PAL: 0x004b54a8
      */
     void SetTunnel(Tunnel *pTunnel, int nIndex);
 
@@ -69,8 +61,6 @@ public:
      * Replace the transformable the seeker drives.
      *
      * @param pTrans The transformable, or null.
-     * @ghidraAddress NTSC-U/C: 0x00477a48
-     * @ghidraAddress PAL: 0x004b56c0
      */
     void SetTrans(Transformable *pTrans);
 
@@ -78,8 +68,6 @@ public:
      * Set the ring the lane moves towards.
      *
      * @param nRing The ring.
-     * @ghidraAddress NTSC-U/C: 0x00477ab8
-     * @ghidraAddress PAL: 0x004b5730
      */
     void SetTargetRing(int nRing);
 
@@ -87,8 +75,6 @@ public:
      * Replace the mesh the seeker draws.
      *
      * @param pMesh The mesh, or null.
-     * @ghidraAddress NTSC-U/C: 0x00477ac0
-     * @ghidraAddress PAL: 0x004b5738
      */
     void SetMesh(Mesh *pMesh);
 
@@ -96,8 +82,6 @@ public:
      * Set the path frame offset used to place the mesh.
      *
      * @param flOffset The offset from the tunnel frame.
-     * @ghidraAddress NTSC-U/C: 0x00477b30
-     * @ghidraAddress PAL: 0x004b57a8
      */
     void SetMeshFrameOffset(float flOffset);
 
@@ -105,8 +89,6 @@ public:
      * Set the path frame offset used to place the transformable.
      *
      * @param flOffset The offset from the tunnel frame.
-     * @ghidraAddress NTSC-U/C: 0x00477b38
-     * @ghidraAddress PAL: 0x004b57b0
      */
     void SetTransFrameOffset(float flOffset);
 
@@ -114,8 +96,6 @@ public:
      * Set the path frame offset the transformable is oriented towards.
      *
      * @param flOffset The offset from the tunnel frame.
-     * @ghidraAddress NTSC-U/C: 0x00477b40
-     * @ghidraAddress PAL: 0x004b57b8
      */
     void SetLookFrameOffset(float flOffset);
 
@@ -125,8 +105,6 @@ public:
      * @param nFirstSlice The first slice of the run.
      * @param nSliceCount The number of slices.
      * @param nRing The ring.
-     * @ghidraAddress NTSC-U/C: 0x00477b48
-     * @ghidraAddress PAL: 0x004b57c0
      */
     void SetRange(int nFirstSlice, int nSliceCount, int nRing);
 
@@ -134,8 +112,6 @@ public:
      * Set the colour of the strip.
      *
      * @param color The colour.
-     * @ghidraAddress NTSC-U/C: 0x00477b68
-     * @ghidraAddress PAL: 0x004b57e0
      */
     void SetColor(const Color &color);
 
@@ -143,8 +119,6 @@ public:
      * Set the material of the strip.
      *
      * @param pMat The material, or null.
-     * @ghidraAddress NTSC-U/C: 0x00477b88
-     * @ghidraAddress PAL: 0x004b5800
      */
     void SetMat(Mat *pMat);
 
@@ -154,8 +128,6 @@ public:
      * Report the first slice of the strip.
      *
      * @return The first slice.
-     * @ghidraAddress NTSC-U/C: 0x00477ba8
-     * @ghidraAddress PAL: 0x004b5820
      */
     int GetFirstSlice() const {
         return mStrip.mFirstSlice;
@@ -165,8 +137,6 @@ public:
      * Report the slice count of the strip.
      *
      * @return The number of slices.
-     * @ghidraAddress NTSC-U/C: 0x00477bb0
-     * @ghidraAddress PAL: 0x004b5828
      */
     int GetSliceCount() const {
         return mStrip.mSliceCount;
@@ -176,8 +146,6 @@ public:
      * Report the ring of the strip.
      *
      * @return The ring.
-     * @ghidraAddress NTSC-U/C: 0x00477bb8
-     * @ghidraAddress PAL: 0x004b5830
      */
     int GetRing() const {
         return mStrip.mRing;
@@ -187,8 +155,6 @@ public:
      * Report the colour of the strip.
      *
      * @return The colour, by value.
-     * @ghidraAddress NTSC-U/C: 0x00477bc0
-     * @ghidraAddress PAL: 0x004b5838
      */
     Color GetColor() const {
         return mStrip.mColor;
@@ -198,8 +164,6 @@ public:
      * Report the material of the strip.
      *
      * @return The material, or null.
-     * @ghidraAddress NTSC-U/C: 0x00477bd0
-     * @ghidraAddress PAL: 0x004b5848
      */
     Mat *GetMat() const {
         return mStrip.mMat;
@@ -210,16 +174,11 @@ public:
      *
      * @param nSlice The slice being drawn.
      * @param flScreenSize The screen size used to pick the level of detail.
-     * @ghidraAddress NTSC-U/C: 0x00477bd8
-     * @ghidraAddress PAL: 0x004b5850
      */
     void DrawSection(int nSlice, float flScreenSize);
 
     /**
      * Draw the mesh, when there is one.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00477bf8
-     * @ghidraAddress PAL: 0x004b5870
      */
     void DrawMesh();
 
@@ -232,8 +191,6 @@ public:
      * target snaps onto it.
      *
      * @return The new lane.
-     * @ghidraAddress NTSC-U/C: 0x0046e6a0
-     * @ghidraAddress PAL: 0x004ac280
      */
     float UpdateLane();
 
@@ -241,8 +198,6 @@ public:
      * Install a transform as the local transform of mTrans and mark it dirty.
      *
      * @param xfm The transform.
-     * @ghidraAddress NTSC-U/C: 0x00477c20
-     * @ghidraAddress PAL: 0x004b5898
      */
     void SetTransXfm(const Transform &xfm);
 
@@ -250,8 +205,6 @@ public:
      * Install a transform as the local transform of mMesh and recompose its world transform.
      *
      * @param xfm The transform.
-     * @ghidraAddress NTSC-U/C: 0x00477c58
-     * @ghidraAddress PAL: 0x004b58d0
      */
     void SetMeshXfm(const Transform &xfm);
 
@@ -261,8 +214,6 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement.
      * @param pReferrer The object the references are held on behalf of.
-     * @ghidraAddress NTSC-U/C: 0x004778c0
-     * @ghidraAddress PAL: 0x004b5538
      */
     void Replace(Object *pFrom, Object *pTo, Object *pReferrer);
 
@@ -273,8 +224,6 @@ public:
      * three frame offsets, the strip run, the strip material by name, and the strip colour.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x0046df88
-     * @ghidraAddress PAL: 0x004abaf8
      */
     void Save(Stream &stream) const;
 
@@ -285,8 +234,6 @@ public:
      * reference is taken on the objects read by name.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x0046e2d8
-     * @ghidraAddress PAL: 0x004abe48
      */
     void Load(Stream &stream);
 

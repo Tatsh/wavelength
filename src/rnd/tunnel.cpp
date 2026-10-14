@@ -106,7 +106,6 @@ void ReadObjectRef(Stream &stream, T *&refOut) {
     refOut = dynamic_cast<T *>(TheManager.Find(name));
 }
 
-// NTSC-U/C: 0x00478570, PAL: 0x004b6200
 Stream &WriteFloatVector(Stream &stream, const std::vector<float> &values) {
     const int nCount = values.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -116,7 +115,6 @@ Stream &WriteFloatVector(Stream &stream, const std::vector<float> &values) {
     return stream;
 }
 
-// NTSC-U/C: 0x00472dd8, PAL: 0x004b0a40
 Stream &ReadFloatVector(Stream &stream, std::vector<float> &values) {
     int nCount;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -127,7 +125,6 @@ Stream &ReadFloatVector(Stream &stream, std::vector<float> &values) {
     return stream;
 }
 
-// NTSC-U/C: 0x00472d20, PAL: 0x004b0988
 Stream &WriteEventList(Stream &stream, const std::list<TunnelEvent> &events) {
     const int nCount = events.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -137,7 +134,6 @@ Stream &WriteEventList(Stream &stream, const std::list<TunnelEvent> &events) {
     return stream;
 }
 
-// NTSC-U/C: 0x004786b8, PAL: 0x004b6348
 Stream &ReadEventList(Stream &stream, std::list<TunnelEvent> &events) {
     int nCount;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -148,7 +144,6 @@ Stream &ReadEventList(Stream &stream, std::list<TunnelEvent> &events) {
     return stream;
 }
 
-// NTSC-U/C: 0x00478620, PAL: 0x004b62b0
 Stream &WriteSeekerVector(Stream &stream, const std::vector<TunnelSeeker> &seekers) {
     const int nCount = seekers.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -158,7 +153,6 @@ Stream &WriteSeekerVector(Stream &stream, const std::vector<TunnelSeeker> &seeke
     return stream;
 }
 
-// NTSC-U/C: 0x004730b0, PAL: 0x004b0d18
 Stream &ReadSeekerVector(Stream &stream, std::vector<TunnelSeeker> &seekers) {
     int nCount;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -1078,7 +1072,6 @@ void Tunnel::SetLaneFloorColor(const Color &color) {
     }
 }
 
-// NTSC-U/C: 0x006eab10, PAL: 0x0072e510
 HxStr g_tunnelClassName("Tunnel");
 
 const HxStr &Tunnel::ClassName() const {
@@ -1286,7 +1279,6 @@ Object *CreateRegisteredTunnel(const HxStr &name) {
     }
 }
 
-// NTSC-U/C: 0x00894d64, PAL: 0x008d9d74
 int g_nTunnelLoadVersion;
 
 } // namespace Rnd

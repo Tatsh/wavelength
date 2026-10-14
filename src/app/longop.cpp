@@ -1,8 +1,6 @@
 #include "app/longop.h"
 
-// NTSC-U/C: 0x00719858, PAL: 0x0075d758
 LongOperationProc g_pfnLongOperationPollProc;
-// NTSC-U/C: 0x0071985c, PAL: 0x0075d75c
 LongOperationProc g_pfnLongOperationDrawProc;
 
 void SetLongOperationPollProc(LongOperationProc pfnPoll) {

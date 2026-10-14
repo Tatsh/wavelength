@@ -77,8 +77,6 @@ void *operator new(size_t nSize);
  * @param nSize The block size in bytes.
  * @param pszClass The class name to bill the allocation to.
  * @return The block.
- * @ghidraAddress NTSC-U/C: 0x004a90a0
- * @ghidraAddress PAL: 0x004e71b0
  */
 void *AllocateTaggedMemory(size_t nSize, const char *pszClass);
 
@@ -90,8 +88,6 @@ void *AllocateTaggedMemory(size_t nSize, const char *pszClass);
  *
  * @param pBlock The block to release.
  * @param pszClass The class name the allocation was billed to.
- * @ghidraAddress NTSC-U/C: 0x004a91e0
- * @ghidraAddress PAL: 0x004e72f0
  */
 void OperatorDeleteOverride(void *pBlock, const char *pszClass);
 
@@ -299,8 +295,6 @@ void MemOrPoolFree(int nSize, void *pBlock);
  * result straight on as a tag.
  *
  * @return The tag buffer.
- * @ghidraAddress NTSC-U/C: 0x004a9090
- * @ghidraAddress PAL: 0x004e71a0
  */
 char *MemGetCurrentTag();
 
@@ -313,8 +307,6 @@ char *MemGetCurrentTag();
  *
  * @param pszKind The container kind, for example `stl_vector`.
  * @param nElemSize The element size in bytes.
- * @ghidraAddress NTSC-U/C: 0x004a9048
- * @ghidraAddress PAL: 0x004e7158
  */
 void MemSetStlTag(const char *pszKind, int nElemSize);
 
@@ -329,8 +321,6 @@ void MemSetStlTag(const char *pszKind, int nElemSize);
  * @param pszTag The tag to bill the allocation to.
  * @param nLine The caller's line number.
  * @return The block.
- * @ghidraAddress NTSC-U/C: 0x004a8520
- * @ghidraAddress PAL: 0x004e6630
  */
 #ifdef __cplusplus
 extern "C" {
@@ -369,8 +359,6 @@ void operator delete(void *pBlock) noexcept;
  * @param pBlock The block to release.
  * @param pszTag The tag the allocation was billed to.
  * @param nLine The caller's line number.
- * @ghidraAddress NTSC-U/C: 0x004a94e8
- * @ghidraAddress PAL: 0x004e75f8
  */
 #ifdef __cplusplus
 extern "C" {
@@ -389,8 +377,6 @@ void MemFreeTagged(void *pBlock, const char *pszTag, int nLine);
  *
  * @param pszName The source name, normally a `__FILE__`.
  * @return The row index.
- * @ghidraAddress NTSC-U/C: 0x004a86c0
- * @ghidraAddress PAL: 0x004e67d0
  */
 int MemLogFindSource(const char *pszName);
 
@@ -405,8 +391,6 @@ int MemLogFindSource(const char *pszName);
  * @param pszTag The tag the allocation was billed to.
  * @param nLine The caller's line number.
  * @return The block, which differs from pBlock only when it moved.
- * @ghidraAddress NTSC-U/C: 0x004a93b8
- * @ghidraAddress PAL: 0x004e74c8
  */
 void *MemReallocTagged(void *pBlock, size_t nSize, const char *pszTag, int nLine);
 
@@ -416,8 +400,6 @@ void *MemReallocTagged(void *pBlock, size_t nSize, const char *pszTag, int nLine
  * Performs no work while logging is off. The frame loop and HHeapLogBasicStats() are the callers.
  *
  * @param pszText The text to mark.
- * @ghidraAddress NTSC-U/C: 0x004a8e18
- * @ghidraAddress PAL: 0x004e6f28
  */
 void MemLogWriteMarker(const char *pszText);
 
@@ -428,9 +410,6 @@ void MemLogWriteMarker(const char *pszText);
  * flag. The summary is the ten fields of the C library's `mallinfo()` and, once MemOpenLog() has
  * painted the stack, the stack depth reached. DumpHeapMemoryLog(0) runs last. Fatal() calls this,
  * and MemOpenLog() registers it with atexit().
- *
- * @ghidraAddress NTSC-U/C: 0x004a7d30
- * @ghidraAddress PAL: 0x004e5e40
  */
 void MemCloseLogAndReport();
 
@@ -445,8 +424,6 @@ void MemCloseLogAndReport();
  * The name is inferred.
  *
  * @param pszPath The report path, or null to paint the stack only.
- * @ghidraAddress NTSC-U/C: 0x004a7c40
- * @ghidraAddress PAL: 0x004e5d50
  */
 void MemOpenLog(const char *pszPath);
 
@@ -457,9 +434,6 @@ void MemOpenLog(const char *pszPath);
  * `_N` before the extension, and writing continues there. The mallinfo summary and the stack depth
  * are logged afterwards whether or not a report was open. The title is the one its log line
  * gives.
- *
- * @ghidraAddress NTSC-U/C: 0x004a7ef8
- * @ghidraAddress PAL: 0x004e6008
  */
 void MemLogCloseAndContinue();
 
@@ -469,8 +443,6 @@ void MemLogCloseAndContinue();
  * The image has no caller. The name is inferred.
  *
  * @param pszText The text.
- * @ghidraAddress NTSC-U/C: 0x004a8e50
- * @ghidraAddress PAL: 0x004e6f60
  */
 void MemLogPrint(const char *pszText);
 
@@ -479,9 +451,6 @@ void MemLogPrint(const char *pszText);
  *
  * Record 0 is labelled `Other_Sources`. Rnd::AsyncLoader's poll brackets a load with this and
  * MemLogEndCount().
- *
- * @ghidraAddress NTSC-U/C: 0x004a8e88
- * @ghidraAddress PAL: 0x004e6f98
  */
 void MemLogBeginCount();
 
@@ -495,8 +464,6 @@ void MemLogBeginCount();
  * @param pszReport Receives the report.
  * @param nReportSize The size of the buffer.
  * @return The total bytes charged since MemLogBeginCount().
- * @ghidraAddress NTSC-U/C: 0x004a8ef8
- * @ghidraAddress PAL: 0x004e7008
  */
 int MemLogEndCount(char *pszReport, int nReportSize);
 
@@ -505,9 +472,6 @@ int MemLogEndCount(char *pszReport, int nReportSize);
  *
  * The block table is 32 MB, 0x200000 slots of 16 bytes. The image has no caller, so block
  * tracking never runs in the shipped build. The name is inferred.
- *
- * @ghidraAddress NTSC-U/C: 0x004a95c8
- * @ghidraAddress PAL: 0x004e76d8
  */
 void MemLogSourceInit();
 
@@ -522,8 +486,6 @@ void MemLogSourceInit();
  * @param pNew The block after the resize.
  * @param pOld The block before the resize.
  * @param nSize The new size in bytes.
- * @ghidraAddress NTSC-U/C: 0x004a87d0
- * @ghidraAddress PAL: 0x004e68e0
  */
 void MemLogSourceTrackRealloc(const char *pszSource, void *pNew, void *pOld, int nSize);
 
@@ -535,8 +497,6 @@ void MemLogSourceTrackRealloc(const char *pszSource, void *pNew, void *pOld, int
  *
  * @param pszTitle The heading line.
  * @param pFile The stream to write, or null for standard output.
- * @ghidraAddress NTSC-U/C: 0x004a8a68
- * @ghidraAddress PAL: 0x004e6b78
  */
 void MemLogSourceReport(const char *pszTitle, FILE *pFile);
 
@@ -549,8 +509,6 @@ void MemLogSourceReport(const char *pszTitle, FILE *pFile);
  * line also goes to the log. Neither file open is checked.
  *
  * @param nIndex The number the file names carry.
- * @ghidraAddress NTSC-U/C: 0x0054b348
- * @ghidraAddress PAL: 0x0058b878
  */
 void DumpHeapMemoryLog(int nIndex);
 
@@ -563,8 +521,6 @@ void DumpHeapMemoryLog(int nIndex);
  *
  * @param nSize The block size in bytes.
  * @return The block, or null when the request cannot be met.
- * @ghidraAddress NTSC-U/C: 0x004bfd48
- * @ghidraAddress PAL: 0x004fdde8
  */
 #ifdef __cplusplus
 extern "C" {
@@ -581,8 +537,6 @@ void *HeapAlloc(size_t nSize);
  * same reentrancy structure and tail-calls `_free_r` at 0x005da3b0.
  *
  * @param pBlock The block to release.
- * @ghidraAddress NTSC-U/C: 0x004bfd70
- * @ghidraAddress PAL: 0x004fde10
  */
 #ifdef __cplusplus
 extern "C" {
@@ -601,8 +555,6 @@ void HeapFree(void *pBlock);
  * @param pBlock The block to resize.
  * @param nSize The new size in bytes.
  * @return The block, which differs from pBlock only when it moved.
- * @ghidraAddress NTSC-U/C: 0x00589278
- * @ghidraAddress PAL: 0x005cc4f0
  */
 #ifdef __cplusplus
 extern "C" {
@@ -618,9 +570,6 @@ void *HeapRealloc(void *pBlock, size_t nSize);
  * Blocks of 2048 bytes are taken through HeapAlloc() until a request fails, the count and the
  * total are logged, and every block is released through HeapFree(). The name is inferred. The
  * binary places the routine at the head of the TexturePairRecord unit, and it has no caller.
- *
- * @ghidraAddress NTSC-U/C: 0x00246c18
- * @ghidraAddress PAL: 0x0025bd58
  */
 void ReportHeapCapacity();
 

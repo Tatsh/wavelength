@@ -57,8 +57,6 @@ void sceVu0MulAffineMatrixXyz(float *pDst, const float *pA, const float *pB);
  * @param pA The transform applied first, four rows of four floats.
  * @param pB The transform applied second, four rows of four floats.
  * @param pOut Receives the composition and may alias either input.
- * @ghidraAddress NTSC-U/C: 0x0045dae8
- * @ghidraAddress PAL: 0x0049b190
  */
 void XfmConcat(const float *pA, const float *pB, float *pOut);
 
@@ -114,8 +112,6 @@ void Mat33BuildOrthonormal(const float *pAxisY, const float *pReference, float *
  *
  * @param pSrc The basis to rebuild, three rows of four floats.
  * @param pDst Receives the orthonormal basis, three rows of four floats.
- * @ghidraAddress NTSC-U/C: 0x002556c8
- * @ghidraAddress PAL: 0x0026adc0
  */
 void Mat33OrthonormalizeAroundY(const float *pSrc, float *pDst);
 
@@ -131,8 +127,6 @@ void Mat33OrthonormalizeAroundY(const float *pSrc, float *pDst);
  * @param pMat3Rows The basis, three rows of four floats.
  * @param pAngles Receives the three angles in radians, ordered X, Y, and Z.
  * @param pScale Receives the three scales.
- * @ghidraAddress NTSC-U/C: 0x004ee750
- * @ghidraAddress PAL: 0x0052d2f8
  */
 void Mat34DecomposeEulerScale(const float *pMat3Rows, float *pAngles, float *pScale);
 
@@ -148,8 +142,6 @@ void Mat34DecomposeEulerScale(const float *pMat3Rows, float *pAngles, float *pSc
  * @param pMatA The left factor, three rows of four floats.
  * @param pMatB The right factor, three rows of four floats.
  * @param pOut Receives the product, and may alias either factor.
- * @ghidraAddress NTSC-U/C: 0x00453ec8
- * @ghidraAddress PAL: 0x004913e8
  */
 void MultiplyMat3VU0(const float *pMatA, const float *pMatB, float *pOut);
 
@@ -165,8 +157,6 @@ namespace Rnd {
  * @param pScale The three scales.
  * @param pMat3Rows The basis to scale, three rows of four floats.
  * @param pOut Receives the scaled basis, and may alias pMat3Rows.
- * @ghidraAddress NTSC-U/C: 0x0045da58
- * @ghidraAddress PAL: 0x0049b100
  */
 void Scale(const float *pScale, const float *pMat3Rows, float *pOut);
 
@@ -182,7 +172,5 @@ void Scale(const float *pScale, const float *pMat3Rows, float *pOut);
  * @param pVec The vector to transform, four floats.
  * @param pMat3Rows The rotation, three rows of four floats.
  * @param pOut Receives the transformed vector, and may alias pVec.
- * @ghidraAddress NTSC-U/C: 0x00453ea0
- * @ghidraAddress PAL: 0x004913c0
  */
 void TransformVec3ByMat3VU0(const float *pVec, const float *pMat3Rows, float *pOut);

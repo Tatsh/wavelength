@@ -38,10 +38,8 @@ inline short PackedBytesPerRow(int nFormat, int nWidth) {
 
 } // namespace
 
-// NTSC-U/C: 0x00725cc0, PAL: 0x00769960
 const unsigned char ABitmap::bmPixelSize[kABitmapFormatCount] = {0, 1, 2, 3, 4, 1};
 
-// NTSC-U/C: 0x00725cc8, PAL: 0x00769968
 const unsigned char g_abBitmapBitsPerPixel[kABitmapFormatCount] = {4, 8, 16, 24, 32, 8};
 
 ABitmap::ABitmap(const ABitmap &source, int nX, int nY, int nWidth, int nHeight) {
@@ -150,7 +148,6 @@ void ABitmap::Reverse32(unsigned char *pPixels, int nCount) {
     }
 }
 
-// NTSC-U/C: 0x00725cd0, PAL: 0x00769970
 int g_nSkipColorSwap = 1;
 
 int ABitmap::Clone(ABitmap &source) {

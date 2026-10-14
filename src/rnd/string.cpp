@@ -102,7 +102,6 @@ void WriteObjectName(Stream &stream, const Object *pObject) {
     }
 }
 
-// NTSC-U/C: 0x004be168, PAL: 0x004fc1c0
 // Writes the point count and then one line per point, its index, its position, and
 // its colour.
 Dbg &DumpPointVector(Dbg &sink, const std::vector<String::Point> &points) {
@@ -135,7 +134,6 @@ Dbg &DumpPointVector(Dbg &sink, const std::vector<String::Point> &points) {
     return sink;
 }
 
-// NTSC-U/C: 0x004be408, PAL: 0x004fc460
 // Writes the point count and then seven floats per point. The padding word of the
 // position never arrives at a file.
 Stream &WritePointVector(Stream &stream, const std::vector<String::Point> &points) {
@@ -153,7 +151,6 @@ Stream &WritePointVector(Stream &stream, const std::vector<String::Point> &point
     return stream;
 }
 
-// NTSC-U/C: 0x004be5a8, PAL: 0x004fc600
 // The reader counterpart of WritePointVector(). The resize fills every new element
 // with a default-constructed point before the seven floats overwrite its first two members.
 Stream &ReadPointVector(Stream &stream, std::vector<String::Point> &points) {
@@ -174,7 +171,6 @@ Stream &ReadPointVector(Stream &stream, std::vector<String::Point> &points) {
 
 } // namespace
 
-// NTSC-U/C: 0x006fc348, PAL: 0x0073fd28
 HxStr g_stringClassName("String");
 
 Object *String::NewObject(const HxStr &name) {

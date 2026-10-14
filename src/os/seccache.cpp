@@ -11,12 +11,10 @@ constexpr char kSectorCacheZoneName[] = "seccache";
 
 // The access clock, not a flag. Stamps start at 1 so that a row that has never been used, whose
 // stamp is zero, always sorts as the oldest.
-// NTSC-U/C: 0x008de798, PAL: 0x00923758
 unsigned gCurrTimestamp;
 
 // The image initialises this word to kNoZone and nothing writes it. The read below is its only
 // reference, so the ZoneFree() branch it selects is dead code.
-// NTSC-U/C: 0x00724bf0, PAL: 0x007687e0
 int g_nSectorCacheZone = kNoZone;
 
 } // namespace

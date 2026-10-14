@@ -64,8 +64,6 @@ PrnStream &operator<<(PrnStream &stream, const Frustum &frustum);
  * @param sink The sink to write to.
  * @param frustum The view volume.
  * @return The sink.
- * @ghidraAddress NTSC-U/C: 0x0054f798
- * @ghidraAddress PAL: 0x0058fdd8
  */
 Rnd::Dbg &operator<<(Rnd::Dbg &sink, const Frustum &frustum);
 

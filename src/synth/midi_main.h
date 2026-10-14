@@ -42,8 +42,6 @@
  * The script layer exposes this as `synth_cmd`, which is the one attested title in the module.
  *
  * @param nCommand The command to run.
- * @ghidraAddress NTSC-U/C: 0x00464ad0
- * @ghidraAddress PAL: 0x004a2490
  */
 void SynthCommand(int nCommand);
 
@@ -51,9 +49,6 @@ void SynthCommand(int nCommand);
  * Client of the game's sound driver on the IOP, bound by ezMidiInit().
  *
  * SubmitSoundDriverRequest() calls through it.
- *
- * @ghidraAddress NTSC-U/C: 0x008e5bc0
- * @ghidraAddress PAL: 0x0092abc0
  */
 extern sceSifClientData gCd;
 
@@ -65,8 +60,6 @@ extern sceSifClientData gCd;
  * server is the game's own IOP driver rather than libsdr's. InitSynthDriver() is the one caller.
  *
  * @return Always 1. The caller discards it.
- * @ghidraAddress NTSC-U/C: 0x005f9638
- * @ghidraAddress PAL: 0x0063a348
  */
 int ezMidiInit();
 
@@ -93,8 +86,6 @@ int ezMidiInit();
  *                  pointer because only half its callers pass one.
  * @return The first word of the reply buffer at `0x008e5b80`. InitSynthDriver() retains the reply
  *         to 0x8010 as the event-buffer address, and the other callers discard it.
- * @ghidraAddress NTSC-U/C: 0x005f96c8
- * @ghidraAddress PAL: 0x0063a3d8
  */
 int SubmitSoundDriverRequest(int nSelector, uintptr_t nArgument);
 
@@ -108,8 +99,6 @@ int SubmitSoundDriverRequest(int nSelector, uintptr_t nArgument);
  * @param pSource The source in main memory.
  * @param nLength The number of bytes to move.
  * @return Zero once the transfer has completed, or -1 when it could not be started.
- * @ghidraAddress NTSC-U/C: 0x005f97d0
- * @ghidraAddress PAL: 0x0063a4e0
  */
 int ezTransToIOP(int nIopAddress, const void *pSource, int nLength);
 
@@ -140,9 +129,6 @@ struct SoundDriverCommand {
 
 /**
  * Block that describes one chunk of a sound bank, submitted under selector 0x1070.
- *
- * @ghidraAddress NTSC-U/C: 0x00894cc0
- * @ghidraAddress PAL: 0x008d9cc0
  */
 extern SoundDriverCommand g_chunkCommand;
 
@@ -154,17 +140,11 @@ constexpr int kIopStagingBufferCount = 2;
  *
  * The table itself may be longer. Only the first two entries are reachable, because the index below
  * is masked to one bit.
- *
- * @ghidraAddress NTSC-U/C: 0x00894748
- * @ghidraAddress PAL: 0x008d8e48
  */
 extern int g_anIopStagingAddress[kIopStagingBufferCount];
 
 /**
  * Staging buffer the next chunk transfer will use.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9b80
- * @ghidraAddress PAL: 0x0072d540
  */
 extern int g_nIopStagingIndex;
 
@@ -173,9 +153,6 @@ extern int g_nIopStagingIndex;
  *
  * CallbackXferHdToIop::Done() moves the whole bank there, and the routine that starts a BD transfer
  * copies it into the first word of the bank-complete block.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9b84
- * @ghidraAddress PAL: 0x0072d548
  */
 extern int g_nBankIopAddress;
 
@@ -198,9 +175,6 @@ struct BankSlot {
 
 /**
  * Every bank currently claiming sound memory.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9bb8
- * @ghidraAddress PAL: 0x0072d578
  */
 extern std::vector<BankSlot> g_bankSlots;
 
@@ -214,8 +188,6 @@ extern std::vector<BankSlot> g_bankSlots;
  * @param nTag The bank's tag.
  * @param nDest The region in sound memory.
  * @param nIopAddress Where the bank lives on the IOP.
- * @ghidraAddress NTSC-U/C: 0x00461a88
- * @ghidraAddress PAL: 0x0049f148
  */
 void RegisterBankSlot(int nTag, int nDest, int nIopAddress);
 
@@ -228,8 +200,6 @@ void RegisterBankSlot(int nTag, int nDest, int nIopAddress);
  * out-of-line copy exists and nothing calls it.
  *
  * @param nDest The region in sound memory.
- * @ghidraAddress NTSC-U/C: 0x004642c8
- * @ghidraAddress PAL: 0x004a1da8
  */
 void ReleaseBankSlotAt(int nDest);
 
@@ -239,9 +209,6 @@ void ReleaseBankSlotAt(int nDest);
  * Each slot that claims sound memory has its tag submitted under selector 0x8130. The slots are
  * not reset one by one, because the vector is emptied straight afterwards. ReleaseSoundBanks() is
  * the one caller.
- *
- * @ghidraAddress NTSC-U/C: 0x00461bb8
- * @ghidraAddress PAL: 0x0049f278
  */
 void ReleaseAllBankSlots();
 
@@ -252,8 +219,6 @@ void ReleaseAllBankSlots();
  * exists and has bytes left to move. MetRenderer's front-end poll is the one caller.
  *
  * @return 1 while either transfer is moving, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x00464628
- * @ghidraAddress PAL: 0x004a2108
  */
 int IsBankXferBusy();
 
@@ -273,8 +238,6 @@ int IsBankXferBusy();
  * @param pszHdPath The HD bank.
  * @param nTag The tag both banks are recorded and stamped with.
  * @param nPlacement Where the pair goes.
- * @ghidraAddress NTSC-U/C: 0x004620b0
- * @ghidraAddress PAL: 0x0049f770
  */
 void LoadSoundBank(const char *pszBdPath, const char *pszHdPath, int nTag, int nPlacement);
 
@@ -286,9 +249,6 @@ constexpr int kBankBufferAlignment = 0x40;
  *
  * StartBdBankXfer() stores the object here and then reads it back to register it with g_hdXfer,
  * which is why the same pointer is written twice.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9dd4
- * @ghidraAddress PAL: 0x0072d794
  */
 extern CallbackXferBdToIop *g_pBdXfer;
 
@@ -300,8 +260,6 @@ extern CallbackXferBdToIop *g_pBdXfer;
  *
  * @param pFourCc The code to copy.
  * @return The scratch buffer at `0x00894740`, valid until the next call.
- * @ghidraAddress NTSC-U/C: 0x00464b50
- * @ghidraAddress PAL: 0x004a2510
  */
 char *FourCcToString(const void *pFourCc);
 
@@ -315,8 +273,6 @@ char *FourCcToString(const void *pFourCc);
  * @param pData The bank.
  * @param nLength The bank's length.
  * @return Zero. There is no failure path.
- * @ghidraAddress NTSC-U/C: 0x00461db8
- * @ghidraAddress PAL: 0x0049f478
  */
 int XferBankFromMemory(const void *pData, int nLength);
 
@@ -329,8 +285,6 @@ int XferBankFromMemory(const void *pData, int nLength);
  *
  * @param pszPath The bank to read.
  * @return The bank's size, or -1 when the file could not be measured.
- * @ghidraAddress NTSC-U/C: 0x00461f28
- * @ghidraAddress PAL: 0x0049f5e8
  */
 int StartBdBankXfer(const char *pszPath);
 
@@ -345,24 +299,16 @@ int StartBdBankXfer(const char *pszPath);
  * @param pszPath The bank to read.
  * @param nPlacement Where the bank goes on the IOP.
  * @return Zero once the read is queued, or -1 on either failure.
- * @ghidraAddress NTSC-U/C: 0x00461c68
- * @ghidraAddress PAL: 0x0049f328
  */
 int StartHdBankXfer(const char *pszPath, int nPlacement);
 
 /**
  * Path of the BD bank currently loaded.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9b90
- * @ghidraAddress PAL: 0x0072d550
  */
 extern HxStr g_bdBankName;
 
 /**
  * Path of the HD bank currently loaded.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9b98
- * @ghidraAddress PAL: 0x0072d558
  */
 extern HxStr g_hdBankName;
 
@@ -387,17 +333,11 @@ constexpr int kBankDestBufferCount = 2;
 
 /**
  * Destinations in sound memory a bank pair may go to.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9ba8
- * @ghidraAddress PAL: 0x0072d568
  */
 extern int g_anBankDestAddress[kBankDestBufferCount];
 
 /**
  * Destination buffer the next rotating placement will use.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9bb0
- * @ghidraAddress PAL: 0x0072d570
  */
 extern int g_nBankDestIndex;
 
@@ -411,17 +351,11 @@ constexpr int kBankIopAddressCount = 3;
 
 /**
  * Addresses on the IOP a bank may go to.
- *
- * @ghidraAddress NTSC-U/C: 0x00894750
- * @ghidraAddress PAL: 0x008d8e50
  */
 extern int g_anBankIopAddress[kBankIopAddressCount];
 
 /**
  * Entry of g_anBankIopAddress the next rotating placement will use.
- *
- * @ghidraAddress NTSC-U/C: 0x0089475c
- * @ghidraAddress PAL: 0x008d8e5c
  */
 extern int g_nBankIopIndex;
 
@@ -430,9 +364,6 @@ extern int g_nBankIopIndex;
  *
  * Nothing recovered reads it. The size is bounded by the next known object at `0x00894cc0` rather
  * than measured.
- *
- * @ghidraAddress NTSC-U/C: 0x00894c40
- * @ghidraAddress PAL: 0x008d9c40
  */
 extern char g_szHdBankPath[];
 
@@ -441,9 +372,6 @@ extern char g_szHdBankPath[];
  *
  * The routine that starts a transfer copies it into the bank block's mDest, and a BD transfer takes
  * its own starting destination from there and advances one chunk at a time.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9ba4
- * @ghidraAddress PAL: 0x0072d564
  */
 extern int g_nBankDestAddress;
 
@@ -451,9 +379,6 @@ extern int g_nBankDestAddress;
  * Word every command block is stamped with at `+0x10`.
  *
  * What the driver does with it is unrecovered, and the writer has not been identified.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9bb4
- * @ghidraAddress PAL: 0x0072d574
  */
 extern int g_nSynthXferTag;
 
@@ -461,9 +386,6 @@ extern int g_nSynthXferTag;
  * Called once after every chunk is submitted and once when a bank transfer finishes.
  *
  * Both call sites test the hook against null first. It takes no arguments.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9bc4
- * @ghidraAddress PAL: 0x0072d584
  */
 extern void (*g_pfnBankLoadProgress)();
 
@@ -471,8 +393,6 @@ extern void (*g_pfnBankLoadProgress)();
  * Install the bank-load progress hook.
  *
  * @param pfnProgress The hook, which may be null.
- * @ghidraAddress NTSC-U/C: 0x00464378
- * @ghidraAddress PAL: 0x004a1e58
  */
 void SetBankLoadProgressHook(void (*pfnProgress)());
 
@@ -481,9 +401,6 @@ void SetBankLoadProgressHook(void (*pfnProgress)());
  *
  * CallbackXferBdToIop defers to it, and CallbackXferHdToIop::Done() clears it. The routine that
  * sets it is unrecovered.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9dc8
- * @ghidraAddress PAL: 0x0072d788
  */
 extern int g_nHdXferInFlight;
 
@@ -493,17 +410,11 @@ extern int g_nHdXferInFlight;
  * The routine that starts a transfer fills it once, at the start, and the completion path submits
  * it unchanged. Its payload is the bank's path, copied in with strcpy(), and the cache is flushed
  * straight afterwards because the driver reads the block from the IOP side.
- *
- * @ghidraAddress NTSC-U/C: 0x00894bc0
- * @ghidraAddress PAL: 0x008d9bc0
  */
 extern SoundDriverCommand g_bankCommand;
 
 /**
  * Buffer the HD bank transfer read into, released once the transfer reports.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9dcc
- * @ghidraAddress PAL: 0x0072d78c
  */
 extern void *g_pHdXferBuffer;
 
@@ -512,9 +423,6 @@ extern void *g_pHdXferBuffer;
  *
  * This is the allocation as it came back from the heap. The read itself uses the pointer rounded up
  * to a 64-byte boundary, which CallbackXferBdToIop stores separately.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9dd0
- * @ghidraAddress PAL: 0x0072d790
  */
 extern void *g_pBdXferBuffer;
 
@@ -529,8 +437,6 @@ extern void *g_pBdXferBuffer;
  *
  * @param bActiveOnly Non-zero to report only the voices whose ENDX bit is clear. SynthCommand()
  *                    passes 1, and zero reports all 24 voices of each core.
- * @ghidraAddress NTSC-U/C: 0x00462558
- * @ghidraAddress PAL: 0x0049ffa0
  */
 void DumpSynthVoices(int bActiveOnly);
 
@@ -543,9 +449,6 @@ void DumpSynthVoices(int bActiveOnly);
  * two cores.
  *
  * InitSynthDriver() is the only caller.
- *
- * @ghidraAddress NTSC-U/C: 0x004649f8
- * @ghidraAddress PAL: 0x004a23b8
  */
 void InitSpu2Cores();
 
@@ -568,8 +471,6 @@ void InitSpu2Cores();
  * a path the log fields are cleared.
  *
  * @param bEnable Zero to force the effect off on both cores.
- * @ghidraAddress NTSC-U/C: 0x00462340
- * @ghidraAddress PAL: 0x0049fbd8
  */
 void ConfigureSpu2Effects(int bEnable);
 
@@ -581,9 +482,6 @@ void ConfigureSpu2Effects(int bEnable);
  *
  * In the PAL build the routine also takes the two IOP buffers of the driver's error logs from the
  * IOP heap.
- *
- * @ghidraAddress NTSC-U/C: 0x004647a8
- * @ghidraAddress PAL: 0x0049f950
  */
 void InitSynthDriver();
 
@@ -592,9 +490,6 @@ void InitSynthDriver();
  *
  * Performs no work while the stream at `0x006e9c58` is absent. MainLoop::Poll() drives this once
  * per frame.
- *
- * @ghidraAddress NTSC-U/C: 0x00464bc8
- * @ghidraAddress PAL: 0x004a2588
  */
 void PollSynthStream();
 
@@ -606,8 +501,6 @@ void PollSynthStream();
  * the routine at `0x00157578` the other. The title is inferred.
  *
  * @param nBar The bar.
- * @ghidraAddress NTSC-U/C: 0x00464ba0
- * @ghidraAddress PAL: 0x004a2560
  */
 void SetSynthStreamBar(int nBar);
 
@@ -618,9 +511,6 @@ void SetSynthStreamBar(int nBar);
  *
  * In the PAL build every sixteenth call also writes each non-empty error log to the open error
  * file and empties the log.
- *
- * @ghidraAddress NTSC-U/C: 0x004648c8
- * @ghidraAddress PAL: 0x0049fa38
  */
 void PollSynthEvents();
 
@@ -629,9 +519,6 @@ void PollSynthEvents();
  *
  * Pumps the async completion queue for as long as IsBankXferBusy() reports a transfer, which it
  * expands inline.
- *
- * @ghidraAddress NTSC-U/C: 0x004645c8
- * @ghidraAddress PAL: 0x004a20a8
  */
 void WaitForBankTransfers();
 
@@ -641,9 +528,6 @@ void WaitForBankTransfers();
  * Submits selector 0xc0, releases every bank slot, deletes the BD transfer, clears both references
  * to it, and assigns the empty string to both stored bank paths so that the next LoadSoundBank()
  * cannot match what was resident. It does not wait for the transfers in flight.
- *
- * @ghidraAddress NTSC-U/C: 0x00464660
- * @ghidraAddress PAL: 0x004a2140
  */
 void ReleaseSoundBanks();
 
@@ -660,8 +544,6 @@ void ReleaseSoundBanks();
  * @param nStatus The status byte.
  * @param nData1 The first data byte.
  * @param nData2 The second data byte.
- * @ghidraAddress NTSC-U/C: 0x00464928
- * @ghidraAddress PAL: 0x004a22e8
  */
 void SendMidiToDriver(unsigned char nStatus, unsigned char nData1, unsigned char nData2);
 
@@ -674,8 +556,6 @@ void SendMidiToDriver(unsigned char nStatus, unsigned char nData1, unsigned char
  * The body is one call to SubmitSoundDriverRequest().
  *
  * @param bMono Nonzero for mono output, zero for stereo.
- * @ghidraAddress NTSC-U/C: 0x00464868
- * @ghidraAddress PAL: 0x004a2288
  */
 void SubmitDriverSetMono(int bMono);
 
@@ -688,8 +568,6 @@ void SubmitDriverSetMono(int bMono);
  * The body is one call to SubmitSoundDriverRequest().
  *
  * @param bRemix Nonzero to enter remix mode, zero to exit it.
- * @ghidraAddress NTSC-U/C: 0x00464888
- * @ghidraAddress PAL: 0x004a22a8
  */
 void SubmitDriverSetRemix(int bRemix);
 
@@ -701,8 +579,6 @@ void SubmitDriverSetRemix(int bRemix);
  * The body is one call to SubmitSoundDriverRequest().
  *
  * @param bPaused Nonzero to pause, zero to resume.
- * @ghidraAddress NTSC-U/C: 0x004648a8
- * @ghidraAddress PAL: 0x004a22c8
  */
 void SubmitDriverSetPaused(int bPaused);
 
@@ -711,9 +587,6 @@ void SubmitDriverSetPaused(int bPaused);
  *
  * Submits selector 0xc0, the driver's all-notes-off command, with no command block.
  * ReleaseSoundBanks() is the one caller.
- *
- * @ghidraAddress NTSC-U/C: 0x004649d8
- * @ghidraAddress PAL: 0x004a2398
  */
 void SubmitDriverAllNotesOff();
 
@@ -724,9 +597,6 @@ void SubmitDriverAllNotesOff();
  * 0x400-byte MIDI stream buffer, and passes it to `sceMSIn_Init()`. A failure logs
  * `sceMSIn_Init Error`. Otherwise the routine puts the message 0xc0 on port 0 through
  * `sceMSIn_PutMsg()`. InitSynthDriver() is the one caller.
- *
- * @ghidraAddress NTSC-U/C: 0x00462290
- * @ghidraAddress PAL: 0x0049fb28
  */
 void ps2_InitMSin();
 
@@ -741,8 +611,6 @@ void ps2_InitMSin();
  * The title is inferred from the failure message.
  *
  * @param pszPath The movie file.
- * @ghidraAddress NTSC-U/C: 0x00462908
- * @ghidraAddress PAL: 0x004a0350
  */
 void StartSoundBankMovie(const char *pszPath);
 
@@ -750,9 +618,6 @@ void StartSoundBankMovie(const char *pszPath);
  * Destroy the sound-bank movie, if one is open, and clear the pointer.
  *
  * The title is inferred as the counterpart of StartSoundBankMovie().
- *
- * @ghidraAddress NTSC-U/C: 0x00464b68
- * @ghidraAddress PAL: 0x004a2528
  */
 void StopSoundBankMovie();
 
@@ -762,8 +627,5 @@ void StopSoundBankMovie();
  * The body is a two-instruction bare return. Ps2HardSynth's destructor is the one caller, which is
  * what identifies the routine as the counterpart of InitSynthDriver() rather than a stub of some
  * other member.
- *
- * @ghidraAddress NTSC-U/C: 0x00464b48
- * @ghidraAddress PAL: 0x004a2508
  */
 void ShutdownSynthDriver();

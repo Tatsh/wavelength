@@ -138,7 +138,6 @@ bool BlendChannelFloat(const std::list<FloatKey> &keys, float flFrame, float &re
 }
 
 // A texture channel does not blend. The earlier key's texture holds until the next key.
-// NTSC-U/C: 0x004dd550, PAL: 0x0051baf0
 void InterpolateTex(Tex *pFrom,
                     [[maybe_unused]] Tex *pTo,
                     [[maybe_unused]] float flBlend,
@@ -146,14 +145,12 @@ void InterpolateTex(Tex *pFrom,
     pOut = pFrom;
 }
 
-// NTSC-U/C: 0x004db6b0, PAL: 0x00519bf8
 Stream &ReadTexKey(Stream &stream, MatAnim::Stage::TexKey &key) {
     ReadObjectRef(stream, key.mValue);
     stream.ReadLE(&key.mFrame, sizeof(key.mFrame));
     return stream;
 }
 
-// NTSC-U/C: 0x004dda98, PAL: 0x0051c050
 Stream &ReadTexKeys(Stream &stream, std::list<MatAnim::Stage::TexKey> &keys) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -165,7 +162,6 @@ Stream &ReadTexKeys(Stream &stream, std::list<MatAnim::Stage::TexKey> &keys) {
 }
 
 // The texture channel as the first revision wrote it, a list of textures without frames.
-// NTSC-U/C: 0x004db0c0, PAL: 0x005195d8
 Stream &ReadTexList(Stream &stream, std::list<Tex *> &textures) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -176,7 +172,6 @@ Stream &ReadTexList(Stream &stream, std::list<Tex *> &textures) {
     return stream;
 }
 
-// NTSC-U/C: 0x004dadc8, PAL: 0x005192e0
 Stream &WriteTexKeys(Stream &stream, const std::list<MatAnim::Stage::TexKey> &keys) {
     const int nCount = keys.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -187,7 +182,6 @@ Stream &WriteTexKeys(Stream &stream, const std::list<MatAnim::Stage::TexKey> &ke
     return stream;
 }
 
-// NTSC-U/C: 0x004daad0, PAL: 0x00518fe8
 Dbg &DumpTexKeys(Dbg &sink, const std::list<MatAnim::Stage::TexKey> &keys) {
     sink.Print("(size:");
     sink.Format("%u", keys.size());
@@ -208,7 +202,6 @@ Dbg &DumpTexKeys(Dbg &sink, const std::list<MatAnim::Stage::TexKey> &keys) {
     return sink;
 }
 
-// NTSC-U/C: 0x004d8b78, PAL: 0x00517090
 Dbg &DumpStageAnims(Dbg &sink, std::vector<MatAnim::Stage> &stages) {
     sink.Print("(size:");
     sink.Format("%u", stages.size());
@@ -225,7 +218,6 @@ Dbg &DumpStageAnims(Dbg &sink, std::vector<MatAnim::Stage> &stages) {
     return sink;
 }
 
-// NTSC-U/C: 0x004d9338, PAL: 0x00517850
 Stream &ReadStageAnims(Stream &stream, std::vector<MatAnim::Stage> &stages) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -236,7 +228,6 @@ Stream &ReadStageAnims(Stream &stream, std::vector<MatAnim::Stage> &stages) {
     return stream;
 }
 
-// NTSC-U/C: 0x004dd908, PAL: 0x0051bec0
 Stream &WriteStageAnims(Stream &stream, std::vector<MatAnim::Stage> &stages) {
     const int nCount = stages.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -248,7 +239,6 @@ Stream &WriteStageAnims(Stream &stream, std::vector<MatAnim::Stage> &stages) {
 
 } // namespace
 
-// NTSC-U/C: 0x00700428, PAL: 0x00743e50
 HxStr MatAnim::sClassName("MatAnim");
 
 void MatAnim::Stage::Save(Stream &stream) {

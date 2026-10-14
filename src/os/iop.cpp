@@ -56,7 +56,6 @@ constexpr int kLoadFailureStatus = 1;
 // records.
 constexpr int kIopModuleCount = 10;
 
-// NTSC-U/C: 0x00702660, PAL: 0x007460b0
 // The table sits in .data rather than in .rodata. The original therefore declared it without
 // const.
 IopModule g_iopModules[kIopModuleCount] = {{"sio2man", 0, nullptr},
@@ -70,7 +69,6 @@ IopModule g_iopModules[kIopModuleCount] = {{"sio2man", 0, nullptr},
                                            {"sdrdrv", 0, nullptr},
                                            {"ezmidi", 0, nullptr}};
 
-// NTSC-U/C: 0x004dfc40, PAL: 0x0051e3a0
 // An unreferenced out-of-line copy sits at that address while the only call site is
 // inlined, which is what establishes an inline function rather than a block the caller open-codes.
 // The same applies to every helper below.
@@ -81,7 +79,6 @@ inline void LoadModuleFromHost(const char *pszPath, int nArgLength, const char *
     }
 }
 
-// NTSC-U/C: 0x004dfc80, PAL: 0x0051e3e0
 inline void LoadModuleFromCd(const char *pszPath, int nArgLength, const char *pArgs) {
     if (sceSifLoadModule(pszPath, nArgLength, pArgs) < 0) {
         Error(kLoadFailedFormat, pszPath);
@@ -91,7 +88,6 @@ inline void LoadModuleFromCd(const char *pszPath, int nArgLength, const char *pA
     sceCdSync(SCECdBlock);
 }
 
-// NTSC-U/C: 0x004dfd80, PAL: 0x0051e518
 // The host mode is read again here rather than passed in, so InitIop() and this helper
 // each call GetHostMode() once.
 inline void RebootIopWithImage() {
@@ -116,7 +112,6 @@ inline void RebootIopWithImage() {
     sceCdMmode(SCECdCD);
 }
 
-// NTSC-U/C: 0x004dfcc8, PAL: 0x0051e428
 inline void LoadAllIopModules(unsigned nSources) {
     AsyncCheck(1);
 
@@ -126,7 +121,6 @@ inline void LoadAllIopModules(unsigned nSources) {
     }
 }
 
-// NTSC-U/C: 0x004dfd28, PAL: 0x0051e488
 // The console exposes two controller ports, and a third is opened regardless.
 inline void InitMultitapPorts() {
     sceMtapInit();
@@ -148,7 +142,6 @@ inline void CloseMultitapPorts() {
 }
 #endif
 
-// NTSC-U/C: 0x004dfd60, PAL: 0x0051e4f8
 inline void InitMemoryCardLibrary() {
     sceMcInitLibrary(); // Yes, the binary discards this call's result.
 }

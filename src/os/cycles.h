@@ -37,8 +37,6 @@ extern float gSystemCycles2Ms;
  * The name is inferred from the value. Nothing in the image attests it.
  *
  * @return 1000.
- * @ghidraAddress NTSC-U/C: 0x00466360
- * @ghidraAddress PAL: 0x004a3d90
  */
 inline int GetMillisecondsPerSecond() {
     return kMillisecondsPerSecond;

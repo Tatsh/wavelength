@@ -46,8 +46,6 @@ public:
      *
      * @param stream The stream to write to.
      * @return The stream.
-     * @ghidraAddress NTSC-U/C: 0x00405ad8
-     * @ghidraAddress PAL: 0x0043f3c8
      */
     HxStream &Write(HxStream &stream) const;
 
@@ -59,8 +57,6 @@ public:
      *
      * @param stream The stream to read from.
      * @return The stream.
-     * @ghidraAddress NTSC-U/C: 0x00405b70
-     * @ghidraAddress PAL: 0x0043f460
      */
     HxStream &Read(HxStream &stream);
 

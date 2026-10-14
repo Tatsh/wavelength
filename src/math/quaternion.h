@@ -41,8 +41,6 @@ public:
      * @param pAxis The rotation axis, three floats.
      * @param flAngle The rotation angle in radians.
      * @return This quaternion.
-     * @ghidraAddress NTSC-U/C: 0x004efd80
-     * @ghidraAddress PAL: 0x0052e970
      */
     Quat &Set(const float *pAxis, float flAngle);
 
@@ -74,8 +72,6 @@ namespace Rnd {
  * @param quat The quaternion, treated as unit length.
  * @param pAxis Receives the axis, three floats.
  * @param pflAngle Receives the angle in radians.
- * @ghidraAddress NTSC-U/C: 0x004f0350
- * @ghidraAddress PAL: 0x0052ef40
  */
 void MakeAxisAngle(const Quat &quat, float *pAxis, float *pflAngle);
 
@@ -104,8 +100,6 @@ Quat EulerAnglesToQuat(const float *pAngles);
  * @param b The right factor.
  * @param out Receives the product. Every component of both factors is loaded before the first
  *            store, which permits the destination to alias either factor.
- * @ghidraAddress NTSC-U/C: 0x004f06a0
- * @ghidraAddress PAL: 0x0052f290
  */
 void QuatMultiply(const Quat &a, const Quat &b, Quat &out);
 
@@ -119,8 +113,6 @@ void QuatMultiply(const Quat &a, const Quat &b, Quat &out);
  * @param quat The rotation to start from.
  * @param pRotVec The rotation vector, three floats.
  * @return The composed rotation.
- * @ghidraAddress NTSC-U/C: 0x004f0178
- * @ghidraAddress PAL: 0x0052ed68
  */
 Quat QuatRotateByVector(const Quat &quat, const float *pRotVec);
 
@@ -168,8 +160,6 @@ void MakeRotMatrix(const Quat &quat, float *pMat3Rows);
  *
  * @param pMat3Rows The rotation, three rows of four floats.
  * @param pAngles Receives the three angles in radians, ordered X, Y, and Z.
- * @ghidraAddress NTSC-U/C: 0x004efe08
- * @ghidraAddress PAL: 0x0052e9f8
  */
 void MakeEuler(const float *pMat3Rows, float *pAngles);
 
@@ -199,7 +189,5 @@ void Mat33ExtractScale(const float *pMat3Rows, float *pScale);
  * @param pTo The angles at a parameter of one, three floats.
  * @param pOut Receives the interpolated angles, three floats.
  * @param flT The interpolation parameter.
- * @ghidraAddress NTSC-U/C: 0x004effe0
- * @ghidraAddress PAL: 0x0052ebd0
  */
 void LerpEulerAngles(const float *pFrom, const float *pTo, float *pOut, float flT);

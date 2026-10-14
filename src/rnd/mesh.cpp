@@ -247,7 +247,6 @@ void TrimKeys(std::list<Key> &keys, int nRemoved, const Value &fill) {
     }
 }
 
-// NTSC-U/C: 0x00493f00, PAL: 0x004d1db0
 Dbg &operator<<(Dbg &sink, Mesh::ZMode nZMode) {
     switch (nZMode) {
     case Mesh::kZModeDisable:
@@ -269,7 +268,6 @@ Dbg &operator<<(Dbg &sink, Mesh::ZMode nZMode) {
     return sink;
 }
 
-// NTSC-U/C: 0x00482f18, PAL: 0x004c0ce8
 Dbg &operator<<(Dbg &sink, Mesh::ZFunc nZFunc) {
     switch (nZFunc) {
     case Mesh::kZFuncNever:
@@ -365,7 +363,6 @@ void PrintElementIndex(Dbg &sink, unsigned nIndex) {
     sink.Print("\t");
 }
 
-// NTSC-U/C: 0x004809f0, PAL: 0x004be6e8
 Dbg &DumpVert(Dbg &sink, const MeshVert &vert) {
     sink.Print("\n\tp:");
     PrintVector3(sink, vert.mPoint);
@@ -388,7 +385,6 @@ Dbg &DumpVert(Dbg &sink, const MeshVert &vert) {
     return sink;
 }
 
-// NTSC-U/C: 0x0048a5d8, PAL: 0x004c8460
 Dbg &DumpVertVector(Dbg &sink, const std::vector<MeshVert> &verts) {
     PrintVectorHeader(sink, verts.size());
     for (unsigned nIndex = 0; nIndex < verts.size(); ++nIndex) {
@@ -398,7 +394,6 @@ Dbg &DumpVertVector(Dbg &sink, const std::vector<MeshVert> &verts) {
     return sink;
 }
 
-// NTSC-U/C: 0x0048a6c8, PAL: 0x004c8550
 Dbg &DumpFaceVector(Dbg &sink, const std::vector<MeshFace> &faces) {
     PrintVectorHeader(sink, faces.size());
     for (unsigned nIndex = 0; nIndex < faces.size(); ++nIndex) {
@@ -411,7 +406,6 @@ Dbg &DumpFaceVector(Dbg &sink, const std::vector<MeshFace> &faces) {
     return sink;
 }
 
-// NTSC-U/C: 0x0048a858, PAL: 0x004c86e0
 Dbg &DumpEdgeVector(Dbg &sink, const std::vector<MeshEdge> &edges) {
     PrintVectorHeader(sink, edges.size());
     for (unsigned nIndex = 0; nIndex < edges.size(); ++nIndex) {
@@ -423,7 +417,6 @@ Dbg &DumpEdgeVector(Dbg &sink, const std::vector<MeshEdge> &edges) {
     return sink;
 }
 
-// NTSC-U/C: 0x0048a9b0, PAL: 0x004c8838
 Stream &WriteVertVector(Stream &stream, const std::vector<MeshVert> &verts) {
     const int nCount = static_cast<int>(verts.size());
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -446,7 +439,6 @@ Stream &WriteVertVector(Stream &stream, const std::vector<MeshVert> &verts) {
     return stream;
 }
 
-// NTSC-U/C: 0x0048ac40, PAL: 0x004c8ac8
 Stream &WriteFaceVector(Stream &stream, const std::vector<MeshFace> &faces) {
     const int nCount = static_cast<int>(faces.size());
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -458,7 +450,6 @@ Stream &WriteFaceVector(Stream &stream, const std::vector<MeshFace> &faces) {
     return stream;
 }
 
-// NTSC-U/C: 0x004945e0, PAL: 0x004d24a8
 Stream &WriteEdgeVector(Stream &stream, const std::vector<MeshEdge> &edges) {
     const int nCount = static_cast<int>(edges.size());
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -469,7 +460,6 @@ Stream &WriteEdgeVector(Stream &stream, const std::vector<MeshEdge> &edges) {
     return stream;
 }
 
-// NTSC-U/C: 0x00482368, PAL: 0x004c0138
 Stream &ReadVert(Stream &stream, MeshVert &vert) {
     stream.ReadLE(&vert.mPoint.x, sizeof(float));
     stream.ReadLE(&vert.mPoint.y, sizeof(float));
@@ -493,7 +483,6 @@ Stream &ReadVert(Stream &stream, MeshVert &vert) {
     return stream;
 }
 
-// NTSC-U/C: 0x0048ad48, PAL: 0x004c8bd0
 Stream &ReadVertVector(Stream &stream, std::vector<MeshVert> &verts) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -504,7 +493,6 @@ Stream &ReadVertVector(Stream &stream, std::vector<MeshVert> &verts) {
     return stream;
 }
 
-// NTSC-U/C: 0x00482e28, PAL: 0x004c0bf8
 Stream &operator>>(Stream &stream, MeshFace &face) {
     stream.ReadLE(&face.mV1, sizeof(face.mV1))
         .ReadLE(&face.mV2, sizeof(face.mV2))
@@ -520,7 +508,6 @@ Stream &operator>>(Stream &stream, MeshFace &face) {
     return stream;
 }
 
-// NTSC-U/C: 0x0048ae78, PAL: 0x004c8d00
 Stream &ReadFaceVector(Stream &stream, std::vector<MeshFace> &faces) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -531,7 +518,6 @@ Stream &ReadFaceVector(Stream &stream, std::vector<MeshFace> &faces) {
     return stream;
 }
 
-// NTSC-U/C: 0x0048af78, PAL: 0x004c8e00
 Stream &ReadEdgeVector(Stream &stream, std::vector<MeshEdge> &edges) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -600,7 +586,6 @@ inline void InvertXfm(const float aflWorld[kXfmRowCount][kXfmRowFloatCount],
         aflInverse[0][2] * negated.x + aflInverse[1][2] * negated.y + aflInverse[2][2] * negated.z;
 }
 
-// NTSC-U/C: 0x0048c040, PAL: 0x004c9ec8
 Stream &ReadIndexRun(Stream &stream, std::vector<unsigned short> &run) {
     int nIndexCount;
     stream.ReadLE(&nIndexCount, sizeof(nIndexCount));
@@ -611,7 +596,6 @@ Stream &ReadIndexRun(Stream &stream, std::vector<unsigned short> &run) {
     return stream;
 }
 
-// NTSC-U/C: 0x0048c138, PAL: 0x004c9fc0
 // Versions 1 through 3 stored a run of vertex indices per record. The renderer no longer uses
 // them, and the loader releases the vector as soon as it has been read.
 Stream &ReadIndexRunVector(Stream &stream, std::vector<std::vector<unsigned short> > &runs) {
@@ -644,7 +628,6 @@ void Mesh::operator delete(void *pBlock) {
     OperatorDeleteOverride(pBlock, kMeshAllocationTag);
 }
 
-// NTSC-U/C: 0x006eed60, PAL: 0x00732780
 Mesh *(*Mesh::sNew)(const HxStr &name) = NewMesh;
 
 Mesh *NewMeshThroughHook(const HxStr &name) {
@@ -663,10 +646,8 @@ Object *CreateRegisteredMesh(const HxStr &name) {
     }
 }
 
-// NTSC-U/C: 0x006eed68, PAL: 0x00732788
 HxStr Mesh::sClassName("Mesh");
 
-// NTSC-U/C: 0x00894d68, PAL: 0x008d9d78
 int g_nRndMeshLoadVersion;
 
 Mesh::Mesh(const HxStr &name)

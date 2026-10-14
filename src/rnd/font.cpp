@@ -74,7 +74,6 @@ const char *StringText(const HxStr &text) {
     return text.mStr != nullptr ? text.mStr : g_szEmptyString;
 }
 
-// NTSC-U/C: 0x004d07e0, PAL: 0x0050ec18
 // A value outside the three produces nothing at all. The sink comes back out so that the three
 // printers chain, which is how DumpText() reaches them.
 Dbg &operator<<(Dbg &sink, Font::Type type) {
@@ -89,12 +88,10 @@ Dbg &operator<<(Dbg &sink, Font::Type type) {
     return sink;
 }
 
-// NTSC-U/C: 0x004d0858, PAL: 0x0050ec90
 Dbg *PrintFontWeight(Dbg &sink, FontWeight weight) {
     return sink.Print(kWeightTitles[weight]);
 }
 
-// NTSC-U/C: 0x004d0898, PAL: 0x0050ecd0
 Dbg *PrintFontFamily(Dbg &sink, FontFamily family) {
     return sink.Print(kFamilyTitles[family]);
 }
@@ -120,7 +117,6 @@ void WriteString(Stream &stream, const HxStr &text) {
     stream.Write(StringText(text), text.mLen + 1);
 }
 
-// NTSC-U/C: 0x004cab18, PAL: 0x00508d80
 Stream &operator>>(Stream &stream, LegacyCharInfo &info) {
     HxStr matName(nullptr);
     stream.ReadString(matName);
@@ -130,7 +126,6 @@ Stream &operator>>(Stream &stream, LegacyCharInfo &info) {
     return stream;
 }
 
-// NTSC-U/C: 0x004ce9c0, PAL: 0x0050ccd0
 Stream &operator>>(Stream &stream, std::map<char, LegacyCharInfo> &charMap) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -519,7 +514,6 @@ Font *NewFont(const HxStr &name) {
     return new Font(name);
 }
 
-// NTSC-U/C: 0x006fecb8, PAL: 0x007426b8
 // Null in the image until RegisterFontClass() or Rnd::Manager::Init() fills it,
 // unlike Text::sNew.
 Font *(*g_pfnNewFont)(const HxStr &name);
@@ -545,7 +539,6 @@ void RegisterFontClass() {
     TheManager.RegisterClass(g_fontClassName, CreateRegisteredFont);
 }
 
-// NTSC-U/C: 0x006fecb0, PAL: 0x007426b0
 HxStr g_fontClassName("Font");
 
 } // namespace Rnd

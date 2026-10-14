@@ -48,8 +48,6 @@ public:
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x003da1c0
-     * @ghidraAddress PAL: 0x004125f8
      */
     void *operator new(size_t nSize) {
         return AllocateTaggedMemory(nSize, "MSG");
@@ -61,8 +59,6 @@ public:
      * Defined in the class for the same reason as operator new(), with 69 copies.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x003da1e0
-     * @ghidraAddress PAL: 0x00412618
      */
     void operator delete(void *pBlock) {
         OperatorDeleteOverride(pBlock, "MSG");

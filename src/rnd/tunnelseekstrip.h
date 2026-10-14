@@ -33,9 +33,6 @@ public:
      * Construct an empty strip with a white colour.
      *
      * The step counters at `+0x30` and `+0x34` are left unset until Build().
-     *
-     * @ghidraAddress NTSC-U/C: 0x0046e7d8
-     * @ghidraAddress PAL: 0x004ac3b8
      */
     TunnelSeekStrip();
 
@@ -53,9 +50,6 @@ public:
      * Release the material reference and empty the sections.
      *
      * mTunnel is cleared as well, and mMat is not.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0046ea98
-     * @ghidraAddress PAL: 0x004ac698
      */
     void Clear();
 
@@ -69,16 +63,11 @@ public:
      * @param nFirstSlice The first slice of the run.
      * @param nSliceCount The number of slices.
      * @param nRing The ring.
-     * @ghidraAddress NTSC-U/C: 0x0046eb48
-     * @ghidraAddress PAL: 0x004ac748
      */
     void SetRange(int nFirstSlice, int nSliceCount, int nRing);
 
     /**
      * Place the strip again on the run it last received.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00477ff0
-     * @ghidraAddress PAL: 0x004b5c68
      */
     void Refresh();
 
@@ -92,8 +81,6 @@ public:
      * @param pTunnel The tunnel.
      * @param pOwner The seeker that owns the strip.
      * @param nIndex The index of the seeker, used in the mesh titles.
-     * @ghidraAddress NTSC-U/C: 0x0046e830
-     * @ghidraAddress PAL: 0x004ac410
      */
     void Build(Tunnel *pTunnel, TunnelSeeker *pOwner, int nIndex);
 
@@ -101,8 +88,6 @@ public:
      * Replace the material and hand it to the finest mesh of every section.
      *
      * @param pMat The material, or null.
-     * @ghidraAddress NTSC-U/C: 0x00477f18
-     * @ghidraAddress PAL: 0x004b5b90
      */
     void SetMat(Mat *pMat);
 
@@ -112,8 +97,6 @@ public:
      * A dirty section takes the colour when Update() next copies its geometry.
      *
      * @param color The colour.
-     * @ghidraAddress NTSC-U/C: 0x00477e68
-     * @ghidraAddress PAL: 0x004b5ae0
      */
     void SetColor(const Color &color);
 
@@ -126,8 +109,6 @@ public:
      *
      * @param nSlice The slice being drawn.
      * @param flScreenSize The screen size used to pick the level of detail.
-     * @ghidraAddress NTSC-U/C: 0x0046ec40
-     * @ghidraAddress PAL: 0x004ac840
      */
     void DrawSection(int nSlice, float flScreenSize);
 
@@ -137,8 +118,6 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement, which must be a Rnd::Mat or null.
      * @param pReferrer The object the reference is held on behalf of.
-     * @ghidraAddress NTSC-U/C: 0x00477db8
-     * @ghidraAddress PAL: 0x004b5a30
      */
     void Replace(Object *pFrom, Object *pTo, Object *pReferrer);
 

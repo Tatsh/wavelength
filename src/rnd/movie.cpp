@@ -55,12 +55,10 @@ constexpr int kMovieBitsPerPixel = 8;
 constexpr int kSetPaletteReservedArg = -1;
 
 // The last time SetFrameSelf() converted.
-// NTSC-U/C: 0x0077a59c, PAL: 0x007be35c
 float g_flMovieBeatCached = -9999.999f;
 
 // SetFrameSelf() returns early while it is positive. It only ever stores zero, and the test never
 // fires.
-// NTSC-U/C: 0x0077a598, PAL: 0x007be358
 int g_nMovieBeatCacheAge;
 
 // Reconfigure a texture whose size or depth differs from its track's frame, logging the change.
@@ -77,7 +75,6 @@ inline void MatchTextureToTrack(Tex *pTex, const AMovieSet::Track &track, const 
     pTex->ReloadBitmaps();
 }
 
-// NTSC-U/C: 0x005d15e0, PAL: 0x006135d0
 Dbg &operator<<(Dbg &sink, const std::list<Movie::TrackTexture> &textures) {
     sink.Print("(size:")->Format("%u", textures.size())->Print(")");
 
@@ -96,7 +93,6 @@ Dbg &operator<<(Dbg &sink, const std::list<Movie::TrackTexture> &textures) {
     return sink;
 }
 
-// NTSC-U/C: 0x005d1790, PAL: 0x00613780
 Stream &operator<<(Stream &stream, const std::list<Movie::TrackTexture> &textures) {
     const int nCount = textures.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -423,7 +419,6 @@ Object *CreateRegisteredMovie(const HxStr &name) {
     return NewMovie(name);
 }
 
-// NTSC-U/C: 0x0077a590, PAL: 0x007be350
 HxStr g_movieClassName("Movie");
 
 } // namespace Rnd

@@ -26,16 +26,6 @@
  * @param first The first entry.
  * @param second The second entry.
  * @return Whether first comes strictly before second.
- * @ghidraAddress NTSC-U/C: 0x001b7068
- * @ghidraAddress PAL: 0x001bce40
- * @ghidraAddress NTSC-U/C: 0x001d7f70
- * @ghidraAddress PAL: 0x001dde50
- * @ghidraAddress NTSC-U/C: 0x001d7f80
- * @ghidraAddress PAL: 0x001dde60
- * @ghidraAddress NTSC-U/C: 0x001d7f90
- * @ghidraAddress PAL: 0x001dde70
- * @ghidraAddress NTSC-U/C: 0x001a9860
- * @ghidraAddress PAL: 0x001af5c8
  */
 template <typename T>
 bool TickObjLess(TickObj<T> first, TickObj<T> second) {
@@ -48,14 +38,6 @@ bool TickObjLess(TickObj<T> first, TickObj<T> second) {
  * @param nTick The song position, in MIDI ticks.
  * @param entry The entry.
  * @return Whether nTick comes strictly before entry.
- * @ghidraAddress NTSC-U/C: 0x001b70e0
- * @ghidraAddress PAL: 0x001bceb8
- * @ghidraAddress NTSC-U/C: 0x001d8028
- * @ghidraAddress PAL: 0x001ddf08
- * @ghidraAddress NTSC-U/C: 0x001d8038
- * @ghidraAddress PAL: 0x001ddf18
- * @ghidraAddress NTSC-U/C: 0x001d8048
- * @ghidraAddress PAL: 0x001ddf28
  */
 template <typename T>
 bool TickObjBefore(int nTick, TickObj<T> entry) {
@@ -68,10 +50,6 @@ bool TickObjBefore(int nTick, TickObj<T> entry) {
  * @param entry The entry.
  * @param nTick The song position, in MIDI ticks.
  * @return Whether entry comes strictly before nTick.
- * @ghidraAddress NTSC-U/C: 0x001d80a0
- * @ghidraAddress PAL: 0x001ddf80
- * @ghidraAddress NTSC-U/C: 0x001a9a10
- * @ghidraAddress PAL: 0x001af778
  */
 template <typename T>
 bool TickObjAfter(TickObj<T> entry, int nTick) {
@@ -84,12 +62,6 @@ bool TickObjAfter(TickObj<T> entry, int nTick) {
  * @param values The entries, sorted by position.
  * @param value The value to place.
  * @return The upper bound of value.
- * @ghidraAddress NTSC-U/C: 0x001b5b40
- * @ghidraAddress PAL: 0x001bb918
- * @ghidraAddress NTSC-U/C: 0x001d6898
- * @ghidraAddress PAL: 0x001dc778
- * @ghidraAddress NTSC-U/C: 0x001d6a48
- * @ghidraAddress PAL: 0x001dc928
  */
 template <typename T>
 typename std::vector<TickObj<T> >::iterator UpperBoundByEntry(std::vector<TickObj<T> > &values,
@@ -103,12 +75,6 @@ typename std::vector<TickObj<T> >::iterator UpperBoundByEntry(std::vector<TickOb
  * @param values The entries, sorted by position.
  * @param value The value to place.
  * @return The lower bound of value.
- * @ghidraAddress NTSC-U/C: 0x001a91a8
- * @ghidraAddress PAL: 0x001aef10
- * @ghidraAddress NTSC-U/C: 0x001d5b98
- * @ghidraAddress PAL: 0x001dba78
- * @ghidraAddress NTSC-U/C: 0x001d61d8
- * @ghidraAddress PAL: 0x001dc0b8
  */
 template <typename T>
 typename std::vector<TickObj<T> >::iterator LowerBoundByEntry(std::vector<TickObj<T> > &values,
@@ -122,14 +88,6 @@ typename std::vector<TickObj<T> >::iterator LowerBoundByEntry(std::vector<TickOb
  * @param values The entries, sorted by position.
  * @param nTick The song position, in MIDI ticks.
  * @return The upper bound of nTick.
- * @ghidraAddress NTSC-U/C: 0x001b6278
- * @ghidraAddress PAL: 0x001bc050
- * @ghidraAddress NTSC-U/C: 0x001d7050
- * @ghidraAddress PAL: 0x001dcf30
- * @ghidraAddress NTSC-U/C: 0x001d7108
- * @ghidraAddress PAL: 0x001dcfe8
- * @ghidraAddress NTSC-U/C: 0x001d71c0
- * @ghidraAddress PAL: 0x001dd0a0
  */
 template <typename T>
 typename std::vector<TickObj<T> >::const_iterator
@@ -143,8 +101,6 @@ UpperBoundByTick(const std::vector<TickObj<T> > &values, int nTick) {
  * @param values The entries, sorted by position.
  * @param nTick The song position, in MIDI ticks.
  * @return The lower bound of nTick.
- * @ghidraAddress NTSC-U/C: 0x001d7278
- * @ghidraAddress PAL: 0x001dd158
  */
 template <typename T>
 typename std::vector<TickObj<T> >::const_iterator
@@ -158,14 +114,6 @@ LowerBoundByTick(const std::vector<TickObj<T> > &values, int nTick) {
  * @param values The entries, sorted by position.
  * @param nTick The song position, in MIDI ticks.
  * @return The entry, or the end when every entry follows nTick.
- * @ghidraAddress NTSC-U/C: 0x001b7290
- * @ghidraAddress PAL: 0x001bd068
- * @ghidraAddress NTSC-U/C: 0x001d80e8
- * @ghidraAddress PAL: 0x001ddfc8
- * @ghidraAddress NTSC-U/C: 0x001d8130
- * @ghidraAddress PAL: 0x001de010
- * @ghidraAddress NTSC-U/C: 0x001d8058
- * @ghidraAddress PAL: 0x001ddf38
  */
 template <typename T>
 typename std::vector<TickObj<T> >::const_iterator
@@ -186,8 +134,6 @@ FindAtOrBefore(const std::vector<TickObj<T> > &values, int nTick) {
  * @param values The entries, sorted by position.
  * @param nTick The song position, in MIDI ticks.
  * @return The entry, or the end when every entry precedes nTick.
- * @ghidraAddress NTSC-U/C: 0x001d80b0
- * @ghidraAddress PAL: 0x001ddf90
  */
 template <typename T>
 typename std::vector<TickObj<T> >::const_iterator
@@ -205,14 +151,6 @@ FindAtOrAfter(const std::vector<TickObj<T> > &values, int nTick) {
  *
  * @param values The entries, sorted by position.
  * @param value The entry to insert.
- * @ghidraAddress NTSC-U/C: 0x001b5e80
- * @ghidraAddress PAL: 0x001bbc58
- * @ghidraAddress NTSC-U/C: 0x001a90c0
- * @ghidraAddress PAL: 0x001aee28
- * @ghidraAddress NTSC-U/C: 0x001d6960
- * @ghidraAddress PAL: 0x001dc840
- * @ghidraAddress NTSC-U/C: 0x001d6b10
- * @ghidraAddress PAL: 0x001dc9f0
  */
 template <typename T>
 void InsertSorted(std::vector<TickObj<T> > &values, const TickObj<T> &value) {
@@ -370,10 +308,6 @@ typename std::vector<T>::const_iterator FindOrdered(const T &key, const std::vec
  * @param values The entries, sorted by position.
  * @param value The value.
  * @param nTick The song position, in MIDI ticks.
- * @ghidraAddress NTSC-U/C: 0x001d5f00
- * @ghidraAddress PAL: 0x001dbde0
- * @ghidraAddress NTSC-U/C: 0x001d6540
- * @ghidraAddress PAL: 0x001dc420
  */
 template <typename T>
 void SetAtTick(std::vector<TickObj<T> > &values, const T &value, int nTick) {
@@ -395,8 +329,6 @@ void SetAtTick(std::vector<TickObj<T> > &values, const T &value, int nTick) {
  *
  * @param values The entries, sorted by position.
  * @param value The entry to insert.
- * @ghidraAddress NTSC-U/C: 0x001a9a20
- * @ghidraAddress PAL: 0x001af788
  */
 template <typename T>
 void InsertAtLowerBound(std::vector<TickObj<T> > &values, const TickObj<T> &value) {
@@ -409,12 +341,6 @@ void InsertAtLowerBound(std::vector<TickObj<T> > &values, const TickObj<T> &valu
  * @param values The entries, sorted by position.
  * @param value The value.
  * @param nTick The song position, in MIDI ticks.
- * @ghidraAddress NTSC-U/C: 0x001d7fa0
- * @ghidraAddress PAL: 0x001dde80
- * @ghidraAddress NTSC-U/C: 0x001d7fc8
- * @ghidraAddress PAL: 0x001ddea8
- * @ghidraAddress NTSC-U/C: 0x001d8000
- * @ghidraAddress PAL: 0x001ddee0
  */
 template <typename T>
 void InsertAtTick(std::vector<TickObj<T> > &values, const T &value, int nTick) {

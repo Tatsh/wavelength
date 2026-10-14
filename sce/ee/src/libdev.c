@@ -26,14 +26,11 @@ enum {
 };
 
 // The console slots. A null buffer marks a free slot.
-// NTSC-U/C: 0x008e6980, PAL: 0x0092b980
 static DevConsole s_Cons[kConsoleCount];
 
 // The console heap. An all-ones size in the first header marks the heap as not yet initialised.
-// NTSC-U/C: 0x007a8530, PAL: 0x007ec230
 static unsigned int g_anDevHeap[kHeapWords] __attribute__((aligned(16))) = {0xffffffffu};
 
-// NTSC-U/C: 0x00622610, PAL: 0x00663020
 // Fill the console state words with their defaults, and record the GS primitive position.
 static void initConsoleContext(unsigned int *pContext, unsigned int nGsX, unsigned int nGsY) {
     pContext[0] = nGsX;
@@ -54,7 +51,6 @@ static void initConsoleContext(unsigned int *pContext, unsigned int nGsX, unsign
     pContext[15] = 0x80ffffffu;
 }
 
-// NTSC-U/C: 0x00623b10, PAL: 0x00664520
 // Take nSize bytes from the static heap, returning null when no block fits. The first call
 // initialises the heap and its end marker.
 static void *chaMemAlloc(unsigned int nSize) {
@@ -110,7 +106,6 @@ static void *chaMemAlloc(unsigned int nSize) {
     return pResult;
 }
 
-// NTSC-U/C: 0x00623c90, PAL: 0x006646a0
 // Return a block chaMemAlloc() handed out, merging it with a free neighbour on either side. A
 // null pointer, an uninitialised heap, and an empty heap are ignored.
 static void chaMemFree(void *pBlock) {

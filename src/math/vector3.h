@@ -41,8 +41,6 @@ namespace Rnd {
  * @param pA The first vector.
  * @param pB The second vector.
  * @param pOut Receives pA plus pB, and may alias either input.
- * @ghidraAddress NTSC-U/C: 0x0028c218
- * @ghidraAddress PAL: 0x002a7ea8
  */
 void Add(const float *pA, const float *pB, float *pOut);
 
@@ -55,8 +53,6 @@ void Add(const float *pA, const float *pB, float *pOut);
  * @param pA The vector subtracted from.
  * @param pB The vector to subtract.
  * @param pOut Receives pA less pB, and may alias either input.
- * @ghidraAddress NTSC-U/C: 0x00317160
- * @ghidraAddress PAL: 0x0033d418
  */
 void Subtract(const float *pA, const float *pB, float *pOut);
 
@@ -74,8 +70,6 @@ void Subtract(const float *pA, const float *pB, float *pOut);
  * @param pSrc The vector to scale.
  * @param flScale The factor to apply.
  * @param pOut Receives the product, and may alias pSrc.
- * @ghidraAddress NTSC-U/C: 0x0024ecd0
- * @ghidraAddress PAL: 0x002640f8
  */
 void Vec3Scale(const float *pSrc, float flScale, float *pOut);
 
@@ -86,8 +80,6 @@ void Vec3Scale(const float *pSrc, float flScale, float *pOut);
  *
  * @param pSrc The vector to negate.
  * @param pOut Receives the negation, and may alias pSrc.
- * @ghidraAddress NTSC-U/C: 0x00492458
- * @ghidraAddress PAL: 0x004d0308
  */
 void NegateVec3(const float *pSrc, float *pOut);
 
@@ -101,8 +93,6 @@ void NegateVec3(const float *pSrc, float *pOut);
  *
  * @param pSrc The vector to normalise.
  * @param pOut Receives the unit vector, and may alias pSrc.
- * @ghidraAddress NTSC-U/C: 0x00476140
- * @ghidraAddress PAL: 0x004b3db8
  */
 void Vec3Normalize(const float *pSrc, float *pOut);
 

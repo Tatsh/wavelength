@@ -23,36 +23,30 @@ public:
         }
     }
 
-    // NTSC-U/C: 0x0013acd0, PAL: 0x0013b618
     virtual ~Cmd() {
         if (mTask != nullptr) {
             mTask->Release();
         }
     }
 
-    // NTSC-U/C: 0x0013ad80, PAL: 0x0013b6c8
     // Nothing registers the factory, and it produces nothing.
     static Sch::Command *New() {
         return nullptr;
     }
 
-    // NTSC-U/C: 0x0013acc0, PAL: 0x0013b608
     virtual int CmdID() {
         return sCmdID;
     }
 
-    // NTSC-U/C: 0x0013ad30, PAL: 0x0013b678
     virtual void Execute() {
         mTask->Run();
     }
 
-    // NTSC-U/C: 0x0013ad50, PAL: 0x0013b698
     virtual void Print(std::ostream &stream) {
         mTask->Print(stream);
     }
 
     // The image initialises it to zero.
-    // NTSC-U/C: 0x006718f8, PAL: 0x006b2500
     static int sCmdID;
 
 private:

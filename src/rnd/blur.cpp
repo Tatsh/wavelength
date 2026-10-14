@@ -63,15 +63,12 @@ void WriteObjectName(Stream &stream, const Object *pObject) {
 
 } // namespace
 
-// NTSC-U/C: 0x006fd248, PAL: 0x00740c38
 HxStr g_blurClassName("Blur");
 
-// NTSC-U/C: 0x00894e28, PAL: 0x008d9e38
 int g_nRndBlurLoadRevision;
 
 Blur *(*g_pfnNewBlur)(const HxStr &name);
 
-// NTSC-U/C: 0x004c34e0, PAL: 0x00501608
 // The thunk the class registry stores. The null test is the conversion of a Blur
 // pointer to its virtual Rnd::Object base rather than a check the source asks for.
 static Object *NewBlurObject(const HxStr &name) {

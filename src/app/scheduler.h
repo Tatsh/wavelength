@@ -68,17 +68,11 @@ public:
 
     /**
      * Construct an idle scheduler with an empty queue and a fresh clock.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004a9858
-     * @ghidraAddress PAL: 0x004e7968
      */
     Scheduler();
 
     /**
      * Block queueing, release every queued wrapper, and release the recorder and the playback.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004a9980
-     * @ghidraAddress PAL: 0x004e7a90
      */
     ~Scheduler();
 
@@ -89,8 +83,6 @@ public:
      * the current time to zero. GameRecorder is the caller. The name is inferred.
      *
      * @param stream The stream the recording is written to.
-     * @ghidraAddress NTSC-U/C: 0x004ac8c0
-     * @ghidraAddress PAL: 0x004eaa60
      */
     void BeginRecording(OBStream &stream);
 
@@ -107,8 +99,6 @@ public:
      * @param id The handle, allocated in place when it reads -2.
      * @param bRecordable Unread.
      * @param nOrder The order among wrappers due at the same time.
-     * @ghidraAddress NTSC-U/C: 0x004ac608
-     * @ghidraAddress PAL: 0x004ea7a8
      */
     void QueueAbsolute(
         Sch::TimedCommand *pCommand, long long nTick, CmdID &id, int bRecordable, int nOrder);
@@ -126,8 +116,6 @@ public:
      * @param id The handle, allocated in place when it reads -2.
      * @param bRecordable Non-zero for a command the recording carries.
      * @param nOrder The order among wrappers due at the same time.
-     * @ghidraAddress NTSC-U/C: 0x004ac698
-     * @ghidraAddress PAL: 0x004ea838
      */
     void QueueDelta(
         Sch::TimedCommand *pCommand, long long nDelta, CmdID &id, int bRecordable, int nOrder);
@@ -140,8 +128,6 @@ public:
      * inferred.
      *
      * @param pCommand The command.
-     * @ghidraAddress NTSC-U/C: 0x004ac808
-     * @ghidraAddress PAL: 0x004ea9a8
      */
     void PostUnreferenced(Sch::Command *pCommand);
 
@@ -153,8 +139,6 @@ public:
      * start routine is the caller. The name is inferred.
      *
      * @param pCommand The wrapper to queue.
-     * @ghidraAddress NTSC-U/C: 0x004ac7b0
-     * @ghidraAddress PAL: 0x004ea950
      */
     void QueueReplayed(Sch::TimedCommand *pCommand);
 
@@ -165,8 +149,6 @@ public:
      * erased and released.
      *
      * @param id The handle.
-     * @ghidraAddress NTSC-U/C: 0x004aa260
-     * @ghidraAddress PAL: 0x004e8370
      */
     void WithdrawByCmdID(const CmdID &id);
 
@@ -179,8 +161,6 @@ public:
      * title is inferred.
      *
      * @param pCommand The wrapper whose position is withdrawn.
-     * @ghidraAddress NTSC-U/C: 0x004a9d00
-     * @ghidraAddress PAL: 0x004e7e10
      */
     void Withdraw(Sch::TimedCommand *pCommand);
 
@@ -188,9 +168,6 @@ public:
      * Reset the clock to zero and the current time with it.
      *
      * Sch::Playbacker::Play() calls this before queueing a recording.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004aca30
-     * @ghidraAddress PAL: 0x004eabd0
      */
     void ResetTimes();
 
@@ -198,9 +175,6 @@ public:
      * Release the recorder and the playback and leave both stream modes.
      *
      * GameRecorder's end of recording and GamePlaybacker's destructor are the callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004ac9e8
-     * @ghidraAddress PAL: 0x004eab88
      */
     void StopRecOrPlayback();
 
@@ -211,8 +185,6 @@ public:
      * and starts it. GamePlaybacker's constructor is the caller. The title is inferred.
      *
      * @param stream The recording, positioned after the session state.
-     * @ghidraAddress NTSC-U/C: 0x004ac950
-     * @ghidraAddress PAL: 0x004eaaf0
      */
     void StartPlayback(IBStream &stream);
 
@@ -229,17 +201,11 @@ public:
      * behind, and a clock more than six seconds past the current time is marked back to it and
      * re-read. When the loop stops, the current time advances to the clock reading if that is
      * later.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004aa848
-     * @ghidraAddress PAL: 0x004e8958
      */
     void Service();
 
     /**
      * Mark the clock at the current time and record the reading in g_llWatchdogSecondNs.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004aca60
-     * @ghidraAddress PAL: 0x004eac00
      */
     void Flush();
 
@@ -248,9 +214,6 @@ public:
      *
      * The queue is copied, emptied, and the copy's wrappers are released one by one, so a release
      * that reaches back into the scheduler finds the queue already empty. The name is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004a9a78
-     * @ghidraAddress PAL: 0x004e7b88
      */
     void Snapshot();
 
@@ -286,8 +249,5 @@ private:
  * Sch::Scheduler::Flush() sets.
  *
  * Only those two routines touch it. Nothing reads it outside Service().
- *
- * @ghidraAddress NTSC-U/C: 0x006f8a80
- * @ghidraAddress PAL: 0x0073c4d0
  */
 extern long long g_llWatchdogSecondNs;

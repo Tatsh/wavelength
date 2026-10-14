@@ -21,8 +21,6 @@ public:
      *
      * @param nTemplate The identifier.
      * @param text The template text.
-     * @ghidraAddress NTSC-U/C: 0x005a4f20
-     * @ghidraAddress PAL: 0x0054fe40
      */
     void Add(int nTemplate, const HxStr &text);
 
@@ -31,8 +29,6 @@ public:
      *
      * @param nTemplate The identifier.
      * @return A copy of the template, or an empty string when none is registered.
-     * @ghidraAddress NTSC-U/C: 0x005a5808
-     * @ghidraAddress PAL: 0x00550768
      */
     HxStr Find(int nTemplate);
 
@@ -42,9 +38,6 @@ private:
 
 /**
  * Every script call template.
- *
- * @ghidraAddress NTSC-U/C: 0x00773fb0
- * @ghidraAddress PAL: 0x007506a8
  */
 extern ScriptTemplateMap g_scriptTemplates;
 
@@ -56,8 +49,6 @@ extern ScriptTemplateMap g_scriptTemplates;
  *
  * @param nTemplate The identifier.
  * @param text The template text.
- * @ghidraAddress NTSC-U/C: 0x00466470
- * @ghidraAddress PAL: 0x004a3ea0
  */
 void RegisterScriptTemplate(int nTemplate, const HxStr &text);
 
@@ -69,7 +60,5 @@ void RegisterScriptTemplate(int nTemplate, const HxStr &text);
  *
  * @param nResid The identifier.
  * @return A copy of the template, or an empty string when none is registered.
- * @ghidraAddress NTSC-U/C: 0x00466438
- * @ghidraAddress PAL: 0x004a3e68
  */
 HxStr Resid2Str(unsigned int nResid);

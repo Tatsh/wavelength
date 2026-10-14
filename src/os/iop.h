@@ -26,9 +26,6 @@ struct IopModule {
  * The retail boot configuration is written first. The IOP is then rebooted and resynchronised, and
  * the debug console and the boot configuration are initialised last. The image is
  * `cdrom0:\IOP\IOPRP23.IMG;1` in kHostModeCdOnly and `host0:iop/ioprp23.img` otherwise.
- *
- * @ghidraAddress NTSC-U/C: 0x004dfe28
- * @ghidraAddress PAL: 0x0051e5c0
  */
 void InitIop();
 
@@ -48,8 +45,6 @@ void InitIop();
  *
  * @param pModule The module to load.
  * @param nSources A mask of IopModuleSource values.
- * @ghidraAddress NTSC-U/C: 0x004de170
- * @ghidraAddress PAL: 0x0051c728
  */
 void LoadIopModule(const IopModule *pModule, unsigned nSources);
 
@@ -60,9 +55,6 @@ void LoadIopModule(const IopModule *pModule, unsigned nSources);
  * the ten modules of the shipped table are loaded, and the multitap and memory card libraries are
  * started. The host mode also selects the media mask. kHostModeCdHost permits both media,
  * kHostModeCdOnly permits the disc, and kHostModeHostOnly permits the host link.
- *
- * @ghidraAddress NTSC-U/C: 0x004de600
- * @ghidraAddress PAL: 0x0051ccd0
  */
 void LoadIopModules();
 
@@ -73,9 +65,6 @@ void LoadIopModules();
  * iop.cpp can call it. It writes eight of the nine words of the block at 0x0070bf10 in one pass,
  * setting the host mode to kHostModeCdOnly and UsingArkFiles() to 1. ScreenMessagesEnabled() is
  * the word it omits.
- *
- * @ghidraAddress NTSC-U/C: 0x0050f030
- * @ghidraAddress PAL: 0x0054e5c8
  */
 void ConfigureRetailBoot();
 
@@ -86,9 +75,6 @@ void ConfigureRetailBoot();
  * The unit is devconsole.cpp. It initialises the GS through Gs_Initialize() and then creates a
  * console of 75 columns by 30 rows of 16-bit character cells, clearing every cell to 0x0720, a
  * space with attribute 7. InitIop() is the only caller.
- *
- * @ghidraAddress NTSC-U/C: 0x005e5f18
- * @ghidraAddress PAL: 0x006280d8
  */
 void InitDebugPrinting();
 
@@ -128,9 +114,6 @@ void ShutdownIop();
  *
  * In the PAL build the routine then records the console's language setting through
  * SetLanguage(), as the European release does.
- *
- * @ghidraAddress NTSC-U/C: 0x0050f080
- * @ghidraAddress PAL: 0x0054e618
  */
 void InitBootConfig();
 
@@ -160,8 +143,5 @@ enum HardEffectTemplate {
  *
  * The name is inferred from those expressions. Nothing in the image attests it, and
  * LoadIopModules() is the only caller.
- *
- * @ghidraAddress NTSC-U/C: 0x005e1210
- * @ghidraAddress PAL: 0x00623150
  */
 void RegisterHardEffectCommands();

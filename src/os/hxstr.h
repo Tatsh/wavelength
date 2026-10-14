@@ -12,9 +12,6 @@
  * than passing null. Twenty routines across unrelated subsystems read it through the same idiom.
  * The European release points every empty HxStr at this text instead of storing null, and its
  * asserts call the global `kNullStr`.
- *
- * @ghidraAddress NTSC-U/C: 0x006fbd10
- * @ghidraAddress PAL: 0x0073f788
  */
 extern const char *g_szEmptyString;
 
@@ -62,8 +59,6 @@ public:
      * A null argument produces an empty string with no allocation.
      *
      * @param pszText The text to copy.
-     * @ghidraAddress NTSC-U/C: 0x004b7ad0
-     * @ghidraAddress PAL: 0x004f5f00
      */
     HxStr(const char *pszText);
 
@@ -75,8 +70,6 @@ public:
      * does.
      *
      * @param other The string to copy.
-     * @ghidraAddress NTSC-U/C: 0x004b7b50
-     * @ghidraAddress PAL: 0x004f5f88
      */
     HxStr(const HxStr &other);
 
@@ -85,8 +78,6 @@ public:
      *
      * @param nCount The number of characters, which becomes the length.
      * @param ch The character to repeat.
-     * @ghidraAddress NTSC-U/C: 0x004b7bd0
-     * @ghidraAddress PAL: 0x004f6010
      */
     HxStr(unsigned nCount, char ch);
 
@@ -107,8 +98,6 @@ public:
      *
      * @param other The string to append.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b7c68
-     * @ghidraAddress PAL: 0x004f60a8
      */
     HxStr &operator+=(const HxStr &other);
 
@@ -128,8 +117,6 @@ public:
      *
      * @param pszText The text to append.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x0010edb0
-     * @ghidraAddress PAL: 0x0010f1f0
      */
     HxStr &operator+=(const char *pszText) {
         return *this += HxStr(pszText);
@@ -140,8 +127,6 @@ public:
      *
      * @param ch The character to append.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b7d28
-     * @ghidraAddress PAL: 0x004f6170
      */
     HxStr &operator+=(char ch);
 
@@ -150,8 +135,6 @@ public:
      *
      * @param pszText The text to copy, or null for an empty string.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b7dd8
-     * @ghidraAddress PAL: 0x004f6228
      */
     HxStr &operator=(const char *pszText);
 
@@ -160,8 +143,6 @@ public:
      *
      * @param other The string to copy.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b7e78
-     * @ghidraAddress PAL: 0x004f62e0
      */
     HxStr &operator=(const HxStr &other);
 
@@ -172,8 +153,6 @@ public:
      *
      * @param i The index.
      * @return The character.
-     * @ghidraAddress NTSC-U/C: 0x004b7f18
-     * @ghidraAddress PAL: 0x004f63a0
      */
     char operator[](unsigned i) const;
 
@@ -185,8 +164,6 @@ public:
      *
      * @param pszRight The text to compare against.
      * @return True when the two differ.
-     * @ghidraAddress NTSC-U/C: 0x004b7f98
-     * @ghidraAddress PAL: 0x004f6400
      */
     bool operator!=(const char *pszRight) const;
 
@@ -195,8 +172,6 @@ public:
      *
      * @param right The string to compare against.
      * @return True when the two differ.
-     * @ghidraAddress NTSC-U/C: 0x004b8018
-     * @ghidraAddress PAL: 0x004f6438
      */
     bool operator!=(const HxStr &right) const;
 
@@ -207,8 +182,6 @@ public:
      *
      * @param pszRight The text to compare against.
      * @return True when the two agree.
-     * @ghidraAddress NTSC-U/C: 0x004b80a0
-     * @ghidraAddress PAL: 0x004f6460
      */
     bool operator==(const char *pszRight) const;
 
@@ -217,8 +190,6 @@ public:
      *
      * @param right The string to compare against.
      * @return True when the two agree.
-     * @ghidraAddress NTSC-U/C: 0x004b8120
-     * @ghidraAddress PAL: 0x004f6498
      */
     bool operator==(const HxStr &right) const;
 
@@ -229,8 +200,6 @@ public:
      *
      * @param right The string to compare against.
      * @return True when this string sorts before the other.
-     * @ghidraAddress NTSC-U/C: 0x004b81a8
-     * @ghidraAddress PAL: 0x004f64c0
      */
     bool operator<(const HxStr &right) const;
 
@@ -242,8 +211,6 @@ public:
      * The new length is recorded before the allocation is checked.
      *
      * @param nLen The new length, excluding the terminator.
-     * @ghidraAddress NTSC-U/C: 0x004b8230
-     * @ghidraAddress PAL: 0x004f64e8
      */
     void Alloc(unsigned nLen);
 
@@ -252,8 +219,6 @@ public:
      *
      * @param ch The character to look for.
      * @return The index, or -1 when the character is absent.
-     * @ghidraAddress NTSC-U/C: 0x004b82b8
-     * @ghidraAddress PAL: 0x004f6580
      */
     int Find(char ch) const;
 
@@ -263,8 +228,6 @@ public:
      * @param ch The character to look for.
      * @param nStart The index to start from.
      * @return The index from the start of the string, or -1 when the character is absent.
-     * @ghidraAddress NTSC-U/C: 0x004b8350
-     * @ghidraAddress PAL: 0x004f65c8
      */
     int Find(char ch, unsigned nStart) const;
 
@@ -273,8 +236,6 @@ public:
      *
      * @param pszText The text to look for.
      * @return The index, or -1 when the text is absent.
-     * @ghidraAddress NTSC-U/C: 0x004b83f0
-     * @ghidraAddress PAL: 0x004f6620
      */
     int Find(const char *pszText) const;
 
@@ -283,8 +244,6 @@ public:
      *
      * @param ch The character to look for.
      * @return The index, or -1 when the character is absent.
-     * @ghidraAddress NTSC-U/C: 0x004b84b0
-     * @ghidraAddress PAL: 0x004f66c0
      */
     int ReverseFind(char ch) const;
 
@@ -294,8 +253,6 @@ public:
      * @param pszChars The candidate characters, as a NUL-terminated set.
      * @return The highest index at which any candidate appears, or -1 when none appears and when
      *         the argument is null.
-     * @ghidraAddress NTSC-U/C: 0x004b8550
-     * @ghidraAddress PAL: 0x004f6720
      */
     int ReverseFindOneOf(const char *pszChars) const;
 
@@ -308,8 +265,6 @@ public:
      * @param len The number of characters to compare.
      * @param str The text to compare against.
      * @return A negative value, zero, or a positive value, as `strncmp()` defines it.
-     * @ghidraAddress NTSC-U/C: 0x004b8678
-     * @ghidraAddress PAL: 0x004f67d0
      */
     int Compare(unsigned pos, unsigned len, const char *str) const;
 
@@ -318,8 +273,6 @@ public:
      *
      * @param pos The index to start from.
      * @return The extracted text.
-     * @ghidraAddress NTSC-U/C: 0x004b8738
-     * @ghidraAddress PAL: 0x004f6858
      */
     HxStr Mid(unsigned pos) const;
 
@@ -331,8 +284,6 @@ public:
      * @param pos The index to start from.
      * @param len The number of characters to extract.
      * @return The extracted text.
-     * @ghidraAddress NTSC-U/C: 0x004b78b8
-     * @ghidraAddress PAL: 0x004f5bc8
      */
     HxStr Mid(unsigned pos, unsigned len) const;
 
@@ -346,8 +297,6 @@ public:
      * @param len The number of characters to overwrite, which must be 1.
      * @param ch The replacement character.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b8818
-     * @ghidraAddress PAL: 0x004f6918
      */
     HxStr &Replace(unsigned pos, unsigned len, char ch);
 
@@ -360,8 +309,6 @@ public:
      * @param len The number of characters to overwrite.
      * @param other The replacement text.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b88d0
-     * @ghidraAddress PAL: 0x004f69d8
      */
     HxStr &Replace(unsigned pos, unsigned len, const HxStr &other);
 
@@ -372,8 +319,6 @@ public:
      * Truncate() would assert, and it asserts nothing itself. The buffer is retained.
      *
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b89f0
-     * @ghidraAddress PAL: 0x004f6ad8
      */
     HxStr &Clear();
 
@@ -385,8 +330,6 @@ public:
      *
      * @param pos The index to cut at, which must not exceed the current length.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b8a10
-     * @ghidraAddress PAL: 0x004f6b00
      */
     HxStr &Truncate(unsigned pos);
 
@@ -399,8 +342,6 @@ public:
      * @param pos The index to remove from.
      * @param len The number of characters to remove.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b8a98
-     * @ghidraAddress PAL: 0x004f6b70
      */
     HxStr &Erase(unsigned pos, unsigned len);
 
@@ -411,8 +352,6 @@ public:
      * @param nCount The number of characters to insert.
      * @param ch The character to insert.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b8bd8
-     * @ghidraAddress PAL: 0x004f6c70
      */
     HxStr &Insert(unsigned pos, unsigned nCount, char ch);
 
@@ -422,8 +361,6 @@ public:
      * @param pos The index to insert at.
      * @param other The text to insert.
      * @return This string.
-     * @ghidraAddress NTSC-U/C: 0x004b8cd8
-     * @ghidraAddress PAL: 0x004f5dd0
      */
     HxStr &Insert(unsigned pos, const HxStr &other);
 
@@ -435,8 +372,6 @@ public:
      *
      * @param stream The stream to write to.
      * @return The stream.
-     * @ghidraAddress NTSC-U/C: 0x004b8e00
-     * @ghidraAddress PAL: 0x004f6d78
      */
     std::ostream &Print(std::ostream &stream) const;
 
@@ -539,9 +474,6 @@ inline HxStr operator+(const HxStr &left, char ch) {
  * unrelated subsystems, including the glyph mesh builder and the PyCXX sequence binding, whose
  * released form returns the standard string's own no-position constant from the member that reads
  * it here.
- *
- * @ghidraAddress NTSC-U/C: 0x008211bc
- * @ghidraAddress PAL: 0x00863d2c
  */
 extern const unsigned g_nHxStrNoPosition;
 
@@ -554,7 +486,5 @@ extern const unsigned g_nHxStrNoPosition;
  * @param stream The stream to write to.
  * @param text The string to write.
  * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x004b8e28
- * @ghidraAddress PAL: 0x004f6da0
  */
 std::ostream &operator<<(std::ostream &stream, const HxStr &text);

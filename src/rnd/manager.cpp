@@ -96,7 +96,6 @@ inline void SkipPastRecordMarker(Stream &stream) {
     }
 }
 
-// NTSC-U/C: 0x0051f798, PAL: 0x0055fcc0
 // Writes the class registry as its entry count and then one indented line per entry.
 // The factory is reported as a truth value rather than as an address, which is what the two
 // literals "true" and "false" at 0x00826e20 and 0x00826e28 are for. Only DumpText() calls it.
@@ -128,16 +127,12 @@ void MoveClassToFront(std::list<Object *> &objects, T *) {
     }
 }
 
-// NTSC-U/C: 0x0051f938, PAL: 0x0055fe60
 template void MoveClassToFront<Font>(std::list<Object *> &objects, Font *);
 
-// NTSC-U/C: 0x0051fa80, PAL: 0x0055ffa8
 template void MoveClassToFront<Mat>(std::list<Object *> &objects, Mat *);
 
-// NTSC-U/C: 0x0051fbc8, PAL: 0x005600f0
 template void MoveClassToFront<Tex>(std::list<Object *> &objects, Tex *);
 
-// NTSC-U/C: 0x0051fd10, PAL: 0x00560238
 template void MoveClassToFront<TransAnim>(std::list<Object *> &objects, TransAnim *);
 
 // The table version Write() stores, and the marker it writes after every object record.
@@ -152,10 +147,8 @@ inline Stream &WriteTerminatedName(Stream &stream, const HxStr &name) {
 
 } // namespace
 
-// NTSC-U/C: 0x0089df90, PAL: 0x008e2fd0
 int g_nRndManagerFileVersion;
 
-// NTSC-U/C: 0x00719888, PAL: 0x0075d788
 int g_nRndManagerLoadFrameCounter;
 
 Manager::Manager() {

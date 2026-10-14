@@ -58,15 +58,9 @@ public:
      * type at Directional.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x0053ffd8
-     * @ghidraAddress PAL: 0x0057fcb0
      */
     explicit Light(const HxStr &name);
 
-    /**
-     * @ghidraAddress NTSC-U/C: 0x005445d8
-     * @ghidraAddress PAL: 0x00584350
-     */
     virtual ~Light();
 
     /**
@@ -74,8 +68,6 @@ public:
      *
      * @param nSize The block size.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x005443c0
-     * @ghidraAddress PAL: 0x00584138
      */
     static void *operator new(size_t nSize);
 
@@ -83,8 +75,6 @@ public:
      * Release a block operator new() allocated.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x005443e0
-     * @ghidraAddress PAL: 0x00584158
      */
     static void operator delete(void *pBlock);
 
@@ -108,8 +98,6 @@ public:
      * @param ambient The light every vertex receives from this light regardless of its normal.
      * @param diffuse The light a vertex receives in proportion to its normal.
      * @param specular The highlight colour.
-     * @ghidraAddress NTSC-U/C: 0x00544400
-     * @ghidraAddress PAL: 0x00584178
      */
     virtual void SetColors(const Color &ambient, const Color &diffuse, const Color &specular);
 
@@ -119,8 +107,6 @@ public:
      * Vtable slot 4 of the Rnd::Transformable table.
      *
      * @param type The lighting model.
-     * @ghidraAddress NTSC-U/C: 0x00544420
-     * @ghidraAddress PAL: 0x00584198
      */
     virtual void SetType(Type type);
 
@@ -130,8 +116,6 @@ public:
      * Vtable slot 5 of the Rnd::Transformable table.
      *
      * @param flRange The distance.
-     * @ghidraAddress NTSC-U/C: 0x00544428
-     * @ghidraAddress PAL: 0x005841a0
      */
     virtual void SetRange(float flRange);
 
@@ -142,8 +126,6 @@ public:
      *
      * @param flInner Angle the cone is at full strength within.
      * @param flOuter Angle the cone falls to nothing at.
-     * @ghidraAddress NTSC-U/C: 0x00544430
-     * @ghidraAddress PAL: 0x005841a8
      */
     virtual void SetAngles(float flInner, float flOuter);
 
@@ -156,8 +138,6 @@ public:
      * @param flConstant The constant term.
      * @param flLinear The term the distance scales.
      * @param flQuadratic The term the squared distance scales.
-     * @ghidraAddress NTSC-U/C: 0x00544440
-     * @ghidraAddress PAL: 0x005841b8
      */
     virtual void SetAttenuation(float flConstant, float flLinear, float flQuadratic);
 
@@ -169,9 +149,6 @@ public:
      * ends with one at `0x00540e80` and Copy() ends with another at `0x0054545c`, which fixes the
      * signature as a no-argument void. The title is inferred from those two call sites, and every
      * subclass that would supply a body is absent from this build.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00544818
-     * @ghidraAddress PAL: 0x00584590
      */
     virtual void SyncLight();
 
@@ -182,8 +159,6 @@ public:
      * "Light".
      *
      * @return The class key.
-     * @ghidraAddress NTSC-U/C: 0x005445c8
-     * @ghidraAddress PAL: 0x00584340
      */
     virtual const HxStr &ClassName() const;
 
@@ -194,8 +169,6 @@ public:
      * level.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x00540420
-     * @ghidraAddress PAL: 0x005800f8
      */
     virtual void DumpText(Dbg &sink);
 
@@ -206,8 +179,6 @@ public:
      * quadword.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x005408b8
-     * @ghidraAddress PAL: 0x00580590
      */
     virtual void Save(Stream &stream);
 
@@ -220,8 +191,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
-     * @ghidraAddress NTSC-U/C: 0x00545480
-     * @ghidraAddress PAL: 0x005851f8
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -234,8 +203,6 @@ public:
      *
      * @param pSource The object to copy from.
      * @param nFlags The set of fields to copy, passed straight to the base.
-     * @ghidraAddress NTSC-U/C: 0x00545390
-     * @ghidraAddress PAL: 0x00585108
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -247,8 +214,6 @@ public:
      * routine.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x00540be8
-     * @ghidraAddress PAL: 0x005808c0
      */
     virtual void Load(Stream &stream);
 
@@ -298,9 +263,6 @@ private:
 
 /**
  * Registered class name of Rnd::Light, the string "Light".
- *
- * @ghidraAddress NTSC-U/C: 0x00720bd0
- * @ghidraAddress PAL: 0x00764660
  */
 extern HxStr g_lightClassName;
 
@@ -311,8 +273,6 @@ extern HxStr g_lightClassName;
  *
  * @param name The object name.
  * @return The new light.
- * @ghidraAddress NTSC-U/C: 0x005448b8
- * @ghidraAddress PAL: 0x00584630
  */
 Light *NewLight(const HxStr &name);
 
@@ -320,9 +280,6 @@ Light *NewLight(const HxStr &name);
  * Creator the registered "Light" class builds through.
  *
  * Rnd::PsEnviron::Init() calls through it to build the default light.
- *
- * @ghidraAddress NTSC-U/C: 0x00720bc8
- * @ghidraAddress PAL: 0x00764658
  */
 extern Light *(*g_pfnNewLight)(const HxStr &name);
 
@@ -333,8 +290,6 @@ extern Light *(*g_pfnNewLight)(const HxStr &name);
  *
  * @param name The object name.
  * @return The new light.
- * @ghidraAddress NTSC-U/C: 0x00544490
- * @ghidraAddress PAL: 0x00584208
  */
 Light *NewLightThroughHook(const HxStr &name);
 
@@ -345,8 +300,6 @@ Light *NewLightThroughHook(const HxStr &name);
  *
  * @param name The object name.
  * @return The new light, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x00544828
- * @ghidraAddress PAL: 0x005845a0
  */
 Object *CreateRegisteredLight(const HxStr &name);
 
@@ -355,9 +308,6 @@ Object *CreateRegisteredLight(const HxStr &name);
  *
  * The out-of-line copy has no caller, and Rnd::Manager::Init() expands the same body. The name is
  * inferred.
- *
- * @ghidraAddress NTSC-U/C: 0x00544450
- * @ghidraAddress PAL: 0x005841c8
  */
 void RegisterLightClass();
 

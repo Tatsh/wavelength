@@ -99,53 +99,39 @@ constexpr int kProbeBlockOverhead = 16;
 constexpr int kHeapLogPathSize = 0x40;
 
 // The blocks one counting pass of DumpHeapMemoryLog() holds before releasing them.
-// NTSC-U/C: 0x0089e200, PAL: 0x008e31c0
 void *g_apProbeBlocks[kProbeBlockLimit] = {};
 
-// NTSC-U/C: 0x006f57d0, PAL: 0x00739220
 int bEnabled = 0;
 
 // The rewind to kStlUnknownTag compiles to one doubleword store. The array bound comes from the
 // distance to the next global rather than from any single access.
-// NTSC-U/C: 0x006f57d8, PAL: 0x00739228
 char stlName[kMemStlTagSize] = "stl_unk";
 
-// NTSC-U/C: 0x006f5858, PAL: 0x007392a8
 int bMemCountEnabled = 0;
 
-// NTSC-U/C: 0x006f585c, PAL: 0x007392ac
 int memCountAlloced = 0;
 
-// NTSC-U/C: 0x006f5860, PAL: 0x007392b0
 MemTagTotal memCountSource[kMemTagCount];
 
-// NTSC-U/C: 0x006f6460, PAL: 0x00739eb0
 MemLogSource g_aMemLogSources[kMemLogSourceCount];
 
 // Null until MemLogSourceInit() runs, which disables the tracking routines.
-// NTSC-U/C: 0x006f8460, PAL: 0x0073beb0
 MemLogBlock *g_pMemLogBlocks = nullptr;
 
 // Set once MemOpenLog() has painted the stack.
-// NTSC-U/C: 0x006f57c8, PAL: 0x00739218
 int g_bMemStackPainted = 0;
 
 // Reports MemLogCloseAndContinue() has started since MemOpenLog().
-// NTSC-U/C: 0x006f57cc, PAL: 0x0073921c
 int g_nMemLogReopenCount = 0;
 
-// NTSC-U/C: 0x00894d70, PAL: 0x008d9d80
 FILE *fpLog = nullptr;
 
 // Path of the report being written.
-// NTSC-U/C: 0x00894db8, PAL: 0x008d9dc8
 char g_szMemLogPath[kMemLogPathSize] = {};
 
 // Path MemOpenLog() was given, which each reopened report is named after.
-// NTSC-U/C: 0x00894d78, PAL: 0x008d9d88
 char g_szMemLogBaseName[kMemLogPathSize] = {};
 
-// NTSC-U/C: 0x004a9360, PAL: 0x004e7470
 // The address is an out-of-line copy with no caller. Reduces a tag to the text after its last path
 // separator. Both separators are tried, and a tag recorded on a Windows build host still logs as a
 // basename.
@@ -200,7 +186,6 @@ inline MemLogBlock *FindTrackedBlock(const void *pBlock) {
     return nullptr;
 }
 
-// NTSC-U/C: 0x004a9620, PAL: 0x004e7730
 // an out-of-line copy with no caller; MemLogSourceTrackRealloc() expands it. Records
 // a block against its source. The new entry is linked only when the chain it joins has a second
 // entry, which is what the binary does.

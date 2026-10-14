@@ -22,7 +22,6 @@ static const char *NameText(const Object *pObject) {
     return pObject->mName.mStr != nullptr ? pObject->mName.mStr : "";
 }
 
-// NTSC-U/C: 0x0053fa40, PAL: 0x0057f6f8
 static Dbg &operator<<(Dbg &sink, const std::list<Object *> &refs) {
     sink.Print("(size:");
     sink.Format(kCountFormat, refs.size());

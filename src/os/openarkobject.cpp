@@ -47,7 +47,6 @@ inline ArkStream *FindStreamRecord(int nHandle) {
 }
 
 // Set once the sector cache has been brought up, so that only the first mount does it.
-// NTSC-U/C: 0x00725eb0, PAL: 0x00769b50
 int g_bArkSectorCacheReady;
 
 // Both disc modes build the same path, and both the host mode and the disc mode's fallback build
@@ -244,7 +243,6 @@ int EraseArkStream(int nHandle) {
     return -1;
 }
 
-// NTSC-U/C: 0x00725e88, PAL: 0x00769b28
 int gOpenFileIndex = 1;
 
 ArkStream *LookupOpenFile(int nHandle) {
@@ -658,7 +656,6 @@ void WaitForFileIdle(int nFile) {
     } while (nExecuting != 0);
 }
 
-// NTSC-U/C: 0x00702650, PAL: 0x007460a0
 const char *const g_apSessionArkPaths[kSessionArkCount] = {
     "ark/root.ark", "ark/levels.ark", "ark/arenas.ark"};
 

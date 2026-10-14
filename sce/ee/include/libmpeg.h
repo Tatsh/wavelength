@@ -96,8 +96,6 @@ sceMpegAddCallback(sceMpeg *pMpeg, int nType, sceMpegCallback pfnCallback, void 
  * Stop the two IPU DMA channels and clear their counts, then reset the IPU and load its tables.
  *
  * @return The sceIpuResetAndLoadTables() result.
- * @ghidraAddress NTSC-U/C: 0x005e0490
- * @ghidraAddress PAL: 0x006223d0
  */
 int sceMpegInit(void);
 
@@ -108,8 +106,6 @@ int sceMpegInit(void);
  * @param pStart The stream data.
  * @param nSize Size of the data in bytes.
  * @return The bytes consumed.
- * @ghidraAddress NTSC-U/C: 0x005caa58
- * @ghidraAddress PAL: 0x0060c9b8
  */
 int sceMpegDemuxPss(sceMpeg *pMpeg, unsigned char *pStart, int nSize);
 
@@ -122,8 +118,6 @@ int sceMpegDemuxPss(sceMpeg *pMpeg, unsigned char *pStart, int nSize);
  * @param pBuffer The ring buffer.
  * @param nBufferSize Size of the ring in bytes.
  * @return The bytes consumed.
- * @ghidraAddress NTSC-U/C: 0x005ca768
- * @ghidraAddress PAL: 0x0060c6c8
  */
 int sceMpegDemuxPssRing(
     sceMpeg *pMpeg, unsigned char *pStart, int nSize, unsigned char *pBuffer, int nBufferSize);
@@ -133,8 +127,6 @@ int sceMpegDemuxPssRing(
  *
  * @param pDecoder The decoder.
  * @return Nonzero after the sequence end code.
- * @ghidraAddress NTSC-U/C: 0x005e08c8
- * @ghidraAddress PAL: 0x00622808
  */
 int sceMpegIsEnd(void *pDecoder);
 
@@ -145,8 +137,6 @@ int sceMpegIsEnd(void *pDecoder);
  * @param pPicture The picture buffer.
  * @param nMacroblocks Size of the buffer in macroblocks.
  * @return Negative when the picture buffer is misaligned.
- * @ghidraAddress NTSC-U/C: 0x005e07b0
- * @ghidraAddress PAL: 0x006226f0
  */
 int sceMpegGetPicture(void *pDecoder, void *pPicture, int nMacroblocks);
 
@@ -154,8 +144,6 @@ int sceMpegGetPicture(void *pDecoder, void *pPicture, int nMacroblocks);
  * Reset the decoder state and the IPU after the input ends.
  *
  * @param pDecoder The decoder.
- * @ghidraAddress NTSC-U/C: 0x005e08e8
- * @ghidraAddress PAL: 0x00622828
  */
 void sceMpegReset(void *pDecoder);
 
@@ -169,8 +157,6 @@ void sceMpegReset(void *pDecoder);
  * @param pWork The work area.
  * @param nWorkSize Size of the work area in bytes.
  * @return The committed write pointer. The sample ignores it.
- * @ghidraAddress NTSC-U/C: 0x005e0530
- * @ghidraAddress PAL: 0x00622470
  */
 void *sceMpegCreateDecoderContext(void *pDecoder, void *pWork, int nWorkSize);
 
@@ -182,8 +168,6 @@ void *sceMpegCreateDecoderContext(void *pDecoder, void *pWork, int nWorkSize);
  * @param pfnCallback The callback.
  * @param pData Data passed to the callback.
  * @return The previous callback.
- * @ghidraAddress NTSC-U/C: 0x005e0990
- * @ghidraAddress PAL: 0x006228d0
  */
 void *sceMpegSetCallbackSlot(void *pDecoder, int nSlot, void *pfnCallback, void *pData);
 
@@ -193,8 +177,6 @@ void *sceMpegSetCallbackSlot(void *pDecoder, int nSlot, void *pfnCallback, void 
  * @param pDecoder The decoder.
  * @param pEntry The entry.
  * @return The callback result, or zero when a link is missing.
- * @ghidraAddress NTSC-U/C: 0x005e09b8
- * @ghidraAddress PAL: 0x006228f8
  */
 int sceMpegInvokeCallbackSlot(void *pDecoder, void *pEntry);
 
@@ -203,8 +185,6 @@ int sceMpegInvokeCallbackSlot(void *pDecoder, void *pEntry);
  *
  * @param pDecoder The decoder.
  * @return Always 1.
- * @ghidraAddress NTSC-U/C: 0x005e0770
- * @ghidraAddress PAL: 0x006226b0
  */
 int sceMpegDelete(void *pDecoder);
 
@@ -215,8 +195,6 @@ int sceMpegDelete(void *pDecoder);
  * @param nIntra Count of intra pictures, or -1 for all.
  * @param nPredicted Count of predicted pictures, or -1 for all.
  * @param nBidirectional Count of bidirectional pictures, or -1 for all.
- * @ghidraAddress NTSC-U/C: 0x005e0890
- * @ghidraAddress PAL: 0x006227d0
  */
 void sceMpegSetDecodeMode(void *pDecoder, int nIntra, int nPredicted, int nBidirectional);
 
@@ -225,8 +203,6 @@ void sceMpegSetDecodeMode(void *pDecoder, int nIntra, int nPredicted, int nBidir
  *
  * @param pDecoder The decoder.
  * @return 1 when no picture has been decoded, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x005e08d8
- * @ghidraAddress PAL: 0x00622818
  */
 int sceMpegIsRefBuffEmpty(void *pDecoder);
 
@@ -241,8 +217,6 @@ int sceMpegIsRefBuffEmpty(void *pDecoder);
  * @param pfnCallback The callback.
  * @param pData Data passed to the callback.
  * @return The previous callback for a duplicate key, or null for a new entry.
- * @ghidraAddress NTSC-U/C: 0x005caa78
- * @ghidraAddress PAL: 0x0060c9d8
  */
 sceMpegCallback sceMpegAddStrCallback(
     void *pDecoder, int nType, int nChannel, sceMpegCallback pfnCallback, void *pData);
@@ -253,8 +227,6 @@ sceMpegCallback sceMpegAddStrCallback(
  * @param pRing The ring.
  * @param pBase The base.
  * @param nSize Size of the ring in bytes.
- * @ghidraAddress NTSC-U/C: 0x005e0ad8
- * @ghidraAddress PAL: 0x00622a18
  */
 void sceMpegResetRingPointers(void *pRing, void *pBase, int nSize);
 
@@ -263,8 +235,6 @@ void sceMpegResetRingPointers(void *pRing, void *pBase, int nSize);
  *
  * @param pRing The ring.
  * @return The write position.
- * @ghidraAddress NTSC-U/C: 0x005e0af0
- * @ghidraAddress PAL: 0x00622a30
  */
 int sceMpegCommitWritePointer(void *pRing);
 
@@ -272,8 +242,6 @@ int sceMpegCommitWritePointer(void *pRing);
  * Rewind the write position of a ring to the committed position.
  *
  * @param pRing The ring.
- * @ghidraAddress NTSC-U/C: 0x005e0b00
- * @ghidraAddress PAL: 0x00622a40
  */
 void sceMpegRewindWritePointer(void *pRing);
 
@@ -284,8 +252,6 @@ void sceMpegRewindWritePointer(void *pRing);
  * @param nNeed Size of the chunk in bytes.
  * @param nAlign Alignment of the chunk.
  * @return The chunk, or null when the buffer ends first or the alignment is zero.
- * @ghidraAddress NTSC-U/C: 0x005e0b10
- * @ghidraAddress PAL: 0x00622a50
  */
 void *sceMpegCheckWorkAreaSize(void *pRing, int nNeed, int nAlign);
 
@@ -297,8 +263,6 @@ void *sceMpegCheckWorkAreaSize(void *pRing, int nNeed, int nAlign);
  * @param pPicture The picture buffer.
  * @param nMacroblocks Size of the buffer in macroblocks.
  * @return Negative when the picture buffer is misaligned.
- * @ghidraAddress NTSC-U/C: 0x005e07f8
- * @ghidraAddress PAL: 0x00622738
  */
 int sceMpegGetPictureRAW8(void *pDecoder, void *pPicture, int nMacroblocks);
 
@@ -313,17 +277,12 @@ int sceMpegGetPictureRAW8(void *pDecoder, void *pPicture, int nMacroblocks);
  * @param nMbWidth Width of the buffer in macroblocks.
  * @param nMbHeight Height of the buffer in macroblocks.
  * @return Negative when the picture buffer is misaligned.
- * @ghidraAddress NTSC-U/C: 0x005e0840
- * @ghidraAddress PAL: 0x00622780
  */
 int sceMpegGetPictureRAW8xy(void *pDecoder, void *pPicture, int nMbWidth, int nMbHeight);
 
 /**
  * Select the MPEG-1 mode of the IPU and place the two motion compensation buffers in the
  * scratchpad.
- *
- * @ghidraAddress NTSC-U/C: 0x0060dd78
- * @ghidraAddress PAL: 0x0064e9e8
  */
 void sceMpegResetMcBuffers(void);
 
@@ -331,16 +290,11 @@ void sceMpegResetMcBuffers(void);
  * Stop the IPU transfer channels and reset the IPU for the decoder.
  *
  * @param pDecoder The decoder.
- * @ghidraAddress NTSC-U/C: 0x0060ddc8
- * @ghidraAddress PAL: 0x0064ea38
  */
 void sceMpegResetIpuChannels(void *pDecoder);
 
 /**
  * Assume an MPEG-1 stream until a sequence extension arrives.
- *
- * @ghidraAddress NTSC-U/C: 0x0060dce0
- * @ghidraAddress PAL: 0x0064e950
  */
 void sceMpegSelectMpeg1(void);
 
@@ -351,8 +305,6 @@ void sceMpegSelectMpeg1(void);
  * otherwise.
  *
  * @param pFormat The message.
- * @ghidraAddress NTSC-U/C: 0x0060ded0
- * @ghidraAddress PAL: 0x0064eb40
  */
 void sceMpegRaiseError(const char *pFormat);
 
@@ -360,8 +312,6 @@ void sceMpegRaiseError(const char *pFormat);
  * Print a decoder error line in the stock "[MPEG ERROR]%s" format.
  *
  * @param pMessage The message.
- * @ghidraAddress NTSC-U/C: 0x0060de90
- * @ghidraAddress PAL: 0x0064eb00
  */
 void sceMpegPrintErrorLine(const char *pMessage);
 
@@ -370,8 +320,6 @@ void sceMpegPrintErrorLine(const char *pMessage);
  *
  * @param pFormat The format.
  * @param ... The format arguments.
- * @ghidraAddress NTSC-U/C: 0x0060dea0
- * @ghidraAddress PAL: 0x0064eb10
  */
 void sceMpegReportErrorFormatted(const char *pFormat, ...);
 
@@ -379,8 +327,6 @@ void sceMpegReportErrorFormatted(const char *pFormat, ...);
  * Parse headers up to the next picture header.
  *
  * @return Its picture_coding_type, or 0 at the sequence end code.
- * @ghidraAddress NTSC-U/C: 0x0060ba60
- * @ghidraAddress PAL: 0x0064c6d0
  */
 int sceMpegNextPictureHeader(void);
 
@@ -389,8 +335,6 @@ int sceMpegNextPictureHeader(void);
  * threshold.
  *
  * @return The final IPU control word.
- * @ghidraAddress NTSC-U/C: 0x0061da40
- * @ghidraAddress PAL: 0x0065e5d0
  */
 int sceIpuResetAndLoadTables(void);
 

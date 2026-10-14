@@ -37,40 +37,26 @@ public:
      * Construct over a bitmap.
      *
      * @param bitmap The bitmap the canvas addresses.
-     * @ghidraAddress NTSC-U/C: 0x006302f8
-     * @ghidraAddress PAL: 0x00670e88
      */
     explicit ACanvas24(const ABitmap &bitmap);
 
     /**
      * Slot 1.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630278
-     * @ghidraAddress PAL: 0x00670e08
      */
     virtual ~ACanvas24();
 
     /**
      * Slot 2. Expands a palette entry into the three channel bytes.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630448
-     * @ghidraAddress PAL: 0x00670fd8
      */
     virtual void SetColor8(int nIndex);
 
     /**
      * Slot 3.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630330
-     * @ghidraAddress PAL: 0x00670ec0
      */
     virtual void SetColor15(unsigned short nColor);
 
     /**
      * Slot 4.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630360
-     * @ghidraAddress PAL: 0x00670ef0
      */
     virtual void SetColor24(const unsigned char *pRGB);
 
@@ -79,41 +65,26 @@ public:
      *
      * The same store as SetColorNative(), in a separate slot. For this format an 8888 colour and
      * the native word are the same value.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630380
-     * @ghidraAddress PAL: 0x00670f10
      */
     virtual void SetColor32(unsigned int nColor);
 
     /**
      * Slot 6. Stores the whole word.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630388
-     * @ghidraAddress PAL: 0x00670f18
      */
     virtual void SetColorNative(unsigned int nColor);
 
     /**
      * Slot 7.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630108
-     * @ghidraAddress PAL: 0x00670c98
      */
     virtual int GetColor8();
 
     /**
      * Slot 8.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630390
-     * @ghidraAddress PAL: 0x00670f20
      */
     virtual unsigned short GetColor15();
 
     /**
      * Slot 9.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006303c8
-     * @ghidraAddress PAL: 0x00670f58
      */
     virtual void GetColor24(unsigned char *pRGB);
 
@@ -121,33 +92,21 @@ public:
      * Slot 10.
      *
      * The same load as GetColorNative(), in a separate slot.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006303e8
-     * @ghidraAddress PAL: 0x00670f78
      */
     virtual unsigned int GetColor32();
 
     /**
      * Slot 11. Reads the whole word.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006303f0
-     * @ghidraAddress PAL: 0x00670f80
      */
     virtual unsigned int GetColorNative();
 
     /**
      * Slot 15.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630498
-     * @ghidraAddress PAL: 0x00671028
      */
     virtual void DrawPixel8U(int nX, int nY, int nIndex);
 
     /**
      * Slot 17.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630508
-     * @ghidraAddress PAL: 0x00671098
      */
     virtual void DrawPixel15U(int nX, int nY, unsigned short nColor);
 
@@ -156,9 +115,6 @@ public:
      *
      * The base's slot 21 is the colourless store rather than a format-specific one. Slot 31 is the
      * same case on the read side, and both traps appear in ACanvas8 as well.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630558
-     * @ghidraAddress PAL: 0x006710e8
      */
     virtual void DrawPixel32U(int nX, int nY, unsigned int nColor);
 
@@ -167,31 +123,20 @@ public:
      *
      * For this format the native word is an 8888 colour, so the store forwards to DrawPixel32U()
      * through the table rather than converting.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006303f8
-     * @ghidraAddress PAL: 0x00670f88
      */
     virtual void DrawPixelNativeU(int nX, int nY, unsigned int nColor);
 
     /**
      * Slot 25.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006301b0
-     * @ghidraAddress PAL: 0x00670d40
      */
     virtual int GetPixel8U(int nX, int nY);
 
     /**
      * Slot 27.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630598
-     * @ghidraAddress PAL: 0x00671128
      */
     virtual unsigned short GetPixel15U(int nX, int nY);
 
     /** Slot 31. The slot is the colourless read.
-     *  @ghidraAddress NTSC-U/C: 0x006305f0
-     *  @ghidraAddress PAL: 0x00671180
      */
     virtual unsigned int GetPixel32U(int nX, int nY);
 
@@ -199,9 +144,6 @@ public:
      * Slot 33.
      *
      * The read counterpart of DrawPixelNativeU(), forwarding to GetPixel32U().
-     *
-     * @ghidraAddress NTSC-U/C: 0x00630420
-     * @ghidraAddress PAL: 0x00670fb0
      */
     virtual unsigned int GetPixelNativeU(int nX, int nY);
 

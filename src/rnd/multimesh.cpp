@@ -59,7 +59,6 @@ void PrintTransform(Dbg &sink, const Transform &xfm) {
     PrintRow(sink, xfm.mTranslation);
 }
 
-// NTSC-U/C: 0x004eae58, PAL: 0x005299b8
 Dbg &DumpTransformList(Dbg &sink, const std::list<Transform> &transforms) {
     sink.Print("(size:");
     sink.Format("%u", transforms.size());
@@ -83,7 +82,6 @@ void WriteRow(Stream &stream, const Vector3 &row) {
     stream.WriteLE(&row.z, sizeof(float));
 }
 
-// NTSC-U/C: 0x004eb240, PAL: 0x00529da0
 Stream &WriteTransformList(Stream &stream, const std::list<Transform> &transforms) {
     const int nCount = static_cast<int>(transforms.size());
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -102,7 +100,6 @@ void ReadRow(Stream &stream, Vector3 &row) {
     stream.ReadLE(&row.z, sizeof(float));
 }
 
-// NTSC-U/C: 0x004eb6a0, PAL: 0x0052a200
 // Load() is its only caller and every transfer goes through the read slot of the stream.
 Stream &ReadTransformList(Stream &stream, std::list<Transform> &transforms) {
     int nCount = 0;
@@ -158,13 +155,10 @@ MultiMesh *NewMultiMesh(const HxStr &name) {
     return new MultiMesh(name);
 }
 
-// NTSC-U/C: 0x00704070, PAL: 0x00747b40
 MultiMesh *(*g_pfnNewMultiMesh)(const HxStr &name) = NewMultiMesh;
 
-// NTSC-U/C: 0x00704068, PAL: 0x00747b38
 HxStr g_multiMeshClassName("MultiMesh");
 
-// NTSC-U/C: 0x00895038, PAL: 0x008da048
 int g_nRndMultiMeshLoadVersion;
 
 Object *CreateRegisteredMultiMesh(const HxStr &name) {

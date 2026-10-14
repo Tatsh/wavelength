@@ -13,9 +13,6 @@ class LinearAnim {
 public:
     /**
      * Start at 0 with no time recorded, mapping 0 through 1 onto 0 through 100 over 240 units.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00411878
-     * @ghidraAddress PAL: 0x0044b340
      */
     LinearAnim();
 
@@ -28,8 +25,6 @@ public:
      * @param flFrom The mapped value at raw 0.
      * @param flTo The mapped value at raw 1.
      * @param flDuration The time the raw value takes to cover 0 through 1.
-     * @ghidraAddress NTSC-U/C: 0x004118d0
-     * @ghidraAddress PAL: 0x0044b398
      */
     void SetParams(float flFrom, float flTo, float flDuration);
 
@@ -37,8 +32,6 @@ public:
      * Set the raw value to move toward.
      *
      * @param flTarget The raw target.
-     * @ghidraAddress NTSC-U/C: 0x00411900
-     * @ghidraAddress PAL: 0x0044b3c8
      */
     void SetTarget(float flTarget);
 
@@ -49,8 +42,6 @@ public:
      * Execute() then finishes the move and reports a change. The title is inferred.
      *
      * @param flTarget The raw target.
-     * @ghidraAddress NTSC-U/C: 0x00411908
-     * @ghidraAddress PAL: 0x0044b3d0
      */
     void Jump(float flTarget);
 
@@ -58,8 +49,6 @@ public:
      * Report the mapped value.
      *
      * @return `mCurrent * mScale + mOffset`.
-     * @ghidraAddress NTSC-U/C: 0x00411958
-     * @ghidraAddress PAL: 0x0044b420
      */
     float Val() const;
 
@@ -72,8 +61,6 @@ public:
      * @param flTime The current time.
      * @return 1 when the raw value was away from the target on entry, and 0 when it was already
      *         there.
-     * @ghidraAddress NTSC-U/C: 0x00411970
-     * @ghidraAddress PAL: 0x0044b438
      */
     int Execute(float flTime);
 

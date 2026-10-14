@@ -33,8 +33,6 @@ public:
      *
      * @param other The rectangle to intersect with.
      * @return The intersection.
-     * @ghidraAddress NTSC-U/C: 0x00613b58
-     * @ghidraAddress PAL: 0x006546e8
      */
     ARect Intersection(const ARect &other) const;
 

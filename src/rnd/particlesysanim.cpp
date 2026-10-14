@@ -86,7 +86,6 @@ void BlendColorRange(const std::list<ColorKey> &keys, float flFrame, Color &low,
 
 } // namespace
 
-// NTSC-U/C: 0x0071af00, PAL: 0x0075ee28
 HxStr g_particleSysAnimClassName("ParticleSysAnim");
 
 const HxStr &ParticleSysAnim::ClassName() const {

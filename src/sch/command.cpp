@@ -27,7 +27,6 @@ bool operator<(const CommandFactoryEntry &left, const CommandFactoryEntry &right
 
 typedef std::vector<CommandFactoryEntry> CommandFactoryTable;
 
-// NTSC-U/C: 0x005381b0, PAL: 0x00577a70
 CommandFactoryTable &CommandFactoryList() {
     static CommandFactoryTable table;
     return table;

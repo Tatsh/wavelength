@@ -34,17 +34,14 @@ public:
     explicit Cmd(ActiveFilter *pOwner) : mOwner(pOwner) {
     }
 
-    // NTSC-U/C: 0x001002f8, PAL: 0x001002f8
     virtual int CmdID() {
         return sCmdID;
     }
 
-    // NTSC-U/C: 0x00100308, PAL: 0x00100308
     virtual void Execute() {
         mOwner->Update();
     }
 
-    // NTSC-U/C: 0x00100328, PAL: 0x00100328
     virtual void Print(std::ostream &stream) {
         stream << "{ActiveFilter}";
     }

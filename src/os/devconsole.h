@@ -11,8 +11,6 @@
  * caller.
  *
  * @return Always 1, which the caller discards.
- * @ghidraAddress NTSC-U/C: 0x005e5d08
- * @ghidraAddress PAL: 0x00627ec8
  */
 int Gs_Initialize();
 
@@ -21,9 +19,6 @@ int Gs_Initialize();
  *
  * The routine is InitDebugPrinting() without its call to Gs_Initialize(). No caller remains in the
  * shipped program.
- *
- * @ghidraAddress NTSC-U/C: 0x005e5ed8
- * @ghidraAddress PAL: 0x00628098
  */
 void InitDevConsole();
 
@@ -31,8 +26,5 @@ void InitDevConsole();
  * Clear every cell of the debug console.
  *
  * No caller survives in the shipped program. The name is inferred.
- *
- * @ghidraAddress NTSC-U/C: 0x005e5f60
- * @ghidraAddress PAL: 0x00628148
  */
 void ClearDebugConsole();

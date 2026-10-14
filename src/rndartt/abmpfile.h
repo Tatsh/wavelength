@@ -42,8 +42,6 @@ public:
      * removed.
      *
      * @return An AGfxFileResult code.
-     * @ghidraAddress NTSC-U/C: 0x0061c688
-     * @ghidraAddress PAL: 0x0065d218
      */
     virtual int StartRead();
 
@@ -57,8 +55,6 @@ public:
      * @param image Receives the image and its palette.
      * @param pbEnd Set to one on a second call.
      * @return An AGfxFileResult code.
-     * @ghidraAddress NTSC-U/C: 0x0061c860
-     * @ghidraAddress PAL: 0x0065d3f0
      */
     virtual int ReadFrame(ABitmap &image, int *pbEnd);
 
@@ -73,8 +69,6 @@ public:
      *
      * @param bitmap The bitmap to write.
      * @return An AGfxFileResult code.
-     * @ghidraAddress NTSC-U/C: 0x0061ca78
-     * @ghidraAddress PAL: 0x0065d608
      */
     virtual int Write(const ABitmap &bitmap);
 
@@ -83,8 +77,6 @@ private:
      * Read the colour table into a new palette.
      *
      * @return The palette, holding mColorCount entries with full alpha.
-     * @ghidraAddress NTSC-U/C: 0x0061cde0
-     * @ghidraAddress PAL: 0x0065d970
      */
     APalette *ReadPalette();
 
@@ -93,8 +85,6 @@ private:
      *
      * @param pImage The bitmap to fill.
      * @return An AGfxFileResult code.
-     * @ghidraAddress NTSC-U/C: 0x0061d5c0
-     * @ghidraAddress PAL: 0x0065e150
      */
     int ReadBitsFromFile(ABitmap *pImage);
 
@@ -103,8 +93,6 @@ private:
      *
      * @param pImage The bitmap to fill.
      * @return kAGfxFileOk.
-     * @ghidraAddress NTSC-U/C: 0x0061cef8
-     * @ghidraAddress PAL: 0x0065da88
      */
     int ReadBitmapNotCompressed(ABitmap *pImage);
 
@@ -116,8 +104,6 @@ private:
      *
      * @param pImage The bitmap to fill.
      * @return kAGfxFileOk, or kAGfxFileBadFormat when a run overflows its row.
-     * @ghidraAddress NTSC-U/C: 0x0061d0e8
-     * @ghidraAddress PAL: 0x0065dc78
      */
     int ReadBitmapCompressed(ABitmap *pImage);
 
@@ -139,7 +125,5 @@ private:
  *
  * @param pPixels The row.
  * @param nCount The number of pixels.
- * @ghidraAddress NTSC-U/C: 0x0061d620
- * @ghidraAddress PAL: 0x0065e1b0
  */
 void Convert24To32InPlace(unsigned char *pPixels, int nCount);

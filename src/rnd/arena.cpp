@@ -108,16 +108,12 @@ int ReadBool(Stream &stream) {
 
 } // namespace
 
-// NTSC-U/C: 0x00777100, PAL: 0x007bafe8
 HxStr g_arenaClassName("Arena");
 
-// NTSC-U/C: 0x008e4a4c, PAL: 0x00929a74
 int g_nRndArenaLoadRevision;
 
-// NTSC-U/C: 0x00777108, PAL: 0x007baff0
 Arena *(*g_pfnNewArena)(const HxStr &name);
 
-// NTSC-U/C: 0x005b82b0, PAL: 0x005fa918
 static Dbg &operator<<(Dbg &sink, const Arena::Section &section) {
     sink.Print("\n\tview:");
     PrintObjectRef(sink, section.mView);
@@ -135,7 +131,6 @@ static Dbg &operator<<(Dbg &sink, const Arena::Section &section) {
     return sink;
 }
 
-// NTSC-U/C: 0x005ba640, PAL: 0x005fccf8
 static Dbg &operator<<(Dbg &sink, const std::vector<Arena::Section> &sections) {
     sink.Print("(size:");
     sink.Format(kCountFormat, sections.size());
@@ -151,7 +146,6 @@ static Dbg &operator<<(Dbg &sink, const std::vector<Arena::Section> &sections) {
     return sink;
 }
 
-// NTSC-U/C: 0x005ba750, PAL: 0x005fce08
 static Stream &operator<<(Stream &stream, const std::vector<Arena::Section> &sections) {
     const int nCount = sections.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -168,7 +162,6 @@ static Stream &operator<<(Stream &stream, const std::vector<Arena::Section> &sec
     return stream;
 }
 
-// NTSC-U/C: 0x005b8450, PAL: 0x005faab8
 static Stream &operator>>(Stream &stream, Arena::Section &section) {
     HxStr viewName(nullptr);
     stream.ReadString(viewName);
@@ -189,7 +182,6 @@ static Stream &operator>>(Stream &stream, Arena::Section &section) {
     return stream;
 }
 
-// NTSC-U/C: 0x005ba908, PAL: 0x005fcfc0
 static Stream &operator>>(Stream &stream, std::vector<Arena::Section> &sections) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));

@@ -125,7 +125,6 @@ inline void ReadPlane(Stream &stream, Plane &plane) {
     plane.d = -(point.x * plane.a + point.y * plane.b + point.z * plane.c);
 }
 
-// NTSC-U/C: 0x00529ee0, PAL: 0x0056a530
 Stream &operator>>(Stream &stream, std::list<Plane> &planes) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -208,7 +207,6 @@ inline void PrintObjectRef(Dbg &sink, const Object *pObject) {
     sink.Format("\"%s\"", pObject->mName.mStr != nullptr ? pObject->mName.mStr : g_szEmptyString);
 }
 
-// NTSC-U/C: 0x00526308, PAL: 0x005668e0
 Dbg &operator<<(Dbg &sink, const Particle &particle) {
     sink.Print("\n\tpos:");
     PrintVector3(sink, particle.mPos);
@@ -230,7 +228,6 @@ Dbg &operator<<(Dbg &sink, const Particle &particle) {
     return sink;
 }
 
-// NTSC-U/C: 0x00529c30, PAL: 0x0056a280
 Dbg &operator<<(Dbg &sink, const std::vector<Particle> &particles) {
     sink.Print("(size:")->Format("%u", static_cast<unsigned>(particles.size()))->Print(")");
     for (std::vector<Particle>::const_iterator it = particles.begin(); it != particles.end();
@@ -248,16 +245,12 @@ inline float DistanceToPlane(const Plane &plane, const Vector3 &point) {
 
 } // namespace
 
-// NTSC-U/C: 0x0071aef0, PAL: 0x0075ee18
 HxStr g_particleSysClassName("ParticleSys");
 
-// NTSC-U/C: 0x0089dfb8, PAL: 0x008e2ff8
 int g_nParticleSysLoadRevision;
 
-// NTSC-U/C: 0x0071aef8, PAL: 0x0075ee20
 ParticleSys *(*g_pfnNewParticleSys)(const HxStr &name) = NewParticleSys;
 
-// NTSC-U/C: 0x0052c6a8, PAL: 0x0056cd20
 // The printer has no case for kModeSprite, so a sprite system writes no mode at all. The gap is in
 // the shipped build.
 Dbg &operator<<(Dbg &sink, ParticleSys::Type nMode) {

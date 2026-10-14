@@ -24,21 +24,16 @@ inline unsigned int FourCc(const char *pszCode) {
 }
 
 // Streams whose first read has not yet completed.
-// NTSC-U/C: 0x00767938, PAL: 0x007ab668
 std::list<Rnd::AMovieSet *> g_pendingStreams;
 
-// NTSC-U/C: 0x00767940, PAL: 0x007ab670
 MovieAsyncCallback g_movieAsyncCallback;
 
-// NTSC-U/C: 0x00767948, PAL: 0x007ab678
 MovieStreamingAsyncCallback g_movieStreamingAsyncCallback;
 
 // Non-zero while a streaming read is outstanding; only one may be.
-// NTSC-U/C: 0x0076794c, PAL: 0x007ab67c
 int g_nStreamingReadPending;
 
 // The stream the streaming callback commits to.
-// NTSC-U/C: 0x007679a4, PAL: 0x007ab6d4
 Rnd::AMovieSet *g_pStreamingMovie;
 
 // Sizes the stream reads with. A streaming file's first read and a rewind read 0x8000 bytes, a
@@ -80,7 +75,6 @@ const unsigned int g_nSndhTag = FourCc("SNDH");
 const unsigned int g_nSndbTag = FourCc("SNDB");
 const unsigned int g_nSndpTag = FourCc("SNDP");
 
-// NTSC-U/C: 0x007a8400, PAL: 0x007ec100
 const char *const g_apszMovieStreamErrors[] = {"NO ERROR",
                                                "Out of memory",
                                                "Can't open file",

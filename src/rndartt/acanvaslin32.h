@@ -32,8 +32,6 @@ public:
      * clears mColor. ACanvas::NewCompatibleCanvas() compiles the same sequence inline.
      *
      * @param bitmap The description to adopt.
-     * @ghidraAddress NTSC-U/C: 0x00614240
-     * @ghidraAddress PAL: 0x00654dd0
      */
     explicit ACanvasLin32(const ABitmap &bitmap);
 
@@ -44,8 +42,6 @@ public:
      * pixel gains a full one. The key is masked to its three colour channels first.
      *
      * @param nColorKey The colour to treat as transparent.
-     * @ghidraAddress NTSC-U/C: 0x00614278
-     * @ghidraAddress PAL: 0x00654e08
      */
     void SetAlphaValues(unsigned int nColorKey);
 
@@ -54,8 +50,6 @@ public:
      *
      * @param nX The column.
      * @param nY The row.
-     * @ghidraAddress NTSC-U/C: 0x00614308
-     * @ghidraAddress PAL: 0x00654e98
      */
     void DrawPixelU(int nX, int nY);
 
@@ -68,8 +62,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @param nColor The colour.
-     * @ghidraAddress NTSC-U/C: 0x00614330
-     * @ghidraAddress PAL: 0x00654ec0
      */
     void DrawPixel32U(int nX, int nY, unsigned int nColor);
 
@@ -79,8 +71,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @return The colour.
-     * @ghidraAddress NTSC-U/C: 0x00614350
-     * @ghidraAddress PAL: 0x00654ee0
      */
     unsigned int GetPixel32U(int nX, int nY);
 
@@ -90,8 +80,6 @@ public:
      * @param nY The row.
      * @param nLeft The first column.
      * @param nRight One past the last column.
-     * @ghidraAddress NTSC-U/C: 0x00614370
-     * @ghidraAddress PAL: 0x00654f00
      */
     void DrawHorzLineU(int nY, int nLeft, int nRight);
 
@@ -101,8 +89,6 @@ public:
      * @param nX The column.
      * @param nTop The first row.
      * @param nBottom One past the last row.
-     * @ghidraAddress NTSC-U/C: 0x006143b8
-     * @ghidraAddress PAL: 0x00654f48
      */
     void DrawVertLineU(int nX, int nTop, int nBottom);
 
@@ -110,8 +96,6 @@ public:
      * Fill a rectangle with the pen colour, with no clip test.
      *
      * @param rect The rectangle.
-     * @ghidraAddress NTSC-U/C: 0x00614408
-     * @ghidraAddress PAL: 0x00654f98
      */
     void DrawRectU(ARect rect);
 
@@ -127,8 +111,6 @@ public:
      * @param pSource The source bitmap.
      * @param pSourcePosition The source position in 24.8 fixed point, advanced in place.
      * @param pSourceStep The per column advance in 24.8 fixed point.
-     * @ghidraAddress NTSC-U/C: 0x006148e0
-     * @ghidraAddress PAL: 0x00655470
      */
     void DrawTmapRow8U(int nY,
                        int nLeft,
@@ -146,8 +128,6 @@ public:
      * @param source The source bitmap.
      * @param nX The destination column.
      * @param nY The destination row.
-     * @ghidraAddress NTSC-U/C: 0x006144b0
-     * @ghidraAddress PAL: 0x00655040
      */
     void DrawBitmapLin4U(const ABitmap &source, int nX, int nY);
 
@@ -157,8 +137,6 @@ public:
      * @param source The source bitmap.
      * @param nX The destination column.
      * @param nY The destination row.
-     * @ghidraAddress NTSC-U/C: 0x00614608
-     * @ghidraAddress PAL: 0x00655198
      */
     void DrawBitmapLin8U(const ABitmap &source, int nX, int nY);
 
@@ -172,8 +150,6 @@ public:
      * @param source The source bitmap.
      * @param nX The destination column.
      * @param nY The destination row.
-     * @ghidraAddress NTSC-U/C: 0x00614070
-     * @ghidraAddress PAL: 0x00654c00
      */
     void DrawBitmapLin32U(const ABitmap &source, int nX, int nY);
 
@@ -185,8 +161,6 @@ public:
      *
      * @param span The row to store.
      * @param pRemap 256 replacement indices, one per source index.
-     * @ghidraAddress NTSC-U/C: 0x006146f0
-     * @ghidraAddress PAL: 0x00655280
      */
     void DrawClutBitmapRowLin8U(const ARowInfo &span, const unsigned char *pRemap);
 
@@ -194,8 +168,6 @@ public:
      * Store one row of palette indices sampled along a fixed step.
      *
      * @param span The row to store.
-     * @ghidraAddress NTSC-U/C: 0x00614790
-     * @ghidraAddress PAL: 0x00655320
      */
     void DrawScaledBitmapRowLin8U(const AScaledRowInfo &span);
 
@@ -204,8 +176,6 @@ public:
      *
      * @param span The row to store.
      * @param pRemap 256 replacement indices, one per source index.
-     * @ghidraAddress NTSC-U/C: 0x00614830
-     * @ghidraAddress PAL: 0x006553c0
      */
     void DrawScaledClutBitmapRowLin8U(const AScaledRowInfo &span, const unsigned char *pRemap);
 };

@@ -45,7 +45,6 @@ static const char *NameText(const Object *pObject) {
     return pObject->mName.mStr != nullptr ? pObject->mName.mStr : "";
 }
 
-// NTSC-U/C: 0x004f8530, PAL: 0x005371d0
 static Dbg &operator<<(Dbg &sink, const std::list<Transformable *> &transList) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, transList.size());
@@ -67,7 +66,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<Transformable *> &transList) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f26f0, PAL: 0x005312e0
 // Only Transformable::DumpText() invokes this. A mode outside the set below writes nothing rather
 // than a fallback title.
 static Dbg &operator<<(Dbg &sink, Transformable::Billboard nBillboard) {
@@ -131,7 +129,6 @@ static inline Dbg &DumpXfmRow(Dbg &sink, const float *pRow) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f88a0, PAL: 0x00537540
 //
 // Each entry is written as the referenced object's name including its terminator. A reader has to
 // resolve the names through Rnd::TheManager. An empty entry writes one zero byte.
@@ -152,7 +149,6 @@ static Stream &operator<<(Stream &stream, const std::list<Transformable *> &tran
     return stream;
 }
 
-// NTSC-U/C: 0x004f8b78, PAL: 0x00537818
 static Stream &operator>>(Stream &stream, std::list<Transformable *> &transList) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -221,10 +217,8 @@ Transformable::~Transformable() {
 // The mBillboard bit that selects the scaling variant of a mode.
 constexpr int kBillboardScaleBit = 0x80;
 
-// NTSC-U/C: 0x007067e0, PAL: 0x0074a300
 float g_drawXfm[kXfmRowCount][kXfmRowFloatCount];
 
-// NTSC-U/C: 0x004faf48, PAL: 0x00539c28
 // Take the reciprocal of each of three components. A zero component writes nothing at all.
 static void ReciprocalVec3(const float *pSrc, float *pOut) {
     if (pSrc[0] == 0.0f || pSrc[1] == 0.0f || pSrc[2] == 0.0f) {

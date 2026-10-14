@@ -44,8 +44,6 @@ public:
      * mColor.
      *
      * @param bitmap The description to adopt.
-     * @ghidraAddress NTSC-U/C: 0x0062fbc0
-     * @ghidraAddress PAL: 0x00670750
      */
     explicit ACanvas15(const ABitmap &bitmap);
 
@@ -56,8 +54,6 @@ public:
      * The index is truncated to eight bits, and the 8888 entry is packed to 1555.
      *
      * @param nIndex The palette index.
-     * @ghidraAddress NTSC-U/C: 0x0062fd48
-     * @ghidraAddress PAL: 0x006708d8
      */
     void SetColor8(int nIndex);
 
@@ -65,8 +61,6 @@ public:
      * Set the pen colour from a 1555 halfword, which on this canvas is stored verbatim.
      *
      * @param nColor The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fbf8
-     * @ghidraAddress PAL: 0x00670788
      */
     void SetColor15(unsigned short nColor);
 
@@ -76,8 +70,6 @@ public:
      * The alpha bit is set unconditionally rather than taken from any argument.
      *
      * @param pRGB The three channel bytes.
-     * @ghidraAddress NTSC-U/C: 0x0062fc00
-     * @ghidraAddress PAL: 0x00670790
      */
     void SetColor24(const unsigned char *pRGB);
 
@@ -85,8 +77,6 @@ public:
      * Set the pen colour from an 8888 word.
      *
      * @param nColor The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fc38
-     * @ghidraAddress PAL: 0x006707c8
      */
     void SetColor32(unsigned int nColor);
 
@@ -96,8 +86,6 @@ public:
      * The compiled body matches SetColor15() instruction for instruction, and both slots exist.
      *
      * @param nColor The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fc70
-     * @ghidraAddress PAL: 0x00670800
      */
     void SetColorNative(unsigned int nColor);
 
@@ -109,8 +97,6 @@ public:
      * available.
      *
      * @return The palette index.
-     * @ghidraAddress NTSC-U/C: 0x0062fd98
-     * @ghidraAddress PAL: 0x00670928
      */
     int GetColor8();
 
@@ -118,8 +104,6 @@ public:
      * Return the pen colour, which on this canvas is already 1555.
      *
      * @return The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fc78
-     * @ghidraAddress PAL: 0x00670808
      */
     unsigned short GetColor15();
 
@@ -130,8 +114,6 @@ public:
      * every channel read back as zero.
      *
      * @param pRGB The three channel bytes to write.
-     * @ghidraAddress NTSC-U/C: 0x0062fc80
-     * @ghidraAddress PAL: 0x00670810
      */
     void GetColor24(unsigned char *pRGB);
 
@@ -141,8 +123,6 @@ public:
      * Alpha is all ones when the 1555 alpha bit is set and zero otherwise.
      *
      * @return The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fca8
-     * @ghidraAddress PAL: 0x00670838
      */
     unsigned int GetColor32();
 
@@ -152,8 +132,6 @@ public:
      * The compiled body matches GetColor15() instruction for instruction, and both slots exist.
      *
      * @return The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fce8
-     * @ghidraAddress PAL: 0x00670878
      */
     unsigned int GetColorNative();
 
@@ -165,8 +143,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @param nIndex The palette index.
-     * @ghidraAddress NTSC-U/C: 0x0062fe28
-     * @ghidraAddress PAL: 0x006709b8
      */
     void DrawPixel8U(int nX, int nY, int nIndex);
 
@@ -176,8 +152,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @param pRGB The three channel bytes.
-     * @ghidraAddress NTSC-U/C: 0x0062fec0
-     * @ghidraAddress PAL: 0x00670a50
      */
     void DrawPixel24U(int nX, int nY, const unsigned char *pRGB);
 
@@ -187,8 +161,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @param nColor The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062ff18
-     * @ghidraAddress PAL: 0x00670aa8
      */
     void DrawPixel32U(int nX, int nY, unsigned int nColor);
 
@@ -198,8 +170,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @param nColor The colour, truncated to a halfword.
-     * @ghidraAddress NTSC-U/C: 0x0062fcf0
-     * @ghidraAddress PAL: 0x00670880
      */
     void DrawPixelNativeU(int nX, int nY, unsigned int nColor);
 
@@ -209,8 +179,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @return The palette index, or zero when no palette is available.
-     * @ghidraAddress NTSC-U/C: 0x0062ff70
-     * @ghidraAddress PAL: 0x00670b00
      */
     int GetPixel8U(int nX, int nY);
 
@@ -220,8 +188,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @param pRGB The three channel bytes to write.
-     * @ghidraAddress NTSC-U/C: 0x00630020
-     * @ghidraAddress PAL: 0x00670bb0
      */
     void GetPixel24U(int nX, int nY, unsigned char *pRGB);
 
@@ -231,8 +197,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @return The colour.
-     * @ghidraAddress NTSC-U/C: 0x00630078
-     * @ghidraAddress PAL: 0x00670c08
      */
     unsigned int GetPixel32U(int nX, int nY);
 
@@ -242,8 +206,6 @@ public:
      * @param nX The column.
      * @param nY The row.
      * @return The colour.
-     * @ghidraAddress NTSC-U/C: 0x0062fd20
-     * @ghidraAddress PAL: 0x006708b0
      */
     unsigned int GetPixelNativeU(int nX, int nY);
 

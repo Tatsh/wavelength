@@ -122,15 +122,9 @@ public:
      * rateGen bounds at 100.0, both scaleGen bounds at 1.0, and every other member at zero.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x00458748
-     * @ghidraAddress PAL: 0x00495cd0
      */
     explicit Generator(const HxStr &name);
 
-    /**
-     * @ghidraAddress NTSC-U/C: 0x0045de20
-     * @ghidraAddress PAL: 0x0049b4c8
-     */
     virtual ~Generator();
 
     /**
@@ -140,8 +134,6 @@ public:
      * of the sink is positive. The instance list and the two path frames need level two.
      *
      * @param sink The text sink.
-     * @ghidraAddress NTSC-U/C: 0x00459618
-     * @ghidraAddress PAL: 0x00496ba0
      */
     virtual void DumpText(Dbg &sink);
 
@@ -152,8 +144,6 @@ public:
      * through Regenerate().
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x00459bd8
-     * @ghidraAddress PAL: 0x00497160
      */
     virtual void Save(Stream &stream);
 
@@ -162,8 +152,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The object to point at, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x00459220
-     * @ghidraAddress PAL: 0x004967a8
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -171,8 +159,6 @@ public:
      * Return the registered class name, "Generator".
      *
      * @return The class name.
-     * @ghidraAddress NTSC-U/C: 0x0045e2e8
-     * @ghidraAddress PAL: 0x0049b990
      */
     virtual const HxStr &ClassName() const;
 
@@ -183,8 +169,6 @@ public:
      *
      * @param pSource The source object, which has to be an emitter.
      * @param nFlags The copy flags.
-     * @ghidraAddress NTSC-U/C: 0x0045e3d8
-     * @ghidraAddress PAL: 0x0049ba80
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -195,8 +179,6 @@ public:
      * one this build writes, and every earlier revision is still read.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x0045a090
-     * @ghidraAddress PAL: 0x00497618
      */
     virtual void Load(Stream &stream);
 
@@ -209,9 +191,6 @@ public:
      * fails skips the randomisation at `0x0045aa0c` and continues rather than ending the loop.
      * mParticleCursor receives the allocation result whether or
      * not it succeeded, because that store sits in the delay slot of the test.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045a998
-     * @ghidraAddress PAL: 0x00498008
      */
     void Regenerate();
 
@@ -222,8 +201,6 @@ public:
      * line here, so it exists as a function rather than as an accessor this reconstruction added.
      *
      * @return The live instances.
-     * @ghidraAddress NTSC-U/C: 0x0045e2f8
-     * @ghidraAddress PAL: 0x0049b9a0
      */
     std::list<Instance> &Instances();
 
@@ -234,9 +211,6 @@ public:
      * stores calls the constructor directly.
      *
      * Rnd::Manager::Init() also expands this inline.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045dcc0
-     * @ghidraAddress PAL: 0x0049b368
      */
     static void Init();
 
@@ -245,8 +219,6 @@ public:
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x0045db78
-     * @ghidraAddress PAL: 0x0049b220
      */
     static void *operator new(size_t nSize);
 
@@ -254,8 +226,6 @@ public:
      * Release an emitter under the tag "Rnd::Generator".
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x0045db98
-     * @ghidraAddress PAL: 0x0049b240
      */
     static void operator delete(void *pBlock);
 
@@ -265,8 +235,6 @@ public:
      * The image has no caller.
      *
      * @return The length of the instance list.
-     * @ghidraAddress NTSC-U/C: 0x0045e2a8
-     * @ghidraAddress PAL: 0x0049b950
      */
     int NumInstances();
 
@@ -278,8 +246,6 @@ public:
      * inferred.
      *
      * @param pMesh The mesh, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x0045e698
-     * @ghidraAddress PAL: 0x0049bd40
      */
     void SetMesh(Mesh *pMesh);
 
@@ -289,8 +255,6 @@ public:
      * The image has no caller, and the title is inferred.
      *
      * @param pView The view, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x0045e738
-     * @ghidraAddress PAL: 0x0049bde0
      */
     void SetView(View *pView);
 
@@ -300,8 +264,6 @@ public:
      * The image has no caller, and the title is inferred.
      *
      * @param pMultiMesh The multi-mesh, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x0045e7d8
-     * @ghidraAddress PAL: 0x0049be80
      */
     void SetMultiMesh(MultiMesh *pMultiMesh);
 
@@ -312,8 +274,6 @@ public:
      * caller, and the title is inferred.
      *
      * @param pParticleSys The particle system, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x0045e878
-     * @ghidraAddress PAL: 0x0049bf20
      */
     void SetParticleSys(ParticleSys *pParticleSys);
 
@@ -323,8 +283,6 @@ public:
      * The image has no caller, and the title is inferred.
      *
      * @param pCam The camera, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x0045ea18
-     * @ghidraAddress PAL: 0x0049c0c0
      */
     void SetBirthCamera(Cam *pCam);
 
@@ -338,8 +296,6 @@ public:
      * @param pPath The path, or null.
      * @param flStartFrame The path frame an instance starts at, or -1.
      * @param flEndFrame The path frame an instance ends at, or -1.
-     * @ghidraAddress NTSC-U/C: 0x0045e920
-     * @ghidraAddress PAL: 0x0049bfc8
      */
     void SetPath(TransAnim *pPath, float flStartFrame, float flEndFrame);
 
@@ -358,8 +314,6 @@ public:
      * Report the path.
      *
      * @return The path, or null.
-     * @ghidraAddress NTSC-U/C: 0x0045dbb8
-     * @ghidraAddress PAL: 0x0049b260
      */
     TransAnim *GetPath() const {
         return mPath;
@@ -369,8 +323,6 @@ public:
      * Report the path frame an instance starts at.
      *
      * @return The frame.
-     * @ghidraAddress NTSC-U/C: 0x0045dbc0
-     * @ghidraAddress PAL: 0x0049b268
      */
     float GetPathStartFrame() const {
         return mPathStartFrame;
@@ -380,8 +332,6 @@ public:
      * Report the path frame an instance ends at.
      *
      * @return The frame.
-     * @ghidraAddress NTSC-U/C: 0x0045dbc8
-     * @ghidraAddress PAL: 0x0049b270
      */
     float GetPathEndFrame() const {
         return mPathEndFrame;
@@ -391,8 +341,6 @@ public:
      * Report the mesh subject.
      *
      * @return The mesh, or null.
-     * @ghidraAddress NTSC-U/C: 0x0045dbd0
-     * @ghidraAddress PAL: 0x0049b278
      */
     Mesh *GetMesh() const {
         return mMesh;
@@ -402,8 +350,6 @@ public:
      * Report the view subject.
      *
      * @return The view, or null.
-     * @ghidraAddress NTSC-U/C: 0x0045dbd8
-     * @ghidraAddress PAL: 0x0049b280
      */
     View *GetView() const {
         return mView;
@@ -413,8 +359,6 @@ public:
      * Report the multi-mesh subject.
      *
      * @return The multi-mesh, or null.
-     * @ghidraAddress NTSC-U/C: 0x0045dbe0
-     * @ghidraAddress PAL: 0x0049b288
      */
     MultiMesh *GetMultiMesh() const {
         return mMultiMesh;
@@ -424,8 +368,6 @@ public:
      * Report the particle system subject.
      *
      * @return The particle system, or null.
-     * @ghidraAddress NTSC-U/C: 0x0045dbe8
-     * @ghidraAddress PAL: 0x0049b290
      */
     ParticleSys *GetParticleSys() const {
         return mParticleSys;
@@ -435,8 +377,6 @@ public:
      * Set mAnimateFromStart.
      *
      * @param nAnimateFromStart Non-zero to drive mView to each instance's age.
-     * @ghidraAddress NTSC-U/C: 0x0045dbf0
-     * @ghidraAddress PAL: 0x0049b298
      */
     void SetAnimateFromStart(int nAnimateFromStart) {
         mAnimateFromStart = nAnimateFromStart;
@@ -446,8 +386,6 @@ public:
      * Report mAnimateFromStart.
      *
      * @return Non-zero when mView is driven to each instance's age.
-     * @ghidraAddress NTSC-U/C: 0x0045dbf8
-     * @ghidraAddress PAL: 0x0049b2a0
      */
     int GetAnimateFromStart() const {
         return mAnimateFromStart;
@@ -457,8 +395,6 @@ public:
      * Set mBirthFrontOnly.
      *
      * @param nBirthFrontOnly Non-zero to spawn only in front of mBirthCam.
-     * @ghidraAddress NTSC-U/C: 0x0045dc00
-     * @ghidraAddress PAL: 0x0049b2a8
      */
     void SetBirthFrontOnly(int nBirthFrontOnly) {
         mBirthFrontOnly = nBirthFrontOnly;
@@ -468,8 +404,6 @@ public:
      * Report mBirthFrontOnly.
      *
      * @return Non-zero when instances spawn only in front of mBirthCam.
-     * @ghidraAddress NTSC-U/C: 0x0045dc08
-     * @ghidraAddress PAL: 0x0049b2b0
      */
     int GetBirthFrontOnly() const {
         return mBirthFrontOnly;
@@ -479,8 +413,6 @@ public:
      * Set mBirthSquareDistCull.
      *
      * @param nCull Non-zero to apply the mBirthSquareDist cull.
-     * @ghidraAddress NTSC-U/C: 0x0045dc10
-     * @ghidraAddress PAL: 0x0049b2b8
      */
     void SetBirthSquareDistCull(int nCull) {
         mBirthSquareDistCull = nCull;
@@ -490,8 +422,6 @@ public:
      * Report mBirthSquareDistCull.
      *
      * @return Non-zero when the mBirthSquareDist cull applies.
-     * @ghidraAddress NTSC-U/C: 0x0045dc18
-     * @ghidraAddress PAL: 0x0049b2c0
      */
     int GetBirthSquareDistCull() const {
         return mBirthSquareDistCull;
@@ -501,8 +431,6 @@ public:
      * Set mBirthSquareDist.
      *
      * @param flSquareDist The squared distance from mBirthCam beyond which nothing spawns.
-     * @ghidraAddress NTSC-U/C: 0x0045dc20
-     * @ghidraAddress PAL: 0x0049b2c8
      */
     void SetBirthSquareDist(float flSquareDist) {
         mBirthSquareDist = flSquareDist;
@@ -512,8 +440,6 @@ public:
      * Report mBirthSquareDist.
      *
      * @return The squared distance from mBirthCam beyond which nothing spawns.
-     * @ghidraAddress NTSC-U/C: 0x0045dc28
-     * @ghidraAddress PAL: 0x0049b2d0
      */
     float GetBirthSquareDist() const {
         return mBirthSquareDist;
@@ -523,8 +449,6 @@ public:
      * Report the birth camera.
      *
      * @return The camera, or null.
-     * @ghidraAddress NTSC-U/C: 0x0045dc30
-     * @ghidraAddress PAL: 0x0049b2d8
      */
     Cam *GetBirthCam() const {
         return mBirthCam;
@@ -534,8 +458,6 @@ public:
      * Set mNextSpawnFrame.
      *
      * @param flFrame The frame the next instance spawns on.
-     * @ghidraAddress NTSC-U/C: 0x0045dc38
-     * @ghidraAddress PAL: 0x0049b2e0
      */
     void SetNextSpawnFrame(float flFrame) {
         mNextSpawnFrame = flFrame;
@@ -546,8 +468,6 @@ public:
      *
      * @param flLow The low bound.
      * @param flHigh The high bound.
-     * @ghidraAddress NTSC-U/C: 0x0045dc40
-     * @ghidraAddress PAL: 0x0049b2e8
      */
     void SetRateGen(float flLow, float flHigh) {
         mRateGenHigh = flHigh;
@@ -559,8 +479,6 @@ public:
      *
      * @param flLow Receives the low bound.
      * @param flHigh Receives the high bound.
-     * @ghidraAddress NTSC-U/C: 0x0045dc50
-     * @ghidraAddress PAL: 0x0049b2f8
      */
     void GetRateGen(float &flLow, float &flHigh) const {
         flLow = mRateGenLow;
@@ -572,8 +490,6 @@ public:
      *
      * @param flLow The low bound.
      * @param flHigh The high bound.
-     * @ghidraAddress NTSC-U/C: 0x0045dc68
-     * @ghidraAddress PAL: 0x0049b310
      */
     void SetScaleGen(float flLow, float flHigh) {
         mScaleGenHigh = flHigh;
@@ -585,8 +501,6 @@ public:
      *
      * @param flLow Receives the low bound.
      * @param flHigh Receives the high bound.
-     * @ghidraAddress NTSC-U/C: 0x0045dc78
-     * @ghidraAddress PAL: 0x0049b320
      */
     void GetScaleGen(float &flLow, float &flHigh) const {
         flLow = mScaleGenLow;
@@ -599,8 +513,6 @@ public:
      * @param flX The bound about x.
      * @param flY The bound about y.
      * @param flZ The bound about z.
-     * @ghidraAddress NTSC-U/C: 0x0045dc90
-     * @ghidraAddress PAL: 0x0049b338
      */
     void SetPathVarMax(float flX, float flY, float flZ) {
         mPathVarMax[0] = flX;
@@ -614,8 +526,6 @@ public:
      * @param flX Receives the bound about x.
      * @param flY Receives the bound about y.
      * @param flZ Receives the bound about z.
-     * @ghidraAddress NTSC-U/C: 0x0045dca0
-     * @ghidraAddress PAL: 0x0049b348
      */
     void GetGenPathVarMax(float &flX, float &flY, float &flZ) const {
         flX = mPathVarMax[0];
@@ -632,8 +542,6 @@ protected:
      * selected path. A multi-mesh or particle system subject then draws once for all instances.
      *
      * @return Non-zero when the children are to be drawn as well.
-     * @ghidraAddress NTSC-U/C: 0x0045b040
-     * @ghidraAddress PAL: 0x004986b0
      */
     virtual int DrawShowing();
 
@@ -644,8 +552,6 @@ protected:
      * camera culls ends the call, leaving later spawns for the next frame.
      *
      * @param flFrame The filtered frame to animate to.
-     * @ghidraAddress NTSC-U/C: 0x0045aa40
-     * @ghidraAddress PAL: 0x004980b0
      */
     virtual void SetFrameSelf(float flFrame);
 
@@ -654,9 +560,6 @@ private:
      * Drops the reference on every object member and empties mInstances.
      *
      * The destructor and Copy() invoke it, and the title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045e528
-     * @ghidraAddress PAL: 0x0049bbd0
      */
     void ReleaseRefs();
 
@@ -664,9 +567,6 @@ private:
      * Takes a reference on every object member and then calls Regenerate().
      *
      * Copy() invokes it, and the title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045e5e0
-     * @ghidraAddress PAL: 0x0049bc88
      */
     void AcquireRefs();
 
@@ -676,35 +576,23 @@ private:
     /**
      * Installs the transform as the local transform of mView, drives mView to the age when
      * mAnimateFromStart is set, recomposes, and draws.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045ea70
-     * @ghidraAddress PAL: 0x0049c118
      */
     void DrawInstanceView(const Transform &xfm, float flAge);
 
     /**
      * Installs the transform as the local transform of mMesh, recomposes, and draws.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045eb00
-     * @ghidraAddress PAL: 0x0049c1a8
      */
     void DrawInstanceMesh(const Transform &xfm, float flAge);
 
     /**
      * Stores the transform in the entry of the transform list of mMultiMesh that mMultiMeshCursor
      * addresses and advances the cursor.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045eb78
-     * @ghidraAddress PAL: 0x0049c220
      */
     void DrawInstanceMultiMesh(const Transform &xfm, float flAge);
 
     /**
      * Moves the particle mParticleCursor addresses to the translation of the transform and advances
      * the cursor, and does nothing once the cursor is null.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0045ebb8
-     * @ghidraAddress PAL: 0x0049c260
      */
     void DrawInstanceParticle(const Transform &xfm, float flAge);
 
@@ -764,16 +652,11 @@ private:
  *
  * @param name The object name.
  * @return The new emitter.
- * @ghidraAddress NTSC-U/C: 0x0045dcf0
- * @ghidraAddress PAL: 0x0049b398
  */
 Generator *NewGenerator(const HxStr &name);
 
 /**
  * Registered class name of Rnd::Generator, the string "Generator".
- *
- * @ghidraAddress NTSC-U/C: 0x006e8280
- * @ghidraAddress PAL: 0x0072bc08
  */
 extern HxStr g_generatorClassName;
 

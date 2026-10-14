@@ -92,7 +92,6 @@ void WriteObjectRef(Stream &stream, const Object *pObject) {
     stream.Write(NameText(pObject), pObject->mName.mLen + 1);
 }
 
-// NTSC-U/C: 0x004d0450, PAL: 0x0050e888
 Dbg &operator<<(Dbg &sink, Text::Alignment nAlign) {
     if ((nAlign & Text::kTextAlignTop) != 0) {
         sink.Print("Top");
@@ -810,7 +809,6 @@ Text *NewText(const HxStr &name) {
     return new Text(name);
 }
 
-// NTSC-U/C: 0x006feca8, PAL: 0x007426a8
 Text *(*Text::sNew)(const HxStr &name) = NewText;
 
 Text *NewTextThroughHook(const HxStr &name) {
@@ -834,7 +832,6 @@ void RegisterTextClass() {
     TheManager.RegisterClass(g_textClassName, CreateRegisteredText);
 }
 
-// NTSC-U/C: 0x006feca0, PAL: 0x007426a0
 HxStr g_textClassName("Text");
 
 } // namespace Rnd

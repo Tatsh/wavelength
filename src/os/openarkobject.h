@@ -85,8 +85,6 @@ struct ArkRelPath {
  *
  * @param pszName The string to hash.
  * @return The hash.
- * @ghidraAddress NTSC-U/C: 0x0055c340
- * @ghidraAddress PAL: 0x0059d560
  */
 short HashArkString(const char *pszName);
 
@@ -102,8 +100,6 @@ struct ArkStream {
      * Find the mounted archive this stream reads from.
      *
      * @return The archive whose file matches mFile, or null when none is mounted.
-     * @ghidraAddress NTSC-U/C: 0x0055c1b8
-     * @ghidraAddress PAL: 0x0059d3d8
      */
     OpenArkObject *FindArk() const;
 
@@ -140,8 +136,6 @@ public:
      *
      * @param pszPath The archive path, relative to the data root.
      * @return Non-zero on success.
-     * @ghidraAddress NTSC-U/C: 0x00559858
-     * @ghidraAddress PAL: 0x0059a9b0
      */
     static int Open(const char *pszPath);
 
@@ -162,8 +156,6 @@ public:
      *
      * @param pszPath The same path that was passed to Open().
      * @return Non-zero when the archive was unmounted.
-     * @ghidraAddress NTSC-U/C: 0x00559f70
-     * @ghidraAddress PAL: 0x0059b180
      */
     static int Close(const char *pszPath);
 
@@ -171,9 +163,6 @@ public:
      * Release the tables the mount allocated.
      *
      * The destructor is inlined into Close(), which is where its line number comes from.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00559f70
-     * @ghidraAddress PAL: 0x0059b180
      */
     ~OpenArkObject();
 
@@ -192,8 +181,6 @@ public:
      * @param pnArk Receives the index of the archive in g_apMountedArks, or -1 when the file was
      * not found.
      * @return The file entry, or null when the file was not found.
-     * @ghidraAddress NTSC-U/C: 0x0055a6d0
-     * @ghidraAddress PAL: 0x0059b8f0
      */
     static ArkFileEntry *
     FindFileEntryByPath(const char *pszPath, char *pszName, char *pszRelPath, int *pnArk);
@@ -205,8 +192,6 @@ public:
      *
      * @param pEntry The file to read, one of this archive's file entries.
      * @return The new stream handle, without kFileHandleArkStream.
-     * @ghidraAddress NTSC-U/C: 0x0055c288
-     * @ghidraAddress PAL: 0x0059d4a8
      */
     int OpenStream(ArkFileEntry *pEntry);
 
@@ -214,9 +199,6 @@ public:
      * Write every field of the copied archive header to standard output.
      *
      * The shipped program does not call it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0055aa38
-     * @ghidraAddress PAL: 0x0059bc58
      */
     void PrintHeader() const;
 
@@ -224,9 +206,6 @@ public:
      * Write every entry of the relative path table to standard output.
      *
      * The shipped program does not call it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0055ac30
-     * @ghidraAddress PAL: 0x0059be50
      */
     void PrintRelPaths() const;
 
@@ -234,9 +213,6 @@ public:
      * Write every entry of the file table to standard output.
      *
      * The shipped program does not call it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0055ada0
-     * @ghidraAddress PAL: 0x0059bfc0
      */
     void PrintFiles() const;
 
@@ -244,9 +220,6 @@ public:
      * Write every file name and every relative path to standard output.
      *
      * The shipped program does not call it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0055afc8
-     * @ghidraAddress PAL: 0x0059c1e8
      */
     void DumpStrings() const;
 
@@ -254,9 +227,6 @@ public:
      * Write the header, the file table, the relative path table, and the strings, in that order.
      *
      * The shipped program does not call it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0055c3a0
-     * @ghidraAddress PAL: 0x0059d5c0
      */
     void PrintAll() const;
 
@@ -276,8 +246,6 @@ private:
      * @param pszName Receives the file name.
      * @param pszRelPath Receives the directory, and then the path relative to the mount point.
      * @return The index of the archive in g_apMountedArks, or -1 when none matches.
-     * @ghidraAddress NTSC-U/C: 0x0055a868
-     * @ghidraAddress PAL: 0x0059ba88
      */
     static int MapPathToArkIndex(const char *pszPath, char *pszName, char *pszRelPath);
 
@@ -293,8 +261,6 @@ private:
      * @param pszName The file name.
      * @param pszRelPath The path relative to the mount point.
      * @return The file entry, or null when this archive does not list the file.
-     * @ghidraAddress NTSC-U/C: 0x0055c050
-     * @ghidraAddress PAL: 0x0059d270
      */
     ArkFileEntry *FindFileEntry(short nNameHash,
                                 short nRelPathHash,
@@ -340,8 +306,6 @@ private:
  *
  * @param nHandle The stream handle.
  * @return Zero when the record was erased, or -1 when no record has that handle.
- * @ghidraAddress NTSC-U/C: 0x0055a1a0
- * @ghidraAddress PAL: 0x0059b3c0
  */
 int EraseArkStream(int nHandle);
 
@@ -353,8 +317,6 @@ int EraseArkStream(int nHandle);
  *
  * @param nHandle The stream handle.
  * @return The record, or null when no record has that handle.
- * @ghidraAddress NTSC-U/C: 0x0055c158
- * @ghidraAddress PAL: 0x0059d378
  */
 ArkStream *LookupOpenFile(int nHandle);
 
@@ -367,8 +329,6 @@ ArkStream *LookupOpenFile(int nHandle);
  *
  * @param nHandle The stream handle, with the bit or without it.
  * @return The entry, or null when no record has that handle.
- * @ghidraAddress NTSC-U/C: 0x0055be80
- * @ghidraAddress PAL: 0x0059d0a0
  */
 ArkFileEntry *FindOpenFileInArk(int nHandle);
 
@@ -378,8 +338,6 @@ ArkFileEntry *FindOpenFileInArk(int nHandle);
  * @param pszPath The path of the file.
  * @return The stream handle, without kFileHandleArkStream, or -1 when no mounted archive lists the
  * file.
- * @ghidraAddress NTSC-U/C: 0x0055bce8
- * @ghidraAddress PAL: 0x0059cf08
  */
 int OpenFileInArk(const char *pszPath);
 
@@ -390,8 +348,6 @@ int OpenFileInArk(const char *pszPath);
  *
  * @param pszPath The path of the file.
  * @return The length in bytes, or -1 when no mounted archive lists the file.
- * @ghidraAddress NTSC-U/C: 0x0055bee0
- * @ghidraAddress PAL: 0x0059d100
  */
 int GetArkFileLengthByPath(const char *pszPath);
 
@@ -408,8 +364,6 @@ int GetArkFileLengthByPath(const char *pszPath);
  * @param nBytes The number of bytes requested.
  * @return The number of bytes read, or -1 when no record has that handle or the stream is at the
  * end of its file.
- * @ghidraAddress NTSC-U/C: 0x0055a280
- * @ghidraAddress PAL: 0x0059b4a0
  */
 int ReadArkStreamThroughCache(int nHandle, void *pBuffer, unsigned nBytes);
 
@@ -422,8 +376,6 @@ int ReadArkStreamThroughCache(int nHandle, void *pBuffer, unsigned nBytes);
  * @param nRequest The request.
  * @param pArg The request argument.
  * @return The sceIoctl() result.
- * @ghidraAddress NTSC-U/C: 0x0055c3e0
- * @ghidraAddress PAL: 0x0059d600
  */
 int IoctlFile(int nFile, int nRequest, void *pArg);
 
@@ -434,8 +386,6 @@ int IoctlFile(int nFile, int nRequest, void *pArg);
  * A negative descriptor returns at once. The shipped program does not call it.
  *
  * @param nFile The file descriptor.
- * @ghidraAddress NTSC-U/C: 0x0055c458
- * @ghidraAddress PAL: 0x0059d678
  */
 void WaitForFileIdle(int nFile);
 
@@ -444,8 +394,6 @@ void WaitForFileIdle(int nFile);
  *
  * @param nHandle The stream handle.
  * @return The archive's file, or -1 when no record has that handle.
- * @ghidraAddress NTSC-U/C: 0x0055c000
- * @ghidraAddress PAL: 0x0059d220
  */
 int GetArkfileIdFromFileFd(int nHandle);
 
@@ -457,8 +405,6 @@ int GetArkfileIdFromFileFd(int nHandle);
  *
  * @param nFile The archive's file.
  * @return The archive's start sector.
- * @ghidraAddress NTSC-U/C: 0x0055a590
- * @ghidraAddress PAL: 0x0059b7b0
  */
 int ArkfileGetBaseSector(int nFile);
 
@@ -482,8 +428,6 @@ int ArkfileGetBaseSector(int nFile);
  * @param nFile The archive's file.
  * @param nSector The logical chunk index.
  * @return The chunk position on the disc.
- * @ghidraAddress NTSC-U/C: 0x0055a410
- * @ghidraAddress PAL: 0x0059b630
  */
 int ArkfileLogicalToPhysicalSector(int nFile, int nSector);
 
@@ -494,8 +438,6 @@ int ArkfileLogicalToPhysicalSector(int nFile, int nSector);
  * reported on `cout`, and the archives after it are not tried.
  *
  * @return Non-zero when every archive was mounted.
- * @ghidraAddress NTSC-U/C: 0x004dfb20
- * @ghidraAddress PAL: 0x0051e280
  */
 int InitArk();
 
@@ -507,8 +449,6 @@ int InitArk();
  * ark archives are not in use or when none of the three was still mounted.
  *
  * @return Non-zero when no archive was unmounted.
- * @ghidraAddress NTSC-U/C: 0x004dfbd8
- * @ghidraAddress PAL: 0x0051e338
  */
 int CloseArk();
 
@@ -518,32 +458,20 @@ constexpr int kSessionArkCount = 3;
 /**
  * The archives InitArk() mounts for the session and CloseArk() unmounts: `ark/root.ark`,
  * `ark/levels.ark`, and `ark/arenas.ark`.
- *
- * @ghidraAddress NTSC-U/C: 0x00702650
- * @ghidraAddress PAL: 0x007460a0
  */
 extern const char *const g_apSessionArkPaths[kSessionArkCount];
 
 /**
  * Every archive mounted right now.
- *
- * @ghidraAddress NTSC-U/C: 0x00725e90
- * @ghidraAddress PAL: 0x00769b30
  */
 extern std::vector<OpenArkObject *> g_apMountedArks;
 
 /**
  * Every stream open on a mounted archive.
- *
- * @ghidraAddress NTSC-U/C: 0x00725ea0
- * @ghidraAddress PAL: 0x00769b40
  */
 extern std::vector<ArkStream> gOpenArkFileTable;
 
 /**
  * Handle OpenArkObject::OpenStream() gives the next stream, incremented after every open.
- *
- * @ghidraAddress NTSC-U/C: 0x00725e88
- * @ghidraAddress PAL: 0x00769b28
  */
 extern int gOpenFileIndex;

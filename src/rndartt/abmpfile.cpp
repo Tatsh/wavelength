@@ -80,7 +80,6 @@ constexpr unsigned char kRleDelta = 2;
 constexpr int kRow4Mask = 0xfff8;
 constexpr int kRowWordMask = 0xfffc;
 
-// NTSC-U/C: 0x007a5768, PAL: 0x007e9468
 // the zero bytes each written row is padded with.
 const unsigned char kRowPadding[kRowAlignment] = {0, 0, 0, 0};
 
@@ -91,9 +90,7 @@ inline unsigned char SwapNibbles(unsigned char nByte) {
 } // namespace
 
 int ABmpFile::StartRead() {
-    // NTSC-U/C: 0x008e68e0, PAL: 0x0092b8e0
     static BmpFileHeader buffHdr;
-    // NTSC-U/C: 0x008e68f0, PAL: 0x0092b8f0
     static BmpInfoHeader buffInfo;
     fread(&buffHdr, 1, kFileHeaderSize, mFile);
     fread(&buffInfo, 1, kInfoHeaderSize, mFile);
@@ -200,9 +197,7 @@ int ABmpFile::ReadFrame(ABitmap &image, int *pbEnd) {
 }
 
 int ABmpFile::Write(const ABitmap &bitmap) {
-    // NTSC-U/C: 0x008e6918, PAL: 0x0092b918
     static BmpFileHeader buffHdr;
-    // NTSC-U/C: 0x008e6928, PAL: 0x0092b928
     static BmpInfoHeader buffInfo;
     BmpHeader header;
     header.mType = kBmpType;

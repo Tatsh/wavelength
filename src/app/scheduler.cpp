@@ -32,7 +32,6 @@ constexpr int kCommandErrorDuration = 50;
 
 } // namespace
 
-// NTSC-U/C: 0x006f8a80, PAL: 0x0073c4d0
 long long g_llWatchdogSecondNs;
 
 Sch::Scheduler::Scheduler()

@@ -73,8 +73,6 @@ public:
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x004cecc0
-     * @ghidraAddress PAL: 0x0050cff8
      */
     static void *operator new(size_t nSize);
 
@@ -82,8 +80,6 @@ public:
      * Release a font to the tagged heap.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x004cece0
-     * @ghidraAddress PAL: 0x0050d018
      */
     static void operator delete(void *pBlock);
 
@@ -124,8 +120,6 @@ public:
          * @param nRow The cell row.
          * @param nCol The cell column.
          * @param pFont The font whose atlas includes the cell.
-         * @ghidraAddress NTSC-U/C: 0x004ca050
-         * @ghidraAddress PAL: 0x005082b8
          */
         CharInfo(int nRow, int nCol, const Font *pFont);
 
@@ -146,16 +140,11 @@ public:
      * loaded or copied.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x004cb1e8
-     * @ghidraAddress PAL: 0x005094a8
      */
     explicit Font(const HxStr &name);
 
     /**
      * Drop the reference on the material and release the character map.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004cee70
-     * @ghidraAddress PAL: 0x0050d1a8
      */
     virtual ~Font();
 
@@ -167,8 +156,6 @@ public:
      * description and a Material font writes the atlas, while a Default font writes neither.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x004ca470
-     * @ghidraAddress PAL: 0x005086d8
      */
     virtual void DumpText(Dbg &sink);
 
@@ -176,8 +163,6 @@ public:
      * Write this font to stream at revision 2.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004ca720
-     * @ghidraAddress PAL: 0x00508988
      */
     virtual void Save(Stream &stream);
 
@@ -186,8 +171,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
-     * @ghidraAddress NTSC-U/C: 0x004d0690
-     * @ghidraAddress PAL: 0x0050eac8
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -198,8 +181,6 @@ public:
      * "Font".
      *
      * @return The class key.
-     * @ghidraAddress NTSC-U/C: 0x004cefd0
-     * @ghidraAddress PAL: 0x0050d330
      */
     virtual const HxStr &ClassName() const;
 
@@ -212,8 +193,6 @@ public:
      *
      * @param pSource The font to copy from.
      * @param nFlags Unread.
-     * @ghidraAddress NTSC-U/C: 0x004cb0b8
-     * @ghidraAddress PAL: 0x00509378
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -231,8 +210,6 @@ public:
      * rebuilds it against the material that has just arrived.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x004cac20
-     * @ghidraAddress PAL: 0x00508eb8
      */
     virtual void Load(Stream &stream);
 
@@ -248,8 +225,6 @@ public:
      * @param nItalic Non-zero for an italic face.
      * @param family The typeface family.
      * @param name The face name.
-     * @ghidraAddress NTSC-U/C: 0x004cedd0
-     * @ghidraAddress PAL: 0x0050d108
      */
     virtual void
     SetBuiltin(int nHeight, FontWeight weight, int nItalic, FontFamily family, const HxStr &name);
@@ -264,8 +239,6 @@ public:
      * @param nItalicOut Receives the italic flag.
      * @param familyOut Receives the typeface family.
      * @param nameOut Receives the face name.
-     * @ghidraAddress NTSC-U/C: 0x004cef88
-     * @ghidraAddress PAL: 0x0050d2e8
      */
     // No direct call to slot 9 survives either. Whatever consumed a Builtin font description is
     // outside the part of the image this tree has recovered.
@@ -283,8 +256,6 @@ public:
      *
      * @param ch The character to measure.
      * @return The advance, in the units Rnd::Text builds its mesh in.
-     * @ghidraAddress NTSC-U/C: 0x004d0988
-     * @ghidraAddress PAL: 0x0050edc0
      */
     float GetCharAdvance(char ch);
 
@@ -297,8 +268,6 @@ public:
      * @param ch The character to look up.
      * @param uv0 Receives the left and top corner.
      * @param uv1 Receives the right and bottom corner.
-     * @ghidraAddress NTSC-U/C: 0x004d08d8
-     * @ghidraAddress PAL: 0x0050ed10
      */
     void GetCharUV(char ch, Vector2 &uv0, Vector2 &uv1);
 
@@ -308,9 +277,6 @@ public:
      * Walks mChars in order, assigning each character the next cell of the mRows by mCols grid and
      * wrapping to the next row after mCols cells. A character appearing twice in mChars is measured
      * twice and the second measurement overwrites the first, so the later cell wins.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004ca978
-     * @ghidraAddress PAL: 0x00508be0
      */
     void BuildCharMap();
 
@@ -329,8 +295,6 @@ public:
      * @param flCols The cell columns.
      * @param flSize The height one cell occupies.
      * @param flSpace The tracking added after every glyph.
-     * @ghidraAddress NTSC-U/C: 0x004d0530
-     * @ghidraAddress PAL: 0x0050e968
      */
     void SetAtlas(
         Mat *pMat, const HxStr &chars, float flRows, float flCols, float flSize, float flSpace);
@@ -343,8 +307,6 @@ public:
      * inferred.
      *
      * @param pMat The new material, or null.
-     * @ghidraAddress NTSC-U/C: 0x004d0600
-     * @ghidraAddress PAL: 0x0050ea38
      */
     void SetMat(Mat *pMat);
 
@@ -355,8 +317,6 @@ public:
      * the store and discarding the measured metrics. The title is inferred.
      *
      * @param flSize The new mSize.
-     * @ghidraAddress NTSC-U/C: 0x004d0648
-     * @ghidraAddress PAL: 0x0050ea80
      */
     void SetSize(float flSize);
 
@@ -366,9 +326,6 @@ private:
      * the next lookup.
      *
      * SetMat(), SetSize(), and the setter at 0x004d0530 are the callers. The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004d0768
-     * @ghidraAddress PAL: 0x0050eba0
      */
     void OnChanged();
 
@@ -377,9 +334,6 @@ private:
      *
      * The destructor is its only out-of-line caller, and Replace(), Load(), and Copy() inline the
      * same body.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004d0738
-     * @ghidraAddress PAL: 0x0050eb70
      */
     void RemoveMatRef();
 
@@ -447,8 +401,6 @@ public:
  *
  * @param name The object name.
  * @return The new font.
- * @ghidraAddress NTSC-U/C: 0x004cf060
- * @ghidraAddress PAL: 0x0050d3c0
  */
 Font *NewFont(const HxStr &name);
 
@@ -457,9 +409,6 @@ Font *NewFont(const HxStr &name);
  *
  * RegisterFontClass() points it at NewFont(), and Rnd::Manager::Init() writes it a second time at
  * `0x00519d44`.
- *
- * @ghidraAddress NTSC-U/C: 0x006fecb8
- * @ghidraAddress PAL: 0x007426b8
  */
 extern Font *(*g_pfnNewFont)(const HxStr &name);
 
@@ -472,8 +421,6 @@ extern Font *(*g_pfnNewFont)(const HxStr &name);
  *
  * @param name The object name.
  * @return The new font.
- * @ghidraAddress NTSC-U/C: 0x004ced40
- * @ghidraAddress PAL: 0x0050d078
  */
 Font *NewFontThroughHook(const HxStr &name);
 
@@ -485,8 +432,6 @@ Font *NewFontThroughHook(const HxStr &name);
  *
  * @param name The object name.
  * @return The new font, as its Rnd::Object base.
- * @ghidraAddress NTSC-U/C: 0x004cefe0
- * @ghidraAddress PAL: 0x0050d340
  */
 Object *CreateRegisteredFont(const HxStr &name);
 
@@ -496,17 +441,11 @@ Object *CreateRegisteredFont(const HxStr &name);
  * The image has no caller. The name is inferred from RegisterTextClass().
  *
  * Rnd::Manager::Init() also expands this inline.
- *
- * @ghidraAddress NTSC-U/C: 0x004ced00
- * @ghidraAddress PAL: 0x0050d038
  */
 void RegisterFontClass();
 
 /**
  * Registered class name of Rnd::Font, the string "Font".
- *
- * @ghidraAddress NTSC-U/C: 0x006fecb0
- * @ghidraAddress PAL: 0x007426b0
  */
 extern HxStr g_fontClassName;
 

@@ -57,9 +57,6 @@ public:
      *
      * Rnd::Cam::DrawShowing() stores itself here, the destructor clears it when it addresses the
      * camera going away, and Rnd::PsCam::DrawShowing() stores its own camera the same way.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006f9588
-     * @ghidraAddress PAL: 0x0073cfd8
      */
     static Cam *sCurrent;
 
@@ -68,17 +65,11 @@ public:
      *
      * Starts as Cam::NewCam(). Rnd::PsCam::Init() installs Rnd::PsCam::NewCam(), and a camera
      * loaded from a file on the PlayStation 2 is therefore a Rnd::PsCam.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006f958c
-     * @ghidraAddress PAL: 0x0073cfdc
      */
     static Cam *(*sNew)(const HxStr &name);
 
     /**
      * Registered class name of Rnd::Cam, the string "Cam".
-     *
-     * @ghidraAddress NTSC-U/C: 0x006f9590
-     * @ghidraAddress PAL: 0x0073cfe0
      */
     static HxStr sClassName;
 
@@ -87,8 +78,6 @@ public:
      *
      * @param nSize The object size, which the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x004b1e90
-     * @ghidraAddress PAL: 0x004f00b8
      */
     void *operator new(size_t nSize);
 
@@ -96,8 +85,6 @@ public:
      * Release a camera to the tagged heap.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x004b1eb0
-     * @ghidraAddress PAL: 0x004f00d8
      */
     void operator delete(void *pBlock);
 
@@ -126,16 +113,11 @@ public:
      * call builds them all.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x004aeb70
-     * @ghidraAddress PAL: 0x004ecd60
      */
     explicit Cam(const HxStr &name);
 
     /**
      * Clear Cam::sCurrent when it addresses this camera and release the render target.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004af668
-     * @ghidraAddress PAL: 0x004ed858
      */
     virtual ~Cam();
 
@@ -148,9 +130,6 @@ public:
      * angle. Either way the matrices map camera space x to screen x, camera space y to depth, and
      * camera space z to negated screen y, which establishes that this engine looks down its y
      * axis with z upwards. UpdateWorldProject() runs afterwards.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004afac0
-     * @ghidraAddress PAL: 0x004edcb0
      */
     void UpdateProjection();
 
@@ -161,9 +140,6 @@ public:
      * planes are moved into world space, the world projection is the world-to-camera matrix
      * followed by the local projection, and the inverse world projection is the inverse local
      * projection followed by the world transform.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004afc18
-     * @ghidraAddress PAL: 0x004ede08
      */
     void UpdateWorldProject();
 
@@ -180,8 +156,6 @@ public:
      * @param ptScreen The point, in the coordinates the screen rectangle is expressed in.
      * @param flLength The length of the segment.
      * @return The segment.
-     * @ghidraAddress NTSC-U/C: 0x004afe00
-     * @ghidraAddress PAL: 0x004edff0
      */
     Segment ScreenToRay(const Vector2 &ptScreen, float flLength);
 
@@ -196,8 +170,6 @@ public:
      *
      * @param pt The world point.
      * @return The point in the unit square.
-     * @ghidraAddress NTSC-U/C: 0x004b2008
-     * @ghidraAddress PAL: 0x004f0230
      */
     Vector2 ProjectToUnit(const Vector3 &pt);
 
@@ -224,8 +196,6 @@ public:
      *
      * @param ptUnit The point in the unit square.
      * @return The world point.
-     * @ghidraAddress NTSC-U/C: 0x004b2118
-     * @ghidraAddress PAL: 0x004f0340
      */
     Vector3 UnprojectFar(const Vector2 &ptUnit);
 
@@ -235,8 +205,6 @@ public:
      * The image has no caller. The title is inferred.
      *
      * @param rect The fraction of the render target the projected image is placed in.
-     * @ghidraAddress NTSC-U/C: 0x004b2190
-     * @ghidraAddress PAL: 0x004f03b8
      */
     void SetScreenRect(const Rect &rect);
 
@@ -250,8 +218,6 @@ public:
      * @param flNear The near clip distance.
      * @param flFar The far clip distance.
      * @param flFov The field of view, zero for an orthographic projection.
-     * @ghidraAddress NTSC-U/C: 0x004b26e0
-     * @ghidraAddress PAL: 0x004f0908
      */
     void SetFrustum(float flNear, float flFar, float flFov);
 
@@ -261,8 +227,6 @@ public:
      * The out-of-line copy has no callers. AppTunnel's constructor inlines it.
      *
      * @return The distance.
-     * @ghidraAddress NTSC-U/C: 0x004b23a8
-     * @ghidraAddress PAL: 0x004f05d0
      */
     float GetNearPlane() const {
         return mNearPlane;
@@ -274,8 +238,6 @@ public:
      * The out-of-line copy has no callers. AppTunnel's constructor inlines it.
      *
      * @return The distance.
-     * @ghidraAddress NTSC-U/C: 0x004b23b0
-     * @ghidraAddress PAL: 0x004f05d8
      */
     float GetFarPlane() const {
         return mFarPlane;
@@ -287,8 +249,6 @@ public:
      * The out-of-line copy has no callers. AppTunnel's constructor inlines it.
      *
      * @return The field of view.
-     * @ghidraAddress NTSC-U/C: 0x004b23b8
-     * @ghidraAddress PAL: 0x004f05e0
      */
     float GetFov() const {
         return mFov;
@@ -305,8 +265,6 @@ public:
      * here, which is what places that virtual in a slot of its own rather than in one of these.
      *
      * @param pTex The render target, or null to draw into the frame buffer.
-     * @ghidraAddress NTSC-U/C: 0x004ad6f8
-     * @ghidraAddress PAL: 0x004eb898
      */
     void SetTargetTex(Tex *pTex);
 
@@ -319,8 +277,6 @@ public:
      *
      * @param ptScreen The point, in the coordinates the screen rectangle is expressed in.
      * @return The same point in render target pixels.
-     * @ghidraAddress NTSC-U/C: 0x004b2000
-     * @ghidraAddress PAL: 0x004f0228
      */
     virtual Vector2 ScreenToPixels(const Vector2 &ptScreen);
 
@@ -330,9 +286,6 @@ public:
      * Vtable slot 5 of the Rnd::Drawable table. With a render target the vertical ratio becomes
      * the target height divided by its width. With none the ratio is untouched, and
      * Rnd::PsCam overrides this routine to supply a default.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b2738
-     * @ghidraAddress PAL: 0x004f0960
      */
     virtual void UpdateTargetAspect();
 
@@ -343,8 +296,6 @@ public:
      * "Cam".
      *
      * @return The class key.
-     * @ghidraAddress NTSC-U/C: 0x004b23d0
-     * @ghidraAddress PAL: 0x004f05f8
      */
     virtual const HxStr &ClassName() const;
 
@@ -358,8 +309,6 @@ public:
      * "no object" in place of the target's quoted name.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x004ad980
-     * @ghidraAddress PAL: 0x004ebb40
      */
     virtual void DumpText(Dbg &sink);
 
@@ -372,8 +321,6 @@ public:
      *
      * @param pFrom The object going away.
      * @param pTo The object to store instead, or null.
-     * @ghidraAddress NTSC-U/C: 0x004b2608
-     * @ghidraAddress PAL: 0x004f0830
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -387,8 +334,6 @@ public:
      * @param pParent The transform to compose against.
      * @param nForce Non-zero to recompose regardless of the dirty flag.
      * @return Non-zero when the world transform was recomposed.
-     * @ghidraAddress NTSC-U/C: 0x004b1fa0
-     * @ghidraAddress PAL: 0x004f01c8
      */
     virtual int UpdateWorldXfm(Transformable *pParent, int nForce);
 
@@ -399,8 +344,6 @@ public:
      * Collideable, which is not the order the bases are declared in.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004ae630
-     * @ghidraAddress PAL: 0x004ec7f0
      */
     virtual void Save(Stream &stream);
 
@@ -412,8 +355,6 @@ public:
      *
      * @param pSource The camera to copy from.
      * @param nFlags The set of fields to copy.
-     * @ghidraAddress NTSC-U/C: 0x004b24f8
-     * @ghidraAddress PAL: 0x004f0720
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -426,8 +367,6 @@ public:
      * form from revision 8.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x004ae870
-     * @ghidraAddress PAL: 0x004eca30
      */
     virtual void Load(Stream &stream);
 
@@ -436,8 +375,6 @@ public:
      *
      * @param name The registry key for the new camera.
      * @return The new camera.
-     * @ghidraAddress NTSC-U/C: 0x004b2470
-     * @ghidraAddress PAL: 0x004f0698
      */
     static Cam *NewCam(const HxStr &name);
 
@@ -527,8 +464,6 @@ protected:
      *
      * @param point The screen point.
      * @param collisions The list to append an intersection to.
-     * @ghidraAddress NTSC-U/C: 0x004ad820
-     * @ghidraAddress PAL: 0x004eb9e0
      */
     virtual void FindCollisions(const Vector2 &point, std::list<Collision> &collisions);
 
@@ -539,8 +474,6 @@ protected:
      * submits the display registers.
      *
      * @return Non-zero, which draws the children as well.
-     * @ghidraAddress NTSC-U/C: 0x004b1fe0
-     * @ghidraAddress PAL: 0x004f0208
      */
     virtual int DrawShowing();
 
@@ -549,9 +482,6 @@ private:
      * Registers this camera as a referrer of the render target and then runs UpdateTargetAspect().
      *
      * The constructor, SetTargetTex(), Copy(), and Load() are the callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b27a8
-     * @ghidraAddress PAL: 0x004f09d0
      */
     void AcquireTargetTex();
 
@@ -559,9 +489,6 @@ private:
      * Drops this camera's registration on the render target.
      *
      * The destructor, Copy(), and Load() are the callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b2778
-     * @ghidraAddress PAL: 0x004f09a0
      */
     void ReleaseTargetTex();
 
@@ -576,7 +503,6 @@ private:
     unsigned char mReserved30c[0x04];
 };
 
-// NTSC-U/C: 0x004b1dd0, PAL: 0x004efff8
 inline void Cam::XfmPoint(const Vector3 &in, const Vector3 *pXfm, Vector3 &out) {
     const float flX = pXfm[0].x * in.x + pXfm[1].x * in.y + pXfm[2].x * in.z + pXfm[3].x;
     const float flY = pXfm[0].y * in.x + pXfm[1].y * in.y + pXfm[2].y * in.z + pXfm[3].y;
@@ -588,7 +514,6 @@ inline void Cam::XfmPoint(const Vector3 &in, const Vector3 *pXfm, Vector3 &out) 
     out.w = flW;
 }
 
-// NTSC-U/C: 0x004b2008, PAL: 0x004f0230
 inline Vector2 Cam::ProjectToUnit(const Vector3 &pt) {
     Vector3 ptProjected;
     XfmPoint(pt, mWorldProject, ptProjected);
@@ -629,8 +554,6 @@ inline void Cam::WorldToScreen(const Vector3 &pt, Vector2 &ptScreen) {
  *
  * @param name The object name.
  * @return The new camera, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x004b23e0
- * @ghidraAddress PAL: 0x004f0608
  */
 Object *CreateRegisteredCam(const HxStr &name);
 
@@ -643,8 +566,6 @@ Object *CreateRegisteredCam(const HxStr &name);
  *
  * @param name The object name.
  * @return The new camera.
- * @ghidraAddress NTSC-U/C: 0x004b1f20
- * @ghidraAddress PAL: 0x004f0148
  */
 Cam *NewCamThroughHook(const HxStr &name);
 
@@ -656,9 +577,6 @@ Cam *NewCamThroughHook(const HxStr &name);
  * the default camera. The name is inferred.
  *
  * Rnd::Manager::Init() also expands this inline.
- *
- * @ghidraAddress NTSC-U/C: 0x004b1ed0
- * @ghidraAddress PAL: 0x004f00f8
  */
 inline void RegisterCamClass() {
     Cam::sNew = Cam::NewCam;

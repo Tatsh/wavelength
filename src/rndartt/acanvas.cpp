@@ -44,7 +44,6 @@ constexpr int kEdgeBackward = -1;
 typedef void (ACanvas::*ABitmapCopyMember)(const ABitmap &, int, int);
 typedef void (ACanvas::*ABitmapStretchMember)(const ABitmap &, const ARect &);
 
-// NTSC-U/C: 0x0077dc98, PAL: 0x007c1a88
 const ABitmapCopyMember pfDrawBitmapU[kABitmapFormatCount] = {&ACanvas::DrawBitmapLin4U,
                                                               &ACanvas::DrawBitmapLin8U,
                                                               &ACanvas::DrawBitmapLin15U,
@@ -52,7 +51,6 @@ const ABitmapCopyMember pfDrawBitmapU[kABitmapFormatCount] = {&ACanvas::DrawBitm
                                                               &ACanvas::DrawBitmapLin32U,
                                                               &ACanvas::DrawBitmapRle8U};
 
-// NTSC-U/C: 0x0077dcc8, PAL: 0x007c1ab8
 const ABitmapCopyMember kCopyForFormat[kABitmapFormatCount] = {&ACanvas::DrawBitmapLin4,
                                                                &ACanvas::DrawBitmapLin8,
                                                                &ACanvas::DrawBitmapLin15,
@@ -97,7 +95,6 @@ inline int AdvanceStretchRow(ACanvas::AScaledRowInfo *pBlit) {
 
 } // namespace
 
-// NTSC-U/C: 0x0086f6f0, PAL: 0x008b3dd0
 APalette *ACanvas::palDefault = nullptr;
 
 void ACanvas::QuantizeToRamps(ACanvas &dest, const std::vector<const Color *> &colors) const {
@@ -1450,7 +1447,6 @@ void ACanvas::DrawBlendBitmapRle8(const ABitmap &source,
 }
 
 void ACanvas::GetBitmapU(const ABitmap &dest, int nX, int nY) {
-    // NTSC-U/C: 0x0077dcf8, PAL: 0x007c1ae8
     static const ABitmapCopyMember kReadNoClipForFormat[kABitmapFormatCount] = {
         &ACanvas::GetBitmapLin4U,
         &ACanvas::GetBitmapLin8U,
@@ -1462,7 +1458,6 @@ void ACanvas::GetBitmapU(const ABitmap &dest, int nX, int nY) {
 }
 
 void ACanvas::GetBitmap(const ABitmap &dest, int nX, int nY) {
-    // NTSC-U/C: 0x0077dd28, PAL: 0x007c1b18
     static const ABitmapCopyMember kReadForFormat[kABitmapFormatCount] = {&ACanvas::GetBitmapLin4,
                                                                           &ACanvas::GetBitmapLin8,
                                                                           &ACanvas::GetBitmapLin15,
@@ -1525,7 +1520,6 @@ int ACanvas::ClipAndSetupScaledBitmap(const ABitmap &source,
 }
 
 void ACanvas::DrawScaledBitmap(const ABitmap &source, const ARect &rect) {
-    // NTSC-U/C: 0x0077dd58, PAL: 0x007c1b48
     static const ABitmapStretchMember kStretchForFormat[kABitmapFormatCount] = {
         &ACanvas::DrawScaledBitmapLin4,
         &ACanvas::DrawScaledBitmapLin8,

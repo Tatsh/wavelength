@@ -13,15 +13,12 @@ namespace {
 // being recovered.
 constexpr int kFailMessageSize = 0x100;
 
-// NTSC-U/C: 0x00894e30, PAL: 0x008d9e40
 char g_szFailMessage[kFailMessageSize] = {};
 
-// NTSC-U/C: 0x00894f30, PAL: 0x008d9f40
 char g_szFailFormatted[kFailMessageSize] = {};
 
 // The handler SetNotify() installs when it is given none. It hands the message to Print(),
 // and Print() discards it. A sink with this handler reports nothing at all.
-// NTSC-U/C: 0x004ddf68, PAL: 0x0051c520
 void DefaultFailReport(const char *pszMessage) {
     Rnd::TheDbg.Print(pszMessage);
 }

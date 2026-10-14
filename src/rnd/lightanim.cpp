@@ -66,7 +66,6 @@ void BlendChannelColor(const std::list<ColorKey> &keys, float flFrame, Color &re
 
 } // namespace
 
-// NTSC-U/C: 0x00720bd8, PAL: 0x00764668
 HxStr g_lightAnimClassName("LightAnim");
 
 LightAnim::LightAnim(const HxStr &name) : Object(name), mLight(nullptr), mKeysOwner(this) {

@@ -46,8 +46,6 @@ public:
      * Start a map at the requested tempo, with song position zero at scheduler time zero.
      *
      * @param nMicrosecondsPerQuarter The tempo, in microseconds per quarter note.
-     * @ghidraAddress NTSC-U/C: 0x0052d118
-     * @ghidraAddress PAL: 0x0056d7a8
      */
     TempoMap(int nMicrosecondsPerQuarter);
 
@@ -55,9 +53,6 @@ public:
      * Release the map.
      *
      * The body forwards to the Attachment destructor and touches no member of its own.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0052d240
-     * @ghidraAddress PAL: 0x0056d8d0
      */
     virtual ~TempoMap();
 
@@ -70,8 +65,6 @@ public:
      *
      * @param nMicrosecondsPerQuarter The new tempo, in microseconds per quarter note.
      * @param nTick The song position the new tempo takes effect at, in MIDI ticks.
-     * @ghidraAddress NTSC-U/C: 0x0052d198
-     * @ghidraAddress PAL: 0x0056d828
      */
     void SetTempo(int nMicrosecondsPerQuarter, long long nTick);
 

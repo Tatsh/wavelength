@@ -103,7 +103,6 @@ inline Vector3 UnitToFarNdc(float flX, float flY) {
 
 Cam *Cam::sCurrent;
 
-// NTSC-U/C: 0x006f958c, PAL: 0x0073cfdc
 Cam *(*Cam::sNew)(const HxStr &name) = Cam::NewCam;
 
 void *Cam::operator new(size_t nSize) {

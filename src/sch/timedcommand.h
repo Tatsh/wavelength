@@ -62,8 +62,6 @@ public:
      * @param tick The tick the caller requested, in the caller's own frame.
      * @param bDelta Non-zero when the requested tick is a distance from now rather than an absolute
      *               scheduler time.
-     * @ghidraAddress NTSC-U/C: 0x005d32f8
-     * @ghidraAddress PAL: 0x00615360
      */
     TimedCommand(Command *pCommand, Time tick, int bDelta);
 
@@ -78,9 +76,6 @@ public:
 
     /**
      * Give back the reference to the command and release the wrapper.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005d33e8
-     * @ghidraAddress PAL: 0x00615450
      */
     virtual ~TimedCommand();
 
@@ -89,9 +84,6 @@ public:
      *
      * The body dispatches Sch::Command::Execute() and does nothing else. The title is inferred
      * from that body, and the scheduler run loop at `0x004aae68` is the one caller.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005d33b8
-     * @ghidraAddress PAL: 0x00615420
      */
     void Run();
 
@@ -99,8 +91,6 @@ public:
      * Write a description of the wrapper to a diagnostic stream.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x005d30b0
-     * @ghidraAddress PAL: 0x006150f8
      */
     void Print(std::ostream &stream);
 
@@ -108,8 +98,6 @@ public:
      * Write the wrapper and the command it refers to.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x005d3440
-     * @ghidraAddress PAL: 0x006154a8
      */
     void Save(OBStream &stream);
 
@@ -119,8 +107,6 @@ public:
      * The order matches Save() field for field.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x005d34d0
-     * @ghidraAddress PAL: 0x00615538
      */
     void Load(IBStream &stream);
 

@@ -119,7 +119,6 @@ int ReadBool(Stream &stream) {
 }
 
 // The tag the allocation operators bill to.
-// NTSC-U/C: 0x0081c1d8, PAL: 0x0085ecf8
 const char *const kGeneratorTag = "Rnd::Generator";
 
 // The next spawn frame the constructor starts from, a hand-written sentinel whose bit pattern
@@ -247,10 +246,8 @@ inline void SetIdentity(Transform &xfm) {
 
 } // namespace
 
-// NTSC-U/C: 0x006e8280, PAL: 0x0072bc08
 HxStr g_generatorClassName("Generator");
 
-// NTSC-U/C: 0x0045b3d0, PAL: 0x00498a40
 static Dbg &operator<<(Dbg &sink, const Generator::Instance &instance) {
     sink.Print("(frameOrg: ");
     sink.Format(kFloatFormat, instance.mFrameOrg);
@@ -263,7 +260,6 @@ static Dbg &operator<<(Dbg &sink, const Generator::Instance &instance) {
     return sink;
 }
 
-// NTSC-U/C: 0x0045d6d0, PAL: 0x0049ad68
 static Dbg &operator<<(Dbg &sink, const std::list<Generator::Instance> &instances) {
     sink.Print("(size:");
     sink.Format(kCountFormat, instances.size());
@@ -532,7 +528,6 @@ void Generator::SetFrameSelf(float flFrame) {
 }
 
 int Generator::DrawShowing() {
-    // NTSC-U/C: 0x0081c448, PAL: 0x0085ef68
     // the four draw paths in DrawPath order.
     static void (Generator::*const kDrawPaths[])(const Transform &, float) = {
         &Generator::DrawInstanceView,
@@ -869,7 +864,6 @@ Generator *NewGenerator(const HxStr &name) {
     }
 }
 
-// NTSC-U/C: 0x0045e300, PAL: 0x0049b9a8
 // The thunk the class registry stores. The null test in the body is the conversion of a Generator
 // pointer to its virtual Rnd::Object base rather than a check the source asks for.
 static Object *NewGeneratorObject(const HxStr &name) {

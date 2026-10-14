@@ -85,8 +85,6 @@ public:
      *
      * @param nTick The position, in MIDI ticks.
      * @return Non-zero for a finite position.
-     * @ghidraAddress NTSC-U/C: 0x00100ab8
-     * @ghidraAddress PAL: 0x00100ab8
      */
     static int IsInRange(int nTick);
 
@@ -121,8 +119,6 @@ public:
      *
      * @param stream The stream to write to.
      * @return The stream, allowing calls to be chained.
-     * @ghidraAddress NTSC-U/C: 0x004acf28
-     * @ghidraAddress PAL: 0x004eb0c8
      */
     OBStream &saveGuts(OBStream &stream) const;
 
@@ -131,8 +127,6 @@ public:
      *
      * @param stream The stream to read from.
      * @return The stream, allowing calls to be chained.
-     * @ghidraAddress NTSC-U/C: 0x004acf68
-     * @ghidraAddress PAL: 0x004eb108
      */
     IBStream &restoreGuts(IBStream &stream);
 
@@ -140,8 +134,6 @@ public:
      * Write the position to a diagnostic stream as measure, beat, and tick.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004ace18
-     * @ghidraAddress PAL: 0x004eafb8
      */
     void Print(std::ostream &stream) const;
 

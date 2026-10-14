@@ -74,22 +74,16 @@ constexpr int kLineBufferSize = 0x12a0;
 const char *const kSignature = "GIF";
 
 // The byte every block introducer and code size is read into.
-// NTSC-U/C: 0x008e8168, PAL: 0x0092d168
 signed char s_cByte;
 
-// NTSC-U/C: 0x008e8170, PAL: 0x0092d170
 APalette pal;
 
-// NTSC-U/C: 0x008e8578, PAL: 0x0092d578
 GifImageDescriptor imageBlock;
 
-// NTSC-U/C: 0x008e8588, PAL: 0x0092d588
 GifGraphicControl gce;
 
-// NTSC-U/C: 0x008e8590, PAL: 0x0092d590
 GifScreenDescriptor gifHeader;
 
-// NTSC-U/C: 0x007b35e8, PAL: 0x007f72e8
 // the low n bits for each code size n.
 const unsigned short kCodeMasks[] = {0x0000,
                                      0x0001,
@@ -110,21 +104,15 @@ const unsigned short kCodeMasks[] = {0x0000,
 
 // Each is bounded at six entries by its neighbour, and the trailing zeros are what a fifth pass
 // reads.
-// NTSC-U/C: 0x007b3608, PAL: 0x007f7308
 const int kInterlaceStep[] = {8, 8, 4, 2, 0, 0};
-// NTSC-U/C: 0x007b3620, PAL: 0x007f7320
 const int kInterlaceStart[] = {0, 4, 2, 1, 0, 0};
 
-// NTSC-U/C: 0x007b3638, PAL: 0x007f7338
 unsigned char firstcodestack[kMaxCodeCount];
 
-// NTSC-U/C: 0x007b4638, PAL: 0x007f8338
 unsigned char lastcodestack[kMaxCodeCount];
 
-// NTSC-U/C: 0x007b5638, PAL: 0x007f9338
 short codestack[kMaxCodeCount];
 
-// NTSC-U/C: 0x007b7638, PAL: 0x007fb338
 unsigned char linebuffer[kLineBufferSize];
 
 // Step to the next data byte, reading the next sub-block when the current one is used up. A zero

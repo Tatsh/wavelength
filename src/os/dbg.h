@@ -55,8 +55,6 @@ public:
      * program, and the name is inferred from the report text.
      *
      * @param path The file to write the log to.
-     * @ghidraAddress NTSC-U/C: 0x004ddfb8
-     * @ghidraAddress PAL: 0x0051c570
      */
     void OpenLog(const HxStr &path);
 
@@ -64,9 +62,6 @@ public:
      * Flush and delete the log stream, if one is open.
      *
      * OpenLog() is the one caller. The name is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004de0a0
-     * @ghidraAddress PAL: 0x0051c658
      */
     void CloseLog();
 
@@ -76,8 +71,6 @@ public:
      * A null handler restores the built-in handler at 0x004ddf68.
      *
      * @param pfnReport The handler to install, or null for the built-in handler.
-     * @ghidraAddress NTSC-U/C: 0x004ddf90
-     * @ghidraAddress PAL: 0x0051c548
      */
     void SetNotify(FailReportProc pfnReport);
 
@@ -87,8 +80,6 @@ public:
      * This is the only member that produces output.
      *
      * @param pszFormat A printf-style format string.
-     * @ghidraAddress NTSC-U/C: 0x004dde28
-     * @ghidraAddress PAL: 0x0051c3e0
      */
     void Notify(const char *pszFormat, ...);
 
@@ -97,8 +88,6 @@ public:
      *
      * @param pszFormat A printf-style format string.
      * @return This sink, allowing calls to be chained.
-     * @ghidraAddress NTSC-U/C: 0x004dde98
-     * @ghidraAddress PAL: 0x0051c450
      */
     Dbg *Format(const char *pszFormat, ...);
 
@@ -109,8 +98,6 @@ public:
      *
      * @param pszText The text to write.
      * @return This sink, allowing calls to be chained.
-     * @ghidraAddress NTSC-U/C: 0x004ddfb0
-     * @ghidraAddress PAL: 0x0051c568
      */
     Dbg *Print(const char *pszText);
 
@@ -145,9 +132,6 @@ private:
 
 /**
  * Engine-wide failure sink.
- *
- * @ghidraAddress NTSC-U/C: 0x00702470
- * @ghidraAddress PAL: 0x00745ec0
  */
 extern Dbg TheDbg;
 

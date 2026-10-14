@@ -110,8 +110,6 @@ public:
      * @param pDest The destination buffer.
      * @param nSize The number of bytes to move.
      * @return This stream.
-     * @ghidraAddress NTSC-U/C: 0x0050fb60
-     * @ghidraAddress PAL: 0x0054f148
      */
     virtual Stream &ReadLE(void *pDest, int nSize);
 
@@ -124,8 +122,6 @@ public:
      * @param pSrc The source buffer.
      * @param nSize The number of bytes to move.
      * @return This stream.
-     * @ghidraAddress NTSC-U/C: 0x0050fb88
-     * @ghidraAddress PAL: 0x0054f170
      */
     virtual Stream &WriteLE(const void *pSrc, int nSize);
 
@@ -149,8 +145,6 @@ public:
      *
      * @param name The string to append the name to.
      * @return This stream, which Rnd::Manager's reader at `0x0051b450` chains into a second read.
-     * @ghidraAddress NTSC-U/C: 0x0050f140
-     * @ghidraAddress PAL: 0x0054e6e8
      */
     Stream &ReadString(HxStr &name);
 };

@@ -62,15 +62,9 @@ public:
      * ends with take no effect on a freshly built object.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x004c0e70
-     * @ghidraAddress PAL: 0x004fef60
      */
     explicit Blur(const HxStr &name);
 
-    /**
-     * @ghidraAddress NTSC-U/C: 0x004c0be8
-     * @ghidraAddress PAL: 0x004fecd8
-     */
     virtual ~Blur();
 
     /**
@@ -80,8 +74,6 @@ public:
      * pointer is stored before the null test, so clearing the mesh stores the null.
      *
      * @param pMesh The mesh to trail, or null for none.
-     * @ghidraAddress NTSC-U/C: 0x004c3758
-     * @ghidraAddress PAL: 0x00501880
      */
     void SetMesh(Mesh *pMesh);
 
@@ -91,8 +83,6 @@ public:
      * A text subject takes precedence over a mesh subject in DrawShowing().
      *
      * @param pText The text to trail, or null for none.
-     * @ghidraAddress NTSC-U/C: 0x004c37b8
-     * @ghidraAddress PAL: 0x005018e0
      */
     void SetText(Text *pText);
 
@@ -102,8 +92,6 @@ public:
      * A negative argument is clamped to 0, which disables the trail.
      *
      * @param nLength The number of transforms to record.
-     * @ghidraAddress NTSC-U/C: 0x004c3818
-     * @ghidraAddress PAL: 0x00501940
      */
     void SetLength(int nLength);
 
@@ -113,8 +101,6 @@ public:
      * An argument below 1 is clamped to 1.
      *
      * @param nRate The frame interval.
-     * @ghidraAddress NTSC-U/C: 0x004c3858
-     * @ghidraAddress PAL: 0x00501980
      */
     void SetRate(int nRate);
 
@@ -122,8 +108,6 @@ public:
      * Set the fraction of the subject's alpha the oldest trail step is drawn with.
      *
      * @param flFalloff The fraction.
-     * @ghidraAddress NTSC-U/C: 0x004c34b0
-     * @ghidraAddress PAL: 0x005015d8
      */
     void SetFalloff(float flFalloff);
 
@@ -131,8 +115,6 @@ public:
      * Report the mesh the trail is drawn from.
      *
      * @return The mesh, or null when none is set.
-     * @ghidraAddress NTSC-U/C: 0x004c3490
-     * @ghidraAddress PAL: 0x005015b8
      */
     Mesh *GetMesh() const;
 
@@ -140,8 +122,6 @@ public:
      * Report the text the trail is drawn from.
      *
      * @return The text, or null when none is set.
-     * @ghidraAddress NTSC-U/C: 0x004c3498
-     * @ghidraAddress PAL: 0x005015c0
      */
     Text *GetText() const;
 
@@ -149,8 +129,6 @@ public:
      * Report how many transforms the trail records.
      *
      * @return The number of transforms.
-     * @ghidraAddress NTSC-U/C: 0x004c34a0
-     * @ghidraAddress PAL: 0x005015c8
      */
     int GetLength() const;
 
@@ -158,8 +136,6 @@ public:
      * Report how many frames pass between two recorded transforms.
      *
      * @return The frame interval.
-     * @ghidraAddress NTSC-U/C: 0x004c34a8
-     * @ghidraAddress PAL: 0x005015d0
      */
     int GetRate() const;
 
@@ -167,8 +143,6 @@ public:
      * Report the alpha fraction of the oldest trail step.
      *
      * @return The fraction.
-     * @ghidraAddress NTSC-U/C: 0x004c34b8
-     * @ghidraAddress PAL: 0x005015e0
      */
     float GetFalloff() const;
 
@@ -179,8 +153,6 @@ public:
      * dump level. A subject that is not set produces "no object".
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x004bfee0
-     * @ghidraAddress PAL: 0x004fdf80
      */
     virtual void DumpText(Dbg &sink);
 
@@ -188,8 +160,6 @@ public:
      * Write this trail's serialised form to stream.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004c00b0
-     * @ghidraAddress PAL: 0x004fe150
      */
     virtual void Save(Stream &stream);
 
@@ -201,8 +171,6 @@ public:
      *
      * @param pFrom The object going away.
      * @param pTo The object to store instead, or null.
-     * @ghidraAddress NTSC-U/C: 0x004c04c0
-     * @ghidraAddress PAL: 0x004fe5b0
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -213,8 +181,6 @@ public:
      * with "Blur".
      *
      * @return The class key.
-     * @ghidraAddress NTSC-U/C: 0x004c3480
-     * @ghidraAddress PAL: 0x005015a8
      */
     virtual const HxStr &ClassName() const;
 
@@ -226,8 +192,6 @@ public:
      *
      * @param pSource The trail to copy from.
      * @param nFlags The set of fields to copy.
-     * @ghidraAddress NTSC-U/C: 0x004c35e8
-     * @ghidraAddress PAL: 0x00501710
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -238,8 +202,6 @@ public:
      * revision 1 and the text subject from revision 2.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x004c0258
-     * @ghidraAddress PAL: 0x004fe2f8
      */
     virtual void Load(Stream &stream);
 
@@ -248,8 +210,6 @@ public:
      *
      * @param name The registry key for the new trail.
      * @return The new trail.
-     * @ghidraAddress NTSC-U/C: 0x004c3570
-     * @ghidraAddress PAL: 0x00501698
      */
     static Blur *NewBlur(const HxStr &name);
 
@@ -263,8 +223,6 @@ public:
      *
      * @param name The registry key for the new trail.
      * @return The new trail, or null.
-     * @ghidraAddress NTSC-U/C: 0x004c3398
-     * @ghidraAddress PAL: 0x005014c0
      */
     static Blur *NewFromHook(const HxStr &name);
 
@@ -276,8 +234,6 @@ public:
      *
      * @param name The registry key to resolve.
      * @return The trail, or null.
-     * @ghidraAddress NTSC-U/C: 0x004c3418
-     * @ghidraAddress PAL: 0x00501540
      */
     static Blur *Find(const HxStr &name);
 
@@ -285,9 +241,6 @@ public:
      * Install the trail factory and register the class key with Rnd::TheManager.
      *
      * Rnd::Manager::Init() also expands this inline.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004c3358
-     * @ghidraAddress PAL: 0x00501480
      */
     static void Init();
 
@@ -307,8 +260,6 @@ protected:
      * stored.
      *
      * @return Non-zero, which draws the children as well.
-     * @ghidraAddress NTSC-U/C: 0x004c0638
-     * @ghidraAddress PAL: 0x004fe728
      */
     virtual int DrawShowing();
 
@@ -317,9 +268,6 @@ private:
      * Registers this object as a referrer of both subjects and discards the recorded transforms.
      *
      * The constructor, Copy(), and Load() are the callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004c36b0
-     * @ghidraAddress PAL: 0x005017d8
      */
     void AcquireObjectRefs();
 
@@ -327,13 +275,9 @@ private:
      * Drops this object's registration on both subjects.
      *
      * Copy() and Load() are the callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004c3708
-     * @ghidraAddress PAL: 0x00501830
      */
     void ReleaseObjectRefs();
 
-    // NTSC-U/C: 0x004c34c0, PAL: 0x005015e8
     // Discards the recorded transforms. The out-of-line copy has no caller, and the
     // setters clear mXfms directly. The name is inferred.
     void ClearXfms() {
@@ -368,9 +312,6 @@ private:
 
 /**
  * Class key a `.rnd` file writes for a trail.
- *
- * @ghidraAddress NTSC-U/C: 0x006fd248
- * @ghidraAddress PAL: 0x00740c38
  */
 extern HxStr g_blurClassName;
 
@@ -379,9 +320,6 @@ extern HxStr g_blurClassName;
  *
  * Load() stores the revision here rather than in a local, which is what lets the helpers it calls
  * test it. The word sits one word below Rnd::g_nRndMatLoadVersion in the same pool.
- *
- * @ghidraAddress NTSC-U/C: 0x00894e28
- * @ghidraAddress PAL: 0x008d9e38
  */
 extern int g_nRndBlurLoadRevision;
 
@@ -393,9 +331,6 @@ extern int g_nRndBlurLoadRevision;
  * Rnd::Manager::Init() writes the hook a second time, at `0x00519c98`.
  *
  * Blur::NewFromHook() is a second dispatcher through the same hook.
- *
- * @ghidraAddress NTSC-U/C: 0x006fd250
- * @ghidraAddress PAL: 0x00740c40
  */
 extern Blur *(*g_pfnNewBlur)(const HxStr &name);
 

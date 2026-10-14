@@ -17,35 +17,25 @@ namespace {
 // The value of the file-service open flag that opens for reading only.
 constexpr int kOpenReadOnly = 1;
 
-// NTSC-U/C: 0x0070bf10, PAL: 0x0074faa0
 int g_nHostMode = 0;
 
-// NTSC-U/C: 0x0070bf14, PAL: 0x0074faa4
 int g_nUsingArkFiles = 0;
 
-// NTSC-U/C: 0x0070bf18, PAL: 0x0074faa8
 int g_nWarningsEnabled = 1;
 
 // No routine writes this word. ConfigureRetailBoot() omits it from the block.
-// NTSC-U/C: 0x0070bf1c, PAL: 0x0074faac
 int g_nScreenMessagesEnabled = 1;
 
-// NTSC-U/C: 0x0070bf20, PAL: 0x0074fab0
 int g_nUsingCdMedia = 0;
 
-// NTSC-U/C: 0x0070bf24, PAL: 0x0074fab4
 int g_nDebugKeysEnabled = 0;
 
-// NTSC-U/C: 0x0070bf28, PAL: 0x0074fab8
 int g_nMidiErrorLogEnabled = 0;
 
-// NTSC-U/C: 0x0070bf2c, PAL: 0x0074fabc
 int g_nMemAccountingEnabled = 0;
 
-// NTSC-U/C: 0x0070bf30, PAL: 0x0074fac0
 int g_nIntroMovieEnabled = 1;
 
-// NTSC-U/C: 0x0070bf38, PAL: 0x0074fac8
 #ifdef VIDEO_STANDARD_PAL
 HxStr g_versionString("197");
 #else
@@ -60,7 +50,6 @@ int g_nLanguage = SCE_FRENCH_LANGUAGE;
 
 // Report that no configuration file was found, force the disc configuration, and open the memory
 // report. InitBootConfig() is the one caller.
-// NTSC-U/C: 0x0050dad8, PAL: 0x0054cfd0
 void ForceCdOnlyBoot() {
     printf(" Running from CD only, since we couldn't find the config file\n");
     g_nHostMode = kHostModeCdOnly;

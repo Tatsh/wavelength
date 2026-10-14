@@ -58,17 +58,11 @@ public:
      * GfxDevice::Init() overwrites the hook with the Rnd::PsMesh creator. A mesh loaded from a file
      * on the PlayStation 2 is therefore a PsMesh. Rnd::Blur, HudDisplay, and Rnd::Tunnel also build
      * their meshes through it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006eed60
-     * @ghidraAddress PAL: 0x00732780
      */
     static Mesh *(*sNew)(const HxStr &name);
 
     /**
      * Registered class name of Rnd::Mesh, the string "Mesh".
-     *
-     * @ghidraAddress NTSC-U/C: 0x006eed68
-     * @ghidraAddress PAL: 0x00732788
      */
     static HxStr sClassName;
 
@@ -129,15 +123,9 @@ public:
      * Construct an empty mesh that owns its own geometry.
      *
      * @param name The object name, passed to the Rnd::Object constructor.
-     * @ghidraAddress NTSC-U/C: 0x0047ff20
-     * @ghidraAddress PAL: 0x004bdc18
      */
     Mesh(const HxStr &name);
 
-    /**
-     * @ghidraAddress NTSC-U/C: 0x00492838
-     * @ghidraAddress PAL: 0x004d06e8
-     */
     virtual ~Mesh();
 
     /**
@@ -147,8 +135,6 @@ public:
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x00492590
-     * @ghidraAddress PAL: 0x004d0440
      */
     void *operator new(size_t nSize);
 
@@ -158,8 +144,6 @@ public:
      * The out-of-line copy has no caller.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x004925b0
-     * @ghidraAddress PAL: 0x004d0460
      */
     void operator delete(void *pBlock);
 
@@ -170,8 +154,6 @@ public:
      * the dump level of the sink is zero or negative.
      *
      * @param sink The text sink.
-     * @ghidraAddress NTSC-U/C: 0x00480d80
-     * @ghidraAddress PAL: 0x004bea78
      */
     virtual void DumpText(Dbg &sink);
 
@@ -183,8 +165,6 @@ public:
      * vertex, face, and edge vectors.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x00481300
-     * @ghidraAddress PAL: 0x004beff8
      */
     virtual void Save(Stream &stream);
 
@@ -197,8 +177,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The object to point at, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x00482810
-     * @ghidraAddress PAL: 0x004c05e0
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -209,8 +187,6 @@ public:
      * `Rnd::Manager::Init()` maps to the creator below.
      *
      * @return The class name.
-     * @ghidraAddress NTSC-U/C: 0x00492f00
-     * @ghidraAddress PAL: 0x004d0db0
      */
     virtual const HxStr &ClassName() const;
 
@@ -223,8 +199,6 @@ public:
      *
      * @param pSource The source object, which has to be a mesh for the copy to have any effect.
      * @param nFlags The copy flags.
-     * @ghidraAddress NTSC-U/C: 0x00482568
-     * @ghidraAddress PAL: 0x004c0338
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -237,8 +211,6 @@ public:
      * 10 are all still readable, and each version test is documented at its reading site.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x004817d0
-     * @ghidraAddress PAL: 0x004bf4c8
      */
     virtual void Load(Stream &stream);
 
@@ -249,8 +221,6 @@ public:
      * a non-null material.
      *
      * @param pMat The material, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493a78
-     * @ghidraAddress PAL: 0x004d1928
      */
     void SetMat(Mat *pMat);
 
@@ -272,8 +242,6 @@ public:
      * non-null owner.
      *
      * @param pOwner The transform, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493c40
-     * @ghidraAddress PAL: 0x004d1af0
      */
     void SetTransOwner(Transformable *pOwner);
 
@@ -288,8 +256,6 @@ public:
      *
      * @param pNext The next mesh in the chain, or null.
      * @param flMinScreen The smallest screen size to draw this mesh at, or zero to always draw it.
-     * @ghidraAddress NTSC-U/C: 0x004925d8
-     * @ghidraAddress PAL: 0x004d0488
      */
     void SetNext(Mesh *pNext, float flMinScreen);
 
@@ -300,8 +266,6 @@ public:
      * no caller. The title is inferred.
      *
      * @param pOwner The owner, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493c98
-     * @ghidraAddress PAL: 0x004d1b48
      */
     void SetTrans1Owner(Transformable *pOwner);
 
@@ -311,8 +275,6 @@ public:
      * Recorded on the same evidence as SetTrans1Owner().
      *
      * @param pOwner The owner, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493cf0
-     * @ghidraAddress PAL: 0x004d1ba0
      */
     void SetTrans2Owner(Transformable *pOwner);
 
@@ -323,8 +285,6 @@ public:
      * unscaled. The out-of-line copy has no caller. The title is inferred.
      *
      * @return The sphere.
-     * @ghidraAddress NTSC-U/C: 0x00492e98
-     * @ghidraAddress PAL: 0x004d0d48
      */
     Sphere WorldSphere();
 
@@ -332,9 +292,6 @@ public:
      * Dispatch Sync().
      *
      * The out-of-line copy has no caller. The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004940a8
-     * @ghidraAddress PAL: 0x004d1f58
      */
     void ForwardSync();
 
@@ -347,8 +304,6 @@ public:
      * with a zero radius. The routine has no caller, and the title is inferred.
      *
      * @return The sphere.
-     * @ghidraAddress NTSC-U/C: 0x00483030
-     * @ghidraAddress PAL: 0x004c0e00
      */
     Sphere BoundingSphere();
 
@@ -359,8 +314,6 @@ public:
      * and the title is inferred.
      *
      * @return The box.
-     * @ghidraAddress NTSC-U/C: 0x00493fb8
-     * @ghidraAddress PAL: 0x004d1e68
      */
     Box BoundingBox();
 
@@ -383,8 +336,6 @@ public:
      * mesh then runs SyncAll() and Sync(). The routine has no caller, and the title is inferred.
      *
      * @param flHalfSize Half the length of a side.
-     * @ghidraAddress NTSC-U/C: 0x00485978
-     * @ghidraAddress PAL: 0x004c3748
      */
     void MakeCube(float flHalfSize);
 
@@ -404,8 +355,6 @@ public:
      * The routine has no caller, and the title is inferred.
      *
      * @param bPositionOnly Weld vertices by position alone, ignoring colour.
-     * @ghidraAddress NTSC-U/C: 0x00485ef0
-     * @ghidraAddress PAL: 0x004c3cc0
      */
     void ComputeNormals(bool bPositionOnly);
 
@@ -425,8 +374,6 @@ public:
      * caller, and the title is inferred.
      *
      * @param bAverageColors Give each flat face the mean colour of its vertices.
-     * @ghidraAddress NTSC-U/C: 0x00483e70
-     * @ghidraAddress PAL: 0x004c1c40
      */
     void WeldVerts(bool bAverageColors);
 
@@ -438,8 +385,6 @@ public:
      * and calls SyncAll().
      *
      * @param pOwner The owner, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493b60
-     * @ghidraAddress PAL: 0x004d1a10
      */
     void SetVertsOwner(Mesh *pOwner);
 
@@ -449,8 +394,6 @@ public:
      * The same shape as SetVertsOwner(), ending with Sync() instead of SyncAll().
      *
      * @param pOwner The owner, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493bd0
-     * @ghidraAddress PAL: 0x004d1a80
      */
     void SetFacesOwner(Mesh *pOwner);
 
@@ -458,8 +401,6 @@ public:
      * Set the material of this mesh and of every coarser level of its mNext chain.
      *
      * @param pMat The material, or null.
-     * @ghidraAddress NTSC-U/C: 0x00493ac8
-     * @ghidraAddress PAL: 0x004d1978
      */
     void SetMaterialChain(Mat *pMat);
 
@@ -468,8 +409,6 @@ public:
      *
      * @param zMode The depth buffer read and write mode.
      * @param zFunc The depth comparison.
-     * @ghidraAddress NTSC-U/C: 0x00493b30
-     * @ghidraAddress PAL: 0x004d19e0
      */
     void SetDepthChain(ZMode zMode, ZFunc zFunc);
 
@@ -477,8 +416,6 @@ public:
      * Give every vertex of mVertsOwner one colour and report the change through SyncChanged().
      *
      * @param color The colour.
-     * @ghidraAddress NTSC-U/C: 0x00494048
-     * @ghidraAddress PAL: 0x004d1ef8
      */
     void SetVertexColor(const Color &color);
 
@@ -489,9 +426,6 @@ public:
      * Defined in the header. The one out-of-line copy is emitted in FreqAppearanceDetail's
      * translation unit and has no caller, and FreqAppearanceDetail::unpack() expands the body. The
      * title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0024ed50
-     * @ghidraAddress PAL: 0x00264178
      */
     void MirrorX() {
         Vec3Scale(mLocalXfm[0], -1.0f, mLocalXfm[0]);
@@ -634,8 +568,6 @@ public:
      *
      * @param worldSphere Receives the bounding sphere in world space.
      * @return Non-zero when the caller is to draw this mesh.
-     * @ghidraAddress NTSC-U/C: 0x00480818
-     * @ghidraAddress PAL: 0x004be510
      */
     int PrepareDraw(Sphere &worldSphere);
 
@@ -652,8 +584,6 @@ public:
      *
      * @param ray The segment to test along.
      * @param collisions The list to append intersections to.
-     * @ghidraAddress NTSC-U/C: 0x0047f950
-     * @ghidraAddress PAL: 0x004bd648
      */
     virtual void FindCollisions(const Segment &ray, std::list<Collision> &collisions);
 
@@ -667,9 +597,6 @@ public:
      * the slot on the mesh it owns, and Rnd::Text derives from Rnd::Drawable rather than from this
      * class, which protected access cannot express. A friend declaration would fit the image
      * equally well; public asserts the weaker of the two.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00492770
-     * @ghidraAddress PAL: 0x004d0620
      */
     virtual void Sync();
 
@@ -681,8 +608,6 @@ public:
      * it on the mesh it animates, from outside this hierarchy and with no accessor in the image.
      *
      * @param nMask The changed parts, a set of the kSync bits above.
-     * @ghidraAddress NTSC-U/C: 0x00492778
-     * @ghidraAddress PAL: 0x004d0628
      */
     virtual void SyncChanged(int nMask);
 
@@ -691,9 +616,6 @@ public:
      *
      * Rnd::Drawable vtable slot 6. Public on the same evidence as Sync(), the same builder
      * dispatching the slot at `0x004c9be8`.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00492780
-     * @ghidraAddress PAL: 0x004d0630
      */
     virtual void SyncAll();
 
@@ -706,9 +628,6 @@ protected:
      *
      * Adds a reference for each of the seven object references, then calls SyncAll() followed by
      * Sync().
-     *
-     * @ghidraAddress NTSC-U/C: 0x00493e10
-     * @ghidraAddress PAL: 0x004d1cc0
      */
     virtual void AddRefObjects();
 
@@ -721,9 +640,6 @@ private:
      * Drop the reference on each object this mesh points at.
      *
      * The destructor, Load(), and Copy() are its callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00493d48
-     * @ghidraAddress PAL: 0x004d1bf8
      */
     void ReleaseObjects();
 
@@ -732,9 +648,6 @@ private:
      * mFacesOwner is another mesh.
      *
      * Load() and Copy() are its callers.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0047fe68
-     * @ghidraAddress PAL: 0x004bdb60
      */
     void ClearSharedGeometry();
 
@@ -759,9 +672,6 @@ private:
      *
      * Records primary in face.mPrimaryFace whether or not it joins. AssignFlatVerts() is the only
      * caller.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004832d0
-     * @ghidraAddress PAL: 0x004c10a0
      */
     friend bool JoinFaces(Mesh *pMesh, FlatFace &primary, FlatFace &face);
 
@@ -775,9 +685,6 @@ private:
      * and Sync() follows. WeldVerts() is the only caller. The matcher at 0x00569bf0 is upstream
      * code from the vendored netflow package (its diagnostics read "Inconsistent matching between
      * %d(U) and %d(V)"), and it is not reconstructed.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00483438
-     * @ghidraAddress PAL: 0x004c1208
      */
     void AssignFlatVerts(std::list<MeshAnim *> &anims);
 
@@ -853,7 +760,6 @@ public:
     int mMutable;
 };
 
-// NTSC-U/C: 0x002723a0, PAL: 0x0028a830
 inline void Mesh::ScaleUniform(float flScale) {
     Vec3Scale(mLocalXfm[0], flScale, mLocalXfm[0]);
     Vec3Scale(mLocalXfm[1], flScale, mLocalXfm[1]);
@@ -868,8 +774,6 @@ inline void Mesh::ScaleUniform(float flScale) {
  *
  * @param name The object name.
  * @return The new mesh.
- * @ghidraAddress NTSC-U/C: 0x00492ff0
- * @ghidraAddress PAL: 0x004d0ea0
  */
 Mesh *NewMesh(const HxStr &name);
 
@@ -882,8 +786,6 @@ Mesh *NewMesh(const HxStr &name);
  *
  * @param name The object name.
  * @return The new mesh, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x00492f50
- * @ghidraAddress PAL: 0x004d0e00
  */
 Object *CreateRegisteredMesh(const HxStr &name);
 
@@ -896,8 +798,6 @@ Object *CreateRegisteredMesh(const HxStr &name);
  *
  * @param name The object name.
  * @return The new mesh.
- * @ghidraAddress NTSC-U/C: 0x004926f0
- * @ghidraAddress PAL: 0x004d05a0
  */
 Mesh *NewMeshThroughHook(const HxStr &name);
 
@@ -908,9 +808,6 @@ Mesh *NewMeshThroughHook(const HxStr &name);
  * at 0x006068c8), and the static initialiser at 0x0049afe0 inlines the body.
  *
  * Rnd::Manager::Init() also expands this inline.
- *
- * @ghidraAddress NTSC-U/C: 0x004926b0
- * @ghidraAddress PAL: 0x004d0560
  */
 inline void RegisterMeshClass() {
     Mesh::sNew = NewMesh;
@@ -926,9 +823,6 @@ inline void RegisterMeshClass() {
  * the neighbouring words are the same thing for other classes; `0x00894d64` is the tunnel version
  * and `0x00894e2c` is the material version. The file-wide version Rnd::Manager::Read() consults at
  * `0x0089df90` is a separate mechanism that never interacts with this one.
- *
- * @ghidraAddress NTSC-U/C: 0x00894d68
- * @ghidraAddress PAL: 0x008d9d78
  */
 extern int g_nRndMeshLoadVersion;
 

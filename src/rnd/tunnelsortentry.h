@@ -23,8 +23,6 @@ public:
      * @param pMesh The mesh.
      * @param nIndex A word stored alongside.
      * @param eye The eye point.
-     * @ghidraAddress NTSC-U/C: 0x00476930
-     * @ghidraAddress PAL: 0x004b45a8
      */
     TunnelSortEntry(Mesh *pMesh, int nIndex, const Vector3 &eye) : mMesh(pMesh), mIndex(nIndex) {
         const std::vector<MeshVert> &verts = pMesh->mVertsOwner->mVerts;

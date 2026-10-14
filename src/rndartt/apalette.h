@@ -46,8 +46,6 @@ public:
      * The second emission of the same body is at 0x0061d4a0.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x005f9cf8
-     * @ghidraAddress PAL: 0x0063aa08
      */
     static void operator delete(void *pBlock) {
         OperatorDeleteOverride(pBlock, "APalette");
@@ -96,8 +94,6 @@ public:
      * @param pEntries The entries to copy in.
      * @param nFirst The first palette index to write.
      * @param nCount The number of entries to write.
-     * @ghidraAddress NTSC-U/C: 0x00613df8
-     * @ghidraAddress PAL: 0x00654988
      */
     void SetEntries(const unsigned int *pEntries, int nFirst, int nCount);
 
@@ -110,8 +106,6 @@ public:
      * @param pRGB The entries to copy in, three bytes each in red, green, blue order.
      * @param nFirst The first palette index to write.
      * @param nCount The number of entries to write.
-     * @ghidraAddress NTSC-U/C: 0x00613e48
-     * @ghidraAddress PAL: 0x006549d8
      */
     void SetEntriesRGB(const unsigned char *pRGB, int nFirst, int nCount);
 
@@ -129,8 +123,6 @@ public:
      * @param nFirst The first index to consider.
      * @param nLast The last index to consider.
      * @return The nearest index, or zero when the range is empty.
-     * @ghidraAddress NTSC-U/C: 0x00613f10
-     * @ghidraAddress PAL: 0x00654aa0
      */
     int FindClosest(unsigned int nColor, int nFirst, int nLast) const;
 
@@ -148,8 +140,6 @@ public:
      *
      * @param keys The keys, in the order the quantiser indexes them.
      * @param palette The palette to fill.
-     * @ghidraAddress NTSC-U/C: 0x00557970
-     * @ghidraAddress PAL: 0x00598ac8
      */
     static void BuildRampPalette(const std::vector<NormalKey> &keys, APalette &palette);
 

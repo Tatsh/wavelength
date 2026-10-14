@@ -11,7 +11,6 @@ enum {
     kStatusMask = 0xf0,
 };
 
-// NTSC-U/C: 0x005e4600, PAL: 0x006267c0
 static int put_message(sceCslCtx *pCtx, unsigned int nPort, unsigned char *pBytes, int nCount) {
     sceCslBuffGrp *pGroups;
     sceCslMidiStream *pStream;

@@ -2,7 +2,6 @@
 
 #include <utility>
 
-// NTSC-U/C: 0x00773fb0, PAL: 0x007506a8
 ScriptTemplateMap g_scriptTemplates;
 
 void ScriptTemplateMap::Add(int nTemplate, const HxStr &text) {

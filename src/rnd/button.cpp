@@ -94,22 +94,16 @@ Stream &operator>>(Stream &stream, std::vector<T *> &entries) {
     return stream;
 }
 
-// NTSC-U/C: 0x005336b0, PAL: 0x00572ed0
 template Dbg &operator<< <Mat>(Dbg &sink, const std::vector<Mat *> &entries);
 
-// NTSC-U/C: 0x005337e8, PAL: 0x00573008
 template Dbg &operator<< <Font>(Dbg &sink, const std::vector<Font *> &entries);
 
-// NTSC-U/C: 0x00533920, PAL: 0x00573140
 template Stream &operator<< <Mat>(Stream &stream, const std::vector<Mat *> &entries);
 
-// NTSC-U/C: 0x00533a10, PAL: 0x00573230
 template Stream &operator<< <Font>(Stream &stream, const std::vector<Font *> &entries);
 
-// NTSC-U/C: 0x00533e08, PAL: 0x00573628
 template Stream &operator>> <Mat>(Stream &stream, std::vector<Mat *> &entries);
 
-// NTSC-U/C: 0x00534290, PAL: 0x00573ad8
 template Stream &operator>> <Font>(Stream &stream, std::vector<Font *> &entries);
 
 } // namespace
@@ -384,7 +378,6 @@ Button *NewButton(const HxStr &name) {
     return new Button(name);
 }
 
-// NTSC-U/C: 0x0071d900, PAL: 0x00761370
 Button *(*g_pfnNewButton)(const HxStr &name) = NewButton;
 
 Button *NewButtonThroughHook(const HxStr &name) {
@@ -408,10 +401,8 @@ void RegisterButtonClass() {
     TheManager.RegisterClass(g_buttonClassName, CreateRegisteredButton);
 }
 
-// NTSC-U/C: 0x0071d8f8, PAL: 0x00761368
 HxStr g_buttonClassName("Button");
 
-// NTSC-U/C: 0x0089e060, PAL: 0x008e2ffc
 int g_nRndButtonLoadVersion;
 
 } // namespace Rnd

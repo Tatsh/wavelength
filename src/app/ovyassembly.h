@@ -31,8 +31,6 @@ public:
      * @param flFrom The frame at raw ramp position 0.
      * @param flTo The frame at raw ramp position 1.
      * @param flDuration The time the ramp takes to cover the range.
-     * @ghidraAddress NTSC-U/C: 0x0042a888
-     * @ghidraAddress PAL: 0x00465bd8
      */
     OvyAssembly(const HxStr &name, float flFrom, float flTo, float flDuration);
 
@@ -42,8 +40,6 @@ public:
      * The out-of-line copy has no caller. The title is inferred.
      *
      * @param flTarget The raw target.
-     * @ghidraAddress NTSC-U/C: 0x0042a958
-     * @ghidraAddress PAL: 0x00465ca8
      */
     void SetTarget(float flTarget);
 
@@ -53,8 +49,6 @@ public:
      * The out-of-line copy has no caller. The title is inferred.
      *
      * @param flTarget The raw target.
-     * @ghidraAddress NTSC-U/C: 0x0042a978
-     * @ghidraAddress PAL: 0x00465cc8
      */
     void Jump(float flTarget);
 
@@ -64,8 +58,6 @@ public:
      * The panel inlines the body, and this copy has no caller.
      *
      * @param flTime The time the ramp runs against.
-     * @ghidraAddress NTSC-U/C: 0x0042a998
-     * @ghidraAddress PAL: 0x00465ce8
      */
     void Execute(float flTime);
 

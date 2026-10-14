@@ -153,8 +153,6 @@ public:
          *
          * @param flValue The value to map.
          * @return The mapped value.
-         * @ghidraAddress NTSC-U/C: 0x0049a560
-         * @ghidraAddress PAL: 0x004d84c8
          */
         virtual float Unapply(float flValue);
 
@@ -238,8 +236,6 @@ public:
          *
          * @param flValue The value to map.
          * @return flValue times mScale plus mOffset.
-         * @ghidraAddress NTSC-U/C: 0x00498ef0
-         * @ghidraAddress PAL: 0x004d6e50
          */
         virtual float Apply(float flValue);
 
@@ -250,8 +246,6 @@ public:
          *
          * @param flValue The value to map.
          * @return flValue less mOffset, divided by mScale.
-         * @ghidraAddress NTSC-U/C: 0x00498f08
-         * @ghidraAddress PAL: 0x004d6e68
          */
         virtual float Unapply(float flValue);
 
@@ -259,8 +253,6 @@ public:
          * Write "(scale:%.2f offset:%.2f)" to sink.
          *
          * @param sink The diagnostic sink to write to.
-         * @ghidraAddress NTSC-U/C: 0x00498f20
-         * @ghidraAddress PAL: 0x004d6e80
          */
         virtual void Print(Dbg &sink) const;
 
@@ -268,8 +260,6 @@ public:
          * Write both parameters to stream.
          *
          * @param stream The stream to write to.
-         * @ghidraAddress NTSC-U/C: 0x00498fc0
-         * @ghidraAddress PAL: 0x004d6f20
          */
         virtual void Save(Stream &stream);
 
@@ -277,8 +267,6 @@ public:
          * Read both parameters from stream.
          *
          * @param stream The stream to read from.
-         * @ghidraAddress NTSC-U/C: 0x00499030
-         * @ghidraAddress PAL: 0x004d6f90
          */
         virtual void Load(Stream &stream);
 
@@ -286,8 +274,6 @@ public:
          * Report kFilterScaleOffset.
          *
          * @return The type tag.
-         * @ghidraAddress NTSC-U/C: 0x00499090
-         * @ghidraAddress PAL: 0x004d6ff0
          */
         virtual int Type();
 
@@ -295,8 +281,6 @@ public:
          * Copy both parameters from pSource.
          *
          * @param pSource The ScaleOffset to copy.
-         * @ghidraAddress NTSC-U/C: 0x00499098
-         * @ghidraAddress PAL: 0x004d6ff8
          */
         virtual void Copy(const Filter *pSource);
 
@@ -317,9 +301,6 @@ public:
     public:
         /**
          * Construct a stage with indeterminate parameters.
-         *
-         * @ghidraAddress NTSC-U/C: 0x004990b8
-         * @ghidraAddress PAL: 0x004d7018
          */
         MinMaxLoop() {
         }
@@ -330,8 +311,6 @@ public:
          * @param flMin The lower end of the range.
          * @param flMax The upper end of the range.
          * @param nLoop Non-zero to wrap into the range instead of clamping to it.
-         * @ghidraAddress NTSC-U/C: 0x004990d0
-         * @ghidraAddress PAL: 0x004d7030
          */
         MinMaxLoop(float flMin, float flMax, int nLoop) : mMin(flMin), mMax(flMax), mLoop(nLoop) {
         }
@@ -344,8 +323,6 @@ public:
          *
          * @param flValue The value to map.
          * @return The value brought into the range.
-         * @ghidraAddress NTSC-U/C: 0x0049a4b8
-         * @ghidraAddress PAL: 0x004d8420
          */
         virtual float Apply(float flValue);
 
@@ -353,8 +330,6 @@ public:
          * Write "(min:%.2f max:%.2f loop:true)" to sink, with mLoop as a word rather than a number.
          *
          * @param sink The diagnostic sink to write to.
-         * @ghidraAddress NTSC-U/C: 0x004990f0
-         * @ghidraAddress PAL: 0x004d7050
          */
         virtual void Print(Dbg &sink) const;
 
@@ -362,8 +337,6 @@ public:
          * Write the two ends as floats and mLoop as a single byte.
          *
          * @param stream The stream to write to.
-         * @ghidraAddress NTSC-U/C: 0x004991c8
-         * @ghidraAddress PAL: 0x004d7128
          */
         virtual void Save(Stream &stream);
 
@@ -371,8 +344,6 @@ public:
          * Read the two ends as floats and mLoop as a single byte.
          *
          * @param stream The stream to read from.
-         * @ghidraAddress NTSC-U/C: 0x00499258
-         * @ghidraAddress PAL: 0x004d71b8
          */
         virtual void Load(Stream &stream);
 
@@ -380,8 +351,6 @@ public:
          * Report kFilterMinMaxLoop.
          *
          * @return The type tag.
-         * @ghidraAddress NTSC-U/C: 0x004992e0
-         * @ghidraAddress PAL: 0x004d7240
          */
         virtual int Type();
 
@@ -389,8 +358,6 @@ public:
          * Copy all three parameters from pSource.
          *
          * @param pSource The MinMaxLoop to copy.
-         * @ghidraAddress NTSC-U/C: 0x004992e8
-         * @ghidraAddress PAL: 0x004d7248
          */
         virtual void Copy(const Filter *pSource);
 
@@ -433,8 +400,6 @@ public:
          *
          * @param flValue The value to move towards.
          * @return The new mLevel.
-         * @ghidraAddress NTSC-U/C: 0x0049a568
-         * @ghidraAddress PAL: 0x004d84d0
          */
         virtual float Apply(float flValue);
 
@@ -446,8 +411,6 @@ public:
          *
          * @param flValue The value the last Apply() received.
          * @return The earlier level.
-         * @ghidraAddress NTSC-U/C: 0x0049a5b8
-         * @ghidraAddress PAL: 0x004d8520
          */
         virtual float Unapply(float flValue);
 
@@ -455,8 +418,6 @@ public:
          * Write "(level:%.2f maxDelta:%.2f)" to sink.
          *
          * @param sink The diagnostic sink to write to.
-         * @ghidraAddress NTSC-U/C: 0x00499348
-         * @ghidraAddress PAL: 0x004d72a8
          */
         virtual void Print(Dbg &sink) const;
 
@@ -464,8 +425,6 @@ public:
          * Write both parameters to stream.
          *
          * @param stream The stream to write to.
-         * @ghidraAddress NTSC-U/C: 0x004993e8
-         * @ghidraAddress PAL: 0x004d7348
          */
         virtual void Save(Stream &stream);
 
@@ -473,8 +432,6 @@ public:
          * Read both parameters from stream.
          *
          * @param stream The stream to read from.
-         * @ghidraAddress NTSC-U/C: 0x00499458
-         * @ghidraAddress PAL: 0x004d73b8
          */
         virtual void Load(Stream &stream);
 
@@ -482,8 +439,6 @@ public:
          * Report kFilterZeroOrder.
          *
          * @return The type tag.
-         * @ghidraAddress NTSC-U/C: 0x004994b8
-         * @ghidraAddress PAL: 0x004d7418
          */
         virtual int Type();
 
@@ -491,8 +446,6 @@ public:
          * Copy both parameters from pSource.
          *
          * @param pSource The ZeroOrder to copy.
-         * @ghidraAddress NTSC-U/C: 0x004994c0
-         * @ghidraAddress PAL: 0x004d7420
          */
         virtual void Copy(const Filter *pSource);
 
@@ -529,8 +482,6 @@ public:
          *
          * @param flValue The value to move towards.
          * @return The new mLevel.
-         * @ghidraAddress NTSC-U/C: 0x004994e0
-         * @ghidraAddress PAL: 0x004d7440
          */
         virtual float Apply(float flValue);
 
@@ -541,8 +492,6 @@ public:
          *
          * @param flValue The value the last Apply() received.
          * @return The earlier level.
-         * @ghidraAddress NTSC-U/C: 0x00499500
-         * @ghidraAddress PAL: 0x004d7460
          */
         virtual float Unapply(float flValue);
 
@@ -550,8 +499,6 @@ public:
          * Write "(level:%.2f ratio:%.2f)" to sink.
          *
          * @param sink The diagnostic sink to write to.
-         * @ghidraAddress NTSC-U/C: 0x00499528
-         * @ghidraAddress PAL: 0x004d7488
          */
         virtual void Print(Dbg &sink) const;
 
@@ -559,8 +506,6 @@ public:
          * Write both parameters to stream.
          *
          * @param stream The stream to write to.
-         * @ghidraAddress NTSC-U/C: 0x004995c8
-         * @ghidraAddress PAL: 0x004d7528
          */
         virtual void Save(Stream &stream);
 
@@ -568,8 +513,6 @@ public:
          * Read both parameters from stream.
          *
          * @param stream The stream to read from.
-         * @ghidraAddress NTSC-U/C: 0x00499638
-         * @ghidraAddress PAL: 0x004d7598
          */
         virtual void Load(Stream &stream);
 
@@ -577,8 +520,6 @@ public:
          * Report kFilterFirstOrder.
          *
          * @return The type tag.
-         * @ghidraAddress NTSC-U/C: 0x00499698
-         * @ghidraAddress PAL: 0x004d75f8
          */
         virtual int Type();
 
@@ -586,8 +527,6 @@ public:
          * Copy both parameters from pSource.
          *
          * @param pSource The FirstOrder to copy.
-         * @ghidraAddress NTSC-U/C: 0x004996a0
-         * @ghidraAddress PAL: 0x004d7600
          */
         virtual void Copy(const Filter *pSource);
 
@@ -632,8 +571,6 @@ public:
          *
          * @param flValue The value to move towards.
          * @return The new mLevel.
-         * @ghidraAddress NTSC-U/C: 0x0049a5f8
-         * @ghidraAddress PAL: 0x004d8560
          */
         virtual float Apply(float flValue);
 
@@ -644,8 +581,6 @@ public:
          *
          * @param flValue The value the last Apply() received.
          * @return The earlier level.
-         * @ghidraAddress NTSC-U/C: 0x0049a630
-         * @ghidraAddress PAL: 0x004d8598
          */
         virtual float Unapply(float flValue);
 
@@ -657,8 +592,6 @@ public:
          * original text rather than of the recovery.
          *
          * @param sink The diagnostic sink to write to.
-         * @ghidraAddress NTSC-U/C: 0x00499700
-         * @ghidraAddress PAL: 0x004d7660
          */
         virtual void Print(Dbg &sink) const;
 
@@ -666,8 +599,6 @@ public:
          * Write the three spring parameters to stream, the velocity excluded.
          *
          * @param stream The stream to write to.
-         * @ghidraAddress NTSC-U/C: 0x00499800
-         * @ghidraAddress PAL: 0x004d7760
          */
         virtual void Save(Stream &stream);
 
@@ -678,8 +609,6 @@ public:
          * by NewFilter() starts at rest.
          *
          * @param stream The stream to read from.
-         * @ghidraAddress NTSC-U/C: 0x00499890
-         * @ghidraAddress PAL: 0x004d77f0
          */
         virtual void Load(Stream &stream);
 
@@ -687,8 +616,6 @@ public:
          * Report kFilterSecondOrder.
          *
          * @return The type tag.
-         * @ghidraAddress NTSC-U/C: 0x00499908
-         * @ghidraAddress PAL: 0x004d7868
          */
         virtual int Type();
 
@@ -696,8 +623,6 @@ public:
          * Copy all four members from pSource.
          *
          * @param pSource The SecondOrder to copy.
-         * @ghidraAddress NTSC-U/C: 0x00499910
-         * @ghidraAddress PAL: 0x004d7870
          */
         virtual void Copy(const Filter *pSource);
 
@@ -714,17 +639,11 @@ public:
 
     /**
      * Construct an animatable with no children, no filters, and a zero frame.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0049a108
-     * @ghidraAddress PAL: 0x004d8068
      */
     Animatable();
 
     /**
      * Drop this object's references on its children and delete its filters.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00499f48
-     * @ghidraAddress PAL: 0x004d7ea8
      */
     virtual ~Animatable();
 
@@ -736,8 +655,6 @@ public:
      * parent in the animation hierarchy rather than a plain cast.
      *
      * @return The parent animatable, or null when no referrer animates this one.
-     * @ghidraAddress NTSC-U/C: 0x00494a88
-     * @ghidraAddress PAL: 0x004d2950
      */
     Animatable *Parent();
 
@@ -748,8 +665,6 @@ public:
      * "%s already in %s" and no insertion.
      *
      * @param pAnim The animatable to add.
-     * @ghidraAddress NTSC-U/C: 0x004953c0
-     * @ghidraAddress PAL: 0x004d3288
      */
     void AddAnim(Animatable *pAnim);
 
@@ -759,8 +674,6 @@ public:
      * Drops this object's reference on pAnim first. A pAnim absent from mAnims does nothing.
      *
      * @param pAnim The animatable to remove.
-     * @ghidraAddress NTSC-U/C: 0x00495540
-     * @ghidraAddress PAL: 0x004d3408
      */
     void RemoveAnim(Animatable *pAnim);
 
@@ -773,8 +686,6 @@ public:
      * applies its own filters to it in turn.
      *
      * @param flFrame The frame to move to.
-     * @ghidraAddress NTSC-U/C: 0x0049a428
-     * @ghidraAddress PAL: 0x004d8390
      */
     void SetFrame(float flFrame);
 
@@ -787,8 +698,6 @@ public:
      *
      * @param flValue The value to map.
      * @return The value in this object's incoming frame numbering.
-     * @ghidraAddress NTSC-U/C: 0x00495050
-     * @ghidraAddress PAL: 0x004d2f18
      */
     float UnfilterFrame(float flValue);
 
@@ -811,8 +720,6 @@ public:
      * The list takes ownership, and the destructor deletes the filter.
      *
      * @param pFilter The filter to append.
-     * @ghidraAddress NTSC-U/C: 0x00499940
-     * @ghidraAddress PAL: 0x004d78a0
      */
     void AddFilter(Filter *pFilter);
 
@@ -821,8 +728,6 @@ public:
      *
      * @param flScale The multiplier.
      * @param flOffset The addend.
-     * @ghidraAddress NTSC-U/C: 0x004999e8
-     * @ghidraAddress PAL: 0x004d7948
      */
     void AddScaleOffset(float flScale, float flOffset);
 
@@ -832,8 +737,6 @@ public:
      * @param flMin The lower end of the range.
      * @param flMax The upper end of the range.
      * @param nLoop Non-zero to wrap into the range instead of clamping to it.
-     * @ghidraAddress NTSC-U/C: 0x00499ae0
-     * @ghidraAddress PAL: 0x004d7a40
      */
     void AddMinMaxLoop(float flMin, float flMax, int nLoop);
 
@@ -842,8 +745,6 @@ public:
      *
      * @param flLevel The starting output.
      * @param flMaxDelta The largest step one frame may take.
-     * @ghidraAddress NTSC-U/C: 0x00499be8
-     * @ghidraAddress PAL: 0x004d7b48
      */
     void AddZeroOrder(float flLevel, float flMaxDelta);
 
@@ -852,8 +753,6 @@ public:
      *
      * @param flLevel The starting output.
      * @param flRatio The fraction of the remaining distance each frame covers.
-     * @ghidraAddress NTSC-U/C: 0x00499ce0
-     * @ghidraAddress PAL: 0x004d7c40
      */
     void AddFirstOrder(float flLevel, float flRatio);
 
@@ -863,8 +762,6 @@ public:
      * @param flLevel The starting output.
      * @param flSpring The acceleration per unit of distance to the input.
      * @param flDamper The fraction of the velocity shed each frame.
-     * @ghidraAddress NTSC-U/C: 0x00499dd8
-     * @ghidraAddress PAL: 0x004d7d38
      */
     void AddSecondOrder(float flLevel, float flSpring, float flDamper);
 
@@ -874,8 +771,6 @@ public:
      * An index at or past the end does nothing. No call site survives in the shipped build.
      *
      * @param nIndex How far into mFilters the filter sits.
-     * @ghidraAddress NTSC-U/C: 0x00494c00
-     * @ghidraAddress PAL: 0x004d2ac8
      */
     void RemoveFilter(int nIndex);
 
@@ -887,8 +782,6 @@ public:
      *
      * @param nIndex How far into mFilters the filter sits.
      * @return The filter.
-     * @ghidraAddress NTSC-U/C: 0x0049a0b0
-     * @ghidraAddress PAL: 0x004d8010
      */
     Filter *FilterAt(int nIndex);
 
@@ -901,8 +794,6 @@ public:
      * definition sits in the unit of the tunnel object cache. The title is inferred.
      *
      * @param flRate The new multiplier.
-     * @ghidraAddress NTSC-U/C: 0x0040d2b0
-     * @ghidraAddress PAL: 0x00446d10
      */
     void SetRate(float flRate);
 
@@ -914,8 +805,6 @@ public:
      * The title is inferred.
      *
      * @param flOffset The new addend.
-     * @ghidraAddress NTSC-U/C: 0x0040d3d0
-     * @ghidraAddress PAL: 0x00446e30
      */
     void SetOffset(float flOffset);
 
@@ -928,8 +817,6 @@ public:
      *
      * @param flMin The new lower end.
      * @param flMax The new upper end.
-     * @ghidraAddress NTSC-U/C: 0x0040d4a8
-     * @ghidraAddress PAL: 0x00446f08
      */
     void SetLoopRange(float flMin, float flMax);
 
@@ -941,8 +828,6 @@ public:
      *
      * @param nType One of the FilterType constants.
      * @return The new filter, or null for an unrecognised tag.
-     * @ghidraAddress NTSC-U/C: 0x004950e8
-     * @ghidraAddress PAL: 0x004d2fb0
      */
     static Filter *NewFilter(int nType);
 
@@ -955,8 +840,6 @@ public:
      * override it with the timestamp of their last keyframe.
      *
      * @return The last frame, never below zero.
-     * @ghidraAddress NTSC-U/C: 0x00494b50
-     * @ghidraAddress PAL: 0x004d2a18
      */
     virtual float FilteredFrameEnd();
 
@@ -967,9 +850,6 @@ public:
      * entry. Rnd::ParticleSys overrides it at `0x0052c490`, releases its live particles, and then
      * chains to this implementation. The title is inferred from that one override. No string in the
      * image identifies the slot, and no direct call site survives.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0049a3b8
-     * @ghidraAddress PAL: 0x004d8320
      */
     virtual void StartAnim();
 
@@ -981,8 +861,6 @@ public:
      * produces no output on this target in any case.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x0049a640
-     * @ghidraAddress PAL: 0x004d85a8
      */
     virtual void DumpText(Dbg &sink);
 
@@ -990,8 +868,6 @@ public:
      * Write the revision, mFilters, and mAnims to stream.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x0049a6e8
-     * @ghidraAddress PAL: 0x004d8650
      */
     virtual void Save(Stream &stream);
 
@@ -1000,8 +876,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
-     * @ghidraAddress NTSC-U/C: 0x004951e0
-     * @ghidraAddress PAL: 0x004d30a8
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -1010,8 +884,6 @@ public:
      *
      * @param pSource The object to copy from.
      * @param nFlags The set of fields to copy; see kCopyChildLists.
-     * @ghidraAddress NTSC-U/C: 0x00494e70
-     * @ghidraAddress PAL: 0x004d2d38
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -1022,8 +894,6 @@ public:
      * followed by the abort handler of Rnd::TheDbg.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x00494d68
-     * @ghidraAddress PAL: 0x004d2c30
      */
     virtual void Load(Stream &stream);
 
@@ -1038,9 +908,6 @@ public:
      * Public because Rnd::MetScreen::ResolveContainerViews() calls it at `0x0038b294` on the
      * Rnd::View it just resolved, and MetScreen derives from MsgSink rather than from this class.
      * A friend declaration for MetScreen fits the image equally well.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0049a960
-     * @ghidraAddress PAL: 0x004d88c8
      */
     void RemoveAllAnims();
 
@@ -1053,8 +920,6 @@ protected:
      * SetFrame() invokes it. The arrangement matches Rnd::Drawable::DrawShowing().
      *
      * @param flFrame The filtered frame to animate to.
-     * @ghidraAddress NTSC-U/C: 0x0049a100
-     * @ghidraAddress PAL: 0x004d8060
      */
     virtual void SetFrameSelf(float flFrame);
 
@@ -1065,23 +930,14 @@ private:
      *
      * The destructor, Copy(), and Load() all invoke it. That shared use is what makes it a member
      * rather than the destructor body alone.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00494cb0
-     * @ghidraAddress PAL: 0x004d2b78
      */
     void ReleaseObjects();
     /**
      * Only SetFrame() invokes this.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0049a7c0
-     * @ghidraAddress PAL: 0x004d8728
      */
     float FilterFrame(float flValue);
     /**
      * Only Copy() and Load() invoke this, and both inline it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0049a750
-     * @ghidraAddress PAL: 0x004d86b8
      */
     void AcquireAnimsRefs();
 

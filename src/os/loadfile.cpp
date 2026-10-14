@@ -76,7 +76,6 @@ constexpr unsigned long long kCrcInitial = 0xffffffff;
 constexpr unsigned kCrcByteBits = 8;
 constexpr unsigned kCrcIndexMask = 0xff;
 
-// NTSC-U/C: 0x007a3ea8, PAL: 0x007e7ba8
 // The reflected CRC-32 table. The image stores each entry in 64 bits.
 constexpr unsigned crc_32_tab[] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -123,85 +122,64 @@ void *AllocateLoadBuffer(unsigned nSize, const char *pszFile, int nLine) {
 
 } // namespace
 
-// NTSC-U/C: 0x00761488, PAL: 0x007a43b8
 // The inflate input descriptor always reads minus one for a memory source.
 int gzip_ifd = 0;
 
-// NTSC-U/C: 0x00761490, PAL: 0x007a43c0
 // The inflate input name stores the memory name during a memory run.
 char gzipIfname[12] = {};
 
-// NTSC-U/C: 0x00761594, PAL: 0x007a44c4
 // The inflate memory source appears twice for the two readers.
 const void *gzipInSrcBuff = nullptr;
 
-// NTSC-U/C: 0x00761598, PAL: 0x007a44c8
 // The inflate memory source arrives here for the run.
 const void *gzipInSrcPtr = nullptr;
 
-// NTSC-U/C: 0x0076159c, PAL: 0x007a44cc
 // The inflate memory source length arrives here for the run.
 int gzipInSrcSize = 0;
 
-// NTSC-U/C: 0x00728c24, PAL: 0x0076bb54
 // The inflate path sets this flag once before the first run.
 int bInit = 0;
 
-// NTSC-U/C: 0x00728c1c, PAL: 0x0076bb4c
 // The inflate path enables this word before each run.
 int decompress = 0;
 
-// NTSC-U/C: 0x00728c10, PAL: 0x0076bb40
 // The compression method, deflate until a member header or the inflate result replaces it.
 int gzipMethod = kGzipDeflated;
 
-// NTSC-U/C: 0x00728c28, PAL: 0x0076bb58
 // The staging buffer refilled from the memory source or the file.
 unsigned char gzipInbuf[kGzipInputBufferSize] = {};
 
-// NTSC-U/C: 0x00761468, PAL: 0x007a4398
 // The valid byte count in the staging buffer.
 unsigned gzipInsize = 0;
 
-// NTSC-U/C: 0x0076146c, PAL: 0x007a439c
 // The read position in the staging buffer.
 unsigned gzipInptr = 0;
 
-// NTSC-U/C: 0x00761470, PAL: 0x007a43a0
 unsigned gzipOutcnt = 0;
 
-// NTSC-U/C: 0x00731468, PAL: 0x00774398
 unsigned char gzipWindow[2 * kGzipWindowSize] = {};
 
-// NTSC-U/C: 0x00761478, PAL: 0x007a43a8
 // The cumulative input bytes fed through the staging buffer.
 unsigned long long gzipBytesIn = 0;
 
-// NTSC-U/C: 0x00761480, PAL: 0x007a43b0
 // The cumulative output bytes flushed from the window.
 unsigned long long gzipBytesOut = 0;
 
-// NTSC-U/C: 0x007615a0, PAL: 0x007a44d0
 // The member modification time, stored once as a zero-extended word.
 unsigned long long gzipTimeStamp = 0;
 
-// NTSC-U/C: 0x007a5b50, PAL: 0x007e9850
 // The stream state word, zeroed on entry and set past the header on exit.
 unsigned long long gzipHeaderBytes = 0;
 
-// NTSC-U/C: 0x00728c20, PAL: 0x0076bb50
 // A nonzero value suppresses the modification time store.
 int g_nGzipTimeFlag = -1;
 
-// NTSC-U/C: 0x00728c18, PAL: 0x0076bb48
 // This word is set on every error path.
 int gzipExitCode = 0;
 
-// NTSC-U/C: 0x008e68d4, PAL: 0x0092b8d4
 // The base of the inflate output.
 unsigned char *g_pGzipOutputStart = nullptr;
 
-// NTSC-U/C: 0x008e68d8, PAL: 0x0092b8d8
 // The current inflate output position, advanced by the deflate driver.
 unsigned char *currOutBuf = nullptr;
 
@@ -312,7 +290,6 @@ int FileTrueSize(const char *pszPath) {
     return (nSize < nStored) ? nStored : nSize;
 }
 
-// NTSC-U/C: 0x0062db60, PAL: 0x0066e6f0
 // Prints a system error for the input name.
 static void GzipPrintSystemError(const char *pszName) {
     if (pszName != nullptr && *pszName != '\0') {
@@ -326,7 +303,6 @@ static void GzipPrintSystemError(const char *pszName) {
     fputc('\n', stderr);
 }
 
-// NTSC-U/C: 0x00612508, PAL: 0x00653098
 // Prints a stream error under the input name and reports one.
 static int gzip_error(const char *pszMessage) {
     fprintf(stderr, kStreamErrorFormat, gzipIfname, pszMessage);
@@ -334,7 +310,6 @@ static int gzip_error(const char *pszMessage) {
     return 1;
 }
 
-// NTSC-U/C: 0x00612550, PAL: 0x006530e0
 // Reports running out of input bytes and reports one.
 static int gzip_read_error() {
     if (errno != 0) {
@@ -387,11 +362,9 @@ int GzipRefillInputBuffer(int nSilentEof) {
     return gzipInbuf[0];
 }
 
-// NTSC-U/C: 0x006123f0, PAL: 0x00652f80
 // Resets the checksum with null data and updates it otherwise, reporting the checksum so far. The
 // register is stored inverted.
 static unsigned long long GzipUpdateCrc(const unsigned char *pData, unsigned nLength) {
-    // NTSC-U/C: 0x007a3ea0, PAL: 0x007e7ba0
     // The running checksum of the inflate output.
     static unsigned long long crc = 0xffffffff;
 
@@ -422,13 +395,11 @@ void GzipFlushWindow() {
     gzipOutcnt = 0;
 }
 
-// NTSC-U/C: 0x006125b8, PAL: 0x00653148
 static void GzipSetMemoryOutput(void *pDest) {
     g_pGzipOutputStart = static_cast<unsigned char *>(pDest);
     currOutBuf = static_cast<unsigned char *>(pDest);
 }
 
-// NTSC-U/C: 0x00612468, PAL: 0x00652ff8
 static void gzip_clear_bufs() {
     gzipOutcnt = 0;
     gzipInptr = 0;
@@ -437,7 +408,6 @@ static void gzip_clear_bufs() {
     gzipBytesIn = 0;
 }
 
-// NTSC-U/C: 0x00562f88, PAL: 0x005a16f8
 // Parses the gzip header and reports the compression method. The descriptor is unused because the
 // input always arrives through the globals.
 static int GzipInflate(int nDescriptor) {
@@ -510,12 +480,10 @@ static int GzipInflate(int nDescriptor) {
     return -1;
 }
 
-// NTSC-U/C: 0x006125d0, PAL: 0x00653160
 static int GzipInflatedSize() {
     return static_cast<int>(currOutBuf - g_pGzipOutputStart);
 }
 
-// NTSC-U/C: 0x0061d778, PAL: 0x0065e308
 // Runs the inflate and reports the status. The trailer checksum and length are not checked.
 static int GzipReportInflateError() {
     GzipUpdateCrc(nullptr, 0);

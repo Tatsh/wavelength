@@ -44,7 +44,6 @@ void PrintColor(Dbg &sink, const Color &color) {
     sink.Print(")");
 }
 
-// NTSC-U/C: 0x005454a0, PAL: 0x00585218
 Dbg &operator<<(Dbg &sink, Light::Type type) {
     switch (type) {
     case Light::kLightTypePoint:
@@ -62,7 +61,6 @@ Dbg &operator<<(Dbg &sink, Light::Type type) {
 
 } // namespace
 
-// NTSC-U/C: 0x00720bd0, PAL: 0x00764660
 HxStr g_lightClassName("Light");
 
 const HxStr &Light::ClassName() const {
@@ -263,7 +261,6 @@ Light *NewLight(const HxStr &name) {
     return new Light(name);
 }
 
-// NTSC-U/C: 0x00720bc8, PAL: 0x00764658
 Light *(*g_pfnNewLight)(const HxStr &name) = NewLight;
 
 void *Light::operator new(size_t nSize) {

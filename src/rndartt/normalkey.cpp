@@ -11,7 +11,6 @@ constexpr float kUnusedKeyScale = 16.0f;
 
 } // namespace
 
-// NTSC-U/C: 0x00725848, PAL: 0x007694e8
 NormalKey g_normalKeyUnused(kUnusedKeyScale, 0.0f, 0.0f);
 
 NormalKey::NormalKey(float flRed, float flGreen, float flBlue) {

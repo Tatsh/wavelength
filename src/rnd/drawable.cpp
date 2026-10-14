@@ -27,7 +27,6 @@ static const char *NameText(const Object *pObject) {
     return pObject->mName.mStr != nullptr ? pObject->mName.mStr : "";
 }
 
-// NTSC-U/C: 0x00505c78, PAL: 0x00544b08
 static Dbg &operator<<(Dbg &sink, const std::list<Drawable *> &draws) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, draws.size());
@@ -48,7 +47,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<Drawable *> &draws) {
     return sink;
 }
 
-// NTSC-U/C: 0x00505fe8, PAL: 0x00544e78
 //
 // Each entry is written as the referenced object's name including its terminator, so a reader has
 // to resolve the names through Rnd::TheManager. An empty entry writes one zero byte.
@@ -68,7 +66,6 @@ static Stream &operator<<(Stream &stream, const std::list<Drawable *> &draws) {
     return stream;
 }
 
-// NTSC-U/C: 0x005062c0, PAL: 0x00545150
 static Stream &operator>>(Stream &stream, std::list<Drawable *> &draws) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));

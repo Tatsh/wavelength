@@ -65,14 +65,11 @@ constexpr unsigned int kConsoleRows = 30;
 
 } // namespace
 
-// NTSC-U/C: 0x0077d5d0, PAL: 0x007c13a8
 // Nothing in the image reads it.
 int g_nDebugGsResetWord = 0;
 
-// NTSC-U/C: 0x008e4f20, PAL: 0x00929f20
 int gConsole = 0;
 
-// NTSC-U/C: 0x008e4f30, PAL: 0x00929f30
 sceGsDBuff g_debugDoubleBuffer;
 
 int Gs_Initialize() {

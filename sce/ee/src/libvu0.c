@@ -127,7 +127,6 @@ static const float kFoldedSineTable[4] = {
     -0.16666667f,
 };
 
-// NTSC-U/C: 0x005e84e8, PAL: 0x0062a6d0
 static float foldedSine(float flFolded) {
     // The image keeps one partial product per vector lane and slides the accumulation window
     // across the lanes, so the lanes finish at the ninth, seventh, fifth, and third powers and
@@ -162,7 +161,6 @@ static float foldedSine(float flFolded) {
     return flSine;
 }
 
-// NTSC-U/C: 0x005e84e0, PAL: 0x0062a6c8
 void _ecossin(float flFolded, int nNegative, float *pOut) {
     // The rotation builders fold the angle about half pi and record whether it was negative, so
     // the folded sine below is the cosine of the original angle and the root below is the

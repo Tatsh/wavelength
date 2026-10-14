@@ -17,7 +17,6 @@ constexpr char kLowercaseOffset = 'a' - 'A';
 
 } // namespace
 
-// NTSC-U/C: 0x00725840, PAL: 0x007694e0
 const char *dirpath = "gen/";
 
 char *ConvertNameToGenerated(char *pszPath, const char *pszExtension) {

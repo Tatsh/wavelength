@@ -29,8 +29,6 @@ public:
      *
      * @param nCmdID The identifier the class streams itself under.
      * @param pfnCreate The factory for the class.
-     * @ghidraAddress NTSC-U/C: 0x00538208
-     * @ghidraAddress PAL: 0x00577ac8
      */
     CommandFactory(int nCmdID, CommandFactoryProc pfnCreate);
 };

@@ -7,7 +7,6 @@ constexpr unsigned int kSeedMask = 0x7fffffff;
 
 } // namespace
 
-// NTSC-U/C: 0x0072407c, PAL: 0x00767c6c
 int gRandom = 1;
 
 int NextRandomValue() {

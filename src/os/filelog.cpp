@@ -106,13 +106,10 @@ inline void BuildHostPath(char *pszDest, const char *pszPath) {
 
 } // namespace
 
-// NTSC-U/C: 0x006ee280, PAL: 0x00731ca0
 std::fstream gFileIOLog;
 
-// NTSC-U/C: 0x006ee320, PAL: 0x00731d40
 int bFileLogging = 0;
 
-// NTSC-U/C: 0x006ee378, PAL: 0x00731d98
 char logfilename[kFileLogPathSize] = {};
 
 int FileOpen(const char *pszPath, int nFlags, ...) {
@@ -308,7 +305,6 @@ extern "C" int isatty(int nFile) {
 // read(), write(), lseek(), and isatty() directly, for the standard descriptors as for every file
 // the game opens with the C library. This C library calls these underscored names instead.
 
-// NTSC-U/C: 0x005da840, PAL: 0x0061c8a8
 extern "C" int _open(const char *pszPath, int nFlags, ...) {
     va_list args;
     va_start(args, nFlags);
@@ -321,7 +317,6 @@ extern "C" int _close(int nFile) {
     return close(nFile);
 }
 
-// NTSC-U/C: 0x0062db94, PAL: 0x0066e724
 extern "C" int _read(int nFile, void *pBuffer, size_t nLength) {
     return read(nFile, pBuffer, nLength);
 }
@@ -347,7 +342,6 @@ extern "C" int _fstat(int /* nFile */, struct stat *pStat) {
     return 0;
 }
 
-// NTSC-U/C: 0x005966b8, PAL: 0x005d9ac0
 extern "C" int _stat(const char * /* pszPath */, struct stat * /* pStat */) {
     errno = EIO;
     return -1;

@@ -18,9 +18,6 @@ enum HostMode {
 
 /**
  * The data source selected for this run.
- *
- * @ghidraAddress NTSC-U/C: 0x0050ef90
- * @ghidraAddress PAL: 0x0054e508
  */
 HostMode GetHostMode();
 
@@ -31,8 +28,6 @@ HostMode GetHostMode();
  * `int`.
  *
  * @return Non-zero when ark archives are in use.
- * @ghidraAddress NTSC-U/C: 0x0050efa0
- * @ghidraAddress PAL: 0x0054e518
  */
 int UsingArkFiles();
 
@@ -52,8 +47,6 @@ int UsingArkFiles();
  * host path.
  *
  * @return Non-zero when data is read from the disc.
- * @ghidraAddress NTSC-U/C: 0x0050efd0
- * @ghidraAddress PAL: 0x0054e548
  */
 int UsingCdMedia();
 
@@ -65,8 +58,6 @@ int UsingCdMedia();
  * before it opens the log and before each line it writes. The title is inferred.
  *
  * @return Non-zero when the error log is written.
- * @ghidraAddress NTSC-U/C: 0x0050eff0
- * @ghidraAddress PAL: 0x0054e568
  */
 int MidiErrorLogEnabled();
 
@@ -79,8 +70,6 @@ int MidiErrorLogEnabled();
  * it.
  *
  * @return 1 when warnings are reported.
- * @ghidraAddress NTSC-U/C: 0x0050efb0
- * @ghidraAddress PAL: 0x0054e528
  */
 int WarningsEnabled();
 
@@ -92,8 +81,6 @@ int WarningsEnabled();
  * routine writes the word, and its `.data` value is 1.
  *
  * @return 1 when messages go to the screen.
- * @ghidraAddress NTSC-U/C: 0x0050efc0
- * @ghidraAddress PAL: 0x0054e538
  */
 int ScreenMessagesEnabled();
 
@@ -104,8 +91,6 @@ int ScreenMessagesEnabled();
  * routine shares a translation unit with GetHostMode() and UsingArkFiles().
  *
  * @return The root, empty in the shipped build.
- * @ghidraAddress NTSC-U/C: 0x0050ef30
- * @ghidraAddress PAL: 0x0054e4a8
  */
 HxStr GetFreqRoot();
 
@@ -118,8 +103,6 @@ HxStr GetFreqRoot();
  *
  * @param name The path below the root.
  * @return The root followed by name.
- * @ghidraAddress NTSC-U/C: 0x0050d9f0
- * @ghidraAddress PAL: 0x0054cea8
  */
 HxStr MakeFreqPath(const HxStr &name);
 
@@ -131,8 +114,6 @@ HxStr MakeFreqPath(const HxStr &name);
  * usual `'joy '` message. ConfigureRetailBoot() clears it. The name is inferred.
  *
  * @return Non-zero when the debug hooks are active.
- * @ghidraAddress NTSC-U/C: 0x0050efe0
- * @ghidraAddress PAL: 0x0054e558
  */
 int DebugKeysEnabled();
 
@@ -144,8 +125,6 @@ int DebugKeysEnabled();
  * while it is non-zero. ConfigureRetailBoot() clears it. The name is inferred.
  *
  * @return Non-zero when loads are accounted.
- * @ghidraAddress NTSC-U/C: 0x0050f000
- * @ghidraAddress PAL: 0x0054e578
  */
 int MemAccountingEnabled();
 
@@ -156,8 +135,6 @@ int MemAccountingEnabled();
  * sets it. The name is inferred.
  *
  * @return Non-zero when the intro movie plays.
- * @ghidraAddress NTSC-U/C: 0x0050f010
- * @ghidraAddress PAL: 0x0054e588
  */
 int IntroMovieEnabled();
 
@@ -216,8 +193,6 @@ inline const char *GetFontLanguageSuffix() {
  * HxStr at 0x0070bf38 (PAL 0x0074fac8). The name is inferred.
  *
  * @return A copy of the version string.
- * @ghidraAddress NTSC-U/C: 0x0050ef60
- * @ghidraAddress PAL: 0x0054e4d8
  */
 HxStr GetVersionString();
 
@@ -228,8 +203,6 @@ HxStr GetVersionString();
  *
  * @param pszPath The path to test.
  * @return True when the open succeeded.
- * @ghidraAddress NTSC-U/C: 0x0050f0c8
- * @ghidraAddress PAL: 0x0054e670
  */
 bool CheckCDFile(const char *pszPath);
 
@@ -238,8 +211,5 @@ bool CheckCDFile(const char *pszPath);
  *
  * The body is one call to ReleaseAllZoneSlots(). The shipped program has no call site, and the
  * name is inferred from the counterpart.
- *
- * @ghidraAddress NTSC-U/C: 0x0050f0a8
- * @ghidraAddress PAL: 0x0054e650
  */
 void TerminateBootConfig();

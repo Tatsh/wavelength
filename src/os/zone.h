@@ -74,8 +74,6 @@ struct ZoneConfig {
  * @param nSize The usable size in bytes.
  * @return The zone index, or kNoZone on failure and when zones are switched
  * off.
- * @ghidraAddress NTSC-U/C: 0x00461190
- * @ghidraAddress PAL: 0x0049e850
  */
 int ZoneCreate(const char *pszName, int nSize);
 
@@ -88,8 +86,6 @@ int ZoneCreate(const char *pszName, int nSize);
  *
  * @param nSize The request in bytes.
  * @return The block, or null when the current zone slot is empty.
- * @ghidraAddress NTSC-U/C: 0x004612e0
- * @ghidraAddress PAL: 0x0049e9a0
  */
 void *ZoneAlloc(unsigned nSize);
 
@@ -103,8 +99,6 @@ void *ZoneAlloc(unsigned nSize);
  * @param nSize The size the caller needs in bytes, which the routine never reads. The buffer is
  *              not checked against it.
  * @return The buffer.
- * @ghidraAddress NTSC-U/C: 0x004613d0
- * @ghidraAddress PAL: 0x0049ea90
  */
 void *ZoneGrabTemp(int nSize);
 
@@ -114,8 +108,6 @@ void *ZoneGrabTemp(int nSize);
  * Switching the setting while zones are on releases every zone first.
  *
  * @param nEnabled Non-zero to allow zones to be created.
- * @ghidraAddress NTSC-U/C: 0x00461518
- * @ghidraAddress PAL: 0x0049ebd8
  */
 void ZoneInit(int nEnabled);
 
@@ -124,17 +116,11 @@ void ZoneInit(int nEnabled);
  *
  * The whole table is zeroed in one pass, which is what distinguishes this
  * routine from ReleaseAllZoneSlots(). The enabled flag is not consulted.
- *
- * @ghidraAddress NTSC-U/C: 0x00461558
- * @ghidraAddress PAL: 0x0049ec18
  */
 void FreeAllZones();
 
 /**
  * Create every zone on the start-up list.
- *
- * @ghidraAddress NTSC-U/C: 0x004615d8
- * @ghidraAddress PAL: 0x0049ec98
  */
 void InitializeZoneList();
 
@@ -144,8 +130,6 @@ void InitializeZoneList();
  * Deleting the current zone also clears the current-zone selection.
  *
  * @param nZone The zone index.
- * @ghidraAddress NTSC-U/C: 0x00461628
- * @ghidraAddress PAL: 0x0049ece8
  */
 void ZoneDelete(int nZone);
 
@@ -154,9 +138,6 @@ void ZoneDelete(int nZone);
  *
  * Each occupied slot goes through the ZoneDelete() path, which respects the
  * enabled flag and clears the current-zone selection.
- *
- * @ghidraAddress NTSC-U/C: 0x004616c8
- * @ghidraAddress PAL: 0x0049ed88
  */
 void ReleaseAllZoneSlots();
 
@@ -165,8 +146,6 @@ void ReleaseAllZoneSlots();
  *
  * @param pszName The zone name.
  * @return The zone index, or kNoZone when no zone has that name.
- * @ghidraAddress NTSC-U/C: 0x00461770
- * @ghidraAddress PAL: 0x0049ee30
  */
 int FindZoneByName(const char *pszName);
 
@@ -177,8 +156,6 @@ int FindZoneByName(const char *pszName);
  * requests to MemAllocTagged().
  *
  * @param nZone The zone index.
- * @ghidraAddress NTSC-U/C: 0x004617f8
- * @ghidraAddress PAL: 0x0049eeb8
  */
 void ZoneSetCurrent(int nZone);
 
@@ -186,16 +163,11 @@ void ZoneSetCurrent(int nZone);
  * Report the selected zone.
  *
  * @return The zone index, or kNoZone when no zone is selected.
- * @ghidraAddress NTSC-U/C: 0x00461818
- * @ghidraAddress PAL: 0x0049eed8
  */
 int ZoneGetCurrent();
 
 /**
  * Rewind the selected zone, discarding everything allocated from it.
- *
- * @ghidraAddress NTSC-U/C: 0x00461828
- * @ghidraAddress PAL: 0x0049eee8
  */
 void ZoneReset();
 
@@ -203,8 +175,6 @@ void ZoneReset();
  * Rewind one zone, discarding everything allocated from it.
  *
  * @param nZone The zone index.
- * @ghidraAddress NTSC-U/C: 0x00461850
- * @ghidraAddress PAL: 0x0049ef10
  */
 void ZoneResetZone(int nZone);
 
@@ -216,8 +186,6 @@ void ZoneResetZone(int nZone);
  * the paths where ZoneAlloc() would have used MemAllocTagged().
  *
  * @param pBlock The block to release.
- * @ghidraAddress NTSC-U/C: 0x004618b0
- * @ghidraAddress PAL: 0x0049ef70
  */
 void ZoneFree(void *pBlock);
 
@@ -228,8 +196,6 @@ void ZoneFree(void *pBlock);
  * @return The unused bytes of the selected zone, nDefault when zones are
  * switched off, and zero when no zone is selected or the selected slot is
  * empty.
- * @ghidraAddress NTSC-U/C: 0x00461900
- * @ghidraAddress PAL: 0x0049efc0
  */
 int ZoneGetAvail(int nDefault);
 
@@ -238,8 +204,6 @@ int ZoneGetAvail(int nDefault);
  *
  * @param pBlock The block to locate.
  * @return The zone index, or kNoZone when the block is in no zone.
- * @ghidraAddress NTSC-U/C: 0x00461968
- * @ghidraAddress PAL: 0x0049f028
  */
 int FindZoneForPointer(const void *pBlock);
 
@@ -247,32 +211,20 @@ int FindZoneForPointer(const void *pBlock);
  * Give the shared temporary buffer back.
  *
  * The buffer itself is retained for the next claim. Only the claim is cleared.
- *
- * @ghidraAddress NTSC-U/C: 0x004619c8
- * @ghidraAddress PAL: 0x0049f088
  */
 void ZoneReleaseTemp();
 
 /**
  * Write every occupied zone to the log.
- *
- * @ghidraAddress NTSC-U/C: 0x004619d8
- * @ghidraAddress PAL: 0x0049f098
  */
 void ZoneDump();
 
 /**
  * The zone table.
- *
- * @ghidraAddress NTSC-U/C: 0x008945a0
- * @ghidraAddress PAL: 0x008d8ca0
  */
 extern Zone zoneDescs[kZoneCount];
 
 /**
  * The start-up zone list, terminated by an entry with a null name.
- *
- * @ghidraAddress NTSC-U/C: 0x006e9810
- * @ghidraAddress PAL: 0x0072d1a8
  */
 extern ZoneConfig g_aZoneConfigs[];

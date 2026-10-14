@@ -20,18 +20,12 @@ namespace Sch {
  */
 class SystemTime {
 public:
-    /**
-     * @ghidraAddress NTSC-U/C: 0x00512498
-     * @ghidraAddress PAL: 0x00552780
-     */
     SystemTime();
 
     /**
      * Read the clock.
      *
      * @return The current reading in nanoseconds.
-     * @ghidraAddress NTSC-U/C: 0x005125e0
-     * @ghidraAddress PAL: 0x005528c8
      */
     long long Now();
 
@@ -39,8 +33,6 @@ public:
      * Record a reference reading for the next comparison.
      *
      * @param nNanoseconds The reading to record.
-     * @ghidraAddress NTSC-U/C: 0x00512538
-     * @ghidraAddress PAL: 0x00552820
      */
     void Mark(long long nNanoseconds);
 
@@ -49,9 +41,6 @@ public:
      *
      * Does nothing while the clock is already stopped. GameManagerImpl's pause handler is the
      * caller. The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00512680
-     * @ghidraAddress PAL: 0x00552968
      */
     void Pause();
 
@@ -60,9 +49,6 @@ public:
      *
      * Moves mStartMs so that the elapsed time excludes the pause. Does nothing while the clock is
      * running. GameManagerImpl's unpause handler is the caller. The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00512700
-     * @ghidraAddress PAL: 0x005529e8
      */
     void Resume();
 
@@ -73,8 +59,6 @@ public:
      * by mNsPerUnit. HxScript::Clock() is the caller. The title is inferred.
      *
      * @param nAmount The amount to advance by.
-     * @ghidraAddress NTSC-U/C: 0x00512788
-     * @ghidraAddress PAL: 0x00552a70
      */
     void Advance(int nAmount);
 

@@ -45,8 +45,6 @@ public:
      *
      * @param pClock The clock that runs the steps.
      * @param pLover The receiver of each step's value.
-     * @ghidraAddress NTSC-U/C: 0x00100080
-     * @ghidraAddress PAL: 0x00100080
      */
     ActiveFilter(Sch::TickClock *pClock, FilterLover *pLover);
 
@@ -56,9 +54,6 @@ public:
      * The variant at `0x001000b8` takes the destructor flags, runs this body, and frees the object
      * under the `ActiveFilter` tag only when bit 0 of the flags is set. AxeFX::~AxeFX() calls it
      * at `0x0019b178` with flags 2 for its embedded filter.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00100100
-     * @ghidraAddress PAL: 0x00100100
      */
     ~ActiveFilter();
 
@@ -78,8 +73,6 @@ public:
      * The title is inferred.
      *
      * @param flTarget The target value.
-     * @ghidraAddress NTSC-U/C: 0x00100150
-     * @ghidraAddress PAL: 0x00100150
      */
     void SetTarget(float flTarget);
 
@@ -89,9 +82,6 @@ public:
      * Sets mValue to `(1.0 - mRetention) * mTarget + mRetention * mValue` in double precision,
      * passes it to FilterLover::OnFilterValue(), and posts the command mInterval ahead under
      * mCommand. Public because the file-local command runs it. The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x001001c8
-     * @ghidraAddress PAL: 0x001001c8
      */
     void Update();
 

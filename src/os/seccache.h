@@ -49,8 +49,6 @@ struct SectorCacheRow {
  * and it requests eight rows.
  *
  * @param nRows The row count to use when zones are switched off.
- * @ghidraAddress NTSC-U/C: 0x00554fb8
- * @ghidraAddress PAL: 0x00595640
  */
 void SectorCacheInit(int nRows);
 
@@ -59,9 +57,6 @@ void SectorCacheInit(int nRows);
  *
  * A row buffer taken from a zone goes back through ZoneFree(), and one taken from the allocator
  * goes back through MemFreeTagged().
- *
- * @ghidraAddress NTSC-U/C: 0x005550c8
- * @ghidraAddress PAL: 0x00595750
  */
 void SectorCacheTerm();
 
@@ -72,8 +67,6 @@ void SectorCacheTerm();
  * which makes it the oldest row and therefore the first to be reused. The buffers stay allocated.
  *
  * @param nFile The file whose rows should be dropped.
- * @ghidraAddress NTSC-U/C: 0x00555298
- * @ghidraAddress PAL: 0x00595920
  */
 void SectorCacheRemove(int nFile);
 
@@ -85,8 +78,6 @@ void SectorCacheRemove(int nFile);
  * @param nFile The file.
  * @param nSector The chunk index.
  * @return The row, or null when no row buffers that chunk.
- * @ghidraAddress NTSC-U/C: 0x00555190
- * @ghidraAddress PAL: 0x00595818
  */
 SectorCacheRow *SectorCacheFind(int nFile, int nSector);
 
@@ -101,8 +92,6 @@ SectorCacheRow *SectorCacheFind(int nFile, int nSector);
  * @param nFile The file to buffer.
  * @param nSector The chunk index to buffer.
  * @return The row, or null when every row is locked.
- * @ghidraAddress NTSC-U/C: 0x00554e50
- * @ghidraAddress PAL: 0x005954d8
  */
 SectorCacheRow *SectorCacheGetLRU(int nFile, int nSector);
 
@@ -115,8 +104,6 @@ SectorCacheRow *SectorCacheGetLRU(int nFile, int nSector);
  *
  * @param nFile The buffered file.
  * @param nSector The buffered chunk index.
- * @ghidraAddress NTSC-U/C: 0x005552f0
- * @ghidraAddress PAL: 0x00595978
  */
 void SectorCacheLock(int nFile, int nSector);
 
@@ -126,8 +113,6 @@ void SectorCacheLock(int nFile, int nSector);
  * The routine exists out of line because a caller in the asynchronous loader already has the row.
  *
  * @param pRow The row to lock.
- * @ghidraAddress NTSC-U/C: 0x00555398
- * @ghidraAddress PAL: 0x00595a20
  */
 void SetSectorRowLocked(SectorCacheRow *pRow);
 
@@ -140,16 +125,11 @@ void SetSectorRowLocked(SectorCacheRow *pRow);
  *
  * @param nFile The buffered file.
  * @param nSector The buffered chunk index.
- * @ghidraAddress NTSC-U/C: 0x005553a8
- * @ghidraAddress PAL: 0x00595a30
  */
 void UnlockCachedSector(int nFile, int nSector);
 
 /**
  * Print every row through printf().
- *
- * @ghidraAddress NTSC-U/C: 0x005554a0
- * @ghidraAddress PAL: 0x00595b28
  */
 void SectorCacheDump();
 
@@ -165,8 +145,5 @@ struct SectorCache {
 
 /**
  * The one sector cache.
- *
- * @ghidraAddress NTSC-U/C: 0x008de790
- * @ghidraAddress PAL: 0x00923750
  */
 extern SectorCache gSectorCache;

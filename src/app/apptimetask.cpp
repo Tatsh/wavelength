@@ -28,30 +28,25 @@ public:
         }
     }
 
-    // NTSC-U/C: 0x0013b048, PAL: 0x0013b990
     virtual ~Cmd() {
         if (mTask != nullptr) {
             mTask->Release();
         }
     }
 
-    // NTSC-U/C: 0x0013b038, PAL: 0x0013b980
     virtual int CmdID() {
         return sCmdID;
     }
 
-    // NTSC-U/C: 0x0013b0a8, PAL: 0x0013b9f0
     virtual void Execute() {
         mTask->Run();
     }
 
-    // NTSC-U/C: 0x0013b0c8, PAL: 0x0013ba10
     virtual void Print(std::ostream &stream) {
         mTask->Print(stream);
     }
 
     // The image initialises it to zero.
-    // NTSC-U/C: 0x00671b60, PAL: 0x006b2768
     static int sCmdID;
 
 private:

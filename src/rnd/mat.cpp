@@ -19,7 +19,6 @@ constexpr char kNoObject[] = "no object";
 // The allocation tag every material block is billed to.
 constexpr char kMatTag[] = "Rnd::Mat";
 
-// NTSC-U/C: 0x004d2e68, PAL: 0x00511308
 // The same printer serves the material blend and the stage blend.
 Dbg &PrintBlendMode(Dbg &sink, Mat::BlendMode nBlend) {
     switch (nBlend) {
@@ -66,7 +65,6 @@ Dbg &PrintBlendMode(Dbg &sink, Mat::BlendMode nBlend) {
     return sink;
 }
 
-// NTSC-U/C: 0x004dd0f0, PAL: 0x0051b690
 Dbg &operator<<(Dbg &sink, Mat::Cull nCull) {
     switch (nCull) {
     case Mat::kCullModeCw:
@@ -82,7 +80,6 @@ Dbg &operator<<(Dbg &sink, Mat::Cull nCull) {
     return sink;
 }
 
-// NTSC-U/C: 0x004dd188, PAL: 0x0051b728
 Dbg &operator<<(Dbg &sink, Mat::TexGen nGenMode) {
     switch (nGenMode) {
     case Mat::kGenModeFixed:
@@ -104,7 +101,6 @@ Dbg &operator<<(Dbg &sink, Mat::TexGen nGenMode) {
     return sink;
 }
 
-// NTSC-U/C: 0x004dd240, PAL: 0x0051b7e0
 Dbg &operator<<(Dbg &sink, Mat::TexWrap nWrap) {
     switch (nWrap) {
     case Mat::kWrapModeClamp:
@@ -196,7 +192,6 @@ constexpr int kStageBlendModeRevision = 3;
 // The last revision in which a stage names the material it belongs to.
 constexpr int kStageMatRefRevision = 0;
 
-// NTSC-U/C: 0x004d75c8, PAL: 0x00515ae0
 // The vector dump opens with the element count and then writes the index of every stage on its
 // own line, the same shape the mesh vector dumps use.
 Dbg &DumpStageVector(Dbg &sink, const std::vector<Mat::Stage> &stages) {
@@ -212,7 +207,6 @@ Dbg &DumpStageVector(Dbg &sink, const std::vector<Mat::Stage> &stages) {
     return sink;
 }
 
-// NTSC-U/C: 0x004dd860, PAL: 0x0051be18
 Stream &WriteStageVector(Stream &stream, const std::vector<Mat::Stage> &stages) {
     const int nCount = static_cast<int>(stages.size());
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -222,7 +216,6 @@ Stream &WriteStageVector(Stream &stream, const std::vector<Mat::Stage> &stages) 
     return stream;
 }
 
-// NTSC-U/C: 0x004d76d8, PAL: 0x00515bf0
 // Every new stage is a copy of one default stage, and each stage then reads itself.
 Stream &ReadStageVector(Stream &stream, std::vector<Mat::Stage> &stages) {
     int nCount = 0;
@@ -276,10 +269,8 @@ Mat::BlendMode MapLegacyBlendFactors(Mat::BlendMode current, int nSrc, int nDst)
 
 } // namespace
 
-// NTSC-U/C: 0x00700420, PAL: 0x00743e48
 HxStr Mat::sClassName("Mat");
 
-// NTSC-U/C: 0x00894e2c, PAL: 0x008d9e3c
 int g_nRndMatLoadVersion;
 
 Mat::Mat(const HxStr &name)

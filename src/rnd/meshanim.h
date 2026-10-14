@@ -48,9 +48,6 @@ private:
      * Take a reference on the mesh and on the keys owner.
      *
      * Load() and Copy() inline it as their own second half, and the standalone copy has no caller.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00494288
-     * @ghidraAddress PAL: 0x004d2138
      */
     void AddRefObjects();
 
@@ -58,9 +55,6 @@ private:
      * Empty the three channels unless this animation owns its keys.
      *
      * SetKeysOwner() inlines it, and the standalone copy has no caller.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00494178
-     * @ghidraAddress PAL: 0x004d2028
      */
     void ClearKeys();
 
@@ -68,9 +62,6 @@ private:
      * Drop the reference on the mesh and on the keys owner.
      *
      * The destructor calls it and Load(), Copy(), and Replace() inline it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00494238
-     * @ghidraAddress PAL: 0x004d20e8
      */
     void ReleaseObjects();
 
@@ -120,15 +111,9 @@ public:
      * Construct an animation with no keyframes that owns its own channels.
      *
      * @param name The object name, passed to the Rnd::Object constructor.
-     * @ghidraAddress NTSC-U/C: 0x00493520
-     * @ghidraAddress PAL: 0x004d13d0
      */
     MeshAnim(const HxStr &name);
 
-    /**
-     * @ghidraAddress NTSC-U/C: 0x00493240
-     * @ghidraAddress PAL: 0x004d10f0
-     */
     virtual ~MeshAnim();
 
     /**
@@ -138,8 +123,6 @@ public:
      * to mKeysOwner rather than to this object.
      *
      * @return The largest keyframe timestamp, never below zero.
-     * @ghidraAddress NTSC-U/C: 0x004873b0
-     * @ghidraAddress PAL: 0x004c51d0
      */
     virtual float FilteredFrameEnd();
 
@@ -150,8 +133,6 @@ public:
      * suppressed while the dump level of the sink is zero or negative.
      *
      * @param sink The text sink.
-     * @ghidraAddress NTSC-U/C: 0x00486c98
-     * @ghidraAddress PAL: 0x004c4a68
      */
     virtual void DumpText(Dbg &sink);
 
@@ -162,8 +143,6 @@ public:
      * three channels, and finally the keys owner as a name.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x00486e50
-     * @ghidraAddress PAL: 0x004c4c20
      */
     virtual void Save(Stream &stream);
 
@@ -176,8 +155,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The object to point at, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x00486ac0
-     * @ghidraAddress PAL: 0x004c4890
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -185,8 +162,6 @@ public:
      * Return the registered class name, "MeshAnim".
      *
      * @return The class name.
-     * @ghidraAddress NTSC-U/C: 0x00493510
-     * @ghidraAddress PAL: 0x004d13c0
      */
     virtual const HxStr &ClassName() const;
 
@@ -199,8 +174,6 @@ public:
      * @param pSource The source object, which has to be a mesh anim for the copy to have any
      *                effect.
      * @param nFlags The copy flags.
-     * @ghidraAddress NTSC-U/C: 0x00487258
-     * @ghidraAddress PAL: 0x004c5078
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -212,8 +185,6 @@ public:
      * checked cast.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x00486fa8
-     * @ghidraAddress PAL: 0x004c4d78
      */
     virtual void Load(Stream &stream);
 
@@ -225,8 +196,6 @@ public:
      *
      * @param nFromVert The vertex slot to copy from.
      * @param nToVert The vertex slot to copy over.
-     * @ghidraAddress NTSC-U/C: 0x004867d8
-     * @ghidraAddress PAL: 0x004c45a8
      */
     void CopyVertKeys(int nFromVert, int nToVert);
 
@@ -237,8 +206,6 @@ public:
      * animation of a mesh after it splits a vertex. The title is inferred.
      *
      * @param nVert The vertex slot to copy.
-     * @ghidraAddress NTSC-U/C: 0x00486900
-     * @ghidraAddress PAL: 0x004c46d0
      */
     void AppendVertKeys(int nVert);
 
@@ -250,8 +217,6 @@ public:
      * section mesh this way. The title is inferred.
      *
      * @param pMesh The new mesh, or null.
-     * @ghidraAddress NTSC-U/C: 0x00494120
-     * @ghidraAddress PAL: 0x004d1fd0
      */
     void SetMesh(Mesh *pMesh);
 
@@ -263,8 +228,6 @@ public:
      * the title follows Rnd::LightAnim::SetKeysOwner().
      *
      * @param pOwner The new keys owner, or null.
-     * @ghidraAddress NTSC-U/C: 0x004941c0
-     * @ghidraAddress PAL: 0x004d2070
      */
     void SetKeysOwner(MeshAnim *pOwner);
 
@@ -295,8 +258,6 @@ protected:
      * reports its own bit to Rnd::Mesh::SyncChanged().
      *
      * @param flFrame The filtered frame to animate to.
-     * @ghidraAddress NTSC-U/C: 0x00487518
-     * @ghidraAddress PAL: 0x004c5338
      */
     virtual void SetFrameSelf(float flFrame);
 };
@@ -309,8 +270,6 @@ protected:
  *
  * @param name The object name.
  * @return The new animation, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x00493a00
- * @ghidraAddress PAL: 0x004d18b0
  */
 Object *CreateRegisteredMeshAnim(const HxStr &name);
 
@@ -322,16 +281,11 @@ Object *CreateRegisteredMeshAnim(const HxStr &name);
  *
  * @param name The object name.
  * @return The new animation.
- * @ghidraAddress NTSC-U/C: 0x00493170
- * @ghidraAddress PAL: 0x004d1020
  */
 MeshAnim *NewMeshAnim(const HxStr &name);
 
 /**
  * Registered class name of Rnd::MeshAnim, the string "MeshAnim".
- *
- * @ghidraAddress NTSC-U/C: 0x006eed70
- * @ghidraAddress PAL: 0x00732790
  */
 extern HxStr g_meshAnimClassName;
 
@@ -342,9 +296,6 @@ extern HxStr g_meshAnimClassName;
  * caller.
  *
  * Rnd::Manager::Init() also expands this inline.
- *
- * @ghidraAddress NTSC-U/C: 0x00493140
- * @ghidraAddress PAL: 0x004d0ff0
  */
 inline void RegisterMeshAnimClass() {
     TheManager.RegisterClass(g_meshAnimClassName, CreateRegisteredMeshAnim);

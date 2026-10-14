@@ -32,8 +32,6 @@ public:
      * is cleared. The version and the screen extent are read but not used.
      *
      * @return An AGfxFileResult code.
-     * @ghidraAddress NTSC-U/C: 0x0062a9c0
-     * @ghidraAddress PAL: 0x0066b550
      */
     virtual int StartRead();
 
@@ -51,8 +49,6 @@ public:
      * @param bitmap Receives the image.
      * @param pbEnd Set to one at the trailer, and also for a negative introducer byte.
      * @return An AGfxFileResult code.
-     * @ghidraAddress NTSC-U/C: 0x0062aaf8
-     * @ghidraAddress PAL: 0x0066b688
      */
     virtual int ReadFrame(ABitmap &bitmap, int *pbEnd);
 
@@ -61,8 +57,6 @@ public:
      *
      * @param bitmap The bitmap, not read.
      * @return kAGfxFileUnsupported.
-     * @ghidraAddress NTSC-U/C: 0x0062b6f0
-     * @ghidraAddress PAL: 0x0066c280
      */
     virtual int Write(const ABitmap &bitmap);
 
@@ -74,9 +68,6 @@ private:
      * mDuration in milliseconds. A plain text, comment, or application block is skipped with its
      * data sub-blocks. Any other label skips one block and no sub-blocks. Every length byte is
      * read signed, so a length above 127 ends the skip.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0062ae10
-     * @ghidraAddress PAL: 0x0066b9a0
      */
     void ReadExtension();
 
@@ -90,8 +81,6 @@ private:
      * @param nCodeSize The minimum code size, from 2 to 8.
      * @param pDest The pixel rectangle, one byte per pixel.
      * @return One when the image decoded to its end code or its last row, zero on any error.
-     * @ghidraAddress NTSC-U/C: 0x0062b008
-     * @ghidraAddress PAL: 0x0066bb98
      */
     static int DecodeLzwImage(FILE *pFile, int nCodeSize, unsigned char *pDest);
 };

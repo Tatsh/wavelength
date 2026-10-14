@@ -32,8 +32,6 @@ public:
      *
      * @param pDest The row to write.
      * @return pDest advanced past the row.
-     * @ghidraAddress NTSC-U/C: 0x0060da78
-     * @ghidraAddress PAL: 0x0064e6e8
      */
     unsigned char *UnpackRow(unsigned char *pDest);
 
@@ -45,8 +43,6 @@ public:
      * mWidth.
      *
      * @param pDest The first row to write.
-     * @ghidraAddress NTSC-U/C: 0x0060dc98
-     * @ghidraAddress PAL: 0x0064e908
      */
     void UnpackAll(unsigned char *pDest);
 
@@ -56,8 +52,6 @@ public:
      * mWidth is read once before the first row. A width written between rows is not seen.
      *
      * @param nRows The number of rows to consume.
-     * @ghidraAddress NTSC-U/C: 0x0060dc10
-     * @ghidraAddress PAL: 0x0064e880
      */
     void SkipRow(int nRows);
 

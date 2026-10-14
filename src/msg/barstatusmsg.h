@@ -83,8 +83,6 @@ public:
      * Allocates 0x30 bytes under the tag `MSG`. The unit's static initialiser registers it.
      *
      * @return The new message.
-     * @ghidraAddress NTSC-U/C: 0x003d7440
-     * @ghidraAddress PAL: 0x0040f340
      */
     static Message *New();
 
@@ -92,8 +90,6 @@ public:
      * Produce a heap copy of this message.
      *
      * @return The copy.
-     * @ghidraAddress NTSC-U/C: 0x003defd0
-     * @ghidraAddress PAL: 0x00417428
      */
     virtual Message *Clone();
 
@@ -101,8 +97,6 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nBarStatusMsgType.
-     * @ghidraAddress NTSC-U/C: 0x003df050
-     * @ghidraAddress PAL: 0x004174a8
      */
     virtual int Type();
 
@@ -110,8 +104,6 @@ public:
      * Report this message's class name.
      *
      * @return The literal `BarStatusMsg`.
-     * @ghidraAddress NTSC-U/C: 0x003df060
-     * @ghidraAddress PAL: 0x004174b8
      */
     virtual const char *GetName() const;
 
@@ -122,8 +114,6 @@ public:
      * ` pow:<powerup>`, and ` effect:<mask>` for each Field bit set in mFlags.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x003d8670
-     * @ghidraAddress PAL: 0x00410a68
      */
     virtual void PrintExtra(std::ostream &stream) const;
 
@@ -132,8 +122,6 @@ public:
      *
      * @param nField The Field bit to test.
      * @return 1 when the bit is set in mFlags, and 0 otherwise.
-     * @ghidraAddress NTSC-U/C: 0x003df1f8
-     * @ghidraAddress PAL: 0x00417650
      */
     int Has(int nField) const;
 
@@ -141,8 +129,6 @@ public:
      * Report the player field.
      *
      * @return The player whose track the bar belongs to.
-     * @ghidraAddress NTSC-U/C: 0x003df130
-     * @ghidraAddress PAL: 0x00417588
      */
     Player *GetPlayer() const {
         Has(kFieldPlayer); // Yes, the binary discards this result.
@@ -153,8 +139,6 @@ public:
      * Report the enabled field.
      *
      * @return Non-zero when the bar is enabled.
-     * @ghidraAddress NTSC-U/C: 0x003df160
-     * @ghidraAddress PAL: 0x004175b8
      */
     int GetEnabled() const {
         Has(kFieldEnabled); // Yes, the binary discards this result.
@@ -165,8 +149,6 @@ public:
      * Report the powerup field.
      *
      * @return The powerup kind on the bar.
-     * @ghidraAddress NTSC-U/C: 0x003df190
-     * @ghidraAddress PAL: 0x004175e8
      */
     int GetPowerup() const {
         Has(kFieldPowerup); // Yes, the binary discards this result.
@@ -177,8 +159,6 @@ public:
      * Report the effect mask.
      *
      * @return One bit per effect kind.
-     * @ghidraAddress NTSC-U/C: 0x003df1c0
-     * @ghidraAddress PAL: 0x00417618
      */
     Effects GetEffects() const {
         Has(kFieldEffects); // Yes, the binary discards this result.
@@ -234,8 +214,5 @@ public:
  * This word belongs to BarStatusMsg because BarStatusMsg::Type() at `0x003df050` returns it.
  * Several handlers elsewhere read the same word to compare against it, which is the expected
  * shape for a registered identity and does not make the word theirs.
- *
- * @ghidraAddress NTSC-U/C: 0x006d02b4
- * @ghidraAddress PAL: 0x00713a4c
  */
 extern int g_nBarStatusMsgType;

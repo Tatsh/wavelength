@@ -28,8 +28,6 @@ public:
      *
      * @param nValue The input value.
      * @return The mapped value, between the smaller and the larger of the two output ends.
-     * @ghidraAddress NTSC-U/C: 0x00536fe0
-     * @ghidraAddress PAL: 0x005768a0
      */
     int Apply(int nValue);
 
@@ -37,9 +35,6 @@ private:
     /**
      * Computes mSlope and mOffset in single precision from the four ends, and orders the two output
      * ends into mLower and mUpper.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00536f50
-     * @ghidraAddress PAL: 0x00576810
      */
     void Recalc();
 

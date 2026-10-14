@@ -23,8 +23,6 @@ namespace Rnd {
  *
  * @param objects The list to append to.
  * @param pAnimatable The animatable to start from, or null.
- * @ghidraAddress NTSC-U/C: 0x00519fc8
- * @ghidraAddress PAL: 0x0055a3c0
  */
 inline void CollectChildren(std::list<Object *> &objects, Animatable *pAnimatable) {
     if (pAnimatable == nullptr) {
@@ -43,8 +41,6 @@ inline void CollectChildren(std::list<Object *> &objects, Animatable *pAnimatabl
  *
  * @param objects The list to append to.
  * @param pCollideable The collideable to start from, or null.
- * @ghidraAddress NTSC-U/C: 0x0051a0e0
- * @ghidraAddress PAL: 0x0055a4d8
  */
 inline void CollectChildren(std::list<Object *> &objects, Collideable *pCollideable) {
     if (pCollideable == nullptr) {
@@ -63,8 +59,6 @@ inline void CollectChildren(std::list<Object *> &objects, Collideable *pCollidea
  *
  * @param objects The list to append to.
  * @param pDrawable The drawable to start from, or null.
- * @ghidraAddress NTSC-U/C: 0x0051a1f8
- * @ghidraAddress PAL: 0x0055a5f0
  */
 inline void CollectChildren(std::list<Object *> &objects, Drawable *pDrawable) {
     if (pDrawable == nullptr) {
@@ -82,8 +76,6 @@ inline void CollectChildren(std::list<Object *> &objects, Drawable *pDrawable) {
  *
  * @param objects The list to append to.
  * @param pTransformable The transformable to start from, or null.
- * @ghidraAddress NTSC-U/C: 0x0051a310
- * @ghidraAddress PAL: 0x0055a708
  */
 inline void CollectChildren(std::list<Object *> &objects, Transformable *pTransformable) {
     if (pTransformable == nullptr) {

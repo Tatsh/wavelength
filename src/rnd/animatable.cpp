@@ -29,7 +29,6 @@ static const char *NameText(const Object *pObject) {
     return pObject->mName.mStr != nullptr ? pObject->mName.mStr : "";
 }
 
-// NTSC-U/C: 0x00497ed8, PAL: 0x004d5e08
 static Dbg &operator<<(Dbg &sink, const std::list<Animatable::Filter *> &filters) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, filters.size());
@@ -51,7 +50,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<Animatable::Filter *> &filters
     return sink;
 }
 
-// NTSC-U/C: 0x00498078, PAL: 0x004d5fa8
 static Dbg &operator<<(Dbg &sink, const std::list<Animatable *> &anims) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, anims.size());
@@ -72,7 +70,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<Animatable *> &anims) {
     return sink;
 }
 
-// NTSC-U/C: 0x0049a8a8, PAL: 0x004d8810
 // No call site survives in the shipped build, and the five literals below are the only
 // record of the FilterType names. The routine is not static: an out-of-line copy with no caller is
 // what external linkage produces, where internal linkage would have let the compiler discard it.
@@ -97,7 +94,6 @@ Dbg &operator<<(Dbg &sink, Animatable::FilterType nType) {
     return sink;
 }
 
-// NTSC-U/C: 0x004981e0, PAL: 0x004d6110
 //
 // Each entry is written as its type tag followed by whatever that filter's own Save() emits. The
 // reader has to build the object before it can read the payload.
@@ -114,7 +110,6 @@ static Stream &operator<<(Stream &stream, const std::list<Animatable::Filter *> 
     return stream;
 }
 
-// NTSC-U/C: 0x004982e8, PAL: 0x004d6218
 //
 // Each entry is written as the referenced object's name including its terminator. A reader has to
 // resolve the names through Rnd::TheManager. An empty entry writes one zero byte.
@@ -134,7 +129,6 @@ static Stream &operator<<(Stream &stream, const std::list<Animatable *> &anims) 
     return stream;
 }
 
-// NTSC-U/C: 0x0049a838, PAL: 0x004d87a0
 // The list reader below inlines this body rather than calling it.
 static Stream &operator>>(Stream &stream, Animatable::Filter *&pFilter) {
     int nType = 0;
@@ -144,7 +138,6 @@ static Stream &operator>>(Stream &stream, Animatable::Filter *&pFilter) {
     return stream;
 }
 
-// NTSC-U/C: 0x004985c0, PAL: 0x004d64f0
 static Stream &operator>>(Stream &stream, std::list<Animatable::Filter *> &filters) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -157,7 +150,6 @@ static Stream &operator>>(Stream &stream, std::list<Animatable::Filter *> &filte
     return stream;
 }
 
-// NTSC-U/C: 0x00498860, PAL: 0x004d6790
 static Stream &operator>>(Stream &stream, std::list<Animatable *> &anims) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));

@@ -42,8 +42,6 @@ public:
      * @param flFrame The frame the event is ordered by.
      * @param nId The identifier the lookups match on.
      * @param nUser The key a filtered draw passes to its filter.
-     * @ghidraAddress NTSC-U/C: 0x00477618
-     * @ghidraAddress PAL: 0x004b5290
      */
     TunnelEvent(Drawable *pObject, float flFrame, int nId, int nUser)
         : mObject(pObject), mFrame(flFrame), mId(nId), mUser(nUser) {
@@ -55,8 +53,6 @@ public:
      * The drawable is written by name, followed by mFrame, mId, and mUser.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x0046dd40
-     * @ghidraAddress PAL: 0x004ab880
      */
     void Save(Stream &stream) const;
 
@@ -67,8 +63,6 @@ public:
      * reference is taken on the drawable.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x0046de48
-     * @ghidraAddress PAL: 0x004ab988
      */
     void Load(Stream &stream);
 
@@ -78,8 +72,6 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement, which must be a Rnd::Drawable or null.
      * @param pReferrer The object the reference is held on behalf of.
-     * @ghidraAddress NTSC-U/C: 0x00477630
-     * @ghidraAddress PAL: 0x004b52a8
      */
     void Replace(Object *pFrom, Object *pTo, Object *pReferrer);
 

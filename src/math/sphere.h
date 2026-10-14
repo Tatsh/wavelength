@@ -26,8 +26,6 @@ public:
      *
      * @param other The sphere to enclose.
      * @return This sphere.
-     * @ghidraAddress NTSC-U/C: 0x00550330
-     * @ghidraAddress PAL: 0x00590970
      */
     Sphere &GrowToContain(const Sphere &other);
 
@@ -39,8 +37,6 @@ public:
      * @param first One end of the diameter.
      * @param second The other end.
      * @return The sphere.
-     * @ghidraAddress NTSC-U/C: 0x005512b8
-     * @ghidraAddress PAL: 0x005918f8
      */
     static Sphere Circumscribe(const Vector3 &first, const Vector3 &second);
 
@@ -57,8 +53,6 @@ public:
      * @param second The second point.
      * @param third The third point.
      * @return The sphere.
-     * @ghidraAddress NTSC-U/C: 0x00550510
-     * @ghidraAddress PAL: 0x00590b50
      */
     static Sphere Circumscribe(const Vector3 &first, const Vector3 &second, const Vector3 &third);
 
@@ -74,8 +68,6 @@ public:
      * @param third The third point.
      * @param fourth The fourth point.
      * @return The sphere.
-     * @ghidraAddress NTSC-U/C: 0x00550850
-     * @ghidraAddress PAL: 0x00590e90
      */
     static Sphere Circumscribe(const Vector3 &first,
                                const Vector3 &second,

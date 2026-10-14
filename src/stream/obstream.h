@@ -66,8 +66,6 @@ public:
      * @param pSrc The source buffer.
      * @param nSize The number of bytes to move.
      * @return This stream.
-     * @ghidraAddress NTSC-U/C: 0x004ed860
-     * @ghidraAddress PAL: 0x0052c408
      */
     virtual OBStream &WriteLE(const void *pSrc, int nSize);
 };
@@ -84,8 +82,6 @@ public:
  * @param stream The stream to write to.
  * @param bValue The value, of which only the low byte reaches the stream.
  * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x004edc80
- * @ghidraAddress PAL: 0x0052c828
  */
 OBStream &operator<<(OBStream &stream, int bValue);
 
@@ -98,8 +94,6 @@ OBStream &operator<<(OBStream &stream, int bValue);
  * @param stream The stream to write to.
  * @param nValue The value, of which only the low four bytes reach the stream.
  * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x004edcb8
- * @ghidraAddress PAL: 0x0052c860
  */
 OBStream &operator<<(OBStream &stream, long nValue);
 
@@ -115,7 +109,5 @@ OBStream &operator<<(OBStream &stream, long nValue);
  * @param stream The stream to write to.
  * @param nValue The value, of which only the low four bytes reach the stream.
  * @return The stream.
- * @ghidraAddress NTSC-U/C: 0x004edcf8
- * @ghidraAddress PAL: 0x0052c8a0
  */
 OBStream &operator<<(OBStream &stream, unsigned long nValue);

@@ -80,7 +80,6 @@ int ATgaFile::Write([[maybe_unused]] const ABitmap &bitmap) {
 
 int ATgaFile::ReadPixels(ABitmap *pImage) {
     // The one pixel a run-length encoded packet is read into.
-    // NTSC-U/C: 0x007a8100, PAL: 0x007ebe00
     static unsigned char bgra[kRGBAByteCount] = {0, 0, 0, 0xff};
     unsigned char *pPixels = static_cast<unsigned char *>(pImage->mPixels);
     for (int y = 0; y < pImage->mHeight; ++y) {

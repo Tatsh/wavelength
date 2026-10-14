@@ -108,7 +108,6 @@ struct LegacyRotKey {
     float mFrame;
 };
 
-// NTSC-U/C: 0x004f9f80, PAL: 0x00538c50
 static Stream &operator>>(Stream &stream, LegacyRotKey &key) {
     stream.ReadLE(&key.mValue.x, sizeof(float));
     stream.ReadLE(&key.mValue.y, sizeof(float));
@@ -118,7 +117,6 @@ static Stream &operator>>(Stream &stream, LegacyRotKey &key) {
     return stream;
 }
 
-// NTSC-U/C: 0x004fd6b8, PAL: 0x0053c3b8
 static Stream &operator>>(Stream &stream, std::list<LegacyRotKey> &keys) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -129,7 +127,6 @@ static Stream &operator>>(Stream &stream, std::list<LegacyRotKey> &keys) {
     return stream;
 }
 
-// NTSC-U/C: 0x004fa500, PAL: 0x005391d0
 // The same order the writer uses, with the padding float of each vector left as it was.
 static Stream &operator>>(Stream &stream, TransAnim::TransKey &key) {
     for (int nAxis = 0; nAxis < kTransKeyStoredFloatCount; ++nAxis) {
@@ -156,7 +153,6 @@ static inline void ReadQuat(Stream &stream, Quat &quat) {
     stream.ReadLE(&quat.w, sizeof(float));
 }
 
-// NTSC-U/C: 0x004fa948, PAL: 0x00539618
 static Stream &operator>>(Stream &stream, TransAnim::RotKey &key) {
     ReadQuat(stream, key.mQuat);
     for (int nAxis = 0; nAxis < kTransKeyStoredFloatCount; ++nAxis) {
@@ -168,7 +164,6 @@ static Stream &operator>>(Stream &stream, TransAnim::RotKey &key) {
     return stream;
 }
 
-// NTSC-U/C: 0x004fa6a8, PAL: 0x00539378
 // Every new element starts from a keyframe whose three vectors have a padding float of 1.0.
 static Stream &operator>>(Stream &stream, std::list<TransAnim::TransKey> &keys) {
     int nCount = 0;
@@ -184,7 +179,6 @@ static Stream &operator>>(Stream &stream, std::list<TransAnim::TransKey> &keys) 
     return stream;
 }
 
-// NTSC-U/C: 0x004fab40, PAL: 0x00539810
 static Stream &operator>>(Stream &stream, std::list<TransAnim::RotKey> &keys) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));
@@ -273,7 +267,6 @@ static void AppendLegacyRotKey(std::list<TransAnim::RotKey> &keys, const LegacyR
     RebuildRotTangents(keys);
 }
 
-// NTSC-U/C: 0x004fd348, PAL: 0x0053c030
 // A mode outside the two below writes nothing rather than a fallback title.
 static Dbg &operator<<(Dbg &sink, TransAnim::Interp nInterp) {
     switch (nInterp) {
@@ -287,7 +280,6 @@ static Dbg &operator<<(Dbg &sink, TransAnim::Interp nInterp) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f9160, PAL: 0x00537e30
 static Dbg &operator<<(Dbg &sink, const TransAnim::RotKey &key) {
     sink.Print("(frame:");
     sink.Format(kFloatFormat, key.mFrame);
@@ -312,7 +304,6 @@ static Dbg &operator<<(Dbg &sink, const TransAnim::RotKey &key) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f9480, PAL: 0x00538150
 static Dbg &operator<<(Dbg &sink, const TransAnim::TransKey &key) {
     sink.Print("(frame:");
     sink.Format(kFloatFormat, key.mFrame);
@@ -336,7 +327,6 @@ static Dbg &operator<<(Dbg &sink, const TransAnim::TransKey &key) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f9360, PAL: 0x00538030
 static Dbg &operator<<(Dbg &sink, const std::list<TransAnim::RotKey> &keys) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, keys.size());
@@ -353,7 +343,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<TransAnim::RotKey> &keys) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f9668, PAL: 0x00538338
 static Dbg &operator<<(Dbg &sink, const std::list<TransAnim::TransKey> &keys) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, keys.size());
@@ -370,7 +359,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<TransAnim::TransKey> &keys) {
     return sink;
 }
 
-// NTSC-U/C: 0x004f9788, PAL: 0x00538458
 // The padding float of each vector is not written, and the shape triple is written ahead of the
 // two tangents rather than after them.
 static Stream &operator<<(Stream &stream, const TransAnim::TransKey &key) {
@@ -396,7 +384,6 @@ static Stream &operator<<(Stream &stream, const TransAnim::TransKey &key) {
     return stream;
 }
 
-// NTSC-U/C: 0x004f9a68, PAL: 0x00538738
 // Unlike the vector channels, the rotation channel writes the fourth float of the quaternion and
 // of both tangents.
 static Stream &operator<<(Stream &stream, const TransAnim::RotKey &key) {
@@ -413,7 +400,6 @@ static Stream &operator<<(Stream &stream, const TransAnim::RotKey &key) {
     return stream;
 }
 
-// NTSC-U/C: 0x004f99b0, PAL: 0x00538680
 static Stream &operator<<(Stream &stream, const std::list<TransAnim::TransKey> &keys) {
     int nCount = keys.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -424,7 +410,6 @@ static Stream &operator<<(Stream &stream, const std::list<TransAnim::TransKey> &
     return stream;
 }
 
-// NTSC-U/C: 0x004f9d00, PAL: 0x005389d0
 static Stream &operator<<(Stream &stream, const std::list<TransAnim::RotKey> &keys) {
     int nCount = keys.size();
     stream.WriteLE(&nCount, sizeof(nCount));
@@ -1140,7 +1125,6 @@ void TransAnim::SetFramesOwner(TransAnim *pOwner) {
     ClearKeys();
 }
 
-// NTSC-U/C: 0x00706828, PAL: 0x0074a348
 HxStr g_transAnimClassName("TransAnim");
 
 TransAnim *NewTransAnim(const HxStr &name) {
@@ -1151,7 +1135,6 @@ TransAnim *NewTransAnim(const HxStr &name) {
     }
 }
 
-// NTSC-U/C: 0x00706820, PAL: 0x0074a340
 TransAnim *(*TransAnim::sNew)(const HxStr &name) = NewTransAnim;
 
 TransAnim *NewTransAnimThroughHook(const HxStr &name) {

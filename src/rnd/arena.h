@@ -63,8 +63,6 @@ public:
      *
      * @param nSize The object size, which the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x005bb870
-     * @ghidraAddress PAL: 0x005fdf38
      */
     void *operator new(size_t nSize);
 
@@ -72,8 +70,6 @@ public:
      * Release a loop to the tagged heap.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x005bb890
-     * @ghidraAddress PAL: 0x005fdf58
      */
     void operator delete(void *pBlock);
 
@@ -148,8 +144,6 @@ public:
      * nothing more than size mDrawOrder to the empty section list.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x005b6c58
-     * @ghidraAddress PAL: 0x005f92c0
      */
     explicit Arena(const HxStr &name);
 
@@ -158,9 +152,6 @@ public:
      *
      * Runs RemoveInstancesFromHitList(), which the binary expands inline, and then
      * ReleaseAllRefs().
-     *
-     * @ghidraAddress NTSC-U/C: 0x005b6600
-     * @ghidraAddress PAL: 0x005f8c68
      */
     virtual ~Arena();
 
@@ -171,8 +162,6 @@ public:
      * of the sink is positive. The Collideable dump runs last of the four.
      *
      * @param sink The text sink.
-     * @ghidraAddress NTSC-U/C: 0x005b5f08
-     * @ghidraAddress PAL: 0x005f8570
      */
     virtual void DumpText(Dbg &sink);
 
@@ -183,8 +172,6 @@ public:
      * not written, because AddInstancesToHitList() rebuilds it from the section count.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x005b60c0
-     * @ghidraAddress PAL: 0x005f8728
      */
     virtual void Save(Stream &stream);
 
@@ -196,8 +183,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The object to point at, which may be null.
-     * @ghidraAddress NTSC-U/C: 0x005b6338
-     * @ghidraAddress PAL: 0x005f89a0
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -205,8 +190,6 @@ public:
      * Return the registered class name, "Arena".
      *
      * @return The class name.
-     * @ghidraAddress NTSC-U/C: 0x005bb9d8
-     * @ghidraAddress PAL: 0x005fe0a0
      */
     virtual const HxStr &ClassName() const;
 
@@ -219,8 +202,6 @@ public:
      *
      * @param pSource The source object, which has to be a loop.
      * @param nFlags The copy flags.
-     * @ghidraAddress NTSC-U/C: 0x005bbbb0
-     * @ghidraAddress PAL: 0x005fe278
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -231,8 +212,6 @@ public:
      * in Rnd::g_nRndArenaLoadRevision rather than in a local.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x005b61e8
-     * @ghidraAddress PAL: 0x005f8850
      */
     virtual void Load(Stream &stream);
 
@@ -243,8 +222,6 @@ public:
      * line here, so it exists as a function rather than as an accessor this reconstruction added.
      *
      * @return The loop displacement.
-     * @ghidraAddress NTSC-U/C: 0x005bb9e8
-     * @ghidraAddress PAL: 0x005fe0b0
      */
     Vector3 &LoopDist();
 
@@ -252,9 +229,6 @@ public:
      * Install the creator hook and register the class with Rnd::TheManager under the key "Arena".
      *
      * Rnd::Manager::Init() also expands this inline.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005bb8b0
-     * @ghidraAddress PAL: 0x005fdf78
      */
     static void Init();
 
@@ -263,9 +237,6 @@ public:
      *
      * Load() runs it once the sections are in place. mDrawOrder receives one null entry per
      * section.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005bbc98
-     * @ghidraAddress PAL: 0x005fe360
      */
     void AddInstancesToHitList();
 
@@ -273,9 +244,6 @@ public:
      * Drop this loop's registration on every section view and empty mDrawOrder.
      *
      * Load() runs it before reading the sections.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005bbd30
-     * @ghidraAddress PAL: 0x005fe3f8
      */
     void RemoveInstancesFromHitList();
 
@@ -288,8 +256,6 @@ public:
      * inferred from the member it writes.
      *
      * @param loopDist The new displacement.
-     * @ghidraAddress NTSC-U/C: 0x005b7a90
-     * @ghidraAddress PAL: 0x005fa0f8
      */
     void SetLoopDist(const Vector3 &loopDist);
 
@@ -302,8 +268,6 @@ public:
      * member it writes.
      *
      * @param flLoopFrames The new frame count.
-     * @ghidraAddress NTSC-U/C: 0x005b7c48
-     * @ghidraAddress PAL: 0x005fa2b0
      */
     void SetLoopFrames(float flLoopFrames);
 
@@ -316,8 +280,6 @@ public:
      * inferred.
      *
      * @param nCount The new section count.
-     * @ghidraAddress NTSC-U/C: 0x005b7de0
-     * @ghidraAddress PAL: 0x005fa448
      */
     void SetSectionCount(unsigned int nCount);
 
@@ -330,8 +292,6 @@ public:
      *
      * @param nIndex The section.
      * @param pView The view to draw, or null.
-     * @ghidraAddress NTSC-U/C: 0x005b8020
-     * @ghidraAddress PAL: 0x005fa688
      */
     void SetSectionView(int nIndex, View *pView);
 
@@ -345,8 +305,6 @@ public:
      * @param nIndex The section.
      * @param flStartFrame The first frame the section is shown.
      * @param flEndFrame The frame the section is hidden again.
-     * @ghidraAddress NTSC-U/C: 0x005b8170
-     * @ghidraAddress PAL: 0x005fa7d8
      */
     void SetSectionRange(int nIndex, float flStartFrame, float flEndFrame);
 
@@ -360,8 +318,6 @@ public:
      *
      * @param nIndex The section.
      * @param nTeleport Non-zero to move the view with the loop.
-     * @ghidraAddress NTSC-U/C: 0x005bc128
-     * @ghidraAddress PAL: 0x005fe7f0
      */
     void SetSectionTeleport(int nIndex, int nTeleport);
 
@@ -372,8 +328,6 @@ protected:
      * Rnd::Drawable vtable slot 3. An entry whose view is null is skipped.
      *
      * @return Always 1, so the children are drawn as well.
-     * @ghidraAddress NTSC-U/C: 0x005bc020
-     * @ghidraAddress PAL: 0x005fe6e8
      */
     virtual int DrawShowing();
 
@@ -386,8 +340,6 @@ protected:
      * @param pParent The parent whose world transform this one composes with.
      * @param nForce Non-zero to recompute even while the dirty flag is clear.
      * @return Non-zero when the world transform changed.
-     * @ghidraAddress NTSC-U/C: 0x005bbf80
-     * @ghidraAddress PAL: 0x005fe648
      */
     virtual int UpdateWorldXfm(Transformable *pParent, int nForce);
 
@@ -398,8 +350,6 @@ protected:
      *
      * @param ray The segment to test along.
      * @param collisions The list to append intersections to.
-     * @ghidraAddress NTSC-U/C: 0x005bc090
-     * @ghidraAddress PAL: 0x005fe758
      */
     virtual void FindCollisions(const Segment &ray, std::list<Collision> &collisions);
 
@@ -412,8 +362,6 @@ protected:
      * mSortStart is set, and the list is then sorted.
      *
      * @param flFrame The filtered frame, which the body does not read.
-     * @ghidraAddress NTSC-U/C: 0x005bbeb0
-     * @ghidraAddress PAL: 0x005fe578
      */
     virtual void SetFrameSelf(float flFrame);
 
@@ -425,9 +373,6 @@ private:
      * The view is written and marked dirty only when mTeleport is set. Does nothing without a view
      * or when the loop is unchanged. UpdateSection() calls it, and the setters above expand it
      * inline with nLoop zero.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005bbda8
-     * @ghidraAddress PAL: 0x005fe470
      */
     void SetSectionLoop(Section &section, int nLoop);
 
@@ -438,9 +383,6 @@ private:
      * plus one. The view is animated to the frame within its own loop and shown while that frame
      * falls in [mFrame - mDelta, mFrame), and is otherwise hidden and restarted if it was showing.
      * SetFrameSelf() and the section setters call it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005b64e0
-     * @ghidraAddress PAL: 0x005f8b48
      */
     void UpdateSection(Section &section);
 
@@ -466,8 +408,6 @@ private:
  *
  * @param name The object name.
  * @return The new loop.
- * @ghidraAddress NTSC-U/C: 0x005bbb28
- * @ghidraAddress PAL: 0x005fe1f0
  */
 Arena *NewArena(const HxStr &name);
 
@@ -479,8 +419,6 @@ Arena *NewArena(const HxStr &name);
  *
  * @param name The object name.
  * @return The new loop, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x005bba98
- * @ghidraAddress PAL: 0x005fe160
  */
 Object *CreateRegisteredArena(const HxStr &name);
 
@@ -492,16 +430,11 @@ Object *CreateRegisteredArena(const HxStr &name);
  *
  * @param name The object name.
  * @return The new loop.
- * @ghidraAddress NTSC-U/C: 0x005bb8f0
- * @ghidraAddress PAL: 0x005fdfb8
  */
 Arena *NewArenaThroughHook(const HxStr &name);
 
 /**
  * Registered class name of Rnd::Arena, the string "Arena".
- *
- * @ghidraAddress NTSC-U/C: 0x00777100
- * @ghidraAddress PAL: 0x007bafe8
  */
 extern HxStr g_arenaClassName;
 
@@ -510,9 +443,6 @@ extern HxStr g_arenaClassName;
  *
  * Load() stores the revision here rather than in a local, which is what lets the helpers it calls
  * test it.
- *
- * @ghidraAddress NTSC-U/C: 0x008e4a4c
- * @ghidraAddress PAL: 0x00929a74
  */
 extern int g_nRndArenaLoadRevision;
 
@@ -521,9 +451,6 @@ extern int g_nRndArenaLoadRevision;
  *
  * Init() fills it with NewArena(), and the thunk the class registry stores loads it rather than
  * calling the factory directly, which is what lets a platform layer substitute a subclass.
- *
- * @ghidraAddress NTSC-U/C: 0x00777108
- * @ghidraAddress PAL: 0x007baff0
  */
 extern Arena *(*g_pfnNewArena)(const HxStr &name);
 

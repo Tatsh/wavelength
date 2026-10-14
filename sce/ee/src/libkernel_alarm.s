@@ -60,7 +60,6 @@
     .globl g_alarmPatch
 g_alarmPatch:
 AlarmPatchStart:
-# NTSC-U/C: 0x80076000, PAL: 0x80076000
 # Returns the kernel address of an alarm system call from the entry table, or zero.
     .org AlarmPatchStart + kAlarmGetEntryAddressOffset
 AlarmGetEntryAddress:

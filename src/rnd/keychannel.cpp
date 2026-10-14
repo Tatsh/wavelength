@@ -11,7 +11,6 @@ namespace Rnd {
 
 namespace {
 
-// NTSC-U/C: 0x004d8c88, PAL: 0x005171a0
 Dbg &DumpColorKey(Dbg &sink, const ColorKey &key) {
     sink.Print("(frame:");
     sink.Format("%.2f", key.mFrame);
@@ -29,7 +28,6 @@ Dbg &DumpColorKey(Dbg &sink, const ColorKey &key) {
     return sink;
 }
 
-// NTSC-U/C: 0x004d9658, PAL: 0x00517b70
 Stream &ReadColorKey(Stream &stream, ColorKey &key) {
     stream.ReadLE(&key.mValue.r, sizeof(float));
     stream.ReadLE(&key.mValue.g, sizeof(float));
@@ -41,7 +39,6 @@ Stream &ReadColorKey(Stream &stream, ColorKey &key) {
 
 // Each component reaches the stream as a stack copy rather than as the address of the member, so
 // the original moved every float through a by-value parameter.
-// NTSC-U/C: 0x004d9098, PAL: 0x005175b0
 Stream &WriteColorKey(Stream &stream, const ColorKey &key) {
     stream.WriteLE(&key.mValue.r, sizeof(float));
     stream.WriteLE(&key.mValue.g, sizeof(float));
@@ -51,7 +48,6 @@ Stream &WriteColorKey(Stream &stream, const ColorKey &key) {
     return stream;
 }
 
-// NTSC-U/C: 0x004da880, PAL: 0x00518d98
 Dbg &DumpVector3Key(Dbg &sink, const Vector3Key &key) {
     sink.Print("(frame:");
     sink.Format("%.2f", key.mFrame);

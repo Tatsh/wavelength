@@ -14,9 +14,6 @@ public:
      *
      * The body is empty. The out-of-line emission frees the object through the scalar release on
      * its deleting path.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0019b278
-     * @ghidraAddress PAL: 0x001a0fe0
      */
     virtual ~FilterLover() {
     }

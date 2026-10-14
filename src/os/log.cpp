@@ -31,7 +31,6 @@ constexpr int kFormatMessageUnused = 0;
 // How long an assertion report asks to stay on screen.
 constexpr int kAssertionMessageDuration = 600;
 
-// NTSC-U/C: 0x0071d368, PAL: 0x00760dd8
 char g_szFatalMessage[kFatalMessageSize];
 
 } // namespace

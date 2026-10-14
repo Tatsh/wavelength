@@ -73,9 +73,6 @@ public:
      *
      * The body restores this class's vtable pointer and runs the Attachment destructor, and it
      * touches no member of its own.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00539ef8
-     * @ghidraAddress PAL: 0x00579828
      */
     virtual ~Command();
 
@@ -103,8 +100,6 @@ public:
      * The body here writes the literal `{Command}` and each derived body writes its own literal.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x0053a088
-     * @ghidraAddress PAL: 0x005799b8
      */
     virtual void Print(std::ostream &stream);
 
@@ -114,8 +109,6 @@ public:
      * The body here is a single `jr ra`. The base therefore does not write a payload.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x00539f20
-     * @ghidraAddress PAL: 0x00579850
      */
     virtual void saveGuts(OBStream &stream) const;
 
@@ -125,8 +118,6 @@ public:
      * The body here is a single `jr ra`. The base therefore does not read a payload.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x00539f28
-     * @ghidraAddress PAL: 0x00579858
      */
     virtual void restoreGuts(IBStream &stream);
 
@@ -139,8 +130,6 @@ public:
      *
      * @param nCmdID The identifier to construct for.
      * @return The new command, or null when the identifier is zero or unregistered.
-     * @ghidraAddress NTSC-U/C: 0x00539fe8
-     * @ghidraAddress PAL: 0x00579918
      */
     static Command *NewCommand(int nCmdID);
 
@@ -170,8 +159,6 @@ public:
  * @param stream The stream to write to.
  * @param pCommand The command to write, or null.
  * @return The stream, allowing calls to be chained.
- * @ghidraAddress NTSC-U/C: 0x005384d0
- * @ghidraAddress PAL: 0x00577d90
  */
 OBStream &operator<<(OBStream &stream, Command *pCommand);
 
@@ -184,8 +171,6 @@ OBStream &operator<<(OBStream &stream, Command *pCommand);
  * @param stream The stream to read from.
  * @param pCommand Receives the new command, or null.
  * @return The stream, allowing calls to be chained.
- * @ghidraAddress NTSC-U/C: 0x005385f0
- * @ghidraAddress PAL: 0x00577eb0
  */
 IBStream &operator>>(IBStream &stream, Command *&pCommand);
 
@@ -198,8 +183,6 @@ IBStream &operator>>(IBStream &stream, Command *&pCommand);
  * @param stream The stream to write to.
  * @param command The command to write.
  * @return The stream, allowing calls to be chained.
- * @ghidraAddress NTSC-U/C: 0x005382e8
- * @ghidraAddress PAL: 0x00577ba8
  */
 OBStream &operator<<(OBStream &stream, Command &command);
 
@@ -213,8 +196,6 @@ OBStream &operator<<(OBStream &stream, Command &command);
  * @param stream The stream to read from.
  * @param command The command to fill.
  * @return The stream, allowing calls to be chained.
- * @ghidraAddress NTSC-U/C: 0x005383d8
- * @ghidraAddress PAL: 0x00577c98
  */
 IBStream &operator>>(IBStream &stream, Command &command);
 

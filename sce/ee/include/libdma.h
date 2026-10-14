@@ -34,8 +34,6 @@ typedef struct {
  *
  * @param nChannel The channel number.
  * @return The register block, or null for a number out of range.
- * @ghidraAddress NTSC-U/C: 0x005f36f0
- * @ghidraAddress PAL: 0x00596e10
  */
 sceDmaChan *sceDmaGetChan(int nChannel);
 
@@ -48,8 +46,6 @@ sceDmaChan *sceDmaGetChan(int nChannel);
  * @param pChannel The channel.
  * @param pAddress The source.
  * @param nQuadwords Size of the transfer in quadwords.
- * @ghidraAddress NTSC-U/C: 0x005f3b18
- * @ghidraAddress PAL: 0x00597238
  */
 void sceDmaSendN(sceDmaChan *pChannel, void *pAddress, int nQuadwords);
 
@@ -63,8 +59,6 @@ void sceDmaSendN(sceDmaChan *pChannel, void *pAddress, int nQuadwords);
  * @param nMode 1 to poll, any other value to wait.
  * @param nTimeout Wait limit, or 0 for the default.
  * @return 1 when polling a running channel, otherwise 0.
- * @ghidraAddress NTSC-U/C: 0x005f3f90
- * @ghidraAddress PAL: 0x005976b0
  */
 int sceDmaSync(sceDmaChan *pChannel, int nMode, int nTimeout);
 
@@ -86,8 +80,6 @@ int sceDmaReset(int nMode);
  *
  * @param pEnv Receives the settings.
  * @return pEnv.
- * @ghidraAddress NTSC-U/C: 0x005f39e0
- * @ghidraAddress PAL: 0x00597100
  */
 sceDmaEnv *sceDmaGetEnv(sceDmaEnv *pEnv);
 
@@ -109,8 +101,6 @@ int sceDmaPutEnv(sceDmaEnv *pEnv);
  *
  * @param pChannel The channel.
  * @param pTag The first DMA tag of the chain.
- * @ghidraAddress NTSC-U/C: 0x005f3a40
- * @ghidraAddress PAL: 0x00597160
  */
 void sceDmaSend(sceDmaChan *pChannel, void *pTag);
 

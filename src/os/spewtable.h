@@ -53,17 +53,11 @@ public:
 
     /**
      * Construct an empty registry.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b32b8
-     * @ghidraAddress PAL: 0x004f14f8
      */
     SpewTable();
 
     /**
      * Close every channel and release both lists.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b32e8
-     * @ghidraAddress PAL: 0x004f1528
      */
     ~SpewTable();
 
@@ -74,8 +68,6 @@ public:
      * out-of-line copy.
      *
      * @return The registry.
-     * @ghidraAddress NTSC-U/C: 0x004b4470
-     * @ghidraAddress PAL: 0x004f2780
      */
     static SpewTable &shared() {
         static SpewTable instance;
@@ -90,8 +82,6 @@ public:
      *
      * @param ppStream The file's stream pointer.
      * @param pszFile The source file name.
-     * @ghidraAddress NTSC-U/C: 0x004b3528
-     * @ghidraAddress PAL: 0x004f1790
      */
     void Register(std::ostream **ppStream, const char *pszFile);
 
@@ -104,8 +94,6 @@ public:
      *
      * @param file The source file's base name.
      * @param channel The channel name: `off`, `console`, `debug`, or a file to write.
-     * @ghidraAddress NTSC-U/C: 0x004b36b8
-     * @ghidraAddress PAL: 0x004f1960
      */
     void Connect(const HxStr &file, const HxStr &channel);
 
@@ -113,8 +101,6 @@ public:
      * Write every registration and its channel name, one per line.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004b4550
-     * @ghidraAddress PAL: 0x004f2860
      */
     void PrintConnections(std::ostream &stream);
 
@@ -124,9 +110,6 @@ private:
      *
      * `off` and `debug` discard their output, `console` writes to cout, and any other name opens a
      * file for writing. The receiver is unread.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b3898
-     * @ghidraAddress PAL: 0x004f1b80
      */
     Channel *NewChannel(const HxStr &name);
 
@@ -134,9 +117,6 @@ private:
      * Flushes and deletes every channel's stream, deletes the channels, and empties mChannels.
      *
      * The destructor is the one caller.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004b3448
-     * @ghidraAddress PAL: 0x004f16a0
      */
     void CloseChannels();
 

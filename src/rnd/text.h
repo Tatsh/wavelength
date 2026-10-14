@@ -75,9 +75,6 @@ public:
 
     /**
      * Creator the registered "Text" class builds through.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006feca8
-     * @ghidraAddress PAL: 0x007426a8
      */
     static Text *(*sNew)(const HxStr &name);
 
@@ -86,8 +83,6 @@ public:
      *
      * @param nSize The object size the compiler supplies.
      * @return The block.
-     * @ghidraAddress NTSC-U/C: 0x004cf150
-     * @ghidraAddress PAL: 0x0050d4b0
      */
     static void *operator new(size_t nSize);
 
@@ -95,8 +90,6 @@ public:
      * Release a text run to the tagged heap.
      *
      * @param pBlock The block.
-     * @ghidraAddress NTSC-U/C: 0x004cf170
-     * @ghidraAddress PAL: 0x0050d4d0
      */
     static void operator delete(void *pBlock);
 
@@ -107,16 +100,11 @@ public:
      * 100.0, wrapping disabled, and both strings, the font, and the mesh empty.
      *
      * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x004c89c0
-     * @ghidraAddress PAL: 0x00506bc8
      */
     explicit Text(const HxStr &name);
 
     /**
      * Release the glyph mesh and drop the reference on the font.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004cf2b8
-     * @ghidraAddress PAL: 0x0050d618
      */
     virtual ~Text();
 
@@ -128,8 +116,6 @@ public:
      * effect without a rebuild.
      *
      * @param color The colour.
-     * @ghidraAddress NTSC-U/C: 0x004cfec8
-     * @ghidraAddress PAL: 0x0050e2c0
      */
     virtual void SetColor(const Color &color);
 
@@ -139,8 +125,6 @@ public:
      * Rnd::Drawable vtable slot 5.
      *
      * @param nAlign A set of the Alignment bits.
-     * @ghidraAddress NTSC-U/C: 0x004cff48
-     * @ghidraAddress PAL: 0x0050e340
      */
     virtual void SetAlign(int nAlign);
 
@@ -151,8 +135,6 @@ public:
      * are derived from it.
      *
      * @param text The text to draw.
-     * @ghidraAddress NTSC-U/C: 0x004d0168
-     * @ghidraAddress PAL: 0x0050e580
      */
     virtual void SetText(const HxStr &text);
 
@@ -186,8 +168,6 @@ public:
      * which drops the previous material without storing the null.
      *
      * @param pFont The font, or null for none.
-     * @ghidraAddress NTSC-U/C: 0x004cfde0
-     * @ghidraAddress PAL: 0x0050e1b8
      */
     virtual void SetFont(Font *pFont);
 
@@ -195,8 +175,6 @@ public:
      * Set whether long lines are broken at word boundaries.
      *
      * @param nWordWrap Non-zero to wrap.
-     * @ghidraAddress NTSC-U/C: 0x004cfab8
-     * @ghidraAddress PAL: 0x0050de50
      */
     void SetWordWrap(int nWordWrap);
 
@@ -204,8 +182,6 @@ public:
      * Set the width a wrapped line is broken at.
      *
      * @param flWrapWidth The width, in the units the font measures in.
-     * @ghidraAddress NTSC-U/C: 0x004cfb78
-     * @ghidraAddress PAL: 0x0050df30
      */
     void SetWrapWidth(float flWrapWidth);
 
@@ -216,9 +192,6 @@ public:
      * glyph widths to measure with. Every setter of a field that affects layout ends here, and the
      * compiler inlined this routine at each of those call sites while retaining the out-of-line
      * body for Load() and Copy().
-     *
-     * @ghidraAddress NTSC-U/C: 0x004cf9f8
-     * @ghidraAddress PAL: 0x0050dd70
      */
     void RebuildText();
 
@@ -231,8 +204,6 @@ public:
      * dump level of 2 or more.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x004c7fc0
-     * @ghidraAddress PAL: 0x00506198
      */
     virtual void DumpText(Dbg &sink);
 
@@ -240,8 +211,6 @@ public:
      * Write this text run to stream at revision 6.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x004c8330
-     * @ghidraAddress PAL: 0x00506508
      */
     virtual void Save(Stream &stream);
 
@@ -252,8 +221,6 @@ public:
      *
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
-     * @ghidraAddress NTSC-U/C: 0x004cf888
-     * @ghidraAddress PAL: 0x0050dc00
      */
     virtual void Replace(Object *pFrom, Object *pTo);
 
@@ -264,8 +231,6 @@ public:
      * "Text".
      *
      * @return The class key.
-     * @ghidraAddress NTSC-U/C: 0x004cf760
-     * @ghidraAddress PAL: 0x0050dad8
      */
     virtual const HxStr &ClassName() const;
 
@@ -278,8 +243,6 @@ public:
      *
      * @param pSource The text run to copy from.
      * @param nFlags The set of fields to copy, passed on to each mix-in.
-     * @ghidraAddress NTSC-U/C: 0x004cfca8
-     * @ghidraAddress PAL: 0x0050e080
      */
     virtual void Copy(const Object *pSource, unsigned nFlags);
 
@@ -296,8 +259,6 @@ public:
      * revision 5 introduced the depth-test flag.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x004c8560
-     * @ghidraAddress PAL: 0x00506738
      */
     virtual void Load(Stream &stream);
 
@@ -310,8 +271,6 @@ public:
      *
      * @param ray The segment to test along.
      * @param collisions The list to append intersections to.
-     * @ghidraAddress NTSC-U/C: 0x004c7ef8
-     * @ghidraAddress PAL: 0x005060d0
      */
     virtual void FindCollisions(const Segment &ray, std::list<Collision> &collisions);
 
@@ -321,8 +280,6 @@ public:
      * Rnd::Transformable vtable slot 1.
      *
      * @param nBillboard The billboard mode.
-     * @ghidraAddress NTSC-U/C: 0x004d02a0
-     * @ghidraAddress PAL: 0x0050e6d8
      */
     virtual void SetBillboard(int nBillboard);
 
@@ -336,8 +293,6 @@ public:
      * @param pParent The transformable this one hangs off, or null for a root.
      * @param nForce Non-zero to recompose even when nothing is marked dirty.
      * @return Non-zero when the world transform was recomposed.
-     * @ghidraAddress NTSC-U/C: 0x004d03e0
-     * @ghidraAddress PAL: 0x0050e818
      */
     virtual int UpdateWorldXfm(Transformable *pParent, int nForce);
 
@@ -349,8 +304,6 @@ public:
      * and the base implementation is not invoked.
      *
      * @param nShowing Non-zero to draw.
-     * @ghidraAddress NTSC-U/C: 0x004d0378
-     * @ghidraAddress PAL: 0x0050e7b0
      */
     virtual void SetShowing(int nShowing);
 
@@ -360,8 +313,6 @@ public:
      * Rnd::Drawable vtable slot 2. The glyph mesh receives the same flag.
      *
      * @param nHighlight Non-zero to highlight.
-     * @ghidraAddress NTSC-U/C: 0x004d0328
-     * @ghidraAddress PAL: 0x0050e760
      */
     virtual void SetHighlight(int nHighlight);
 
@@ -379,8 +330,6 @@ public:
      * HudTextMessage's constructor inlines the load, and the out-of-line copy has no caller.
      *
      * @return The font, or null.
-     * @ghidraAddress NTSC-U/C: 0x004cf740
-     * @ghidraAddress PAL: 0x0050dab8
      */
     Font *GetFont() {
         return mFont;
@@ -396,8 +345,6 @@ public:
      * directly on a text from outside the hierarchy.
      *
      * @return Non-zero, always.
-     * @ghidraAddress NTSC-U/C: 0x004d02f8
-     * @ghidraAddress PAL: 0x0050e730
      */
     virtual int DrawShowing();
 
@@ -411,8 +358,6 @@ public:
      * @param pText The characters to measure.
      * @param nCount How many characters to measure.
      * @return The summed advance.
-     * @ghidraAddress NTSC-U/C: 0x004d0010
-     * @ghidraAddress PAL: 0x0050e428
      */
     float GetFontWidth(const char *pText, int nCount);
 
@@ -427,8 +372,6 @@ public:
      *
      * @param nIndex The glyph.
      * @return The position.
-     * @ghidraAddress NTSC-U/C: 0x004c9e98
-     * @ghidraAddress PAL: 0x00508100
      */
     Vector3 CharPosition(int nIndex);
 
@@ -442,8 +385,6 @@ public:
      *
      * @param flTop Receives the extent above the origin.
      * @param flBottom Receives the extent below the origin, as a negative or zero value.
-     * @ghidraAddress NTSC-U/C: 0x004d0088
-     * @ghidraAddress PAL: 0x0050e4a0
      */
     void GetVerticalBounds(float &flTop, float &flBottom);
 
@@ -453,8 +394,6 @@ public:
      * The name is inferred.
      *
      * @return The line count, at least 1.
-     * @ghidraAddress NTSC-U/C: 0x004d0238
-     * @ghidraAddress PAL: 0x0050e670
      */
     int CountLines();
 
@@ -466,9 +405,6 @@ private:
      * and its font is a Material font. Otherwise it creates a mesh through the Rnd::Mesh creator
      * hook, names it after this object, sizes its vertex and face vectors for four vertices and two
      * triangles per glyph, and emits one line at a time.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004c9780
-     * @ghidraAddress PAL: 0x005079c8
      */
     void BuildGlyphMesh();
 
@@ -484,8 +420,6 @@ private:
      * @param nCharBase Number of glyphs already emitted, which indexes both vectors.
      * @param pBegin First character of the line.
      * @param pEnd One past the last character of the line.
-     * @ghidraAddress NTSC-U/C: 0x004c9ca0
-     * @ghidraAddress PAL: 0x00507f08
      */
     void EmitLineGlyphs(
         float flLineY, float flLineWidth, int nCharBase, const char *pBegin, const char *pEnd);
@@ -500,8 +434,6 @@ private:
      *
      * @param text The text to wrap.
      * @return The wrapped text.
-     * @ghidraAddress NTSC-U/C: 0x004c95d0
-     * @ghidraAddress PAL: 0x005077e8
      */
     HxStr ApplyWordWrap(const HxStr &text);
 
@@ -515,8 +447,6 @@ private:
      *
      * @param pText The line to measure, which has to be NUL-terminated.
      * @return The number of characters that fit, or 0 when the line starts with a newline.
-     * @ghidraAddress NTSC-U/C: 0x004c9278
-     * @ghidraAddress PAL: 0x00507490
      */
     int HowManyFit(const char *pText);
 
@@ -530,9 +460,6 @@ private:
      *
      * The destructor is its only out-of-line caller, and Copy() and BuildGlyphMesh() inline the
      * same body.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004cf958
-     * @ghidraAddress PAL: 0x0050dcd0
      */
     void ReleaseObjects();
 
@@ -540,9 +467,6 @@ private:
      * Take a reference on the font and rebuild.
      *
      * Copy() and Load() inline the same body.
-     *
-     * @ghidraAddress NTSC-U/C: 0x004cf9b8
-     * @ghidraAddress PAL: 0x0050dd30
      */
     void AddRefObjects();
 
@@ -610,8 +534,6 @@ private:
  *
  * @param name The object name.
  * @return The new text run.
- * @ghidraAddress NTSC-U/C: 0x004cf800
- * @ghidraAddress PAL: 0x0050db78
  */
 Text *NewText(const HxStr &name);
 
@@ -624,8 +546,6 @@ Text *NewText(const HxStr &name);
  *
  * @param name The object name.
  * @return The new text run.
- * @ghidraAddress NTSC-U/C: 0x004cf1d0
- * @ghidraAddress PAL: 0x0050d530
  */
 Text *NewTextThroughHook(const HxStr &name);
 
@@ -637,8 +557,6 @@ Text *NewTextThroughHook(const HxStr &name);
  *
  * @param name The object name.
  * @return The new text run, as its Rnd::Object subobject.
- * @ghidraAddress NTSC-U/C: 0x004cf770
- * @ghidraAddress PAL: 0x0050dae8
  */
 Object *CreateRegisteredText(const HxStr &name);
 
@@ -646,17 +564,11 @@ Object *CreateRegisteredText(const HxStr &name);
  * Point Text::sNew at NewText() and register the "Text" class with Rnd::Manager.
  *
  * Rnd::Manager::Init() also expands this inline.
- *
- * @ghidraAddress NTSC-U/C: 0x004cf190
- * @ghidraAddress PAL: 0x0050d4f0
  */
 void RegisterTextClass();
 
 /**
  * Registered class name of Rnd::Text, the string "Text".
- *
- * @ghidraAddress NTSC-U/C: 0x006feca0
- * @ghidraAddress PAL: 0x007426a0
  */
 extern HxStr g_textClassName;
 

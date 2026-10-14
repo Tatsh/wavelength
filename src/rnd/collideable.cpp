@@ -25,7 +25,6 @@ static const char *NameText(const Object *pObject) {
     return pObject->mName.mStr != nullptr ? pObject->mName.mStr : "";
 }
 
-// NTSC-U/C: 0x00501c48, PAL: 0x00540a20
 static Dbg &operator<<(Dbg &sink, const std::list<Collideable *> &collides) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, collides.size());
@@ -47,7 +46,6 @@ static Dbg &operator<<(Dbg &sink, const std::list<Collideable *> &collides) {
     return sink;
 }
 
-// NTSC-U/C: 0x00501db0, PAL: 0x00540b88
 //
 // Each entry is written as the referenced object's name including its terminator. A reader has to
 // resolve the names through Rnd::TheManager. An empty entry writes one zero byte.
@@ -68,7 +66,6 @@ static Stream &operator<<(Stream &stream, const std::list<Collideable *> &collid
     return stream;
 }
 
-// NTSC-U/C: 0x00502088, PAL: 0x00540e60
 static Stream &operator>>(Stream &stream, std::list<Collideable *> &collides) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));

@@ -40,9 +40,6 @@ enum ABitmapColorKey {
  * The table sits immediately after ABitmap::bmPixelSize and no reader of it was located inside
  * the art library. A second pair of the same shape exists at 0x0070d3d0, where the first table
  * maps the same codes to PlayStation 2 graphics synthesiser storage modes.
- *
- * @ghidraAddress NTSC-U/C: 0x00725cc8
- * @ghidraAddress PAL: 0x00769968
  */
 extern const unsigned char g_abBitmapBitsPerPixel[kABitmapFormatCount];
 
@@ -53,9 +50,6 @@ extern const unsigned char g_abBitmapBitsPerPixel[kABitmapFormatCount];
  * `0x00254cf8` test it before calling ABitmap::SwapRedBlue(). Rnd::VRAM::Screendump() swaps without
  * the test. The image never writes it, and it retains its initial value of 1. The name is
  * inferred.
- *
- * @ghidraAddress NTSC-U/C: 0x00725cd0
- * @ghidraAddress PAL: 0x00769970
  */
 extern int g_nSkipColorSwap;
 
@@ -99,9 +93,6 @@ public:
      *
      * The entry for kABitmapFormatLinear4 is zero, because four-bit rows use a separate stride
      * formula. Both ABitmap::ABitmap() and ACanvas::NewCompatibleCanvas() read the table.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00725cc0
-     * @ghidraAddress PAL: 0x00769960
      */
     static const unsigned char bmPixelSize[kABitmapFormatCount];
 
@@ -126,8 +117,6 @@ public:
      * @param nWidth The width in pixels.
      * @param nHeight The height in pixels.
      * @param nBytesPerRow The row stride, or zero to derive it from the format.
-     * @ghidraAddress NTSC-U/C: 0x005593a0
-     * @ghidraAddress PAL: 0x0059a4f8
      */
     ABitmap(void *pPixels,
             int nFormat,
@@ -150,8 +139,6 @@ public:
      * @param nY The top row of the rectangle.
      * @param nWidth The width in pixels.
      * @param nHeight The height in pixels.
-     * @ghidraAddress NTSC-U/C: 0x00558dd8
-     * @ghidraAddress PAL: 0x00599f30
      */
     ABitmap(const ABitmap &source, int nX, int nY, int nWidth, int nHeight);
 
@@ -165,8 +152,6 @@ public:
      * @param pEntries The entries to copy in.
      * @param nFirst The first palette index to write.
      * @param nCount The number of entries to write.
-     * @ghidraAddress NTSC-U/C: 0x005eb290
-     * @ghidraAddress PAL: 0x0062d3d8
      */
     void SetPaletteEntries(const unsigned int *pEntries, int nFirst, int nCount);
 
@@ -178,8 +163,6 @@ public:
      *
      * @param nBitsPerPixel The pixel width in bits.
      * @return The format code.
-     * @ghidraAddress NTSC-U/C: 0x00559310
-     * @ghidraAddress PAL: 0x0059a468
      */
     static int Bpp2Format(int nBitsPerPixel);
 
@@ -194,8 +177,6 @@ public:
      * @param nWidth The width in pixels.
      * @param nHeight The height in pixels.
      * @return The size in bytes.
-     * @ghidraAddress NTSC-U/C: 0x00559368
-     * @ghidraAddress PAL: 0x0059a4c0
      */
     static int ComputeByteCount(int nFormat, int nWidth, int nHeight);
 
@@ -204,8 +185,6 @@ public:
      *
      * @param pPixels The first pixel.
      * @param nCount The number of pixels.
-     * @ghidraAddress NTSC-U/C: 0x00559568
-     * @ghidraAddress PAL: 0x0059a6c0
      */
     static void Reverse15(unsigned short *pPixels, int nCount);
 
@@ -214,8 +193,6 @@ public:
      *
      * @param pPixels The first pixel.
      * @param nCount The number of pixels.
-     * @ghidraAddress NTSC-U/C: 0x005595c8
-     * @ghidraAddress PAL: 0x0059a720
      */
     static void Reverse24(unsigned char *pPixels, int nCount);
 
@@ -224,8 +201,6 @@ public:
      *
      * @param pPixels The first pixel.
      * @param nCount The number of pixels.
-     * @ghidraAddress NTSC-U/C: 0x00559600
-     * @ghidraAddress PAL: 0x0059a758
      */
     static void Reverse32(unsigned char *pPixels, int nCount);
 
@@ -246,8 +221,6 @@ public:
      * at 0x004e5928 is the one caller, passing the texture's flag word.
      *
      * @param nFlags ABitmapColorKey bits.
-     * @ghidraAddress NTSC-U/C: 0x004e5b78
-     * @ghidraAddress PAL: 0x005245c8
      */
     void ApplyColorKey(int nFlags);
 
@@ -258,9 +231,6 @@ public:
      * palette. A direct colour format swaps every pixel of every row, stepping by mBytesPerRow.
      * The four row loops inline Reverse15(), Reverse24(), and Reverse32(). Callers
      * skip the call while g_nSkipColorSwap is non-zero.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00559140
-     * @ghidraAddress PAL: 0x0059a298
      */
     void SwapRedBlue();
 
@@ -274,8 +244,6 @@ public:
      * in the Rnd::Tex translation unit. The name is inferred.
      *
      * @param bWhiten Non-zero to set the colour bytes to white as well.
-     * @ghidraAddress NTSC-U/C: 0x004e7d48
-     * @ghidraAddress PAL: 0x00526838
      */
     void SetPaletteAlphaFromLowByte(int bWhiten);
 
@@ -291,8 +259,6 @@ public:
      *
      * @param source The bitmap to copy.
      * @return 0, or -1 when the allocation fails.
-     * @ghidraAddress NTSC-U/C: 0x00558f28
-     * @ghidraAddress PAL: 0x0059a080
      */
     int Clone(ABitmap &source);
 

@@ -53,7 +53,6 @@ inline void PrintColor(Dbg &sink, const Color &color) {
 
 } // namespace
 
-// NTSC-U/C: 0x00718d18, PAL: 0x0075cc08
 HxStr Environ::sClassName("Environ");
 
 Environ *Environ::sCurrent;
@@ -77,7 +76,6 @@ const HxStr &Environ::ClassName() const {
     return Environ::sClassName;
 }
 
-// NTSC-U/C: 0x00519470, PAL: 0x00559808
 //
 // A mode outside the enumeration produces no text at all rather than a fallback name.
 Dbg &operator<<(Dbg &sink, FogMode nMode) {
@@ -99,7 +97,6 @@ Dbg &operator<<(Dbg &sink, FogMode nMode) {
     return sink;
 }
 
-// NTSC-U/C: 0x005185b0, PAL: 0x00558908
 Dbg &operator<<(Dbg &sink, const std::list<Light *> &lights) {
     sink.Print("(size:");
     sink.Format(kSizeFormat, lights.size());
@@ -121,7 +118,6 @@ Dbg &operator<<(Dbg &sink, const std::list<Light *> &lights) {
     return sink;
 }
 
-// NTSC-U/C: 0x00518718, PAL: 0x00558a70
 //
 // Each entry is written as the referenced object's name including its terminator. An empty entry
 // writes one zero byte.
@@ -141,7 +137,6 @@ static Stream &operator<<(Stream &stream, const std::list<Light *> &lights) {
     return stream;
 }
 
-// NTSC-U/C: 0x005189f0, PAL: 0x00558d48
 static Stream &operator>>(Stream &stream, std::list<Light *> &lights) {
     int nCount = 0;
     stream.ReadLE(&nCount, sizeof(nCount));

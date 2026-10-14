@@ -178,8 +178,6 @@ void VSync(void);
  * @param pAlpha The pairs.
  * @param nPabe PABE setting.
  * @return 4, the pair count.
- * @ghidraAddress NTSC-U/C: 0x00621c20
- * @ghidraAddress PAL: 0x006627b0
  */
 int sceGsSetDefAlphaEnv(sceGsAlphaEnv *pAlpha, short nPabe);
 
@@ -275,8 +273,6 @@ int sceGsSetDefClear(sceGsClear *pClear,
  * @param nZTest Depth test.
  * @param nZPsm Pixel storage format of the depth buffer.
  * @param nClear Nonzero to fill the clear halves.
- * @ghidraAddress NTSC-U/C: 0x005e4b30
- * @ghidraAddress PAL: 0x00626cf0
  */
 int sceGsSetDefDBuff(sceGsDBuff *pDBuff,
                      short nPsm,

@@ -236,8 +236,6 @@ void loadImage(LoadImageTag *tags);
  * Print an error line. The game defines the routine, and the sample units call it.
  *
  * @param pszMessage The message.
- * @ghidraAddress NTSC-U/C: 0x00510f20
- * @ghidraAddress PAL: 0x00551198
  */
 void ErrMessage(char *pszMessage);
 

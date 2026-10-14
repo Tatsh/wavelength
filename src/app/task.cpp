@@ -2,7 +2,6 @@
 
 #include "os/log.h"
 
-// NTSC-U/C: 0x006fba4c, PAL: 0x0073f4c4
 Task::Node *g_pRunningTasks;
 
 Task::Task() {

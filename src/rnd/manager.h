@@ -84,9 +84,6 @@ public:
      * Construct an empty registry.
      *
      * The body default-constructs the four members and nothing else.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005200c0
-     * @ghidraAddress PAL: 0x00560618
      */
     Manager();
 
@@ -95,9 +92,6 @@ public:
      *
      * The members are destroyed in reverse declaration order. The deleting variant then frees the
      * storage under the tag "Rnd::Manager".
-     *
-     * @ghidraAddress NTSC-U/C: 0x00520348
-     * @ghidraAddress PAL: 0x005608a0
      */
     ~Manager();
 
@@ -109,8 +103,6 @@ public:
      *
      * @param pObject The object to look for.
      * @return True when some entry holds pObject.
-     * @ghidraAddress NTSC-U/C: 0x005199d8
-     * @ghidraAddress PAL: 0x00559d88
      */
     bool Contains(const Object *pObject);
 
@@ -141,8 +133,6 @@ public:
      *
      * @param name The type name a `.rnd` file writes.
      * @param pfnCreate The factory for that name.
-     * @ghidraAddress NTSC-U/C: 0x00519a98
-     * @ghidraAddress PAL: 0x00559e48
      */
     void RegisterClass(const HxStr &name, ClassFactory pfnCreate);
 
@@ -154,8 +144,6 @@ public:
      * @param className The type name a `.rnd` file wrote.
      * @param objectName The object name for the new instance.
      * @return The new object, or null when the type name is unregistered.
-     * @ghidraAddress NTSC-U/C: 0x005205b0
-     * @ghidraAddress PAL: 0x00560b08
      */
     Object *Create(const HxStr &className, const HxStr &objectName);
 
@@ -188,8 +176,6 @@ public:
      * @param bRecurse Non-zero to clone the descendants.
      * @param bLink Non-zero to attach the clone to the source's parents.
      * @return The clone, or null when the source's class cannot be created.
-     * @ghidraAddress NTSC-U/C: 0x0051a428
-     * @ghidraAddress PAL: 0x0055a820
      */
     Object *ResolveAndLinkObject(
         Object *pSource, const HxStr &prefix, unsigned nFlags, int bRecurse, int bLink);
@@ -220,8 +206,6 @@ public:
      * is what makes a movie the texture-streaming class it is.
      *
      * @param name The type name to rewrite in place.
-     * @ghidraAddress NTSC-U/C: 0x0051be08
-     * @ghidraAddress PAL: 0x0055c2c8
      */
     void RemapLegacyClassName(HxStr &name);
 
@@ -259,8 +243,6 @@ public:
      * "__temp__", loading the record into it, and destroying it.
      *
      * @param stream The stream to read from.
-     * @ghidraAddress NTSC-U/C: 0x0051b450
-     * @ghidraAddress PAL: 0x0055b888
      */
     void Read(Stream &stream);
 
@@ -278,8 +260,6 @@ public:
      * its record and follows each record with the marker `0xdeaddead`.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x0051aff8
-     * @ghidraAddress PAL: 0x0055b430
      */
     void Write(Stream &stream);
 
@@ -290,8 +270,6 @@ public:
      * `+0x0c` and `+0x10`, and returns. The stream is a Rnd::FileStream built on the stack.
      *
      * @param path The file to read.
-     * @ghidraAddress NTSC-U/C: 0x00520648
-     * @ghidraAddress PAL: 0x00560ba0
      */
     void LoadFile(const HxStr &path);
 
@@ -303,8 +281,6 @@ public:
      * is the one caller. The name is inferred from LoadFile().
      *
      * @param path The file to write.
-     * @ghidraAddress NTSC-U/C: 0x005204e8
-     * @ghidraAddress PAL: 0x00560a40
      */
     void SaveFile(const HxStr &path);
 
@@ -333,8 +309,6 @@ public:
      *
      * @param name The object name as written in the `.rnd` file.
      * @return The object, or null when no object has that name.
-     * @ghidraAddress NTSC-U/C: 0x00520498
-     * @ghidraAddress PAL: 0x005609f0
      */
     Object *Find(const HxStr &name);
 
@@ -427,8 +401,6 @@ public:
      * rather than dead analysis.
      *
      * @param sink The diagnostic sink to write to.
-     * @ghidraAddress NTSC-U/C: 0x0051ad98
-     * @ghidraAddress PAL: 0x0055b1d0
      */
     void DumpText(Dbg &sink);
 
@@ -484,9 +456,6 @@ extern Manager TheManager;
  * Version word of the `.rnd` file Manager::Read() is loading.
  *
  * Manager::Read() stores it before anything else, and Manager::RemapLegacyClassName() tests it.
- *
- * @ghidraAddress NTSC-U/C: 0x0089df90
- * @ghidraAddress PAL: 0x008e2fd0
  */
 extern int g_nRndManagerFileVersion;
 
@@ -494,9 +463,6 @@ extern int g_nRndManagerFileVersion;
  * Table entries Manager::Read() has passed since it last called g_pfnLongOperationDrawProc.
  *
  * Counts to 8 and resets to 0. Manager::Read() does not reset it between loads.
- *
- * @ghidraAddress NTSC-U/C: 0x00719888
- * @ghidraAddress PAL: 0x0075d788
  */
 extern int g_nRndManagerLoadFrameCounter;
 

@@ -25,16 +25,11 @@ public:
     /**
      * @param pClock The clock the task is posted against.
      * @param nPeriodNs Nanoseconds between one run and the next.
-     * @ghidraAddress NTSC-U/C: 0x0013b100
-     * @ghidraAddress PAL: 0x0013ba48
      */
     TimeTask(Sch::TimeClock *pClock, long long nPeriodNs);
 
     /**
      * Withdraw the queued command.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013b138
-     * @ghidraAddress PAL: 0x0013ba80
      */
     virtual ~TimeTask();
 
@@ -44,8 +39,6 @@ public:
      * Table slot 3.
      *
      * @param stream The stream to write to.
-     * @ghidraAddress NTSC-U/C: 0x0013afc0
-     * @ghidraAddress PAL: 0x0013b908
      */
     virtual void Print(std::ostream &stream);
 
@@ -67,8 +60,6 @@ public:
      *
      * @param nEpochOffsetNs Nanoseconds the epoch lies before now, or kNoEpochOffset for an epoch
      *                       at zero.
-     * @ghidraAddress NTSC-U/C: 0x0013b180
-     * @ghidraAddress PAL: 0x0013bac8
      */
     void Start(long long nEpochOffsetNs);
 
@@ -76,9 +67,6 @@ public:
      * Run Tick() for the run now due and post the next one.
      *
      * The file-local Cmd's Execute() is the caller. The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013ae70
-     * @ghidraAddress PAL: 0x0013b7b8
      */
     void Run();
 
@@ -86,9 +74,6 @@ public:
      * Withdraw the queued command and forget its handle.
      *
      * The title is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0013b1f0
-     * @ghidraAddress PAL: 0x0013bb38
      */
     void Stop();
 

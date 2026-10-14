@@ -22,19 +22,14 @@ constexpr int kTempBufferFallbackSize = 128 * 1024;
 // The zone ZoneGrabTemp() takes its buffer from.
 constexpr char kTempZoneName[] = "temp";
 
-// NTSC-U/C: 0x006e9808, PAL: 0x0072d1a0
 int bZonesInUse = 0;
 
-// NTSC-U/C: 0x006e980c, PAL: 0x0072d1a4
 int zhCurr = kNoZone;
 
-// NTSC-U/C: 0x006e9860, PAL: 0x0072d1f8
 void *g_pTempBuffer = nullptr;
 
-// NTSC-U/C: 0x006e9864, PAL: 0x0072d1fc
 int g_nTempBufferSize = 0;
 
-// NTSC-U/C: 0x006e9868, PAL: 0x0072d200
 int g_bTempGrabbed = 0;
 
 char *AlignZoneStart(void *pBlock) {
@@ -300,7 +295,6 @@ void ZoneDump() {
 Zone zoneDescs[kZoneCount];
 
 // The European release enlarges rndglobal for the fonts and screens of its five languages.
-// NTSC-U/C: 0x006e9810, PAL: 0x0072d1a8
 ZoneConfig g_aZoneConfigs[] = {
     {"seccache", 512},
     {"rndfile", 660},
