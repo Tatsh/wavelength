@@ -525,7 +525,7 @@ typedef struct {
  * @return The device.
  * @ghidraAddress NTSC-U/C: 0x002e4840
  */
-RtDmeDevice *RtDmeDeviceAlloc(void);
+RtDmeDevice *rtDmeDeviceCreate(void);
 
 /**
  * Release a device.
@@ -533,7 +533,7 @@ RtDmeDevice *RtDmeDeviceAlloc(void);
  * @param pDevice The device.
  * @ghidraAddress NTSC-U/C: 0x002e48c4
  */
-void RtDmeDeviceDestroy(RtDmeDevice *pDevice);
+void rtDmeDeviceDestroy(RtDmeDevice *pDevice);
 
 /**
  * Start a device.
@@ -543,7 +543,7 @@ void RtDmeDeviceDestroy(RtDmeDevice *pDevice);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e4934
  */
-int RtDmeDeviceInit(RtDmeDevice *pDevice, const RtDmeDeviceSettings *pSettings);
+int rtDmeDeviceInit(RtDmeDevice *pDevice, const RtDmeDeviceSettings *pSettings);
 
 /**
  * Reach a device through a gateway.
@@ -555,7 +555,7 @@ int RtDmeDeviceInit(RtDmeDevice *pDevice, const RtDmeDeviceSettings *pSettings);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e4e34
  */
-int RtDmeDeviceConnect(RtDmeDevice *pDevice,
+int rtDmeDeviceMapPort(RtDmeDevice *pDevice,
                        const char *pszAddress,
                        int nPort,
                        RtDmeDeviceStreamFunc pfnStream);
@@ -564,10 +564,9 @@ int RtDmeDeviceConnect(RtDmeDevice *pDevice,
  * Stop a device.
  *
  * @param pDevice The device.
- * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e4fbc
  */
-int RtDmeDeviceStop(RtDmeDevice *pDevice);
+void rtDmeDeviceStop(RtDmeDevice *pDevice);
 
 /**
  * Run a device once.
@@ -576,7 +575,7 @@ int RtDmeDeviceStop(RtDmeDevice *pDevice);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e501c
  */
-int RtDmeDeviceUpdate(RtDmeDevice *pDevice);
+int rtDmeDeviceUpdate(RtDmeDevice *pDevice);
 
 /**
  * Open a named channel of a device.
@@ -588,7 +587,7 @@ int RtDmeDeviceUpdate(RtDmeDevice *pDevice);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e541c
  */
-int RtDmeDeviceOpenChannel(RtDmeDevice *pDevice, int nMode, int *pnChannel, const char *pszName);
+int rtDmeDeviceOpenConnection(RtDmeDevice *pDevice, int nMode, int *pnChannel, const char *pszName);
 
 /**
  * Select the channel of a device that sends.
@@ -598,7 +597,7 @@ int RtDmeDeviceOpenChannel(RtDmeDevice *pDevice, int nMode, int *pnChannel, cons
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e6d9c
  */
-int RtDmeDeviceSelectChannel(RtDmeDevice *pDevice, int nChannel);
+int rtDmeDeviceDeselectConnection(RtDmeDevice *pDevice, int nChannel);
 
 /**
  * Set the client of a device.
@@ -608,7 +607,7 @@ int RtDmeDeviceSelectChannel(RtDmeDevice *pDevice, int nChannel);
  * @return 0.
  * @ghidraAddress NTSC-U/C: 0x002e6e84
  */
-int RtDmeDeviceSetClient(RtDmeDevice *pDevice, int nClient);
+int rtDmeDeviceSetLocalId(RtDmeDevice *pDevice, int nClient);
 
 /**
  * Copy the voice address of a device.
@@ -618,7 +617,7 @@ int RtDmeDeviceSetClient(RtDmeDevice *pDevice, int nClient);
  * @return 0.
  * @ghidraAddress NTSC-U/C: 0x002e6e98
  */
-int RtDmeDeviceGetPeer(RtDmeDevice *pDevice, RtDmeDevicePeer *pPeer);
+int rtDmeDeviceGetLocalInfo(RtDmeDevice *pDevice, RtDmeDevicePeer *pPeer);
 
 /**
  * Add a peer to a device.
@@ -628,7 +627,7 @@ int RtDmeDeviceGetPeer(RtDmeDevice *pDevice, RtDmeDevicePeer *pPeer);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e6ed4
  */
-int RtDmeDeviceAddPeer(RtDmeDevice *pDevice, const RtDmeDevicePeer *pPeer);
+int rtDmeDeviceAddPeer(RtDmeDevice *pDevice, const RtDmeDevicePeer *pPeer);
 
 /**
  * Remove a peer from a device.
@@ -638,7 +637,7 @@ int RtDmeDeviceAddPeer(RtDmeDevice *pDevice, const RtDmeDevicePeer *pPeer);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e6fa0
  */
-int RtDmeDeviceRemovePeer(RtDmeDevice *pDevice, int nClient);
+int rtDmeDeviceRemovePeer(RtDmeDevice *pDevice, int nClient);
 
 /**
  * Report the status of a device.
@@ -648,7 +647,7 @@ int RtDmeDeviceRemovePeer(RtDmeDevice *pDevice, int nClient);
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002e7094
  */
-int RtDmeDeviceGetStatus(RtDmeDevice *pDevice, RtDmeDeviceStatus *pStatus);
+int rtDmeDeviceGetStatus(RtDmeDevice *pDevice, RtDmeDeviceStatus *pStatus);
 
 /** @} */
 

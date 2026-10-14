@@ -117,8 +117,8 @@ static int RtDmeVoiceCreateDevice(RtDmeDevice **ppDevice, const RtDmeDeviceSetti
     RtDmeDevice *pDevice;
     int nResult;
 
-    pDevice = RtDmeDeviceAlloc();
-    nResult = RtDmeDeviceInit(pDevice, pSettings);
+    pDevice = rtDmeDeviceCreate();
+    nResult = rtDmeDeviceInit(pDevice, pSettings);
     *ppDevice = pDevice;
     return nResult;
 }
@@ -128,59 +128,59 @@ static int RtDmeVoiceConnectDevice(RtDmeDevice *pDevice,
                                    const char *pszAddress,
                                    int nPort,
                                    RtDmeDeviceStreamFunc pfnStream) {
-    return RtDmeDeviceConnect(pDevice, pszAddress, nPort, pfnStream);
+    return rtDmeDeviceMapPort(pDevice, pszAddress, nPort, pfnStream);
 }
 
 // NTSC-U/C: 0x002afaf8
 static int
 RtDmeVoiceOpenChannel(RtDmeDevice *pDevice, int nMode, int *pnChannel, const char *pszName) {
-    return RtDmeDeviceOpenChannel(pDevice, nMode, pnChannel, pszName);
+    return rtDmeDeviceOpenConnection(pDevice, nMode, pnChannel, pszName);
 }
 
 // NTSC-U/C: 0x002afb14
-static int RtDmeVoiceStopDevice(RtDmeDevice *pDevice) {
-    return RtDmeDeviceStop(pDevice);
+static void RtDmeVoiceStopDevice(RtDmeDevice *pDevice) {
+    rtDmeDeviceStop(pDevice);
 }
 
 // NTSC-U/C: 0x002afb30
 static int RtDmeVoiceSetDeviceClient(RtDmeDevice *pDevice, int nClient) {
-    return RtDmeDeviceSetClient(pDevice, nClient);
+    return rtDmeDeviceSetLocalId(pDevice, nClient);
 }
 
 // NTSC-U/C: 0x002afb4c
 static int RtDmeVoiceGetDevicePeer(RtDmeDevice *pDevice, RtDmeDevicePeer *pPeer) {
-    return RtDmeDeviceGetPeer(pDevice, pPeer);
+    return rtDmeDeviceGetLocalInfo(pDevice, pPeer);
 }
 
 // NTSC-U/C: 0x002afb68
 static int RtDmeVoiceAddDevicePeer(RtDmeDevice *pDevice, const RtDmeDevicePeer *pPeer) {
-    return RtDmeDeviceAddPeer(pDevice, pPeer) != 0 ? 0 : -1;
+    return rtDmeDeviceAddPeer(pDevice, pPeer) != 0 ? 0 : -1;
 }
 
 // NTSC-U/C: 0x002afb90
 static int RtDmeVoiceRemoveDevicePeer(RtDmeDevice *pDevice, int nClient) {
-    return RtDmeDeviceRemovePeer(pDevice, nClient);
+    return rtDmeDeviceRemovePeer(pDevice, nClient);
 }
 
 // NTSC-U/C: 0x002afbac
 static int RtDmeVoiceSelectChannel(RtDmeDevice *pDevice, int nChannel) {
-    return RtDmeDeviceSelectChannel(pDevice, nChannel);
+    return rtDmeDeviceDeselectConnection(pDevice, nChannel);
 }
 
 // NTSC-U/C: 0x002afbc8
 static int RtDmeVoiceGetDeviceStatus(RtDmeDevice *pDevice, RtDmeDeviceStatus *pStatus) {
-    return RtDmeDeviceGetStatus(pDevice, pStatus);
+    return rtDmeDeviceGetStatus(pDevice, pStatus);
 }
 
 // NTSC-U/C: 0x002afbe4
 static int RtDmeVoiceUpdateDevice(RtDmeDevice *pDevice) {
-    return RtDmeDeviceUpdate(pDevice);
+    return rtDmeDeviceUpdate(pDevice);
 }
 
 // NTSC-U/C: 0x002afc00
 static void RtDmeVoiceDestroyDevice(RtDmeDevice *pDevice) {
     if (pDevice != NULL) {
-        RtDmeDeviceDestroy(pDevice);
+        rtDmeDeviceDestroy(pDevice);
     }
 }
 
@@ -886,8 +886,7 @@ int RtDmeVoiceClose(int nConnection) {
     if (nResult != 0) {
         return nResult;
     }
-    // Yes, the binary discards the result of stopping the device.
-    (void)RtDmeVoiceStopDevice(pVoice->pDevice);
+    RtDmeVoiceStopDevice(pVoice->pDevice);
     RtDmeVoiceDestroyDevice(pVoice->pDevice);
     pVoice->bOpen = 0;
     pVoice->bLocalStarted = 0;
