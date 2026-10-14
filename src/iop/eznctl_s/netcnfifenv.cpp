@@ -11,6 +11,7 @@ constexpr char kMemoryCardPrefix[] = "mc";
 constexpr char kHardDiskPrefix[] = "pfs";
 constexpr char kPairNameSeparator[] = " + ";
 constexpr char kUnknownTypeMessage[] = "[%s] unknown type (%d)\n";
+constexpr char kWriteEnvName[] = "sceNetcnfifWriteEnv";
 
 constexpr uintptr_t kMemoryAlignment = 4;
 // Alignment selector of every sceNetCnfAllocMem() call.
@@ -488,7 +489,7 @@ int NetcnfifEnv::WriteEnv(NetcnfifData *data, int kind) {
         }
         result = Attach(kind);
     } else {
-        printf(kUnknownTypeMessage, __func__, kind);
+        printf(kUnknownTypeMessage, kWriteEnvName, kind);
     }
     if (result >= 0) {
         AlignMemory();
