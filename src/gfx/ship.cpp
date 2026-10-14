@@ -149,18 +149,20 @@ void LerpPoint(const float *pTo, const float *pFrom, float fBlend, float *pOut) 
     pOut[kVec3PaddingFloat] = pTo[kVec3PaddingFloat];
 }
 
-// Copy a transform into the local transform of an object and mark it for recomposing.
-void SetLocalXfm(RndTransformable *pTrans, const float (*pXfm)[kTransformRowFloatCount]) {
-    Vector3 *rows[] = {&pTrans->mLocalXfm.mBasisX,
-                       &pTrans->mLocalXfm.mBasisY,
-                       &pTrans->mLocalXfm.mBasisZ,
-                       &pTrans->mLocalXfm.mTranslation};
+// Copy the four whole rows of a transform held as a bare array into a transform.
+void SetXfmRows(Transform &xfm, const float (*pXfm)[kTransformRowFloatCount]) {
+    Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
     for (int i = 0; i < kTransformRowCount; ++i) {
         rows[i]->x = pXfm[i][0];
         rows[i]->y = pXfm[i][1];
         rows[i]->z = pXfm[i][2];
         rows[i]->w = pXfm[i][kVec3PaddingFloat];
     }
+}
+
+// Copy a transform into the local transform of an object and mark it for recomposing.
+void SetLocalXfm(RndTransformable *pTrans, const float (*pXfm)[kTransformRowFloatCount]) {
+    SetXfmRows(pTrans->mLocalXfm, pXfm);
     pTrans->mDirty = 1;
 }
 
@@ -814,7 +816,7 @@ void Ship::SetOverride(const float (*pXfm)[kTransformRowFloatCount], float fBlen
         mHasOverride = 0;
         return;
     }
-    memcpy(mXfm, pXfm, sizeof(mXfm));
+    SetXfmRows(mXfm, pXfm);
     mOverrideBlend = fBlend;
     mHasOverride = 1;
     mIntroActive = 0;
@@ -1112,11 +1114,11 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     if (mHasOverride != 0) {
         const float fBlend = mOverrideBlend;
         if (fBlend == 1.0f) {
-            memcpy(pPosition, mXfm[kTransformRowCount - 1], sizeof(mXfm[0]));
+            memcpy(pPosition, &mXfm.mTranslation, sizeof(mXfm.mTranslation));
         } else if (fBlend != 0.0f) {
-            LerpPoint(mXfm[kTransformRowCount - 1], pPosition, fBlend, pPosition);
+            LerpPoint(&mXfm.mTranslation.x, pPosition, fBlend, pPosition);
         }
-        InterpBasis(aflBasis[0], mXfm[0], aflBasis[0], fBlend);
+        InterpBasis(aflBasis[0], &mXfm.mBasisX.x, aflBasis[0], fBlend);
     } else if (mIntroActive != 0) {
         bShowThrusters = true;
         if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
@@ -1214,7 +1216,7 @@ void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransf
     float fBlend = (sIntroBlendEndTick - fTick) / (sIntroBlendEndTick - kIntroStartTick);
     fBlend = fBlend > 1.0f ? 1.0f : (fBlend < 0.0f ? 0.0f : fBlend);
     float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
-    sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &pSlideXfm[0][0], &mXfm[0][0]);
+    sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &pSlideXfm[0][0], &mXfm.mBasisX.x);
     float aflIntroPos[kTransformRowFloatCount];
     XfmPoint(pSlideXfm, sIntroPos, aflIntroPos);
     float *pIntroTranslation = aflIntroXfm[kTransformRowCount - 1];
@@ -1247,7 +1249,7 @@ void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformR
     float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
     float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
     CopyRows(pCamFX->mView, aflSlideXfm);
-    sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &aflSlideXfm[0][0], &mXfm[0][0]);
+    sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &aflSlideXfm[0][0], &mXfm.mBasisX.x);
     float *pIntroTranslation = aflIntroXfm[kTransformRowCount - 1];
     if (fBlend == 1.0f) {
         memcpy(pPosition, pIntroTranslation, sizeof(aflIntroXfm[0]));
@@ -1270,27 +1272,26 @@ void Ship::UpdateTransform() {
     }
     const float fElapsed = fNow - mStartMs;
     mIntroActive = 1;
-    Transform flyIn;
-    mIntroFlyIn->MakeTransform(mIntroFlyIn->FilterFrame(fElapsed), flyIn, 1);
-    memcpy(mXfm, &flyIn, sizeof(mXfm));
+    mIntroFlyIn->MakeTransform(mIntroFlyIn->FilterFrame(fElapsed), mXfm, 1);
     float aflIntro[kTransformRowCount][kTransformRowFloatCount];
     Transform intro;
     mIntro->MakeTransform(mIntro->FilterFrame(fElapsed), intro, 1);
     memcpy(aflIntro, &intro, sizeof(aflIntro));
-    sceVu0MulAffineMatrixXyz(&mXfm[0][0], &mXfm[0][0], &aflIntro[0][0]);
+    sceVu0MulAffineMatrixXyz(&mXfm.mBasisX.x, &mXfm.mBasisX.x, &aflIntro[0][0]);
 
     // Yes, the binary builds the scaled basis over the intro transform, retaining its fourth words.
+    const Vector3 *const basis[] = {&mXfm.mBasisX, &mXfm.mBasisY, &mXfm.mBasisZ};
     for (int i = 0; i < kNumComponents; ++i) {
-        for (int j = 0; j < kNumComponents; ++j) {
-            aflIntro[i][j] = mXfm[i][j] * sScale;
-        }
+        aflIntro[i][0] = basis[i]->x * sScale;
+        aflIntro[i][1] = basis[i]->y * sScale;
+        aflIntro[i][2] = basis[i]->z * sScale;
     }
     // Yes, the binary scales the translation of mXfm in place, unlike its basis.
-    float *pTranslation = mXfm[kTransformRowCount - 1];
-    for (int j = 0; j < kNumComponents; ++j) {
-        pTranslation[j] *= sScale;
-    }
-    memcpy(aflIntro[kTransformRowCount - 1], pTranslation, sizeof(aflIntro[0]));
+    Vector3 &translation = mXfm.mTranslation;
+    translation.x *= sScale;
+    translation.y *= sScale;
+    translation.z *= sScale;
+    memcpy(aflIntro[kTransformRowCount - 1], &translation, sizeof(aflIntro[0]));
     SetLocalXfm(mView, aflIntro);
     // The binary leaves the fourth word of the origin unset.
     const Vector3 origin{0.0f, 0.0f, 0.0f};

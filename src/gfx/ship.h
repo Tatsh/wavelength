@@ -7,6 +7,7 @@
 #include "gfx/particlearm.h"
 #include "gfx/playercamfx.h"
 #include "math/color.h"
+#include "math/transform.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
 #include "rnd/rndanimatable.h"
@@ -498,7 +499,7 @@ public:
     int mIntroActive;               /*!< Whether the intro still blends the ship in. */
     float mOverrideBlend;           /*!< The blend SetOverride() gave. */
     /*!< The transform of the intro, or the transform SetOverride() gave. +0x1d0 */
-    float mXfm[kTransformRowCount][kTransformRowFloatCount];
+    Transform mXfm;
     int mShown;                        /*!< Whether SetShown() shows the ship. */
     int mHidden;                       /*!< Whether SetHidden() hides the ship. */
     int mMulti;                        /*!< Whether the game is not solo. */
