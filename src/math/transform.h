@@ -12,9 +12,10 @@
  * rows are quadwords the vector unit multiplies in place, which is why each row is a padded
  * Vector3 rather than a bare triple. Rnd::MatStage and Rnd::Transformable both store transforms
  * in this shape, and the identity every default constructor writes is the three unit basis rows
- * followed by a zero translation.
+ * followed by a zero translation. The DMA controller reads instance transforms in place from their
+ * list nodes, and it ignores the low four bits of an address, so a transform starts on a quadword.
  */
-struct Transform {
+struct alignas(16) Transform {
     Vector3 mBasisX;      // +0x00
     Vector3 mBasisY;      // +0x10
     Vector3 mBasisZ;      // +0x20
