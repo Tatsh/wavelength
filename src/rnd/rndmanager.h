@@ -112,6 +112,16 @@ public:
     ~RndManager();
 
     /**
+     * Register the factory of every class a `.rnd` file may instantiate.
+     *
+     * The class `Tunnel` is registered with NewTunnel(). The current camera is cleared.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00236800
+     * @ghidraAddress PAL: 0x0023f380
+     */
+    void Init();
+
+    /**
      * Advance the queued loaders until a time budget is spent.
      *
      * The front loader is advanced, and it leaves the queue once it has loaded. The budget is

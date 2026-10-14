@@ -14,13 +14,34 @@
 #include "os/string.h"
 #include "os/system.h"
 #include "rnd/rndanimatable.h"
+#include "rnd/rndarena.h"
 #include "rnd/rndbitmap.h"
+#include "rnd/rndblur.h"
+#include "rnd/rndbutton.h"
+#include "rnd/rndcam.h"
 #include "rnd/rndcollideable.h"
+#include "rnd/rndcursor.h"
 #include "rnd/rnddrawable.h"
+#include "rnd/rndenviron.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndgenerator.h"
+#include "rnd/rndlight.h"
+#include "rnd/rndlightanim.h"
+#include "rnd/rndline.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmatanim.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndmeshanim.h"
 #include "rnd/rndmovie.h"
+#include "rnd/rndmultimesh.h"
+#include "rnd/rndparticlesys.h"
+#include "rnd/rndparticlesysanim.h"
 #include "rnd/rndrenderer.h"
 #include "rnd/rndtex.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransanim.h"
 #include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 
 namespace {
 
@@ -146,6 +167,34 @@ RndManager::RndManager() {
 }
 
 RndManager::~RndManager() {
+}
+
+void RndManager::Init() {
+    mClasses[RndBlur::sClassName] = RndBlur::New;
+    RndCam::sCurrent = nullptr;
+    mClasses[RndCam::sClassName] = RndCam::New;
+    mClasses[RndMesh::sClassName] = RndMesh::New;
+    mClasses[RndText::sClassName] = RndText::New;
+    mClasses[RndFont::sClassName] = RndFont::New;
+    mClasses[RndLight::sClassName] = RndLight::New;
+    mClasses[RndEnviron::sClassName] = RndEnviron::New;
+    mClasses[RndMat::sClassName] = RndMat::New;
+    mClasses[RndTex::sClassName] = RndTex::New;
+    mClasses[RndMovie::sClassName] = RndMovie::New;
+    mClasses[RndTransAnim::sClassName] = RndTransAnim::New;
+    mClasses[RndLightAnim::sClassName] = RndLightAnim::New;
+    mClasses[RndMeshAnim::sClassName] = RndMeshAnim::New;
+    mClasses[RndMatAnim::sClassName] = RndMatAnim::New;
+    mClasses[RndView::sClassName] = RndView::New;
+    mClasses[RndLine::sClassName] = RndLine::New;
+    mClasses[RndGenerator::sClassName] = RndGenerator::New;
+    mClasses[RndButton::sClassName] = RndButton::New;
+    mClasses[RndArena::sClassName] = RndArena::New;
+    mClasses[RndParticleSys::sClassName] = RndParticleSys::New;
+    mClasses[RndParticleSysAnim::sClassName] = RndParticleSysAnim::New;
+    mClasses[RndMultiMesh::sClassName] = RndMultiMesh::New;
+    mClasses[RndCursor::sClassName] = RndCursor::New;
+    mClasses["Tunnel"] = NewTunnel;
 }
 
 void RndManager::PollLoaders(float fBudgetMs) {
