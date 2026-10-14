@@ -849,8 +849,8 @@ VoxTrack *RemixLogic::FindVoxTrack(int nTrack) const {
 }
 
 void RemixLogic::SetHudsActive(int nActive) {
-    for (RemixHUD *pHud : mHuds) {
-        pHud->SetActive(nActive);
+    for (unsigned int i = 0; i < mHuds.size(); ++i) {
+        mHuds[i]->SetActive(nActive);
     }
 }
 
