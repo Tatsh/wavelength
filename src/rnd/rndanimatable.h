@@ -645,6 +645,18 @@ public:
     float UnfilterFrame(float fValue);
 
     /**
+     * Report the latest end frame of the children, unfiltered through this animatable.
+     *
+     * Each child's EndFrame() is unfiltered through the child's filters first. Without children
+     * the result is UnfilterFrame(0).
+     *
+     * @return The end frame.
+     * @ghidraAddress NTSC-U/C: 0x00199c10
+     * @ghidraAddress PAL: 0x001a1150
+     */
+    float ChildrenEndFrame();
+
+    /**
      * Append a child.
      *
      * An animatable already among the children is not added again.

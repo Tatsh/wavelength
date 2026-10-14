@@ -204,6 +204,17 @@ float RndAnimatable::UnfilterFrame(float fValue) {
     return fValue;
 }
 
+float RndAnimatable::ChildrenEndFrame() {
+    float fEnd = 0.0f;
+    for (RndAnimatable *pChild : mAnims) {
+        const float fChildEnd = pChild->UnfilterFrame(pChild->EndFrame());
+        if (fEnd < fChildEnd) {
+            fEnd = fChildEnd;
+        }
+    }
+    return UnfilterFrame(fEnd);
+}
+
 bool RndAnimatable::AddAnim(RndAnimatable *pAnim) {
     if (ListContains(mAnims, pAnim)) {
         DebugNotify("%s already in %s", pAnim->mName.c_str(), mName.c_str());
