@@ -452,8 +452,8 @@ int GameDb::GetNumPads() const {
     return mNumPads;
 }
 
-bool GameDb::IsLocalPlayer(int nPlayer) const {
-    return mPlayers[nPlayer]->mLocal != 0;
+int GameDb::IsLocalPlayer(int nPlayer) const {
+    return mPlayers[nPlayer]->mLocal;
 }
 
 int GameDb::GetPlayerSlot(int nPlayer) const {

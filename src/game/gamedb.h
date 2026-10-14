@@ -224,11 +224,11 @@ public:
      * Report whether a player plays on this console.
      *
      * @param nPlayer The player.
-     * @return Whether the player is local.
+     * @return PlayerInfo::mLocal of the player, non-zero for a local player.
      * @ghidraAddress NTSC-U/C: 0x0026e958
      * @ghidraAddress PAL: 0x002784f8
      */
-    bool IsLocalPlayer(int nPlayer) const;
+    int IsLocalPlayer(int nPlayer) const;
 
     /**
      * Report the slot of a player, which selects the player's sounds and colours.
