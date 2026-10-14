@@ -70,7 +70,7 @@ int Axer::IsActive() const {
 }
 
 void Axer::SetX(float fX) {
-    TheSynth->VirtualSlot26(fX);
+    TheSynth->SetSoftFxModulation(fX);
     const int nContourRange = mContour->GetHighestKey() - mContour->GetLowestKey();
     const int nHarmonyRange = mHarmony->GetHighest() - mHarmony->GetLowest();
     const int nTranspose = static_cast<int>(

@@ -99,7 +99,7 @@ SynthEffects::SynthEffects() {
     mFilter.mType = SoftFxFilter::kTypeOff;
     mFilter.mFreqCeiling = kDefaultFreqCeiling;
     mFilter.mFreqFloor = kDefaultFreqFloor;
-    mFilter.mReserved04 = 0;
+    mFilter.mFrequency = 0.0f;
     for (SoftFxFilter::Tap &tap : mFilter.mTaps) {
         tap = {};
     }
@@ -174,7 +174,7 @@ void SynthEffects::Apply() {
     } else {
         (void)pSynth->EnableSoftFx(); // Yes, the binary discards the result.
         pSynth->SetSoftFxFilter(mFilter);
-        pSynth->VirtualSlot32(mSoftFxOutput);
+        pSynth->SetSoftFxInput(mSoftFxOutput);
         pSynth->SetBusToSoftFx(mBusToSoftFx);
         pSynth->SetBusToCoreFx(mBusToCoreFx);
     }

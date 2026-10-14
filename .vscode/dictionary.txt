@@ -91,6 +91,7 @@ backmusic
 backmusicbuilder
 backps
 baddriverver
+bankfileio
 bankheader
 bankloader
 bankloaderbuilder
@@ -541,6 +542,7 @@ labl
 launchmtvpanel
 launchscreen
 laypatt
+lazyfilestream
 lazysusan
 lbits
 ldimage
@@ -1233,6 +1235,7 @@ strcat
 strcmp
 strcpy
 streakarrow
+streamplayer
 streamqueue
 streamtask
 strequal
@@ -1253,6 +1256,7 @@ synthedit
 syntheffects
 synthlock
 synthmodule
+synthps
 synthserver
 sysclib
 sysex

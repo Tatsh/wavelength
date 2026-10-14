@@ -9,10 +9,17 @@
 struct SoftFxFilter {
     /** The kinds of software effect, the values of mType. */
     enum Type {
-        kTypeOff = 0,     /*!< No software effect. */
-        kTypeChorus = 6,  /*!< Two modulated delay taps, with `feedback`, `attenuation`, `taps`. */
-        kTypeDistort = 8, /*!< Distortion, with `distortion` and `feedback`. */
-        kTypeCount = 10,  /*!< The number of types the reader accepts. */
+        kTypeOff = 0,             /*!< No software effect. */
+        kTypeStream = 1,          /*!< The stream a StreamPlayer plays. */
+        kTypeSweptFilter = 2,     /*!< A resonant filter that sweeps. */
+        kTypeStutter = 3,         /*!< A gate on the input that the sweep speeds up. */
+        kTypeBypass = 4,          /*!< The input unchanged. */
+        kTypeFilter = 5,          /*!< A resonant filter that sweeps. */
+        kTypeChorus = 6,          /*!< Two modulated delay taps, with `feedback` and `taps`. */
+        kTypeFilterVariant = 7,   /*!< A resonant filter per channel that sweeps. */
+        kTypeDistort = 8,         /*!< Distortion, with `distortion` and `feedback`. */
+        kTypeDistortedFilter = 9, /*!< A clipped resonant filter per channel that sweeps. */
+        kTypeCount = 10,          /*!< The number of types the reader accepts. */
     };
 
     /** The number of delay taps of a kTypeChorus effect. */
@@ -29,8 +36,8 @@ struct SoftFxFilter {
         float mVolume; /*!< `volume`. */
     };
 
-    int mType;        /*!< `type`, one of Type, or a sweeping filter (2, 5, 7, or 9). */
-    int mReserved04;  // +0x04, not yet identified.
+    int mType;        /*!< `type`, one of Type. */
+    float mFrequency; /*!< The frequency a sweeping filter reached, recorded by the sound output. */
     int mFreqCeiling; /*!< `freq_ceiling` of a sweeping filter. */
     int mFreqFloor;   /*!< `freq_floor` of a sweeping filter. */
 

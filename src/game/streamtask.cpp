@@ -19,7 +19,7 @@ void StreamTask::SetWaitingTask(Task *pTask) {
 }
 
 void StreamTask::OnStart() {
-    (void)TheSynth->VirtualSlot10(); // Yes, the binary discards this call's result.
+    (void)TheSynth->GetStream(); // Yes, the binary discards this call's result.
     const char *pszPath = FormatString(kStreamPathFormat, mDirectory, mName);
     mPlayer = new StreamPlayer(0, pszPath, false);
     TheSynth->SetStream(mPlayer);

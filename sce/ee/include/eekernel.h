@@ -460,6 +460,17 @@ void FlushCache(int operation);
 void SyncDCache(void *start, void *end);
 
 /**
+ * Discards the data cache lines of a memory range without writing them back. Interrupts are
+ * disabled around the walk.
+ *
+ * @param start First address of the range.
+ * @param end Last address of the range.
+ * @ghidraAddress NTSC-U/C: 0x00317898
+ * @ghidraAddress PAL: 0x003841b0
+ */
+void InvalidDCache(void *start, void *end);
+
+/**
  * Returns the GS interrupt mask.
  *
  * @ghidraAddress NTSC-U/C: 0x00536e00

@@ -10,8 +10,8 @@
  * Abstract base of the game's sound output.
  *
  * The RTTI includes the class name and records no base. The vptr sits at offset 0. Two classes
- * implement it. SynthPS2 drives the sound hardware, and SynthNull supplies empty bodies.
- * Create() builds one of the two as TheSynth.
+ * implement it. SynthPS2 drives the sound hardware through the `synth` and `softfx` IOP modules,
+ * and SynthNull supplies empty bodies. Create() builds one of the two as TheSynth.
  *
  * The vtable has 38 slots, declared in order.
  */
@@ -36,18 +36,28 @@ public:
      */
     static void Destroy();
 
-    /** Vtable slot 1. Bring up the sound output. */
-    virtual void Init() = 0;
-
-    /** Vtable slot 2. Shut down the sound output. */
-    virtual void Terminate() = 0;
+    /**
+     * Vtable slot 1. Bring up the sound output.
+     *
+     * @return The status of the start-up, 0 when it succeeded.
+     */
+    virtual int Init() = 0;
 
     /**
-     * Vtable slot 3. The base body is empty, and the purpose is not yet recovered.
+     * Vtable slot 2. Shut down the sound output.
+     *
+     * @return 0.
+     */
+    virtual int Terminate() = 0;
+
+    /**
+     * Vtable slot 3. Initialise the sound processor again.
+     *
+     * The base body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x00395f58
      */
-    virtual void VirtualSlot3();
+    virtual void ResetSpu();
 
     /**
      * Vtable slot 4. Release the sound output.
@@ -63,8 +73,9 @@ public:
      * SendMessage().
      *
      * @param nPacked The four message bytes.
+     * @return 0.
      */
-    virtual void SendPackedMessage(unsigned int nPacked) = 0;
+    virtual int SendPackedMessage(unsigned int nPacked) = 0;
 
     /**
      * Vtable slot 6. Send one message.
@@ -72,9 +83,10 @@ public:
      * @param nByte0 The first message byte.
      * @param nByte1 The second message byte.
      * @param nByte2 The third message byte.
-     * @param nByte3 The fourth message value.
+     * @param nByte3 The fourth message value, the delay of the message in milliseconds.
+     * @return 0.
      */
-    virtual void
+    virtual int
     SendMessage(unsigned char nByte0, unsigned char nByte1, unsigned char nByte2, int nByte3) = 0;
 
     /**
@@ -98,16 +110,20 @@ public:
      * Vtable slot 9. Service the sound output once per frame.
      *
      * The main loop calls it after the game database has been serviced. The name is inferred.
-     */
-    virtual void Poll() = 0;
-
-    /**
-     * Vtable slot 10. The base body returns 0. The parameters are not yet recovered.
      *
      * @return 0.
+     */
+    virtual int Poll() = 0;
+
+    /**
+     * Vtable slot 10. Report the stream SetStream() set.
+     *
+     * The base body returns null. The name is inferred.
+     *
+     * @return The stream, or null.
      * @ghidraAddress NTSC-U/C: 0x00395f90
      */
-    virtual int VirtualSlot10();
+    virtual StreamPlayer *GetStream();
 
     /**
      * Vtable slot 11. Set the stream the output plays, or none.
@@ -120,22 +136,36 @@ public:
     virtual void SetStream(StreamPlayer *pStream);
 
     /**
-     * Vtable slot 12. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 12. Append a run of stream data to the stream the software effect plays.
      *
+     * The base body is empty. An empty run ends the stream. The name is inferred.
+     *
+     * @param pData The data.
+     * @param nSize The size of the data in bytes.
      * @ghidraAddress NTSC-U/C: 0x00395fa0
      */
-    virtual void VirtualSlot12();
+    virtual void SendStreamData(const void *pData, int nSize);
 
     /**
-     * Vtable slot 13. The base body returns 0. The parameters are not yet recovered.
+     * Vtable slot 13. Report the room the software effect has for stream data.
      *
-     * @return 0.
+     * The base body returns 0. The name is inferred.
+     *
+     * @return The room in bytes.
      * @ghidraAddress NTSC-U/C: 0x00395fa8
      */
-    virtual int VirtualSlot13();
+    virtual int GetStreamStatus();
 
-    /** Vtable slot 14, pure in this class. The signature is not yet recovered. */
-    virtual void VirtualSlot14() = 0;
+    /**
+     * Vtable slot 14, pure in this class. Report the format of the stream data.
+     *
+     * SynthPS2 reports 28351 and 64. The name is inferred.
+     *
+     * @param pnRate Receives the first value.
+     * @param pnBlock Receives the second value.
+     * @return 0.
+     */
+    virtual int GetStreamFormat(int *pnRate, int *pnBlock) = 0;
 
     /**
      * Vtable slot 15. Queue the division of the sound memory among the bank slots.
@@ -170,12 +200,15 @@ public:
     virtual bool IsBankLoaded(unsigned short nSlot) = 0;
 
     /**
-     * Vtable slot 18. The base body returns 1. The parameters are not yet recovered.
+     * Vtable slot 18. Report whether a slot has a bank or a bank waiting to load.
      *
-     * @return 1.
+     * The base body returns 1. The name is inferred.
+     *
+     * @param nSlot The bank slot.
+     * @return 1 when the slot has a bank or a pending load, otherwise 0.
      * @ghidraAddress NTSC-U/C: 0x00395fb0
      */
-    virtual int VirtualSlot18();
+    virtual int IsBankPresent(unsigned short nSlot);
 
     /**
      * Vtable slot 19. Start loading a sample bank file into a slot.
@@ -184,9 +217,10 @@ public:
      *
      * @param nSlot The bank slot.
      * @param file The bank file.
-     * @param bFlag The meaning is not yet recovered. Duel passes true.
+     * @param bSkipPending Do nothing when a load into the slot is already waiting.
+     * @return 0.
      */
-    virtual void LoadBank(unsigned short nSlot, const String &file, bool bFlag) = 0;
+    virtual int LoadBank(unsigned short nSlot, const String &file, bool bSkipPending) = 0;
 
     /**
      * Vtable slot 20. Empty a sample bank slot.
@@ -194,22 +228,29 @@ public:
      * The member is pure in this class. The name is inferred.
      *
      * @param nSlot The bank slot.
+     * @return 0.
      */
-    virtual void UnloadBank(unsigned short nSlot) = 0;
+    virtual int UnloadBank(unsigned short nSlot) = 0;
 
     /**
-     * Vtable slot 21. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 21. Choose whether the output may invert a channel for surround decoders.
      *
+     * The base body is empty. The name is inferred.
+     *
+     * @param bSurround Whether the inversion is allowed.
      * @ghidraAddress NTSC-U/C: 0x00395fb8
      */
-    virtual void VirtualSlot21();
+    virtual void SetSurround(bool bSurround);
 
     /**
-     * Vtable slot 22. The base body is empty. The parameters are not yet recovered.
+     * Vtable slot 22. Choose mono output.
      *
+     * The base body is empty. The name is inferred.
+     *
+     * @param bMono Whether the output is mono.
      * @ghidraAddress NTSC-U/C: 0x00395fc0
      */
-    virtual void VirtualSlot22();
+    virtual void SetMono(bool bMono);
 
     /**
      * Vtable slot 23. Set the lag of the output, the value of the `lag_ms` entry of the `synth`
@@ -244,14 +285,15 @@ public:
     virtual void SetSoftFxSweep(float fPosition);
 
     /**
-     * Vtable slot 26. The base body is empty. The purpose is not yet recovered.
+     * Vtable slot 26. Set the second control of the software effect.
      *
-     * AxeVoice passes the vertical position of the stick.
+     * The base body is empty. AxeVoice passes the vertical position of the stick. The name is
+     * inferred.
      *
-     * @param fValue The value.
+     * @param fValue The value, from -1 to 1.
      * @ghidraAddress NTSC-U/C: 0x00395fe8
      */
-    virtual void VirtualSlot26(float fValue);
+    virtual void SetSoftFxModulation(float fValue);
 
     /**
      * Vtable slot 27. Send the settings of the software effect.
@@ -284,8 +326,8 @@ public:
     /**
      * Vtable slot 30. Set the output level that slot 31 reports.
      *
-     * The base body is empty. SynthPS2 scales the level by 16383 and sends it to the sound
-     * processor. The name is inferred.
+     * The base body is empty. SynthPS2 scales the level by 16383 and sends it to the software
+     * effect. The name is inferred.
      *
      * @param fLevel The level, 1 for full.
      * @ghidraAddress NTSC-U/C: 0x00395ff8
@@ -303,20 +345,21 @@ public:
     virtual float GetOutputLevel();
 
     /**
-     * Vtable slot 32. The base body is empty, and the purpose is not yet recovered.
+     * Vtable slot 32. Choose the mixer input of the sound processor that the software effect
+     * captures.
      *
-     * SynthPS2 sends the value to the sound processor as command 0x6d. The metagame passes 1
-     * before it plays the intro movie.
+     * The base body is empty. The metagame passes 1 before it plays the intro movie. The name is
+     * inferred.
      *
-     * @param nValue The value sent.
+     * @param nInput The input pair, 0 to 2.
      * @ghidraAddress NTSC-U/C: 0x00396010
      */
-    virtual void VirtualSlot32(int nValue);
+    virtual void SetSoftFxInput(int nInput);
 
     /**
      * Vtable slot 33. Set whether the effect buses feed the hardware effects.
      *
-     * The base body is empty. SynthPS2 sends the value as command 0x6e. The name is inferred.
+     * The base body is empty. The name is inferred.
      *
      * @param nOn Whether the buses feed the hardware effects.
      * @ghidraAddress NTSC-U/C: 0x00396018
@@ -326,7 +369,7 @@ public:
     /**
      * Vtable slot 34. Set whether the effect buses feed the software effect.
      *
-     * The base body is empty, and SynthPS2 does not override it with any work. The name is
+     * The base body is empty, and SynthPS2 overrides it with an empty body. The name is
      * inferred.
      *
      * @param nOn Whether the buses feed the software effect.

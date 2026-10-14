@@ -1038,7 +1038,7 @@ void Metagame::PollLoad() {
             ThePs.ReleaseForMovie();
             String path;
             MakeDevicePath(path, kIntroMovie);
-            TheSynth->VirtualSlot32(kStreamSilent);
+            TheSynth->SetSoftFxInput(kStreamSilent);
             for (int i = 0; i < kMidiChannelCount; ++i) {
                 TheSynth->SendMessage(kMidiControlChange | i, kMidiControlVolume, 0, 0);
             }
