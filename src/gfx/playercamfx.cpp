@@ -185,7 +185,10 @@ PlayerCamFX::PlayerCamFX(int nPlayer, int nNumTracks, bool bBoss)
 PlayerCamFX::~PlayerCamFX() {
 }
 
-void PlayerCamFX::Poll(GfxTunnel *pTunnel, float flTick, float flTime) {
+void PlayerCamFX::Poll(GfxTunnel *pTunnel,
+                       [[maybe_unused]] GfxArena *pArena,
+                       float flTick,
+                       float flTime) {
     const bool bLocal = (TheGameDb->mCommunity == GameDb::kCommunityLocal);
     if (mFx == nullptr) {
         return;

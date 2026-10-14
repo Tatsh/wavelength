@@ -55,12 +55,13 @@ public:
      * Place the camera objects for a frame.
      *
      * @param pTunnel The tunnel.
+     * @param pArena The arena of the tunnel. The routine does not read it.
      * @param flTick The tick of the song, which runs the intro while it is early enough.
      * @param flTime The time of the song, which runs the pull back.
      * @ghidraAddress NTSC-U/C: 0x001f7818
      * @ghidraAddress PAL: 0x002005b8
      */
-    void Poll(GfxTunnel *pTunnel, float flTick, float flTime);
+    void Poll(GfxTunnel *pTunnel, GfxArena *pArena, float flTick, float flTime);
 
     /**
      * Slide the view towards a transform, or stop sliding.

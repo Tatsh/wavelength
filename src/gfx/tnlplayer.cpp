@@ -107,7 +107,7 @@ bool TnlPlayer::SelectColor(int nMultiplier) {
     return true;
 }
 
-void TnlPlayer::Update(float flTicks, float flTime) {
+void TnlPlayer::Update([[maybe_unused]] GfxArena *pArena, float flTicks, float flTime) {
     mActivator.Update(flTime);
     mGrid.Update();
     const int nTrack = mGeom->GetPlayer(mPlayer)->mTrack;

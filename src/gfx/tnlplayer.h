@@ -90,12 +90,13 @@ public:
     /**
      * Advance the activator, the grid, and the cursor.
      *
+     * @param pArena The arena of the tunnel. The routine does not read it.
      * @param flTicks The ticks since the last poll.
      * @param flTime The time since the last poll.
      * @ghidraAddress NTSC-U/C: 0x001d6e48
      * @ghidraAddress PAL: 0x001dfbe8
      */
-    void Update(float flTicks, float flTime);
+    void Update(GfxArena *pArena, float flTicks, float flTime);
 
     /**
      * Draw the needle of the scratch freestyle.

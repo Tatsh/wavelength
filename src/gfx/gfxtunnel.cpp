@@ -1547,11 +1547,11 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
             mPathBlending = 0;
         }
     }
-    mCamFX->Poll(this, flTick, flTime);
+    mCamFX->Poll(this, mArena, flTick, flTime);
     mDivider->Poll(fTime, this);
     mArms->Poll(flTick);
     for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
-        (*it)->Update(fTicks, fTime);
+        (*it)->Update(mArena, fTicks, fTime);
     }
 
     if (mTrackColorLight != nullptr) {

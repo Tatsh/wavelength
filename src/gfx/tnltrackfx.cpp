@@ -316,7 +316,7 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
                                &kWhite,
                                &kWhite,
                                &mGemTicks);
-            RestoreGlowSizes(&pTunnel->mGems->mGems, mTrack);
+            RestoreGlowSizes(&pTunnel->mGems->mGems, mTrack, flHeight);
             mState = kStateIdle;
             mPhase = kPhaseNone;
         } else {
@@ -346,7 +346,9 @@ void TnlTrackFX::SetGlowSizes(std::list<TnlGem> *pGems, char nTrack, float flSiz
     }
 }
 
-void TnlTrackFX::RestoreGlowSizes(std::list<TnlGem> *pGems, char nTrack) {
+void TnlTrackFX::RestoreGlowSizes(std::list<TnlGem> *pGems,
+                                  char nTrack,
+                                  [[maybe_unused]] float flSize) {
     for (TnlGem &gem : *pGems) {
         if ((gem.mTrack != nTrack) || ((gem.mType & TnlGem::kTypeSprite) != 0)) {
             continue;

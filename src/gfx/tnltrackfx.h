@@ -208,8 +208,9 @@ private:
      *
      * @param pGems The gems.
      * @param nTrack The track.
+     * @param flSize The size. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001ee1b8
      * @ghidraAddress PAL: 0x001f6f58
      */
-    static void RestoreGlowSizes(std::list<TnlGem> *pGems, char nTrack);
+    static void RestoreGlowSizes(std::list<TnlGem> *pGems, char nTrack, float flSize);
 };
