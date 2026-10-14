@@ -21,6 +21,12 @@ struct Transform {
     Vector3 mTranslation; // +0x30
 };
 
+/** Rows in a transform held as a bare array, three of the basis and the translation. */
+constexpr int kTransformRowCount = 4;
+
+/** Floats in a row of a transform held as a bare array, x, y, z, and padding. */
+constexpr int kTransformRowFloatCount = 4;
+
 /**
  * Transform a point by the basis rows and the translation of a transform.
  *
