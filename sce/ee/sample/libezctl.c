@@ -25,6 +25,8 @@ enum {
 };
 
 static const char kEzNetCtlModuleName[] = "eznetctl";
+// The source file name the diagnostics print.
+static const char kEzNetCtlFileName[] = "libezctl.c";
 
 // NTSC-U/C: 0x003b14c4
 static int g_nEznetctlBound = 0;
@@ -47,7 +49,7 @@ static unsigned int TransferSifDma(const void *src, unsigned int dest, int size,
     dma.size = (size + kSifDmaAlignMask) & ~kSifDmaAlignMask;
     dma.mode = 0;
     if ((size & kSifDmaAlignMask) != 0) {
-        scePrintf("%s> ", __FILE__);
+        scePrintf("%s> ", kEzNetCtlFileName);
         scePrintf("warning: SIF DMA transfer size %d padded to %d\n", size, dma.size);
     }
     unsigned int id;
@@ -95,7 +97,7 @@ int ezNetCtlSetProperties(const ezNetCnfData_t *data) {
                   0,
                   0);
     if (g_dwEznetctlPropAddr == 0) {
-        scePrintf("%s> ", __FILE__);
+        scePrintf("%s> ", kEzNetCtlFileName);
         scePrintf("eCtlGetPropertiesAddress returned 0\n");
         g_dwEznetctlPropAddr = kEzNetCtlNoDataAddress;
         return kEzNetCtlNoDataAddress;
@@ -110,7 +112,7 @@ int ezNetCtlSetProperties(const ezNetCnfData_t *data) {
                   sizeof(g_dwEznetctlPropAddr),
                   0,
                   0);
-    scePrintf("%s> ", __FILE__);
+    scePrintf("%s> ", kEzNetCtlFileName);
     scePrintf("ezNetCtlSetProperties returned %d\n", g_dwEznetctlPropAddr);
     return g_dwEznetctlPropAddr;
 }
@@ -130,7 +132,7 @@ int ezNetCtlGetStatus(ezNetCtlStatus_t *status) {
                   0,
                   0);
     if (status->result != 0) {
-        scePrintf("%s> ", __FILE__);
+        scePrintf("%s> ", kEzNetCtlFileName);
         scePrintf("ezNetCtlGetStatus returned %d\n", status->result);
     }
     return status->result;
