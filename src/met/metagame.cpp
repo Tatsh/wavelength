@@ -514,6 +514,19 @@ inline bool IsTransitionListed(const char *pszKey, const char *pszFrom, const ch
     return bListed;
 }
 
+// Format the name of the end-game screen for the number of players ranked first.
+inline const char *EndScreenName(const char *pszFormat, int nWinners) {
+    String suffix;
+    if (nWinners >= kNamedTieWinners) {
+        suffix = FormatString(kTieCountFormat, TheGameDb->GetNumPlayers());
+    } else if (nWinners >= kTieWinners) {
+        suffix = kTieSuffix;
+    } else {
+        suffix = kWinSuffix;
+    }
+    return FormatString(pszFormat, TheGameDb->GetNumPlayers(), suffix.c_str());
+}
+
 } // namespace
 
 Metagame::Metagame() {
@@ -1385,19 +1398,10 @@ void Metagame::ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUs
                 ++nWinners;
             }
         }
-        const bool bOnline = TheGameDb->mCommunity == GameDb::kCommunityOnline;
-        {
-            String suffix;
-            if (nWinners >= kNamedTieWinners) {
-                suffix = FormatString(kTieCountFormat, TheGameDb->GetNumPlayers());
-            } else if (nWinners >= kTieWinners) {
-                suffix = kTieSuffix;
-            } else {
-                suffix = kWinSuffix;
-            }
-            pszScreen = FormatString(bOnline ? kOnlineEndScreenFormat : kLocalEndScreenFormat,
-                                     TheGameDb->GetNumPlayers(),
-                                     suffix.c_str());
+        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+            pszScreen = EndScreenName(kOnlineEndScreenFormat, nWinners);
+        } else {
+            pszScreen = EndScreenName(kLocalEndScreenFormat, nWinners);
         }
         TheGfxManager.ShowHud(false);
     }
