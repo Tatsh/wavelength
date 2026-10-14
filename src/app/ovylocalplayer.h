@@ -20,10 +20,11 @@ public:
      *
      * @param nPlayer The player.
      * @param nPosition The place of the player's parts, from 0.
+     * @param pLayout The layout view of the head-up display, which is not used.
      * @ghidraAddress NTSC-U/C: 0x001c2638
      * @ghidraAddress PAL: 0x001cb3d8
      */
-    OvyLocalPlayer(int nPlayer, int nPosition);
+    OvyLocalPlayer(int nPlayer, int nPosition, RndView *pLayout);
 
     /**
      * Destroy the parts.

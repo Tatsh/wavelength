@@ -21,9 +21,6 @@ namespace {
 // The song position, in ticks, after which the parts of the display show.
 constexpr float kShowPartsFrame = -3840.0f;
 
-// The number of player slots of a duel.
-constexpr int kNumDuelSlots = 4;
-
 // The fraction of the letterbox per frame of its animation.
 constexpr float kLetterboxPerFrame = 0.01f;
 
@@ -133,7 +130,7 @@ Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mCommon(nullptr), m
             if (!TheGameDb->IsLocalPlayer(i)) {
                 continue;
             }
-            mLocals.push_back(new OvyLocalPlayer(i, nPosition));
+            mLocals.push_back(new OvyLocalPlayer(i, nPosition, pLayout));
             mAlls.push_back(new OvyAllPlayer(i, nPosition, pLayout));
             ++nPosition;
         }
@@ -145,13 +142,15 @@ Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mCommon(nullptr), m
             ++nPosition;
         }
     } else {
-        for (int nSlot = 0; nSlot < kNumDuelSlots; ++nSlot) {
+        // Yes, the binary copies this table of slots to the stack.
+        const int anSlots[] = {0, 1, 2, 3};
+        for (const int nSlot : anSlots) {
             for (int i = 0; i < nPlayers; ++i) {
                 if (TheGameDb->GetPlayerSlot(i) != nSlot) {
                     continue;
                 }
                 if (TheGameDb->IsLocalPlayer(i)) {
-                    mLocals.push_back(new OvyLocalPlayer(i, nSlot));
+                    mLocals.push_back(new OvyLocalPlayer(i, nSlot, pLayout));
                 }
                 mAlls.push_back(new OvyAllPlayer(i, nSlot, pLayout));
                 break;

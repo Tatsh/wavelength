@@ -5,7 +5,7 @@
 #include "os/string.h"
 #include "rnd/rndmanager.h"
 
-OvyLocalPlayer::OvyLocalPlayer(int nPlayer, int nPosition) {
+OvyLocalPlayer::OvyLocalPlayer(int nPlayer, int nPosition, [[maybe_unused]] RndView *pLayout) {
     mPlayer = nPlayer;
     mPosition = nPosition;
     mPoints = nullptr;
