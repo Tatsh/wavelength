@@ -59,6 +59,8 @@ void MeshGroup::Unbind(TnlGem *pGem) {
 }
 
 void MeshGroup::TakeGem(MeshGroup *pFrom, TnlGem *pGem) {
+    // Yes, the binary copies the transform of the gem and never reads the copy.
+    [[maybe_unused]] const Transform xfm = *pGem->mTransform;
     pFrom->Unbind(pGem);
     Bind(pGem);
 }
