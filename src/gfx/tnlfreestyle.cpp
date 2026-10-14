@@ -12,6 +12,9 @@
 
 namespace {
 
+// sceVu0MulAffineMatrixXyz() loads the rows of a matrix with lqc2, which needs a quadword boundary.
+constexpr int kMatrixAlign = 16;
+
 // A change takes this many ticks instead of the configured delay when it is quick.
 constexpr float kQuickTicks = 4.0f;
 
@@ -312,7 +315,7 @@ void TnlFreestyle::Poll(float flTicks, float flTime) {
     const bool bPlaying = mPlaying && (mType != Freestylus::kTypeScratch);
     sFreestylus->Update(bPlaying, flTicks, flTime, flAssembly);
     RndTransAnim *pAnim = (mVictory && bShip) ? Ship::sWinFlyOff : nullptr;
-    float shipXfm[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float shipXfm[kTransformRowCount][kTransformRowFloatCount];
     Transform camXfm;
     ComputeXfms(
         bCam != 0, pAnim, &stick, shipXfm, &camXfm, flAbsTime, flAbsTicks, flTick - mStartTick);

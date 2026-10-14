@@ -25,6 +25,9 @@ namespace {
 // The components of a point or of a row of a basis.
 constexpr int kNumComponents = 3;
 
+// sceVu0MulAffineMatrixXyz() loads the rows of a matrix with lqc2, which needs a quadword boundary.
+constexpr int kMatrixAlign = 16;
+
 // Copy the rows of a transform of the camera into the row form the ships work in.
 inline void CopyRows(const Transform &xfm, float (*pRows)[kTransformRowFloatCount]) {
     const Vector3 *rows[] = {&xfm.mBasisX, &xfm.mBasisY, &xfm.mBasisZ, &xfm.mTranslation};
@@ -527,7 +530,7 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     }
     pViewDraw->RemoveDraw(mMesh);
     static_cast<RndTransformable *>(mFxView)->RemoveTrans(mScratchRibbon);
-    float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
     BuildIdentity(aflIdentity);
     SetLocalXfm(mFxView, aflIdentity);
     static_cast<RndDrawable *>(mScratchRibbon)->SetShowing(0);
@@ -715,7 +718,7 @@ void Ship::Reset() {
         Geom()->GetPlayer(mPlayer)->mMoveTime = 1.0f;
     }
     mFlags &= ~kFlagBumped;
-    float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
     BuildIdentity(aflIdentity);
     SetLocalXfm(mFxView, aflIdentity);
 }
@@ -885,7 +888,7 @@ void Ship::AddBeam(std::list<BeamData> *pList,
         pBeam->mOwnerList = pList;
     }
     pBeam->SetEnd(0, &mArmXfms[nSlot]->mWorldXfm.mTranslation.x);
-    float aflCell[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
     const float fOffset = (static_cast<float>(nSlot) * kSlotSpacing) + kSlotOffset;
     Transform cell;
     Geom()->CellXfm(nTrack, &cell, false, true, fTick, fOffset);
@@ -930,7 +933,7 @@ void Ship::UpdateBeams(std::list<BeamData> *pList,
                        bool bMoveEnd) {
     const float fTick = TheGameDb->mSongTick;
     int nCellSlot = -1;
-    float aflCell[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
     std::list<BeamData>::iterator it = pList->begin();
     while (it != pList->end()) {
         Beam *pBeam = it->mBeam;
@@ -1070,7 +1073,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         memcpy(&mThruster3->mForce, aflForce, sizeof(aflForce));
     }
 
-    float aflBasis[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflBasis[kTransformRowCount][kTransformRowFloatCount];
     float *pPosition = aflBasis[kTransformRowCount - 1];
     if (mMulti != 0) {
         const float fSpread = mSpread < 1.0f ? mSpread : 1.0f;
@@ -1085,7 +1088,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         if (TheGameDb->mCommunity != GameDb::kCommunityLocal && 1.0f < mSpread) {
             offset.y *= ((mSpread - 1.0f) * kSpreadLift) + 1.0f;
         }
-        float aflCell[kTransformRowCount][kTransformRowFloatCount];
+        alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
         Transform cell;
         Geom()->BlendCell(&cell, true, false, pPlayer->mPosition, fTick, kCellCentre);
         ToRows(cell, aflCell);
@@ -1099,7 +1102,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         }
         Mat33BuildOrthonormal(aflUp, aflForward, &aflBasis[0][0]);
     } else {
-        float aflCamXfm[kTransformRowCount][kTransformRowFloatCount];
+        alignas(kMatrixAlign) float aflCamXfm[kTransformRowCount][kTransformRowFloatCount];
         CopyRows(pCamFX->mCamera, aflCamXfm);
         const float (*pCamXfm)[kTransformRowFloatCount] = aflCamXfm;
         XfmPoint(pCamXfm, sOffsetPivot, pPosition);
@@ -1195,7 +1198,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
 
 void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformRowFloatCount]) {
     float *pPosition = pXfm[kTransformRowCount - 1];
-    float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
     CopyRows(pCamFX->mView, aflSlideXfm);
     const float (*pSlideXfm)[kTransformRowFloatCount] = aflSlideXfm;
     RndTransformable *pViewXfm = mView;
@@ -1218,7 +1221,7 @@ void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransf
     }
     float fBlend = (sIntroBlendEndTick - fTick) / (sIntroBlendEndTick - kIntroStartTick);
     fBlend = fBlend > 1.0f ? 1.0f : (fBlend < 0.0f ? 0.0f : fBlend);
-    float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
     sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &pSlideXfm[0][0], &mXfm.mBasisX.x);
     float aflIntroPos[kTransformRowFloatCount];
     XfmPoint(pSlideXfm, sIntroPos, aflIntroPos);
@@ -1249,8 +1252,8 @@ void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformR
         pViewXfm->SetOrigin(sPivot);
         return;
     }
-    float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
-    float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
     CopyRows(pCamFX->mView, aflSlideXfm);
     sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &aflSlideXfm[0][0], &mXfm.mBasisX.x);
     float *pIntroTranslation = aflIntroXfm[kTransformRowCount - 1];
@@ -1276,7 +1279,7 @@ void Ship::UpdateTransform() {
     const float fElapsed = fNow - mStartMs;
     mIntroActive = 1;
     mIntroFlyIn->MakeTransform(mIntroFlyIn->FilterFrame(fElapsed), mXfm, 1);
-    float aflIntro[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflIntro[kTransformRowCount][kTransformRowFloatCount];
     Transform intro;
     mIntro->MakeTransform(mIntro->FilterFrame(fElapsed), intro, 1);
     memcpy(aflIntro, &intro, sizeof(aflIntro));
@@ -1354,7 +1357,7 @@ void Ship::DrawEffects() {
         mFlags &= ~kFlagAttacking;
         return;
     }
-    float aflCell[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
     Transform cell;
     Geom()->CellXfm(mAttackTrack, &cell, true, false, TheGameDb->mSongTick, kCellCentre);
     ToRows(cell, aflCell);
@@ -1394,7 +1397,7 @@ void Ship::DrawArrow() {
         fX = ((fX - kArrowCentreX) * fScale) + kArrowCentreX;
     }
     const float fAspect = TheRnd->AspectRatio();
-    float aflXfm[kTransformRowCount][kTransformRowFloatCount];
+    alignas(kMatrixAlign) float aflXfm[kTransformRowCount][kTransformRowFloatCount];
     float *pRight = aflXfm[0];
     float *pUp = aflXfm[1];
     float *pDirection = aflXfm[2];
