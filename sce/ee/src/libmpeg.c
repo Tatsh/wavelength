@@ -993,8 +993,8 @@ static void IssueIpuCommand(MpegContext *w, unsigned int nCommand) {
 }
 
 // NTSC-U/C: 0x0030c390, PAL: 0x00378820
-static int WaitForIpuIdle(MpegContext *w) {
-    return SpinIpuBusy(w);
+static void WaitForIpuIdle(MpegContext *w) {
+    (void)SpinIpuBusy(w);
 }
 
 // NTSC-U/C: 0x0030c438, PAL: 0x003788c8
@@ -3306,6 +3306,7 @@ int sceMpegCreate(sceMpeg *mp, unsigned char *work_area, int work_area_size) {
     w = (MpegContext *)(((uintptr_t)work_area + kAlignMask) & ~(uintptr_t)kAlignMask);
     nAvailable = (unsigned int)work_area_size - (unsigned int)((unsigned char *)w - work_area);
     if (nAvailable < kContextSize) {
+        // Yes, the binary reports through a context that may extend past the work area.
         _sceMpegError(w, "The size of work area is too small");
         return 0;
     }
