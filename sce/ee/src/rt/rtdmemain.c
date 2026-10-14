@@ -4409,7 +4409,7 @@ static int RtDmeProbeSilentClients(void) {
 static int RtDmePumpPolls(unsigned char bNotify) {
     RtDmePoll *pPoll;
     unsigned int uElapsed;
-    unsigned char bReady;
+    bool bReady;
     int nResult;
     unsigned int i;
 
@@ -4426,11 +4426,11 @@ static int RtDmePumpPolls(unsigned char bNotify) {
         case kPollFree:
             break;
         case kPollStarted:
-            bReady = 0;
+            bReady = false;
             if (RtChannelApiPollListener(&bReady, pPoll->szAddress, pPoll->uPort) != 0) {
                 break;
             }
-            if (bReady != 1) {
+            if (!bReady) {
                 break;
             }
             RtReadClock(&pPoll->startTime);

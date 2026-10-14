@@ -1498,13 +1498,13 @@ int rtMediusConnect(const rtMediusConnectParams *params, rtMediusConnectStatus *
     connect.voice = params->voice;
     if (rtDmeConnect(&connect, &connectStatus) != 0) {
         status->result = RT_MEDIUS_ERROR_CONNECTING;
-        status->connection = connectStatus.reserved[2]; // The connection the status reports.
+        status->connection = connectStatus.connection;
         rtMediusClearConnectCallback();
         return RT_MEDIUS_ERROR_CONNECTING;
     }
     if (params->onConnect == NULL) {
-        g_nMediusConnection = connectStatus.reserved[2];
-        status->connection = connectStatus.reserved[2];
+        g_nMediusConnection = connectStatus.connection;
+        status->connection = connectStatus.connection;
         status->result = 0;
     }
     return 0;
@@ -2311,13 +2311,13 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&worldReport, &worldReport.genericField2);
     rtMediusAddInt(&worldReport, &worldReport.genericField3);
     rtMediusAddInt(&worldReport, &worldReport.worldStatus);
-    rtMediusRegisterLobbyMessage(&g_nMediusWorldReportType, rtMediusOnMessage000);
+    rtMediusRegisterLobbyMessage(&g_nMediusWorldReportType, rtMediusOnWorldReport0);
 
     rtDmeBeginFields();
     rtMediusAddChars(&playerReport, playerReport.sessionKey, sizeof(playerReport.sessionKey));
     rtMediusAddInt(&playerReport, &playerReport.worldId);
     rtMediusAddChars(&playerReport, playerReport.stats, sizeof(playerReport.stats));
-    rtMediusRegisterLobbyMessage(&g_nMediusPlayerReportType, rtMediusOnMessage001);
+    rtMediusRegisterLobbyMessage(&g_nMediusPlayerReportType, rtMediusOnPlayerReport);
 
     rtDmeBeginFields();
     rtMediusAddChars(&endGameReport, endGameReport.sessionKey, sizeof(endGameReport.sessionKey));
@@ -2326,12 +2326,12 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &endGameReport, endGameReport.winningPlayer, sizeof(endGameReport.winningPlayer));
     rtMediusAddInt(&endGameReport, &endGameReport.finalScore);
-    rtMediusRegisterLobbyMessage(&g_nMediusEndGameReportType, rtMediusOnMessage002);
+    rtMediusRegisterLobbyMessage(&g_nMediusEndGameReportType, rtMediusOnEndGameReport);
 
     rtDmeBeginFields();
     rtMediusAddChars(&sessionBegin, sessionBegin.messageId, sizeof(sessionBegin.messageId));
     rtMediusAddInt(&sessionBegin, &sessionBegin.connectionClass);
-    rtMediusRegisterLobbyMessage(&g_nMediusSessionBeginType, rtMediusOnMessage003);
+    rtMediusRegisterLobbyMessage(&g_nMediusSessionBeginType, rtMediusOnSessionBegin);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&sessionBeginResponse, &sessionBeginResponse.header);
@@ -2343,7 +2343,7 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&sessionEnd, &sessionEnd);
-    rtMediusRegisterLobbyMessage(&g_nMediusSessionEndType, rtMediusOnMessage005);
+    rtMediusRegisterLobbyMessage(&g_nMediusSessionEndType, rtMediusOnSessionEnd);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&sessionEndResponse, &sessionEndResponse);
@@ -2353,7 +2353,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddRequestHeader(&accountLogin, &accountLogin.header);
     rtMediusAddChars(&accountLogin, accountLogin.accountName, sizeof(accountLogin.accountName));
     rtMediusAddChars(&accountLogin, accountLogin.password, sizeof(accountLogin.password));
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountLoginType, rtMediusOnMessage007);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountLoginType, rtMediusOnAccountLogin);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&loginResponse, &loginResponse.header);
@@ -2373,7 +2373,7 @@ int rtMediusRegisterMessages(void) {
                      sizeof(accountRegistration.accountName));
     rtMediusAddChars(
         &accountRegistration, accountRegistration.password, sizeof(accountRegistration.password));
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountRegistrationType, rtMediusOnMessage009);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountRegistrationType, rtMediusOnAccountRegistration);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&accountRegistrationResponse, &accountRegistrationResponse.header);
@@ -2383,22 +2383,25 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&accountGetProfile, &accountGetProfile);
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountGetProfileType, rtMediusOnMessage011);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountGetProfileType, rtMediusOnAccountGetProfile);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&accountGetProfileResponse, &accountGetProfileResponse.header);
     rtMediusAddInt(&accountGetProfileResponse, &accountGetProfileResponse.accountId);
     rtMediusAddProfile(&accountGetProfileResponse, &accountGetProfileResponse.profile);
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountGetProfileResponseType, rtMediusOnMessage012);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountGetProfileResponseType,
+                                 rtMediusOnAccountGetProfileResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&accountUpdateProfile, &accountUpdateProfile.header);
     rtMediusAddProfile(&accountUpdateProfile, &accountUpdateProfile.profile);
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountUpdateProfileType, rtMediusOnMessage013);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountUpdateProfileType,
+                                 rtMediusOnAccountUpdateProfile);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&statusResponse, &statusResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountUpdateProfileResponseType, rtMediusOnMessage014);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountUpdateProfileResponseType,
+                                 rtMediusOnAccountUpdateProfileResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&changePassword, &changePassword.header);
@@ -2406,7 +2409,7 @@ int rtMediusRegisterMessages(void) {
         &changePassword, changePassword.oldPassword, sizeof(changePassword.oldPassword));
     rtMediusAddChars(
         &changePassword, changePassword.newPassword, sizeof(changePassword.newPassword));
-    rtMediusRegisterLobbyMessage(&g_nMediusChangePasswordType, rtMediusOnMessage015);
+    rtMediusRegisterLobbyMessage(&g_nMediusChangePasswordType, rtMediusOnAccountUpdatePassword);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&statusResponse, &statusResponse);
@@ -2416,16 +2419,17 @@ int rtMediusRegisterMessages(void) {
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&updateStats, &updateStats.header);
     rtMediusAddChars(&updateStats, updateStats.stats, sizeof(updateStats.stats));
-    rtMediusRegisterLobbyMessage(&g_nMediusUpdateStatsType, rtMediusOnMessage017);
+    rtMediusRegisterLobbyMessage(&g_nMediusUpdateStatsType, rtMediusOnAccountUpdateStats);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&statusResponse, &statusResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusUpdateStatsResponseType, rtMediusOnUpdateStatsResponse);
+    rtMediusRegisterLobbyMessage(&g_nMediusUpdateStatsResponseType,
+                                 rtMediusOnAccountUpdateStatsResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&accountDelete, &accountDelete.header);
     rtMediusAddChars(&accountDelete, accountDelete.password, sizeof(accountDelete.password));
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountDeleteType, rtMediusOnMessage019);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountDeleteType, rtMediusOnAccountDelete);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&statusResponse, &statusResponse);
@@ -2434,16 +2438,17 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&accountLogout, &accountLogout);
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountLogoutType, rtMediusOnMessage021);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountLogoutType, rtMediusOnAccountLogout);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&statusResponse, &statusResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountLogoutResponseType, rtMediusOnMessage022);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountLogoutResponseType,
+                                 rtMediusOnAccountLogoutResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&accountGetId, &accountGetId.header);
     rtMediusAddChars(&accountGetId, accountGetId.accountName, sizeof(accountGetId.accountName));
-    rtMediusRegisterLobbyMessage(&g_nMediusAccountGetIdType, rtMediusOnMessage023);
+    rtMediusRegisterLobbyMessage(&g_nMediusAccountGetIdType, rtMediusOnAccountGetId);
 
     rtDmeBeginFields();
     rtMediusAddChars(&accountGetIdResponse,
@@ -2459,7 +2464,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &anonymousLogin, anonymousLogin.accountName, sizeof(anonymousLogin.accountName));
     rtMediusAddChars(&anonymousLogin, anonymousLogin.stats, kAnonymousLoginStatsCount);
-    rtMediusRegisterLobbyMessage(&g_nMediusAnonymousLoginType, rtMediusOnMessage025);
+    rtMediusRegisterLobbyMessage(&g_nMediusAnonymousLoginType, rtMediusOnAnonymousLogin);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&loginResponse, &loginResponse.header);
@@ -2473,7 +2478,7 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getMyIp, &getMyIp);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetMyIpType, rtMediusOnMessage027);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetMyIpType, rtMediusOnGetMyIP);
 
     rtDmeBeginFields();
     rtMediusAddChars(
@@ -2481,7 +2486,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &getMyIpResponse, getMyIpResponse.ipAddress, sizeof(getMyIpResponse.ipAddress));
     rtMediusAddInt(&getMyIpResponse, &getMyIpResponse.status);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetMyIpResponseType, rtMediusOnMessage028);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetMyIpResponseType, rtMediusOnGetMyIPResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&createGame, &createGame.header);
@@ -2497,12 +2502,12 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&createGame, &createGame.genericField2);
     rtMediusAddInt(&createGame, &createGame.genericField3);
     rtMediusAddInt(&createGame, &createGame.gameHostType);
-    rtMediusRegisterLobbyMessage(&g_nMediusCreateGameType, rtMediusOnMessage029);
+    rtMediusRegisterLobbyMessage(&g_nMediusCreateGameType, rtMediusOnCreateGameRequest0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&createGameResponse, &createGameResponse.header);
     rtMediusAddInt(&createGameResponse, &createGameResponse.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusCreateGameResponseType, rtMediusOnMessage030);
+    rtMediusRegisterLobbyMessage(&g_nMediusCreateGameResponseType, rtMediusOnCreateGameResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&message031, &message031.header);
@@ -2529,12 +2534,12 @@ int rtMediusRegisterMessages(void) {
         &message031, message031.addresses[1].address, sizeof(message031.addresses[1].address));
     rtDmeAddField(
         &message031, &message031.addresses[1].port, sizeof(message031.addresses[1].port), 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusMessage031Type, rtMediusOnMessage031);
+    rtMediusRegisterLobbyMessage(&g_nMediusMessage031Type, rtMediusOnCreateGameOnSelf);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&message032, &message032.header);
     rtMediusAddInt(&message032, &message032.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusMessage032Type, rtMediusOnMessage032);
+    rtMediusRegisterLobbyMessage(&g_nMediusMessage032Type, rtMediusOnCreateGameOnSelfResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&createChannel, &createChannel.header);
@@ -2542,7 +2547,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&createChannel, &createChannel.maxPlayers);
     rtMediusAddChars(&createChannel, createChannel.name, sizeof(createChannel.name));
     rtMediusAddChars(&createChannel, createChannel.password, sizeof(createChannel.password));
-    rtMediusRegisterLobbyMessage(&g_nMediusCreateChannelType, rtMediusOnMessage033);
+    rtMediusRegisterLobbyMessage(&g_nMediusCreateChannelType, rtMediusOnCreateChannelRequest0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&createChannelResponse, &createChannelResponse.header);
@@ -2559,7 +2564,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&joinGame, &joinGame.addresses[1].type);
     rtMediusAddCharsBySize(
         &joinGame, joinGame.addresses[1].address, sizeof(joinGame.addresses[1].address));
-    rtMediusRegisterLobbyMessage(&g_nMediusJoinGameType, rtMediusOnMessage035);
+    rtMediusRegisterLobbyMessage(&g_nMediusJoinGameType, rtMediusOnJoinGameRequest0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&joinGameResponse, &joinGameResponse.header);
@@ -2571,7 +2576,7 @@ int rtMediusRegisterMessages(void) {
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&joinChannel, &joinChannel.header);
     rtMediusAddInt(&joinChannel, &joinChannel.worldId);
-    rtMediusRegisterLobbyMessage(&g_nMediusJoinChannelType, rtMediusOnMessage037);
+    rtMediusRegisterLobbyMessage(&g_nMediusJoinChannelType, rtMediusOnJoinChannel);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&joinChannelResponse, &joinChannelResponse.header);
@@ -2580,7 +2585,7 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&joinChannelFwd, &joinChannelFwd);
-    rtMediusRegisterLobbyMessage(&g_nMediusJoinChannelFwdType, rtMediusOnMessage039);
+    rtMediusRegisterLobbyMessage(&g_nMediusJoinChannelFwdType, rtMediusOnJoinChannelFwd);
 
     rtDmeBeginFields();
     rtMediusAddChars(&joinChannelFwdResponse,
@@ -2593,14 +2598,15 @@ int rtMediusRegisterMessages(void) {
                      joinChannelFwdResponse.accessKey,
                      sizeof(joinChannelFwdResponse.accessKey));
     rtMediusAddInt(&joinChannelFwdResponse, &joinChannelFwdResponse.worldId);
-    rtMediusRegisterLobbyMessage(&g_nMediusJoinChannelFwdResponseType, rtMediusOnMessage040);
+    rtMediusRegisterLobbyMessage(&g_nMediusJoinChannelFwdResponseType,
+                                 rtMediusOnJoinChannelFwdResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&gameList, &gameList.header);
     rtMediusAddInt(&gameList, &gameList.applicationId);
     rtMediusAddShort(&gameList, &gameList.pageId);
     rtMediusAddShort(&gameList, &gameList.pageSize);
-    rtMediusRegisterLobbyMessage(&g_nMediusGameListType, rtMediusOnMessage041);
+    rtMediusRegisterLobbyMessage(&g_nMediusGameListType, rtMediusOnGameList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&gameListResponse, &gameListResponse.header);
@@ -2617,7 +2623,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddRequestHeader(&channelList, &channelList.header);
     rtMediusAddShort(&channelList, &channelList.pageId);
     rtMediusAddShort(&channelList, &channelList.pageSize);
-    rtMediusRegisterLobbyMessage(&g_nMediusChannelListType, rtMediusOnMessage043);
+    rtMediusRegisterLobbyMessage(&g_nMediusChannelListType, rtMediusOnChannelList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&channelListResponse, &channelListResponse.header);
@@ -2631,7 +2637,7 @@ int rtMediusRegisterMessages(void) {
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&channelPlayers, &channelPlayers.header);
     rtMediusAddInt(&channelPlayers, &channelPlayers.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusChannelPlayersType, rtMediusOnMessage045);
+    rtMediusRegisterLobbyMessage(&g_nMediusChannelPlayersType, rtMediusOnLobbyWorldPlayerList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&channelPlayersResponse, &channelPlayersResponse.header);
@@ -2646,12 +2652,12 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&channelPlayersResponse, &channelPlayersResponse.connectionClass);
     rtMediusAddChars(&channelPlayersResponse, &channelPlayersResponse.endOfList, 1);
     rtMediusRegisterLobbyMessage(&g_nMediusChannelPlayersResponseType,
-                                 rtMediusOnChannelPlayersResponse);
+                                 rtMediusOnLobbyWorldPlayerListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&gamePlayers, &gamePlayers.header);
     rtMediusAddInt(&gamePlayers, &gamePlayers.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGamePlayersType, rtMediusOnMessage047);
+    rtMediusRegisterLobbyMessage(&g_nMediusGamePlayersType, rtMediusOnGameWorldPlayerList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&gamePlayersResponse, &gamePlayersResponse.header);
@@ -2663,12 +2669,13 @@ int rtMediusRegisterMessages(void) {
         &gamePlayersResponse, gamePlayersResponse.stats, sizeof(gamePlayersResponse.stats));
     rtMediusAddInt(&gamePlayersResponse, &gamePlayersResponse.connectionClass);
     rtMediusAddChars(&gamePlayersResponse, &gamePlayersResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGamePlayersResponseType, rtMediusOnGamePlayersResponse);
+    rtMediusRegisterLobbyMessage(&g_nMediusGamePlayersResponseType,
+                                 rtMediusOnGameWorldPlayerListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&playerInfo, &playerInfo.header);
     rtMediusAddInt(&playerInfo, &playerInfo.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusPlayerInfoType, rtMediusOnMessage049);
+    rtMediusRegisterLobbyMessage(&g_nMediusPlayerInfoType, rtMediusOnPlayerInfo);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&playerInfoResponse, &playerInfoResponse.header);
@@ -2685,7 +2692,7 @@ int rtMediusRegisterMessages(void) {
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&gameInfo, &gameInfo.header);
     rtMediusAddInt(&gameInfo, &gameInfo.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGameInfoType, rtMediusOnMessage051);
+    rtMediusRegisterLobbyMessage(&g_nMediusGameInfoType, rtMediusOnGameInfo0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&gameInfoResponse, &gameInfoResponse.header);
@@ -2705,12 +2712,12 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&gameInfoResponse, &gameInfoResponse.genericField3);
     rtMediusAddInt(&gameInfoResponse, &gameInfoResponse.worldStatus);
     rtMediusAddInt(&gameInfoResponse, &gameInfoResponse.gameHostType);
-    rtMediusRegisterLobbyMessage(&g_nMediusGameInfoResponseType, rtMediusOnMessage052);
+    rtMediusRegisterLobbyMessage(&g_nMediusGameInfoResponseType, rtMediusOnGameInfoResponse0);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&channelInfo, &channelInfo.header);
     rtMediusAddInt(&channelInfo, &channelInfo.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusChannelInfoType, rtMediusOnMessage053);
+    rtMediusRegisterLobbyMessage(&g_nMediusChannelInfoType, rtMediusOnChannelInfo);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&channelInfoResponse, &channelInfoResponse.header);
@@ -2724,7 +2731,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddRequestHeader(&findWorldByName, &findWorldByName.header);
     rtMediusAddChars(&findWorldByName, findWorldByName.name, sizeof(findWorldByName.name));
     rtMediusAddInt(&findWorldByName, &findWorldByName.worldType);
-    rtMediusRegisterLobbyMessage(&g_nMediusFindWorldByNameType, rtMediusOnMessage055);
+    rtMediusRegisterLobbyMessage(&g_nMediusFindWorldByNameType, rtMediusOnFindWorldByName);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&findWorldByNameResponse, &findWorldByNameResponse.header);
@@ -2737,14 +2744,15 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(&findWorldByNameResponse, findWorldByNameResponse.worldName, kWorldNameCount);
     rtMediusAddInt(&findWorldByNameResponse, &findWorldByNameResponse.worldStatus);
     rtMediusAddChars(&findWorldByNameResponse, &findWorldByNameResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusFindWorldByNameResponseType, rtMediusOnMessage056);
+    rtMediusRegisterLobbyMessage(&g_nMediusFindWorldByNameResponseType,
+                                 rtMediusOnFindWorldByNameResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&findPlayer, &findPlayer.header);
     rtMediusAddInt(&findPlayer, &findPlayer.searchType);
     rtMediusAddInt(&findPlayer, &findPlayer.accountId);
     rtMediusAddChars(&findPlayer, findPlayer.accountName, sizeof(findPlayer.accountName));
-    rtMediusRegisterLobbyMessage(&g_nMediusFindPlayerType, rtMediusOnMessage057);
+    rtMediusRegisterLobbyMessage(&g_nMediusFindPlayerType, rtMediusOnFindPlayer);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&findPlayerResponse, &findPlayerResponse.header);
@@ -2765,7 +2773,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&chatMessage, &chatMessage.toAccount);
     rtMediusAddInt(&chatMessage, &chatMessage.targetAccountId);
     rtMediusAddChars(&chatMessage, chatMessage.text, sizeof(chatMessage.text));
-    rtMediusRegisterLobbyMessage(&g_nMediusChatMessageType, rtMediusOnMessage059);
+    rtMediusRegisterLobbyMessage(&g_nMediusChatMessageType, rtMediusOnChatMessage);
 
     rtDmeBeginFields();
     rtMediusAddChars(&chatFwdMessage, chatFwdMessage.messageId, sizeof(chatFwdMessage.messageId));
@@ -2774,11 +2782,11 @@ int rtMediusRegisterMessages(void) {
         &chatFwdMessage, chatFwdMessage.originatorName, sizeof(chatFwdMessage.originatorName));
     rtMediusAddInt(&chatFwdMessage, &chatFwdMessage.messageType);
     rtMediusAddChars(&chatFwdMessage, chatFwdMessage.text, sizeof(chatFwdMessage.text));
-    rtMediusRegisterLobbyMessage(&g_nMediusChatFwdMessageType, rtMediusOnChatMessage);
+    rtMediusRegisterLobbyMessage(&g_nMediusChatFwdMessageType, rtMediusOnChatFwdMessage);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getBuddyList, &getBuddyList);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetBuddyListType, rtMediusOnMessage061);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetBuddyListType, rtMediusOnGetBuddyList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getBuddyListResponse, &getBuddyListResponse.header);
@@ -2788,30 +2796,34 @@ int rtMediusRegisterMessages(void) {
                      sizeof(getBuddyListResponse.accountName));
     rtMediusAddInt(&getBuddyListResponse, &getBuddyListResponse.onlineState);
     rtMediusAddChars(&getBuddyListResponse, &getBuddyListResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetBuddyListResponseType, rtMediusOnMessage062);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetBuddyListResponseType,
+                                 rtMediusOnGetBuddyListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&addToBuddyList, &addToBuddyList.header);
     rtMediusAddInt(&addToBuddyList, &addToBuddyList.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListType, rtMediusOnMessage063);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListType, rtMediusOnAddToBuddyList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&addToBuddyListResponse, &addToBuddyListResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListResponseType, rtMediusOnMessage064);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListResponseType,
+                                 rtMediusOnAddToBuddyListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&removeFromBuddyList, &removeFromBuddyList.header);
     rtMediusAddInt(&removeFromBuddyList, &removeFromBuddyList.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromBuddyListType, rtMediusOnMessage065);
+    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromBuddyListType, rtMediusOnRemoveFromBuddyList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&removeFromBuddyListResponse, &removeFromBuddyListResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromBuddyListResponseType, rtMediusOnMessage066);
+    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromBuddyListResponseType,
+                                 rtMediusOnRemoveFromBuddyListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&buddyConfirmation, &buddyConfirmation.header);
     rtMediusAddInt(&buddyConfirmation, &buddyConfirmation.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListConfirmationType, rtMediusOnMessage067);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListConfirmationType,
+                                 rtMediusOnAddToBuddyListConfirmationRequest0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&buddyConfirmationResponse, &buddyConfirmationResponse.header);
@@ -2820,7 +2832,7 @@ int rtMediusRegisterMessages(void) {
                      buddyConfirmationResponse.accountName,
                      sizeof(buddyConfirmationResponse.accountName));
     rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListConfirmationResponseType,
-                                 rtMediusOnMessage068);
+                                 rtMediusOnAddToBuddyListConfirmationResponse);
 
     rtDmeBeginFields();
     rtMediusAddChars(&buddyFwdConfirmation,
@@ -2831,7 +2843,7 @@ int rtMediusRegisterMessages(void) {
                      buddyFwdConfirmation.originatorName,
                      sizeof(buddyFwdConfirmation.originatorName));
     rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListFwdConfirmationType,
-                                 rtMediusOnInitHandler04);
+                                 rtMediusOnAddToBuddyListFwdConfirmationRequest0);
 
     rtDmeBeginFields();
     rtMediusAddChars(&buddyFwdConfirmationResponse,
@@ -2844,39 +2856,39 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&buddyFwdConfirmationResponse,
                    &buddyFwdConfirmationResponse.originatorAccountId);
     rtMediusRegisterLobbyMessage(&g_nMediusAddToBuddyListFwdConfirmationResponseType,
-                                 rtMediusOnMessage070);
+                                 rtMediusOnAddToBuddyListFwdConfirmationResponse0);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getPolicy, &getPolicy.header);
     rtMediusAddInt(&getPolicy, &getPolicy.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetPolicyType, rtMediusOnMessage071);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetPolicyType, rtMediusOnPolicy);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getPolicyResponse, &getPolicyResponse.header);
     rtMediusAddChars(
         &getPolicyResponse, getPolicyResponse.policy, sizeof(getPolicyResponse.policy));
     rtMediusAddChars(&getPolicyResponse, &getPolicyResponse.endOfText, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetPolicyResponseType, rtMediusOnGetPolicyResponse);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetPolicyResponseType, rtMediusOnPolicyResponse);
 
     rtDmeBeginFields();
     rtMediusAddChars(
         &updateUserState, updateUserState.sessionKey, sizeof(updateUserState.sessionKey));
     rtMediusAddInt(&updateUserState, &updateUserState.userAction);
-    rtMediusRegisterLobbyMessage(&g_nMediusUpdateUserStateType, rtMediusOnMessage073);
+    rtMediusRegisterLobbyMessage(&g_nMediusUpdateUserStateType, rtMediusOnUpdateUserState);
 
     rtDmeBeginFields();
     rtMediusAddInt(&notice, &notice.code);
     rtMediusAddChars(&notice, notice.text, sizeof(notice.text));
-    rtMediusRegisterLobbyMessage(&g_nMediusNoticeType, rtMediusOnNotice);
+    rtMediusRegisterLobbyMessage(&g_nMediusNoticeType, rtMediusOnErrorMessage);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getAnnouncements, &getAnnouncements.header);
     rtMediusAddInt(&getAnnouncements, &getAnnouncements.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetAnnouncementsType, rtMediusOnMessage075);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetAnnouncementsType, rtMediusOnGetAnnouncements);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getAllAnnouncements, &getAllAnnouncements.header);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetAllAnnouncementsType, rtMediusOnMessage076);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetAllAnnouncementsType, rtMediusOnGetAllAnnouncements);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getAnnouncementsResponse, &getAnnouncementsResponse.header);
@@ -2893,17 +2905,17 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&setGameListFilter, &setGameListFilter.filterField);
     rtMediusAddInt(&setGameListFilter, &setGameListFilter.comparison);
     rtMediusAddInt(&setGameListFilter, &setGameListFilter.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusSetGameListFilterType, rtMediusOnMessage078);
+    rtMediusRegisterLobbyMessage(&g_nMediusSetGameListFilterType, rtMediusOnSetGameListFilter0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&setGameListFilterResponse, &setGameListFilterResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusSetGameListFilterResponseType,
-                                 rtMediusOnSetGameListFilterResponse);
+                                 rtMediusOnSetGameListFilterResponse0);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&clearGameListFilter, &clearGameListFilter.header);
     rtMediusAddInt(&clearGameListFilter, &clearGameListFilter.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusClearGameListFilterType, rtMediusOnMessage080);
+    rtMediusRegisterLobbyMessage(&g_nMediusClearGameListFilterType, rtMediusOnClearGameListFilter0);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&clearGameListFilterResponse, &clearGameListFilterResponse);
@@ -2912,14 +2924,15 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getGameListFilter, &getGameListFilter);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetGameListFilterType, rtMediusOnMessage082);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetGameListFilterType, rtMediusOnGetGameListFilter);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getGameListFilterResponse, &getGameListFilterResponse.header);
     rtMediusAddInt(&getGameListFilterResponse, &getGameListFilterResponse.filterField);
     rtMediusAddInt(&getGameListFilterResponse, &getGameListFilterResponse.comparison);
     rtMediusAddInt(&getGameListFilterResponse, &getGameListFilterResponse.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetGameListFilterResponseType, rtMediusOnMessage083);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetGameListFilterResponseType,
+                                 rtMediusOnGetGameListFilterResponse0);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&createClan, &createClan.header);
@@ -2927,26 +2940,26 @@ int rtMediusRegisterMessages(void) {
     // Yes, the binary adds the clan name of the record of message 89 to this list.
     rtMediusAddChars(
         &getClanByIdResponse, getClanByIdResponse.clanName, sizeof(getClanByIdResponse.clanName));
-    rtMediusRegisterLobbyMessage(&g_nMediusCreateClanType, rtMediusOnMessage084);
+    rtMediusRegisterLobbyMessage(&g_nMediusCreateClanType, rtMediusOnCreateClan);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&createClanResponse, &createClanResponse.header);
     rtMediusAddInt(&createClanResponse, &createClanResponse.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusCreateClanResponseType, rtMediusOnMessage085);
+    rtMediusRegisterLobbyMessage(&g_nMediusCreateClanResponseType, rtMediusOnCreateClanResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&disbandClan, &disbandClan.header);
     rtMediusAddInt(&disbandClan, &disbandClan.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusDisbandClanType, rtMediusOnMessage086);
+    rtMediusRegisterLobbyMessage(&g_nMediusDisbandClanType, rtMediusOnDisbandClan);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&disbandClanResponse, &disbandClanResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusDisbandClanResponseType, rtMediusOnMessage087);
+    rtMediusRegisterLobbyMessage(&g_nMediusDisbandClanResponseType, rtMediusOnDisbandClanResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getClanById, &getClanById.header);
     rtMediusAddInt(&getClanById, &getClanById.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByIdType, rtMediusOnMessage088);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByIdType, rtMediusOnGetClanByID);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getClanByIdResponse, &getClanByIdResponse.header);
@@ -2960,13 +2973,13 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &getClanByIdResponse, getClanByIdResponse.stats, sizeof(getClanByIdResponse.stats));
     rtMediusAddInt(&getClanByIdResponse, &getClanByIdResponse.clanStatus);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByIdResponseType, rtMediusOnMessage089);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByIdResponseType, rtMediusOnGetClanByIDResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getClanByName, &getClanByName.header);
     rtMediusAddInt(&getClanByName, &getClanByName.id);
     rtMediusAddChars(&getClanByName, getClanByName.name, sizeof(getClanByName.name));
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByNameType, rtMediusOnMessage090);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByNameType, rtMediusOnGetClanByName);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getClanByNameResponse, &getClanByNameResponse.header);
@@ -2978,56 +2991,63 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &getClanByNameResponse, getClanByNameResponse.stats, sizeof(getClanByNameResponse.stats));
     rtMediusAddInt(&getClanByNameResponse, &getClanByNameResponse.clanStatus);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByNameResponseType, rtMediusOnMessage091);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanByNameResponseType,
+                                 rtMediusOnGetClanByNameResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&transferClanLeadership, &transferClanLeadership.header);
     rtMediusAddInt(&transferClanLeadership, &transferClanLeadership.id);
     rtMediusAddChars(
         &transferClanLeadership, transferClanLeadership.name, sizeof(transferClanLeadership.name));
-    rtMediusRegisterLobbyMessage(&g_nMediusTransferClanLeadershipType, rtMediusOnMessage092);
+    rtMediusRegisterLobbyMessage(&g_nMediusTransferClanLeadershipType,
+                                 rtMediusOnTransferClanLeadership);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&transferClanLeadershipResponse, &transferClanLeadershipResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusTransferClanLeadershipResponseType,
-                                 rtMediusOnMessage093);
+                                 rtMediusOnTransferClanLeadershipResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&addPlayerToClan, &addPlayerToClan.header);
     rtMediusAddInt(&addPlayerToClan, &addPlayerToClan.id);
     rtMediusAddChars(&addPlayerToClan, addPlayerToClan.message, sizeof(addPlayerToClan.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusAddPlayerToClanType, rtMediusOnMessage094);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddPlayerToClanType, rtMediusOnAddPlayerToClan);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&addPlayerToClanResponse, &addPlayerToClanResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusAddPlayerToClanResponseType, rtMediusOnMessage095);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddPlayerToClanResponseType,
+                                 rtMediusOnAddPlayerToClanResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&removePlayerFromClan, &removePlayerFromClan.header);
     rtMediusAddInt(&removePlayerFromClan, &removePlayerFromClan.id);
     rtMediusAddInt(&removePlayerFromClan, &removePlayerFromClan.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusRemovePlayerFromClanType, rtMediusOnMessage096);
+    rtMediusRegisterLobbyMessage(&g_nMediusRemovePlayerFromClanType,
+                                 rtMediusOnRemovePlayerFromClan);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&removePlayerFromClanResponse, &removePlayerFromClanResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusRemovePlayerFromClanResponseType, rtMediusOnMessage097);
+    rtMediusRegisterLobbyMessage(&g_nMediusRemovePlayerFromClanResponseType,
+                                 rtMediusOnRemovePlayerFromClanResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&invitePlayerToClan, &invitePlayerToClan.header);
     rtMediusAddInt(&invitePlayerToClan, &invitePlayerToClan.id);
     rtMediusAddChars(
         &invitePlayerToClan, invitePlayerToClan.message, sizeof(invitePlayerToClan.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusInvitePlayerToClanType, rtMediusOnMessage098);
+    rtMediusRegisterLobbyMessage(&g_nMediusInvitePlayerToClanType, rtMediusOnInvitePlayerToClan);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&invitePlayerToClanResponse, &invitePlayerToClanResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusInvitePlayerToClanResponseType, rtMediusOnMessage099);
+    rtMediusRegisterLobbyMessage(&g_nMediusInvitePlayerToClanResponseType,
+                                 rtMediusOnInvitePlayerToClanResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&checkMyClanInvitations, &checkMyClanInvitations.header);
     rtMediusAddInt(&checkMyClanInvitations, &checkMyClanInvitations.id);
     rtMediusAddInt(&checkMyClanInvitations, &checkMyClanInvitations.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusCheckMyClanInvitationsType, rtMediusOnMessage100);
+    rtMediusRegisterLobbyMessage(&g_nMediusCheckMyClanInvitationsType,
+                                 rtMediusOnCheckMyClanInvitations);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&checkMyClanInvitationsResponse,
@@ -3046,7 +3066,7 @@ int rtMediusRegisterMessages(void) {
                      sizeof(checkMyClanInvitationsResponse.leaderAccountName));
     rtMediusAddChars(&checkMyClanInvitationsResponse, &checkMyClanInvitationsResponse.endOfList, 1);
     rtMediusRegisterLobbyMessage(&g_nMediusCheckMyClanInvitationsResponseType,
-                                 rtMediusOnMessage101);
+                                 rtMediusOnCheckMyClanInvitationsResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&respondToClanInvitation, &respondToClanInvitation.header);
@@ -3055,21 +3075,24 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(&respondToClanInvitation,
                      respondToClanInvitation.message,
                      sizeof(respondToClanInvitation.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusRespondToClanInvitationType, rtMediusOnMessage102);
+    rtMediusRegisterLobbyMessage(&g_nMediusRespondToClanInvitationType,
+                                 rtMediusOnRespondToClanInvitation);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&respondToClanInvitationResponse, &respondToClanInvitationResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusRespondToClanInvitationResponseType,
-                                 rtMediusOnMessage103);
+                                 rtMediusOnRespondToClanInvitationResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&revokeClanInvitation, &revokeClanInvitation.header);
     rtMediusAddInt(&revokeClanInvitation, &revokeClanInvitation.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanInvitationType, rtMediusOnMessage104);
+    rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanInvitationType,
+                                 rtMediusOnRevokeClanInvitation);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&revokeClanInvitationResponse, &revokeClanInvitationResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanInvitationResponseType, rtMediusOnMessage105);
+    rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanInvitationResponseType,
+                                 rtMediusOnRevokeClanInvitationResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&requestClanTeamChallenge, &requestClanTeamChallenge.header);
@@ -3077,19 +3100,20 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(&requestClanTeamChallenge,
                      requestClanTeamChallenge.message,
                      sizeof(requestClanTeamChallenge.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusRequestClanTeamChallengeType, rtMediusOnMessage106);
+    rtMediusRegisterLobbyMessage(&g_nMediusRequestClanTeamChallengeType,
+                                 rtMediusOnRequestClanTeamChallenge);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&requestClanTeamChallengeResponse, &requestClanTeamChallengeResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusRequestClanTeamChallengeResponseType,
-                                 rtMediusOnMessage107);
+                                 rtMediusOnRequestClanTeamChallengeResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getMyClanMessages, &getMyClanMessages.header);
     rtMediusAddInt(&getMyClanMessages, &getMyClanMessages.clanId);
     rtMediusAddInt(&getMyClanMessages, &getMyClanMessages.start);
     rtMediusAddInt(&getMyClanMessages, &getMyClanMessages.pageSize);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClanMessagesType, rtMediusOnMessage108);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClanMessagesType, rtMediusOnGetMyClanMessages);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getMyClanMessagesResponse, &getMyClanMessagesResponse.header);
@@ -3098,12 +3122,13 @@ int rtMediusRegisterMessages(void) {
                      getMyClanMessagesResponse.message,
                      sizeof(getMyClanMessagesResponse.message));
     rtMediusAddChars(&getMyClanMessagesResponse, &getMyClanMessagesResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClanMessagesResponseType, rtMediusOnMessage109);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClanMessagesResponseType,
+                                 rtMediusOnGetMyClanMessagesResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&sendClanMessage, &sendClanMessage.header);
     rtMediusAddChars(&sendClanMessage, sendClanMessage.message, sizeof(sendClanMessage.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusSendClanMessageType, rtMediusOnMessage110);
+    rtMediusRegisterLobbyMessage(&g_nMediusSendClanMessageType, rtMediusOnSendClanMessage);
 
     rtDmeBeginFields();
     rtMediusAddChars(&sendClanMessageResponse,
@@ -3115,27 +3140,30 @@ int rtMediusRegisterMessages(void) {
                   sizeof(sendClanMessageResponse.messageId),
                   1);
     rtMediusAddInt(&sendClanMessageResponse, &sendClanMessageResponse.status);
-    rtMediusRegisterLobbyMessage(&g_nMediusSendClanMessageResponseType, rtMediusOnMessage111);
+    rtMediusRegisterLobbyMessage(&g_nMediusSendClanMessageResponseType,
+                                 rtMediusOnSendClanMessageResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&modifyClanMessage, &modifyClanMessage.header);
     rtMediusAddInt(&modifyClanMessage, &modifyClanMessage.id);
     rtMediusAddChars(
         &modifyClanMessage, modifyClanMessage.message, sizeof(modifyClanMessage.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusModifyClanMessageType, rtMediusOnMessage112);
+    rtMediusRegisterLobbyMessage(&g_nMediusModifyClanMessageType, rtMediusOnModifyClanMessage);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&modifyClanMessageResponse, &modifyClanMessageResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusModifyClanMessageResponseType, rtMediusOnMessage113);
+    rtMediusRegisterLobbyMessage(&g_nMediusModifyClanMessageResponseType,
+                                 rtMediusOnModifyClanMessageResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&deleteClanMessage, &deleteClanMessage.header);
     rtMediusAddInt(&deleteClanMessage, &deleteClanMessage.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusDeleteClanMessageType, rtMediusOnMessage114);
+    rtMediusRegisterLobbyMessage(&g_nMediusDeleteClanMessageType, rtMediusOnDeleteClanMessage);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&deleteClanMessageResponse, &deleteClanMessageResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusDeleteClanMessageResponseType, rtMediusOnMessage115);
+    rtMediusRegisterLobbyMessage(&g_nMediusDeleteClanMessageResponseType,
+                                 rtMediusOnDeleteClanMessageResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&respondToClanTeamChallenge, &respondToClanTeamChallenge.header);
@@ -3144,23 +3172,25 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(&respondToClanTeamChallenge,
                      respondToClanTeamChallenge.message,
                      sizeof(respondToClanTeamChallenge.message));
-    rtMediusRegisterLobbyMessage(&g_nMediusRespondToClanTeamChallengeType, rtMediusOnMessage116);
+    rtMediusRegisterLobbyMessage(&g_nMediusRespondToClanTeamChallengeType,
+                                 rtMediusOnRespondToClanTeamChallenge);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&respondToClanTeamChallengeResponse,
                               &respondToClanTeamChallengeResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusRespondToClanTeamChallengeResponseType,
-                                 rtMediusOnMessage117);
+                                 rtMediusOnRespondToClanTeamChallengeResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&revokeClanTeamChallenge, &revokeClanTeamChallenge.header);
     rtMediusAddInt(&revokeClanTeamChallenge, &revokeClanTeamChallenge.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanTeamChallengeType, rtMediusOnMessage118);
+    rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanTeamChallengeType,
+                                 rtMediusOnRevokeClanTeamChallenge);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&revokeClanTeamChallengeResponse, &revokeClanTeamChallengeResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusRevokeClanTeamChallengeResponseType,
-                                 rtMediusOnMessage119);
+                                 rtMediusOnRevokeClanTeamChallengeResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getClanTeamChallengeHistory, &getClanTeamChallengeHistory.header);
@@ -3168,7 +3198,8 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&getClanTeamChallengeHistory, &getClanTeamChallengeHistory.threshold);
     rtMediusAddInt(&getClanTeamChallengeHistory, &getClanTeamChallengeHistory.start);
     rtMediusAddInt(&getClanTeamChallengeHistory, &getClanTeamChallengeHistory.pageSize);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengeHistoryType, rtMediusOnMessage120);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengeHistoryType,
+                                 rtMediusOnGetClanTeamChallengeHistory);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getClanTeamChallengeHistoryResponse,
@@ -3180,13 +3211,14 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &getClanTeamChallengeHistoryResponse, &getClanTeamChallengeHistoryResponse.endOfList, 1);
     rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengeHistoryResponseType,
-                                 rtMediusOnMessage121);
+                                 rtMediusOnGetClanTeamChallengeHistoryResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getClanInvitationsSent, &getClanInvitationsSent.header);
     rtMediusAddInt(&getClanInvitationsSent, &getClanInvitationsSent.id);
     rtMediusAddInt(&getClanInvitationsSent, &getClanInvitationsSent.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanInvitationsSentType, rtMediusOnMessage122);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanInvitationsSentType,
+                                 rtMediusOnGetClanInvitationsSent);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getClanInvitationsSentResponse,
@@ -3201,13 +3233,13 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&getClanInvitationsSentResponse, &getClanInvitationsSentResponse.responseTime);
     rtMediusAddChars(&getClanInvitationsSentResponse, &getClanInvitationsSentResponse.endOfList, 1);
     rtMediusRegisterLobbyMessage(&g_nMediusGetClanInvitationsSentResponseType,
-                                 rtMediusOnMessage123);
+                                 rtMediusOnGetClanInvitationsSentResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getMyClans, &getMyClans.header);
     rtMediusAddInt(&getMyClans, &getMyClans.id);
     rtMediusAddInt(&getMyClans, &getMyClans.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClansType, rtMediusOnMessage124);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClansType, rtMediusOnGetMyClans);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getMyClansResponse, &getMyClansResponse.header);
@@ -3222,13 +3254,13 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddChars(
         &getMyClansResponse, getMyClansResponse.stats, sizeof(getMyClansResponse.stats));
     rtMediusAddChars(&getMyClansResponse, &getMyClansResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClansResponseType, rtMediusOnMessage125);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetMyClansResponseType, rtMediusOnGetMyClansResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getAllClanMessages, &getAllClanMessages.header);
     rtMediusAddInt(&getAllClanMessages, &getAllClanMessages.id);
     rtMediusAddInt(&getAllClanMessages, &getAllClanMessages.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetAllClanMessagesType, rtMediusOnMessage126);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetAllClanMessagesType, rtMediusOnGetAllClanMessages);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getAllClanMessagesResponse, &getAllClanMessagesResponse.header);
@@ -3238,17 +3270,19 @@ int rtMediusRegisterMessages(void) {
                      sizeof(getAllClanMessagesResponse.message));
     rtMediusAddInt(&getAllClanMessagesResponse, &getAllClanMessagesResponse.messageStatus);
     rtMediusAddChars(&getAllClanMessagesResponse, &getAllClanMessagesResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetAllClanMessagesResponseType, rtMediusOnMessage127);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetAllClanMessagesResponseType,
+                                 rtMediusOnGetAllClanMessagesResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&confirmClanTeamChallenge, &confirmClanTeamChallenge.header);
     rtMediusAddInt(&confirmClanTeamChallenge, &confirmClanTeamChallenge.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusConfirmClanTeamChallengeType, rtMediusOnMessage128);
+    rtMediusRegisterLobbyMessage(&g_nMediusConfirmClanTeamChallengeType,
+                                 rtMediusOnConfirmClanTeamChallenge);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&confirmClanTeamChallengeResponse, &confirmClanTeamChallengeResponse);
     rtMediusRegisterLobbyMessage(&g_nMediusConfirmClanTeamChallengeResponseType,
-                                 rtMediusOnMessage129);
+                                 rtMediusOnConfirmClanTeamChallengeResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getClanTeamChallenges, &getClanTeamChallenges.header);
@@ -3257,7 +3291,8 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&getClanTeamChallenges, &getClanTeamChallenges.threshold);
     rtMediusAddInt(&getClanTeamChallenges, &getClanTeamChallenges.start);
     rtMediusAddInt(&getClanTeamChallenges, &getClanTeamChallenges.pageSize);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengesType, rtMediusOnMessage130);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengesType,
+                                 rtMediusOnGetClanTeamChallenges);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getClanTeamChallengesResponse,
@@ -3273,21 +3308,23 @@ int rtMediusRegisterMessages(void) {
                      getClanTeamChallengesResponse.responseMessage,
                      sizeof(getClanTeamChallengesResponse.responseMessage));
     rtMediusAddChars(&getClanTeamChallengesResponse, &getClanTeamChallengesResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengesResponseType, rtMediusOnMessage131);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanTeamChallengesResponseType,
+                                 rtMediusOnGetClanTeamChallengesResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&updateClanStats, &updateClanStats.header);
     rtMediusAddInt(&updateClanStats, &updateClanStats.clanId);
     rtMediusAddCharsBySize(&updateClanStats, updateClanStats.stats, sizeof(updateClanStats.stats));
-    rtMediusRegisterLobbyMessage(&g_nMediusUpdateClanStatsType, rtMediusOnMessage132);
+    rtMediusRegisterLobbyMessage(&g_nMediusUpdateClanStatsType, rtMediusOnUpdateClanStats);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&updateClanStatsResponse, &updateClanStatsResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusUpdateClanStatsResponseType, rtMediusOnMessage133);
+    rtMediusRegisterLobbyMessage(&g_nMediusUpdateClanStatsResponseType,
+                                 rtMediusOnUpdateClanStatsResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&versionServer, &versionServer);
-    rtMediusRegisterLobbyMessage(&g_nMediusVersionServerType, rtMediusOnMessage134);
+    rtMediusRegisterLobbyMessage(&g_nMediusVersionServerType, rtMediusOnVersionServer);
 
     rtDmeBeginFields();
     rtMediusAddChars(&versionServerResponse,
@@ -3302,7 +3339,8 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddRequestHeader(&getWorldSecurityLevel, &getWorldSecurityLevel.header);
     rtMediusAddInt(&getWorldSecurityLevel, &getWorldSecurityLevel.id);
     rtMediusAddInt(&getWorldSecurityLevel, &getWorldSecurityLevel.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetWorldSecurityLevelType, rtMediusOnMessage136);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetWorldSecurityLevelType,
+                                 rtMediusOnGetWorldSecurityLevel);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getWorldSecurityLevelResponse,
@@ -3310,7 +3348,8 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&getWorldSecurityLevelResponse, &getWorldSecurityLevelResponse.worldId);
     rtMediusAddInt(&getWorldSecurityLevelResponse, &getWorldSecurityLevelResponse.applicationType);
     rtMediusAddInt(&getWorldSecurityLevelResponse, &getWorldSecurityLevelResponse.securityLevel);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetWorldSecurityLevelResponseType, rtMediusOnMessage137);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetWorldSecurityLevelResponseType,
+                                 rtMediusOnGetWorldSecurityLevelResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&banPlayer, &banPlayer.header);
@@ -3318,7 +3357,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&banPlayer, &banPlayer.reserved34);
     rtMediusAddInt(&banPlayer, &banPlayer.accountId);
     rtMediusAddInt(&banPlayer, &banPlayer.duration);
-    rtMediusRegisterLobbyMessage(&g_nMediusBanPlayerType, rtMediusOnMessage138);
+    rtMediusRegisterLobbyMessage(&g_nMediusBanPlayerType, rtMediusOnBanPlayer);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&banPlayerResponse, &banPlayerResponse);
@@ -3326,7 +3365,7 @@ int rtMediusRegisterMessages(void) {
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getLocations, &getLocations);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetLocationsType, rtMediusOnMessage140);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetLocationsType, rtMediusOnGetLocations);
 
     rtDmeBeginFields();
     rtMediusAddChars(&getLocationsResponse,
@@ -3338,21 +3377,23 @@ int rtMediusRegisterMessages(void) {
                            sizeof(getLocationsResponse.locationName));
     rtMediusAddInt(&getLocationsResponse, &getLocationsResponse.status);
     rtMediusAddChars(&getLocationsResponse, &getLocationsResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetLocationsResponseType, rtMediusOnMessage141);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetLocationsResponseType,
+                                 rtMediusOnGetLocationsResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&pickLocation, &pickLocation.header);
     rtMediusAddInt(&pickLocation, &pickLocation.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusPickLocationType, rtMediusOnMessage142);
+    rtMediusRegisterLobbyMessage(&g_nMediusPickLocationType, rtMediusOnPickLocation);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&pickLocationResponse, &pickLocationResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusPickLocationResponseType, rtMediusOnMessage143);
+    rtMediusRegisterLobbyMessage(&g_nMediusPickLocationResponseType,
+                                 rtMediusOnPickLocationResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getClanMemberList, &getClanMemberList.header);
     rtMediusAddInt(&getClanMemberList, &getClanMemberList.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanMemberListType, rtMediusOnMessage144);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanMemberListType, rtMediusOnGetClanMemberList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getClanMemberListResponse, &getClanMemberListResponse.header);
@@ -3361,7 +3402,8 @@ int rtMediusRegisterMessages(void) {
                      sizeof(getClanMemberListResponse.accountName));
     rtMediusAddInt(&getClanMemberListResponse, &getClanMemberListResponse.accountId);
     rtMediusAddChars(&getClanMemberListResponse, &getClanMemberListResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetClanMemberListResponseType, rtMediusOnMessage145);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetClanMemberListResponseType,
+                                 rtMediusOnGetClanMemberListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&ladderPosition, &ladderPosition.header);
@@ -3369,7 +3411,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&ladderPosition, &ladderPosition.ladderType);
     rtMediusAddInt(&ladderPosition, &ladderPosition.statId);
     rtMediusAddInt(&ladderPosition, &ladderPosition.reserved34);
-    rtMediusRegisterLobbyMessage(&g_nMediusLadderPositionType, rtMediusOnMessage146);
+    rtMediusRegisterLobbyMessage(&g_nMediusLadderPositionType, rtMediusOnLadderPosition);
 
     rtDmeBeginFields();
     rtMediusAddChars(&ladderPositionResponse,
@@ -3387,7 +3429,7 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&ladderList, &ladderList.reserved30);
     rtMediusAddInt(&ladderList, &ladderList.startPosition);
     rtMediusAddInt(&ladderList, &ladderList.pageSize);
-    rtMediusRegisterLobbyMessage(&g_nMediusLadderListType, rtMediusOnMessage148);
+    rtMediusRegisterLobbyMessage(&g_nMediusLadderListType, rtMediusOnLadderList);
 
     rtDmeBeginFields();
     rtMediusAddChars(
@@ -3404,17 +3446,17 @@ int rtMediusRegisterMessages(void) {
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&chatToggle, &chatToggle.header);
     rtMediusAddInt(&chatToggle, &chatToggle.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusChatToggleType, rtMediusOnMessage150);
+    rtMediusRegisterLobbyMessage(&g_nMediusChatToggleType, rtMediusOnChatToggle);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&chatToggleResponse, &chatToggleResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusChatToggleResponseType, rtMediusOnMessage151);
+    rtMediusRegisterLobbyMessage(&g_nMediusChatToggleResponseType, rtMediusOnChatToggleResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&textFilter, &textFilter.header);
     rtMediusAddInt(&textFilter, &textFilter.filterLevel);
     rtMediusAddChars(&textFilter, textFilter.text, sizeof(textFilter.text));
-    rtMediusRegisterLobbyMessage(&g_nMediusTextFilterType, rtMediusOnMessage152);
+    rtMediusRegisterLobbyMessage(&g_nMediusTextFilterType, rtMediusOnTextFilter);
 
     rtDmeBeginFields();
     rtMediusAddChars(
@@ -3426,32 +3468,35 @@ int rtMediusRegisterMessages(void) {
     rtDmeBeginFields();
     rtMediusAddInt(&reassignWorld, &reassignWorld.oldWorldId);
     rtMediusAddInt(&reassignWorld, &reassignWorld.newWorldId);
-    rtMediusRegisterLobbyMessage(&g_nMediusReassignWorldType, rtMediusOnInitHandler0C);
+    rtMediusRegisterLobbyMessage(&g_nMediusReassignWorldType,
+                                 rtMediusOnServerReassignGameMediusWorldID);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getTotalGames, &getTotalGames.header);
     rtMediusAddInt(&getTotalGames, &getTotalGames.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalGamesType, rtMediusOnMessage155);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalGamesType, rtMediusOnGetTotalGames);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getTotalGamesResponse, &getTotalGamesResponse.header);
     rtMediusAddInt(&getTotalGamesResponse, &getTotalGamesResponse.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalGamesResponseType, rtMediusOnMessage156);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalGamesResponseType,
+                                 rtMediusOnGetTotalGamesResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getTotalChannels, &getTotalChannels.header);
     rtMediusAddInt(&getTotalChannels, &getTotalChannels.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalChannelsType, rtMediusOnMessage157);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalChannelsType, rtMediusOnGetTotalChannels);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getTotalChannelsResponse, &getTotalChannelsResponse.header);
     rtMediusAddInt(&getTotalChannelsResponse, &getTotalChannelsResponse.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalChannelsResponseType, rtMediusOnMessage158);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalChannelsResponseType,
+                                 rtMediusOnGetTotalChannelsResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getLobbyPlayerNames, &getLobbyPlayerNames.header);
     rtMediusAddInt(&getLobbyPlayerNames, &getLobbyPlayerNames.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetLobbyPlayerNamesType, rtMediusOnMessage159);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetLobbyPlayerNamesType, rtMediusOnGetLobbyPlayerNames);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getLobbyPlayerNamesResponse, &getLobbyPlayerNamesResponse.header);
@@ -3460,84 +3505,96 @@ int rtMediusRegisterMessages(void) {
                      getLobbyPlayerNamesResponse.accountName,
                      sizeof(getLobbyPlayerNamesResponse.accountName));
     rtMediusAddChars(&getLobbyPlayerNamesResponse, &getLobbyPlayerNamesResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetLobbyPlayerNamesResponseType, rtMediusOnMessage160);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetLobbyPlayerNamesResponseType,
+                                 rtMediusOnGetLobbyPlayerNamesResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getTotalUsers, &getTotalUsers.header);
     rtMediusAddInt(&getTotalUsers, &getTotalUsers.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalUsersType, rtMediusOnMessage161);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalUsersType, rtMediusOnGetTotalUsers);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getTotalUsersResponse, &getTotalUsersResponse.header);
     rtMediusAddInt(&getTotalUsersResponse, &getTotalUsersResponse.totalInSystem);
     rtMediusAddInt(&getTotalUsersResponse, &getTotalUsersResponse.totalActive);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalUsersResponseType, rtMediusOnMessage162);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetTotalUsersResponseType,
+                                 rtMediusOnGetTotalUsersResponse);
 
     // The binary describes the fields of the localization and file messages with empty lists.
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusSetLocalizationParamsType, rtMediusOnMessage163);
+    rtMediusRegisterLobbyMessage(&g_nMediusSetLocalizationParamsType,
+                                 rtMediusOnSetLocalizationParams);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusSetLocalizationParamsResponseType, rtMediusOnMessage164);
+    rtMediusRegisterLobbyMessage(&g_nMediusSetLocalizationParamsResponseType,
+                                 rtMediusOnSetLocalizationParamsResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileCreateType, rtMediusOnMessage165);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileCreateType, rtMediusOnFileCreate);
     rtDmeBeginFields();
     rtMediusRegisterLobbyMessage(&g_nMediusFileCreateResponseType, rtMediusOnFileCreateResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUploadType, rtMediusOnMessage167);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUploadType, rtMediusOnFileUpload);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUploadPartType, rtMediusOnMessage168);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUploadPartType, rtMediusOnFileUploadResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUploadRequestType, rtMediusOnFileUploadRequest);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUploadRequestType, rtMediusOnFileUploadServerReq);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileCloseType, rtMediusOnMessage170);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileCloseType, rtMediusOnFileClose);
     rtDmeBeginFields();
     rtMediusRegisterLobbyMessage(&g_nMediusFileCloseResponseType, rtMediusOnFileCloseResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadType, rtMediusOnMessage172);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadType, rtMediusOnFileDownload);
     rtDmeBeginFields();
     rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadResponseType,
                                  rtMediusOnFileDownloadResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadStreamType, rtMediusOnMessage174);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadStreamType, rtMediusOnFileDownloadStream);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadStreamResponseType, rtMediusOnMessage175);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileDownloadStreamResponseType,
+                                 rtMediusOnFileDownloadStreamResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileDeleteType, rtMediusOnMessage176);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileDeleteType, rtMediusOnFileDelete);
     rtDmeBeginFields();
     rtMediusRegisterLobbyMessage(&g_nMediusFileDeleteResponseType, rtMediusOnFileDeleteResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileListType, rtMediusOnMessage178);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileListType, rtMediusOnFileListFiles);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileListResponseType, rtMediusOnFileListResponse);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileListResponseType, rtMediusOnFileListFilesResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateAttributesType, rtMediusOnMessage180);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateAttributesType,
+                                 rtMediusOnFileUpdateAttributes);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateAttributesResponseType, rtMediusOnMessage181);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateAttributesResponseType,
+                                 rtMediusOnFileUpdateAttributesResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileGetAttributesType, rtMediusOnMessage182);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileGetAttributesType, rtMediusOnFileGetAttributes);
     rtDmeBeginFields();
     rtMediusRegisterLobbyMessage(&g_nMediusFileGetAttributesResponseType,
                                  rtMediusOnFileGetAttributesResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateMetaDataType, rtMediusOnMessage184);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateMetaDataType, rtMediusOnFileUpdateMetaData);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateMetaDataResponseType, rtMediusOnMessage185);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileUpdateMetaDataResponseType,
+                                 rtMediusOnFileUpdateMetaDataResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileGetMetaDataType, rtMediusOnMessage186);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileGetMetaDataType, rtMediusOnFileGetMetaData);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileGetMetaDataResponseType, rtMediusOnMessage187);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileGetMetaDataResponseType,
+                                 rtMediusOnFileGetMetaDataResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileSearchByMetaDataType, rtMediusOnMessage188);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileSearchByMetaDataType,
+                                 rtMediusOnFileSearchByMetaData);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileSearchByMetaDataResponseType, rtMediusOnMessage189);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileSearchByMetaDataResponseType,
+                                 rtMediusOnFileSearchByMetaDataResponse);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileCancelOperationType, rtMediusOnMessage190);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileCancelOperationType, rtMediusOnFileCancelOperation);
     rtDmeBeginFields();
-    rtMediusRegisterLobbyMessage(&g_nMediusFileCancelOperationResponseType, rtMediusOnMessage191);
+    rtMediusRegisterLobbyMessage(&g_nMediusFileCancelOperationResponseType,
+                                 rtMediusOnFileCancelOperationResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&getIgnoreList, &getIgnoreList);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetIgnoreListType, rtMediusOnMessage192);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetIgnoreListType, rtMediusOnGetIgnoreList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&getIgnoreListResponse, &getIgnoreListResponse.header);
@@ -3547,35 +3604,40 @@ int rtMediusRegisterMessages(void) {
                      sizeof(getIgnoreListResponse.accountName));
     rtMediusAddInt(&getIgnoreListResponse, &getIgnoreListResponse.onlineState);
     rtMediusAddChars(&getIgnoreListResponse, &getIgnoreListResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetIgnoreListResponseType, rtMediusOnMessage193);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetIgnoreListResponseType,
+                                 rtMediusOnGetIgnoreListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&addToIgnoreList, &addToIgnoreList.header);
     rtMediusAddInt(&addToIgnoreList, &addToIgnoreList.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusAddToIgnoreListType, rtMediusOnMessage194);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddToIgnoreListType, rtMediusOnAddToIgnoreList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&addToIgnoreListResponse, &addToIgnoreListResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusAddToIgnoreListResponseType, rtMediusOnMessage195);
+    rtMediusRegisterLobbyMessage(&g_nMediusAddToIgnoreListResponseType,
+                                 rtMediusOnAddToIgnoreListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&removeFromIgnoreList, &removeFromIgnoreList.header);
     rtMediusAddInt(&removeFromIgnoreList, &removeFromIgnoreList.id);
-    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromIgnoreListType, rtMediusOnMessage196);
+    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromIgnoreListType,
+                                 rtMediusOnRemoveFromIgnoreList);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&removeFromIgnoreListResponse, &removeFromIgnoreListResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromIgnoreListResponseType, rtMediusOnMessage197);
+    rtMediusRegisterLobbyMessage(&g_nMediusRemoveFromIgnoreListResponseType,
+                                 rtMediusOnRemoveFromIgnoreListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&setMessageAsRead, &setMessageAsRead.header);
     rtMediusAddInt(&setMessageAsRead, &setMessageAsRead.id);
     rtMediusAddInt(&setMessageAsRead, &setMessageAsRead.value);
-    rtMediusRegisterLobbyMessage(&g_nMediusSetMessageAsReadType, rtMediusOnMessage198);
+    rtMediusRegisterLobbyMessage(&g_nMediusSetMessageAsReadType, rtMediusOnSetMessageAsRead);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&statusResponse, &statusResponse);
-    rtMediusRegisterLobbyMessage(&g_nMediusSetMessageAsReadResponseType, rtMediusOnMessage199);
+    rtMediusRegisterLobbyMessage(&g_nMediusSetMessageAsReadResponseType,
+                                 rtMediusOnSetMessageAsReadResponse);
 
     rtDmeBeginFields();
     rtMediusAddChars(
@@ -3583,14 +3645,16 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&universeInformation, &universeInformation.infoType);
     rtMediusAddInt(&universeInformation, &universeInformation.characterEncoding);
     rtMediusAddInt(&universeInformation, &universeInformation.language);
-    rtMediusRegisterLobbyMessage(&g_nMediusGetUniverseInformationType, rtMediusOnMessage200);
+    rtMediusRegisterLobbyMessage(&g_nMediusGetUniverseInformationType,
+                                 rtMediusOnGetUniverseInformation);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&universeNewsResponse, &universeNewsResponse.header);
     rtMediusAddCharsBySize(
         &universeNewsResponse, universeNewsResponse.news, sizeof(universeNewsResponse.news));
     rtMediusAddChars(&universeNewsResponse, &universeNewsResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusUniverseNewsResponseType, rtMediusOnMessage201);
+    rtMediusRegisterLobbyMessage(&g_nMediusUniverseNewsResponseType,
+                                 rtMediusOnUniverseNewsResponse);
 
     rtDmeBeginFields();
     rtMediusAddResponseHeader(&universeStatusResponse, &universeStatusResponse.header);
@@ -3607,19 +3671,21 @@ int rtMediusRegisterMessages(void) {
     rtMediusAddInt(&universeStatusResponse, &universeStatusResponse.userCount);
     rtMediusAddInt(&universeStatusResponse, &universeStatusResponse.maxUsers);
     rtMediusAddChars(&universeStatusResponse, &universeStatusResponse.endOfList, 1);
-    rtMediusRegisterLobbyMessage(&g_nMediusUniverseStatusListResponseType, rtMediusOnMessage202);
+    rtMediusRegisterLobbyMessage(&g_nMediusUniverseStatusListResponseType,
+                                 rtMediusOnUniverseStatusListResponse);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&machineSignature, &machineSignature.header);
     rtMediusAddChars(
         &machineSignature, machineSignature.signature, sizeof(machineSignature.signature));
-    rtMediusRegisterLobbyMessage(&g_nMediusMachineSignaturePostType, rtMediusOnMessage203);
+    rtMediusRegisterLobbyMessage(&g_nMediusMachineSignaturePostType,
+                                 rtMediusOnMachineSignaturePost);
 
     rtDmeBeginFields();
     rtMediusAddRequestHeader(&ladderPositionFast, &ladderPositionFast.header);
     rtMediusAddInt(&ladderPositionFast, &ladderPositionFast.accountId);
     rtMediusAddInt(&ladderPositionFast, &ladderPositionFast.statValue);
-    rtMediusRegisterLobbyMessage(&g_nMediusLadderPositionFastType, rtMediusOnMessage204);
+    rtMediusRegisterLobbyMessage(&g_nMediusLadderPositionFastType, rtMediusOnLadderPositionFast);
 
     rtDmeBeginFields();
     rtMediusAddChars(&ladderPositionFastResponse,
