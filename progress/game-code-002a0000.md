@@ -67,7 +67,7 @@ preliminary.
 | `StreamBuffer__EmptySpaceForFilling` | :white_check_mark: |      4 |     56 | `0x002a0070` | `0x002a9d28` | `int StreamBuffer__EmptySpaceForFilling(StreamBuffer * pThis)`                        |
 | `GIF_resetProgress`                  | :white_check_mark: |      1 |     56 | `0x002a5918` | `0x002af888` | `void GIF_resetProgress(void)`                                                        |
 | `DMA_setDataAddress`                 | :white_check_mark: |      1 |     52 | `0x002a1a78` | `0x002ab9e8` | `void DMA_setDataAddress(uint address)`                                               |
-| `Task__Destructor`                   | :white_check_mark: |     94 |     48 | `0x002a0130` | `0x002a9de8` | `void Task__Destructor(void * pThis, ulong dwFlags)`                                  |
+| `Task__Destructor`                   | :white_check_mark: |    101 |     48 | `0x002a0130` | `0x002a9de8` | `void Task__Destructor(void * pThis, ulong dwFlags)`                                  |
 | `DMA_toTagAddress`                   | :white_check_mark: |      9 |     44 | `0x002a1970` | `0x002ab8e0` | `uint DMA_toTagAddress(uint address)`                                                 |
 | `DMA_advanceDataAddress`             | :white_check_mark: |      1 |     36 | `0x002a1af0` | `0x002aba60` | `void DMA_advanceDataAddress(void)`                                                   |
 | `GIF_report`                         | :white_check_mark: |     21 |     28 | `0x002a2750` | `0x002ac6c0` | `int GIF_report(int number, int severity, char * text)`                               |
