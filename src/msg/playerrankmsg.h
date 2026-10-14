@@ -13,6 +13,14 @@
 class PlayerRankMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039e8c0
+     * @ghidraAddress PAL: 0x0040d5a0
+     */
+    ~PlayerRankMsg() override = default;
+
+    /**
      * Construct a message.
      *
      * Inline.

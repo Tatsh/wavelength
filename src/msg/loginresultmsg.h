@@ -12,6 +12,14 @@
  */
 class LoginResultMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039e2e0
+     * @ghidraAddress PAL: 0x0040cfc0
+     */
+    ~LoginResultMsg() override = default;
+
     /** Values of mResult. */
     enum Result {
         kResultServerError = -86,     /*!< The login server failed. */

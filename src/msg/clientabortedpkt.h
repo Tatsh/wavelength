@@ -20,6 +20,14 @@ extern int g_nClientAbortedPktType;
 class ClientAbortedPkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00398f58
+     * @ghidraAddress PAL: 0x004077e0
+     */
+    ~ClientAbortedPkt() override = default;
+
+    /**
      * Construct a packet for every peer.
      *
      * Inline. New() expands it.
@@ -59,6 +67,8 @@ public:
      * Produce a heap copy of this packet.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x00398fd8
+     * @ghidraAddress PAL: 0x00407860
      */
     Message *Clone() override {
         return new ClientAbortedPkt(*this);
@@ -68,6 +78,8 @@ public:
      * Report this packet's registered identity.
      *
      * @return g_nClientAbortedPktType.
+     * @ghidraAddress NTSC-U/C: 0x00399040
+     * @ghidraAddress PAL: 0x004078c8
      */
     int Type() override {
         return g_nClientAbortedPktType;
@@ -77,6 +89,8 @@ public:
      * Report this packet's class name.
      *
      * @return The literal `ClientAbortedPkt`.
+     * @ghidraAddress NTSC-U/C: 0x00399050
+     * @ghidraAddress PAL: 0x004078d8
      */
     const char *GetName() const override {
         return "ClientAbortedPkt";

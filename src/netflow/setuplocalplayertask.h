@@ -13,6 +13,13 @@ class LobbyPlayer;
 class SetupLocalPlayerTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bed8
+     */
+    ~SetupLocalPlayerTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

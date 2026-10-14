@@ -14,6 +14,13 @@
 class GetGamePlayersTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c508
+     */
+    ~GetGamePlayersTask() override = default;
+
+    /**
      * Decode and add a player, and finish the step the response is tagged with after the last
      * player.
      *

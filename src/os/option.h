@@ -17,7 +17,12 @@ public:
      */
     explicit Option(const char *pszName);
 
-    /** Release the option. */
+    /**
+     * Release the option.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab520
+     * @ghidraAddress PAL: 0x0041a280
+     */
     virtual ~Option() {
     }
 

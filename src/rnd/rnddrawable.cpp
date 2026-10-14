@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "os/debug.h"
+#include "os/listcontains.h"
 #include "rnd/rndmanager.h"
 
 int RndDrawable::sRev = 0;
@@ -94,9 +95,7 @@ void RndDrawable::Load(BinStream &stream) {
 RndDrawable *RndDrawable::Parent() {
     for (RndObject *pRef : mRefs) {
         RndDrawable *pDrawable = pRef != nullptr ? dynamic_cast<RndDrawable *>(pRef) : nullptr;
-        if (pDrawable != nullptr &&
-            std::find(pDrawable->mDraws.begin(), pDrawable->mDraws.end(), this) !=
-                pDrawable->mDraws.end()) {
+        if (pDrawable != nullptr && ListContains(pDrawable->mDraws, this)) {
             return pDrawable;
         }
     }
@@ -113,7 +112,7 @@ void RndDrawable::Draw() {
 }
 
 bool RndDrawable::AddDraw(RndDrawable *pDraw, RndDrawable *pBefore) {
-    if (std::find(mDraws.begin(), mDraws.end(), pDraw) != mDraws.end()) {
+    if (ListContains(mDraws, pDraw)) {
         DebugNotify("%s already in %s", pDraw->mName.c_str(), mName.c_str());
         return false;
     }
@@ -126,7 +125,7 @@ bool RndDrawable::AddDraw(RndDrawable *pDraw, RndDrawable *pBefore) {
 }
 
 void RndDrawable::RemoveDraw(RndDrawable *pDraw) {
-    if (std::find(mDraws.begin(), mDraws.end(), pDraw) == mDraws.end()) {
+    if (!ListContains(mDraws, pDraw)) {
         return;
     }
     if (pDraw != nullptr) {

@@ -177,13 +177,44 @@ void SetStringReadsText(int bText);
 /**
  * Write a vector as its element count followed by each element.
  *
- * Each element type has its own instance. The Key<Vector3> instance is at `0x003875b8` and the
- * RndMesh::Vert instance at `0x00389208`.
+ * Each element type has its own instance, one address each.
  *
  * @tparam T The type of the elements.
  * @param stream The stream to write to.
  * @param elements The elements.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x003875b8
+ * @ghidraAddress PAL: 0x003f5cc0
+ * @ghidraAddress NTSC-U/C: 0x00389208
+ * @ghidraAddress PAL: 0x003f7910
+ * @ghidraAddress NTSC-U/C: 0x00385520
+ * @ghidraAddress PAL: 0x003f3c28
+ * @ghidraAddress NTSC-U/C: 0x00385608
+ * @ghidraAddress PAL: 0x003f3d10
+ * @ghidraAddress NTSC-U/C: 0x003876b0
+ * @ghidraAddress PAL: 0x003f5db8
+ * @ghidraAddress NTSC-U/C: 0x003921d0
+ * @ghidraAddress PAL: 0x004008d8
+ * @ghidraAddress NTSC-U/C: 0x0039d1d8
+ * @ghidraAddress PAL: 0x0040bf00
+ * @ghidraAddress NTSC-U/C: 0x0039d7a0
+ * @ghidraAddress PAL: 0x0040c4c8
+ * @ghidraAddress NTSC-U/C: 0x0038c050
+ * @ghidraAddress PAL: 0x003fa758
+ * @ghidraAddress NTSC-U/C: 0x0038c1e0
+ * @ghidraAddress PAL: 0x003fa8e8
+ * @ghidraAddress NTSC-U/C: 0x0038c3a0
+ * @ghidraAddress PAL: 0x003faaa8
+ * @ghidraAddress NTSC-U/C: 0x003a4a70
+ * @ghidraAddress PAL: 0x00413750
+ * @ghidraAddress NTSC-U/C: 0x00383608
+ * @ghidraAddress PAL: 0x003f1d10
+ * @ghidraAddress NTSC-U/C: 0x003893e0
+ * @ghidraAddress PAL: 0x003f7ae8
+ * @ghidraAddress NTSC-U/C: 0x003894b0
+ * @ghidraAddress PAL: 0x003f7bb8
+ * @ghidraAddress NTSC-U/C: 0x00393dd0
+ * @ghidraAddress PAL: 0x004024d8
  */
 template <typename T>
 BinStream &operator<<(BinStream &stream, const std::vector<T> &elements) {
@@ -199,13 +230,48 @@ BinStream &operator<<(BinStream &stream, const std::vector<T> &elements) {
  * Read a vector the vector writer wrote.
  *
  * The vector is resized to the count with default elements, which are then read in place. Each
- * element type has its own instance. The Key<Vector3> instance is at `0x00387e60` and the
- * RndMesh::Vert instance at `0x00389558`.
+ * element type has its own instance, one address each.
  *
  * @tparam T The type of the elements.
  * @param stream The stream to read from.
  * @param elements Receives the elements.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00387e60
+ * @ghidraAddress PAL: 0x003f6568
+ * @ghidraAddress NTSC-U/C: 0x00389558
+ * @ghidraAddress PAL: 0x003f7c60
+ * @ghidraAddress NTSC-U/C: 0x00385ba8
+ * @ghidraAddress PAL: 0x003f42b0
+ * @ghidraAddress NTSC-U/C: 0x00386058
+ * @ghidraAddress PAL: 0x003f4760
+ * @ghidraAddress NTSC-U/C: 0x00388398
+ * @ghidraAddress PAL: 0x003f6aa0
+ * @ghidraAddress NTSC-U/C: 0x003922d0
+ * @ghidraAddress PAL: 0x004009d8
+ * @ghidraAddress NTSC-U/C: 0x00389670
+ * @ghidraAddress PAL: 0x003f7d78
+ * @ghidraAddress NTSC-U/C: 0x00389768
+ * @ghidraAddress PAL: 0x003f7e70
+ * @ghidraAddress NTSC-U/C: 0x0038a3e8
+ * @ghidraAddress PAL: 0x003f8af0
+ * @ghidraAddress NTSC-U/C: 0x0038a4a0
+ * @ghidraAddress PAL: 0x003f8ba8
+ * @ghidraAddress NTSC-U/C: 0x0038c9c0
+ * @ghidraAddress PAL: 0x003fb0c8
+ * @ghidraAddress NTSC-U/C: 0x0038d1b8
+ * @ghidraAddress PAL: 0x003fb8c0
+ * @ghidraAddress NTSC-U/C: 0x0038d9c0
+ * @ghidraAddress PAL: 0x003fc0c8
+ * @ghidraAddress NTSC-U/C: 0x00393f20
+ * @ghidraAddress PAL: 0x00402610
+ * @ghidraAddress NTSC-U/C: 0x0039d5e8
+ * @ghidraAddress PAL: 0x0040c310
+ * @ghidraAddress NTSC-U/C: 0x0039dbb0
+ * @ghidraAddress PAL: 0x0040c8d8
+ * @ghidraAddress NTSC-U/C: 0x003a4f20
+ * @ghidraAddress PAL: 0x00413c00
+ * @ghidraAddress NTSC-U/C: 0x00383740
+ * @ghidraAddress PAL: 0x003f1e48
  */
 template <typename T>
 BinStream &operator>>(BinStream &stream, std::vector<T> &elements) {
@@ -221,12 +287,14 @@ BinStream &operator>>(BinStream &stream, std::vector<T> &elements) {
 /**
  * Write a list as its element count followed by each element.
  *
- * Each element type has its own instance. The NetRepoRemix instance is at `0x0039a878`.
+ * Each element type has its own instance, one address each.
  *
  * @tparam T The type of the elements.
  * @param stream The stream to write to.
  * @param elements The elements.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0039a878
+ * @ghidraAddress PAL: 0x00409100
  */
 template <typename T>
 BinStream &operator<<(BinStream &stream, const std::list<T> &elements) {
@@ -242,12 +310,14 @@ BinStream &operator<<(BinStream &stream, const std::list<T> &elements) {
  * Read a list the list writer wrote.
  *
  * The list is resized to the count with default elements, which are then read in place. Each
- * element type has its own instance. The NetRepoRemix instance is at `0x0039aaf8`.
+ * element type has its own instance, one address each.
  *
  * @tparam T The type of the elements.
  * @param stream The stream to read from.
  * @param elements Receives the elements.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0039aaf8
+ * @ghidraAddress PAL: 0x00409380
  */
 template <typename T>
 BinStream &operator>>(BinStream &stream, std::list<T> &elements) {

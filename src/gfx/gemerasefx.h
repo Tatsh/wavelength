@@ -35,6 +35,8 @@ public:
          * @param gem The burst.
          * @param flTime The time.
          * @return Whether the burst is earlier.
+         * @ghidraAddress NTSC-U/C: 0x00372100
+         * @ghidraAddress PAL: 0x003e0830
          */
         static bool Before(const Gem &gem, float flTime) {
             return gem.mTime < flTime;

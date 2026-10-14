@@ -12,6 +12,14 @@
  */
 class LobbyConnectionLostMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039afb8
+     * @ghidraAddress PAL: 0x00409c00
+     */
+    ~LobbyConnectionLostMsg() override = default;
+
     /** The error code of a connection to the internet that went down. */
     static constexpr int kInternetDown = -91;
 

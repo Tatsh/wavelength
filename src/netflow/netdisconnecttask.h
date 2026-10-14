@@ -10,6 +10,14 @@
 class NetDisconnectTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a208
+     * @ghidraAddress PAL: 0x00408a90
+     */
+    ~NetDisconnectTask() override = default;
+
+    /**
      * Close LaunchpadRT::mConnection, on the worker thread.
      *
      * The name is inferred.

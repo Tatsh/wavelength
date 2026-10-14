@@ -13,6 +13,14 @@
 class BackgroundAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374a20
+     * @ghidraAddress PAL: 0x003e3150
+     */
+    ~BackgroundAction() override = default;
+
+    /**
      * Read the action.
      *
      * The alpha of the colour is never written.

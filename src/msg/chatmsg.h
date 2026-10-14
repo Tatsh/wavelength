@@ -101,6 +101,14 @@ public:
     static MsgSink *FindSink(int nChannel);
 
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a1768
+     * @ghidraAddress PAL: 0x00410448
+     */
+    ~ChatMsg() override = default;
+
+    /**
      * Register the sink that receives the chat of a channel.
      *
      * The type information of the registry identifies the record type as ChatHandler. A panel

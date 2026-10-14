@@ -13,6 +13,14 @@
 class InitRTTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b838
+     * @ghidraAddress PAL: 0x0040a480
+     */
+    ~InitRTTask() override = default;
+
+    /**
      * Allocate a block for the library from the `rtime` pool.
      *
      * The name is inferred.

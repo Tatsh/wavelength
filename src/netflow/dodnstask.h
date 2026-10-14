@@ -15,6 +15,14 @@ class InetDNSLookupResultMsg;
 class DoDNSTask : public NetTask, public MsgSink {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b778
+     * @ghidraAddress PAL: 0x0040a3c0
+     */
+    ~DoDNSTask() override = default;
+
+    /**
      * Pass an InetDNSLookupResultMsg to OnResult().
      *
      * @param pMsg The message.

@@ -13,6 +13,14 @@
 class InitMGCLTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00399c58
+     * @ghidraAddress PAL: 0x004084e0
+     */
+    ~InitMGCLTask() override = default;
+
+    /**
      * Ignore the first kind of request of the game server.
      *
      * @param nConnection The connection.

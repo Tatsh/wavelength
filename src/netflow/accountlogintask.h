@@ -13,6 +13,13 @@
 class AccountLoginTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039be68
+     */
+    ~AccountLoginTask() override = default;
+
+    /**
      * Take the account, the chat channel, and the connection of a login, and finish the step the
      * response is tagged with.
      *

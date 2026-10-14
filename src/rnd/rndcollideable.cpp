@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "os/debug.h"
+#include "os/listcontains.h"
 #include "rnd/rndmanager.h"
 
 int RndCollideable::sRev = 0;
@@ -87,9 +88,7 @@ RndCollideable *RndCollideable::Parent() {
     for (RndObject *pRef : mRefs) {
         RndCollideable *pCollideable =
             pRef != nullptr ? dynamic_cast<RndCollideable *>(pRef) : nullptr;
-        if (pCollideable != nullptr &&
-            std::find(pCollideable->mCollides.begin(), pCollideable->mCollides.end(), this) !=
-                pCollideable->mCollides.end()) {
+        if (pCollideable != nullptr && ListContains(pCollideable->mCollides, this)) {
             return pCollideable;
         }
     }
@@ -97,7 +96,7 @@ RndCollideable *RndCollideable::Parent() {
 }
 
 bool RndCollideable::AddCollide(RndCollideable *pCollide) {
-    if (std::find(mCollides.begin(), mCollides.end(), pCollide) != mCollides.end()) {
+    if (ListContains(mCollides, pCollide)) {
         DebugNotify("%s already in %s", pCollide->mName.c_str(), mName.c_str());
         return false;
     }
@@ -109,7 +108,7 @@ bool RndCollideable::AddCollide(RndCollideable *pCollide) {
 }
 
 void RndCollideable::RemoveCollide(RndCollideable *pCollide) {
-    if (std::find(mCollides.begin(), mCollides.end(), pCollide) == mCollides.end()) {
+    if (!ListContains(mCollides, pCollide)) {
         return;
     }
     if (pCollide != nullptr) {

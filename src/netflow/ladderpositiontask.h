@@ -15,6 +15,13 @@ class LobbyPlayer;
 class LadderPositionTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bbc0
+     */
+    ~LadderPositionTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

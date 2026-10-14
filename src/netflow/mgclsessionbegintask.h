@@ -13,6 +13,14 @@
 class MGCLSessionBeginTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00399e88
+     * @ghidraAddress PAL: 0x00408710
+     */
+    ~MGCLSessionBeginTask() override = default;
+
+    /**
      * Take the key of the session into HostpadRT::mSessionKey and finish the step.
      *
      * The name is inferred.

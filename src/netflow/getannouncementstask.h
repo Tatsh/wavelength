@@ -13,6 +13,13 @@
 class GetAnnouncementsTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c1f8
+     */
+    ~GetAnnouncementsTask() override = default;
+
+    /**
      * Take the news and finish the step the response is tagged with.
      *
      * The name is inferred.

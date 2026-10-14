@@ -24,6 +24,14 @@ extern int g_nUITextEntryInvalidMsgType;
 class UITextEntryInvalidMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0037c4e8
+     * @ghidraAddress PAL: 0x003eac18
+     */
+    ~UITextEntryInvalidMsg() override = default;
+
+    /**
      * Construct the message.
      *
      * Inline. UITextEntry::ProcessKey() expands it on its stack.

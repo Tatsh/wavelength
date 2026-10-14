@@ -11,6 +11,14 @@
 class BoolOption : public Option {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab550
+     * @ghidraAddress PAL: 0x0041a2b0
+     */
+    ~BoolOption() override = default;
+
+    /**
      * Construct an option of a name.
      *
      * @param pszName The name, without the leading `-`.

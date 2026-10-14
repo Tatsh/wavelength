@@ -12,6 +12,14 @@
 class AvatarInstrumentAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003748d0
+     * @ghidraAddress PAL: 0x003e3000
+     */
+    ~AvatarInstrumentAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

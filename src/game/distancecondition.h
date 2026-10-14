@@ -12,10 +12,25 @@
  */
 class DistanceCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375be0
+     * @ghidraAddress PAL: 0x003e4310
+     */
+    ~DistanceCondition() override = default;
+
     explicit DistanceCondition(DataArray *pCondition)
         : mLow(pCondition->Float(1)), mHigh(pCondition->Float(2)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375c60
+     * @ghidraAddress PAL: 0x003e4390
+     */
     bool Test() override {
         return mLow <= TheTriggerMgr.mDistance && TheTriggerMgr.mDistance <= mHigh;
     }

@@ -10,6 +10,15 @@
  * LaunchpadAbortedMsg::kReasonHostFailed.
  */
 class NetHostTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a048
+     * @ghidraAddress PAL: 0x004088d0
+     */
+    ~NetHostTask() override = default;
+
 protected:
     /**
      * Start hosting, with LaunchpadRT::sNetTask set to the step.

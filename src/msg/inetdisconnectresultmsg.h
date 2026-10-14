@@ -13,6 +13,13 @@
 class InetDisconnectResultMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00397588
+     */
+    ~InetDisconnectResultMsg() override = default;
+
+    /**
      * Allocate a message, billed to the class name.
      *
      * @param nSize The object size the compiler supplies.
@@ -35,6 +42,8 @@ public:
      * Produce a heap copy of this message.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x00397630
+     * @ghidraAddress PAL: 0x00405eb8
      */
     Message *Clone() override {
         return new InetDisconnectResultMsg(*this);
@@ -44,6 +53,8 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nInetDisconnectResultMsgType.
+     * @ghidraAddress NTSC-U/C: 0x00397668
+     * @ghidraAddress PAL: 0x00405ef0
      */
     int Type() override {
         return g_nInetDisconnectResultMsgType;
@@ -53,6 +64,8 @@ public:
      * Report this message's class name.
      *
      * @return The literal `InetDisconnectResultMsg`.
+     * @ghidraAddress NTSC-U/C: 0x00397678
+     * @ghidraAddress PAL: 0x00405f00
      */
     const char *GetName() const override {
         return "InetDisconnectResultMsg";

@@ -15,6 +15,13 @@ class String;
 class FileGetAttributesTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c720
+     */
+    ~FileGetAttributesTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

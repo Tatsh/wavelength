@@ -13,6 +13,14 @@
 class SetCamAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374cc0
+     * @ghidraAddress PAL: 0x003e33f0
+     */
+    ~SetCamAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

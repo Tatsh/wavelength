@@ -14,6 +14,14 @@ class Avatar;
 class InstrPart : public AvatarPart {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a3478
+     * @ghidraAddress PAL: 0x00412158
+     */
+    ~InstrPart() override = default;
+
+    /**
      * Construct the model of the instrument.
      *
      * @param nParent The part the model hangs from.

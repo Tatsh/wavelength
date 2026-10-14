@@ -12,9 +12,24 @@
  */
 class ButtonCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376000
+     * @ghidraAddress PAL: 0x003e4730
+     */
+    ~ButtonCondition() override = default;
+
     explicit ButtonCondition(DataArray *pCondition) : mMask(1 << pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00376080
+     * @ghidraAddress PAL: 0x003e47b0
+     */
     bool Test() override {
         return (TheTriggerMgr.mButtons & mMask) != 0;
     }

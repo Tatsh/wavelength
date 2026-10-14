@@ -22,6 +22,14 @@ extern int g_nJoypadInputMsgType;
 class JoypadInputMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a71a0
+     * @ghidraAddress PAL: 0x00415e80
+     */
+    ~JoypadInputMsg() override = default;
+
+    /**
      * Construct the message of a button.
      *
      * Inline. UIManager::Poll() expands it on its stack to repeat a held directional button.

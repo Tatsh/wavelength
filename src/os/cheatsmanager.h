@@ -15,6 +15,14 @@
  */
 class CheatsManager : public MsgSink {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a9268
+     * @ghidraAddress PAL: 0x00418028
+     */
+    ~CheatsManager() override = default;
+
     /** Presses mHistory retains. */
     static constexpr int kMaxHistory = 16;
 

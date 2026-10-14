@@ -13,6 +13,14 @@
 class LobbyDisconnectResultMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b0d0
+     * @ghidraAddress PAL: 0x00409d18
+     */
+    ~LobbyDisconnectResultMsg() override = default;
+
+    /**
      * Allocate a message, billed to the class name.
      *
      * @param nSize The object size the compiler supplies.
@@ -35,6 +43,8 @@ public:
      * Produce a heap copy of this message.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x0039b178
+     * @ghidraAddress PAL: 0x00409dc0
      */
     Message *Clone() override {
         return new LobbyDisconnectResultMsg(*this);
@@ -44,6 +54,8 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nLobbyDisconnectResultMsgType.
+     * @ghidraAddress NTSC-U/C: 0x0039b1b0
+     * @ghidraAddress PAL: 0x00409df8
      */
     int Type() override {
         return g_nLobbyDisconnectResultMsgType;
@@ -53,6 +65,8 @@ public:
      * Report this message's class name.
      *
      * @return The literal `LobbyDisconnectResultMsg`.
+     * @ghidraAddress NTSC-U/C: 0x0039b1c0
+     * @ghidraAddress PAL: 0x00409e08
      */
     const char *GetName() const override {
         return "LobbyDisconnectResultMsg";

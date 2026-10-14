@@ -9,11 +9,26 @@
  * The class is not polymorphic and has no RTTI. The name is inferred. The one instance is
  * TheFxMidi, and its members are one sound cue each, which SFXBuilder fills from the tracks the
  * names of the members follow. Each routine below plays or stops cues of that instance on the
- * interface scheduler of GameDb. The constructor at `0x003a5f30` (PAL `0x00414c10`) and the
- * destructor at `0x003a5a80` (PAL `0x00414760`) are compiler-generated.
+ * interface scheduler of GameDb.
  */
 class FxMidi {
 public:
+    /**
+     * Construct a bank with every cue unset.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a5f30
+     * @ghidraAddress PAL: 0x00414c10
+     */
+    FxMidi() = default;
+
+    /**
+     * Release the cues.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a5a80
+     * @ghidraAddress PAL: 0x00414760
+     */
+    ~FxMidi() = default;
+
     /** Entries of mPowerupCatches and mPowerupDeploys. Entry 0 has no cue. */
     enum Powerup {
         kPowerupAutocatcher = 1, /*!< The autocatcher. */

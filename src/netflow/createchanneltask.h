@@ -14,6 +14,13 @@
 class CreateChannelTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c428
+     */
+    ~CreateChannelTask() override = default;
+
+    /**
      * Take the new room and finish the step the response is tagged with.
      *
      * The name is inferred.

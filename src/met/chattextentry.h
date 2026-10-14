@@ -13,6 +13,14 @@
 class ChatTextEntry : public UITextEntry {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003613a0
+     * @ghidraAddress PAL: 0x003cf8b8
+     */
+    ~ChatTextEntry() override = default;
+
+    /**
      * Construct the entry from its script description.
      *
      * @param pData The script description.

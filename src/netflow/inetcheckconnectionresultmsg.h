@@ -24,6 +24,13 @@ public:
      */
     explicit InetCheckConnectionResultMsg(int nResult) : mResult(nResult) {
     }
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00397688
+     * @ghidraAddress PAL: 0x00405f10
+     */
+    ~InetCheckConnectionResultMsg() override = default;
 
     /**
      * Allocate a message, billed to the class name.
@@ -48,6 +55,8 @@ public:
      * Produce a heap copy of this message.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x00397730
+     * @ghidraAddress PAL: 0x00405fb8
      */
     Message *Clone() override {
         return new InetCheckConnectionResultMsg(*this);
@@ -57,6 +66,8 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nInetCheckConnectionResultMsgType.
+     * @ghidraAddress NTSC-U/C: 0x00397780
+     * @ghidraAddress PAL: 0x00406008
      */
     int Type() override {
         return g_nInetCheckConnectionResultMsgType;
@@ -66,6 +77,8 @@ public:
      * Report this message's class name.
      *
      * @return The literal `InetCheckConnectionResultMsg`.
+     * @ghidraAddress NTSC-U/C: 0x00397790
+     * @ghidraAddress PAL: 0x00406018
      */
     const char *GetName() const override {
         return "InetCheckConnectionResultMsg";

@@ -8,6 +8,15 @@
  * The RTTI includes the name and records NetTask as the base. The vtable is at `0x003d4a28`.
  */
 class MediusSendWorldReportTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a358
+     * @ghidraAddress PAL: 0x00408be0
+     */
+    ~MediusSendWorldReportTask() override = default;
+
 protected:
     /**
      * Send the report, whose name encodes the settings of the game, and finish.

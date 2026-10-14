@@ -19,6 +19,14 @@ extern int g_nBootPktType;
 class BootPkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a0f18
+     * @ghidraAddress PAL: 0x0040fbf8
+     */
+    ~BootPkt() override = default;
+
+    /**
      * Construct a packet for every peer with no guest.
      *
      * Inline. New() expands it.

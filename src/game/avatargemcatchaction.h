@@ -13,6 +13,14 @@
 class AvatarGemCatchAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374828
+     * @ghidraAddress PAL: 0x003e2f58
+     */
+    ~AvatarGemCatchAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

@@ -29,7 +29,7 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x003a8ae0
      */
-    ~BufStream() override;
+    ~BufStream() override = default;
 
     /**
      * Read bytes.

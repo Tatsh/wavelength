@@ -23,6 +23,8 @@ public:
      * Vtable slot 1. Release the connection.
      *
      * Inline.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003974d0
      */
     virtual ~NetInet() {
     }
@@ -79,8 +81,15 @@ public:
      */
     virtual int GetConnectionType() = 0;
 
-    /** Vtable slot 10. Request that the next poll switch the console off. */
-    virtual void PowerOff() = 0;
+    /**
+     * Vtable slot 10. Request that the next poll switch the console off.
+     *
+     * The default does nothing.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00397500
+     */
+    virtual void PowerOff() {
+    }
 };
 
 /**

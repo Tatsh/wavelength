@@ -69,6 +69,9 @@ public:
      * Vtable slot 7. Publish the settings of the game the host changed.
      *
      * The default does nothing. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00398be0
+     * @ghidraAddress PAL: 0x00407468
      */
     virtual void EndEdit() {
     }
@@ -79,6 +82,8 @@ public:
      * The default refuses. The name is inferred.
      *
      * @return Whether the offer started.
+     * @ghidraAddress NTSC-U/C: 0x00398be8
+     * @ghidraAddress PAL: 0x00407470
      */
     virtual bool ShareRemix() {
         return false;
@@ -90,6 +95,8 @@ public:
      * The default does nothing and reports zero. The name is inferred.
      *
      * @return Non-zero when the song starts.
+     * @ghidraAddress NTSC-U/C: 0x00398bf0
+     * @ghidraAddress PAL: 0x00407478
      */
     virtual int Launch() {
         return 0;
@@ -101,12 +108,19 @@ public:
      * The default does nothing. The name is inferred.
      *
      * @param nPlayer The guest.
+     * @ghidraAddress NTSC-U/C: 0x00398bf8
+     * @ghidraAddress PAL: 0x00407480
      */
     virtual void BootPlayer(int nPlayer) {
         (void)nPlayer;
     }
 
-    /** Vtable slot 11. Release the session. */
+    /**
+     * Vtable slot 11. Release the session.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00398c00
+     * @ghidraAddress PAL: 0x00407488
+     */
     virtual ~NetLaunchpad() {
     }
 };

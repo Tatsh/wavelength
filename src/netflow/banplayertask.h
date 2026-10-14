@@ -12,6 +12,14 @@
  */
 class BanPlayerTask : public NetTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a438
+     * @ghidraAddress PAL: 0x00408cc0
+     */
+    ~BanPlayerTask() override = default;
+
     /** The length of a ban the request gives. */
     static constexpr int kBanDuration = 60;
 

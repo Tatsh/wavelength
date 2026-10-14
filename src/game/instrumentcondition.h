@@ -13,9 +13,24 @@
  */
 class InstrumentCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375f58
+     * @ghidraAddress PAL: 0x003e4688
+     */
+    ~InstrumentCondition() override = default;
+
     explicit InstrumentCondition(DataArray *pCondition) : mInstrument(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375fd8
+     * @ghidraAddress PAL: 0x003e4708
+     */
     bool Test() override {
         return TheTriggerMgr.mInstrument[TheTriggerMgr.mPlayer] == mInstrument;
     }

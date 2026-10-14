@@ -15,6 +15,14 @@
 class ClockSyncTask : public Task {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a4b0
+     * @ghidraAddress PAL: 0x00408ce0
+     */
+    ~ClockSyncTask() override = default;
+
+    /**
      * One answer of the host.
      *
      * The RTTI names the type, which a standard library vector records.

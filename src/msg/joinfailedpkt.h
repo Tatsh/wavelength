@@ -19,6 +19,14 @@ extern int g_nJoinFailedPktType;
 class JoinFailedPkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a0448
+     * @ghidraAddress PAL: 0x0040f128
+     */
+    ~JoinFailedPkt() override = default;
+
+    /**
      * Construct a packet with mReason left unset.
      *
      * Inline. New() expands it.

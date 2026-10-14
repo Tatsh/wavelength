@@ -14,6 +14,14 @@
 class AnimCondition : public TriggerCondition {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375c98
+     * @ghidraAddress PAL: 0x003e43c8
+     */
+    ~AnimCondition() override = default;
+
+    /**
      * Read the condition.
      *
      * The frame of the last test starts indeterminate.
@@ -24,6 +32,13 @@ public:
      */
     explicit AnimCondition(DataArray *pCondition);
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375d18
+     * @ghidraAddress PAL: 0x003e4448
+     */
     bool Test() override {
         const float flFrame = mAnim->mFilteredFrame;
         const bool bPassed = mLastFrame < mFrame && mFrame <= flFrame;

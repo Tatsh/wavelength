@@ -12,6 +12,14 @@
  */
 class CreateAccountResultMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039e470
+     * @ghidraAddress PAL: 0x0040d150
+     */
+    ~CreateAccountResultMsg() override = default;
+
     /** Values of mResult. */
     enum Result {
         kResultAlreadyExists = -81,      /*!< An account of the name exists. */

@@ -12,9 +12,24 @@
  */
 class GameStateCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003766b0
+     * @ghidraAddress PAL: 0x003e4de0
+     */
+    ~GameStateCondition() override = default;
+
     explicit GameStateCondition(DataArray *pCondition) : mGameState(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00376730
+     * @ghidraAddress PAL: 0x003e4e60
+     */
     bool Test() override {
         return TheTriggerMgr.mGameState == mGameState;
     }

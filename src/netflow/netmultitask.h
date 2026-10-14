@@ -14,6 +14,14 @@
 class NetMultiTask : public SerialTasks {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00398c30
+     * @ghidraAddress PAL: 0x004074b8
+     */
+    ~NetMultiTask() override = default;
+
+    /**
      * Construct a request with no steps.
      *
      * The constructor has no out-of-line copy.

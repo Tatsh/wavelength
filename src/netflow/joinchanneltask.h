@@ -13,6 +13,13 @@
 class JoinChannelTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c3b8
+     */
+    ~JoinChannelTask() override = default;
+
+    /**
      * Take the connection to the room and finish the step the response is tagged with.
      *
      * The name is inferred.

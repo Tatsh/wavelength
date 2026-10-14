@@ -13,6 +13,14 @@
 class LoadGameMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00398d48
+     * @ghidraAddress PAL: 0x004075d0
+     */
+    ~LoadGameMsg() override = default;
+
+    /**
      * Allocate a message, billed to the class name.
      *
      * @param nSize The object size the compiler supplies.
@@ -35,6 +43,8 @@ public:
      * Produce a heap copy of this message.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x00398df0
+     * @ghidraAddress PAL: 0x00407678
      */
     Message *Clone() override {
         return new LoadGameMsg(*this);
@@ -44,6 +54,8 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nLoadGameMsgType.
+     * @ghidraAddress NTSC-U/C: 0x00398e28
+     * @ghidraAddress PAL: 0x004076b0
      */
     int Type() override {
         return g_nLoadGameMsgType;
@@ -53,6 +65,8 @@ public:
      * Report this message's class name.
      *
      * @return The literal `LoadGameMsg`.
+     * @ghidraAddress NTSC-U/C: 0x00398e38
+     * @ghidraAddress PAL: 0x004076c0
      */
     const char *GetName() const override {
         return "LoadGameMsg";

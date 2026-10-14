@@ -98,6 +98,8 @@ public:
      * @ghidraAddress PAL: 0x003c30d0
      * @ghidraAddress NTSC-U/C: 0x00356098
      * @ghidraAddress PAL: 0x003c3348
+     * @ghidraAddress NTSC-U/C: 0x003a66c8
+     * @ghidraAddress PAL: 0x004153a8
      */
     ~MemFunCommand() override = default;
 
@@ -174,6 +176,8 @@ public:
      * @ghidraAddress PAL: 0x003c3148
      * @ghidraAddress NTSC-U/C: 0x00356110
      * @ghidraAddress PAL: 0x003c33c0
+     * @ghidraAddress NTSC-U/C: 0x003a6740
+     * @ghidraAddress PAL: 0x00415420
      */
     void Execute() override {
         (mObject->*mMember)();
@@ -313,6 +317,8 @@ public:
  * @ghidraAddress PAL: 0x003c2778
  * @ghidraAddress NTSC-U/C: 0x00355fa0
  * @ghidraAddress PAL: 0x003c3250
+ * @ghidraAddress NTSC-U/C: 0x003a6620
+ * @ghidraAddress PAL: 0x00415300
  */
 template <typename Function, typename Object>
 Command *NewMemFunCommand(Object *pObject, Function pfnMember) {

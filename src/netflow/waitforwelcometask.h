@@ -8,6 +8,15 @@
  * The RTTI includes the name and records NetTask as the base. The vtable is at `0x003d4a88`.
  */
 class WaitForWelcomeTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a278
+     * @ghidraAddress PAL: 0x00408b00
+     */
+    ~WaitForWelcomeTask() override = default;
+
 protected:
     /**
      * Finish once the session is welcomed, and fail with LaunchpadRT::mError once it failed.

@@ -11,6 +11,14 @@
  */
 class MediusJoinGameTask : public NetTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a198
+     * @ghidraAddress PAL: 0x00408a20
+     */
+    ~MediusJoinGameTask() override = default;
+
     /** The status of the response for a game that refuses this console. */
     static constexpr int kStatusDenied = -972;
 

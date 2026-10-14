@@ -10,7 +10,12 @@
  */
 class Interpolator {
 public:
-    /** Release the interpolator. */
+    /**
+     * Release the interpolator.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a85f0
+     * @ghidraAddress PAL: 0x004172d0
+     */
     virtual ~Interpolator() {
     }
 
@@ -120,6 +125,14 @@ public:
 class ExpInterpolator : public Interpolator {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a86d0
+     * @ghidraAddress PAL: 0x004173b0
+     */
+    ~ExpInterpolator() override = default;
+
+    /**
      * Construct an interpolator.
      *
      * @param fY0 The output at the start of the range.
@@ -182,6 +195,14 @@ public:
 class InvExpInterpolator : public Interpolator {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a8778
+     * @ghidraAddress PAL: 0x00417458
+     */
+    ~InvExpInterpolator() override = default;
+
+    /**
      * Construct an interpolator.
      *
      * @param fY0 The output at the start of the range.
@@ -241,6 +262,14 @@ public:
  */
 class ATanInterpolator : public Interpolator {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a8820
+     * @ghidraAddress PAL: 0x00417500
+     */
+    ~ATanInterpolator() override = default;
+
     /**
      * Construct an interpolator.
      *

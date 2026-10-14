@@ -146,6 +146,8 @@ public:
      * Inline.
      *
      * @return The players.
+     * @ghidraAddress NTSC-U/C: 0x00398d30
+     * @ghidraAddress PAL: 0x004075b8
      */
     std::list<NetLaunchpadPlayer> *GetPlayers() override {
         return &mPlayers;

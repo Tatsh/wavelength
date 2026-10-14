@@ -8,6 +8,15 @@
  * The RTTI includes the name and records NetTask as the base. The vtable is at `0x003d4a58`.
  */
 class WaitForKeyTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a2e8
+     * @ghidraAddress PAL: 0x00408b70
+     */
+    ~WaitForKeyTask() override = default;
+
 protected:
     /**
      * Finish once JoinpadRT::mKeyReceived is set.

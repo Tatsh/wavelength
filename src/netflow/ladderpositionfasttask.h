@@ -16,6 +16,13 @@ class LobbyPlayer;
 class LadderPositionFastTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bca8
+     */
+    ~LadderPositionFastTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

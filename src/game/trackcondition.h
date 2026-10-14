@@ -12,9 +12,24 @@
  */
 class TrackCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376370
+     * @ghidraAddress PAL: 0x003e4aa0
+     */
+    ~TrackCondition() override = default;
+
     explicit TrackCondition(DataArray *pCondition) : mTrack(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x003763f0
+     * @ghidraAddress PAL: 0x003e4b20
+     */
     bool Test() override {
         return TheTriggerMgr.mTrack[TheTriggerMgr.mPlayer] == mTrack;
     }

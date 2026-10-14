@@ -27,6 +27,12 @@ public:
      */
     static TriggerAction *New(DataArray *pAction);
 
+    /**
+     * Release the action.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374670
+     * @ghidraAddress PAL: 0x003e2da0
+     */
     virtual ~TriggerAction() {
     }
 
@@ -41,6 +47,8 @@ public:
      * The base action finishes at once.
      *
      * @return Whether the action is done.
+     * @ghidraAddress NTSC-U/C: 0x003746a0
+     * @ghidraAddress PAL: 0x003e2dd0
      */
     virtual bool Poll() {
         return true;

@@ -13,6 +13,13 @@
 class AccountUpdateStatsTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bf50
+     */
+    ~AccountUpdateStatsTask() override = default;
+
+    /**
      * Finish the step the response is tagged with.
      *
      * The name is inferred.

@@ -19,6 +19,14 @@ extern int g_nTimeRequestPktType;
 class TimeRequestPkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a0ab8
+     * @ghidraAddress PAL: 0x0040f798
+     */
+    ~TimeRequestPkt() override = default;
+
+    /**
      * Construct a packet with mSendTime left unset.
      *
      * Inline. New() expands it.

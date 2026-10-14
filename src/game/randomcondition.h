@@ -12,10 +12,25 @@
  */
 class RandomCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375470
+     * @ghidraAddress PAL: 0x003e3ba0
+     */
+    ~RandomCondition() override = default;
+
     explicit RandomCondition(DataArray *pCondition)
         : mLow(pCondition->Float(1)), mHigh(pCondition->Float(2)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x003754f0
+     * @ghidraAddress PAL: 0x003e3c20
+     */
     bool Test() override {
         return mLow <= TheTriggerMgr.mRandom && TheTriggerMgr.mRandom < mHigh;
     }

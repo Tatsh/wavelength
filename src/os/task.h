@@ -81,15 +81,27 @@ public:
     int mState;
 
 protected:
-    /** Begin the work. Start() calls this member. */
+    /**
+     * Begin the work. Start() calls this member.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab810
+     */
     virtual void OnStart() {
     }
 
-    /** Abandon the work. Stop() calls this member for a running task. */
+    /**
+     * Abandon the work. Stop() calls this member for a running task.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab818
+     */
     virtual void OnStop() {
     }
 
-    /** Advance the work, and set mState to kStateDone when it finishes. */
+    /**
+     * Advance the work, and set mState to kStateDone when it finishes.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab820
+     */
     virtual void OnPoll() {
     }
 };

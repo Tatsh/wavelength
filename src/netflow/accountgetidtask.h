@@ -15,6 +15,13 @@ class LobbyPlayer;
 class AccountGetIDTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c030
+     */
+    ~AccountGetIDTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

@@ -19,6 +19,14 @@ extern int g_nDataAckPktType;
  */
 class DataAckPkt : public InternalPacket {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00398e50
+     * @ghidraAddress PAL: 0x004076d8
+     */
+    ~DataAckPkt() override = default;
+
     /** The identifier in the session of the host, the receiver of every packet of the class. */
     static constexpr int kHost = 0;
 
@@ -62,6 +70,8 @@ public:
      * Produce a heap copy of this packet.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x00398ed0
+     * @ghidraAddress PAL: 0x00407758
      */
     Message *Clone() override {
         return new DataAckPkt(*this);
@@ -71,6 +81,8 @@ public:
      * Report this packet's registered identity.
      *
      * @return g_nDataAckPktType.
+     * @ghidraAddress NTSC-U/C: 0x00398f38
+     * @ghidraAddress PAL: 0x004077c0
      */
     int Type() override {
         return g_nDataAckPktType;
@@ -80,6 +92,8 @@ public:
      * Report this packet's class name.
      *
      * @return The literal `DataAckPkt`.
+     * @ghidraAddress NTSC-U/C: 0x00398f48
+     * @ghidraAddress PAL: 0x004077d0
      */
     const char *GetName() const override {
         return "DataAckPkt";

@@ -14,6 +14,14 @@
 class SessionBeginTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b9f8
+     * @ghidraAddress PAL: 0x0040a640
+     */
+    ~SessionBeginTask() override = default;
+
+    /**
      * Take the key of the session and finish the step the response is tagged with.
      *
      * The name is inferred.

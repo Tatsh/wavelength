@@ -51,6 +51,13 @@ public:
     }
 
     /**
+     * Release the message and its configurations.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039dc98
+     */
+    ~InetConfigsResultMsg() override = default;
+
+    /**
      * Produce a heap copy of this message.
      *
      * @return The copy.

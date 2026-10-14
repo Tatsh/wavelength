@@ -22,6 +22,12 @@ public:
      */
     static TriggerCondition *New(DataArray *pCondition);
 
+    /**
+     * Release the condition.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376970
+     * @ghidraAddress PAL: 0x003e50a0
+     */
     virtual ~TriggerCondition() {
     }
 

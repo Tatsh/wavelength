@@ -25,6 +25,14 @@ extern int g_nUIComponentFocusChangeMsgType;
 class UIComponentFocusChangeMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0037c000
+     * @ghidraAddress PAL: 0x003ea730
+     */
+    ~UIComponentFocusChangeMsg() override = default;
+
+    /**
      * Construct the message.
      *
      * Inline. UIPanel::SetFocus() expands it on its stack.

@@ -14,6 +14,14 @@
 class MGCLCreateGameTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a128
+     * @ghidraAddress PAL: 0x004089b0
+     */
+    ~MGCLCreateGameTask() override = default;
+
+    /**
      * Take the game into LaunchpadRT::mWorldId and finish sTask.
      *
      * The name is inferred.

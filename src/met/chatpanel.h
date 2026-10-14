@@ -40,6 +40,14 @@ struct ChatMessage {
 class ChatPanel : public FreqPanel, public KeyboardUser {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00361238
+     * @ghidraAddress PAL: 0x003cf750
+     */
+    ~ChatPanel() override = default;
+
+    /**
      * The chat channels of the `chat_type` setting.
      */
     enum ChatType {

@@ -13,6 +13,13 @@
 class GetPolicyTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c268
+     */
+    ~GetPolicyTask() override = default;
+
+    /**
      * Append a part of the text, and finish the step the response is tagged with after the last
      * part.
      *

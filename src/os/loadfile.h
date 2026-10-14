@@ -148,8 +148,8 @@ extern "C" void GzipDecompressFdToRam(int nFile, void *pBuffer);
  * @param nSourceLength The number of stored bytes.
  * @param pDest The destination.
  * @return Positive once the data is in place, and not positive on failure.
- * @ghidraAddress NTSC-U/C: 0x005636a0
- * @ghidraAddress PAL: 0x005a1e10
+ * @ghidraAddress NTSC-U/C: 0x002835b0
+ * @ghidraAddress PAL: 0x0028ce60
  */
 int GzipDecompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
 
@@ -190,6 +190,7 @@ int GzipInflatedSize(const void *pSource, int nSourceLength);
  * @param pDest The destination, which may be the source.
  * @return The length of the member.
  * @ghidraAddress NTSC-U/C: 0x00283648
+ * @ghidraAddress PAL: 0x0028cef8
  */
 int GzipCompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
 
@@ -203,6 +204,7 @@ int GzipCompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
  *                   Otherwise the copy is the file with `.gz` appended.
  * @param pszOut Receives the name.
  * @ghidraAddress NTSC-U/C: 0x002836b8
+ * @ghidraAddress PAL: 0x0028cf68
  */
 void GzipFileName(const char *pszFile, int bGenerated, char *pszOut);
 

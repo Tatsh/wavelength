@@ -16,6 +16,13 @@ class String;
 class TextFilterTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bb50
+     */
+    ~TextFilterTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

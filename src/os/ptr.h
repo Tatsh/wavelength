@@ -145,6 +145,8 @@ public:
      * @return The object, or null.
      * @ghidraAddress NTSC-U/C: 0x00334608
      * @ghidraAddress PAL: 0x003a1bb8
+     * @ghidraAddress NTSC-U/C: 0x003a67c0
+     * @ghidraAddress PAL: 0x004154a0
      * @ghidraAddress NTSC-U/C: 0x00333ea8
      * @ghidraAddress PAL: 0x003a1458
      * @ghidraAddress NTSC-U/C: 0x003385a8
@@ -178,6 +180,8 @@ public:
      * @return The object.
      * @ghidraAddress NTSC-U/C: 0x0033fe40
      * @ghidraAddress PAL: 0x003ad378
+     * @ghidraAddress NTSC-U/C: 0x003a6a90
+     * @ghidraAddress PAL: 0x00415770
      * @ghidraAddress NTSC-U/C: 0x00335ca8
      * @ghidraAddress PAL: 0x003a3258
      * @ghidraAddress NTSC-U/C: 0x00343a60

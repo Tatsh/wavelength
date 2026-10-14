@@ -21,6 +21,14 @@ extern int g_nGameEndedMsgType;
  */
 class GameEndedMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039ff40
+     * @ghidraAddress PAL: 0x0040ec20
+     */
+    ~GameEndedMsg() override = default;
+
     /** Values of mResult. */
     enum Result {
         kResultFinished = 1,       /*!< The song ended normally. */

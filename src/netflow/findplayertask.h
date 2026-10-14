@@ -16,6 +16,13 @@ struct NetChatroomInfo;
 class FindPlayerTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c5c8
+     */
+    ~FindPlayerTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

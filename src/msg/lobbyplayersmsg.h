@@ -21,6 +21,14 @@ extern int g_nLobbyPlayersMsgType;
  */
 class LobbyPlayersMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039e7a0
+     * @ghidraAddress PAL: 0x0040d480
+     */
+    ~LobbyPlayersMsg() override = default;
+
     /** The value of mLaunchpad when the players are not those of a session. */
     static constexpr int kNoLaunchpad = -1;
 

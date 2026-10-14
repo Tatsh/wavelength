@@ -176,13 +176,41 @@ constexpr int kPrnModeFull = 10;
  * Write a list as its size followed by one tab-indented line per element.
  *
  * The output starts with "(size:", the element count, and ")". Each element then writes a newline,
- * its index, a tab, and the element.
+ * its index, a tab, and the element. Each element type has its own instance, one address each.
  *
  * @param stream The stream to write to.
  * @param list The list to write.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x003901b8
  * @ghidraAddress PAL: 0x003fe8c0
+ * @ghidraAddress NTSC-U/C: 0x0037db08
+ * @ghidraAddress PAL: 0x003ec238
+ * @ghidraAddress NTSC-U/C: 0x0037dc10
+ * @ghidraAddress PAL: 0x003ec340
+ * @ghidraAddress NTSC-U/C: 0x0037f4a8
+ * @ghidraAddress PAL: 0x003edbc0
+ * @ghidraAddress NTSC-U/C: 0x00380270
+ * @ghidraAddress PAL: 0x003ee988
+ * @ghidraAddress NTSC-U/C: 0x00380b10
+ * @ghidraAddress PAL: 0x003ef228
+ * @ghidraAddress NTSC-U/C: 0x00382538
+ * @ghidraAddress PAL: 0x003f0c40
+ * @ghidraAddress NTSC-U/C: 0x0038fca0
+ * @ghidraAddress PAL: 0x003fe3a8
+ * @ghidraAddress NTSC-U/C: 0x00391798
+ * @ghidraAddress PAL: 0x003ffea0
+ * @ghidraAddress NTSC-U/C: 0x0039cad0
+ * @ghidraAddress PAL: 0x0040b7f8
+ * @ghidraAddress NTSC-U/C: 0x0039cbd8
+ * @ghidraAddress PAL: 0x0040b900
+ * @ghidraAddress NTSC-U/C: 0x0039cce0
+ * @ghidraAddress PAL: 0x0040ba08
+ * @ghidraAddress NTSC-U/C: 0x0039cde8
+ * @ghidraAddress PAL: 0x0040bb10
+ * @ghidraAddress NTSC-U/C: 0x0039cef0
+ * @ghidraAddress PAL: 0x0040bc18
+ * @ghidraAddress NTSC-U/C: 0x0039cff8
+ * @ghidraAddress PAL: 0x0040bd20
  */
 template <typename T>
 PrnStream &operator<<(PrnStream &stream, const std::list<T> &list) {
@@ -198,13 +226,53 @@ PrnStream &operator<<(PrnStream &stream, const std::list<T> &list) {
 /**
  * Write a vector as its size followed by one tab-indented line per element.
  *
- * The output has the shape of the list writer's. Each element type has its own instance. The
- * Key<Vector3> instance is at `0x00387300` and the RndMesh::Vert instance at `0x00388f60`.
+ * The output has the shape of the list writer's. Each element type has its own instance, one
+ * address each.
  *
  * @tparam T The type of the elements.
  * @param stream The stream to write to.
  * @param elements The vector to write.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00387300
+ * @ghidraAddress PAL: 0x003f5a08
+ * @ghidraAddress NTSC-U/C: 0x00388f60
+ * @ghidraAddress PAL: 0x003f7668
+ * @ghidraAddress NTSC-U/C: 0x003851b8
+ * @ghidraAddress PAL: 0x003f38c0
+ * @ghidraAddress NTSC-U/C: 0x00385308
+ * @ghidraAddress PAL: 0x003f3a10
+ * @ghidraAddress NTSC-U/C: 0x00387450
+ * @ghidraAddress PAL: 0x003f5b58
+ * @ghidraAddress NTSC-U/C: 0x00389130
+ * @ghidraAddress PAL: 0x003f7838
+ * @ghidraAddress NTSC-U/C: 0x0038b868
+ * @ghidraAddress PAL: 0x003f9f70
+ * @ghidraAddress NTSC-U/C: 0x0038bab0
+ * @ghidraAddress PAL: 0x003fa1b8
+ * @ghidraAddress NTSC-U/C: 0x0038bcf8
+ * @ghidraAddress PAL: 0x003fa400
+ * @ghidraAddress NTSC-U/C: 0x00392050
+ * @ghidraAddress PAL: 0x00400758
+ * @ghidraAddress NTSC-U/C: 0x00394ff0
+ * @ghidraAddress PAL: 0x004036e0
+ * @ghidraAddress NTSC-U/C: 0x003950c8
+ * @ghidraAddress PAL: 0x004037b8
+ * @ghidraAddress NTSC-U/C: 0x0039d100
+ * @ghidraAddress PAL: 0x0040be28
+ * @ghidraAddress NTSC-U/C: 0x0039d6c8
+ * @ghidraAddress PAL: 0x0040c3f0
+ * @ghidraAddress NTSC-U/C: 0x00383510
+ * @ghidraAddress PAL: 0x003f1c18
+ * @ghidraAddress NTSC-U/C: 0x00389038
+ * @ghidraAddress PAL: 0x003f7740
+ * @ghidraAddress NTSC-U/C: 0x0038b9b8
+ * @ghidraAddress PAL: 0x003fa0c0
+ * @ghidraAddress NTSC-U/C: 0x0038bc00
+ * @ghidraAddress PAL: 0x003fa308
+ * @ghidraAddress NTSC-U/C: 0x0038be48
+ * @ghidraAddress PAL: 0x003fa550
+ * @ghidraAddress NTSC-U/C: 0x00393cd8
+ * @ghidraAddress PAL: 0x004023e0
  */
 template <typename T>
 PrnStream &operator<<(PrnStream &stream, const std::vector<T> &elements) {

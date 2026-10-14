@@ -13,9 +13,24 @@
  */
 class MusicModeCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375eb0
+     * @ghidraAddress PAL: 0x003e45e0
+     */
+    ~MusicModeCondition() override = default;
+
     explicit MusicModeCondition(DataArray *pCondition) : mMode(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375f30
+     * @ghidraAddress PAL: 0x003e4660
+     */
     bool Test() override {
         return TheTriggerMgr.mMode[TheTriggerMgr.mPlayer] == mMode;
     }

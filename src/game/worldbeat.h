@@ -26,6 +26,14 @@ public:
     class WorldBeatCmd : public Command {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x003a6458
+         * @ghidraAddress PAL: 0x00415138
+         */
+        ~WorldBeatCmd() override = default;
+
+        /**
          * Construct the command of a letter.
          *
          * @param pScheduler The scheduler the events run on.

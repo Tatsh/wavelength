@@ -14,6 +14,14 @@
 class RemixDownloadMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b1d0
+     * @ghidraAddress PAL: 0x00409e18
+     */
+    ~RemixDownloadMsg() override = default;
+
+    /**
      * Construct a message.
      *
      * Inline.
@@ -49,6 +57,8 @@ public:
      * Produce a heap copy of this message, which points at the same texts.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x0039b278
+     * @ghidraAddress PAL: 0x00409ec0
      */
     Message *Clone() override {
         return new RemixDownloadMsg(*this);
@@ -58,6 +68,8 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nRemixDownloadMsgType.
+     * @ghidraAddress NTSC-U/C: 0x0039b2d8
+     * @ghidraAddress PAL: 0x00409f20
      */
     int Type() override {
         return g_nRemixDownloadMsgType;
@@ -67,6 +79,8 @@ public:
      * Report this message's class name.
      *
      * @return The literal `RemixDownloadMsg`.
+     * @ghidraAddress NTSC-U/C: 0x0039b2e8
+     * @ghidraAddress PAL: 0x00409f30
      */
     const char *GetName() const override {
         return "RemixDownloadMsg";

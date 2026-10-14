@@ -14,6 +14,14 @@
 class GameParamsUpdateMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039f9f8
+     * @ghidraAddress PAL: 0x0040e6d8
+     */
+    ~GameParamsUpdateMsg() override = default;
+
+    /**
      * Construct a message with the settings.
      *
      * Inline.

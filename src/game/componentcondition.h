@@ -13,9 +13,24 @@
  */
 class ComponentCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003755d8
+     * @ghidraAddress PAL: 0x003e3d08
+     */
+    ~ComponentCondition() override = default;
+
     explicit ComponentCondition(DataArray *pCondition) : mName(pCondition->Sym(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375680
+     * @ghidraAddress PAL: 0x003e3db0
+     */
     bool Test() override {
         return TheTriggerMgr.mComponent == mName;
     }

@@ -12,9 +12,24 @@
  */
 class PowerupCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376418
+     * @ghidraAddress PAL: 0x003e4b48
+     */
+    ~PowerupCondition() override = default;
+
     explicit PowerupCondition(DataArray *pCondition) : mPowerup(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00376498
+     * @ghidraAddress PAL: 0x003e4bc8
+     */
     bool Test() override {
         return TheTriggerMgr.mPowerup == mPowerup;
     }

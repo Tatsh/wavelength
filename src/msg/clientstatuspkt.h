@@ -19,6 +19,14 @@ extern int g_nClientStatusPktType;
 class ClientStatusPkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a0820
+     * @ghidraAddress PAL: 0x0040f500
+     */
+    ~ClientStatusPkt() override = default;
+
+    /**
      * Construct a packet with mReady left unset.
      *
      * Inline. New() expands it.

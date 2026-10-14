@@ -18,6 +18,14 @@ class Avatar;
 class ArmPart : public AvatarPart {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a3588
+     * @ghidraAddress PAL: 0x00412268
+     */
+    ~ArmPart() override = default;
+
+    /**
      * Construct the model of an arm.
      *
      * @param nPart The arm, AvatarPartSet::kPartLeftArm or AvatarPartSet::kPartRightArm.

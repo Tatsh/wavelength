@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "os/debug.h"
+#include "os/listcontains.h"
 #include "rnd/rndcam.h"
 #include "rnd/rndmanager.h"
 
@@ -139,7 +140,7 @@ void RndEnviron::Load(BinStream &stream) {
 }
 
 void RndEnviron::AddLight(RndLight *pLight) {
-    if (std::find(mLights.begin(), mLights.end(), pLight) != mLights.end()) {
+    if (ListContains(mLights, pLight)) {
         DebugNotify("%s already in %s", pLight->mName.c_str(), mName.c_str());
         return;
     }

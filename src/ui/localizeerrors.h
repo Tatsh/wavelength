@@ -48,6 +48,15 @@ public:
     }
 
     /**
+     * Copy another record.
+     *
+     * @param other The record.
+     * @ghidraAddress NTSC-U/C: 0x003786b8
+     * @ghidraAddress PAL: 0x003e6de8
+     */
+    LocalizeErrors(const LocalizeErrors &other) = default;
+
+    /**
      * Keep a copy of the record for the report.
      *
      * @ghidraAddress NTSC-U/C: 0x00209978

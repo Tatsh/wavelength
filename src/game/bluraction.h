@@ -13,6 +13,14 @@
 class BlurAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374ac8
+     * @ghidraAddress PAL: 0x003e31f8
+     */
+    ~BlurAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

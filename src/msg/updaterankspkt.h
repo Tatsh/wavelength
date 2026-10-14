@@ -22,6 +22,14 @@ extern int g_nUpdateRanksPktType;
  */
 class UpdateRanksPkt : public InternalPacket {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a15f8
+     * @ghidraAddress PAL: 0x004102d8
+     */
+    ~UpdateRanksPkt() override = default;
+
     /** The rank of one player. The RTTI records the name `UpdateRanksPkt::Info`. */
     struct Info {
         int mPlayer; /*!< The player's identifier in the session. */

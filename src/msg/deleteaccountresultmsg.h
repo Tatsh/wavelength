@@ -12,6 +12,14 @@
  */
 class DeleteAccountResultMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039e580
+     * @ghidraAddress PAL: 0x0040d260
+     */
+    ~DeleteAccountResultMsg() override = default;
+
     /** Values of mResult. */
     enum Result {
         kResultDeleteFailed = -79, /*!< The server did not delete the account. */

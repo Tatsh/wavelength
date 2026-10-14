@@ -39,6 +39,8 @@ public:
          * The base does nothing. The name is inferred.
          *
          * @param nObjects The number of objects.
+         * @ghidraAddress NTSC-U/C: 0x00364b00
+         * @ghidraAddress PAL: 0x003d3278
          */
         virtual void SetObjectCount([[maybe_unused]] int nObjects) {
         }

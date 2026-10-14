@@ -13,6 +13,14 @@
 class ChangeScreenAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375320
+     * @ghidraAddress PAL: 0x003e3a50
+     */
+    ~ChangeScreenAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

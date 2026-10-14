@@ -27,6 +27,14 @@ extern int g_nUIComponentSelectMsgType;
 class UIComponentSelectMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0037bda0
+     * @ghidraAddress PAL: 0x003ea4d0
+     */
+    ~UIComponentSelectMsg() override = default;
+
+    /**
      * Construct the message.
      *
      * Inline. The components expand it on their stack.

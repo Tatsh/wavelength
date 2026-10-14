@@ -9,6 +9,14 @@
  * step always succeeds.
  */
 class UpdateClientStateTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c188
+     */
+    ~UpdateClientStateTask() override = default;
+
 protected:
     /**
      * Send the report and finish.

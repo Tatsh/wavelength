@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "os/debug.h"
+#include "os/listcontains.h"
 #include "rnd/rndcam.h"
 #include "rnd/rndmanager.h"
 
@@ -252,9 +253,7 @@ RndTransformable *RndTransformable::Parent() {
     for (RndObject *pRef : mRefs) {
         RndTransformable *pTrans =
             pRef != nullptr ? dynamic_cast<RndTransformable *>(pRef) : nullptr;
-        if (pTrans != nullptr &&
-            std::find(pTrans->mTransList.begin(), pTrans->mTransList.end(), this) !=
-                pTrans->mTransList.end()) {
+        if (pTrans != nullptr && ListContains(pTrans->mTransList, this)) {
             return pTrans;
         }
     }
@@ -262,7 +261,7 @@ RndTransformable *RndTransformable::Parent() {
 }
 
 bool RndTransformable::AddTrans(RndTransformable *pTrans) {
-    if (std::find(mTransList.begin(), mTransList.end(), pTrans) != mTransList.end()) {
+    if (ListContains(mTransList, pTrans)) {
         DebugNotify("%s already in %s", pTrans->mName.c_str(), mName.c_str());
         return false;
     }
@@ -275,7 +274,7 @@ bool RndTransformable::AddTrans(RndTransformable *pTrans) {
 }
 
 void RndTransformable::RemoveTrans(RndTransformable *pTrans) {
-    if (std::find(mTransList.begin(), mTransList.end(), pTrans) == mTransList.end()) {
+    if (!ListContains(mTransList, pTrans)) {
         return;
     }
     if (pTrans != nullptr) {

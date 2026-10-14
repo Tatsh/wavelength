@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "os/debug.h"
+#include "os/listcontains.h"
 #include "rnd/rndmanager.h"
 
 int RndAnimatable::sRev = 0;
@@ -171,9 +172,7 @@ RndAnimatable *RndAnimatable::Parent() {
     for (RndObject *pRef : mRefs) {
         RndAnimatable *pAnimatable =
             pRef != nullptr ? dynamic_cast<RndAnimatable *>(pRef) : nullptr;
-        if (pAnimatable != nullptr &&
-            std::find(pAnimatable->mAnims.begin(), pAnimatable->mAnims.end(), this) !=
-                pAnimatable->mAnims.end()) {
+        if (pAnimatable != nullptr && ListContains(pAnimatable->mAnims, this)) {
             return pAnimatable;
         }
     }
@@ -206,7 +205,7 @@ float RndAnimatable::UnfilterFrame(float fValue) {
 }
 
 bool RndAnimatable::AddAnim(RndAnimatable *pAnim) {
-    if (std::find(mAnims.begin(), mAnims.end(), pAnim) != mAnims.end()) {
+    if (ListContains(mAnims, pAnim)) {
         DebugNotify("%s already in %s", pAnim->mName.c_str(), mName.c_str());
         return false;
     }
@@ -218,7 +217,7 @@ bool RndAnimatable::AddAnim(RndAnimatable *pAnim) {
 }
 
 void RndAnimatable::RemoveAnim(RndAnimatable *pAnim) {
-    if (std::find(mAnims.begin(), mAnims.end(), pAnim) == mAnims.end()) {
+    if (!ListContains(mAnims, pAnim)) {
         return;
     }
     if (pAnim != nullptr) {

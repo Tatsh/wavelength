@@ -11,6 +11,14 @@
  */
 class MediusConnectTask : public NetTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b918
+     * @ghidraAddress PAL: 0x0040a560
+     */
+    ~MediusConnectTask() override = default;
+
     /** Values of mServer. */
     enum Server {
         kServerLocation = 0, /*!< The server LobbyRT::mLobbyInfo identifies. */

@@ -15,6 +15,14 @@ class String;
 class FileCloseTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c970
+     * @ghidraAddress PAL: 0x0040b620
+     */
+    ~FileCloseTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

@@ -16,6 +16,14 @@
 class SetGeneratorAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374eb8
+     * @ghidraAddress PAL: 0x003e35e8
+     */
+    ~SetGeneratorAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

@@ -20,6 +20,14 @@ extern int g_nLoadGamePktType;
 class LoadGamePkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a6e0
+     * @ghidraAddress PAL: 0x00408f68
+     */
+    ~LoadGamePkt() override = default;
+
+    /**
      * Construct a packet for every peer.
      *
      * Inline. New() expands it.
@@ -59,6 +67,8 @@ public:
      * Produce a heap copy of this packet.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x0039a760
+     * @ghidraAddress PAL: 0x00408fe8
      */
     Message *Clone() override {
         return new LoadGamePkt(*this);
@@ -68,6 +78,8 @@ public:
      * Report this packet's registered identity.
      *
      * @return g_nLoadGamePktType.
+     * @ghidraAddress NTSC-U/C: 0x0039a7c8
+     * @ghidraAddress PAL: 0x00409050
      */
     int Type() override {
         return g_nLoadGamePktType;
@@ -77,6 +89,8 @@ public:
      * Report this packet's class name.
      *
      * @return The literal `LoadGamePkt`.
+     * @ghidraAddress NTSC-U/C: 0x0039a7d8
+     * @ghidraAddress PAL: 0x00409060
      */
     const char *GetName() const override {
         return "LoadGamePkt";

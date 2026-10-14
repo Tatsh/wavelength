@@ -13,6 +13,14 @@
 class MGCLSessionEndTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00399ef8
+     * @ghidraAddress PAL: 0x00408780
+     */
+    ~MGCLSessionEndTask() override = default;
+
+    /**
      * Clear HostpadRT::mSessionKey and finish the step.
      *
      * The name is inferred.

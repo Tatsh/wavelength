@@ -12,10 +12,25 @@
  */
 class TimeCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003761e0
+     * @ghidraAddress PAL: 0x003e4910
+     */
+    ~TimeCondition() override = default;
+
     explicit TimeCondition(DataArray *pCondition)
         : mLow(pCondition->Int(1)), mHigh(pCondition->Int(2)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00376260
+     * @ghidraAddress PAL: 0x003e4990
+     */
     bool Test() override {
         const float flTime = TheTriggerMgr.mTime[TheTriggerMgr.mClock];
         return static_cast<float>(mLow) <= flTime && flTime <= static_cast<float>(mHigh);

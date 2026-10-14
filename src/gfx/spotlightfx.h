@@ -29,6 +29,8 @@ public:
          * @param pos The light.
          * @param flTick The tick.
          * @return Whether the light is earlier.
+         * @ghidraAddress NTSC-U/C: 0x003720e0
+         * @ghidraAddress PAL: 0x003e0810
          */
         static bool Before(const LightPos &pos, float flTick) {
             return pos.mTick < flTick;

@@ -16,6 +16,13 @@ class MsgSink;
 class LadderPosition2Task : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bc30
+     */
+    ~LadderPosition2Task() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

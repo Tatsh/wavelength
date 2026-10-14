@@ -13,6 +13,14 @@
 class AnimChildAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003751d0
+     * @ghidraAddress PAL: 0x003e3900
+     */
+    ~AnimChildAction() override = default;
+
+    /**
      * Read the action.
      *
      * One warning reports the first of the two names that is missing.

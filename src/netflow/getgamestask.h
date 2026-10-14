@@ -13,6 +13,13 @@
 class GetGamesTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c348
+     */
+    ~GetGamesTask() override = default;
+
+    /**
      * Decode and add a game, and finish the step the response is tagged with after the last game.
      *
      * The name is inferred.

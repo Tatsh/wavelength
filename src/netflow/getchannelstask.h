@@ -13,6 +13,13 @@
 class GetChannelsTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c2d8
+     */
+    ~GetChannelsTask() override = default;
+
+    /**
      * Add a room, and finish the step the response is tagged with after the last room.
      *
      * The name is inferred.

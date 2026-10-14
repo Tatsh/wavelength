@@ -12,10 +12,25 @@
  */
 class StreakCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375d58
+     * @ghidraAddress PAL: 0x003e4488
+     */
+    ~StreakCondition() override = default;
+
     explicit StreakCondition(DataArray *pCondition)
         : mLow(pCondition->Int(1)), mHigh(pCondition->Int(2)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375dd8
+     * @ghidraAddress PAL: 0x003e4508
+     */
     bool Test() override {
         const int nStreak = TheTriggerMgr.mStreak[TheTriggerMgr.mPlayer];
         return mLow <= nStreak && nStreak <= mHigh;

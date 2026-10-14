@@ -13,6 +13,14 @@
 class ShowAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375278
+     * @ghidraAddress PAL: 0x003e39a8
+     */
+    ~ShowAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

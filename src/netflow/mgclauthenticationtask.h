@@ -13,6 +13,14 @@
 class MGCLAuthenticationTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00399f68
+     * @ghidraAddress PAL: 0x004087f0
+     */
+    ~MGCLAuthenticationTask() override = default;
+
+    /**
      * Take the game server into HostpadRT::mServerInfo and finish the step.
      *
      * The name is inferred.

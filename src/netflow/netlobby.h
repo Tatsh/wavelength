@@ -28,6 +28,9 @@ public:
      * Release the service.
      *
      * Inline.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039af08
+     * @ghidraAddress PAL: 0x00409b50
      */
     virtual ~NetLobby() {
     }

@@ -8,6 +8,14 @@
  * The RTTI includes the name and records NetTask as the base. The vtable is at `0x003d4908`.
  */
 class FinishUpdateGameParamsTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a670
+     */
+    ~FinishUpdateGameParamsTask() override = default;
+
 protected:
     /**
      * Send the settings when the host still exists, and finish.

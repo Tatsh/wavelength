@@ -13,9 +13,24 @@
  */
 class PanelCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375778
+     * @ghidraAddress PAL: 0x003e3ea8
+     */
+    ~PanelCondition() override = default;
+
     explicit PanelCondition(DataArray *pCondition) : mName(pCondition->Sym(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375820
+     * @ghidraAddress PAL: 0x003e3f50
+     */
     bool Test() override {
         return TheTriggerMgr.mPanel == mName;
     }

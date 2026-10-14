@@ -10,6 +10,14 @@
  */
 class MGCLConnectTask : public NetTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00399da8
+     * @ghidraAddress PAL: 0x00408630
+     */
+    ~MGCLConnectTask() override = default;
+
     /** Values of mServer. */
     enum Server {
         kServerGame = 0,  /*!< The game server HostpadRT::mServerInfo describes. */

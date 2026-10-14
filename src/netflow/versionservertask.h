@@ -13,6 +13,14 @@
 class VersionServerTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bad8
+     * @ghidraAddress PAL: 0x0040a720
+     */
+    ~VersionServerTask() override = default;
+
+    /**
      * Print the version and finish the step the response is tagged with.
      *
      * The name is inferred.

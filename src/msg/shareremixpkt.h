@@ -20,6 +20,14 @@ extern int g_nShareRemixPktType;
 class ShareRemixPkt : public InternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a1048
+     * @ghidraAddress PAL: 0x0040fd28
+     */
+    ~ShareRemixPkt() override = default;
+
+    /**
      * Construct a packet with a reset description. mShareOnly is left unset.
      *
      * Inline. New() expands it.

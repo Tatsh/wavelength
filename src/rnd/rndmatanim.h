@@ -40,6 +40,14 @@ public:
         }
 
         /**
+         * Release the keys.
+         *
+         * @ghidraAddress NTSC-U/C: 0x00388478
+         * @ghidraAddress PAL: 0x003f6b80
+         */
+        ~Stage() = default;
+
+        /**
          * Write a description of the keys.
          *
          * @param stream The stream to write to.

@@ -8,6 +8,14 @@
  * The RTTI includes the name and records NetTask as the base. The vtable is at `0x003d4938`.
  */
 class WaitForShareDoneTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039a600
+     */
+    ~WaitForShareDoneTask() override = default;
+
 protected:
     /**
      * Finish once HostpadRT::mSharing is clear.

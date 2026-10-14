@@ -345,11 +345,17 @@ inline void ReadKeyValue(BinStream &stream, Color &color) {
 /**
  * Write a list key value as its count followed by each value.
  *
- * Each value type has its own instance. The Vector3 instance is at `0x0038bf40`.
+ * Each value type has its own instance, one address each.
  *
  * @tparam T The type of the values.
  * @param stream The stream to write to.
  * @param values The value.
+ * @ghidraAddress NTSC-U/C: 0x0038bf40
+ * @ghidraAddress PAL: 0x003fa648
+ * @ghidraAddress NTSC-U/C: 0x0038c0e8
+ * @ghidraAddress PAL: 0x003fa7f0
+ * @ghidraAddress NTSC-U/C: 0x0038c278
+ * @ghidraAddress PAL: 0x003fa980
  */
 template <typename T>
 void WriteKeyValue(BinStream &stream, const std::vector<T> &values) {
@@ -363,9 +369,17 @@ void WriteKeyValue(BinStream &stream, const std::vector<T> &values) {
 /**
  * Read a list key value the list key value writer wrote.
  *
+ * Each value type has its own instance, one address each.
+ *
  * @tparam T The type of the values.
  * @param stream The stream to read from.
  * @param values Receives the value.
+ * @ghidraAddress NTSC-U/C: 0x0038c878
+ * @ghidraAddress PAL: 0x003faf80
+ * @ghidraAddress NTSC-U/C: 0x0038d080
+ * @ghidraAddress PAL: 0x003fb788
+ * @ghidraAddress NTSC-U/C: 0x0038d868
+ * @ghidraAddress PAL: 0x003fbf70
  */
 template <typename T>
 void ReadKeyValue(BinStream &stream, std::vector<T> &values) {
@@ -380,12 +394,26 @@ void ReadKeyValue(BinStream &stream, std::vector<T> &values) {
 /**
  * Write a key as its value followed by its frame.
  *
- * Each value type has its own instance. The vector instance is at `0x00387528`.
+ * Each value type has its own instance, one address each.
  *
  * @tparam T The type of the value.
  * @param stream The stream to write to.
  * @param key The key.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00387528
+ * @ghidraAddress PAL: 0x003f5c30
+ * @ghidraAddress NTSC-U/C: 0x00385478
+ * @ghidraAddress PAL: 0x003f3b80
+ * @ghidraAddress NTSC-U/C: 0x003855a8
+ * @ghidraAddress PAL: 0x003f3cb0
+ * @ghidraAddress NTSC-U/C: 0x00392128
+ * @ghidraAddress PAL: 0x00400830
+ * @ghidraAddress NTSC-U/C: 0x0038c000
+ * @ghidraAddress PAL: 0x003fa708
+ * @ghidraAddress NTSC-U/C: 0x0038c190
+ * @ghidraAddress PAL: 0x003fa898
+ * @ghidraAddress NTSC-U/C: 0x0038c350
+ * @ghidraAddress PAL: 0x003faa58
  */
 template <typename T>
 BinStream &operator<<(BinStream &stream, const Key<T> &key) {
@@ -397,12 +425,26 @@ BinStream &operator<<(BinStream &stream, const Key<T> &key) {
 /**
  * Read a key the key writer wrote.
  *
- * Each value type has its own instance. The vector instance is at `0x00387df8`.
+ * Each value type has its own instance, one address each.
  *
  * @tparam T The type of the value.
  * @param stream The stream to read from.
  * @param key Receives the key.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00387df8
+ * @ghidraAddress PAL: 0x003f6500
+ * @ghidraAddress NTSC-U/C: 0x00385b30
+ * @ghidraAddress PAL: 0x003f4238
+ * @ghidraAddress NTSC-U/C: 0x00386010
+ * @ghidraAddress PAL: 0x003f4718
+ * @ghidraAddress NTSC-U/C: 0x00392258
+ * @ghidraAddress PAL: 0x00400960
+ * @ghidraAddress NTSC-U/C: 0x0038c978
+ * @ghidraAddress PAL: 0x003fb080
+ * @ghidraAddress NTSC-U/C: 0x0038d170
+ * @ghidraAddress PAL: 0x003fb878
+ * @ghidraAddress NTSC-U/C: 0x0038d978
+ * @ghidraAddress PAL: 0x003fc080
  */
 template <typename T>
 BinStream &operator>>(BinStream &stream, Key<T> &key) {
@@ -414,12 +456,28 @@ BinStream &operator>>(BinStream &stream, Key<T> &key) {
 /**
  * Write a key as its frame and its value.
  *
- * Each value type has its own instance. The vector instance is at `0x00387288`.
+ * Each value type has its own instance, one address each.
  *
  * @tparam T The type of the value.
  * @param stream The stream to write to.
  * @param key The key.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00387288
+ * @ghidraAddress PAL: 0x003f5990
+ * @ghidraAddress NTSC-U/C: 0x00385140
+ * @ghidraAddress PAL: 0x003f3848
+ * @ghidraAddress NTSC-U/C: 0x00385290
+ * @ghidraAddress PAL: 0x003f3998
+ * @ghidraAddress NTSC-U/C: 0x003873d8
+ * @ghidraAddress PAL: 0x003f5ae0
+ * @ghidraAddress NTSC-U/C: 0x00391fd8
+ * @ghidraAddress PAL: 0x004006e0
+ * @ghidraAddress NTSC-U/C: 0x0038b940
+ * @ghidraAddress PAL: 0x003fa048
+ * @ghidraAddress NTSC-U/C: 0x0038bb88
+ * @ghidraAddress PAL: 0x003fa290
+ * @ghidraAddress NTSC-U/C: 0x0038bdd0
+ * @ghidraAddress PAL: 0x003fa4d8
  */
 template <typename T>
 PrnStream &operator<<(PrnStream &stream, const Key<T> &key) {

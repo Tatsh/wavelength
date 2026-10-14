@@ -12,9 +12,24 @@
  */
 class PathAlreadyUnlockedCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003767e0
+     * @ghidraAddress PAL: 0x003e4f10
+     */
+    ~PathAlreadyUnlockedCondition() override = default;
+
     explicit PathAlreadyUnlockedCondition(DataArray *pCondition) : mPath(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00376860
+     * @ghidraAddress PAL: 0x003e4f90
+     */
     bool Test() override {
         return TheTriggerMgr.IsPathUnlocked(mPath);
     }

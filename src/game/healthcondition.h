@@ -12,10 +12,25 @@
  */
 class HealthCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376550
+     * @ghidraAddress PAL: 0x003e4c80
+     */
+    ~HealthCondition() override = default;
+
     explicit HealthCondition(DataArray *pCondition)
         : mLow(pCondition->Int(1)), mHigh(pCondition->Int(2)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x003765d0
+     * @ghidraAddress PAL: 0x003e4d00
+     */
     bool Test() override {
         const int nHealth = TheTriggerMgr.mHealth[TheTriggerMgr.mPlayer];
         return mLow <= nHealth && nHealth <= mHigh;

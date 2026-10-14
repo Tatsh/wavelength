@@ -14,6 +14,14 @@
 class SetAnimAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003746a8
+     * @ghidraAddress PAL: 0x003e2dd8
+     */
+    ~SetAnimAction() override = default;
+
+    /**
      * Read the action.
      *
      * A first filter of the wrong kind produces a warning.

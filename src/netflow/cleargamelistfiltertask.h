@@ -17,6 +17,13 @@
 class ClearGameListFilterTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c6b0
+     */
+    ~ClearGameListFilterTask() override = default;
+
+    /**
      * Count down the requests of the step the response is tagged with, and finish it after an
      * error or the last response.
      *

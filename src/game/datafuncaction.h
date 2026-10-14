@@ -20,6 +20,12 @@ public:
      */
     explicit DataFuncAction(DataArray *pAction);
 
+    /**
+     * Release the reference on the node.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003747c8
+     * @ghidraAddress PAL: 0x003e2ef8
+     */
     ~DataFuncAction() override {
         mCommand->Release();
     }

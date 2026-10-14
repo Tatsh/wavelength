@@ -15,6 +15,14 @@
 class SetEnvAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374c18
+     * @ghidraAddress PAL: 0x003e3348
+     */
+    ~SetEnvAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.

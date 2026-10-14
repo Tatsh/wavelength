@@ -15,6 +15,14 @@ class InetCheckConnectionResultMsg;
 class CheckInetTask : public NetTask, public MsgSink {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b6b8
+     * @ghidraAddress PAL: 0x0040a300
+     */
+    ~CheckInetTask() override = default;
+
+    /**
      * Pass an InetCheckConnectionResultMsg to OnResult().
      *
      * @param pMsg The message.

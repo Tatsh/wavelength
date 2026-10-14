@@ -12,9 +12,24 @@
  */
 class RuleSetCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376748
+     * @ghidraAddress PAL: 0x003e4e78
+     */
+    ~RuleSetCondition() override = default;
+
     explicit RuleSetCondition(DataArray *pCondition) : mRuleSet(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x003767c8
+     * @ghidraAddress PAL: 0x003e4ef8
+     */
     bool Test() override {
         return TheTriggerMgr.mRuleSet == mRuleSet;
     }

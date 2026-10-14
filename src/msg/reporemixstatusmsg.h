@@ -13,6 +13,14 @@
  */
 class RepoRemixStatusMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039f060
+     * @ghidraAddress PAL: 0x0040dd40
+     */
+    ~RepoRemixStatusMsg() override = default;
+
     /** Values of mStatus. */
     enum Status {
         kStatusFailed = -100,       /*!< The transfer failed. */

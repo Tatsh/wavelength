@@ -12,9 +12,24 @@
  */
 class GemPosCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375e18
+     * @ghidraAddress PAL: 0x003e4548
+     */
+    ~GemPosCondition() override = default;
+
     explicit GemPosCondition(DataArray *pCondition) : mGemPos(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375e98
+     * @ghidraAddress PAL: 0x003e45c8
+     */
     bool Test() override {
         return TheTriggerMgr.mGemPos == mGemPos;
     }

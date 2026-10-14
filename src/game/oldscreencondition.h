@@ -13,9 +13,24 @@
  */
 class OldScreenCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003759e8
+     * @ghidraAddress PAL: 0x003e4118
+     */
+    ~OldScreenCondition() override = default;
+
     explicit OldScreenCondition(DataArray *pCondition) : mName(pCondition->Sym(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375a90
+     * @ghidraAddress PAL: 0x003e41c0
+     */
     bool Test() override {
         return TheTriggerMgr.mOldScreen == mName;
     }

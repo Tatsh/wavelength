@@ -15,6 +15,13 @@ class LobbyPlayer;
 class PlayerInfoTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039c0a0
+     */
+    ~PlayerInfoTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

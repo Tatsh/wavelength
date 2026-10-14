@@ -22,6 +22,14 @@ extern int g_nUITransitionCompleteMsgType;
 class UITransitionCompleteMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0037c260
+     * @ghidraAddress PAL: 0x003ea990
+     */
+    ~UITransitionCompleteMsg() override = default;
+
+    /**
      * Construct the message.
      *
      * Inline. UIScreen::Poll() expands it on its stack.

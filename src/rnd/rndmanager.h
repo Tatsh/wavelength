@@ -359,13 +359,21 @@ extern RndManager TheManager;
 /**
  * Write a list of objects as its size followed by each object's name.
  *
- * A null entry writes an empty name.
+ * A null entry writes an empty name. Each element type has its own copy, one address each.
  *
  * @param stream The stream to write to.
  * @param list The list.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x00380540
  * @ghidraAddress PAL: 0x003eec58
+ * @ghidraAddress NTSC-U/C: 0x0037de10
+ * @ghidraAddress PAL: 0x003ec540
+ * @ghidraAddress NTSC-U/C: 0x0037f5c0
+ * @ghidraAddress PAL: 0x003edcd8
+ * @ghidraAddress NTSC-U/C: 0x00380c28
+ * @ghidraAddress PAL: 0x003ef340
+ * @ghidraAddress NTSC-U/C: 0x00391a68
+ * @ghidraAddress PAL: 0x00400170
  */
 template <typename T>
 BinStream &operator<<(BinStream &stream, const std::list<T *> &list) {
@@ -381,13 +389,24 @@ BinStream &operator<<(BinStream &stream, const std::list<T *> &list) {
 /**
  * Read a list of objects the list writer wrote, resolving each name in TheManager.
  *
- * An empty name, an unknown name, or an object of another class reads as null.
+ * An empty name, an unknown name, or an object of another class reads as null. Each element
+ * type has its own copy, one address each.
  *
  * @param stream The stream to read from.
  * @param list Receives the objects.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x00380780
  * @ghidraAddress PAL: 0x003eee98
+ * @ghidraAddress NTSC-U/C: 0x0037e250
+ * @ghidraAddress PAL: 0x003ec980
+ * @ghidraAddress NTSC-U/C: 0x0037f800
+ * @ghidraAddress PAL: 0x003edf18
+ * @ghidraAddress NTSC-U/C: 0x00380e68
+ * @ghidraAddress PAL: 0x003ef580
+ * @ghidraAddress NTSC-U/C: 0x00387908
+ * @ghidraAddress PAL: 0x003f6010
+ * @ghidraAddress NTSC-U/C: 0x00391ca8
+ * @ghidraAddress PAL: 0x004003b0
  */
 template <typename T>
 BinStream &operator>>(BinStream &stream, std::list<T *> &list) {
@@ -409,12 +428,16 @@ BinStream &operator>>(BinStream &stream, std::list<T *> &list) {
 /**
  * Write a vector of objects as its size followed by each object's name.
  *
- * A null entry writes an empty name. Each element type has its own instance. The RndMat instance
- * is at `0x003951a0` and the RndFont instance at `0x00395250`.
+ * A null entry writes an empty name. Each element type has its own instance, and the addresses
+ * are those of the RndMat and the RndFont instances.
  *
  * @param stream The stream to write to.
  * @param objects The vector.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x003951a0
+ * @ghidraAddress PAL: 0x00403890
+ * @ghidraAddress NTSC-U/C: 0x00395250
+ * @ghidraAddress PAL: 0x00403940
  */
 template <typename T>
 BinStream &operator<<(BinStream &stream, const std::vector<T *> &objects) {
@@ -431,12 +454,15 @@ BinStream &operator<<(BinStream &stream, const std::vector<T *> &objects) {
  * Read a vector of objects the vector writer wrote, resolving each name in TheManager.
  *
  * An empty name, an unknown name, or an object of another class reads as null. Each element type
- * has its own instance. The RndMat instance is at `0x00395300` and the RndFont instance at
- * `0x00395718`.
+ * has its own instance, and the addresses are those of the RndMat and the RndFont instances.
  *
  * @param stream The stream to read from.
  * @param objects Receives the objects.
  * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00395300
+ * @ghidraAddress PAL: 0x004039f0
+ * @ghidraAddress NTSC-U/C: 0x00395718
+ * @ghidraAddress PAL: 0x00403e08
  */
 template <typename T>
 BinStream &operator>>(BinStream &stream, std::vector<T *> &objects) {

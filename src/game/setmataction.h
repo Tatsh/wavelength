@@ -17,6 +17,14 @@
 class SetMatAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00374d68
+     * @ghidraAddress PAL: 0x003e3498
+     */
+    ~SetMatAction() override = default;
+
+    /**
      * Read the action.
      *
      * A stage value for a stage the material does not have produces a warning.

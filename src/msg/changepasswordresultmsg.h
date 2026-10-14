@@ -12,6 +12,14 @@
  */
 class ChangePasswordResultMsg : public Message {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039e690
+     * @ghidraAddress PAL: 0x0040d370
+     */
+    ~ChangePasswordResultMsg() override = default;
+
     /** Values of mResult. */
     enum Result {
         kResultUpdateFailed = -77, /*!< The server did not update the password. */

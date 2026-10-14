@@ -16,6 +16,14 @@
 class FileListMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039b2f8
+     * @ghidraAddress PAL: 0x00409f40
+     */
+    ~FileListMsg() override = default;
+
+    /**
      * Construct a message that points at the names.
      *
      * Inline.
@@ -48,6 +56,8 @@ public:
      * Produce a heap copy of this message, which points at the same names.
      *
      * @return The copy.
+     * @ghidraAddress NTSC-U/C: 0x0039b3a0
+     * @ghidraAddress PAL: 0x00409fe8
      */
     Message *Clone() override {
         return new FileListMsg(*this);
@@ -57,6 +67,8 @@ public:
      * Report this message's registered identity.
      *
      * @return g_nFileListMsgType.
+     * @ghidraAddress NTSC-U/C: 0x0039b3f0
+     * @ghidraAddress PAL: 0x0040a038
      */
     int Type() override {
         return g_nFileListMsgType;
@@ -66,6 +78,8 @@ public:
      * Report this message's class name.
      *
      * @return The literal `FileListMsg`.
+     * @ghidraAddress NTSC-U/C: 0x0039b400
+     * @ghidraAddress PAL: 0x0040a048
      */
     const char *GetName() const override {
         return "FileListMsg";

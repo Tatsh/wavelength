@@ -50,7 +50,12 @@ public:
      */
     virtual void ReportScores(const std::vector<NetGameScore> &scores) = 0;
 
-    /** Release the transport. */
+    /**
+     * Release the transport.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003a1f90
+     * @ghidraAddress PAL: 0x00410c70
+     */
     virtual ~NetTransport() {
     }
 };

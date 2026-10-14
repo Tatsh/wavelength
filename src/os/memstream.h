@@ -13,6 +13,14 @@
 class MemStream : public BinStream {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003ab1a8
+     * @ghidraAddress PAL: 0x00419f18
+     */
+    ~MemStream() override = default;
+
+    /**
      * Construct an empty stream with room for 4096 bytes.
      *
      * @param bLittleEndian Store values in the console's byte order.

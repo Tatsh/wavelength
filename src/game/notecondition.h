@@ -13,6 +13,14 @@
 class NoteCondition : public TriggerCondition {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00375b48
+     * @ghidraAddress PAL: 0x003e4278
+     */
+    ~NoteCondition() override = default;
+
+    /**
      * Read the condition.
      *
      * A note outside A through G produces a warning.
@@ -23,6 +31,13 @@ public:
      */
     explicit NoteCondition(DataArray *pCondition);
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00375bc8
+     * @ghidraAddress PAL: 0x003e42f8
+     */
     bool Test() override {
         return mNote == TheTriggerMgr.mNote;
     }

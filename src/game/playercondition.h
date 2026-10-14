@@ -12,9 +12,24 @@
  */
 class PlayerCondition : public TriggerCondition {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00376098
+     * @ghidraAddress PAL: 0x003e47c8
+     */
+    ~PlayerCondition() override = default;
+
     explicit PlayerCondition(DataArray *pCondition) : mPlayer(pCondition->Int(1)) {
     }
 
+    /**
+     * Test the condition.
+     *
+     * @return Whether the condition holds.
+     * @ghidraAddress NTSC-U/C: 0x00376118
+     * @ghidraAddress PAL: 0x003e4848
+     */
     bool Test() override {
         return TheTriggerMgr.mPlayer == mPlayer;
     }

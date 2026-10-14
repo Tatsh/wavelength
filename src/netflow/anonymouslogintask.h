@@ -10,6 +10,14 @@
  * and AccountLoginTask::OnResponse() receives the response.
  */
 class AnonymousLoginTask : public NetTask {
+public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039bdf8
+     */
+    ~AnonymousLoginTask() override = default;
+
 protected:
     /**
      * Send the request with the name and the statistics of the local player.

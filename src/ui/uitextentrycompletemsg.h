@@ -24,6 +24,14 @@ extern int g_nUITextEntryCompleteMsgType;
 class UITextEntryCompleteMsg : public Message {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0037c388
+     * @ghidraAddress PAL: 0x003eaab8
+     */
+    ~UITextEntryCompleteMsg() override = default;
+
+    /**
      * Construct the message.
      *
      * Inline. UITextEntry::ProcessKey() expands it on its stack.

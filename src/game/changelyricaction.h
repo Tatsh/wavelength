@@ -13,6 +13,14 @@
 class ChangeLyricAction : public TriggerAction {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003753c8
+     * @ghidraAddress PAL: 0x003e3af8
+     */
+    ~ChangeLyricAction() override = default;
+
+    /**
      * Read the action.
      *
      * @param pAction The node.
