@@ -13,32 +13,6 @@ namespace {
 constexpr float kBlendDone = 1.0f;
 constexpr float kBlendStart = 0.0f;
 
-// A frame before the first translation key follows the tangent of the translation spline at that
-// key. The spline weighs the next key and the key after it by these factors at an end.
-constexpr float kEndTangentNear = 1.5f;
-constexpr float kEndTangentFar = 0.25f;
-
-// The tangent of a translation channel with fewer than two keys.
-constexpr Vector3 kNoTangent{0.0f, 1.0f, 0.0f};
-
-// The tangent of the translation spline at its first key.
-inline Vector3 FirstKeyTangent(const std::vector<Key<Vector3>> &keys) {
-    if (keys.size() < 2) {
-        return kNoTangent;
-    }
-    const Vector3 &first = keys[0].value;
-    const Vector3 &second = keys[1].value;
-    Vector3 tangent{second.x - first.x, second.y - first.y, second.z - first.z, second.w};
-    if (keys.size() == 2) {
-        return tangent;
-    }
-    const Vector3 &third = keys[2].value;
-    tangent.x = ((second.x - first.x) * kEndTangentNear) - ((third.x - first.x) * kEndTangentFar);
-    tangent.y = ((second.y - first.y) * kEndTangentNear) - ((third.y - first.y) * kEndTangentFar);
-    tangent.z = ((second.z - first.z) * kEndTangentNear) - ((third.z - first.z) * kEndTangentFar);
-    return tangent;
-}
-
 } // namespace
 
 TnlPath::TnlPath() : mBlend(kBlendDone, kBlendDone, kBlendStart, kBlendDone) {
@@ -130,8 +104,8 @@ void TnlPath::Segment::Xfm(float flTick, float flTime, Transform *pXfm) const {
     mAnim->MakeTransform(flFirst, *pXfm, 1);
     // Yes, a channel of one key divides by the frame of the key after its last.
     const float flSpan = keys[1].frame - flFirst;
-    pXfm->mTranslation = keys.front().value;
-    Vector3 tangent = FirstKeyTangent(keys);
+    Vector3 tangent;
+    InterpVector(keys, RndTransAnim::kInterpSpline, pXfm->mTranslation, &tangent, flFirst);
     const float flScale = (flFrame - flFirst) / flSpan;
     tangent.x *= flScale;
     tangent.z *= flScale;
