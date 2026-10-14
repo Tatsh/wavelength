@@ -13,11 +13,32 @@
 	.type	_start, @function
 	.ent	_start
 _start:
+	# Clear every general register but the kernel's $26 and $27, the multiply registers, the shift
+	# amount, the floating-point registers and accumulator, and the floating-point control word.
+	.irp	reg, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31
+	padduw	$\reg, $0, $0
+	.endr
+	mthi	$0
+	mthi1	$0
+	mtlo	$0
+	mtlo1	$0
+	mtsah	$0, 0
+	.irp	reg, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+	mtc1	$0, $f\reg
+	.endr
+	adda.s	$f0, $f1
+	sync.p
+	ctc1	$0, $31
+
 	la	$2, _fbss
 	la	$3, _end
+	# The empty instructions lengthen the loop past the six instructions of the R5900 short-loop erratum.
 1:
 	sq	$0, 0($2)
+	nop
 	sltu	$1, $2, $3
+	nop
+	nop
 	bne	$1, $0, 1b
 	addiu	$2, $2, 16
 
