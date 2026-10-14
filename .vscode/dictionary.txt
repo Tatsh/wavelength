@@ -143,6 +143,7 @@ bumperpacket
 bvoll
 bvolr
 bzero
+calloc
 camslide
 cantlinkinside
 capturepacket
@@ -1657,6 +1658,8 @@ xfer
 xfms
 xgkick
 xmlparse
+xmlrole
+xmltok
 xproceedscreen
 xtop
 xyoffset

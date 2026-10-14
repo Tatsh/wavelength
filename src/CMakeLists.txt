@@ -56,6 +56,9 @@ list(APPEND WAVELENGTH_LIBRARIES wavelength_ezmpeg wavelength_eznet)
 # The Sony library reconstructions live under sce/ee with the sample.
 list(APPEND WAVELENGTH_LIBRARIES wavelength_sonylibs)
 
+# The vendored third-party libraries the game links.
+list(APPEND WAVELENGTH_LIBRARIES wavelength_expat)
+
 add_custom_target(archives DEPENDS ${WAVELENGTH_LIBRARIES})
 
 # The executable links the reconstructed start-up code, every archive, and the compiler runtime

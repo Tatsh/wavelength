@@ -21,6 +21,11 @@ Only the parser and tokenizer sources and their headers are imported, with `expa
 licence terms. The prebuilt Windows binaries, the project files, `xmlwf`, `gennmtab`, and the sample
 are omitted. The port does not change these files yet.
 
+The game links `xmlparse.c`, `xmlrole.c`, and `xmltok.c`, built with `XML_NS` and `XML_DTD` (the
+binary has the namespace scanners and the parameter-entity processors). Expat allocates through the
+online library's `RtXmlMalloc()`, `RtXmlCalloc()`, `RtXmlRealloc()`, and `RtXmlFree()`, which the
+build substitutes for the C library's allocator.
+
 ## gzip 1.2.4
 
 The game decompresses and compresses gzip streams. The imported files are `COPYING`, `README`,

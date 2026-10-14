@@ -110,6 +110,33 @@ target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/
                                                       "${CMAKE_SOURCE_DIR}/sce/ee/src"
                                                       "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse")
 
+# The vendored Expat 1.2 the online library parses UPnP replies with. The game builds it with
+# namespaces and DTD support, and Expat allocates through the online library's allocator.
+add_library(
+  wavelength_expat STATIC
+  "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse/xmlparse.c"
+  "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmltok/xmlrole.c"
+  "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmltok/xmltok.c")
+target_link_libraries(wavelength_expat PRIVATE wavelength_common)
+target_compile_definitions(
+  wavelength_expat
+  PRIVATE XML_NS
+          XML_DTD
+          malloc=RtXmlMalloc
+          calloc=RtXmlCalloc
+          realloc=RtXmlRealloc
+          free=RtXmlFree)
+# These warnings concern upstream style.
+target_compile_options(
+  wavelength_expat
+  PRIVATE -Wno-implicit-fallthrough
+          -Wno-maybe-uninitialized
+          -Wno-missing-field-initializers
+          -Wno-sign-compare
+          -Wno-unused-parameter)
+target_include_directories(wavelength_expat PRIVATE "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse"
+                                                    "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmltok")
+
 # The system layer the compiler's C and C++ runtime needs, over the reconstructed kernel.
 add_library(wavelength_runtime STATIC runtime/newlib.c runtime/pthread.c runtime/softfloat.c)
 target_link_libraries(wavelength_runtime PRIVATE wavelength_common)
