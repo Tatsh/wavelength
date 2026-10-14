@@ -97,7 +97,7 @@ sceSifQueueData g_rpcQueue;
 sceSifServeData g_rpcServer;
 
 // NTSC-U/C: 0x00006890
-unsigned char g_rpcBuffer[kRpcBufferSize];
+alignas(16) unsigned char g_rpcBuffer[kRpcBufferSize];
 
 // NTSC-U/C: 0x00003460, PAL: 0x00003460
 void SetSdParam(unsigned short entry, unsigned short value) {
