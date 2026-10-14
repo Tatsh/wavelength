@@ -12,6 +12,10 @@
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
+#ifdef ENABLE_PATCHES
+#include "buildinfo.h"
+#endif
+
 namespace {
 
 // The value of mAttractTime while the attract demo is disarmed.
@@ -25,6 +29,12 @@ constexpr int kAttractPowerupLevel = 1;
 
 // The controller whose cross and START buttons play the choice sound.
 constexpr int kFirstPad = 0;
+
+#ifdef ENABLE_PATCHES
+// A patched build shows its identification in place of the blank version text.
+const char *const kBuildTag =
+    "https://github.com/Tatsh/wavelength " WAVELENGTH_GIT_REVISION " " WAVELENGTH_BUILD_TIME;
+#endif
 
 } // namespace
 
@@ -47,7 +57,11 @@ void MetaStartScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     DataArray *pVersion = DataArray::Read("version.txt", nullptr);
     RndText *pText = dynamic_cast<RndText *>(TheManager.Find("start_version.txt"));
     if (pText != nullptr) {
+#ifdef ENABLE_PATCHES
+        pText->SetText(kBuildTag);
+#else
         pText->SetText(""); // Yes, the binary blanks the text after reading the version file.
+#endif
     }
     pVersion->Release();
     mMusicView = dynamic_cast<RndView *>(TheManager.Find("logo_music_anim.view"));
