@@ -29,6 +29,7 @@ constexpr char kSkillNormalToken[] = "skill_norm";
 constexpr char kSkillExpertToken[] = "skill_exp";
 constexpr char kSkillInsaneToken[] = "skill_insane";
 constexpr char kAllToken[] = "search_all";
+constexpr char kCursorComponent[] = "cursor";
 constexpr char kSearchComponent[] = "search";
 constexpr char kListComponent[] = "list";
 constexpr char kSongPanel[] = "fn_search_song";
@@ -155,8 +156,15 @@ bool NetSearchScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         return NetParamsScreen::HandleSelect(pMsg);
     }
     if (std::strcmp(pMsg->mComponent->mName, kSearchComponent) != 0) {
-        UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
-        pPanel->SetFocus(pPanel->FindComponent(kSearchComponent, false), kPadNone);
+        // Yes, the binary checks the button again and focuses the search button on both paths.
+        if (pMsg->mButton == kPadCross &&
+            std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
+            UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
+            pPanel->SetFocus(pPanel->FindComponent(kSearchComponent, false), kPadNone);
+        } else if (pMsg->mButton == kPadCross) {
+            UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
+            pPanel->SetFocus(pPanel->FindComponent(kSearchComponent, false), kPadNone);
+        }
         return NetParamsScreen::HandleSelect(pMsg);
     }
 

@@ -372,23 +372,9 @@ constexpr char kLocalEndScreenFormat[] = "m_g_end_%dpl_%s";
 constexpr int kNamedTieWinners = 3;
 constexpr int kTieWinners = 2;
 
-// The screens after a song that show the player's character on the gizmo again.
-constexpr const char *kReturnScreens[] = {
-    "game2solometa",
-    "game2soloremix",
-    "game2soloremix_mode",
-    "game2soloremix_mode_save",
-    "game2soloarena",
-    "game2soloarena_save",
-    "game2solocustom",
-    "game2netlaunch_host",
-    "game2netlaunch_guest",
-    "game2net_end_remix",
-    "game2net_end_save_read_only",
-    "game2lost_launchpad",
-    "game2lost_lobby",
-    "game2unlockarena",
-};
+// The save variants of the screens after a song.
+constexpr char kSoloRemixModeSaveScreen[] = "game2soloremix_mode_save";
+constexpr char kSoloArenaSaveScreen[] = "game2soloarena_save";
 
 // Renderer objects.
 constexpr char kLoadingScreenFormat[] = "metagame\\loading%d.rnd";
@@ -1527,35 +1513,38 @@ bool Metagame::OnTransitionComplete(UITransitionCompleteMsg *pMsg) {
         mHelpPanel->ShowActions(pMsg->mScreen);
     }
 
-    const char *pszScreen = pMsg->mScreen->mName;
-    bool bShowAvatar = false;
-    if (strcmp(pszScreen, kBlankScreen) == 0) {
+    if (strcmp(pMsg->mScreen->mName, kBlankScreen) == 0) {
         if (mDialogCallback != nullptr) {
             mDialogCallback(mDialogAction, mDialogUserData);
             mDialogCallback = nullptr;
         }
-    } else if (strcmp(pszScreen, kBackToShellScreen) == 0) {
+    } else if (strcmp(pMsg->mScreen->mName, kBackToShellScreen) == 0) {
         mEvent = kEventQuit;
-    } else if (strcmp(pszScreen, kJustMtvLeaveGizmoScreen) == 0) {
+    } else if (strcmp(pMsg->mScreen->mName, kJustMtvLeaveGizmoScreen) == 0) {
         mGizmo->SetShowAvatar(false);
         TheUI.GotoScreen(kJustMtvScreen);
-    } else if (strcmp(pszScreen, kLaunchScreen) == 0 ||
-               strcmp(pszScreen, kLaunchTrainingScreen) == 0) {
+    } else if (strcmp(pMsg->mScreen->mName, kLaunchScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kLaunchTrainingScreen) == 0) {
         mGizmo->SetShowAvatar(false);
-    } else {
-        for (const char *pszReturnScreen : kReturnScreens) {
-            if (strcmp(pszScreen, pszReturnScreen) == 0) {
-                bShowAvatar = true;
-                break;
-            }
+    } else if (strcmp(pMsg->mScreen->mName, kSoloMetaScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kSoloRemixScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kSoloRemixModeScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kSoloRemixModeSaveScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kSoloArenaScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kSoloArenaSaveScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kSoloCustomScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kNetLaunchHostScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kNetLaunchGuestScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kNetEndRemixScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kNetEndSaveReadOnlyScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kLostLaunchpadScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kLostLobbyScreen) == 0 ||
+               strcmp(pMsg->mScreen->mName, kUnlockArenaScreen) == 0 ||
+               (strcmp(pMsg->mScreen->mName, kStartScreen) == 0 &&
+                strcmp(pMsg->mPrevScreen->mName, kPreGame2MetaScreen) == 0)) {
+        if (TheGameDb->GetProfile(0)->mCustom != 0) {
+            mGizmo->SetShowAvatar(true);
         }
-        if (!bShowAvatar && strcmp(pszScreen, kStartScreen) == 0 &&
-            strcmp(pMsg->mPrevScreen->mName, kPreGame2MetaScreen) == 0) {
-            bShowAvatar = true;
-        }
-    }
-    if (bShowAvatar && TheGameDb->GetProfile(0)->mCustom != 0) {
-        mGizmo->SetShowAvatar(true);
     }
 
     if (IsStopSpeedUp(pMsg->mPrevScreen->mName, pMsg->mScreen->mName)) {

@@ -11,17 +11,13 @@
 
 namespace {
 
-// A choice other than a song, which shows its label as the genre and the picture of an arena.
-struct Choice {
-    const char *mToken;
-    const char *mArena;
-};
-
-constexpr Choice kChoices[] = {
-    {"host_random", "random"},
-    {"host_custom", "custom"},
-    {"search_all", "all"},
-};
+// The choices other than a song, with the arenas whose pictures they show.
+constexpr char kRandomToken[] = "host_random";
+constexpr char kRandomArena[] = "random";
+constexpr char kCustomToken[] = "host_custom";
+constexpr char kCustomArena[] = "custom";
+constexpr char kAllToken[] = "search_all";
+constexpr char kAllArena[] = "all";
 
 } // namespace
 
@@ -58,14 +54,20 @@ void SongSelList::UpdateCursor() {
         pPicPanel->SetBandPicture(entry.GetName(), true, false, false);
         return;
     }
-    for (const Choice &choice : kChoices) {
-        if (strcmp(TheLocale.Localize(choice.mToken, true), mSongs[mSelected].c_str()) == 0) {
-            pGenre->SetText(TheLocale.Localize(choice.mToken, true));
-            pPicPanel->SetPictureShowing(true);
-            pPicPanel->SetArenaPicture(choice.mArena);
-            return;
-        }
+    if (strcmp(TheLocale.Localize(kRandomToken, true), mSongs[mSelected].c_str()) == 0) {
+        pGenre->SetText(TheLocale.Localize(kRandomToken, true));
+        pPicPanel->SetPictureShowing(true);
+        pPicPanel->SetArenaPicture(kRandomArena);
+    } else if (strcmp(TheLocale.Localize(kCustomToken, true), mSongs[mSelected].c_str()) == 0) {
+        pGenre->SetText(TheLocale.Localize(kCustomToken, true));
+        pPicPanel->SetPictureShowing(true);
+        pPicPanel->SetArenaPicture(kCustomArena);
+    } else if (strcmp(TheLocale.Localize(kAllToken, true), mSongs[mSelected].c_str()) == 0) {
+        pGenre->SetText(TheLocale.Localize(kAllToken, true));
+        pPicPanel->SetPictureShowing(true);
+        pPicPanel->SetArenaPicture(kAllArena);
+    } else {
+        pGenre->SetText("");
+        pPicPanel->SetPictureShowing(false);
     }
-    pGenre->SetText("");
-    pPicPanel->SetPictureShowing(false);
 }
