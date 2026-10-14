@@ -19,7 +19,7 @@ constexpr char kEnteringRpcLoopMessage[] = "Entering sceSifRpcLoop\n";
 constexpr char kRpcServerMessage[] = "rpc_server(%08x, %08X, %08x)\n";
 
 // NTSC-U/C: 0x00000360
-ProfileBuffer ProfBuffer;
+alignas(16) ProfileBuffer ProfBuffer;
 
 // NTSC-U/C: 0x000083e0
 unsigned char buffer[kRpcBufferSize];
