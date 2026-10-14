@@ -38,6 +38,14 @@ set(WAVELENGTH_SONYLIB_SRCS
     src/libmtap.c
     src/libosd.c
     src/libpad.c
+    src/librtbigint.c
+    src/librtcodec.c
+    src/librtdmedev.c
+    src/librtimage.c
+    src/librtinet.c
+    src/librtnet.c
+    src/librtpitch.c
+    src/librtreasm.c
     src/libscf.c
     src/libsdr.c
     src/libusbkb.c
@@ -90,6 +98,8 @@ target_compile_options(wavelength_sonylibs PRIVATE -UNDEBUG)
 set_source_files_properties(src/rt/mgcl.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
 # Most receivers of the lobby messages only report the size of the record.
 set_source_files_properties(src/rt/rtmediushandlers.c PROPERTIES COMPILE_OPTIONS -Wno-unused-parameter)
+# The device copies the address of the router with the full size of its field, as retail does.
+set_source_files_properties(src/librtdmedev.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
 target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include"
                                                       "${CMAKE_SOURCE_DIR}/sce/ee/src"
                                                       "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse")

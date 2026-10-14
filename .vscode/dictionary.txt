@@ -33,6 +33,7 @@ alalc
 allocatebuffertask
 allocinfo
 ambiently
+amdf
 andi
 anim
 animatables
@@ -110,6 +111,7 @@ beqzl
 bffm
 bgez
 bgtz
+biquad
 bitbltbuf
 bknm
 blez
@@ -148,6 +150,7 @@ catchtrackdata
 catchtrackdisplay
 catchtrackmusic
 catchtrackstate
+cccccccccccccp
 cdbuild
 cdread
 cdreadstm
@@ -228,6 +231,7 @@ dcmake
 deactivator
 deactivators
 deci
+deemphasis
 defpushbutton
 defsym
 deletefreqscreen
@@ -235,6 +239,7 @@ deleteremixscreen
 demangled
 demangles
 depfile
+dequantisation
 dequantize
 dialing
 dialog
@@ -246,6 +251,7 @@ diedfl
 dienum
 dierr
 difficultyrating
+difmag
 dijofs
 dimx
 dinput
@@ -615,9 +621,19 @@ libnetconfig
 libosd
 libpad
 libpath
+librtbigint
+librtcodec
 librtdme
+librtdmedev
+librtimage
+librtinet
+librtlpc
 librtmedius
 librtmgcl
+librtnet
+librtpitch
+librtreasm
+librtvlc
 libscf
 libsd
 libsdr
@@ -1108,6 +1124,7 @@ rdparty
 rdtsc
 readonlycheckscreen
 readonlysavescreen
+reassembler
 reax
 recomposeonresize
 rect
