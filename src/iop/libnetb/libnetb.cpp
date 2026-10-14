@@ -81,9 +81,10 @@ constexpr const char *kInetErrorMessages[] = {
     "sceINETE_CONNECTION_REFUSED, connection was reset when status is syn-received\n",
     "sceINETE_CONNECTION_RESET, connection was reset\n",
     "sceINETE_CONNECTION_CLOSING, connection status is closing\n",
-    "sceINETE_CONNECTION_DOES_NOT_EXIST, no connection was established or connection has been "
+    // Yes, the binary misspells three of these messages.
+    "sceINETE_CONNECTION_DOES_NOT_EXIST, no conection was established or connection has been "
     "closed\n",
-    "sceINETE_CONNECTION_ALREADY_EXISTS, an attempt was made to open a connection that was "
+    "sceINETE_CONNECTION_ALREADY_EXISTS, an attempt wasmade to open a connection that was "
     "already established\n",
     "sceINETE_FOREIGN_SOCKET_UNSPECIFIED, invalid value as specified as remote_addr or "
     "remote_port\n",
@@ -93,7 +94,7 @@ constexpr const char *kInetErrorMessages[] = {
     "sceINETE_BUSY, INET module initialization is not completed\n",
     "sceINETE_ABORT, interruption due to sceInetAbort() call\n",
     "sceINETE_TIMEOUT, timeout specified by argument in function occurred or TCP resend "
-    "timeout occurred\n",
+    "timeout occured\n",
 };
 
 constexpr char kConnectionRule[] = "=====================================\n";

@@ -196,6 +196,7 @@ color
 combolist
 commandid
 conductorbuilder
+conection
 conexant
 constructo
 controllerconfigscreen
@@ -999,6 +1000,7 @@ objc
 objcopy
 objs
 obound
+occured
 occurence
 olecreate
 olectl
@@ -1641,6 +1643,7 @@ wanip
 wanpots
 wanppp
 warray
+wasmade
 wbdc
 wchar
 wctype
