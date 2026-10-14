@@ -49,11 +49,11 @@ public:
     /**
      * Report whether the tracks have been handed to the music.
      *
-     * @return Whether the song has loaded.
+     * @return Non-zero when the song has loaded.
      * @ghidraAddress NTSC-U/C: 0x0016a5b0
      * @ghidraAddress PAL: 0x0016d738
      */
-    bool IsLoaded() const;
+    int IsLoaded() const;
 
     /**
      * Report the sample bank of the song.

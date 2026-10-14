@@ -95,8 +95,8 @@ void MixMidiBuilder::Poll() {
     }
 }
 
-bool MixMidiBuilder::IsDone() const {
-    return mDone != 0;
+int MixMidiBuilder::IsDone() const {
+    return mDone;
 }
 
 int MixMidiBuilder::NumTracks() const {

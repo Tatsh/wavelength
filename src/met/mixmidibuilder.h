@@ -181,11 +181,11 @@ public:
     /**
      * Report whether every event has been parsed.
      *
-     * @return Whether the pieces are built.
+     * @return Non-zero when the pieces are built.
      * @ghidraAddress NTSC-U/C: 0x0016b048
      * @ghidraAddress PAL: 0x0016e1d0
      */
-    bool IsDone() const;
+    int IsDone() const;
 
     /**
      * Report the number of pieces built.

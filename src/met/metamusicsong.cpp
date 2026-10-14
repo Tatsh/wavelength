@@ -32,8 +32,8 @@ void MetaMusicSong::Poll() {
     }
 }
 
-bool MetaMusicSong::IsLoaded() const {
-    return mLoaded != 0;
+int MetaMusicSong::IsLoaded() const {
+    return mLoaded;
 }
 
 const char *MetaMusicSong::BankFile() const {
