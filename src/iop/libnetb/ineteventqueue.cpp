@@ -24,6 +24,11 @@ constexpr int kRetryDelay = 300000;
 
 constexpr char kEventMessage[] = "Libnet: type %d: id %d\n";
 constexpr char kErrorMessage[] = "# ERR # %s: %d (%d)\n";
+// The source path the retail module prints.
+constexpr char kSourceFile[] = "../../../../libnetb/src/iop/libnetb.c";
+// The source lines the retail module prints.
+constexpr int kWaitErrorLine = 92;
+constexpr int kSignalErrorLine = 99;
 constexpr char kRetryMessage[] = "Libnet: retry %d\n";
 
 } // namespace
@@ -62,14 +67,14 @@ void InetEventQueue::EventHandler(int interfaceId, int event) {
     }
     int result = WaitSema(sLockSema);
     if (result != KE_OK) {
-        printf(kErrorMessage, __FILE__, __LINE__, result);
+        printf(kErrorMessage, kSourceFile, kWaitErrorLine, result);
     }
     sInterfaceIdQueue[sWriteIndex] = interfaceId;
     sEventQueue[sWriteIndex] = event;
     sWriteIndex = (sWriteIndex + 1) % kQueueSize;
     result = SignalSema(sLockSema);
     if (result != KE_OK) {
-        printf(kErrorMessage, __FILE__, __LINE__, result);
+        printf(kErrorMessage, kSourceFile, kSignalErrorLine, result);
     }
     if (SignalSema(sCountSema) != KE_OK) {
         sFlags |= kFlagOverflow;

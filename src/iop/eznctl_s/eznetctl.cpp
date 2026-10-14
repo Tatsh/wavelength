@@ -23,6 +23,8 @@ constexpr int kLookUpRetries = 1;
 constexpr int kAddressTextSize = 32;
 
 constexpr char kMessagePrefix[] = "%s> ";
+// The source path the retail module prints.
+constexpr char kSourceFile[] = "../common/eznetctl.c";
 constexpr char kCreateEventFlagErrorMessage[] = "CreateEventFlag failed with %d\n";
 constexpr char kLookUpMessage[] = "DNSLookup(%s, %d)\n";
 constexpr char kName2AddressErrorMessage[] = "sceInetName2Address: error %d\n";
@@ -130,7 +132,7 @@ int EzNetCtl::Initialize() {
     if (sEventFlag > 0) {
         return 0;
     }
-    printf(kMessagePrefix, __FILE__);
+    printf(kMessagePrefix, kSourceFile);
     printf(kCreateEventFlagErrorMessage, sEventFlag);
     sEventFlag = 0;
     return -1;
@@ -192,24 +194,24 @@ int EzNetCtl::Connect(NetcnfifEnv *env) {
 }
 
 char *EzNetCtl::LookUpName(char *name, int size) {
-    printf(kMessagePrefix, __FILE__);
+    printf(kMessagePrefix, kSourceFile);
     printf(kLookUpMessage, name, size);
     sceInetAddress address;
     // The binary leaves the sixth argument uninitialised.
     int result = sceInetName2Address(0, &address, name, kLookUpTimeout, kLookUpRetries, 0);
     if (result != 0) {
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kName2AddressErrorMessage, result);
         name[0] = '\0';
     } else {
         result = sceInetAddress2String(name, kAddressTextSize, &address);
         if (result != 0) {
-            printf(kMessagePrefix, __FILE__);
+            printf(kMessagePrefix, kSourceFile);
             printf(kAddress2StringErrorMessage, result);
             name[0] = '\0';
         }
     }
-    printf(kMessagePrefix, __FILE__);
+    printf(kMessagePrefix, kSourceFile);
     printf(kResultMessage, name);
     return name;
 }
@@ -250,7 +252,7 @@ void *EzNetCtl::RpcHandler(unsigned int function, void *buffer, int size) {
         LookUpName(static_cast<char *>(buffer), size);
         return buffer;
     case kFunctionNetCheck:
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kNetCheckMessage);
         break;
 #ifdef VIDEO_STANDARD_PAL
@@ -259,7 +261,7 @@ void *EzNetCtl::RpcHandler(unsigned int function, void *buffer, int size) {
         break;
 #endif
     default:
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kUnknownFunctionMessage, function);
         break;
     }

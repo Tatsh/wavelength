@@ -16,6 +16,8 @@ constexpr int kRpcThreadStackSize = 0x800;
 constexpr int kDmaAlignment = 16;
 
 constexpr char kMessagePrefix[] = "%s> ";
+// The source path the retail module prints.
+constexpr char kSourceFile[] = "../common/eznetcnf.c";
 constexpr char kDmaPaddingMessage[] = "warning: SIF DMA transfer size %d padded to %d\n";
 constexpr char kUnknownFunctionMessage[] = "unrecognized function id %d\n";
 
@@ -114,7 +116,7 @@ void *EzNetCnf::RpcHandler(unsigned int function, void *buffer, [[maybe_unused]]
         result = request->LoadEntry();
         break;
     default:
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kUnknownFunctionMessage, function);
         break;
     }
@@ -129,7 +131,7 @@ unsigned int EzNetCnf::SendToEe(void *data, void *destination, int size, bool no
     transfer.size = (size + kDmaAlignment - 1) & -kDmaAlignment;
     transfer.mode = 0;
     if ((size & (kDmaAlignment - 1)) != 0) {
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kDmaPaddingMessage, size, transfer.size);
     }
     unsigned int id;

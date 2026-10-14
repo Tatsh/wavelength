@@ -22,6 +22,8 @@ constexpr int kMemoryCardEntryLimit = 6;
 constexpr int kOtherEntryLimit = 10;
 
 constexpr char kMessagePrefix[] = "%s> ";
+// The source path the retail module prints.
+constexpr char kSourceFile[] = "../common/eznetcnf.c";
 constexpr char kGetCountErrorMessage[] = "sceNetCnfGetCount(%s) error %d\n";
 constexpr char kAllocErrorMessage[] = "AllocSysMemory failed\n";
 constexpr char kListLimitMessage[] = "ezList length limit reached at \"%s\"";
@@ -64,7 +66,7 @@ inline int NetCnfRequest::FillList(sceNetCnfList *list,
     NetcnfifEnv &env = EzNetCnf::sEnv;
     for (int i = 0; i < netCount; ++i) {
         if (i >= kNetCnfListEntryCount) {
-            printf(kMessagePrefix, __FILE__);
+            printf(kMessagePrefix, kSourceFile);
             printf(kListLimitMessage, list[i].systemName);
             break;
         }
@@ -105,7 +107,7 @@ inline int NetCnfRequest::FillList(sceNetCnfList *list,
 int NetCnfRequest::GetList() {
     const int netCount = sceNetCnfGetCount(mFileName, SCE_NETCNF_TYPE_NET);
     if (netCount <= 0) {
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kGetCountErrorMessage, mFileName, netCount);
         return netCount;
     }
@@ -120,7 +122,7 @@ int NetCnfRequest::GetList() {
     CpuResumeIntr(EzNetCnf::sInterruptState);
     int result;
     if (list == nullptr || reply == nullptr) {
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kAllocErrorMessage);
         result = kErrorNoMemory;
     } else {
@@ -144,7 +146,7 @@ int NetCnfRequest::LoadEntry() {
     CpuResumeIntr(EzNetCnf::sInterruptState);
     int result;
     if (data == nullptr) {
-        printf(kMessagePrefix, __FILE__);
+        printf(kMessagePrefix, kSourceFile);
         printf(kAllocErrorMessage);
         result = kErrorNoMemory;
     } else {
