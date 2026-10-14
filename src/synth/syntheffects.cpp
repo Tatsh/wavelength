@@ -12,12 +12,6 @@ constexpr int kDefaultFreqFloor = 500;
 constexpr int kDefaultInitFreq = 1000;
 constexpr float kDefaultResonance = 0.5f;
 
-// The sweeping filters, the other values of SoftFxFilter::mType that read parameters.
-constexpr int kTypeSweep2 = 2;
-constexpr int kTypeSweep5 = 5;
-constexpr int kTypeSweep7 = 7;
-constexpr int kTypeSweep9 = 9;
-
 // The delay ranges are given in milliseconds and stored in samples at 48 kHz.
 constexpr float kSamplesPerMs = 48.0f;
 constexpr float kDegreesPerCycle = 360.0f;
@@ -49,10 +43,10 @@ inline void LoadFilter(SoftFxFilter &filter, DataArray *pBus) {
     pFilter->FindInt("type", &nType, false);
     filter.mType = nType;
     switch (nType) {
-    case kTypeSweep2:
-    case kTypeSweep5:
-    case kTypeSweep7:
-    case kTypeSweep9:
+    case SoftFxFilter::kTypeSweptFilter:
+    case SoftFxFilter::kTypeFilter:
+    case SoftFxFilter::kTypeFilterVariant:
+    case SoftFxFilter::kTypeDistortedFilter:
         pFilter->FindFloat("resonance", &filter.mMix.mResonance, false);
         pFilter->FindInt("init_freq", &filter.mParam.mInitFreq, false);
         pFilter->FindInt("freq_floor", &filter.mFreqFloor, false);
