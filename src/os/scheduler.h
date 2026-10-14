@@ -59,7 +59,7 @@ public:
         float mTime;           /*!< The time it runs at, in milliseconds. */
         int mTick;             /*!< The tick it runs at. */
         CommandId mId;         /*!< The tag stored with the run. */
-        bool mRecordable;      /*!< Whether a recording writes the run. */
+        int mRecordable;       /*!< Non-zero when a recording writes the run. */
     };
 
     /**
