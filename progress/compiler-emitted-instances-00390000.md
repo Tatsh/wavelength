@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00390000` to `0x003a0000`
 
-82 of 277 routines done.
+84 of 277 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -74,7 +74,7 @@ preliminary.
 | `ClientAbortedPkt__InitializeClientAbortedPkt`                         |        :x:         |      1 |    104 | `0x00398fd8` | `0x00407860` | `void ClientAbortedPkt__InitializeClientAbortedPkt(ClientAbortedPkt * pSource)`                                                |
 | `DataAckPkt__InitializeDataAckPkt`                                     |        :x:         |      1 |    104 | `0x00398ed0` | `0x00407758` | `void DataAckPkt__InitializeDataAckPkt(DataAckPkt * pSource)`                                                                  |
 | `LoadGamePkt__CloneLoadGamePkt`                                        |        :x:         |      1 |    104 | `0x0039a760` | `0x00408fe8` | `void LoadGamePkt__CloneLoadGamePkt(LoadGamePkt * pSource)`                                                                    |
-| `DestructInetConfigsResultMsg`                                         |       :memo:       |      0 |    104 | `0x0039dc98` | `0x0040c9c0` | `undefined DestructInetConfigsResultMsg()`                                                                                     |
+| `DestructInetConfigsResultMsg`                                         |        :x:         |      0 |    104 | `0x0039dc98` | `0x0040c9c0` | `undefined DestructInetConfigsResultMsg()`                                                                                     |
 | `RndText__GetTypeInfo`                                                 |        :x:         |    100 |    100 | `0x003911c8` |              | `offset_type_info * RndText__GetTypeInfo(void)`                                                                                |
 | `RndParticleSys__GetTypeInfo`                                          |        :x:         |     39 |    100 | `0x00390668` | `0x003fed70` | `offset_type_info * RndParticleSys__GetTypeInfo(void)`                                                                         |
 | `SendSynthSetupCoreFxCommand`                                          | :white_check_mark: |      1 |    100 | `0x00396f50` | `0x00405638` | `undefined8 SendSynthSetupCoreFxCommand(int pSynth, int * pData, undefined4 nArg3, undefined4 nArg4)`                          |
@@ -232,12 +232,12 @@ preliminary.
 | `RemixDownloadMsg__GetRemixDownloadMsgName`                            |        :x:         |      0 |      1 | `0x0039b2e8` | `0x00409f30` | `char * RemixDownloadMsg__GetRemixDownloadMsgName(void)`                                                                       |
 | `RemixDownloadMsg__GetRemixDownloadMsgTypeId`                          |        :x:         |      0 |      1 | `0x0039b2d8` | `0x00409f20` | `undefined4 RemixDownloadMsg__GetRemixDownloadMsgTypeId(void)`                                                                 |
 | `TextFilterTask__DestroyTextFilterTask`                                |        :x:         |      0 |      1 | `0x0039bb50` |              | `void TextFilterTask__DestroyTextFilterTask(void * pThis, ulong dwFlags)`                                                      |
-| `InetImpl__GetInetImplField0x28`                                       |       :memo:       |      0 |      1 | `0x00397580` |              | `undefined4 InetImpl__GetInetImplField0x28(int pThis)`                                                                         |
-| `NetLobby__SetSink`                                                    |       :memo:       |      0 |      1 | `0x0039afb0` | `0x00409bf8` | `void NetLobby__SetSink(int pThis, undefined4 value)`                                                                          |
 | `GetRndMultiMeshClassName`                                             | :white_check_mark: |      0 |      1 | `0x00390158` | `0x003fe860` | `char * GetRndMultiMeshClassName(void)`                                                                                        |
 | `GetRndParticleSysClassName`                                           | :white_check_mark: |      0 |      1 | `0x00390708` | `0x003fee10` | `char * GetRndParticleSysClassName(void)`                                                                                      |
+| `InetImpl__GetInetImplField0x28`                                       | :white_check_mark: |      0 |      1 | `0x00397580` |              | `undefined4 InetImpl__GetInetImplField0x28(int pThis)`                                                                         |
 | `LobbyConnectionLostMsg__GetLobbyConnectionLostMsgName`                | :white_check_mark: |      0 |      1 | `0x0039b0c0` | `0x00409d08` | `char * LobbyConnectionLostMsg__GetLobbyConnectionLostMsgName(void)`                                                           |
 | `LobbyConnectionLostMsg__GetLobbyConnectionLostMsgTypeId`              | :white_check_mark: |      0 |      1 | `0x0039b0b0` | `0x00409cf8` | `undefined4 LobbyConnectionLostMsg__GetLobbyConnectionLostMsgTypeId(void)`                                                     |
+| `NetLobby__SetSink`                                                    | :white_check_mark: |      0 |      1 | `0x0039afb0` | `0x00409bf8` | `void NetLobby__SetSink(int pThis, undefined4 value)`                                                                          |
 | `PsTex__GetPsTexClassFactoryDescriptor`                                | :white_check_mark: |      0 |      1 | `0x003910a0` | `0x003ff7a8` | `void * PsTex__GetPsTexClassFactoryDescriptor(void)`                                                                           |
 | `PsTex__PsTexNopVirtual`                                               | :white_check_mark: |      0 |      1 | `0x00391098` | `0x003ff7a0` | `void PsTex__PsTexNopVirtual(void)`                                                                                            |
 | `RndArena__ResolveRndArenaClassString`                                 | :white_check_mark: |      0 |      1 | `0x00394b88` | `0x00403278` | `char * RndArena__ResolveRndArenaClassString(void)`                                                                            |
