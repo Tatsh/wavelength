@@ -11,6 +11,13 @@
 add_library(wavelength_common INTERFACE)
 target_compile_options(wavelength_common INTERFACE -Wall -Wextra -Wno-unknown-pragmas)
 
+# The game was built without exceptions. Its only exception tables belong to the compiler runtime,
+# and no game routine registers an unwind region or reaches the throw routines. Nothing here
+# builds unwind tables either.
+target_compile_options(
+  wavelength_common INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions> -fno-asynchronous-unwind-tables
+                              -fno-unwind-tables)
+
 # _EE selects the Emotion Engine side of the headers serving both processors.
 target_compile_definitions(wavelength_common INTERFACE _EE)
 
