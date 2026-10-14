@@ -65,18 +65,18 @@ int start(int argc, char **argv) {
     }
     switch (CxtModem::sLoadMode) {
     case CxtModem::kLoadModeNormal:
-        CxtModem::sDeviceFound = true;
+        CxtModem::sDeviceFound = 1;
         break;
     case CxtModem::kLoadModeAuto:
     case CxtModem::kLoadModeTest:
-        CxtModem::sDeviceFound = false;
+        CxtModem::sDeviceFound = 0;
         break;
     }
     // Registration probes the attached devices, and CxtModem::Probe() records a modem it finds.
     sceUsbdRegisterLdd(&g_driver);
     if (CxtModem::sLoadMode == CxtModem::kLoadModeTest) {
         sceUsbdUnregisterLdd(&g_driver);
-        return CxtModem::sDeviceFound ? kTestLoadFound : NO_RESIDENT_END;
+        return CxtModem::sDeviceFound == 1 ? kTestLoadFound : NO_RESIDENT_END;
     }
     if (!CxtModem::sDeviceFound) {
         sceUsbdUnregisterLdd(&g_driver);

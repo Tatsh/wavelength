@@ -240,7 +240,7 @@ inline bool CopyStringDescriptor(const char *descriptor, char *name) {
 CxtModem::LoadMode CxtModem::sLoadMode = CxtModem::kLoadModeNormal;
 
 // NTSC-U/C: 0x00003560
-bool CxtModem::sDeviceFound = false;
+int CxtModem::sDeviceFound = 0;
 
 // NTSC-U/C: 0x00003570
 char CxtModem::sDialString[CxtModem::kDialStringSize];
@@ -811,7 +811,7 @@ int CxtModem::Probe(int deviceId) {
     if (!IsConexantModem(device)) {
         return 0;
     }
-    sDeviceFound = true;
+    sDeviceFound = 1;
     if (sceUsbdScanStaticDescriptor(deviceId, device, USB_DESCRIPTOR_TYPE_INTERFACE) == nullptr) {
         return 0;
     }

@@ -85,7 +85,7 @@ public:
     static LoadMode sLoadMode;
 
     /** Whether a modem is attached, or for a normal load, whether to stay loaded. */
-    static bool sDeviceFound;
+    static int sDeviceFound;
 
     /** Size of sDialString. */
     static constexpr int kDialStringSize = 1024;
