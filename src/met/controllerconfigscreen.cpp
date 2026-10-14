@@ -46,7 +46,7 @@ constexpr char kLeftStickToken[] = "left_stick";
 constexpr char kRightStickToken[] = "right_stick";
 
 // The letters of the icons of the shoulder and face buttons, in the order of JoypadButton.
-constexpr const char *kButtonLabels[] = {"a", "b", "c", "d", "e", "f", "g", "h"};
+constexpr const char *kButtonLabels[] = {"f", "h", "e", "g", "b", "c", "d", "a"};
 
 constexpr int kLeftStick = 0;
 constexpr int kRightStick = 1;
