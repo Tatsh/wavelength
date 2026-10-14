@@ -450,7 +450,8 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
         sHit2Beams->LoadConfig(pConfig, pDefaults, bReload, fBeamScale);
     }
     if (sBeamView == nullptr) {
-        sBeamView = dynamic_cast<RndView *>(TheManager.Create("View", "ship beam draw.view"));
+        sBeamView =
+            dynamic_cast<RndView *>(TheManager.Create(RndView::sClassName, "ship beam draw.view"));
     }
 }
 
@@ -503,9 +504,9 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     mView = FindObject<RndView>(FormatString("ship_%c.view", nColor));
     mMesh = FindObject<RndMesh>(FormatString("ship_%c.mesh", nColor));
     mPsAnim = dynamic_cast<RndView *>(
-        TheManager.Create("View", FormatString("ship ps anim %c.view", nColor)));
+        TheManager.Create(RndView::sClassName, FormatString("ship ps anim %c.view", nColor)));
     mBackPsAnim = dynamic_cast<RndView *>(
-        TheManager.Create("View", FormatString("ship backps anim %c.view", nColor)));
+        TheManager.Create(RndView::sClassName, FormatString("ship backps anim %c.view", nColor)));
     mFxView = FindObject<RndView>(FormatString("ship fx_%c.view", nColor));
     mMat = FindObject<RndMat>(FormatString("ship_%c.mat", nColor));
     if (mMulti != 0) {
