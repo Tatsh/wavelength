@@ -6,9 +6,9 @@
 #include "met/metagame.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/rndanimatable.h"
 #include "rnd/rndmanager.h"
 #include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "ui/uilabel.h"
 #include "ui/uimanager.h"
 
@@ -26,7 +26,7 @@ void ArenaUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     const String arena(TheMetagame.ArenaName(arenas[mCount - 1]));
     pLabel->SetText(FormatString(TheLocale.Localize("unlock_arena", true), arena.c_str()));
     pLabel->mText->UpdateCursors();
-    mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find("s_unlock_arena.view")));
+    mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find("s_unlock_arena.view")));
 }
 
 void ArenaUnlockScreen::Exit(UIScreen *pNextScreen, float fTime) {

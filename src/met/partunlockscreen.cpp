@@ -8,9 +8,9 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/rndanimatable.h"
 #include "rnd/rndmanager.h"
 #include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -51,7 +51,7 @@ void PartUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     SystemConfig()->FindArray(kMetagameKey, true)->FindFloat("unlock_prefab_time", &mDelayMs, true);
     mPanel = dynamic_cast<UnlockAvatarPanel *>(TheUI.FindPanel("s_unloc_p", false));
     ShowNextItems();
-    mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find(kViewName)));
+    mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find(kViewName)));
     FreqScreen::Enter(pPrevScreen, fTime);
 }
 
@@ -72,7 +72,7 @@ void PartUnlockScreen::Poll(float fTime) {
         if (static_cast<unsigned>(mIndex) < mItems.size()) {
             mNextMs = SystemMs() + mDelayMs;
             ShowNextItems();
-            mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find(kViewName)));
+            mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find(kViewName)));
             mAnimPlayer.Start(TheUI.mTime);
         } else {
             TheUI.GotoScreen("unlock_parts_done");

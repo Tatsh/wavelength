@@ -8,10 +8,10 @@
 #include "met/bonuspicpanel.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/rndanimatable.h"
 #include "rnd/rndmanager.h"
 #include "rnd/rndmatanim.h"
 #include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
@@ -55,7 +55,7 @@ void SongDecryptScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     pPicText->SetText(FormatString(TheLocale.Localize("s_g_bonus_pic_label", true), pszType));
     pPicText->UpdateCursors();
 
-    mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find("s_g_bonus.view")));
+    mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find("s_g_bonus.view")));
     mAnimPlayer.Start(TheUI.mTime);
     mDecryptPlayed = 0;
     FreqScreen::Enter(pPrevScreen, fTime);
