@@ -799,14 +799,17 @@ void Song::ReadDuelPatterns() {
 }
 
 void Song::ValidateEnableOrder() {
-    std::set<int> enabled;
-    for (unsigned int i = 0; i < mEnableOrder.size(); ++i) {
-        for (unsigned int j = 0; j < mEnableOrder[i].size(); ++j) {
-            const int nTrack = mEnableOrder[i][j];
-            if (enabled.find(nTrack) != enabled.end()) {
-                Error(String(kTrackEnabledTwiceError));
+    {
+        // The set is released before the range check.
+        std::set<int> enabled;
+        for (unsigned int i = 0; i < mEnableOrder.size(); ++i) {
+            for (unsigned int j = 0; j < mEnableOrder[i].size(); ++j) {
+                const int nTrack = mEnableOrder[i][j];
+                if (enabled.find(nTrack) != enabled.end()) {
+                    Error(String(kTrackEnabledTwiceError));
+                }
+                enabled.insert(nTrack);
             }
-            enabled.insert(nTrack);
         }
     }
     const int nTracks = GetNumTracks();
