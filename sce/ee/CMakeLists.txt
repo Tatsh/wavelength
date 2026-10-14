@@ -52,11 +52,19 @@ set(WAVELENGTH_SONYLIB_SRCS
     src/tlbfunc.c
     src/tty.c)
 
-add_library(wavelength_sonylibs STATIC ${WAVELENGTH_SONYLIB_SRCS})
+# The SCE-RT network library.
+set(WAVELENGTH_RT_SRCS src/rt/libnet.c src/rt/mgcl.c src/rt/rtmediushandlers.c)
+
+add_library(wavelength_sonylibs STATIC ${WAVELENGTH_SONYLIB_SRCS} ${WAVELENGTH_RT_SRCS})
 target_link_libraries(wavelength_sonylibs PRIVATE wavelength_common)
 # The original libraries assert in the shipped build. No build type may compile the assertions out.
 target_compile_options(wavelength_sonylibs PRIVATE -UNDEBUG)
-target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include")
+# The game server client copies its fixed texts with the full size of their fields, as retail does.
+set_source_files_properties(src/rt/mgcl.c PROPERTIES COMPILE_OPTIONS -Wno-stringop-truncation)
+# Most receivers of the lobby messages only report the size of the record.
+set_source_files_properties(src/rt/rtmediushandlers.c PROPERTIES COMPILE_OPTIONS -Wno-unused-parameter)
+target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include"
+                                                      "${CMAKE_SOURCE_DIR}/sce/ee/src")
 
 # The system layer the compiler's C and C++ runtime needs, over the reconstructed kernel.
 add_library(wavelength_runtime STATIC runtime/newlib.c runtime/pthread.c runtime/softfloat.c)

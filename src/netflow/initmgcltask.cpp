@@ -22,7 +22,7 @@ void InitMGCLTask::OnStart() {
     params.handlers[3] = OnServerRequest3;
     params.maxClients = LaunchpadRT::kMaxClients;
     params.applicationId = LobbyRT::kApplicationId;
-    params.reserved00 = 0;
+    params.publicKey = nullptr;
     params.connectMode = 0;
     int nStatus;
     memset(&nStatus, 0, sizeof(nStatus));
@@ -37,20 +37,21 @@ void InitMGCLTask::OnStart() {
     Finish(bReady, LaunchpadAbortedMsg::kReasonInit);
 }
 
-void InitMGCLTask::OnServerRequest0(int nConnection,
-                                    int nType,
-                                    int nSize,
-                                    const rtMgclResponse *pRequest) {
+int InitMGCLTask::OnServerRequest0(int nConnection,
+                                   int nType,
+                                   int nSize,
+                                   const rtMgclResponse *pRequest) {
     (void)nConnection;
     (void)nType;
     (void)nSize;
     (void)pRequest;
+    return 0; // The binary leaves the result register as it found it.
 }
 
-void InitMGCLTask::OnServerRequest1(int nConnection,
-                                    int nType,
-                                    int nSize,
-                                    const rtMgclResponse *pRequest) {
+int InitMGCLTask::OnServerRequest1(int nConnection,
+                                   int nType,
+                                   int nSize,
+                                   const rtMgclResponse *pRequest) {
     (void)nConnection;
     (void)nType;
     (void)nSize;
@@ -59,25 +60,27 @@ void InitMGCLTask::OnServerRequest1(int nConnection,
     strncpy(reply.messageId, pRequest->messageId, RT_MGCL_MESSAGE_ID_SIZE);
     reply.status = RT_MGCL_STATUS_SUCCESS;
     reply.sessionKey[0] = '\0';
-    (void)rtMgclSendServerReply(&reply);
+    return rtMgclSendServerReply(&reply);
 }
 
-void InitMGCLTask::OnServerRequest2(int nConnection,
-                                    int nType,
-                                    int nSize,
-                                    const rtMgclResponse *pRequest) {
+int InitMGCLTask::OnServerRequest2(int nConnection,
+                                   int nType,
+                                   int nSize,
+                                   const rtMgclResponse *pRequest) {
     (void)nConnection;
     (void)nType;
     (void)nSize;
     (void)pRequest;
+    return 0; // The binary leaves the result register as it found it.
 }
 
-void InitMGCLTask::OnServerRequest3(int nConnection,
-                                    int nType,
-                                    int nSize,
-                                    const rtMgclResponse *pRequest) {
+int InitMGCLTask::OnServerRequest3(int nConnection,
+                                   int nType,
+                                   int nSize,
+                                   const rtMgclResponse *pRequest) {
     (void)nConnection;
     (void)nType;
     (void)nSize;
     (void)pRequest;
+    return 0; // The binary leaves the result register as it found it.
 }

@@ -573,11 +573,9 @@ initmgcltask
 initrttask
 initsys
 innm
-inptr
 inputlost
 inputmap
 inputmgr
-insize
 instrpart
 intdialog
 intdir
@@ -1278,6 +1276,9 @@ rpcd
 rpcm
 rshift
 rsqrt
+rtmedius
+rtmediushandlers
+rtmemory
 rtti
 safn
 sampledesc

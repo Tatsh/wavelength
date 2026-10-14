@@ -42,9 +42,9 @@ typedef struct {
 typedef struct {
     MRpcPacketHeader header;
     unsigned int nCommand;
-    void *pBuffer;
     int nBufferSize;
-    int nOption;
+    int nStackSize;
+    int nPriority;
 } MRpcBindPacket;
 
 typedef struct {
@@ -195,9 +195,9 @@ void sceSifMInitRpc(unsigned int mode) {
 int sceSifMBindRpcParam(sceSifMClientData *cd,
                         unsigned int command,
                         unsigned int mode,
-                        void *pBuffer,
-                        int nBufferSize,
-                        int nOption) {
+                        int buffersize,
+                        int stacksize,
+                        int priority) {
     struct SemaParam sema; // Yes, the binary sets only three of the fields.
     MRpcPacket *pPacket;
     int nWaitSema;
@@ -216,9 +216,9 @@ int sceSifMBindRpcParam(sceSifMClientData *cd,
     WaitSema(cd->sema);
     cd->command = command;
     cd->serve = NULL;
-    cd->pBindBuffer = pBuffer;
-    cd->nBindBufferSize = nBufferSize;
-    cd->nBindOption = nOption;
+    cd->buffersize = buffersize;
+    cd->stacksize = stacksize;
+    cd->priority = priority;
     pPacket = getPacket(&_data_table);
     if (pPacket == NULL) {
         DeleteSema(cd->sema);
@@ -227,9 +227,9 @@ int sceSifMBindRpcParam(sceSifMClientData *cd,
     cd->paddr = pPacket;
     cd->pid = pPacket->header.nId;
     pPacket->bind.nCommand = command;
-    pPacket->bind.pBuffer = pBuffer;
-    pPacket->bind.nBufferSize = nBufferSize;
-    pPacket->bind.nOption = nOption;
+    pPacket->bind.nBufferSize = buffersize;
+    pPacket->bind.nStackSize = stacksize;
+    pPacket->bind.nPriority = priority;
     pPacket->header.pPacket = pPacket;
     pPacket->header.pClient = cd;
     sema.maxCount = 1;

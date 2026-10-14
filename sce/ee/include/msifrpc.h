@@ -23,9 +23,9 @@ typedef struct {
     void *serve;              /*!< The IOP server record the bind reply reports, or null. */
     int sema;                 /*!< The semaphore that serialises the requests of the client. */
     int nUnbindResult;        /*!< The result the unbind reply reports. */
-    void *pBindBuffer;        /*!< The buffer sceSifMBindRpcParam() passes to the server. */
-    int nBindBufferSize;      /*!< The size sceSifMBindRpcParam() passes to the server. */
-    int nBindOption;          /*!< The option word sceSifMBindRpcParam() passes to the server. */
+    int buffersize;           /*!< The argument buffer size the server thread is given. */
+    int stacksize;            /*!< The stack size of the server thread. */
+    int priority;             /*!< The priority of the server thread. */
     unsigned int nReserved60; /*!< Not written by the library. */
 } sceSifMClientData;
 
@@ -45,9 +45,9 @@ void sceSifMInitRpc(unsigned int mode);
  * @param cd The client.
  * @param command The server identifier.
  * @param mode Must be zero.
- * @param pBuffer The buffer the server receives.
- * @param nBufferSize The size the server receives.
- * @param nOption The option word the server receives.
+ * @param buffersize The argument buffer size the server thread is given.
+ * @param stacksize The stack size of the server thread.
+ * @param priority The priority of the server thread.
  * @return Zero, -1 for a nonzero mode or when no packet is free, -2 when the request cannot be
  * sent, or -3 when no semaphore can be created.
  * @ghidraAddress NTSC-U/C: 0x003165b8
@@ -56,9 +56,9 @@ void sceSifMInitRpc(unsigned int mode);
 int sceSifMBindRpcParam(sceSifMClientData *cd,
                         unsigned int command,
                         unsigned int mode,
-                        void *pBuffer,
-                        int nBufferSize,
-                        int nOption);
+                        int buffersize,
+                        int stacksize,
+                        int priority);
 
 /**
  * Unbind a client from its server and wait for the reply.

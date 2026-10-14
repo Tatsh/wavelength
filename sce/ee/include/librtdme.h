@@ -313,6 +313,134 @@ int rtDmeSend(signed char flags,
               unsigned short size,
               const rtDmeMessage *message);
 
+/** The message class of the messages exchanged with the lobby server. */
+#define RT_DME_CLASS_LOBBY 1
+
+/** The message class of the messages exchanged with the game server. */
+#define RT_DME_CLASS_SERVER 3
+
+/**
+ * Register a message type of a message class with the field list and its receiver.
+ *
+ * @param type Receives the registered type.
+ * @param messageClass The message class.
+ * @param handler The receiver, or null for a type the console only sends.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8038
+ * @ghidraAddress PAL: 0x002b1fa8
+ */
+int rtDmeRegisterClassMessage(int *type, int messageClass, rtDmeMessageHandler handler);
+
+/**
+ * Send a message of a message class.
+ *
+ * @param flags A combination of the RT_DME_SEND_ bits.
+ * @param connection The connection.
+ * @param receiver The peer, or 0xffff for the server.
+ * @param messageClass The message class.
+ * @param type The registered type.
+ * @param size The size of the record in bytes.
+ * @param record The record.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002b22d8
+ * @ghidraAddress PAL: 0x002bc248
+ */
+int rtDmeSendClassMessage(signed char flags,
+                          int connection,
+                          int receiver,
+                          int messageClass,
+                          int type,
+                          int size,
+                          const void *record);
+
+/** The addresses the server sees for a console. */
+typedef struct {
+    int complete;                                 /*!< Non-zero once the addresses are known. */
+    int error;                                    /*!< 0 for success, otherwise an error. */
+    rtNetAddress addresses[RT_NET_ADDRESS_COUNT]; /*!< The addresses. */
+} rtDmeAddressResult;
+
+/**
+ * Receiver of the result of rtDmeQueryAddresses().
+ *
+ * @param result The result.
+ */
+typedef void (*rtDmeAddressCallback)(const rtDmeAddressResult *result);
+
+/** The parameters of rtDmeQueryAddresses(). 0x20 bytes. */
+typedef struct {
+    int reserved00;                /* +0x00, set by rtDmeInitAddressQuery(). */
+    rtDmeAddressCallback onResult; /*!< Receives the result. */
+    rtNetAddress server;           /*!< The server to ask. */
+} rtDmeAddressQuery;
+
+/** The parameters of rtDmeReportAddresses(). 0x34 bytes. */
+typedef struct {
+    int reserved00;                               /* +0x00, set by rtDmeInitAddressReport(). */
+    rtNetAddress addresses[RT_NET_ADDRESS_COUNT]; /*!< The addresses of the peer. */
+} rtDmeAddressReport;
+
+/**
+ * Set the defaults of the parameters of rtDmeQueryAddresses().
+ *
+ * @param query The parameters.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8540
+ * @ghidraAddress PAL: 0x002b24b0
+ */
+int rtDmeInitAddressQuery(rtDmeAddressQuery *query);
+
+/**
+ * Ask a server for the addresses it sees for this console.
+ *
+ * @param query The parameters.
+ * @param status Receives a further status.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a85d8
+ * @ghidraAddress PAL: 0x002b2548
+ */
+int rtDmeQueryAddresses(const rtDmeAddressQuery *query, rtDmeConnectStatus *status);
+
+/**
+ * Set the defaults of the parameters of rtDmeReportAddresses().
+ *
+ * @param report The parameters.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8680
+ * @ghidraAddress PAL: 0x002b25f0
+ */
+int rtDmeInitAddressReport(rtDmeAddressReport *report);
+
+/**
+ * Hand the library the addresses of a peer.
+ *
+ * @param report The parameters.
+ * @param status Receives a further status.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8718
+ * @ghidraAddress PAL: 0x002b2688
+ */
+int rtDmeReportAddresses(const rtDmeAddressReport *report, rtDmeConnectStatus *status);
+
+/**
+ * Write the local address of the console as text.
+ *
+ * @param address Receives the text.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8950
+ * @ghidraAddress PAL: 0x002b28c0
+ */
+int rtDmeGetLocalAddress(char address[RT_NET_ADDRESS_SIZE]);
+
+/**
+ * Service the library once per frame.
+ *
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8bf8
+ * @ghidraAddress PAL: 0x002b2b68
+ */
+int rtDmeUpdate(void);
+
 #ifdef __cplusplus
 }
 #endif

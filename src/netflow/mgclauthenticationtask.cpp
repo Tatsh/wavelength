@@ -9,7 +9,7 @@ void MGCLAuthenticationTask::OnStart() {
     rtMgclAuthenticationRequest request;
     memset(&request, 0, sizeof(request));
     MakeTag(this, request.messageId);
-    request.addresses[0].type = 0;
+    request.requestType = 0;
     if (rtMgclAuthenticate(&request, OnResponse) != 0) {
         Finish(false, LaunchpadAbortedMsg::kReasonServer);
     }

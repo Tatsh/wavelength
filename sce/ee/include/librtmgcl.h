@@ -52,18 +52,20 @@ typedef struct {
  * @param type The kind of request.
  * @param size The size of the request.
  * @param request The request.
+ * @return 0 to accept the addresses of a peer the request carries. The library reads the result
+ * for the second kind of request only.
  */
-typedef void (*rtMgclServerRequestHandler)(int connection,
-                                           int type,
-                                           int size,
-                                           const rtMgclResponse *request);
+typedef int (*rtMgclServerRequestHandler)(int connection,
+                                          int type,
+                                          int size,
+                                          const rtMgclResponse *request);
 
 /** The answer of the host to a request rtMgclServerRequestHandler received. 0x68 bytes. */
 typedef struct {
     char messageId[RT_MGCL_MESSAGE_ID_SIZE];   /*!< The identifier of the request. */
     signed char status;                        /*!< RT_MGCL_STATUS_SUCCESS or an error. */
     char sessionKey[RT_MGCL_SESSION_KEY_SIZE]; /*!< The key of the session, or empty. */
-    char reserved27[0x41];                     /* +0x27, the rest the game leaves zero. */
+    int reserved28[16];                        /* +0x28, the game leaves it zero. */
 } rtMgclServerReply;
 
 /** The number of request handlers of rtMgclInitParams. */
@@ -71,8 +73,8 @@ typedef struct {
 
 /** The parameters of rtMgclInitialize(). 0x20 bytes. */
 typedef struct {
-    int reserved00;  /* +0x00, the game leaves it zero. */
-    int connectMode; /*!< Zero for the default connection. */
+    const unsigned char *publicKey; /*!< The public key of the console, or null. */
+    int connectMode;                /*!< 1 to start the peer-to-peer layer as well. */
     rtMgclServerRequestHandler handlers[RT_MGCL_HANDLER_COUNT]; /*!< The request handlers. */
     int maxClients;                                             /*!< The consoles a game takes. */
     int applicationId;                                          /*!< The identifier of the game. */
@@ -116,9 +118,10 @@ typedef struct {
 
 /** The request of rtMgclAuthenticate(). 0x4c bytes. */
 typedef struct {
-    char messageId[RT_MGCL_MESSAGE_ID_SIZE];      /*!< The identifier. */
-    rtNetAddress addresses[RT_NET_ADDRESS_COUNT]; /*!< The addresses of the host, left empty. */
-    int reserved48;                               /* +0x48, the game leaves it zero. */
+    char messageId[RT_MGCL_MESSAGE_ID_SIZE]; /*!< The identifier. */
+    int requestType;                         /*!< The kind of request. The game sets 0. */
+    rtNetAddress
+        addresses[RT_NET_ADDRESS_COUNT]; /*!< The addresses of the host, set by the library. */
 } rtMgclAuthenticationRequest;
 
 /** The response of rtMgclAuthenticate(). */
@@ -193,6 +196,7 @@ typedef void (*rtMgclCreateGameCallback)(int connection,
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x003040e8
+ * @ghidraAddress PAL: 0x0030e180
  */
 int rtMgclInitialize(const rtMgclInitParams *params, int *status);
 
@@ -202,6 +206,7 @@ int rtMgclInitialize(const rtMgclInitParams *params, int *status);
  * @param version Receives the text.
  * @return 0.
  * @ghidraAddress NTSC-U/C: 0x003050d0
+ * @ghidraAddress PAL: 0x0030f168
  */
 int rtMgclGetVersion(char version[RT_MGCL_VERSION_SIZE]);
 
@@ -211,6 +216,7 @@ int rtMgclGetVersion(char version[RT_MGCL_VERSION_SIZE]);
  * @param reply The answer.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00305100
+ * @ghidraAddress PAL: 0x0030f198
  */
 int rtMgclSendServerReply(rtMgclServerReply *reply);
 
@@ -219,6 +225,7 @@ int rtMgclSendServerReply(rtMgclServerReply *reply);
  *
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00303e48
+ * @ghidraAddress PAL: 0x0030dee0
  */
 int rtMgclClose(void);
 
@@ -228,6 +235,7 @@ int rtMgclClose(void);
  * @param params The parameters.
  * @return 0, or an error code for null parameters.
  * @ghidraAddress NTSC-U/C: 0x003052c0
+ * @ghidraAddress PAL: 0x0030f358
  */
 int rtMgclInitConnectParams(rtMgclConnectParams *params);
 
@@ -241,6 +249,7 @@ int rtMgclInitConnectParams(rtMgclConnectParams *params);
  * @param onConnect Receives the result, or null to keep the receiver.
  * @return 0, or an error code for null parameters.
  * @ghidraAddress NTSC-U/C: 0x00305300
+ * @ghidraAddress PAL: 0x0030f398
  */
 int rtMgclSetConnectParams(rtMgclConnectParams *params,
                            const char *address,
@@ -254,6 +263,7 @@ int rtMgclSetConnectParams(rtMgclConnectParams *params,
  * @param key Receives the key.
  * @return 0, or -1 for a null buffer.
  * @ghidraAddress NTSC-U/C: 0x003031c4
+ * @ghidraAddress PAL: 0x0030d25c
  */
 int rtMgclGetServerKey(unsigned char key[RT_NET_SERVER_KEY_SIZE]);
 
@@ -264,6 +274,7 @@ int rtMgclGetServerKey(unsigned char key[RT_NET_SERVER_KEY_SIZE]);
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00303ec0
+ * @ghidraAddress PAL: 0x0030df58
  */
 int rtMgclConnect(const rtMgclConnectParams *params, int *status);
 
@@ -272,6 +283,7 @@ int rtMgclConnect(const rtMgclConnectParams *params, int *status);
  *
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00304080
+ * @ghidraAddress PAL: 0x0030e118
  */
 int rtMgclDisconnect(void);
 
@@ -282,6 +294,7 @@ int rtMgclDisconnect(void);
  * @param callback Receives an rtMgclSessionBeginResponse.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00303c68
+ * @ghidraAddress PAL: 0x0030dd00
  */
 int rtMgclSessionBegin(rtMgclSessionBeginRequest *request, rtMgclSessionBeginCallback callback);
 
@@ -292,6 +305,7 @@ int rtMgclSessionBegin(rtMgclSessionBeginRequest *request, rtMgclSessionBeginCal
  * @param callback Receives the response.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00303d60
+ * @ghidraAddress PAL: 0x0030ddf8
  */
 int rtMgclSessionEnd(rtMgclSessionEndRequest *request, rtMgclSessionEndCallback callback);
 
@@ -302,6 +316,7 @@ int rtMgclSessionEnd(rtMgclSessionEndRequest *request, rtMgclSessionEndCallback 
  * @param callback Receives an rtMgclAuthenticationResponse.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00303b18
+ * @ghidraAddress PAL: 0x0030dbb0
  */
 int rtMgclAuthenticate(rtMgclAuthenticationRequest *request, rtMgclAuthenticationCallback callback);
 
@@ -311,6 +326,7 @@ int rtMgclAuthenticate(rtMgclAuthenticationRequest *request, rtMgclAuthenticatio
  * @param report The report.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00305000
+ * @ghidraAddress PAL: 0x0030f098
  */
 int rtMgclSendServerReport(rtMgclServerReport *report);
 
@@ -321,6 +337,7 @@ int rtMgclSendServerReport(rtMgclServerReport *report);
  * @param callback Receives an rtMgclCreateGameResponse.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x00305190
+ * @ghidraAddress PAL: 0x0030f228
  */
 int rtMgclCreateGame(rtMgclCreateGameRequest *request, rtMgclCreateGameCallback callback);
 
@@ -329,6 +346,7 @@ int rtMgclCreateGame(rtMgclCreateGameRequest *request, rtMgclCreateGameCallback 
  *
  * @return 0, or an error code once the connection failed.
  * @ghidraAddress NTSC-U/C: 0x00303de8
+ * @ghidraAddress PAL: 0x0030de80
  */
 int rtMgclUpdate(void);
 

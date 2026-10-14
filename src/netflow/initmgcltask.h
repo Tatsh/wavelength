@@ -27,10 +27,11 @@ public:
      * @param nType The kind of request.
      * @param nSize The size of the request.
      * @param pRequest The request.
+     * @return 0, which the library does not read.
      * @ghidraAddress NTSC-U/C: 0x0025b0f0
      * @ghidraAddress PAL: 0x00264140
      */
-    static void
+    static int
     OnServerRequest0(int nConnection, int nType, int nSize, const rtMgclResponse *pRequest);
 
     /**
@@ -40,10 +41,11 @@ public:
      * @param nType The kind of request.
      * @param nSize The size of the request.
      * @param pRequest The request, whose identifier the reply repeats.
+     * @return The result of rtMgclSendServerReply().
      * @ghidraAddress NTSC-U/C: 0x0025b0f8
      * @ghidraAddress PAL: 0x00264148
      */
-    static void
+    static int
     OnServerRequest1(int nConnection, int nType, int nSize, const rtMgclResponse *pRequest);
 
     /**
@@ -53,10 +55,11 @@ public:
      * @param nType The kind of request.
      * @param nSize The size of the request.
      * @param pRequest The request.
+     * @return 0, which the library does not read.
      * @ghidraAddress NTSC-U/C: 0x0025b148
      * @ghidraAddress PAL: 0x00264198
      */
-    static void
+    static int
     OnServerRequest2(int nConnection, int nType, int nSize, const rtMgclResponse *pRequest);
 
     /**
@@ -66,10 +69,11 @@ public:
      * @param nType The kind of request.
      * @param nSize The size of the request.
      * @param pRequest The request.
+     * @return 0, which the library does not read.
      * @ghidraAddress NTSC-U/C: 0x0025b150
      * @ghidraAddress PAL: 0x002641a0
      */
-    static void
+    static int
     OnServerRequest3(int nConnection, int nType, int nSize, const rtMgclResponse *pRequest);
 
 protected:
