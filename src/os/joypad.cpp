@@ -188,7 +188,7 @@ int JoypadWait() {
 
 void JoypadPoll() {
     if (gThresholdLoaded == 0) {
-        DebugNotify(" Can't call %s before initialization...", __func__);
+        DebugNotify(" Can't call JoypadPoll before initialization...");
         return;
     }
     int nButtons = 0;
