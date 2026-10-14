@@ -22,7 +22,7 @@ void InitMGCLTask::OnStart() {
     params.handlers[3] = OnServerRequest3;
     params.maxClients = LaunchpadRT::kMaxClients;
     params.applicationId = LobbyRT::kApplicationId;
-    params.publicKey = nullptr;
+    params.keyPair = nullptr;
     params.connectMode = 0;
     int nStatus;
     memset(&nStatus, 0, sizeof(nStatus));

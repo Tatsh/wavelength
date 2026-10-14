@@ -663,7 +663,7 @@ int rtMgclInitialize(const rtMgclInitParams *params, int *status) {
         return kErrorAlreadyInitialized;
     }
     rtNetDefaultSettings(&settings);
-    settings.publicKey = params->publicKey;
+    settings.keyPair = params->keyPair;
     g_nMaxClients = params->maxClients;
     settings.applicationId = params->applicationId;
     if (params->connectMode == 1) {

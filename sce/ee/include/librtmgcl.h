@@ -73,8 +73,8 @@ typedef struct {
 
 /** The parameters of rtMgclInitialize(). 0x20 bytes. */
 typedef struct {
-    const unsigned char *publicKey; /*!< The public key of the console, or null. */
-    int connectMode;                /*!< 1 to start the peer-to-peer layer as well. */
+    const rtNetKeyPair *keyPair; /*!< The key pair of the console, or null. */
+    int connectMode;             /*!< 1 to start the peer-to-peer layer as well. */
     rtMgclServerRequestHandler handlers[RT_MGCL_HANDLER_COUNT]; /*!< The request handlers. */
     int maxClients;                                             /*!< The consoles a game takes. */
     int applicationId;                                          /*!< The identifier of the game. */
