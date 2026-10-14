@@ -165,16 +165,6 @@ private:
 BinStream &operator>>(BinStream &stream, String &text);
 
 /**
- * Select the text mode of the string streams, in which operator>>() reads a string up to its
- * terminator.
- *
- * @param bText Non-zero for the text mode.
- * @ghidraAddress NTSC-U/C: 0x0029f858
- * @ghidraAddress PAL: 0x002a9518
- */
-void SetStringReadsText(int bText);
-
-/**
  * Write a vector as its element count followed by each element.
  *
  * Each element type has its own instance, one address each.
