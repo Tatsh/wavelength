@@ -331,6 +331,88 @@ public:
     void TransformVerts(const Transform &xfm);
 
     /**
+     * Append the two triangles of a quad to the faces of mGeomOwner.
+     *
+     * The triangles are (nV0, nV1, nV2) and (nV2, nV1, nV3). The only out-of-line copy is in the
+     * tunnel geometry unit.
+     *
+     * @param nV0 The first corner.
+     * @param nV1 The corner after nV0 along the first row.
+     * @param nV2 The corner of the second row beside nV0.
+     * @param nV3 The corner of the second row beside nV1.
+     * @ghidraAddress NTSC-U/C: 0x001cb608
+     */
+    void AddQuad(unsigned short nV0, unsigned short nV1, unsigned short nV2, unsigned short nV3);
+
+    /**
+     * Append the quads between two rows of vertices with AddQuad().
+     *
+     * Each row has nCount vertices nStride apart, and a quad spans nStep of them. The only
+     * out-of-line copy is in the tunnel geometry unit.
+     *
+     * @param nRowA The first vertex of the first row.
+     * @param nRowB The first vertex of the second row.
+     * @param nCount The vertices in each row.
+     * @param nStride The distance between two neighbouring vertices of a row.
+     * @param nStep The vertices a quad spans.
+     * @ghidraAddress NTSC-U/C: 0x001cba30
+     */
+    void AddQuadStrip(int nRowA, int nRowB, int nCount, int nStride, int nStep);
+
+    /**
+     * Fill the vertices of two edges of a tunnel panel, interpolating every field along them.
+     *
+     * Each edge blends in a straight line between two corners. The vertex vector grows to twice
+     * nCount first when it is shorter.
+     *
+     * @param nEdgeA The first vertex of the first edge.
+     * @param nEdgeB The first vertex of the second edge.
+     * @param nCount The vertices of each edge.
+     * @param nStride The distance between two neighbouring vertices of an edge.
+     * @param pointA0 The position at the start of the first edge.
+     * @param pointB0 The position at the start of the second edge.
+     * @param pointA1 The position at the end of the first edge.
+     * @param pointB1 The position at the end of the second edge.
+     * @param texA0 The first texture coordinate at the start of the first edge.
+     * @param texB0 The first texture coordinate at the start of the second edge.
+     * @param texA1 The first texture coordinate at the end of the first edge.
+     * @param texB1 The first texture coordinate at the end of the second edge.
+     * @param weightsA0 The two vertex weights at the start of the first edge.
+     * @param weightsB0 The two vertex weights at the start of the second edge.
+     * @param weightsA1 The two vertex weights at the end of the first edge.
+     * @param weightsB1 The two vertex weights at the end of the second edge.
+     * @param colorA0 The colour at the start of the first edge.
+     * @param colorB0 The colour at the start of the second edge.
+     * @param colorA1 The colour at the end of the first edge.
+     * @param colorB1 The colour at the end of the second edge.
+     * @param normA The normal of the first edge.
+     * @param normB The normal of the second edge.
+     * @ghidraAddress NTSC-U/C: 0x001cbac8
+     */
+    void FillEdges(int nEdgeA,
+                   int nEdgeB,
+                   int nCount,
+                   int nStride,
+                   const Vector3 &pointA0,
+                   const Vector3 &pointB0,
+                   const Vector3 &pointA1,
+                   const Vector3 &pointB1,
+                   const Vector2 &texA0,
+                   const Vector2 &texB0,
+                   const Vector2 &texA1,
+                   const Vector2 &texB1,
+                   const Vector2 &weightsA0,
+                   const Vector2 &weightsB0,
+                   const Vector2 &weightsA1,
+                   const Vector2 &weightsB1,
+                   const Color &colorA0,
+                   const Color &colorB0,
+                   const Color &colorA1,
+                   const Color &colorB1,
+                   const Vector3 &normA,
+                   const Vector3 &normB);
+
+    /**
      * Create a mesh.
      *
      * @param pszName The registry key.

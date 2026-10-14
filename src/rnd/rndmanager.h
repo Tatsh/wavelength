@@ -182,6 +182,17 @@ public:
     void LoadFile(const char *pszFile);
 
     /**
+     * Write the objects to a `.rnd` file.
+     *
+     * A file that does not open reports "Could not open file: %s" and nothing is written.
+     * Otherwise the directory of the file becomes the root that relative paths resolve against.
+     *
+     * @param pszFile The file.
+     * @ghidraAddress NTSC-U/C: 0x00238fe8
+     */
+    void SaveFile(const char *pszFile);
+
+    /**
      * Create an instance of a registered class.
      *
      * An unregistered class, or a name already in use, yields null.

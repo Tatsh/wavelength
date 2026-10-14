@@ -80,6 +80,9 @@ constexpr int kFileFlagsNone = 0;
 // The alignment argument of PoolMemAlloc(), here the default.
 constexpr int kDefaultAlignment = 0;
 
+// The block size of a file SaveFile() writes.
+constexpr int kSaveChunkSize = 0x20000;
+
 // The marker Write() places after each object record.
 constexpr unsigned kRecordEndMarker = 0xdeaddead;
 
@@ -236,6 +239,16 @@ RndLoader *RndManager::AddLoader(const char *pszFile,
 
 void RndManager::LoadFile(const char *pszFile) {
     delete AddLoader(pszFile, 0, nullptr, nullptr);
+}
+
+void RndManager::SaveFile(const char *pszFile) {
+    ChunkStream stream(pszFile, ChunkStream::kModeWrite, kSaveChunkSize, true, true);
+    if (stream.Fail()) {
+        DebugNotify("Could not open file: %s", pszFile);
+        return;
+    }
+    FilePath::SetRoot(FileGetPath(pszFile));
+    Write(stream);
 }
 
 RndObject *RndManager::Create(const char *pszClass, const char *pszName) {
