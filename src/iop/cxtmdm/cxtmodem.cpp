@@ -892,7 +892,7 @@ int CxtModem::Connect(int deviceId) {
     const auto productIndex = static_cast<signed char>(device->productIndex);
     DelayThread(kStringRequestDelay);
     // The vendor copy runs one byte into the product name, which the product copy replaces.
-    bcopy(vendor, modem->mVendorName, sizeof(modem->mVendorName));
+    bcopy(vendor, modem->mVendorName, kNameLength);
     bcopy(product, modem->mProductName, kNameLength);
 
     request.requestType = USB_REQUEST_TYPE_IN_DEVICE;
