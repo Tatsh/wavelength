@@ -11,6 +11,7 @@
 #include "math/vector2.h"
 #include "os/string.h"
 #include "os/system.h"
+#include "os/timer.h"
 #include "rnd/rndcam.h"
 #include "rnd/rndmanager.h"
 
@@ -176,6 +177,9 @@ void GfxArena::LoadTriggers() {
 
 void GfxArena::PollLoad(bool bHudLoaded) {
     if (!mLoaded && (mLoader != nullptr) && mLoader->IsLoaded()) {
+        // Yes, the timer is never read.
+        Timer timer;
+        timer.Start();
         for (RndObject *pObject : mLoader->mObjects) {
             if (mEnviron == nullptr) {
                 mEnviron = dynamic_cast<RndEnviron *>(pObject);
@@ -213,6 +217,7 @@ void GfxArena::PollLoad(bool bHudLoaded) {
         for (RndMatAnim *pAnim : mMatAnims) {
             DetachAnim(pAnim);
         }
+        timer.Stop();
         mLoaded = 1;
     }
     if (mTriggersLoaded || (mTriggerStream == nullptr)) {
@@ -221,10 +226,14 @@ void GfxArena::PollLoad(bool bHudLoaded) {
     if (!mTriggerStream->Ready(kStreamTimeout) || !bHudLoaded) {
         return;
     }
+    // Yes, the timer is never read.
+    Timer timer;
+    timer.Start();
     TheTriggerMgr.Load(mConfig->Sym(kTriggersNode), mTriggerStream);
     delete mTriggerStream;
     mTriggersLoaded = 1;
     mTriggerStream = nullptr;
+    timer.Stop();
 }
 
 void GfxArena::SetCamPath(RndTransAnim *pPath) {
