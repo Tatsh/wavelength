@@ -133,7 +133,6 @@ inline void InitMultitapPorts() {
 // The ports InitMultitapPorts() opens and one more.
 constexpr int kMultitapPortCount = 4;
 
-// PAL: 0x0051e4c0
 // ShutdownIop() expands it inline, and the out-of-line copy has no caller.
 inline void CloseMultitapPorts() {
     for (int nPort = 0; nPort < kMultitapPortCount; ++nPort) {

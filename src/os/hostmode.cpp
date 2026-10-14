@@ -44,7 +44,6 @@ HxStr g_versionString("198");
 
 #ifdef VIDEO_STANDARD_PAL
 // The language code GetLanguage() reports. The name is inferred.
-// PAL: 0x0074fad0
 int g_nLanguage = SCE_FRENCH_LANGUAGE;
 #endif
 

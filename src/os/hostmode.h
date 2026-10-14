@@ -147,7 +147,6 @@ int IntroMovieEnabled();
  * The European release added the routine. The name is inferred.
  *
  * @return The language code.
- * @ghidraAddress PAL: 0x0054e5a8
  */
 int GetLanguage();
 
@@ -158,7 +157,6 @@ int GetLanguage();
  * the routine. The name is inferred.
  *
  * @param nLanguage The language code.
- * @ghidraAddress PAL: 0x0054e5b8
  */
 void SetLanguage(int nLanguage);
 

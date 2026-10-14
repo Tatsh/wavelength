@@ -84,8 +84,6 @@ void InitDebugPrinting();
  *
  * The routine belongs to devconsole.cpp and is declared here so that iop.cpp can call it.
  * ShutdownIop() is the only caller. The name is inferred.
- *
- * @ghidraAddress PAL: 0x00628120
  */
 void CloseDebugConsole();
 
@@ -94,8 +92,6 @@ void CloseDebugConsole();
  *
  * Closes multitap ports 0 to 3 and then the debug console. main() calls it after the application
  * exits. The name is inferred.
- *
- * @ghidraAddress PAL: 0x0051e678
  */
 void ShutdownIop();
 #endif
