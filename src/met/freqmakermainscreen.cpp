@@ -345,15 +345,22 @@ bool FreqMakerMainScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     if (pMsg->mButton == kPadTriangle && pMsg->mPressed != 0) {
-        const bool bOnline = TheGameDb->mCommunity == GameDb::kCommunityOnline;
         if (mChanged != 0) {
             FreqMakerErrorScreen *pError = dynamic_cast<FreqMakerErrorScreen *>(
                 TheUI.FindScreen("f_maker_lose_main_changes", false));
-            pError->SetScreens(bOnline ? "f_net_confirm" : "f_confirm", "f_maker");
+            if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+                pError->SetScreens("f_net_confirm", "f_maker");
+            } else {
+                pError->SetScreens("f_confirm", "f_maker");
+            }
             TheUI.GotoScreen(pError);
         } else {
             Undo();
-            TheUI.GotoScreen(bOnline ? "f_net_confirm" : "f_confirm");
+            if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+                TheUI.GotoScreen("f_net_confirm");
+            } else {
+                TheUI.GotoScreen("f_confirm");
+            }
         }
     }
     return FreqScreen::HandleJoypad(pMsg);
