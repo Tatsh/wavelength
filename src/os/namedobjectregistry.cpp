@@ -21,7 +21,8 @@ NamedObjectRegistry::~NamedObjectRegistry() {
 }
 
 void NamedObjectRegistry::DeleteEntries() {
-    for (Entry *pEntry : mEntries) {
+    for (auto it = mEntries.begin(); it != mEntries.end(); ++it) {
+        Entry *pEntry = *it;
         if (pEntry != nullptr) {
             delete pEntry->mObject;
             delete pEntry;
