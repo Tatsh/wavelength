@@ -78,19 +78,19 @@ void String::Print(const char *pszText) {
 String String::operator+(const char *pszText) const {
     String result(*this);
     result += pszText;
-    return result;
+    return String(result); // Yes, the binary copies the result out instead of eliding the copy.
 }
 
 String String::operator+(char ch) const {
     String result(*this);
     result += ch;
-    return result;
+    return String(result); // Yes, the binary copies the result out instead of eliding the copy.
 }
 
 String String::operator+(const String &other) const {
     String result(*this);
     result += other;
-    return result;
+    return String(result); // Yes, the binary copies the result out instead of eliding the copy.
 }
 
 String &String::operator+=(const String &other) {
