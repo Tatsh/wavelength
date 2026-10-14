@@ -8,6 +8,7 @@
 
 #include "os/arkfile.h"
 #include "os/asyncfile.h"
+#include "os/fileutil.h"
 #include "os/system.h"
 
 namespace {

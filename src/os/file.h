@@ -263,18 +263,6 @@ void FileTerminate();
 void FileNoteRead(const char *pszPath);
 
 /**
- * Read bytes from a file of gFileTable.
- *
- * @param nDescriptor The index of the file.
- * @param pBuffer Receives the bytes.
- * @param nBytes The number of bytes.
- * @return The number of bytes read.
- * @ghidraAddress NTSC-U/C: 0x00289e40
- * @ghidraAddress PAL: 0x00293638
- */
-int FileTableRead(int nDescriptor, void *pBuffer, int nBytes);
-
-/**
  * Report the status of a host file.
  *
  * With a non-zero kImageFirstWord the status is cleared instead.

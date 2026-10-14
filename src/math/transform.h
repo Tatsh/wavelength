@@ -97,9 +97,9 @@ inline void MakeScale(const Transform &xfm, Vector3 &scale) {
  * Write the four rows of a transform.
  *
  * @param stream The stream to write to.
- * @param xfm The transform.
+ * @param transform The transform.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x002930a0
  * @ghidraAddress PAL: 0x0029ca68
  */
-PrnStream &operator<<(PrnStream &stream, const Transform &xfm);
+PrnStream &operator<<(PrnStream &stream, const Transform &transform);

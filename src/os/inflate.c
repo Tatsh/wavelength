@@ -7,15 +7,6 @@
 
 #include "os/log.h"
 
-// The upstream names resolve to the gzip state the loader defines.
-#define inbuf gzipInbuf
-#define insize gzipInsize
-#define inptr gzipInptr
-#define outcnt gzipOutcnt
-#define window gzipWindow
-#define fill_inbuf GzipRefillInputBuffer
-#define flush_window GzipFlushWindow
-
 // Tables come from the fixed pool, and releasing one does nothing. inflate() rewinds the pool.
 #define malloc(size) HuftMalloc((size) / sizeof(struct huft))
 #define free(p) ((void)(p))

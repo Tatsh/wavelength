@@ -18,6 +18,8 @@ constexpr char kGzExtension[] = ".gz";
  * @param nBufferSize The destination size, which is ignored when pBuffer is null.
  * @param pnSize Receives the file size, and is written even when the allocation failed.
  * @return The destination, or null when the file could not be opened or read.
+ * @ghidraAddress NTSC-U/C: 0x00555538
+ * @ghidraAddress PAL: 0x00595bc0
  */
 void *LoadWholeFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, unsigned *pnSize);
 
@@ -36,6 +38,8 @@ void *LoadWholeFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, un
  * @param nBufferSize The destination size, which is ignored when pBuffer is null.
  * @param pnSize Receives the decompressed size.
  * @return The destination, or null when the file could not be opened.
+ * @ghidraAddress NTSC-U/C: 0x00555678
+ * @ghidraAddress PAL: 0x00595d00
  */
 void *LoadGzFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, unsigned *pnSize);
 
@@ -46,6 +50,8 @@ void *LoadGzFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, unsig
  *
  * @param pszPath The path to open, device prefix included.
  * @return The handle, or a negative value on failure.
+ * @ghidraAddress NTSC-U/C: 0x0055c400
+ * @ghidraAddress PAL: 0x0059d620
  */
 int OpenStreamByPath(const char *pszPath);
 
@@ -60,6 +66,8 @@ int OpenStreamByPath(const char *pszPath);
  * @param nSector The chunk index.
  * @param pBuffer The destination.
  * @param nLength The number of bytes to read.
+ * @ghidraAddress NTSC-U/C: 0x0055c498
+ * @ghidraAddress PAL: 0x0059d6b8
  */
 void ReadStreamChunk(int nFile, int nSector, void *pBuffer, unsigned nLength);
 
@@ -71,6 +79,8 @@ void ReadStreamChunk(int nFile, int nSector, void *pBuffer, unsigned nLength);
  *
  * @param pszComponent The component to append.
  * @param pszPath The buffer to append to.
+ * @ghidraAddress NTSC-U/C: 0x0047dec0
+ * @ghidraAddress PAL: 0x004bbb98
  */
 void FilenameToISO9660(const char *pszComponent, char *pszPath);
 
@@ -80,6 +90,8 @@ void FilenameToISO9660(const char *pszComponent, char *pszPath);
  * The whole body forwards to the SDK primitive at 0x0056af88 with the argument passed through.
  *
  * @param nFile The file to close.
+ * @ghidraAddress NTSC-U/C: 0x0055c438
+ * @ghidraAddress PAL: 0x0059d658
  */
 void CloseLoadFile(int nFile);
 
@@ -93,6 +105,8 @@ void CloseLoadFile(int nFile);
  *
  * @param nStream The ark stream handle.
  * @return The decompressed size in bytes, or -1 when no record has that handle.
+ * @ghidraAddress NTSC-U/C: 0x0055bf88
+ * @ghidraAddress PAL: 0x0059d1a8
  */
 int FindOpenFileInArkTrueSize(int nStream);
 
@@ -101,53 +115,55 @@ int FindOpenFileInArkTrueSize(int nStream);
  *
  * @param nFile The file.
  * @return The decompressed size in bytes.
+ * @ghidraAddress NTSC-U/C: 0x005638c8
+ * @ghidraAddress PAL: 0x005a2038
  */
 unsigned GetGzFileSize(int nFile);
 
-/**
- * Decompress a whole file into a buffer.
- *
- * Vendored gzip glue, declared by title only. The body stores the file in the bundled gzip code's
- * input-descriptor global at `0x00761488`, copies `unknown` into its input-name global at
- * `0x00761490`, and drives the gzip routines at `0x006125b8`, `0x00612468`, `0x00562f88`,
- * `0x0061d778`, and `0x006125d0`. Both exits close the file with close() unless the descriptor
- * reads -1. The failure exit puts -1 in the result register. LoadGzFile(), the one caller, ignores
- * the result.
- *
- * @param nFile The file to read.
- * @param pBuffer The destination, which must take the whole decompressed size.
- */
-extern "C" void GzipDecompressFdToRam(int nFile, void *pBuffer);
+extern "C" {
 
 /**
- * Inflate a gzip member that is already in memory.
+ * Mark the gzip module initialized.
+ *
+ * Only GzipInit() reads the flag.
+ *
+ * @ghidraAddress NTSC-U/C: 0x002834b8
+ * @ghidraAddress PAL: 0x0028cd68
+ */
+void GzipInit();
+
+/**
+ * Decompress or compress the gzip input to a buffer.
+ *
+ * Decompression reads the member header and inflates the data without checking the trailer.
+ * Compression writes a whole member. The file is not closed.
+ *
+ * The name is inferred.
+ *
+ * @param nFile The file to read, or -1 for the memory source.
+ * @param pDest The destination.
+ * @param bCompress Non-zero to compress, zero to decompress.
+ * @return The number of bytes written, or -1 on failure.
+ * @ghidraAddress NTSC-U/C: 0x002834d8
+ * @ghidraAddress PAL: 0x0028cd88
+ */
+int GzipFdToRam(int nFile, void *pDest, int bCompress);
+
+/**
+ * Inflate a gzip member that is already in memory, naming the input `(in-memory)`.
  *
  * The source and destination windows may overlap, and every caller in the async layer relies on
  * the overlap. The stored bytes sit against the end of the destination, and the inflate runs
  * forward over the whole destination.
  *
  * @param pSource The stored bytes.
- * @param nSourceLength The number of stored bytes.
+ * @param nSourceLength The number of bytes the inflate may read.
  * @param pDest The destination.
- * @return Positive once the data is in place, and not positive on failure.
+ * @return The number of bytes written, or -1 on failure.
  * @ghidraAddress NTSC-U/C: 0x002835b0
  * @ghidraAddress PAL: 0x0028ce60
  */
 int GzipDecompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
-
-/**
- * Inflate a gzip member in memory into a buffer.
- *
- * The name is inferred.
- *
- * @param pSource The stored bytes.
- * @param nLength The number of bytes the inflate may read.
- * @param pDest The destination.
- * @return The status of the inflate.
- * @ghidraAddress NTSC-U/C: 0x002835b0
- * @ghidraAddress PAL: 0x0028ce60
- */
-int InflateMemoryBuffer(const void *pSource, int nLength, void *pDest);
 
 /**
  * Report the uncompressed length a gzip member in memory records in its trailer.
@@ -160,17 +176,17 @@ int InflateMemoryBuffer(const void *pSource, int nLength, void *pDest);
  * @ghidraAddress NTSC-U/C: 0x00283620
  * @ghidraAddress PAL: 0x0028ced0
  */
-int GzipInflatedSize(const void *pSource, int nSourceLength);
+int GzipSizeDecompressed(const void *pSource, int nSourceLength);
 
 /**
- * Deflate bytes in memory into a gzip member, naming the source `(in-memory)`.
+ * Deflate bytes in memory into a gzip member, naming the input `(in-memory)`.
  *
  * The name is inferred.
  *
  * @param pSource The bytes.
  * @param nSourceLength The number of bytes.
  * @param pDest The destination, which may be the source.
- * @return The length of the member.
+ * @return The length of the member, or -1 on failure.
  * @ghidraAddress NTSC-U/C: 0x00283648
  * @ghidraAddress PAL: 0x0028cef8
  */
@@ -190,6 +206,8 @@ int GzipCompressRamToRam(const void *pSource, int nSourceLength, void *pDest);
  */
 void GzipFileName(const char *pszFile, int bGenerated, char *pszOut);
 
+} // extern "C"
+
 /**
  * Report the stored length of a file.
  *
@@ -198,6 +216,8 @@ void GzipFileName(const char *pszFile, int bGenerated, char *pszOut);
  *
  * @param pszPath The file to measure.
  * @return The length in bytes, or 0 when the file could not be opened.
+ * @ghidraAddress NTSC-U/C: 0x00555790
+ * @ghidraAddress PAL: 0x00595e18
  */
 int FileSize(const char *pszPath);
 
@@ -209,66 +229,7 @@ int FileSize(const char *pszPath);
  *
  * @param pszPath The file to measure.
  * @return The uncompressed length, or zero or less when the file could not be opened.
+ * @ghidraAddress NTSC-U/C: 0x00555800
+ * @ghidraAddress PAL: 0x00595e88
  */
 int FileTrueSize(const char *pszPath);
-
-/** The window length the decompressor fills before each flush. */
-constexpr unsigned kGzipWindowSize = 0x8000;
-
-extern "C" {
-
-/**
- * The decompressor window.
- *
- * The image reserves two window lengths, and only the first is written.
- */
-extern unsigned char gzipWindow[2 * kGzipWindowSize];
-
-/**
- * The write position in gzipWindow.
- */
-extern unsigned gzipOutcnt;
-
-/**
- * The staging buffer refilled from the memory source or the file.
- */
-extern unsigned char gzipInbuf[];
-
-/**
- * The valid byte count in gzipInbuf.
- */
-extern unsigned gzipInsize;
-
-/**
- * The read position in gzipInbuf.
- */
-extern unsigned gzipInptr;
-
-/**
- * Refill the staging buffer from the memory source or the file and report its first byte.
- *
- * @param nSilentEof Nonzero to report -1 rather than an error when a file has no more bytes.
- * @return The first byte of the refilled buffer, or -1 at a silent end of file.
- */
-int GzipRefillInputBuffer(int nSilentEof);
-
-/**
- * Checksum the filled part of gzipWindow, copy it to the output, and rewind the window.
- *
- * An empty window is not flushed.
- */
-void GzipFlushWindow();
-
-} // extern "C"
-
-/**
- * Read one byte through the staging buffer, refilling the buffer when it is exhausted.
- *
- * @return The byte.
- */
-inline int GzipGetByte() {
-    if (gzipInptr < gzipInsize) {
-        return gzipInbuf[gzipInptr++];
-    }
-    return GzipRefillInputBuffer(0);
-}

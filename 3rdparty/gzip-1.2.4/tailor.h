@@ -129,6 +129,17 @@
 #  define OS_CODE  0x0b
 #endif
 
+#ifdef _EE /* PlayStation 2 Emotion Engine */
+#  define MAX_PATH_LEN  260
+#  define PROTO
+#  define STDC_HEADERS
+#  define SMALL_MEM
+#  define NO_SIZE_CHECK
+#  define OS_CODE  0x0b
+#  include "os/fileutil.h"
+#  define read(fd, buf, cnt) FileTableRead((fd), (buf), (cnt))
+#endif
+
 #ifdef MSDOS
 #  ifdef __TURBOC__
 #    include <alloc.h>

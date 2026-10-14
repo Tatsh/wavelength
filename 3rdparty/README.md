@@ -25,11 +25,31 @@ are omitted. The port does not change these files yet.
 
 The game decompresses and compresses gzip streams. The imported files are `COPYING`, `README`,
 `gzip.h`, `tailor.h`, `inflate.c`, the compression side (`bits.c`, `deflate.c`, `trees.c`, `zip.c`),
-`util.c`, `unzip.c`, and `gzip.c` for `get_method()`, with the headers they include (`crypt.h`,
-`getopt.h`, `lzw.h`, and `revision.h`).
+`util.c`, `unzip.c`, and `gzip.c`, with the headers they include (`crypt.h`, `getopt.h`, `lzw.h`,
+and `revision.h`).
 
-The port changes one file. `inflate.c` calls `HuftReset()` before each block to rewind the table
-pool. [src/os/INFLATE.md](../src/os/INFLATE.md) records the change and the version evidence.
+The game links `gzip.c`, `unzip.c`, `util.c`, `zip.c`, `bits.c`, `deflate.c`, `inflate.c`, and
+`trees.c`. The port edits them in place to match the game. The external names and the in-memory
+additions are those of the symbol table of the _FreQuency_ demonstration disc (`SCUS_971.57`),
+which links an earlier copy of the same changes.
+
+- `gzip.h` gives every external name a prefix (`gzip_zip`, `gzipInbuf`, and so on) and declares the
+  memory source and the output routines.
+- `tailor.h` has a section for the Emotion Engine. It selects the small buffers, the 260-byte name
+  buffer, operating system code 11, and no input size check, and it reads files through
+  `FileTableRead()`.
+- `gzip.c` keeps the buffers, the variables the other modules use, and a reduced `get_method()`.
+  The command-line program is removed. The game adds `GzipInit()`, a driver that compresses or
+  decompresses to a buffer, the in-memory entry points, the trailer length reader, and
+  `GzipFileName()`.
+- `unzip.c` keeps a reduced `unzip()` that does not check the trailer.
+- `util.c` reads from the memory source when the descriptor is -1 and copies its output to a
+  buffer. `error()` and `read_error()` report the error without exiting. The routines the game
+  does not link are removed.
+- `zip.c` does not store the original name, and `file_read()` reads the memory source.
+- `bits.c` always reads through `file_read()`.
+- `inflate.c` calls `HuftReset()` before each block to rewind the table pool.
+  [src/os/INFLATE.md](../src/os/INFLATE.md) records the change and the version evidence.
 
 ## LibTomCrypt 0.75
 

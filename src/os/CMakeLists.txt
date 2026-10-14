@@ -73,10 +73,24 @@ set(WAVELENGTH_OS_SRCS
     timer.cpp
     zone.cpp)
 
-add_library(wavelength_os STATIC ${WAVELENGTH_OS_SRCS})
+# The modules of the vendored gzip 1.2.4 the game links beside inflate.c, edited to match the game.
+set(WAVELENGTH_GZIP_SRCS
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/bits.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/deflate.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/gzip.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/trees.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/unzip.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/util.c
+    ${CMAKE_SOURCE_DIR}/3rdparty/gzip-1.2.4/zip.c)
+
+add_library(wavelength_os STATIC ${WAVELENGTH_OS_SRCS} ${WAVELENGTH_GZIP_SRCS})
 target_link_libraries(wavelength_os PRIVATE wavelength_common)
 
 # inflate.c includes the vendored gzip 1.2.4 inflate.c. The sign-compare warning concerns upstream
 # style.
 set_source_files_properties(inflate.c PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/3rdparty"
                                                  COMPILE_OPTIONS -Wno-sign-compare)
+
+# The warnings concern upstream style.
+set_source_files_properties(${WAVELENGTH_GZIP_SRCS} PROPERTIES COMPILE_OPTIONS
+                                                          "-Wno-sign-compare;-Wno-unused-parameter")

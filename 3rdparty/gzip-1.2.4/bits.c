@@ -67,8 +67,6 @@ static char rcsid[] = "$Id: bits.c,v 0.9 1993/06/11 10:16:58 jloup Exp $";
  * Local data used by the "bit string" routines.
  */
 
-local file_t zfile; /* output gzip file */
-
 local unsigned short bi_buf;
 /* Output buffer. bits are inserted starting at the bottom (least significant
  * bits).
@@ -93,23 +91,18 @@ int (*read_buf) OF((char *buf, unsigned size));
 
 /* ===========================================================================
  * Initialize the bit string routines.
+ * NTSC-U/C: 0x002840b8, PAL: 0x0028d968
  */
-void bi_init (zipfile)
-    file_t zipfile; /* output zip file, NO_FILE for in-memory compression */
+void bi_init ()
 {
-    zfile  = zipfile;
     bi_buf = 0;
     bi_valid = 0;
 #ifdef DEBUG
     bits_sent = 0L;
 #endif
 
-    /* Set the defaults for file compression. They are set by memcompress
-     * for in-memory compression.
-     */
-    if (zfile != NO_FILE) {
-	read_buf  = file_read;
-    }
+    /* file_read() reads the memory source as well as files. */
+    read_buf  = file_read;
 }
 
 /* ===========================================================================

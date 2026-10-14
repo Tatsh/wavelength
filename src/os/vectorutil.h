@@ -5,13 +5,15 @@
 /**
  * Remove the first element of a vector equal to a value.
  *
- * The online session instantiates the template for `int`, and for HostpadRT::ClientData at
- * `0x0025af40` (PAL `0x00263f90`).
+ * The online session instantiates the template for `int` and for HostpadRT::ClientData, in that
+ * order.
  *
  * @param vector The vector.
  * @param value The value.
  * @ghidraAddress NTSC-U/C: 0x0025aec0
  * @ghidraAddress PAL: 0x00263f10
+ * @ghidraAddress NTSC-U/C: 0x0025af40
+ * @ghidraAddress PAL: 0x00263f90
  */
 template <class T>
 void VectorRemove(std::vector<T> &vector, const T &value) {

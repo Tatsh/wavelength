@@ -26,19 +26,17 @@ local ulg crc;       /* crc on uncompressed file data */
 long header_bytes;   /* number of bytes in gzip header */
 
 /* ===========================================================================
- * Deflate in to out.
+ * Deflate the input to the output.
  * IN assertions: the input and output buffers are cleared.
- *   The variables time_stamp and save_orig_name are initialized.
+ *   The variable time_stamp is initialized.
+ * NTSC-U/C: 0x00283bb8, PAL: 0x0028d468
  */
-int zip(in, out)
-    int in, out;            /* input and output file descriptors */
+int zip()
 {
     uch  flags = 0;         /* general purpose bit flags */
     ush  attr = 0;          /* ascii/binary flag */
     ush  deflate_flags = 0; /* pkzip -es, -en or -ex equivalent */
 
-    ifd = in;
-    ofd = out;
     outcnt = 0;
 
     /* Write the header to the gzip file. See algorithm.doc for the format */
@@ -48,28 +46,19 @@ int zip(in, out)
     put_byte(GZIP_MAGIC[1]);
     put_byte(DEFLATED);      /* compression method */
 
-    if (save_orig_name) {
-	flags |= ORIG_NAME;
-    }
     put_byte(flags);         /* general flags */
     put_long(time_stamp);
 
     /* Write deflated file to zip file */
     crc = updcrc(0, 0);
 
-    bi_init(out);
+    bi_init();
     ct_init(&attr, &method);
     lm_init(level, &deflate_flags);
 
     put_byte((uch)deflate_flags); /* extra flags */
     put_byte(OS_CODE);            /* OS identifier */
 
-    if (save_orig_name) {
-	char *p = basename(ifname); /* Don't save the directory part. */
-	do {
-	    put_char(*p);
-	} while (*p++);
-    }
     header_bytes = (long)outcnt;
 
     (void)deflate();
@@ -99,6 +88,7 @@ int zip(in, out)
  * Read a new buffer from the current input file, perform end-of-line
  * translation, and update the crc and input file size.
  * IN assertion: size >= 2 (for end-of-line translation)
+ * NTSC-U/C: 0x00283fd0, PAL: 0x0028d880
  */
 int file_read(buf, size)
     char *buf;
@@ -108,8 +98,15 @@ int file_read(buf, size)
 
     Assert(insize == 0, "inbuf not empty");
 
-    len = read(ifd, buf, size);
-    if (len == (unsigned)(-1) || len == 0) return (int)len;
+    if (ifd == NO_FILE) {
+	len = gzipInSrcSize - (gzipInSrcPtr - gzipInSrcBuff);
+	if (len > size) len = size;
+	memcpy(buf, gzipInSrcPtr, len);
+	gzipInSrcPtr += len;
+    } else {
+	len = read(ifd, buf, size);
+	if (len == (unsigned)(-1) || len == 0) return (int)len;
+    }
 
     crc = updcrc((uch*)buf, len);
     isize += (ulg)len;

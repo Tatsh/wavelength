@@ -1,5 +1,11 @@
 #pragma once
 
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Report the directory the game's files are read from, `.`.
  *
@@ -88,3 +94,19 @@ const char *FileGetExt(const char *pszPath);
  * @ghidraAddress PAL: 0x00293598
  */
 const char *FileGetBaseName(const char *pszPath);
+
+/**
+ * Read bytes from a file of gFileTable.
+ *
+ * @param nDescriptor The index of the file.
+ * @param pBuffer Receives the bytes.
+ * @param nBytes The number of bytes.
+ * @return The number of bytes read.
+ * @ghidraAddress NTSC-U/C: 0x00289e40
+ * @ghidraAddress PAL: 0x00293638
+ */
+int FileTableRead(int nDescriptor, void *pBuffer, int nBytes);
+
+#ifdef __cplusplus
+}
+#endif

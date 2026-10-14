@@ -24,7 +24,7 @@ struct huft;
  * @ghidraAddress NTSC-U/C: 0x00286cd8
  * @ghidraAddress PAL: 0x00290588
  */
-int inflate(void);
+int gzip_inflate(void);
 
 /**
  * Record the pool high-water mark and rewind the pool to its start.

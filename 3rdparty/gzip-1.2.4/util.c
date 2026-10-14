@@ -33,23 +33,29 @@ static char rcsid[] = "$Id: util.c,v 0.15 1993/06/15 09:04:13 jloup Exp $";
 extern ulg crc_32_tab[];   /* crc table, defined below */
 
 /* ===========================================================================
- * Copy input to output unchanged: zcat == cat with --force.
- * IN assertion: insize bytes have already been read in inbuf.
+ * The output buffer the decompressed or compressed data is copied to.
  */
-int copy(in, out)
-    int in, out;   /* input and output file descriptors */
+local uch *trueOutBuf; /* start of the output */
+local uch *currOutBuf; /* next byte to write */
+
+/* ===========================================================================
+ * Direct the output to a buffer.
+ * NTSC-U/C: 0x002837d8, PAL: 0x0028d088
+ */
+void init_outdest(buf)
+    uch *buf;
 {
-    errno = 0;
-    while (insize != 0 && (int)insize != EOF) {
-	write_buf(out, (char*)inbuf, insize);
-	bytes_out += insize;
-	insize = read(in, (char*)inbuf, INBUFSIZ);
-    }
-    if ((int)insize == EOF && errno != 0) {
-	read_error();
-    }
-    bytes_in = bytes_out;
-    return OK;
+    trueOutBuf = buf;
+    currOutBuf = buf;
+}
+
+/* ===========================================================================
+ * Return the number of bytes written to the output buffer.
+ * NTSC-U/C: 0x002837f0, PAL: 0x0028d0a0
+ */
+int size_outdest()
+{
+    return currOutBuf - trueOutBuf;
 }
 
 /* ===========================================================================
@@ -89,24 +95,34 @@ void clear_bufs()
 
 /* ===========================================================================
  * Fill the input buffer. This is called only when the buffer is empty.
+ * NTSC-U/C: 0x002838b8, PAL: 0x0028d168
  */
 int fill_inbuf(eof_ok)
     int eof_ok;          /* set if EOF acceptable as a result */
 {
     int len;
 
-    /* Read as much as possible */
-    insize = 0;
-    errno = 0;
-    do {
-	len = read(ifd, (char*)inbuf+insize, INBUFSIZ-insize);
-        if (len == 0 || len == EOF) break;
-	insize += len;
-    } while (insize < INBUFSIZ);
+    if (ifd == NO_FILE) {
+	/* Copy as much as possible from the memory source */
+	len = gzipInSrcSize - (gzipInSrcPtr - gzipInSrcBuff);
+	if (len > INBUFSIZ) len = INBUFSIZ;
+	insize = len;
+	memcpy((char*)inbuf, gzipInSrcPtr, len);
+	gzipInSrcPtr += insize;
+    } else {
+	/* Read as much as possible */
+	insize = 0;
+	errno = 0;
+	do {
+	    len = read(ifd, (char*)inbuf+insize, INBUFSIZ-insize);
+	    if (len == 0 || len == EOF) break;
+	    insize += len;
+	} while (insize < INBUFSIZ);
 
-    if (insize == 0) {
-	if (eof_ok) return EOF;
-	read_error();
+	if (insize == 0) {
+	    if (eof_ok) return EOF;
+	    read_error();
+	}
     }
     bytes_in += (ulg)insize;
     inptr = 1;
@@ -114,293 +130,58 @@ int fill_inbuf(eof_ok)
 }
 
 /* ===========================================================================
- * Write the output buffer outbuf[0..outcnt-1] and update bytes_out.
+ * Copy the output buffer outbuf[0..outcnt-1] to the output and update
+ * bytes_out.
  * (used for the compressed data only)
+ * NTSC-U/C: 0x00283a10, PAL: 0x0028d2c0
  */
 void flush_outbuf()
 {
     if (outcnt == 0) return;
 
-    write_buf(ofd, (char *)outbuf, outcnt);
+    memcpy(currOutBuf, (char *)outbuf, outcnt);
+    currOutBuf += outcnt;
     bytes_out += (ulg)outcnt;
     outcnt = 0;
 }
 
 /* ===========================================================================
- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+ * Copy the output window window[0..outcnt-1] to the output and update crc
+ * and bytes_out.
  * (Used for the decompressed data only.)
+ * NTSC-U/C: 0x00283a80, PAL: 0x0028d330
  */
 void flush_window()
 {
     if (outcnt == 0) return;
     updcrc(window, outcnt);
 
-    if (!test) {
-	write_buf(ofd, (char *)window, outcnt);
-    }
+    memcpy(currOutBuf, (char *)window, outcnt);
+    currOutBuf += outcnt;
     bytes_out += (ulg)outcnt;
     outcnt = 0;
 }
 
-/* ===========================================================================
- * Does the same as write(), but also handles partial pipe writes and checks
- * for error return.
- */
-void write_buf(fd, buf, cnt)
-    int       fd;
-    voidp     buf;
-    unsigned  cnt;
-{
-    unsigned  n;
-
-    while ((n = write(fd, buf, cnt)) != cnt) {
-	if (n == (unsigned)(-1)) {
-	    write_error();
-	}
-	cnt -= n;
-	buf = (voidp)((char*)buf+n);
-    }
-}
-
-/* ========================================================================
- * Put string s in lower case, return s.
- */
-char *strlwr(s)
-    char *s;
-{
-    char *t;
-    for (t = s; *t; t++) *t = tolow(*t);
-    return s;
-}
-
-/* ========================================================================
- * Return the base name of a file (remove any directory prefix and
- * any version suffix). For systems with file names that are not
- * case sensitive, force the base name to lower case.
- */
-char *basename(fname)
-    char *fname;
-{
-    char *p;
-
-    if ((p = strrchr(fname, PATH_SEP))  != NULL) fname = p+1;
-#ifdef PATH_SEP2
-    if ((p = strrchr(fname, PATH_SEP2)) != NULL) fname = p+1;
-#endif
-#ifdef PATH_SEP3
-    if ((p = strrchr(fname, PATH_SEP3)) != NULL) fname = p+1;
-#endif
-#ifdef SUFFIX_SEP
-    if ((p = strrchr(fname, SUFFIX_SEP)) != NULL) *p = '\0';
-#endif
-    if (casemap('A') == 'a') strlwr(fname);
-    return fname;
-}
-
-/* ========================================================================
- * Make a file name legal for file systems not allowing file names with
- * multiple dots or starting with a dot (such as MSDOS), by changing
- * all dots except the last one into underlines.  A target dependent
- * function can be used instead of this simple function by defining the macro
- * MAKE_LEGAL_NAME in tailor.h and providing the function in a target
- * dependent module.
- */
-void make_simple_name(name)
-    char *name;
-{
-    char *p = strrchr(name, '.');
-    if (p == NULL) return;
-    if (p == name) p++;
-    do {
-        if (*--p == '.') *p = '_';
-    } while (p != name);
-}
-
-
-#if defined(NO_STRING_H) && !defined(STDC_HEADERS)
-
-/* Provide missing strspn and strcspn functions. */
-
-#  ifndef __STDC__
-#    define const
-#  endif
-
-int strspn  OF((const char *s, const char *accept));
-int strcspn OF((const char *s, const char *reject));
-
-/* ========================================================================
- * Return the length of the maximum initial segment
- * of s which contains only characters in accept.
- */
-int strspn(s, accept)
-    const char *s;
-    const char *accept;
-{
-    register const char *p;
-    register const char *a;
-    register int count = 0;
-
-    for (p = s; *p != '\0'; ++p) {
-	for (a = accept; *a != '\0'; ++a) {
-	    if (*p == *a) break;
-	}
-	if (*a == '\0') return count;
-	++count;
-    }
-    return count;
-}
-
-/* ========================================================================
- * Return the length of the maximum inital segment of s
- * which contains no characters from reject.
- */
-int strcspn(s, reject)
-    const char *s;
-    const char *reject;
-{
-    register int count = 0;
-
-    while (*s != '\0') {
-	if (strchr(reject, *s++) != NULL) return count;
-	++count;
-    }
-    return count;
-}
-
-#endif /* NO_STRING_H */
-
-/* ========================================================================
- * Add an environment variable (if any) before argv, and update argc.
- * Return the expanded environment variable to be freed later, or NULL 
- * if no options were added to argv.
- */
-#define SEPARATOR	" \t"	/* separators in env variable */
-
-char *add_envopt(argcp, argvp, env)
-    int *argcp;          /* pointer to argc */
-    char ***argvp;       /* pointer to argv */
-    char *env;           /* name of environment variable */
-{
-    char *p;             /* running pointer through env variable */
-    char **oargv;        /* runs through old argv array */
-    char **nargv;        /* runs through new argv array */
-    int	 oargc = *argcp; /* old argc */
-    int  nargc = 0;      /* number of arguments in env variable */
-
-    env = (char*)getenv(env);
-    if (env == NULL) return NULL;
-
-    p = (char*)xmalloc(strlen(env)+1);
-    env = strcpy(p, env);                    /* keep env variable intact */
-
-    for (p = env; *p; nargc++ ) {            /* move through env */
-	p += strspn(p, SEPARATOR);	     /* skip leading separators */
-	if (*p == '\0') break;
-
-	p += strcspn(p, SEPARATOR);	     /* find end of word */
-	if (*p) *p++ = '\0';		     /* mark it */
-    }
-    if (nargc == 0) {
-	free(env);
-	return NULL;
-    }
-    *argcp += nargc;
-    /* Allocate the new argv array, with an extra element just in case
-     * the original arg list did not end with a NULL.
-     */
-    nargv = (char**)calloc(*argcp+1, sizeof(char *));
-    if (nargv == NULL) error("out of memory");
-    oargv  = *argvp;
-    *argvp = nargv;
-
-    /* Copy the program name first */
-    if (oargc-- < 0) error("argc<=0");
-    *(nargv++) = *(oargv++);
-
-    /* Then copy the environment args */
-    for (p = env; nargc > 0; nargc--) {
-	p += strspn(p, SEPARATOR);	     /* skip separators */
-	*(nargv++) = p;			     /* store start */
-	while (*p++) ;			     /* skip over word */
-    }
-
-    /* Finally copy the old args and add a NULL (usual convention) */
-    while (oargc--) *(nargv++) = *(oargv++);
-    *nargv = NULL;
-    return env;
-}
-
 /* ========================================================================
  * Error handlers.
+ * NTSC-U/C: 0x00283b08, PAL: 0x0028d3b8
  */
 void error(m)
     char *m;
 {
-    fprintf(stderr, "\n%s: %s: %s\n", progname, ifname, m);
-    abort_gzip();
+    fprintf(stderr, "\n%s: %s\n", ifname, m);
+    exit_code = ERROR;
 }
 
-void warn(a, b)
-    char *a, *b;            /* message strings juxtaposed in output */
-{
-    WARN((stderr, "%s: %s: warning: %s%s\n", progname, ifname, a, b));
-}
-
+/* NTSC-U/C: 0x00283b50, PAL: 0x0028d400 */
 void read_error()
 {
-    fprintf(stderr, "\n%s: ", progname);
     if (errno != 0) {
 	perror(ifname);
     } else {
-	fprintf(stderr, "%s: unexpected end of file\n", ifname);
+	fprintf(stderr, "GZIP ERROR: %s: unexpected end of file\n", ifname);
     }
-    abort_gzip();
-}
-
-void write_error()
-{
-    fprintf(stderr, "\n%s: ", progname);
-    perror(ofname);
-    abort_gzip();
-}
-
-/* ========================================================================
- * Display compression ratio on the given stream on 6 characters.
- */
-void display_ratio(num, den, file)
-    long num;
-    long den;
-    FILE *file;
-{
-    long ratio;  /* 1000 times the compression ratio */
-
-    if (den == 0) {
-	ratio = 0; /* no compression */
-    } else if (den < 2147483L) { /* (2**31 -1)/1000 */
-	ratio = 1000L*num/den;
-    } else {
-	ratio = num/(den/1000L);
-    }
-    if (ratio < 0) {
-	putc('-', file);
-	ratio = -ratio;
-    } else {
-	putc(' ', file);
-    }
-    fprintf(file, "%2ld.%1ld%%", ratio / 10L, ratio % 10L);
-}
-
-
-/* ========================================================================
- * Semi-safe malloc -- never returns NULL.
- */
-voidp xmalloc (size)
-    unsigned size;
-{
-    voidp cp = (voidp)malloc (size);
-
-    if (cp == NULL) error("out of memory");
-    return cp;
+    exit_code = ERROR;
 }
 
 /* ========================================================================

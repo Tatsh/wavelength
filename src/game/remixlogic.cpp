@@ -1252,10 +1252,10 @@ void RemixLogic::LoadRemix() {
         return;
     }
     RemixInfo *pInfo = TheGameDb->GetRemixInfo();
-    const int nSize = GzipInflatedSize(pPacked, pInfo->mDataSize);
+    const int nSize = GzipSizeDecompressed(pPacked, pInfo->mDataSize);
     (void)strcmp(pInfo->mSong, TheGameDb->mSong.c_str()); // Yes, the binary discards the result.
     auto *pBuffer = static_cast<char *>(PoolMemAlloc(nSize, kRemixBufferTag, 0));
-    (void)InflateMemoryBuffer(pPacked, nSize, pBuffer);
+    (void)GzipDecompressRamToRam(pPacked, nSize, pBuffer);
     BufStream stream(pBuffer, nSize, true);
     Load(stream);
     PoolMemFree(pBuffer);

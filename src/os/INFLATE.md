@@ -2,15 +2,14 @@
 
 The game decodes its gzip data with `inflate.c` from GNU gzip 1.2.4, Mark Adler's public domain
 decoder at version c10p1 (10 January 1993). The routines are C with unmangled names. The image also
-links the gzip compression side (`zip`, `deflate`, `trees`, and `bits`), and no caller uses it.
+links the gzip compression side (`zip`, `deflate`, `trees`, and `bits`). The rest of gzip is
+described in [3rdparty/README.md](../../3rdparty/README.md).
 
 The upstream files are vendored at `3rdparty/gzip-1.2.4/` with the release's top directory name
-preserved. Only `inflate.c`, the two headers it includes (`gzip.h` and `tailor.h`), `README`, and
-`COPYING` are imported. `gzip.h` and `tailor.h` are under the GPL, and `inflate.c` is public
-domain.
+preserved. `gzip.h` and `tailor.h` are under the GPL, and `inflate.c` is public domain.
 
-[inflate.c](inflate.c) is the game side. It maps the upstream names onto the loader's gzip state,
-replaces the allocator, includes the vendored `inflate.c`, and defines the table pool.
+[inflate.c](inflate.c) is the game side. It replaces the allocator, includes the vendored
+`inflate.c`, and defines the table pool.
 
 ## Version evidence
 
@@ -33,19 +32,14 @@ The build options read from the image are these:
 
 ## Game configuration
 
-These macros precede the include and do not modify the upstream file:
+The vendored `gzip.h` gives each external name its game prefix (`inflate` becomes `gzip_inflate`,
+`inbuf` becomes `gzipInbuf`, and so on). These macros precede the include and do not modify the
+upstream file:
 
-| Upstream name  | Game definition                                          |
-| -------------- | -------------------------------------------------------- |
-| `inbuf`        | `gzipInbuf`                                              |
-| `insize`       | `gzipInsize`                                             |
-| `inptr`        | `gzipInptr`                                              |
-| `outcnt`       | `gzipOutcnt` (upstream `wp`)                             |
-| `window`       | `gzipWindow` (upstream `slide`)                          |
-| `fill_inbuf`   | `GzipRefillInputBuffer`                                  |
-| `flush_window` | `GzipFlushWindow`                                        |
-| `malloc`       | `HuftMalloc`, given the entry count rather than the size |
-| `free`         | Nothing                                                  |
+| Upstream name | Game definition                                          |
+| ------------- | -------------------------------------------------------- |
+| `malloc`      | `HuftMalloc`, given the entry count rather than the size |
+| `free`        | Nothing                                                  |
 
 `HuftMalloc` carves tables from a 2048-entry pool. It advances the cursor even when the allocation
 fails, fails an allocation that ends exactly at the end of the pool, and logs

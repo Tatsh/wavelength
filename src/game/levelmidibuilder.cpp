@@ -711,7 +711,7 @@ void LevelMidiBuilder::Error(int nTick, const String &message) {
 void LevelMidiBuilder::LoadRemix() {
     const char *pPacked = TheGameDb->GetRemixBuffer();
     const int nPackedSize = TheGameDb->GetRemixInfo()->mDataSize;
-    const int nSize = GzipInflatedSize(pPacked, nPackedSize);
+    const int nSize = GzipSizeDecompressed(pPacked, nPackedSize);
     auto *pData = static_cast<char *>(PoolMemAlloc(nSize, kRemixBufferTag, kDefaultAlign));
     GzipDecompressRamToRam(pPacked, nPackedSize, pData);
     BufStream stream(pData, nSize, true);

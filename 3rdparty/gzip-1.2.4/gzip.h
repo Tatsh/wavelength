@@ -41,6 +41,52 @@
 
 #define local static
 
+/* The game links these modules beside its own code, so every external name
+ * takes a gzip prefix.
+ */
+#define bi_init      gzip_bi_init
+#define bi_reverse   gzip_bi_reverse
+#define bi_windup    gzip_bi_windup
+#define block_start  gzip_block_start
+#define bytes_in     gzipBytesIn
+#define bytes_out    gzipBytesOut
+#define clear_bufs   gzip_clear_bufs
+#define copy_block   gzip_copy_block
+#define ct_init      gzip_ct_init
+#define ct_tally     gzip_ct_tally
+#define d_buf        gzipDbuf
+#define deflate      gzip_deflate
+#define error        gzip_error
+#define exit_code    gzipExitCode
+#define file_read    gzip_file_read
+#define fill_inbuf   gzip_fill_inbuf
+#define flush_block  gzip_flush_block
+#define flush_outbuf gzip_flush_outbuf
+#define flush_window gzip_flush_window
+#define header_bytes gzipHeaderBytes
+#define ifd          gzip_ifd
+#define ifname       gzipIfname
+#define inbuf        gzipInbuf
+#define inflate      gzip_inflate
+#define inptr        gzipInptr
+#define insize       gzipInsize
+#define level        gzipLevel
+#define lm_init      gzip_lm_init
+#define method       gzipMethod
+#define ofd          gzip_ofd
+#define outbuf       gzipOutbuf
+#define outcnt       gzipOutcnt
+#define prev         gzipPrev
+#define read_buf     gzip_read_buf
+#define read_error   gzip_read_error
+#define send_bits    gzip_send_bits
+#define strstart     gzip_strstart
+#define time_stamp   gzipTimeStamp
+#define unzip        gzip_unzip
+#define updcrc       gzip_updcrc
+#define window       gzipWindow
+#define zip          gzip_zip
+
 typedef unsigned char  uch;
 typedef unsigned short ush;
 typedef unsigned long  ulg;
@@ -146,6 +192,11 @@ extern char ofname[];   /* output file name or "stdout" */
 extern char *progname;  /* program name */
 
 extern long time_stamp; /* original time stamp (modification time) */
+
+/* The memory source the input reads from while ifd is NO_FILE */
+extern const uch *gzipInSrcBuff; /* start of the source */
+extern const uch *gzipInSrcPtr;  /* next byte to read */
+extern int gzipInSrcSize;        /* length of the source */
 extern long ifile_size; /* input file size, -1 for devices (debug only) */
 
 typedef int file_t;     /* Do not use stdio */
@@ -259,11 +310,11 @@ extern int save_orig_name; /* set if original name must be saved */
 		   if (exit_code == OK) exit_code = WARNING;}
 
 	/* in zip.c: */
-extern int zip        OF((int in, int out));
+extern int zip        OF((void));
 extern int file_read  OF((char *buf,  unsigned size));
 
 	/* in unzip.c */
-extern int unzip      OF((int in, int out));
+extern int unzip      OF((void));
 extern int check_zipfile OF((int in));
 
 	/* in unpack.c */
@@ -285,7 +336,7 @@ int  ct_tally    OF((int dist, int lc));
 ulg  flush_block OF((char *buf, ulg stored_len, int eof));
 
         /* in bits.c */
-void     bi_init    OF((file_t zipfile));
+void     bi_init    OF((void));
 void     send_bits  OF((int value, int length));
 unsigned bi_reverse OF((unsigned value, int length));
 void     bi_windup  OF((void));
@@ -293,6 +344,8 @@ void     copy_block OF((char *buf, unsigned len, int header));
 extern   int (*read_buf) OF((char *buf, unsigned size));
 
 	/* in util.c: */
+extern void init_outdest  OF((uch *buf));
+extern int  size_outdest  OF((void));
 extern int copy           OF((int in, int out));
 extern ulg  updcrc        OF((uch *s, unsigned n));
 extern void clear_bufs    OF((void));
