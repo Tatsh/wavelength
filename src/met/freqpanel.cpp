@@ -91,12 +91,12 @@ void FreqPanel::FinishLoad() {
     const char *pszPanelAnim = FormatString("%s_f2EE.anim", mName);
     mPanelAnim = dynamic_cast<RndView *>(TheManager.Find(pszPanelAnim));
     if (mPanelAnim == nullptr) {
-        mPanelAnim = dynamic_cast<RndView *>(TheManager.Create("View", pszPanelAnim));
+        mPanelAnim = dynamic_cast<RndView *>(TheManager.Create(RndView::sClassName, pszPanelAnim));
         mLoader->mObjects.push_back(mPanelAnim);
 
         RndTransAnim *pSource = dynamic_cast<RndTransAnim *>(TheManager.Find(sPanelAnimName));
-        RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(
-            TheManager.Create("TransAnim", FormatString("%s_%s", mName, sPanelAnimName)));
+        RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(TheManager.Create(
+            RndTransAnim::sClassName, FormatString("%s_%s", mName, sPanelAnimName)));
         pAnim->Copy(pSource, kTransAnimCopyFlags);
         RndMesh *pPanelMesh =
             dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_panel.mesh", mName)));
