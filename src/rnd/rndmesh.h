@@ -71,9 +71,10 @@ public:
     /**
      * One vertex.
      *
-     * The RTTI includes the nested class name.
+     * The RTTI includes the nested class name. A mutable PsMesh sends each vertex by a DMA REF tag
+     * and the skinning code stores it with quadword writes, so a vertex starts on a quadword.
      */
-    class Vert {
+    class alignas(16) Vert {
     public:
         /** Construct a white vertex at the origin with no normal and no weights. */
         Vert() {

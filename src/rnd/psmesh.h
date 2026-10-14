@@ -25,9 +25,10 @@ public:
     /**
      * The bind pose of a skinned vertex, with the weight of each bone in the fourth word.
      *
-     * The structure is not polymorphic and emits no RTTI descriptor. The name is inferred.
+     * The structure is not polymorphic and emits no RTTI descriptor. The name is inferred. The
+     * skinning code reads each half with a quadword load, so the structure starts on a quadword.
      */
-    struct SkinVert {
+    struct alignas(16) SkinVert {
         float mPos[3];  /*!< The position. */
         float mWeight1; /*!< The weight of the first bone. */
         float mNorm[3]; /*!< The normal. */
