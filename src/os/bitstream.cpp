@@ -15,8 +15,8 @@ BitStream::BitStream(void *pBuffer, int nSize) {
     mBitPos = 0;
 }
 
-void BitStream::PackBool(bool bValue) {
-    Write(bValue, 1);
+void BitStream::PackBool(int nValue) {
+    Write(nValue, 1);
 }
 
 void BitStream::PackSigned(int nValue, int nBits) {

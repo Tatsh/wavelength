@@ -19,13 +19,13 @@ public:
     BitStream(void *pBuffer, int nSize);
 
     /**
-     * Append one bit.
+     * Append one bit, the lowest bit of a flag word.
      *
-     * @param bValue The bit.
+     * @param nValue The flag word. Only its lowest bit is appended.
      * @ghidraAddress NTSC-U/C: 0x00296e90
      * @ghidraAddress PAL: 0x002a0aa0
      */
-    void PackBool(bool bValue);
+    void PackBool(int nValue);
 
     /**
      * Append the low bits of a value.
