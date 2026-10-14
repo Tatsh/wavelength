@@ -94,11 +94,11 @@ bool TnlGemCapFX::Draw(TnlGeom *pGeom) {
         return false;
     }
     const float flNow = TheGameDb->mSongTime;
-    if (mFrameCurve.mX1 <= flNow) {
+    if (mTickCurve.mX1 <= flNow) {
         mTrack = kIdle;
         return true;
     }
-    if ((flNow - mFrameCurve.mX0) <= 0.0f) {
+    if ((flNow - mTickCurve.mX0) <= 0.0f) {
         return false;
     }
     const float flTick = mTickCurve.Interp(flNow);
