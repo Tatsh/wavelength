@@ -15,8 +15,8 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/movie.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmovie.h"
 #include "ui/uicomponent.h"
 #include "ui/uilabel.h"
 #include "ui/uimanager.h"
@@ -144,7 +144,6 @@ bool SoloEndGameScreen::DispatchPriv(Message *pMsg) {
 
 void SoloEndGameScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
-    dynamic_cast<Rnd::Movie *>(Rnd::TheManager.Find("freq_winner.mov"))
-        ->SetFrame(TheGameDb->mSongTick);
+    dynamic_cast<RndMovie *>(TheManager.Find("freq_winner.mov"))->SetFrame(TheGameDb->mSongTick);
     Avatar::Poll(fTime);
 }

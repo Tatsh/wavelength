@@ -4,10 +4,10 @@
 #include "math/quaternion.h"
 #include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/movie.h"
-#include "rnd/view.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndmovie.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -146,10 +146,10 @@ public:
     alignas(16) Quat mFromRot;    /*!< The orientation the move started from. */
     int mUnused;                  // +0x40, the constructor's argument, which no routine reads.
     float mMoveStart;             /*!< The time the move started, or 0 when no move is under way. */
-    Rnd::View *mView;             /*!< The view `gizmo.view`. */
-    Rnd::Mat *mMat;               /*!< The material `freqscreen.mat` of the gizmo's screen. */
-    Rnd::Mesh *mMesh;             /*!< The mesh `gizmo.mesh`, which Poll() places. */
-    Rnd::Movie *mMovie;           /*!< The movie `gizmo movie.mov`. */
+    RndView *mView;               /*!< The view `gizmo.view`. */
+    RndMat *mMat;                 /*!< The material `freqscreen.mat` of the gizmo's screen. */
+    RndMesh *mMesh;               /*!< The mesh `gizmo.mesh`, which Poll() places. */
+    RndMovie *mMovie;             /*!< The movie `gizmo movie.mov`. */
     ATanInterpolator mInterp;     /*!< Maps a frame of the move to the fraction moved. */
 
 private:

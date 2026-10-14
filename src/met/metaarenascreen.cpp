@@ -12,8 +12,8 @@
 #include "os/debug.h"
 #include "os/joypad.h"
 #include "os/locale.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "synth/fxmidi.h"
 #include "synth/synth.h"
 #include "ui/uibutton.h"
@@ -157,8 +157,7 @@ void MetaArenaScreen::UpdateBand(UIComponent *pArena, UIPanel *pPanel) {
         }
     }
 
-    Rnd::Text *pLabel =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_arena_band_label.txt"));
+    RndText *pLabel = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_arena_band_label.txt"));
     if (strcmp(pszArena, "Tutorial") == 0) {
         pLabel->SetText(TheLocale.Localize("programs_label", true));
     } else {

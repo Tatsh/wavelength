@@ -10,10 +10,10 @@
 #include "os/listat.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 
@@ -102,12 +102,12 @@ void NetRankedPlayersList::UpdateRow(int nRow, int nItem) {
 
 void NetRankedPlayersList::SetCursorSelected(bool bSelected) {
     UIList::SetCursorSelected(bSelected);
-    dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kCursorText))->SetShowing(bSelected);
+    dynamic_cast<RndText *>(TheManager.Find(kCursorText))->SetShowing(bSelected);
 }
 
 void NetRankedPlayersList::UpdateCursor() {
     UIList::UpdateCursor();
-    auto *pView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kDetailView));
+    auto *pView = dynamic_cast<RndView *>(TheManager.Find(kDetailView));
     if (mPlayers.empty()) {
         pView->SetShowing(false);
         return;
@@ -142,6 +142,5 @@ void NetRankedPlayersList::UpdateCursor() {
     player.mLastOnline.FormatShortDate(login);
     pLogin->SetText(FormatString(TheLocale.Localize(kLoginToken, true), login.c_str()));
 
-    dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(kRankMesh))
-        ->SetMat(FindRankMaterial(player.mRankIcon));
+    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))->SetMat(FindRankMaterial(player.mRankIcon));
 }

@@ -2,7 +2,7 @@
 
 #include "met/freqscreen.h"
 #include "msg/joypadinputmsg.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 #include "ui/uitransitioncompletemsg.h"
 
@@ -139,6 +139,6 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    float mAttractTime;    /*!< The system time the attract demo starts at, or -1 when disarmed. */
-    Rnd::View *mMusicView; /*!< The `logo_music_anim.view` the music animates, or null. */
+    float mAttractTime;  /*!< The system time the attract demo starts at, or -1 when disarmed. */
+    RndView *mMusicView; /*!< The `logo_music_anim.view` the music animates, or null. */
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rnd/animatable.h"
+#include "rnd/rndanimatable.h"
 
 /**
  * Player of the entry animation of a view, which loops the cursor sound while a cursor of the
@@ -26,7 +26,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0019d1c8
      * @ghidraAddress PAL: 0x001a4ee0
      */
-    void SetAnim(Rnd::Animatable *pAnim);
+    void SetAnim(RndAnimatable *pAnim);
 
     /**
      * Start playing the animation from its first frame.
@@ -72,8 +72,8 @@ public:
      */
     void Clear();
 
-    float mStartMs;         /*!< The time the animation started, or 0 while it does not play. */
-    float mEndFrame;        /*!< The last frame of the animation. */
-    int mCursorMoving;      /*!< Non-zero while the cursor sound loops. */
-    Rnd::Animatable *mAnim; /*!< The animation, or null. */
+    float mStartMs;       /*!< The time the animation started, or 0 while it does not play. */
+    float mEndFrame;      /*!< The last frame of the animation. */
+    int mCursorMoving;    /*!< Non-zero while the cursor sound loops. */
+    RndAnimatable *mAnim; /*!< The animation, or null. */
 };

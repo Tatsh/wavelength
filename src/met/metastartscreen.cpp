@@ -7,8 +7,8 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
@@ -45,12 +45,12 @@ void MetaStartScreen::Poll(float fTime) {
 
 void MetaStartScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     DataArray *pVersion = DataArray::Read("version.txt", nullptr);
-    Rnd::Text *pText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("start_version.txt"));
+    RndText *pText = dynamic_cast<RndText *>(TheManager.Find("start_version.txt"));
     if (pText != nullptr) {
         pText->SetText(""); // Yes, the binary blanks the text after reading the version file.
     }
     pVersion->Release();
-    mMusicView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("logo_music_anim.view"));
+    mMusicView = dynamic_cast<RndView *>(TheManager.Find("logo_music_anim.view"));
     FreqScreen::Enter(pPrevScreen, fTime);
 }
 

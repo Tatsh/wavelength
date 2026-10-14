@@ -1,8 +1,8 @@
 #include "met/focuschangepanel.h"
 
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 
 namespace {
 
@@ -16,13 +16,13 @@ constexpr char kFocusedBgMat[] = "bg_hi.mat";
 constexpr char kBgMat[] = "bg_no.mat";
 
 // Find a mesh by a name built from a format.
-inline Rnd::Mesh *FindMesh(const char *pszFormat, const char *pszArg) {
-    return dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString(pszFormat, pszArg)));
+inline RndMesh *FindMesh(const char *pszFormat, const char *pszArg) {
+    return dynamic_cast<RndMesh *>(TheManager.Find(FormatString(pszFormat, pszArg)));
 }
 
 // Find a material by name.
-inline Rnd::Mat *FindMat(const char *pszName) {
-    return dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszName));
+inline RndMat *FindMat(const char *pszName) {
+    return dynamic_cast<RndMat *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -37,9 +37,9 @@ void FocusChangePanel::Focus() {
     if (!mLoaded) {
         return;
     }
-    Rnd::Mesh *pPanel = FindMesh(kPanelMeshFormat, mName);
+    RndMesh *pPanel = FindMesh(kPanelMeshFormat, mName);
     pPanel->SetMat(FindMat(FormatString(kFocusedPanelMatFormat, mMaterialPrefix.c_str())));
-    Rnd::Mesh *pBg = FindMesh(kBgMeshFormat, mName);
+    RndMesh *pBg = FindMesh(kBgMeshFormat, mName);
     pBg->SetMat(FindMat(kFocusedBgMat));
 }
 
@@ -47,8 +47,8 @@ void FocusChangePanel::Unfocus() {
     if (!mLoaded) {
         return;
     }
-    Rnd::Mesh *pPanel = FindMesh(kPanelMeshFormat, mName);
+    RndMesh *pPanel = FindMesh(kPanelMeshFormat, mName);
     pPanel->SetMat(FindMat(FormatString(kPanelMatFormat, mMaterialPrefix.c_str())));
-    Rnd::Mesh *pBg = FindMesh(kBgMeshFormat, mName);
+    RndMesh *pBg = FindMesh(kBgMeshFormat, mName);
     pBg->SetMat(FindMat(kBgMat));
 }

@@ -10,9 +10,9 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "synth/fxmidi.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -172,12 +172,12 @@ void HsvToRgb(const Hsv *pHsv, Color *pRgb) {
     }
 }
 
-Rnd::Mesh *FindMesh(const char *pszName) {
-    return dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(pszName));
+RndMesh *FindMesh(const char *pszName) {
+    return dynamic_cast<RndMesh *>(TheManager.Find(pszName));
 }
 
-Rnd::Mat *FindMat(const char *pszName) {
-    return dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszName));
+RndMat *FindMat(const char *pszName) {
+    return dynamic_cast<RndMat *>(TheManager.Find(pszName));
 }
 
 LRButton *FindSetting(const char *pszButton) {

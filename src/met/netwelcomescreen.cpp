@@ -1,8 +1,8 @@
 #include "met/netwelcomescreen.h"
 
 #include "os/joypad.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "ui/uipanel.h"
 
 namespace {
@@ -18,6 +18,6 @@ NetWelcomeScreen::NetWelcomeScreen(DataArray *pData) : FreqScreen(pData) {
 
 void NetWelcomeScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
-    dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kNewsText))->SetText(mNews);
+    dynamic_cast<RndText *>(TheManager.Find(kNewsText))->SetText(mNews);
     mFocusPanel->SetFocus(mFocusPanel->FindComponent(kFirstButton, false), kPadNone);
 }

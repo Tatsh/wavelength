@@ -6,8 +6,8 @@
 #include "met/netsortedlaunchpadslist.h"
 #include "netflow/netlobby.h"
 #include "os/joypad.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 
@@ -59,7 +59,7 @@ void NetSortedLaunchpadsPanel::Enter(bool bForce, float fTime) {
     TheNetLobby->RequestLaunchpads(
         this, kPageFirst, kNoMode, mArena.c_str(), mRuleSet, mSkillLevel);
     mHilite = 0;
-    mNoneText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kNoneText));
+    mNoneText = dynamic_cast<RndText *>(TheManager.Find(kNoneText));
     mNoneText->SetShowing(false);
     HideArrows(static_cast<UIList *>(FindComponent(kListComponent, false)));
 }

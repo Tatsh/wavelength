@@ -19,10 +19,10 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
 #include "synth/fxmidi.h"
 #include "ui/uibutton.h"
 #include "ui/uimanager.h"
@@ -52,12 +52,12 @@ constexpr int kFirstRealChoice = 1;
 // The name the save button treats as no name.
 const char *const kDefaultName = "Player 1";
 
-Rnd::Mesh *FindMesh(const char *pszName) {
-    return dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(pszName));
+RndMesh *FindMesh(const char *pszName) {
+    return dynamic_cast<RndMesh *>(TheManager.Find(pszName));
 }
 
-Rnd::Mat *FindMat(const char *pszName) {
-    return dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszName));
+RndMat *FindMat(const char *pszName) {
+    return dynamic_cast<RndMat *>(TheManager.Find(pszName));
 }
 
 AvatarPanel *FindAvatarPanel() {
@@ -66,7 +66,7 @@ AvatarPanel *FindAvatarPanel() {
 
 // Write the name of the Freq on the panel that shows it.
 void ShowName(const char *pszName) {
-    dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("f_maker_p_01.txt"))->SetText(pszName);
+    dynamic_cast<RndText *>(TheManager.Find("f_maker_p_01.txt"))->SetText(pszName);
 }
 
 // Focus a component of a panel.

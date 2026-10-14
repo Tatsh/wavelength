@@ -9,10 +9,10 @@
 #include "netflow/netlaunchpad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
 #include "ui/uicomponent.h"
 
 namespace {
@@ -45,7 +45,7 @@ constexpr int kRankTextSize = 32;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -68,21 +68,20 @@ void NetLPadGamePanel::ShowPlayers(const char *pszPanel, std::list<NetLaunchpadP
     for (int nRow = 1; nRow <= kNumPlayerRows; ++nRow) {
         String name;
         if (pPlayers->size() < static_cast<unsigned int>(nRow)) {
-            FindObject<Rnd::Mesh>(FormatString(kColorMeshFormat, pszPanel, nRow))
-                ->SetShowing(false);
+            FindObject<RndMesh>(FormatString(kColorMeshFormat, pszPanel, nRow))->SetShowing(false);
             name = FormatString(kNameTextFormat, pszPanel, nRow);
-            FindObject<Rnd::Text>(name.c_str())->SetText(kNoText);
+            FindObject<RndText>(name.c_str())->SetText(kNoText);
         } else {
             name = FormatString(kNameTextFormat, pszPanel, nRow);
-            Rnd::Text *pName = FindObject<Rnd::Text>(name.c_str());
+            RndText *pName = FindObject<RndText>(name.c_str());
             pName->SetText(player->mPlayer.mName.c_str());
             pName->SetFont(
-                FindObject<Rnd::Font>(player->mReady == kReady ? kReadyFont : kNotReadyFont));
-            FindObject<Rnd::Mesh>(FormatString(kRankMeshFormat, pszPanel, nRow))
+                FindObject<RndFont>(player->mReady == kReady ? kReadyFont : kNotReadyFont));
+            FindObject<RndMesh>(FormatString(kRankMeshFormat, pszPanel, nRow))
                 ->SetMat(FindRankMaterial(player->mPlayer.mRankIcon));
 
             name = FormatString(kRankTextFormat, pszPanel, nRow);
-            Rnd::Text *pRank = FindObject<Rnd::Text>(name.c_str());
+            RndText *pRank = FindObject<RndText>(name.c_str());
             char szRank[kRankTextSize];
             if (player->mPlayer.IsNewbie()) {
                 std::strcpy(szRank, TheLocale.Localize(kNewbieToken, true));
@@ -91,8 +90,7 @@ void NetLPadGamePanel::ShowPlayers(const char *pszPanel, std::list<NetLaunchpadP
             }
             pRank->SetText(FormatString(TheLocale.Localize(kRankToken, true), szRank));
 
-            Rnd::Mesh *pColor =
-                FindObject<Rnd::Mesh>(FormatString(kColorMeshFormat, pszPanel, nRow));
+            RndMesh *pColor = FindObject<RndMesh>(FormatString(kColorMeshFormat, pszPanel, nRow));
             const char *pszColor = GetPlayerColorName(player->mColor);
             pColor->SetShowing(true);
             pColor->SetMat(FindColorMaterial(pszColor));

@@ -2,9 +2,9 @@
 
 #include "os/asyncstream.h"
 #include "os/string.h"
-#include "rnd/particlesysanim.h"
 #include "rnd/rndloader.h"
-#include "rnd/view.h"
+#include "rnd/rndparticlesysanim.h"
+#include "rnd/rndview.h"
 
 /**
  * The arena scene shown behind the front end, and its arena unlock animations.
@@ -124,18 +124,18 @@ private:
      */
     void PollLoad(float flTime);
 
-    RndLoader *mLoader;         /*!< The load of the scene, or null. */
-    Rnd::View *mView;           /*!< The view of the arena. */
-    Rnd::View *mTransitionView; /*!< The transition that drives the arena's sub-views. */
-    String mPrefix;             /*!< The `arena_prefix` entry of the metagame configuration. */
-    int mRevealArena;           /*!< The unlock animation to reveal, 0 for the fifth, or -1. */
-    float mRevealStart;         /*!< The clock the reveal started at, or 0. */
-    float mParticlesStart;      /*!< The clock the reveal's particles started at, or 0. */
-    Rnd::View *mRevealView;     /*!< The animation of the reveal, or null. */
-    Rnd::ParticleSysAnim *mParticles; /*!< The particles of the reveal, or null. */
-    float mRevealLength;              /*!< The length of the reveal. */
-    float mParticlesLength;           /*!< The length of the reveal's particles. */
-    const char *mTriggerFile;    /*!< The `trigger_file` entry of the metagame configuration. */
-    AsyncStream *mTriggerStream; /*!< The read of the trigger file, or null. */
-    int mLoadState;              /*!< One of LoadState. */
+    RndLoader *mLoader;             /*!< The load of the scene, or null. */
+    RndView *mView;                 /*!< The view of the arena. */
+    RndView *mTransitionView;       /*!< The transition that drives the arena's sub-views. */
+    String mPrefix;                 /*!< The `arena_prefix` entry of the metagame configuration. */
+    int mRevealArena;               /*!< The unlock animation to reveal, 0 for the fifth, or -1. */
+    float mRevealStart;             /*!< The clock the reveal started at, or 0. */
+    float mParticlesStart;          /*!< The clock the reveal's particles started at, or 0. */
+    RndView *mRevealView;           /*!< The animation of the reveal, or null. */
+    RndParticleSysAnim *mParticles; /*!< The particles of the reveal, or null. */
+    float mRevealLength;            /*!< The length of the reveal. */
+    float mParticlesLength;         /*!< The length of the reveal's particles. */
+    const char *mTriggerFile;       /*!< The `trigger_file` entry of the metagame configuration. */
+    AsyncStream *mTriggerStream;    /*!< The read of the trigger file, or null. */
+    int mLoadState;                 /*!< One of LoadState. */
 };

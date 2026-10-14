@@ -2,10 +2,10 @@
 
 #include "os/fileutil.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
-#include "rnd/tex.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtex.h"
 
 SongPicPanel::SongPicPanel(DataArray *pData, const char *pszDir) : FreqPanel(pData, pszDir) {
     mPictureShowing = 1;
@@ -17,7 +17,7 @@ SongPicPanel::SongPicPanel(DataArray *pData, const char *pszDir) : FreqPanel(pDa
 
 void SongPicPanel::FinishLoad() {
     FreqPanel::FinishLoad();
-    mPictureMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("%s.mesh", mName)));
+    mPictureMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s.mesh", mName)));
     mPictureMesh->SetShowing(false);
 }
 
@@ -29,7 +29,7 @@ void SongPicPanel::SetBandPicture(const char *pszSong,
     mEncrypted = bEncrypted;
     mSong = pszSong;
     if (mPicturePath.mLength != 0) {
-        Rnd::TheManager.ReleaseTexture(mPicturePath);
+        TheManager.ReleaseTexture(mPicturePath);
     }
     FilePath::SetRoot(FileRoot());
     if (mEncrypted != 0) {
@@ -39,7 +39,7 @@ void SongPicPanel::SetBandPicture(const char *pszSong,
     } else {
         mPicturePath.Set(FormatString("Songs\\%s\\%s_band.bmp", pszSong, pszSong));
     }
-    Rnd::TheManager.AcquireTexture(mPicturePath);
+    TheManager.AcquireTexture(mPicturePath);
     mPictureReady = 0;
 }
 
@@ -47,11 +47,11 @@ void SongPicPanel::SetArenaPicture(const char *pszArena) {
     mSong = "";
     mUnlocked = 0;
     if (mPicturePath.mLength != 0) {
-        Rnd::TheManager.ReleaseTexture(mPicturePath);
+        TheManager.ReleaseTexture(mPicturePath);
     }
     FilePath::SetRoot(FileRoot());
     mPicturePath.Set(FormatString("Metagame\\image\\%s_band.bmp", pszArena));
-    Rnd::TheManager.AcquireTexture(mPicturePath);
+    TheManager.AcquireTexture(mPicturePath);
     mPictureReady = 0;
 }
 
@@ -66,21 +66,20 @@ void SongPicPanel::SetPictureShowing(bool bShowing) {
 
 void SongPicPanel::Poll(float fTime) {
     FreqPanel::Poll(fTime);
-    if (!mLoaded || mPicturePath.mLength == 0 || !Rnd::TheManager.IsTextureLoaded(mPicturePath)) {
+    if (!mLoaded || mPicturePath.mLength == 0 || !TheManager.IsTextureLoaded(mPicturePath)) {
         return;
     }
 
     if (mPictureShowing != 0) {
         mPictureMesh->SetShowing(true);
-        Rnd::Mesh *pBeat =
-            dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("s_g_sel_song_pic_beat.mesh"));
+        RndMesh *pBeat = dynamic_cast<RndMesh *>(TheManager.Find("s_g_sel_song_pic_beat.mesh"));
         if (pBeat != nullptr) {
             const char *pszMat = mEncrypted != 0 ? "band_lock.mat" : "band_unlock.mat";
-            pBeat->SetMat(dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszMat)));
+            pBeat->SetMat(dynamic_cast<RndMat *>(TheManager.Find(pszMat)));
         }
     }
-    Rnd::Tex *pTex = dynamic_cast<Rnd::Tex *>(Rnd::TheManager.Find("band_pic.bmp"));
-    pTex->SetBitmapConfig(0, 0, 0, mPicturePath, 0, 0);
+    RndTex *pTex = dynamic_cast<RndTex *>(TheManager.Find("band_pic.bmp"));
+    pTex->SetBitmap(0, 0, 0, mPicturePath, 0, 0);
     mPicturePath.Clear();
     mPictureReady = 1;
 }
@@ -88,6 +87,6 @@ void SongPicPanel::Poll(float fTime) {
 void SongPicPanel::Exit(bool bForce, float fTime) {
     FreqPanel::Exit(bForce, fTime);
     if (mPicturePath.mLength != 0) {
-        Rnd::TheManager.ReleaseTexture(mPicturePath);
+        TheManager.ReleaseTexture(mPicturePath);
     }
 }

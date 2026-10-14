@@ -12,9 +12,9 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 #include "ui/uiscreen.h"
@@ -55,15 +55,15 @@ NetMainLaunchpadsList *FindList(UIPanel *pPanel) {
     return static_cast<NetMainLaunchpadsList *>(pPanel->FindComponent(kListComponent, false));
 }
 
-Rnd::Text *FindText(const char *pszName) {
-    return dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(pszName));
+RndText *FindText(const char *pszName) {
+    return dynamic_cast<RndText *>(TheManager.Find(pszName));
 }
 
-Rnd::Mesh *FindRankMesh(int nRow) {
-    return dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString(kRankMeshFormat, nRow)));
+RndMesh *FindRankMesh(int nRow) {
+    return dynamic_cast<RndMesh *>(TheManager.Find(FormatString(kRankMeshFormat, nRow)));
 }
 
-Rnd::Text *FindNameText(int nRow) {
+RndText *FindNameText(int nRow) {
     return FindText(FormatString(kNameTextFormat, nRow + kFirstNameText));
 }
 
@@ -102,7 +102,7 @@ void NetMainLaunchpadsPanel::HidePlayers() {
 }
 
 void NetMainLaunchpadsPanel::ShowLaunchpad(NetLaunchpadInfo *pLaunchpad) {
-    Rnd::Text *pHost = FindText(kHostText);
+    RndText *pHost = FindText(kHostText);
     pHost->SetShowing(true);
     const NetGameParams &params = pLaunchpad->mParams;
     if (pLaunchpad->mOpen == 0) {
@@ -124,10 +124,10 @@ void NetMainLaunchpadsPanel::ShowPlayers(std::list<LobbyPlayer> *pPlayers, int n
     }
     int nRow = 0;
     for (const auto &player : *pPlayers) {
-        Rnd::Mesh *pRank = FindRankMesh(nRow + 1);
+        RndMesh *pRank = FindRankMesh(nRow + 1);
         pRank->SetShowing(true);
         pRank->SetMat(FindRankMaterial(player.mRankIcon));
-        Rnd::Text *pName = FindNameText(nRow);
+        RndText *pName = FindNameText(nRow);
         pName->SetShowing(true);
         pName->SetText(player.mName.c_str());
         ++nRow;

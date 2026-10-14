@@ -1,7 +1,7 @@
 #include "met/bonuspicpanel.h"
 
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -16,7 +16,7 @@ BonusPicPanel::BonusPicPanel(DataArray *pData, const char *pszDir)
 
 void BonusPicPanel::Load() {
     if (mLoadRefs == 0) {
-        mBonusLoader = Rnd::TheManager.AddLoader(
+        mBonusLoader = TheManager.AddLoader(
             FormatString("Songs\\%s\\bonus.rnd", mSong), kBonusLoadFlags, nullptr, nullptr);
     }
     UIPanel::Load();

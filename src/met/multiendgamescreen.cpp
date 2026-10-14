@@ -10,8 +10,8 @@
 #include "met/multigamestatspanel.h"
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/movie.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmovie.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 #include "ui/uipanel.h"
@@ -155,6 +155,5 @@ bool MultiEndGameScreen::DispatchPriv(Message *pMsg) {
 
 void MultiEndGameScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
-    dynamic_cast<Rnd::Movie *>(Rnd::TheManager.Find("freq_winner.mov"))
-        ->SetFrame(TheGameDb->mSongTick);
+    dynamic_cast<RndMovie *>(TheManager.Find("freq_winner.mov"))->SetFrame(TheGameDb->mSongTick);
 }

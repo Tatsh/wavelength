@@ -4,9 +4,9 @@
 #include "netflow/netlaunchpad.h"
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "ui/uicomponent.h"
 
 namespace {
@@ -30,8 +30,8 @@ constexpr unsigned int kMinPlayers = 2;
 
 // Give a mesh named by a format a material.
 void SetMeshMat(const char *pszFormat, const char *pszPanel, const char *pszMat) {
-    dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString(pszFormat, pszPanel)))
-        ->SetMat(dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszMat)));
+    dynamic_cast<RndMesh *>(TheManager.Find(FormatString(pszFormat, pszPanel)))
+        ->SetMat(dynamic_cast<RndMat *>(TheManager.Find(pszMat)));
 }
 
 } // namespace

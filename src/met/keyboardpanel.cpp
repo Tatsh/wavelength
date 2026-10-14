@@ -10,7 +10,7 @@
 #include "os/scheduler.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
@@ -109,7 +109,7 @@ void KeyboardPanel::Enter(bool bForce, float fTime) {
         mReplaceText = 1;
     }
     mEntry->SetText(mRequest.mText.c_str());
-    mSelectAnim = dynamic_cast<Rnd::MatAnim *>(Rnd::TheManager.Find("keyboard_sel.mnm"));
+    mSelectAnim = dynamic_cast<RndMatAnim *>(TheManager.Find("keyboard_sel.mnm"));
     SetFocus(FindComponent("but_enter", false), kPadNone);
 }
 

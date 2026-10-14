@@ -11,9 +11,9 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "synth/fxmidi.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -45,12 +45,12 @@ constexpr int kHostId = 0;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 void SetMeshMat(const char *pszMeshFormat, const char *pszPanel, const char *pszMat) {
-    Rnd::Mesh *pMesh = FindObject<Rnd::Mesh>(FormatString(pszMeshFormat, pszPanel));
-    pMesh->SetMat(FindObject<Rnd::Mat>(pszMat));
+    RndMesh *pMesh = FindObject<RndMesh>(FormatString(pszMeshFormat, pszPanel));
+    pMesh->SetMat(FindObject<RndMat>(pszMat));
 }
 
 // Find the player at a position of the list, or the end of the list.
@@ -129,7 +129,7 @@ void NetLPadPlayerPanel::ShowPlayer(NetLaunchpadPlayer *pPlayer) {
     const String connection(GetConnectionTypeName(pPlayer->mPlayer.mConnectionType));
     pNet->SetText(FormatString(TheLocale.Localize(kNetToken, true), connection.c_str()));
     const char *pszColor = GetPlayerColorName(pPlayer->mColor);
-    Rnd::Mesh *pColor = FindObject<Rnd::Mesh>(kColorMesh);
+    RndMesh *pColor = FindObject<RndMesh>(kColorMesh);
     pColor->SetMat(FindColorMaterial(pszColor));
 }
 

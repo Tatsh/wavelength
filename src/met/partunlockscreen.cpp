@@ -8,9 +8,9 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/animatable.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -51,7 +51,7 @@ void PartUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     SystemConfig()->FindArray(kMetagameKey, true)->FindFloat("unlock_prefab_time", &mDelayMs, true);
     mPanel = dynamic_cast<UnlockAvatarPanel *>(TheUI.FindPanel("s_unloc_p", false));
     ShowNextItems();
-    mAnimPlayer.SetAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find(kViewName)));
+    mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find(kViewName)));
     FreqScreen::Enter(pPrevScreen, fTime);
 }
 
@@ -72,7 +72,7 @@ void PartUnlockScreen::Poll(float fTime) {
         if (static_cast<unsigned>(mIndex) < mItems.size()) {
             mNextMs = SystemMs() + mDelayMs;
             ShowNextItems();
-            mAnimPlayer.SetAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find(kViewName)));
+            mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find(kViewName)));
             mAnimPlayer.Start(TheUI.mTime);
         } else {
             TheUI.GotoScreen("unlock_parts_done");
@@ -81,8 +81,8 @@ void PartUnlockScreen::Poll(float fTime) {
 }
 
 void PartUnlockScreen::SetLine(int nLine, const char *pszText) {
-    Rnd::Text *pText =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(FormatString("s_unlock_%02d.txt", nLine)));
+    RndText *pText =
+        dynamic_cast<RndText *>(TheManager.Find(FormatString("s_unlock_%02d.txt", nLine)));
     pText->SetText(pszText);
     pText->UpdateCursors();
 }

@@ -3,8 +3,8 @@
 #include "netflow/netlobby.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 
 namespace {
 
@@ -17,8 +17,8 @@ constexpr char kNoText[] = "";
 constexpr int kTopOfRanking = 0;
 constexpr int kTopTenMode = 1;
 
-Rnd::Text *FindRowText(const char *pszFormat, int nRow) {
-    return dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(FormatString(pszFormat, nRow)));
+RndText *FindRowText(const char *pszFormat, int nRow) {
+    return dynamic_cast<RndText *>(TheManager.Find(FormatString(pszFormat, nRow)));
 }
 
 } // namespace
@@ -48,7 +48,7 @@ bool NetRankedPlayersPanel::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
     int nRow = 0;
     for (auto player = pPlayers->begin(); player != pPlayers->end() && nRow < kNumRows; ++player) {
         ++nRow;
-        Rnd::Text *pRank = FindRowText(kRankTextFormat, nRow);
+        RndText *pRank = FindRowText(kRankTextFormat, nRow);
         if (player->IsNewbie()) {
             pRank->SetText(TheLocale.Localize(kNewbieToken, true));
         } else {

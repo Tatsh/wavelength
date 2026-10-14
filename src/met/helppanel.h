@@ -2,12 +2,13 @@
 
 #include <vector>
 
+#include "math/vector3.h"
 #include "met/freqpanel.h"
 #include "os/string.h"
 #include "rnd/rndloader.h"
-#include "rnd/text.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndtransformable.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uipanel.h"
@@ -194,13 +195,14 @@ public:
      */
     static RndLoader *sLoader;
 
-    Rnd::View *mView;                                        /*!< `help.view`. */
-    DataArray *mFonts;                                       /*!< The `help_fonts` entry. */
-    std::vector<Rnd::Text *> mHelpTexts;                     /*!< `help_help<n>.txt`. */
-    std::vector<Rnd::Text *> mActionTexts;                   /*!< `help_action<n>.txt`. */
-    alignas(16) float mHelpOrigin[Rnd::kXfmRowFloatCount];   /*!< Where the help starts. */
-    alignas(16) float mActionOrigin[Rnd::kXfmRowFloatCount]; /*!< Where the buttons start. */
-    const char *mHelpText;                                   /*!< The help that shows. */
-    const char *mActionText;                                 /*!< The text of the buttons. */
-    std::vector<HelpText> mRuns;                             /*!< The runs of the last text. */
+    RndView *mView;                                                 /*!< `help.view`. */
+    DataArray *mFonts;                                              /*!< The `help_fonts` entry. */
+    std::vector<RndText *> mHelpTexts;                              /*!< `help_help<n>.txt`. */
+    std::vector<RndText *> mActionTexts;                            /*!< `help_action<n>.txt`. */
+    alignas(16) float mHelpOrigin[sizeof(Vector3) / sizeof(float)]; /*!< Where the help starts. */
+    alignas(
+        16) float mActionOrigin[sizeof(Vector3) / sizeof(float)]; /*!< Where the buttons start. */
+    const char *mHelpText;                                        /*!< The help that shows. */
+    const char *mActionText;                                      /*!< The text of the buttons. */
+    std::vector<HelpText> mRuns;                                  /*!< The runs of the last text. */
 };

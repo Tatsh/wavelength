@@ -1,7 +1,7 @@
 #include "met/netflashupdate.h"
 
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -16,7 +16,7 @@ constexpr float kDefaultFlashInterval = 30.0f;
 
 template <typename T>
 T *FindObject(const char *pszFormat, const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(FormatString(pszFormat, pszName)));
+    return dynamic_cast<T *>(TheManager.Find(FormatString(pszFormat, pszName)));
 }
 
 } // namespace
@@ -42,13 +42,13 @@ void NetFlashUpdate::StopFlash() {
 }
 
 void NetFlashUpdate::InitFlash(const char *pszPanel, const char *pszKind) {
-    mTitles = FindObject<Rnd::View>(kTitlesViewFormat, pszPanel);
+    mTitles = FindObject<RndView>(kTitlesViewFormat, pszPanel);
     mTitles->SetShowing(true);
-    mRefresh = FindObject<Rnd::Text>(kRefreshTextFormat, pszPanel);
+    mRefresh = FindObject<RndText>(kRefreshTextFormat, pszPanel);
     mRefresh->SetShowing(false);
-    mPanelMesh = FindObject<Rnd::Mesh>(kPanelMeshFormat, pszPanel);
-    mMat = FindObject<Rnd::Mat>(kMatFormat, pszKind);
-    mHiliteMat = FindObject<Rnd::Mat>(kHiliteMatFormat, pszKind);
+    mPanelMesh = FindObject<RndMesh>(kPanelMeshFormat, pszPanel);
+    mMat = FindObject<RndMat>(kMatFormat, pszKind);
+    mHiliteMat = FindObject<RndMat>(kHiliteMatFormat, pszKind);
 }
 
 void NetFlashUpdate::HideFlash() {

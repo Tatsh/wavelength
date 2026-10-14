@@ -1,16 +1,17 @@
 #include "met/songdecryptscreen.h"
 
-#include <iterator>
-#include <list>
+#include <vector>
 
 #include "game/gamedb.h"
 #include "game/songentry.h"
+#include "math/key.h"
 #include "met/bonuspicpanel.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/animatable.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmatanim.h"
+#include "rnd/rndtext.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
@@ -34,8 +35,8 @@ void SongDecryptScreen::SetSong(const char *pszSong) {
 }
 
 void SongDecryptScreen::Enter(UIScreen *pPrevScreen, float fTime) {
-    mPicAnim = dynamic_cast<Rnd::MatAnim *>(Rnd::TheManager.Find("band_pic.mnm"));
-    Rnd::Text *pBonusText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_bonus_01.txt"));
+    mPicAnim = dynamic_cast<RndMatAnim *>(TheManager.Find("band_pic.mnm"));
+    RndText *pBonusText = dynamic_cast<RndText *>(TheManager.Find("s_g_bonus_01.txt"));
     SongEntry entry{TheGameDb->FindSong(mSong)};
     const char *pszLabel;
     if (entry.GetType() == SongEntry::kTypeBonus) {
@@ -49,12 +50,12 @@ void SongDecryptScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     pBonusText->SetText(FormatString(TheLocale.Localize("s_g_bonus_01", true), pszType));
     pBonusText->UpdateCursors();
 
-    Rnd::Text *pPicText =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(FormatString("s_g_bonus_pic_label.txt")));
+    RndText *pPicText =
+        dynamic_cast<RndText *>(TheManager.Find(FormatString("s_g_bonus_pic_label.txt")));
     pPicText->SetText(FormatString(TheLocale.Localize("s_g_bonus_pic_label", true), pszType));
     pPicText->UpdateCursors();
 
-    mAnimPlayer.SetAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("s_g_bonus.view")));
+    mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find("s_g_bonus.view")));
     mAnimPlayer.Start(TheUI.mTime);
     mDecryptPlayed = 0;
     FreqScreen::Enter(pPrevScreen, fTime);
@@ -65,15 +66,14 @@ void SongDecryptScreen::Poll(float fTime) {
     const float fFrame = mPicAnim->mFilteredFrame;
     mAnimPlayer.Poll(TheUI.mTime); // Yes, the binary polls with the front-end time.
     // The second texture key of the first stage starts the decryption, and the third ends it.
-    const std::list<Rnd::MatAnim::Stage::TexKey> &keys =
-        mPicAnim->mKeysOwner->mStages[kRevealStage].mTexKeys;
-    auto key = std::next(keys.begin(), kDecryptKey);
-    if (!mDecryptPlayed && key->mFrame <= fFrame) {
+    const std::vector<Key<RndTex *>> &keys = mPicAnim->mKeysOwner->mStages[kRevealStage].mTexKeys;
+    auto key = keys.begin() + kDecryptKey;
+    if (!mDecryptPlayed && key->frame <= fFrame) {
         FxMidi::PlayDecrypt();
         mDecryptPlayed = 1;
     }
     ++key;
-    if (key->mFrame <= fFrame) {
+    if (key->frame <= fFrame) {
         TheUI.GotoScreen("song_decrypt_done");
     }
 }

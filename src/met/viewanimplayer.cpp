@@ -1,12 +1,12 @@
 #include "met/viewanimplayer.h"
 
-#include "rnd/cursor.h"
+#include "rnd/rndcursor.h"
 #include "synth/fxmidi.h"
 
 ViewAnimPlayer::ViewAnimPlayer() : mStartMs(0.0f), mAnim(nullptr) {
 }
 
-void ViewAnimPlayer::SetAnim(Rnd::Animatable *pAnim) {
+void ViewAnimPlayer::SetAnim(RndAnimatable *pAnim) {
     mAnim = pAnim;
     pAnim->SetFrame(0.0f);
     mEndFrame = mAnim->ChildrenEndFrame();
@@ -35,13 +35,13 @@ void ViewAnimPlayer::Poll(float fNowMs) {
         return;
     }
     int nMoving = 0;
-    for (Rnd::Animatable *pChild : mAnim->mAnims) {
-        Rnd::Cursor *pCursor = pChild != nullptr ? dynamic_cast<Rnd::Cursor *>(pChild) : nullptr;
+    for (RndAnimatable *pChild : mAnim->mAnims) {
+        RndCursor *pCursor = pChild != nullptr ? dynamic_cast<RndCursor *>(pChild) : nullptr;
         if (pCursor == nullptr) {
             continue;
         }
         const float fCursorFrame = pCursor->mFilteredFrame;
-        if (0.0f <= fCursorFrame && fCursorFrame <= pCursor->FilteredFrameEnd()) {
+        if (0.0f <= fCursorFrame && fCursorFrame <= pCursor->EndFrame()) {
             nMoving = 1;
         }
     }

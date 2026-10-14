@@ -4,7 +4,7 @@
 #include "met/keyboardrequest.h"
 #include "msg/joypadinputmsg.h"
 #include "msg/keyboardkeymsg.h"
-#include "rnd/matanim.h"
+#include "rnd/rndmatanim.h"
 #include "script/dataarray.h"
 #include "ui/uibutton.h"
 #include "ui/uicomponent.h"
@@ -272,5 +272,5 @@ public:
     UIButton *mCapsButton;       /*!< The key `but_caps`, while the panel shows. */
     UIButton *mLeftShiftButton;  /*!< The key `but_lshift`, while the panel shows. */
     UIButton *mRightShiftButton; /*!< The key `but_rshift`, while the panel shows. */
-    Rnd::MatAnim *mSelectAnim;   /*!< The animation `keyboard_sel.mnm`, or null. +0x130 */
+    RndMatAnim *mSelectAnim;     /*!< The animation `keyboard_sel.mnm`, or null. +0x130 */
 };

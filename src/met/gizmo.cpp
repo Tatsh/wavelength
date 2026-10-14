@@ -1,19 +1,13 @@
 #include "met/gizmo.h"
 
+#include "game/avatar.h"
 #include "game/avatarpartset.h"
 #include "game/gamedb.h"
 #include "math/transformops.h"
-#include "rnd/manager.h"
-#include "rnd/transformable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtransformable.h"
 
 namespace {
-
-// Rows of a transform, three of the basis and the translation.
-constexpr int kTranslationRow = 3;
-constexpr int kX = 0;
-constexpr int kY = 1;
-constexpr int kZ = 2;
-constexpr int kW = 3;
 
 // The curve the constructor builds before Init()'s frames apply.
 constexpr float kDefaultSeverity = 10.0f;
@@ -21,20 +15,6 @@ constexpr float kDefaultSeverity = 10.0f;
 // The fractions at which a move stands at its start and at its end.
 constexpr float kMoveStart = 0.0f;
 constexpr float kMoveEnd = 1.0f;
-
-void CopyToRow(const Vector3 &vector, float *pRow) {
-    pRow[kX] = vector.x;
-    pRow[kY] = vector.y;
-    pRow[kZ] = vector.z;
-    pRow[kW] = vector.w;
-}
-
-void CopyFromRow(const float *pRow, Vector3 &vector) {
-    vector.x = pRow[kX];
-    vector.y = pRow[kY];
-    vector.z = pRow[kZ];
-    vector.w = pRow[kW];
-}
 
 } // namespace
 
@@ -45,12 +25,12 @@ float Gizmo::sSeverity = 1.0f;
 
 Gizmo::Gizmo(int nUnused)
     : mUnused(nUnused), mInterp(0.0f, 0.0f, 0.0f, kMoveEnd, kDefaultSeverity) {
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("gizmo.view"));
+    mView = dynamic_cast<RndView *>(TheManager.Find("gizmo.view"));
     mView->SetShowing(true);
-    mMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("gizmo.mesh"));
-    mMovie = dynamic_cast<Rnd::Movie *>(Rnd::TheManager.Find("gizmo movie.mov"));
+    mMesh = dynamic_cast<RndMesh *>(TheManager.Find("gizmo.mesh"));
+    mMovie = dynamic_cast<RndMovie *>(TheManager.Find("gizmo movie.mov"));
     mView->RemoveAnim(mMovie);
-    mMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find("freqscreen.mat"));
+    mMat = dynamic_cast<RndMat *>(TheManager.Find("freqscreen.mat"));
     SetShowAvatar(false);
     mMoveStart = 0.0f;
     mInterp.Reset(mMoveStart, kMoveEnd, sAnimStart, sAnimEnd, sSeverity);
@@ -72,23 +52,23 @@ void Gizmo::SetShowing(bool bShowing) {
 }
 
 bool Gizmo::IsShowing() const {
-    return mView->GetShowing() != 0;
+    return mView->mShowing != 0;
 }
 
 void Gizmo::SetShowAvatar(bool bShowAvatar) {
-    Rnd::Mat::BlendMode blend;
+    int nBlend;
     if (bShowAvatar) {
-        mMat->mStages.front().SetTex(g_pAvatarTex);
-        blend = Rnd::Mat::kBlendModeSrcAlpha;
+        mMat->mStages.front().SetTex(Avatar::sTargetTex);
+        nBlend = RndMat::kBlendSrcAlpha;
     } else {
         mMat->mStages.front().SetTex(mMovie->mTex);
-        blend = Rnd::Mat::kBlendModeAdd;
+        nBlend = RndMat::kBlendAdd;
     }
-    mMat->mBlend = blend;
+    mMat->mBlend = nBlend;
 }
 
 bool Gizmo::IsShowingAvatar() const {
-    return mMat->mBlend == Rnd::Mat::kBlendModeSrcAlpha;
+    return mMat->mBlend == RndMat::kBlendSrcAlpha;
 }
 
 void Gizmo::Draw() {
@@ -103,10 +83,10 @@ void Gizmo::Poll(float fTime) {
         return;
     }
 
-    alignas(16) float xfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount];
+    Transform xfm;
     if (mMoveStart == 0.0f) {
-        Rnd::MakeRotMatrix(mRot, xfm[0]);
-        CopyToRow(mPos, xfm[kTranslationRow]);
+        Rnd::MakeRotMatrix(mRot, &xfm.mBasisX.x);
+        xfm.mTranslation = mPos;
     } else {
         float fElapsed = fTime - mMoveStart;
         // Yes, before the begin frame the binary places the mesh with an unset transform.
@@ -117,20 +97,20 @@ void Gizmo::Poll(float fTime) {
             const float fFrame = sAnimStart + (fElapsed - sBeginFrame);
             const float fT = mInterp.ATanInterpolator::Interp(fFrame);
             if (fT == kMoveStart) {
-                CopyToRow(mFromPos, xfm[kTranslationRow]);
+                xfm.mTranslation = mFromPos;
             } else if (fT == kMoveEnd) {
-                CopyToRow(mPos, xfm[kTranslationRow]);
+                xfm.mTranslation = mPos;
             } else {
                 const float fFrom = kMoveEnd - fT;
                 Vector3 position = mPos;
                 position.x = mPos.x * fT + mFromPos.x * fFrom;
                 position.y = mPos.y * fT + mFromPos.y * fFrom;
                 position.z = mPos.z * fT + mFromPos.z * fFrom;
-                CopyToRow(position, xfm[kTranslationRow]);
+                xfm.mTranslation = position;
             }
             alignas(16) Quat rot;
             QuatSlerp(mFromRot, mRot, rot, fT);
-            Rnd::MakeRotMatrix(rot, xfm[0]);
+            Rnd::MakeRotMatrix(rot, &xfm.mBasisX.x);
             if (sAnimEnd <= fFrame) {
                 mMoveStart = 0.0f;
             }
@@ -141,23 +121,14 @@ void Gizmo::Poll(float fTime) {
         mMovie->SetFrame(TheGameDb->mSongTick);
     }
     mView->SetFrame(fTime);
-    XfmConcat(mMesh->mLocalXfm[0], xfm[0], xfm[0]);
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
-        for (int j = 0; j < Rnd::kXfmRowFloatCount; ++j) {
-            mMesh->mLocalXfm[i][j] = xfm[i][j];
-        }
-    }
+    sceVu0MulAffineMatrixXyz(&xfm.mBasisX.x, &xfm.mBasisX.x, &mMesh->mLocalXfm.mBasisX.x);
+    mMesh->mLocalXfm = xfm;
     mMesh->mDirty = 1;
     mView->UpdateWorldXfm(nullptr, 0);
 }
 
 Transform Gizmo::WorldXfm() const {
-    Transform xfm;
-    CopyFromRow(mMesh->mWorldXfm[0], xfm.mBasisX);
-    CopyFromRow(mMesh->mWorldXfm[1], xfm.mBasisY);
-    CopyFromRow(mMesh->mWorldXfm[2], xfm.mBasisZ);
-    CopyFromRow(mMesh->mWorldXfm[kTranslationRow], xfm.mTranslation);
-    return xfm;
+    return mMesh->mWorldXfm;
 }
 
 void Gizmo::MoveTo(const Vector3 &position, const Quat &orientation, float fTime) {

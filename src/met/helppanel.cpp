@@ -5,8 +5,8 @@
 #include "math/vector3.h"
 #include "os/locale.h"
 #include "os/system.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -22,13 +22,12 @@ constexpr char kComponentHelpFormat[] = "%s_%s_HELP";
 constexpr char kActionFormat[] = "%s_ACTION";
 constexpr char kDefaultAction[] = "default_ACTION";
 
-constexpr int kTranslationRow = Rnd::kXfmRowCount - 1;
 constexpr int kAxisX = 0;
 constexpr int kAxisY = 1;
 constexpr int kAxisZ = 2;
 
-Rnd::Text *FindText(const char *pszName) {
-    return dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(pszName));
+RndText *FindText(const char *pszName) {
+    return dynamic_cast<RndText *>(TheManager.Find(pszName));
 }
 
 // Read the `help_offset` entry. An absent entry does not change the offset.
@@ -37,12 +36,15 @@ inline void ReadHelpOffset(int &nOffset) {
 }
 
 // Set the font and the text of a text object and place it at a position.
-inline void PlaceRun(Rnd::Text *pText, const HelpPanel::HelpText &run, const float *pPosition) {
+inline void PlaceRun(RndText *pText, const HelpPanel::HelpText &run, const float *pPosition) {
     const char *pszText = run.mText.c_str();
     pText->mDirty = 1;
-    std::memcpy(
-        pText->mLocalXfm[kTranslationRow], pPosition, sizeof(pText->mLocalXfm[kTranslationRow]));
-    pText->SetFont(dynamic_cast<Rnd::Font *>(Rnd::TheManager.Find(run.mFont.c_str())));
+    Vector3 &translation = pText->mLocalXfm.mTranslation;
+    translation.x = pPosition[kAxisX];
+    translation.y = pPosition[kAxisY];
+    translation.z = pPosition[kAxisZ];
+    translation.w = pPosition[kVec3PaddingFloat];
+    pText->SetFont(dynamic_cast<RndFont *>(TheManager.Find(run.mFont.c_str())));
     pText->SetText(pszText);
 }
 
@@ -61,7 +63,7 @@ HelpPanel::~HelpPanel() {
 
 void HelpPanel::Load() {
     if (sLoader == nullptr) {
-        sLoader = Rnd::TheManager.AddLoader(
+        sLoader = TheManager.AddLoader(
             mFile.c_str(), RndLoader::kAsync | RndLoader::kDeleteObjects, nullptr, nullptr);
     }
     mLoader = sLoader;
@@ -82,16 +84,16 @@ void HelpPanel::FinishLoad() {
     FreqPanel::FinishLoad();
     mFonts = SystemConfig()->FindArray(kMetagameKey, false)->FindArray("help_fonts", false);
     for (int i = 1; i <= kNumTexts; ++i) {
-        Rnd::Text *pText = FindText(FormatString("help_help%d.txt", i));
+        RndText *pText = FindText(FormatString("help_help%d.txt", i));
         pText->SetText(kEmptyText);
         mHelpTexts.push_back(pText);
         pText = FindText(FormatString("help_action%d.txt", i));
         pText->SetText(kEmptyText);
         mActionTexts.push_back(pText);
     }
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("help.view"));
-    std::memcpy(mHelpOrigin, mHelpTexts[0]->mLocalXfm[kTranslationRow], sizeof(mHelpOrigin));
-    std::memcpy(mActionOrigin, mActionTexts[0]->mLocalXfm[kTranslationRow], sizeof(mActionOrigin));
+    mView = dynamic_cast<RndView *>(TheManager.Find("help.view"));
+    std::memcpy(mHelpOrigin, &mHelpTexts[0]->mLocalXfm.mTranslation, sizeof(mHelpOrigin));
+    std::memcpy(mActionOrigin, &mActionTexts[0]->mLocalXfm.mTranslation, sizeof(mActionOrigin));
 }
 
 const char *HelpPanel::FontOf(const char *pszName) {
@@ -141,11 +143,11 @@ void HelpPanel::LayoutHelp() {
     SetTextsShowing(true);
     const int nRuns = static_cast<int>(mRuns.size());
     if (nRuns != 0) {
-        float position[Rnd::kXfmRowFloatCount];
+        float position[sizeof(Vector3) / sizeof(float)];
         std::memcpy(position, mHelpOrigin, sizeof(position));
         int nOffset = 0;
         for (int i = 0; i < nRuns; ++i) {
-            Rnd::Text *pText = mHelpTexts[i];
+            RndText *pText = mHelpTexts[i];
             const HelpText &run = mRuns[i];
             PlaceRun(pText, run, position);
             Vector3 end = pText->CharPosition(static_cast<int>(strlen(run.mText.c_str())));
@@ -159,8 +161,8 @@ void HelpPanel::LayoutHelp() {
         constexpr float kHalf = 0.5f;
         const float fShift = (position[kAxisX] - mHelpOrigin[kAxisX]) * kHalf;
         for (int i = 0; i < nRuns; ++i) {
-            Rnd::Text *pText = mHelpTexts[i];
-            pText->mLocalXfm[kTranslationRow][kAxisX] -= fShift;
+            RndText *pText = mHelpTexts[i];
+            pText->mLocalXfm.mTranslation.x -= fShift;
             pText->mDirty = 1;
         }
     }
@@ -174,11 +176,11 @@ void HelpPanel::LayoutActions() {
     }
     const int nRuns = static_cast<int>(mRuns.size());
     if (nRuns != 0) {
-        float position[Rnd::kXfmRowFloatCount];
+        float position[sizeof(Vector3) / sizeof(float)];
         std::memcpy(position, mActionOrigin, sizeof(position));
         int nOffset = 0;
         for (int i = nRuns - 1; i >= 0; --i) {
-            Rnd::Text *pText = mActionTexts[i];
+            RndText *pText = mActionTexts[i];
             PlaceRun(pText, mRuns[i], position);
             Vector3 start = pText->CharPosition(0);
             ReadHelpOffset(nOffset);

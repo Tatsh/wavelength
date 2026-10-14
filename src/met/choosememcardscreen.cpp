@@ -3,9 +3,9 @@
 #include "memcard/mcmanager.h"
 #include "met/remixorfreqscreen.h"
 #include "os/joypad.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "ui/lrbutton.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -39,13 +39,13 @@ bool ChooseMemCardScreen::DispatchPriv(Message *pMsg) {
 
 void ChooseMemCardScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
-    Rnd::View *pCard = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kCardView));
-    Rnd::Text *pNoCard = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kNoCardText));
+    RndView *pCard = dynamic_cast<RndView *>(TheManager.Find(kCardView));
+    RndText *pNoCard = dynamic_cast<RndText *>(TheManager.Find(kNoCardText));
     mSlot = 0;
     if (!mSlots.empty()) {
         pCard->SetShowing(true);
         pNoCard->SetShowing(false);
-        Rnd::Text *pSlot = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kSlotText));
+        RndText *pSlot = dynamic_cast<RndText *>(TheManager.Find(kSlotText));
         pSlot->SetText(TheMCManager.GetSlotName(mSlots[mSlot]));
     } else {
         pCard->SetShowing(false);
@@ -70,7 +70,7 @@ bool ChooseMemCardScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         mSlot = mSlot + 1 < nSlots ? mSlot + 1 : 0;
     }
 
-    Rnd::Text *pSlot = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kSlotText));
+    RndText *pSlot = dynamic_cast<RndText *>(TheManager.Find(kSlotText));
     if (!mSlots.empty()) {
         pSlot->SetText(TheMCManager.GetSlotName(mSlots[mSlot]));
     } else {

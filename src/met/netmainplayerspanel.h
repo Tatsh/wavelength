@@ -3,7 +3,7 @@
 #include "met/netmainpanel.h"
 #include "msg/lobbyplayersmsg.h"
 #include "msg/playerrankmsg.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmesh.h"
 #include "script/dataarray.h"
 #include "ui/uipanel.h"
 
@@ -147,6 +147,6 @@ private:
      */
     bool HandlePlayerRank(PlayerRankMsg *pMsg);
 
-    Rnd::Mesh *mAvatarMesh; // The mesh `fn_main_play_freq.mesh` the Freq is drawn on.
-    int mShowAvatar;        // Whether Draw() draws the Freq, from Enter() to Exit().
+    RndMesh *mAvatarMesh; // The mesh `fn_main_play_freq.mesh` the Freq is drawn on.
+    int mShowAvatar;      // Whether Draw() draws the Freq, from Enter() to Exit().
 };

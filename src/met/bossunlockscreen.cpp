@@ -6,9 +6,9 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/animatable.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "ui/uilabel.h"
 #include "ui/uimanager.h"
 
@@ -44,7 +44,7 @@ void BossUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     pLabel->SetText(FormatString(TheLocale.Localize("unlock_boss_3", true), entry.GetTitle()));
     pLabel->mText->UpdateCursors();
 
-    mAnimPlayer.SetAnim(dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find("d_launch.view")));
+    mAnimPlayer.SetAnim(dynamic_cast<RndAnimatable *>(TheManager.Find("d_launch.view")));
 }
 
 void BossUnlockScreen::Exit(UIScreen *pNextScreen, float fTime) {

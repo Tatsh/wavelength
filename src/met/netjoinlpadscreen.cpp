@@ -13,8 +13,8 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -140,8 +140,8 @@ bool NetJoinLPadScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     }
     if (TheNetLaunchpad != nullptr) {
         mCancelling = 1;
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("dialog_05a.txt"))->SetShowing(false);
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("dialog_05b.txt"))->SetShowing(false);
+        dynamic_cast<RndText *>(TheManager.Find("dialog_05a.txt"))->SetShowing(false);
+        dynamic_cast<RndText *>(TheManager.Find("dialog_05b.txt"))->SetShowing(false);
         dynamic_cast<DialogPanel *>(mFocusPanel)
             ->SetText(TheLocale.Localize("cancel_join_attempt", true));
         TheNetLaunchpad->Cancel(this);

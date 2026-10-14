@@ -2,7 +2,7 @@
 
 #include "met/freqpanel.h"
 #include "os/string.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -80,8 +80,8 @@ public:
      */
     void SetText(const char *pszText);
 
-    int mTriCancel;         /*!< Non-zero when the cancel hint shows, `tri_cancel`. +0xe0 */
-    Rnd::View *mPanelView;  /*!< The view `dialog_panel.view`, whose frame sets the height. */
-    Rnd::View *mButtonView; /*!< The view `dialog_text.view`, whose frame places the buttons. */
-    String mPendingText;    /*!< The text SetText() received before the panel loaded. +0xec */
+    int mTriCancel;       /*!< Non-zero when the cancel hint shows, `tri_cancel`. +0xe0 */
+    RndView *mPanelView;  /*!< The view `dialog_panel.view`, whose frame sets the height. */
+    RndView *mButtonView; /*!< The view `dialog_text.view`, whose frame places the buttons. */
+    String mPendingText;  /*!< The text SetText() received before the panel loaded. +0xec */
 };

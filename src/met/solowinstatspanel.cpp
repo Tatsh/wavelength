@@ -6,9 +6,9 @@
 #include "met/metagameutil.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndview.h"
 
 namespace {
 
@@ -79,8 +79,8 @@ void SoloWinStatsPanel::Refresh() {
     }
 
     const bool bShowGrade = !TheGameDb->mLoadRemix;
-    Rnd::Mesh *pGrade =
-        dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString(kGradeMeshFormat, mName)));
+    RndMesh *pGrade =
+        dynamic_cast<RndMesh *>(TheManager.Find(FormatString(kGradeMeshFormat, mName)));
     pGrade->SetShowing(bShowGrade);
     if (bShowGrade) {
         Campaign *pProfile = TheGameDb->GetProfile(0);
@@ -91,8 +91,7 @@ void SoloWinStatsPanel::Refresh() {
         pGrade->SetMat(FindGradeMaterial(nMedal, true));
     }
 
-    mReveal.SetAnim(
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString(kViewFormat, mName))));
+    mReveal.SetAnim(dynamic_cast<RndView *>(TheManager.Find(FormatString(kViewFormat, mName))));
 }
 
 void SoloWinStatsPanel::Poll(float fTime) {

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "met/freqpanel.h"
-#include "rnd/animatable.h"
-#include "rnd/drawable.h"
-#include "rnd/view.h"
+#include "rnd/rndanimatable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -38,8 +38,8 @@ public:
          */
         void Load(const char *pszName);
 
-        Rnd::Animatable *mAnim; /*!< The animation, `o_controller_map_<name>.tnm`. */
-        Rnd::Drawable *mMesh;   /*!< The highlight, `o_controller_map_<name>.mesh`. */
+        RndAnimatable *mAnim; /*!< The animation, `o_controller_map_<name>.tnm`. */
+        RndDrawable *mMesh;   /*!< The highlight, `o_controller_map_<name>.mesh`. */
     };
 
     /**
@@ -94,6 +94,6 @@ public:
     void SetRegion(int nRegion);
 
     Region mRegions[kNumRegions]; /*!< The regions, indexed by JoypadButton. */
-    Rnd::View *mView;             /*!< The view of the picture, `o_controller_map.view`. */
+    RndView *mView;               /*!< The view of the picture, `o_controller_map.view`. */
     int mRegion;                  /*!< The highlighted region, or kPadNone. */
 };

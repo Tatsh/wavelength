@@ -2,7 +2,7 @@
 
 #include "game/gamedb.h"
 #include "game/songentry.h"
-#include "rnd/text.h"
+#include "rnd/rndtext.h"
 #include "ui/uilabel.h"
 
 namespace {

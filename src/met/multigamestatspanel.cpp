@@ -4,9 +4,9 @@
 #include "met/metagameutil.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
 
 namespace {
 
@@ -21,7 +21,7 @@ constexpr char kScoreFormat[] = "%d";
 
 template <typename T>
 T *FindObject(const char *pszFormat, const char *pszPanel) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(FormatString(pszFormat, pszPanel)));
+    return dynamic_cast<T *>(TheManager.Find(FormatString(pszFormat, pszPanel)));
 }
 
 } // namespace
@@ -44,15 +44,15 @@ const char *MultiGameStatsPanel::RankLabel(int nRank, bool bTied) {
 void MultiGameStatsPanel::SetPlayer(int nPlayer) {
     mPlayer = nPlayer;
     SetAvatar(TheGameDb->GetAvatar(nPlayer));
-    FindObject<Rnd::Text>(kNameTextFormat, mName)->SetText(TheGameDb->GetPlayerName(mPlayer));
-    FindObject<Rnd::Text>(kPlaceTextFormat, mName)
+    FindObject<RndText>(kNameTextFormat, mName)->SetText(TheGameDb->GetPlayerName(mPlayer));
+    FindObject<RndText>(kPlaceTextFormat, mName)
         ->SetText(RankLabel(TheGameDb->GetPlayerRank(mPlayer), mTied != 0));
 
     const String score(FormatString(kScoreFormat, TheGameDb->GetPlayerScore(mPlayer)));
-    FindObject<Rnd::Text>(kScoreTextFormat, mName)->SetText(score.c_str());
+    FindObject<RndText>(kScoreTextFormat, mName)->SetText(score.c_str());
 
     const char *pszColor = TheGameDb->GetPlayerColor(mPlayer);
-    Rnd::Mesh *pMesh = FindObject<Rnd::Mesh>(kColorMeshFormat, mName);
+    RndMesh *pMesh = FindObject<RndMesh>(kColorMeshFormat, mName);
     pMesh->SetShowing(true);
     pMesh->SetMat(FindColorMaterial(pszColor));
 }

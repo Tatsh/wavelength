@@ -5,8 +5,8 @@
 
 #include "met/metagameutil.h"
 #include "os/locale.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 
@@ -77,7 +77,7 @@ void NetFoundPlayerPanel::Enter(bool bForce, float fTime) {
     }
     pLobby->SetText(text.c_str());
 
-    dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(kRankMesh))
+    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))
         ->SetMat(FindRankMaterial(mPlayer.mRankIcon));
     SetAvatar(&mPlayer.mAvatar);
 }

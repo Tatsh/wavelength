@@ -11,8 +11,8 @@
 #include "os/listat.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 #include "synth/fxmidi.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -74,7 +74,7 @@ void NetMainPlayersList::SetCursorSelected(bool bSelected) {
         TheUI.FindComponent(kDetailPanel, kNetComponent, false)->SetShowing(bSelected);
         TheUI.FindComponent(kDetailPanel, kGamesComponent, false)->SetShowing(bSelected);
     }
-    dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(kRankMesh))->SetShowing(bSelected);
+    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))->SetShowing(bSelected);
 }
 
 void NetMainPlayersList::UpdateCursor() {
@@ -108,8 +108,7 @@ void NetMainPlayersList::UpdateCursor() {
     UIComponent *pGames = TheUI.FindComponent(kDetailPanel, kGamesComponent, false);
     pGames->SetText(FormatString(TheLocale.Localize(kGamesToken, true), player.mGames));
 
-    dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(kRankMesh))
-        ->SetMat(FindRankMaterial(player.mRankIcon));
+    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))->SetMat(FindRankMaterial(player.mRankIcon));
 }
 
 void NetMainPlayersList::SetPlayers(std::list<LobbyPlayer> *pPlayers, int nSelected) {

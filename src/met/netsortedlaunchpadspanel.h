@@ -5,7 +5,7 @@
 #include "msg/joypadinputmsg.h"
 #include "msg/lobbylaunchpadsmsg.h"
 #include "os/string.h"
-#include "rnd/text.h"
+#include "rnd/rndtext.h"
 #include "script/dataarray.h"
 #include "ui/uicomponentselectmsg.h"
 #include "ui/uipanel.h"
@@ -138,10 +138,10 @@ private:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
-    String mArena;        /*!< The arena of the search, or empty for any. */
-    int mRuleSet;         /*!< The game mode of the search. */
-    int mSkillLevel;      /*!< The skill level of the search, or -1 for any. */
-    int mHasPrevious;     /*!< Non-zero when launchpads precede the last list received. */
-    int mPage;            /*!< The page last requested, one of Page. */
-    Rnd::Text *mNoneText; /*!< The text `fn_sorted_none.txt` an empty list shows. */
+    String mArena;      /*!< The arena of the search, or empty for any. */
+    int mRuleSet;       /*!< The game mode of the search. */
+    int mSkillLevel;    /*!< The skill level of the search, or -1 for any. */
+    int mHasPrevious;   /*!< Non-zero when launchpads precede the last list received. */
+    int mPage;          /*!< The page last requested, one of Page. */
+    RndText *mNoneText; /*!< The text `fn_sorted_none.txt` an empty list shows. */
 };

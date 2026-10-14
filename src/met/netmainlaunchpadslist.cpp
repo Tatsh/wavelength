@@ -12,8 +12,8 @@
 #include "os/listat.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -100,7 +100,7 @@ void NetMainLaunchpadsList::UpdateRow(int nRow, int nItem) {
     } else {
         pszFont = kFont;
     }
-    SetRowFont(nRow, dynamic_cast<Rnd::Font *>(Rnd::TheManager.Find(pszFont)));
+    SetRowFont(nRow, dynamic_cast<RndFont *>(TheManager.Find(pszFont)));
 }
 
 void NetMainLaunchpadsList::UpdateCursor() {

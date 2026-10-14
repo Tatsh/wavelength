@@ -5,8 +5,8 @@
 #include "met/metagameutil.h"
 #include "netflow/netlobby.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 
@@ -18,8 +18,8 @@ constexpr char kGenreComponent[] = "genre";
 constexpr char kSortedScreen[] = "fn_sorted";
 constexpr char kNoText[] = "";
 
-Rnd::Mesh *FindRankMesh(int nRow) {
-    return dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString(kRankMeshFormat, nRow)));
+RndMesh *FindRankMesh(int nRow) {
+    return dynamic_cast<RndMesh *>(TheManager.Find(FormatString(kRankMeshFormat, nRow)));
 }
 
 } // namespace
@@ -44,7 +44,7 @@ void NetSortedDataPanel::SetPlayers(std::list<LobbyPlayer> *pPlayers, int nLaunc
     int nRow = 0;
     for (const auto &player : *pPlayers) {
         ++nRow;
-        Rnd::Mesh *pRank = FindRankMesh(nRow);
+        RndMesh *pRank = FindRankMesh(nRow);
         pRank->SetShowing(true);
         pRank->SetMat(FindRankMaterial(player.mRankIcon));
         UIComponent *pName = FindComponent(FormatString(kNameFormat, nRow), false);

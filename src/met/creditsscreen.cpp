@@ -6,8 +6,8 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -91,8 +91,8 @@ void CreditsScreen::Advance() {
 
 void CreditsScreen::ShowPage() {
     for (int i = 0;; ++i) {
-        Rnd::Text *pText = dynamic_cast<Rnd::Text *>(
-            Rnd::TheManager.Find(FormatString(kTextObjectFormat, mTextTag, i + 1)));
+        RndText *pText = dynamic_cast<RndText *>(
+            TheManager.Find(FormatString(kTextObjectFormat, mTextTag, i + 1)));
         if (pText == nullptr) {
             break;
         }

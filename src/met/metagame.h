@@ -18,8 +18,8 @@
 #include "msg/shareremixprogressmsg.h"
 #include "netflow/netchatroominfo.h"
 #include "os/string.h"
-#include "rnd/cam.h"
-#include "rnd/environ.h"
+#include "rnd/rndcam.h"
+#include "rnd/rndenviron.h"
 #include "rnd/rndloader.h"
 #include "synth/syntheffects.h"
 #include "ui/uicomponentfocuschangemsg.h"
@@ -409,8 +409,8 @@ public:
     std::list<UnlockEvent> mUnlockScreens; /*!< The queued screens that follow the song. */
     std::vector<UnlockableItem> mUnlocks;  /*!< The items the last song unlocked. */
     Gizmo *mGizmo;                         /*!< The projector of the menu screens. +0x12c */
-    Rnd::Cam *mUiCamera;                   /*!< The camera of the front end. */
-    Rnd::Environ *mUiEnviron;              /*!< The lights of the front end. */
+    RndCam *mUiCamera;                     /*!< The camera of the front end. */
+    RndEnviron *mUiEnviron;                /*!< The lights of the front end. */
     int mSpeedingUp;                       /*!< Set while a `speed_up` transition runs. */
     float mSpeed;                          /*!< The rate of mTime against the scheduler. */
     int mNetScreenPending;                 /*!< Whether mNetScreen waits to be shown. */

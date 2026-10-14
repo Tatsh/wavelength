@@ -4,17 +4,16 @@
 #include "game/remixinfo.h"
 #include "game/songentry.h"
 #include "os/string.h"
-#include "rnd/font.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
 #include "rnd/rndfont.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 
 /**
  * The `freq_winner.mat` material FindWinnerMaterial() keeps for the result screens.
  *
  * @ghidraAddress NTSC-U/C: 0x003af8b4
  */
-extern Rnd::Mat *g_pWinnerMat;
+extern RndMat *g_pWinnerMat;
 
 /**
  * Find the `freq_winner.mat` material the result screens draw the winner's character with, and
@@ -63,7 +62,7 @@ RndFont *FindLucidaFont(const char *pszColor);
  * @ghidraAddress NTSC-U/C: 0x001995c8
  * @ghidraAddress PAL: 0x001a0ae8
  */
-Rnd::Mat *FindColorMaterial(const char *pszColor);
+RndMat *FindColorMaterial(const char *pszColor);
 
 /**
  * Report the colour of a player.
@@ -114,7 +113,7 @@ const char *GetDuelDifficultyAbbrev(int nDifficulty);
  * @ghidraAddress NTSC-U/C: 0x00199910
  * @ghidraAddress PAL: 0x001a0e50
  */
-Rnd::Mat *FindRankMaterial(int nRank);
+RndMat *FindRankMaterial(int nRank);
 
 /**
  * Find the material of a grade, `grade_0<grade>.mat`, or `grade_end_0<grade>.mat` for the end of
@@ -128,7 +127,7 @@ Rnd::Mat *FindRankMaterial(int nRank);
  * @ghidraAddress NTSC-U/C: 0x00199a08
  * @ghidraAddress PAL: 0x001a0f48
  */
-Rnd::Mat *FindGradeMaterial(int nGrade, bool bEnd);
+RndMat *FindGradeMaterial(int nGrade, bool bEnd);
 
 /**
  * Render an avatar into the part of the screen a mesh covers, and draw the mesh with the winner's
@@ -141,7 +140,7 @@ Rnd::Mat *FindGradeMaterial(int nGrade, bool bEnd);
  * @ghidraAddress NTSC-U/C: 0x00199ab8
  * @ghidraAddress PAL: 0x001a0ff8
  */
-void DrawAvatarOnMesh(AvatarPartSet *pAvatar, Rnd::Mesh *pMesh);
+void DrawAvatarOnMesh(AvatarPartSet *pAvatar, RndMesh *pMesh);
 
 /**
  * Remove the spaces at the start and at the end of a string.

@@ -7,7 +7,7 @@
 #include "netflow/netlobby.h"
 #include "os/locale.h"
 #include "os/system.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -26,7 +26,7 @@ constexpr float kRequestIntervalMs = 20000.0f;
 
 void NetMainPlayersPanel::FinishLoad() {
     NetMainPanel::FinishLoad();
-    mAvatarMesh = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(kAvatarMesh));
+    mAvatarMesh = dynamic_cast<RndMesh *>(TheManager.Find(kAvatarMesh));
     mAvatarMesh->SetShowing(false);
 }
 

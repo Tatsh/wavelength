@@ -1,8 +1,8 @@
 #include "met/neteulascreen.h"
 
 #include "os/joypad.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
 
 namespace {
 
@@ -17,8 +17,8 @@ constexpr int kSamePage = 0;
 // mPages ends with the end of the last page. The last page starts one entry before it.
 constexpr int kPageEndEntries = 2;
 
-Rnd::Text *FindEulaText() {
-    return dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kEulaText));
+RndText *FindEulaText() {
+    return dynamic_cast<RndText *>(TheManager.Find(kEulaText));
 }
 
 } // namespace
@@ -40,7 +40,7 @@ void NetEULAScreen::TurnPage(int nDelta) {
         mPage = nLastPage;
     }
 
-    Rnd::Text *pText = FindEulaText();
+    RndText *pText = FindEulaText();
     char *pPageEnd = mPages[mPage + 1];
     const char cSaved = *pPageEnd;
     *pPageEnd = '\0';
@@ -50,8 +50,8 @@ void NetEULAScreen::TurnPage(int nDelta) {
 
 void NetEULAScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
-    Rnd::Text *pText = FindEulaText();
-    pText->WrapText(mText, &mWrappedText);
+    RndText *pText = FindEulaText();
+    pText->WrapText(mText, mWrappedText);
     pText->SetWordWrap(kNoWordWrap);
 
     int nLines = 0;

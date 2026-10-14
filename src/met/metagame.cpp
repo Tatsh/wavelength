@@ -197,12 +197,12 @@
 #include "os/string.h"
 #include "os/system.h"
 #include "os/timer.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
 #include "rnd/ps.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
 #include "rnd/rndrenderer.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 #include "script/scriptfunction.h"
 #include "script/symbol.h"
@@ -731,9 +731,9 @@ void Metagame::CreateGizmo() {
 
 void Metagame::ShowLoadingScreen() {
     const int nScreen = RandomInt(0, kLoadingScreenCount) + 1;
-    mLoadingScreenLoader = Rnd::TheManager.AddLoader(
+    mLoadingScreenLoader = TheManager.AddLoader(
         FormatString(kLoadingScreenFormat, nScreen), RndLoader::kDeleteObjects, nullptr, nullptr);
-    Rnd::View *pView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kLoadingViewName));
+    RndView *pView = dynamic_cast<RndView *>(TheManager.Find(kLoadingViewName));
 
     // The screen is drawn into both frame buffers.
     TheRnd->BeginFrame();
@@ -770,10 +770,10 @@ void Metagame::Init() {
     DataArray *pFreqScreen = pMetagame->FindArray(kFreqScreenKey, true);
     const char *pszObject;
     if (pFreqScreen->FindSymbol(kUiCameraKey, &pszObject, false)) {
-        mUiCamera = dynamic_cast<Rnd::Cam *>(Rnd::TheManager.Find(pszObject));
+        mUiCamera = dynamic_cast<RndCam *>(TheManager.Find(pszObject));
     }
     if (pFreqScreen->FindSymbol(kUiEnvironKey, &pszObject, false)) {
-        mUiEnviron = dynamic_cast<Rnd::Environ *>(Rnd::TheManager.Find(pszObject));
+        mUiEnviron = dynamic_cast<RndEnviron *>(TheManager.Find(pszObject));
     }
 
     TheUI.AddSink(this);
@@ -1079,11 +1079,11 @@ void Metagame::Draw() {
 
 void Metagame::DrawOverlay() {
     if (mLoadStage < kLoadStageStartFxBanks) {
-        Rnd::Mat *pMat = dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(kLoadingMatName));
-        const float flLevel = std::max(0.0f, pMat->mAmbient.r - kLoadingFadeStep);
+        RndMat *pMat = dynamic_cast<RndMat *>(TheManager.Find(kLoadingMatName));
+        const float flLevel = std::max(0.0f, pMat->mBaseColor.r - kLoadingFadeStep);
         const Color ambient{flLevel, flLevel, flLevel, 1.0f};
-        pMat->SetAmbient(ambient);
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kLoadingViewName))->Draw();
+        pMat->SetBaseColor(ambient);
+        dynamic_cast<RndView *>(TheManager.Find(kLoadingViewName))->Draw();
         return;
     }
 
@@ -1586,9 +1586,9 @@ bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
     TheTriggerMgr.ScreenChangeEvent(pMsg);
 
     FreqScreen *pScreen = dynamic_cast<FreqScreen *>(pMsg->mScreen);
-    Rnd::Text *pTitle = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kTitleTextName));
+    RndText *pTitle = dynamic_cast<RndText *>(TheManager.Find(kTitleTextName));
     if (pTitle != nullptr && pScreen != nullptr) {
-        Rnd::View *pView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kTitleViewName));
+        RndView *pView = dynamic_cast<RndView *>(TheManager.Find(kTitleViewName));
         const String title(pScreen->Title());
         pTitle->SetText(title.c_str());
         if (title.mLength != 0) {
@@ -1596,7 +1596,7 @@ bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
             const float flWidth =
                 pTitle->MeasureWidth(title.c_str(), static_cast<int>(strlen(title.c_str())));
             const float flFraction = (flWidth - kTitleMinWidth) / kTitleWidthRange;
-            dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kTitleViewName))
+            dynamic_cast<RndView *>(TheManager.Find(kTitleViewName))
                 ->SetFrame((1.0f - flFraction) * kTitleFrames);
             dynamic_cast<FreqPanel *>(TheUI.FindPanel(kTitlePanelName, false))->UpdateBgBox();
         } else {

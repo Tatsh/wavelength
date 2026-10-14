@@ -7,9 +7,9 @@
 #include "os/joypad.h"
 #include "os/listat.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "ui/uibutton.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -54,8 +54,8 @@ void NetChooseIConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         }
     }
 
-    auto *pView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kConfigView));
-    const int nFramesPerButton = static_cast<int>(pView->UnfilterFrame(pView->FilteredFrameEnd()) /
+    auto *pView = dynamic_cast<RndView *>(TheManager.Find(kConfigView));
+    const int nFramesPerButton = static_cast<int>(pView->UnfilterFrame(pView->EndFrame()) /
                                                   static_cast<float>(kConfigButtons));
     const float flAllButtons = static_cast<float>(nFramesPerButton * kConfigButtons);
     UIButton *pFocus;
@@ -74,7 +74,7 @@ void NetChooseIConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 void NetChooseIConfigScreen::ShowDescription(bool bShow) {
-    auto *pText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kDescriptionText));
+    auto *pText = dynamic_cast<RndText *>(TheManager.Find(kDescriptionText));
     pText->SetShowing(bShow);
     if (bShow) {
         pText->SetText(ListAt(mConfigs, mSelected)->mDescription.c_str());

@@ -15,10 +15,10 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "synth/fxmidi.h"
 #include "ui/uibutton.h"
 #include "ui/uilabel.h"
@@ -167,11 +167,9 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
     if (pSongButton != nullptr) {
         bLocked = pSongButton->mStyle == TheUI.FindStyle("locked_song_style", false);
     }
-    Rnd::Text *pBio = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_pic_bio.txt"));
-    Rnd::Text *pGenre =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_pic_genre.txt"));
-    Rnd::Text *pStatus =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_pic_lock.txt"));
+    RndText *pBio = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_bio.txt"));
+    RndText *pGenre = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_genre.txt"));
+    RndText *pStatus = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_lock.txt"));
     if (bLocked) {
         if (song.GetType() == kSongTypeBonus) {
             pBio->SetText(TheLocale.Localize("locked_bonus_bio", true));
@@ -194,8 +192,7 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
         }
     }
 
-    Rnd::Text *pArtist =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_pic_bio_01.txt"));
+    RndText *pArtist = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_bio_01.txt"));
     if (bLocked) {
         pArtist->SetText("");
     } else {
@@ -204,8 +201,7 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
     if (strcmp(song.GetName(), "POD") == 0) {
         pArtist->SetText(song.GetArtistShort());
     }
-    Rnd::Text *pWww =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_pic_bio_02.txt"));
+    RndText *pWww = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_bio_02.txt"));
     if (bLocked) {
         pWww->SetText("");
     } else {
@@ -254,9 +250,8 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
 }
 
 void MetaSongScreen::ShowPicture(bool bShowPicture) {
-    Rnd::View *pBio = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("s_g_sel_song_pic_bio.view"));
-    Rnd::View *pImage =
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("s_g_sel_song_pic_image.view"));
+    RndView *pBio = dynamic_cast<RndView *>(TheManager.Find("s_g_sel_song_pic_bio.view"));
+    RndView *pImage = dynamic_cast<RndView *>(TheManager.Find("s_g_sel_song_pic_image.view"));
     const char *pszFirst;
     const char *pszSecond;
     if (strcmp(TheMetagame.mSelectedArena.c_str(), "Tutorial") == 0) {
@@ -287,8 +282,8 @@ void MetaSongScreen::SetUpSongButton(SongEntry *pSong, int nIndex, bool bLocked)
         static_cast<UIButton *>(mBandPanel->FindComponent(FormatString("%02d", nNumber), false));
     UILabel *pScore =
         static_cast<UILabel *>(mBandPanel->FindComponent(FormatString("hi_%02d", nNumber), false));
-    Rnd::Mesh *pGrade = dynamic_cast<Rnd::Mesh *>(
-        Rnd::TheManager.Find(FormatString("s_g_sel_song_band_g_%02d.mesh", nNumber)));
+    RndMesh *pGrade = dynamic_cast<RndMesh *>(
+        TheManager.Find(FormatString("s_g_sel_song_band_g_%02d.mesh", nNumber)));
     pButton->SetState(UIComponent::kStateNormal, false);
     pButton->SetShowing(true);
 
@@ -383,8 +378,8 @@ void MetaSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         UIComponent *pScore = mBandPanel->FindComponent(FormatString("hi_0%d", i + 1), false);
         pScore->SetText("");
         pScore->SetShowing(false);
-        Rnd::Mesh *pGrade = dynamic_cast<Rnd::Mesh *>(
-            Rnd::TheManager.Find(FormatString("s_g_sel_song_band_g_%02d.mesh", i + 1)));
+        RndMesh *pGrade = dynamic_cast<RndMesh *>(
+            TheManager.Find(FormatString("s_g_sel_song_band_g_%02d.mesh", i + 1)));
         pGrade->SetShowing(false);
     }
     if (pFocus == nullptr) {
@@ -394,11 +389,9 @@ void MetaSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     ShowPicture(true);
 
-    Rnd::Text *pBeat = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_band_07.txt"));
-    Rnd::Text *pHigh =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_band_hi_07.txt"));
-    Rnd::Text *pLabel =
-        dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find("s_g_sel_song_band_label.txt"));
+    RndText *pBeat = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_band_07.txt"));
+    RndText *pHigh = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_band_hi_07.txt"));
+    RndText *pLabel = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_band_label.txt"));
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo && strcmp(pszArena, "Tutorial") != 0) {
         const int nTarget = TheGameDb->GetProfile(0)->GetArenaScoreToBeat(pszArena, nSkillLevel);
         pBeat->SetText(FormatString(TheLocale.Localize("s_g_sel_song_band_07", true), nTarget));
@@ -494,9 +487,8 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         (void)TheUI.FindPanel("s_g_sel_song_band", false); // Yes, the binary discards these.
         (void)FindSong(dynamic_cast<UIButton *>(mBandPanel->mFocus));
         (void)TheUI.FindPanel("s_g_sel_song_pic", false);
-        Rnd::View *pBio =
-            dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("s_g_sel_song_pic_bio.view"));
-        ShowPicture(pBio->GetShowing() != 0);
+        RndView *pBio = dynamic_cast<RndView *>(TheManager.Find("s_g_sel_song_pic_bio.view"));
+        ShowPicture(pBio->mShowing != 0);
     } else if (pMsg->mButton == kPadTriangle) {
         if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
             TheUI.GotoScreen("multisong2multiarena");

@@ -3,10 +3,9 @@
 #include <string.h>
 
 #include "game/avatar.h"
+#include "math/transform.h"
 #include "os/locale.h"
-#include "rnd/cam.h"
-#include "rnd/manager.h"
-#include "rnd/meshvert.h"
+#include "rnd/rndcam.h"
 #include "rnd/rndmanager.h"
 
 namespace {
@@ -44,22 +43,13 @@ constexpr int kNumMeshCorners = 2;
 constexpr float kAvatarOnMeshNear = 0.0f;
 constexpr float kAvatarOnMeshFar = 0.25f;
 
-void TransformPoint(Vector3 &point, const float (&xfm)[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount]) {
-    const float flX = point.x;
-    const float flY = point.y;
-    const float flZ = point.z;
-    point.x = xfm[0][0] * flX + xfm[1][0] * flY + xfm[2][0] * flZ + xfm[3][0];
-    point.y = xfm[0][1] * flX + xfm[1][1] * flY + xfm[2][1] * flZ + xfm[3][1];
-    point.z = xfm[0][2] * flX + xfm[1][2] * flY + xfm[2][2] * flZ + xfm[3][2];
-}
-
-Rnd::Mat *FindMat(const char *pszName) {
-    return dynamic_cast<Rnd::Mat *>(Rnd::TheManager.Find(pszName));
+RndMat *FindMat(const char *pszName) {
+    return dynamic_cast<RndMat *>(TheManager.Find(pszName));
 }
 
 } // namespace
 
-Rnd::Mat *g_pWinnerMat;
+RndMat *g_pWinnerMat;
 
 void FindWinnerMaterial() {
     g_pWinnerMat = FindMat("freq_winner.mat");
@@ -85,7 +75,7 @@ RndFont *FindLucidaFont(const char *pszColor) {
     return FindColorFont("lucida", pszColor);
 }
 
-Rnd::Mat *FindColorMaterial(const char *pszColor) {
+RndMat *FindColorMaterial(const char *pszColor) {
     if (strcmp(pszColor, "red") == 0) {
         return FindMat("fcolor_2.mat");
     }
@@ -173,7 +163,7 @@ const char *GetDuelDifficultyAbbrev(int nDifficulty) {
     return TheLocale.Localize(pszToken, false);
 }
 
-Rnd::Mat *FindRankMaterial(int nRank) {
+RndMat *FindRankMaterial(int nRank) {
     switch (nRank) {
     case kRankSecond:
         return FindMat("rank_02.mat");
@@ -189,29 +179,28 @@ Rnd::Mat *FindRankMaterial(int nRank) {
     }
 }
 
-Rnd::Mat *FindGradeMaterial(int nGrade, bool bEnd) {
+RndMat *FindGradeMaterial(int nGrade, bool bEnd) {
     if (bEnd) {
         return FindMat(FormatString("grade_end_0%d.mat", nGrade));
     }
     return FindMat(FormatString("grade_0%d.mat", nGrade));
 }
 
-void DrawAvatarOnMesh(AvatarPartSet *pAvatar, Rnd::Mesh *pMesh) {
+void DrawAvatarOnMesh(AvatarPartSet *pAvatar, RndMesh *pMesh) {
     if (pAvatar->IsWinAnim()) {
-        Rnd::Mat *pOldMat = pMesh->mMat;
+        RndMat *pOldMat = pMesh->mMat;
         pMesh->SetMat(g_pWinnerMat);
-        static_cast<Rnd::Drawable *>(pMesh)->Draw();
+        static_cast<RndDrawable *>(pMesh)->Draw();
         pMesh->SetMat(pOldMat);
     }
 
-    const std::vector<Rnd::MeshVert> &verts = pMesh->mVertsOwner->mVerts;
-    Vector3 corners[] = {verts[kMeshCornerFirst].mPoint, verts[kMeshCornerLast].mPoint};
+    const std::vector<RndMesh::Vert> &verts = pMesh->mGeomOwner->mVerts;
+    Vector3 corners[kNumMeshCorners];
+    MultiplyPoint(pMesh->mWorldXfm, verts[kMeshCornerFirst].mPos, corners[0]);
+    MultiplyPoint(pMesh->mWorldXfm, verts[kMeshCornerLast].mPos, corners[1]);
     Vector2 ptScreen[kNumMeshCorners];
     for (int i = 0; i < kNumMeshCorners; ++i) {
-        TransformPoint(corners[i], pMesh->mWorldXfm);
-    }
-    for (int i = 0; i < kNumMeshCorners; ++i) {
-        Rnd::Cam::sCurrent->WorldToScreen(corners[i], ptScreen[i]);
+        RndCam::sCurrent->WorldToScreen(corners[i], ptScreen[i]);
     }
     const Rect rect{
         ptScreen[0].x, ptScreen[0].y, ptScreen[1].x - ptScreen[0].x, ptScreen[1].y - ptScreen[0].y};

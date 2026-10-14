@@ -4,8 +4,8 @@
 #include "met/metagameutil.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
 
@@ -56,6 +56,6 @@ void FreqLoadList::UpdateCursor() {
     dynamic_cast<AvatarPanel *>(TheUI.FindPanel(kPanel, false))
         ->SetAvatar(&mProfiles[mSelected].mAvatar);
 
-    Rnd::Mesh *pRank = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("f_load_p_rank.mesh"));
+    RndMesh *pRank = dynamic_cast<RndMesh *>(TheManager.Find("f_load_p_rank.mesh"));
     pRank->SetMat(FindRankMaterial(mProfiles[mSelected].GetHighestBeatenSkillLevel()));
 }

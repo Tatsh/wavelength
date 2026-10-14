@@ -2,7 +2,7 @@
 
 #include "met/freqpanel.h"
 #include "os/filepath.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmesh.h"
 #include "script/dataarray.h"
 
 /**
@@ -110,11 +110,11 @@ public:
      */
     void SetPictureShowing(bool bShowing);
 
-    FilePath mPicturePath;   /*!< The texture file of the picture, or an empty path. +0xe4 */
-    Rnd::Mesh *mPictureMesh; /*!< The mesh `<name>.mesh` the picture shows on. */
-    int mUnlocked;           /*!< Whether the band's song is unlocked. */
-    const char *mSong;       /*!< The song of the band picture, or an empty string. */
-    int mPictureShowing;     /*!< Whether the picture shows. */
-    int mPictureReady;       /*!< Whether the loaded picture is placed on the mesh. */
-    int mEncrypted;          /*!< Whether the band's song is locked and hidden. */
+    FilePath mPicturePath; /*!< The texture file of the picture, or an empty path. +0xe4 */
+    RndMesh *mPictureMesh; /*!< The mesh `<name>.mesh` the picture shows on. */
+    int mUnlocked;         /*!< Whether the band's song is unlocked. */
+    const char *mSong;     /*!< The song of the band picture, or an empty string. */
+    int mPictureShowing;   /*!< Whether the picture shows. */
+    int mPictureReady;     /*!< Whether the loaded picture is placed on the mesh. */
+    int mEncrypted;        /*!< Whether the band's song is locked and hidden. */
 };

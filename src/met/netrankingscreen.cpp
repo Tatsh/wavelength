@@ -4,7 +4,7 @@
 
 #include "met/fullrankedpanel.h"
 #include "netflow/netlobby.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmesh.h"
 #include "ui/uimanager.h"
 
 namespace {

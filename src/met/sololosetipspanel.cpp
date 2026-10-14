@@ -7,8 +7,8 @@
 #include "os/debug.h"
 #include "os/locale.h"
 #include "os/system.h"
-#include "rnd/manager.h"
-#include "rnd/view.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndview.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -51,7 +51,7 @@ void SoloLoseTipsPanel::Enter(bool bForce, float fTime) {
     const char *pszToken = PickTip(pTips);
     mTip = TheUI.FindComponent(kTipPanel, kTipComponent, false);
     mTip->SetText(TheLocale.Localize(pszToken, true));
-    mTipAnim.SetAnim(dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kTipView)));
+    mTipAnim.SetAnim(dynamic_cast<RndView *>(TheManager.Find(kTipView)));
     mTipAnim.Start(fTime + mEnterMs);
     FreqPanel::Enter(bForce, fTime);
     mTip->SetShowing(false);

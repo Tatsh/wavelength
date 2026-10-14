@@ -2,7 +2,7 @@
 
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -40,7 +40,7 @@ ControllerPanel::ControllerPanel(DataArray *pData, const char *pszDir) : FreqPan
 }
 
 void ControllerPanel::Enter(bool bForce, float fTime) {
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(kViewName));
+    mView = dynamic_cast<RndView *>(TheManager.Find(kViewName));
     for (int i = 0; i < kNumRegions; ++i) {
         mRegions[i].Load(kRegionNames[i]);
     }
@@ -74,7 +74,6 @@ void ControllerPanel::SetRegion(int nRegion) {
 }
 
 void ControllerPanel::Region::Load(const char *pszName) {
-    mAnim =
-        dynamic_cast<Rnd::Animatable *>(Rnd::TheManager.Find(FormatString(kAnimFormat, pszName)));
-    mMesh = dynamic_cast<Rnd::Drawable *>(Rnd::TheManager.Find(FormatString(kMeshFormat, pszName)));
+    mAnim = dynamic_cast<RndAnimatable *>(TheManager.Find(FormatString(kAnimFormat, pszName)));
+    mMesh = dynamic_cast<RndDrawable *>(TheManager.Find(FormatString(kMeshFormat, pszName)));
 }

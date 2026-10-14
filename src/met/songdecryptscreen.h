@@ -2,7 +2,7 @@
 
 #include "met/freqscreen.h"
 #include "met/viewanimplayer.h"
-#include "rnd/matanim.h"
+#include "rnd/rndmatanim.h"
 #include "script/dataarray.h"
 
 /**
@@ -84,7 +84,7 @@ public:
     void SetSong(const char *pszSong);
 
     const char *mSong;          /*!< The song, a symbol. */
-    Rnd::MatAnim *mPicAnim;     /*!< The reveal, `band_pic.mnm`, or null. */
+    RndMatAnim *mPicAnim;       /*!< The reveal, `band_pic.mnm`, or null. */
     ViewAnimPlayer mAnimPlayer; /*!< The player of `s_g_bonus.view`. +0x78 */
     int mDecryptPlayed;         /*!< Whether the decrypt sound has played. +0x88 */
 };

@@ -6,9 +6,9 @@
 #include "game/songentry.h"
 #include "met/songpicpanel.h"
 #include "os/locale.h"
-#include "rnd/font.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
+#include "rnd/rndfont.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -30,13 +30,12 @@ enum Column {
 // The entry that turns every entry with it.
 constexpr int kAllEntry = 0;
 
-Rnd::Mat *FindLightMat(int nSelected) {
-    return dynamic_cast<Rnd::Mat *>(
-        Rnd::TheManager.Find(nSelected != 0 ? kLightOnMat : kLightOffMat));
+RndMat *FindLightMat(int nSelected) {
+    return dynamic_cast<RndMat *>(TheManager.Find(nSelected != 0 ? kLightOnMat : kLightOffMat));
 }
 
-Rnd::Font *FindFont(const char *pszFont) {
-    return dynamic_cast<Rnd::Font *>(Rnd::TheManager.Find(pszFont));
+RndFont *FindFont(const char *pszFont) {
+    return dynamic_cast<RndFont *>(TheManager.Find(pszFont));
 }
 
 } // namespace

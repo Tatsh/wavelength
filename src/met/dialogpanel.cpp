@@ -4,9 +4,9 @@
 
 #include "os/joypad.h"
 #include "os/locale.h"
-#include "rnd/manager.h"
-#include "rnd/mesh.h"
-#include "rnd/text.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
 #include "ui/uicomponent.h"
 
 namespace {
@@ -32,7 +32,7 @@ constexpr unsigned kButtonRowCount = 3;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 } // namespace
@@ -59,18 +59,18 @@ void DialogPanel::FinishLoad() {
         SetFocus(FindComponent(pszFocus, false), kPadNone);
     }
     mName = mData->Sym(kNameNode);
-    mPanelView = FindObject<Rnd::View>("dialog_panel.view");
-    mButtonView = FindObject<Rnd::View>("dialog_text.view");
+    mPanelView = FindObject<RndView>("dialog_panel.view");
+    mButtonView = FindObject<RndView>("dialog_text.view");
 }
 
 void DialogPanel::Enter(bool bForce, float fTime) {
     FreqPanel::Enter(bForce, fTime);
     for (int i = kFirstHiddenRow; i <= kLastHiddenRow; ++i) {
-        FindObject<Rnd::Mesh>(FormatString("dialog_%02d.mesh", i))->SetShowing(false);
-        FindObject<Rnd::Text>(FormatString("dialog_%02d.txt", i))->SetShowing(false);
+        FindObject<RndMesh>(FormatString("dialog_%02d.mesh", i))->SetShowing(false);
+        FindObject<RndText>(FormatString("dialog_%02d.txt", i))->SetShowing(false);
     }
-    FindObject<Rnd::Text>("dialog_05a.txt")->SetShowing(mTriCancel);
-    FindObject<Rnd::Text>("dialog_05b.txt")->SetShowing(mTriCancel);
+    FindObject<RndText>("dialog_05a.txt")->SetShowing(mTriCancel);
+    FindObject<RndText>("dialog_05b.txt")->SetShowing(mTriCancel);
     if (strcmp(mPendingText.c_str(), "") == 0) {
         SetText(TheLocale.Localize(mName, false));
     } else {
@@ -85,10 +85,10 @@ void DialogPanel::SetText(const char *pszText) {
         return;
     }
 
-    Rnd::Text *pText = FindObject<Rnd::Text>("dialog_01.txt");
+    RndText *pText = FindObject<RndText>("dialog_01.txt");
     pText->SetShowing(true);
     pText->SetText(pszText);
-    const int nLines = pText->CountLines();
+    const int nLines = pText->NumLines();
     const int nRows = mComponents.size() == kButtonRowCount ? nLines + 1 : nLines;
     mPanelView->SetFrame(static_cast<float>(nRows) / kRowsPerHeight * kHeightFrames);
     UpdateBgBox();

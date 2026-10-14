@@ -1,9 +1,9 @@
 #include "met/netsongpanel.h"
 
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "ui/uilist.h"
 
 namespace {
@@ -18,12 +18,12 @@ constexpr char kBgMat[] = "bg_no.mat";
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 void SetMeshMat(const char *pszMeshFormat, const char *pszPanel, const char *pszMat) {
-    Rnd::Mesh *pMesh = FindObject<Rnd::Mesh>(FormatString(pszMeshFormat, pszPanel));
-    pMesh->SetMat(FindObject<Rnd::Mat>(pszMat));
+    RndMesh *pMesh = FindObject<RndMesh>(FormatString(pszMeshFormat, pszPanel));
+    pMesh->SetMat(FindObject<RndMat>(pszMat));
 }
 
 } // namespace

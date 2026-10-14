@@ -7,9 +7,9 @@
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndmat.h"
+#include "rnd/rndmesh.h"
 #include "synth/fxmidi.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -36,7 +36,7 @@ constexpr int kNoRankIcon = -1;
 
 template <typename T>
 T *FindObject(const char *pszName) {
-    return dynamic_cast<T *>(Rnd::TheManager.Find(pszName));
+    return dynamic_cast<T *>(TheManager.Find(pszName));
 }
 
 template <typename T>
@@ -71,12 +71,12 @@ void FreqSelPanel::Enter(bool bForce, float fTime) {
 }
 
 void FreqSelPanel::SetChosen(bool bChosen) {
-    Rnd::Mesh *pPanelMesh = FindObject<Rnd::Mesh>(kPanelMeshFormat, mName);
-    pPanelMesh->SetMat(FindObject<Rnd::Mat>(bChosen ? kChosenTabMat : kTabMat));
-    Rnd::Mesh *pFreqMesh = FindObject<Rnd::Mesh>(kFreqMeshFormat, mName);
-    pFreqMesh->SetMat(FindObject<Rnd::Mat>(bChosen ? kChosenFreqMat : kFreqMat));
-    FindObject<Rnd::Mesh>(kLeftArrowFormat, mName)->SetShowing(!bChosen);
-    FindObject<Rnd::Mesh>(kRightArrowFormat, mName)->SetShowing(!bChosen);
+    RndMesh *pPanelMesh = FindObject<RndMesh>(kPanelMeshFormat, mName);
+    pPanelMesh->SetMat(FindObject<RndMat>(bChosen ? kChosenTabMat : kTabMat));
+    RndMesh *pFreqMesh = FindObject<RndMesh>(kFreqMeshFormat, mName);
+    pFreqMesh->SetMat(FindObject<RndMat>(bChosen ? kChosenFreqMat : kFreqMat));
+    FindObject<RndMesh>(kLeftArrowFormat, mName)->SetShowing(!bChosen);
+    FindObject<RndMesh>(kRightArrowFormat, mName)->SetShowing(!bChosen);
 }
 
 void FreqSelPanel::Unload() {
@@ -134,7 +134,7 @@ bool FreqSelPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
 void FreqSelPanel::ShowSelected() {
     Campaign &profile = mProfiles[mSelected];
     SetAvatar(&profile.mAvatar);
-    Rnd::Mesh *pRankMesh = FindObject<Rnd::Mesh>(kRankMeshFormat, mName);
+    RndMesh *pRankMesh = FindObject<RndMesh>(kRankMeshFormat, mName);
     const String button(FormatString(kNameButtonFormat, mAvatarIndex + 1));
     if (std::strcmp(profile.mName.c_str(), kNoName) == 0) {
         FindComponent(button.c_str(), false)
