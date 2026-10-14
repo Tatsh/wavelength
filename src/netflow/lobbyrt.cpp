@@ -190,7 +190,7 @@ constexpr int kWorldStatusOpen = 1;
 // The years DateTime counts from 1900 before the two digits of a remix file.
 constexpr int kCenturyYears = 100;
 
-// The format of the file of an upload of a remix: year, month, day, name, song, and attempt.
+// The format of the file of an upload of a remix: year, month, day, song, name, and attempt.
 const char *const kRemixFileFormat = "r_%02d%02d%02d_%s_%s.%d";
 
 } // namespace
@@ -876,8 +876,8 @@ bool LobbyRT::StartUpload(MsgSink *pSink) {
                          now.mYear - kCenturyYears,
                          now.mMonth + 1,
                          now.mDay,
-                         pInfo->mName,
                          pInfo->mSong,
+                         pInfo->mName,
                          mUploadAttempts);
     RepoRemixStatusMsg msg(RepoRemixStatusMsg::kStatusProgress, kProgressStart);
     pSink->Dispatch(&msg);
