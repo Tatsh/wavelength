@@ -23,8 +23,9 @@ enum {
 // The state has one word more than the generator uses. RtSeedRandomFromArray() writes it.
 // NTSC-U/C: 0x003b61b0
 static unsigned int g_auRandomState[kRandomStateSize + 1];
+// An index past the state makes the first draw seed the generator.
 // NTSC-U/C: 0x003b6b74
-static int g_nRandomIndex;
+static int g_nRandomIndex = kRandomStateSize;
 
 // The words RtSeedRandomFromEntropy() gathers.
 typedef union {

@@ -229,7 +229,7 @@ enum {
 };
 
 // NTSC-U/C: 0x003b6bec
-int g_nDmeActiveConnection;
+int g_nDmeActiveConnection = RT_DME_CONNECTION_COUNT; // No connection is active.
 // NTSC-U/C: 0x003b6bf0
 unsigned char g_bDmeObjectsShared;
 // NTSC-U/C: 0x003b6bf4
