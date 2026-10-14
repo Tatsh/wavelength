@@ -21,26 +21,26 @@ python3 .wiswa-ci/port/progress.py --write
 
 | Measure                                |  Count |
 | -------------------------------------- | -----: |
-| Functions in the program               | 12,771 |
+| Functions in the program               | 12,791 |
 | Excluded: Compiler-emitted instance    |  1,795 |
 | Excluded: Compiler RTTI                |  1,350 |
-| Excluded: STL instance (GCC library)   |    525 |
+| Excluded: STL instance (GCC library)   |    526 |
 | Excluded: C and compiler runtime       |    313 |
-| Excluded: Vendored under 3rdparty      |    295 |
-| To port                                |  8,493 |
-| Done                                   |  7,227 |
+| Excluded: Vendored under 3rdparty      |    296 |
+| To port                                |  8,511 |
+| Done                                   |  7,238 |
 | Stubbed (not counted as done)          |      0 |
-| Declared only (not counted as done)    |     83 |
-| Share done                             | 85.09% |
+| Declared only (not counted as done)    |     97 |
+| Share done                             | 85.04% |
 | FreQuency annotations left in the tree |      0 |
 
 ## By component
 
 | Component                    | Routines |  Done |  Share |
 | ---------------------------- | -------: | ----: | -----: |
-| Game code                    |    6,800 | 6,790 |  99.9% |
+| Game code                    |    6,798 | 6,798 | 100.0% |
 | Sony online library (SCE-RT) |    1,256 |     0 |   0.0% |
-| Sony EE libraries            |      437 |   437 | 100.0% |
+| Sony EE libraries            |      457 |   440 |  96.3% |
 
 ## IOP modules
 
@@ -66,7 +66,7 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00100000.md](progress/game-code-00100000.md)                                   | Game code                    | `0x00100000`-`0x00110000` |      196 |  196 | 100.0% |
 | [game-code-00110000.md](progress/game-code-00110000.md)                                   | Game code                    | `0x00110000`-`0x00120000` |      220 |  220 | 100.0% |
 | [game-code-00120000.md](progress/game-code-00120000.md)                                   | Game code                    | `0x00120000`-`0x00130000` |      314 |  314 | 100.0% |
-| [game-code-00130000.md](progress/game-code-00130000.md)                                   | Game code                    | `0x00130000`-`0x00140000` |      281 |  280 |  99.6% |
+| [game-code-00130000.md](progress/game-code-00130000.md)                                   | Game code                    | `0x00130000`-`0x00140000` |      280 |  280 | 100.0% |
 | [game-code-00140000.md](progress/game-code-00140000.md)                                   | Game code                    | `0x00140000`-`0x00150000` |      382 |  382 | 100.0% |
 | [game-code-00150000.md](progress/game-code-00150000.md)                                   | Game code                    | `0x00150000`-`0x00160000` |      381 |  381 | 100.0% |
 | [game-code-00160000.md](progress/game-code-00160000.md)                                   | Game code                    | `0x00160000`-`0x00170000` |      273 |  273 | 100.0% |
@@ -84,11 +84,11 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [game-code-00220000.md](progress/game-code-00220000.md)                                   | Game code                    | `0x00220000`-`0x00230000` |      183 |  183 | 100.0% |
 | [game-code-00230000.md](progress/game-code-00230000.md)                                   | Game code                    | `0x00230000`-`0x00240000` |      136 |  136 | 100.0% |
 | [game-code-00240000.md](progress/game-code-00240000.md)                                   | Game code                    | `0x00240000`-`0x00250000` |      196 |  196 | 100.0% |
-| [game-code-00250000.md](progress/game-code-00250000.md)                                   | Game code                    | `0x00250000`-`0x00260000` |      268 |  267 |  99.6% |
+| [game-code-00250000.md](progress/game-code-00250000.md)                                   | Game code                    | `0x00250000`-`0x00260000` |      268 |  268 | 100.0% |
 | [game-code-00260000.md](progress/game-code-00260000.md)                                   | Game code                    | `0x00260000`-`0x00270000` |      389 |  389 | 100.0% |
 | [game-code-00270000.md](progress/game-code-00270000.md)                                   | Game code                    | `0x00270000`-`0x00280000` |      254 |  254 | 100.0% |
-| [game-code-00280000.md](progress/game-code-00280000.md)                                   | Game code                    | `0x00280000`-`0x00290000` |      333 |  326 |  97.9% |
-| [game-code-00290000.md](progress/game-code-00290000.md)                                   | Game code                    | `0x00290000`-`0x002a0000` |      427 |  426 |  99.8% |
+| [game-code-00280000.md](progress/game-code-00280000.md)                                   | Game code                    | `0x00280000`-`0x00290000` |      332 |  332 | 100.0% |
+| [game-code-00290000.md](progress/game-code-00290000.md)                                   | Game code                    | `0x00290000`-`0x002a0000` |      427 |  427 | 100.0% |
 | [sony-online-library-sce-rt-002a0000.md](progress/sony-online-library-sce-rt-002a0000.md) | Sony online library (SCE-RT) | `0x002a0000`-`0x002b0000` |      143 |    0 |   0.0% |
 | [game-code-002a0000.md](progress/game-code-002a0000.md)                                   | Game code                    | `0x002a0000`-`0x002b0000` |       67 |   67 | 100.0% |
 | [sony-online-library-sce-rt-002b0000.md](progress/sony-online-library-sce-rt-002b0000.md) | Sony online library (SCE-RT) | `0x002b0000`-`0x002c0000` |      211 |    0 |   0.0% |
@@ -96,5 +96,5 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [sony-online-library-sce-rt-002e0000.md](progress/sony-online-library-sce-rt-002e0000.md) | Sony online library (SCE-RT) | `0x002e0000`-`0x002f0000` |      163 |    0 |   0.0% |
 | [sony-online-library-sce-rt-002f0000.md](progress/sony-online-library-sce-rt-002f0000.md) | Sony online library (SCE-RT) | `0x002f0000`-`0x00300000` |      180 |    0 |   0.0% |
 | [sony-online-library-sce-rt-00300000.md](progress/sony-online-library-sce-rt-00300000.md) | Sony online library (SCE-RT) | `0x00300000`-`0x00310000` |      298 |    0 |   0.0% |
-| [sony-ee-libraries-00300000.md](progress/sony-ee-libraries-00300000.md)                   | Sony EE libraries            | `0x00300000`-`0x00310000` |      124 |  124 | 100.0% |
+| [sony-ee-libraries-00300000.md](progress/sony-ee-libraries-00300000.md)                   | Sony EE libraries            | `0x00300000`-`0x00310000` |      144 |  127 |  88.2% |
 | [sony-ee-libraries-00310000.md](progress/sony-ee-libraries-00310000.md)                   | Sony EE libraries            | `0x00310000`-`0x00320000` |      313 |  313 | 100.0% |
