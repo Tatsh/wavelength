@@ -45,12 +45,15 @@ set(WAVELENGTH_RND_SRCS
     rndbutton.cpp
     rndcam.cpp
     rndcollideable.cpp
+    rndcursor.cpp
     rnddrawable.cpp
     rndenviron.cpp
     rndfont.cpp
+    rndgenerator.cpp
     rndlight.cpp
     rndlightanim.cpp
     rndline.cpp
+    rndloader.cpp
     rndmanager.cpp
     rndmat.cpp
     rndmatanim.cpp
@@ -59,6 +62,7 @@ set(WAVELENGTH_RND_SRCS
     rndmovie.cpp
     rndmultimesh.cpp
     rndobject.cpp
+    rndparticlesys.cpp
     rndparticlesysanim.cpp
     rndrenderer.cpp
     rndtex.cpp

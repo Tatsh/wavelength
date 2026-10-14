@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+#include "os/binstream.h"
 #include "os/string.h"
 
 /**
@@ -41,4 +44,29 @@ public:
      * @ghidraAddress PAL: 0x002a30e0
      */
     const char *RelativePath() const;
+
+    /**
+     * The root directory that relative paths resolve against.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00515318
+     */
+    static String sRoot;
 };
+
+/**
+ * Write a vector of paths as its size followed by each path relative to the root directory.
+ *
+ * @param stream The stream to write to.
+ * @param paths The paths.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0038eda8
+ * @ghidraAddress PAL: 0x003fd4b0
+ */
+inline BinStream &operator<<(BinStream &stream, const std::vector<FilePath> &paths) {
+    const int nSize = static_cast<int>(paths.size());
+    stream.WriteEndian(&nSize, sizeof(nSize));
+    for (const FilePath &path : paths) {
+        stream.WriteString(path.RelativePath());
+    }
+    return stream;
+}

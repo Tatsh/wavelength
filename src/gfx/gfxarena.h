@@ -7,10 +7,10 @@
 #include "os/asyncstream.h"
 #include "os/string.h"
 #include "rnd/animatable.h"
-#include "rnd/environ.h"
 #include "rnd/mat.h"
 #include "rnd/matanim.h"
 #include "rnd/movie.h"
+#include "rnd/rndenviron.h"
 #include "rnd/rndloader.h"
 #include "rnd/tex.h"
 #include "rnd/transanim.h"
@@ -199,7 +199,7 @@ public:
     float mLength;               /*!< The ticks the camera path covers, `length`. */
     float mSongTicks;            /*!< The length of the song SetSongTicks() fitted. */
     float mCamPathLength;        /*!< The length of the camera path the data expects. */
-    Rnd::Environ *mEnviron;      /*!< The first environment of the file of the arena. */
+    RndEnviron *mEnviron;        /*!< The first environment of the file of the arena. */
     int mUnlockIndex;            /*!< The index of the arena among the unlocked arenas. */
     std::vector<Key<float>> mFreestyleKeys; /*!< `freestyle_constraints` over camera frames. */
     float mFreestyle; /*!< The value of mFreestyleKeys at the frame of the camera. */

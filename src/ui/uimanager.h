@@ -75,7 +75,7 @@ public:
          * @ghidraAddress NTSC-U/C: 0x0020ca58
          * @ghidraAddress PAL: 0x00215858
          */
-        int ShouldLoad(Rnd::Object *pExisting, const char *pszName, const char *pszClass) override;
+        int ShouldLoad(RndObject *pExisting, const char *pszName, const char *pszClass) override;
 
         /**
          * Report the objects the loads skipped without permission.
@@ -496,7 +496,7 @@ public:
     UIScreen *mCurrentScreen;                             /*!< The screen that shows, or null. */
     float mTime;                                          /*!< The time the last Poll() received. */
     bool mEditMode; /*!< Whether the `editmode` setting of the configuration is on. */
-    std::list<Rnd::Object *> mSharedObjects;          /*!< The objects the shared files created. */
+    std::list<RndObject *> mSharedObjects;            /*!< The objects the shared files created. */
     std::map<String, PanelFactory> mPanelFactories;   /*!< The panel types. */
     std::map<String, ScreenFactory> mScreenFactories; /*!< The screen types. */
     std::map<String, StyleFactory> mStyleFactories;   /*!< The style types. */

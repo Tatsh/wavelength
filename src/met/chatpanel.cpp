@@ -8,8 +8,7 @@
 #include "met/metagameutil.h"
 #include "netflow/netlaunchpad.h"
 #include "os/joypad.h"
-#include "rnd/manager.h"
-#include "rnd/transformable.h"
+#include "rnd/rndmanager.h"
 #include "ui/uimanager.h"
 #include "ui/uitextentry.h"
 
@@ -35,7 +34,6 @@ constexpr char kGuestScreen[] = "fn_g_lpad";
 constexpr char kNoText[] = "";
 
 constexpr unsigned kCloneFlags = 0x200;
-constexpr int kTranslationRow = Rnd::kXfmRowCount - 1;
 
 // The player whose name is shown in the entry.
 constexpr int kFirstPlayer = 0;
@@ -54,28 +52,18 @@ constexpr int kKeyboardPad = 0;
 constexpr int kKeyboardMaxChars = 256;
 constexpr int kKeyboardMaxWidth = 512;
 
-Vector3 Translation(const Rnd::Text *pText) {
-    const float *pRow = pText->mLocalXfm[kTranslationRow];
-    Vector3 position;
-    position.x = pRow[0];
-    position.y = pRow[1];
-    position.z = pRow[2];
-    position.w = pRow[3];
-    return position;
+Vector3 Translation(const RndText *pText) {
+    return pText->mLocalXfm.mTranslation;
 }
 
-void MoveText(Rnd::Text *pText, const Vector3 &position) {
+void MoveText(RndText *pText, const Vector3 &position) {
     pText->mDirty = 1;
-    float *pRow = pText->mLocalXfm[kTranslationRow];
-    pRow[0] = position.x;
-    pRow[1] = position.y;
-    pRow[2] = position.z;
-    pRow[3] = position.w;
+    pText->mLocalXfm.mTranslation = position;
 }
 
-Rnd::Text *FindText(const char *pszFormat, const char *pszPanel) {
-    Rnd::Object *pObject = Rnd::TheManager.Find(FormatString(pszFormat, pszPanel));
-    return pObject != nullptr ? dynamic_cast<Rnd::Text *>(pObject) : nullptr;
+RndText *FindText(const char *pszFormat, const char *pszPanel) {
+    RndObject *pObject = TheManager.Find(FormatString(pszFormat, pszPanel));
+    return pObject != nullptr ? dynamic_cast<RndText *>(pObject) : nullptr;
 }
 
 } // namespace
@@ -101,11 +89,11 @@ void ChatPanel::Unload() {
     }
     for (unsigned int i = 1; i < mRows.size(); ++i) {
         if (mRows[i].first != nullptr) {
-            delete static_cast<Rnd::Object *>(mRows[i].first);
+            delete static_cast<RndObject *>(mRows[i].first);
         }
         mRows[i].first = nullptr;
         if (mRows[i].second != nullptr) {
-            delete static_cast<Rnd::Object *>(mRows[i].second);
+            delete static_cast<RndObject *>(mRows[i].second);
         }
         mRows[i].second = nullptr;
     }
@@ -113,27 +101,27 @@ void ChatPanel::Unload() {
     mRowPositions.clear();
 }
 
-Rnd::Text *ChatPanel::CloneText(int nRow, Rnd::Text *pTemplate) {
+RndText *ChatPanel::CloneText(int nRow, RndText *pTemplate) {
     const char *pszPrefix = FormatString(kClonePrefixFormat, nRow);
-    std::list<Rnd::Object *> clones;
-    Rnd::TheManager.Clone(pTemplate, pszPrefix, &clones, kCloneFlags, 1, 1);
-    Rnd::Object *pClone = clones.front();
-    return pClone != nullptr ? dynamic_cast<Rnd::Text *>(pClone) : nullptr;
+    std::list<RndObject *> clones;
+    TheManager.Clone(pTemplate, pszPrefix, &clones, kCloneFlags, 1, 1);
+    RndObject *pClone = clones.front();
+    return pClone != nullptr ? dynamic_cast<RndText *>(pClone) : nullptr;
 }
 
 void ChatPanel::FinishLoad() {
     FreqPanel::FinishLoad();
-    Rnd::Text *pFirstSender = FindText(kSenderTextFormat, mName);
+    RndText *pFirstSender = FindText(kSenderTextFormat, mName);
     mRowPositions.push_back(Translation(pFirstSender));
     mTextStart = Translation(pFirstSender);
     mRowStart = mTextStart;
-    Rnd::Text *pFirstText = FindText(kMessageTextFormat, mName);
+    RndText *pFirstText = FindText(kMessageTextFormat, mName);
     mRows.push_back(std::make_pair(pFirstSender, pFirstText));
 
     for (int i = 1; i < mNumLines; ++i) {
         const float fDrop = static_cast<float>(mSpacing * i);
 
-        Rnd::Text *pSender = CloneText(i, pFirstSender);
+        RndText *pSender = CloneText(i, pFirstSender);
         pSender->SetText(kNoText);
         mTexts.push_back(pSender);
         Vector3 position = Translation(pFirstSender);
@@ -141,7 +129,7 @@ void ChatPanel::FinishLoad() {
         MoveText(pSender, position);
         mRowPositions.push_back(position);
 
-        Rnd::Text *pText = CloneText(i, pFirstText);
+        RndText *pText = CloneText(i, pFirstText);
         pText->SetText(kNoText);
         mTexts.push_back(pText);
         position = Translation(pFirstText);
@@ -156,7 +144,7 @@ void ChatPanel::Enter(bool bForce, float fTime) {
     mReserved110 = 0;
     const String name(TheGameDb->GetPlayerName(kFirstPlayer));
     const String sender(FormatString(kSenderFormat, name.c_str()));
-    Rnd::Text *pSender = mRows[0].first;
+    RndText *pSender = mRows[0].first;
     pSender->SetText(sender.c_str());
     const Vector3 end = pSender->CharPosition(sender.mLength);
     mTextStart.x = mRowStart.x + end.x;
@@ -226,7 +214,7 @@ void ChatPanel::Refresh() {
         // Each line is laid out in the first row to count the rows it takes.
         mRow = 0;
         ShowLine(it->mSender.c_str(), it->mText.c_str(), it->mPlayer);
-        const int nTotal = nLines + mRows[0].second->CountLines();
+        const int nTotal = nLines + mRows[0].second->NumLines();
         if (mNumLines < nTotal) {
             break;
         }
@@ -301,7 +289,7 @@ void ChatPanel::ShowLine(const char *pszSender, const char *pszText, int nPlayer
         mRows[mRow].first->SetFont(FindLucidaFont(GetPlayerColorName(nColor)));
     }
 
-    Rnd::Text *pSender = mRows[mRow].first;
+    RndText *pSender = mRows[mRow].first;
     pSender->SetText(sender.c_str());
     const Vector3 end = pSender->CharPosition(sender.mLength);
     const Vector3 &rowPosition = mRowPositions[mRow];
@@ -317,11 +305,11 @@ void ChatPanel::ShowLine(const char *pszSender, const char *pszText, int nPlayer
     mRows[mRow].second->SetText(pszText);
 
     if (mRow < mNumLines) {
-        if (mRows[mRow].second->CountLines() >= 2) {
+        if (mRows[mRow].second->NumLines() >= 2) {
             // The binary clears the next row without checking that it exists.
             mRows[mRow + 1].first->SetText(kNoText);
             mRows[mRow + 1].second->SetText(kNoText);
         }
-        mRow += mRows[mRow].second->CountLines();
+        mRow += mRows[mRow].second->NumLines();
     }
 }

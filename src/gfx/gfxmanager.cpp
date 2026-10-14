@@ -218,7 +218,7 @@ GfxManager::GfxLoader::GfxLoader(bool bDone, bool bMergeAll, DataArray *pForceMe
 
 GfxManager::GfxLoader::~GfxLoader() = default;
 
-int GfxManager::GfxLoader::ShouldLoad(Rnd::Object *pExisting,
+int GfxManager::GfxLoader::ShouldLoad(RndObject *pExisting,
                                       const char *pszName,
                                       const char *pszClass) {
     if (pExisting == nullptr) {

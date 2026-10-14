@@ -148,6 +148,30 @@ public:
     void RemoveCollide(RndCollideable *pCollide);
 
     /**
+     * Append every collision descendant of a collideable, depth first, each before its
+     * descendants.
+     *
+     * Each unit that uses the inline routine emits a copy. The first address is the copy of
+     * RndManager, and the second the copy of UIList.
+     *
+     * @param objects The list to append to.
+     * @param pCollideable The collideable to start from, or null.
+     * @ghidraAddress NTSC-U/C: 0x00237fb0
+     * @ghidraAddress PAL: 0x00240b30
+     * @ghidraAddress NTSC-U/C: 0x00205530
+     * @ghidraAddress PAL: 0x0020e2e8
+     */
+    static void CollectChildren(std::list<RndObject *> &objects, RndCollideable *pCollideable) {
+        if (pCollideable == nullptr) {
+            return;
+        }
+        for (RndCollideable *pChild : pCollideable->mCollides) {
+            objects.push_back(pChild);
+            CollectChildren(objects, pChild);
+        }
+    }
+
+    /**
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0998

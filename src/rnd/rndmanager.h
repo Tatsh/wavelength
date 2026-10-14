@@ -185,6 +185,65 @@ public:
     RndObject *Create(const char *pszClass, const char *pszName);
 
     /**
+     * Clone an object under a prefixed name, optionally with its descendants and its parents.
+     *
+     * The descendants are cloned without their descendants, and every clone then has each
+     * reference to an original replaced with the clone of that original. The pairing assumes that
+     * pClones started empty. A linked clone is attached to each parent of the source.
+     *
+     * @param pSource The object to clone.
+     * @param pszPrefix The prefix for the name of every clone.
+     * @param pClones Receives the clone first, followed by the clones of the descendants.
+     * @param nFlags The copy flags.
+     * @param bRecurse Non-zero to clone the descendants.
+     * @param bLink Non-zero to attach the clone to the parents of the source.
+     * @ghidraAddress NTSC-U/C: 0x002382b0
+     * @ghidraAddress PAL: 0x00240e30
+     */
+    void Clone(RndObject *pSource,
+               const char *pszPrefix,
+               std::list<RndObject *> *pClones,
+               int nFlags,
+               int bRecurse,
+               int bLink);
+
+    /**
+     * Order a list of objects for writing, the textures first and sorted by file, followed by the
+     * animations, the materials, the fonts, the texts, the meshes, the blurs, and the rest.
+     *
+     * The name is inferred.
+     *
+     * @param objects The list to order.
+     * @ghidraAddress NTSC-U/C: 0x00238958
+     * @ghidraAddress PAL: 0x002414d8
+     */
+    void SortObjects(std::list<RndObject *> &objects);
+
+    /**
+     * Write every object that is not internal as a `.rnd` file.
+     *
+     * The file is the version, the class and the name of each object, the files of the textures
+     * and the movies, and the record of each object, each record followed by an end marker.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00239088
+     * @ghidraAddress PAL: 0x00241c08
+     */
+    void Write(BinStream &stream);
+
+    /**
+     * Create a view in place of a tunnel, the factory registered for the class `Tunnel`.
+     *
+     * A notice reports the substitution. The name is inferred.
+     *
+     * @param pszName The object name.
+     * @return The view, or null when the name is taken.
+     * @ghidraAddress NTSC-U/C: 0x002367b8
+     * @ghidraAddress PAL: 0x0023f338
+     */
+    static RndObject *NewTunnel(const char *pszName);
+
+    /**
      * Report the tag a resource file's buffer is billed to, from the file's extension.
      *
      * The name is inferred.
@@ -276,6 +335,13 @@ public:
      * @ghidraAddress PAL: 0x00243170
      */
     void ClearResources();
+
+    /**
+     * The format version Write() writes and the newest a loader accepts.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003b0a00
+     */
+    static int sRev;
 
     std::map<const char *, RndObject *, StrLess> mObjects;  /*!< Live objects by name. */
     std::map<const char *, ClassFactory, StrLess> mClasses; /*!< Factories by class name. */

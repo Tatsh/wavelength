@@ -7,6 +7,7 @@
 #include "rnd/cam.h"
 #include "rnd/manager.h"
 #include "rnd/meshvert.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -64,7 +65,7 @@ void FindWinnerMaterial() {
     g_pWinnerMat = FindMat("freq_winner.mat");
 }
 
-Rnd::Font *FindColorFont(const char *pszFace, const char *pszColor) {
+RndFont *FindColorFont(const char *pszFace, const char *pszColor) {
     const char *pszFormat;
     if (strcmp(pszColor, "red") == 0) {
         pszFormat = "%s_1_red.font";
@@ -77,10 +78,10 @@ Rnd::Font *FindColorFont(const char *pszFace, const char *pszColor) {
     } else {
         pszFormat = "%s_1_white.font";
     }
-    return dynamic_cast<Rnd::Font *>(Rnd::TheManager.Find(FormatString(pszFormat, pszFace)));
+    return dynamic_cast<RndFont *>(TheManager.Find(FormatString(pszFormat, pszFace)));
 }
 
-Rnd::Font *FindLucidaFont(const char *pszColor) {
+RndFont *FindLucidaFont(const char *pszColor) {
     return FindColorFont("lucida", pszColor);
 }
 

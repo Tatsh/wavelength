@@ -31,7 +31,7 @@ constexpr int kFifthArena = 5;
 constexpr int kNumUnlockViews = 5;
 
 constexpr int kSceneLoadFlags =
-    RndLoader::kAsync | RndLoader::kPostLoad | RndLoader::kDeleteObjects;
+    RndLoader::kAsync | RndLoader::kReportExisting | RndLoader::kDeleteObjects;
 
 // The bytes of the trigger file the load waits for, which is more than any file holds.
 constexpr int kWholeFile = 999999999;

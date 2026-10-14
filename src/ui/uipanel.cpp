@@ -4,7 +4,7 @@
 
 #include "os/joypad.h"
 #include "os/locale.h"
-#include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 #include "ui/localizeerrors.h"
 #include "ui/uicomponentfocuschangemsg.h"
 #include "ui/uimanager.h"
@@ -96,7 +96,7 @@ void UIPanel::Load() {
     mFocus = nullptr;
     mNavigator = nullptr;
     if (mLoader == nullptr) {
-        mLoader = Rnd::TheManager.AddLoader(mFile.c_str(), kPanelLoadFlags, nullptr, nullptr);
+        mLoader = TheManager.AddLoader(mFile.c_str(), kPanelLoadFlags, nullptr, nullptr);
     }
 }
 
@@ -142,11 +142,11 @@ bool UIPanel::IsLoaded() {
 
 void UIPanel::FinishLoad() {
     LocalizeTexts(mFile.c_str(), mLoader->mObjects);
-    mView = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString("%s.view", mName)));
-    mLoopAnim = dynamic_cast<Rnd::Animatable *>(
-        Rnd::TheManager.Find(FormatString("%s_always.anim", mName)));
-    mEnterExitAnim = dynamic_cast<Rnd::Animatable *>(
-        Rnd::TheManager.Find(FormatString("%s_enterexit.anim", mName)));
+    mView = dynamic_cast<RndView *>(TheManager.Find(FormatString("%s.view", mName)));
+    mLoopAnim =
+        dynamic_cast<RndAnimatable *>(TheManager.Find(FormatString("%s_always.anim", mName)));
+    mEnterExitAnim =
+        dynamic_cast<RndAnimatable *>(TheManager.Find(FormatString("%s_enterexit.anim", mName)));
 
     float fEnterStart = sEnterStartFrame;
     float fEnterStop = sEnterStopFrame;
@@ -197,7 +197,7 @@ void UIPanel::AddComponent(UIComponent *pComponent) {
 }
 
 void UIPanel::SetTextsShowing(bool bShowing) {
-    for (Rnd::Text *pText : mTexts) {
+    for (RndText *pText : mTexts) {
         pText->SetShowing(bShowing);
     }
 }
@@ -364,16 +364,16 @@ UIComponent *UIPanel::FindComponent(const char *pszName, [[maybe_unused]] bool b
     return it->second;
 }
 
-void UIPanel::LocalizeTexts(const char *pszFile, std::list<Rnd::Object *> &objects) {
+void UIPanel::LocalizeTexts(const char *pszFile, std::list<RndObject *> &objects) {
     LocalizeErrors errors(pszFile);
-    for (Rnd::Object *pObject : objects) {
-        Rnd::Text *pText = pObject != nullptr ? dynamic_cast<Rnd::Text *>(pObject) : nullptr;
+    for (RndObject *pObject : objects) {
+        RndText *pText = pObject != nullptr ? dynamic_cast<RndText *>(pObject) : nullptr;
         if (pText == nullptr) {
             continue;
         }
         mTexts.push_back(pText);
         pText->SetShowing(false);
-        String token(pText->mName.mStr);
+        String token(pText->mName.c_str());
         if (token.Compare(token.mLength - kTextSuffixLength, kTextSuffixLength, ".txt") == 0) {
             token.Erase(token.mLength - kTextSuffixLength, kTextSuffixLength);
         }
@@ -384,8 +384,8 @@ void UIPanel::LocalizeTexts(const char *pszFile, std::list<Rnd::Object *> &objec
         if (pszLocalized != token.c_str()) {
             pText->SetText(pszLocalized);
         } else if (TheUI.mEditMode) {
-            errors.mErrors.push_back(LocalizeErrors::SingleError{String(pText->mName.mStr),
-                                                                 String(pText->mPreWrapText.mStr)});
+            errors.mErrors.push_back(LocalizeErrors::SingleError{
+                String(pText->mName.c_str()), String(pText->mPreWrapText.c_str())});
         }
         pText->UpdateCursors();
     }

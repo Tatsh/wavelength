@@ -7,6 +7,7 @@
 #include "rnd/font.h"
 #include "rnd/mat.h"
 #include "rnd/mesh.h"
+#include "rnd/rndfont.h"
 
 /**
  * The `freq_winner.mat` material FindWinnerMaterial() keeps for the result screens.
@@ -39,7 +40,7 @@ void FindWinnerMaterial();
  * @ghidraAddress NTSC-U/C: 0x00199450
  * @ghidraAddress PAL: 0x001a0970
  */
-Rnd::Font *FindColorFont(const char *pszFace, const char *pszColor);
+RndFont *FindColorFont(const char *pszFace, const char *pszColor);
 
 /**
  * Find the `lucida` font in a player colour.
@@ -49,7 +50,7 @@ Rnd::Font *FindColorFont(const char *pszFace, const char *pszColor);
  * @ghidraAddress NTSC-U/C: 0x001995a0
  * @ghidraAddress PAL: 0x001a0ac0
  */
-Rnd::Font *FindLucidaFont(const char *pszColor);
+RndFont *FindLucidaFont(const char *pszColor);
 
 /**
  * Find the material of a player colour, `fcolor_<n>.mat`.

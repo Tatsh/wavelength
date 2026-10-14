@@ -183,6 +183,30 @@ public:
     const Transform &BillboardXfm();
 
     /**
+     * Append every transform descendant of a transformable, depth first, each before its
+     * descendants.
+     *
+     * Each unit that uses the inline routine emits a copy. The first address is the copy of
+     * RndManager, and the second the copy of UIList.
+     *
+     * @param objects The list to append to.
+     * @param pTransformable The transformable to start from, or null.
+     * @ghidraAddress NTSC-U/C: 0x002381b0
+     * @ghidraAddress PAL: 0x00240d30
+     * @ghidraAddress NTSC-U/C: 0x00205730
+     * @ghidraAddress PAL: 0x0020e4e8
+     */
+    static void CollectChildren(std::list<RndObject *> &objects, RndTransformable *pTransformable) {
+        if (pTransformable == nullptr) {
+            return;
+        }
+        for (RndTransformable *pChild : pTransformable->mTransList) {
+            objects.push_back(pChild);
+            CollectChildren(objects, pChild);
+        }
+    }
+
+    /**
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a58

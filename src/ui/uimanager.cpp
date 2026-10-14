@@ -45,7 +45,7 @@ UIManager::Callback::Callback(DataArray *pConfig) {
     mAllowed = pConfig->FindArray("allowed_rnd_merges", true);
 }
 
-int UIManager::Callback::ShouldLoad(Rnd::Object *pExisting,
+int UIManager::Callback::ShouldLoad(RndObject *pExisting,
                                     const char *pszName,
                                     [[maybe_unused]] const char *pszClass) {
     const bool bMissing = pExisting == nullptr;
@@ -101,7 +101,7 @@ void UIManager::Init() {
         for (int i = 1; i < pShared->Size(); ++i) {
             RndLoader *pLoader =
                 Rnd::TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback, nullptr);
-            for (Rnd::Object *pObject : pLoader->mObjects) {
+            for (RndObject *pObject : pLoader->mObjects) {
                 mSharedObjects.push_back(pObject);
             }
             delete pLoader;

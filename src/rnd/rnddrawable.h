@@ -183,6 +183,29 @@ public:
     void ClearDraws();
 
     /**
+     * Append every draw descendant of a drawable, depth first, each before its descendants.
+     *
+     * Each unit that uses the inline routine emits a copy. The first address is the copy of
+     * RndManager, and the second the copy of UIList.
+     *
+     * @param objects The list to append to.
+     * @param pDrawable The drawable to start from, or null.
+     * @ghidraAddress NTSC-U/C: 0x002380b0
+     * @ghidraAddress PAL: 0x00240c30
+     * @ghidraAddress NTSC-U/C: 0x00205630
+     * @ghidraAddress PAL: 0x0020e3e8
+     */
+    static void CollectChildren(std::list<RndObject *> &objects, RndDrawable *pDrawable) {
+        if (pDrawable == nullptr) {
+            return;
+        }
+        for (RndDrawable *pChild : pDrawable->mDraws) {
+            objects.push_back(pChild);
+            CollectChildren(objects, pChild);
+        }
+    }
+
+    /**
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09a4

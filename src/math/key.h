@@ -164,13 +164,15 @@ inline void Interp(float fA, float fB, float fRatio, float &fOut) {
 /**
  * Take the first of two pointers, which do not blend.
  *
- * The RndTex instance is at `0x00232058`.
+ * The addresses are of the RndTex instance.
  *
  * @tparam T The type pointed at.
  * @param pA The value at 0.
  * @param pB The value at 1. The routine ignores it.
  * @param fRatio The position. The routine ignores it.
  * @param pOut Receives pA.
+ * @ghidraAddress NTSC-U/C: 0x00232058
+ * @ghidraAddress PAL: 0x0023ac20
  */
 template <typename T>
 void Interp(T *pA, [[maybe_unused]] T *pB, [[maybe_unused]] float fRatio, T *&pOut) {

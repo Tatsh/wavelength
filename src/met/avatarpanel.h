@@ -3,7 +3,7 @@
 #include "game/avatarpartset.h"
 #include "met/freqpanel.h"
 #include "rnd/mesh.h"
-#include "rnd/view.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 
 /**
@@ -101,7 +101,7 @@ public:
     int mSpinControl;       /*!< Non-zero when the stick turns the Freq, `spin_control`. */
     AvatarPartSet *mAvatar; /*!< The Freq that shows, or null. */
     Rnd::Mesh *mFreqMesh;   /*!< The mesh `<name>_freq.mesh` the Freq covers, or null. */
-    Rnd::View *mPostView;   /*!< The view `<name>_post_avatar.view`, or null. */
+    RndView *mPostView;     /*!< The view `<name>_post_avatar.view`, or null. */
     float mSpinX;           /*!< The horizontal stick position, eased toward the stick. */
     float mSpinY;           /*!< The vertical stick position, eased toward the stick. */
 };

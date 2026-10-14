@@ -8,43 +8,19 @@
 #include "met/metagame.h"
 #include "os/joypad.h"
 #include "os/string.h"
-#include "rnd/manager.h"
-#include "rnd/object.h"
-#include "rnd/transanim.h"
-#include "rnd/transformable.h"
+#include "rnd/rndmanager.h"
+#include "rnd/rndobject.h"
+#include "rnd/rndtransanim.h"
 #include "synth/fxmidi.h"
 #include "ui/uimanager.h"
 
 namespace {
-
-// Rows of a transform, and components of a row.
-constexpr int kRowX = 0;
-constexpr int kRowY = 1;
-constexpr int kRowZ = 2;
-constexpr int kRowTranslation = 3;
-constexpr int kX = 0;
-constexpr int kY = 1;
-constexpr int kZ = 2;
-constexpr int kW = 3;
 
 // The copy flags of the panel's transform animation.
 constexpr unsigned kTransAnimCopyFlags = 0x100;
 
 // The share of each corner of the background box in its centre.
 constexpr float kHalf = 0.5f;
-
-// Copy a transform kept as four rows of four floats.
-Transform ToTransform(const float xfm[Rnd::kXfmRowCount][Rnd::kXfmRowFloatCount]) {
-    Transform result;
-    Vector3 *rows[] = {&result.mBasisX, &result.mBasisY, &result.mBasisZ, &result.mTranslation};
-    for (int i = 0; i < Rnd::kXfmRowCount; ++i) {
-        rows[i]->x = xfm[i][kX];
-        rows[i]->y = xfm[i][kY];
-        rows[i]->z = xfm[i][kZ];
-        rows[i]->w = xfm[i][kW];
-    }
-    return result;
-}
 
 // Transform a point. The fourth word of the result is the point's own.
 Vector3 XfmPoint(const Transform &xfm, const Vector3 &point) {
@@ -59,12 +35,12 @@ Vector3 XfmPoint(const Transform &xfm, const Vector3 &point) {
     return result;
 }
 
-// Store a row of a transform kept as four rows of four floats.
-void SetRow(float *pRow, float x, float y, float z, float w) {
-    pRow[kX] = x;
-    pRow[kY] = y;
-    pRow[kZ] = z;
-    pRow[kW] = w;
+// Store a row of a transform.
+void SetRow(Vector3 &row, float x, float y, float z, float w) {
+    row.x = x;
+    row.y = y;
+    row.z = z;
+    row.w = w;
 }
 
 } // namespace
@@ -113,18 +89,17 @@ void FreqPanel::FinishLoad() {
     UIPanel::FinishLoad();
 
     const char *pszPanelAnim = FormatString("%s_f2EE.anim", mName);
-    mPanelAnim = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(pszPanelAnim));
+    mPanelAnim = dynamic_cast<RndView *>(TheManager.Find(pszPanelAnim));
     if (mPanelAnim == nullptr) {
-        mPanelAnim = dynamic_cast<Rnd::View *>(Rnd::TheManager.Create("View", pszPanelAnim));
+        mPanelAnim = dynamic_cast<RndView *>(TheManager.Create("View", pszPanelAnim));
         mLoader->mObjects.push_back(mPanelAnim);
 
-        Rnd::TransAnim *pSource =
-            dynamic_cast<Rnd::TransAnim *>(Rnd::TheManager.Find(sPanelAnimName));
-        Rnd::TransAnim *pAnim = dynamic_cast<Rnd::TransAnim *>(
-            Rnd::TheManager.Create("TransAnim", FormatString("%s_%s", mName, sPanelAnimName)));
+        RndTransAnim *pSource = dynamic_cast<RndTransAnim *>(TheManager.Find(sPanelAnimName));
+        RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(
+            TheManager.Create("TransAnim", FormatString("%s_%s", mName, sPanelAnimName)));
         pAnim->Copy(pSource, kTransAnimCopyFlags);
-        Rnd::Mesh *pPanelMesh =
-            dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("%s_panel.mesh", mName)));
+        RndMesh *pPanelMesh =
+            dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_panel.mesh", mName)));
         pAnim->SetTrans(pPanelMesh);
         mPanelAnim->AddAnim(pAnim);
         mLoader->mObjects.push_back(pAnim);
@@ -133,27 +108,25 @@ void FreqPanel::FinishLoad() {
             mGizmoOffsetIndex = 0;
         }
 
-        std::list<Rnd::Object *> clones;
-        Rnd::Mesh *pPyramid = dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find("pyramid.mesh"));
-        Rnd::TheManager.Clone(pPyramid, mName, &clones, 0, 0, 0);
-        Rnd::Object *pClone = clones.front();
-        mGizmoMesh = pClone != nullptr ? dynamic_cast<Rnd::Mesh *>(pClone) : nullptr;
+        std::list<RndObject *> clones;
+        RndMesh *pPyramid = dynamic_cast<RndMesh *>(TheManager.Find("pyramid.mesh"));
+        TheManager.Clone(pPyramid, mName, &clones, 0, 0, 0);
+        RndObject *pClone = clones.front();
+        mGizmoMesh = pClone != nullptr ? dynamic_cast<RndMesh *>(pClone) : nullptr;
         mLoader->mObjects.push_back(mGizmoMesh);
-        mBgMesh =
-            dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("%s_bg.mesh", mName)));
+        mBgMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_bg.mesh", mName)));
         UpdateBgBox();
     } else {
         mGizmoMesh =
-            dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("%spyramid.mesh", mName)));
+            dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%spyramid.mesh", mName)));
         if (mGizmoMesh != nullptr) {
-            mBgMesh =
-                dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("%s_bg.mesh", mName)));
+            mBgMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_bg.mesh", mName)));
             UpdateBgBox();
         }
     }
 
-    mMatAlwaysAnim = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("mat_2d_always.anim"));
-    mMatEnterExitAnim = dynamic_cast<Rnd::View *>(Rnd::TheManager.Find("mat_2d_EE.anim"));
+    mMatAlwaysAnim = dynamic_cast<RndView *>(TheManager.Find("mat_2d_always.anim"));
+    mMatEnterExitAnim = dynamic_cast<RndView *>(TheManager.Find("mat_2d_EE.anim"));
     mMatEntering = true;
     mMatStart = 0.0f;
 }
@@ -169,7 +142,7 @@ void FreqPanel::Unload() {
 
 void FreqPanel::UpdateBgBox() {
     if (mBgMesh != nullptr) {
-        mBgMesh->BoundingBox(&mBgBox);
+        mBgMesh->BoundingBox(mBgBox);
     }
 }
 
@@ -202,10 +175,10 @@ void FreqPanel::DrawGizmo() {
 
     const Transform gizmoXfm = TheMetagame.mGizmo->WorldXfm();
     const Vector3 tip = XfmPoint(gizmoXfm, sGizmoOffsets[mGizmoOffsetIndex]);
-    SetRow(mGizmoMesh->mLocalXfm[kRowTranslation], tip.x, tip.y, tip.z, tip.w);
+    SetRow(mGizmoMesh->mLocalXfm.mTranslation, tip.x, tip.y, tip.z, tip.w);
     mGizmoMesh->mDirty = 1;
 
-    const Transform bgXfm = ToTransform(mBgMesh->mWorldXfm);
+    const Transform &bgXfm = mBgMesh->mWorldXfm;
     const Vector3 low = XfmPoint(bgXfm, mBgBox.mMin);
     const Vector3 high = XfmPoint(bgXfm, mBgBox.mMax);
     const float fCentreX = high.x * kHalf + low.x * kHalf;
@@ -213,10 +186,10 @@ void FreqPanel::DrawGizmo() {
     const float fCentreZ = high.z * kHalf + low.z * kHalf;
 
     // Yes, the binary leaves the fourth word of each basis row unset.
-    SetRow(mGizmoMesh->mLocalXfm[kRowX], std::fabs(high.x - low.x), 0.0f, 0.0f, 0.0f);
+    SetRow(mGizmoMesh->mLocalXfm.mBasisX, std::fabs(high.x - low.x), 0.0f, 0.0f, 0.0f);
     SetRow(
-        mGizmoMesh->mLocalXfm[kRowY], tip.x - fCentreX, tip.y - fCentreY, tip.z - fCentreZ, 0.0f);
-    SetRow(mGizmoMesh->mLocalXfm[kRowZ], 0.0f, 0.0f, std::fabs(high.z - low.z), 0.0f);
+        mGizmoMesh->mLocalXfm.mBasisY, tip.x - fCentreX, tip.y - fCentreY, tip.z - fCentreZ, 0.0f);
+    SetRow(mGizmoMesh->mLocalXfm.mBasisZ, 0.0f, 0.0f, std::fabs(high.z - low.z), 0.0f);
     mGizmoMesh->mDirty = 1;
 
     mGizmoMesh->UpdateWorldXfm(mView, 0);

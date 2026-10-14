@@ -134,7 +134,7 @@ public:
          * @ghidraAddress NTSC-U/C: 0x001b13c0
          * @ghidraAddress PAL: 0x001ba100
          */
-        int ShouldLoad(Rnd::Object *pExisting, const char *pszName, const char *pszClass) override;
+        int ShouldLoad(RndObject *pExisting, const char *pszName, const char *pszClass) override;
 
         /**
          * Start to load a file.

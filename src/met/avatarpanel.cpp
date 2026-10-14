@@ -5,6 +5,7 @@
 #include "os/joypad.h"
 #include "os/string.h"
 #include "rnd/manager.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
@@ -37,7 +38,7 @@ void AvatarPanel::FinishLoad() {
     }
     FreqPanel::FinishLoad();
     mPostView =
-        dynamic_cast<Rnd::View *>(Rnd::TheManager.Find(FormatString("%s_post_avatar.view", mName)));
+        dynamic_cast<RndView *>(TheManager.Find(FormatString("%s_post_avatar.view", mName)));
     mView->RemoveDraw(mPostView);
     mFreqMesh =
         dynamic_cast<Rnd::Mesh *>(Rnd::TheManager.Find(FormatString("%s_freq.mesh", mName)));

@@ -10,7 +10,7 @@
 #include "msg/chatmsg.h"
 #include "msg/joypadinputmsg.h"
 #include "os/string.h"
-#include "rnd/text.h"
+#include "rnd/rndtext.h"
 #include "script/dataarray.h"
 #include "ui/uitextentrycompletemsg.h"
 
@@ -199,15 +199,15 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001a2db0
      * @ghidraAddress PAL: 0x001aaa90
      */
-    Rnd::Text *CloneText(int nRow, Rnd::Text *pTemplate);
+    RndText *CloneText(int nRow, RndText *pTemplate);
 
     String mText;                     /*!< The last line typed into the entry. */
     std::list<ChatMessage> mMessages; /*!< The lines shown, oldest first. */
     int mNumLines;                    /*!< The `num_chat_lines` setting, the number of rows. */
     int mReserved110;                 // +0x110, Enter() clears it, and no reader is known.
-    std::vector<std::pair<Rnd::Text *, Rnd::Text *>> mRows; /*!< The name and text of each row. */
-    int mRow;                                               /*!< The row ShowLine() fills next. */
-    int mChatType;                                          /*!< One of ChatType. */
+    std::vector<std::pair<RndText *, RndText *>> mRows; /*!< The name and text of each row. */
+    int mRow;                                           /*!< The row ShowLine() fills next. */
+    int mChatType;                                      /*!< One of ChatType. */
     alignas(16) Vector3 mTextStart; /*!< Where the text of the first row starts after the name. */
     alignas(16) Vector3 mRowStart;  /*!< The position of the name of the first row. */
     std::vector<Vector3> mRowPositions; /*!< The position of the name of each row. */

@@ -174,9 +174,9 @@ void GfxArena::LoadTriggers() {
 
 void GfxArena::PollLoad(bool bHudLoaded) {
     if (!mLoaded && (mLoader != nullptr) && mLoader->IsLoaded()) {
-        for (Rnd::Object *pObject : mLoader->mObjects) {
+        for (RndObject *pObject : mLoader->mObjects) {
             if (mEnviron == nullptr) {
-                mEnviron = dynamic_cast<Rnd::Environ *>(pObject);
+                mEnviron = dynamic_cast<RndEnviron *>(pObject);
             }
         }
         Rnd::Cam *pCam = FindObject<Rnd::Cam>("outer 1.cam");

@@ -3,7 +3,9 @@
 #include <cstring>
 #include <strings.h>
 
+#include "os/chunkstream.h"
 #include "os/debug.h"
+#include "os/filepath.h"
 #include "os/filestream.h"
 #include "os/fileutil.h"
 #include "os/loadfile.h"
@@ -11,8 +13,14 @@
 #include "os/memstream.h"
 #include "os/string.h"
 #include "os/system.h"
+#include "rnd/rndanimatable.h"
 #include "rnd/rndbitmap.h"
+#include "rnd/rndcollideable.h"
+#include "rnd/rnddrawable.h"
+#include "rnd/rndmovie.h"
 #include "rnd/rndrenderer.h"
+#include "rnd/rndtex.h"
+#include "rnd/rndtransformable.h"
 
 namespace {
 
@@ -51,7 +59,29 @@ constexpr int kFileFlagsNone = 0;
 // The alignment argument of PoolMemAlloc(), here the default.
 constexpr int kDefaultAlignment = 0;
 
+// The marker Write() places after each object record.
+constexpr unsigned kRecordEndMarker = 0xdeaddead;
+
+// The classes SortObjects() moves to the front in turn, each ahead of the previous. The last,
+// the textures, are also sorted by file.
+const char *const kSortedClasses[] = {"Blur", "Mesh", "Text", "Font", "Mat", "TransAnim", "Tex"};
+constexpr int kTexSortIndex = 6;
+
+// Move every object of a class, by its registered name, ahead of the object that was first in
+// the list. A moved object is visited again with the objects after it.
+// NTSC-U/C: 0x002388a0, PAL: 0x00241420
+void GroupByClass(std::list<RndObject *> &objects, const char *pszClass) {
+    const auto first = objects.begin();
+    for (auto it = objects.begin(); it != objects.end(); ++it) {
+        if ((*it)->ClassName() == pszClass) {
+            objects.splice(first, objects, it);
+        }
+    }
+}
+
 } // namespace
+
+int RndManager::sRev = 10;
 
 // The unit's static initialiser at NTSC-U/C: 0x0023a6a8, PAL: 0x00243228, its global constructor
 // at NTSC-U/C: 0x0023a6e8, PAL: 0x00243268, and its global destructor at NTSC-U/C: 0x0023a708,
@@ -170,6 +200,157 @@ RndObject *RndManager::Create(const char *pszClass, const char *pszName) {
         return nullptr;
     }
     return it->second(pszName);
+}
+
+void RndManager::Clone(RndObject *pSource,
+                       const char *pszPrefix,
+                       std::list<RndObject *> *pClones,
+                       int nFlags,
+                       int bRecurse,
+                       int bLink) {
+    RndObject *pClone =
+        Create(pSource->ClassName(), FormatString("%s%s", pszPrefix, pSource->mName.c_str()));
+    if (pClone == nullptr) {
+        return;
+    }
+    pClone->Copy(pSource, nFlags);
+    pClones->push_back(pClone);
+    if (bRecurse == 0 && bLink == 0) {
+        return;
+    }
+
+    RndAnimatable *pAnim = pSource != nullptr ? dynamic_cast<RndAnimatable *>(pSource) : nullptr;
+    RndCollideable *pCollide =
+        pSource != nullptr ? dynamic_cast<RndCollideable *>(pSource) : nullptr;
+    RndDrawable *pDraw = pSource != nullptr ? dynamic_cast<RndDrawable *>(pSource) : nullptr;
+    RndTransformable *pTrans =
+        pSource != nullptr ? dynamic_cast<RndTransformable *>(pSource) : nullptr;
+
+    if (bRecurse != 0) {
+        std::list<RndObject *> children;
+        RndAnimatable::CollectChildren(children, pAnim);
+        RndCollideable::CollectChildren(children, pCollide);
+        RndDrawable::CollectChildren(children, pDraw);
+        RndTransformable::CollectChildren(children, pTrans);
+        children.sort();
+        children.unique();
+        for (RndObject *pChild : children) {
+            Clone(pChild, pszPrefix, pClones, nFlags, 0, 0);
+        }
+
+        children.push_front(pSource);
+        auto itClone = pClones->begin();
+        for (auto itChild = children.begin(); itChild != children.end(); ++itChild, ++itClone) {
+            for (auto it = pClones->begin(); it != pClones->end(); ++it) {
+                if (it != itClone) {
+                    (*it)->Replace(*itChild, *itClone);
+                }
+            }
+        }
+    }
+
+    if (bLink == 0) {
+        return;
+    }
+    if (pTrans != nullptr) {
+        RndTransformable *pParent = pTrans->Parent();
+        if (pParent != nullptr) {
+            pParent->AddTrans(pClone != nullptr ? dynamic_cast<RndTransformable *>(pClone) :
+                                                  nullptr);
+        }
+    }
+    if (pCollide != nullptr) {
+        RndCollideable *pParent = pCollide->Parent();
+        if (pParent != nullptr) {
+            pParent->AddCollide(pClone != nullptr ? dynamic_cast<RndCollideable *>(pClone) :
+                                                    nullptr);
+        }
+    }
+    if (pDraw != nullptr) {
+        RndDrawable *pParent = pDraw->Parent();
+        if (pParent != nullptr) {
+            pParent->AddDraw(pClone != nullptr ? dynamic_cast<RndDrawable *>(pClone) : nullptr,
+                             nullptr);
+        }
+    }
+    if (pAnim != nullptr) {
+        RndAnimatable *pParent = pAnim->Parent();
+        if (pParent != nullptr) {
+            pParent->AddAnim(pClone != nullptr ? dynamic_cast<RndAnimatable *>(pClone) : nullptr);
+        }
+    }
+}
+
+void RndManager::SortObjects(std::list<RndObject *> &objects) {
+    for (int i = 0; i < kTexSortIndex; ++i) {
+        // Yes, the binary takes the key of end() for an unregistered class.
+        GroupByClass(objects, mClasses.find(kSortedClasses[i])->first);
+    }
+
+    const char *pszTex = mClasses.find(kSortedClasses[kTexSortIndex])->first;
+    auto sorted = objects.begin();
+    for (auto it = objects.begin(); it != objects.end(); ++it) {
+        if ((*it)->ClassName() != pszTex) {
+            continue;
+        }
+        RndTex *pTex = *it != nullptr ? dynamic_cast<RndTex *>(*it) : nullptr;
+        const char *pszFile = pTex->mFile.c_str();
+        auto pos = objects.begin();
+        for (; pos != sorted; ++pos) {
+            RndTex *pOther = *pos != nullptr ? dynamic_cast<RndTex *>(*pos) : nullptr;
+            if (strcmp(pszFile, pOther->mFile.c_str()) < 0) {
+                break;
+            }
+        }
+        if (it == sorted) {
+            ++sorted;
+        }
+        objects.splice(pos, objects, it);
+    }
+}
+
+void RndManager::Write(BinStream &stream) {
+    std::list<RndObject *> objects;
+    for (const auto &entry : mObjects) {
+        if (entry.second->mInternal == 0) {
+            objects.push_back(entry.second);
+        }
+    }
+    SortObjects(objects);
+
+    int nValue = sRev;
+    stream.WriteEndian(&nValue, sizeof(nValue));
+    nValue = static_cast<int>(objects.size());
+    stream.WriteEndian(&nValue, sizeof(nValue));
+    for (RndObject *pObject : objects) {
+        stream.WriteString(pObject->ClassName()).WriteString(pObject->mName.c_str());
+    }
+
+    std::vector<FilePath> files;
+    for (RndObject *pObject : objects) {
+        RndTex *pTex = pObject != nullptr ? dynamic_cast<RndTex *>(pObject) : nullptr;
+        if (pTex != nullptr) {
+            files.push_back(pTex->mFile);
+            continue;
+        }
+        RndMovie *pMovie = pObject != nullptr ? dynamic_cast<RndMovie *>(pObject) : nullptr;
+        if (pMovie != nullptr) {
+            files.push_back(pMovie->mFile);
+        }
+    }
+    EndChunk(stream << files);
+
+    for (RndObject *pObject : objects) {
+        pObject->Save(stream);
+        const unsigned nMarker = kRecordEndMarker;
+        stream.WriteEndian(&nMarker, sizeof(nMarker));
+        EndChunk(stream);
+    }
+}
+
+RndObject *RndManager::NewTunnel(const char *pszName) {
+    DebugNotify("Tunnel %s loaded as view", pszName);
+    return TheManager.Create("View", pszName);
 }
 
 const char *RndManager::ResourceTag(const char *pszFile) {

@@ -2,8 +2,8 @@
 
 #include "math/box.h"
 #include "math/vector3.h"
-#include "rnd/mesh.h"
-#include "rnd/view.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uipanel.h"
@@ -183,15 +183,15 @@ public:
      */
     alignas(16) static Vector3 sGizmoOffsets[kNumGizmoOffsets];
 
-    Rnd::Mesh *mGizmoMesh;        /*!< The panel's clone of `pyramid.mesh`, or null. */
-    Rnd::Mesh *mBgMesh;           /*!< The background mesh `<name>_bg.mesh`, or null. */
-    alignas(16) Box mBgBox;       /*!< The bounding box of mBgMesh in its own space. */
-    int mGizmoOffsetIndex;        /*!< The entry of sGizmoOffsets the pyramid reaches. */
-    Rnd::View *mMatEnterExitAnim; /*!< The shared animation `mat_2d_EE.anim`. */
-    Rnd::View *mMatAlwaysAnim;    /*!< The shared animation `mat_2d_always.anim`. */
-    Rnd::View *mPanelAnim;        /*!< The panel animation `<name>_f2EE.anim`, or null. */
-    float mMatStart;              /*!< The time the material entry or exit started, or 0. */
-    bool mMatEntering;            /*!< Whether the material animation enters rather than exits. */
+    RndMesh *mGizmoMesh;        /*!< The panel's clone of `pyramid.mesh`, or null. */
+    RndMesh *mBgMesh;           /*!< The background mesh `<name>_bg.mesh`, or null. */
+    alignas(16) Box mBgBox;     /*!< The bounding box of mBgMesh in its own space. */
+    int mGizmoOffsetIndex;      /*!< The entry of sGizmoOffsets the pyramid reaches. */
+    RndView *mMatEnterExitAnim; /*!< The shared animation `mat_2d_EE.anim`. */
+    RndView *mMatAlwaysAnim;    /*!< The shared animation `mat_2d_always.anim`. */
+    RndView *mPanelAnim;        /*!< The panel animation `<name>_f2EE.anim`, or null. */
+    float mMatStart;            /*!< The time the material entry or exit started, or 0. */
+    bool mMatEntering;          /*!< Whether the material animation enters rather than exits. */
 
 private:
     /**

@@ -6,11 +6,11 @@
 #include "app/msgsink.h"
 #include "os/string.h"
 #include "os/strless.h"
-#include "rnd/animatable.h"
-#include "rnd/object.h"
+#include "rnd/rndanimatable.h"
 #include "rnd/rndloader.h"
-#include "rnd/text.h"
-#include "rnd/view.h"
+#include "rnd/rndobject.h"
+#include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 #include "script/dataarray.h"
 #include "ui/uicomponent.h"
 #include "ui/uinavigator.h"
@@ -300,31 +300,31 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020a278
      * @ghidraAddress PAL: 0x00213078
      */
-    void LocalizeTexts(const char *pszFile, std::list<Rnd::Object *> &objects);
+    void LocalizeTexts(const char *pszFile, std::list<RndObject *> &objects);
 
     float mFrame;      /*!< The frame of the entry and exit animation the last Poll() computed. */
     float mIdleFrame;  /*!< The frame ComputeFrame() reports while neither animation plays. */
     const char *mName; /*!< The name, a symbol. */
     String mFile;      /*!< The `.rnd` file. */
     int mState;        /*!< One of State. */
-    Rnd::View *mView;  /*!< The view of the file, or null. */
-    const char *mFocusName;          /*!< The component that receives the focus after a load. */
-    float mLoopStart;                /*!< The time the looping animation's frame counts from. */
-    Rnd::Animatable *mLoopAnim;      /*!< The looping animation, or null. */
-    Rnd::Animatable *mEnterExitAnim; /*!< The entry and exit animation, or null. */
-    float mTransitionStart;          /*!< The time the entry or exit started, or 0 for neither. */
-    float mShownFrame;               /*!< The frame the entry stops at. */
-    float mHiddenFrame;              /*!< The frame the exit stops at. */
-    float mEnterMs;                  /*!< The length of the entry. */
-    float mExitMs;                   /*!< The length of the exit. */
-    bool mEnterReversed;             /*!< Whether the entry plays its frames backwards. */
-    bool mExitReversed;              /*!< Whether the exit plays its frames backwards. */
-    float mEnterStartFrame;          /*!< The frame the entry starts at. */
-    float mExitStartFrame;           /*!< The frame the exit starts at. */
+    RndView *mView;    /*!< The view of the file, or null. */
+    const char *mFocusName;        /*!< The component that receives the focus after a load. */
+    float mLoopStart;              /*!< The time the looping animation's frame counts from. */
+    RndAnimatable *mLoopAnim;      /*!< The looping animation, or null. */
+    RndAnimatable *mEnterExitAnim; /*!< The entry and exit animation, or null. */
+    float mTransitionStart;        /*!< The time the entry or exit started, or 0 for neither. */
+    float mShownFrame;             /*!< The frame the entry stops at. */
+    float mHiddenFrame;            /*!< The frame the exit stops at. */
+    float mEnterMs;                /*!< The length of the entry. */
+    float mExitMs;                 /*!< The length of the exit. */
+    bool mEnterReversed;           /*!< Whether the entry plays its frames backwards. */
+    bool mExitReversed;            /*!< Whether the exit plays its frames backwards. */
+    float mEnterStartFrame;        /*!< The frame the entry starts at. */
+    float mExitStartFrame;         /*!< The frame the exit starts at. */
     int mLoadRefs;                 /*!< The number of Load() calls not yet balanced by Unload(). */
     bool mLoaded;                  /*!< Whether FinishLoad() has run since the last load. */
     DataArray *mData;              /*!< The script description. */
-    std::list<Rnd::Text *> mTexts; /*!< The text objects of the file. */
+    std::list<RndText *> mTexts;   /*!< The text objects of the file. */
     std::map<const char *, UIComponent *, StrLess> mComponents; /*!< The components by name. */
     UINavigator *mNavigator; /*!< The navigator that moves the focus, or null. */
     UIComponent *mFocus;     /*!< The component with the focus, or null. */

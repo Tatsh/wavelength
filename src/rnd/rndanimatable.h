@@ -686,6 +686,30 @@ public:
     static Filter *NewFilter(int nType);
 
     /**
+     * Append every animation descendant of an animatable, depth first, each before its
+     * descendants.
+     *
+     * Each unit that uses the inline routine emits a copy. The first address is the copy of
+     * RndManager, and the second the copy of UIList.
+     *
+     * @param objects The list to append to.
+     * @param pAnimatable The animatable to start from, or null.
+     * @ghidraAddress NTSC-U/C: 0x00237eb0
+     * @ghidraAddress PAL: 0x00240a30
+     * @ghidraAddress NTSC-U/C: 0x00205430
+     * @ghidraAddress PAL: 0x0020e1e8
+     */
+    static void CollectChildren(std::list<RndObject *> &objects, RndAnimatable *pAnimatable) {
+        if (pAnimatable == nullptr) {
+            return;
+        }
+        for (RndAnimatable *pChild : pAnimatable->mAnims) {
+            objects.push_back(pChild);
+            CollectChildren(objects, pChild);
+        }
+    }
+
+    /**
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b07f0

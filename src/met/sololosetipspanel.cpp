@@ -8,6 +8,7 @@
 #include "os/locale.h"
 #include "os/system.h"
 #include "rnd/manager.h"
+#include "rnd/view.h"
 #include "ui/uimanager.h"
 
 namespace {

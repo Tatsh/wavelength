@@ -1075,14 +1075,17 @@ rndblur
 rndbutton
 rndcam
 rndcollideable
+rndcursor
 rnddrawable
 rndenviron
 rndfile
 rndfont
+rndgenerator
 rndglobal
 rndlight
 rndlightanim
 rndline
+rndloader
 rndmanager
 rndmat
 rndmatanim
@@ -1091,6 +1094,7 @@ rndmeshanim
 rndmovie
 rndmultimesh
 rndobject
+rndparticlesys
 rndparticlesysanim
 rndrenderer
 rndtex
