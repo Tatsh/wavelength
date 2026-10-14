@@ -1106,6 +1106,9 @@ void TnlGeom::CellXfm(int nTrack,
         pXfm->mTranslation =
             LerpRow(XfmPoint(first.mXfm, point), XfmPoint(second.mXfm, point), flBlend);
     } else {
+        // Yes, the timer is started and never read.
+        Timer timer;
+        timer.Start();
         const TrackGeometry &geometry = mTrackGeometry[nTrack];
         pXfm->mBasisX = geometry.mBasis[0];
         pXfm->mBasisY = geometry.mBasis[1];
