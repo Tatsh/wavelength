@@ -42,7 +42,8 @@ bool AsyncStream::Ready(int nBytes) {
     if (mFile == nullptr) {
         return true;
     }
-    int nRead;
+    // The binary leaves the count uninitialised, and ReadDone() sets it only once the read ends.
+    int nRead = 0;
     if (mFile->ReadDone(&nRead)) {
         delete mFile;
         mFile = nullptr;
