@@ -1,8 +1,6 @@
 # The motion compensation kernels of libmpeg. Each kernel takes one prediction descriptor that
 # libmpeg.c builds and writes the prediction rows of a macroblock to the scratchpad. The add and put
 # routines saturate the prediction, with or without the decoded block, into the frame.
-#
-# NTSC-U/C: 0x0030a308 to 0x0030b0b8, PAL: 0x00376798 to 0x00377548
 
     .set noreorder
     .set noat
@@ -13,6 +11,7 @@
     nop
     nop
 
+# NTSC-U/C: 0x0030a308, PAL: 0x00376798
     .globl sceMpegMcLumaCopy
     .type sceMpegMcLumaCopy, @function
 sceMpegMcLumaCopy:
@@ -49,6 +48,7 @@ sceMpegMcLumaCopy:
     nop
     .size sceMpegMcLumaCopy, .-sceMpegMcLumaCopy
 
+# NTSC-U/C: 0x0030a380, PAL: 0x00376810
     .globl sceMpegMcChromaCopy
     .type sceMpegMcChromaCopy, @function
 sceMpegMcChromaCopy:
@@ -94,6 +94,7 @@ sceMpegMcChromaCopy:
     nop
     .size sceMpegMcChromaCopy, .-sceMpegMcChromaCopy
 
+# NTSC-U/C: 0x0030a418, PAL: 0x003768a8
     .globl sceMpegMcLumaHalfV
     .type sceMpegMcLumaHalfV, @function
 sceMpegMcLumaHalfV:
@@ -147,6 +148,7 @@ sceMpegMcLumaHalfV:
     nop
     .size sceMpegMcLumaHalfV, .-sceMpegMcLumaHalfV
 
+# NTSC-U/C: 0x0030a4d0, PAL: 0x00376960
     .globl sceMpegMcChromaHalfV
     .type sceMpegMcChromaHalfV, @function
 sceMpegMcChromaHalfV:
@@ -207,6 +209,7 @@ sceMpegMcChromaHalfV:
     nop
     .size sceMpegMcChromaHalfV, .-sceMpegMcChromaHalfV
 
+# NTSC-U/C: 0x0030a5a0, PAL: 0x00376a30
     .globl sceMpegMcLumaHalfH
     .type sceMpegMcLumaHalfH, @function
 sceMpegMcLumaHalfH:
@@ -257,6 +260,7 @@ sceMpegMcLumaHalfH:
     nop
     .size sceMpegMcLumaHalfH, .-sceMpegMcLumaHalfH
 
+# NTSC-U/C: 0x0030a650, PAL: 0x00376ae0
     .globl sceMpegMcChromaHalfH
     .type sceMpegMcChromaHalfH, @function
 sceMpegMcChromaHalfH:
@@ -310,6 +314,7 @@ sceMpegMcChromaHalfH:
     nop
     .size sceMpegMcChromaHalfH, .-sceMpegMcChromaHalfH
 
+# NTSC-U/C: 0x0030a708, PAL: 0x00376b98
     .globl sceMpegMcLumaHalfHV
     .type sceMpegMcLumaHalfHV, @function
 sceMpegMcLumaHalfHV:
@@ -379,6 +384,7 @@ sceMpegMcLumaHalfHV:
     nop
     .size sceMpegMcLumaHalfHV, .-sceMpegMcLumaHalfHV
 
+# NTSC-U/C: 0x0030a800, PAL: 0x00376c90
     .globl sceMpegMcChromaHalfHV
     .type sceMpegMcChromaHalfHV, @function
 sceMpegMcChromaHalfHV:
@@ -451,6 +457,7 @@ sceMpegMcChromaHalfHV:
     nop
     .size sceMpegMcChromaHalfHV, .-sceMpegMcChromaHalfHV
 
+# NTSC-U/C: 0x0030a900, PAL: 0x00376d90
     .globl sceMpegMcLumaAverageCopy
     .type sceMpegMcLumaAverageCopy, @function
 sceMpegMcLumaAverageCopy:
@@ -497,6 +504,7 @@ sceMpegMcLumaAverageCopy:
     nop
     .size sceMpegMcLumaAverageCopy, .-sceMpegMcLumaAverageCopy
 
+# NTSC-U/C: 0x0030a9a0, PAL: 0x00376e30
     .globl sceMpegMcChromaAverageCopy
     .type sceMpegMcChromaAverageCopy, @function
 sceMpegMcChromaAverageCopy:
@@ -548,6 +556,7 @@ sceMpegMcChromaAverageCopy:
     nop
     .size sceMpegMcChromaAverageCopy, .-sceMpegMcChromaAverageCopy
 
+# NTSC-U/C: 0x0030aa50, PAL: 0x00376ee0
     .globl sceMpegMcLumaAverageHalfV
     .type sceMpegMcLumaAverageHalfV, @function
 sceMpegMcLumaAverageHalfV:
@@ -611,6 +620,7 @@ sceMpegMcLumaAverageHalfV:
     nop
     .size sceMpegMcLumaAverageHalfV, .-sceMpegMcLumaAverageHalfV
 
+# NTSC-U/C: 0x0030ab30, PAL: 0x00376fc0
     .globl sceMpegMcChromaAverageHalfV
     .type sceMpegMcChromaAverageHalfV, @function
 sceMpegMcChromaAverageHalfV:
@@ -677,6 +687,7 @@ sceMpegMcChromaAverageHalfV:
     nop
     .size sceMpegMcChromaAverageHalfV, .-sceMpegMcChromaAverageHalfV
 
+# NTSC-U/C: 0x0030ac18, PAL: 0x003770a8
     .globl sceMpegMcLumaAverageHalfH
     .type sceMpegMcLumaAverageHalfH, @function
 sceMpegMcLumaAverageHalfH:
@@ -737,6 +748,7 @@ sceMpegMcLumaAverageHalfH:
     nop
     .size sceMpegMcLumaAverageHalfH, .-sceMpegMcLumaAverageHalfH
 
+# NTSC-U/C: 0x0030acf0, PAL: 0x00377180
     .globl sceMpegMcChromaAverageHalfH
     .type sceMpegMcChromaAverageHalfH, @function
 sceMpegMcChromaAverageHalfH:
@@ -796,6 +808,7 @@ sceMpegMcChromaAverageHalfH:
     nop
     .size sceMpegMcChromaAverageHalfH, .-sceMpegMcChromaAverageHalfH
 
+# NTSC-U/C: 0x0030adc0, PAL: 0x00377250
     .globl sceMpegMcLumaAverageHalfHV
     .type sceMpegMcLumaAverageHalfHV, @function
 sceMpegMcLumaAverageHalfHV:
@@ -875,6 +888,7 @@ sceMpegMcLumaAverageHalfHV:
     nop
     .size sceMpegMcLumaAverageHalfHV, .-sceMpegMcLumaAverageHalfHV
 
+# NTSC-U/C: 0x0030aee0, PAL: 0x00377370
     .globl sceMpegMcChromaAverageHalfHV
     .type sceMpegMcChromaAverageHalfHV, @function
 sceMpegMcChromaAverageHalfHV:
@@ -953,6 +967,7 @@ sceMpegMcChromaAverageHalfHV:
     nop
     .size sceMpegMcChromaAverageHalfHV, .-sceMpegMcChromaAverageHalfHV
 
+# NTSC-U/C: 0x0030aff8, PAL: 0x00377488
     .globl sceMpegMcAddBlock
     .type sceMpegMcAddBlock, @function
 sceMpegMcAddBlock:
@@ -983,6 +998,7 @@ sceMpegMcAddBlock:
     nop
     .size sceMpegMcAddBlock, .-sceMpegMcAddBlock
 
+# NTSC-U/C: 0x0030b058, PAL: 0x003774e8
     .globl sceMpegMcPutBlock
     .type sceMpegMcPutBlock, @function
 sceMpegMcPutBlock:
