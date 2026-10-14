@@ -1,6 +1,6 @@
 # Sony EE libraries, `0x00310000` to `0x00320000`
 
-320 of 405 routines done.
+319 of 405 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -115,7 +115,7 @@ preliminary.
 | `libscf__subdate`                     | :white_check_mark: |      1 |    164 | `0x00315db0` | `0x00382668` | `void libscf__subdate(byte * pClock)`                                                                                                                                                 |
 | `sceSdRemoteInit`                     | :white_check_mark: |      1 |    164 | `0x00315f88` | `0x00382840` | `undefined4 sceSdRemoteInit(void)`                                                                                                                                                    |
 | `sceCdSync`                           | :white_check_mark: |      3 |    160 | `0x00314870` | `0x00380f10` | `int sceCdSync(long bNonBlocking)`                                                                                                                                                    |
-| `int`                                 | :white_check_mark: |      2 |    160 | `0x003104b0` | `0x0037ca60` | `int int(long pfnHandler)`                                                                                                                                                            |
+| `int`                                 |       :memo:       |      2 |    160 | `0x003104b0` | `0x0037ca60` | `int int(long pfnHandler)`                                                                                                                                                            |
 | `sceSifSearchModuleByName`            | :white_check_mark: |      2 |    160 | `0x0031bfd0` | `0x003888e8` | `undefined4 sceSifSearchModuleByName(undefined8 pPath)`                                                                                                                               |
 | `sceUsbKbSync`                        | :white_check_mark: |      2 |    160 | `0x00310c50` | `0x0037d200` | `undefined8 sceUsbKbSync(int nMode, undefined4 * pResultOut)`                                                                                                                         |
 | `sceCdRpcEnd`                         | :white_check_mark: |      1 |    160 | `0x00313f40` |              | `void sceCdRpcEnd(int * pResult)`                                                                                                                                                     |

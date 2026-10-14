@@ -1,6 +1,6 @@
 # Game code, `0x001d0000` to `0x001e0000`
 
-181 of 181 routines done.
+180 of 181 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -12,7 +12,7 @@ preliminary.
 | `GfxTunnel__LoadConfig`                 | :white_check_mark: |      1 |   4020 | `0x001d7248` | `0x001dffe8` | `void GfxTunnel__LoadConfig(long pScreen, undefined8 param_2, undefined8 param_3, long nDeviceIdx, int nApply)`                                                                                                                     |
 | `GfxTunnel__BuildPanels`                | :white_check_mark: |      2 |   3592 | `0x001dca10` | `0x001e57b0` | `void GfxTunnel__BuildPanels(int pObj, int nFillCells, int pBuildCtx)`                                                                                                                                                              |
 | `GfxTunnel__BuildOuterCams`             | :white_check_mark: |      1 |   3400 | `0x001da970` | `0x001e3710` | `int GfxTunnel__BuildOuterCams(int pObj)`                                                                                                                                                                                           |
-| `TnlGeom__Init`                         | :white_check_mark: |      1 |   3128 | `0x001d0658` | `0x001d93f8` | `int TnlGeom__Init(uint dwLevelBack, uint dwLevelFront, int * pGridFields, int * pTrackList, uint dwLevel, int nNumLevels, uint dwColorA, uint dwColorB, int * pColumnList, int pColumnSrc, int pMatAnimSrc)`                       |
+| `TnlGeom__Init`                         |       :memo:       |      1 |   3128 | `0x001d0658` | `0x001d93f8` | `int TnlGeom__Init(uint dwLevelBack, uint dwLevelFront, int * pGridFields, int * pTrackList, uint dwLevel, int nNumLevels, uint dwColorA, uint dwColorB, int * pColumnList, int pColumnSrc, int pMatAnimSrc)`                       |
 | `GfxTunnel__dtor`                       | :white_check_mark: |      1 |   2124 | `0x001dc078` | `0x001e4e18` | `void GfxTunnel__dtor(void * pObj, uint nFreeFlags)`                                                                                                                                                                                |
 | `GfxTunnel__Poll`                       | :white_check_mark: |      1 |   1940 | `0x001de480` | `0x001e7220` | `void GfxTunnel__Poll(float flDelta, uint dwEventCtx, int * pTunnel)`                                                                                                                                                               |
 | `TnlFire__TnlFire`                      | :white_check_mark: |      2 |   1800 | `0x001d4a88` | `0x001dd828` | `void * TnlFire__TnlFire(void * pObj, undefined4 pszName, int nNodeKind, undefined4 param4, long bLoadChunks)`                                                                                                                      |
