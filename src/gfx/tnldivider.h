@@ -90,6 +90,14 @@ public:
     float TicksSinceSection(float flTick) const;
 
     /**
+     * Remove every boundary.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001f0248
+     * @ghidraAddress PAL: 0x001f8fe8
+     */
+    void ClearSections();
+
+    /**
      * Move the boundary to the current section and animate it.
      *
      * @param flDelta The time since the last update.
@@ -167,14 +175,6 @@ private:
      * @ghidraAddress PAL: 0x001f9558
      */
     void UpdateText(std::list<Section>::iterator section);
-
-    /**
-     * Remove every boundary.
-     *
-     * @ghidraAddress NTSC-U/C: 0x001f0248
-     * @ghidraAddress PAL: 0x001f8fe8
-     */
-    void ClearSections();
 
     /**
      * Place a transformable at the transform of the path at a tick.

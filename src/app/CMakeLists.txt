@@ -5,6 +5,7 @@ set(WAVELENGTH_APP_SRCS
     apptimetask.cpp
     attachment.cpp
     cutscene.cpp
+    editfield.cpp
     hideablepanel.cpp
     hudcommon.cpp
     hudflyingbutton.cpp

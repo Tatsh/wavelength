@@ -72,6 +72,10 @@ void FitKeys(std::list<K> &keys, float fScale, float fOffset) {
 
 } // namespace
 
+// The static initialiser of the unit, and the routine that runs it.
+// NTSC-U/C: 0x001ece50, PAL: 0x001f5bf0
+// NTSC-U/C: 0x001ece88, PAL: 0x001f5c28
+
 GfxArena::Creator GfxArena::sCreators[] = {Constructo::Create, nullptr};
 float GfxArena::sLowEnergy = 0.16666f;
 

@@ -38,6 +38,10 @@ T *FindObject(const char *pszName) {
 
 } // namespace
 
+// The static initialiser of the unit, and the routine that runs it.
+// NTSC-U/C: 0x001ee090, PAL: 0x001f6e30
+// NTSC-U/C: 0x001ee0c8, PAL: 0x001f6e68
+
 Constructo::Constructo(const char *pszName) : GfxArena(pszName) {
     if (std::strcmp(pszName, "ConstructoP1") == 0) {
         mLevel = kLevelP1;

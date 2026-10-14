@@ -1249,7 +1249,7 @@ void GfxManager::SetEnergy(int nPlayer, float fEnergy) {
         }
     }
     mOverlay->SetEnergy(fEnergy, nZone);
-    mTunnel->SetEnergy(fEnergy, nZone, fZoneFraction);
+    mTunnel->SetEnergy(fEnergy, nZone);
     mShips[nPlayer]->SetEnergy(fEnergy, nZone, fZoneFraction);
     mArena->SetEnergy(nZone, fEnergy);
     TheTriggerMgr.HealthEvent(nPlayer, static_cast<int>(fEnergy * kPercent));
@@ -1653,7 +1653,7 @@ void GfxManager::SetTrackEnabled(int nTrack, bool bEnabled) {
 }
 
 void GfxManager::AddCheckpoint(const char *pszLabel, float fTick, float fOffset, float fScale) {
-    mTunnel->AddCheckpoint(fTick, fScale);
+    mTunnel->AddCheckpoint(pszLabel, fTick, fScale);
     const float fSongTicks = mArena->mSongTicks;
     if (fSongTicks != 0.0f) {
         mOverlay->AddCheckpoint(fTick / fSongTicks, pszLabel);
@@ -1676,7 +1676,7 @@ bool GfxManager::GetOption() {
 }
 
 void GfxManager::SetScrollSpeed(float fSpeed) {
-    mTunnel->SetScrollSpeed(fSpeed);
+    mTunnel->SetZoom(fSpeed);
 }
 
 void GfxManager::SetPlayerShown(int nPlayer, bool bShown) {

@@ -72,10 +72,11 @@ public:
     /**
      * Retarget the pending window with no gems and no length.
      *
+     * @param nStyle The style of the display. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001fd298
      * @ghidraAddress PAL: 0x00206038
      */
-    void Refresh();
+    void Refresh(int nStyle);
 
     /**
      * Move the cursor to a window.

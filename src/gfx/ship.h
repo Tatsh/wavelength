@@ -493,7 +493,7 @@ public:
     Vector2 mScreenPos;             /*!< Where DrawTrack() last saw the ship on the screen. */
     Color mColor;                   /*!< The colour of the player. */
     float mSpread;                  /*!< How far apart the ships of a shared screen fly. */
-    float mArrowAspect;             /*!< The slope of the edge arrow. Nothing writes it. +0x1b4 */
+    float mArrowAspect;             /*!< The slope of the edge arrow, the activator scale. +0x1b4 */
     int mHasOverride;               /*!< Whether SetOverride() gave a transform. */
     int mIntroActive;               /*!< Whether the intro still blends the ship in. */
     float mOverrideBlend;           /*!< The blend SetOverride() gave. */

@@ -1,17 +1,22 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "gfx/tnlpath.h"
 #include "math/color.h"
 #include "math/interpolator.h"
 #include "math/transform.h"
+#include "math/vector2.h"
+#include "os/mem.h"
 #include "rnd/collideable.h"
 #include "rnd/mat.h"
+#include "rnd/matanim.h"
 #include "rnd/mesh.h"
 #include "rnd/raytest.h"
 #include "rnd/transformable.h"
 #include "rnd/view.h"
+#include "script/dataarray.h"
 
 /**
  * The geometry of the tracks of the tunnel, which places a cell of a track in the world.
@@ -26,6 +31,9 @@ public:
     /** Bars of the ring of built panels a bar index selects with its low bits. */
     static constexpr int kRingMask = 7;
 
+    /** The bar a slot of the ring holds when no bar is built in it. */
+    static constexpr int kNoBar = 100000000;
+
     /** One cross section of a panel, 0x70 bytes. */
     struct CrossSectionXfm {
         Transform mXfm;        /*!< The section in the world, X across the full track. */
@@ -39,7 +47,9 @@ public:
         float mRightX;                   /*!< The X of the right edge of the track. */
         float mRightZ;                   /*!< The Z of the right edge of the track. */
         Vector3 mBasis[3];               /*!< The basis of a cell of the track. */
-        unsigned char mReserved40[0x60]; // +0x40 to +0x9f are not yet identified.
+        unsigned char mReserved40[0x10]; // +0x40 to +0x4f are not yet identified.
+        Transform mXfm;                  /*!< The track in the space of the path. +0x50 */
+        unsigned char mReserved90[0x10]; // +0x90 to +0x9f are not yet identified.
     };
 
     /** Owner of a mesh the panels are built from, 4 bytes. */
@@ -101,14 +111,14 @@ public:
         std::vector<CrossSectionXfm> mBaseSections; /*!< The sections as the bar was built. */
         std::vector<CrossSectionXfm> mSections;     /*!< The sections as drawn, which may bend. */
         Rnd::Mesh *mMesh;                           /*!< The mesh of the panel. */
-        int mStyle;                                 // +0x24 Set with the state, not yet read.
-        Rnd::TriangleTest mTriangles[2];            /*!< The halves of the panel a pick tests. */
-        Color mColor;                               /*!< The colour of the panel. */
-        char mHighlighted;                          /*!< Whether the panel is drawn highlighted. */
-        int mDirty;                                 /*!< Whether the mesh needs Rebuild(). */
-        int mPickable;                              /*!< Whether Hit() tests the panel. */
-        char mTransparent;                          /*!< Whether the panel does not write depth. */
-        char mStartSection;                         /*!< The first section Rebuild() moves along. */
+        Rnd::Mat *mCheckpointMat;        /*!< The checkpoint material of the panel, or null. */
+        Rnd::TriangleTest mTriangles[2]; /*!< The halves of the panel a pick tests. */
+        Color mColor;                    /*!< The colour of the panel. */
+        char mHighlighted;               /*!< Whether the panel is drawn highlighted. */
+        int mDirty;                      /*!< Whether the mesh needs Rebuild(). */
+        int mPickable;                   /*!< Whether Hit() tests the panel. */
+        char mTransparent;               /*!< Whether the panel does not write depth. */
+        char mStartSection;              /*!< The first section Rebuild() moves along. */
     };
 
     /** The state of one track, 0x30 bytes. */
@@ -261,6 +271,174 @@ public:
      * @ghidraAddress PAL: 0x001d5100
      */
     TnlGeom();
+
+    /**
+     * Destroy the geometry.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001cc5a8
+     * @ghidraAddress PAL: 0x001d5348
+     */
+    ~TnlGeom();
+
+    /**
+     * Allocate a geometry from the pool, billed to `Tunnel`.
+     *
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
+     */
+    void *operator new(size_t nSize) {
+        return PoolMemAlloc(static_cast<int>(nSize), "Tunnel", 0);
+    }
+
+    /**
+     * Release a geometry.
+     *
+     * @param pBlock The block.
+     */
+    void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
+
+    /**
+     * Load the settings of the geometry. The body is empty.
+     *
+     * @param pConfig The configuration.
+     * @param pDefaults The defaults of the configuration.
+     * @param nOption The fourth argument every loader of the tunnel graphics receives.
+     * @ghidraAddress NTSC-U/C: 0x001ccaa0
+     * @ghidraAddress PAL: 0x001d5840
+     */
+    void LoadConfig(DataArray *pConfig, DataArray *pDefaults, int nOption);
+
+    /**
+     * Set up the tracks from the edges of the cross section, and the passes of the standard panel
+     * from a material and an animation of it, then rebuild the meshes and the ring of panels.
+     *
+     * Each texture stage of pPanelMat becomes one material `tnl std panel mat pass <n>`, and each
+     * stage of pPanelAnim with transform keys one animation `tnl std matanim stage <n>` of the
+     * material of its pass. A track past the end of pColors takes the last colour.
+     *
+     * @param pEdges The left and the right edge of each track, X then Z.
+     * @param nNumBars The bars of each track in the ring of built panels.
+     * @param nDetail One more than the doublings of the cross sections of a bar.
+     * @param nBarsBehind The built bars retained behind the current bar.
+     * @param flSlabDepth The depth of a slab under the panels.
+     * @param flSlabAngle The angle of the sides of a slab, in radians.
+     * @param pPath The animation of the path.
+     * @param pColors The colour of each track.
+     * @param pPanelMat The material of the standard panel.
+     * @param pPanelAnim The animation of pPanelMat.
+     * @return Whether pEdges has a track.
+     * @ghidraAddress NTSC-U/C: 0x001d0658
+     * @ghidraAddress PAL: 0x001d93f8
+     */
+    bool Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
+              int nNumBars,
+              int nDetail,
+              int nBarsBehind,
+              float flSlabDepth,
+              float flSlabAngle,
+              Rnd::TransAnim *pPath,
+              const std::vector<Color> *pColors,
+              Rnd::Mat *pPanelMat,
+              Rnd::MatAnim *pPanelAnim);
+
+    /**
+     * Advance the geometry to a tick, building the bars ahead and moving the players and their
+     * activators.
+     *
+     * @param flTick The tick of the song.
+     * @param flDeltaTicks The ticks since the last poll.
+     * @ghidraAddress NTSC-U/C: 0x001cdab8
+     * @ghidraAddress PAL: 0x001d6858
+     */
+    void Poll(float flTick, float flDeltaTicks);
+
+    /**
+     * Draw the panels of the tracks, as the tunnel does in a solo game or outside the Game rule
+     * set. The title is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001ccaa8
+     * @ghidraAddress PAL: 0x001d5848
+     */
+    void DrawPanels();
+
+    /**
+     * Draw the panels of the tracks, as the tunnel does in a game of several players with the Game
+     * rule set. The title is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001ccfa8
+     * @ghidraAddress PAL: 0x001d5d48
+     */
+    void DrawPanelsMultiplayer();
+
+    /**
+     * Draw the overlay materials of the tracks. The title is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001cd4d0
+     * @ghidraAddress PAL: 0x001d6270
+     */
+    void DrawOverlays();
+
+    /**
+     * Build the bars of the ring that are not built yet.
+     *
+     * Bars at or after mEndBar are marked as not built. While mAnimateMoves is set, the call
+     * stops after the first bar it builds.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001d0020
+     * @ghidraAddress PAL: 0x001d8dc0
+     */
+    void BuildBars();
+
+    /**
+     * Build the cross sections of one bar on every track along the path, and give the slot of the
+     * bar its material.
+     *
+     * A bar before the song takes the kind of panel counted back from the last kind, and every
+     * other bar takes the default material. The last section of each panel starts the panel as
+     * transparent, not pickable, unhighlighted, and in the colour of its track.
+     *
+     * @param nBar The bar.
+     * @ghidraAddress NTSC-U/C: 0x001d0100
+     * @ghidraAddress PAL: 0x001d8ea0
+     */
+    void BuildBar(int nBar);
+
+    /**
+     * Put every panel back in its first state, white and transparent, and mark every slot of the
+     * ring as not built.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001d0548
+     * @ghidraAddress PAL: 0x001d92e8
+     */
+    void ResetPanels();
+
+    /**
+     * Put every player at its track at once.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001d0600
+     * @ghidraAddress PAL: 0x001d93a0
+     */
+    void ResetPlayers();
+
+    /**
+     * Set the number of players, attaching each to the geometry with its index.
+     *
+     * @param nPlayers The number of players.
+     * @ghidraAddress NTSC-U/C: 0x001d1290
+     * @ghidraAddress PAL: 0x001da030
+     */
+    void SetNumPlayers(int nPlayers);
+
+    /**
+     * Set the ticks of a move of a player to the next track.
+     *
+     * @param flLength The ticks.
+     * @ghidraAddress NTSC-U/C: 0x001d1430
+     * @ghidraAddress PAL: 0x001da1d0
+     */
+    void SetMoveLength(float flLength);
 
     /**
      * Report the place of a player.
@@ -459,14 +637,14 @@ public:
     Color *GetTrackColor(int nTrack);
 
     /**
-     * Set the value of a built bar in mBarValues.
+     * Set the checkpoint material of a built bar in mBarValues.
      *
      * @param nBar The bar.
-     * @param nValue The value.
+     * @param pMat The checkpoint material, or null.
      * @ghidraAddress NTSC-U/C: 0x001d25a0
      * @ghidraAddress PAL: 0x001db340
      */
-    void SetBarValue(int nBar, int nValue);
+    void SetBarValue(int nBar, Rnd::Mat *pMat);
 
     /**
      * Set the state of a built panel.
@@ -474,7 +652,7 @@ public:
      * @param nTrack The track.
      * @param nBar The bar.
      * @param bTransparent Whether the panel does not write depth.
-     * @param nStyle The value of mStyle.
+     * @param pCheckpointMat The checkpoint material of the panel, or null.
      * @param bPickable Whether picks test the panel.
      * @param bHighlighted Whether the panel is drawn highlighted.
      * @param pColor The colour, or null to retain the colour.
@@ -484,7 +662,7 @@ public:
     void SetPanelState(int nTrack,
                        int nBar,
                        char bTransparent,
-                       int nStyle,
+                       Rnd::Mat *pCheckpointMat,
                        int bPickable,
                        bool bHighlighted,
                        const Color *pColor);
@@ -605,36 +783,41 @@ public:
      */
     static Transform sIdentity;
 
-    int mNumBars;                       /*!< The bars of each track in the ring of built panels. */
-    int mReserved04;                    // +0x04 Starts at 2, not yet read.
-    float mReserved08;                  // +0x08 Starts at 0.2, not yet read.
-    int mReserved0c;                    // +0x0c Cleared, not yet read.
-    TnlPath *mPath;                     /*!< The path of the tunnel. */
-    int mBarsBehind;                    /*!< The built bars kept behind the current bar. */
-    float mMoveLength;                  /*!< The ticks of a move of a player to the next track. */
-    float mCamMoveSpeed;                /*!< The tracks a camera moves per tick. */
-    int mWraps;                         /*!< Whether the tracks wrap around the tunnel. */
-    int mReserved24;                    // +0x24 Starts at 1, not yet read.
-    int mAnimateMoves;                  /*!< Whether players move between tracks along curves. */
+    int mNumBars;        /*!< The bars of each track in the ring of built panels. */
+    int mReserved04;     // +0x04 Starts at 2, the nDetail of Init(), not yet read.
+    float mSlabDepth;    /*!< The depth of a slab under the panels. */
+    float mSlabAngle;    /*!< The angle of the sides of a slab, in radians. */
+    TnlPath *mPath;      /*!< The path of the tunnel. */
+    int mBarsBehind;     /*!< The built bars kept behind the current bar. */
+    float mMoveLength;   /*!< The ticks of a move of a player to the next track. */
+    float mCamMoveSpeed; /*!< The tracks a camera moves per tick. */
+    int mWraps;          /*!< Whether the tracks wrap around the tunnel. */
+    int mShowPanels;     /*!< Whether the panels show, `show_panels`. */
+    /*!< Whether players move between tracks along curves and BuildBars() builds one bar a call. */
+    int mAnimateMoves;
     float mBarsPerTick;                 /*!< The reciprocal of mTicksPerBar. */
     float mTicksPerBar;                 /*!< The ticks of one bar. */
     int mSectionsPerBar;                /*!< The cross sections of one bar. */
     int mFirstBar;                      /*!< The first bar of the ring. */
     int mReserved3c;                    // +0x3c Cleared, not yet read.
-    int mReserved40;                    // +0x40 Starts at 100000000, not yet read.
+    int mEndBar;                        /*!< The first bar that is never built. */
     std::vector<int> mBarRing;          /*!< The bar each slot of the ring holds. */
     std::vector<Rnd::Mat *> mBarMats;   /*!< The material of each slot of the ring. */
     std::vector<MeshHolder> mMeshes;    /*!< The opaque and the transparent source mesh. */
     std::vector<PanelData> mPanels;     /*!< The panels, mNumBars for each track. */
     std::vector<TrackData> mTracks;     /*!< The state of each track. */
-    std::vector<int> mBarValues;        /*!< A value for each slot of the ring. */
-    std::vector<int> mReservedA4;       // +0xa4 One for each slot of the ring, not yet read.
-    std::vector<int> mReservedB4;       // +0xb4 Not yet read.
-    unsigned char mReservedC4[0x2c];    // +0xc4 to +0xef are not yet identified.
-    int mBarValuesDirty;                /*!< Whether mBarValues changed. */
-    Rnd::Mat *mDefaultMat;              /*!< The material of a panel with no kind. */
-    std::vector<Rnd::Mat *> mPanelMats; /*!< The material of each kind of panel. */
-    std::vector<Vector3> mTrackOffsets; /*!< The offset of each track. */
+    std::vector<Rnd::Mat *> mBarValues; /*!< The checkpoint material of each slot of the ring. */
+    /*!< The material of each pass of the standard panel, `tnl std panel mat pass <n>`. */
+    std::vector<Rnd::Mat *> mPassMats;
+    /*!< The animations of the passes, `tnl std matanim stage <n>`. */
+    std::vector<Rnd::MatAnim *> mPassAnims;
+    unsigned char mReservedC4[0xc]; // +0xc4 to +0xcf are not yet identified.
+    Color mReservedD0;              // +0xd0 Init() sets opaque black, not yet read.
+    Color mPanelLightColor;         /*!< The light colour of the material of the standard panel. */
+    int mBarValuesDirty;            /*!< Whether mBarValues changed. */
+    Rnd::Mat *mDefaultMat;          /*!< The material of a panel with no kind. */
+    std::vector<Rnd::Mat *> mPanelMats;        /*!< The material of each kind of panel. */
+    std::vector<Vector3> mTrackOffsets;        /*!< The offset of each track. */
     std::vector<bool> mTrackOffsetChanged;     /*!< Whether the offset of each track changed. */
     std::vector<TrackGeometry> mTrackGeometry; /*!< The flat cross section of each track. */
     int mNumTracks;                            /*!< The number of tracks. */
@@ -643,6 +826,24 @@ public:
 private:
     /** Below this index SetPanelMat() sets the default material. */
     static constexpr int kDefaultMatThreshold = -16;
+
+    /**
+     * Rebuild the opaque and the transparent source meshes and the materials of the panel
+     * effects.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001cfd98
+     * @ghidraAddress PAL: 0x001d8b38
+     */
+    void BuildMeshes();
+
+    /**
+     * Size the ring of panels, the tracks, and their offsets for the tracks Init() set, and build
+     * the panels.
+     *
+     * @ghidraAddress NTSC-U/C: 0x001cdc48
+     * @ghidraAddress PAL: 0x001d69e8
+     */
+    void BuildRing();
 
     /**
      * Find a built panel.

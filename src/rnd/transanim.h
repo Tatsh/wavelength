@@ -11,6 +11,7 @@
 class GfxArena;
 class HudLetterExit;
 class TnlDivider;
+class TnlSlowdownFX;
 struct Vector3;
 
 namespace Rnd {
@@ -59,6 +60,9 @@ class TransAnim : public Animatable, public Drawable {
     // The constructor of TnlDivider scales the keys of two animations directly, and the image has
     // no accessor for them.
     friend class ::TnlDivider;
+    // The constructor of TnlSlowdownFX sets the first scale key of its animation directly, and the
+    // image has no accessor for it.
+    friend class ::TnlSlowdownFX;
     // GfxArena finds the camera path by mTrans and scales its keys directly, and ScaleTransKeys()
     // in gfx/gfxutil.h scales mTransKeys directly. The image has no accessor for either.
     friend class ::GfxArena;

@@ -27,6 +27,10 @@ constexpr int kNumComponents = 3;
 
 } // namespace
 
+// The static initialiser of the unit, and the routine that runs it.
+// NTSC-U/C: 0x001ed9d8, PAL: 0x001f6778
+// NTSC-U/C: 0x001eda10, PAL: 0x001f67b0
+
 Beam::Beam() {
     mParams = nullptr;
     mLine = nullptr;

@@ -14,6 +14,9 @@ class MetRenderer;
 class PlayerCamFX;
 class SetAnimAction;
 class Ship;
+class TnlFire;
+class TnlFreestyle;
+class TnlGeom;
 class ViewAnimPlayer;
 namespace Rnd {
 class Animatable;
@@ -78,6 +81,12 @@ class Animatable : public virtual Object {
     friend class ::AnimateToAction;
     // PlayerCamFX maps a tick through the filters of its intro animation with FilterFrame().
     friend class ::PlayerCamFX;
+    // TnlFire maps the age of a chunk through the filters of its animation with FilterFrame(), and
+    // TnlFreestyle the age of a victory freestyle.
+    friend class ::TnlFire;
+    friend class ::TnlFreestyle;
+    // TnlGeom::Init() copies the filters of a material animation into the animations it creates.
+    friend class ::TnlGeom;
     // GfxArena and Constructo search mAnims directly before RemoveAnim(), and the image has no
     // accessor for it.
     friend class ::Constructo;

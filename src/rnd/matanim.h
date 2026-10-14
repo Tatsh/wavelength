@@ -9,6 +9,8 @@
 
 class GfxArena;
 class SongDecryptScreen;
+class TnlCatcher;
+class TnlGeom;
 namespace Rnd {
 class Dbg;
 class Mat;
@@ -237,6 +239,8 @@ public:
         // accessor for it.
         friend class ::GfxArena;
         friend class ::SongDecryptScreen;
+        // TnlGeom::Init() copies the transform channels.
+        friend class ::TnlGeom;
 
         // Channel blended into the last row of the stage transform, which is its translation.
         std::list<Vector3Key> mTranslateKeys; // +0x00
@@ -454,10 +458,14 @@ private:
      */
     void RemoveObjectRefs();
 
-    // SongDecryptScreen::Poll() and GfxArena read mKeysOwner and mStages directly, and the image
-    // has no accessor for either. The order below is the recovered offset order.
+    // SongDecryptScreen::Poll(), GfxArena, and TnlCatcher read mKeysOwner, mStages, and the keys
+    // directly, and the image has no accessor for them. The order below is the recovered offset
+    // order.
     friend class ::GfxArena;
     friend class ::SongDecryptScreen;
+    friend class ::TnlCatcher;
+    // TnlGeom::Init() copies the stage keys of one animation into the animations it creates.
+    friend class ::TnlGeom;
 
     // The material this animation drives.
     Mat *mMat; // +0x18

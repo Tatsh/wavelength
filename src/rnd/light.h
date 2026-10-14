@@ -89,6 +89,17 @@ public:
     static void operator delete(void *pBlock);
 
     /**
+     * Set the light a vertex receives in proportion to its normal.
+     *
+     * @param color The colour.
+     * @ghidraAddress NTSC-U/C: 0x00382cf0
+     * @ghidraAddress PAL: 0x003f13f8
+     */
+    virtual void SetColor(const Color &color) {
+        mDiffuse = color;
+    }
+
+    /**
      * Set all three colours at once.
      *
      * Vtable slot 3 of the Rnd::Transformable table. The parameter order is the recovered one and

@@ -108,6 +108,7 @@ basenames
 bclr
 bcopy
 bdec
+beamgrow
 beamparams
 beis
 bffm
@@ -257,6 +258,7 @@ dmaend
 dmapacket
 docstrings
 dopenssl
+doublings
 doutput
 dpadd
 dpadl
@@ -281,6 +283,7 @@ dwavelength
 dxguid
 ecossin
 edata
+editfield
 editgempacket
 edittext
 eekernel
@@ -341,7 +344,6 @@ fileversion
 finalscorepacket
 findctp
 fini
-floatlist
 flushe
 fmacro
 focuschangepanel
@@ -360,6 +362,7 @@ freestylebumppacket
 freestylelaptipscreen
 freestylepacket
 freestyletrack
+freestylus
 freqconfirmscreen
 freqcopydelscreen
 freqlist
@@ -397,6 +400,8 @@ genpath
 gfxarena
 gfxconfig
 gfxmanager
+gfxtunnel
+gfxtunnelpanel
 gfxutil
 ghidra
 giftag
@@ -850,6 +855,7 @@ netswitchlobbyscreen
 netwelcome
 netwelcomescreen
 neuro
+neut
 newlib
 nlohmann
 nmake
@@ -921,6 +927,7 @@ paddh
 padman
 padman's
 palettization
+panelchunk
 particlearm
 particlearms
 particlearmsassembly
@@ -937,6 +944,7 @@ periodictimer
 pextlb
 pextub
 phdrs
+pickability
 pickable
 picure
 pidl
@@ -1300,20 +1308,31 @@ timrman
 tipsscreen
 tlid
 tmfc
+tnlactivator
+tnlblurs
+tnlcatcher
 tnlconnectorbeam
 tnlcripfx
 tnlcursor
 tnldivider
+tnlfire
 tnlflashfx
+tnlfreestyle
 tnlgem
 tnlgemcapfx
 tnlgems
 tnlgeom
+tnlgrid
+tnlplayer
+tnlsabretrail
 tnlseeker
+tnlslowdownfx
 tnlstreakgemfx
 tnltrackfx
 tnltrackrange
 tnlwave
+tnlwinshell
+tnlz
 tostring
 totbytes
 toupper
@@ -1371,6 +1390,7 @@ unclamped
 undebug
 undraft
 undrafted
+unhighlighted
 unistd
 unlockarena
 unlockavatarpanel

@@ -1,6 +1,8 @@
 #include "gfx/gfxconfig.h"
 
+#include "game/gamedb.h"
 #include "os/debug.h"
+#include "os/system.h"
 
 namespace {
 
@@ -85,4 +87,22 @@ bool FindConfigVector3(
 bool FindConfigColor(
     DataArray *pConfig, DataArray *pDefaults, const char *pszName, Color *pValue, bool bFail) {
     return FindConfigValue(pConfig, pDefaults, pszName, pValue, bFail, &DataArray::FindColor);
+}
+
+DataArray *GetModeGfxConfig() {
+    const char *pszMode;
+    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+        pszMode = "solo";
+    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+        pszMode = "duel";
+    } else if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        pszMode = "net";
+    } else {
+        pszMode = "multi";
+    }
+    return GetGfxConfig()->FindArray(pszMode, false);
+}
+
+DataArray *GetGfxConfig() {
+    return SystemConfig()->FindArray("gfx", true);
 }

@@ -15,6 +15,7 @@
 #include "rnd/transformable.h"
 
 class Constructo;
+class Freestylus;
 class MeshGroup;
 class ParticleArm;
 class ParticleArmsAssembly;
@@ -23,6 +24,7 @@ class Ship;
 class SpriteGroup;
 class SubstepParticles;
 class TnlCripFX;
+class TnlFire;
 class TnlTrackFX;
 
 namespace Rnd {
@@ -95,6 +97,12 @@ class ParticleSys : public Animatable, public Transformable, public Drawable {
     // Constructo turns on mCollide and moves mCollidePlane directly, and the image has no accessor
     // for either.
     friend class ::Constructo;
+    // Freestylus drives SetFrameSelf() of its particles directly, and the image has no accessor
+    // for it.
+    friend class ::Freestylus;
+    // TnlFire scales the emission box, the speed, the size, and the force of its flames, and the
+    // image has no accessor for them.
+    friend class ::TnlFire;
 
 public:
     /**

@@ -56,28 +56,6 @@ enum Usage {
 // Function keys F1 to F12.
 constexpr unsigned int kFunctionKeyCount = 12;
 
-// Keys KeyboardKeyMsg reports for keys without a character.
-enum Key {
-    kKeyNone = 0,
-    kKeyCapsLock = 0x122,
-    kKeyNumLock = 0x123,
-    kKeyScrollLock = 0x124,
-    kKeyPrintScreen = 0x12c,
-    kKeyPause = 0x12d,
-    kKeyEscape = 0x12e,
-    kKeyInsert = 0x136,
-    kKeyDelete = 0x137,
-    kKeyHome = 0x138,
-    kKeyEnd = 0x139,
-    kKeyPageUp = 0x13a,
-    kKeyPageDown = 0x13b,
-    kKeyLeft = 0x140,
-    kKeyRight = 0x141,
-    kKeyUp = 0x142,
-    kKeyDown = 0x143,
-    kKeyF1 = 0x191
-};
-
 // NTSC-U/C: 0x003b2100
 int gActive;
 

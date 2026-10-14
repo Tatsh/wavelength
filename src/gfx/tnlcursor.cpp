@@ -51,7 +51,7 @@ void TnlCursor::Reset() {
     mTargetEndTick = 0.0f;
 }
 
-void TnlCursor::Refresh() {
+void TnlCursor::Refresh([[maybe_unused]] int nStyle) {
     SetTarget(mTrack, nullptr, mStartTick, mStartTick);
 }
 

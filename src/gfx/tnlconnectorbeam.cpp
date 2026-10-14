@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "game/gamedb.h"
-#include "gfx/floatlist.h"
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
+#include "gfx/polynomial.h"
 #include "math/interpolator.h"
 #include "math/rand.h"
 #include "math/transform.h"
@@ -64,7 +64,7 @@ float sParticleBaseSize = 0.4f;
 // NTSC-U/C: 0x003afc2c
 float sParticleMultiplierBaseSize = 0.7f;
 // NTSC-U/C: 0x0043b6e0
-std::vector<float> sLineEnergyFalloff;
+Polynomial sLineEnergyFalloff;
 // Alternate spans round the number of points to the nearest and down, which spreads the rounding.
 // NTSC-U/C: 0x00400f10
 const float kPointBias[] = {0.0f, 0.4999f};
@@ -119,7 +119,7 @@ void TnlConnectorBeam::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxT
     FindConfigArray(pSection, pDefaultSection, "gem_energy_model", &pValue, true);
     sEnergyModel = ObjectToInterpolator(pValue->Array(1));
     FindConfigArray(pSection, pDefaultSection, "line_energy_falloff", &pValue, true);
-    LoadFloatList(sLineEnergyFalloff, pValue);
+    sLineEnergyFalloff.Load(pValue);
 
     float flWidth = 0.04f;
     FindConfigFloat(pSection, pDefaultSection, "particle_base_size", &sParticleBaseSize, true);
@@ -358,7 +358,7 @@ void TnlConnectorBeam::Pulse(float flTick) {
     }
     mPulseTick = flTick;
     mEnergy = mEnergyLevel;
-    const float flRate = EvalPolynomial(sLineEnergyFalloff, mEnergyLevel);
+    const float flRate = sLineEnergyFalloff.Eval(mEnergyLevel);
     mDecayRate = (kMinDecayRate < flRate) ? flRate : kMinDecayRate;
 }
 

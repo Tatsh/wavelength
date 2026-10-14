@@ -2,6 +2,28 @@
 
 #include "app/msgsink.h"
 
+/** Keys KeyboardKeyMsg reports for keys without a character. */
+enum KeyboardKeyCode {
+    kKeyNone = 0,            /*!< No key. */
+    kKeyCapsLock = 0x122,    /*!< Caps Lock. */
+    kKeyNumLock = 0x123,     /*!< Num Lock. */
+    kKeyScrollLock = 0x124,  /*!< Scroll Lock. */
+    kKeyPrintScreen = 0x12c, /*!< Print Screen. */
+    kKeyPause = 0x12d,       /*!< Pause. */
+    kKeyEscape = 0x12e,      /*!< Escape. */
+    kKeyInsert = 0x136,      /*!< Insert. */
+    kKeyDelete = 0x137,      /*!< Delete. */
+    kKeyHome = 0x138,        /*!< Home. */
+    kKeyEnd = 0x139,         /*!< End. */
+    kKeyPageUp = 0x13a,      /*!< Page Up. */
+    kKeyPageDown = 0x13b,    /*!< Page Down. */
+    kKeyLeft = 0x140,        /*!< The left arrow. */
+    kKeyRight = 0x141,       /*!< The right arrow. */
+    kKeyUp = 0x142,          /*!< The up arrow. */
+    kKeyDown = 0x143,        /*!< The down arrow. */
+    kKeyF1 = 0x191           /*!< F1, the first of the twelve function keys. */
+};
+
 /**
  * Start the USB keyboard library and set up keyboard 0.
  *

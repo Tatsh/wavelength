@@ -3,11 +3,13 @@ set(WAVELENGTH_GFX_SRCS
     beamparams.cpp
     camslide.cpp
     constructo.cpp
-    floatlist.cpp
+    freestylus.cpp
     gemerasefx.cpp
     gfxarena.cpp
     gfxconfig.cpp
     gfxmanager.cpp
+    gfxtunnel.cpp
+    gfxtunnelpanel.cpp
     gfxutil.cpp
     gsdoublebuffer.cpp
     meshgroup.cpp
@@ -16,26 +18,38 @@ set(WAVELENGTH_GFX_SRCS
     particlearms.cpp
     particlearmsassembly.cpp
     playercamfx.cpp
+    polynomial.cpp
     quadraticapproach.cpp
     ship.cpp
     shipflyin.cpp
     spotlightfx.cpp
     spritegroup.cpp
     substepparticles.cpp
+    tnlactivator.cpp
+    tnlblurs.cpp
+    tnlcatcher.cpp
     tnlconnectorbeam.cpp
     tnlcripfx.cpp
     tnlcursor.cpp
     tnldivider.cpp
+    tnlfire.cpp
     tnlflashfx.cpp
+    tnlfreestyle.cpp
     tnlgem.cpp
     tnlgemcapfx.cpp
     tnlgems.cpp
     tnlgeom.cpp
+    tnlgrid.cpp
+    tnlplayer.cpp
+    tnlsabretrail.cpp
     tnlseeker.cpp
+    tnlslowdownfx.cpp
     tnlstreakgemfx.cpp
     tnltrackfx.cpp
     tnltrackrange.cpp
-    tnlwave.cpp)
+    tnlwave.cpp
+    tnlwinshell.cpp
+    vortex.cpp)
 
 # The VU microprograms and the DMA chains that upload them. The DVP assembler builds them. It ships
 # with the SDK beside the Emotion Engine compiler.
