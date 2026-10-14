@@ -1,7 +1,10 @@
 #pragma once
 
+#include <list>
+
 #include "app/msgsink.h"
 #include "game/campaign.h"
+#include "netflow/netreporemix.h"
 #include "os/string.h"
 
 /**
@@ -13,6 +16,14 @@
  */
 class NetLobby {
 public:
+    /**
+     * Construct a service with no receiver.
+     *
+     * Inline.
+     */
+    NetLobby() : mSink(nullptr) {
+    }
+
     /** Release the service. */
     virtual ~NetLobby();
 
@@ -161,10 +172,8 @@ public:
      *
      * @param pSink The sink that receives the result.
      * @param nChatroomId The identifier of the room.
-     * @ghidraAddress NTSC-U/C: 0x00260238
-     * @ghidraAddress PAL: 0x00269318
      */
-    virtual void JoinChatroom(MsgSink *pSink, int nChatroomId);
+    virtual void JoinChatroom(MsgSink *pSink, int nChatroomId) = 0;
 
     /**
      * Start creating a chat room and joining it.
@@ -213,17 +222,17 @@ public:
      * Start listing the files of the repository.
      *
      * @param pSink The receiver of the FileListMsg.
-     * @param nOwn Non-zero to list only the files of the local player.
+     * @param nRemixes Non-zero to list only the uploaded remixes.
      */
-    virtual void RequestFiles(MsgSink *pSink, int nOwn) = 0;
+    virtual void RequestFiles(MsgSink *pSink, int nRemixes) = 0;
 
     /**
-     * Start uploading the remix directory to the repository.
+     * Start uploading the remix directory to the repository, in place of the stored directory.
      *
      * @param pSink The receiver of the RepoRemixStatusMsg.
-     * @param pszName The name of the remix.
+     * @param pRemixes The remixes of the directory.
      */
-    virtual void UploadDirectory(MsgSink *pSink, const char *pszName) = 0;
+    virtual void UploadDirectory(MsgSink *pSink, std::list<NetRepoRemix> *pRemixes) = 0;
 
     /**
      * Start deleting a file of the repository.

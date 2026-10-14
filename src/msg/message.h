@@ -176,3 +176,27 @@ public:
      */
     static Message *NewMessage(int nType);
 };
+
+/**
+ * Write a message as its 16-bit identity and then its payload through saveGuts().
+ *
+ * @param stream The stream.
+ * @param pMsg The message.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0029d030
+ * @ghidraAddress PAL: 0x002a6cf8
+ */
+BinStream &operator<<(BinStream &stream, Message *pMsg);
+
+/**
+ * Read a message operator<<() wrote, constructing it through the factory list.
+ *
+ * An identity that has no factory produces no message and a debug report.
+ *
+ * @param stream The stream.
+ * @param pMsg Receives the new message, or null.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x0029d0b8
+ * @ghidraAddress PAL: 0x002a6d80
+ */
+BinStream &operator>>(BinStream &stream, Message *&pMsg);

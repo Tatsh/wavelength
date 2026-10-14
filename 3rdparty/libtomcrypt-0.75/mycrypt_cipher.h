@@ -327,6 +327,7 @@ extern int ofb_decrypt(const unsigned char *ct, unsigned char *pt, unsigned long
 #ifdef CBC
 extern int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
                      int keylen, int num_rounds, symmetric_CBC *cbc);
+extern int cbc_setiv(int cipher, const unsigned char *IV, symmetric_CBC *cbc);
 extern int cbc_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_CBC *cbc);
 extern int cbc_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_CBC *cbc);
 #endif

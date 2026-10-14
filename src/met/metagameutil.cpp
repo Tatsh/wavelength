@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "game/avatarcam.h"
+#include "game/avatar.h"
 #include "os/locale.h"
 #include "rnd/cam.h"
 #include "rnd/manager.h"
@@ -218,10 +218,10 @@ void DrawAvatarOnMesh(AvatarPartSet *pAvatar, Rnd::Mesh *pMesh) {
 
     float fNear;
     float fFar;
-    GetAvatarDepthRange(&fNear, &fFar);
-    SetAvatarDepthRange(kAvatarOnMeshNear, kAvatarOnMeshFar);
+    Avatar::GetDepthRange(&fNear, &fFar);
+    Avatar::SetDepthRange(kAvatarOnMeshNear, kAvatarOnMeshFar);
     pAvatar->Render(&rect);
-    SetAvatarDepthRange(fNear, fFar);
+    Avatar::SetDepthRange(fNear, fFar);
 }
 
 const char *FormatGenreTempo(const SongEntry &song, const RemixInfo *pInfo) {

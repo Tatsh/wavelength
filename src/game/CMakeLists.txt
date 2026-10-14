@@ -3,6 +3,7 @@ set(WAVELENGTH_GAME_SRCS
     animatetoaction.cpp
     animchildaction.cpp
     animcondition.cpp
+    avatar.cpp
     avatarbodyanimateaction.cpp
     avatargemcatchaction.cpp
     avatarinstrumentaction.cpp
@@ -44,6 +45,7 @@ set(WAVELENGTH_GAME_SRCS
     fxmgr.cpp
     game.cpp
     gameconfig.cpp
+    gamedb.cpp
     gamelogic.cpp
     gametrackselector.cpp
     generateaction.cpp

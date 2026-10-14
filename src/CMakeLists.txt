@@ -53,8 +53,8 @@ foreach(SUBSYSTEM ${WAVELENGTH_SUBSYSTEMS})
   list(APPEND WAVELENGTH_LIBRARIES wavelength_${SUBSYSTEM})
 endforeach()
 
-# The Sony sample archive lives under sce/ee rather than with the game subsystems.
-list(APPEND WAVELENGTH_LIBRARIES wavelength_ezmpeg)
+# The Sony sample archives live under sce/ee rather than with the game subsystems.
+list(APPEND WAVELENGTH_LIBRARIES wavelength_ezmpeg wavelength_eznet)
 
 # The Sony library reconstructions live under sce/ee with the sample.
 list(APPEND WAVELENGTH_LIBRARIES wavelength_sonylibs)

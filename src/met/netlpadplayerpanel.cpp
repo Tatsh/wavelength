@@ -128,7 +128,7 @@ void NetLPadPlayerPanel::ShowPlayer(NetLaunchpadPlayer *pPlayer) {
     UIComponent *pNet = FindComponent(kNetComponent, false);
     const String connection(GetConnectionTypeName(pPlayer->mPlayer.mConnectionType));
     pNet->SetText(FormatString(TheLocale.Localize(kNetToken, true), connection.c_str()));
-    const char *pszColor = GetPlayerColorName(pPlayer->mDifficulty);
+    const char *pszColor = GetPlayerColorName(pPlayer->mColor);
     Rnd::Mesh *pColor = FindObject<Rnd::Mesh>(kColorMesh);
     pColor->SetMat(FindColorMaterial(pszColor));
 }

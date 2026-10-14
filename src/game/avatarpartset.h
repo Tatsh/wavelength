@@ -2,8 +2,9 @@
 
 #include <vector>
 
-#include "game/avatarplayer.h"
+#include "game/avatar.h"
 #include "math/color.h"
+#include "os/binstream.h"
 #include "rnd/cam.h"
 #include "rnd/tex.h"
 #include "script/dataarray.h"
@@ -17,7 +18,7 @@
  * choices, and the torso part also has an `emblem` array with another `types` array. The set
  * records a choice as its index in the `types` array, less one, and a colour as three bytes.
  *
- * While the set shows, it borrows an AvatarPlayer that draws it. Every change returns the player.
+ * While the set shows, it borrows an Avatar that draws it. Every change returns the avatar.
  */
 class AvatarPartSet {
 public:
@@ -41,12 +42,32 @@ public:
     };
 
     /**
-     * Prepare the avatar players and find the `parts` array.
+     * Prepare the avatars and find the `parts` array.
      *
      * @ghidraAddress NTSC-U/C: 0x002718a0
      * @ghidraAddress PAL: 0x0027b450
      */
     static void Init();
+
+    /**
+     * Delete the avatars.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00271908
+     * @ghidraAddress PAL: 0x0027b4b8
+     */
+    static void Terminate();
+
+    /**
+     * Advance the avatars to a time once the time changes, and take each avatar back from a set
+     * that has not drawn it for more than one frame.
+     *
+     * The name is inferred.
+     *
+     * @param fTime The time in milliseconds.
+     * @ghidraAddress NTSC-U/C: 0x00271928
+     * @ghidraAddress PAL: 0x0027b4d8
+     */
+    static void Poll(float fTime);
 
     /**
      * List the choices of a part.
@@ -211,6 +232,26 @@ public:
     void ReleasePlayer();
 
     /**
+     * Write the choices and the colours to the packets of a session.
+     *
+     * The name is inferred.
+     *
+     * @param stream The stream.
+     * @ghidraAddress NTSC-U/C: 0x00272808
+     */
+    void Save(BinStream &stream) const;
+
+    /**
+     * Read the choices and the colours Save() wrote.
+     *
+     * The name is inferred.
+     *
+     * @param stream The stream.
+     * @ghidraAddress NTSC-U/C: 0x00272938
+     */
+    void Load(BinStream &stream);
+
+    /**
      * Apply the pending parts to the avatar player once their files have loaded.
      *
      * The name is inferred.
@@ -319,7 +360,7 @@ public:
     unsigned char mVersion;        /*!< The format of the set, 1 once loaded or constructed. */
     PartSetting mParts[kNumParts]; /*!< The choice and colour of each part. +0x01 */
     unsigned char mEmblem;         /*!< The emblem of the torso, an index as in mParts. +0x21 */
-    AvatarPlayer *mPlayer;         /*!< The avatar player that draws the set, or null. +0x24 */
+    Avatar *mPlayer;               /*!< The avatar that draws the set, or null. +0x24 */
     int mFrame;                    /*!< The frame Render() last drew the set in. */
     int mPending;                  /*!< Non-zero while the player has parts to apply. */
     const char *mBaseAnim;         /*!< The animation the player plays, or null. */

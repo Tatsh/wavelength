@@ -1,5 +1,7 @@
 #pragma once
 
+#include <librtmedius.h>
+
 #include "app/msgsink.h"
 #include "msg/message.h"
 
@@ -57,7 +59,54 @@ public:
      */
     static bool Send(int nChannel, int nRecipient, const char *pszText, int nEcho);
 
-    int mReserved04;     // +0x04, not yet identified.
+    /**
+     * Send a line of chat to one account only.
+     *
+     * The online session exchanges its key through the line. The name is inferred.
+     *
+     * @param nChannel The channel.
+     * @param nAccountId The account that receives the line.
+     * @param pszText The text.
+     * @ghidraAddress NTSC-U/C: 0x00252580
+     * @ghidraAddress PAL: 0x0025af28
+     */
+    static void SendPrivate(int nChannel, int nAccountId, const char *pszText);
+
+    /**
+     * Forget every registered sink.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00252d58
+     * @ghidraAddress PAL: 0x0025b700
+     */
+    static void ClearHandlers();
+
+    /**
+     * Deliver a line of chat from the lobby server to the sink of its channel.
+     *
+     * The lobby client calls the member. The name is inferred.
+     *
+     * @param nConnection The connection.
+     * @param nType The kind of response.
+     * @param nSize The size of the line.
+     * @param pMessage The line.
+     * @ghidraAddress NTSC-U/C: 0x00252dd0
+     * @ghidraAddress PAL: 0x0025b778
+     */
+    static void
+    OnLobbyChat(int nConnection, int nType, int nSize, const rtMediusChatMessage *pMessage);
+
+    /**
+     * Write the channel and the text.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x002691b8
+     * @ghidraAddress PAL: 0x00272dc0
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
+    int mAccountId;      /*!< The sender's account identifier. */
     int mPlayer;         /*!< The sender's identifier in the session, or -2 for none. */
     const char *mText;   /*!< The text. */
     const char *mSender; /*!< The sender's name. */

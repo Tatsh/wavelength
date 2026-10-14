@@ -9,8 +9,8 @@
  * The online session a console hosts or joins, from its launchpad to the end of the song.
  *
  * The RTTI includes the class name. LaunchpadRT derives from it and from MsgSink, and its
- * constructor stores the one instance in TheNetLaunchpad. Only the table slots its callers here
- * use are declared.
+ * constructor stores the one instance in TheNetLaunchpad. The vtable is at `0x003d4850`. The
+ * members of slots 7 to 11 have inline bodies, and the other members are pure.
  */
 class NetLaunchpad {
 public:
@@ -39,11 +39,11 @@ public:
     virtual void NotifyLoaded() = 0;
 
     /**
-     * Vtable slot 4. Report whether this console joined the session rather than hosting it.
+     * Vtable slot 4. Report the identifier of this console in the session.
      *
-     * LaunchpadRT reports its word at `+0xac`. The name is inferred.
+     * The host is 0, and a guest is non-zero. The name is inferred.
      *
-     * @return Non-zero for a guest.
+     * @return The identifier.
      */
     virtual int IsGuest() = 0;
 
@@ -66,38 +66,49 @@ public:
     virtual std::list<NetLaunchpadPlayer> *GetPlayers() = 0;
 
     /**
-     * Vtable slot 7. Report that the host finished editing the remix of the game.
+     * Vtable slot 7. Publish the settings of the game the host changed.
      *
-     * LaunchpadRT does nothing. The name is inferred.
+     * The default does nothing. The name is inferred.
      */
-    virtual void EndEdit() = 0;
+    virtual void EndEdit() {
+    }
 
     /**
      * Vtable slot 8. Offer the remix of the game to the guests.
      *
-     * LaunchpadRT refuses. The name is inferred.
+     * The default refuses. The name is inferred.
      *
      * @return Whether the offer started.
      */
-    virtual bool ShareRemix() = 0;
+    virtual bool ShareRemix() {
+        return false;
+    }
 
     /**
      * Vtable slot 9. Start the song of the session on every console.
      *
-     * LaunchpadRT does nothing and reports zero. The name is inferred.
+     * The default does nothing and reports zero. The name is inferred.
      *
-     * @return Zero in LaunchpadRT.
+     * @return Non-zero when the song starts.
      */
-    virtual int Launch() = 0;
+    virtual int Launch() {
+        return 0;
+    }
 
     /**
      * Vtable slot 10. Remove a guest from the session.
      *
-     * LaunchpadRT does nothing. The name is inferred.
+     * The default does nothing. The name is inferred.
      *
      * @param nPlayer The guest.
      */
-    virtual void BootPlayer(int nPlayer) = 0;
+    virtual void BootPlayer(int nPlayer) {
+        (void)nPlayer;
+    }
+
+    /** Vtable slot 11. Release the session. */
+    virtual ~NetLaunchpad() {
+    }
 };
 
 /**

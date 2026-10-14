@@ -16,6 +16,16 @@ public:
     static constexpr int kInternetDown = -91;
 
     /**
+     * Construct a message.
+     *
+     * Inline.
+     *
+     * @param nError The error code of the network library.
+     */
+    explicit LobbyConnectionLostMsg(int nError) : mError(nError) {
+    }
+
+    /**
      * Produce a heap copy of this message.
      *
      * @return The copy.

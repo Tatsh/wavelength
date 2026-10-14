@@ -1741,7 +1741,7 @@ bool Metagame::OnLoadGame([[maybe_unused]] Message *pMsg) {
     std::list<NetLaunchpadPlayer> *pPlayers = TheNetLaunchpad->GetPlayers();
     for (const auto &player : *pPlayers) {
         if (player.mId == TheNetLaunchpad->IsGuest()) {
-            TheGameDb->AddPlayer(kLocalPlayer, &profile, player.mId, player.mDifficulty);
+            TheGameDb->AddPlayer(kLocalPlayer, &profile, player.mId, player.mColor);
             break;
         }
     }
@@ -1752,7 +1752,7 @@ bool Metagame::OnLoadGame([[maybe_unused]] Message *pMsg) {
         Campaign other;
         other.mName = player.mPlayer.mName.c_str();
         other.mAvatar = player.mPlayer.mAvatar;
-        TheGameDb->AddPlayer(kRemotePlayer, &other, player.mId, player.mDifficulty);
+        TheGameDb->AddPlayer(kRemotePlayer, &other, player.mId, player.mColor);
     }
 
     if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {

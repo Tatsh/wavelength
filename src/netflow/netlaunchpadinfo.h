@@ -1,6 +1,7 @@
 #pragma once
 
 #include "netflow/netgameparams.h"
+#include "os/prnstream.h"
 
 /**
  * The description of one online session that the lobby lists.
@@ -24,3 +25,14 @@ struct NetLaunchpadInfo {
         kStatusFull = 2, /*!< The session has no room. */
     };
 };
+
+/**
+ * Write a session as its identifier, settings, player count, status, and connection.
+ *
+ * @param stream The stream.
+ * @param launchpad The session.
+ * @return The stream.
+ * @ghidraAddress NTSC-U/C: 0x00268208
+ * @ghidraAddress PAL: 0x00271ee0
+ */
+PrnStream &operator<<(PrnStream &stream, const NetLaunchpadInfo &launchpad);

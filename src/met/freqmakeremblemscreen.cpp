@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "game/avatarcam.h"
+#include "game/avatar.h"
 #include "game/avatarpartset.h"
 #include "game/gamedb.h"
 #include "os/joypad.h"
@@ -36,7 +36,7 @@ void FreqMakerEmblemScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         mIndex = static_cast<int>(mEmblems.size()) - 1;
     }
 
-    SetAvatarCam("emblems");
+    Avatar::SetCamera("emblems");
     UIPanel *pPanel = TheUI.FindPanel("f_maker_e", false);
     mPartButton = dynamic_cast<UIButton *>(pPanel->FindComponent("part", false));
     mPartButton->SetText(TheLocale.Localize(mEmblems[mIndex], true));
@@ -46,7 +46,7 @@ void FreqMakerEmblemScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void FreqMakerEmblemScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
-    SetAvatarCam("f_maker");
+    Avatar::SetCamera("f_maker");
 }
 
 const char *FreqMakerEmblemScreen::Title() {

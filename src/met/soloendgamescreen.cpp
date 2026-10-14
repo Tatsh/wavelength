@@ -2,8 +2,8 @@
 
 #include <string.h>
 
+#include "game/avatar.h"
 #include "game/avatarpartset.h"
-#include "game/avatarplayer.h"
 #include "game/campaign.h"
 #include "game/gamedb.h"
 #include "game/songentry.h"
@@ -146,5 +146,5 @@ void SoloEndGameScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
     dynamic_cast<Rnd::Movie *>(Rnd::TheManager.Find("freq_winner.mov"))
         ->SetFrame(TheGameDb->mSongTick);
-    AvatarPlayer::PollAll(fTime);
+    Avatar::Poll(fTime);
 }

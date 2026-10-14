@@ -1,6 +1,6 @@
 #include "met/avatarpanel.h"
 
-#include "game/avatarcam.h"
+#include "game/avatar.h"
 #include "met/metagameutil.h"
 #include "os/joypad.h"
 #include "os/string.h"
@@ -51,7 +51,7 @@ void AvatarPanel::Draw() {
             const JoypadStick &stick = JoypadGetState(kSpinPad)->mSticks[kSpinStick];
             mSpinX += (stick.mX - mSpinX) / kSpinEasing;
             mSpinY += (stick.mY - mSpinY) / kSpinEasing;
-            SetAvatarViewAngles(0.0f, mSpinX * kSpinTurnScale);
+            Avatar::SetViewAngles(0.0f, mSpinX * kSpinTurnScale);
         }
         DrawAvatarOnMesh(mAvatar, mFreqMesh);
     }
@@ -60,7 +60,7 @@ void AvatarPanel::Draw() {
 
 void AvatarPanel::Enter(bool bForce, float fTime) {
     FreqPanel::Enter(bForce, fTime);
-    SetAvatarViewAngles(0.0f, 0.0f);
+    Avatar::SetViewAngles(0.0f, 0.0f);
     mSpinX = 0.0f;
     mSpinY = 0.0f;
 }
@@ -71,7 +71,7 @@ void AvatarPanel::Exit(bool bForce, float fTime) {
         mAvatar->ReleasePlayer();
         mAvatar = nullptr;
     }
-    SetAvatarViewAngles(0.0f, 0.0f);
+    Avatar::SetViewAngles(0.0f, 0.0f);
     mSpinX = 0.0f;
     mSpinY = 0.0f;
 }

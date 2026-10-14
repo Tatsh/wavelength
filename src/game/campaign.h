@@ -82,12 +82,12 @@ public:
      * Report which songs of a group the player has cleared at a skill level.
      *
      * @param nSkillLevel The skill level.
-     * @param nGroup The group.
+     * @param pszGroup The group, the name of an arena.
      * @param pCleared Receives one flag for each song of the group.
      * @ghidraAddress NTSC-U/C: 0x00279cb8
      * @ghidraAddress PAL: 0x00283748
      */
-    void GetClearedSongs(int nSkillLevel, int nGroup, std::vector<bool> *pCleared);
+    void GetClearedSongs(int nSkillLevel, const char *pszGroup, std::vector<bool> *pCleared);
 
     /**
      * Report whether the player has unlocked an item at a skill level.
@@ -177,6 +177,16 @@ public:
      * @ghidraAddress PAL: 0x00284ad0
      */
     static void UnlockAllParts();
+
+    /**
+     * Count every song as unlocked for every profile, by setting g_dwUnlockAllSongs.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027b030
+     * @ghidraAddress PAL: 0x00284ac0
+     */
+    static void UnlockAllSongs();
 
     /**
      * Construct a profile with the default settings.

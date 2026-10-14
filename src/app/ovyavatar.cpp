@@ -1,7 +1,7 @@
 #include "app/ovyavatar.h"
 
 #include "app/overlay.h"
-#include "game/avatarcam.h"
+#include "game/avatar.h"
 #include "game/gamedb.h"
 #include "game/gameoptions.h"
 #include "gfx/gfxmanager.h"
@@ -100,16 +100,16 @@ OvyAvatar::OvyAvatar(int nPlayer, int nIndex, Rnd::View *pHudView)
         mNameColor.a = kLeaderLabelAlpha;
     }
     Reset();
-    SetAvatarDepthRange(sDepthRange.x, sDepthRange.y);
+    Avatar::SetDepthRange(sDepthRange.x, sDepthRange.y);
 }
 
 OvyAvatar::~OvyAvatar() {
     ClearAllAnims(mAvatar);
-    SnapAvatarCam("bust");
+    Avatar::SnapCamera("bust");
 }
 
 void OvyAvatar::UpdateShown() {
-    const bool bAvatarShown = IsAvatarShown();
+    const bool bAvatarShown = Avatar::IsShown();
     HideablePanel::Show(mWanted != 0 && bAvatarShown);
 }
 
@@ -170,7 +170,7 @@ void OvyAvatar::SetPlayer(int nPlayer) {
 }
 
 void OvyAvatar::SetFreqSize(int nFreqSize) {
-    SetAvatarFreqSize(nFreqSize, false);
+    Avatar::SetFreqSize(nFreqSize, false);
     UpdateShown();
 }
 

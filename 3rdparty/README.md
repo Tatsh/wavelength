@@ -39,9 +39,11 @@ from the project site's 2003 capture as the nearest release.
 
 The game uses Blowfish, CBC mode, the cipher registry, and `zeromem()`. The imported files are
 `blowfish.c`, `cbc.c`, `crypt.c`, `mem.c`, the `mycrypt*.h` headers, `authors`, `changes`, and
-`crypt.tex`, the manual that records the licence terms. Two differences from 0.70 are known. 0.71
-replaced the error strings with error codes, and the game's `cbc_encrypt()` applies the IV before it
-checks the cipher index. The port is to make these files match 0.70 in place.
+`crypt.tex`, the manual that records the licence terms. Three differences from 0.70 are known. 0.71
+replaced the error strings with error codes, the game's `cbc_encrypt()` applies the IV before it
+checks the cipher index, and the game's `cbc.c` has a routine between `cbc_start()` and
+`cbc_encrypt()` that copies a new IV into a CBC state. The port is to make these files match 0.70 in
+place. The port adds that routine to `cbc.c` as `cbc_setiv()`, a name that is inferred.
 
 ## Verification
 

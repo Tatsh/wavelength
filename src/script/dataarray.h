@@ -112,6 +112,19 @@ public:
     static DataArray *Read(const char *pszPath, BinStream *pStream);
 
     /**
+     * Parse script text into an array, never the compiled form Read() prefers on the disc.
+     *
+     * The name is inferred.
+     *
+     * @param pszPath The file to read when pStream is null, and the name errors give.
+     * @param pStream The stream to read, or null to read the file.
+     * @return The array, with one reference.
+     * @ghidraAddress NTSC-U/C: 0x002980d8
+     * @ghidraAddress PAL: 0x002a1ce0
+     */
+    static DataArray *ReadText(const char *pszPath, BinStream *pStream);
+
+    /**
      * Find the child array whose first node is a tag.
      *
      * @param pszTag The tag.

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "game/avatarcam.h"
+#include "game/avatar.h"
 #include "game/avatarpartset.h"
 #include "game/gamedb.h"
 #include "met/metagame.h"
@@ -252,7 +252,7 @@ void FreqMakerPartConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         mIndex = static_cast<int>(mChoices.size()) - 1;
     }
 
-    SetAvatarCam(pszButton);
+    Avatar::SetCamera(pszButton);
     mPartButton = dynamic_cast<UIButton *>(TheUI.FindComponent("f_maker_s", "part", false));
     mPartButton->SetText(TheLocale.Localize(mChoices[mIndex], true));
     TheUI.FindPanel("f_maker_s", false)->SetFocus(mPartButton, kPadNone);
@@ -281,7 +281,7 @@ void FreqMakerPartConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 void FreqMakerPartConfigScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
     FindMesh("f_maker_s_panel.mesh")->SetMat(FindMat("panel_sub.mat"));
-    SetAvatarCam("f_maker");
+    Avatar::SetCamera("f_maker");
 }
 
 void FreqMakerPartConfigScreen::ShowPartHelp() {

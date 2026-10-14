@@ -100,6 +100,16 @@ public:
     PrnStream &operator<<(unsigned int nValue);
 
     /**
+     * Write a short number in decimal.
+     *
+     * @param nValue The value.
+     * @return The stream.
+     * @ghidraAddress NTSC-U/C: 0x0029e268
+     * @ghidraAddress PAL: 0x002a7f30
+     */
+    PrnStream &operator<<(short nValue);
+
+    /**
      * Write a number with two decimals.
      *
      * @param fValue The value.

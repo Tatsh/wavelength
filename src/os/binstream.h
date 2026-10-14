@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <vector>
 
 #include "os/string.h"
@@ -203,6 +204,48 @@ BinStream &operator<<(BinStream &stream, const std::vector<T> &elements) {
  */
 template <typename T>
 BinStream &operator>>(BinStream &stream, std::vector<T> &elements) {
+    int nSize;
+    stream.ReadEndian(&nSize, sizeof(nSize));
+    elements.resize(nSize, T());
+    for (T &element : elements) {
+        stream >> element;
+    }
+    return stream;
+}
+
+/**
+ * Write a list as its element count followed by each element.
+ *
+ * Each element type has its own instance. The NetRepoRemix instance is at `0x0039a878`.
+ *
+ * @tparam T The type of the elements.
+ * @param stream The stream to write to.
+ * @param elements The elements.
+ * @return The stream.
+ */
+template <typename T>
+BinStream &operator<<(BinStream &stream, const std::list<T> &elements) {
+    const int nSize = static_cast<int>(elements.size());
+    stream.WriteEndian(&nSize, sizeof(nSize));
+    for (const T &element : elements) {
+        stream << element;
+    }
+    return stream;
+}
+
+/**
+ * Read a list the list writer wrote.
+ *
+ * The list is resized to the count with default elements, which are then read in place. Each
+ * element type has its own instance. The NetRepoRemix instance is at `0x0039aaf8`.
+ *
+ * @tparam T The type of the elements.
+ * @param stream The stream to read from.
+ * @param elements Receives the elements.
+ * @return The stream.
+ */
+template <typename T>
+BinStream &operator>>(BinStream &stream, std::list<T> &elements) {
     int nSize;
     stream.ReadEndian(&nSize, sizeof(nSize));
     elements.resize(nSize, T());

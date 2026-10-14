@@ -30,6 +30,16 @@ int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key,
    return CRYPT_OK;
 }
 
+int cbc_setiv(int cipher, const unsigned char *IV, symmetric_CBC *cbc)
+{
+   int x;
+
+   for (x = 0; x < cbc->blocklen; x++) {
+       cbc->IV[x] = IV[x];
+   }
+   return CRYPT_OK;
+}
+
 int cbc_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_CBC *cbc)
 {
    int x, errno;

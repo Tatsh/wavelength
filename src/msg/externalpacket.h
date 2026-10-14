@@ -21,4 +21,15 @@ public:
     explicit ExternalPacket(unsigned char nFlags = 0, int nReceiver = kAllPeers)
         : Packet(nFlags, nReceiver) {
     }
+
+    /**
+     * Report that a received packet goes to the sink of TheNetTransport.
+     *
+     * Inline. Every derived vtable addresses a shared copy that returns 1.
+     *
+     * @return kRouteTransport.
+     */
+    int Route() override {
+        return kRouteTransport;
+    }
 };

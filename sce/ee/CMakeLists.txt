@@ -4,6 +4,13 @@ add_library(wavelength_ezmpeg STATIC ${WAVELENGTH_EZMPEG_SRCS})
 target_link_libraries(wavelength_ezmpeg PRIVATE wavelength_common)
 target_include_directories(wavelength_ezmpeg PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include")
 
+# The clients of the eznetcnf and eznetctl servers from Sony's network samples.
+set(WAVELENGTH_EZNET_SRCS sample/libezctl.c sample/libeznetcnf.c)
+
+add_library(wavelength_eznet STATIC ${WAVELENGTH_EZNET_SRCS})
+target_link_libraries(wavelength_eznet PRIVATE wavelength_common)
+target_include_directories(wavelength_eznet PUBLIC "${CMAKE_SOURCE_DIR}/sce/ee/include")
+
 # The Sony library reconstructions. Each unit lists its sources explicitly, as the subsystem
 # libraries do. libdma is absent until its routines are recovered.
 set(WAVELENGTH_SONYLIB_SRCS

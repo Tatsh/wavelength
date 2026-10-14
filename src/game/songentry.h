@@ -1,12 +1,14 @@
 #pragma once
 
+#include <vector>
+
 #include "script/dataarray.h"
 
 /**
  * View of the entry of one song in the "songs" section of the configuration.
  *
  * The class is not polymorphic and has no RTTI. The name is inferred. The object is the one
- * pointer to the entry. Only the members GameLogic uses are declared.
+ * pointer to the entry.
  */
 class SongEntry {
 public:
@@ -36,6 +38,15 @@ public:
      * @ghidraAddress PAL: 0x002867f8
      */
     const char *GetName() const;
+
+    /**
+     * Report the number of the song, the `id` of the entry.
+     *
+     * @return The number.
+     * @ghidraAddress NTSC-U/C: 0x0027ce40
+     * @ghidraAddress PAL: 0x00286758
+     */
+    int GetId() const;
 
     /**
      * Report the localised title of the song. The name is inferred.
@@ -191,6 +202,76 @@ public:
      * @ghidraAddress PAL: 0x002868a8
      */
     const char *GetTitleShort() const;
+
+    /**
+     * Report the `arena_path` of the entry.
+     *
+     * The name is inferred.
+     *
+     * @return The path.
+     * @ghidraAddress NTSC-U/C: 0x0027ce70
+     * @ghidraAddress PAL: 0x00286788
+     */
+    const char *GetArenaPath() const;
+
+    /**
+     * Report whether the song is available at a skill level, which its `skill` sets the lowest
+     * of.
+     *
+     * The name is inferred.
+     *
+     * @param nSkillLevel The skill level.
+     * @return Whether `skill` is at most nSkillLevel.
+     * @ghidraAddress NTSC-U/C: 0x0027d358
+     * @ghidraAddress PAL: 0x00286c70
+     */
+    bool IsAvailable(int nSkillLevel) const;
+
+    /**
+     * Report whether a duel can play the song, from its `duel`.
+     *
+     * The name is inferred.
+     *
+     * @return Whether `duel` is non-zero.
+     * @ghidraAddress NTSC-U/C: 0x0027d3a0
+     * @ghidraAddress PAL: 0x00286cb8
+     */
+    bool IsDuel() const;
+
+    /**
+     * Report whether a remix can be made of the song, from its `not_remix`.
+     *
+     * The name is inferred.
+     *
+     * @return Whether `not_remix` is zero.
+     * @ghidraAddress NTSC-U/C: 0x0027d3d8
+     * @ghidraAddress PAL: 0x00286cf0
+     */
+    bool IsRemixable() const;
+
+    /**
+     * Report whether a game can play the song, from its `not_game`.
+     *
+     * The name is inferred.
+     *
+     * @return Whether `not_game` is zero.
+     * @ghidraAddress NTSC-U/C: 0x0027d410
+     * @ghidraAddress PAL: 0x00286d28
+     */
+    bool IsGameable() const;
+
+    /**
+     * Find a song in a list by name.
+     *
+     * The name is inferred.
+     *
+     * @param songs The list.
+     * @param pszName The name of the song.
+     * @return The entry of the song, or null when the list does not include it.
+     * @ghidraAddress NTSC-U/C: 0x0027d540
+     * @ghidraAddress PAL: 0x00286e58
+     */
+    static DataArray *Find(const std::vector<SongEntry> &songs, const char *pszName);
 
     DataArray *mData; /*!< The entry. */
 };

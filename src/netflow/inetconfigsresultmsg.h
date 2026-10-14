@@ -51,6 +51,15 @@ public:
      */
     const char *GetName() const override;
 
+    /**
+     * Write the result, and the configurations after a success.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00268970
+     * @ghidraAddress PAL: 0x002725c8
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
     int mResult;                    /*!< The outcome, negative when the search failed. +0x04 */
     std::list<InetConfig> mConfigs; /*!< The configurations found. +0x08 */
 };

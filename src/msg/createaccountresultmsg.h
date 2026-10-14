@@ -2,6 +2,7 @@
 
 #include "msg/message.h"
 #include "netflow/lobbymsgtypes.h"
+#include "os/mem.h"
 
 /**
  * Result of NetLobby::CreateAccount().
@@ -20,11 +21,42 @@ public:
     };
 
     /**
+     * Construct a result.
+     *
+     * Inline.
+     *
+     * @param nResult One of Result, or another negative error.
+     */
+    explicit CreateAccountResultMsg(int nResult) : mResult(nResult) {
+    }
+
+    /**
+     * Allocate a message, billed to the class name.
+     *
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
+     */
+    void *operator new(size_t nSize) {
+        return PoolMemAlloc(static_cast<int>(nSize), "CreateAccountResultMsg", 0);
+    }
+
+    /**
+     * Release a message.
+     *
+     * @param pBlock The block.
+     */
+    void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
+
+    /**
      * Produce a heap copy of this message.
      *
      * @return The copy.
      */
-    Message *Clone() override;
+    Message *Clone() override {
+        return new CreateAccountResultMsg(*this);
+    }
 
     /**
      * Report this message's registered identity.
@@ -43,6 +75,15 @@ public:
     const char *GetName() const override {
         return "CreateAccountResultMsg";
     }
+
+    /**
+     * Write the result.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00268b68
+     * @ghidraAddress PAL: 0x00272770
+     */
+    void PrintExtra(PrnStream &stream) const override;
 
     int mResult; /*!< One of Result, or another negative error. */
 };

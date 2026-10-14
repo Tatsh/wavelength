@@ -626,9 +626,9 @@ void GameLogic::Finish(bool bWon) {
 
     bool bUnlocked = false;
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        const int nGroup = TheGameDb->FindSongGroup();
+        const char *pszGroup = TheGameDb->FindSongGroup();
         std::vector<bool> cleared;
-        TheGameDb->GetProfile(0)->GetClearedSongs(TheGameDb->mSkillLevel, nGroup, &cleared);
+        TheGameDb->GetProfile(0)->GetClearedSongs(TheGameDb->mSkillLevel, pszGroup, &cleared);
         const int nSong = TheGameDb->GetSongIndex();
         SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
         if (bWon && nSong >= 0 && !cleared[nSong] && TheGameDb->mPracticeMode == 0 &&

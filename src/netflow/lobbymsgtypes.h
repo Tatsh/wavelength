@@ -22,6 +22,20 @@ extern int g_nInetConnectResultMsgType;
 extern int g_nInetDisconnectResultMsgType;
 
 /**
+ * Identity that InetDNSLookupResultMsg::Type() reports.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b0b14
+ */
+extern int g_nInetDNSLookupResultMsgType;
+
+/**
+ * Identity that InetCheckConnectionResultMsg::Type() reports.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b0b18
+ */
+extern int g_nInetCheckConnectionResultMsgType;
+
+/**
  * Identity that LobbyConnectionLostMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b1c

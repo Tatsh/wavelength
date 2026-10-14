@@ -10,21 +10,19 @@
  * Connection that carries packets between consoles.
  *
  * The RTTI includes the class name. TransportRT derives from it, and its constructor stores the
- * one instance in TheNetTransport. Only the members its callers here use are declared.
+ * one instance in TheNetTransport. The vtable is at `0x003d6550`. Every member is pure, and the
+ * destructor occupies the last slot.
  */
 class NetTransport {
 public:
     /**
      * Set the sink the received messages go to.
      *
-     * TransportRT's table places the member first. The name is inferred.
+     * The name is inferred.
      *
      * @param pSink The sink, or null.
      */
     virtual void SetSink(MsgSink *pSink) = 0;
-
-    /** Release the transport. */
-    virtual ~NetTransport();
 
     /**
      * Encode a packet and send it to the peers its receiver selects.
@@ -51,6 +49,10 @@ public:
      * @param scores The score of each player.
      */
     virtual void ReportScores(const std::vector<NetGameScore> &scores) = 0;
+
+    /** Release the transport. */
+    virtual ~NetTransport() {
+    }
 };
 
 /**

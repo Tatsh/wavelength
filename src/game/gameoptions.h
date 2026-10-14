@@ -72,11 +72,32 @@ public:
      */
     void ApplyOutputMode();
 
+    /**
+     * Record today as the day of the last remix upload, and mark the settings modified.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0027ca50
+     * @ghidraAddress PAL: 0x002863c0
+     */
+    void RecordUpload();
+
+    /**
+     * Report whether the last remix upload was today.
+     *
+     * The name is inferred.
+     *
+     * @return Whether the day, month, and year of mDate match the clock.
+     * @ghidraAddress NTSC-U/C: 0x0027ca80
+     * @ghidraAddress PAL: 0x002863f0
+     */
+    bool UploadedToday() const;
+
     int mFreqSize;      /*!< The size of the display of the tracks, one of FreqSize. */
     int mOutputMode;    /*!< The speaker output mode. */
     int mHelpText;      /*!< Whether hints are shown, as a word of 0 or 1. */
     int mForceFeedback; /*!< Whether controller vibration is on. */
-    DateTime mDate;     /*!< The clock reading the settings record. */
+    DateTime mDate;     /*!< The clock reading of the last remix upload. */
     int mModified;      /*!< Whether the settings changed since they were saved. */
 };
 

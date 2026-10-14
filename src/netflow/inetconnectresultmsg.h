@@ -2,6 +2,7 @@
 
 #include "msg/message.h"
 #include "netflow/lobbymsgtypes.h"
+#include "os/string.h"
 
 /**
  * Message that reports the outcome of NetInet::Connect().
@@ -21,5 +22,14 @@ public:
         kResultTimeout = -94,            /*!< The connection timed out. */
     };
 
-    int mResult; /*!< The outcome, one of Result or another failure. */
+    /**
+     * Write the result, and the error text when it is not empty.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress NTSC-U/C: 0x00268a10
+     */
+    void PrintExtra(PrnStream &stream) const override;
+
+    int mResult;   /*!< The outcome, one of Result or another failure. */
+    String mError; /*!< The text of the error, or empty. */
 };

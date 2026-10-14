@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "game/avatarcam.h"
+#include "game/avatar.h"
 #include "game/avatarpartset.h"
 #include "game/gamedb.h"
 #include "math/color.h"
@@ -91,7 +91,7 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         }
     }
 
-    SetAvatarCam("f_maker");
+    Avatar::SetCamera("f_maker");
     FreqScreen::Enter(pPrevScreen, fTime);
     FindAvatarPanel()->SetAvatar(TheGameDb->GetAvatar(0));
     FindMesh("f_maker_panel.mesh")->SetMat(FindMat("panel_sub_hi.mat"));
@@ -170,7 +170,7 @@ void FreqMakerMainScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
     FindMesh("f_maker_panel.mesh")->SetMat(FindMat("panel_sub.mat"));
     if (pNextScreen == nullptr || dynamic_cast<FreqMakerCustomScreen *>(pNextScreen) == nullptr) {
-        SetAvatarCam("bust");
+        Avatar::SetCamera("bust");
     }
 }
 

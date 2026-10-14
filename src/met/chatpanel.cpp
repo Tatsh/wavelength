@@ -283,7 +283,7 @@ void ChatPanel::ShowLine(const char *pszSender, const char *pszText, int nPlayer
         int nColor = kNoColor;
         for (const auto &player : *TheNetLaunchpad->GetPlayers()) {
             if (player.mId == nPlayer) {
-                nColor = player.mDifficulty;
+                nColor = player.mColor;
             }
         }
         mRows[mRow].first->SetFont(FindLucidaFont(GetPlayerColorName(nColor)));

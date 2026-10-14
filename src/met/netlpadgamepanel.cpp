@@ -93,7 +93,7 @@ void NetLPadGamePanel::ShowPlayers(const char *pszPanel, std::list<NetLaunchpadP
 
             Rnd::Mesh *pColor =
                 FindObject<Rnd::Mesh>(FormatString(kColorMeshFormat, pszPanel, nRow));
-            const char *pszColor = GetPlayerColorName(player->mDifficulty);
+            const char *pszColor = GetPlayerColorName(player->mColor);
             pColor->SetShowing(true);
             pColor->SetMat(FindColorMaterial(pszColor));
         }

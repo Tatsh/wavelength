@@ -1,6 +1,6 @@
 #include "game/avatarpartset.h"
 
-#include "game/avatarplayer.h"
+#include "game/avatar.h"
 #include "os/debug.h"
 #include "os/system.h"
 #include "script/symbol.h"
@@ -54,9 +54,13 @@ void ListTypes(DataArray *pTypes, std::vector<const char *> *pList) {
 DataArray *AvatarPartSet::sParts = nullptr;
 
 void AvatarPartSet::Init() {
-    AvatarPlayer::Init();
+    Avatar::Init();
     sParts =
         SystemConfig()->FindArray("db", true)->FindArray("avatar", true)->FindArray("parts", true);
+}
+
+void AvatarPartSet::Terminate() {
+    Avatar::Terminate();
 }
 
 void AvatarPartSet::GetPartTypes(int nPart, std::vector<const char *> *pTypes) {

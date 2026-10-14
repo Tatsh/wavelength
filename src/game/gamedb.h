@@ -6,6 +6,7 @@
 #include "game/campaign.h"
 #include "game/gameoptions.h"
 #include "game/inputmap.h"
+#include "game/playerinfo.h"
 #include "game/remixinfo.h"
 #include "game/songentry.h"
 #include "netflow/netgameparams.h"
@@ -19,9 +20,8 @@
  *
  * The class is not polymorphic and has no RTTI. The name is inferred from the "db" section of the
  * configuration Init() reads. The one instance is the function-local static of shared(), and
- * TheGameDb addresses it. Only the members the recovered routines use are declared.
- * WorldMgr::Load() reads the rule set from `+0x50`, and WorldMgr::UpdateTime() writes the two
- * timing floats at `+0x158` and `+0x15c`.
+ * TheGameDb addresses it. WorldMgr::Load() reads the rule set from `+0x50`, and
+ * WorldMgr::UpdateTime() writes the two timing floats at `+0x158` and `+0x15c`.
  */
 class GameDb {
 public:
@@ -187,18 +187,18 @@ public:
     void SetRemixName(const char *pszName);
 
     /**
-     * List the songs the players have unlocked at a skill level, without the songs of type 3 that
-     * the first profile has not unlocked.
+     * List the songs of every arena but the tutorial that are available at a skill level, without
+     * the songs of type 3 that the first profile has not unlocked.
      *
      * The name is inferred.
      *
      * @param pSongs The list to fill.
      * @param nSkillLevel The skill level, or 4 for any.
-     * @param bFirstPlayerOnly Whether only the first player's unlocks count.
+     * @param bDuelOnly Whether only the songs a duel can play are listed.
      * @ghidraAddress NTSC-U/C: 0x0026d8a0
      * @ghidraAddress PAL: 0x00277440
      */
-    void GetHostSongs(std::vector<SongEntry> *pSongs, int nSkillLevel, bool bFirstPlayerOnly);
+    void GetHostSongs(std::vector<SongEntry> *pSongs, int nSkillLevel, bool bDuelOnly);
 
     /**
      * Report the number of controllers the players on this console use.
@@ -352,18 +352,18 @@ public:
     void SetWon(bool bWon);
 
     /**
-     * Report the group of songs mSong belongs to.
+     * Report the arena whose songs include mSong, the tutorial included.
      *
-     * @return The group, or 0 when no group lists the song.
+     * @return The name of the arena, or null when no arena lists the song.
      * @ghidraAddress NTSC-U/C: 0x0026efb0
      * @ghidraAddress PAL: 0x00278b50
      */
-    int FindSongGroup();
+    const char *FindSongGroup();
 
     /**
-     * Report the index of mSong within its group, from the digit that ends its name.
+     * Report the index of the arena of the game, from the digit that ends mArena, less one.
      *
-     * @return The index, or -1 for a song outside the groups.
+     * @return The index, or -1 when mSong has a `type` or mArena is shorter than two characters.
      * @ghidraAddress NTSC-U/C: 0x0026f1d0
      * @ghidraAddress PAL: 0x00278d70
      */
@@ -388,17 +388,16 @@ public:
     void SetOptions(const GameOptions *pOptions);
 
     /**
-     * Pass two camera values to the renderer of the players' avatars.
+     * Set the depth range of the camera the avatars share, with Avatar::SetDepthRange().
      *
-     * The metagame passes 0.05 and 1 as the front end starts. The meaning of the two values is
-     * not yet recovered, and the name is inferred.
+     * The metagame passes 0.05 and 1 as the front end starts. The name is inferred.
      *
-     * @param fFirst The first value.
-     * @param fSecond The second value.
+     * @param fNear The near end of the range.
+     * @param fFar The far end of the range.
      * @ghidraAddress NTSC-U/C: 0x0026f4e8
      * @ghidraAddress PAL: 0x00279088
      */
-    void SetAvatarCameraParams(float fFirst, float fSecond);
+    void SetAvatarCameraParams(float fNear, float fFar);
 
     /**
      * Unlock every song.
@@ -459,12 +458,12 @@ public:
      *
      * @param bLocal Non-zero for the player of this console, which also counts it as local.
      * @param pProfile The profile to copy.
-     * @param nId The player's identifier in the session.
-     * @param nDifficulty The difficulty the player chose, -1 for none.
+     * @param nSlot The value GetPlayerSlot() reports for the player.
+     * @param nNetOrder The value GetPlayerNetOrder() reports for the player.
      * @ghidraAddress NTSC-U/C: 0x0026e790
      * @ghidraAddress PAL: 0x00278330
      */
-    void AddPlayer(int bLocal, const Campaign *pProfile, int nId, int nDifficulty);
+    void AddPlayer(int bLocal, const Campaign *pProfile, int nSlot, int nNetOrder);
 
     /**
      * Set mSkillLevel.
@@ -773,36 +772,134 @@ public:
                           int nSkillLevel,
                           bool bFirstPlayerOnly);
 
-    int mReserved00;         // +0x00, the player list. The element type is not yet recovered.
-    int mReserved04;         // +0x04, the player list.
-    int mReserved08;         // +0x08, the player list.
-    int mReserved0C;         // +0x0c, the player list.
+    /**
+     * List the songs of every arena but the tutorial that are available at a skill level.
+     *
+     * @param pSongs The list to fill.
+     * @param bDuelOnly Whether only the songs a duel can play are listed.
+     * @param nSkillLevel The skill level, or kSkillAny.
+     * @ghidraAddress NTSC-U/C: 0x0026d580
+     * @ghidraAddress PAL: 0x00277120
+     */
+    void GetAllSongs(std::vector<SongEntry> *pSongs, bool bDuelOnly, int nSkillLevel);
+
+    /**
+     * Report whether an arena lists a song.
+     *
+     * @param pszSong The song.
+     * @return Whether an arena lists the song.
+     * @ghidraAddress NTSC-U/C: 0x0026df10
+     * @ghidraAddress PAL: 0x00277ab0
+     */
+    bool HasSong(const char *pszSong);
+
+    /**
+     * Find the song whose `id` matches.
+     *
+     * @param ppSong Receives the entry of the song found in the last arena that lists one.
+     * @param nId The identifier.
+     * @return Whether a song matched.
+     * @ghidraAddress NTSC-U/C: 0x0026df90
+     * @ghidraAddress PAL: 0x00277b30
+     */
+    bool FindSongById(DataArray **ppSong, int nId);
+
+    /**
+     * Report the flag SetRemixActive() sets.
+     *
+     * @return The flag.
+     * @ghidraAddress NTSC-U/C: 0x0026e190
+     * @ghidraAddress PAL: 0x00277d30
+     */
+    int GetRemixActive() const;
+
+    std::vector<PlayerInfo *> mPlayers; /*!< The players, which the database allocates. */
     String mSong;            /*!< The song of the game, the "song" entry of the "db" section. */
-    int mLoadRemix;          /*!< `load_remix`, whether a saved remix is played. +0x24 */
-    int mRemixReadOnly;      /*!< Non-zero when the remix may not be saved over. +0x28 */
-    String mRemixName;       /*!< The name of the saved remix played. +0x2c */
-    int mPracticeMode;       /*!< `practice_mode`. +0x40 */
-    int mTutorial;           /*!< Whether the tutorial is played. +0x44 */
-    int mSkillLevel;         /*!< `skill_level`. +0x48 */
-    int mPowerupLevel;       /*!< Index into GameConfig::mPowerupProbMulti. +0x4c */
-    int mRuleSet;            /*!< `rule_set`, one of RuleSet. +0x50 */
-    int mCommunity;          /*!< `community`, one of Community. +0x54 */
-    int mMaxPlayers;         /*!< The number of players an online session takes. +0x58 */
-    String mArena;           /*!< The arena of the game. +0x5c */
-    int mReserved70[6];      // +0x70, not yet recovered.
-    int mWinSequence;        /*!< Whether the campaign win sequence runs. +0x88 */
-    int mReserved8C[2];      // +0x8c, not yet recovered.
-    float mEnergized;        /*!< The value of SetEnergized(). +0x94 */
-    int mFullMixBars;        /*!< The value of SetFullMixBars(). +0x98 */
-    int mBestStreak;         /*!< The value of SetBestStreak(). +0x9c */
-    float mProgress;         /*!< The value of SetProgress(). +0xa0 */
-    int mReservedA4[2];      // +0xa4, not yet recovered.
+    int mLoadRemix;          /*!< `load_remix`, whether a saved remix is played. */
+    int mRemixReadOnly;      /*!< Non-zero when the remix may not be saved over. */
+    String mRemixName;       /*!< The name of the saved remix played. */
+    int mPracticeMode;       /*!< `practice_mode`. */
+    int mTutorial;           /*!< Whether the tutorial is played. */
+    int mSkillLevel;         /*!< `skill_level`. */
+    int mPowerupLevel;       /*!< Index into GameConfig::mPowerupProbMulti. */
+    int mRuleSet;            /*!< `rule_set`, one of RuleSet. */
+    int mCommunity;          /*!< `community`, one of Community. */
+    int mMaxPlayers;         /*!< The number of players an online session takes. */
+    String mArena;           /*!< The arena of the game. */
+    int mNumPads;            /*!< The number of local players, which GetNumPads() reports. */
+    String mDemo;            /*!< The demo recording played, or empty. */
+    int mWinSequence;        /*!< Whether the campaign win sequence runs. */
+    int mUnlockAll;          /*!< Non-zero once UnlockAllSongs() ran, which lifts every lock. */
+    int mWon;                /*!< The value of SetWon(). */
+    float mEnergized;        /*!< The value of SetEnergized(). */
+    int mFullMixBars;        /*!< The value of SetFullMixBars(). */
+    int mBestStreak;         /*!< The value of SetBestStreak(). */
+    float mProgress;         /*!< The value of SetProgress(). */
+    int mReservedA4;         // +0xa4, cleared with the results and not yet identified.
+    DataArray *mSongs;       /*!< The `songs` array of the "db" section, one entry per arena. */
     char *mRemixBuffer;      /*!< The packed data of the remix, which SetRemixBuffer() replaces. */
-    int mReservedB0[41];     // +0xb0, not yet recovered.
+    RemixInfo mRemixInfo;    /*!< The description of the remix played, which SetRemix() copies. */
+    int mRemixActive;        /*!< The flag SetRemixActive() sets, 1 at construction. */
     int mNetRemixEnded;      /*!< Whether the remix of an online game has ended. */
-    float mSongTick;         /*!< The running world's position in ticks. +0x158 */
-    float mSongTime;         /*!< The running world's position on its song clock. +0x15c */
-    Scheduler mSfxScheduler; /*!< The scheduler the interface sounds play on. +0x160 */
+    float mSongTick;         /*!< The running world's position in ticks. */
+    float mSongTime;         /*!< The running world's position on its song clock. */
+    Scheduler mSfxScheduler; /*!< The scheduler the interface sounds play on. */
+    GameOptions mOptions;    /*!< The settings of the game options screen. */
+
+private:
+    /**
+     * Read an integer of a section of the configuration.
+     *
+     * @param pszName The name of the integer.
+     * @param pData The section.
+     * @param bFail Treat a missing integer as an error.
+     * @return The integer, or 0 when it is missing.
+     * @ghidraAddress NTSC-U/C: 0x0026ce20
+     * @ghidraAddress PAL: 0x002769c0
+     */
+    static int FindInt(const char *pszName, DataArray *pData, bool bFail);
+
+    /**
+     * Read a symbol of a section of the configuration.
+     *
+     * @param pszName The name of the symbol.
+     * @param pData The section.
+     * @param bFail Treat a missing symbol as an error.
+     * @return The symbol, or null when it is missing.
+     * @ghidraAddress NTSC-U/C: 0x0026ce58
+     * @ghidraAddress PAL: 0x002769f8
+     */
+    static const char *FindSymbol(const char *pszName, DataArray *pData, bool bFail);
+
+    /**
+     * Report the colour symbol of a player slot.
+     *
+     * @param nSlot The slot, 0 to 3.
+     * @return `green`, `purple`, `red`, or `yellow`, or null with a warning for another slot.
+     * @ghidraAddress NTSC-U/C: 0x0026ce90
+     * @ghidraAddress PAL: 0x00276a30
+     */
+    static const char *GetSlotColor(int nSlot);
+
+    /**
+     * Report the skill levels an unlock query tests.
+     *
+     * @param nSkillLevel The skill level of the query, or kSkillAny.
+     * @param bExact Whether only nSkillLevel counts, rather than every level up to it.
+     * @param pnFirst Receives the first level tested.
+     * @param pnEnd Receives the level after the last one tested.
+     * @ghidraAddress NTSC-U/C: 0x0026cf20
+     * @ghidraAddress PAL: 0x00276ac0
+     */
+    static void GetSkillRange(int nSkillLevel, bool bExact, int *pnFirst, int *pnEnd);
+
+    /**
+     * Rank the players by mScore, 0 for the best. Equal scores share a rank.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0026ed00
+     * @ghidraAddress PAL: 0x002788a0
+     */
+    void RankPlayers();
 };
 
 /**
