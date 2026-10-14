@@ -228,11 +228,11 @@ typedef struct {
     char messageId[RT_MEDIUS_MESSAGE_ID_SIZE];
 } MediusUploadPartRequest;
 
-int rtMediusOnNotice(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnErrorMessage(int connection, int type, int sender, rtDmeMessage *message) {
     const rtMediusResponse *response = (const rtMediusResponse *)message;
 
-    if (g_pfnMediusNoticeCallback != NULL) {
-        g_pfnMediusNoticeCallback(connection, type, sender, response);
+    if (g_pfnMediusErrorMessageCallback != NULL) {
+        g_pfnMediusErrorMessageCallback(connection, type, sender, response);
     }
     return kMessage074Size;
 }
@@ -379,11 +379,14 @@ int rtMediusOnAccountUpdateStats(int connection, int type, int sender, rtDmeMess
     return kMessage017Size;
 }
 
-int rtMediusOnUpdateStatsResponse(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnAccountUpdateStatsResponse(int connection,
+                                         int type,
+                                         int sender,
+                                         rtDmeMessage *message) {
     const rtMediusResponse *response = (const rtMediusResponse *)message;
 
-    if (g_pfnMediusUpdateStatsCallback != NULL) {
-        g_pfnMediusUpdateStatsCallback(connection, type, sender, response);
+    if (g_pfnMediusAccountUpdateStatsCallback != NULL) {
+        g_pfnMediusAccountUpdateStatsCallback(connection, type, sender, response);
     }
     return kMessage018Size;
 }
@@ -507,12 +510,15 @@ int rtMediusOnLobbyWorldPlayerList(int connection, int type, int sender, rtDmeMe
     return kMessage045Size;
 }
 
-int rtMediusOnChannelPlayersResponse(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnLobbyWorldPlayerListResponse(int connection,
+                                           int type,
+                                           int sender,
+                                           rtDmeMessage *message) {
     const rtMediusChannelPlayersResponse *response =
         (const rtMediusChannelPlayersResponse *)message;
 
-    if (g_pfnMediusChannelPlayersCallback != NULL) {
-        g_pfnMediusChannelPlayersCallback(connection, type, sender, response);
+    if (g_pfnMediusLobbyWorldPlayerListCallback != NULL) {
+        g_pfnMediusLobbyWorldPlayerListCallback(connection, type, sender, response);
     }
     return kMessage046Size;
 }
@@ -521,11 +527,14 @@ int rtMediusOnGameWorldPlayerList(int connection, int type, int sender, rtDmeMes
     return kMessage047Size;
 }
 
-int rtMediusOnGamePlayersResponse(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnGameWorldPlayerListResponse(int connection,
+                                          int type,
+                                          int sender,
+                                          rtDmeMessage *message) {
     const rtMediusGamePlayersResponse *response = (const rtMediusGamePlayersResponse *)message;
 
-    if (g_pfnMediusGamePlayersCallback != NULL) {
-        g_pfnMediusGamePlayersCallback(connection, type, sender, response);
+    if (g_pfnMediusGameWorldPlayerListCallback != NULL) {
+        g_pfnMediusGameWorldPlayerListCallback(connection, type, sender, response);
     }
     return kMessage048Size;
 }
@@ -669,11 +678,15 @@ int rtMediusOnAddToBuddyListConfirmationResponse(int connection,
     return kMessage068Size;
 }
 
-int rtMediusOnInitHandler04(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnAddToBuddyListFwdConfirmationRequest0(int connection,
+                                                    int type,
+                                                    int sender,
+                                                    rtDmeMessage *message) {
     const rtMediusResponse *response = (const rtMediusResponse *)message;
 
-    if (g_pfnMediusInitHandler04Callback != NULL) {
-        g_pfnMediusInitHandler04Callback(connection, type, sender, response);
+    if (g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback != NULL) {
+        g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback(
+            connection, type, sender, response);
     }
     return kMessage069Size;
 }
@@ -731,11 +744,11 @@ int rtMediusOnPolicy(int connection, int type, int sender, rtDmeMessage *message
     return kMessage071Size;
 }
 
-int rtMediusOnGetPolicyResponse(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnPolicyResponse(int connection, int type, int sender, rtDmeMessage *message) {
     const rtMediusPolicyResponse *response = (const rtMediusPolicyResponse *)message;
 
-    if (g_pfnMediusGetPolicyCallback != NULL) {
-        g_pfnMediusGetPolicyCallback(connection, type, sender, response);
+    if (g_pfnMediusPolicyCallback != NULL) {
+        g_pfnMediusPolicyCallback(connection, type, sender, response);
     }
     return kMessage072Size;
 }
@@ -768,14 +781,14 @@ int rtMediusOnSetGameListFilter0(int connection, int type, int sender, rtDmeMess
     return kMessage078Size;
 }
 
-int rtMediusOnSetGameListFilterResponse(int connection,
-                                        int type,
-                                        int sender,
-                                        rtDmeMessage *message) {
+int rtMediusOnSetGameListFilterResponse0(int connection,
+                                         int type,
+                                         int sender,
+                                         rtDmeMessage *message) {
     const rtMediusResponse *response = (const rtMediusResponse *)message;
 
-    if (g_pfnMediusSetGameListFilterCallback != NULL) {
-        g_pfnMediusSetGameListFilterCallback(connection, type, sender, response);
+    if (g_pfnMediusSetGameListFilterResponse0Callback != NULL) {
+        g_pfnMediusSetGameListFilterResponse0Callback(connection, type, sender, response);
     }
     return kMessage079Size;
 }
@@ -1393,11 +1406,14 @@ int rtMediusOnTextFilterResponse(int connection, int type, int sender, rtDmeMess
     return kMessage153Size;
 }
 
-int rtMediusOnInitHandler0C(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnServerReassignGameMediusWorldID(int connection,
+                                              int type,
+                                              int sender,
+                                              rtDmeMessage *message) {
     const rtMediusResponse *response = (const rtMediusResponse *)message;
 
-    if (g_pfnMediusInitHandler0CCallback != NULL) {
-        g_pfnMediusInitHandler0CCallback(connection, type, sender, response);
+    if (g_pfnMediusServerReassignGameMediusWorldIDCallback != NULL) {
+        g_pfnMediusServerReassignGameMediusWorldIDCallback(connection, type, sender, response);
     }
     return kMessage154Size;
 }
@@ -1572,11 +1588,11 @@ int rtMediusOnFileListFiles(int connection, int type, int sender, rtDmeMessage *
     return kMessage178Size;
 }
 
-int rtMediusOnFileListResponse(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnFileListFilesResponse(int connection, int type, int sender, rtDmeMessage *message) {
     const rtMediusFileResponse *response = (const rtMediusFileResponse *)message;
 
-    if (g_pfnMediusFileListCallback != NULL) {
-        g_pfnMediusFileListCallback(connection, type, sender, response);
+    if (g_pfnMediusFileListFilesCallback != NULL) {
+        g_pfnMediusFileListFilesCallback(connection, type, sender, response);
     }
     return kMessage179Size;
 }
@@ -1705,7 +1721,7 @@ int rtMediusOnUniverseStatusListResponse(int connection,
     return kMessage202Size;
 }
 
-int rtMediusOnFileUploadRequest(int connection, int type, int sender, rtDmeMessage *message) {
+int rtMediusOnFileUploadServerReq(int connection, int type, int sender, rtDmeMessage *message) {
     const MediusUploadPartRequest *request = (const MediusUploadPartRequest *)message;
     rtMediusFileTransferResponse part;
 
@@ -1729,8 +1745,8 @@ int rtMediusOnFileUploadRequest(int connection, int type, int sender, rtDmeMessa
     if (g_nMediusConnection < 0) {
         part.status = kUploadStatusOffline;
     }
-    if (g_pfnMediusFileUploadCallback != NULL) {
-        g_pfnMediusFileUploadCallback(connection, type, sender, &part);
+    if (g_pfnMediusFileUploadServerReqCallback != NULL) {
+        g_pfnMediusFileUploadServerReqCallback(connection, type, sender, &part);
     }
     rtDmeSendClassMessage(RT_DME_SEND_GUARANTEED,
                           g_nMediusConnection,

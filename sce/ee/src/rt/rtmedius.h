@@ -33,10 +33,10 @@ extern int g_nMediusUploadSize;
 extern int g_nMediusFileUploadPartType;
 
 /** The receiver of the parts of an upload, or null. NTSC-U/C: 0x004357f8. */
-extern rtMediusFileTransferCallback g_pfnMediusFileUploadCallback;
+extern rtMediusFileTransferCallback g_pfnMediusFileUploadServerReqCallback;
 
 /** The receiver of message 74, or null. NTSC-U/C: 0x003c25f0. */
-extern rtMediusCallback g_pfnMediusNoticeCallback;
+extern rtMediusCallback g_pfnMediusErrorMessageCallback;
 
 /** The receiver of message 4, or null. NTSC-U/C: 0x003c25f4. */
 extern rtMediusSessionBeginCallback g_pfnMediusSessionBeginCallback;
@@ -63,7 +63,7 @@ extern rtMediusCallback g_pfnMediusAccountUpdateProfileCallback;
 extern rtMediusCallback g_pfnMediusChangePasswordCallback;
 
 /** The receiver of message 18, or null. NTSC-U/C: 0x003c2614. */
-extern rtMediusCallback g_pfnMediusUpdateStatsCallback;
+extern rtMediusCallback g_pfnMediusAccountUpdateStatsCallback;
 
 /** The receiver of message 26, or null. NTSC-U/C: 0x003c2620. */
 extern rtMediusLoginCallback g_pfnMediusAnonymousLoginCallback;
@@ -90,10 +90,10 @@ extern rtMediusGameListCallback g_pfnMediusGameListCallback;
 extern rtMediusChannelListCallback g_pfnMediusChannelListCallback;
 
 /** The receiver of message 46, or null. NTSC-U/C: 0x003c2624. */
-extern rtMediusChannelPlayersCallback g_pfnMediusChannelPlayersCallback;
+extern rtMediusChannelPlayersCallback g_pfnMediusLobbyWorldPlayerListCallback;
 
 /** The receiver of message 48, or null. NTSC-U/C: 0x003c2628. */
-extern rtMediusGamePlayersCallback g_pfnMediusGamePlayersCallback;
+extern rtMediusGamePlayersCallback g_pfnMediusGameWorldPlayerListCallback;
 
 /** The receiver of message 50, or null. NTSC-U/C: 0x003c2648. */
 extern rtMediusPlayerInfoCallback g_pfnMediusPlayerInfoCallback;
@@ -126,7 +126,7 @@ extern rtMediusCallback g_pfnMediusRemoveFromBuddyListCallback;
 extern rtMediusCallback g_pfnMediusAddToBuddyListConfirmationCallback;
 
 /** The receiver of message 69, or null. NTSC-U/C: 0x003c266c. */
-extern rtMediusCallback g_pfnMediusInitHandler04Callback;
+extern rtMediusCallback g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback;
 
 /** The receiver of message 193, or null. NTSC-U/C: 0x003c2674. */
 extern rtMediusCallback g_pfnMediusGetIgnoreListCallback;
@@ -138,13 +138,13 @@ extern rtMediusCallback g_pfnMediusAddToIgnoreListCallback;
 extern rtMediusCallback g_pfnMediusRemoveFromIgnoreListCallback;
 
 /** The receiver of message 72, or null. NTSC-U/C: 0x003c2680. */
-extern rtMediusPolicyCallback g_pfnMediusGetPolicyCallback;
+extern rtMediusPolicyCallback g_pfnMediusPolicyCallback;
 
 /** The receiver of message 77, or null. NTSC-U/C: 0x003c2684. */
 extern rtMediusAnnouncementCallback g_pfnMediusGetAnnouncementsCallback;
 
 /** The receiver of message 79, or null. NTSC-U/C: 0x003c2688. */
-extern rtMediusCallback g_pfnMediusSetGameListFilterCallback;
+extern rtMediusCallback g_pfnMediusSetGameListFilterResponse0Callback;
 
 /** The receiver of message 81, or null. NTSC-U/C: 0x003c268c. */
 extern rtMediusCallback g_pfnMediusClearGameListFilterCallback;
@@ -270,7 +270,7 @@ extern rtMediusCallback g_pfnMediusChatToggleCallback;
 extern rtMediusTextFilterCallback g_pfnMediusTextFilterCallback;
 
 /** The receiver of message 154, or null. NTSC-U/C: 0x003c26c0. */
-extern rtMediusCallback g_pfnMediusInitHandler0CCallback;
+extern rtMediusCallback g_pfnMediusServerReassignGameMediusWorldIDCallback;
 
 /** The receiver of message 156, or null. NTSC-U/C: 0x003c26c4. */
 extern rtMediusCallback g_pfnMediusGetTotalGamesCallback;
@@ -306,7 +306,7 @@ extern rtMediusCallback g_pfnMediusFileDownloadStreamCallback;
 extern rtMediusFileDeleteCallback g_pfnMediusFileDeleteCallback;
 
 /** The receiver of message 179, or null. NTSC-U/C: 0x00435814. */
-extern rtMediusFileCallback g_pfnMediusFileListCallback;
+extern rtMediusFileCallback g_pfnMediusFileListFilesCallback;
 
 /** The receiver of message 181, or null. NTSC-U/C: 0x00435818. */
 extern rtMediusCallback g_pfnMediusFileUpdateAttributesCallback;
@@ -348,7 +348,7 @@ void rtMediusSetServerAddress(const rtNetAddress *address);
  *
  * @ghidraAddress NTSC-U/C: 0x00301938
  */
-int rtMediusOnNotice(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnErrorMessage(int connection, int type, int sender, rtDmeMessage *message);
 
 /**
  * Receive message 0 of the lobby server and report the size of its record.
@@ -511,7 +511,10 @@ int rtMediusOnAccountUpdateStats(int connection, int type, int sender, rtDmeMess
  *
  * @ghidraAddress NTSC-U/C: 0x00301c10
  */
-int rtMediusOnUpdateStatsResponse(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnAccountUpdateStatsResponse(int connection,
+                                         int type,
+                                         int sender,
+                                         rtDmeMessage *message);
 
 /**
  * Receive message 25 of the lobby server and report the size of its record.
@@ -651,7 +654,10 @@ int rtMediusOnLobbyWorldPlayerList(int connection, int type, int sender, rtDmeMe
  *
  * @ghidraAddress NTSC-U/C: 0x00301e18
  */
-int rtMediusOnChannelPlayersResponse(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnLobbyWorldPlayerListResponse(int connection,
+                                           int type,
+                                           int sender,
+                                           rtDmeMessage *message);
 
 /**
  * Receive message 47 of the lobby server and report the size of its record.
@@ -665,7 +671,10 @@ int rtMediusOnGameWorldPlayerList(int connection, int type, int sender, rtDmeMes
  *
  * @ghidraAddress NTSC-U/C: 0x00301e50
  */
-int rtMediusOnGamePlayersResponse(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnGameWorldPlayerListResponse(int connection,
+                                          int type,
+                                          int sender,
+                                          rtDmeMessage *message);
 
 /**
  * Receive message 49 of the lobby server and report the size of its record.
@@ -821,7 +830,10 @@ int rtMediusOnAddToBuddyListConfirmationResponse(int connection,
  *
  * @ghidraAddress NTSC-U/C: 0x003020b0
  */
-int rtMediusOnInitHandler04(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnAddToBuddyListFwdConfirmationRequest0(int connection,
+                                                    int type,
+                                                    int sender,
+                                                    rtDmeMessage *message);
 
 /**
  * Receive message 70 of the lobby server and report the size of its record.
@@ -890,7 +902,7 @@ int rtMediusOnPolicy(int connection, int type, int sender, rtDmeMessage *message
  *
  * @ghidraAddress NTSC-U/C: 0x00302198
  */
-int rtMediusOnGetPolicyResponse(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnPolicyResponse(int connection, int type, int sender, rtDmeMessage *message);
 
 /**
  * Receive message 73 of the lobby server and report the size of its record.
@@ -932,10 +944,10 @@ int rtMediusOnSetGameListFilter0(int connection, int type, int sender, rtDmeMess
  *
  * @ghidraAddress NTSC-U/C: 0x00302218
  */
-int rtMediusOnSetGameListFilterResponse(int connection,
-                                        int type,
-                                        int sender,
-                                        rtDmeMessage *message);
+int rtMediusOnSetGameListFilterResponse0(int connection,
+                                         int type,
+                                         int sender,
+                                         rtDmeMessage *message);
 
 /**
  * Receive message 80 of the lobby server and report the size of its record.
@@ -1588,7 +1600,10 @@ int rtMediusOnTextFilterResponse(int connection, int type, int sender, rtDmeMess
  *
  * @ghidraAddress NTSC-U/C: 0x00302b40
  */
-int rtMediusOnInitHandler0C(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnServerReassignGameMediusWorldID(int connection,
+                                              int type,
+                                              int sender,
+                                              rtDmeMessage *message);
 
 /**
  * Receive message 155 of the lobby server and report the size of its record.
@@ -1779,7 +1794,7 @@ int rtMediusOnFileListFiles(int connection, int type, int sender, rtDmeMessage *
  *
  * @ghidraAddress NTSC-U/C: 0x00302f40
  */
-int rtMediusOnFileListResponse(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnFileListFilesResponse(int connection, int type, int sender, rtDmeMessage *message);
 
 /**
  * Receive message 180 of the lobby server and report the size of its record.
@@ -1910,7 +1925,7 @@ int rtMediusOnUniverseStatusListResponse(int connection,
  *
  * @ghidraAddress NTSC-U/C: 0x00302d08
  */
-int rtMediusOnFileUploadRequest(int connection, int type, int sender, rtDmeMessage *message);
+int rtMediusOnFileUploadServerReq(int connection, int type, int sender, rtDmeMessage *message);
 
 #ifdef __cplusplus
 }
