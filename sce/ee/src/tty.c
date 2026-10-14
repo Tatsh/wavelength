@@ -333,6 +333,13 @@ int LibcConsoleIsatty(int nFile) {
     return 1;
 }
 
+int LibcConsoleFstat(int nFile, struct stat *pStat) {
+    (void)nFile;
+    pStat->st_mtime = 0;
+    pStat->st_mode = S_IFCHR;
+    return 0;
+}
+
 void LibcConsoleReset(void) {
     ttyinit = 0;
 }

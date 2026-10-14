@@ -7,8 +7,6 @@
 #include <sifdev.h>
 #include <sifrpc.h>
 
-#include "os/log.h"
-
 // The argument prefix that makes the IOP boot loader load a replacement image.
 static const char kUdnlPrefix[] = "rom0:UDNL ";
 static const char kTooLongFormat[] = "too long parameter '%s'\n";

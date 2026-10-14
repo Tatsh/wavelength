@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/lock.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <eekernel.h>
 #include <libcconsole.h>
@@ -127,6 +129,46 @@ int _getentropy(void *buffer, size_t length) {
 int _fcntl(int fd, int cmd, ...) {
     (void)fd;
     (void)cmd;
+    errno = ENOSYS;
+    return -1;
+}
+
+// The C library's file calls reach the console layer of the kernel library, as the SDK C library's
+// did. That library opened no file, so an open fails.
+int _open(const char *path, int flags, ...) {
+    (void)path;
+    (void)flags;
+    errno = ENOSYS;
+    return -1;
+}
+
+int _close(int fd) {
+    return LibcConsoleClose(fd);
+}
+
+int _read(int fd, void *buffer, size_t length) {
+    return reax(fd, buffer, (int)length);
+}
+
+int _write(int fd, const void *buffer, size_t length) {
+    return writx(fd, buffer, (int)length);
+}
+
+off_t _lseek(int fd, off_t offset, int whence) {
+    return LibcConsoleLseek(fd, (int)offset, whence);
+}
+
+int _isatty(int fd) {
+    return LibcConsoleIsatty(fd);
+}
+
+int _fstat(int fd, struct stat *st) {
+    return LibcConsoleFstat(fd, st);
+}
+
+int _stat(const char *path, struct stat *st) {
+    (void)path;
+    (void)st;
     errno = ENOSYS;
     return -1;
 }

@@ -2,6 +2,7 @@
 #define LIBCCONSOLE_H
 
 #include <stddef.h>
+#include <sys/stat.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,6 +80,19 @@ void *sbrk(ptrdiff_t nIncrement);
  * @ghidraAddress PAL: 0x00383f88
  */
 int LibcConsoleIsatty(int nFile);
+
+/**
+ * Describe a descriptor as a character device.
+ *
+ * Only the mode and the modification time are written. The mode is S_IFCHR and the modification
+ * time is zero.
+ *
+ * @param nFile The descriptor.
+ * @param pStat Receives the description.
+ * @return Always 0.
+ * @ghidraAddress NTSC-U/C: 0x003176a8
+ */
+int LibcConsoleFstat(int nFile, struct stat *pStat);
 
 /**
  * Mark the console closed. The next read or write opens the DECI2 TTY again.

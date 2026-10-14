@@ -143,14 +143,6 @@ int sceDmaDeleteQueueSemaphore(ViBuf *buffer);
 int viBufReset(ViBuf *buffer);
 
 /**
- * Hand the newly buffered sectors to the input DMA after a stall.
- *
- * @param buffer The input record.
- * @return 1, or 0 when the queue is not active.
- */
-int viBufAddDMA(ViBuf *buffer);
-
-/**
  * Stop the input DMA, saving its position.
  *
  * @param buffer The input record.

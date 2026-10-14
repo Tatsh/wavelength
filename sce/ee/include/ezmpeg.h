@@ -232,13 +232,6 @@ void setLoadImageTagsTile(LoadImageTag *tags, void *image, int x, int y, int w, 
  */
 void loadImage(LoadImageTag *tags);
 
-/**
- * Print an error line. The game defines the routine, and the sample units call it.
- *
- * @param pszMessage The message.
- */
-void ErrMessage(char *pszMessage);
-
 #ifdef __cplusplus
 }
 #endif
