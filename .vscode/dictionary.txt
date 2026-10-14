@@ -38,6 +38,7 @@ afxdll
 afxres
 agfxfile
 agiffile
+alalc
 allocatebuffertask
 allocinfo
 ambiently
@@ -298,6 +299,7 @@ dmacnt
 dmadebug
 dmaend
 dmapacket
+dmvector
 docstrings
 dodnstask
 dopenssl
@@ -723,7 +725,6 @@ ltxt
 lucida
 luma
 macroblock
-macroblock's
 macroblocks
 madd
 madda
@@ -750,6 +751,7 @@ maxu
 maxv
 maxx
 mbai
+mbcount
 mbcs
 mccardstatustask
 mccheckremixspaceneededtask
@@ -1014,7 +1016,6 @@ nodefaultlibs
 nodisc
 nolattice
 nologo
-nomacro
 nomemcpy
 noname
 nonexclusive

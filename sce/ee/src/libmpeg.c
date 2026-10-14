@@ -1,1252 +1,355 @@
-#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <eekernel.h>
+#include <eeregs.h>
 #include <eetypes.h>
+#include <libipu.h>
 #include <libmpeg.h>
+#include <libmpeg_mc.h>
 
-#include "os/log.h"
-
-// Layout facts recovered from the disassembly of the routines in this file. The decoder
-// (sceMpeg) lives in the caller and points at the work area through pContext (+0x40). The work
-// area holds seven callback slots (+0x0c), the stream table pointer (+0x44), and the stream
-// count (+0x48), followed by decoder state and the input ring (+0x108).
 enum {
     kAlignMask = 3,
-    kPictureAlignMask = 0x3f,
+    kPictureAlignMask = 63,
     kPhysicalAddressMask = 0x0fffffff,
     kUncachedSegment = 0x20000000,
-    kMaxStreamCallbacks = 0x40,
-    kStreamEntrySize = 0x18,
-    kMinWorkSize = 0x118,
+    kContextSize = 4288,
     kErrorMessageSize = 256,
-    kStreamAllocSize = 0x600,
-    kStreamAllocAlign = 8,
+    kMaxStreamCallbacks = 64,
+    kStreamTableSize = kMaxStreamCallbacks * 24,
+    kStreamTableAlign = 8,
+    kFrameBufferAlign = 64,
     kSlotCount = 7,
-    kTableCount = 9,
-    kPictureCountIntra = 0,
-    kPictureCountPredicted = 1,
-    kPictureCountBidirectional = 2,
-    kPictureCountTypes = 3,
-    kFrameCentreOffsetCount = 3
-};
-
-// One stream entry, 0x18 bytes. The key is compared as eight bytes, the template copies the
-// eight bytes for the stream type, and the callback returns on duplicate registration.
-typedef struct {
-    unsigned long long key;          // Combined key, compared as a pair. +0x00
-    unsigned long long templateBits; // Template for the stream type. +0x08
-    sceMpegCallback callback;        // Stream callback, returned on duplicate registration. +0x10
-    void *data;                      // Stream data. +0x14
-} StreamEntry;
-
-// One callback slot, 8 bytes. Seven slots run from +0x0c to +0x44, where the table pointer
-// sits. Slots two and three start with default callbacks.
-typedef struct {
-    void *callback; // Slot callback. A replacement returns the old callback. +0x00
-    void *data;     // Slot data. +0x04
-} MpegSlot;
-
-// The input ring at +0x108. The base and size bound the buffer while the write pointer doubles
-// as the bump allocator cursor and the commit pointer saves it.
-typedef struct {
-    int mBase;   // Buffer base, set at reset. +0x00
-    int mSize;   // Buffer size, set at reset. +0x04
-    int mWrite;  // Write position, bumped by allocation. +0x08
-    int mCommit; // Committed write position. +0x0c
-} MpegRing;
-
-// The work area behind the decoder context pointer. Reserved members are never read or written.
-typedef struct {
-    int mCompleted;    // Set to 1 when the picture is done and cleared to arm or fail. +0x00
-    int mPictureIndex; // Pictures decoded since the last flush. +0x04
-    int mOutputState;  // Idle, decoding, or shown, and cleared by sceMpegReset(). +0x08
-    MpegSlot mSlots[kSlotCount]; // Callback slots. +0x0c
-    StreamEntry *mStreamTable;   // Stream entries, bump-allocated from the ring. +0x44
-    int mStreamCount;            // Entries used. Duplicates overwrite and still count. +0x48
-    int mReserved4C[9];          // Untouched at creation. +0x4c
-    int mUseDefaultPtsGap; // Set to 1 to interpolate a missing stamp from the default gap. +0x70
-    int mReserved74;       // Untouched at creation. +0x74
-    unsigned long long mDefaultPtsGap; // Stamp ticks per frame for the interpolation. +0x78
-    int mLastPts;    // Stamp of the last output picture, -1 at creation and on drain. +0x80
-    int mReserved84; // Untouched at creation. +0x84
-    unsigned long long mDisplayFieldCount; // Fields the displayed picture occupies. +0x88
-    int mOddGapPictures; // Pictures interpolated with an odd gap, for the rounding. +0x90
-    int mDecodeLimits[kPictureCountTypes]; // Pictures of each type to decode, -1 for all. +0x94
-    int mDecodeCounts[kPictureCountTypes]; // Pictures of each type met so far. +0xa0
-    int mFrameCountBase; // Picture counter when the first picture was shown. +0xac
-    int mConvertColours; // Set to 1 to colour-convert the output, 0 to copy it raw. +0xb0
-    // Copied from the displayed picture. +0xb4
-    int mFrameCentreHorizontalOffset[kFrameCentreOffsetCount];
-    // Copied from the displayed picture. +0xc0
-    int mFrameCentreVerticalOffset[kFrameCentreOffsetCount];
-    int mDisplayHorizontalSize; // Copied from the displayed picture. +0xcc
-    int mDisplayVerticalSize;   // Copied from the displayed picture. +0xd0
-    int mFirstFieldStructure;   // The picture_structure of the sequence's first picture. +0xd4
-    int mPictureAddress;        // Output buffer of the picture under decode. +0xd8
-    int mOutputWidth;           // Output buffer width in pixels, or 0 for a macroblock count. +0xdc
-    int mOutputHeight;      // Output buffer height in pixels, or 0 for a macroblock count. +0xe0
-    int mOutputMacroblocks; // Output buffer capacity in macroblocks. +0xe4
-    // Treated as broken_link and only ever cleared. The purpose is inferred. +0xe8
-    int mForceBrokenLink;
-    int mReservedEC;        // Untouched by the observed code. +0xec
-    long long mPendingPts;  // Pending time stamp, or -1 when there is none. +0xf0
-    int mPendingPtsState;   // Armed, then ready once a picture is output. +0xf8
-    int mFirstFrameBuffer;  // First of three frame buffers carved from the ring per sequence. +0xfc
-    int mSecondFrameBuffer; // +0x100
-    int mThirdFrameBuffer;  // +0x104
-    MpegRing mRing;         // Input ring. +0x108
-} MpegWork;
-
-// One motion compensation job for a kernel, 28 bytes. The source spans two staged macroblock
-// columns and continues into the macroblock below after mRows rows.
-typedef struct {
-    int mDest;        // Prediction output address. +0x00
-    int mShift;       // Byte offset of the reference column within the loaded quadword. +0x04
-    int mRows;        // Rows read before the source crosses into the macroblock below. +0x08
-    int mRowsBelow;   // Rows read from the macroblock below. +0x0c
-    int mStride;      // Source row stride. +0x10
-    int mSourceLeft;  // Source in the left staged column. +0x14
-    int mSourceRight; // Source in the right staged column. +0x18
-} MpegMcDescriptor;
-
-typedef void (*MpegMcKernel)(const MpegMcDescriptor *pDescriptor);
-
-enum {
+    kPictureCount = 9,
+    kFrameCentreOffsetCount = 3,
+    kStreamTypeCount = 10,
+    kMacroblockSize = 384,
+    kMacroblockQuadwords = kMacroblockSize / 16,
     kMcPredictionSlots = 4,
     kMcKernelVariants = 8,
+    kMcStagingSize = 4 * kMacroblockSize,
+    kMcColumnSize = 2 * kMacroblockSize,
+    kMcChromaOffset = 256,
+    kMcChromaOutputOffset = 512,
+    kIpuSpinLimit = 5000,
+    kQuantMatrixQuadwords = 4,
+    kMaxVerticalSize = 2800,
+    kCscChunkMacroblocks = 1023,
+    kCscChunkQuadwords = kCscChunkMacroblocks * 64,
+    kCscChunkBytes = kCscChunkMacroblocks * 1024,
+    kCscDirectLimit = 1024,
+    kToIpuChunkQuadwords = 0xffff,
+    kToIpuChunkBytes = kToIpuChunkQuadwords * 16,
+    kMacroblockToIpuQuadwords = 24,
 };
 
-// One macroblock in flight, 0x140 bytes. Two alternate so the kernels of one macroblock run while
+// Picture types, structures, and the macroblock and motion types of ISO/IEC 13818-2.
+enum {
+    kPictureI = 1,
+    kPictureP = 2,
+    kPictureB = 3,
+    kPictureD = 4,
+    kTopField = 1,
+    kBottomField = 2,
+    kFramePicture = 3,
+    kMbIntra = 1,
+    kMbPattern = 2,
+    kMbMotionBackward = 4,
+    kMbMotionForward = 8,
+    kMbQuant = 16,
+    kMcField = 1,
+    kMcFrame = 2,
+    kMc16x8 = 2,
+    kMcDmv = 3,
+    kMvField = 0,
+    kMvFrame = 1,
+};
+
+// Start codes.
+enum {
+    kPictureStartCode = 0x100,
+    kSliceStartCodeMin = 0x101,
+    kSliceStartCodeCount = 175,
+    kUserDataStartCode = 0x1b2,
+    kSequenceHeaderCode = 0x1b3,
+    kExtensionStartCode = 0x1b5,
+    kSequenceEndCode = 0x1b7,
+    kGroupStartCode = 0x1b8,
+    kProgramEndCode = 0x1b9,
+    kPackStartCode = 0x1ba,
+    kSystemHeaderStartCode = 0x1bb,
+    kPacketStartPrefix = 1,
+    kExtensionIdCount = 11,
+};
+
+// IPU_CMD codes and the fields of IPU_CTRL.
+enum {
+    kIpuCmdBclr = 0x00000000,
+    kIpuCmdBdec = 0x20000000,
+    kIpuCmdVdec = 0x30000000,
+    kIpuCmdFdec = 0x40000000,
+    kIpuCmdSetIqIntra = 0x50000000,
+    kIpuCmdSetIqNonIntra = 0x58000000,
+    kIpuCmdCsc = 0x70000000,
+    kIpuCmdShift = 28,
+    kIpuCmdFdecIndex = 4,
+    kIpuVdecTableShift = 26,
+    kIpuBdecIntraShift = 27,
+    kIpuBdecDcResetShift = 26,
+    kIpuBdecDctTypeShift = 25,
+    kIpuBdecQscShift = 16,
+    kIpuCtrlErrorCode = 0x4000,
+    kIpuCtrlIdpShift = 16,
+    kIpuCtrlIdpMask = 0x30000,
+    kIpuCtrlAlternateScanShift = 20,
+    kIpuCtrlAlternateScan = 0x100000,
+    kIpuCtrlIntraVlcShift = 21,
+    kIpuCtrlIntraVlc = 0x200000,
+    kIpuCtrlQstShift = 22,
+    kIpuCtrlQst = 0x400000,
+    kIpuCtrlMpeg1Shift = 23,
+    kIpuCtrlMpeg1 = 0x800000,
+    kIpuCtrlPctShift = 24,
+    kIpuCtrlPctMask = 0x7000000,
+    kIpuCtrlReset = 0x40000000,
+    kIpuBpPositionMask = 31,
+    kIpuBpByteMask = 7,
+    kIpuTopBits = 32,
+};
+
+// The address bit that selects the scratchpad for a DMA channel.
+static const unsigned int kScratchpadFlag = 0x80000000;
+
+// IPU_CTRL with its busy bit set and its error bit clear.
+static const unsigned int kIpuCtrlBusyOrError = 0x80004000;
+static const unsigned int kIpuCtrlBusy = 0x80000000;
+
+// VDEC tables.
+enum {
+    kVlcMacroblockAddressIncrement = 0,
+    kVlcMacroblockType = 1,
+    kVlcMotionCode = 2,
+    kVlcDmVector = 3,
+    kMbaiStuffing = 34,
+    kMbaiEscape = 35,
+    kMbaiEscapeIncrement = 33,
+    kMbaiStuffingCode = 15,
+};
+
+// DMA channel settings.
+enum {
+    kDmaHoldAll = 0x10000,
+    kChcrStart = 0x100,
+    kChcrFromMemory = 1,
+    kChcrChain = 4,
+    kDmaTagRef = 3,
+    kDmaTagRefe = 0,
+    kDmaTagIdShift = 28,
+    kDStatFromIpu = 8,
+    kDStatToIpu = 16,
+};
+
+// Values of slice() and pictureData() results.
+enum {
+    kSliceDone = 0,
+    kSliceNext = 1,
+    kSliceError = 2,
+    kSliceResync = 3,
+    kSliceAbort = 4,
+};
+
+// Output states and the states of the pending time stamp.
+enum {
+    kOutputIdle = 0,
+    kOutputDecoding = 1,
+    kOutputShown = 2,
+    kPendingPtsArmed = 1,
+    kPendingPtsReady = 2,
+};
+
+// One stream entry, 24 bytes. A packet matches when its key masked with mMask equals mKey.
+typedef struct {
+    unsigned long long mKey;
+    unsigned long long mMask;
+    sceMpegCallback mCallback;
+    void *mData;
+} StreamEntry;
+
+typedef struct {
+    sceMpegCallback mCallback;
+    void *mData;
+} MpegSlot;
+
+// The bump allocator over the rest of the work area. mDynamic marks the end of the allocations
+// that survive a new sequence.
+typedef struct {
+    unsigned char *mBase;
+    int mSize;
+    unsigned char *mCurrent;
+    unsigned char *mDynamic;
+} MpegAlalc;
+
+// One picture, 104 bytes. The sequence setup writes the first five words, and the reference
+// update copies the picture header state into the rest.
+typedef struct {
+    unsigned char *mData; // Macroblocks in column order, uncached.
+    int mWidth;
+    int mHeight;
+    int mMbWidth;
+    int mMbHeight;   // Also the macroblock stride of a column.
+    int mReserved14; // +0x14
+    long long mPts;
+    long long mDts;
+    int mDecoded;
+    int mPictureCodingType;
+    int mPictureStructure;
+    int mProgressiveSequence;
+    int mProgressiveFrame;
+    int mTopFieldFirst;
+    int mRepeatFirstField;
+    int mFrameCentreHorizontalOffset[kFrameCentreOffsetCount];
+    int mFrameCentreVerticalOffset[kFrameCentreOffsetCount];
+    int mDisplayHorizontalSize;
+    int mDisplayVerticalSize;
+    int mReserved64; // +0x64
+} MpegPicture;
+
+typedef struct {
+    MpegPicture *mForward;
+    MpegPicture *mBackward;
+    MpegPicture *mCurrent;
+    MpegPicture *mAux;
+} MpegPictureSet;
+
+// One macroblock in flight, 320 bytes. Two alternate so the kernels of one macroblock run while
 // the IPU decodes the next.
 typedef struct {
-    int mStaging;                                    // Reference macroblocks land here. +0x000
-    int mCoefficients;                               // The IPU writes the block here. +0x004
-    int mRefLeft[kMcPredictionSlots];                // Left reference column pair. +0x008
-    int mRefRight[kMcPredictionSlots];               // Right reference column pair. +0x018
-    MpegMcKernel mLumaKernels[kMcPredictionSlots];   // +0x028
-    MpegMcKernel mChromaKernels[kMcPredictionSlots]; // +0x038
-    MpegMcDescriptor mLuma[kMcPredictionSlots];      // +0x048
-    MpegMcDescriptor mChroma[kMcPredictionSlots];    // +0x0b8
-    int mOutput;                                     // Macroblock in the frame. +0x128
-    int mPredictionCount;                            // +0x12c
-    int mIntra;                                      // +0x130
-    int mFollowsCoded;                               // Coded and adjacent, and never read. +0x134
-    int mDmaPending;                                 // References are being staged. +0x138
-    int mNotCoded;                                   // The macroblock has no block data. +0x13c
+    unsigned char *mStaging;      // The reference macroblocks land here.
+    unsigned char *mCoefficients; // The IPU writes the block here.
+    unsigned char *mRefLeft[kMcPredictionSlots];
+    unsigned char *mRefRight[kMcPredictionSlots];
+    MpegMcKernel mLumaKernels[kMcPredictionSlots];
+    MpegMcKernel mChromaKernels[kMcPredictionSlots];
+    MpegMcDescriptor mLuma[kMcPredictionSlots];
+    MpegMcDescriptor mChroma[kMcPredictionSlots];
+    unsigned char *mOutput; // The macroblock in the frame.
+    int mPredictionCount;
+    int mIntra;
+    int mCoded; // Never read.
+    int mDmaPending;
+    int mNotCoded;
 } MpegMcBuffer;
 
-// Motion compensation state at 0x007a30f8.
+// The decoder state at the start of the work area, 4288 bytes.
+struct MpegContext {
+    int mIsEnd;
+    int mPendingOutput;
+    int mOutputState;
+    MpegSlot mSlots[kSlotCount];
+    StreamEntry *mStreamTable;
+    int mStreamCount;
+    sceIpuDmaEnv mDmaEnv;
+    int mUseDefaultPtsGap;
+    int mReserved74; // +0x74
+    unsigned long long mDefaultPtsGap;
+    int mLastPts;
+    int mReserved84; // +0x84
+    unsigned long long mDisplayFieldCount;
+    int mOddGapPictures;
+    int mDecodeLimits[3];
+    int mDecodeCounts[3];
+    int mFrameCountBase;
+    int mConvertColours;
+    int mFrameCentreHorizontalOffset[kFrameCentreOffsetCount];
+    int mFrameCentreVerticalOffset[kFrameCentreOffsetCount];
+    int mDisplayHorizontalSize;
+    int mDisplayVerticalSize;
+    int mFirstFieldStructure;
+    unsigned char *mPictureAddress;
+    int mOutputWidth;
+    int mOutputHeight;
+    int mOutputMacroblocks;
+    int mForceBrokenLink;
+    int mReservedEC; // +0xec
+    long long mPendingPts;
+    int mPendingPtsState;
+    unsigned char *mFrameBuffers[3];
+    MpegAlalc mAlalc;
+    int mPictureCount;
+    int mFault;
+    int mSecondField;
+    int mHorizontalSize;
+    int mVerticalSize;
+    int mMbWidth;
+    int mMbHeight;
+    int mBitRate;
+    int mVbvBufferSize;
+    int mProgressiveSequence;
+    int mChromaFormat;
+    int mMatrixCoefficients;
+    int mSequenceDisplayHorizontalSize;
+    int mSequenceDisplayVerticalSize;
+    int mPictureCodingType;
+    int mFullPelForwardVector;
+    int mForwardFCode;
+    int mFullPelBackwardVector;
+    int mBackwardFCode;
+    int mFCode[2][2];
+    int mPictureStructure;
+    int mTopFieldFirst;
+    int mFramePredFrameDct;
+    int mConcealmentMotionVectors;
+    int mRepeatFirstField;
+    int mProgressiveFrame;
+    int mPictureFrameCentreHorizontalOffset[kFrameCentreOffsetCount];
+    int mPictureFrameCentreVerticalOffset[kFrameCentreOffsetCount];
+    int mClosedGop;
+    int mBrokenLink;
+    int mPictureNumber;
+    int mResetDcPredictor;
+    int mQuantizerScaleCode;
+    MpegPictureSet mFrames;
+    MpegPictureSet mTopFields;
+    MpegPictureSet mBottomFields;
+    MpegPicture mPictures[kPictureCount];
+    MpegMcBuffer mMcBuffers[2];
+    int mMcCurrent;
+    int mPictureResetWord; // Cleared per picture and never read.
+    int mTopStale;         // Nonzero once a command invalidates mTopBits.
+    unsigned char *mMcOutput;
+    int mPictureReady;
+    int mReserved824; // +0x824
+    long long mPts;
+    long long mDts;
+    unsigned int mTopBits;
+    int mTopBitCount;
+    int mLoadIntraQuantiserMatrix;
+    int mLoadNonIntraQuantiserMatrix;
+    int mMpeg2;
+    int mGopPictureBase;
+    int mMaxPictureNumber;
+    int mNewGop;
+    sceMpeg *mMpeg;
+    unsigned char abReserved85C[0x10a0 - 0x85c];         // +0x85c
+    int mAbort;                                          // Never written. +0x10a0
+    unsigned char abReserved10A4[kContextSize - 0x10a4]; // +0x10a4
+};
+
+typedef struct MpegContext MpegContext;
+
+// Two DMA tags per prediction, each in its own quadword.
 typedef struct {
-    MpegMcBuffer mBuffers[2]; // +0x000
-    int mCurrent;             // Buffer the next macroblock uses. +0x280
-    int mPictureResetWord;    // Cleared per picture. No reader was found. +0x284
-} MpegIpuTable;
-static MpegIpuTable g_mpegIpuTable;
-
-// One picture table, 0x68 bytes. The picture setup writes the first five words, and the reorder
-// step copies the picture header state into the rest when a picture is decoded into it.
-typedef struct {
-    int mBuffer;     // Frame buffer address, uncached. +0x00
-    int mWidth;      // Width in pixels. +0x04
-    int mHeight;     // Height in pixels. +0x08
-    int mMbWidth;    // Width in macroblocks. +0x0c
-    int mMbHeight;   // Height in macroblocks and the column stride of the buffer. +0x10
-    int mReserved14; // Untouched by the observed writers. +0x14
-    long long mPts;  // Presentation time stamp, or -1 when absent. +0x18
-    long long mDts;  // Decoding time stamp, or -1 when absent. +0x20
-    int mDecoded;    // Set to 1 once the picture is complete and cleared when it is reused. +0x28
-    int mPictureCodingType;                                    // +0x2c
-    int mPictureStructure;                                     // +0x30
-    int mProgressiveSequence;                                  // +0x34
-    int mProgressiveFrame;                                     // +0x38
-    int mTopFieldFirst;                                        // +0x3c
-    int mRepeatFirstField;                                     // +0x40
-    int mFrameCentreHorizontalOffset[kFrameCentreOffsetCount]; // +0x44
-    int mFrameCentreVerticalOffset[kFrameCentreOffsetCount];   // +0x50
-    int mDisplayHorizontalSize;                                // +0x5c
-    int mDisplayVerticalSize;                                  // +0x60
-    int mReserved64; // Untouched by the observed writers. +0x64
-} MpegSeqTable;
-
-// Sequence table arenas at 0x007a2d50, nine of 0x68 bytes ending where the IPU table below
-// begins. Creation points the table slots at them in order.
-static MpegSeqTable g_mpegSeqAreas[kTableCount];
-static MpegSeqTable *g_mpegTables[kTableCount];
-
-// Nibble dispatch words at 0x007a3408, read in full. The last two are code addresses the image
-// stores as data; no call passes through them here.
-static unsigned int g_mpegNibbleTable[16] = {
-    0x00000001u,
-    0x00000001u,
-    0x00000000u,
-    0x00000000u,
-    0x00000000u,
-    0x00000001u,
-    0x00000001u,
-    0x00000001u,
-    0x00000001u,
-    0x00000001u,
-    0x00000000u,
-    0xffffffffu,
-    0x00000000u,
-    0x00000000u,
-    0x0060e880u,
-    0x0060e668u,
-};
-
-// The scratchpad offsets of the two macroblock buffers sceMpegResetMcBuffers() places.
-enum {
-    kMcFirstCoefficientsOffset = 0x1800,
-    kMcSecondStagingOffset = 0x1b00,
-    kMcSecondCoefficientsOffset = 0x3300,
-};
-
-// The scratchpad base sceMpegResetMcBuffers() derives the macroblock buffers from.
-// NTSC-U/C: 0x007a38b0, PAL: 0x007e75b0
-static int g_mpegIpuBase = 0x70000000;
-// Word at NTSC-U/C: 0x007a2b24, PAL: 0x007e6824, nonzero while an IPU command is outstanding.
-static int g_mpegIpuBusyFlag;
-// Word at NTSC-U/C: 0x007a33b0, PAL: 0x007e70b0, set once a sequence extension marks MPEG-2.
-static int g_nMpegIsMpeg2;
-
-// The default quantiser matrices in zigzag order. The IPU reads them by DMA when a sequence header
-// does not load its own.
-// NTSC-U/C: 0x007a2b80, PAL: 0x007e6880
-static const unsigned char g_abMpegDefaultIntraMatrix[] __attribute__((aligned(16))) = {
-    8,  16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26, 24, 26, 27, 27, 27, 26, 26, 26, 26,
-    27, 27, 27, 29, 29, 29, 34, 34, 34, 29, 29, 29, 27, 27, 29, 29, 32, 32, 34, 34, 37, 38,
-    37, 35, 35, 34, 35, 38, 38, 40, 40, 40, 48, 48, 46, 46, 56, 56, 58, 69, 69, 83};
-// NTSC-U/C: 0x007a2bc0, PAL: 0x007e68c0
-static const unsigned char g_abMpegDefaultNonIntraMatrix[] __attribute__((aligned(16))) = {
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16};
-// Word at NTSC-U/C: 0x007a3398, PAL: 0x007e7098, the next 32 bits, shifted down by the readers.
-static int g_mpegShiftAccum;
-// Word at NTSC-U/C: 0x007a339c, PAL: 0x007e709c, compared against the bit count read.
-static int g_mpegShiftBudget;
-
-// Picture header, group of pictures header, and picture numbering words.
-static int g_nMpegTemporalReference; // Word at NTSC-U/C: 0x007a2c78, PAL: 0x007e6978.
-// Word at NTSC-U/C: 0x007a2c7c, PAL: 0x007e697c, returned by the picture header search.
-static int g_nMpegPictureCodingType;
-static int g_nMpegVbvDelay;              // Word at NTSC-U/C: 0x007a2c80, PAL: 0x007e6980.
-static int g_nMpegFullPelForwardVector;  // Word at NTSC-U/C: 0x007a2c84, PAL: 0x007e6984.
-static int g_nMpegForwardFCode;          // Word at NTSC-U/C: 0x007a2c88, PAL: 0x007e6988.
-static int g_nMpegFullPelBackwardVector; // Word at NTSC-U/C: 0x007a2c8c, PAL: 0x007e698c.
-static int g_nMpegBackwardFCode;         // Word at NTSC-U/C: 0x007a2c90, PAL: 0x007e6990.
-// Word at NTSC-U/C: 0x007a3430, PAL: 0x007e7130, picture number of temporal reference 0.
-static int g_nMpegGopPictureBase;
-// Word at NTSC-U/C: 0x007a3434, PAL: 0x007e7134, highest picture number so far.
-static int g_nMpegLatestPictureNumber;
-// Word at NTSC-U/C: 0x007a3438, PAL: 0x007e7138, set by a GOP header until the next picture.
-static int g_nMpegGopStarted;
-static int g_nMpegDropFrameFlag;    // Word at NTSC-U/C: 0x007a2d1c, PAL: 0x007e6a1c.
-static int g_nMpegTimeCodeHours;    // Word at NTSC-U/C: 0x007a2d20, PAL: 0x007e6a20.
-static int g_nMpegTimeCodeMinutes;  // Word at NTSC-U/C: 0x007a2d24, PAL: 0x007e6a24.
-static int g_nMpegTimeCodeSeconds;  // Word at NTSC-U/C: 0x007a2d28, PAL: 0x007e6a28.
-static int g_nMpegTimeCodePictures; // Word at NTSC-U/C: 0x007a2d2c, PAL: 0x007e6a2c.
-static int g_nMpegClosedGop;        // Word at NTSC-U/C: 0x007a2d30, PAL: 0x007e6a30.
-static int g_nMpegBrokenLink;       // Word at NTSC-U/C: 0x007a2d34, PAL: 0x007e6a34.
-// Words at NTSC-U/C: 0x007a3388, PAL: 0x007e7088, from the time stamp callback.
-static unsigned long long g_llMpegNextPts;
-// Words at NTSC-U/C: 0x007a3390, PAL: 0x007e7090, from the time stamp callback.
-static unsigned long long g_llMpegNextDts;
-// Word at NTSC-U/C: 0x007a346c, PAL: 0x007e716c, set once the reference wraps.
-static int g_nMpegTemporalReferenceWrapped;
-static int g_nMpegPreviousTemporalReference; // Word at NTSC-U/C: 0x007a3470, PAL: 0x007e7170.
-// Word at NTSC-U/C: 0x007a2d38, PAL: 0x007e6a38, temporal reference plus the GOP base.
-static int g_nMpegPictureNumber;
-// Word at NTSC-U/C: 0x007a2d3c, PAL: 0x007e6a3c, the BDEC DC reset bit.
-static int g_nMpegResetDcPredictor;
-
-// Sequence header words and the frame geometry derived from them.
-static int g_nMpegCodedWidth;                  // Word at NTSC-U/C: 0x007a2c0c, PAL: 0x007e690c.
-static int g_nMpegCodedHeight;                 // Word at NTSC-U/C: 0x007a2c10, PAL: 0x007e6910.
-static int g_nMpegChromaWidth;                 // Word at NTSC-U/C: 0x007a2c14, PAL: 0x007e6914.
-static int g_nMpegChromaHeight;                // Word at NTSC-U/C: 0x007a2c18, PAL: 0x007e6918.
-static int g_nMpegHorizontalSize;              // Word at NTSC-U/C: 0x007a2c20, PAL: 0x007e6920.
-static int g_nMpegVerticalSize;                // Word at NTSC-U/C: 0x007a2c24, PAL: 0x007e6924.
-static int g_nMpegMbWidth;                     // Word at NTSC-U/C: 0x007a2c28, PAL: 0x007e6928.
-static int g_nMpegMbHeight;                    // Word at NTSC-U/C: 0x007a2c2c, PAL: 0x007e692c.
-static int g_nMpegAspectRatioInformation;      // Word at NTSC-U/C: 0x007a2c30, PAL: 0x007e6930.
-static int g_nMpegFrameRateCode;               // Word at NTSC-U/C: 0x007a2c34, PAL: 0x007e6934.
-static int g_nMpegBitRate;                     // Word at NTSC-U/C: 0x007a2c38, PAL: 0x007e6938.
-static int g_nMpegVbvBufferSize;               // Word at NTSC-U/C: 0x007a2c3c, PAL: 0x007e693c.
-static int g_nMpegConstrainedParametersFlag;   // Word at NTSC-U/C: 0x007a2c40, PAL: 0x007e6940.
-static int g_nMpegProgressiveSequence;         // Word at NTSC-U/C: 0x007a2c48, PAL: 0x007e6948.
-static int g_nMpegChromaFormat;                // Word at NTSC-U/C: 0x007a2c4c, PAL: 0x007e694c.
-static int g_nMpegMatrixCoefficients;          // Word at NTSC-U/C: 0x007a2c6c, PAL: 0x007e696c.
-static int g_nMpegFramePredFrameDct;           // Word at NTSC-U/C: 0x007a2cb4, PAL: 0x007e69b4.
-static int g_nMpegProgressiveFrame;            // Word at NTSC-U/C: 0x007a2cc8, PAL: 0x007e69c8.
-static int g_nMpegLoadIntraQuantiserMatrix;    // Word at NTSC-U/C: 0x007a33a0, PAL: 0x007e70a0.
-static int g_nMpegLoadNonIntraQuantiserMatrix; // Word at NTSC-U/C: 0x007a33a4, PAL: 0x007e70a4.
-
-// Fields the MPEG-2 extensions record.
-// Word at NTSC-U/C: 0x007a2c44, PAL: 0x007e6944, profile_and_level_indication.
-static int g_nMpegProfileAndLevel;
-// Word at NTSC-U/C: 0x007a2c50, PAL: 0x007e6950, low_delay.
-static int g_nMpegLowDelay;
-// Word at NTSC-U/C: 0x007a2c54, PAL: 0x007e6954, frame_rate_extension_n.
-static int g_nMpegFrameRateExtensionN;
-// Word at NTSC-U/C: 0x007a2c58, PAL: 0x007e6958, frame_rate_extension_d.
-static int g_nMpegFrameRateExtensionD;
-// Word at NTSC-U/C: 0x007a2c5c, PAL: 0x007e695c, video_format.
-static int g_nMpegVideoFormat;
-// Word at NTSC-U/C: 0x007a2c60, PAL: 0x007e6960, colour_description.
-static int g_nMpegColourDescription;
-// Word at NTSC-U/C: 0x007a2c64, PAL: 0x007e6964, colour_primaries.
-static int g_nMpegColourPrimaries;
-// Word at NTSC-U/C: 0x007a2c68, PAL: 0x007e6968, transfer_characteristics.
-static int g_nMpegTransferCharacteristics;
-// Word at NTSC-U/C: 0x007a2c70, PAL: 0x007e6970, display_horizontal_size.
-static int g_nMpegDisplayHorizontalSize;
-// Word at NTSC-U/C: 0x007a2c74, PAL: 0x007e6974, display_vertical_size.
-static int g_nMpegDisplayVerticalSize;
-// Words at NTSC-U/C: 0x007a2c98, PAL: 0x007e6998, the four f_code values.
-static int g_anMpegFCodes[4];
-// Word at NTSC-U/C: 0x007a2ca8, PAL: 0x007e69a8, intra_dc_precision.
-static int g_nMpegIntraDcPrecision;
-// Word at NTSC-U/C: 0x007a2cac, PAL: 0x007e69ac, picture_structure.
-static int g_nMpegPictureStructure;
-// Word at NTSC-U/C: 0x007a2cb0, PAL: 0x007e69b0, top_field_first.
-static int g_nMpegTopFieldFirst;
-// Word at NTSC-U/C: 0x007a2cb8, PAL: 0x007e69b8, concealment_motion_vectors.
-static int g_nMpegConcealmentMotionVectors;
-// Word at NTSC-U/C: 0x007a2cbc, PAL: 0x007e69bc, intra_vlc_format.
-static int g_nMpegIntraVlcFormat;
-// Word at NTSC-U/C: 0x007a2cc0, PAL: 0x007e69c0, repeat_first_field.
-static int g_nMpegRepeatFirstField;
-// Word at NTSC-U/C: 0x007a2cc4, PAL: 0x007e69c4, chroma_420_type.
-static int g_nMpegChroma420Type;
-// Word at NTSC-U/C: 0x007a2ccc, PAL: 0x007e69cc, composite_display_flag.
-static int g_nMpegCompositeDisplayFlag;
-// Word at NTSC-U/C: 0x007a2cd0, PAL: 0x007e69d0, v_axis.
-static int g_nMpegVAxis;
-// Word at NTSC-U/C: 0x007a2cd4, PAL: 0x007e69d4, field_sequence.
-static int g_nMpegFieldSequence;
-// Word at NTSC-U/C: 0x007a2cd8, PAL: 0x007e69d8, sub_carrier.
-static int g_nMpegSubCarrier;
-// Word at NTSC-U/C: 0x007a2cdc, PAL: 0x007e69dc, burst_amplitude.
-static int g_nMpegBurstAmplitude;
-// Word at NTSC-U/C: 0x007a2ce0, PAL: 0x007e69e0, sub_carrier_phase.
-static int g_nMpegSubCarrierPhase;
-// Words at NTSC-U/C: 0x007a2ce8 and 0x007a2cf8, PAL: 0x007e69e8 and 0x007e69f8,
-// frame_centre_horizontal_offset and frame_centre_vertical_offset.
-static int g_anMpegFrameCentreHorizontalOffsets[3];
-static int g_anMpegFrameCentreVerticalOffsets[3];
-// Word at NTSC-U/C: 0x007a2d04, PAL: 0x007e6a04, copyright_flag.
-static int g_nMpegCopyrightFlag;
-// Word at NTSC-U/C: 0x007a2d08, PAL: 0x007e6a08, copyright_identifier.
-static int g_nMpegCopyrightIdentifier;
-// Word at NTSC-U/C: 0x007a2d0c, PAL: 0x007e6a0c, original_or_copy.
-static int g_nMpegOriginalOrCopy;
-// Word at NTSC-U/C: 0x007a2d10, PAL: 0x007e6a10, copyright_number_1.
-static int g_nMpegCopyrightNumber1;
-// Word at NTSC-U/C: 0x007a2d14, PAL: 0x007e6a14, copyright_number_2.
-static int g_nMpegCopyrightNumber2;
-// Word at NTSC-U/C: 0x007a2d18, PAL: 0x007e6a18, copyright_number_3.
-static int g_nMpegCopyrightNumber3;
-// Word at NTSC-U/C: 0x007a33b4, PAL: 0x007e70b4, q_scale_type.
-static int g_nMpegQScaleType;
-// Word at NTSC-U/C: 0x007a33b8, PAL: 0x007e70b8, alternate_scan.
-static int g_nMpegAlternateScan;
-
-// The decoder instance address retained for the interrupt handlers.
-// NTSC-U/C: 0x007a38bc, PAL: 0x007e75bc
-static void *g_decoderInstance;
-
-// IPU register words and the watchdog limit the bit readers share.
-enum {
-    kIpuCommandAddress = 0x10002000,
-    kIpuControlAddress = 0x10002010,
-    kIpuBusyMask = 0x80004000u,
-    kIpuBusyValue = 0x80000000u,
-    kIpuDataReadyBit = 0x4000u,
-    kIpuWatchdogLimit = 0x1389u
-};
-
-// Registers and values the picture output path drives.
-enum {
-    kIpuControlReset = 0x40000000,
-    kIpuControlErrorBit = 0x4000,
-    kIpuCommandBitstreamClear = 0,
-    kIpuCommandColourConvert = 0x70000000,
-    kIpuFromChcrAddress = 0x1000b000,
-    kIpuFromMadrAddress = 0x1000b010,
-    kIpuFromQwcAddress = 0x1000b020,
-    kIpuToChcrAddress = 0x1000b400,
-    kIpuToMadrAddress = 0x1000b410,
-    kIpuToQwcAddress = 0x1000b420,
-    kFromSprChcrAddress = 0x1000d000,
-    kFromSprMadrAddress = 0x1000d010,
-    kFromSprQwcAddress = 0x1000d020,
-    kFromSprSadrAddress = 0x1000d080,
-    kToSprChcrAddress = 0x1000d400,
-    kToSprMadrAddress = 0x1000d410,
-    kToSprQwcAddress = 0x1000d420,
-    kToSprSadrAddress = 0x1000d480,
-    kDmacStatusAddress = 0x1000e010,
-    kDmaChannelFromIpu = 3,
-    kDmaChannelToIpu = 4,
-    kDmacStatusFromIpu = 1 << kDmaChannelFromIpu,
-    kDmacStatusToIpu = 1 << kDmaChannelToIpu,
-    kDmaChcrStart = 0x100,
-    kDmaChcrStartFromMemory = 0x101,
-    kDmaChcrStartBit = 8,
-    kMacroblockQwc = 24,
-    kMacroblockBytes = 384,
-    kHalfMacroblockBytes = 192,
-    kQwcShift = 4,
-    kMacroblockQwcShift = 6,
-    kMacroblockPixels = 256,
-    kColourConvertLimit = 1024,
-    kColourConvertChunkMacroblocks = 1023,
-    kColourConvertChunkQwc = 0xffc0,
-    kColourConvertChunkBytes = 0xffc00,
-    kToIpuChunkQwc = 0xffff,
-    kToIpuChunkBytes = 0xffff0,
-};
-
-// Callback types the output path reports through the callback slots.
-enum {
-    kMpegCbStopDma = 2,
-    kMpegCbRestartDma = 3,
-    kMpegCbBackground = 4,
-};
-
-// picture_structure and picture_coding_type values.
-enum {
-    kPictureStructureTopField = 1,
-    kPictureStructureBottomField = 2,
-    kPictureStructureFrame = 3,
-    kPictureCodingPredicted = 2,
-    kPictureCodingBidirectional = 3,
-};
-
-// Slots of g_mpegTables. Each picture structure has an older reference, a newer reference, and
-// a bidirectional picture.
-enum {
-    kTableFrameForward = 0,
-    kTableFrameBackward = 1,
-    kTableFrameBidirectional = 2,
-    kTableTopForward = 3,
-    kTableTopBackward = 4,
-    kTableTopBidirectional = 5,
-    kTableBottomForward = 6,
-    kTableBottomBackward = 7,
-    kTableBottomBidirectional = 8,
-};
-
-// The tables the current picture decodes into, one per picture structure.
-enum {
-    kCurrentFrame = 0,
-    kCurrentTopField = 1,
-    kCurrentBottomField = 2,
-    kCurrentTableCount = 3,
-};
-
-// Bits of the picture flags word the output path sets.
-enum {
-    kPictureFlagFieldCountShift = 5,
-    kPictureFlagFieldCountMask = 0xf,
-    kPictureFlagTopFieldFirst = 0x40,
-    kPictureFlagStructureShift = 3,
-    kPictureFlagRepeatFirstFieldShift = 5,
-    kPictureFlagTopFieldFirstShift = 6,
-    kPictureFlagProgressiveFrameShift = 7,
-    kPictureFlagProgressiveSequenceShift = 8,
-};
-
-// NTSC-U/C: 0x007a2d44, PAL: 0x007e6a44
-static MpegSeqTable *g_mpegCurrentTables[kCurrentTableCount];
-
-// Set between the first and second field of a field picture pair.
-// NTSC-U/C: 0x007a2c1c, PAL: 0x007e691c
-static int g_mpegSecondFieldPending;
-
-// Fields each picture occupies, indexed by the repeat_first_field, top_field_first,
-// progressive_frame, and progressive_sequence flag bits.
-// NTSC-U/C: 0x007a3478, PAL: 0x007e7178
-static const int g_mpegFieldCountTable[] = {2, 0, 2, 0, 2, 3, 2, 3, 0, 0, 0, 0, 2, 4, 0, 6};
-
-// The macroblock stream the to-IPU interrupt handler continues, and the interrupts it has taken.
-// NTSC-U/C: 0x008ea920, PAL: 0x0092f920
-static volatile int g_nToIpuInterrupts;
-// NTSC-U/C: 0x008ea924, PAL: 0x0092f924
-static volatile unsigned int g_nToIpuRemainingQwc;
-// NTSC-U/C: 0x008ea928, PAL: 0x0092f928
-static volatile unsigned int g_nToIpuNextAddress;
-
-// The chunked colour conversion the from-IPU interrupt handler continues.
-// NTSC-U/C: 0x008ea914, PAL: 0x0092f914
-static volatile int g_nColourConvertRemaining;
-// NTSC-U/C: 0x008ea918, PAL: 0x0092f918
-static volatile unsigned int g_nColourConvertNextAddress;
-// NTSC-U/C: 0x008ea91c, PAL: 0x0092f91c
-static volatile int g_nColourConvertChunks;
-// NTSC-U/C: 0x007c3818, PAL: 0x00807518
-static volatile int g_nColourConvertError;
-// NTSC-U/C: 0x007c3820, PAL: 0x00807520
-static volatile int g_nFromIpuInterrupts;
-
-// NTSC-U/C: 0x005e0a08, PAL: 0x00622948
-static int sceMpegReportNoData(void *pDecoder) {
-    StreamEntry entry;
-
-    // The image stores only the low key word and leaves the rest of the stack entry as garbage.
-    // The reconstruction zeroes it instead, which no observed reader distinguishes.
-    entry.key = 1;
-    entry.templateBits = 0;
-    entry.callback = NULL;
-    entry.data = NULL;
-    return sceMpegInvokeCallbackSlot(pDecoder, &entry);
-}
-
-// NTSC-U/C: 0x0060b2c0, PAL: 0x0064bf30
-static int sceMpegWaitIpuIdle(void) {
-    volatile unsigned int *pControl;
-    unsigned int count;
-
-    pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    count = 0;
-    if ((*pControl & kIpuBusyMask) != kIpuBusyValue) {
-        return (int)kIpuBusyValue; // The image returns the mask word still in the result register.
-    }
-    do {
-        if (count >= kIpuWatchdogLimit) {
-            sceMpegReportNoData(g_decoderInstance);
-            count = 0;
-        } else {
-            ++count;
-        }
-    } while ((*pControl & kIpuBusyMask) == kIpuBusyValue);
-    return (int)count;
-}
-
-// NTSC-U/C: 0x0060b368, PAL: 0x0064bfd8
-static int sceMpegReadIpuData(void) {
-    volatile unsigned long long *pData;
-    volatile unsigned int *pControl;
-    long long value;
-    unsigned int count;
-
-    pData = (volatile unsigned long long *)(uintptr_t)kIpuCommandAddress;
-    pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    value = (long long)*pData;
-    count = 0;
-    for (;;) {
-        if (value >= 0) {
-            return (int)value;
-        }
-        if ((*pControl & kIpuDataReadyBit) != 0) {
-            return (int)value;
-        }
-        if (count >= kIpuWatchdogLimit) {
-            sceMpegReportNoData(g_decoderInstance);
-            count = 0;
-        } else {
-            ++count;
-        }
-        value = (long long)*pData;
-    }
-}
-
-// Issues an IPU command word and returns the nibble table word its top nibble selects.
-// NTSC-U/C: 0x0060b290, PAL: 0x0064bf00
-static int sceMpegIssueIpuCommand(unsigned int nCommand) {
-    unsigned int index;
-    int value;
-
-    *(volatile unsigned int *)(uintptr_t)kIpuCommandAddress = nCommand;
-    index = (nCommand >> 28) & 0xfu;
-    value = (int)g_mpegNibbleTable[index];
-    g_mpegIpuBusyFlag = value;
-    return value;
-}
-
-// NTSC-U/C: 0x0060e5a8, PAL: 0x0064f218
-static int sceMpegLoadDefaultMatrix(unsigned int nCommand, const unsigned char *pMatrix) {
-    StreamEntry entry;
-    volatile unsigned int *pData;
-    volatile unsigned int *pGifA;
-    volatile unsigned int *pGifB;
-
-    entry.key = 2;
-    entry.templateBits = 0;
-    entry.callback = NULL;
-    entry.data = NULL;
-    sceMpegInvokeCallbackSlot(g_decoderInstance, &entry);
-    sceMpegWaitIpuIdle();
-    pData = (volatile unsigned int *)(uintptr_t)kIpuCommandAddress;
-    *pData = 0u; // Clears the IPU input FIFO.
-    sceMpegWaitIpuIdle();
-    pGifA = (volatile unsigned int *)(uintptr_t)0x1000b410;
-    *pGifA = (unsigned int)(uintptr_t)pMatrix & 0x0fffffffu;
-    pGifB = (volatile unsigned int *)(uintptr_t)0x1000b420;
-    *pGifB = 4u;
-    // Start the IPU input channel on the matrix.
-    *(volatile unsigned int *)(uintptr_t)0x1000b400 = 0x101u;
-    sceMpegIssueIpuCommand(nCommand);
-    sceMpegWaitIpuIdle();
-    entry.key = 3;
-    return sceMpegInvokeCallbackSlot(g_decoderInstance, &entry);
-}
-
-// Sets picture dimensions into a sequence table and reports one.
-// NTSC-U/C: 0x0060e000, PAL: 0x0064ec70
-static int sceMpegSetTableSize(MpegSeqTable *pTable, int nWidth, int nHeight) {
-    pTable->mMbWidth = nWidth >> 4;
-    pTable->mMbHeight = nHeight >> 4;
-    pTable->mWidth = nWidth;
-    pTable->mHeight = nHeight;
-    return 1;
-}
-
-// NTSC-U/C: 0x0060e4c0, PAL: 0x0064f130
-static void sceMpegAssignFrameBuffers(MpegSeqTable *pFrameForward,
-                                      MpegSeqTable *pFrameBackward,
-                                      MpegSeqTable *pFrameBidirectional,
-                                      MpegSeqTable *pTopForward,
-                                      MpegSeqTable *pTopBackward,
-                                      MpegSeqTable *pTopBidirectional,
-                                      MpegSeqTable *pBottomForward,
-                                      MpegSeqTable *pBottomBackward,
-                                      MpegSeqTable *pBottomBidirectional,
-                                      int nForwardBuffer,
-                                      int nBackwardBuffer,
-                                      int nBidirectionalBuffer) {
-    // A field starts half a frame of macroblocks into its frame buffer.
-    const int fieldBytes =
-        g_nMpegCodedWidth * g_nMpegCodedHeight / (kMacroblockPixels * 2) * kMacroblockBytes;
-    const int forward =
-        (int)(((unsigned int)nForwardBuffer & kPhysicalAddressMask) | kUncachedSegment);
-    const int backward =
-        (int)(((unsigned int)nBackwardBuffer & kPhysicalAddressMask) | kUncachedSegment);
-    const int bidirectional =
-        (int)(((unsigned int)nBidirectionalBuffer & kPhysicalAddressMask) | kUncachedSegment);
-
-    pFrameForward->mBuffer = forward;
-    pFrameBackward->mBuffer = backward;
-    pFrameBidirectional->mBuffer = bidirectional;
-    pTopForward->mBuffer = forward;
-    pTopBackward->mBuffer = backward;
-    pTopBidirectional->mBuffer = bidirectional;
-    pBottomForward->mBuffer =
-        (int)(((unsigned int)(fieldBytes + nForwardBuffer) & kPhysicalAddressMask) |
-              kUncachedSegment);
-    pBottomBackward->mBuffer =
-        (int)(((unsigned int)(fieldBytes + nBackwardBuffer) & kPhysicalAddressMask) |
-              kUncachedSegment);
-    pBottomBidirectional->mBuffer =
-        (int)(((unsigned int)(fieldBytes + nBidirectionalBuffer) & kPhysicalAddressMask) |
-              kUncachedSegment);
-}
-
-// NTSC-U/C: 0x0060b820, PAL: 0x0064c490
-static int sceMpegGetBits(int nBits) {
-    volatile unsigned int *pControl;
-    volatile unsigned int *pData;
-    unsigned int count;
-    unsigned int command;
-    unsigned int index;
-    int shifted;
-
-    pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    pData = (volatile unsigned int *)(uintptr_t)kIpuCommandAddress;
-    if ((*pControl & kIpuBusyMask) == kIpuBusyValue) {
-        count = 0;
-        for (;;) {
-            if (count >= kIpuWatchdogLimit) {
-                sceMpegReportNoData(g_decoderInstance);
-                count = 0;
-            } else {
-                ++count;
-            }
-            if ((*pControl & kIpuBusyMask) != kIpuBusyValue) {
-                break;
-            }
-        }
-    }
-    if (g_mpegIpuBusyFlag != 0 || g_mpegShiftBudget < nBits) {
-        *pData = 0x40000000u;
-        g_mpegIpuBusyFlag = (int)g_mpegNibbleTable[4];
-        g_mpegShiftAccum = sceMpegReadIpuData();
-    }
-    g_mpegShiftBudget = 0x20;
-    command = (unsigned int)nBits | 0x40000000u;
-    *pData = command;
-    shifted = (int)((unsigned int)g_mpegShiftAccum >> ((0x20 - nBits) & 31));
-    index = (command >> 28) & 0xfu;
-    g_mpegIpuBusyFlag = (int)g_mpegNibbleTable[index];
-    g_mpegShiftAccum = sceMpegReadIpuData();
-    return shifted;
-}
-
-// NTSC-U/C: 0x0060a038, PAL: 0x0064aca8
-int sceIpuSetMpeg1Mode(int nMpeg1) {
-    volatile unsigned int *pControl;
-    unsigned int value;
-
-    pControl = (volatile unsigned int *)(uintptr_t)0x10002010;
-    value = (*pControl & 0xff7fffffu) | ((unsigned int)nMpeg1 << 23);
-    // The store falls in the return delay slot, so it lands before the return either way.
-    *pControl = value;
-    return (int)value;
-}
-
-// NTSC-U/C: 0x0060e668, PAL: 0x0064f2d8
-// The sequence extension. The size, bit rate, and buffer size extensions are folded into the
-// sequence header's fields.
-int sceMpegSequenceExtension(void) {
-    unsigned int bits;
-    unsigned int bitRateExt;
-    unsigned int horizontalExt;
-    unsigned int verticalExt;
-    unsigned int bufferExt;
-
-    g_nMpegIsMpeg2 = 1;
-    sceIpuSetMpeg1Mode(0);
-    bits = (unsigned int)sceMpegGetBits(0x1c);
-    bitRateExt = (bits >> 1) & 0xfff;
-    horizontalExt = (bits >> 15) & 3;
-    verticalExt = (bits >> 13) & 3;
-    g_nMpegChromaFormat = (int)((bits >> 17) & 3);
-    if (g_nMpegChromaFormat != 1) {
-        sceMpegRaiseError("_chroma_format needs to be 1: 420");
-    }
-    g_nMpegProfileAndLevel = (int)(bits >> 20);
-    g_nMpegProgressiveSequence = (int)((bits >> 19) & 1);
-    bits = (unsigned int)sceMpegGetBits(0x10);
-    g_nMpegFrameRateExtensionD = (int)(bits & 0x1f);
-    g_nMpegFrameRateExtensionN = (int)((bits >> 5) & 3);
-    g_nMpegLowDelay = (int)((bits >> 7) & 1);
-    bufferExt = bits >> 8;
-    if (g_nMpegProfileAndLevel != 0x48 && g_nMpegProfileAndLevel != 0x58) {
-        sceMpegRaiseError("Unsupported profile/level");
-    }
-    g_nMpegHorizontalSize =
-        (int)((horizontalExt << 12) | ((unsigned int)g_nMpegHorizontalSize & 0xfff));
-    g_nMpegVerticalSize = (int)((verticalExt << 12) | ((unsigned int)g_nMpegVerticalSize & 0xfff));
-    g_nMpegBitRate += (int)(bitRateExt << 18);
-    g_nMpegVbvBufferSize += (int)(bufferExt << 10);
-    return g_nMpegVerticalSize;
-}
-
-// NTSC-U/C: 0x0060e7d0, PAL: 0x0064f440
-// The sequence display extension.
-int sceMpegSequenceDisplayExtension(void) {
-    g_nMpegVideoFormat = sceMpegGetBits(3);
-    g_nMpegColourDescription = sceMpegGetBits(1);
-    if (g_nMpegColourDescription != 0) {
-        g_nMpegColourPrimaries = sceMpegGetBits(8);
-        g_nMpegTransferCharacteristics = sceMpegGetBits(8);
-        g_nMpegMatrixCoefficients = sceMpegGetBits(8);
-    }
-    g_nMpegDisplayHorizontalSize = sceMpegGetBits(14);
-    sceMpegGetBits(1); // The marker bit.
-    g_nMpegDisplayVerticalSize = sceMpegGetBits(14);
-    return g_nMpegDisplayVerticalSize;
-}
-
-// NTSC-U/C: 0x0060c138, PAL: 0x0064cda8
-// The quantiser matrix extension. A loaded matrix goes straight to the IPU, and the chroma
-// matrices of the 4:2:2 and 4:4:4 formats are reported as unsupported.
-int sceMpegQuantMatrixExtension(void) {
-    g_nMpegLoadIntraQuantiserMatrix = sceMpegGetBits(1);
-    if (g_nMpegLoadIntraQuantiserMatrix != 0) {
-        sceMpegWaitIpuIdle();
-        sceMpegIssueIpuCommand(0x50000000u);
-        sceMpegWaitIpuIdle();
-    }
-    g_nMpegLoadNonIntraQuantiserMatrix = sceMpegGetBits(1);
-    if (g_nMpegLoadNonIntraQuantiserMatrix != 0) {
-        sceMpegWaitIpuIdle();
-        sceMpegIssueIpuCommand(0x58000000u);
-        sceMpegWaitIpuIdle();
-    }
-    if (sceMpegGetBits(1) != 0) {
-        sceMpegRaiseError("load_chroma_intra_quantizer_matrix == 1");
-    }
-    if (sceMpegGetBits(1) != 0) {
-        sceMpegRaiseError("load_chroma_non_intra_quantizer_matrix == 1");
-    }
-    return 0;
-}
-
-// NTSC-U/C: 0x0060c2d8, PAL: 0x0064cf48
-// The copyright extension.
-int sceMpegCopyrightExtension(void) {
-    g_nMpegCopyrightFlag = sceMpegGetBits(1);
-    g_nMpegCopyrightIdentifier = sceMpegGetBits(8);
-    g_nMpegOriginalOrCopy = sceMpegGetBits(1);
-    sceMpegGetBits(7); // Reserved bits.
-    sceMpegGetBits(1); // The marker bit.
-    g_nMpegCopyrightNumber1 = sceMpegGetBits(0x14);
-    sceMpegGetBits(1); // The marker bit.
-    g_nMpegCopyrightNumber2 = sceMpegGetBits(0x16);
-    sceMpegGetBits(1); // The marker bit.
-    g_nMpegCopyrightNumber3 = sceMpegGetBits(0x16);
-    return 0;
-}
-
-// NTSC-U/C: 0x0060c1e8, PAL: 0x0064ce58
-// The picture display extension. The number of frame centre offsets follows from the sequence and
-// picture flags.
-int sceMpegPictureDisplayExtension(void) {
-    int count;
-    int i;
-
-    if (g_nMpegProgressiveSequence != 0) {
-        if (g_nMpegRepeatFirstField == 0) {
-            count = 1;
-        } else {
-            count = g_nMpegTopFieldFirst != 0 ? 3 : 2;
-        }
-    } else if (g_nMpegPictureStructure != 3) {
-        count = 1;
-    } else {
-        count = g_nMpegRepeatFirstField != 0 ? 3 : 2;
-    }
-    for (i = 0; i < count; ++i) {
-        g_anMpegFrameCentreHorizontalOffsets[i] = sceMpegGetBits(0x10);
-        sceMpegGetBits(1); // The marker bit.
-        g_anMpegFrameCentreVerticalOffsets[i] = sceMpegGetBits(0x10);
-        sceMpegGetBits(1); // The marker bit.
-    }
-    return 0;
-}
-
-// Replace the field of the IPU control register that starts at nShift and is nWidth bits wide.
-static void sceMpegSetIpuControlField(int nShift, unsigned int nWidthMask, unsigned int nValue) {
-    volatile unsigned int *pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    *pControl = (*pControl & ~(nWidthMask << nShift)) | (nValue << nShift);
-}
-
-// NTSC-U/C: 0x0060bd08, PAL: 0x0064c978
-// The picture coding extension. The DC precision and three coding flags are also mirrored into the
-// IPU control register.
-int sceMpegPictureCodingExtension(void) {
-    sceMpeg *decoder = (sceMpeg *)g_decoderInstance;
-    MpegWork *work = (MpegWork *)decoder->pContext;
-    int i;
-
-    for (i = 0; i < 4; ++i) {
-        g_anMpegFCodes[i] = sceMpegGetBits(4);
-    }
-    g_nMpegIntraDcPrecision = sceMpegGetBits(2);
-    sceMpegSetIpuControlField(16, 3u, (unsigned int)g_nMpegIntraDcPrecision);
-    g_nMpegPictureStructure = sceMpegGetBits(2);
-    if (work->mFirstFieldStructure == 0) {
-        work->mFirstFieldStructure = g_nMpegPictureStructure;
-    }
-    g_nMpegTopFieldFirst = sceMpegGetBits(1);
-    g_nMpegFramePredFrameDct = sceMpegGetBits(1);
-    g_nMpegConcealmentMotionVectors = sceMpegGetBits(1);
-    g_nMpegQScaleType = sceMpegGetBits(1);
-    sceMpegSetIpuControlField(22, 1u, (unsigned int)g_nMpegQScaleType);
-    g_nMpegIntraVlcFormat = sceMpegGetBits(1);
-    sceMpegSetIpuControlField(21, 1u, (unsigned int)g_nMpegIntraVlcFormat);
-    g_nMpegAlternateScan = sceMpegGetBits(1);
-    sceMpegSetIpuControlField(20, 1u, (unsigned int)g_nMpegAlternateScan);
-    g_nMpegRepeatFirstField = sceMpegGetBits(1);
-    g_nMpegChroma420Type = sceMpegGetBits(1);
-    g_nMpegProgressiveFrame = sceMpegGetBits(1);
-    g_nMpegCompositeDisplayFlag = sceMpegGetBits(1);
-    if (g_nMpegCompositeDisplayFlag != 0) {
-        g_nMpegVAxis = sceMpegGetBits(1);
-        g_nMpegFieldSequence = sceMpegGetBits(3);
-        g_nMpegSubCarrier = sceMpegGetBits(1);
-        g_nMpegBurstAmplitude = sceMpegGetBits(7);
-        g_nMpegSubCarrierPhase = sceMpegGetBits(8);
-        return g_nMpegSubCarrierPhase;
-    }
-    return 0;
-}
-
-// NTSC-U/C: 0x0060e870, PAL: 0x0064f4e0
-int sceMpegSequenceScalableExtension(void) {
-    sceMpegRaiseError("_sequenceScalableExtension() is not implemented");
-    return 0;
-}
-
-// NTSC-U/C: 0x0060e880, PAL: 0x0064f4f0
-int sceMpegReservedExtension(void) {
-    sceMpegRaiseError("Unknown Extension");
-    return 0;
-}
-
-// NTSC-U/C: 0x0060e890, PAL: 0x0064f500
-int sceMpegPictureSpatialScalableExtension(void) {
-    sceMpegRaiseError("_pictureSpatialScalableExtension is not supported");
-    return 0;
-}
-
-// NTSC-U/C: 0x0060e8a0, PAL: 0x0064f510
-int sceMpegPictureTemporalScalableExtension(void) {
-    sceMpegRaiseError("_pictureTemporalScalableExtension is not supported");
-    return 0;
-}
-
-// NTSC-U/C: 0x0060b708, PAL: 0x0064c378
-static int sceMpegSkipBits(int nBits) {
-    volatile unsigned int *pControl;
-    volatile unsigned int *pData;
-    unsigned int count;
-    unsigned int index;
-    int result;
-
-    pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    pData = (volatile unsigned int *)(uintptr_t)kIpuCommandAddress;
-    if ((*pControl & kIpuBusyMask) == kIpuBusyValue) {
-        count = 0;
-        for (;;) {
-            if (count >= kIpuWatchdogLimit) {
-                sceMpegReportNoData(g_decoderInstance);
-                count = 0;
-            } else {
-                ++count;
-            }
-            if ((*pControl & kIpuBusyMask) != kIpuBusyValue) {
-                break;
-            }
-        }
-    }
-    *pData = (unsigned int)nBits | 0x40000000u;
-    index = (((unsigned int)nBits | 0x40000000u) >> 28) & 0xfu;
-    g_mpegIpuBusyFlag = (int)g_mpegNibbleTable[index];
-    result = sceMpegReadIpuData();
-    g_mpegShiftAccum = result;
-    g_mpegShiftBudget = 0x20;
-    return result;
-}
-
-// NTSC-U/C: 0x0060b5d0, PAL: 0x0064c240
-static int sceMpegPeekBits(int nBits) {
-    volatile unsigned int *pControl;
-    volatile unsigned int *pData;
-    unsigned int count;
-
-    pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    pData = (volatile unsigned int *)(uintptr_t)kIpuCommandAddress;
-    if (g_mpegIpuBusyFlag != 0 || g_mpegShiftBudget < nBits) {
-        count = 0;
-        for (;;) {
-            if (count >= kIpuWatchdogLimit) {
-                sceMpegReportNoData(g_decoderInstance);
-                count = 0;
-            } else {
-                ++count;
-            }
-            if ((*pControl & kIpuBusyMask) != kIpuBusyValue) {
-                break;
-            }
-        }
-        *pData = 0x40000000u;
-        g_mpegIpuBusyFlag = (int)g_mpegNibbleTable[4];
-        g_mpegShiftAccum = sceMpegReadIpuData();
-        g_mpegShiftBudget = 0x20;
-    }
-    // The shift is a variable rotate the hardware masks to five bits.
-    return (int)((unsigned int)g_mpegShiftAccum >> ((0 - nBits) & 31));
-}
-
-// NTSC-U/C: 0x0060b988, PAL: 0x0064c5f8
-static int sceMpegNextStartCode(void) {
-    volatile unsigned int *pStatus;
-    unsigned int arg;
-    int result;
-
-    sceMpegWaitIpuIdle();
-    pStatus = (volatile unsigned int *)(uintptr_t)0x10002020;
-    arg = (0u - (*pStatus & 7u)) & 7u;
-    if (arg != 0) {
-        sceMpegSkipBits((int)arg);
-    }
-    for (;;) {
-        result = sceMpegPeekBits(0x18);
-        if (result == 1) {
-            return result;
-        }
-        sceMpegSkipBits(8);
-    }
-}
-
-// Extension handlers at 0x007a3440, indexed by extension_start_code_identifier. The last two
-// nibble table words above are the first two entries.
-typedef int (*MpegExtensionHandler)(void);
-static MpegExtensionHandler g_mpegExtensionHandlers[11] = {
-    sceMpegReservedExtension,
-    sceMpegSequenceExtension,
-    sceMpegSequenceDisplayExtension,
-    sceMpegQuantMatrixExtension,
-    sceMpegCopyrightExtension,
-    sceMpegSequenceScalableExtension,
-    sceMpegReservedExtension,
-    sceMpegPictureDisplayExtension,
-    sceMpegPictureCodingExtension,
-    sceMpegPictureSpatialScalableExtension,
-    sceMpegPictureTemporalScalableExtension,
-};
-
-// NTSC-U/C: 0x0060bf38, PAL: 0x0064cba8
-static void sceMpegSkipExtraInformation(void) {
-    for (;;) {
-        if (sceMpegGetBits(1) == 0) {
-            return;
-        }
-        sceMpegSkipBits(8);
-    }
-}
-
-// NTSC-U/C: 0x0060bc58, PAL: 0x0064c8c8
-static void sceMpegExtensionAndUserData(void) {
-    int index;
-
-    sceMpegNextStartCode();
-    for (;;) {
-        index = sceMpegPeekBits(0x20);
-        if (index == 0x1b5) {
-            sceMpegSkipBits(0x20);
-            index = sceMpegGetBits(4);
-            if ((unsigned int)index > 10u) {
-                index = 0;
-            }
-            g_mpegExtensionHandlers[index]();
-            sceMpegNextStartCode();
-            continue;
-        }
-        if (index != 0x1b2) {
-            return;
-        }
-        sceMpegSkipBits(0x20);
-        sceMpegNextStartCode();
-    }
-}
-
-// NTSC-U/C: 0x0060bf70, PAL: 0x0064cbe0
-static int sceMpegUpdatePictureNumber(void) {
-    if (g_nMpegPictureCodingType != 3 &&
-        g_nMpegTemporalReference != g_nMpegPreviousTemporalReference) {
-        if (g_nMpegTemporalReferenceWrapped != 0) {
-            g_nMpegTemporalReferenceWrapped = 0;
-            g_nMpegGopPictureBase += 0x400;
-        }
-        if (g_nMpegTemporalReference < g_nMpegPreviousTemporalReference && g_nMpegGopStarted == 0) {
-            g_nMpegTemporalReferenceWrapped = 1;
-        }
-        g_nMpegGopStarted = 0;
-        g_nMpegPreviousTemporalReference = g_nMpegTemporalReference;
-    }
-    g_nMpegPictureNumber = g_nMpegGopPictureBase + g_nMpegTemporalReference;
-    if (g_nMpegTemporalReferenceWrapped != 0 &&
-        g_nMpegPreviousTemporalReference >= g_nMpegTemporalReference) {
-        g_nMpegPictureNumber += 0x400;
-    }
-    if (g_nMpegLatestPictureNumber < g_nMpegPictureNumber) {
-        g_nMpegLatestPictureNumber = g_nMpegPictureNumber;
-    }
-    return g_nMpegLatestPictureNumber;
-}
-
-// NTSC-U/C: 0x0060bb88, PAL: 0x0064c7f8
-static int sceMpegPictureHeader(void) {
-    g_nMpegTemporalReference = sceMpegGetBits(0xa);
-    g_nMpegPictureCodingType = sceMpegGetBits(3);
-    g_nMpegVbvDelay = sceMpegGetBits(0x10);
-    if ((unsigned int)(g_nMpegPictureCodingType - 2) < 2u) {
-        g_nMpegFullPelForwardVector = sceMpegGetBits(1);
-        g_nMpegForwardFCode = sceMpegGetBits(3);
-    }
-    if (g_nMpegPictureCodingType == 3) {
-        g_nMpegFullPelBackwardVector = sceMpegGetBits(1);
-        g_nMpegBackwardFCode = sceMpegGetBits(3);
-    }
-    sceMpegSkipExtraInformation();
-    sceMpegExtensionAndUserData();
-    return sceMpegUpdatePictureNumber();
-}
-
-// NTSC-U/C: 0x0060c050, PAL: 0x0064ccc0
-static void sceMpegGroupOfPicturesHeader(void) {
-    sceMpeg *decoder;
-    MpegWork *work;
-
-    decoder = (sceMpeg *)g_decoderInstance;
-    work = (MpegWork *)decoder->pContext;
-    work->mForceBrokenLink = 0;
-    g_nMpegGopPictureBase = g_nMpegLatestPictureNumber + 1;
-    g_nMpegGopStarted = 1;
-    g_nMpegDropFrameFlag = sceMpegGetBits(1);
-    g_nMpegTimeCodeHours = sceMpegGetBits(5);
-    g_nMpegTimeCodeMinutes = sceMpegGetBits(6);
-    (void)sceMpegGetBits(1);
-    g_nMpegTimeCodeSeconds = sceMpegGetBits(6);
-    g_nMpegTimeCodePictures = sceMpegGetBits(6);
-    g_nMpegClosedGop = sceMpegGetBits(1);
-    g_nMpegBrokenLink = sceMpegGetBits(1);
-    sceMpegExtensionAndUserData();
-}
-
-// NTSC-U/C: 0x0060e020, PAL: 0x0064ec90
-static int sceMpegSequenceHeader(void) {
-    sceMpeg *decoder;
-    MpegWork *work;
-    int bits;
-    int half;
-    int frameBytes;
-
-    decoder = (sceMpeg *)g_decoderInstance;
-    work = (MpegWork *)decoder->pContext;
-    // The clear falls in the setup call delay slot, so it lands before the setup body.
-    work->mFirstFieldStructure = 0;
-    bits = sceMpegGetBits(0x20);
-    g_nMpegFrameRateCode = bits & 0xf;
-    g_nMpegAspectRatioInformation = (bits >> 4) & 0xf;
-    g_nMpegHorizontalSize = (unsigned int)bits >> 0x14;
-    if (((bits >> 8) & 0xfff) >= 0xaf1) {
-        sceMpegRaiseError("vertical size > 2800");
-    }
-    g_nMpegVerticalSize = (bits >> 8) & 0xfff;
-    bits = sceMpegGetBits(0x1e);
-    g_nMpegConstrainedParametersFlag = bits & 1;
-    g_nMpegVbvBufferSize = (bits >> 1) & 0x3ff;
-    g_nMpegBitRate = (unsigned int)bits >> 12;
-    bits = sceMpegGetBits(1);
-    g_nMpegLoadIntraQuantiserMatrix = bits;
-    if (bits == 0) {
-        sceMpegLoadDefaultMatrix(0x50000000u, g_abMpegDefaultIntraMatrix);
-    } else {
-        sceMpegWaitIpuIdle();
-        sceMpegIssueIpuCommand(0x50000000u);
-        sceMpegWaitIpuIdle();
-    }
-    bits = sceMpegGetBits(1);
-    g_nMpegLoadNonIntraQuantiserMatrix = bits;
-    if (bits == 0) {
-        sceMpegLoadDefaultMatrix(0x58000000u, g_abMpegDefaultNonIntraMatrix);
-    } else {
-        sceMpegWaitIpuIdle();
-        sceMpegIssueIpuCommand(0x58000000u);
-        sceMpegWaitIpuIdle();
-    }
-    sceMpegExtensionAndUserData();
-    decoder = (sceMpeg *)g_decoderInstance;
-    work = (MpegWork *)decoder->pContext;
-    if (g_nMpegIsMpeg2 == 0) {
-        g_nMpegPictureStructure = 3;
-        g_nMpegFramePredFrameDct = 1;
-        g_nMpegMatrixCoefficients = 5;
-        g_nMpegProgressiveSequence = 1;
-        g_nMpegChromaFormat = 1;
-        g_nMpegProgressiveFrame = 1;
-    }
-    g_nMpegMbWidth = (g_nMpegHorizontalSize + 0xf) >> 4;
-    if (g_nMpegIsMpeg2 == 0 || g_nMpegProgressiveSequence != 0) {
-        g_nMpegMbHeight = (g_nMpegVerticalSize + 0xf) >> 4;
-    } else {
-        g_nMpegMbHeight = ((g_nMpegVerticalSize + 0x1f) >> 5) << 1;
-    }
-    g_nMpegCodedWidth = g_nMpegMbWidth << 4;
-    g_nMpegCodedHeight = g_nMpegMbHeight << 4;
-    if (g_nMpegCodedWidth == decoder->width && g_nMpegCodedHeight == decoder->height) {
-        return decoder->height;
-    }
-    decoder->height = g_nMpegCodedHeight;
-    decoder->width = g_nMpegCodedWidth;
-    g_nMpegChromaWidth = g_nMpegCodedWidth >> 1;
-    g_nMpegChromaHeight = g_nMpegCodedHeight >> 1;
-    sceMpegRewindWritePointer(&work->mRing);
-    // A macroblock stores 384 bytes for each 256 pixels.
-    frameBytes =
-        (int)((unsigned int)(g_nMpegCodedWidth * (g_nMpegCodedHeight * kMacroblockBytes)) >> 8);
-    work->mFirstFrameBuffer =
-        (int)(uintptr_t)sceMpegCheckWorkAreaSize(&work->mRing, frameBytes, 0x40);
-    work->mSecondFrameBuffer =
-        (int)(uintptr_t)sceMpegCheckWorkAreaSize(&work->mRing, frameBytes, 0x40);
-    work->mThirdFrameBuffer =
-        (int)(uintptr_t)sceMpegCheckWorkAreaSize(&work->mRing, frameBytes, 0x40);
-    sceMpegAssignFrameBuffers(&g_mpegSeqAreas[0],
-                              &g_mpegSeqAreas[1],
-                              &g_mpegSeqAreas[2],
-                              &g_mpegSeqAreas[3],
-                              &g_mpegSeqAreas[4],
-                              &g_mpegSeqAreas[5],
-                              &g_mpegSeqAreas[6],
-                              &g_mpegSeqAreas[7],
-                              &g_mpegSeqAreas[8],
-                              work->mFirstFrameBuffer,
-                              work->mSecondFrameBuffer,
-                              work->mThirdFrameBuffer);
-    sceMpegSetTableSize(&g_mpegSeqAreas[0], g_nMpegCodedWidth, g_nMpegCodedHeight);
-    sceMpegSetTableSize(&g_mpegSeqAreas[1], g_nMpegCodedWidth, g_nMpegCodedHeight);
-    sceMpegSetTableSize(&g_mpegSeqAreas[2], g_nMpegCodedWidth, g_nMpegCodedHeight);
-    half = g_nMpegCodedHeight / 2;
-    sceMpegSetTableSize(&g_mpegSeqAreas[3], g_nMpegCodedWidth, half);
-    sceMpegSetTableSize(&g_mpegSeqAreas[4], g_nMpegCodedWidth, half);
-    sceMpegSetTableSize(&g_mpegSeqAreas[5], g_nMpegCodedWidth, half);
-    sceMpegSetTableSize(&g_mpegSeqAreas[6], g_nMpegCodedWidth, half);
-    sceMpegSetTableSize(&g_mpegSeqAreas[7], g_nMpegCodedWidth, half);
-    return sceMpegSetTableSize(&g_mpegSeqAreas[8], g_nMpegCodedWidth, half);
-}
-
-int sceMpegNextPictureHeader(void) {
-    StreamEntry entry;
-
-    for (;;) {
-        sceMpegNextStartCode(); // Yes, the binary discards the result and reads the code itself.
-        int status = sceMpegGetBits(0x20);
-        if (status == 0x1b3) {
-            sceMpegSequenceHeader();
-            continue;
-        }
-        if ((unsigned int)status >= 0x1b4u) {
-            if (status == 0x1b7) {
-                return 0;
-            }
-            if (status == 0x1b8) {
-                sceMpegGroupOfPicturesHeader();
-            }
-            continue;
-        }
-        if (status != 0x100) {
-            continue;
-        }
-        sceMpegPictureHeader();
-        entry.key = 5;
-        entry.templateBits = ~(unsigned long long)0;
-        entry.callback = (void *)~(uintptr_t)0;
-        entry.data = (void *)~(uintptr_t)0;
-        sceMpegInvokeCallbackSlot(g_decoderInstance, &entry);
-        g_llMpegNextPts = entry.templateBits;
-        g_llMpegNextDts = (unsigned long long)(unsigned int)(uintptr_t)entry.data << 32 |
-                          (unsigned int)(uintptr_t)entry.callback;
-        return g_nMpegPictureCodingType;
-    }
-}
-// The count of pictures decoded since sceMpegReset() last reset it. The frame count is its
-// distance from the work area's base count.
-// NTSC-U/C: 0x007a2c04, PAL: 0x007e6904
-static int g_mpegPictureCounter;
-// Set once a decoded picture is ready for output. The picture path loops until it is set.
-// NTSC-U/C: 0x007a3380, PAL: 0x007e7080
-static int g_pictureWaitFlag;
-
-// The default callback pointers installed for slots two and three, standing in for the words
-// near 0x0062dd58. Their values are not yet recovered.
-static void *g_defaultSlotTwo;
-static void *g_defaultSlotThree;
-
-// NTSC-U/C: 0x007798b8, PAL: 0x007bd678
-// Key and match mask for each stream type. A packet belongs to a stream when its key, masked,
-// equals the stream key. The mask also selects where the channel number goes.
-static const unsigned long long g_streamTemplates[10][2] = {
-    {0xe000000000ULL, 0xff00000000ULL}, // MPEG-2 video, channel in the stream identifier.
+    unsigned long long mTag;
+    unsigned long long mUnused;
+} MpegDmaTag;
+
+// NTSC-U/C: 0x003c27e0
+static const unsigned long long g_aMpegStreamIdTable[kStreamTypeCount][2] = {
+    {0xe000000000ULL, 0xff00000000ULL},
     {0xbdffc00000ULL, 0xffffffffffULL},
-    {0xbdffa00000ULL, 0xffffffffffULL}, // PCM audio.
+    {0xbdffa00000ULL, 0xffffffffffULL},
     {0xbdffa10000ULL, 0xffffffffffULL},
     {0xbdff900000ULL, 0xffffffffffULL},
     {0xc000000000ULL, 0xff00000000ULL},
@@ -1256,495 +359,229 @@ static const unsigned long long g_streamTemplates[10][2] = {
     {0xbd90000000ULL, 0xffff000000ULL},
 };
 
-void sceMpegResetRingPointers(void *pRing, void *pBase, int nSize) {
-    MpegRing *ring;
-
-    ring = (MpegRing *)pRing;
-    ring->mCommit = (int)(uintptr_t)pBase;
-    ring->mSize = nSize;
-    ring->mBase = (int)(uintptr_t)pBase;
-    ring->mWrite = (int)(uintptr_t)pBase;
-}
-
-int sceMpegCommitWritePointer(void *pRing) {
-    MpegRing *ring;
-    int value;
-
-    ring = (MpegRing *)pRing;
-    value = ring->mWrite;
-    ring->mCommit = value;
-    return value;
-}
-
-void sceMpegRewindWritePointer(void *pRing) {
-    MpegRing *ring;
-    int value;
-
-    ring = (MpegRing *)pRing;
-    value = ring->mCommit;
-    ring->mWrite = value;
-}
-
-void *sceMpegCheckWorkAreaSize(void *pRing, int nNeed, int nAlign) {
-    MpegRing *ring;
-    unsigned int write;
-    unsigned int size;
-    unsigned int base;
-    unsigned int aligned;
-    unsigned int end;
-    unsigned int needed;
-
-    ring = (MpegRing *)pRing;
-    write = (unsigned int)ring->mWrite;
-    size = (unsigned int)ring->mSize;
-    base = (unsigned int)ring->mBase;
-    aligned = ((write + (unsigned int)nAlign) - 1u) / (unsigned int)nAlign;
-    end = base + size;
-    aligned = aligned * (unsigned int)nAlign;
-    needed = aligned + (unsigned int)nNeed;
-    if (end < needed) {
-        sceMpegRaiseError("work area size is too small");
-        return NULL;
-    }
-    ring->mWrite = (int)needed;
-    return (void *)(uintptr_t)aligned;
-}
-
-void sceMpegRaiseError(const char *pFormat) {
-    sceMpeg *decoder;
-    MpegWork *work;
-    StreamEntry entry;
-
-    decoder = (sceMpeg *)g_decoderInstance;
-    if (decoder == NULL) {
-        sceMpegPrintErrorLine(pFormat);
-        return;
-    }
-    work = (MpegWork *)decoder->pContext;
-    if (work == NULL || work->mSlots[0].callback == NULL) {
-        sceMpegPrintErrorLine(pFormat);
-        return;
-    }
-    // The low word carries zero and the high word carries the message, which the slot callback
-    // reads back from the entry. The remaining words stay uninitialised, as they do in the image.
-    entry.key = (unsigned long long)(unsigned int)(uintptr_t)pFormat << 32;
-    sceMpegInvokeCallbackSlot(decoder, &entry);
-}
-
-void sceMpegPrintErrorLine(const char *pMessage) {
-    printf("[MPEG ERROR]%s\n", pMessage);
-}
-
-void sceMpegReportErrorFormatted(const char *pFormat, ...) {
-    char buffer[kErrorMessageSize];
-    va_list args;
-
-    va_start(args, pFormat);
-    vsprintf(buffer, pFormat, args);
-    va_end(args);
-    sceMpegRaiseError(buffer);
-}
-
-// NTSC-U/C: 0x00637178, PAL: 0x00677d08
-int sceIpuSync(int nMode) {
-    volatile unsigned int *pControl;
-
-    pControl = (volatile unsigned int *)(uintptr_t)0x10002010;
-    if (nMode == 0) {
-        while ((int)*pControl < 0) {
-        }
-        return 0;
-    }
-    if (nMode == 1) {
-        return (int)(*pControl >> 31);
-    }
-    return 0;
-}
-
-void sceMpegResetMcBuffers(void) {
-    int base;
-
-    sceIpuSetMpeg1Mode(1);
-    base = g_mpegIpuBase;
-    g_mpegIpuTable.mBuffers[0].mStaging = base;
-    g_mpegIpuTable.mBuffers[0].mCoefficients = base + kMcFirstCoefficientsOffset;
-    g_mpegIpuTable.mBuffers[1].mStaging = base + kMcSecondStagingOffset;
-    g_mpegIpuTable.mBuffers[1].mCoefficients = base + kMcSecondCoefficientsOffset;
-    g_mpegIpuTable.mCurrent = 0;
-}
-
-void sceMpegResetIpuChannels(void *pDecoder) {
-    volatile unsigned int *pStatus;
-    volatile unsigned int *pStatusSet;
-    volatile unsigned int *pMaskA;
-    volatile unsigned int *pMaskB;
-    volatile unsigned int *pClearC;
-    unsigned int value;
-
-    (void)pDecoder;
-    g_nMpegResetDcPredictor = 0;
-    // The busy flag store falls in the delay slot of the disable call and lands first.
-    g_mpegIpuBusyFlag = 1;
-    DIntr();
-    pStatus = (volatile unsigned int *)(uintptr_t)0x1000f520;
-    pStatusSet = (volatile unsigned int *)(uintptr_t)0x1000f590;
-    value = *pStatus;
-    value = value | 0x00010000u;
-    *pStatusSet = value;
-    pMaskA = (volatile unsigned int *)(uintptr_t)0x1000b000;
-    *pMaskA = 0;
-    pMaskB = (volatile unsigned int *)(uintptr_t)0x1000b400;
-    *pMaskB = 0;
-    pClearC = (volatile unsigned int *)(uintptr_t)0x1000d400;
-    *pClearC = 0;
-    value = *pStatus;
-    value = value & 0xfffeffffu;
-    // The clear store falls in the delay slot of the reenable call and lands first.
-    *pStatusSet = value;
-    EIntr();
-    pMaskA = (volatile unsigned int *)(uintptr_t)0x1000b020;
-    *pMaskA = 0;
-    pMaskB = (volatile unsigned int *)(uintptr_t)0x1000b420;
-    *pMaskB = 0;
-    pClearC = (volatile unsigned int *)(uintptr_t)0x1000d420;
-    *pClearC = 0;
-    *(volatile int *)(uintptr_t)0x10002010 = 0x40000000;
-    sceIpuSync(0);
-}
-
-void sceMpegSelectMpeg1(void) {
-    g_nMpegIsMpeg2 = 0;
-    sceIpuSetMpeg1Mode(1);
-}
-
-// NTSC-U/C: 0x0061d9d8, PAL: 0x0065e568
-int sceIpuWriteToChannelControl(int nChcr) {
-    volatile unsigned int *pStatus;
-    volatile unsigned int *pStatusSet;
-    volatile unsigned int *pClear;
-    unsigned int value;
-
-    DIntr();
-    pStatus = (volatile unsigned int *)(uintptr_t)0x1000f520;
-    pStatusSet = (volatile unsigned int *)(uintptr_t)0x1000f590;
-    value = *pStatus;
-    value = value | 0x00010000u;
-    *pStatusSet = value;
-    pClear = (volatile unsigned int *)(uintptr_t)0x1000b400;
-    *pClear = (unsigned int)nChcr;
-    value = *pStatus;
-    value = value & 0xfffeffffu;
-    *pStatusSet = value;
-    return (int)EIntr();
-}
-
-// One IPU input-FIFO quadword, addressable as bytes.
-typedef union {
-    unsigned char mBytes[16];
-    u_long128 mQuad;
-} IpuQuad;
-
-// NTSC-U/C: 0x007a5ae0, PAL: 0x007e97e0
-// The intra quantiser matrix, four quadwords, then the flat non-intra row the initialiser sends
-// four times.
-static const IpuQuad kIpuQuantRows[5] = {
-    {{0x08,
-      0x10,
-      0x10,
-      0x13,
-      0x10,
-      0x13,
-      0x16,
-      0x16,
-      0x16,
-      0x16,
-      0x16,
-      0x16,
-      0x1a,
-      0x18,
-      0x1a,
-      0x1b}},
-    {{0x1b,
-      0x1b,
-      0x1a,
-      0x1a,
-      0x1a,
-      0x1a,
-      0x1b,
-      0x1b,
-      0x1b,
-      0x1d,
-      0x1d,
-      0x1d,
-      0x22,
-      0x22,
-      0x22,
-      0x1d}},
-    {{0x1d,
-      0x1d,
-      0x1b,
-      0x1b,
-      0x1d,
-      0x1d,
-      0x20,
-      0x20,
-      0x22,
-      0x22,
-      0x25,
-      0x26,
-      0x25,
-      0x23,
-      0x23,
-      0x22}},
-    {{0x23,
-      0x26,
-      0x26,
-      0x28,
-      0x28,
-      0x28,
-      0x30,
-      0x30,
-      0x2e,
-      0x2e,
-      0x38,
-      0x38,
-      0x3a,
-      0x45,
-      0x45,
-      0x53}},
-    {{0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10,
-      0x10}},
+// NTSC-U/C: 0x003c2880, sent to the IPU by DMA.
+static const unsigned char g_abDefaultIntraQuantMatrix[64] __attribute__((aligned(16))) = {
+    8,  16, 16, 19, 16, 19, 22, 22, 22, 22, 22, 22, 26, 24, 26, 27, 27, 27, 26, 26, 26, 26,
+    27, 27, 27, 29, 29, 29, 34, 34, 34, 29, 29, 29, 27, 27, 29, 29, 32, 32, 34, 34, 37, 38,
+    37, 35, 35, 34, 35, 38, 38, 40, 40, 40, 48, 48, 46, 46, 56, 56, 58, 69, 69, 83,
 };
 
-// NTSC-U/C: 0x007a5b30, PAL: 0x007e9830
-// The colour lookup table for vector quantisation.
-static const IpuQuad kIpuVqTable[2] = {
-    {{0x00,
-      0x00,
-      0x21,
-      0x04,
-      0x42,
-      0x08,
-      0xe0,
-      0x03,
-      0x84,
-      0x10,
-      0xa5,
-      0x14,
-      0xc6,
-      0x18,
-      0xe7,
-      0x1c}},
-    {{0x1f,
-      0x00,
-      0x29,
-      0x25,
-      0x4a,
-      0x29,
-      0x00,
-      0x7c,
-      0x8c,
-      0x31,
-      0xad,
-      0x35,
-      0xff,
-      0x7f,
-      0xce,
-      0x39}},
+// NTSC-U/C: 0x003c28c0, sent to the IPU by DMA.
+static const unsigned char g_abDefaultNonIntraQuantMatrix[64] __attribute__((aligned(16))) = {
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
 };
 
-enum {
-    kIpuCmdBclr = 0x00000000,
-    kIpuCmdSetIqIntra = 0x50000000,
-    kIpuCmdSetIqNonIntra = 0x58000000,
-    kIpuCmdSetVq = 0x60000000,
-    kIpuCmdSetTh = (int)0x90000000u,
-    kIpuCtrlReset = 0x40000000,
-    kIpuQuantRowsPerMatrix = 4,
+// NTSC-U/C: 0x003c2900, indexed by averaging, horizontal half pel, and vertical half pel.
+static const MpegMcKernel g_apfnMpegLumaKernels[kMcKernelVariants] = {
+    sceMpegMcLumaCopy,
+    sceMpegMcLumaHalfV,
+    sceMpegMcLumaHalfH,
+    sceMpegMcLumaHalfHV,
+    sceMpegMcLumaAverageCopy,
+    sceMpegMcLumaAverageHalfV,
+    sceMpegMcLumaAverageHalfH,
+    sceMpegMcLumaAverageHalfHV,
 };
 
-#define IPU_CMD_REG (*(volatile unsigned int *)(uintptr_t)0x10002000)
-#define IPU_CTRL_REG (*(volatile unsigned int *)(uintptr_t)0x10002010)
-#define IPU_IN_FIFO ((volatile u_long128 *)(uintptr_t)0x10007010)
+// NTSC-U/C: 0x003c2920
+static const MpegMcKernel g_apfnMpegChromaKernels[kMcKernelVariants] = {
+    sceMpegMcChromaCopy,
+    sceMpegMcChromaHalfV,
+    sceMpegMcChromaHalfH,
+    sceMpegMcChromaHalfHV,
+    sceMpegMcChromaAverageCopy,
+    sceMpegMcChromaAverageHalfV,
+    sceMpegMcChromaAverageHalfH,
+    sceMpegMcChromaAverageHalfHV,
+};
 
-// Waits until the IPU is idle and returns the control word that ended the wait.
-static inline int IpuWaitIdle(void) {
-    int value;
+// NTSC-U/C: 0x003c2940, nonzero for the IPU commands that leave IPU_TOP stale.
+static const int g_anIpuCmdTypeTable[] = {1, 1, 0, 0, 0, 1, 1, 1, 1, 1};
 
-    do {
-        value = (int)IPU_CTRL_REG;
-    } while (value < 0);
-    return value;
+// NTSC-U/C: 0x003c2968, the fields a picture shows by its repeat_first_field, top_field_first,
+// progressive_frame, and progressive_sequence bits.
+static const unsigned int g_anMpegDisplayFieldCount[] = {
+    2, 0, 2, 0, 2, 3, 2, 3, 0, 0, 0, 0, 2, 4, 0, 6};
+
+// NTSC-U/C: 0x0052d3c0, the DMA chain that stages the reference macroblocks.
+static MpegDmaTag g_aMpegRefDmaChain[2 * kMcPredictionSlots] __attribute__((aligned(16)));
+
+static inline unsigned char *Uncached(const void *pAddress) {
+    return (unsigned char *)(((uintptr_t)pAddress & kPhysicalAddressMask) | kUncachedSegment);
 }
 
-int sceIpuResetAndLoadTables(void) {
-    int i;
-
-    sceIpuWriteToChannelControl(1);
-    IPU_CTRL_REG = kIpuCtrlReset;
-    (void)IpuWaitIdle();
-    IPU_CMD_REG = kIpuCmdBclr;
-    (void)IpuWaitIdle();
-    for (i = 0; i < kIpuQuantRowsPerMatrix; ++i) {
-        ee_store_quadword(IPU_IN_FIFO, kIpuQuantRows[i].mQuad);
-    }
-    for (i = 0; i < kIpuQuantRowsPerMatrix; ++i) {
-        ee_store_quadword(IPU_IN_FIFO, kIpuQuantRows[kIpuQuantRowsPerMatrix].mQuad);
-    }
-    IPU_CMD_REG = kIpuCmdSetIqIntra;
-    (void)IpuWaitIdle();
-    IPU_CMD_REG = kIpuCmdSetIqNonIntra;
-    (void)IpuWaitIdle();
-    ee_store_quadword(IPU_IN_FIFO, kIpuVqTable[0].mQuad);
-    ee_store_quadword(IPU_IN_FIFO, kIpuVqTable[1].mQuad);
-    IPU_CMD_REG = kIpuCmdSetVq;
-    (void)IpuWaitIdle();
-    IPU_CMD_REG = (unsigned int)kIpuCmdSetTh;
-    (void)IpuWaitIdle();
-    IPU_CTRL_REG = kIpuCtrlReset;
-    (void)IpuWaitIdle();
-    IPU_CMD_REG = kIpuCmdBclr;
-    return IpuWaitIdle();
+static inline unsigned int PhysicalAddress(const void *pAddress) {
+    return (unsigned int)((uintptr_t)pAddress & kPhysicalAddressMask);
 }
 
-int sceMpegDemuxPss(sceMpeg *pMpeg, unsigned char *pStart, int nSize) {
-    return sceMpegDemuxPssRing(pMpeg, pStart, nSize, NULL, -1);
-}
+#pragma mark - Demultiplexer bit reader
 
-// NTSC-U/C: 0x005ca4e0, PAL: 0x0060c440
-static unsigned long long buildStreamKey(int nType, int nChannel) {
-    static const unsigned long long kSubstreamByteMask = 0xffffULL << 24;
-    static const unsigned long long kStreamIdMask = 0xff00ULL << 24;
-    unsigned long long mask;
-    int shift;
-
-    if ((unsigned int)nType >= 10u) {
-        return 0;
-    }
-    mask = g_streamTemplates[nType][1];
-    if (mask == kSubstreamByteMask) {
-        shift = 24;
-    } else if (mask > kSubstreamByteMask) {
-        shift = 0;
-    } else if (mask == kStreamIdMask) {
-        shift = 32;
-    } else {
-        shift = 0;
-    }
-    return g_streamTemplates[nType][0] | ((unsigned long long)(long long)nChannel << shift);
-}
-
-void sceMpegReset(void *pDecoder) {
-    sceMpeg *decoder;
-    MpegWork *work;
-
-    decoder = (sceMpeg *)pDecoder;
-    work = (MpegWork *)decoder->pContext;
-    work->mCompleted = 0;
-    work->mPictureIndex = 0;
-    work->mOutputState = 0;
-    decoder->frameCount = 0;
-    work->mLastPts = -1;
-    // The work word at +0xac falls in the call delay slot, so it lands before the drain body.
-    work->mFrameCountBase = 0;
-    sceMpegResetIpuChannels(pDecoder);
-    g_mpegPictureCounter = 0;
-    sceMpegSelectMpeg1();
-}
-
-// Flag tables visited in binary order. Only six of the nine table slots participate.
-static const int kPendingTableOrder[6] = {0, 3, 6, 1, 4, 7};
-
-// NTSC-U/C: 0x005e0928, PAL: 0x00622868
-int sceMpegClearRefBuff(void *pDecoder) {
-    int i;
-    int index;
-
-    (void)pDecoder;
-    for (i = 0; i < 6; ++i) {
-        index = kPendingTableOrder[i];
-        if (g_mpegTables[index] != NULL) {
-            g_mpegTables[index]->mDecoded = 0;
-        }
-    }
-    return 1;
-}
-
-int sceMpegInit(void) {
-    volatile unsigned int *pStatus;
-    volatile unsigned int *pStatusSet;
-    volatile unsigned int *pMaskA;
-    volatile unsigned int *pMaskB;
-    volatile unsigned int *pClearA;
-    volatile unsigned int *pClearB;
-    unsigned int value;
-
-    DIntr();
-    pStatus = (volatile unsigned int *)(uintptr_t)0x1000f520;
-    pStatusSet = (volatile unsigned int *)(uintptr_t)0x1000f590;
-    value = *pStatus;
-    value = value | 0x00010000u;
-    *pStatusSet = value;
-    pMaskA = (volatile unsigned int *)(uintptr_t)0x1000b000;
-    value = *pMaskA;
-    value = value & 0xfffffeffu;
-    *pMaskA = value;
-    pMaskB = (volatile unsigned int *)(uintptr_t)0x1000b400;
-    value = *pMaskB;
-    value = value & 0xfffffeffu;
-    *pMaskB = value;
-    value = *pStatus;
-    value = value & 0xfffeffffu;
-    *pStatusSet = value;
-    EIntr();
-    pClearA = (volatile unsigned int *)(uintptr_t)0x1000b020;
-    *pClearA = 0;
-    pClearB = (volatile unsigned int *)(uintptr_t)0x1000b420;
-    *pClearB = 0;
-    return sceIpuResetAndLoadTables();
-}
-
-// Bit reader over the input, 0x30 bytes. The cache has the next bits left-aligned, and each
-// advance refills it past 56 valid bits. A read of up to 32 bits therefore never needs a refill.
-// The fetch pointer wraps from the ring end back to its base.
 typedef struct {
     unsigned long long mCache;
     unsigned char *mStart;
     unsigned char *mFetch;
     int mCached;
-    unsigned long long mPosition; // Bits consumed since mStart.
+    unsigned long long mPosition; // In bits from mStart.
     unsigned char *mRingBase;
-    uintptr_t mRingEnd; // All ones without a ring, which the fetch pointer never arrives at.
+    unsigned char *mRingEnd;
     int mRingSize;
 } BitReader;
 
-// The pack header fields the demultiplexer stores, 0x10 bytes.
+enum {
+    kCacheRefillBits = 57,
+    kCacheTopShift = 56,
+};
+
+// NTSC-U/C: 0x0030e8d8, PAL: 0x0037ad68
+static void AdvanceMpegBitReader(BitReader *pReader, int nBits) {
+    pReader->mCache <<= nBits;
+    pReader->mCached -= nBits;
+    // An overdrawn count wraps to a large unsigned value and skips the refill, as in the binary.
+    while ((unsigned int)pReader->mCached < kCacheRefillBits) {
+        pReader->mCache |= (unsigned long long)*pReader->mFetch
+                           << (kCacheTopShift - pReader->mCached);
+        ++pReader->mFetch;
+        if (pReader->mFetch >= pReader->mRingEnd) {
+            pReader->mFetch = pReader->mRingBase;
+        }
+        pReader->mCached += 8;
+    }
+    pReader->mPosition += (unsigned long long)(long long)nBits;
+}
+
+// NTSC-U/C: 0x0030e880, PAL: 0x0037ad10
+static void InitMpegBitReader(BitReader *pReader,
+                              unsigned char *pStart,
+                              unsigned char *pRingBase,
+                              int nRingSize) {
+    pReader->mFetch = pStart;
+    pReader->mRingEnd = pRingBase + nRingSize;
+    pReader->mRingSize = nRingSize;
+    pReader->mStart = pStart;
+    pReader->mCache = 0;
+    pReader->mCached = 0;
+    pReader->mPosition = 0;
+    pReader->mRingBase = pRingBase;
+    AdvanceMpegBitReader(pReader, 0);
+}
+
+// NTSC-U/C: 0x0030e8b8, PAL: 0x0037ad48
+static int PeekMpegBits(const BitReader *pReader, int nBits) {
+    return (int)(pReader->mCache >> (64 - nBits));
+}
+
+// NTSC-U/C: 0x0030e970, PAL: 0x0037ae00
+static int getBits(BitReader *pReader, int nBits) {
+    int nValue = PeekMpegBits(pReader, nBits);
+
+    AdvanceMpegBitReader(pReader, nBits);
+    return nValue;
+}
+
+// NTSC-U/C: 0x0030e9c0, PAL: 0x0037ae50
+static int getBit(BitReader *pReader) {
+    int nValue = PeekMpegBits(pReader, 1);
+
+    AdvanceMpegBitReader(pReader, 1);
+    return nValue;
+}
+
+// NTSC-U/C: 0x0030ea08, PAL: 0x0037ae98
+// Moves the reader nBytes ahead of its bit position, rounded down to a byte, and refills.
+static void SkipMpegBitReaderBytes(BitReader *pReader, int nBytes) {
+    unsigned long long nPosition =
+        (unsigned long long)(long long)(nBytes << 3) + pReader->mPosition;
+    unsigned char *pFetch;
+
+    pReader->mCache = 0;
+    pReader->mCached = 0;
+    pFetch = pReader->mStart + (int)(nPosition >> 3);
+    pReader->mPosition = nPosition;
+    pReader->mFetch = pFetch;
+    if (pFetch >= pReader->mRingEnd) {
+        pReader->mFetch = pFetch - pReader->mRingSize;
+    }
+    AdvanceMpegBitReader(pReader, 0);
+}
+
+// NTSC-U/C: 0x0030ea60, PAL: 0x0037aef0
+static unsigned char *GetMpegBitReaderBytePointer(const BitReader *pReader, int nBitPosition) {
+    unsigned char *pByte = pReader->mStart + (nBitPosition >> 3);
+
+    if (pByte >= pReader->mRingEnd) {
+        pByte -= pReader->mRingSize;
+    }
+    return pByte;
+}
+
+#pragma mark - Callbacks and errors
+
+// NTSC-U/C: 0x00308338, PAL: 0x003747c8
+// Calls the slot callback of the callback type, and returns its result or zero.
+static int _sceMpegCallback(sceMpeg *mp, sceMpegCbData *pCbData) {
+    MpegContext *w;
+    MpegSlot *pSlot;
+
+    if (mp == NULL || (w = mp->sys) == NULL) {
+        return 0;
+    }
+    pSlot = &w->mSlots[pCbData->type];
+    if (pSlot->mCallback == NULL) {
+        return 0;
+    }
+    return pSlot->mCallback(mp, pCbData, pSlot->mData);
+}
+
+// NTSC-U/C: 0x00308388, PAL: 0x00374818
+static int _sceMpegCbNodata(sceMpeg *mp) {
+    sceMpegCbData cbData;
+
+    cbData.type = sceMpegCbNodata;
+    _sceMpegCallback(mp, &cbData);
+    return 1;
+}
+
+// NTSC-U/C: 0x00308ad0, PAL: 0x00374f60
+static void _sceMpegPrintError(const char *pMessage) {
+    scePrintf("[MPEG ERROR]%s\n", pMessage);
+}
+
+// NTSC-U/C: 0x00308b18, PAL: 0x00374fa8
+static void _sceMpegError(MpegContext *w, const char *pMessage) {
+    sceMpeg *mp = w->mMpeg;
+    sceMpegCbData cbData;
+
+    if (mp != NULL && w != NULL && w->mSlots[sceMpegCbError].mCallback != NULL) {
+        cbData.error.type = sceMpegCbError;
+        cbData.error.errMessage = (char *)pMessage;
+        _sceMpegCallback(mp, &cbData);
+    } else {
+        _sceMpegPrintError(pMessage);
+    }
+}
+
+// NTSC-U/C: 0x00308ae0, PAL: 0x00374f70
+static void _sceMpegErrorFormat(MpegContext *w, const char *pFormat, unsigned int nValue) {
+    char szMessage[kErrorMessageSize];
+
+    sprintf(szMessage, pFormat, nValue);
+    _sceMpegError(w, szMessage);
+}
+
+#pragma mark - Demultiplexer
+
 typedef struct {
     int mScrExtension;
-    unsigned int mScrLow; // System clock reference bits 31 to 0.
-    int mScrHigh;         // System clock reference bit 32.
+    unsigned int mScrLow;
+    int mScrHigh;
     int mHasSystemHeader;
 } PackHeader;
 
-// One parsed packet, 0x2c bytes. The key is the stream identifier shifted up by 32 bits, with the
-// substream word of a private stream in the low word. Positions are bit positions from the start
-// of the input.
+// One parsed packet. Positions are bit positions from the start of the input.
 typedef struct {
-    unsigned long long mKey;
+    unsigned long long mKey; // The stream identifier above bit 32 and a substream word below.
     int mPacketLength;
     int mScrambling;
     long long mPts;
@@ -1755,12 +592,6 @@ typedef struct {
 } PesPacket;
 
 enum {
-    kCacheRefillBits = 57,
-    kCacheTopShift = 56,
-    kPacketStartPrefix = 0x000001,
-    kPackStartCode = 0x000001ba,
-    kSystemHeaderStartCode = 0x000001bb,
-    kProgramEndCode = 0x000001b9,
     kStreamIdProgramStreamMap = 0xbc,
     kStreamIdPrivate1 = 0xbd,
     kStreamIdPadding = 0xbe,
@@ -1773,154 +604,90 @@ enum {
     kPtsFlag = 2,
     kPtsDtsFlags = 3,
     kSubstreamHeaderBytes = 4,
-    // The packet length counts the three bytes of flags and header length ahead of the header data.
+    // The packet length counts the three bytes of flags and header length ahead of the header.
     kPesFlagBytes = 3,
-    kPrivateDataBits = 128
 };
 
-// Stream key the demultiplexer falls back to when no registered stream matches a packet.
+// The stream key the demultiplexer falls back to when no registered stream matches a packet.
 static const unsigned long long kDefaultStreamKey = 0xbdffULL << 24;
+static const unsigned long long kSubstreamByteMask = 0xffffULL << 24;
+static const unsigned long long kStreamIdMask = 0xff00ULL << 24;
 
-// NTSC-U/C: 0x00779958, PAL: 0x007bd718
-// Bits the optional PES fields occupy for each combination of the ES rate, trick mode, copy
-// information, and CRC flags.
-static const unsigned char kOptionalFieldBits[] = {
-    0, 16, 8, 24, 8, 24, 16, 32, 24, 40, 32, 48, 32, 48, 40, 56};
+// NTSC-U/C: 0x00307318, PAL: 0x003737a8
+static unsigned long long buildStreamKey(int nType, int nChannel) {
+    unsigned long long nMask;
+    int nShift = 0;
 
-static unsigned long long streamKey(int nStreamId) {
+    if ((unsigned int)nType >= kStreamTypeCount) {
+        return 0;
+    }
+    nMask = g_aMpegStreamIdTable[nType][1];
+    if (nMask == kSubstreamByteMask) {
+        nShift = 24;
+    } else if (nMask > kSubstreamByteMask) {
+        nShift = 0;
+    } else if (nMask == kStreamIdMask) {
+        nShift = 32;
+    }
+    return g_aMpegStreamIdTable[nType][0] | ((unsigned long long)(long long)nChannel << nShift);
+}
+
+static inline unsigned long long StreamIdKey(int nStreamId) {
     return (unsigned long long)(unsigned int)nStreamId << 32;
 }
 
-// NTSC-U/C: 0x006102c0, PAL: 0x00650f30
-static void bitReaderAdvance(BitReader *pReader, int nBits) {
-    pReader->mCache <<= nBits;
-    pReader->mCached -= nBits;
-    // An overdrawn count wraps to a large unsigned value and skips the refill, as in the image.
-    while ((unsigned int)pReader->mCached < kCacheRefillBits) {
-        pReader->mCache |= (unsigned long long)*pReader->mFetch
-                           << (kCacheTopShift - pReader->mCached);
-        ++pReader->mFetch;
-        if ((uintptr_t)pReader->mFetch >= pReader->mRingEnd) {
-            pReader->mFetch = pReader->mRingBase;
-        }
-        pReader->mCached += 8;
-    }
-    pReader->mPosition += (unsigned long long)(long long)nBits;
-}
-
-// NTSC-U/C: 0x00610268, PAL: 0x00650ed8
-static void
-initBitReader(BitReader *pReader, unsigned char *pStart, unsigned char *pRingBase, int nRingSize) {
-    pReader->mFetch = pStart;
-    pReader->mRingEnd = (uintptr_t)pRingBase + (uintptr_t)(intptr_t)nRingSize;
-    pReader->mRingSize = nRingSize;
-    pReader->mStart = pStart;
-    pReader->mCache = 0;
-    pReader->mCached = 0;
-    pReader->mPosition = 0;
-    pReader->mRingBase = pRingBase;
-    bitReaderAdvance(pReader, 0);
-}
-
-// NTSC-U/C: 0x006102a0, PAL: 0x00650f10
-static int peekBits(const BitReader *pReader, int nBits) {
-    return (int)(pReader->mCache >> (64 - nBits));
-}
-
-// NTSC-U/C: 0x00610358, PAL: 0x00650fc8
-static int getBits(BitReader *pReader, int nBits) {
-    int value = peekBits(pReader, nBits);
-    bitReaderAdvance(pReader, nBits);
-    return value;
-}
-
-// NTSC-U/C: 0x006103a8, PAL: 0x00651018
-static int getBit(BitReader *pReader) {
-    int value = peekBits(pReader, 1);
-    bitReaderAdvance(pReader, 1);
-    return value;
-}
-
-// NTSC-U/C: 0x006103f0, PAL: 0x00651060
-// Moves the reader nBytes ahead of its bit position, rounded down to a byte, and refills.
-static void skipBytes(BitReader *pReader, int nBytes) {
-    unsigned long long position;
-    unsigned char *pFetch;
-
-    position = pReader->mPosition + (unsigned long long)(long long)(nBytes * 8);
-    pReader->mCache = 0;
-    pReader->mCached = 0;
-    pFetch = pReader->mStart + (int)(position >> 3);
-    if ((uintptr_t)pFetch >= pReader->mRingEnd) {
-        pFetch -= pReader->mRingSize;
-    }
-    pReader->mFetch = pFetch;
-    pReader->mPosition = position;
-    bitReaderAdvance(pReader, 0);
-}
-
-// NTSC-U/C: 0x00610448, PAL: 0x006510b8
-static unsigned char *pointerAt(const BitReader *pReader, int nBitPosition) {
-    unsigned char *pByte = pReader->mStart + (nBitPosition >> 3);
-    if ((uintptr_t)pByte >= pReader->mRingEnd) {
-        pByte -= pReader->mRingSize;
-    }
-    return pByte;
-}
-
 // A 33-bit time stamp split 3, 15, and 15 around marker bits, after its four-bit prefix.
-static inline long long readTimestamp(BitReader *pReader) {
-    int high;
-    int middle;
-    int low;
-    unsigned int lowWord;
+static inline long long ReadTimeStamp(BitReader *pReader) {
+    unsigned int nHigh;
+    unsigned int nMiddle;
+    unsigned int nLow;
 
     (void)getBits(pReader, 4);
-    high = getBits(pReader, 3);
+    nHigh = (unsigned int)getBits(pReader, 3);
     (void)getBit(pReader);
-    middle = getBits(pReader, 15);
+    nMiddle = (unsigned int)getBits(pReader, 15);
     (void)getBit(pReader);
-    low = getBits(pReader, 15);
+    nLow = (unsigned int)getBits(pReader, 15);
     (void)getBit(pReader);
-    lowWord = ((unsigned int)high << 30) | ((unsigned int)middle << 15) | (unsigned int)low;
-    return (long long)(((unsigned long long)((high >> 2) & 1) << 32) | lowWord);
+    return (long long)(((unsigned long long)((nHigh >> 2) & 1) << 32) |
+                       ((nHigh << 30) | (nMiddle << 15) | nLow));
 }
 
-// NTSC-U/C: 0x005cacc0, PAL: 0x0060cc20
+// NTSC-U/C: 0x00307908, PAL: 0x00373d98
 static int parseSystemHeader(BitReader *pReader, PackHeader *pPack) {
-    (void)pPack;                // The image passes the pack header and never reads it.
-    (void)getBits(pReader, 56); // Start code, header length, and the first rate bits.
-    (void)getBits(pReader, 40); // The rest of the fixed fields.
-    while (peekBits(pReader, 1) == 1) {
-        (void)getBits(pReader, 24); // One stream bound entry.
+    (void)pPack; // Yes, the binary passes the pack header and never reads it.
+    (void)getBits(pReader, 56);
+    (void)getBits(pReader, 40);
+    while (PeekMpegBits(pReader, 1) == 1) {
+        (void)getBits(pReader, 24);
     }
     return 1;
 }
 
-// NTSC-U/C: 0x005cab70, PAL: 0x0060cad0
+// NTSC-U/C: 0x003077b8, PAL: 0x00373c48
 static int parsePackHeader(BitReader *pReader, PackHeader *pPack) {
-    int high;
-    int middle;
-    int low;
-    int stuffing;
-    int i;
+    unsigned int nHigh;
+    unsigned int nMiddle;
+    unsigned int nLow;
+    unsigned int nStuffing;
+    unsigned int i;
 
-    (void)getBits(pReader, 34); // Start code and the '01' marker.
-    high = getBits(pReader, 3);
+    (void)getBits(pReader, 34);
+    nHigh = (unsigned int)getBits(pReader, 3);
     (void)getBit(pReader);
-    middle = getBits(pReader, 15);
+    nMiddle = (unsigned int)getBits(pReader, 15);
     (void)getBit(pReader);
-    low = getBits(pReader, 15);
+    nLow = (unsigned int)getBits(pReader, 15);
     (void)getBit(pReader);
     pPack->mScrExtension = getBits(pReader, 9);
-    (void)getBits(pReader, 30); // Marker, mux rate, markers, and reserved bits.
-    stuffing = getBits(pReader, 3);
-    pPack->mScrLow = ((unsigned int)high << 30) | ((unsigned int)middle << 15) | (unsigned int)low;
-    pPack->mScrHigh = (int)(((unsigned int)high >> 2) & 1);
-    for (i = 0; i < stuffing; ++i) {
+    (void)getBits(pReader, 30);
+    nStuffing = (unsigned int)getBits(pReader, 3);
+    pPack->mScrHigh = (int)((nHigh >> 2) & 1);
+    pPack->mScrLow = (nHigh << 30) | (nMiddle << 15) | nLow;
+    for (i = 0; i < nStuffing; ++i) {
         (void)getBits(pReader, 8);
     }
-    if (peekBits(pReader, 32) == kSystemHeaderStartCode) {
+    if (PeekMpegBits(pReader, 32) == kSystemHeaderStartCode) {
         pPack->mHasSystemHeader = 1;
         parseSystemHeader(pReader, pPack);
     } else {
@@ -1929,3359 +696,2753 @@ static int parsePackHeader(BitReader *pReader, PackHeader *pPack) {
     return 1;
 }
 
-// NTSC-U/C: 0x005cad30, PAL: 0x0060cc90
-// Returns zero when the packet embeds a pack header. A program stream may not embed one.
-static int parsePacket(BitReader *pReader, PesPacket *pPacket) {
-    int streamId;
-    int ptsDtsFlags;
-    int hasEscr;
-    int optionalFlags;
-    int hasExtension;
-    int headerDataLength;
-    int headerStart;
-    int payload;
-    int skip;
-    int i;
+// NTSC-U/C: 0x00307978, PAL: 0x00373e08
+// Returns zero when the packet embeds a pack header, which a program stream may not.
+static int parsePacket(MpegContext *w, BitReader *pReader, PesPacket *pPacket) {
+    // Bits the optional fields take for each combination of the ES rate, trick mode, copy
+    // information, and CRC flags.
+    const unsigned char abOptionalFieldBits[] = {
+        0, 16, 8, 24, 8, 24, 16, 32, 24, 40, 32, 48, 32, 48, 40, 56};
+    int nPtsDtsFlags;
+    int nHasEscr;
+    int nOptionalFlags;
+    int nHasExtension;
+    int nHeaderDataLength;
+    int nHeaderStart;
+    int nPayload;
+    int nSkip;
 
     pPacket->mHeaderPosition = (int)pReader->mPosition;
     (void)getBits(pReader, 24);
-    streamId = getBits(pReader, 8);
-    pPacket->mKey = streamKey(streamId);
+    pPacket->mKey = StreamIdKey(getBits(pReader, 8));
     pPacket->mPacketLength = getBits(pReader, 16);
     pPacket->mPts = -1;
     pPacket->mDts = -1;
-    switch (streamId) {
-    case kStreamIdPrivate2:
-        pPacket->mKey |= (unsigned int)getBits(pReader, 32);
-        skip = pPacket->mPacketLength - kSubstreamHeaderBytes;
-        if (skip != 0) {
-            skipBytes(pReader, skip);
+    if (pPacket->mKey == StreamIdKey(kStreamIdProgramStreamMap) ||
+        pPacket->mKey == StreamIdKey(kStreamIdPadding) ||
+        pPacket->mKey == StreamIdKey(kStreamIdPrivate2) ||
+        pPacket->mKey == StreamIdKey(kStreamIdEcm) || pPacket->mKey == StreamIdKey(kStreamIdEmm) ||
+        pPacket->mKey == StreamIdKey(kStreamIdDirectory) ||
+        pPacket->mKey == StreamIdKey(kStreamIdDsmcc) ||
+        pPacket->mKey == StreamIdKey(kStreamIdH2221TypeE)) {
+        if (pPacket->mKey == StreamIdKey(kStreamIdPadding)) {
+            if (pPacket->mPacketLength != 0) {
+                SkipMpegBitReaderBytes(pReader, pPacket->mPacketLength);
+            }
+            return 1;
+        }
+        nSkip = pPacket->mPacketLength;
+        if (pPacket->mKey == StreamIdKey(kStreamIdPrivate2)) {
+            pPacket->mKey |= (unsigned int)getBits(pReader, 32);
+            nSkip -= kSubstreamHeaderBytes;
+        }
+        if (nSkip != 0) {
+            SkipMpegBitReaderBytes(pReader, nSkip);
         }
         return 1;
-    case kStreamIdProgramStreamMap:
-    case kStreamIdPadding:
-    case kStreamIdEcm:
-    case kStreamIdEmm:
-    case kStreamIdDirectory:
-    case kStreamIdDsmcc:
-    case kStreamIdH2221TypeE:
-        if (pPacket->mPacketLength != 0) {
-            skipBytes(pReader, pPacket->mPacketLength);
-        }
-        return 1;
-    default:
-        break;
     }
 
-    (void)getBits(pReader, 2); // The '10' marker.
+    (void)getBits(pReader, 2);
     pPacket->mScrambling = getBits(pReader, 2);
-    (void)getBits(pReader, 4); // Priority, alignment, copyright, and original flags.
-    ptsDtsFlags = getBits(pReader, 2);
-    hasEscr = getBits(pReader, 1);
-    optionalFlags = getBits(pReader, 4);
-    hasExtension = getBits(pReader, 1);
-    headerDataLength = getBits(pReader, 8);
-    headerStart = (int)pReader->mPosition;
-    if ((ptsDtsFlags & kPtsFlag) != 0) {
-        pPacket->mPts = readTimestamp(pReader);
+    (void)getBits(pReader, 4);
+    nPtsDtsFlags = getBits(pReader, 2);
+    nHasEscr = getBits(pReader, 1);
+    nOptionalFlags = getBits(pReader, 4);
+    nHasExtension = getBits(pReader, 1);
+    nHeaderDataLength = getBits(pReader, 8);
+    nHeaderStart = (int)pReader->mPosition;
+    if ((nPtsDtsFlags & kPtsFlag) != 0) {
+        pPacket->mPts = ReadTimeStamp(pReader);
     }
-    if (ptsDtsFlags == kPtsDtsFlags) {
-        pPacket->mDts = readTimestamp(pReader);
+    if (nPtsDtsFlags == kPtsDtsFlags) {
+        pPacket->mDts = ReadTimeStamp(pReader);
     }
-    if (hasEscr == 1) {
+    if (nHasEscr == 1) {
         (void)getBits(pReader, 48);
     }
-    if (optionalFlags != 0) {
-        (void)getBits(pReader, kOptionalFieldBits[optionalFlags]);
+    if (nOptionalFlags != 0) {
+        (void)getBits(pReader, abOptionalFieldBits[nOptionalFlags]);
     }
-    if (hasExtension == 1) {
-        int hasPrivateData = getBits(pReader, 1);
-        int hasPackHeader = getBits(pReader, 1);
-        int hasSequenceCounter = getBits(pReader, 1);
-        int hasPStdBuffer = getBits(pReader, 1);
-        int hasExtension2;
+    if (nHasExtension == 1) {
+        int nHasPrivateData = getBits(pReader, 1);
+        int nHasPackHeader = getBits(pReader, 1);
+        int nHasSequenceCounter = getBits(pReader, 1);
+        int nHasPStdBuffer = getBits(pReader, 1);
+        int nHasExtension2;
 
         (void)getBits(pReader, 3);
-        hasExtension2 = getBits(pReader, 1);
-        if (hasPrivateData == 1) {
-            // 128 bits, read as 48, 48, and 32.
+        nHasExtension2 = getBits(pReader, 1);
+        if (nHasPrivateData == 1) {
             (void)getBits(pReader, 48);
             (void)getBits(pReader, 48);
             (void)getBits(pReader, 32);
         }
-        if (hasPackHeader == 1) {
-            sceMpegRaiseError("pack_header_field_flag needs to be '0' in PS\n");
+        if (nHasPackHeader == 1) {
+            _sceMpegError(w, "pack_header_field_flag needs to be '0' in PS\n");
             return 0;
         }
-        if (hasSequenceCounter == 1) {
+        if (nHasSequenceCounter == 1) {
             (void)getBits(pReader, 16);
         }
-        if (hasPStdBuffer == 1) {
+        if (nHasPStdBuffer == 1) {
             (void)getBits(pReader, 16);
         }
-        if (hasExtension2 == 1) {
-            int length;
+        if (nHasExtension2 == 1) {
+            unsigned int nLength;
+            unsigned int j;
 
             (void)getBit(pReader);
-            length = getBits(pReader, 7);
-            for (i = 0; i < length; ++i) {
+            nLength = (unsigned int)getBits(pReader, 7);
+            for (j = 0; j < nLength; ++j) {
                 (void)getBits(pReader, 8);
             }
         }
     }
-    // Skip the rest of the header data, including any stuffing.
-    skip = headerDataLength -
-           (int)((pReader->mPosition - (unsigned long long)(long long)headerStart) >> 3);
-    if (skip != 0) {
-        skipBytes(pReader, skip);
+    nSkip = nHeaderDataLength -
+            (int)((pReader->mPosition - (unsigned long long)(long long)nHeaderStart) >> 3);
+    if (nSkip != 0) {
+        SkipMpegBitReaderBytes(pReader, nSkip);
     }
-    payload = pPacket->mPacketLength - headerDataLength;
-    pPacket->mDataLength = payload - kPesFlagBytes;
+    nPayload = pPacket->mPacketLength - nHeaderDataLength;
+    pPacket->mDataLength = nPayload - kPesFlagBytes;
     pPacket->mDataPosition = (int)pReader->mPosition;
-    skip = payload - kPesFlagBytes;
-    if (pPacket->mKey == streamKey(kStreamIdPrivate1)) {
+    nSkip = nPayload - kPesFlagBytes;
+    if (pPacket->mKey == StreamIdKey(kStreamIdPrivate1)) {
         // The substream word stays in the reported data and length.
         pPacket->mKey |= (unsigned int)getBits(pReader, 32);
-        skip = payload - kPesFlagBytes - kSubstreamHeaderBytes;
+        nSkip = nPayload - kPesFlagBytes - kSubstreamHeaderBytes;
     }
-    if (skip != 0) {
-        skipBytes(pReader, skip);
+    if (nSkip != 0) {
+        SkipMpegBitReaderBytes(pReader, nSkip);
     }
     return 1;
 }
 
-static int deliverPacket(sceMpeg *pMpeg,
-                         const BitReader *pReader,
-                         const PesPacket *pPacket,
-                         sceMpegCallback pfnCallback,
-                         void *pData) {
-    sceMpegCbDataStr callbackData;
+static inline int DeliverPacket(sceMpeg *mp,
+                                const BitReader *pReader,
+                                const PesPacket *pPacket,
+                                sceMpegCallback pfnCallback,
+                                void *pData) {
+    sceMpegCbDataStr cbData;
 
-    callbackData.type = sceMpegCbStr;
-    callbackData.header = pointerAt(pReader, pPacket->mHeaderPosition);
-    callbackData.data = pointerAt(pReader, pPacket->mDataPosition);
-    callbackData.len = (unsigned int)pPacket->mDataLength;
-    callbackData.pts = pPacket->mPts;
-    callbackData.dts = pPacket->mDts;
-    return pfnCallback(pMpeg, &callbackData, pData);
+    cbData.type = sceMpegCbStr;
+    cbData.header = GetMpegBitReaderBytePointer(pReader, pPacket->mHeaderPosition);
+    cbData.data = GetMpegBitReaderBytePointer(pReader, pPacket->mDataPosition);
+    cbData.len = (unsigned int)pPacket->mDataLength;
+    cbData.pts = pPacket->mPts;
+    cbData.dts = pPacket->mDts;
+    return pfnCallback(mp, &cbData, pData);
 }
 
-static int isPacketStart(const BitReader *pReader) {
-    return peekBits(pReader, 24) == kPacketStartPrefix && peekBits(pReader, 32) != kPackStartCode &&
-           peekBits(pReader, 32) != kProgramEndCode;
+static inline int IsPacketStart(const BitReader *pReader) {
+    return PeekMpegBits(pReader, 24) == kPacketStartPrefix &&
+           PeekMpegBits(pReader, 32) != kPackStartCode &&
+           PeekMpegBits(pReader, 32) != kProgramEndCode;
 }
 
 int sceMpegDemuxPssRing(
-    sceMpeg *pMpeg, unsigned char *pStart, int nSize, unsigned char *pBuffer, int nBufferSize) {
-    MpegWork *work;
-    StreamEntry *table;
+    sceMpeg *mp, unsigned char *data, int size, unsigned char *buffer, int buffer_size) {
+    MpegContext *w = mp->sys;
+    StreamEntry *pTable = w->mStreamTable;
     BitReader reader;
     PackHeader pack;
-    // Packets without header data do not set the payload fields, so a callback sees the previous
-    // packet's values. The image starts them from uninitialised stack memory.
+    // A packet without header data does not set the payload fields. A callback then reads the
+    // previous packet's values, and the first packet reads zeros instead of stale stack memory.
     PesPacket packet = {0};
-    sceMpegCallback defaultCallback;
-    void *defaultData;
-    unsigned long long limit;
-    int consumed;
-    int proceed;
-    int count;
+    sceMpegCallback pfnDefault = NULL;
+    void *pDefaultData = NULL;
+    unsigned long long nLimit = (unsigned long long)(long long)(size << 3);
+    int nConsumed = 0;
+    int nProceed = 1;
     int i;
 
-    work = (MpegWork *)pMpeg->pContext;
-    table = work->mStreamTable;
-    defaultCallback = NULL;
-    defaultData = NULL;
-    consumed = 0;
-    proceed = 1;
-    limit = (unsigned long long)(long long)(nSize * 8);
-    initBitReader(&reader, pStart, pBuffer, nBufferSize);
-    count = work->mStreamCount;
-    for (i = 0; i < count; ++i) {
-        if (table[i].key == kDefaultStreamKey) {
-            defaultData = table[i].data;
-            defaultCallback = table[i].callback;
+    InitMpegBitReader(&reader, data, buffer, buffer_size);
+    for (i = 0; i < w->mStreamCount; ++i) {
+        if (pTable[i].mKey == kDefaultStreamKey) {
+            pDefaultData = pTable[i].mData;
+            pfnDefault = pTable[i].mCallback;
         }
-        if (defaultCallback != NULL) {
+        if (pfnDefault != NULL) {
             break;
         }
     }
-
-    if (peekBits(&reader, 32) == kPackStartCode) {
+    if (PeekMpegBits(&reader, 32) == kPackStartCode) {
         parsePackHeader(&reader, &pack);
     }
     for (;;) {
-        if (isPacketStart(&reader) && reader.mPosition < limit) {
-            if (proceed == 0) {
-                return consumed;
+        if (IsPacketStart(&reader) && reader.mPosition < nLimit) {
+            if (nProceed == 0) {
+                return nConsumed;
             }
-            parsePacket(&reader, &packet);
-            if (limit < reader.mPosition) {
+            parsePacket(w, &reader, &packet);
+            if (nLimit < reader.mPosition) {
                 continue;
             }
-            count = work->mStreamCount;
-            for (i = 0; i < count; ++i) {
-                if (table[i].key == (packet.mKey & table[i].templateBits)) {
-                    proceed =
-                        deliverPacket(pMpeg, &reader, &packet, table[i].callback, table[i].data);
+            for (i = 0; i < w->mStreamCount; ++i) {
+                if (pTable[i].mKey == (packet.mKey & pTable[i].mMask)) {
+                    nProceed =
+                        DeliverPacket(mp, &reader, &packet, pTable[i].mCallback, pTable[i].mData);
                     break;
                 }
             }
-            // The count is read again after a callback. The callback may register a stream.
-            if (i == work->mStreamCount && defaultCallback != NULL) {
-                proceed = deliverPacket(pMpeg, &reader, &packet, defaultCallback, defaultData);
+            // The count is read again after a callback, which may register a stream.
+            if (i == w->mStreamCount && pfnDefault != NULL) {
+                nProceed = DeliverPacket(mp, &reader, &packet, pfnDefault, pDefaultData);
             }
-            if (proceed != 0) {
-                consumed = (int)(reader.mPosition >> 3);
+            if (nProceed != 0) {
+                nConsumed = (int)(reader.mPosition >> 3);
             }
             continue;
         }
-        if (limit < reader.mPosition || peekBits(&reader, 32) != kPackStartCode) {
-            return consumed;
+        if (nLimit < reader.mPosition || PeekMpegBits(&reader, 32) != kPackStartCode) {
+            return nConsumed;
         }
         parsePackHeader(&reader, &pack);
     }
 }
 
-int sceMpegIsEnd(void *pDecoder) {
-    MpegWork *work;
-
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    return work->mCompleted;
+int sceMpegDemuxPss(sceMpeg *mp, unsigned char *data, int size) {
+    return sceMpegDemuxPssRing(mp, data, size, NULL, -1);
 }
 
-// Word at NTSC-U/C: 0x007a2c08, PAL: 0x007e6908, set when a VLC or slice error was reported.
-static int g_nMpegDecodeError;
-// Word at NTSC-U/C: 0x007a2d40, PAL: 0x007e6a40, quantiser_scale_code.
-static int g_nMpegQuantiserScaleCode;
-static int g_nMpegIntraSlice; // Word at NTSC-U/C: 0x007a33c0, PAL: 0x007e70c0, intra_slice.
+sceMpegCallback
+sceMpegAddStrCallback(sceMpeg *mp, int type, int ch, sceMpegCallback func, void *data) {
+    MpegContext *w = mp->sys;
+    StreamEntry *pTable = w->mStreamTable;
+    unsigned long long nKey = buildStreamKey(type, ch);
+    sceMpegCallback pfnPrevious = NULL;
+    int nCount = w->mStreamCount;
+    int i;
 
-// The reference DMA chain. The word at 0x007a38b4 records its address.
-static unsigned long long g_mpegMcChain[kMcPredictionSlots * 4] __attribute__((aligned(64)));
-
-enum {
-    kIpuBitPointerAddress = 0x10002020,
-    kIpuTopAddress = 0x10002030,
-    kIpuErrorCodeDetected = 0x4000u,
-    kIpuReset = 0x40000000u,
-    kIpuCommandBdec = 0x20000000u,
-    kIpuCommandVdec = 0x30000000u,
-    kIpuVdecTableShift = 26,
-    kIpuPictureTypeShift = 24,
-    kIpuPictureTypeMask = 7u,
-    kBdecIntraShift = 27,
-    kBdecResetDcShift = 26,
-    kBdecDctTypeShift = 25,
-    kBdecQuantiserShift = 16,
-    kIpuBitsPerWord = 32,
-    kIpuBitPointerMask = 0x1f,
-    kToSprTadrAddress = 0x1000d430,
-    kDmacEnableReadAddress = 0x1000f520,
-    kDmacEnableWriteAddress = 0x1000f590,
-    kDmacSuspend = 0x10000u,
-    kDmaChcrChainToSpr = 0x105u,
-    kDmaScratchpadFlag = 0x80000000u,
-    kDmaTagRef = 0x30000000u,
-    kDmaTagRefe = 0,
-    kCoefficientQwords = 48,
-    kStagingPairQwords = 48,
-    kMpegMcOutputBase = 0x70003600, // Word at NTSC-U/C: 0x007a38b8, PAL: 0x007e75b8, never written.
-};
-
-// The VDEC tables, the macroblock_type bits, and the coding enumerations of ISO/IEC 13818-2.
-enum {
-    kVdecMacroblockAddressIncrement = 0,
-    kVdecMacroblockType = 1,
-    kVdecMotionCode = 2,
-    kVdecDmVector = 3,
-    kMbIntra = 1,
-    kMbPattern = 2,
-    kMbMotionBackward = 4,
-    kMbMotionForward = 8,
-    kMbQuant = 0x10,
-    kMcField = 1,
-    kMcFrame = 2,
-    kMc16x8 = 2,
-    kMcDualPrime = 3,
-    kTopField = 1,
-    kBottomField = 2,
-    kFramePicture = 3,
-    kPictureI = 1,
-    kPictureP = 2,
-    kMbaiStuffing = 34,
-    kMbaiEscape = 35,
-    kMbaiEscapeIncrement = 33,
-    kMbaiPeekBits = 11,
-    kMpeg1StuffingCode = 15,
-    kSliceStartCodeFirst = 0x101,
-    kSliceStartCodeCount = 0xaf,
-    kSliceDone = 0,
-    kSliceError = 1,
-    kSliceSkipPicture = 2,
-    kSliceNext = 3,
-};
-
-// Staging and output layout. A staged reference is four macroblocks, two rows of each of two
-// columns, and a macroblock stores 256 luma bytes then 64 bytes of each chroma plane.
-enum {
-    kStagingBytes = 1536,
-    kStagingRightColumn = 768,
-    kChromaPlaneOffset = 256,
-    kLumaSize = 16,
-    kChromaSize = 8,
-    kHalfLumaSize = 8,
-    kLumaRowShift = 4,
-    kChromaRowShift = 3,
-    kLumaDestRowShift = 5,
-    kChromaDestRowShift = 4,
-    kChromaDestOffset = 512,
-};
-
-// The hand-written MMI kernels at 0x00609268 to 0x0060a038. Each prediction kernel takes one
-// MpegMcDescriptor. The luma kernels read quadword rows; the chroma kernels read doubleword rows of
-// both planes. Index bit 0 is half-pel vertical, bit 1 half-pel horizontal, and bit 2 averages
-// with the prediction already in the output.
-void sceMpegMcLumaCopy(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaCopy(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaHalfV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaHalfV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaHalfH(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaHalfH(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaHalfHV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaHalfHV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaAverageCopy(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaAverageCopy(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaAverageHalfV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaAverageHalfV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaAverageHalfH(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaAverageHalfH(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcLumaAverageHalfHV(const MpegMcDescriptor *pDescriptor);
-void sceMpegMcChromaAverageHalfHV(const MpegMcDescriptor *pDescriptor);
-// Adds the prediction to the decoded block, saturates, and packs 384 bytes to nDest.
-void sceMpegMcAddBlock(int nDest, int nPrediction, int nBlock);
-// Saturates and packs 384 bytes of nSource to nDest.
-void sceMpegMcPutBlock(int nDest, int nSource);
-
-// NTSC-U/C: 0x007a33c8, PAL: 0x007e70c8
-static const MpegMcKernel g_mpegLumaKernels[kMcKernelVariants] = {
-    sceMpegMcLumaCopy,
-    sceMpegMcLumaHalfV,
-    sceMpegMcLumaHalfH,
-    sceMpegMcLumaHalfHV,
-    sceMpegMcLumaAverageCopy,
-    sceMpegMcLumaAverageHalfV,
-    sceMpegMcLumaAverageHalfH,
-    sceMpegMcLumaAverageHalfHV,
-};
-
-// NTSC-U/C: 0x007a33e8, PAL: 0x007e70e8
-static const MpegMcKernel g_mpegChromaKernels[kMcKernelVariants] = {
-    sceMpegMcChromaCopy,
-    sceMpegMcChromaHalfV,
-    sceMpegMcChromaHalfH,
-    sceMpegMcChromaHalfHV,
-    sceMpegMcChromaAverageCopy,
-    sceMpegMcChromaAverageHalfV,
-    sceMpegMcChromaAverageHalfH,
-    sceMpegMcChromaAverageHalfHV,
-};
-
-// The routines retain the image's layout. Each starts at the same offset within a quadword and
-// the clamp constant at 0x0060a020 stays quadword aligned. The constant sits inside the last
-// routine's path and executes as a no-op shift of $zero.
-__asm__("    .text\n"
-        "    .set push\n"
-        "    .set noreorder\n"
-        "    .set nomacro\n"
-        "    .set noat\n"
-        "    .align 4\n"
-        "    nop\n"
-        "    nop\n"
-        "    .type sceMpegMcLumaCopy, @function\n"
-        "sceMpegMcLumaCopy:\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    sll $11,$12,0x1\n"
-        "    addiu $15,$0,-1\n"
-        "    mtsab $13,0\n"
-        ".LMcLumaCopyRow:\n"
-        "    lq $8,0($5)\n"
-        "    addi $7,$7,-1\n"
-        "    lq $9,0($6)\n"
-        "    addu $5,$5,$12\n"
-        "    qfsrv $10,$9,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    pextub $9,$0,$10\n"
-        "    sq $8,0($14)\n"
-        "    addu $6,$6,$12\n"
-        "    sq $9,16($14)\n"
-        "    bgtz $7,.LMcLumaCopyRow\n"
-        "    addu $14,$14,$11\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$15,$7\n"
-        "    bne $10,$0,.LMcLumaCopyRow\n"
-        "    daddu $15,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaCopy, @function\n"
-        "sceMpegMcChromaCopy:\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    sll $11,$12,0x1\n"
-        "    mtsab $13,0\n"
-        "    addiu $24,$0,-1\n"
-        ".LMcChromaCopyPlane:\n"
-        "    lw $7,8($4)\n"
-        "    addiu $15,$0,-1\n"
-        ".LMcChromaCopyRow:\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    qfsrv $9,$8,$8\n"
-        "    pextlb $8,$0,$9\n"
-        "    sq $8,0($14)\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$12\n"
-        "    addu $14,$14,$11\n"
-        "    bgtz $7,.LMcChromaCopyRow\n"
-        "    addu $6,$6,$12\n"
-        "    addiu $5,$5,320\n"
-        "    addiu $6,$6,320\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$15,$7\n"
-        "    bne $10,$0,.LMcChromaCopyRow\n"
-        "    daddu $15,$0,$0\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    bne $24,$0,.LMcChromaCopyPlane\n"
-        "    daddu $24,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaHalfV, @function\n"
-        "sceMpegMcLumaHalfV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $24,16($4)\n"
-        "    lq $8,0($5)\n"
-        "    sll $12,$24,0x1\n"
-        "    lq $9,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $10,$9,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    addiu $11,$0,-1\n"
-        "    beq $7,$0,.LMcLumaHalfVBelow\n"
-        "    pextub $9,$0,$10\n"
-        ".LMcLumaHalfVRow:\n"
-        "    addu $5,$5,$24\n"
-        "    addu $6,$6,$24\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    qfsrv $2,$15,$10\n"
-        "    pextlb $10,$0,$2\n"
-        "    addi $7,$7,-1\n"
-        "    pextub $15,$0,$2\n"
-        "    paddh $2,$8,$10\n"
-        "    paddh $3,$9,$15\n"
-        "    por $8,$10,$0\n"
-        "    por $9,$15,$0\n"
-        "    paddh $2,$2,$25\n"
-        "    paddh $3,$3,$25\n"
-        "    psrlh $2,$2,0x1\n"
-        "    psrlh $3,$3,0x1\n"
-        "    sq $2,0($14)\n"
-        "    sq $3,16($14)\n"
-        "    bgtz $7,.LMcLumaHalfVRow\n"
-        "    addu $14,$14,$12\n"
-        ".LMcLumaHalfVBelow:\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcLumaHalfVRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaHalfV, @function\n"
-        "sceMpegMcChromaHalfV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    addiu $11,$0,1\n"
-        "    sll $24,$12,0x1\n"
-        "    mtsab $13,0\n"
-        ".LMcChromaHalfVPlane:\n"
-        "    lw $7,8($4)\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    qfsrv $8,$8,$8\n"
-        "    ori $11,$11,0x8000\n"
-        "    beq $7,$0,.LMcChromaHalfVBelow\n"
-        "    pextlb $15,$0,$8\n"
-        ".LMcChromaHalfVRow:\n"
-        "    addu $5,$5,$12\n"
-        "    addu $6,$6,$12\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $10,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    paddh $9,$10,$15\n"
-        "    por $15,$10,$0\n"
-        "    paddh $10,$9,$25\n"
-        "    psrlh $10,$10,0x1\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaHalfVRow\n"
-        "    addu $14,$14,$24\n"
-        ".LMcChromaHalfVBelow:\n"
-        "    psrah $10,$11,0xf\n"
-        "    addiu $5,$5,320\n"
-        "    lw $7,12($4)\n"
-        "    addiu $6,$6,320\n"
-        "    and $10,$10,$7\n"
-        "    bne $10,$0,.LMcChromaHalfVRow\n"
-        "    andi $11,$11,0x7fff\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    andi $10,$11,0x1\n"
-        "    bne $10,$0,.LMcChromaHalfVPlane\n"
-        "    andi $11,$11,0xfffe\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaHalfH, @function\n"
-        "sceMpegMcLumaHalfH:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    addiu $24,$0,1\n"
-        "    lw $9,16($4)\n"
-        "    sll $8,$9,0x1\n"
-        "    addiu $11,$0,-1\n"
-        ".LMcLumaHalfHRow:\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $2,$15,$10\n"
-        "    qfsrv $3,$10,$15\n"
-        "    pextlb $10,$0,$2\n"
-        "    addi $7,$7,-1\n"
-        "    pextub $15,$0,$2\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $3,$3,$2\n"
-        "    pextlb $2,$0,$3\n"
-        "    pextub $3,$0,$3\n"
-        "    paddh $10,$10,$2\n"
-        "    paddh $15,$15,$3\n"
-        "    paddh $2,$10,$25\n"
-        "    paddh $3,$15,$25\n"
-        "    psrlh $2,$2,0x1\n"
-        "    psrlh $3,$3,0x1\n"
-        "    sq $2,0($14)\n"
-        "    sq $3,16($14)\n"
-        "    addu $5,$5,$9\n"
-        "    addu $6,$6,$9\n"
-        "    bgtz $7,.LMcLumaHalfHRow\n"
-        "    addu $14,$14,$8\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $12,$11,$7\n"
-        "    bne $12,$0,.LMcLumaHalfHRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaHalfH, @function\n"
-        "sceMpegMcChromaHalfH:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    addiu $24,$0,1\n"
-        "    addiu $12,$0,-1\n"
-        "    lw $3,16($4)\n"
-        "    sll $2,$3,0x1\n"
-        ".LMcChromaHalfHPlane:\n"
-        "    lw $7,8($4)\n"
-        "    addiu $11,$0,-1\n"
-        ".LMcChromaHalfHRow:\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$3\n"
-        "    addu $6,$6,$3\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $10,$0,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    paddh $10,$9,$8\n"
-        "    paddh $10,$10,$25\n"
-        "    psrlh $10,$10,0x1\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaHalfHRow\n"
-        "    addu $14,$14,$2\n"
-        "    addiu $5,$5,320\n"
-        "    addiu $6,$6,320\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcChromaHalfHRow\n"
-        "    daddu $11,$0,$0\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    bne $12,$0,.LMcChromaHalfHPlane\n"
-        "    daddu $12,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaHalfHV, @function\n"
-        "sceMpegMcLumaHalfHV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    psllh $25,$25,0x1\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    addiu $24,$0,1\n"
-        "    lq $8,0($5)\n"
-        "    lq $9,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $10,$9,$8\n"
-        "    qfsrv $15,$8,$9\n"
-        "    pextlb $8,$0,$10\n"
-        "    pextub $9,$0,$10\n"
-        "    addiu $11,$0,-1\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $15,$15,$10\n"
-        "    pextlb $10,$0,$15\n"
-        "    pextub $15,$0,$15\n"
-        "    paddh $8,$8,$10\n"
-        "    beq $7,$0,.LMcLumaHalfHVBelow\n"
-        "    paddh $9,$9,$15\n"
-        ".LMcLumaHalfHVRow:\n"
-        "    addu $5,$5,$12\n"
-        "    addu $6,$6,$12\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $2,$15,$10\n"
-        "    qfsrv $3,$10,$15\n"
-        "    pextlb $10,$0,$2\n"
-        "    addi $7,$7,-1\n"
-        "    pextub $15,$0,$2\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $3,$3,$2\n"
-        "    pextlb $2,$0,$3\n"
-        "    pextub $3,$0,$3\n"
-        "    paddh $10,$10,$2\n"
-        "    paddh $15,$15,$3\n"
-        "    paddh $2,$8,$10\n"
-        "    paddh $3,$9,$15\n"
-        "    por $8,$10,$0\n"
-        "    por $9,$15,$0\n"
-        "    paddh $2,$2,$25\n"
-        "    paddh $3,$3,$25\n"
-        "    psrlh $2,$2,0x2\n"
-        "    psrlh $3,$3,0x2\n"
-        "    sq $2,0($14)\n"
-        "    sll $10,$12,0x1\n"
-        "    sq $3,16($14)\n"
-        "    bgtz $7,.LMcLumaHalfHVRow\n"
-        "    addu $14,$14,$10\n"
-        ".LMcLumaHalfHVBelow:\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcLumaHalfHVRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaHalfHV, @function\n"
-        "sceMpegMcChromaHalfHV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    psllh $25,$25,0x1\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    addiu $24,$0,1\n"
-        "    addiu $11,$0,1\n"
-        ".LMcChromaHalfHVPlane:\n"
-        "    lw $7,8($4)\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addu $5,$5,$12\n"
-        "    ori $11,$11,0x8000\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $10,$0,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    beq $7,$0,.LMcChromaHalfHVBelow\n"
-        "    paddh $15,$9,$8\n"
-        ".LMcChromaHalfHVRow:\n"
-        "    addu $6,$6,$12\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$12\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $10,$0,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    paddh $10,$9,$8\n"
-        "    paddh $9,$10,$15\n"
-        "    por $15,$10,$0\n"
-        "    paddh $10,$9,$25\n"
-        "    sll $8,$12,0x1\n"
-        "    psrlh $10,$10,0x2\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaHalfHVRow\n"
-        "    addu $14,$14,$8\n"
-        ".LMcChromaHalfHVBelow:\n"
-        "    psrah $10,$11,0xf\n"
-        "    addiu $5,$5,320\n"
-        "    lw $7,12($4)\n"
-        "    addiu $6,$6,320\n"
-        "    and $10,$10,$7\n"
-        "    bne $10,$0,.LMcChromaHalfHVRow\n"
-        "    andi $11,$11,0x7fff\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    andi $10,$11,0x1\n"
-        "    bne $10,$0,.LMcChromaHalfHVPlane\n"
-        "    andi $11,$11,0xfffe\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaAverageCopy, @function\n"
-        "sceMpegMcLumaAverageCopy:\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $9,16($4)\n"
-        "    sll $8,$9,0x1\n"
-        "    addiu $11,$0,-1\n"
-        "    mtsab $13,0\n"
-        ".LMcLumaAverageCopyRow:\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    qfsrv $2,$15,$10\n"
-        "    pextlb $10,$0,$2\n"
-        "    pextub $15,$0,$2\n"
-        "    lq $2,0($14)\n"
-        "    lq $3,16($14)\n"
-        "    paddh $2,$2,$10\n"
-        "    paddh $3,$3,$15\n"
-        "    pcgth $10,$2,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$2,$10\n"
-        "    psrlh $2,$10,0x1\n"
-        "    pcgth $10,$3,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$3,$10\n"
-        "    psrlh $3,$10,0x1\n"
-        "    sq $2,0($14)\n"
-        "    sq $3,16($14)\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$9\n"
-        "    addu $14,$14,$8\n"
-        "    bgtz $7,.LMcLumaAverageCopyRow\n"
-        "    addu $6,$6,$9\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $12,$11,$7\n"
-        "    bne $12,$0,.LMcLumaAverageCopyRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaAverageCopy, @function\n"
-        "sceMpegMcChromaAverageCopy:\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    addiu $12,$0,-1\n"
-        "    lw $3,16($4)\n"
-        "    sll $2,$3,0x1\n"
-        "    mtsab $13,0\n"
-        ".LMcChromaAverageCopyPlane:\n"
-        "    lw $7,8($4)\n"
-        "    addiu $11,$0,-1\n"
-        ".LMcChromaAverageCopyRow:\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$3\n"
-        "    addu $6,$6,$3\n"
-        "    lq $8,0($14)\n"
-        "    paddh $10,$9,$8\n"
-        "    pcgth $9,$10,$0\n"
-        "    psrlh $9,$9,0xf\n"
-        "    paddh $10,$10,$9\n"
-        "    psrlh $10,$10,0x1\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaAverageCopyRow\n"
-        "    addu $14,$14,$2\n"
-        "    addiu $5,$5,320\n"
-        "    addiu $6,$6,320\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcChromaAverageCopyRow\n"
-        "    daddu $11,$0,$0\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    bne $12,$0,.LMcChromaAverageCopyPlane\n"
-        "    daddu $12,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaAverageHalfV, @function\n"
-        "sceMpegMcLumaAverageHalfV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    lq $8,0($5)\n"
-        "    lq $9,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $10,$9,$8\n"
-        "    sll $24,$12,0x1\n"
-        "    pextlb $8,$0,$10\n"
-        "    addiu $11,$0,-1\n"
-        "    beq $7,$0,.LMcLumaAverageHalfVBelow\n"
-        "    pextub $9,$0,$10\n"
-        ".LMcLumaAverageHalfVRow:\n"
-        "    addu $5,$5,$12\n"
-        "    addu $6,$6,$12\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    qfsrv $2,$15,$10\n"
-        "    pextlb $10,$0,$2\n"
-        "    addi $7,$7,-1\n"
-        "    pextub $15,$0,$2\n"
-        "    paddh $2,$8,$10\n"
-        "    paddh $3,$9,$15\n"
-        "    por $8,$10,$0\n"
-        "    por $9,$15,$0\n"
-        "    paddh $2,$2,$25\n"
-        "    paddh $3,$3,$25\n"
-        "    psrlh $2,$2,0x1\n"
-        "    psrlh $3,$3,0x1\n"
-        "    lq $10,0($14)\n"
-        "    lq $15,16($14)\n"
-        "    paddh $2,$2,$10\n"
-        "    paddh $3,$3,$15\n"
-        "    pcgth $10,$2,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$2,$10\n"
-        "    psrlh $2,$10,0x1\n"
-        "    pcgth $10,$3,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$3,$10\n"
-        "    psrlh $3,$10,0x1\n"
-        "    sq $2,0($14)\n"
-        "    sq $3,16($14)\n"
-        "    bgtz $7,.LMcLumaAverageHalfVRow\n"
-        "    addu $14,$14,$24\n"
-        ".LMcLumaAverageHalfVBelow:\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcLumaAverageHalfVRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaAverageHalfV, @function\n"
-        "sceMpegMcChromaAverageHalfV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    addiu $11,$0,1\n"
-        "    sll $24,$12,0x1\n"
-        "    mtsab $13,0\n"
-        ".LMcChromaAverageHalfVPlane:\n"
-        "    lw $7,8($4)\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    qfsrv $8,$8,$8\n"
-        "    ori $11,$11,0x8000\n"
-        "    beq $7,$0,.LMcChromaAverageHalfVBelow\n"
-        "    pextlb $15,$0,$8\n"
-        ".LMcChromaAverageHalfVRow:\n"
-        "    addu $5,$5,$12\n"
-        "    addu $6,$6,$12\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $10,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    paddh $9,$10,$15\n"
-        "    por $15,$10,$0\n"
-        "    paddh $10,$9,$25\n"
-        "    psrlh $10,$10,0x1\n"
-        "    lq $8,0($14)\n"
-        "    paddh $10,$10,$8\n"
-        "    pcgth $9,$10,$0\n"
-        "    psrlh $9,$9,0xf\n"
-        "    paddh $10,$10,$9\n"
-        "    psrlh $10,$10,0x1\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaAverageHalfVRow\n"
-        "    addu $14,$14,$24\n"
-        ".LMcChromaAverageHalfVBelow:\n"
-        "    psrah $10,$11,0xf\n"
-        "    addiu $5,$5,320\n"
-        "    lw $7,12($4)\n"
-        "    addiu $6,$6,320\n"
-        "    and $10,$10,$7\n"
-        "    bne $10,$0,.LMcChromaAverageHalfVRow\n"
-        "    andi $11,$11,0x7fff\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    andi $10,$11,0x1\n"
-        "    bne $10,$0,.LMcChromaAverageHalfVPlane\n"
-        "    andi $11,$11,0xfffe\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaAverageHalfH, @function\n"
-        "sceMpegMcLumaAverageHalfH:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    addiu $24,$0,1\n"
-        "    lw $9,16($4)\n"
-        "    sll $8,$9,0x1\n"
-        "    addiu $11,$0,-1\n"
-        ".LMcLumaAverageHalfHRow:\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $2,$15,$10\n"
-        "    qfsrv $3,$10,$15\n"
-        "    pextlb $10,$0,$2\n"
-        "    addi $7,$7,-1\n"
-        "    pextub $15,$0,$2\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $3,$3,$2\n"
-        "    pextlb $2,$0,$3\n"
-        "    pextub $3,$0,$3\n"
-        "    paddh $10,$10,$2\n"
-        "    paddh $15,$15,$3\n"
-        "    paddh $2,$10,$25\n"
-        "    paddh $3,$15,$25\n"
-        "    psrlh $2,$2,0x1\n"
-        "    psrlh $3,$3,0x1\n"
-        "    lq $10,0($14)\n"
-        "    lq $15,16($14)\n"
-        "    paddh $2,$2,$10\n"
-        "    paddh $3,$3,$15\n"
-        "    pcgth $10,$2,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$2,$10\n"
-        "    psrlh $2,$10,0x1\n"
-        "    pcgth $10,$3,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$3,$10\n"
-        "    psrlh $3,$10,0x1\n"
-        "    sq $2,0($14)\n"
-        "    sq $3,16($14)\n"
-        "    addu $5,$5,$9\n"
-        "    addu $6,$6,$9\n"
-        "    bgtz $7,.LMcLumaAverageHalfHRow\n"
-        "    addu $14,$14,$8\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $12,$11,$7\n"
-        "    bne $12,$0,.LMcLumaAverageHalfHRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaAverageHalfH, @function\n"
-        "sceMpegMcChromaAverageHalfH:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    addiu $24,$0,1\n"
-        "    addiu $12,$0,-1\n"
-        "    lw $3,16($4)\n"
-        "    sll $2,$3,0x1\n"
-        ".LMcChromaAverageHalfHPlane:\n"
-        "    lw $7,8($4)\n"
-        "    addiu $11,$0,-1\n"
-        ".LMcChromaAverageHalfHRow:\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$3\n"
-        "    addu $6,$6,$3\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $10,$0,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    paddh $10,$9,$8\n"
-        "    paddh $10,$10,$25\n"
-        "    psrlh $10,$10,0x1\n"
-        "    lq $8,0($14)\n"
-        "    paddh $10,$10,$8\n"
-        "    pcgth $9,$10,$0\n"
-        "    psrlh $9,$9,0xf\n"
-        "    paddh $10,$10,$9\n"
-        "    psrlh $10,$10,0x1\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaAverageHalfHRow\n"
-        "    addu $14,$14,$2\n"
-        "    addiu $5,$5,320\n"
-        "    addiu $6,$6,320\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcChromaAverageHalfHRow\n"
-        "    daddu $11,$0,$0\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    bne $12,$0,.LMcChromaAverageHalfHPlane\n"
-        "    daddu $12,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcLumaAverageHalfHV, @function\n"
-        "sceMpegMcLumaAverageHalfHV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    psllh $25,$25,0x1\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $7,8($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $24,16($4)\n"
-        "    addiu $12,$0,1\n"
-        "    lq $8,0($5)\n"
-        "    lq $9,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $10,$9,$8\n"
-        "    qfsrv $15,$8,$9\n"
-        "    pextlb $8,$0,$10\n"
-        "    pextub $9,$0,$10\n"
-        "    addiu $11,$0,-1\n"
-        "    mtsab $12,0\n"
-        "    qfsrv $15,$15,$10\n"
-        "    pextlb $10,$0,$15\n"
-        "    pextub $15,$0,$15\n"
-        "    paddh $8,$8,$10\n"
-        "    beq $7,$0,.LMcLumaAverageHalfHVBelow\n"
-        "    paddh $9,$9,$15\n"
-        ".LMcLumaAverageHalfHVRow:\n"
-        "    addu $5,$5,$24\n"
-        "    addu $6,$6,$24\n"
-        "    lq $10,0($5)\n"
-        "    lq $15,0($6)\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $2,$15,$10\n"
-        "    qfsrv $3,$10,$15\n"
-        "    pextlb $10,$0,$2\n"
-        "    addi $7,$7,-1\n"
-        "    pextub $15,$0,$2\n"
-        "    mtsab $12,0\n"
-        "    qfsrv $3,$3,$2\n"
-        "    pextlb $2,$0,$3\n"
-        "    pextub $3,$0,$3\n"
-        "    paddh $10,$10,$2\n"
-        "    paddh $15,$15,$3\n"
-        "    paddh $2,$8,$10\n"
-        "    paddh $3,$9,$15\n"
-        "    por $8,$10,$0\n"
-        "    por $9,$15,$0\n"
-        "    paddh $2,$2,$25\n"
-        "    paddh $3,$3,$25\n"
-        "    psrlh $2,$2,0x2\n"
-        "    psrlh $3,$3,0x2\n"
-        "    lq $10,0($14)\n"
-        "    lq $15,16($14)\n"
-        "    paddh $2,$2,$10\n"
-        "    paddh $3,$3,$15\n"
-        "    pcgth $10,$2,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$2,$10\n"
-        "    psrlh $2,$10,0x1\n"
-        "    pcgth $10,$3,$0\n"
-        "    psrlh $10,$10,0xf\n"
-        "    paddh $10,$3,$10\n"
-        "    psrlh $3,$10,0x1\n"
-        "    sq $2,0($14)\n"
-        "    sll $10,$24,0x1\n"
-        "    sq $3,16($14)\n"
-        "    bgtz $7,.LMcLumaAverageHalfHVRow\n"
-        "    addu $14,$14,$10\n"
-        ".LMcLumaAverageHalfHVBelow:\n"
-        "    addiu $5,$5,128\n"
-        "    addiu $6,$6,128\n"
-        "    lw $7,12($4)\n"
-        "    and $10,$11,$7\n"
-        "    bne $10,$0,.LMcLumaAverageHalfHVRow\n"
-        "    daddu $11,$0,$0\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcChromaAverageHalfHV, @function\n"
-        "sceMpegMcChromaAverageHalfHV:\n"
-        "    pnor $25,$0,$0\n"
-        "    psrlh $25,$25,0xf\n"
-        "    psllh $25,$25,0x1\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    lw $13,4($4)\n"
-        "    lw $12,16($4)\n"
-        "    addiu $24,$0,1\n"
-        "    addiu $11,$0,1\n"
-        ".LMcChromaAverageHalfHVPlane:\n"
-        "    lw $7,8($4)\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addu $5,$5,$12\n"
-        "    ori $11,$11,0x8000\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $10,$0,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    beq $7,$0,.LMcChromaAverageHalfHVBelow\n"
-        "    paddh $15,$9,$8\n"
-        ".LMcChromaAverageHalfHVRow:\n"
-        "    addu $6,$6,$12\n"
-        "    ld $8,0($5)\n"
-        "    ld $9,0($6)\n"
-        "    pcpyld $8,$9,$8\n"
-        "    mtsab $13,0\n"
-        "    qfsrv $8,$8,$8\n"
-        "    pextlb $9,$0,$8\n"
-        "    addi $7,$7,-1\n"
-        "    addu $5,$5,$12\n"
-        "    mtsab $24,0\n"
-        "    qfsrv $10,$0,$8\n"
-        "    pextlb $8,$0,$10\n"
-        "    paddh $10,$9,$8\n"
-        "    paddh $9,$10,$15\n"
-        "    por $15,$10,$0\n"
-        "    paddh $10,$9,$25\n"
-        "    psrlh $10,$10,0x2\n"
-        "    lq $8,0($14)\n"
-        "    paddh $10,$10,$8\n"
-        "    pcgth $9,$10,$0\n"
-        "    psrlh $9,$9,0xf\n"
-        "    paddh $10,$10,$9\n"
-        "    sll $8,$12,0x1\n"
-        "    psrlh $10,$10,0x1\n"
-        "    sq $10,0($14)\n"
-        "    bgtz $7,.LMcChromaAverageHalfHVRow\n"
-        "    addu $14,$14,$8\n"
-        ".LMcChromaAverageHalfHVBelow:\n"
-        "    psrah $10,$11,0xf\n"
-        "    addiu $5,$5,320\n"
-        "    lw $7,12($4)\n"
-        "    addiu $6,$6,320\n"
-        "    and $10,$10,$7\n"
-        "    bne $10,$0,.LMcChromaAverageHalfHVRow\n"
-        "    andi $11,$11,0x7fff\n"
-        "    lw $5,20($4)\n"
-        "    lw $6,24($4)\n"
-        "    lw $14,0($4)\n"
-        "    addiu $5,$5,64\n"
-        "    addiu $6,$6,64\n"
-        "    addiu $14,$14,128\n"
-        "    andi $10,$11,0x1\n"
-        "    bne $10,$0,.LMcChromaAverageHalfHVPlane\n"
-        "    andi $11,$11,0xfffe\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcAddBlock, @function\n"
-        "sceMpegMcAddBlock:\n"
-        "    addiu $12,$0,24\n"
-        "    lui $10,%hi(sceMpegMcClampLimit)\n"
-        "    addiu $10,$10,%lo(sceMpegMcClampLimit)\n"
-        "    lq $11,0($10)\n"
-        ".LMcAddBlockRow:\n"
-        "    lq $8,0($5)\n"
-        "    addi $12,$12,-1\n"
-        "    lq $13,0($6)\n"
-        "    addiu $4,$4,16\n"
-        "    lq $9,16($5)\n"
-        "    paddh $8,$8,$13\n"
-        "    lq $2,16($6)\n"
-        "    pminh $8,$8,$11\n"
-        "    paddh $9,$9,$2\n"
-        "    pmaxh $8,$8,$0\n"
-        "    pminh $9,$9,$11\n"
-        "    addiu $5,$5,32\n"
-        "    pmaxh $9,$9,$0\n"
-        "    addiu $6,$6,32\n"
-        "    ppacb $10,$9,$8\n"
-        "    bne $12,$0,.LMcAddBlockRow\n"
-        "    sq $10,-16($4)\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "    .type sceMpegMcPutBlock, @function\n"
-        "sceMpegMcPutBlock:\n"
-        "    addiu $12,$0,24\n"
-        "    lui $10,%hi(sceMpegMcClampLimit)\n"
-        "    addiu $10,$10,%lo(sceMpegMcClampLimit)\n"
-        "    lq $11,0($10)\n"
-        ".LMcPutBlockRow:\n"
-        "    lq $8,0($5)\n"
-        "    addi $12,$12,-1\n"
-        "    pminh $8,$8,$11\n"
-        "    lq $9,16($5)\n"
-        "    pmaxh $8,$8,$0\n"
-        "    pminh $9,$9,$11\n"
-        "    addiu $5,$5,32\n"
-        "    pmaxh $9,$9,$0\n"
-        "    addiu $4,$4,16\n"
-        "    ppacb $10,$9,$8\n"
-        "    bne $12,$0,.LMcPutBlockRow\n"
-        "    sq $10,-16($4)\n"
-        "    sll $0,$0,0x0\n"
-        "    sll $0,$0,0x0\n"
-        "sceMpegMcClampLimit:\n"
-        "    .word 0xff00ff\n"
-        "    .word 0xff00ff\n"
-        "    .word 0xff00ff\n"
-        "    .word 0xff00ff\n"
-        "    jr $31\n"
-        "    sll $0,$0,0x0\n"
-        "    .set pop\n");
-
-// Rounds half a motion vector component away from zero for positive values, as the dual prime
-// derivation does.
-static inline int sceMpegHalfRoundUp(int nValue) {
-    return (nValue + (nValue > 0)) >> 1;
-}
-
-// NTSC-U/C: 0x0060a268, PAL: 0x0064aed8
-// Derives the dual prime vectors from the transmitted vector and the differential.
-static void sceMpegDualPrimeVectors(int *pDmv, const int *pDmVector, int nMvx, int nMvy) {
-    if (g_nMpegPictureStructure == kFramePicture) {
-        if (g_nMpegTopFieldFirst != 0) {
-            pDmv[0] = sceMpegHalfRoundUp(nMvx) + pDmVector[0];
-            pDmv[1] = sceMpegHalfRoundUp(nMvy) + pDmVector[1] - 1;
-            pDmv[2] = sceMpegHalfRoundUp(3 * nMvx) + pDmVector[0];
-            pDmv[3] = sceMpegHalfRoundUp(3 * nMvy) + pDmVector[1] + 1;
-        } else {
-            pDmv[0] = sceMpegHalfRoundUp(3 * nMvx) + pDmVector[0];
-            pDmv[1] = sceMpegHalfRoundUp(3 * nMvy) + pDmVector[1] - 1;
-            pDmv[2] = sceMpegHalfRoundUp(nMvx) + pDmVector[0];
-            pDmv[3] = sceMpegHalfRoundUp(nMvy) + pDmVector[1] + 1;
+    for (i = 0; i < nCount; ++i) {
+        if (nKey == pTable[i].mKey) {
+            pfnPrevious = pTable[i].mCallback;
+            break;
         }
+    }
+    if (i < kMaxStreamCallbacks) {
+        w->mStreamCount = nCount + 1; // Yes, the binary counts a duplicate key too.
+        pTable[i].mKey = nKey;
+        pTable[i].mData = data;
+        pTable[i].mCallback = func;
+        pTable[i].mMask = g_aMpegStreamIdTable[type][1];
+    }
+    return pfnPrevious;
+}
+
+#pragma mark - Work area allocator
+
+// NTSC-U/C: 0x003083d8, PAL: 0x00374868
+static void _sceMpegAlalcInit(MpegAlalc *pAlalc, unsigned char *pBase, int nSize) {
+    pAlalc->mDynamic = pBase;
+    pAlalc->mSize = nSize;
+    pAlalc->mBase = pBase;
+    pAlalc->mCurrent = pBase;
+}
+
+// NTSC-U/C: 0x003083f0, PAL: 0x00374880
+static void _sceMpegAlalcSetDynamic(MpegAlalc *pAlalc) {
+    pAlalc->mDynamic = pAlalc->mCurrent;
+}
+
+// NTSC-U/C: 0x00308400, PAL: 0x00374890
+static void _sceMpegAlalcFree(MpegAlalc *pAlalc) {
+    pAlalc->mCurrent = pAlalc->mDynamic;
+}
+
+// NTSC-U/C: 0x00308410, PAL: 0x003748a0
+static unsigned char *
+_sceMpegAlalcAlloc(MpegContext *w, MpegAlalc *pAlalc, unsigned int nSize, unsigned int nAlign) {
+    uintptr_t nStart = (((uintptr_t)pAlalc->mCurrent + nAlign - 1) / nAlign) * nAlign;
+
+    if ((uintptr_t)(pAlalc->mBase + pAlalc->mSize) < nStart + nSize) {
+        _sceMpegError(w, "work area size is too small");
+        return NULL;
+    }
+    pAlalc->mCurrent = (unsigned char *)(nStart + nSize);
+    return (unsigned char *)nStart;
+}
+
+#pragma mark - IPU access
+
+// NTSC-U/C: 0x0030b0b8, PAL: 0x00377548
+static void SetIpuControlEnableBit(int nMpeg1) {
+    *IPU_CTRL =
+        (*IPU_CTRL & ~(unsigned int)kIpuCtrlMpeg1) | ((unsigned int)nMpeg1 << kIpuCtrlMpeg1Shift);
+}
+
+// Spins while the IPU is busy without an error, raising the no-data callback every 5001 spins.
+static inline int SpinIpuBusy(MpegContext *w) {
+    int nSpins = 0;
+
+    if ((*IPU_CTRL & kIpuCtrlBusyOrError) == kIpuCtrlBusy) {
+        do {
+            if (nSpins++ > kIpuSpinLimit) {
+                _sceMpegCbNodata(w->mMpeg);
+                nSpins = 0;
+            }
+        } while ((*IPU_CTRL & kIpuCtrlBusyOrError) == kIpuCtrlBusy);
+    }
+    return nSpins;
+}
+
+// NTSC-U/C: 0x0030c360, PAL: 0x003787f0
+static void IssueIpuCommand(MpegContext *w, unsigned int nCommand) {
+    *IPU_CMD = nCommand;
+    w->mTopStale = g_anIpuCmdTypeTable[nCommand >> kIpuCmdShift];
+}
+
+// NTSC-U/C: 0x0030c390, PAL: 0x00378820
+static int WaitForIpuIdle(MpegContext *w) {
+    return SpinIpuBusy(w);
+}
+
+// NTSC-U/C: 0x0030c438, PAL: 0x003788c8
+// Returns the data of the last command once the IPU has it, or at an error.
+static unsigned int WaitForIpuCommandResult(MpegContext *w) {
+    unsigned long long nData = *IPU_CMD_DATA;
+    int nSpins = 0;
+
+    if ((long long)nData < 0 && (*IPU_CTRL & kIpuCtrlErrorCode) == 0) {
+        do {
+            if (nSpins++ > kIpuSpinLimit) {
+                _sceMpegCbNodata(w->mMpeg);
+                nSpins = 0;
+            }
+            nData = *IPU_CMD_DATA;
+            if ((long long)nData >= 0) {
+                break;
+            }
+        } while ((*IPU_CTRL & kIpuCtrlErrorCode) == 0);
+    }
+    return (unsigned int)nData;
+}
+
+// NTSC-U/C: 0x0030c4e8, PAL: 0x00378978
+static int DecodeIpuVlc(MpegContext *w, int nTable) {
+    unsigned int nCommand;
+    unsigned long long nData;
+    unsigned long long nTop;
+    unsigned int nPosition;
+    int nSpins = 0;
+
+    SpinIpuBusy(w);
+    nCommand = ((unsigned int)nTable << kIpuVdecTableShift) | kIpuCmdVdec;
+    *IPU_CMD = nCommand;
+    w->mTopStale = g_anIpuCmdTypeTable[(int)nCommand >> kIpuCmdShift];
+    nData = *IPU_CMD_DATA;
+    while ((long long)nData < 0) {
+        if (nSpins++ > kIpuSpinLimit) {
+            _sceMpegCbNodata(w->mMpeg);
+            nSpins = 0;
+        }
+        nData = *IPU_CMD_DATA;
+    }
+    nTop = *IPU_TOP;
+    nPosition = *IPU_BP;
+    w->mTopBits = (unsigned int)nTop;
+    if ((long long)nTop < 0) {
+        w->mTopBitCount = (int)((0u - (nPosition & kIpuBpPositionMask)) & kIpuBpPositionMask);
+    } else {
+        w->mTopBitCount = kIpuTopBits;
+    }
+    w->mFault = (int)nData == 0;
+    return (short)nData;
+}
+
+// NTSC-U/C: 0x0030c660, PAL: 0x00378af0
+static unsigned int PeekIpuBits(MpegContext *w, int nBits) {
+    if (w->mTopStale != 0 || w->mTopBitCount < nBits) {
+        SpinIpuBusy(w);
+        *IPU_CMD = kIpuCmdFdec;
+        w->mTopStale = g_anIpuCmdTypeTable[kIpuCmdFdecIndex];
+        w->mTopBits = WaitForIpuCommandResult(w);
+        w->mTopBitCount = kIpuTopBits;
+    }
+    return w->mTopBits >> ((kIpuTopBits - nBits) & (kIpuTopBits - 1));
+}
+
+// NTSC-U/C: 0x0030c768, PAL: 0x00378bf8
+static void ConsumeIpuBits(MpegContext *w, int nBits) {
+    unsigned int nCommand;
+
+    SpinIpuBusy(w);
+    nCommand = (unsigned int)nBits | kIpuCmdFdec;
+    *IPU_CMD = nCommand;
+    w->mTopStale = g_anIpuCmdTypeTable[nCommand >> kIpuCmdShift];
+    w->mTopBits = WaitForIpuCommandResult(w);
+    w->mTopBitCount = kIpuTopBits;
+}
+
+// NTSC-U/C: 0x0030c858, PAL: 0x00378ce8
+static unsigned int ReadMpegBits(MpegContext *w, int nBits) {
+    unsigned int nCommand;
+    unsigned int nValue;
+
+    SpinIpuBusy(w);
+    if (w->mTopStale != 0 || w->mTopBitCount < nBits) {
+        *IPU_CMD = kIpuCmdFdec;
+        w->mTopStale = g_anIpuCmdTypeTable[kIpuCmdFdecIndex];
+        w->mTopBits = WaitForIpuCommandResult(w);
+    }
+    w->mTopBitCount = kIpuTopBits;
+    nValue = w->mTopBits >> ((kIpuTopBits - nBits) & (kIpuTopBits - 1));
+    nCommand = (unsigned int)nBits | kIpuCmdFdec;
+    *IPU_CMD = nCommand;
+    w->mTopStale = g_anIpuCmdTypeTable[nCommand >> kIpuCmdShift];
+    w->mTopBits = WaitForIpuCommandResult(w);
+    return nValue;
+}
+
+// NTSC-U/C: 0x0030c9a8, PAL: 0x00378e38
+static void AlignToMpegStartCode(MpegContext *w) {
+    int nBits;
+
+    WaitForIpuIdle(w);
+    nBits = (int)((0u - *IPU_BP) & kIpuBpByteMask);
+    if (nBits != 0) {
+        ConsumeIpuBits(w, nBits);
+    }
+    while (PeekIpuBits(w, 24) != kPacketStartPrefix) {
+        ConsumeIpuBits(w, 8);
+    }
+}
+
+// NTSC-U/C: 0x0030b380, PAL: 0x00377810
+static int SetMpegStreamMode3(MpegContext *w) {
+    return DecodeIpuVlc(w, kVlcDmVector);
+}
+
+#pragma mark - Motion compensation
+
+// NTSC-U/C: 0x0030b3a0, PAL: 0x00377830
+static void
+mpc___dualPrimeVector(MpegContext *w, int dmv[2][2], const int dmvector[2], int nMvx, int nMvy) {
+    if (w->mPictureStructure == kFramePicture) {
+        if (w->mTopFieldFirst != 0) {
+            dmv[0][0] = ((nMvx + (nMvx > 0)) >> 1) + dmvector[0];
+            dmv[0][1] = ((nMvy + (nMvy > 0)) >> 1) + dmvector[1] - 1;
+            dmv[1][0] = ((3 * nMvx + (nMvx > 0)) >> 1) + dmvector[0];
+            dmv[1][1] = ((3 * nMvy + (nMvy > 0)) >> 1) + dmvector[1] + 1;
+        } else {
+            dmv[0][0] = ((3 * nMvx + (nMvx > 0)) >> 1) + dmvector[0];
+            dmv[0][1] = ((3 * nMvy + (nMvy > 0)) >> 1) + dmvector[1] - 1;
+            dmv[1][0] = ((nMvx + (nMvx > 0)) >> 1) + dmvector[0];
+            dmv[1][1] = ((nMvy + (nMvy > 0)) >> 1) + dmvector[1] + 1;
+        }
+    } else {
+        dmv[0][0] = ((nMvx + (nMvx > 0)) >> 1) + dmvector[0];
+        dmv[0][1] = ((nMvy + (nMvy > 0)) >> 1) + dmvector[1];
+        if (w->mPictureStructure == kTopField) {
+            --dmv[0][1];
+        } else {
+            ++dmv[0][1];
+        }
+    }
+}
+
+// Splits the rows of a job at the block boundary of the staged reference.
+static inline void
+SplitRows(MpegMcDescriptor *pJob, int nTop, int nRows, int nFieldMode, int nHalf, int nBlock) {
+    int nAbove;
+
+    if (nTop + (nRows << nFieldMode) < nBlock + 1 - nHalf) {
+        pJob->mRows = nRows;
+        pJob->mRowsBelow = 0;
         return;
     }
-    pDmv[0] = sceMpegHalfRoundUp(nMvx) + pDmVector[0];
-    pDmv[1] = sceMpegHalfRoundUp(nMvy) + pDmVector[1];
-    if (g_nMpegPictureStructure == kTopField) {
-        pDmv[1] = pDmv[1] - 1;
-    } else {
-        pDmv[1] = pDmv[1] + 1;
-    }
+    nAbove = (nBlock >> nFieldMode) - (nTop >> nFieldMode) - nHalf;
+    pJob->mRows = nAbove;
+    pJob->mRowsBelow = nRows - nAbove;
 }
 
-// Splits a block of nHeight rows starting nOffset rows into a staged macroblock of nSize rows into
-// the rows above the boundary and the rows below it. A half-pel vertical prediction reads one row
-// more.
-static inline void sceMpegSplitMcRows(MpegMcDescriptor *pDescriptor,
-                                      int nOffset,
-                                      int nHeight,
-                                      int nFieldShift,
-                                      int nHalfY,
-                                      int nSize) {
-    if (nHalfY != 0) {
-        if (nOffset + (nHeight << nFieldShift) < nSize) {
-            pDescriptor->mRows = nHeight;
-            pDescriptor->mRowsBelow = 0;
-            return;
-        }
-        pDescriptor->mRows = (nSize >> nFieldShift) - (nOffset >> nFieldShift) - 1;
-    } else {
-        if (nOffset + (nHeight << nFieldShift) < nSize + 1) {
-            pDescriptor->mRows = nHeight;
-            pDescriptor->mRowsBelow = 0;
-            return;
-        }
-        pDescriptor->mRows = (nSize >> nFieldShift) - (nOffset >> nFieldShift);
-    }
-    pDescriptor->mRowsBelow = nHeight - pDescriptor->mRows;
+// NTSC-U/C: 0x00309cc8, PAL: 0x00376158
+// Queues one prediction of the current macroblock from a reference picture.
+static void BuildMpegMotionBlockDescriptor(MpegContext *w,
+                                           const MpegPicture *pSource,
+                                           int nSourceField,
+                                           int nDestField,
+                                           int nRowOffset,
+                                           int nHeight,
+                                           int nX,
+                                           int nY,
+                                           int nDx,
+                                           int nDy,
+                                           int nFieldMode,
+                                           int nAverage) {
+    MpegMcBuffer *pBuffer = &w->mMcBuffers[w->mMcCurrent];
+    int nIndex = pBuffer->mPredictionCount;
+    MpegMcDescriptor *pLuma = &pBuffer->mLuma[nIndex];
+    MpegMcDescriptor *pChroma = &pBuffer->mChroma[nIndex];
+    unsigned char *pOutput = w->mMcOutput;
+    unsigned char *pStaging;
+    unsigned char *pChromaStaging;
+    int nLeft = (nDx >> 1) + nX;
+    int nTop;
+    int nColumn;
+    int nRow;
+    int nFirst;
+    int nHalfX = nDx & 1;
+    int nHalfY = nDy & 1;
+    int nChromaDx = nDx / 2;
+    int nChromaDy = nDy / 2;
+    int nChromaLeft;
+    int nChromaTop;
+    int nChromaColumn;
+    int nChromaRow;
+
+    nTop = (nFieldMode != 0 ? (nDy >> 1) << 1 : nDy >> 1) + nY + nRowOffset + nSourceField;
+    nColumn = nLeft >> 4;
+    nRow = nTop >> 4;
+    nFirst = nColumn * pSource->mMbHeight + nRow;
+    pLuma->mShift = nLeft - (nColumn << 4);
+    pLuma->mDest = pOutput + ((nDestField + nRowOffset) << 5);
+    nTop -= nRow << 4;
+    SplitRows(pLuma, nTop, nHeight, nFieldMode, nHalfY, 16);
+    pStaging = pBuffer->mStaging + nIndex * kMcStagingSize;
+    pLuma->mSourceLeft = pStaging + (nTop << 4);
+    pLuma->mStride = 16 << nFieldMode;
+    pLuma->mSourceRight = pStaging + (nTop << 4) + kMcColumnSize;
+
+    nChromaLeft = (nChromaDx >> 1) + (nX >> 1);
+    nChromaTop = (nFieldMode != 0 ? (nChromaDy >> 1) << 1 : nChromaDy >> 1) + (nY >> 1) +
+                 (nRowOffset >> 1) + nSourceField;
+    nChromaRow = nChromaTop >> 3;
+    nChromaColumn = nChromaLeft >> 3;
+    pChroma->mShift = nChromaLeft - (nChromaColumn << 3);
+    pChroma->mDest = pOutput + kMcChromaOutputOffset + ((nDestField + (nRowOffset >> 1)) << 4);
+    nChromaTop -= nChromaRow << 3;
+    SplitRows(pChroma, nChromaTop, nHeight >> 1, nFieldMode, nChromaDy & 1, 8);
+    pChroma->mStride = 8 << nFieldMode;
+    pChromaStaging =
+        pStaging + (((nChromaColumn - nColumn) << 1) + (nChromaRow - nRow)) * kMacroblockSize;
+
+    pBuffer->mLumaKernels[nIndex] = g_apfnMpegLumaKernels[(nAverage << 2) | (nHalfX << 1) | nHalfY];
+    pBuffer->mChromaKernels[nIndex] =
+        g_apfnMpegChromaKernels[(nAverage << 2) | ((nChromaDx & 1) << 1) | (nChromaDy & 1)];
+    pChroma->mSourceLeft = pChromaStaging + (nChromaTop << 3) + kMcChromaOffset;
+    pChroma->mSourceRight = pChromaStaging + (nChromaTop << 3) + kMcColumnSize + kMcChromaOffset;
+    pBuffer->mRefLeft[nIndex] = pSource->mData + nFirst * kMacroblockSize;
+    pBuffer->mRefRight[nIndex] = pSource->mData + (nFirst + pSource->mMbHeight) * kMacroblockSize;
+    pBuffer->mPredictionCount = nIndex + 1;
 }
 
-// NTSC-U/C: 0x00608cb8, PAL: 0x00649928
-// Queues one prediction of the current macroblock, comprising the reference macroblocks to stage
-// and the luma and chroma kernel jobs that read them.
-static void sceMpegQueuePrediction(MpegSeqTable *pRef,
-                                   int nSourceField,
-                                   int nDestField,
-                                   int nYOffset,
-                                   int nHeight,
-                                   int nX,
-                                   int nY,
-                                   int nDx,
-                                   int nDy,
-                                   int nFieldShift,
-                                   int nAverage) {
-    MpegMcBuffer *buffer = &g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent];
-    const int slot = buffer->mPredictionCount;
-    MpegMcDescriptor *luma = &buffer->mLuma[slot];
-    MpegMcDescriptor *chroma = &buffer->mChroma[slot];
-    const int staging = buffer->mStaging + slot * kStagingBytes;
-    const int x = (nDx >> 1) + nX;
-    const int y = (nFieldShift != 0 ? (nDy >> 1) << 1 : nDy >> 1) + nY + nYOffset + nSourceField;
-    const int column = x >> kLumaRowShift;
-    const int row = y >> kLumaRowShift;
-    const int macroblock = column * pRef->mMbHeight + row;
-    const int lumaOffset = y - (row << kLumaRowShift);
-    const int lumaKernel = (nAverage << 2) | ((nDx & 1) << 1) | (nDy & 1);
-    const int chromaDx = nDx / 2;
-    const int chromaDy = nDy / 2;
-    const int chromaX = (chromaDx >> 1) + (nX >> 1);
-    const int chromaY = (nFieldShift != 0 ? (chromaDy >> 1) << 1 : chromaDy >> 1) + (nY >> 1) +
-                        (nYOffset >> 1) + nSourceField;
-    const int chromaColumn = chromaX >> kChromaRowShift;
-    const int chromaRow = chromaY >> kChromaRowShift;
-    const int chromaOffset = chromaY - (chromaRow << kChromaRowShift);
-    const int chromaKernel = (nAverage << 2) | ((chromaDx & 1) << 1) | (chromaDy & 1);
-    const int chromaSource =
-        staging + ((chromaColumn - column) * 2 + (chromaRow - row)) * kMacroblockBytes;
+// NTSC-U/C: 0x003095c0, PAL: 0x00375a50
+// Queues every prediction of the current macroblock.
+static void mpc___getAllRefs(MpegContext *w,
+                             int nX,
+                             int nY,
+                             int nMbType,
+                             int nMotionType,
+                             int PMV[2][2][2],
+                             int mvfs[2][2],
+                             int dmvector[2]) {
+    int dmv[2][2];
+    MpegPicture *apFields[4];
+    int nAverage = 0;
+    int nBackward;
+    int nBottom;
 
-    luma->mShift = x - (column << kLumaRowShift);
-    luma->mDest = kMpegMcOutputBase + ((nDestField + nYOffset) << kLumaDestRowShift);
-    sceMpegSplitMcRows(luma, lumaOffset, nHeight, nFieldShift, nDy & 1, kLumaSize);
-    luma->mStride = kLumaSize << nFieldShift;
-    luma->mSourceLeft = staging + (lumaOffset << kLumaRowShift);
-    luma->mSourceRight = staging + (lumaOffset << kLumaRowShift) + kStagingRightColumn;
-
-    chroma->mShift = chromaX - (chromaColumn << kChromaRowShift);
-    chroma->mDest = kMpegMcOutputBase + kChromaDestOffset +
-                    ((nDestField + (nYOffset >> 1)) << kChromaDestRowShift);
-    sceMpegSplitMcRows(chroma, chromaOffset, nHeight >> 1, nFieldShift, chromaDy & 1, kChromaSize);
-    chroma->mStride = kChromaSize << nFieldShift;
-    chroma->mSourceLeft = chromaSource + (chromaOffset << kChromaRowShift) + kChromaPlaneOffset;
-    chroma->mSourceRight =
-        chromaSource + (chromaOffset << kChromaRowShift) + kStagingRightColumn + kChromaPlaneOffset;
-
-    buffer->mRefLeft[slot] = pRef->mBuffer + macroblock * kMacroblockBytes;
-    buffer->mLumaKernels[slot] = g_mpegLumaKernels[lumaKernel];
-    buffer->mRefRight[slot] = pRef->mBuffer + (macroblock + pRef->mMbHeight) * kMacroblockBytes;
-    buffer->mChromaKernels[slot] = g_mpegChromaKernels[chromaKernel];
-    buffer->mPredictionCount = slot + 1;
-}
-
-// NTSC-U/C: 0x00608608, PAL: 0x00649278
-// Queues every prediction the macroblock's type and motion type call for. A backward prediction
-// averages with a forward one queued first.
-static void sceMpegQueuePredictions(int nX,
-                                    int nY,
-                                    int nMbType,
-                                    int nMotionType,
-                                    int pPmv[2][2][2],
-                                    int pMvfs[2][2],
-                                    int *pDmVector) {
-    int dmv[4];
-    MpegSeqTable *fieldRefs[2][2];
-    int formed = 0;
-    int bottom;
-    int other;
-
-    g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent].mPredictionCount = 0;
-    if ((nMbType & kMbMotionForward) != 0 || g_nMpegPictureCodingType == kPictureP) {
-        if (g_nMpegPictureStructure == kFramePicture) {
+    w->mMcBuffers[w->mMcCurrent].mPredictionCount = 0;
+    if ((nMbType & kMbMotionForward) != 0 || w->mPictureCodingType == kPictureP) {
+        if (w->mPictureStructure == kFramePicture) {
             if (nMotionType == kMcFrame || (nMbType & kMbMotionForward) == 0) {
-                sceMpegQueuePrediction(g_mpegTables[0],
-                                       0,
-                                       0,
-                                       0,
-                                       kLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1],
-                                       0,
-                                       0);
+                BuildMpegMotionBlockDescriptor(
+                    w, w->mFrames.mForward, 0, 0, 0, 16, nX, nY, PMV[0][0][0], PMV[0][0][1], 0, 0);
             } else if (nMotionType == kMcField) {
-                sceMpegQueuePrediction(g_mpegTables[0],
-                                       pMvfs[0][0],
-                                       0,
-                                       0,
-                                       kHalfLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1] >> 1,
-                                       1,
-                                       0);
-                sceMpegQueuePrediction(g_mpegTables[0],
-                                       pMvfs[1][0],
-                                       1,
-                                       0,
-                                       kHalfLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[1][0][0],
-                                       pPmv[1][0][1] >> 1,
-                                       1,
-                                       0);
-            } else if (nMotionType == kMcDualPrime) {
-                sceMpegDualPrimeVectors(dmv, pDmVector, pPmv[0][0][0], pPmv[0][0][1] >> 1);
-                sceMpegQueuePrediction(g_mpegTables[0],
-                                       0,
-                                       0,
-                                       0,
-                                       kHalfLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1] >> 1,
-                                       1,
-                                       0);
-                sceMpegQueuePrediction(
-                    g_mpegTables[0], 1, 0, 0, kHalfLumaSize, nX, nY, dmv[0], dmv[1], 1, 1);
-                sceMpegQueuePrediction(g_mpegTables[0],
-                                       1,
-                                       1,
-                                       0,
-                                       kHalfLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1] >> 1,
-                                       1,
-                                       0);
-                sceMpegQueuePrediction(
-                    g_mpegTables[0], 0, 1, 0, kHalfLumaSize, nX, nY, dmv[2], dmv[3], 1, 1);
+                BuildMpegMotionBlockDescriptor(w,
+                                               w->mFrames.mForward,
+                                               mvfs[0][0],
+                                               0,
+                                               0,
+                                               8,
+                                               nX,
+                                               nY,
+                                               PMV[0][0][0],
+                                               PMV[0][0][1] >> 1,
+                                               1,
+                                               0);
+                BuildMpegMotionBlockDescriptor(w,
+                                               w->mFrames.mForward,
+                                               mvfs[1][0],
+                                               1,
+                                               0,
+                                               8,
+                                               nX,
+                                               nY,
+                                               PMV[1][0][0],
+                                               PMV[1][0][1] >> 1,
+                                               1,
+                                               0);
+            } else if (nMotionType == kMcDmv) {
+                mpc___dualPrimeVector(w, dmv, dmvector, PMV[0][0][0], PMV[0][0][1] >> 1);
+                BuildMpegMotionBlockDescriptor(w,
+                                               w->mFrames.mForward,
+                                               0,
+                                               0,
+                                               0,
+                                               8,
+                                               nX,
+                                               nY,
+                                               PMV[0][0][0],
+                                               PMV[0][0][1] >> 1,
+                                               1,
+                                               0);
+                BuildMpegMotionBlockDescriptor(
+                    w, w->mFrames.mForward, 1, 0, 0, 8, nX, nY, dmv[0][0], dmv[0][1], 1, 1);
+                BuildMpegMotionBlockDescriptor(w,
+                                               w->mFrames.mForward,
+                                               1,
+                                               1,
+                                               0,
+                                               8,
+                                               nX,
+                                               nY,
+                                               PMV[0][0][0],
+                                               PMV[0][0][1] >> 1,
+                                               1,
+                                               0);
+                BuildMpegMotionBlockDescriptor(
+                    w, w->mFrames.mForward, 0, 1, 0, 8, nX, nY, dmv[1][0], dmv[1][1], 1, 1);
             } else {
-                sceMpegReportErrorFormatted("(a) invalid motion_type(%d)-0", nMotionType);
+                _sceMpegErrorFormat(w, "(a) invalid motion_type(%d)-0", (unsigned int)nMotionType);
             }
         } else {
-            bottom = g_nMpegPictureStructure == kBottomField;
-            fieldRefs[0][0] = g_mpegTables[3];
-            fieldRefs[0][1] = g_mpegTables[6];
-            fieldRefs[1][0] = g_mpegTables[4];
-            fieldRefs[1][1] = g_mpegTables[7];
-            // The second field of a P frame predicts from the first field of the same frame.
-            other = 0;
-            if (g_nMpegPictureCodingType == kPictureP && g_mpegSecondFieldPending != 0) {
-                other = bottom != pMvfs[0][0];
+            nBottom = w->mPictureStructure == kBottomField;
+            apFields[0] = w->mTopFields.mForward;
+            apFields[1] = w->mBottomFields.mForward;
+            apFields[2] = w->mTopFields.mBackward;
+            apFields[3] = w->mBottomFields.mBackward;
+            nBackward = 0;
+            if (w->mPictureCodingType == kPictureP && w->mSecondField != 0) {
+                nBackward = nBottom != mvfs[0][0];
             }
             if (nMotionType == kMcField || (nMbType & kMbMotionForward) == 0) {
-                sceMpegQueuePrediction(fieldRefs[other][pMvfs[0][0]],
-                                       0,
-                                       0,
-                                       0,
-                                       kLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1],
-                                       0,
-                                       0);
+                BuildMpegMotionBlockDescriptor(w,
+                                               apFields[(nBackward << 1) + mvfs[0][0]],
+                                               0,
+                                               0,
+                                               0,
+                                               16,
+                                               nX,
+                                               nY,
+                                               PMV[0][0][0],
+                                               PMV[0][0][1],
+                                               0,
+                                               0);
             } else if (nMotionType == kMc16x8) {
-                sceMpegQueuePrediction(fieldRefs[other][pMvfs[0][0]],
-                                       0,
-                                       0,
-                                       0,
-                                       kHalfLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1],
-                                       0,
-                                       0);
-                other = 0;
-                if (g_nMpegPictureCodingType == kPictureP && g_mpegSecondFieldPending != 0) {
-                    other = bottom != pMvfs[1][0];
+                BuildMpegMotionBlockDescriptor(w,
+                                               apFields[(nBackward << 1) + mvfs[0][0]],
+                                               0,
+                                               0,
+                                               0,
+                                               8,
+                                               nX,
+                                               nY,
+                                               PMV[0][0][0],
+                                               PMV[0][0][1],
+                                               0,
+                                               0);
+                nBackward = 0;
+                if (w->mPictureCodingType == kPictureP && w->mSecondField != 0) {
+                    nBackward = nBottom != mvfs[1][0];
                 }
-                sceMpegQueuePrediction(fieldRefs[other][pMvfs[1][0]],
-                                       0,
-                                       0,
-                                       kHalfLumaSize,
-                                       kHalfLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[1][0][0],
-                                       pPmv[1][0][1],
-                                       0,
-                                       0);
-            } else if (nMotionType == kMcDualPrime) {
-                other = g_mpegSecondFieldPending != 0;
-                sceMpegDualPrimeVectors(dmv, pDmVector, pPmv[0][0][0], pPmv[0][0][1]);
-                sceMpegQueuePrediction(fieldRefs[0][bottom],
-                                       0,
-                                       0,
-                                       0,
-                                       kLumaSize,
-                                       nX,
-                                       nY,
-                                       pPmv[0][0][0],
-                                       pPmv[0][0][1],
-                                       0,
-                                       0);
-                sceMpegQueuePrediction(
-                    fieldRefs[other][!bottom], 0, 0, 0, kLumaSize, nX, nY, dmv[0], dmv[1], 0, 1);
+                BuildMpegMotionBlockDescriptor(w,
+                                               apFields[(nBackward << 1) + mvfs[1][0]],
+                                               0,
+                                               0,
+                                               8,
+                                               8,
+                                               nX,
+                                               nY,
+                                               PMV[1][0][0],
+                                               PMV[1][0][1],
+                                               0,
+                                               0);
+            } else if (nMotionType == kMcDmv) {
+                nBackward = w->mSecondField != 0;
+                mpc___dualPrimeVector(w, dmv, dmvector, PMV[0][0][0], PMV[0][0][1]);
+                BuildMpegMotionBlockDescriptor(
+                    w, apFields[nBottom], 0, 0, 0, 16, nX, nY, PMV[0][0][0], PMV[0][0][1], 0, 0);
+                BuildMpegMotionBlockDescriptor(w,
+                                               apFields[(nBackward << 1) + !nBottom],
+                                               0,
+                                               0,
+                                               0,
+                                               16,
+                                               nX,
+                                               nY,
+                                               dmv[0][0],
+                                               dmv[0][1],
+                                               0,
+                                               1);
             } else {
-                sceMpegReportErrorFormatted("(b) invalid motion_type(%d)-1", nMotionType);
+                _sceMpegErrorFormat(w, "(b) invalid motion_type(%d)-1", (unsigned int)nMotionType);
             }
         }
-        formed = 1;
+        nAverage = 1;
     }
     if ((nMbType & kMbMotionBackward) == 0) {
         return;
     }
-    if (g_nMpegPictureStructure == kFramePicture) {
+    if (w->mPictureStructure == kFramePicture) {
         if (nMotionType == kMcFrame) {
-            sceMpegQueuePrediction(g_mpegTables[1],
-                                   0,
-                                   0,
-                                   0,
-                                   kLumaSize,
-                                   nX,
-                                   nY,
-                                   pPmv[0][1][0],
-                                   pPmv[0][1][1],
-                                   0,
-                                   formed);
+            BuildMpegMotionBlockDescriptor(w,
+                                           w->mFrames.mBackward,
+                                           0,
+                                           0,
+                                           0,
+                                           16,
+                                           nX,
+                                           nY,
+                                           PMV[0][1][0],
+                                           PMV[0][1][1],
+                                           0,
+                                           nAverage);
         } else {
-            sceMpegQueuePrediction(g_mpegTables[1],
-                                   pMvfs[0][1],
-                                   0,
-                                   0,
-                                   kHalfLumaSize,
-                                   nX,
-                                   nY,
-                                   pPmv[0][1][0],
-                                   pPmv[0][1][1] >> 1,
-                                   1,
-                                   formed);
-            sceMpegQueuePrediction(g_mpegTables[1],
-                                   pMvfs[1][1],
-                                   1,
-                                   0,
-                                   kHalfLumaSize,
-                                   nX,
-                                   nY,
-                                   pPmv[1][1][0],
-                                   pPmv[1][1][1] >> 1,
-                                   1,
-                                   formed);
+            BuildMpegMotionBlockDescriptor(w,
+                                           w->mFrames.mBackward,
+                                           mvfs[0][1],
+                                           0,
+                                           0,
+                                           8,
+                                           nX,
+                                           nY,
+                                           PMV[0][1][0],
+                                           PMV[0][1][1] >> 1,
+                                           1,
+                                           nAverage);
+            BuildMpegMotionBlockDescriptor(w,
+                                           w->mFrames.mBackward,
+                                           mvfs[1][1],
+                                           1,
+                                           0,
+                                           8,
+                                           nX,
+                                           nY,
+                                           PMV[1][1][0],
+                                           PMV[1][1][1] >> 1,
+                                           1,
+                                           nAverage);
         }
     } else if (nMotionType == kMcField) {
-        sceMpegQueuePrediction(pMvfs[0][1] != 0 ? g_mpegTables[7] : g_mpegTables[4],
-                               0,
-                               0,
-                               0,
-                               kLumaSize,
-                               nX,
-                               nY,
-                               pPmv[0][1][0],
-                               pPmv[0][1][1],
-                               0,
-                               formed);
+        BuildMpegMotionBlockDescriptor(w,
+                                       mvfs[0][1] != 0 ? w->mBottomFields.mBackward :
+                                                         w->mTopFields.mBackward,
+                                       0,
+                                       0,
+                                       0,
+                                       16,
+                                       nX,
+                                       nY,
+                                       PMV[0][1][0],
+                                       PMV[0][1][1],
+                                       0,
+                                       nAverage);
     } else if (nMotionType == kMc16x8) {
-        sceMpegQueuePrediction(pMvfs[0][1] != 0 ? g_mpegTables[7] : g_mpegTables[4],
-                               0,
-                               0,
-                               0,
-                               kHalfLumaSize,
-                               nX,
-                               nY,
-                               pPmv[0][1][0],
-                               pPmv[0][1][1],
-                               0,
-                               formed);
-        sceMpegQueuePrediction(pMvfs[1][1] != 0 ? g_mpegTables[7] : g_mpegTables[4],
-                               0,
-                               0,
-                               kHalfLumaSize,
-                               kHalfLumaSize,
-                               nX,
-                               nY,
-                               pPmv[1][1][0],
-                               pPmv[1][1][1],
-                               0,
-                               formed);
+        BuildMpegMotionBlockDescriptor(w,
+                                       mvfs[0][1] != 0 ? w->mBottomFields.mBackward :
+                                                         w->mTopFields.mBackward,
+                                       0,
+                                       0,
+                                       0,
+                                       8,
+                                       nX,
+                                       nY,
+                                       PMV[0][1][0],
+                                       PMV[0][1][1],
+                                       0,
+                                       nAverage);
+        BuildMpegMotionBlockDescriptor(w,
+                                       mvfs[1][1] != 0 ? w->mBottomFields.mBackward :
+                                                         w->mTopFields.mBackward,
+                                       0,
+                                       0,
+                                       8,
+                                       8,
+                                       nX,
+                                       nY,
+                                       PMV[1][1][0],
+                                       PMV[1][1][1],
+                                       0,
+                                       nAverage);
     } else {
-        sceMpegReportErrorFormatted("(c) invalid motion_type(%d)-2", nMotionType);
+        _sceMpegErrorFormat(w, "(c) invalid motion_type(%d)-2", (unsigned int)nMotionType);
     }
 }
 
-// NTSC-U/C: 0x006082d0, PAL: 0x00648f40
-// Prepares the reconstruction of one macroblock. The routine stages its references by DMA to the
-// scratchpad, records whether it is intra, and locates it in the destination frame or field.
-static int sceMpegStartMotionCompensation(int nAddress,
-                                          int nIncrement,
-                                          int nMbType,
-                                          int nMotionType,
-                                          int pPmv[2][2][2],
-                                          int pMvfs[2][2],
-                                          int *pDmVector) {
-    volatile unsigned int *pToSprChcr = (volatile unsigned int *)(uintptr_t)kToSprChcrAddress;
-    const int row = nAddress / g_nMpegMbWidth;
-    const int column = nAddress % g_nMpegMbWidth;
-    const int intra = nMbType & kMbIntra;
-    MpegMcBuffer *buffer;
-    MpegSeqTable *frame;
-    volatile unsigned long long *pTag;
-    unsigned int left;
-    unsigned int right;
-    int count;
+// NTSC-U/C: 0x0030a0e8, PAL: 0x00376578
+// Runs the queued kernels of a macroblock buffer and writes the macroblock into the frame.
+static void ReconstructMpegMacroblockPixels(MpegContext *w, int nBuffer) {
+    MpegMcBuffer *pBuffer = &w->mMcBuffers[nBuffer];
     int i;
 
-    if (intra != 0) {
-        while (((*pToSprChcr >> 8) & 1) != 0) {
+    if (pBuffer->mDmaPending != 0) {
+        for (i = 0; i < pBuffer->mPredictionCount; ++i) {
+            pBuffer->mLumaKernels[i](&pBuffer->mLuma[i]);
+            pBuffer->mChromaKernels[i](&pBuffer->mChroma[i]);
         }
-        g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent].mDmaPending = 0;
+    }
+    if (pBuffer->mIntra != 0 && pBuffer->mNotCoded != 0) {
+        _sceMpegError(w, "intra && skip MB");
+    }
+    if (pBuffer->mIntra != 0) {
+        sceMpegMcPutBlock(pBuffer->mOutput, pBuffer->mCoefficients);
+    } else if (pBuffer->mNotCoded != 0) {
+        sceMpegMcPutBlock(pBuffer->mOutput, w->mMcOutput);
     } else {
-        if ((unsigned int)(nMotionType - 1) >= 3u) {
-            sceMpegReportErrorFormatted("Invalid modion type -- ignored(%d)", nMotionType);
-            g_nMpegDecodeError = 1;
+        sceMpegMcAddBlock(pBuffer->mOutput, w->mMcOutput, pBuffer->mCoefficients);
+    }
+}
+
+// NTSC-U/C: 0x0030def8, PAL: 0x0037a388
+// Stages the reference macroblocks of the current buffer into the scratchpad.
+static void BuildMpegInputDmaChainAndKick(MpegContext *w) {
+    MpegMcBuffer *pBuffer = &w->mMcBuffers[w->mMcCurrent];
+    MpegDmaTag *pTags = (MpegDmaTag *)Uncached(g_aMpegRefDmaChain);
+    int nCount = pBuffer->mPredictionCount;
+    int nInterrupts;
+    int i;
+
+    for (i = 0; i < nCount; ++i) {
+        unsigned long long nLastId = i == nCount - 1 ? kDmaTagRefe : kDmaTagRef;
+
+        pTags[0].mTag = ((unsigned long long)PhysicalAddress(pBuffer->mRefLeft[i]) << 32) |
+                        ((unsigned long long)kDmaTagRef << kDmaTagIdShift) | kMcColumnSize / 16;
+        pTags[1].mTag = ((unsigned long long)PhysicalAddress(pBuffer->mRefRight[i]) << 32) |
+                        (nLastId << kDmaTagIdShift) | kMcColumnSize / 16;
+        pTags += 2;
+    }
+    nInterrupts = DIntr();
+    __asm__ volatile("sync" ::: "memory");
+    *D9_SADR = (unsigned int)(uintptr_t)w->mMcBuffers[w->mMcCurrent].mStaging;
+    *D9_TADR = (unsigned int)(uintptr_t)g_aMpegRefDmaChain;
+    *D9_QWC = 0;
+    *D9_CHCR = kChcrStart | kChcrChain | kChcrFromMemory;
+    if (nInterrupts != 0) {
+        EIntr();
+    }
+}
+
+// NTSC-U/C: 0x0030e068, PAL: 0x0037a4f8
+// Points the channel from the IPU at the scratchpad for nBytes of decoded block.
+static void StartIpuFromDmaTransfer(unsigned char *pDest, int nBytes) {
+    int nInterrupts = DIntr();
+
+    *D3_MADR = PhysicalAddress(pDest) | kScratchpadFlag;
+    *D3_QWC = (unsigned int)(nBytes >> 4);
+    *D3_CHCR = kChcrStart;
+    if (nInterrupts != 0) {
+        EIntr();
+    }
+}
+
+// NTSC-U/C: 0x00309370, PAL: 0x00375800
+static int DispatchMpegMacroblockDecode(MpegContext *w,
+                                        int nMba,
+                                        int nMbaInc,
+                                        int nMbType,
+                                        int nMotionType,
+                                        int PMV[2][2][2],
+                                        int mvfs[2][2],
+                                        int dmvector[2]) {
+    int nIntra = nMbType & kMbIntra;
+    int nX = nMba % w->mMbWidth;
+    int nY = nMba / w->mMbWidth;
+    MpegMcBuffer *pBuffer;
+    MpegPicture *pCurrent;
+
+    if (nIntra != 0) {
+        while ((*D9_CHCR & kChcrStart) != 0) {
+        }
+        w->mMcBuffers[w->mMcCurrent].mDmaPending = 0;
+    } else {
+        if ((unsigned int)(nMotionType - 1) >= 3) {
+            _sceMpegErrorFormat(w, "Invalid modion type -- ignored(%d)", (unsigned int)nMotionType);
+            w->mFault = 1;
             return 0;
         }
-        sceMpegQueuePredictions(column << kLumaRowShift,
-                                row << kLumaRowShift,
-                                nMbType,
-                                nMotionType,
-                                pPmv,
-                                pMvfs,
-                                pDmVector);
-        while (((*pToSprChcr >> 8) & 1) != 0) {
+        mpc___getAllRefs(w, nX << 4, nY << 4, nMbType, nMotionType, PMV, mvfs, dmvector);
+        while ((*D9_CHCR & kChcrStart) != 0) {
         }
-        pTag = (volatile unsigned long long *)(uintptr_t)(((unsigned int)(uintptr_t)g_mpegMcChain &
-                                                           kPhysicalAddressMask) |
-                                                          kUncachedSegment);
-        count = g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent].mPredictionCount;
-        for (i = 0; i < count; ++i) {
-            buffer = &g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent];
-            left = (unsigned int)buffer->mRefLeft[i] & kPhysicalAddressMask;
-            right = (unsigned int)buffer->mRefRight[i] & kPhysicalAddressMask;
-            pTag[0] = (unsigned long long)left << 32 | kDmaTagRef | kStagingPairQwords;
-            pTag[2] = (unsigned long long)right << 32 |
-                      (i == count - 1 ? kDmaTagRefe : kDmaTagRef) | kStagingPairQwords;
-            pTag += 4;
-        }
-        __asm__ __volatile__("sync" : : : "memory");
-        buffer = &g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent];
-        *(volatile int *)(uintptr_t)kToSprSadrAddress = buffer->mStaging;
-        *(volatile int *)(uintptr_t)kToSprTadrAddress = (int)(uintptr_t)g_mpegMcChain;
-        *(volatile int *)(uintptr_t)kToSprQwcAddress = 0;
-        *pToSprChcr = kDmaChcrChainToSpr;
-        buffer->mDmaPending = 1;
+        BuildMpegInputDmaChainAndKick(w);
+        w->mMcBuffers[w->mMcCurrent].mDmaPending = 1;
     }
-    buffer = &g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent];
-    buffer->mFollowsCoded = (nIncrement == 1 && (nMbType & kMbPattern) != 0) ? 1 : 0;
-    buffer->mIntra = intra;
-    if (g_nMpegPictureStructure == kFramePicture) {
-        frame = g_mpegCurrentTables[kCurrentFrame];
-    } else if (g_nMpegPictureStructure == kBottomField) {
-        frame = g_mpegCurrentTables[kCurrentBottomField];
+    pBuffer = &w->mMcBuffers[w->mMcCurrent];
+    pBuffer->mCoded = nMbaInc == 1 && (nMbType & kMbPattern) != 0;
+    pBuffer->mIntra = nIntra;
+    if (w->mPictureStructure == kFramePicture) {
+        pCurrent = w->mFrames.mCurrent;
+    } else if (w->mPictureStructure == kBottomField) {
+        pCurrent = w->mBottomFields.mCurrent;
     } else {
-        frame = g_mpegCurrentTables[kCurrentTopField];
+        pCurrent = w->mTopFields.mCurrent;
     }
-    buffer->mOutput = frame->mBuffer + (column * frame->mMbHeight + row) * kMacroblockBytes;
+    pBuffer->mOutput = pCurrent->mData + (nX * pCurrent->mMbHeight + nY) * kMacroblockSize;
     return 1;
 }
 
-// NTSC-U/C: 0x006090d8, PAL: 0x00649d48
-// Runs the queued kernels of one buffer and writes its macroblock to the frame.
-static void sceMpegFinishMacroblock(int nBuffer) {
-    MpegMcBuffer *buffer = &g_mpegIpuTable.mBuffers[nBuffer];
-    int i;
+// NTSC-U/C: 0x0030b0e0, PAL: 0x00377570
+// Waits for the block decode of the IPU. Returns zero after an abort or an error code.
+static int WaitForIpuBlockDecode(MpegContext *w) {
+    sceMpegCbData cbData;
+    unsigned long long nTop;
+    unsigned int nPosition;
+    int nInterrupts;
 
-    if (buffer->mDmaPending != 0) {
-        for (i = 0; i < buffer->mPredictionCount; ++i) {
-            buffer->mLumaKernels[i](&buffer->mLuma[i]);
-            buffer->mChromaKernels[i](&buffer->mChroma[i]);
+    WaitForIpuIdle(w);
+    if (*D3_QWC != 0 && (*IPU_CTRL & kIpuCtrlErrorCode) == 0) {
+        for (;;) {
+            if (*D4_QWC == 0 && (*D4_CHCR & kChcrStart) == 0) {
+                cbData.type = sceMpegCbNodata;
+                _sceMpegCallback(w->mMpeg, &cbData);
+            }
+            if (*D3_QWC == 0 || (*IPU_CTRL & kIpuCtrlErrorCode) != 0) {
+                break;
+            }
         }
     }
-    if (buffer->mIntra != 0 && buffer->mNotCoded != 0) {
-        sceMpegRaiseError("intra && skip MB");
+    if (w->mAbort != 0) {
+        nInterrupts = DIntr();
+        *D_ENABLEW = *D_ENABLER | kDmaHoldAll;
+        *D4_CHCR = 0;
+        *D3_CHCR = 0;
+        *D_ENABLEW = *D_ENABLER & ~(unsigned int)kDmaHoldAll;
+        if (nInterrupts != 0) {
+            EIntr();
+        }
+        *D3_QWC = 0;
+        *D4_QWC = 0;
+        *IPU_CTRL = kIpuCtrlReset;
+        return 0;
     }
-    if (buffer->mIntra != 0) {
-        sceMpegMcPutBlock(buffer->mOutput, buffer->mCoefficients);
-    } else if (buffer->mNotCoded == 0) {
-        sceMpegMcAddBlock(buffer->mOutput, kMpegMcOutputBase, buffer->mCoefficients);
+    nTop = *IPU_TOP;
+    nPosition = *IPU_BP;
+    w->mTopBits = (unsigned int)nTop;
+    if ((long long)nTop < 0) {
+        w->mTopBitCount = (nPosition & kIpuBpPositionMask) != 0 ?
+                              kIpuTopBits - (int)(nPosition & kIpuBpPositionMask) :
+                              0;
     } else {
-        sceMpegMcPutBlock(buffer->mOutput, kMpegMcOutputBase);
+        w->mTopBitCount = kIpuTopBits;
     }
-}
-
-// Reloads the bit reader words from the IPU after a command.
-static inline void sceMpegReloadShiftWords(void) {
-    const long long top = *(volatile long long *)(uintptr_t)kIpuTopAddress;
-    const unsigned int bitPointer = *(volatile unsigned int *)(uintptr_t)kIpuBitPointerAddress;
-
-    g_mpegShiftAccum = (int)top;
-    if (top < 0) {
-        g_mpegShiftBudget = (int)((0u - (bitPointer & kIpuBitPointerMask)) & kIpuBitPointerMask);
-    } else {
-        g_mpegShiftBudget = kIpuBitsPerWord;
-    }
-}
-
-// NTSC-U/C: 0x0060a060, PAL: 0x0064acd0
-// Waits for the block the IPU is decoding to drain. On a decode error the IPU and its output
-// channel are reset and the routine reports 0.
-static int sceMpegWaitBlockDecode(void) {
-    volatile unsigned int *pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    volatile unsigned int *pFromQwc = (volatile unsigned int *)(uintptr_t)kIpuFromQwcAddress;
-    volatile unsigned int *pEnableWrite =
-        (volatile unsigned int *)(uintptr_t)kDmacEnableWriteAddress;
-    volatile unsigned int *pEnableRead = (volatile unsigned int *)(uintptr_t)kDmacEnableReadAddress;
-    StreamEntry entry;
-
-    sceMpegWaitIpuIdle();
-    if (*pFromQwc != 0 && (*pControl & kIpuErrorCodeDetected) == 0) {
-        do {
-            // The IPU stalls for input once the input channel is idle and empty.
-            if (*(volatile unsigned int *)(uintptr_t)kIpuToQwcAddress == 0 &&
-                (*(volatile unsigned int *)(uintptr_t)kIpuToChcrAddress & kDmaChcrStart) == 0) {
-                sceMpegReportNoData(g_decoderInstance);
-            }
-        } while (*pFromQwc != 0 && (*pControl & kIpuErrorCodeDetected) == 0);
-    }
-    sceMpegReloadShiftWords();
-    if ((*pControl & kIpuErrorCodeDetected) == 0) {
+    if ((*IPU_CTRL & kIpuCtrlErrorCode) == 0) {
         return 1;
     }
-    sceMpegRaiseError("Error code detected(BDEC)");
-    entry.key = 2;
-    entry.templateBits = 0;
-    entry.callback = NULL;
-    entry.data = NULL;
-    sceMpegInvokeCallbackSlot(g_decoderInstance, &entry);
-    *pControl = kIpuReset;
-    entry.key = 3;
-    sceMpegInvokeCallbackSlot(g_decoderInstance, &entry);
-    DIntr();
-    *pEnableWrite = *pEnableRead | kDmacSuspend;
-    *(volatile unsigned int *)(uintptr_t)kIpuFromChcrAddress = 0;
-    // The store sits in the delay slot of the call that re-enables interrupts and therefore lands
-    // first.
-    *pEnableWrite = *pEnableRead & ~kDmacSuspend;
-    EIntr();
-    *pFromQwc = 0;
+    _sceMpegError(w, "Error code detected(BDEC)");
+    cbData.type = sceMpegCbStopDMA;
+    _sceMpegCallback(w->mMpeg, &cbData);
+    *IPU_CTRL = kIpuCtrlReset;
+    cbData.type = sceMpegCbRestartDMA;
+    _sceMpegCallback(w->mMpeg, &cbData);
+    nInterrupts = DIntr();
+    *D_ENABLEW = *D_ENABLER | kDmaHoldAll;
+    *D3_CHCR = 0;
+    *D_ENABLEW = *D_ENABLER & ~(unsigned int)kDmaHoldAll;
+    if (nInterrupts != 0) {
+        EIntr();
+    }
+    *D3_QWC = 0;
     return 0;
 }
 
-// NTSC-U/C: 0x0060b418, PAL: 0x0064c088
-// Issues a VDEC command on table nTable and returns the decoded symbol. A zero result word marks a
-// VLC error in the error flag.
-static int sceMpegDecodeVlc(int nTable) {
-    volatile unsigned int *pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    volatile long long *pResult = (volatile long long *)(uintptr_t)kIpuCommandAddress;
-    unsigned int command;
-    unsigned int count;
-    long long result;
+#pragma mark - Macroblocks and slices
 
-    if ((*pControl & kIpuBusyMask) == kIpuBusyValue) {
-        count = 0;
-        do {
-            if (count++ >= kIpuWatchdogLimit) {
-                sceMpegReportNoData(g_decoderInstance);
-                count = 0;
-            }
-        } while ((*pControl & kIpuBusyMask) == kIpuBusyValue);
-    }
-    command = ((unsigned int)nTable << kIpuVdecTableShift) | kIpuCommandVdec;
-    *(volatile unsigned int *)(uintptr_t)kIpuCommandAddress = command;
-    result = *pResult;
-    // Yes, the binary shifts the command arithmetically here, unlike sceMpegGetBits().
-    g_mpegIpuBusyFlag = (int)g_mpegNibbleTable[(int)command >> 28];
-    count = 0;
-    while (result < 0) {
-        if (count++ >= kIpuWatchdogLimit) {
-            sceMpegReportNoData(g_decoderInstance);
-            count = 0;
-        }
-        result = *pResult;
-    }
-    sceMpegReloadShiftWords();
-    g_nMpegDecodeError = (int)result == 0;
-    return (short)result;
-}
+// NTSC-U/C: 0x0030bfe8, PAL: 0x00378478
+static void PredictMpegMotionVectorComponent(
+    int *pPred, int nRSize, int nMotionCode, int nResidual, int nFullPel) {
+    int nLimit = 16 << nRSize;
+    int nVector = nFullPel != 0 ? *pPred >> 1 : *pPred;
 
-// NTSC-U/C: 0x0060a248, PAL: 0x0064aeb8
-static int sceMpegDecodeDmVector(void) {
-    return sceMpegDecodeVlc(kVdecDmVector);
-}
-
-// NTSC-U/C: 0x0060a3f0, PAL: 0x0064b060
-// Decodes macroblock_address_increment, folding escapes and skipping stuffing.
-static int sceMpegMacroblockAddressIncrement(void) {
-    int increment = 0;
-    int code;
-    int peek;
-
-    for (;;) {
-        code = sceMpegDecodeVlc(kVdecMacroblockAddressIncrement);
-        if (code == kMbaiStuffing) {
-            continue;
-        }
-        if (code == kMbaiEscape) {
-            increment += kMbaiEscapeIncrement;
-            continue;
-        }
-        if (code != 0) {
-            return increment + code;
-        }
-        // The peek happens before the MPEG-2 test.
-        peek = sceMpegPeekBits(kMbaiPeekBits);
-        if (g_nMpegIsMpeg2 != 0 && peek == kMpeg1StuffingCode) {
-            sceMpegSkipBits(kMbaiPeekBits);
-            continue;
-        }
-        sceMpegReportErrorFormatted("Invalid macroblock_address_increment code(0x%08x)", code);
-        g_nMpegDecodeError = 1;
-        return 1;
-    }
-}
-
-// NTSC-U/C: 0x0060b9f0, PAL: 0x0064c660
-// Reads the rest of the slice header. The image always returns zero. The caller uses the result as
-// the slice vertical position extension.
-static int sceMpegSliceHeader(void) {
-    g_nMpegQuantiserScaleCode = sceMpegGetBits(5);
-    if (sceMpegGetBits(1) != 0) {
-        g_nMpegIntraSlice = sceMpegGetBits(1);
-        sceMpegSkipBits(7);
-        sceMpegSkipExtraInformation();
-    } else {
-        g_nMpegIntraSlice = 0;
-    }
-    return 0;
-}
-
-// NTSC-U/C: 0x0060a628, PAL: 0x0064b298
-// Starts a slice. The routine finds its start code, reads its header and first increment, and
-// resets the predictors. The macroblock count argument is not read.
-static int
-sceMpegStartSlice(int nMacroblockCount, int *pAddress, int *pIncrement, int pPmv[2][2][2]) {
-    int code;
-    int extension;
-    int increment;
-    int r;
-    int s;
-    int t;
-
-    (void)nMacroblockCount;
-    g_nMpegDecodeError = 0;
-    sceMpegNextStartCode();
-    code = sceMpegPeekBits(32);
-    if ((unsigned int)(code - kSliceStartCodeFirst) >= (unsigned int)kSliceStartCodeCount) {
-        sceMpegReportErrorFormatted("slice_start_code(0x%08x) out of range", code);
-        return kSliceSkipPicture;
-    }
-    sceMpegSkipBits(32);
-    extension = sceMpegSliceHeader();
-    increment = sceMpegMacroblockAddressIncrement();
-    *pIncrement = increment;
-    if (g_nMpegDecodeError != 0) {
-        sceMpegRaiseError("_sliceA0(): error happens");
-        return kSliceError;
-    }
-    *pAddress = ((extension << 7) + (code & 0xff) - 1) * g_nMpegMbWidth + increment - 1;
-    *pIncrement = 1;
-    g_nMpegResetDcPredictor = 1;
-    for (r = 0; r < 2; ++r) {
-        for (s = 0; s < 2; ++s) {
-            for (t = 0; t < 2; ++t) {
-                pPmv[r][s][t] = 0;
-            }
-        }
-    }
-    return kSliceDone;
-}
-
-// NTSC-U/C: 0x0060af48, PAL: 0x0064bbb8
-// Applies one decoded motion vector component to its predictor.
-static void sceMpegDecodeMotionComponent(
-    int *pPred, int nRSize, int nMotionCode, int nMotionResidual, int nFullPel) {
-    const int limit = 16 << nRSize;
-    int vector = *pPred;
-
-    if (nFullPel != 0) {
-        vector >>= 1;
-    }
     if (nMotionCode > 0) {
-        vector += ((nMotionCode - 1) << nRSize) + nMotionResidual + 1;
-        if (vector >= limit) {
-            vector -= limit << 1;
+        nVector += ((nMotionCode - 1) << nRSize) + nResidual + 1;
+        if (nVector >= nLimit) {
+            nVector -= nLimit + nLimit;
         }
     } else if (nMotionCode < 0) {
-        vector -= ((~nMotionCode) << nRSize) + nMotionResidual + 1;
-        if (vector < -limit) {
-            vector += limit << 1;
+        nVector -= ((-nMotionCode - 1) << nRSize) + nResidual + 1;
+        if (nVector < -nLimit) {
+            nVector += nLimit + nLimit;
         }
     }
-    *pPred = nFullPel != 0 ? vector << 1 : vector;
+    *pPred = nFullPel != 0 ? nVector << 1 : nVector;
 }
 
-// NTSC-U/C: 0x0060b150, PAL: 0x0064bdc0
-// Decodes one motion vector into pPmv, with its dual prime differential when nDmv is set.
-static void sceMpegMotionVector(
-    int *pPmv, int *pDmVector, int nHRSize, int nVRSize, int nDmv, int nMvScale, int nFullPel) {
-    int code;
-    int residual;
+// NTSC-U/C: 0x0030c210, PAL: 0x003786a0
+static void DecodeMpegMotionVectorPair(MpegContext *w,
+                                       int PMV[2],
+                                       int dmvector[2],
+                                       int nHRSize,
+                                       int nVRSize,
+                                       int nDmv,
+                                       int nMvScale,
+                                       int nFullPel) {
+    int nCode = DecodeIpuVlc(w, kVlcMotionCode);
+    int nResidual = nHRSize != 0 && nCode != 0 ? (int)ReadMpegBits(w, nHRSize) : 0;
 
-    code = sceMpegDecodeVlc(kVdecMotionCode);
-    residual = (nHRSize != 0 && code != 0) ? sceMpegGetBits(nHRSize) : 0;
-    sceMpegDecodeMotionComponent(&pPmv[0], nHRSize, code, residual, nFullPel);
+    PredictMpegMotionVectorComponent(&PMV[0], nHRSize, nCode, nResidual, nFullPel);
     if (nDmv != 0) {
-        pDmVector[0] = sceMpegDecodeDmVector();
+        dmvector[0] = SetMpegStreamMode3(w);
     }
-    code = sceMpegDecodeVlc(kVdecMotionCode);
-    residual = (nVRSize != 0 && code != 0) ? sceMpegGetBits(nVRSize) : 0;
+    nCode = DecodeIpuVlc(w, kVlcMotionCode);
+    nResidual = nVRSize != 0 && nCode != 0 ? (int)ReadMpegBits(w, nVRSize) : 0;
     if (nMvScale != 0) {
-        pPmv[1] >>= 1;
+        PMV[1] >>= 1;
     }
-    sceMpegDecodeMotionComponent(&pPmv[1], nVRSize, code, residual, nFullPel);
+    PredictMpegMotionVectorComponent(&PMV[1], nVRSize, nCode, nResidual, nFullPel);
     if (nMvScale != 0) {
-        pPmv[1] <<= 1;
+        PMV[1] <<= 1;
     }
     if (nDmv != 0) {
-        pDmVector[1] = sceMpegDecodeDmVector();
+        dmvector[1] = SetMpegStreamMode3(w);
     }
 }
 
-// NTSC-U/C: 0x0060afd0, PAL: 0x0064bc40
-// Decodes the motion vectors of direction s.
-static void sceMpegMotionVectors(int pPmv[2][2][2],
-                                 int *pDmVector,
-                                 int pMvfs[2][2],
-                                 int s,
-                                 int nCount,
-                                 int nMvFormat,
-                                 int nHRSize,
-                                 int nVRSize,
-                                 int nDmv,
-                                 int nMvScale) {
-    if (nCount == 1) {
-        if (nMvFormat == 0 && nDmv == 0) {
-            pMvfs[1][s] = pMvfs[0][s] = sceMpegGetBits(1);
+// NTSC-U/C: 0x0030c070, PAL: 0x00378500
+static void mpc___motionVectors(MpegContext *w,
+                                int PMV[2][2][2],
+                                int dmvector[2],
+                                int mvfs[2][2],
+                                int s,
+                                int nMotionVectorCount,
+                                int nMvFormat,
+                                int nHRSize,
+                                int nVRSize,
+                                int nDmv,
+                                int nMvScale) {
+    if (nMotionVectorCount == 1) {
+        if (nMvFormat == kMvField && nDmv == 0) {
+            mvfs[1][s] = mvfs[0][s] = (int)ReadMpegBits(w, 1);
         }
-        sceMpegMotionVector(pPmv[0][s], pDmVector, nHRSize, nVRSize, nDmv, nMvScale, 0);
-        pPmv[1][s][0] = pPmv[0][s][0];
-        pPmv[1][s][1] = pPmv[0][s][1];
+        DecodeMpegMotionVectorPair(w, PMV[0][s], dmvector, nHRSize, nVRSize, nDmv, nMvScale, 0);
+        PMV[1][s][0] = PMV[0][s][0];
+        PMV[1][s][1] = PMV[0][s][1];
         return;
     }
-    pMvfs[0][s] = sceMpegGetBits(1);
-    sceMpegMotionVector(pPmv[0][s], pDmVector, nHRSize, nVRSize, nDmv, nMvScale, 0);
-    pMvfs[1][s] = sceMpegGetBits(1);
-    sceMpegMotionVector(pPmv[1][s], pDmVector, nHRSize, nVRSize, nDmv, nMvScale, 0);
+    mvfs[0][s] = (int)ReadMpegBits(w, 1);
+    DecodeMpegMotionVectorPair(w, PMV[0][s], dmvector, nHRSize, nVRSize, nDmv, nMvScale, 0);
+    mvfs[1][s] = (int)ReadMpegBits(w, 1);
+    DecodeMpegMotionVectorPair(w, PMV[1][s], dmvector, nHRSize, nVRSize, nDmv, nMvScale, 0);
 }
 
-// NTSC-U/C: 0x0060aa20, PAL: 0x0064b690
-// Decodes one coded macroblock's header and vectors and starts the IPU on its block data. Returns
-// 0 after an error.
-static int sceMpegCodedMacroblock(int *pMbType,
-                                  int *pMotionType,
-                                  int *pDctType,
-                                  int pPmv[2][2][2],
-                                  int pMvfs[2][2],
-                                  int *pDmVector) {
-    volatile unsigned int *pControl = (volatile unsigned int *)(uintptr_t)kIpuControlAddress;
-    MpegMcBuffer *buffer;
-    int type;
-    int motionType;
-    int count;
-    int format;
-    int dmv;
-    int mvScale;
+// NTSC-U/C: 0x0030b528, PAL: 0x003779b8
+static int ReadMpegMacroblockAddressIncrement(MpegContext *w) {
+    int nIncrement = 0;
+    int nMore;
 
-    *pControl = (*pControl & ~(kIpuPictureTypeMask << kIpuPictureTypeShift)) |
-                ((unsigned int)g_nMpegPictureCodingType << kIpuPictureTypeShift);
-    type = sceMpegDecodeVlc(kVdecMacroblockType);
-    *pMbType = type;
-    if (type == 0) {
-        sceMpegRaiseError("Invalid macroblock_type code: 0");
-        g_nMpegDecodeError = 1;
+    do {
+        int nCode = DecodeIpuVlc(w, kVlcMacroblockAddressIncrement);
+
+        if (nCode == kMbaiStuffing) {
+            nMore = 1;
+        } else if (nCode < kMbaiEscape) {
+            if (nCode == 0) {
+                // Yes, the binary takes the stuffing code in an MPEG-2 stream only.
+                if (w->mMpeg2 != 0 && PeekIpuBits(w, 11) == kMbaiStuffingCode) {
+                    ConsumeIpuBits(w, 11);
+                    nMore = 1;
+                } else {
+                    _sceMpegErrorFormat(w,
+                                        "Invalid macroblock_address_increment code(0x%08x)",
+                                        (unsigned int)nCode);
+                    w->mFault = 1;
+                    return 1;
+                }
+            } else {
+                nIncrement += nCode;
+                nMore = 0;
+            }
+        } else if (nCode == kMbaiEscape) {
+            nIncrement += kMbaiEscapeIncrement;
+            nMore = 1;
+        } else {
+            nIncrement += nCode;
+            nMore = 0;
+        }
+    } while (nMore != 0);
+    return nIncrement;
+}
+
+// NTSC-U/C: 0x0030bb40, PAL: 0x00377fd0
+// Parses the modes and vectors of a coded macroblock and starts the block decode.
+static int DecodeMpegMacroblockType(MpegContext *w,
+                                    int *pMbType,
+                                    int *pMotionType,
+                                    int *pDctType,
+                                    int PMV[2][2][2],
+                                    int mvfs[2][2],
+                                    int dmvector[2]) {
+    int nMbType;
+    int nMotionVectorCount;
+    int nMvFormat;
+    int nDmv;
+    int nMvScale;
+
+    *IPU_CTRL = (*IPU_CTRL & ~(unsigned int)kIpuCtrlPctMask) |
+                ((unsigned int)w->mPictureCodingType << kIpuCtrlPctShift);
+    nMbType = DecodeIpuVlc(w, kVlcMacroblockType);
+    *pMbType = nMbType;
+    if (nMbType == 0) {
+        _sceMpegError(w, "Invalid macroblock_type code: 0");
+        w->mFault = 1;
         return 0;
     }
-    if ((type & (kMbMotionForward | kMbMotionBackward)) != 0) {
-        if (g_nMpegPictureStructure == kFramePicture && g_nMpegFramePredFrameDct != 0) {
+    if ((nMbType & (kMbMotionForward | kMbMotionBackward)) != 0) {
+        if (w->mPictureStructure == kFramePicture && w->mFramePredFrameDct != 0) {
             *pMotionType = kMcFrame;
         } else {
-            *pMotionType = sceMpegGetBits(2);
+            *pMotionType = (int)ReadMpegBits(w, 2);
         }
-    } else if ((type & kMbIntra) != 0 && g_nMpegConcealmentMotionVectors != 0) {
-        *pMotionType = g_nMpegPictureStructure == kFramePicture ? kMcFrame : kMcField;
+    } else if ((nMbType & kMbIntra) != 0 && w->mConcealmentMotionVectors != 0) {
+        *pMotionType = w->mPictureStructure == kFramePicture ? kMcFrame : kMcField;
     }
-    motionType = *pMotionType;
-    if (g_nMpegPictureStructure == kFramePicture) {
-        count = motionType == kMcField ? 2 : 1;
-        format = motionType == kMcFrame;
+    if (w->mPictureStructure == kFramePicture) {
+        nMotionVectorCount = *pMotionType == kMcField ? 2 : 1;
+        nMvFormat = *pMotionType == kMcFrame ? kMvFrame : kMvField;
     } else {
-        count = motionType == kMc16x8 ? 2 : 1;
-        format = 0;
+        nMotionVectorCount = *pMotionType == kMc16x8 ? 2 : 1;
+        nMvFormat = kMvField;
     }
-    dmv = motionType == kMcDualPrime;
-    mvScale = 0;
-    if (format == 0) {
-        mvScale = g_nMpegPictureStructure == kFramePicture;
+    nDmv = *pMotionType == kMcDmv;
+    nMvScale = nMvFormat == kMvField && w->mPictureStructure == kFramePicture;
+    *pDctType = w->mPictureStructure == kFramePicture && w->mFramePredFrameDct == 0 &&
+                        (*pMbType & (kMbPattern | kMbIntra)) != 0 ?
+                    (int)ReadMpegBits(w, 1) :
+                    0;
+    if ((*pMbType & kMbQuant) != 0) {
+        w->mQuantizerScaleCode = (int)ReadMpegBits(w, 5);
     }
-    if (g_nMpegPictureStructure == kFramePicture && g_nMpegFramePredFrameDct == 0 &&
-        (type & (kMbIntra | kMbPattern)) != 0) {
-        *pDctType = sceMpegGetBits(1);
-    } else {
-        *pDctType = 0;
-    }
-    if ((type & kMbQuant) != 0) {
-        g_nMpegQuantiserScaleCode = sceMpegGetBits(5);
-    }
-    if ((type & kMbMotionForward) != 0 ||
-        ((type & kMbIntra) != 0 && g_nMpegConcealmentMotionVectors != 0)) {
-        if (g_nMpegIsMpeg2 != 0) {
-            sceMpegMotionVectors(pPmv,
-                                 pDmVector,
-                                 pMvfs,
-                                 0,
-                                 count,
-                                 format,
-                                 g_anMpegFCodes[0] - 1,
-                                 g_anMpegFCodes[1] - 1,
-                                 dmv,
-                                 mvScale);
+    if ((*pMbType & kMbMotionForward) != 0 ||
+        ((*pMbType & kMbIntra) != 0 && w->mConcealmentMotionVectors != 0)) {
+        if (w->mMpeg2 != 0) {
+            mpc___motionVectors(w,
+                                PMV,
+                                dmvector,
+                                mvfs,
+                                0,
+                                nMotionVectorCount,
+                                nMvFormat,
+                                w->mFCode[0][0] - 1,
+                                w->mFCode[0][1] - 1,
+                                nDmv,
+                                nMvScale);
         } else {
-            sceMpegMotionVector(pPmv[0][0],
-                                pDmVector,
-                                g_nMpegForwardFCode - 1,
-                                g_nMpegForwardFCode - 1,
-                                0,
-                                0,
-                                g_nMpegFullPelForwardVector);
+            DecodeMpegMotionVectorPair(w,
+                                       PMV[0][0],
+                                       dmvector,
+                                       w->mForwardFCode - 1,
+                                       w->mForwardFCode - 1,
+                                       0,
+                                       0,
+                                       w->mFullPelForwardVector);
         }
     }
-    if (g_nMpegDecodeError != 0) {
+    if (w->mFault != 0) {
         return 0;
     }
-    if ((type & kMbMotionBackward) != 0) {
-        if (g_nMpegIsMpeg2 != 0) {
-            sceMpegMotionVectors(pPmv,
-                                 pDmVector,
-                                 pMvfs,
-                                 1,
-                                 count,
-                                 format,
-                                 g_anMpegFCodes[2] - 1,
-                                 g_anMpegFCodes[3] - 1,
-                                 0,
-                                 mvScale);
+    if ((*pMbType & kMbMotionBackward) != 0) {
+        if (w->mMpeg2 != 0) {
+            mpc___motionVectors(w,
+                                PMV,
+                                dmvector,
+                                mvfs,
+                                1,
+                                nMotionVectorCount,
+                                nMvFormat,
+                                w->mFCode[1][0] - 1,
+                                w->mFCode[1][1] - 1,
+                                0,
+                                nMvScale);
         } else {
-            sceMpegMotionVector(pPmv[0][1],
-                                pDmVector,
-                                g_nMpegBackwardFCode - 1,
-                                g_nMpegBackwardFCode - 1,
-                                0,
-                                0,
-                                g_nMpegFullPelBackwardVector);
+            DecodeMpegMotionVectorPair(w,
+                                       PMV[0][1],
+                                       dmvector,
+                                       w->mBackwardFCode - 1,
+                                       w->mBackwardFCode - 1,
+                                       0,
+                                       0,
+                                       w->mFullPelBackwardVector);
         }
     }
-    if (g_nMpegDecodeError != 0) {
+    if (w->mFault != 0) {
         return 0;
     }
-    if ((type & kMbIntra) != 0 && g_nMpegConcealmentMotionVectors != 0) {
-        sceMpegSkipBits(1); // The marker bit after the concealment vectors.
+    if ((*pMbType & kMbIntra) != 0 && w->mConcealmentMotionVectors != 0) {
+        ConsumeIpuBits(w, 1);
     }
-    buffer = &g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent];
-    if ((type & (kMbIntra | kMbPattern)) != 0) {
-        *(volatile unsigned int *)(uintptr_t)kIpuFromMadrAddress =
-            ((unsigned int)buffer->mCoefficients & kPhysicalAddressMask) | kDmaScratchpadFlag;
-        *(volatile unsigned int *)(uintptr_t)kIpuFromQwcAddress = kCoefficientQwords;
-        *(volatile unsigned int *)(uintptr_t)kIpuFromChcrAddress = kDmaChcrStart;
-        sceMpegWaitIpuIdle();
-        sceMpegIssueIpuCommand(((unsigned int)(type & kMbIntra) << kBdecIntraShift) |
-                               ((unsigned int)g_nMpegQuantiserScaleCode << kBdecQuantiserShift) |
-                               ((unsigned int)g_nMpegResetDcPredictor << kBdecResetDcShift) |
-                               kIpuCommandBdec | ((unsigned int)*pDctType << kBdecDctTypeShift));
+    if ((*pMbType & (kMbPattern | kMbIntra)) != 0) {
+        StartIpuFromDmaTransfer(w->mMcBuffers[w->mMcCurrent].mCoefficients, 2 * kMacroblockSize);
+        WaitForIpuIdle(w);
+        IssueIpuCommand(
+            w,
+            ((unsigned int)(*pMbType & kMbIntra) << kIpuBdecIntraShift) |
+                ((unsigned int)w->mQuantizerScaleCode << kIpuBdecQscShift) |
+                (((unsigned int)w->mResetDcPredictor << kIpuBdecDcResetShift) | kIpuCmdBdec) |
+                ((unsigned int)*pDctType << kIpuBdecDctTypeShift));
     } else {
-        buffer->mNotCoded = 1;
+        w->mMcBuffers[w->mMcCurrent].mNotCoded = 1;
     }
-    g_nMpegResetDcPredictor = 0;
-    if (g_nMpegDecodeError != 0) {
+    w->mResetDcPredictor = 0;
+    if (w->mFault != 0) {
         return 0;
     }
-    if ((type & kMbIntra) == 0) {
-        g_nMpegResetDcPredictor = 1;
-    } else if (g_nMpegConcealmentMotionVectors == 0) {
-        pPmv[0][0][0] = 0;
-        pPmv[0][0][1] = 0;
-        pPmv[0][1][0] = 0;
-        pPmv[0][1][1] = 0;
-        pPmv[1][0][0] = 0;
-        pPmv[1][0][1] = 0;
-        pPmv[1][1][0] = 0;
-        pPmv[1][1][1] = 0;
+    if ((*pMbType & kMbIntra) == 0) {
+        w->mResetDcPredictor = 1;
     }
-    if (g_nMpegPictureCodingType == kPictureP && (type & (kMbIntra | kMbMotionForward)) == 0) {
-        pPmv[0][0][0] = 0;
-        pPmv[0][0][1] = 0;
-        pPmv[1][0][0] = 0;
-        pPmv[1][0][1] = 0;
-        if (g_nMpegPictureStructure == kFramePicture) {
+    if ((*pMbType & kMbIntra) != 0 && w->mConcealmentMotionVectors == 0) {
+        PMV[0][0][0] = PMV[0][0][1] = PMV[1][0][0] = PMV[1][0][1] = 0;
+        PMV[0][1][0] = PMV[0][1][1] = PMV[1][1][0] = PMV[1][1][1] = 0;
+    }
+    if (w->mPictureCodingType == kPictureP && (*pMbType & (kMbMotionForward | kMbIntra)) == 0) {
+        PMV[0][0][0] = PMV[0][0][1] = PMV[1][0][0] = PMV[1][0][1] = 0;
+        if (w->mPictureStructure == kFramePicture) {
             *pMotionType = kMcFrame;
         } else {
             *pMotionType = kMcField;
-            pMvfs[0][0] = g_nMpegPictureStructure == kBottomField;
+            mvfs[0][0] = w->mPictureStructure == kBottomField;
         }
     }
     return 1;
 }
 
-// NTSC-U/C: 0x0060a950, PAL: 0x0064b5c0
-// Sets up a skipped macroblock. Returns 0 in an I picture, which may not skip.
-static int
-sceMpegSkippedMacroblock(int pPmv[2][2][2], int *pMotionType, int pMvfs[2][2], int *pMbType) {
-    int result = 1;
+// NTSC-U/C: 0x0030ba80, PAL: 0x00377f10
+static int HandleMpegSkippedMacroblock(
+    MpegContext *w, int PMV[2][2][2], int *pMotionType, int mvfs[2][2], int *pMbType) {
+    int nResult = 1;
 
-    g_nMpegResetDcPredictor = 1;
-    g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent].mNotCoded = 1;
-    if (g_nMpegPictureCodingType == kPictureP) {
-        pPmv[0][0][0] = 0;
-        pPmv[1][0][1] = 0;
-        pPmv[1][0][0] = 0;
-        pPmv[0][0][1] = 0;
+    w->mMcBuffers[w->mMcCurrent].mNotCoded = 1;
+    w->mResetDcPredictor = 1;
+    if (w->mPictureCodingType == kPictureP) {
+        PMV[0][0][0] = PMV[0][0][1] = PMV[1][0][0] = PMV[1][0][1] = 0;
     }
-    if (g_nMpegPictureStructure == kFramePicture) {
+    if (w->mPictureStructure == kFramePicture) {
         *pMotionType = kMcFrame;
     } else {
         *pMotionType = kMcField;
-        pMvfs[0][0] = g_nMpegPictureStructure == kBottomField;
-        pMvfs[0][1] = g_nMpegPictureStructure == kBottomField;
+        mvfs[0][0] = mvfs[0][1] = w->mPictureStructure == kBottomField;
     }
-    if (g_nMpegPictureCodingType == kPictureI) {
-        sceMpegRaiseError("skiped macroblock in I picure is not allowed");
-        result = 0;
+    if (w->mPictureCodingType == kPictureI) {
+        _sceMpegError(w, "skiped macroblock in I picure is not allowed");
+        nResult = 0;
     }
     *pMbType &= ~kMbIntra;
-    return result;
+    return nResult;
 }
 
-// NTSC-U/C: 0x0060a750, PAL: 0x0064b3c0
-// Decodes one slice. Each macroblock's kernels run while the IPU decodes the next one. Returns one
-// of kSliceDone, kSliceError, kSliceSkipPicture, or kSliceNext.
-static int sceMpegDecodeSlice(int nCounter, int nMacroblockCount) {
-    int pmv[2][2][2];
-    int address = 0;
-    int increment = 0;
-    // The image does not initialise these locals. A value is read only after the macroblock that
-    // sets it.
-    int mvfs[2][2] = {{0, 0}, {0, 0}};
-    int dmVector[2] = {0, 0};
-    int mbType = 0;
-    int motionType = 0;
-    int dctType = 0;
-    int result;
-
-    (void)nCounter; // Passed down from the picture path and never read.
-    result = sceMpegStartSlice(nMacroblockCount, &address, &increment, pmv);
-    if (result != kSliceDone) {
-        return result;
-    }
-    g_nMpegDecodeError = 0;
-    for (;;) {
-        if (address >= nMacroblockCount) {
-            return kSliceDone;
-        }
-        g_mpegIpuTable.mBuffers[g_mpegIpuTable.mCurrent].mNotCoded = 0;
-        if (sceMpegWaitBlockDecode() == 0) {
-            return kSliceSkipPicture;
-        }
-        if (increment == 0) {
-            if (sceMpegPeekBits(23) == 0 || g_nMpegDecodeError != 0) {
-                g_nMpegDecodeError = 0;
-                return kSliceNext;
-            }
-            increment = sceMpegMacroblockAddressIncrement();
-            if (g_nMpegDecodeError != 0) {
-                g_nMpegDecodeError = 0;
-                return kSliceError;
-            }
-        }
-        if (address >= nMacroblockCount) {
-            sceMpegRaiseError("Too many macroblocks in picture");
-            return kSliceSkipPicture;
-        }
-        if (increment == 1) {
-            if (sceMpegCodedMacroblock(&mbType, &motionType, &dctType, pmv, mvfs, dmVector) == 0) {
-                g_nMpegDecodeError = 0;
-                return kSliceError;
-            }
-        } else if (sceMpegSkippedMacroblock(pmv, &motionType, mvfs, &mbType) == 0) {
-            g_nMpegDecodeError = 0;
-            return kSliceSkipPicture;
-        }
-        if (sceMpegStartMotionCompensation(
-                address, increment, mbType, motionType, pmv, mvfs, dmVector) == 0) {
-            g_nMpegDecodeError = 0;
-            return kSliceSkipPicture;
-        }
-        if (address != 0) {
-            sceMpegFinishMacroblock(g_mpegIpuTable.mCurrent ^ 1);
-        }
-        ++address;
-        --increment;
-        g_mpegIpuTable.mCurrent ^= 1;
+// NTSC-U/C: 0x0030cf80, PAL: 0x00379410
+static void SkipMpegExtraInformation(MpegContext *w) {
+    while (ReadMpegBits(w, 1) != 0) {
+        ConsumeIpuBits(w, 8);
     }
 }
 
-// NTSC-U/C: 0x0060a500, PAL: 0x0064b170
-// Decodes the slices of one picture and finishes its last macroblock. Returns 1 when the picture
-// decoded completely.
-static int sceMpegDecodeSlices(int nCounter) {
-    volatile unsigned int *pToSprChcr = (volatile unsigned int *)(uintptr_t)kToSprChcrAddress;
-    int count = g_nMpegMbWidth * g_nMpegMbHeight;
-    int result;
-
-    g_mpegIpuTable.mPictureResetWord = 0;
-    g_mpegIpuTable.mCurrent = 0;
-    if (g_nMpegPictureStructure != kFramePicture) {
-        count >>= 1;
-    }
-    do {
-        result = sceMpegDecodeSlice(nCounter, count);
-    } while (result == kSliceError || result == kSliceNext);
-    sceMpegWaitIpuIdle();
-    if (sceMpegWaitBlockDecode() == 0) {
-        result = kSliceSkipPicture;
-    }
-    while (((*pToSprChcr >> 8) & 1) != 0) {
-    }
-    if (result == kSliceDone) {
-        sceMpegFinishMacroblock(g_mpegIpuTable.mCurrent == 0);
-    }
-    if ((unsigned int)(result - 1) < 2u) {
-        sceMpegRaiseError("= Skip to the next picture =");
-    }
-    return result == kSliceDone;
-}
-
-// Output states of the work area's +0x08 word.
-enum {
-    kOutputIdle = 0,
-    kOutputDecoding = 1,
-    kOutputShown = 2,
-};
-
-// sceMpegNextPictureHeader() results the picture path dispatches on. The picture types are
-// picture_coding_type.
-enum {
-    kPictureSequenceEnd = 0,
-    kPictureCodingIntra = 1,
-    kPictureCodingDc = 4,
-    kPictureDispatchCount = 5,
-};
-
-// The buffer check reports a picture larger than the caller's buffer in this many bytes.
-enum {
-    kBufferMessageSize = 256,
-};
-
-// Pending time stamp states of the work area's +0xf8 word.
-enum {
-    kPendingStampArmed = 1,
-    kPendingStampReady = 2,
-};
-
-static inline volatile unsigned int *MpegRegister(unsigned int nAddress) {
-    return (volatile unsigned int *)(uintptr_t)nAddress;
-}
-
-static inline int MpegIpuBusy(void) {
-    return (*MpegRegister(kIpuControlAddress) & kIpuBusyValue) != 0;
-}
-
-// Reports a callback that has only its type. The image does not initialise the rest of the stack
-// entry, and the reconstruction zeroes it as sceMpegReportNoData() does.
-static inline int MpegInvokeTypedCallback(void *pDecoder, int nType) {
-    StreamEntry entry;
-
-    entry.key = (unsigned long long)nType;
-    entry.templateBits = 0;
-    entry.callback = NULL;
-    entry.data = NULL;
-    return sceMpegInvokeCallbackSlot(pDecoder, &entry);
-}
-
-static inline MpegWork *MpegInstanceWork(void) {
-    return (MpegWork *)((sceMpeg *)g_decoderInstance)->pContext;
-}
-
-// NTSC-U/C: 0x00638598, PAL: 0x00679128
-static int sceMpegToIpuHandler(int nChannel) {
-    unsigned int remaining;
-    unsigned int address;
-
-    (void)nChannel;
-    *MpegRegister(kDmacStatusAddress) = kDmacStatusToIpu;
-    ++g_nToIpuInterrupts;
-    remaining = g_nToIpuRemainingQwc;
-    if (remaining == 0) {
-        return 1;
-    }
-    address = g_nToIpuNextAddress;
-    if (remaining > kToIpuChunkQwc) {
-        *MpegRegister(kIpuToMadrAddress) = address;
-        *MpegRegister(kIpuToQwcAddress) = kToIpuChunkQwc;
-        *MpegRegister(kIpuToChcrAddress) = kDmaChcrStartFromMemory;
-        g_nToIpuNextAddress = (address + kToIpuChunkBytes) & kPhysicalAddressMask;
-        g_nToIpuRemainingQwc = remaining - kToIpuChunkQwc;
-    } else {
-        *MpegRegister(kIpuToMadrAddress) = address;
-        *MpegRegister(kIpuToQwcAddress) = remaining;
-        *MpegRegister(kIpuToChcrAddress) = kDmaChcrStartFromMemory;
-        g_nToIpuRemainingQwc = 0;
+// NTSC-U/C: 0x0030ca28, PAL: 0x00378eb8
+// Returns the slice_vertical_position_extension, always zero.
+static int ReadMpegSliceQuantizer(MpegContext *w) {
+    w->mQuantizerScaleCode = (int)ReadMpegBits(w, 5);
+    if (ReadMpegBits(w, 1) != 0) {
+        (void)ReadMpegBits(w, 1);
+        ConsumeIpuBits(w, 7);
+        SkipMpegExtraInformation(w);
     }
     return 0;
 }
 
-// NTSC-U/C: 0x00638290, PAL: 0x00678e20
-static int sceMpegFromIpuHandler(int nChannel) {
-    unsigned int address;
-    int remaining;
+// NTSC-U/C: 0x0030b758, PAL: 0x00377be8
+static int
+ParseMpegSliceHeader(MpegContext *w, int nMbaMax, int *pMba, int *pMbaInc, int PMV[2][2][2]) {
+    unsigned int nCode;
+    int nExtension;
+    int nIncrement;
+
+    (void)nMbaMax;
+    w->mFault = 0;
+    AlignToMpegStartCode(w);
+    nCode = PeekIpuBits(w, 32);
+    if (nCode - kSliceStartCodeMin >= kSliceStartCodeCount) {
+        _sceMpegErrorFormat(w, "slice_start_code(0x%08x) out of range", nCode);
+        return kSliceError;
+    }
+    ConsumeIpuBits(w, 32);
+    nExtension = ReadMpegSliceQuantizer(w);
+    nIncrement = ReadMpegMacroblockAddressIncrement(w);
+    *pMbaInc = nIncrement;
+    if (w->mFault != 0) {
+        _sceMpegError(w, "_sliceA0(): error happens");
+        return kSliceNext;
+    }
+    *pMba = ((nExtension << 7) + (int)(nCode & 0xff) - 1) * w->mMbWidth + nIncrement - 1;
+    *pMbaInc = 1;
+    w->mResetDcPredictor = 1;
+    PMV[0][0][0] = PMV[0][0][1] = PMV[1][0][0] = PMV[1][0][1] = 0;
+    PMV[0][1][0] = PMV[0][1][1] = PMV[1][1][0] = PMV[1][1][1] = 0;
+    return kSliceDone;
+}
+
+// NTSC-U/C: 0x0030b888, PAL: 0x00377d18
+static int DecodeMpegSliceMacroblocks(MpegContext *w, int nMbaMax) {
+    // The binary leaves the modes and selectors uninitialised until a macroblock sets them.
+    int PMV[2][2][2];
+    int mvfs[2][2] = {{0, 0}, {0, 0}};
+    int dmvector[2];
+    int nMba = 0;
+    int nMbaInc = 0;
+    int nMbType = 0;
+    int nMotionType = 0;
+    int nDctType;
+    int nResult = ParseMpegSliceHeader(w, nMbaMax, &nMba, &nMbaInc, PMV);
+
+    if (nResult != 0) {
+        return nResult;
+    }
+    w->mFault = 0;
+    for (;;) {
+        if (nMba >= nMbaMax) {
+            return kSliceDone;
+        }
+        w->mMcBuffers[w->mMcCurrent].mNotCoded = 0;
+        if (WaitForIpuBlockDecode(w) == 0) {
+            if (w->mAbort != 0) {
+                w->mAbort = 0;
+                return kSliceAbort;
+            }
+            return kSliceError;
+        }
+        if (nMbaInc == 0) {
+            if (PeekIpuBits(w, 23) == 0 || w->mFault != 0) {
+                w->mFault = 0;
+                return kSliceResync;
+            }
+            nMbaInc = ReadMpegMacroblockAddressIncrement(w);
+            if (w->mFault != 0) {
+                w->mFault = 0;
+                return kSliceNext;
+            }
+        }
+        if (nMba >= nMbaMax) {
+            _sceMpegError(w, "Too many macroblocks in picture");
+            return kSliceError;
+        }
+        if (nMbaInc == 1) {
+            if (DecodeMpegMacroblockType(
+                    w, &nMbType, &nMotionType, &nDctType, PMV, mvfs, dmvector) == 0) {
+                w->mFault = 0;
+                return kSliceNext;
+            }
+        } else if (HandleMpegSkippedMacroblock(w, PMV, &nMotionType, mvfs, &nMbType) == 0) {
+            w->mFault = 0;
+            return kSliceError;
+        }
+        if (DispatchMpegMacroblockDecode(
+                w, nMba, nMbaInc, nMbType, nMotionType, PMV, mvfs, dmvector) == 0) {
+            w->mFault = 0;
+            return kSliceError;
+        }
+        if (nMba != 0) {
+            ReconstructMpegMacroblockPixels(w, w->mMcCurrent ^ 1);
+        }
+        ++nMba;
+        --nMbaInc;
+        w->mMcCurrent ^= 1;
+    }
+}
+
+// NTSC-U/C: 0x0030b638, PAL: 0x00377ac8
+// Decodes the slices of a picture. Returns nonzero when the picture decoded.
+static int DecodeMpegPictureSlices(MpegContext *w) {
+    int nMbaMax;
+    int nResult;
+
+    w->mMcCurrent = 0;
+    nMbaMax = w->mMbWidth * w->mMbHeight;
+    w->mPictureResetWord = 0;
+    if (w->mPictureStructure != kFramePicture) {
+        nMbaMax >>= 1;
+    }
+    do {
+        nResult = DecodeMpegSliceMacroblocks(w, nMbaMax);
+    } while (nResult == kSliceNext || nResult == kSliceResync);
+    WaitForIpuIdle(w);
+    if (WaitForIpuBlockDecode(w) == 0) {
+        if (w->mAbort != 0) {
+            w->mAbort = 0;
+            nResult = kSliceAbort;
+        } else {
+            nResult = kSliceError;
+        }
+    }
+    while ((*D9_CHCR & kChcrStart) != 0) {
+    }
+    if (nResult == kSliceDone) {
+        ReconstructMpegMacroblockPixels(w, w->mMcCurrent == 0);
+    }
+    if ((unsigned int)(nResult - 1) < 2) {
+        _sceMpegError(w, "= Skip to the next picture =");
+    }
+    return nResult == kSliceDone;
+}
+
+#pragma mark - Sequence and picture headers
+
+// NTSC-U/C: 0x00308b70, PAL: 0x00375000
+static void SetPlaneRectDimensions(MpegPicture *pPicture, int nWidth, int nHeight) {
+    pPicture->mMbWidth = nWidth >> 4;
+    pPicture->mMbHeight = nHeight >> 4;
+    pPicture->mWidth = nWidth;
+    pPicture->mHeight = nHeight;
+}
+
+// NTSC-U/C: 0x00308f60, PAL: 0x003753f0
+// Points the three frames at the buffers, and each frame's fields at its two halves.
+static void InitPlaneDmaAddressSlots(MpegPicture *pFrame0,
+                                     MpegPicture *pFrame1,
+                                     MpegPicture *pFrame2,
+                                     MpegPicture *pTop0,
+                                     MpegPicture *pTop1,
+                                     MpegPicture *pTop2,
+                                     MpegPicture *pBottom0,
+                                     MpegPicture *pBottom1,
+                                     MpegPicture *pBottom2,
+                                     unsigned char *pBuffer0,
+                                     unsigned char *pBuffer1,
+                                     unsigned char *pBuffer2,
+                                     int nWidth,
+                                     int nHeight) {
+    int nFieldOffset = nWidth * nHeight / 512 * kMacroblockSize;
+
+    pFrame0->mData = Uncached(pBuffer0);
+    pFrame1->mData = Uncached(pBuffer1);
+    pFrame2->mData = Uncached(pBuffer2);
+    pTop0->mData = Uncached(pBuffer0);
+    pTop1->mData = Uncached(pBuffer1);
+    pTop2->mData = Uncached(pBuffer2);
+    pBottom0->mData = Uncached(pBuffer0 + nFieldOffset);
+    pBottom1->mData = Uncached(pBuffer1 + nFieldOffset);
+    pBottom2->mData = Uncached(pBuffer2 + nFieldOffset);
+}
+
+// NTSC-U/C: 0x00309040, PAL: 0x003754d0
+static void
+UploadQuantMatrixToIpu(MpegContext *w, unsigned int nCommand, const unsigned char *pMatrix) {
+    sceMpegCbData cbData;
+    int nInterrupts;
+
+    cbData.type = sceMpegCbStopDMA;
+    _sceMpegCallback(w->mMpeg, &cbData);
+    WaitForIpuIdle(w);
+    *IPU_CMD = kIpuCmdBclr;
+    WaitForIpuIdle(w);
+    nInterrupts = DIntr();
+    *D4_MADR = PhysicalAddress(pMatrix);
+    *D4_QWC = kQuantMatrixQuadwords;
+    *D4_CHCR = kChcrStart | kChcrFromMemory;
+    if (nInterrupts != 0) {
+        EIntr();
+    }
+    IssueIpuCommand(w, nCommand);
+    WaitForIpuIdle(w);
+    cbData.type = sceMpegCbRestartDMA;
+    _sceMpegCallback(w->mMpeg, &cbData);
+}
+
+// NTSC-U/C: 0x00308cb8, PAL: 0x00375148
+// Sizes the decoder for the sequence and carves its three frame buffers on a size change.
+static void SetupMpegPictureBuffers(sceMpeg *mp) {
+    MpegContext *w = mp->sys;
+    int nWidth;
+    int nHeight;
+    unsigned int nSize;
+
+    if (w->mMpeg2 == 0) {
+        w->mPictureStructure = kFramePicture;
+        w->mFramePredFrameDct = 1;
+        w->mMatrixCoefficients = 5;
+        w->mProgressiveSequence = 1;
+        w->mChromaFormat = 1;
+        w->mProgressiveFrame = 1;
+    }
+    w->mMbWidth = (w->mHorizontalSize + 15) >> 4;
+    if (w->mMpeg2 != 0 && w->mProgressiveSequence == 0) {
+        w->mMbHeight = ((w->mVerticalSize + 31) >> 5) << 1;
+    } else {
+        w->mMbHeight = (w->mVerticalSize + 15) >> 4;
+    }
+    nHeight = w->mMbHeight << 4;
+    nWidth = w->mMbWidth << 4;
+    if (nWidth == mp->width && nHeight == mp->height) {
+        return;
+    }
+    mp->height = nHeight;
+    mp->width = nWidth;
+    nSize = (unsigned int)(nWidth * (nHeight * kMacroblockSize)) >> 8;
+    _sceMpegAlalcFree(&w->mAlalc);
+    w->mFrameBuffers[0] = _sceMpegAlalcAlloc(w, &w->mAlalc, nSize, kFrameBufferAlign);
+    w->mFrameBuffers[1] = _sceMpegAlalcAlloc(w, &w->mAlalc, nSize, kFrameBufferAlign);
+    w->mFrameBuffers[2] = _sceMpegAlalcAlloc(w, &w->mAlalc, nSize, kFrameBufferAlign);
+    InitPlaneDmaAddressSlots(&w->mPictures[0],
+                             &w->mPictures[1],
+                             &w->mPictures[2],
+                             &w->mPictures[3],
+                             &w->mPictures[4],
+                             &w->mPictures[5],
+                             &w->mPictures[6],
+                             &w->mPictures[7],
+                             &w->mPictures[8],
+                             w->mFrameBuffers[0],
+                             w->mFrameBuffers[1],
+                             w->mFrameBuffers[2],
+                             nWidth,
+                             nHeight);
+    SetPlaneRectDimensions(&w->mPictures[0], nWidth, nHeight);
+    SetPlaneRectDimensions(&w->mPictures[1], nWidth, nHeight);
+    SetPlaneRectDimensions(&w->mPictures[2], nWidth, nHeight);
+    SetPlaneRectDimensions(&w->mPictures[3], nWidth, nHeight >> 1);
+    SetPlaneRectDimensions(&w->mPictures[4], nWidth, nHeight >> 1);
+    SetPlaneRectDimensions(&w->mPictures[5], nWidth, nHeight >> 1);
+    SetPlaneRectDimensions(&w->mPictures[6], nWidth, nHeight >> 1);
+    SetPlaneRectDimensions(&w->mPictures[7], nWidth, nHeight >> 1);
+    SetPlaneRectDimensions(&w->mPictures[8], nWidth, nHeight >> 1);
+}
+
+// NTSC-U/C: 0x00309120, PAL: 0x003755b0
+static void ParseMpegSequenceExtension(MpegContext *w) {
+    unsigned int nBits;
+    unsigned int nBitRateExtension;
+    unsigned int nHorizontalExtension;
+    unsigned int nVerticalExtension;
+    unsigned int nProfileAndLevel;
+    unsigned int nVbvExtension;
+
+    w->mMpeg2 = 1;
+    SetIpuControlEnableBit(0);
+    nBits = ReadMpegBits(w, 28);
+    nBitRateExtension = (nBits >> 1) & 0xfff;
+    nVerticalExtension = (nBits >> 13) & 3;
+    nHorizontalExtension = (nBits >> 15) & 3;
+    w->mChromaFormat = (int)((nBits >> 17) & 3);
+    if (w->mChromaFormat != 1) {
+        _sceMpegError(w, "_chroma_format needs to be 1: 420");
+    }
+    w->mProgressiveSequence = (int)((nBits >> 19) & 1);
+    nProfileAndLevel = nBits >> 20;
+    nVbvExtension = ReadMpegBits(w, 16) >> 8;
+    if (nProfileAndLevel != 0x48 && nProfileAndLevel != 0x58 && nProfileAndLevel != 0x44) {
+        _sceMpegError(w, "Unsupported profile/level");
+    }
+    w->mHorizontalSize = (int)((nHorizontalExtension << 12) | (w->mHorizontalSize & 0xfff));
+    w->mVerticalSize = (int)((nVerticalExtension << 12) | (w->mVerticalSize & 0xfff));
+    w->mBitRate += (int)(nBitRateExtension << 18);
+    w->mVbvBufferSize += (int)(nVbvExtension << 10);
+}
+
+// NTSC-U/C: 0x00309250, PAL: 0x003756e0
+static void ParseMpegSequenceRateInfo(MpegContext *w) {
+    (void)ReadMpegBits(w, 3);
+    if (ReadMpegBits(w, 1) != 0) {
+        (void)ReadMpegBits(w, 8);
+        (void)ReadMpegBits(w, 8);
+        w->mMatrixCoefficients = (int)ReadMpegBits(w, 8);
+    }
+    w->mSequenceDisplayHorizontalSize = (int)ReadMpegBits(w, 14);
+    (void)ReadMpegBits(w, 1);
+    w->mSequenceDisplayVerticalSize = (int)ReadMpegBits(w, 14);
+}
+
+// NTSC-U/C: 0x003092e0, PAL: 0x00375770
+static void HandleMpegSequenceScalableExtUnsupported(MpegContext *w) {
+    _sceMpegError(w, "_sequenceScalableExtension() is not implemented");
+}
+
+// NTSC-U/C: 0x003092f0, PAL: 0x00375780
+static void HandleMpegUnknownExtension(MpegContext *w) {
+    _sceMpegError(w, "Unknown Extension");
+}
+
+// NTSC-U/C: 0x00309300, PAL: 0x00375790
+static void HandleMpegPictureSpatialScalableExtUnsupported(MpegContext *w) {
+    _sceMpegError(w, "_pictureSpatialScalableExtension is not supported");
+}
+
+// NTSC-U/C: 0x00309310, PAL: 0x003757a0
+static void HandleMpegPictureTemporalScalableExtUnsupported(MpegContext *w) {
+    _sceMpegError(w, "_pictureTemporalScalableExtension is not supported");
+}
+
+// Loads one quantiser matrix from the bitstream.
+static inline void LoadMatrixFromStream(MpegContext *w, unsigned int nCommand) {
+    WaitForIpuIdle(w);
+    IssueIpuCommand(w, nCommand);
+    WaitForIpuIdle(w);
+}
+
+// NTSC-U/C: 0x0030d0e0, PAL: 0x00379570
+static void LoadMpegQuantizerMatrices(MpegContext *w) {
+    w->mLoadIntraQuantiserMatrix = (int)ReadMpegBits(w, 1);
+    if (w->mLoadIntraQuantiserMatrix != 0) {
+        LoadMatrixFromStream(w, kIpuCmdSetIqIntra);
+    }
+    w->mLoadNonIntraQuantiserMatrix = (int)ReadMpegBits(w, 1);
+    if (w->mLoadNonIntraQuantiserMatrix != 0) {
+        LoadMatrixFromStream(w, kIpuCmdSetIqNonIntra);
+    }
+    if (ReadMpegBits(w, 1) != 0) {
+        _sceMpegError(w, "load_chroma_intra_quantizer_matrix == 1");
+    }
+    if (ReadMpegBits(w, 1) != 0) {
+        _sceMpegError(w, "load_chroma_non_intra_quantizer_matrix == 1");
+    }
+}
+
+// NTSC-U/C: 0x0030d2a0, PAL: 0x00379730
+static void SkipMpegCopyrightExtension(MpegContext *w) {
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 8);
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 7);
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 20);
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 22);
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 22);
+}
+
+// NTSC-U/C: 0x0030d1a8, PAL: 0x00379638
+static void ParseMpegPictureDisplayExtension(MpegContext *w) {
+    int nOffsets;
+    int i;
+
+    if (w->mProgressiveSequence != 0) {
+        if (w->mRepeatFirstField != 0) {
+            nOffsets = w->mTopFieldFirst != 0 ? 3 : 2;
+        } else {
+            nOffsets = 1;
+        }
+    } else if (w->mPictureStructure != kFramePicture) {
+        nOffsets = 1;
+    } else {
+        nOffsets = w->mRepeatFirstField != 0 ? 3 : 2;
+    }
+    for (i = 0; i < nOffsets; ++i) {
+        w->mPictureFrameCentreHorizontalOffset[i] = (int)ReadMpegBits(w, 16);
+        (void)ReadMpegBits(w, 1);
+        w->mPictureFrameCentreVerticalOffset[i] = (int)ReadMpegBits(w, 16);
+        (void)ReadMpegBits(w, 1);
+    }
+}
+
+static inline void SetIpuControlBit(unsigned int nBit, unsigned int nShift, unsigned int nValue) {
+    *IPU_CTRL = (*IPU_CTRL & ~nBit) | (nValue << nShift);
+}
+
+// NTSC-U/C: 0x0030cd90, PAL: 0x00379220
+static void ParseMpegPictureCodingExtension(MpegContext *w) {
+    w->mFCode[0][0] = (int)ReadMpegBits(w, 4);
+    w->mFCode[0][1] = (int)ReadMpegBits(w, 4);
+    w->mFCode[1][0] = (int)ReadMpegBits(w, 4);
+    w->mFCode[1][1] = (int)ReadMpegBits(w, 4);
+    SetIpuControlBit(kIpuCtrlIdpMask, kIpuCtrlIdpShift, ReadMpegBits(w, 2));
+    w->mPictureStructure = (int)ReadMpegBits(w, 2);
+    if (w->mFirstFieldStructure == 0) {
+        w->mFirstFieldStructure = w->mPictureStructure;
+    }
+    w->mTopFieldFirst = (int)ReadMpegBits(w, 1);
+    w->mFramePredFrameDct = (int)ReadMpegBits(w, 1);
+    w->mConcealmentMotionVectors = (int)ReadMpegBits(w, 1);
+    SetIpuControlBit(kIpuCtrlQst, kIpuCtrlQstShift, ReadMpegBits(w, 1));
+    SetIpuControlBit(kIpuCtrlIntraVlc, kIpuCtrlIntraVlcShift, ReadMpegBits(w, 1));
+    SetIpuControlBit(kIpuCtrlAlternateScan, kIpuCtrlAlternateScanShift, ReadMpegBits(w, 1));
+    w->mRepeatFirstField = (int)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 1);
+    w->mProgressiveFrame = (int)ReadMpegBits(w, 1);
+    if (ReadMpegBits(w, 1) != 0) {
+        (void)ReadMpegBits(w, 1);
+        (void)ReadMpegBits(w, 3);
+        (void)ReadMpegBits(w, 1);
+        (void)ReadMpegBits(w, 7);
+        (void)ReadMpegBits(w, 8);
+    }
+}
+
+// NTSC-U/C: 0x0030cc68, PAL: 0x003790f8
+static void ParseMpegPictureExtensions(MpegContext *w) {
+    void (*const apfnExtensions[kExtensionIdCount])(MpegContext *) = {
+        HandleMpegUnknownExtension,
+        ParseMpegSequenceExtension,
+        ParseMpegSequenceRateInfo,
+        LoadMpegQuantizerMatrices,
+        SkipMpegCopyrightExtension,
+        HandleMpegSequenceScalableExtUnsupported,
+        HandleMpegUnknownExtension,
+        ParseMpegPictureDisplayExtension,
+        ParseMpegPictureCodingExtension,
+        HandleMpegPictureSpatialScalableExtUnsupported,
+        HandleMpegPictureTemporalScalableExtUnsupported,
+    };
+    unsigned int nCode;
+    unsigned int nId;
+
+    AlignToMpegStartCode(w);
+    for (;;) {
+        nCode = PeekIpuBits(w, 32);
+        if (nCode == kExtensionStartCode) {
+            ConsumeIpuBits(w, 32);
+            nId = ReadMpegBits(w, 4);
+            if (nId >= kExtensionIdCount) {
+                nId = 0;
+            }
+            apfnExtensions[nId](w);
+            AlignToMpegStartCode(w);
+        } else if (nCode == kUserDataStartCode) {
+            ConsumeIpuBits(w, 32);
+            AlignToMpegStartCode(w);
+        } else {
+            return;
+        }
+    }
+}
+
+// NTSC-U/C: 0x00308b90, PAL: 0x00375020
+static void ParseMpegSequenceHeader(MpegContext *w) {
+    unsigned int nBits;
+
+    w->mFirstFieldStructure = 0;
+    nBits = ReadMpegBits(w, 32);
+    w->mHorizontalSize = (int)(nBits >> 20);
+    w->mVerticalSize = (int)((nBits >> 8) & 0xfff);
+    if (w->mVerticalSize > kMaxVerticalSize) {
+        _sceMpegError(w, "vertical size > 2800");
+    }
+    nBits = ReadMpegBits(w, 30);
+    w->mBitRate = (int)(nBits >> 12);
+    w->mVbvBufferSize = (int)((nBits >> 1) & 0x3ff);
+    w->mLoadIntraQuantiserMatrix = (int)ReadMpegBits(w, 1);
+    if (w->mLoadIntraQuantiserMatrix != 0) {
+        LoadMatrixFromStream(w, kIpuCmdSetIqIntra);
+    } else {
+        UploadQuantMatrixToIpu(w, kIpuCmdSetIqIntra, g_abDefaultIntraQuantMatrix);
+    }
+    w->mLoadNonIntraQuantiserMatrix = (int)ReadMpegBits(w, 1);
+    if (w->mLoadNonIntraQuantiserMatrix != 0) {
+        LoadMatrixFromStream(w, kIpuCmdSetIqNonIntra);
+    } else {
+        UploadQuantMatrixToIpu(w, kIpuCmdSetIqNonIntra, g_abDefaultNonIntraQuantMatrix);
+    }
+    ParseMpegPictureExtensions(w);
+    SetupMpegPictureBuffers(w->mMpeg);
+}
+
+// NTSC-U/C: 0x0030d040, PAL: 0x003794d0
+static void ParseMpegGroupOfPicturesHeader(MpegContext *w) {
+    w->mForceBrokenLink = 0;
+    w->mNewGop = 1;
+    w->mGopPictureBase = w->mMaxPictureNumber + 1;
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 5);
+    (void)ReadMpegBits(w, 6);
+    (void)ReadMpegBits(w, 1);
+    (void)ReadMpegBits(w, 6);
+    (void)ReadMpegBits(w, 6);
+    w->mClosedGop = (int)ReadMpegBits(w, 1);
+    w->mBrokenLink = (int)ReadMpegBits(w, 1);
+    ParseMpegPictureExtensions(w);
+}
+
+// NTSC-U/C: 0x0030cfc8, PAL: 0x00379458
+static void UpdateMpegPictureDisplayOrder(MpegContext *w, int nTemporalReference) {
+    int nWrapped = 0;
+
+    // Yes, the binary only wraps for a negative temporal reference, which ten bits never hold.
+    if (w->mPictureCodingType != kPictureB && nTemporalReference != 0) {
+        if (nTemporalReference < 0) {
+            nWrapped = w->mNewGop == 0;
+        }
+        w->mNewGop = 0;
+    }
+    w->mPictureNumber = w->mGopPictureBase + nTemporalReference;
+    if (nWrapped != 0) {
+        w->mPictureNumber = w->mGopPictureBase + nTemporalReference + 1024;
+    }
+    if (w->mMaxPictureNumber < w->mPictureNumber) {
+        w->mMaxPictureNumber = w->mPictureNumber;
+    }
+}
+
+// NTSC-U/C: 0x0030cba0, PAL: 0x00379030
+static void ParseMpegPictureHeader(MpegContext *w) {
+    int nTemporalReference = (int)ReadMpegBits(w, 10);
+
+    w->mPictureCodingType = (int)ReadMpegBits(w, 3);
+    (void)ReadMpegBits(w, 16);
+    if (w->mPictureCodingType == kPictureP || w->mPictureCodingType == kPictureB) {
+        w->mFullPelForwardVector = (int)ReadMpegBits(w, 1);
+        w->mForwardFCode = (int)ReadMpegBits(w, 3);
+    }
+    if (w->mPictureCodingType == kPictureB) {
+        w->mFullPelBackwardVector = (int)ReadMpegBits(w, 1);
+        w->mBackwardFCode = (int)ReadMpegBits(w, 3);
+    }
+    SkipMpegExtraInformation(w);
+    ParseMpegPictureExtensions(w);
+    UpdateMpegPictureDisplayOrder(w, nTemporalReference);
+}
+
+// NTSC-U/C: 0x0030ca90, PAL: 0x00378f20
+// Parses headers up to the next picture. Returns its coding type, or 0 at the sequence end.
+static int ParseMpegToNextPicture(MpegContext *w) {
+    sceMpegCbData cbData;
+
+    for (;;) {
+        AlignToMpegStartCode(w);
+        switch (ReadMpegBits(w, 32)) {
+        case kSequenceHeaderCode:
+            ParseMpegSequenceHeader(w);
+            break;
+        case kGroupStartCode:
+            ParseMpegGroupOfPicturesHeader(w);
+            break;
+        case kPictureStartCode:
+            ParseMpegPictureHeader(w);
+            cbData.timeStamp.type = sceMpegCbTimeStamp;
+            cbData.timeStamp.dts = -1;
+            cbData.timeStamp.pts = -1;
+            _sceMpegCallback(w->mMpeg, &cbData);
+            w->mDts = cbData.timeStamp.dts;
+            w->mPts = cbData.timeStamp.pts;
+            return w->mPictureCodingType;
+        case kSequenceEndCode:
+            return 0;
+        default:
+            break;
+        }
+    }
+}
+
+#pragma mark - Picture output
+
+// NTSC-U/C: 0x0030daa0, PAL: 0x00379f30
+static void sceMpegGetPictureStamps(MpegContext *w,
+                                    const MpegPicture *pPicture,
+                                    long long *pPts,
+                                    long long *pDts,
+                                    unsigned long long *pFlags) {
+    if (w->mUseDefaultPtsGap != 0) {
+        long long nPts = pPicture->mPts;
+
+        if (nPts >= 0 || w->mLastPts < 0) {
+            *pPts = nPts;
+        } else {
+            long long nFields = (int)w->mDisplayFieldCount;
+            int nOdd = w->mOddGapPictures;
+
+            *pPts = w->mLastPts + (int)((w->mDefaultPtsGap * (unsigned long long)nFields) >> 1) +
+                    (int)((unsigned long long)(nFields & 1) * (w->mDefaultPtsGap & 1) *
+                          (unsigned long long)(nOdd & 1));
+            if ((unsigned long long)(nFields & 1) * (w->mDefaultPtsGap & 1) != 0) {
+                w->mOddGapPictures = nOdd + 1;
+            }
+        }
+    } else {
+        *pPts = pPicture->mPts;
+    }
+    if (w->mPendingPtsState == kPendingPtsReady && w->mPendingPts >= 0) {
+        *pPts = w->mPendingPts;
+        w->mPendingPtsState = 0;
+        w->mPendingPts = -1;
+    }
+    *pDts = pPicture->mDts;
+    *pFlags = (unsigned long long)pPicture->mPictureCodingType |
+              ((unsigned long long)pPicture->mPictureStructure << 3) |
+              ((unsigned long long)pPicture->mRepeatFirstField << 5) |
+              ((unsigned long long)pPicture->mTopFieldFirst << 6) |
+              ((unsigned long long)pPicture->mProgressiveFrame << 7) |
+              ((unsigned long long)pPicture->mProgressiveSequence << 8);
+}
+
+// NTSC-U/C: 0x0030d748, PAL: 0x00379bd8
+static int CheckMpegOutputBufferCapacity(MpegContext *w, const MpegPicture *pPicture) {
+    char szMessage[kErrorMessageSize];
+    int nFits;
+
+    if (w->mOutputHeight != 0) {
+        nFits = !(w->mOutputWidth < pPicture->mWidth) && !(w->mOutputHeight < pPicture->mHeight);
+    } else {
+        nFits = !(w->mOutputMacroblocks < pPicture->mMbWidth * pPicture->mMbHeight);
+    }
+    if (nFits == 0) {
+        sprintf(szMessage,
+                "Too small buffer size for %dx%d picture\n",
+                pPicture->mWidth,
+                pPicture->mHeight);
+        _sceMpegError(w, szMessage);
+    }
+    return nFits;
+}
+
+// NTSC-U/C: 0x0030d7e8, PAL: 0x00379c78
+// Copies the decoded macroblock columns to the output through the scratchpad.
+static void CopyMpegMacroblocksToFrameViaSpr(MpegContext *w, const MpegPicture *pPicture) {
+    unsigned int nSource = PhysicalAddress(pPicture->mData);
+    unsigned int nDest = PhysicalAddress(w->mPictureAddress);
+    unsigned int nColumnDest;
+    int nColumnBytes;
+    int nDestStride;
+    int nPasses;
+    int nPass;
+    int nColumn;
+    int nInterrupts;
+
+    if (w->mPictureStructure == kFramePicture || w->mOutputHeight == 0) {
+        nColumnBytes = pPicture->mMbHeight * kMacroblockSize;
+        nDestStride =
+            w->mOutputHeight != 0 ? (w->mOutputHeight >> 4) * kMacroblockSize : nColumnBytes;
+        nPasses = 1;
+    } else {
+        nDestStride = (w->mOutputHeight >> 4) * (kMacroblockSize / 2);
+        nColumnBytes = (pPicture->mMbHeight >> 1) * kMacroblockSize;
+        nPasses = 2;
+    }
+    for (nPass = 0; nPass < nPasses; ++nPass) {
+        nColumnDest = nDest;
+        for (nColumn = 0; nColumn < pPicture->mMbWidth; ++nColumn) {
+            nInterrupts = DIntr();
+            *D9_SADR = 0;
+            *D9_MADR = nSource;
+            *D9_QWC = (unsigned int)(nColumnBytes >> 4);
+            *D9_CHCR = kChcrStart | kChcrFromMemory;
+            if (nInterrupts != 0) {
+                EIntr();
+            }
+            nSource += (unsigned int)nColumnBytes;
+            while ((*D9_CHCR & kChcrStart) != 0) {
+            }
+            nInterrupts = DIntr();
+            *D8_SADR = 0;
+            *D8_MADR = nColumnDest;
+            *D8_QWC = (unsigned int)(nColumnBytes >> 4);
+            *D8_CHCR = kChcrStart;
+            if (nInterrupts != 0) {
+                EIntr();
+            }
+            while ((*D8_CHCR & kChcrStart) != 0) {
+            }
+            while (*D8_QWC != 0) {
+            }
+            nColumnDest += (unsigned int)nDestStride;
+        }
+        // The second field goes to the second half of the output.
+        nDest += (unsigned int)(w->mOutputMacroblocks * (kMacroblockSize / 2));
+    }
+}
+
+// NTSC-U/C: 0x0030da78, PAL: 0x00379f08
+static void SetMpegPictureReady(MpegContext *w) {
+    if (w->mOutputState != kOutputShown) {
+        w->mOutputState = kOutputShown;
+        w->mFrameCountBase = w->mPictureCount;
+    }
+    w->mPictureReady = 1;
+}
+
+// NTSC-U/C: 0x0030e0f0, PAL: 0x0037a580
+static void IssueIpuCscAndReadResult(MpegContext *w, unsigned char *pDest, int nMacroblocks) {
+    sceMpegCbData cbData;
+    int nInterrupts;
+
+    while ((int)*IPU_CTRL < 0) {
+    }
+    nInterrupts = DIntr();
+    *D3_MADR = PhysicalAddress(pDest);
+    *D3_QWC = (unsigned int)(nMacroblocks << 6);
+    *D3_CHCR = kChcrStart;
+    if (nInterrupts != 0) {
+        EIntr();
+    }
+    IssueIpuCommand(w, (unsigned int)nMacroblocks | kIpuCmdCsc);
+    cbData.type = sceMpegCbBackground;
+    _sceMpegCallback(w->mMpeg, &cbData);
+    while ((*D3_CHCR & kChcrStart) != 0) {
+    }
+    while ((int)*IPU_CTRL < 0) {
+    }
+}
+
+// The progress of a chunked colour conversion, which the DMA handler advances.
+typedef struct {
+    volatile int mChunksDone;
+    int mError;
+    int mMacroblocks;
+    unsigned int mNextDest;
+    int mChunks;
+} CscProgress;
+
+// NTSC-U/C: 0x0030e218, PAL: 0x0037a6a8
+// Starts the next chunk of a colour conversion when the channel from the IPU finishes one.
+static int csc___ch3dmaCSC(int nChannel, void *pArg, void *pAddress) {
+    CscProgress *pProgress = pArg;
 
     (void)nChannel;
-    *MpegRegister(kDmacStatusAddress) = kDmacStatusFromIpu;
-    ++g_nFromIpuInterrupts;
-    if (*MpegRegister(kIpuFromQwcAddress) != 0 ||
-        (*MpegRegister(kIpuFromChcrAddress) & kDmaChcrStart) != 0) {
-        g_nColourConvertError = 1;
-        return 0; // The image skips the interrupt enable on this path.
+    (void)pAddress;
+    *D_STAT = kDStatFromIpu;
+    ++pProgress->mChunksDone;
+    if (*D3_QWC != 0 || (*D3_CHCR & kChcrStart) != 0) {
+        pProgress->mError = 1;
+        ExitHandler();
+        return 0;
     }
-    if (g_nFromIpuInterrupts < g_nColourConvertChunks - 1) {
-        address = g_nColourConvertNextAddress;
-        *MpegRegister(kIpuFromMadrAddress) = address;
-        *MpegRegister(kIpuFromQwcAddress) = kColourConvertChunkQwc;
-        *MpegRegister(kIpuFromChcrAddress) = kDmaChcrStart;
-        *MpegRegister(kIpuCommandAddress) =
-            kIpuCommandColourConvert | kColourConvertChunkMacroblocks;
-        g_nColourConvertNextAddress = (address + kColourConvertChunkBytes) & kPhysicalAddressMask;
-    } else if (g_nFromIpuInterrupts == g_nColourConvertChunks - 1) {
-        remaining =
-            g_nColourConvertRemaining - g_nFromIpuInterrupts * kColourConvertChunkMacroblocks;
-        g_nColourConvertRemaining = remaining;
-        *MpegRegister(kIpuFromMadrAddress) = g_nColourConvertNextAddress;
-        *MpegRegister(kIpuFromQwcAddress) = (unsigned int)remaining << kMacroblockQwcShift;
-        *MpegRegister(kIpuFromChcrAddress) = kDmaChcrStart;
-        *MpegRegister(kIpuCommandAddress) = (unsigned int)remaining | kIpuCommandColourConvert;
+    if (pProgress->mChunksDone < pProgress->mChunks - 1) {
+        *D3_MADR = pProgress->mNextDest;
+        *D3_QWC = kCscChunkQuadwords;
+        *D3_CHCR = kChcrStart;
+        *IPU_CMD = kIpuCmdCsc | kCscChunkMacroblocks;
+        pProgress->mNextDest = (pProgress->mNextDest + kCscChunkBytes) & kPhysicalAddressMask;
+    } else if (pProgress->mChunksDone == pProgress->mChunks - 1) {
+        pProgress->mMacroblocks -= (pProgress->mChunksDone << 10) - pProgress->mChunksDone;
+        *D3_MADR = pProgress->mNextDest;
+        *D3_QWC = (unsigned int)(pProgress->mMacroblocks << 6);
+        *D3_CHCR = kChcrStart;
+        *IPU_CMD = (unsigned int)pProgress->mMacroblocks | kIpuCmdCsc;
     }
     ExitHandler();
     return 0;
 }
 
-// NTSC-U/C: 0x006381a8, PAL: 0x00678d38
-static void sceMpegConvertColours(unsigned int nDestination, int nMacroblocks) {
-    const unsigned int qwc = (unsigned int)nMacroblocks << kMacroblockQwcShift;
+// NTSC-U/C: 0x0030e360, PAL: 0x0037a7f0
+// Converts more macroblocks than one CSC command takes, in chunks of 1023.
+static void csc___doCSC2(MpegContext *w, unsigned char *pDest, int nMacroblocks) {
+    CscProgress progress;
+    sceMpegCbData cbData;
+    int nHandler;
+    int nInterrupts;
+    int nError;
 
-    while (MpegIpuBusy()) {
+    progress.mChunks = nMacroblocks / kCscChunkMacroblocks + 1;
+    progress.mMacroblocks = nMacroblocks;
+    progress.mNextDest = ((unsigned int)(uintptr_t)pDest + kCscChunkBytes) & kPhysicalAddressMask;
+    progress.mError = 0;
+    progress.mChunksDone = 0;
+    while ((int)*IPU_CTRL < 0) {
     }
-    *MpegRegister(kIpuFromMadrAddress) = nDestination & kPhysicalAddressMask;
-    *MpegRegister(kIpuFromQwcAddress) = qwc;
-    *MpegRegister(kIpuFromChcrAddress) = kDmaChcrStart;
-    sceMpegIssueIpuCommand((unsigned int)nMacroblocks | kIpuCommandColourConvert);
-    MpegInvokeTypedCallback(g_decoderInstance, kMpegCbBackground);
-    while (((*MpegRegister(kIpuFromChcrAddress) >> kDmaChcrStartBit) & 1) != 0) {
+    nHandler = AddDmacHandler2(DMAC_FROM_IPU, csc___ch3dmaCSC, 0, &progress);
+    *D_STAT = kDStatFromIpu;
+    EnableDmac(DMAC_FROM_IPU);
+    nInterrupts = DIntr();
+    *D3_MADR = PhysicalAddress(pDest);
+    *D3_QWC = kCscChunkQuadwords;
+    *D3_CHCR = kChcrStart;
+    if (nInterrupts != 0) {
+        EIntr();
     }
-    while (MpegIpuBusy()) {
+    *IPU_CMD = kIpuCmdCsc | kCscChunkMacroblocks;
+    cbData.type = sceMpegCbBackground;
+    _sceMpegCallback(w->mMpeg, &cbData);
+    nError = progress.mError; // Yes, the binary reads the error flag before the wait.
+    while (progress.mChunksDone < progress.mChunks) {
     }
+    if (nError != 0) {
+        _sceMpegError(w, "CSC handler error\n");
+    }
+    while ((int)*IPU_CTRL < 0) {
+    }
+    DisableDmac(DMAC_FROM_IPU);
+    RemoveDmacHandler(DMAC_FROM_IPU, nHandler);
 }
 
-// NTSC-U/C: 0x006383d8, PAL: 0x00678f68
-static void sceMpegConvertColoursChunked(unsigned int nDestination, int nMacroblocks) {
-    int handlerId;
+// The remainder of a transfer to the IPU, which the DMA handler sends in chunks.
+typedef struct {
+    unsigned int mQuadwords;
+    unsigned int mSource;
+} ToIpuProgress;
 
-    g_nColourConvertRemaining = nMacroblocks;
-    g_nColourConvertNextAddress = (nDestination + kColourConvertChunkBytes) & kPhysicalAddressMask;
-    g_nFromIpuInterrupts = 0;
-    g_nColourConvertError = 0;
-    g_nColourConvertChunks = nMacroblocks / kColourConvertChunkMacroblocks + 1;
-    while (MpegIpuBusy()) {
+// NTSC-U/C: 0x0030e520, PAL: 0x0037a9b0
+static int csc___ch4dma(int nChannel, void *pArg, void *pAddress) {
+    ToIpuProgress *pProgress = pArg;
+
+    (void)nChannel;
+    (void)pAddress;
+    *D_STAT = kDStatToIpu;
+    if (pProgress->mQuadwords == 0) {
+        ExitHandler();
+        return 1;
     }
-    handlerId = AddDmacHandler(kDmaChannelFromIpu, sceMpegFromIpuHandler, 0);
-    *MpegRegister(kDmacStatusAddress) = kDmacStatusFromIpu;
-    EnableDmac(kDmaChannelFromIpu);
-    *MpegRegister(kIpuFromMadrAddress) = nDestination & kPhysicalAddressMask;
-    *MpegRegister(kIpuFromQwcAddress) = kColourConvertChunkQwc;
-    *MpegRegister(kIpuFromChcrAddress) = kDmaChcrStart;
-    *MpegRegister(kIpuCommandAddress) = kIpuCommandColourConvert | kColourConvertChunkMacroblocks;
-    MpegInvokeTypedCallback(g_decoderInstance, kMpegCbBackground);
-    while (g_nFromIpuInterrupts < g_nColourConvertChunks) {
+    if (pProgress->mQuadwords > kToIpuChunkQuadwords) {
+        *D4_MADR = pProgress->mSource;
+        *D4_QWC = kToIpuChunkQuadwords;
+        *D4_CHCR = kChcrStart | kChcrFromMemory;
+        pProgress->mSource = (pProgress->mSource + kToIpuChunkBytes) & kPhysicalAddressMask;
+        pProgress->mQuadwords -= kToIpuChunkQuadwords;
+    } else {
+        *D4_MADR = pProgress->mSource;
+        *D4_QWC = pProgress->mQuadwords;
+        *D4_CHCR = kChcrStart | kChcrFromMemory;
+        pProgress->mQuadwords = 0;
     }
-    if (g_nColourConvertError != 0) {
-        sceMpegRaiseError("CSC handler error\n");
-    }
-    while (MpegIpuBusy()) {
-    }
-    DisableDmac(kDmaChannelFromIpu);
-    RemoveDmacHandler(kDmaChannelFromIpu, handlerId);
+    ExitHandler();
+    return 0;
 }
 
-// NTSC-U/C: 0x00638670, PAL: 0x00679200
-static void sceMpegConvertPicture(MpegSeqTable *pTable) {
-    MpegWork *work;
-    int macroblocks;
-    unsigned int qwc;
-    unsigned int address;
-    int handlerId;
+// NTSC-U/C: 0x0030e5f8, PAL: 0x0037aa88
+// Feeds a decoded picture back through the IPU to colour convert it into the output.
+static void BlitMpegFrameViaIpuCsc(MpegContext *w, const MpegPicture *pPicture) {
+    int nMacroblocks = pPicture->mMbWidth * pPicture->mMbHeight;
+    sceMpegCbData cbData;
+    ToIpuProgress progress;
+    int nDirect;
+    int nHandler;
+    int nInterrupts;
 
-    work = MpegInstanceWork();
-    macroblocks = pTable->mMbWidth * pTable->mMbHeight;
-    MpegInvokeTypedCallback(g_decoderInstance, kMpegCbStopDma);
-    if ((*MpegRegister(kIpuControlAddress) & kIpuControlErrorBit) != 0) {
-        *MpegRegister(kIpuControlAddress) = kIpuControlReset;
+    cbData.type = sceMpegCbStopDMA;
+    _sceMpegCallback(w->mMpeg, &cbData);
+    if ((*IPU_CTRL & kIpuCtrlErrorCode) != 0) {
+        *IPU_CTRL = kIpuCtrlReset;
     }
-    while (MpegIpuBusy()) {
+    nDirect = nMacroblocks < kCscDirectLimit;
+    while ((int)*IPU_CTRL < 0) {
     }
-    sceMpegIssueIpuCommand(kIpuCommandBitstreamClear);
-    while (MpegIpuBusy()) {
+    IssueIpuCommand(w, kIpuCmdBclr);
+    while ((int)*IPU_CTRL < 0) {
     }
-    qwc = (unsigned int)(macroblocks * kMacroblockQwc);
-    address = (unsigned int)pTable->mBuffer & kPhysicalAddressMask;
-    g_nToIpuNextAddress = address;
-    g_nToIpuRemainingQwc = qwc;
-    if (qwc > kToIpuChunkQwc) {
-        handlerId = AddDmacHandler(kDmaChannelToIpu, sceMpegToIpuHandler, 0);
-        *MpegRegister(kDmacStatusAddress) = kDmacStatusToIpu;
-        EnableDmac(kDmaChannelToIpu);
-        address = g_nToIpuNextAddress;
-        *MpegRegister(kIpuToMadrAddress) = address;
-        *MpegRegister(kIpuToQwcAddress) = kToIpuChunkQwc;
-        *MpegRegister(kIpuToChcrAddress) = kDmaChcrStartFromMemory;
-        g_nToIpuNextAddress = (address + kToIpuChunkBytes) & kPhysicalAddressMask;
-        g_nToIpuRemainingQwc -= kToIpuChunkQwc;
-        if (macroblocks < kColourConvertLimit) {
-            sceMpegConvertColours((unsigned int)work->mPictureAddress, macroblocks);
+    progress.mSource = PhysicalAddress(pPicture->mData);
+    progress.mQuadwords = (unsigned int)(nMacroblocks * kMacroblockToIpuQuadwords);
+    if (progress.mQuadwords > kToIpuChunkQuadwords) {
+        nHandler = AddDmacHandler2(DMAC_TO_IPU, csc___ch4dma, 0, &progress);
+        *D_STAT = kDStatToIpu;
+        EnableDmac(DMAC_TO_IPU);
+        nInterrupts = DIntr();
+        *D4_MADR = progress.mSource;
+        *D4_QWC = kToIpuChunkQuadwords;
+        *D4_CHCR = kChcrStart | kChcrFromMemory;
+        if (nInterrupts != 0) {
+            EIntr();
+        }
+        progress.mSource = (progress.mSource + kToIpuChunkBytes) & kPhysicalAddressMask;
+        progress.mQuadwords -= kToIpuChunkQuadwords;
+        if (nDirect != 0) {
+            IssueIpuCscAndReadResult(w, w->mPictureAddress, nMacroblocks);
         } else {
-            sceMpegConvertColoursChunked((unsigned int)work->mPictureAddress, macroblocks);
+            csc___doCSC2(w, w->mPictureAddress, nMacroblocks);
         }
-        DisableDmac(kDmaChannelToIpu);
-        RemoveDmacHandler(kDmaChannelToIpu, handlerId);
+        DisableDmac(DMAC_TO_IPU);
+        RemoveDmacHandler(DMAC_TO_IPU, nHandler);
     } else {
-        *MpegRegister(kIpuToMadrAddress) = address;
-        *MpegRegister(kIpuToQwcAddress) = qwc;
-        *MpegRegister(kIpuToChcrAddress) = kDmaChcrStartFromMemory;
-        g_nToIpuRemainingQwc = 0;
-        if (macroblocks < kColourConvertLimit) {
-            sceMpegConvertColours((unsigned int)work->mPictureAddress, macroblocks);
+        nInterrupts = DIntr();
+        *D4_MADR = PhysicalAddress(pPicture->mData);
+        *D4_QWC = progress.mQuadwords;
+        *D4_CHCR = kChcrStart | kChcrFromMemory;
+        if (nInterrupts != 0) {
+            EIntr();
+        }
+        progress.mQuadwords = 0;
+        if (nDirect != 0) {
+            IssueIpuCscAndReadResult(w, w->mPictureAddress, nMacroblocks);
         } else {
-            sceMpegConvertColoursChunked((unsigned int)work->mPictureAddress, macroblocks);
+            csc___doCSC2(w, w->mPictureAddress, nMacroblocks);
         }
     }
-    MpegInvokeTypedCallback(g_decoderInstance, kMpegCbRestartDma);
+    cbData.type = sceMpegCbRestartDMA;
+    _sceMpegCallback(w->mMpeg, &cbData);
 }
 
-// NTSC-U/C: 0x0060c900, PAL: 0x0064d570
-static int sceMpegCheckPictureBufferSize(MpegSeqTable *pTable) {
-    MpegWork *work;
-    char message[kBufferMessageSize];
-    int fits;
-
-    work = MpegInstanceWork();
-    if (work->mOutputHeight == 0) {
-        fits = !(work->mOutputMacroblocks < pTable->mMbWidth * pTable->mMbHeight);
-    } else if (work->mOutputWidth < pTable->mWidth) {
-        fits = 0;
+static inline void WritePicture(MpegContext *w, const MpegPicture *pPicture) {
+    if (w->mConvertColours != 0) {
+        BlitMpegFrameViaIpuCsc(w, pPicture);
     } else {
-        fits = !(work->mOutputHeight < pTable->mHeight);
+        CopyMpegMacroblocksToFrameViaSpr(w, pPicture);
     }
-    if (fits == 0) {
-        sprintf(
-            message, "Too small buffer size for %dx%d picture\n", pTable->mWidth, pTable->mHeight);
-        sceMpegRaiseError(message);
-    }
-    return fits;
 }
 
-// NTSC-U/C: 0x0060c9a0, PAL: 0x0064d610
-static void sceMpegCopyRawPicture(MpegSeqTable *pTable) {
-    MpegWork *work;
-    unsigned int source;
-    unsigned int destinationBase;
-    unsigned int destination;
-    unsigned int nextSource;
-    unsigned int nextDestination;
-    int sourceStride;
-    int destinationStride;
-    int rowQwc;
-    int passes;
-    int pass;
-    int row;
+// NTSC-U/C: 0x0030dc30, PAL: 0x0037a0c0
+static void DisplayMpegFramePicture(MpegContext *w, MpegPicture *pPicture, int nFrame) {
+    sceMpeg *mp = w->mMpeg;
 
-    work = MpegInstanceWork();
-    source = (unsigned int)pTable->mBuffer & kPhysicalAddressMask;
-    destinationBase = (unsigned int)work->mPictureAddress & kPhysicalAddressMask;
-    if (g_nMpegPictureStructure == kPictureStructureFrame || work->mOutputHeight == 0) {
-        sourceStride = pTable->mMbHeight * kMacroblockBytes;
-        if (work->mOutputHeight != 0) {
-            destinationStride = (work->mOutputHeight >> kQwcShift) * kMacroblockBytes;
+    (void)nFrame;
+    sceMpegGetPictureStamps(w, pPicture, &mp->pts, &mp->dts, &mp->flags);
+    mp = w->mMpeg;
+    w->mLastPts = (int)mp->pts;
+    w->mDisplayFieldCount = g_anMpegDisplayFieldCount[(int)(mp->flags >> 5) & 15];
+    w->mDisplayHorizontalSize = pPicture->mDisplayHorizontalSize;
+    w->mDisplayVerticalSize = pPicture->mDisplayVerticalSize;
+    w->mFrameCentreHorizontalOffset[0] = pPicture->mFrameCentreHorizontalOffset[0];
+    w->mFrameCentreHorizontalOffset[1] = pPicture->mFrameCentreHorizontalOffset[1];
+    w->mFrameCentreHorizontalOffset[2] = pPicture->mFrameCentreHorizontalOffset[2];
+    w->mFrameCentreVerticalOffset[0] = pPicture->mFrameCentreVerticalOffset[0];
+    w->mFrameCentreVerticalOffset[1] = pPicture->mFrameCentreVerticalOffset[1];
+    w->mFrameCentreVerticalOffset[2] = pPicture->mFrameCentreVerticalOffset[2];
+    if (CheckMpegOutputBufferCapacity(w, pPicture) != 0 && pPicture->mDecoded == 1) {
+        WritePicture(w, pPicture);
+        SetMpegPictureReady(w);
+    }
+}
+
+// NTSC-U/C: 0x0030dd40, PAL: 0x0037a1d0
+static void
+DisplayMpegFieldPicturePair(MpegContext *w, MpegPicture *pTop, MpegPicture *pBottom, int nFrame) {
+    sceMpeg *mp;
+    MpegPicture *pFirst;
+    MpegPicture *pSecond;
+    unsigned long long nTopFieldFirst = 0;
+
+    (void)nFrame;
+    if (w->mPictureStructure == kBottomField) {
+        pFirst = pTop;
+        pSecond = pBottom;
+        nTopFieldFirst = 64;
+    } else {
+        pFirst = pBottom;
+        pSecond = pTop;
+    }
+    mp = w->mMpeg;
+    sceMpegGetPictureStamps(w, pFirst, &mp->pts, &mp->dts, &mp->flags);
+    mp = w->mMpeg;
+    w->mDisplayFieldCount = 1;
+    w->mLastPts = (int)mp->pts;
+    sceMpegGetPictureStamps(w, pSecond, &mp->pts2nd, &mp->dts2nd, &mp->flags2nd);
+    mp = w->mMpeg;
+    w->mDisplayFieldCount = 1;
+    w->mLastPts = (int)mp->pts2nd;
+    mp->flags |= nTopFieldFirst;
+    mp->flags2nd |= nTopFieldFirst;
+    w->mDisplayHorizontalSize = pFirst->mDisplayHorizontalSize;
+    w->mDisplayVerticalSize = pFirst->mDisplayVerticalSize;
+    w->mFrameCentreHorizontalOffset[0] = pFirst->mFrameCentreHorizontalOffset[0];
+    w->mFrameCentreHorizontalOffset[1] = pSecond->mFrameCentreHorizontalOffset[1];
+    w->mFrameCentreVerticalOffset[0] = pFirst->mFrameCentreVerticalOffset[0];
+    w->mFrameCentreVerticalOffset[1] = pSecond->mFrameCentreVerticalOffset[1];
+    if (CheckMpegOutputBufferCapacity(w, pTop) != 0 && pTop->mDecoded == 1 &&
+        pBottom->mDecoded == 1) {
+        // The top field picture spans the frame for the output.
+        pTop->mMbHeight <<= 1;
+        WritePicture(w, pTop);
+        pTop->mMbHeight >>= 1;
+        SetMpegPictureReady(w);
+    }
+}
+
+// NTSC-U/C: 0x0030d490, PAL: 0x00379920
+// Rotates the reference pictures for the new picture and records its header state. Returns
+// nonzero when the references the picture needs are decoded.
+static int SetupMpegReferenceFrameBuffers(MpegContext *w, int nSecondField) {
+    int nReferences = w->mPictureStructure == kFramePicture ? 2 : 4;
+    int nReady = 0;
+    MpegPicture *pCurrent = NULL;
+    MpegPicture *pSwap;
+    MpegPicture *pOther;
+
+    if (w->mPictureCodingType == kPictureB) {
+        w->mFrames.mCurrent = w->mFrames.mAux;
+        w->mTopFields.mCurrent = w->mTopFields.mAux;
+        w->mBottomFields.mCurrent = w->mBottomFields.mAux;
+        if (w->mDecodeCounts[0] + w->mDecodeCounts[1] < nReferences) {
+            w->mForceBrokenLink = 0;
+            w->mBrokenLink = 0;
+            w->mClosedGop = 0;
+        }
+        if ((w->mForceBrokenLink != 0 || w->mBrokenLink != 0) && w->mClosedGop == 0) {
+            w->mFrames.mForward->mDecoded = 0;
+            w->mTopFields.mForward->mDecoded = 0;
+            w->mBottomFields.mForward->mDecoded = 0;
+        }
+        w->mForceBrokenLink = 0;
+        w->mBrokenLink = 0;
+        if (w->mPictureStructure == kFramePicture) {
+            if (w->mFrames.mForward->mDecoded == 1 || w->mClosedGop != 0) {
+                nReady = w->mFrames.mBackward->mDecoded == 1;
+            }
+        } else if ((w->mTopFields.mForward->mDecoded == 1 &&
+                    w->mBottomFields.mForward->mDecoded == 1) ||
+                   w->mClosedGop != 0) {
+            nReady =
+                w->mTopFields.mBackward->mDecoded == 1 && w->mBottomFields.mBackward->mDecoded == 1;
+        }
+    } else {
+        if (nSecondField == 0) {
+            pSwap = w->mFrames.mForward;
+            w->mFrames.mForward = w->mFrames.mBackward;
+            w->mFrames.mBackward = pSwap;
+            pSwap = w->mTopFields.mForward;
+            w->mTopFields.mForward = w->mTopFields.mBackward;
+            w->mTopFields.mBackward = pSwap;
+            pSwap = w->mBottomFields.mForward;
+            w->mBottomFields.mForward = w->mBottomFields.mBackward;
+            w->mBottomFields.mBackward = pSwap;
+        }
+        w->mFrames.mCurrent = w->mFrames.mBackward;
+        w->mTopFields.mCurrent = w->mTopFields.mBackward;
+        w->mBottomFields.mCurrent = w->mBottomFields.mBackward;
+        if (w->mPictureStructure == kFramePicture) {
+            nReady = w->mPictureCodingType != kPictureP || w->mFrames.mForward->mDecoded == 1;
         } else {
-            destinationStride = sourceStride;
-        }
-        passes = 1;
-    } else {
-        destinationStride = (work->mOutputHeight >> kQwcShift) * kHalfMacroblockBytes;
-        sourceStride = (pTable->mMbHeight >> 1) * kMacroblockBytes;
-        passes = 2;
-    }
-    rowQwc = sourceStride >> kQwcShift;
-    for (pass = 0; pass < passes; ++pass) {
-        destination = destinationBase;
-        for (row = 0; row < pTable->mMbWidth; ++row) {
-            *MpegRegister(kToSprSadrAddress) = 0;
-            *MpegRegister(kToSprMadrAddress) = source;
-            *MpegRegister(kToSprQwcAddress) = (unsigned int)rowQwc;
-            *MpegRegister(kToSprChcrAddress) = kDmaChcrStartFromMemory;
-            nextSource = source + (unsigned int)sourceStride;
-            nextDestination = destination + (unsigned int)destinationStride;
-            while ((*MpegRegister(kToSprChcrAddress) & kDmaChcrStart) != 0) {
-            }
-            *MpegRegister(kFromSprSadrAddress) = 0;
-            *MpegRegister(kFromSprMadrAddress) = destination;
-            *MpegRegister(kFromSprQwcAddress) = (unsigned int)rowQwc;
-            *MpegRegister(kFromSprChcrAddress) = kDmaChcrStart;
-            while ((*MpegRegister(kFromSprChcrAddress) & kDmaChcrStart) != 0) {
-            }
-            while (*MpegRegister(kFromSprQwcAddress) != 0) {
-            }
-            destination = nextDestination;
-            source = nextSource;
-        }
-        destinationBase += (unsigned int)(work->mOutputMacroblocks * kHalfMacroblockBytes);
-    }
-}
-
-// NTSC-U/C: 0x0060cb90, PAL: 0x0064d800
-static void sceMpegFinishPictureOutput(void) {
-    MpegWork *work;
-
-    work = MpegInstanceWork();
-    if (work->mOutputState != kOutputShown) {
-        work->mOutputState = kOutputShown;
-        work->mFrameCountBase = g_mpegPictureCounter;
-    }
-    g_pictureWaitFlag = 1;
-}
-
-// NTSC-U/C: 0x0060cbc8, PAL: 0x0064d838
-static void sceMpegGetPictureStamps(MpegSeqTable *pTable,
-                                    long long *pPts,
-                                    long long *pDts,
-                                    unsigned long long *pFlags) {
-    MpegWork *work;
-    long long pts;
-    long long oddFields;
-    long long weight;
-    int base;
-    int fields;
-    int counter;
-    int rounding;
-    int half;
-
-    work = MpegInstanceWork();
-    if (work->mUseDefaultPtsGap == 0) {
-        *pPts = pTable->mPts;
-    } else {
-        pts = pTable->mPts;
-        base = work->mLastPts;
-        if (pts >= 0 || base < 0) {
-            *pPts = pts;
-        } else {
-            // Interpolate from the last stamp by half the frame period for each field shown.
-            fields = (int)work->mDisplayFieldCount;
-            oddFields = fields & 1;
-            counter = work->mOddGapPictures;
-            weight = oddFields * (long long)(work->mDefaultPtsGap & 1);
-            rounding = (int)(weight * (counter & 1));
-            half = (int)(((long long)work->mDefaultPtsGap * fields) >> 1);
-            *pPts = (int)((unsigned int)base + (unsigned int)half + (unsigned int)rounding);
-            if (oddFields * (long long)(work->mDefaultPtsGap & 1) != 0) {
-                work->mOddGapPictures = counter + 1;
-            }
-        }
-    }
-    if (work->mPendingPtsState == kPendingStampReady && work->mPendingPts >= 0) {
-        *pPts = work->mPendingPts;
-        work->mPendingPtsState = 0;
-        work->mPendingPts = -1;
-    }
-    *pDts = pTable->mDts;
-    *pFlags =
-        ((unsigned long long)(long long)pTable->mProgressiveSequence
-         << kPictureFlagProgressiveSequenceShift) |
-        (unsigned long long)(long long)pTable->mPictureCodingType |
-        ((unsigned long long)(long long)pTable->mRepeatFirstField
-         << kPictureFlagRepeatFirstFieldShift) |
-        ((unsigned long long)(long long)pTable->mTopFieldFirst << kPictureFlagTopFieldFirstShift) |
-        ((unsigned long long)(long long)pTable->mProgressiveFrame
-         << kPictureFlagProgressiveFrameShift) |
-        ((unsigned long long)(long long)pTable->mPictureStructure << kPictureFlagStructureShift);
-}
-
-// NTSC-U/C: 0x0060cd60, PAL: 0x0064d9d0
-static void sceMpegOutputFramePicture(MpegSeqTable *pTable, int nIndex) {
-    sceMpeg *decoder;
-    MpegWork *work;
-    int i;
-
-    (void)nIndex; // The callers pass the counter less one, and the image never reads it.
-    decoder = (sceMpeg *)g_decoderInstance;
-    work = (MpegWork *)decoder->pContext;
-    sceMpegGetPictureStamps(pTable, &decoder->pts, &decoder->dts, &decoder->flags);
-    work->mLastPts = (int)decoder->pts;
-    work->mDisplayFieldCount =
-        (unsigned int)g_mpegFieldCountTable[(decoder->flags >> kPictureFlagFieldCountShift) &
-                                            kPictureFlagFieldCountMask];
-    work->mDisplayHorizontalSize = pTable->mDisplayHorizontalSize;
-    work->mDisplayVerticalSize = pTable->mDisplayVerticalSize;
-    for (i = 0; i < kFrameCentreOffsetCount; ++i) {
-        work->mFrameCentreHorizontalOffset[i] = pTable->mFrameCentreHorizontalOffset[i];
-        work->mFrameCentreVerticalOffset[i] = pTable->mFrameCentreVerticalOffset[i];
-    }
-    if (sceMpegCheckPictureBufferSize(pTable) == 0 || pTable->mDecoded != 1) {
-        return;
-    }
-    if (work->mConvertColours != 0) {
-        sceMpegConvertPicture(pTable);
-    } else {
-        sceMpegCopyRawPicture(pTable);
-    }
-    sceMpegFinishPictureOutput();
-}
-
-// NTSC-U/C: 0x0060ce78, PAL: 0x0064dae8
-static void sceMpegOutputFieldPicture(MpegSeqTable *pFirst, MpegSeqTable *pSecond, int nIndex) {
-    sceMpeg *decoder;
-    MpegWork *work;
-    MpegSeqTable *earlier;
-    MpegSeqTable *later;
-    unsigned long long topFieldFirst;
-
-    (void)nIndex; // The callers pass the counter less one, and the image never reads it.
-    decoder = (sceMpeg *)g_decoderInstance;
-    work = (MpegWork *)decoder->pContext;
-    if (g_nMpegPictureStructure == kPictureStructureBottomField) {
-        earlier = pFirst;
-        later = pSecond;
-        topFieldFirst = kPictureFlagTopFieldFirst;
-    } else {
-        earlier = pSecond;
-        later = pFirst;
-        topFieldFirst = 0;
-    }
-    sceMpegGetPictureStamps(earlier, &decoder->pts, &decoder->dts, &decoder->flags);
-    work->mDisplayFieldCount = 1;
-    work->mLastPts = (int)decoder->pts;
-    sceMpegGetPictureStamps(later, &decoder->pts2nd, &decoder->dts2nd, &decoder->flags2nd);
-    work->mDisplayFieldCount = 1;
-    work->mLastPts = (int)decoder->pts2nd;
-    decoder->flags |= topFieldFirst;
-    decoder->flags2nd |= topFieldFirst;
-    // The image copies only the first two offsets, alternating between the two fields.
-    work->mDisplayHorizontalSize = earlier->mDisplayHorizontalSize;
-    work->mDisplayVerticalSize = earlier->mDisplayVerticalSize;
-    work->mFrameCentreHorizontalOffset[0] = earlier->mFrameCentreHorizontalOffset[0];
-    work->mFrameCentreHorizontalOffset[1] = later->mFrameCentreHorizontalOffset[1];
-    work->mFrameCentreVerticalOffset[0] = earlier->mFrameCentreVerticalOffset[0];
-    work->mFrameCentreVerticalOffset[1] = later->mFrameCentreVerticalOffset[1];
-    if (sceMpegCheckPictureBufferSize(pFirst) == 0 || pFirst->mDecoded != 1 ||
-        pSecond->mDecoded != 1) {
-        return;
-    }
-    // The two fields interleave in the first table's buffer. The table's row count therefore
-    // doubles for output.
-    pFirst->mMbHeight *= 2;
-    if (work->mConvertColours != 0) {
-        sceMpegConvertPicture(pFirst);
-    } else {
-        sceMpegCopyRawPicture(pFirst);
-    }
-    pFirst->mMbHeight >>= 1;
-    sceMpegFinishPictureOutput();
-}
-
-// NTSC-U/C: 0x0060c468, PAL: 0x0064d0d8
-static void sceMpegOutputPicture(int nCounter, int bOutput) {
-    MpegWork *work;
-
-    work = MpegInstanceWork();
-    if (bOutput != 0) {
-        if (g_nMpegPictureStructure == kPictureStructureFrame) {
-            if (g_nMpegPictureCodingType == kPictureCodingBidirectional) {
-                sceMpegOutputFramePicture(g_mpegTables[kTableFrameBidirectional], nCounter - 1);
+            pOther = w->mPictureStructure == kTopField ? w->mBottomFields.mBackward :
+                                                         w->mTopFields.mBackward;
+            if (w->mPictureCodingType != kPictureP ||
+                (nSecondField != 0 && pOther->mDecoded == 1)) {
+                nReady = 1;
             } else {
-                sceMpegOutputFramePicture(g_mpegTables[kTableFrameForward], nCounter - 1);
+                nReady = w->mTopFields.mForward->mDecoded == 1 &&
+                         w->mBottomFields.mForward->mDecoded == 1;
             }
-        } else if (g_nMpegPictureCodingType == kPictureCodingBidirectional) {
-            sceMpegOutputFieldPicture(g_mpegTables[kTableTopBidirectional],
-                                      g_mpegTables[kTableBottomBidirectional],
-                                      nCounter - 1);
-        } else {
-            sceMpegOutputFieldPicture(
-                g_mpegTables[kTableTopForward], g_mpegTables[kTableBottomForward], nCounter - 1);
         }
     }
-    if (work->mPendingPtsState == kPendingStampArmed) {
-        work->mPendingPtsState = kPendingStampReady;
+    if (w->mPictureStructure == kBottomField) {
+        pCurrent = w->mBottomFields.mCurrent;
+    } else if (w->mPictureStructure == kTopField) {
+        pCurrent = w->mTopFields.mCurrent;
+    } else if (w->mPictureStructure == kFramePicture) {
+        pCurrent = w->mFrames.mCurrent;
     }
+    // Yes, the binary writes through a null picture for an unknown picture_structure.
+    pCurrent->mDecoded = 0;
+    pCurrent->mPts = w->mPts;
+    pCurrent->mPictureCodingType = w->mPictureCodingType;
+    pCurrent->mDts = w->mDts;
+    pCurrent->mPictureStructure = w->mPictureStructure;
+    pCurrent->mProgressiveSequence = w->mProgressiveSequence;
+    pCurrent->mProgressiveFrame = w->mProgressiveFrame;
+    pCurrent->mTopFieldFirst = w->mTopFieldFirst;
+    pCurrent->mRepeatFirstField = w->mRepeatFirstField;
+    pCurrent->mFrameCentreHorizontalOffset[0] = w->mPictureFrameCentreHorizontalOffset[0];
+    pCurrent->mFrameCentreHorizontalOffset[1] = w->mPictureFrameCentreHorizontalOffset[1];
+    pCurrent->mFrameCentreHorizontalOffset[2] = w->mPictureFrameCentreHorizontalOffset[2];
+    pCurrent->mFrameCentreVerticalOffset[0] = w->mPictureFrameCentreVerticalOffset[0];
+    pCurrent->mFrameCentreVerticalOffset[1] = w->mPictureFrameCentreVerticalOffset[1];
+    pCurrent->mFrameCentreVerticalOffset[2] = w->mPictureFrameCentreVerticalOffset[2];
+    pCurrent->mDisplayHorizontalSize = w->mSequenceDisplayHorizontalSize;
+    pCurrent->mDisplayVerticalSize = w->mSequenceDisplayVerticalSize;
+    return nReady;
 }
 
-// NTSC-U/C: 0x0060dcf0, PAL: 0x0064e960
-static void sceMpegCheckSecondField(int nCounter) {
-    if (g_mpegSecondFieldPending != 0) {
-        sceMpegRaiseError("the second field is missing");
-        g_mpegSecondFieldPending = 0;
-        return;
+// NTSC-U/C: 0x0030d330, PAL: 0x003797c0
+static int DecodeMpegPictureToFrameBuffer(MpegContext *w) {
+    MpegPicture *pCurrent;
+    int nDecoded;
+
+    if (w->mPictureStructure == kFramePicture && w->mSecondField != 0) {
+        _sceMpegError(w, "odd number of field pictures");
+        w->mSecondField = 0;
     }
-    if (g_nMpegPictureStructure == kPictureStructureFrame) {
-        sceMpegOutputFramePicture(g_mpegTables[kTableFrameBackward], nCounter - 1);
+    if (w->mPictureStructure == kBottomField) {
+        pCurrent = w->mBottomFields.mCurrent;
+    } else if (w->mPictureStructure == kTopField) {
+        pCurrent = w->mTopFields.mCurrent;
     } else {
-        sceMpegOutputFieldPicture(
-            g_mpegTables[kTableTopBackward], g_mpegTables[kTableBottomBackward], nCounter - 1);
+        pCurrent = w->mFrames.mCurrent;
+        if (w->mPictureStructure != kFramePicture) {
+            _sceMpegError(w, "unknown picture sutructure");
+        }
     }
-    g_mpegSecondFieldPending = 0;
+    nDecoded = DecodeMpegPictureSlices(w);
+    if (nDecoded != 0) {
+        pCurrent->mDecoded = 1;
+    }
+    return nDecoded;
 }
 
-static inline void MpegSwapTables(int nFirst, int nSecond) {
-    MpegSeqTable *table;
-
-    table = g_mpegTables[nFirst];
-    g_mpegTables[nFirst] = g_mpegTables[nSecond];
-    g_mpegTables[nSecond] = table;
-}
-
-static inline int MpegTableComplete(int nIndex) {
-    return g_mpegTables[nIndex]->mDecoded == 1;
-}
-
-// NTSC-U/C: 0x0060c520, PAL: 0x0064d190
-static int sceMpegSelectPictureTables(int bKeepReferences) {
-    MpegWork *work;
-    MpegSeqTable *target;
-    MpegSeqTable *other;
-    int structure;
-    int codingType;
-    int threshold;
-    int ready;
-    int i;
-
-    work = MpegInstanceWork();
-    structure = g_nMpegPictureStructure;
-    codingType = g_nMpegPictureCodingType;
-    threshold = (structure == kPictureStructureFrame) ? 2 : 4;
-    ready = 0;
-    target = NULL;
-    if (codingType == kPictureCodingBidirectional) {
-        g_mpegCurrentTables[kCurrentFrame] = g_mpegTables[kTableFrameBidirectional];
-        g_mpegCurrentTables[kCurrentTopField] = g_mpegTables[kTableTopBidirectional];
-        g_mpegCurrentTables[kCurrentBottomField] = g_mpegTables[kTableBottomBidirectional];
-        if (work->mDecodeCounts[kPictureCountIntra] + work->mDecodeCounts[kPictureCountPredicted] >=
-            threshold) {
-            work->mForceBrokenLink = 0;
-            g_nMpegBrokenLink = 0;
-            g_nMpegClosedGop = 0;
-        }
-        if ((work->mForceBrokenLink != 0 || g_nMpegBrokenLink != 0) && g_nMpegClosedGop == 0) {
-            g_mpegTables[kTableFrameForward]->mDecoded = 0;
-            g_mpegTables[kTableTopForward]->mDecoded = 0;
-            g_mpegTables[kTableBottomForward]->mDecoded = 0;
-        }
-        work->mForceBrokenLink = 0;
-        g_nMpegBrokenLink = 0;
-        if (g_nMpegPictureStructure == kPictureStructureFrame) {
-            if (MpegTableComplete(kTableFrameForward) || g_nMpegClosedGop != 0) {
-                ready = MpegTableComplete(kTableFrameBackward);
-            }
-        } else if ((MpegTableComplete(kTableTopForward) &&
-                    MpegTableComplete(kTableBottomForward)) ||
-                   g_nMpegClosedGop != 0) {
-            if (MpegTableComplete(kTableTopBackward)) {
-                ready = MpegTableComplete(kTableBottomBackward);
-            }
-        }
-    } else {
-        if (bKeepReferences == 0) {
-            MpegSwapTables(kTableFrameForward, kTableFrameBackward);
-            MpegSwapTables(kTableTopForward, kTableTopBackward);
-            MpegSwapTables(kTableBottomForward, kTableBottomBackward);
-        }
-        g_mpegCurrentTables[kCurrentFrame] = g_mpegTables[kTableFrameBackward];
-        g_mpegCurrentTables[kCurrentTopField] = g_mpegTables[kTableTopBackward];
-        g_mpegCurrentTables[kCurrentBottomField] = g_mpegTables[kTableBottomBackward];
-        if (structure == kPictureStructureFrame) {
-            if (codingType != kPictureCodingPredicted || MpegTableComplete(kTableFrameForward)) {
-                ready = 1;
-            }
+// NTSC-U/C: 0x0030d400, PAL: 0x00379890
+// Outputs the reference picture that precedes the new one in display order.
+static void OutputDecodedMpegPicture(MpegContext *w, int nFrame, int nPending) {
+    if (nPending != 0) {
+        if (w->mPictureStructure == kFramePicture) {
+            DisplayMpegFramePicture(w,
+                                    w->mPictureCodingType == kPictureB ? w->mFrames.mAux :
+                                                                         w->mFrames.mForward,
+                                    nFrame - 1);
+        } else if (w->mPictureCodingType == kPictureB) {
+            DisplayMpegFieldPicturePair(w, w->mTopFields.mAux, w->mBottomFields.mAux, nFrame - 1);
         } else {
-            other = (structure != kPictureStructureTopField) ? g_mpegTables[kTableTopBackward] :
-                                                               g_mpegTables[kTableBottomBackward];
-            if (g_nMpegPictureCodingType != kPictureCodingPredicted) {
-                ready = 1;
-            } else if (bKeepReferences != 0 && other->mDecoded == 1) {
-                ready = 1;
-            } else if (MpegTableComplete(kTableTopForward) &&
-                       MpegTableComplete(kTableBottomForward)) {
-                ready = 1;
-            }
+            DisplayMpegFieldPicturePair(
+                w, w->mTopFields.mForward, w->mBottomFields.mForward, nFrame - 1);
         }
     }
-    switch (g_nMpegPictureStructure) {
-    case kPictureStructureBottomField:
-        target = g_mpegCurrentTables[kCurrentBottomField];
-        break;
-    case kPictureStructureTopField:
-        target = g_mpegCurrentTables[kCurrentTopField];
-        break;
-    case kPictureStructureFrame:
-        target = g_mpegCurrentTables[kCurrentFrame];
-        break;
-    default:
-        break; // The image stores through a null table here.
+    if (w->mPendingPtsState == kPendingPtsArmed) {
+        w->mPendingPtsState = kPendingPtsReady;
     }
-    target->mPictureCodingType = g_nMpegPictureCodingType;
-    target->mPictureStructure = g_nMpegPictureStructure;
-    target->mProgressiveSequence = g_nMpegProgressiveSequence;
-    target->mProgressiveFrame = g_nMpegProgressiveFrame;
-    target->mTopFieldFirst = g_nMpegTopFieldFirst;
-    target->mRepeatFirstField = g_nMpegRepeatFirstField;
-    target->mDecoded = 0;
-    for (i = 0; i < kFrameCentreOffsetCount; ++i) {
-        target->mFrameCentreHorizontalOffset[i] = g_anMpegFrameCentreHorizontalOffsets[i];
-        target->mFrameCentreVerticalOffset[i] = g_anMpegFrameCentreVerticalOffsets[i];
-    }
-    target->mPts = (long long)g_llMpegNextPts;
-    target->mDts = (long long)g_llMpegNextDts;
-    target->mDisplayHorizontalSize = g_nMpegDisplayHorizontalSize;
-    target->mDisplayVerticalSize = g_nMpegDisplayVerticalSize;
-    return ready;
 }
 
-// NTSC-U/C: 0x0060c388, PAL: 0x0064cff8
-static int sceMpegDecodePictureBody(int nCounter, int nIndex) {
-    MpegSeqTable *target;
-    int decoded;
+#pragma mark - Decoding loop
 
-    (void)nIndex; // The callers pass the picture index, and the image never reads it.
-    if (g_nMpegPictureStructure == kPictureStructureFrame && g_mpegSecondFieldPending != 0) {
-        sceMpegRaiseError("odd number of field pictures");
-        g_mpegSecondFieldPending = 0;
+// NTSC-U/C: 0x00308a08, PAL: 0x00374e98
+// Stops the IPU and scratchpad channels and resets the IPU.
+static int mpeg___clearEach(MpegContext *w) {
+    int nInterrupts;
+
+    w->mTopStale = 1;
+    w->mResetDcPredictor = 0;
+    nInterrupts = DIntr();
+    *D_ENABLEW = *D_ENABLER | kDmaHoldAll;
+    *D3_CHCR = 0;
+    *D4_CHCR = 0;
+    *D9_CHCR = 0;
+    *D_ENABLEW = *D_ENABLER & ~(unsigned int)kDmaHoldAll;
+    if (nInterrupts != 0) {
+        EIntr();
     }
-    switch (g_nMpegPictureStructure) {
-    case kPictureStructureBottomField:
-        target = g_mpegCurrentTables[kCurrentBottomField];
-        break;
-    case kPictureStructureTopField:
-        target = g_mpegCurrentTables[kCurrentTopField];
-        break;
-    case kPictureStructureFrame:
-        target = g_mpegCurrentTables[kCurrentFrame];
-        break;
-    default:
-        sceMpegRaiseError("unknown picture sutructure");
-        target = g_mpegCurrentTables[kCurrentFrame];
-        break;
-    }
-    decoded = sceMpegDecodeSlices(nCounter);
-    if (decoded != 0) {
-        target->mDecoded = 1;
-    }
-    return decoded;
+    *D3_QWC = 0;
+    *D4_QWC = 0;
+    *D9_QWC = 0;
+    *IPU_CTRL = kIpuCtrlReset;
+    return sceIpuSync(0, 0);
 }
 
-// NTSC-U/C: 0x005e0ff0, PAL: 0x00622f30
-static int sceMpegFlushLastPicture(void *pDecoder) {
-    sceMpeg *decoder;
-    MpegWork *work;
+// NTSC-U/C: 0x00308918, PAL: 0x00374da8
+static void ClearRetryFlagAndEnableIpu(MpegContext *w) {
+    w->mMpeg2 = 0;
+    SetIpuControlEnableBit(1);
+}
 
-    decoder = (sceMpeg *)pDecoder;
-    work = (MpegWork *)decoder->pContext;
-    if (work->mPictureIndex == 0 || work->mOutputState == kOutputIdle) {
+// NTSC-U/C: 0x003089a8, PAL: 0x00374e38
+// Places the two macroblock buffers in the scratchpad.
+static void InitDecoderScratchpadPointers(MpegContext *w) {
+    SetIpuControlEnableBit(1);
+    w->mMcBuffers[0].mStaging = (unsigned char *)0x70000000;
+    w->mMcBuffers[0].mCoefficients = (unsigned char *)0x70001800;
+    w->mMcBuffers[1].mStaging = (unsigned char *)0x70001b00;
+    w->mMcBuffers[1].mCoefficients = (unsigned char *)0x70003300;
+    w->mMcCurrent = 0;
+}
+
+// NTSC-U/C: 0x00308928, PAL: 0x00374db8
+static void EmitDecodedMpegFrame(MpegContext *w) {
+    int nFrame = w->mPictureCount;
+
+    if (w->mSecondField != 0) {
+        _sceMpegError(w, "the second field is missing");
+    } else if (w->mPictureStructure == kFramePicture) {
+        DisplayMpegFramePicture(w, w->mFrames.mBackward, nFrame - 1);
+    } else {
+        DisplayMpegFieldPicturePair(
+            w, w->mTopFields.mBackward, w->mBottomFields.mBackward, nFrame - 1);
+    }
+    w->mSecondField = 0;
+}
+
+// NTSC-U/C: 0x003088b0, PAL: 0x00374d40
+// Outputs the last reference picture at the end of the stream.
+static int FlushPendingMpegFrame(sceMpeg *mp) {
+    MpegContext *w = mp->sys;
+
+    if (w->mPendingOutput == 0 || w->mOutputState == kOutputIdle) {
         return 0;
     }
-    sceMpegCheckSecondField(g_mpegPictureCounter);
-    decoder->frameCount = g_mpegPictureCounter - work->mFrameCountBase;
-    work->mPictureIndex = 0;
+    EmitDecodedMpegFrame(w);
+    mp->frameCount = w->mPictureCount - w->mFrameCountBase;
+    w->mPendingOutput = 0;
     return 1;
 }
 
-static inline void MpegStartOutput(sceMpeg *pDecoder, MpegWork *pWork) {
-    if (pWork->mOutputState == kOutputIdle) {
-        pDecoder->frameCount = 0;
-        pWork->mOutputState = kOutputDecoding;
-    }
-}
+// NTSC-U/C: 0x003085f0, PAL: 0x00374a80
+// Decodes or skips a frame picture.
+static int DecodeNextMpegFrame(sceMpeg *mp, int nCount, int nLimit) {
+    MpegContext *w = mp->sys;
+    int nSkipped = 0;
+    int nResult;
 
-// NTSC-U/C: 0x005e0d18, PAL: 0x00622c58
-static int sceMpegDecodeFramePicture(void *pDecoder, int nCount, int nLimit) {
-    sceMpeg *decoder;
-    MpegWork *work;
-    int skipped;
-    int decoded;
-
-    decoder = (sceMpeg *)pDecoder;
-    work = (MpegWork *)decoder->pContext;
-    skipped = 0;
     if (nLimit == -1 || nCount < nLimit) {
-        MpegStartOutput(decoder, work);
-        decoded = 0;
-        if (sceMpegSelectPictureTables(0) != 0) {
-            decoded = sceMpegDecodePictureBody(g_mpegPictureCounter, work->mPictureIndex) != 0;
+        if (w->mOutputState == kOutputIdle) {
+            mp->frameCount = 0;
+            w->mOutputState = kOutputDecoding;
         }
+        nResult =
+            SetupMpegReferenceFrameBuffers(w, 0) != 0 && DecodeMpegPictureToFrameBuffer(w) != 0;
     } else {
-        skipped = 1;
-        decoded = sceMpegSelectPictureTables(1);
-        sceMpegReportNoData(pDecoder);
+        nResult = SetupMpegReferenceFrameBuffers(w, 0);
+        nSkipped = 1;
+        _sceMpegCbNodata(mp);
     }
-    sceMpegOutputPicture(g_mpegPictureCounter, work->mPictureIndex);
-    if (g_nMpegPictureStructure != kPictureStructureFrame && skipped == 0) {
-        g_mpegSecondFieldPending = !g_mpegSecondFieldPending;
+    OutputDecodedMpegPicture(w, w->mPictureCount, w->mPendingOutput);
+    // Yes, the binary toggles the field flag here, though only frame pictures arrive.
+    if (w->mPictureStructure != kFramePicture && nSkipped == 0) {
+        w->mSecondField = w->mSecondField == 0;
     }
-    decoder->frameCount = g_mpegPictureCounter - work->mFrameCountBase;
-    if (g_mpegSecondFieldPending == 0) {
-        ++g_mpegPictureCounter;
-        ++work->mPictureIndex;
+    mp->frameCount = w->mPictureCount - w->mFrameCountBase;
+    if (w->mSecondField == 0) {
+        ++w->mPictureCount;
+        ++w->mPendingOutput;
     }
-    return decoded;
+    return nResult;
 }
 
-// NTSC-U/C: 0x005e0e80, PAL: 0x00622dc0
-static int sceMpegDecodeFieldPicture(void *pDecoder, int nCount, int nLimit) {
-    sceMpeg *decoder;
-    MpegWork *work;
-    int wanted;
-    int decoded;
-    int expected;
+// NTSC-U/C: 0x00308750, PAL: 0x00374be0
+// Decodes or skips both fields of a field picture pair. Returns -1 when the second field does
+// not follow, with its header already parsed.
+static int PrepareNextMpegFrame(sceMpeg *mp, int nCount, int nLimit) {
+    MpegContext *w = mp->sys;
+    int nDecode = 0;
+    int nResult = 0;
 
-    decoder = (sceMpeg *)pDecoder;
-    work = (MpegWork *)decoder->pContext;
-    g_mpegSecondFieldPending = 0;
-    wanted = nLimit == -1 || nCount < nLimit;
-    MpegStartOutput(decoder, work);
-    if (sceMpegSelectPictureTables(0) != 0 && wanted != 0) {
-        (void)sceMpegDecodePictureBody(g_mpegPictureCounter, work->mPictureIndex); // Discarded.
+    w->mSecondField = 0;
+    if (nLimit == -1 || nCount < nLimit) {
+        nDecode = 1;
     }
-    g_mpegSecondFieldPending = 1;
-    if (sceMpegNextPictureHeader() == 0) {
-        sceMpegFlushLastPicture(pDecoder);
-        work->mCompleted = 1;
+    if (w->mOutputState == kOutputIdle) {
+        mp->frameCount = 0;
+        w->mOutputState = kOutputDecoding;
+    }
+    if (SetupMpegReferenceFrameBuffers(w, 0) != 0 && nDecode != 0) {
+        DecodeMpegPictureToFrameBuffer(w);
+    }
+    w->mSecondField = 1;
+    if (ParseMpegToNextPicture(w) == 0) {
+        FlushPendingMpegFrame(mp);
+        w->mIsEnd = 1;
         return 0;
     }
-    expected = (work->mFirstFieldStructure != kPictureStructureTopField) ?
-                   kPictureStructureTopField :
-                   kPictureStructureBottomField;
-    if (g_nMpegPictureStructure != expected) {
+    if (w->mPictureStructure != (w->mFirstFieldStructure == kTopField ? kBottomField : kTopField)) {
         return -1;
     }
-    decoded = 0;
-    if (sceMpegSelectPictureTables(1) != 0 && wanted != 0) {
-        decoded = sceMpegDecodePictureBody(g_mpegPictureCounter, work->mPictureIndex) != 0;
+    if (SetupMpegReferenceFrameBuffers(w, 1) != 0 && nDecode != 0) {
+        nResult = DecodeMpegPictureToFrameBuffer(w) != 0;
     }
-    sceMpegOutputPicture(g_mpegPictureCounter, work->mPictureIndex);
-    g_mpegSecondFieldPending = 0;
-    decoder->frameCount = g_mpegPictureCounter - work->mFrameCountBase;
-    ++g_mpegPictureCounter;
-    ++work->mPictureIndex;
-    if (wanted == 0) {
-        sceMpegReportNoData(pDecoder);
+    OutputDecodedMpegPicture(w, w->mPictureCount, w->mPendingOutput);
+    w->mSecondField = 0;
+    mp->frameCount = w->mPictureCount - w->mFrameCountBase;
+    ++w->mPictureCount;
+    ++w->mPendingOutput;
+    if (nDecode == 0) {
+        _sceMpegCbNodata(mp);
     }
-    return decoded;
+    return nResult;
 }
 
-// NTSC-U/C: 0x005e0e40, PAL: 0x00622d80
-static int sceMpegDecodeCodedPicture(void *pDecoder, int nCount, int nLimit) {
-    if (g_nMpegPictureStructure == kPictureStructureFrame) {
-        return sceMpegDecodeFramePicture(pDecoder, nCount, nLimit);
+// NTSC-U/C: 0x00308708, PAL: 0x00374b98
+static int mpeg___decodeOrSkip(sceMpeg *mp, int nCount, int nLimit) {
+    if (mp->sys->mPictureStructure == kFramePicture) {
+        return DecodeNextMpegFrame(mp, nCount, nLimit);
     }
-    return sceMpegDecodeFieldPicture(pDecoder, nCount, nLimit);
+    return PrepareNextMpegFrame(mp, nCount, nLimit);
 }
 
-// NTSC-U/C: 0x005e0b90, PAL: 0x00622ad0
-static int decodePictureInner(void *pDecoder) {
-    MpegWork *work;
-    int state;
-    int result;
+// NTSC-U/C: 0x00308480, PAL: 0x00374910
+// Decodes pictures until one is output or the stream ends.
+static int RunImageDecodeStateMachine(sceMpeg *mp) {
+    MpegContext *w = mp->sys;
+    int nType = 1;
+    int nResult = 0;
 
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    work->mCompleted = 0;
-    if (((unsigned int)work->mPictureAddress & kPictureAlignMask) != 0) {
-        sceMpegReportErrorFormatted("image buffer needs to be aligned to 64byte boundary(0x%08x)",
-                                    work->mPictureAddress);
+    w->mIsEnd = 0;
+    if (((uintptr_t)w->mPictureAddress & kPictureAlignMask) != 0) {
+        _sceMpegErrorFormat(w,
+                            "image buffer needs to be aligned to 64byte boundary(0x%08x)",
+                            (unsigned int)(uintptr_t)w->mPictureAddress);
         return -1;
     }
-    g_pictureWaitFlag = 0;
-    state = kPictureCodingIntra;
-    result = 0;
+    w->mPictureReady = 0;
     do {
-        // A skipped field pair reruns the last picture type without reading a new header.
-        if (result != -1) {
+        // A field pair that broke off left the header of the next picture parsed.
+        if (nResult != -1) {
             do {
-                state = sceMpegNextPictureHeader();
-            } while (state != kPictureSequenceEnd &&
-                     g_nMpegPictureStructure != work->mFirstFieldStructure && g_nMpegIsMpeg2 != 0);
+                nType = ParseMpegToNextPicture(w);
+            } while (nType != 0 && w->mPictureStructure != w->mFirstFieldStructure &&
+                     w->mMpeg2 != 0);
         }
-        switch (state) {
-        case kPictureSequenceEnd:
-            sceMpegFlushLastPicture(pDecoder);
-            work->mCompleted = 1;
+        switch (nType) {
+        case 0:
+            FlushPendingMpegFrame(mp);
+            w->mIsEnd = 1;
             break;
-        case kPictureCodingIntra:
-            work->mDecodeCounts[kPictureCountBidirectional] = 0;
-            work->mDecodeCounts[kPictureCountPredicted] = 0;
-            work->mDecodeCounts[kPictureCountIntra] = 0;
-            result =
-                sceMpegDecodeCodedPicture(pDecoder, 0, work->mDecodeLimits[kPictureCountIntra]);
-            ++work->mDecodeCounts[kPictureCountIntra];
+        case kPictureI:
+            w->mDecodeCounts[2] = 0;
+            w->mDecodeCounts[1] = 0;
+            w->mDecodeCounts[0] = 0;
+            nResult = mpeg___decodeOrSkip(mp, w->mDecodeCounts[0], w->mDecodeLimits[0]);
+            ++w->mDecodeCounts[0];
             break;
-        case kPictureCodingPredicted:
-            result = sceMpegDecodeCodedPicture(pDecoder,
-                                               work->mDecodeCounts[kPictureCountPredicted],
-                                               work->mDecodeLimits[kPictureCountPredicted]);
-            ++work->mDecodeCounts[kPictureCountPredicted];
+        case kPictureP:
+            nResult = mpeg___decodeOrSkip(mp, w->mDecodeCounts[1], w->mDecodeLimits[1]);
+            ++w->mDecodeCounts[1];
             break;
-        case kPictureCodingBidirectional:
-        case kPictureCodingDc:
-            result = sceMpegDecodeCodedPicture(pDecoder,
-                                               work->mDecodeCounts[kPictureCountBidirectional],
-                                               work->mDecodeLimits[kPictureCountBidirectional]);
-            ++work->mDecodeCounts[kPictureCountBidirectional];
+        case kPictureB:
+        case kPictureD:
+            nResult = mpeg___decodeOrSkip(mp, w->mDecodeCounts[2], w->mDecodeLimits[2]);
+            ++w->mDecodeCounts[2];
             break;
         default:
             break;
         }
-    } while (g_pictureWaitFlag == 0);
+    } while (w->mPictureReady == 0 && w->mIsEnd == 0);
     return 1;
 }
 
-int sceMpegGetPicture(void *pDecoder, void *pPicture, int nMacroblocks) {
-    MpegWork *work;
-    uintptr_t picture;
-
-    picture = (uintptr_t)pPicture;
-    picture = picture & (uintptr_t)kPhysicalAddressMask;
-    picture = picture | (uintptr_t)kUncachedSegment;
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    work->mConvertColours = 1;
-    work->mPictureAddress = (int)picture;
-    work->mOutputMacroblocks = nMacroblocks;
-    work->mOutputWidth = 0;
-    // The second clear falls in the call delay slot and therefore lands before the decode body.
-    work->mOutputHeight = 0;
-    return decodePictureInner(pDecoder);
-}
-
-int sceMpegGetPictureRAW8(void *pDecoder, void *pPicture, int nMacroblocks) {
-    MpegWork *work;
-    uintptr_t picture;
-
-    picture = (uintptr_t)pPicture;
-    picture = picture & (uintptr_t)kPhysicalAddressMask;
-    picture = picture | (uintptr_t)kUncachedSegment;
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    work->mOutputMacroblocks = nMacroblocks;
-    work->mPictureAddress = (int)picture;
-    work->mOutputWidth = 0;
-    work->mConvertColours = 0;
-    // The second clear falls in the call delay slot and therefore lands before the decode body.
-    work->mOutputHeight = 0;
-    return decodePictureInner(pDecoder);
-}
-
-int sceMpegGetPictureRAW8xy(void *pDecoder, void *pPicture, int nMbWidth, int nMbHeight) {
-    MpegWork *work;
-    uintptr_t picture;
-
-    picture = (uintptr_t)pPicture;
-    picture = picture & (uintptr_t)kPhysicalAddressMask;
-    picture = picture | (uintptr_t)kUncachedSegment;
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    work->mOutputHeight = nMbHeight << 4;
-    work->mPictureAddress = (int)picture;
-    work->mOutputMacroblocks = nMbWidth * nMbHeight;
-    work->mOutputWidth = nMbWidth << 4;
-    // The busy clear falls in the call delay slot and therefore lands before the decode body.
-    work->mConvertColours = 0;
-    return decodePictureInner(pDecoder);
-}
-
-void *sceMpegCreateDecoderContext(void *pDecoder, void *pWork, int nWorkSize) {
-    sceMpeg *decoder;
-    uintptr_t work;
-    uintptr_t aligned;
-    int rest;
-    MpegWork *context;
-    MpegRing *ring;
-    int i;
-
-    decoder = (sceMpeg *)pDecoder;
-    work = (uintptr_t)pWork;
-    aligned = (work + (uintptr_t)kAlignMask) & ~(uintptr_t)kAlignMask;
-    rest = nWorkSize - (int)(aligned - work);
-    if ((unsigned int)rest < kMinWorkSize) {
-        sceMpegRaiseError("The size of work area is too small");
-        return NULL;
-    }
-    context = (MpegWork *)aligned;
-    ring = &context->mRing;
-    sceMpegResetRingPointers(
-        ring, (void *)(aligned + (uintptr_t)kMinWorkSize), rest - kMinWorkSize);
-    decoder->width = 0;
-    decoder->height = 0;
-    decoder->frameCount = 0;
-    decoder->pts = -1;
-    decoder->dts = -1;
-    decoder->flags = 0;
-    decoder->pts2nd = -1;
-    decoder->dts2nd = -1;
-    decoder->flags2nd = 0;
-    decoder->pContext = context;
-    for (i = 0; i < kFrameCentreOffsetCount; ++i) {
-        context->mFrameCentreHorizontalOffset[i] = 0;
-        context->mFrameCentreVerticalOffset[i] = 0;
-    }
-    context->mDisplayHorizontalSize = 0;
-    context->mDisplayVerticalSize = 0;
-    context->mFirstFieldStructure = 0;
-    context->mPictureAddress = 0;
-    context->mOutputWidth = 0;
-    context->mOutputHeight = 0;
-    context->mOutputMacroblocks = 0;
-    context->mForceBrokenLink = 0;
-    context->mPendingPtsState = 0;
-    context->mSlots[0].callback = NULL;
-    context->mSlots[1].callback = NULL;
-    context->mSlots[4].callback = NULL;
-    context->mSlots[5].callback = NULL;
-    context->mSlots[6].callback = NULL;
-    context->mPendingPts = -1;
-    context->mSlots[2].callback = g_defaultSlotTwo;
-    context->mSlots[3].callback = g_defaultSlotThree;
-    // The second default falls in the allocator call delay slot and still lands here.
-    context->mStreamTable =
-        (StreamEntry *)sceMpegCheckWorkAreaSize(ring, kStreamAllocSize, kStreamAllocAlign);
-    context->mStreamCount = 0;
-    context->mFirstFrameBuffer = 0;
-    context->mSecondFrameBuffer = 0;
-    context->mThirdFrameBuffer = 0;
-    context->mUseDefaultPtsGap = 0;
-    context->mDefaultPtsGap = 0;
-    context->mDisplayFieldCount = 0;
-    context->mOddGapPictures = 0;
-    context->mFrameCountBase = 0;
-    context->mDecodeLimits[kPictureCountBidirectional] = -1;
-    context->mConvertColours = 1;
-    g_decoderInstance = decoder;
-    context->mLastPts = -1;
-    context->mDecodeLimits[kPictureCountIntra] = -1;
-    context->mDecodeLimits[kPictureCountPredicted] = -1;
-    // The last busy clear falls in the disable call delay slot and still lands here.
-    sceMpegResetMcBuffers();
-    sceMpegReset(decoder);
-    sceMpegClearRefBuff(decoder);
-    for (i = 0; i < kTableCount; ++i) {
-        g_mpegTables[i] = &g_mpegSeqAreas[i];
-    }
-    return (void *)(uintptr_t)sceMpegCommitWritePointer(ring);
-}
-
-void *sceMpegSetCallbackSlot(void *pDecoder, int nSlot, void *pfnCallback, void *pData) {
-    MpegWork *work;
-    void *old;
-
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    work->mSlots[nSlot].data = pData;
-    old = work->mSlots[nSlot].callback;
-    work->mSlots[nSlot].callback = pfnCallback;
-    return old;
-}
-
-int sceMpegInvokeCallbackSlot(void *pDecoder, void *pEntry) {
-    MpegWork *work;
-    StreamEntry *entry;
-    unsigned int key;
-    MpegSlot *slot;
-    int (*callback)(void *pDecoder, void *pEntry, void *pData);
-
-    if (pDecoder == NULL) {
-        return 0;
-    }
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    if (work == NULL) {
-        return 0;
-    }
-    entry = (StreamEntry *)pEntry;
-    key = (unsigned int)entry->key;
-    // The image scales the key with no bounds check, so the slot index is equally unchecked.
-    slot = &work->mSlots[key];
-    if (slot->callback == NULL) {
-        return 0;
-    }
-    callback = (int (*)(void *, void *, void *))slot->callback;
-    return callback(pDecoder, pEntry, slot->data);
-}
-
-int sceMpegDelete(void *pDecoder) {
-    (void)pDecoder;
+// NTSC-U/C: 0x00309320, PAL: 0x003757b0
+static int SaveMpegPictureDataDmaChannel(sceMpeg *mp, void *cbdata, void *data) {
+    (void)cbdata;
+    (void)data;
+    sceIpuStopDMA(&mp->sys->mDmaEnv);
     return 1;
 }
 
-void sceMpegSetDecodeMode(void *pDecoder, int nIntra, int nPredicted, int nBidirectional) {
-    MpegWork *work;
-
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    work->mDecodeLimits[kPictureCountBidirectional] = nBidirectional;
-    work->mDecodeLimits[kPictureCountIntra] = nIntra;
-    // The second value falls in the return delay slot and still lands here.
-    work->mDecodeLimits[kPictureCountPredicted] = nPredicted;
+// NTSC-U/C: 0x00309348, PAL: 0x003757d8
+static int ResetMpegStreamSubField4c(sceMpeg *mp, void *cbdata, void *data) {
+    (void)cbdata;
+    (void)data;
+    sceIpuRestartDMA(&mp->sys->mDmaEnv);
+    return 1;
 }
 
-int sceMpegIsRefBuffEmpty(void *pDecoder) {
-    MpegWork *work;
-    unsigned int value;
+#pragma mark - Library interface
 
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    value = (unsigned int)work->mPictureIndex;
-    return value < 1u;
+int sceMpegInit(void) {
+    int nInterrupts = DIntr();
+
+    *D_ENABLEW = *D_ENABLER | kDmaHoldAll;
+    *D3_CHCR &= ~(unsigned int)kChcrStart;
+    *D4_CHCR &= ~(unsigned int)kChcrStart;
+    *D_ENABLEW = *D_ENABLER & ~(unsigned int)kDmaHoldAll;
+    if (nInterrupts != 0) {
+        EIntr();
+    }
+    *D3_QWC = 0;
+    *D4_QWC = 0;
+    sceIpuInit();
+    return 1;
 }
 
-sceMpegCallback sceMpegAddStrCallback(
-    void *pDecoder, int nType, int nChannel, sceMpegCallback pfnCallback, void *pData) {
-    MpegWork *work;
-    StreamEntry *table;
-    int count;
-    unsigned long long key;
-    unsigned long long templateBits;
-    StreamEntry *entry;
-    int index;
-    sceMpegCallback found;
+int sceMpegCreate(sceMpeg *mp, unsigned char *work_area, int work_area_size) {
+    MpegContext *w;
+    unsigned int nAvailable;
 
-    work = (MpegWork *)((sceMpeg *)pDecoder)->pContext;
-    key = buildStreamKey(nType, nChannel);
-    table = work->mStreamTable;
-    count = work->mStreamCount;
-    index = 0;
-    found = NULL;
-    if (count > 0) {
-        for (index = 0; index < count; ++index) {
-            if (table[index].key == key) {
-                found = table[index].callback;
-                break;
-            }
-        }
+    memset(work_area, 0, (size_t)work_area_size);
+    w = (MpegContext *)(((uintptr_t)work_area + kAlignMask) & ~(uintptr_t)kAlignMask);
+    nAvailable = (unsigned int)work_area_size - (unsigned int)((unsigned char *)w - work_area);
+    if (nAvailable < kContextSize) {
+        _sceMpegError(w, "The size of work area is too small");
+        return 0;
     }
-    if (index >= kMaxStreamCallbacks) {
-        return found;
+    mp->sys = w;
+    _sceMpegAlalcInit(
+        &w->mAlalc, (unsigned char *)w + kContextSize, (int)(nAvailable - kContextSize));
+    mp->width = 0;
+    mp->height = 0;
+    mp->frameCount = 0;
+    mp->pts = -1;
+    mp->dts = -1;
+    mp->flags = 0;
+    mp->pts2nd = -1;
+    mp->dts2nd = -1;
+    mp->flags2nd = 0;
+    w->mFrameCentreHorizontalOffset[0] = 0;
+    w->mFrameCentreHorizontalOffset[1] = 0;
+    w->mFrameCentreHorizontalOffset[2] = 0;
+    w->mFrameCentreVerticalOffset[0] = 0;
+    w->mFrameCentreVerticalOffset[1] = 0;
+    w->mFrameCentreVerticalOffset[2] = 0;
+    w->mDisplayHorizontalSize = 0;
+    w->mDisplayVerticalSize = 0;
+    w->mFirstFieldStructure = 0;
+    w->mPictureAddress = NULL;
+    w->mOutputWidth = 0;
+    w->mOutputHeight = 0;
+    w->mOutputMacroblocks = 0;
+    w->mForceBrokenLink = 0;
+    w->mPendingPtsState = 0;
+    w->mSlots[sceMpegCbError].mCallback = NULL;
+    w->mSlots[sceMpegCbNodata].mCallback = NULL;
+    w->mSlots[sceMpegCbBackground].mCallback = NULL;
+    w->mSlots[sceMpegCbTimeStamp].mCallback = NULL;
+    w->mSlots[sceMpegCbStr].mCallback = NULL;
+    w->mPendingPts = -1;
+    w->mSlots[sceMpegCbStopDMA].mCallback = SaveMpegPictureDataDmaChannel;
+    w->mSlots[sceMpegCbRestartDMA].mCallback = ResetMpegStreamSubField4c;
+    w->mStreamTable =
+        (StreamEntry *)_sceMpegAlalcAlloc(w, &w->mAlalc, kStreamTableSize, kStreamTableAlign);
+    w->mStreamCount = 0;
+    w->mFrameBuffers[0] = NULL;
+    w->mFrameBuffers[1] = NULL;
+    w->mFrameBuffers[2] = NULL;
+    w->mUseDefaultPtsGap = 0;
+    w->mDefaultPtsGap = 0;
+    w->mLastPts = -1;
+    w->mDisplayFieldCount = 0;
+    w->mOddGapPictures = 0;
+    w->mFrameCountBase = 0;
+    w->mDecodeLimits[0] = -1;
+    w->mDecodeLimits[1] = -1;
+    w->mDecodeLimits[2] = -1;
+    w->mMpeg = mp;
+    w->mConvertColours = 1;
+    InitDecoderScratchpadPointers(w);
+    sceMpegReset(mp);
+    sceMpegClearRefBuff(mp);
+    w->mFrames.mForward = &w->mPictures[0];
+    w->mFrames.mBackward = &w->mPictures[1];
+    w->mFrames.mAux = &w->mPictures[2];
+    w->mTopFields.mForward = &w->mPictures[3];
+    w->mTopFields.mBackward = &w->mPictures[4];
+    w->mTopFields.mAux = &w->mPictures[5];
+    w->mBottomFields.mForward = &w->mPictures[6];
+    w->mBottomFields.mBackward = &w->mPictures[7];
+    w->mBottomFields.mAux = &w->mPictures[8];
+    _sceMpegAlalcSetDynamic(&w->mAlalc);
+    w->mMaxPictureNumber = -1;
+    w->mNewGop = 0;
+    w->mMcOutput = (unsigned char *)0x70003600;
+    w->mGopPictureBase = 0;
+    return 1;
+}
+
+int sceMpegDelete(sceMpeg *mp) {
+    (void)mp;
+    return 1;
+}
+
+int sceMpegGetPicture(sceMpeg *mp, void *rgb32, int mbcount) {
+    MpegContext *w = mp->sys;
+
+    w->mConvertColours = 1;
+    w->mPictureAddress = Uncached(rgb32);
+    w->mOutputMacroblocks = mbcount;
+    w->mOutputWidth = 0;
+    w->mOutputHeight = 0;
+    return RunImageDecodeStateMachine(mp);
+}
+
+int sceMpegIsEnd(sceMpeg *mp) {
+    return mp->sys->mIsEnd;
+}
+
+int sceMpegReset(sceMpeg *mp) {
+    MpegContext *w = mp->sys;
+
+    w->mIsEnd = 0;
+    w->mPendingOutput = 0;
+    w->mOutputState = kOutputIdle;
+    mp->frameCount = 0;
+    w->mFrameCountBase = 0;
+    w->mLastPts = -1;
+    mpeg___clearEach(w);
+    w->mPictureCount = 0;
+    ClearRetryFlagAndEnableIpu(w);
+    return 1;
+}
+
+int sceMpegClearRefBuff(sceMpeg *mp) {
+    MpegContext *w = mp->sys;
+
+    if (w->mFrames.mForward != NULL) {
+        w->mFrames.mForward->mDecoded = 0;
     }
-    // Yes, the image indexes the template table with no bounds check on the stream type.
-    templateBits = g_streamTemplates[nType][1];
-    entry = &table[index];
-    entry->key = key;
-    entry->templateBits = templateBits;
-    entry->callback = pfnCallback;
-    entry->data = pData;
-    work->mStreamCount = count + 1;
-    return found;
+    if (w->mTopFields.mForward != NULL) {
+        w->mTopFields.mForward->mDecoded = 0;
+    }
+    if (w->mBottomFields.mForward != NULL) {
+        w->mBottomFields.mForward->mDecoded = 0;
+    }
+    if (w->mFrames.mBackward != NULL) {
+        w->mFrames.mBackward->mDecoded = 0;
+    }
+    if (w->mTopFields.mBackward != NULL) {
+        w->mTopFields.mBackward->mDecoded = 0;
+    }
+    if (w->mBottomFields.mBackward != NULL) {
+        w->mBottomFields.mBackward->mDecoded = 0;
+    }
+    return 1;
+}
+
+sceMpegCallback sceMpegAddCallback(sceMpeg *mp, int type, sceMpegCallback func, void *data) {
+    MpegSlot *pSlot = &mp->sys->mSlots[type];
+    sceMpegCallback pfnPrevious = pSlot->mCallback;
+
+    pSlot->mData = data;
+    pSlot->mCallback = func;
+    return pfnPrevious;
 }

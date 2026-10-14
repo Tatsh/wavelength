@@ -34,6 +34,7 @@ set(WAVELENGTH_SONYLIB_SRCS
     src/libkernel_tlb.s
     src/libmc.c
     src/libmpeg.c
+    src/libmpeg_mc.s
     src/libmtap.c
     src/libosd.c
     src/libpad.c
