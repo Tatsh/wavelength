@@ -694,7 +694,7 @@ void PlayerAbortedMsg::PrintExtra(PrnStream &stream) const {
 }
 
 void ChatMsg::PrintExtra(PrnStream &stream) const {
-    stream << mAccountId << " " << mText;
+    stream << mAccountId << ":" << mText;
 }
 
 void Packet::PrintExtra(PrnStream &stream) const {
