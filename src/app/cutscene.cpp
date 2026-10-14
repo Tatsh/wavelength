@@ -127,7 +127,7 @@ struct StrFile {
 alignas(kBufferAlign) unsigned int g_clearTile[kClearTileWords];
 
 // NTSC-U/C: 0x00436d80
-bool g_bAudioStarted;
+int g_bAudioStarted;
 
 // NTSC-U/C: 0x00436d88
 AudioDec g_audioDec;
@@ -166,10 +166,10 @@ unsigned char *g_pRingDmaEnd;
 StrFile g_inFile;
 
 // NTSC-U/C: 0x003af8ec
-bool g_bCdInitialized = false;
+int g_bCdInitialized = 0;
 
 // NTSC-U/C: 0x003af8f0
-bool g_bReadPending = false;
+int g_bReadPending = 0;
 
 template <typename T>
 inline T *Uncached(T *pAddress) {
@@ -389,7 +389,7 @@ int strFileOpen(const char *pszName) {
                 sceCdMmode(SCECdDVD);
             }
             sceCdDiskReady(SCECdBlock);
-            g_bCdInitialized = true;
+            g_bCdInitialized = 1;
         }
         g_inFile.iopBuffer = sceSifAllocIopHeap(kCdStreamBufferSize);
         sceCdStInit(kCdStreamSectors,
@@ -429,7 +429,7 @@ int strFileOpen(const char *pszName) {
         sceClose(g_inFile.fd);
         return 0;
     }
-    g_bReadPending = false;
+    g_bReadPending = 0;
     return 1;
 }
 
@@ -458,14 +458,14 @@ int strFileRead(unsigned char *pBuffer, int nSize) {
     }
     if (!g_bReadPending) {
         sceRead(g_inFile.fd, pBuffer, nSize);
-        g_bReadPending = true;
+        g_bReadPending = 1;
     }
     int nExecuting;
     sceIoctl(g_inFile.fd, SCE_FS_EXECUTING, &nExecuting);
     if (nExecuting != 0) {
         return 0;
     }
-    g_bReadPending = false;
+    g_bReadPending = 0;
     return nSize;
 }
 
@@ -492,7 +492,7 @@ void playPss(int (*pfnFetch)(unsigned char *pBuffer, int nSize), const PlayPssPa
                    pParam->zero,
                    pParam->iopZero,
                    kZeroSize);
-    g_bAudioStarted = false;
+    g_bAudioStarted = 0;
     clearBackground(0);
 
     sceMpegCreate(&mp, pParam->mpegWork, pParam->mpegWorkSize);
@@ -556,7 +556,7 @@ void playPss(int (*pfnFetch)(unsigned char *pBuffer, int nSize), const PlayPssPa
         audioDecSendToIOP(&g_audioDec);
         if (!g_bAudioStarted && audioDecIsPreset(&g_audioDec) != 0) {
             audioDecStart(&g_audioDec);
-            g_bAudioStarted = true;
+            g_bAudioStarted = 1;
         }
         while (*T0_COUNT < kFrameHblanks) {
             fillBuff(&mp, 0);
