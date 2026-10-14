@@ -18,8 +18,6 @@ constexpr char kGzExtension[] = ".gz";
  * @param nBufferSize The destination size, which is ignored when pBuffer is null.
  * @param pnSize Receives the file size, and is written even when the allocation failed.
  * @return The destination, or null when the file could not be opened or read.
- * @ghidraAddress NTSC-U/C: 0x00555538
- * @ghidraAddress PAL: 0x00595bc0
  */
 void *LoadWholeFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, unsigned *pnSize);
 
@@ -38,8 +36,6 @@ void *LoadWholeFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, un
  * @param nBufferSize The destination size, which is ignored when pBuffer is null.
  * @param pnSize Receives the decompressed size.
  * @return The destination, or null when the file could not be opened.
- * @ghidraAddress NTSC-U/C: 0x00555678
- * @ghidraAddress PAL: 0x00595d00
  */
 void *LoadGzFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, unsigned *pnSize);
 
@@ -50,8 +46,6 @@ void *LoadGzFile(const char *pszPath, void *pBuffer, unsigned nBufferSize, unsig
  *
  * @param pszPath The path to open, device prefix included.
  * @return The handle, or a negative value on failure.
- * @ghidraAddress NTSC-U/C: 0x0055c400
- * @ghidraAddress PAL: 0x0059d620
  */
 int OpenStreamByPath(const char *pszPath);
 
@@ -66,8 +60,6 @@ int OpenStreamByPath(const char *pszPath);
  * @param nSector The chunk index.
  * @param pBuffer The destination.
  * @param nLength The number of bytes to read.
- * @ghidraAddress NTSC-U/C: 0x0055c498
- * @ghidraAddress PAL: 0x0059d6b8
  */
 void ReadStreamChunk(int nFile, int nSector, void *pBuffer, unsigned nLength);
 
@@ -79,8 +71,6 @@ void ReadStreamChunk(int nFile, int nSector, void *pBuffer, unsigned nLength);
  *
  * @param pszComponent The component to append.
  * @param pszPath The buffer to append to.
- * @ghidraAddress NTSC-U/C: 0x0047dec0
- * @ghidraAddress PAL: 0x004bbb98
  */
 void FilenameToISO9660(const char *pszComponent, char *pszPath);
 
@@ -90,8 +80,6 @@ void FilenameToISO9660(const char *pszComponent, char *pszPath);
  * The whole body forwards to the SDK primitive at 0x0056af88 with the argument passed through.
  *
  * @param nFile The file to close.
- * @ghidraAddress NTSC-U/C: 0x0055c438
- * @ghidraAddress PAL: 0x0059d658
  */
 void CloseLoadFile(int nFile);
 
@@ -105,8 +93,6 @@ void CloseLoadFile(int nFile);
  *
  * @param nStream The ark stream handle.
  * @return The decompressed size in bytes, or -1 when no record has that handle.
- * @ghidraAddress NTSC-U/C: 0x0055bf88
- * @ghidraAddress PAL: 0x0059d1a8
  */
 int FindOpenFileInArkTrueSize(int nStream);
 
@@ -115,8 +101,6 @@ int FindOpenFileInArkTrueSize(int nStream);
  *
  * @param nFile The file.
  * @return The decompressed size in bytes.
- * @ghidraAddress NTSC-U/C: 0x005638c8
- * @ghidraAddress PAL: 0x005a2038
  */
 unsigned GetGzFileSize(int nFile);
 
@@ -216,8 +200,6 @@ void GzipFileName(const char *pszFile, int bGenerated, char *pszOut);
  *
  * @param pszPath The file to measure.
  * @return The length in bytes, or 0 when the file could not be opened.
- * @ghidraAddress NTSC-U/C: 0x00555790
- * @ghidraAddress PAL: 0x00595e18
  */
 int FileSize(const char *pszPath);
 
@@ -229,7 +211,5 @@ int FileSize(const char *pszPath);
  *
  * @param pszPath The file to measure.
  * @return The uncompressed length, or zero or less when the file could not be opened.
- * @ghidraAddress NTSC-U/C: 0x00555800
- * @ghidraAddress PAL: 0x00595e88
  */
 int FileTrueSize(const char *pszPath);
