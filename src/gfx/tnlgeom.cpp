@@ -100,6 +100,9 @@ constexpr float kDefaultTrackWidth = 1.0f;
 // The level of detail of the faces of a source mesh.
 constexpr int kSourceMeshLevel = 0;
 
+// The name of a source mesh.
+constexpr char kSourceMeshFormat[] = "panel fx %d src.mesh";
+
 // The flags the mesh of a new panel copies the opaque source mesh with.
 constexpr unsigned kPanelCopyFlags = 0;
 
@@ -741,10 +744,11 @@ void TnlGeom::BuildSourceMeshes() {
             holder.mMesh = BuildPanelMesh(flWidth, kSourceMeshLevel, &extent, false);
             holder.mMesh->mZFunc = RndMesh::kZFuncLessEqual;
             holder.mMesh->mZMode = RndMesh::kZModeZReadOnly;
+            holder.mMesh->SetName(FormatString(kSourceMeshFormat, nIndex));
         } else {
             holder.mMesh = BuildPanelMesh(flWidth, kSourceMeshLevel, &extent, true);
+            holder.mMesh->SetName(FormatString(kSourceMeshFormat, nIndex));
         }
-        holder.mMesh->SetName(FormatString("panel fx %d src.mesh", nIndex));
         ++nIndex;
     }
 }
