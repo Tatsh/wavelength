@@ -50,6 +50,17 @@ public:
     void AddGem(const Gem &gem);
 
     /**
+     * Insert a gem into a vector of gems at the place its tick and lane order it.
+     *
+     * The name is inferred. The third argument is unused.
+     *
+     * @param gem The gem.
+     * @param gems The gems, in order.
+     * @ghidraAddress NTSC-U/C: 0x0034a320
+     */
+    static void InsertSorted(const Gem &gem, std::vector<Gem> &gems, int);
+
+    /**
      * Remove the gems of a span of the song, which wraps past the end of the track when it ends
      * before it starts.
      *

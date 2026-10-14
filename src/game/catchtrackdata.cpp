@@ -36,7 +36,11 @@ void CatchTrackData::AddGem(const Gem &gem) {
         mGems.push_back(gem);
         return;
     }
-    mGems.insert(std::lower_bound(mGems.begin(), mGems.end(), gem, GemBefore), gem);
+    InsertSorted(gem, mGems, 0);
+}
+
+void CatchTrackData::InsertSorted(const Gem &gem, std::vector<Gem> &gems, int) {
+    gems.insert(std::lower_bound(gems.begin(), gems.end(), gem, GemBefore), gem);
 }
 
 void CatchTrackData::EraseSpan(PlayMap *pPlayMap, int nStartTick, int nEndTick) {
