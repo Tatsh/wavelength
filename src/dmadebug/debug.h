@@ -36,11 +36,12 @@ extern "C" {
 /**
  * Print a source line and a message, and end the program.
  *
+ * @param line The line of the original source file the message names.
  * @param message A format with no conversions.
  */
-#define DEBUG_ABORT(message)                                                                       \
+#define DEBUG_ABORT(line, message)                                                                 \
     do {                                                                                           \
-        printf("Line %d: ", __LINE__);                                                             \
+        printf("Line %d: ", line);                                                                 \
         printf(message);                                                                           \
         printf("\n");                                                                              \
         exit(1);                                                                                   \

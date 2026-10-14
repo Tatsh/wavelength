@@ -129,7 +129,7 @@ void DEBUG_init(const char *options) {
         if (option != NULL) {
             option += 2;
             if (*option == '\0') {
-                DEBUG_ABORT("Invalid debug initialisation string at '-W'!");
+                DEBUG_ABORT(210, "Invalid debug initialisation string at '-W'!");
             }
             if (*option == 'e') {
                 g_nDebugWarningsAsErrors = 1;
@@ -141,7 +141,7 @@ void DEBUG_init(const char *options) {
                 if (mask != 0 && g_nDebugWarnMaskCount >= 0) {
                     if (g_nDebugWarnMaskCount >= DEBUG_MAX_WARNING_MASKS) {
                         DEBUG_ABORT(
-                            "Invalid initialisation string at '-W'! Too many warning masks!");
+                            222, "Invalid initialisation string at '-W'! Too many warning masks!");
                     }
                     g_anDebugWarnMasks[g_nDebugWarnMaskCount++] = mask;
                 }
@@ -157,7 +157,7 @@ void DEBUG_init(const char *options) {
                 g_nDebugBufferSizeKb = g_nDebugBufferSizeKb * 10 + (*option - '0');
             }
             if (g_nDebugBufferSizeKb == 0) {
-                DEBUG_ABORT("Invalid parameter for buffer size (-B)! Must be a number > 0");
+                DEBUG_ABORT(239, "Invalid parameter for buffer size (-B)! Must be a number > 0");
             }
         }
         if (strstr(options, "-noscroll") != NULL) {
@@ -166,7 +166,7 @@ void DEBUG_init(const char *options) {
     }
     g_pDebugOutputBuffer = memalign(4, g_nDebugBufferSizeKb << 10);
     if (g_pDebugOutputBuffer == NULL) {
-        DEBUG_ABORT("ERROR in Debug module! Could not allocate output buffer");
+        DEBUG_ABORT(248, "ERROR in Debug module! Could not allocate output buffer");
     }
     g_nDebugModuleInited = 1;
     DEBUG_reset();
@@ -211,7 +211,8 @@ int DEBUG_print(const char *text) {
         g_pDebugOutputWritePtr = g_pDebugOutputBuffer + strlen(g_pDebugOutputBuffer);
         if (g_pDebugOutputBuffer + (g_nDebugBufferSizeKb << 10) <
             g_pDebugOutputWritePtr + length + BUFFER_MARGIN) {
-            DEBUG_ABORT("Error - could not fit string into Output Buffer, even after scrolling.");
+            DEBUG_ABORT(319,
+                        "Error - could not fit string into Output Buffer, even after scrolling.");
         }
     }
     strcat(g_pDebugOutputWritePtr, text);
@@ -322,11 +323,11 @@ void DEBUG_addField(int placement, char *line, char *format, ...) {
             if (conversions != 1) {
                 cut = nextConversion(format);
                 if (cut == NULL) {
-                    DEBUG_ABORT("Logic error - should have found at least 1 '%%'\n");
+                    DEBUG_ABORT(488, "Logic error - should have found at least 1 '%%'\n");
                 }
                 cut = nextConversion(&cut[1]);
                 if (cut == NULL) {
-                    DEBUG_ABORT("Logic error - should have found at least 2 '%%'\n");
+                    DEBUG_ABORT(491, "Logic error - should have found at least 2 '%%'\n");
                 }
                 *cut = '\0';
             }
@@ -373,7 +374,7 @@ void DEBUG_addField(int placement, char *line, char *format, ...) {
         strcat(end, field);
         break;
     default:
-        DEBUG_ABORT("LOGIC ERROR in DEBUG_addField - this type does not exist.");
+        DEBUG_ABORT(549, "LOGIC ERROR in DEBUG_addField - this type does not exist.");
         break;
     }
 }

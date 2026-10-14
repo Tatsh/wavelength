@@ -715,7 +715,7 @@ static int decodeCode(const unsigned int *code, char *line) {
         break;
     }
     default:
-        DEBUG_ABORT("Logic error, this VIFcode should be caught.");
+        DEBUG_ABORT(732, "Logic error, this VIFcode should be caught.");
         break;
     }
     if (g_nVifUnit == 1) {
@@ -774,7 +774,7 @@ static int grabElement(int sizeShift, int isUnsigned, unsigned int *element) {
         break;
     }
     default:
-        DEBUG_ABORT("LOGIC ERROR - This case should never be reached (grabUnpackElement)\n");
+        DEBUG_ABORT(813, "LOGIC ERROR - This case should never be reached (grabUnpackElement)\n");
         break;
     }
     if (++g_nVifElementIndex >= perWord) {
@@ -1200,7 +1200,8 @@ int VIF_disassemble(void) {
                                  "GIF tag is not aligned to a quadword boundary!");
             }
             if (g_vifCode.length & 3) {
-                DEBUG_ABORT("Logic error! length for DIRECT/HL should be a multiple of 4!!\n");
+                DEBUG_ABORT(1259,
+                            "Logic error! length for DIRECT/HL should be a multiple of 4!!\n");
             }
             while (g_vifCode.length > 0 && !(result & (DEBUG_ERROR | DEBUG_FATAL))) {
                 result |= refill();
@@ -1227,7 +1228,8 @@ int VIF_disassemble(void) {
             (void)DEBUG_print(line); // Yes, the binary discards the flags of this line.
         }
         if (result == 0 && g_vifCode.length != 0) {
-            DEBUG_ABORT("Logic error, length should be zero when exiting this switch statement.\n");
+            DEBUG_ABORT(1306,
+                        "Logic error, length should be zero when exiting this switch statement.\n");
         }
         if (failed) {
             break;

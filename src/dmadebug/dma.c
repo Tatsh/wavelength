@@ -513,7 +513,7 @@ static int readTag(void) {
         } else if (depth == 2) {
             g_dwDmaNextTag = g_pDmaChannel->asr1;
         } else {
-            DEBUG_ABORT("Logic error - ASP of CHCR is > 2\n");
+            DEBUG_ABORT(612, "Logic error - ASP of CHCR is > 2\n");
         }
         g_pDmaChannel->madr = toTagAddress(tagAddress + QWORD_SIZE);
         break;

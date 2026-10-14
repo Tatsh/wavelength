@@ -1905,7 +1905,7 @@ static int describeRegister(int id, const unsigned int *value, char *line) {
     default:
         printf("Logic error, this case (0x%x) in disassembleRegister() should be caught.\n",
                reg->id);
-        DEBUG_ABORT("Invalid GS register\n");
+        DEBUG_ABORT(1028, "Invalid GS register\n");
         break;
     }
     return result;
@@ -2036,7 +2036,8 @@ static int describeData(char *line) {
                     g_gifTag.regs[(g_gifProgress.reg - 1) & 0xf], &g_pGifData[half], line);
             } else {
                 if (half == 0) {
-                    DEBUG_ABORT("Logic error - came across a NOP in the first half of a "
+                    DEBUG_ABORT(1231,
+                                "Logic error - came across a NOP in the first half of a "
                                 "quadword.\n");
                 }
                 result |= describeRegister(GS_SKIPPED, &g_pGifData[2], line);
