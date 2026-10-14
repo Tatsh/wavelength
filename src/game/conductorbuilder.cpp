@@ -28,7 +28,7 @@ ConductorBuilder::~ConductorBuilder() {
 }
 
 void ConductorBuilder::OnTempo(int nTick, int nMicrosecondsPerBeat) {
-    if (!mValidate) {
+    if (mValidate == 0) {
         return;
     }
 

@@ -349,9 +349,9 @@ protected:
     int mPendingPoints;                 /*!< The points of the phrase being played. */
     int mMultiplierValue;               /*!< 1, or the multiplier power-up value. */
     int mStreak;                        /*!< The streak. */
-    bool mCatching;                     /*!< Whether the player is catching. */
-    bool mAborted;                      /*!< Whether the player has left the song. */
-    bool mRepeat;                       /*!< The remix repeat state. */
+    int mCatching;                      /*!< Whether the player is catching. */
+    int mAborted;                       /*!< Whether the player has left the song. */
+    int mRepeat;                        /*!< The remix repeat state. */
     int mLastHitTick;                   /*!< The tick of the last gem hit, or -1. */
     Ptr<Command> mMultiplierEndCommand; /*!< The command that calls EndMultiplier(). */
     int mPowerup;                       /*!< The kind of power-up the player holds. */

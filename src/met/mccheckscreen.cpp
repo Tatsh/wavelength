@@ -89,7 +89,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
             break;
         }
         TheMetagame.mFreqsOnCard = 1;
-        if (!TheUI.mEditMode) {
+        if (TheUI.mEditMode == 0) {
             mLoadSettings = 1;
         } else {
             TheUI.GotoScreen(mDoneScreen.c_str());

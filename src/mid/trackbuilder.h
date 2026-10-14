@@ -48,7 +48,7 @@ public:
     void Error(int nTick, const char *pszMessage);
 
     int mTrack;                 /*!< The number of the MIDI track. */
-    bool mValidate;             /*!< Check the events for authoring errors. */
+    int mValidate;              /*!< Check the events for authoring errors. */
     ErrorHandler mErrorHandler; /*!< The routine that reports an error, or null. */
 
 private:

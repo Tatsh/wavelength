@@ -23,7 +23,7 @@ constexpr int kNoHitTick = -1;
 
 Player::Player(int nIndex, int nTicksPerBar)
     : mIndex(nIndex), mTicksPerBar(nTicksPerBar), mTrack(nullptr), mScore(0), mPendingPoints(0),
-      mMultiplierValue(kNoMultiplier), mStreak(0), mCatching(false), mAborted(false), mRepeat(true),
+      mMultiplierValue(kNoMultiplier), mStreak(0), mCatching(0), mAborted(0), mRepeat(1),
       mLastHitTick(kNoHitTick),
       mMultiplierEndCommand(NewMemFunCommand(this, &Player::EndMultiplier)),
       mPowerup(GameLogic::kPowerupNone) {
@@ -71,7 +71,7 @@ void Player::HandleInput(const StickEvent<6> &event) {
 }
 
 void Player::Abort() {
-    mAborted = true;
+    mAborted = 1;
 }
 
 void Player::SetScore(int nScore) {

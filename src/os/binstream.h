@@ -148,7 +148,7 @@ public:
     void WriteEndian(const void *pData, int nBytes);
 
 private:
-    bool mLittleEndian; /*!< Whether values are stored in the console's byte order. */
+    int mLittleEndian; /*!< Whether values are stored in the console's byte order. */
 };
 
 /**

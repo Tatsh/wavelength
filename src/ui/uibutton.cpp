@@ -18,7 +18,7 @@ constexpr int kBaseIndex = 3;
 } // namespace
 
 UIButton::UIButton(DataArray *pData, const char *pszPanel) : UIComponent(pData) {
-    mFlashDone = true;
+    mFlashDone = 1;
     mStyle = TheUI.FindStyle(pData->Sym(kStyleIndex), false);
     const char *pszBase = pData->Size() > kBaseIndex ? pData->Sym(kBaseIndex) : mName;
     mText = dynamic_cast<RndText *>(TheManager.Find(FormatString("%s_%s.txt", pszPanel, pszBase)));
@@ -78,7 +78,7 @@ bool UIButton::DispatchPriv(Message *pMsg) {
 }
 
 bool UIButton::HandleSelect(JoypadInputMsg *pMsg) {
-    if (pMsg->mButton != kPadCross || !mFlashDone || pMsg->mPressed == 0) {
+    if (pMsg->mButton != kPadCross || mFlashDone == 0 || pMsg->mPressed == 0) {
         return false;
     }
     UIScreen *pScreen = TheUI.mCurrentScreen;
@@ -94,7 +94,7 @@ void UIButton::Unfocus() {
         return;
     }
     SetState(mRevertState, true);
-    mFlashDone = true;
+    mFlashDone = 1;
 }
 
 void UIButton::Poll(float fTime) {
@@ -103,7 +103,7 @@ void UIButton::Poll(float fTime) {
     }
     if (mFlashEnd <= fTime) {
         SetState(mRevertState, true);
-        mFlashDone = true;
+        mFlashDone = 1;
         UIPanel *pPanel = TheUI.FocusPanel();
         UIComponentSelectMsg msg(this, pPanel, TheUI.mCurrentScreen, kPadCross);
         Dispatch(&msg);
@@ -129,7 +129,7 @@ void UIButton::StartFlash(float fTime,
     mFlashStart = fTime;
     mSelectedMs = fSelectedMs;
     mNormalMs = fNormalMs;
-    mFlashDone = false;
+    mFlashDone = 0;
     mRevertState = GetState();
     mFlashStart -= fSelectedMs;
     mFlashEnd = fTime + static_cast<float>(nFlashes) * mFlashPeriod + fNormalMs;
@@ -137,9 +137,9 @@ void UIButton::StartFlash(float fTime,
 
 void UIButton::Print(PrnStream &stream) {
     stream << "{UIButton " << mName << "\n"
-           << "   visible: " << mShowing << "\n"
+           << "   visible: " << (mShowing != 0) << "\n"
            << "   RndButton object: " << mName << " (state: " << GetState() << ")\n";
-    if (!mFlashDone) {
+    if (mFlashDone == 0) {
         stream << "   button flash characteristics:\n"
                << "      flash start frame:    " << mFlashStart << "\n"
                << "      flash end frame:      " << mFlashEnd << "\n"

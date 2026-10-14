@@ -829,8 +829,8 @@ private:
     SoftFxFilter mFilter;                     /*!< The settings of the software effect. */
     Lfo mTapOscillators[kNumTaps];            /*!< The oscillators of the echo taps. */
     std::vector<OnePoleFilter> mChannelVolumes; /*!< The smoothed volume of each channel. */
-    bool mGotAudioData;                    /*!< Whether the last read of audio data completed. */
-    bool mMoreAudioData;                   /*!< Whether more audio data is to come. */
+    int mGotAudioData;                     /*!< Whether the last read of audio data completed. */
+    int mMoreAudioData;                    /*!< Whether more audio data is to come. */
     int mAudioDataOffset;                  /*!< The offset of the audio data last read. */
     std::vector<unsigned char> mAudioData; /*!< The audio data last read. */
 };

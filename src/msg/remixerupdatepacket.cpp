@@ -29,6 +29,6 @@ void RemixerUpdatePacket::restoreGuts(BinStream &stream) {
 }
 
 void RemixerUpdatePacket::PrintExtra(PrnStream &stream) const {
-    stream << "track: " << mTrack << " " << "repeat: " << mRepeat << " "
+    stream << "track: " << mTrack << " " << "repeat: " << (mRepeat != 0) << " "
            << "version: " << static_cast<unsigned int>(mVersion) << "\n";
 }

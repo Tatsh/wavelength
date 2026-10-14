@@ -75,7 +75,7 @@ void NetMainLaunchpadsPanel::RequestUpdate() {
 }
 
 void NetMainLaunchpadsPanel::Focus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     FocusChangePanel::Focus();
@@ -84,7 +84,7 @@ void NetMainLaunchpadsPanel::Focus() {
 }
 
 void NetMainLaunchpadsPanel::Unfocus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     FocusChangePanel::Unfocus();

@@ -32,7 +32,7 @@ public:
      *
      * Inline. New() expands it.
      */
-    PlayerUpdatePacket() : mTrack(-1), mPoints(-1), mCatching(false), mVersion(0) {
+    PlayerUpdatePacket() : mTrack(-1), mPoints(-1), mCatching(0), mVersion(0) {
     }
 
     /**
@@ -137,8 +137,8 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
-    int mTrack;     /*!< The index of the player's track. */
-    int mPoints;    /*!< The player's score. */
-    bool mCatching; /*!< The player's catching state. */
-    int mVersion;   /*!< The update's sequence number. */
+    int mTrack;    /*!< The index of the player's track. */
+    int mPoints;   /*!< The player's score. */
+    int mCatching; /*!< The player's catching state. */
+    int mVersion;  /*!< The update's sequence number. */
 };

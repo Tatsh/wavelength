@@ -50,6 +50,7 @@ void FreestylePacket::restoreGuts(BinStream &stream) {
 }
 
 void FreestylePacket::PrintExtra(PrnStream &stream) const {
-    stream << "active: " << mActive << " " << "button: " << mButton << " " << "x: " << mX << " "
+    stream << "active: " << (mActive != 0) << " " << "button: " << mButton << " " << "x: " << mX
+           << " "
            << "y: " << mY << "\n";
 }

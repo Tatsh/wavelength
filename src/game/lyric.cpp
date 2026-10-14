@@ -15,7 +15,7 @@ constexpr char kToggleCommandName[] = "lyric";
 
 Lyric::Lyric(int nTicksPerBar, int nLoopBars)
     : mTicksPerBar(nTicksPerBar), mLoopBars(nLoopBars), mCurrent(),
-      mAdvanceCommand(NewMemFunCommand(this, &Lyric::Advance)), mShowing(false) {
+      mAdvanceCommand(NewMemFunCommand(this, &Lyric::Advance)), mShowing(0) {
     ScriptFunction::Register(ToggleShowing, kToggleCommandName, this);
 }
 
@@ -65,9 +65,9 @@ void Lyric::Advance() {
 
 void Lyric::ToggleShowing([[maybe_unused]] DataArray *pCommand, void *pUserData) {
     auto *pLyric = static_cast<Lyric *>(pUserData);
-    pLyric->mShowing = !pLyric->mShowing;
+    pLyric->mShowing ^= 1;
     DebugPrint("CHEAT: lyrics %s\n", pLyric->mShowing ? "showing" : "not showing");
-    if (!pLyric->mShowing) {
+    if (pLyric->mShowing == 0) {
         TheGfxManager.SetLyricText("", true);
     }
 }

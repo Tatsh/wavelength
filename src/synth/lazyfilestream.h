@@ -70,7 +70,7 @@ private:
      */
     void StartRead();
 
-    bool mMoreData;              /*!< Whether a read remains. */
+    int mMoreData;               /*!< Whether a read remains. */
     int mPosition;               /*!< Offset in the file of the next data handed out. */
     File *mFile;                 /*!< The file. */
     char *mBuffers[kNumBuffers]; /*!< The buffers. */

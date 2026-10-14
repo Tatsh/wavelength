@@ -57,7 +57,7 @@ void UILabel::SetState(int nState, bool bForce) {
 
 void UILabel::Print(PrnStream &stream) {
     stream << "{UILabel " << mName << "\n";
-    stream << "   visible: " << mShowing << "\n";
+    stream << "   visible: " << (mShowing != 0) << "\n";
     stream << "   RndText object: " << mText->mName.c_str() << "\n";
     stream << "}\n";
 }

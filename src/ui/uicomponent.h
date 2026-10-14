@@ -34,7 +34,7 @@ public:
      *
      * @param pData The script description. Index 1 is the name.
      */
-    explicit UIComponent(DataArray *pData) : mName(pData->Sym(1)), mShowing(true) {
+    explicit UIComponent(DataArray *pData) : mName(pData->Sym(1)), mShowing(1) {
         mState = kStateNormal;
     }
 
@@ -182,7 +182,7 @@ public:
     virtual void Print(PrnStream &stream) = 0;
 
     const char *mName; /*!< The name, a symbol. */
-    bool mShowing;     /*!< Whether the component shows. */
+    int mShowing;      /*!< Whether the component shows. */
     int mState;        /*!< One of State. */
 
 protected:

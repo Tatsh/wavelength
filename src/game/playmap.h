@@ -113,5 +113,5 @@ public:
     int mTicksPerBar;         /*!< The song ticks in one bar. */
     std::vector<Loop> mLoops; /*!< The loops, by the bar they play from. */
     int mEndBar;              /*!< The bar the song ends at while no loop was added. */
-    bool mLooping;            /*!< Whether a loop was added. */
+    int mLooping;             /*!< Whether a loop was added. */
 };

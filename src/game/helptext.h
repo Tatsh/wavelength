@@ -165,7 +165,7 @@ public:
     void StopAttentionCue();
 
 private:
-    bool mEnabled;            /*!< Whether hints are allowed. */
+    int mEnabled;             /*!< Whether hints are allowed. */
     float mLastShownMs;       /*!< The song time the last hint appeared at, in milliseconds. */
     Ptr<Command> mStopCueCmd; /*!< The command that runs StopAttentionCue(). */
 };

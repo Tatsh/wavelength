@@ -183,5 +183,5 @@ public:
     std::vector<Track *> mTracks;   /*!< The catch tracks, then the freestyle track. */
     int mFreestyleType;             /*!< The track type of the freestyle track. */
     int mFreestyleInstrument;       /*!< The instrument of the freestyle track. */
-    bool mHasFreestyle;             /*!< Whether the song has a freestyle track. */
+    int mHasFreestyle;              /*!< Whether the song has a freestyle track. */
 };

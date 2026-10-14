@@ -116,12 +116,12 @@ public:
      * @param audioData Receives the data of a completed read, padded with zeros to a multiple of
      *     64 bytes.
      * @param pnPosition Receives the offset of the data in the file.
-     * @param pbGotData Receives whether a read completed.
+     * @param pnGotData Receives 1 when a read completed, otherwise 0.
      * @return Whether more data is to come.
      * @ghidraAddress NTSC-U/C: 0x002512c0
      * @ghidraAddress PAL: 0x00259c78
      */
-    bool GetAudioData(std::vector<unsigned char> &audioData, int *pnPosition, bool *pbGotData);
+    bool GetAudioData(std::vector<unsigned char> &audioData, int *pnPosition, int *pnGotData);
 
     /**
      * Start looking for a chunk from the start of the bank file.

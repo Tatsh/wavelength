@@ -339,7 +339,7 @@ void DuelTrack::MissCatch() {
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
         TheGameDb->IsLocalPlayer(mPlayer->GetIndex())) {
         CapturePacket packet(mIndex, mCatchBar, false);
-        packet.mValid = false;
+        packet.mValid = 0;
         TheNetTransport->Send(packet);
     }
     mLogic->OnCatchMissed(this, mSidePlayer, mCatchBar);

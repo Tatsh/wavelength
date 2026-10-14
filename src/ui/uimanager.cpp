@@ -70,7 +70,7 @@ void UIManager::Callback::Report() {
     }
 }
 
-UIManager::UIManager() : mTime(1.0f), mEditMode(false), mRepeatPad(kNoRepeatPad) {
+UIManager::UIManager() : mTime(1.0f), mEditMode(0), mRepeatPad(kNoRepeatPad) {
     mRepeatPending = 1;
     mRepeatTime = 0.0f;
 }
@@ -79,7 +79,7 @@ UIManager::~UIManager() {
 }
 
 void UIManager::Init() {
-    mEditMode = false;
+    mEditMode = 0;
     mCurrentScreen = nullptr;
     mTime = 1.0f;
     DataArray *pConfig = SystemConfig()->FindArray("ui", true);

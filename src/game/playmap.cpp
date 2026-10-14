@@ -10,12 +10,12 @@ constexpr int kEndlessBars = 0x20000001;
 } // namespace
 
 PlayMap::PlayMap(int nTicksPerBar, int nEndBar)
-    : mTicksPerBar(nTicksPerBar), mLoops(), mEndBar(nEndBar), mLooping(false) {
+    : mTicksPerBar(nTicksPerBar), mLoops(), mEndBar(nEndBar), mLooping(0) {
     mLoops.push_back(Loop{0, kEndlessBars, 0});
 }
 
 void PlayMap::AddLoop(int nStartBar, int nNumBars, int nPlayBar) {
-    mLooping = true;
+    mLooping = 1;
     const Loop &last = mLoops.back();
     const int nPartBars = (nPlayBar - last.mPlayBar) % last.mNumBars;
     if (nPartBars != 0) {

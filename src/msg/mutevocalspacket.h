@@ -31,7 +31,7 @@ public:
      *
      * Inline. New() expands it.
      */
-    MuteVocalsPacket() : ExternalPacket(kFlagGuaranteed), mSection(-1), mTrack(-1), mMute(false) {
+    MuteVocalsPacket() : ExternalPacket(kFlagGuaranteed), mSection(-1), mTrack(-1), mMute(0) {
     }
 
     /**
@@ -127,5 +127,5 @@ public:
 
     int mSection; /*!< The section. */
     int mTrack;   /*!< The track. */
-    bool mMute;   /*!< Whether the vocals are muted. */
+    int mMute;    /*!< Whether the vocals are muted. */
 };

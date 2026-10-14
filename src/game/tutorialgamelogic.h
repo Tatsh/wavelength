@@ -436,19 +436,19 @@ public:
     StreamQueue mStreams;                         /*!< The narration streams. */
     std::vector<Ptr<PlayScriptCmd> > mScriptCmds; /*!< The tracks `midi` started. +0x504 */
     int mBar;                                     /*!< The bar OnBar() last recorded. +0x514 */
-    int mRotateMode;        /*!< One of RotateMode, initially kRotateModeNone. +0x518 */
-    bool mInputDisabled;    /*!< Set by `disable_input`. +0x51c */
-    float mProgressLength;  /*!< The span GetProgress() measures, in ticks. +0x520 */
-    float mProgressOffset;  /*!< Added to the tick GetProgress() measures. +0x524 */
-    bool mPowerupsDisabled; /*!< Set by `disable_powerups`, initially true. +0x528 */
-    bool mManualEnableNext; /*!< Set by `set_manual_enable_next`. +0x52c */
+    int mRotateMode;       /*!< One of RotateMode, initially kRotateModeNone. +0x518 */
+    int mInputDisabled;    /*!< Set by `disable_input`. +0x51c */
+    float mProgressLength; /*!< The span GetProgress() measures, in ticks. +0x520 */
+    float mProgressOffset; /*!< Added to the tick GetProgress() measures. +0x524 */
+    int mPowerupsDisabled; /*!< Set by `disable_powerups`, initially 1. +0x528 */
+    int mManualEnableNext; /*!< Set by `set_manual_enable_next`. +0x52c */
     std::vector<Ptr<Command> > mDeactivators; /*!< The scheduled deactivations. +0x530 */
-    bool mSavedNoCapture;      /*!< GameConfig::mNoCapture before the tutorial. +0x540 */
-    bool mSavedNoDeactivate;   /*!< GameConfig::mNoDeactivate before the tutorial. +0x544 */
-    int mReserved548;          // +0x548, not read or written by the class.
-    bool mSavedStreaksEnabled; /*!< GameConfig::mStreaksEnabled before the tutorial. +0x54c */
-    bool mSavedGuideTicks;     /*!< GameConfig::mGuideTicks before the tutorial. +0x550 */
-    int mSavedStrandBars;      /*!< The strand bars of the player count. +0x554 */
+    int mSavedNoCapture;      /*!< GameConfig::mNoCapture before the tutorial. +0x540 */
+    int mSavedNoDeactivate;   /*!< GameConfig::mNoDeactivate before the tutorial. +0x544 */
+    int mReserved548;         // +0x548, not read or written by the class.
+    int mSavedStreaksEnabled; /*!< GameConfig::mStreaksEnabled before the tutorial. +0x54c */
+    int mSavedGuideTicks;     /*!< GameConfig::mGuideTicks before the tutorial. +0x550 */
+    int mSavedStrandBars;     /*!< The strand bars of the player count. +0x554 */
 
 private:
     /**

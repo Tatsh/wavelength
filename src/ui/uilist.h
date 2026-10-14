@@ -246,6 +246,6 @@ public:
     RndMesh *mUpArrow;                       /*!< The arrow above the rows, or null. */
     RndMesh *mDownArrow;                     /*!< The arrow below the rows, or null. */
     alignas(16) Transform mCursorXfm;        /*!< The cursor's transform on the first row. */
-    bool mShowUpArrow;   /*!< Whether the up arrow shows even when no item lies above. */
-    bool mShowDownArrow; /*!< Whether the down arrow shows even when no item lies below. */
+    int mShowUpArrow;   /*!< Whether the up arrow shows even when no item lies above. */
+    int mShowDownArrow; /*!< Whether the down arrow shows even when no item lies below. */
 };

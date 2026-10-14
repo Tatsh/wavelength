@@ -33,6 +33,6 @@ void PlayerUpdatePacket::restoreGuts(BinStream &stream) {
 
 void PlayerUpdatePacket::PrintExtra(PrnStream &stream) const {
     stream << "track: " << mTrack << " " << "points: " << mPoints << " "
-           << "catching: " << mCatching << " " << "version: " << static_cast<unsigned int>(mVersion)
-           << "\n";
+           << "catching: " << (mCatching != 0) << " "
+           << "version: " << static_cast<unsigned int>(mVersion) << "\n";
 }

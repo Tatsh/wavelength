@@ -108,5 +108,5 @@ private:
     std::set<LyricData> mLyrics;            /*!< The lyrics in tick order. */
     std::set<LyricData>::iterator mCurrent; /*!< The lyric Advance() shows next. */
     Ptr<Command> mAdvanceCommand;           /*!< The command that calls Advance(). */
-    bool mShowing;                          /*!< Whether lyrics show on the display. */
+    int mShowing;                           /*!< Whether lyrics show on the display. */
 };

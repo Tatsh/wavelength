@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-StatsAccumulator::StatsAccumulator() : mMin(0.0F), mMax(0.0F), mSum(0.0F), mSorted(false) {
+StatsAccumulator::StatsAccumulator() : mMin(0.0F), mMax(0.0F), mSum(0.0F), mSorted(0) {
 }
 
 void StatsAccumulator::AddSample(float fSample) {
@@ -15,11 +15,11 @@ void StatsAccumulator::AddSample(float fSample) {
         mMin = std::min(mMin, fSample);
     }
     mSamples.push_back(fSample);
-    mSorted = false;
+    mSorted = 0;
 }
 
 float StatsAccumulator::GetMedian() {
-    if (!mSorted) {
+    if (mSorted == 0) {
         std::sort(mSamples.begin(), mSamples.end());
     }
     const int nCount = static_cast<int>(mSamples.size());

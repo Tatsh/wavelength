@@ -117,11 +117,11 @@ void BankFileIO::OpenAudioData(int nBufferSize) {
 
 bool BankFileIO::GetAudioData(std::vector<unsigned char> &audioData,
                               int *pnPosition,
-                              bool *pbGotData) {
+                              int *pnGotData) {
     bool bMoreToCome = true;
-    *pbGotData = false;
+    *pnGotData = 0;
     *pnPosition = 0;
-    *pbGotData = false; // Yes, the binary clears the flag twice.
+    *pnGotData = 0; // Yes, the binary clears the flag twice.
     if (mAudioFileStream->ReadDone()) {
         int nBytesAvailable;
         const char *pData = mAudioFileStream->GetData(pnPosition, &nBytesAvailable);
@@ -131,7 +131,7 @@ bool BankFileIO::GetAudioData(std::vector<unsigned char> &audioData,
             nZeroPadding = 0;
         }
         audioData.resize(nBytesAvailable + nZeroPadding);
-        *pbGotData = true;
+        *pnGotData = 1;
         memcpy(audioData.data(), pData, nBytesAvailable);
         if (nZeroPadding > 0) {
             memset(&audioData[nBytesAvailable], 0, nZeroPadding);

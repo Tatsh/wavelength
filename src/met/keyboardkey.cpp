@@ -15,7 +15,7 @@ KeyboardKey::~KeyboardKey() {
 }
 
 bool KeyboardKey::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mButton != kPadCross || !mFlashDone || pMsg->mPressed == 0) {
+    if (pMsg->mButton != kPadCross || mFlashDone == 0 || pMsg->mPressed == 0) {
         return false;
     }
     UIScreen *pScreen = TheUI.mCurrentScreen;

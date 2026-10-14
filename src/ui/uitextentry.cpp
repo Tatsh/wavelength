@@ -46,7 +46,7 @@ float UITextEntry::sBlinkMs = 450.0f;
 
 UITextEntry::UITextEntry(DataArray *pData, const char *pszPanel)
     : UIComponent(pData), mMesh(nullptr), mHighlightStyle(nullptr), mScroll(0), mWordWrapLines(0),
-      mPassword(0), mEditing(false), mNextBlink(0.0f), mInvalidChars(nullptr) {
+      mPassword(0), mEditing(0), mNextBlink(0.0f), mInvalidChars(nullptr) {
     mCursor = 0;
     mMaxEntryWidth = kNoWidthLimit;
     mNumLines = 1;
@@ -165,7 +165,7 @@ void UITextEntry::ToggleCaret() {
 }
 
 void UITextEntry::Poll(float fTime) {
-    if (!mEditing) {
+    if (mEditing == 0) {
         mCaret->SetShowing(false);
         return;
     }

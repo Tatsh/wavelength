@@ -28,7 +28,7 @@ constexpr float kAttentionCueMs = 2000.0f;
 HelpText *TheHelpText = HelpText::shared();
 
 HelpText::HelpText()
-    : mEnabled(true), mLastShownMs(0.0f),
+    : mEnabled(1), mLastShownMs(0.0f),
       mStopCueCmd(NewMemFunCommand(this, &HelpText::StopAttentionCue)) {
 }
 
@@ -46,7 +46,7 @@ void HelpText::SetEnabled(bool bEnabled) {
 
 void HelpText::Reset() {
     mLastShownMs = 0.0f;
-    mEnabled = true;
+    mEnabled = 1;
 }
 
 bool HelpText::ShowEnergyLow() {
@@ -109,7 +109,7 @@ bool HelpText::Show(const char *pszFirst,
     if (bBeginnerOnly && TheGameDb->mSkillLevel >= kFirstExpertSkillLevel) {
         return false;
     }
-    if (!mEnabled || TheGameDb->mRuleSet != GameDb::kRuleSetGame ||
+    if (mEnabled == 0 || TheGameDb->mRuleSet != GameDb::kRuleSetGame ||
         TheGameDb->GetOptions()->mHelpText == 0) {
         return false;
     }

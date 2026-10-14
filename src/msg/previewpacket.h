@@ -112,6 +112,6 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
-    int mSection;     /*!< The section previewed. */
-    bool mPreviewing; /*!< Whether the preview started rather than stopped. */
+    int mSection;    /*!< The section previewed. */
+    int mPreviewing; /*!< Whether the preview started rather than stopped. */
 };

@@ -127,7 +127,7 @@ void FreqPanel::FinishLoad() {
 
     mMatAlwaysAnim = dynamic_cast<RndView *>(TheManager.Find("mat_2d_always.anim"));
     mMatEnterExitAnim = dynamic_cast<RndView *>(TheManager.Find("mat_2d_EE.anim"));
-    mMatEntering = true;
+    mMatEntering = 1;
     mMatStart = 0.0f;
 }
 
@@ -158,7 +158,7 @@ void FreqPanel::ShowGizmoMesh(bool bShowing) {
 }
 
 void FreqPanel::Poll(float fTime) {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     UIPanel::Poll(fTime);
@@ -197,7 +197,7 @@ void FreqPanel::DrawGizmo() {
 }
 
 void FreqPanel::Draw() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     const float fTime = TheUI.mTime;
@@ -205,7 +205,7 @@ void FreqPanel::Draw() {
     if (mMatStart != 0.0f) {
         float fFrame = fTime - mMatStart;
         float fStop = sMatEnterStop;
-        if (!mMatEntering) {
+        if (mMatEntering == 0) {
             fFrame += sMatExitStart;
             fStop = sMatExitStop;
         }
@@ -223,7 +223,7 @@ void FreqPanel::Draw() {
 }
 
 void FreqPanel::Enter(bool bForce, float fTime) {
-    mMatEntering = true;
+    mMatEntering = 1;
     if (bForce || mState == kStateShown) {
         mMatEnterExitAnim->SetFrame(mShownFrame);
     } else {
@@ -233,7 +233,7 @@ void FreqPanel::Enter(bool bForce, float fTime) {
 }
 
 void FreqPanel::Exit(bool bForce, float fTime) {
-    mMatEntering = false;
+    mMatEntering = 0;
     if (bForce || mState == kStateHidden) {
         mMatEnterExitAnim->SetFrame(mHiddenFrame);
     } else {

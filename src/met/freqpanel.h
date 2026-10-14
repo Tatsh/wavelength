@@ -191,7 +191,7 @@ public:
     RndView *mMatAlwaysAnim;    /*!< The shared animation `mat_2d_always.anim`. */
     RndView *mPanelAnim;        /*!< The panel animation `<name>_f2EE.anim`, or null. */
     float mMatStart;            /*!< The time the material entry or exit started, or 0. */
-    bool mMatEntering;          /*!< Whether the material animation enters rather than exits. */
+    int mMatEntering;           /*!< Whether the material animation enters rather than exits. */
 
 private:
     /**

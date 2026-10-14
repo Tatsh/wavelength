@@ -38,7 +38,7 @@ void SetMeshMat(const char *pszFormat, const char *pszPanel, const char *pszMat)
 
 void NetHostLPadButtonPanel::Focus() {
     UIPanel::Focus();
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     SetMeshMat(kPanelMeshFormat, mName, kFocusedPanelMat);

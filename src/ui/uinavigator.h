@@ -141,6 +141,6 @@ public:
     std::vector<std::vector<UIComponent *> > mHorizontal; /*!< The horizontal lists. */
     std::vector<std::vector<UIComponent *> > mVertical;   /*!< The vertical lists. */
     std::vector<UIComponent *> *mRow; /*!< The list the focus last moved along. */
-    bool mWrap;                       /*!< Whether the focus wraps at the ends of a list. */
-    bool mEnabled;                    /*!< Whether the directional buttons move the focus. */
+    int mWrap;                        /*!< Whether the focus wraps at the ends of a list. */
+    int mEnabled;                     /*!< Whether the directional buttons move the focus. */
 };

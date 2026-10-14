@@ -175,7 +175,7 @@ public:
      */
     bool HandleSelect(JoypadInputMsg *pMsg);
 
-    bool mFlashDone;    /*!< Whether no flash runs. */
+    int mFlashDone;     /*!< Whether no flash runs. */
     float mFlashStart;  /*!< The time the first flash period started. */
     float mFlashPeriod; /*!< The length of one selected and one normal phase. */
     float mSelectedMs;  /*!< The length of the selected phase. */

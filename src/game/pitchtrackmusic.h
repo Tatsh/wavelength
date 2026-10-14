@@ -104,5 +104,5 @@ private:
     Ptr<Command> mPlayGemCommand; /*!< The command that calls PlayGem(). */
     Ptr<Command> mBarCommand;     /*!< The command that calls StartBar(). */
     Muse *mPlaying;               /*!< The riff that plays, or null. */
-    bool mMuted;                  /*!< Whether the gems are silent. */
+    int mMuted;                   /*!< Whether the gems are silent. */
 };

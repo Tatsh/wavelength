@@ -83,7 +83,7 @@ public:
         void SetShowing(bool bShowing, RndMultiMesh *pMesh, std::list<Transform> &hidden);
 
         const Vector3 *mScale;                    /*!< The scale of the basis rows. */
-        bool mShowing;                            /*!< Whether the transform is an instance. */
+        int mShowing;                             /*!< Whether the transform is an instance. */
         std::list<Transform>::iterator mInstance; /*!< The transform of the line. */
         float mTick;                              /*!< The tick the line was last placed at. */
     };
@@ -183,7 +183,7 @@ public:
     GfxTunnel *mTunnel;           /*!< The tunnel. */
     RndMultiMesh *mMesh;          /*!< The `grid.mm` multi-mesh, shared by every grid. */
     std::list<Transform> mHidden; /*!< The transforms of the hidden lines. */
-    bool mRefresh;                /*!< Whether the next update reconsiders every line. */
-    bool mShowLines;              /*!< Whether the lines may show, for the first player only. */
+    int mRefresh;                 /*!< Whether the next update reconsiders every line. */
+    int mShowLines;               /*!< Whether the lines may show, for the first player only. */
     int mReserved2c;              // +0x2c Not set or read by the class.
 };

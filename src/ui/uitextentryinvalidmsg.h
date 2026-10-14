@@ -106,6 +106,6 @@ public:
     void PrintExtra(PrnStream &stream) const override;
 
     char mChar;          /*!< The refused character. */
-    bool mEndOfField;    /*!< Whether the character was refused because the text is full. */
+    int mEndOfField;     /*!< Whether the character was refused because the text is full. */
     UITextEntry *mEntry; /*!< The text entry. */
 };

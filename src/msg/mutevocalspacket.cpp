@@ -29,5 +29,5 @@ void MuteVocalsPacket::restoreGuts(BinStream &stream) {
 }
 
 void MuteVocalsPacket::PrintExtra(PrnStream &stream) const {
-    stream << "track: " << mTrack << "mute: " << mMute << "\n";
+    stream << "track: " << mTrack << "mute: " << (mMute != 0) << "\n";
 }

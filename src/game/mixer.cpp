@@ -70,8 +70,8 @@ Mixer::Mixer() {
     mVictoryLapVolume = kFullVolume;
     mHeldCount = 0;
     mMode = kModeOff;
-    mHasInstrumentTrack = false;
-    mMuteUnoccupied = false;
+    mHasInstrumentTrack = 0;
+    mMuteUnoccupied = 0;
     for (int i = 0; i < kChannelCount; ++i) {
         mRamps[i] = new VolumeRamp(&TheSongScheduler, kRampStartVolume, i);
     }
@@ -120,7 +120,7 @@ void Mixer::Init(int nTracks, int nInstrument) {
 }
 
 bool Mixer::IsInstrumentTrack(int nTrack) const {
-    if (!mHasInstrumentTrack) {
+    if (mHasInstrumentTrack == 0) {
         return false;
     }
     return nTrack == static_cast<int>(mTracks.size()) - 1;
@@ -170,7 +170,7 @@ void Mixer::HoldTrack(int nTrack, int nUntilTick) {
     }
     (void)IsInstrumentTrack(nTrack); // Yes, the binary discards this call's result.
     ++mHeldCount;
-    mTracks[nTrack].mHeld = true;
+    mTracks[nTrack].mHeld = 1;
     TheSongScheduler.PostAt(mTracks[nTrack].mReleaseCommand.Get(), nUntilTick - 1, false);
     if (mMode == kModePlaying) {
         for (int i = 0; i < kChannelCount; ++i) {
@@ -184,7 +184,7 @@ void Mixer::HoldTrack(int nTrack, int nUntilTick) {
 void Mixer::ReleaseTrack(int nTrack) {
     (void)IsInstrumentTrack(nTrack); // Yes, the binary discards this call's result.
     --mHeldCount;
-    mTracks[nTrack].mHeld = false;
+    mTracks[nTrack].mHeld = 0;
     if (mMode == kModePlaying) {
         RefreshAll(mRampTicks);
     }
@@ -269,7 +269,7 @@ void Mixer::RefreshTrack(int nChannel, int nTicks) {
 
     if (static_cast<unsigned>(nChannel) < mTracks.size()) {
         const TrackData &track = mTracks[nChannel];
-        const bool bFollowsPlayers = !track.mHeld || mMuteUnoccupied;
+        const bool bFollowsPlayers = track.mHeld == 0 || mMuteUnoccupied;
         if (bFollowsPlayers && track.mPlayers > 0) {
             SetVolume(nChannel, mHighVolume, 0); // Yes, an occupied track moves at once.
             return;
@@ -286,7 +286,7 @@ void Mixer::RefreshAll(int nTicks) {
 
 void Mixer::ToggleMuteUnoccupied([[maybe_unused]] DataArray *pCommand,
                                  [[maybe_unused]] void *pUserData) {
-    TheMixer->mMuteUnoccupied = !TheMixer->mMuteUnoccupied;
+    TheMixer->mMuteUnoccupied ^= 1;
     DebugPrint("CHEAT: %s muting unoccupied tracks\n", TheMixer->mMuteUnoccupied ? "" : "not");
     TheMixer->RefreshAll(0);
 }

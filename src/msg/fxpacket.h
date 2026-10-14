@@ -31,7 +31,7 @@ public:
      *
      * Inline. New() expands it.
      */
-    FXPacket() : ExternalPacket(kFlagGuaranteed), mSection(-1), mTrack(-1), mType(0), mOn(false) {
+    FXPacket() : ExternalPacket(kFlagGuaranteed), mSection(-1), mTrack(-1), mType(0), mOn(0) {
     }
 
     /**
@@ -125,5 +125,5 @@ public:
     int mSection; /*!< The section. */
     int mTrack;   /*!< The track. */
     int mType;    /*!< The effect. */
-    bool mOn;     /*!< Whether the effect is switched on. */
+    int mOn;      /*!< Whether the effect is switched on. */
 };

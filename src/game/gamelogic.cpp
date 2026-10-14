@@ -191,10 +191,10 @@ GameLogic::GameLogic(Song *pSong, DataArray *pConfig, int nSeed)
     : mSong(pSong), mState(kStateIdle), mPaused(0), mTicksPerBar(pSong->mBuilder->mTicksPerBar),
       mNumBars(pSong->mNumBars), mPlayMap(pSong->GetPlayMap()), mFreestyleTrack(nullptr),
       mTrackSelector(nullptr), mSpeedRamp(new SpeedRamp(&TheSongScheduler, mSong->GetSpeed())),
-      mPhraseThisBar(false), mQuit(0), mReserved60(0), mSectionStartBar(0),
+      mPhraseThisBar(0), mQuit(0), mReserved60(0), mSectionStartBar(0),
       mNextSectionBar(pSong->GetSections()->SectionEnd(0)), mSection(0),
       mWorldBeat(&TheSongScheduler, pSong->GetWorldTrack(), mTicksPerBar * mNumBars),
-      mSavedState(kStatePlaying), mSlowdown(false), mNextEnableStep(0),
+      mSavedState(kStatePlaying), mSlowdown(0), mNextEnableStep(0),
       mBarCmd(NewMemFunCommand(this, &GameLogic::TickBar)),
       mStopSlowdownCmd(NewMemFunCommand(this, &GameLogic::StopSlowdown)), mRand(nSeed),
       mEndTick(0) {
@@ -659,11 +659,11 @@ void GameLogic::TickBar() {
     if (mState == kStatePlaying || mState == kStatePaused) {
         TheSongScheduler.PostIn(mBarCmd.Get(), mTicksPerBar, false);
     }
-    mPhraseThisBar = false;
+    mPhraseThisBar = 0;
     if (nBar < mNumBars) {
         for (CatchTrack *pTrack : mCatchTracks) {
             if (pTrack->HasPhraseAt(nBar)) {
-                mPhraseThisBar = true;
+                mPhraseThisBar = 1;
                 break;
             }
         }
@@ -1125,15 +1125,15 @@ void GameLogic::StartSlowdown() {
     const float fSlowdownSpeed = TheGameConfig->mSlowdownSpeed;
     mSpeedRamp->MoveTo(
         TheGameConfig->mSlowdownStartTicks, kSlowdownStepTicks, fSlowdownSpeed * mSong->GetSpeed());
-    mSlowdown = true;
+    mSlowdown = 1;
 }
 
 void GameLogic::StopSlowdown() {
-    if (!mSlowdown) {
+    if (mSlowdown == 0) {
         return;
     }
     mSpeedRamp->MoveTo(TheGameConfig->mSlowdownStopTicks, kSlowdownStepTicks, mSong->GetSpeed());
-    mSlowdown = false;
+    mSlowdown = 0;
 }
 
 bool GameLogic::DeploySlowdown(Player *pPlayer) {

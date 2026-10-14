@@ -418,7 +418,7 @@ void SoloGameLogic::DrainPendingJuice() {
     if (nBar < 0 || nBar >= mNumBars) {
         return;
     }
-    if (mPlayer->GetTrack() == mFreestyleTrack || !mPhraseThisBar) {
+    if (mPlayer->GetTrack() == mFreestyleTrack || mPhraseThisBar == 0) {
         return;
     }
     mPendingJuice -= kJuiceDrainPerBar;

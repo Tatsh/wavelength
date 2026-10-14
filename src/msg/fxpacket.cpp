@@ -13,8 +13,8 @@ constexpr int kTypeBits = 2;
 } // namespace
 
 void FXPacket::PrintExtra(PrnStream &stream) const {
-    stream << "section: " << mSection << "track: " << mTrack << "type: " << mType << "on: " << mOn
-           << "\n";
+    stream << "section: " << mSection << "track: " << mTrack << "type: " << mType
+           << "on: " << (mOn != 0) << "\n";
 }
 
 void FXPacket::saveGuts(BinStream &stream) const {

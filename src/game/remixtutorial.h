@@ -358,25 +358,25 @@ public:
      */
     static void OnAllowRotationLeft(DataArray *pCommand, void *pUserData);
 
-    SerialTasks mScript;        /*!< The steps, in order. */
-    StreamQueue mStreams;       /*!< The narration streams. */
-    bool mPitchingEnabled;      /*!< Cleared by "disable_pitching". */
-    bool mRotationEnabled;      /*!< Cleared by "disable_rot". */
-    bool mSectionChangeEnabled; /*!< Cleared by "disable_section_change". */
-    bool mHudEnabled;           /*!< Cleared by "disable_hud". */
-    bool mErasingEnabled;       /*!< Cleared by "disable_erasing". */
-    int mPreviewEnabled;        /*!< Whether the remix starts or stops a preview. Always 0. */
-    int mStick2Enabled;         /*!< Whether the remix passes on a StickEvent<2>. Always 0. */
-    int mStick6Enabled;         /*!< Whether the remix passes on a StickEvent<6>. Always 0. */
-    int mButton10Enabled;       /*!< Whether the remix passes on a BtnEvent<10>. Always 0. */
-    bool mBurnPatterns;         /*!< Set by "burn_patterns". */
-    bool mShowPatterns;         /*!< Set by "show_patterns". */
-    bool mTempoChangeAllowed;   /*!< Set by "allow_tempo_change". */
-    bool mLoopingAllowed;       /*!< Set by "allow_looping". */
-    bool mPaused;               /*!< The tutorial is paused. */
-    int mLastRotation;          /*!< The rotation NotifyRotate() last recorded, initially -1. */
-    bool mRotationLeftAllowed;  /*!< Set by "allow_rotation_left", initially true. */
-    RemixLogic *mLogic;         /*!< The remix session the tutorial drives. */
+    SerialTasks mScript;       /*!< The steps, in order. */
+    StreamQueue mStreams;      /*!< The narration streams. */
+    int mPitchingEnabled;      /*!< Cleared by "disable_pitching". */
+    int mRotationEnabled;      /*!< Cleared by "disable_rot". */
+    int mSectionChangeEnabled; /*!< Cleared by "disable_section_change". */
+    int mHudEnabled;           /*!< Cleared by "disable_hud". */
+    int mErasingEnabled;       /*!< Cleared by "disable_erasing". */
+    int mPreviewEnabled;       /*!< Whether the remix starts or stops a preview. Always 0. */
+    int mStick2Enabled;        /*!< Whether the remix passes on a StickEvent<2>. Always 0. */
+    int mStick6Enabled;        /*!< Whether the remix passes on a StickEvent<6>. Always 0. */
+    int mButton10Enabled;      /*!< Whether the remix passes on a BtnEvent<10>. Always 0. */
+    int mBurnPatterns;         /*!< Set by "burn_patterns". */
+    int mShowPatterns;         /*!< Set by "show_patterns". */
+    int mTempoChangeAllowed;   /*!< Set by "allow_tempo_change". */
+    int mLoopingAllowed;       /*!< Set by "allow_looping". */
+    int mPaused;               /*!< The tutorial is paused. */
+    int mLastRotation;         /*!< The rotation NotifyRotate() last recorded, initially -1. */
+    int mRotationLeftAllowed;  /*!< Set by "allow_rotation_left", initially 1. */
+    RemixLogic *mLogic;        /*!< The remix session the tutorial drives. */
 
 private:
     /**

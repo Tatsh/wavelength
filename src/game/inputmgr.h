@@ -115,5 +115,5 @@ private:
     std::vector<int> mLocalPlayers;           /*!< The player of each controller. */
     float mRepeatInitialDelayMs;              /*!< The time before the first repeat. */
     float mRepeatDelayMs;                     /*!< The time between repeats. */
-    bool mDemo;                               /*!< Whether a demo plays. */
+    int mDemo;                                /*!< Whether a demo plays. */
 };

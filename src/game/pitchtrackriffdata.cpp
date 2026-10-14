@@ -10,7 +10,7 @@ constexpr int kNotFound = -1;
 
 } // namespace
 
-PitchTrackRiffData::PitchTrackRiffData() : mRiffSets(), mReserved10(1), mEnabled(true), mName() {
+PitchTrackRiffData::PitchTrackRiffData() : mRiffSets(), mReserved10(1), mEnabled(1), mName() {
 }
 
 PitchTrackRiffData::~PitchTrackRiffData() {

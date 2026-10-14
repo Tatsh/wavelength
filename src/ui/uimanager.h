@@ -495,7 +495,7 @@ public:
     std::map<const char *, UIStyle *, StrLess> mStyles;   /*!< The styles by name. */
     UIScreen *mCurrentScreen;                             /*!< The screen that shows, or null. */
     float mTime;                                          /*!< The time the last Poll() received. */
-    bool mEditMode; /*!< Whether the `editmode` setting of the configuration is on. */
+    int mEditMode; /*!< Whether the `editmode` setting of the configuration is on. */
     std::list<RndObject *> mSharedObjects;            /*!< The objects the shared files created. */
     std::map<String, PanelFactory> mPanelFactories;   /*!< The panel types. */
     std::map<String, ScreenFactory> mScreenFactories; /*!< The screen types. */

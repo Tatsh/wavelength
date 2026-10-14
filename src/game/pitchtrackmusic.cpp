@@ -10,7 +10,7 @@ PitchTrackMusic::PitchTrackMusic(PitchTrackPlayGems *pGems,
     : mTicksPerBar(nTicksPerBar), mGems(pGems), mRiffs(pRiffs), mBar(), mNextGem(0),
       mPlayGemCommand(NewMemFunCommand(this, &PitchTrackMusic::PlayGem)),
       mBarCommand(NewMemFunCommand(this, &PitchTrackMusic::StartBar)), mPlaying(nullptr),
-      mMuted(false) {
+      mMuted(0) {
 }
 
 PitchTrackMusic::~PitchTrackMusic() {
@@ -86,7 +86,7 @@ void PitchTrackMusic::PlayGem() {
     }
 
     if (mBar.TickAt(mNextGem) == nNow) {
-        if (!mMuted) {
+        if (mMuted == 0) {
             const PitchGem &gem = mBar.At(mNextGem);
             if (mPlaying != nullptr) {
                 mPlaying->Stop();

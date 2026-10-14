@@ -24,9 +24,9 @@ FullRankedPanel *FindRankPanel() {
 
 void HideArrows(UIList *pList) {
     pList->mUpArrow->SetShowing(false);
-    pList->mShowUpArrow = false;
+    pList->mShowUpArrow = 0;
     pList->mDownArrow->SetShowing(false);
-    pList->mShowDownArrow = false;
+    pList->mShowDownArrow = 0;
 }
 
 } // namespace
@@ -83,6 +83,6 @@ bool NetRankingScreen::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
     mList->mUpArrow->SetShowing(mHasPrevious != 0);
     mList->mShowUpArrow = mHasPrevious != 0;
     mList->mDownArrow->SetShowing(true);
-    mList->mShowDownArrow = true;
+    mList->mShowDownArrow = 1;
     return false;
 }

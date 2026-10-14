@@ -200,8 +200,8 @@ inline int ToFixed(float fValue) {
 SynthPS2::SynthPS2()
     : mLoadSlot(kNoSlot), mBankFile(nullptr), mLoadState(kLoadIdle), mInitialized(0), mLagMs(0.0f),
       mNowMs(kNoTime), mLastMs(kNoTime), mTimeUpdated(0), mStream(nullptr), mSoftFxEnabled(0),
-      mSoftFxSweep(0.0f), mSoftFxModulation(0.0f), mOutputLevel(1.0f), mGotAudioData(false),
-      mMoreAudioData(true), mAudioDataOffset(0) {
+      mSoftFxSweep(0.0f), mSoftFxModulation(0.0f), mOutputLevel(1.0f), mGotAudioData(0),
+      mMoreAudioData(1), mAudioDataOffset(0) {
     mFilter.mFreqCeiling = kDefaultFreqCeiling;
     mFilter.mFreqFloor = kDefaultFreqFloor;
     mFilter.mType = SoftFxFilter::kTypeOff;
@@ -409,8 +409,8 @@ int SynthPS2::PollBankLoad() {
         mLoadState = kLoadIdle;
         g_nSynthLoadStatePolls = 0;
         mAudioDataOffset = 0;
-        mMoreAudioData = true;
-        mGotAudioData = false;
+        mMoreAudioData = 1;
+        mGotAudioData = 0;
         mAudioData.resize(0);
         ProcessJobs();
     };
@@ -477,17 +477,17 @@ int SynthPS2::PollBankLoad() {
         g_nSynthLoadStatePolls = 0;
         break;
     case kTransferAudioData:
-        if (!mGotAudioData) {
+        if (mGotAudioData == 0) {
             mMoreAudioData = mBankFile->GetAudioData(mAudioData, &mAudioDataOffset, &mGotAudioData);
         }
         if (!IsRpcBusy() && IsTransferDone()) {
             if (mGotAudioData) {
                 (void)SendSampleData(mAudioData, mAudioDataOffset, mLoadSlot);
                 g_nSynthLoadStatePolls = 0;
-                mGotAudioData = false;
+                mGotAudioData = 0;
                 mAudioData.resize(0);
             }
-            if (!mMoreAudioData) {
+            if (mMoreAudioData == 0) {
                 mLoadState = kMarkLoaded;
                 g_nSynthLoadStatePolls = 0;
             }

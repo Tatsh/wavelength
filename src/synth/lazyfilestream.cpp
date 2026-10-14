@@ -3,7 +3,7 @@
 #include "os/mem.h"
 
 LazyFileStream::LazyFileStream(const String &filename, int nBufferSize)
-    : mMoreData(true), mPosition(0), mFile(nullptr), mCurBuffer(0), mBufferSize(nBufferSize),
+    : mMoreData(1), mPosition(0), mFile(nullptr), mCurBuffer(0), mBufferSize(nBufferSize),
       mBytesAvailable(-1) {
     mFile = File::New(filename.c_str(), File::kModeRead, 0);
     for (unsigned int i = 0; i < kNumBuffers; ++i) {
@@ -20,7 +20,7 @@ LazyFileStream::~LazyFileStream() {
 }
 
 bool LazyFileStream::Eof() const {
-    return !mMoreData;
+    return mMoreData == 0;
 }
 
 void LazyFileStream::StartRead() {
@@ -42,7 +42,7 @@ char *LazyFileStream::GetData(int *pnPosition, int *pnBytesAvailable) {
     *pnBytesAvailable = mBytesAvailable;
     mPosition += mBytesAvailable;
     if (mFile->Eof()) {
-        mMoreData = false;
+        mMoreData = 0;
     } else {
         mBytesAvailable = -1;
         ++mCurBuffer;

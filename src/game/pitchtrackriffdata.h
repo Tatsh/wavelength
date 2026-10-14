@@ -132,6 +132,6 @@ private:
 public:
     std::vector<TickObj<RiffSet>> mRiffSets; /*!< The sets, by the tick they start at. */
     int mReserved10;                         // +0x10, set to 1 and not read by any routine here.
-    bool mEnabled;                           /*!< Whether the track takes part in a remix. */
+    int mEnabled;                            /*!< Whether the track takes part in a remix. */
     String mName;                            /*!< The name of the track. */
 };

@@ -32,7 +32,7 @@ public:
      * Inline. New() expands it.
      */
     EditGemPacket()
-        : ExternalPacket(kFlagGuaranteed), mTrack(-1), mSlot(-1), mTick(-1), mRepeat(false) {
+        : ExternalPacket(kFlagGuaranteed), mTrack(-1), mSlot(-1), mTick(-1), mRepeat(0) {
     }
 
     /**
@@ -128,8 +128,8 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
-    int mTrack;   /*!< The track, in a duel the side of the player who catches the gem. */
-    int mSlot;    /*!< The gem button of the gem. */
-    int mTick;    /*!< The tick of the gem. */
-    bool mRepeat; /*!< Whether the edit repeats on every other bar of the section. */
+    int mTrack;  /*!< The track, in a duel the side of the player who catches the gem. */
+    int mSlot;   /*!< The gem button of the gem. */
+    int mTick;   /*!< The tick of the gem. */
+    int mRepeat; /*!< Whether the edit repeats on every other bar of the section. */
 };

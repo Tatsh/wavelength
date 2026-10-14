@@ -66,7 +66,7 @@ void SongPicPanel::SetPictureShowing(bool bShowing) {
 
 void SongPicPanel::Poll(float fTime) {
     FreqPanel::Poll(fTime);
-    if (!mLoaded || mPicturePath.mLength == 0 || !TheManager.IsTextureLoaded(mPicturePath)) {
+    if (mLoaded == 0 || mPicturePath.mLength == 0 || !TheManager.IsTextureLoaded(mPicturePath)) {
         return;
     }
 

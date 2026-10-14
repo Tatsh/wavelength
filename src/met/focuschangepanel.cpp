@@ -34,7 +34,7 @@ FocusChangePanel::FocusChangePanel(DataArray *pData, const char *pszDir)
 
 void FocusChangePanel::Focus() {
     UIPanel::Focus();
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     RndMesh *pPanel = FindMesh(kPanelMeshFormat, mName);
@@ -44,7 +44,7 @@ void FocusChangePanel::Focus() {
 }
 
 void FocusChangePanel::Unfocus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     RndMesh *pPanel = FindMesh(kPanelMeshFormat, mName);

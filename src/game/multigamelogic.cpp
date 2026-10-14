@@ -552,7 +552,7 @@ void MultiGameLogic::OnCapture(CapturePacket *pPacket) {
     const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
     CatchTrack *pTrack = mCatchTracks[pPacket->mTrack];
     Player *pPlayer = mPlayers[nPlayer];
-    if (!pPacket->mAutocatch) {
+    if (pPacket->mAutocatch == 0) {
         pTrack->Capture(pPacket->mBar, pPlayer);
         return;
     }

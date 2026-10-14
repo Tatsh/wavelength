@@ -38,7 +38,7 @@ void NetMainLobbiesPanel::RequestUpdate() {
 }
 
 void NetMainLobbiesPanel::Focus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     FocusChangePanel::Focus();
@@ -48,7 +48,7 @@ void NetMainLobbiesPanel::Focus() {
 }
 
 void NetMainLobbiesPanel::Unfocus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     FocusChangePanel::Unfocus();

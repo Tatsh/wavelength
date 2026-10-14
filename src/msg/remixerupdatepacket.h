@@ -33,7 +33,7 @@ public:
      *
      * Inline. New() expands it.
      */
-    RemixerUpdatePacket() : mTrack(-1), mRepeat(false), mVersion(0) {
+    RemixerUpdatePacket() : mTrack(-1), mRepeat(0), mVersion(0) {
     }
 
     /**
@@ -137,6 +137,6 @@ public:
     void restoreGuts(BinStream &stream) override;
 
     int mTrack;   /*!< The index of the player's track. */
-    bool mRepeat; /*!< The player's repeat state. */
+    int mRepeat;  /*!< The player's repeat state. */
     int mVersion; /*!< The update's sequence number. */
 };

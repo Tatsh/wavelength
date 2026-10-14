@@ -596,7 +596,7 @@ public:
     FreestyleTrack *mFreestyleTrack;          /*!< The freestyle track, or null. */
     GameTrackSelector *mTrackSelector;        /*!< The assignment of the players to the tracks. */
     SpeedRamp *mSpeedRamp;                    /*!< The speed of the song. */
-    bool mPhraseThisBar;                      /*!< Whether a catch track has a phrase this bar. */
+    int mPhraseThisBar;                       /*!< Whether a catch track has a phrase this bar. */
     int mQuit;                                /*!< Set by the derived logic when a player quit. */
     int mReserved60;                          // +0x60, reported by IsRestartRequested().
     int mSectionStartBar;                     /*!< First bar of the current section. */
@@ -605,7 +605,7 @@ public:
     WorldBeat mWorldBeat;                     /*!< The events of the track named "WORLD". */
     int mSavedState;                          /*!< The state SetPaused() restores. */
     int mReserved8c;                          // +0x8c, not written by the constructor.
-    bool mSlowdown;                           /*!< Whether StartSlowdown() slowed the song. */
+    int mSlowdown;                            /*!< Whether StartSlowdown() slowed the song. */
     int mNextEnableStep;                      /*!< The step EnableNextTracks() enables next. */
     std::vector<PlayerData> mPlayerData;      /*!< The record of each player. */
     Ptr<Command> mBarCmd;                     /*!< Runs TickBar(). */

@@ -306,12 +306,12 @@ void TutorialGameLogic::OnSchedStageCompleteCommand(DataArray *pCommand, void *p
 TutorialGameLogic::TutorialGameLogic(Song *pSong, DataArray *pSongConfig)
     : GameLogic(pSong, pSongConfig, RandomInt(0, kMaxSeed)) {
     mBar = 0;
-    mInputDisabled = false;
+    mInputDisabled = 0;
     mProgressOffset = 0.0f;
-    mManualEnableNext = false;
+    mManualEnableNext = 0;
     mRotateMode = kRotateModeNone;
     mProgressLength = kInitialProgressLength;
-    mPowerupsDisabled = true;
+    mPowerupsDisabled = 1;
 
     ScriptFunction::Register(OnMidiCommand, kMidiCommand, this);
     ScriptFunction::Register(OnStreamCommand, kStreamCommand, this);
@@ -430,7 +430,7 @@ void TutorialGameLogic::HandleInput(const RotateEvent &event) {
 }
 
 void TutorialGameLogic::HandleInput(const PlayNoteEvent &event) {
-    if (!mInputDisabled) {
+    if (mInputDisabled == 0) {
         GameLogic::HandleInput(event);
     }
 }
@@ -439,7 +439,7 @@ void TutorialGameLogic::HandleInput([[maybe_unused]] const BtnEvent<4> &event) {
 }
 
 void TutorialGameLogic::HandleInput(const BtnEvent<5> &event) {
-    if (!mInputDisabled && !mPowerupsDisabled) {
+    if (mInputDisabled == 0 && mPowerupsDisabled == 0) {
         GameLogic::HandleInput(event);
     }
 }
@@ -495,7 +495,7 @@ void TutorialGameLogic::OnPhraseCaptured([[maybe_unused]] CatchTrack *pTrack,
                                          [[maybe_unused]] Player *pPlayer,
                                          [[maybe_unused]] int nBar,
                                          [[maybe_unused]] bool bStreak) {
-    if (!mManualEnableNext) {
+    if (mManualEnableNext == 0) {
         EnableNext();
     }
 }

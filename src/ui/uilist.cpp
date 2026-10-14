@@ -38,7 +38,7 @@ FindRowCells(std::list<std::vector<UIList::Cell> > &rowCells, int nRow) {
 
 UIList::UIList(DataArray *pData, const char *pszPanel)
     : UIComponent(pData), mItemCount(0), mRowCount(0), mColumnCount(0), mCursorRow(0), mSelected(0),
-      mRowPitch(0), mPanelName(pszPanel), mShowUpArrow(false), mShowDownArrow(false) {
+      mRowPitch(0), mPanelName(pszPanel), mShowUpArrow(0), mShowDownArrow(0) {
     mStyle = TheUI.FindStyle(pData->Sym(kStyleIndex), false);
 
     RndObject *pObject = TheManager.Find(FormatString("%s_%s_row.view", pszPanel, pData->Sym(1)));

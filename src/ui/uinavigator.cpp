@@ -18,9 +18,9 @@ constexpr int kNotFound = -1;
 } // namespace
 
 UINavigator::UINavigator(DataArray *pData, UIPanel *pPanel) {
-    mEnabled = true;
+    mEnabled = 1;
     mPanel = pPanel;
-    mWrap = true;
+    mWrap = 1;
     for (int i = 1; i < pData->Size(); ++i) {
         DataArray *pList = pData->Array(i);
         bool bVertical = false;
@@ -98,7 +98,7 @@ int UINavigator::FindFocus(int nAxis) {
 }
 
 bool UINavigator::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (!mEnabled || !pMsg->mPressed) {
+    if (mEnabled == 0 || !pMsg->mPressed) {
         return false;
     }
     int nAxis;
@@ -141,12 +141,12 @@ bool UINavigator::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool UINavigator::HandleSelectStart([[maybe_unused]] UIComponentSelectStartMsg *pMsg) {
-    mEnabled = false;
+    mEnabled = 0;
     return false;
 }
 
 bool UINavigator::HandleSelect([[maybe_unused]] UIComponentSelectMsg *pMsg) {
-    mEnabled = true;
+    mEnabled = 1;
     return false;
 }
 

@@ -45,7 +45,7 @@ void NetMainPlayersPanel::RequestUpdate() {
 }
 
 void NetMainPlayersPanel::Focus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     FocusChangePanel::Focus();
@@ -57,7 +57,7 @@ void NetMainPlayersPanel::Focus() {
 }
 
 void NetMainPlayersPanel::Unfocus() {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     FocusChangePanel::Unfocus();

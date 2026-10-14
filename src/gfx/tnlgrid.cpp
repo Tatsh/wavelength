@@ -42,7 +42,7 @@ void TnlGrid::GridLine::Attach(const Vector3 *pScale, RndMultiMesh *pMesh) {
     Transform xfm; // Yes, the binary adds a transform it never set. Place() sets it.
     instances.insert(instances.begin(), xfm);
     mScale = pScale;
-    mShowing = true;
+    mShowing = 1;
     mInstance = instances.begin();
 }
 
@@ -83,8 +83,8 @@ void TnlGrid::GridLine::SetShowing(bool bShowing,
 }
 
 TnlGrid::TnlGrid(GfxTunnel *pTunnel, int nCam) : mTrack(0), mTunnel(pTunnel), mMesh(nullptr) {
-    mShowLines = true;
-    mRefresh = true;
+    mShowLines = 1;
+    mRefresh = 1;
     if (nCam <= 0) {
         return;
     }
@@ -124,12 +124,12 @@ void TnlGrid::SetTrack(int nTrack) {
         }
     }
     mTrack = nTrack;
-    mRefresh = true;
+    mRefresh = 1;
 }
 
 void TnlGrid::SetOrder(int nOrder) {
     mShowLines = (nOrder == 0);
-    mRefresh = true;
+    mRefresh = 1;
 }
 
 void TnlGrid::RefreshTrack(int nTrack, bool bPlace) {
@@ -139,7 +139,7 @@ void TnlGrid::RefreshTrack(int nTrack, bool bPlace) {
     if (bPlace) {
         SetTrack(nTrack);
     } else {
-        mRefresh = true;
+        mRefresh = 1;
     }
 }
 
@@ -170,7 +170,7 @@ void TnlGrid::Update() {
         if (!bMoved) {
             continue;
         }
-        if (!mShowLines) {
+        if (mShowLines == 0) {
             it->SetShowing(false, mMesh, mHidden);
             continue;
         }
@@ -181,5 +181,5 @@ void TnlGrid::Update() {
         }
         it->SetShowing(bBarShown, mMesh, mHidden);
     }
-    mRefresh = false;
+    mRefresh = 0;
 }

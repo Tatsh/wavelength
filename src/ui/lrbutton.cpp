@@ -21,7 +21,7 @@ int LRButton::sArrowFlashes = 1;
 
 LRButton::LRButton(DataArray *pData, const char *pszPanel) : UIButton(pData, pszPanel) {
     mArrowButton = kPadNone;
-    mArrowFlashDone = true;
+    mArrowFlashDone = 1;
     mArrowStyle = TheUI.FindStyle(pData->Sym(kArrowStyleIndex), false);
     const char *pszBase = pData->Sym(kBaseIndex);
     mLeftArrow = dynamic_cast<RndMesh *>(
@@ -66,8 +66,8 @@ void LRButton::Unfocus() {
         return;
     }
     SetState(mRevertState, true);
-    mArrowFlashDone = true;
-    mFlashDone = true;
+    mArrowFlashDone = 1;
+    mFlashDone = 1;
 }
 
 void LRButton::SetShowing(bool bShowing) {
@@ -99,7 +99,7 @@ void LRButton::Poll(float fTime) {
     }
     if (mFlashEnd <= fTime) {
         SetArrowState(mRevertState);
-        mArrowFlashDone = true;
+        mArrowFlashDone = 1;
         mArrowButton = kPadNone;
         UIPanel *pPanel = TheUI.FocusPanel();
         // The button is read after it is cleared, so the message carries kPadNone.
@@ -136,8 +136,8 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
     }
     const bool bArrow = (mLeftArrow != nullptr && pMsg->mButton == kPadDLeft) ||
                         (mRightArrow != nullptr && pMsg->mButton == kPadDRight);
-    if (bArrow && !mFlashDone) {
-        mFlashDone = true;
+    if (bArrow && mFlashDone == 0) {
+        mFlashDone = 1;
         if (mArrowButton == kPadDLeft) {
             mLeftArrow->SetMat(mArrowStyle->GetMat(mRevertState));
         } else if (mArrowButton == kPadDRight) {
@@ -145,7 +145,7 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
         }
         SetState(mRevertState, true);
         mArrowButton = kPadNone;
-        mArrowFlashDone = true;
+        mArrowFlashDone = 1;
     }
     if (!bArrow || pMsg->mPressed == 0) {
         return false;
@@ -160,7 +160,7 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
     }
     mArrowButton = pMsg->mButton;
     StartFlash(TheUI.mTime, sArrowFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
-    mFlashDone = true;
-    mArrowFlashDone = false;
+    mFlashDone = 1;
+    mArrowFlashDone = 0;
     return true;
 }

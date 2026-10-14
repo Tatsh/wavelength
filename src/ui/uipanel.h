@@ -317,12 +317,12 @@ public:
     float mHiddenFrame;            /*!< The frame the exit stops at. */
     float mEnterMs;                /*!< The length of the entry. */
     float mExitMs;                 /*!< The length of the exit. */
-    bool mEnterReversed;           /*!< Whether the entry plays its frames backwards. */
-    bool mExitReversed;            /*!< Whether the exit plays its frames backwards. */
+    int mEnterReversed;            /*!< Whether the entry plays its frames backwards. */
+    int mExitReversed;             /*!< Whether the exit plays its frames backwards. */
     float mEnterStartFrame;        /*!< The frame the entry starts at. */
     float mExitStartFrame;         /*!< The frame the exit starts at. */
     int mLoadRefs;                 /*!< The number of Load() calls not yet balanced by Unload(). */
-    bool mLoaded;                  /*!< Whether FinishLoad() has run since the last load. */
+    int mLoaded;                   /*!< Whether FinishLoad() has run since the last load. */
     DataArray *mData;              /*!< The script description. */
     std::list<RndText *> mTexts;   /*!< The text objects of the file. */
     std::map<const char *, UIComponent *, StrLess> mComponents; /*!< The components by name. */

@@ -633,10 +633,10 @@ void RemixLogic::HandleInput(const RotateEvent &event) {
         return;
     }
     if (mTutorial != nullptr) {
-        if (!mTutorial->mRotationEnabled) {
+        if (mTutorial->mRotationEnabled == 0) {
             return;
         }
-        if (!mTutorial->mRotationLeftAllowed &&
+        if (mTutorial->mRotationLeftAllowed == 0 &&
             event.mDirection == RotateEvent::kDirectionPrevious) {
             return;
         }
@@ -670,7 +670,7 @@ void RemixLogic::HandleInput(const PlayNoteEvent &event) {
     if (mPreviewing != 0 && TheGameDb->mCommunity != GameDb::kCommunitySolo) {
         return;
     }
-    if (mTutorial != nullptr && !mTutorial->mPitchingEnabled) {
+    if (mTutorial != nullptr && mTutorial->mPitchingEnabled == 0) {
         return;
     }
     const int nPlayer = event.mPlayer;
@@ -700,7 +700,7 @@ void RemixLogic::HandleInput(const BtnEvent<8> &event) {
     if (IsInputLocked(1, false)) {
         return;
     }
-    if (mTutorial != nullptr && !mTutorial->mErasingEnabled) {
+    if (mTutorial != nullptr && mTutorial->mErasingEnabled == 0) {
         return;
     }
     mPlayers[event.mPlayer]->HandleInput(event);
@@ -721,7 +721,7 @@ void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
     if (IsInputLocked(1, false)) {
         return;
     }
-    if (mTutorial != nullptr && (!mTutorial->mSectionChangeEnabled || event.mDirection != 0)) {
+    if (mTutorial != nullptr && (mTutorial->mSectionChangeEnabled == 0 || event.mDirection != 0)) {
         return;
     }
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline && !TheNetTransport->IsHost()) {
@@ -1068,7 +1068,7 @@ void RemixLogic::StartPreview(int nBar, bool bTransition) {
             if (TheNetTransport->IsHost() && bTransition) {
                 PreviewPacket packet;
                 packet.mSection = nBar; // Yes, the binary sends the bar the preview starts at.
-                packet.mPreviewing = true;
+                packet.mPreviewing = 1;
                 TheNetTransport->Send(packet);
             }
             TheSongScheduler.PostAfter(
@@ -1154,7 +1154,7 @@ void RemixLogic::StopPreview(int nBar) {
             if (TheNetTransport->IsHost()) {
                 PreviewPacket packet;
                 packet.mSection = mLoopBar; // Yes, the binary sends the bar of the loop.
-                packet.mPreviewing = false;
+                packet.mPreviewing = 0;
                 TheNetTransport->Send(packet);
             }
             TheSongScheduler.PostAfter(
@@ -1544,7 +1544,7 @@ void RemixLogic::OnHudEvent(int nPlayer, int nEvent, void *pData) {
 
 void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
     const int nTrack = mPlayers[nPlayer]->GetTrack()->mIndex;
-    if (mTutorial != nullptr && !mTutorial->mHudEnabled) {
+    if (mTutorial != nullptr && mTutorial->mHudEnabled == 0) {
         mTutorial->PlaySound();
         return;
     }
@@ -1569,7 +1569,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
     }
     case RemixHUD::kEventLoopOn:
     case RemixHUD::kEventLoopOff: {
-        if (mTutorial != nullptr && !mTutorial->mLoopingAllowed) {
+        if (mTutorial != nullptr && mTutorial->mLoopingAllowed == 0) {
             mTutorial->PlaySound();
             return;
         }
@@ -1647,7 +1647,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         break;
     case RemixHUD::kEventTempoUp:
     case RemixHUD::kEventTempoDown:
-        if (mTutorial != nullptr && !mTutorial->mTempoChangeAllowed) {
+        if (mTutorial != nullptr && mTutorial->mTempoChangeAllowed == 0) {
             return;
         }
         AdjustTempo(nEvent == RemixHUD::kEventTempoUp ? kTempoStep : -kTempoStep);

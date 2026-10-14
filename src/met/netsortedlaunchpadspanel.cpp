@@ -30,9 +30,9 @@ constexpr unsigned int kRowsShown = 7;
 
 void HideArrows(UIList *pList) {
     pList->mUpArrow->SetShowing(false);
-    pList->mShowUpArrow = false;
+    pList->mShowUpArrow = 0;
     pList->mDownArrow->SetShowing(false);
-    pList->mShowDownArrow = false;
+    pList->mShowDownArrow = 0;
 }
 
 } // namespace
@@ -104,7 +104,7 @@ bool NetSortedLaunchpadsPanel::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool NetSortedLaunchpadsPanel::HandleLobbyLaunchpads(LobbyLaunchpadsMsg *pMsg) {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return false;
     }
     int nSelected;

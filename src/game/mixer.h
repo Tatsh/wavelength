@@ -45,7 +45,7 @@ public:
     /** The state of one of the song's tracks. */
     struct TrackData {
         int mPlayers = 0;                      /*!< The number of players on the track. */
-        bool mHeld = false;                    /*!< Whether HoldTrack() holds the track. */
+        int mHeld = 0;                         /*!< Whether HoldTrack() holds the track. */
         Ptr<Command> mReleaseCommand{nullptr}; /*!< The command that calls ReleaseTrack(). */
     };
 
@@ -351,8 +351,8 @@ private:
     unsigned char mVictoryLapVolume;                    /*!< The instrument's victory lap volume. */
     int mHeldCount;                                     /*!< The number of held tracks. */
     int mMode;                                          /*!< One of Mode. */
-    bool mHasInstrumentTrack;          /*!< Whether there is an instrument track. */
-    bool mMuteUnoccupied;              /*!< The `track_solo` cheat. */
+    int mHasInstrumentTrack;           /*!< Whether there is an instrument track. */
+    int mMuteUnoccupied;               /*!< The `track_solo` cheat. */
     VolumeRamp *mRamps[kChannelCount]; /*!< Each channel's volume. */
 };
 

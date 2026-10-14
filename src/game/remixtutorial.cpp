@@ -173,21 +173,21 @@ void RemixTutorial::OnAllowRotationLeft(DataArray *pCommand, void *pUserData) {
 
 RemixTutorial::RemixTutorial(RemixLogic *pLogic) {
     mLastRotation = kNoRotation;
-    mRotationLeftAllowed = true;
-    mPitchingEnabled = false;
-    mRotationEnabled = false;
-    mSectionChangeEnabled = false;
-    mHudEnabled = false;
-    mErasingEnabled = false;
+    mRotationLeftAllowed = 1;
+    mPitchingEnabled = 0;
+    mRotationEnabled = 0;
+    mSectionChangeEnabled = 0;
+    mHudEnabled = 0;
+    mErasingEnabled = 0;
     mPreviewEnabled = 0;
     mStick2Enabled = 0;
     mStick6Enabled = 0;
     mButton10Enabled = 0;
-    mBurnPatterns = false;
-    mShowPatterns = false;
-    mTempoChangeAllowed = false;
-    mLoopingAllowed = false;
-    mPaused = false;
+    mBurnPatterns = 0;
+    mShowPatterns = 0;
+    mTempoChangeAllowed = 0;
+    mLoopingAllowed = 0;
+    mPaused = 0;
     mLogic = pLogic;
 
     ScriptFunction::Register(OnDisableRot, kDisableRotCommand, this);

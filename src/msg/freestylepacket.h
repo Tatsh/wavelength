@@ -31,7 +31,7 @@ public:
      *
      * Inline. New() expands it.
      */
-    FreestylePacket() : mActive(false), mButton(0), mX(0.0f), mY(0.0f) {
+    FreestylePacket() : mActive(0), mButton(0), mX(0.0f), mY(0.0f) {
     }
 
     /**
@@ -159,8 +159,8 @@ public:
      */
     static float Dequantize(int nValue, int nBits);
 
-    bool mActive; /*!< Whether the player is playing freestyle. */
-    int mButton;  /*!< The button held. */
-    float mX;     /*!< The stick's horizontal position. */
-    float mY;     /*!< The stick's vertical position. */
+    int mActive; /*!< Whether the player is playing freestyle. */
+    int mButton; /*!< The button held. */
+    float mX;    /*!< The stick's horizontal position. */
+    float mY;    /*!< The stick's vertical position. */
 };

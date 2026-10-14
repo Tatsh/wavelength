@@ -152,7 +152,7 @@ public:
     RndMesh *mLeftArrow;  /*!< The left arrow, or null. */
     RndMesh *mRightArrow; /*!< The right arrow, or null. */
     int mArrowButton;     /*!< The directional button whose arrow flashes, or kPadNone. */
-    bool mArrowFlashDone; /*!< Whether no arrow flashes. */
+    int mArrowFlashDone;  /*!< Whether no arrow flashes. */
     UIStyle *mArrowStyle; /*!< The style of the arrows. */
 
 private:

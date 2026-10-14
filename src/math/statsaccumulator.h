@@ -43,5 +43,5 @@ public:
     float mMax;                  /*!< The largest sample. */
     float mSum;                  /*!< The sum of the samples. */
     std::vector<float> mSamples; /*!< Every sample. */
-    bool mSorted;                /*!< Whether mSamples is known to be sorted. */
+    int mSorted;                 /*!< Whether mSamples is known to be sorted. */
 };

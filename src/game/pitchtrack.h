@@ -334,10 +334,10 @@ private:
     PitchTrackRiffs mRiffs;                      /*!< The riffs of the gem buttons. */
     PitchTrackMusic mMusic;                      /*!< The player of the gems' riffs. */
     PitchTrackDisplay *mDisplay;                 /*!< The display of the gems, or null. */
-    bool mRepeat;                                /*!< Whether edits repeat in the section. */
-    bool mEditing;                               /*!< Whether the remix editor is open. */
-    bool mMuteRemote;                            /*!< Whether remote players silence it. */
-    bool mActive;                                /*!< Whether the song's player plays it. */
+    int mRepeat;                                 /*!< Whether edits repeat in the section. */
+    int mEditing;                                /*!< Whether the remix editor is open. */
+    int mMuteRemote;                             /*!< Whether remote players silence it. */
+    int mActive;                                 /*!< Whether the song's player plays it. */
     float mLastEraseMs;                          /*!< The system time of the last erase. */
     int mStartBar;                               /*!< The first bar a phrase can start at. */
     int mPreviewPattern;                         // +0xb4, -1. No routine sets another value.

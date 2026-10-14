@@ -77,7 +77,7 @@ UIPanel::UIPanel(DataArray *pData, const char *pszDir)
     mShownFrame = kDefaultShownFrame;
     mEnterMs = kDefaultEnterMs;
     mLoadRefs = 0;
-    mLoaded = false;
+    mLoaded = 0;
     mNavigator = nullptr;
     mFocus = nullptr;
     mLoader = nullptr;
@@ -122,7 +122,7 @@ void UIPanel::Unload() {
     if (mLoader != nullptr) {
         delete mLoader;
     }
-    mLoaded = false;
+    mLoaded = 0;
     mLoader = nullptr;
 }
 
@@ -182,7 +182,7 @@ void UIPanel::FinishLoad() {
     if (mFocus == nullptr && !mComponents.empty()) {
         mFocus = mComponents.begin()->second;
     }
-    mLoaded = true;
+    mLoaded = 1;
 }
 
 UIPanel::~UIPanel() {
@@ -306,7 +306,7 @@ float UIPanel::ComputeFrame(float fTime) {
 }
 
 void UIPanel::Poll(float fTime) {
-    if (!mLoaded) {
+    if (mLoaded == 0) {
         return;
     }
     if (mLoopAnim != nullptr) {

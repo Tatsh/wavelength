@@ -48,8 +48,8 @@ PitchTrack::PitchTrack(int nTrack,
       mGems(pSections, pPatternGrid, nNumBars, nTicksPerBar),
       mPlayGems(&mGems, pPlayMap, pSections, pPatternGrid, nNumBars, nTicksPerBar), mPatterns(),
       mRiffs(pRiffData, pPlayMap), mMusic(&mPlayGems, &mRiffs, nTicksPerBar), mDisplay(nullptr),
-      mRepeat(true), mEditing(false), mMuteRemote(false), mActive(false), mLastEraseMs(0.0f),
-      mStartBar(0), mPreviewPattern(kNoPattern),
+      mRepeat(1), mEditing(0), mMuteRemote(0), mActive(0), mLastEraseMs(0.0f), mStartBar(0),
+      mPreviewPattern(kNoPattern),
       mPhraseCommand(NewMemFun1Command(this, &PitchTrack::UpdatePhrase, false)) {
     if (bDisplayed) {
         mDisplay = new PitchTrackDisplay(
@@ -278,7 +278,7 @@ void PitchTrack::Load(BinStream &stream) {
 
 void PitchTrack::UpdatePhrase(bool bStyle) {
     if (mPlayer != nullptr) {
-        ShowPhrase(mRepeat ? !mEditing : false, bStyle);
+        ShowPhrase(mRepeat ? mEditing == 0 : false, bStyle);
     }
 }
 
@@ -288,7 +288,8 @@ void PitchTrack::ShowPhrase(bool bPlayable, bool bStyle) {
     const int nSongBar = mPlayMap->MapBar(nBar);
     int nNextTick = 0;
     if (nSongBar < 0) {
-        TheGfxManager.ShowPhrase(mPlayer->GetIndex(), mIndex, false, 0.0f, 0.0f, bStyle, !mEditing);
+        TheGfxManager.ShowPhrase(
+            mPlayer->GetIndex(), mIndex, false, 0.0f, 0.0f, bStyle, mEditing == 0);
         nNextTick = (nBar + 1) * mTicksPerBar;
     } else {
         int nSectionStart = 0;
@@ -304,7 +305,7 @@ void PitchTrack::ShowPhrase(bool bPlayable, bool bStyle) {
                                  static_cast<float>(nPhraseTick),
                                  static_cast<float>(nNextTick - 1),
                                  bStyle,
-                                 bOwned ? !mEditing : false);
+                                 bOwned ? mEditing == 0 : false);
     }
     TheSongScheduler.Cancel(mPhraseCommand.Get());
     TheSongScheduler.PostAt(mPhraseCommand.Get(), nNextTick, false);

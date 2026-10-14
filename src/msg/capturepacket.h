@@ -32,7 +32,7 @@ public:
      * Inline. New() expands it.
      */
     CapturePacket()
-        : ExternalPacket(kFlagGuaranteed), mTrack(-1), mBar(-1), mAutocatch(false), mValid(false) {
+        : ExternalPacket(kFlagGuaranteed), mTrack(-1), mBar(-1), mAutocatch(0), mValid(0) {
     }
 
     /**
@@ -46,7 +46,7 @@ public:
      */
     CapturePacket(int nTrack, int nBar, bool bAutocatch)
         : ExternalPacket(kFlagGuaranteed), mTrack(nTrack), mBar(nBar), mAutocatch(bAutocatch),
-          mValid(true) {
+          mValid(1) {
     }
 
     /**
@@ -128,8 +128,8 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
-    int mTrack;      /*!< The index of the track. */
-    int mBar;        /*!< The bar of the capture. */
-    bool mAutocatch; /*!< Whether an autocatcher captured the phrase. */
-    bool mValid;     /*!< Whether a sender filled the packet. */
+    int mTrack;     /*!< The index of the track. */
+    int mBar;       /*!< The bar of the capture. */
+    int mAutocatch; /*!< Whether an autocatcher captured the phrase. */
+    int mValid;     /*!< Whether a sender filled the packet. */
 };
