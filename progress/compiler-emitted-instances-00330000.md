@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x00330000` to `0x00340000`
 
-82 of 313 routines done.
+81 of 313 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -11,7 +11,7 @@ preliminary.
 | `InsertSortedStreamRefRecord`                                             |        :x:         |      1 |   1020 | `0x0033d520` | `0x003aaa58` | `void InsertSortedStreamRefRecord(void * pValue, int * pVector, int unused)`                                                                          |
 | `GameConfig__Destructor`                                                  |        :x:         |      1 |    644 | `0x00336db8` | `0x003a4368` | `void GameConfig__Destructor(GameConfig * this, int nFlags)`                                                                                          |
 | `ForceFeedbackMgr__BeatCmd__Execute`                                      | :white_check_mark: |      0 |    308 | `0x00335e08` | `0x003a33b8` | `void ForceFeedbackMgr__BeatCmd__Execute(undefined8 pCmd)`                                                                                            |
-| `PrnStream__OperatorShiftLeftMap`                                         | :white_check_mark: |      1 |    232 | `0x00333a20` | `0x003a0fd0` | `undefined8 PrnStream__OperatorShiftLeftMap(undefined8 pStream, int pMap)`                                                                            |
+| `PrnStream__OperatorShiftLeftMap`                                         |       :memo:       |      1 |    232 | `0x00333a20` | `0x003a0fd0` | `undefined8 PrnStream__OperatorShiftLeftMap(undefined8 pStream, int pMap)`                                                                            |
 | `MidiValidator__dtor`                                                     |       :memo:       |      8 |    208 | `0x0033cd90` | `0x003aa2c8` | `void MidiValidator__dtor(void * pThis, ulong flags)`                                                                                                 |
 | `InvokeGfxManagerFloatStrDoubleCommand`                                   |        :x:         |      0 |    192 | `0x0033f858` | `0x003acd90` | `void InvokeGfxManagerFloatStrDoubleCommand(int pCmd)`                                                                                                |
 | `DifficultyRating__dtor`                                                  | :white_check_mark: |      1 |    188 | `0x0033f098` | `0x003ac5d0` | `void DifficultyRating__dtor(DifficultyRating * this, int nFlags)`                                                                                    |
