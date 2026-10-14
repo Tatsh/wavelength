@@ -70,7 +70,7 @@ public:
     bool IsPlaying() const;
 
     int mChannel;              /*!< The value the constructor received first. */
-    bool mPlaying;             /*!< Whether the stream plays. */
+    int mPlaying;              /*!< Non-zero while the stream plays. */
     FileStreamBuffer *mBuffer; /*!< The reader of the stream file. */
     char *mRun;                /*!< The run handed to the sound output last, or null. */
     float mEndMs;              /*!< The system time to end the stream at, or -1 before the end. */

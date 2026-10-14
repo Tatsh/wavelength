@@ -13,7 +13,7 @@ float g_flStreamEndDelayMs = 40.0f;
 } // namespace
 
 StreamPlayer::StreamPlayer(int nChannel, const char *pszFile, bool bAudio)
-    : mChannel(nChannel), mPlaying(false), mRun(nullptr), mEndMs(kNoEndMs), mEndSent(0) {
+    : mChannel(nChannel), mPlaying(0), mRun(nullptr), mEndMs(kNoEndMs), mEndSent(0) {
     mBuffer = new FileStreamBuffer(pszFile, bAudio);
     if (mBuffer->IsClosed()) {
         delete mBuffer;
@@ -63,5 +63,5 @@ void StreamPlayer::SetPlaying(bool bPlaying) {
 }
 
 bool StreamPlayer::IsPlaying() const {
-    return mPlaying;
+    return mPlaying != 0;
 }
