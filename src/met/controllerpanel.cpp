@@ -10,26 +10,6 @@ constexpr char kViewName[] = "o_controller_map.view";
 constexpr char kAnimFormat[] = "o_controller_map_%s.tnm";
 constexpr char kMeshFormat[] = "o_controller_map_%s.mesh";
 
-// The regions in the order of JoypadButton.
-constexpr const char *kRegionNames[] = {
-    "l2",
-    "r2",
-    "l1",
-    "r1",
-    "triangle",
-    "circle",
-    "x",
-    "square",
-    "select",
-    "l3",
-    "r3",
-    "start",
-    "dpadu",
-    "dpadr",
-    "dpadd",
-    "dpadl",
-};
-
 } // namespace
 
 ControllerPanel::ControllerPanel(DataArray *pData, const char *pszDir) : FreqPanel(pData, pszDir) {
@@ -41,9 +21,22 @@ ControllerPanel::ControllerPanel(DataArray *pData, const char *pszDir) : FreqPan
 
 void ControllerPanel::Enter(bool bForce, float fTime) {
     mView = dynamic_cast<RndView *>(TheManager.Find(kViewName));
-    for (int i = 0; i < kNumRegions; ++i) {
-        mRegions[i].Load(kRegionNames[i]);
-    }
+    mRegions[kPadL2].Load("l2");
+    mRegions[kPadR2].Load("r2");
+    mRegions[kPadL1].Load("l1");
+    mRegions[kPadR1].Load("r1");
+    mRegions[kPadTriangle].Load("triangle");
+    mRegions[kPadCircle].Load("circle");
+    mRegions[kPadCross].Load("x");
+    mRegions[kPadSquare].Load("square");
+    mRegions[kPadSelect].Load("select");
+    mRegions[kPadL3].Load("l3");
+    mRegions[kPadR3].Load("r3");
+    mRegions[kPadStart].Load("start");
+    mRegions[kPadDUp].Load("dpadu");
+    mRegions[kPadDRight].Load("dpadr");
+    mRegions[kPadDDown].Load("dpadd");
+    mRegions[kPadDLeft].Load("dpadl");
     mView->RemoveAllAnims();
     for (Region &region : mRegions) {
         region.mMesh->SetShowing(false);
