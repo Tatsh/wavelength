@@ -22,15 +22,16 @@ python3 .wiswa-ci/port/progress.py --write
 | Measure                                |  Count |
 | -------------------------------------- | -----: |
 | Functions in the program               | 12,771 |
-| Excluded: Compiler RTTI                |    807 |
+| Excluded: Compiler-emitted instance    |  1,795 |
+| Excluded: Compiler RTTI                |  1,350 |
 | Excluded: STL instance (GCC library)   |    525 |
 | Excluded: C and compiler runtime       |    313 |
 | Excluded: Vendored under 3rdparty      |    295 |
-| To port                                | 10,831 |
-| Done                                   |  8,885 |
+| To port                                |  8,493 |
+| Done                                   |  7,124 |
 | Stubbed (not counted as done)          |      0 |
 | Declared only (not counted as done)    |     85 |
-| Share done                             | 82.03% |
+| Share done                             | 83.88% |
 | FreQuency annotations left in the tree |  2,557 |
 
 ## By component
@@ -40,7 +41,6 @@ python3 .wiswa-ci/port/progress.py --write
 | Game code                    |    6,800 | 6,790 | 99.9% |
 | Sony online library (SCE-RT) |    1,256 |     0 |  0.0% |
 | Sony EE libraries            |      437 |   334 | 76.4% |
-| Compiler-emitted instances   |    2,338 | 1,761 | 75.3% |
 
 ## IOP modules
 
@@ -98,12 +98,3 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [sony-online-library-sce-rt-00300000.md](progress/sony-online-library-sce-rt-00300000.md) | Sony online library (SCE-RT) | `0x00300000`-`0x00310000` |      298 |    0 |   0.0% |
 | [sony-ee-libraries-00300000.md](progress/sony-ee-libraries-00300000.md)                   | Sony EE libraries            | `0x00300000`-`0x00310000` |      124 |   21 |  16.9% |
 | [sony-ee-libraries-00310000.md](progress/sony-ee-libraries-00310000.md)                   | Sony EE libraries            | `0x00310000`-`0x00320000` |      313 |  313 | 100.0% |
-| [compiler-emitted-instances-00330000.md](progress/compiler-emitted-instances-00330000.md) | Compiler-emitted instances   | `0x00330000`-`0x00340000` |      313 |  237 |  75.7% |
-| [compiler-emitted-instances-00340000.md](progress/compiler-emitted-instances-00340000.md) | Compiler-emitted instances   | `0x00340000`-`0x00350000` |      453 |  386 |  85.2% |
-| [compiler-emitted-instances-00350000.md](progress/compiler-emitted-instances-00350000.md) | Compiler-emitted instances   | `0x00350000`-`0x00360000` |      473 |  388 |  82.0% |
-| [compiler-emitted-instances-00360000.md](progress/compiler-emitted-instances-00360000.md) | Compiler-emitted instances   | `0x00360000`-`0x00370000` |      233 |  126 |  54.1% |
-| [compiler-emitted-instances-00370000.md](progress/compiler-emitted-instances-00370000.md) | Compiler-emitted instances   | `0x00370000`-`0x00380000` |      298 |  192 |  64.4% |
-| [compiler-emitted-instances-00380000.md](progress/compiler-emitted-instances-00380000.md) | Compiler-emitted instances   | `0x00380000`-`0x00390000` |      163 |  138 |  84.7% |
-| [compiler-emitted-instances-00390000.md](progress/compiler-emitted-instances-00390000.md) | Compiler-emitted instances   | `0x00390000`-`0x003a0000` |      294 |  250 |  85.0% |
-| [compiler-emitted-instances-003a0000.md](progress/compiler-emitted-instances-003a0000.md) | Compiler-emitted instances   | `0x003a0000`-`0x003b0000` |      107 |   44 |  41.1% |
-| [compiler-emitted-instances-00420000.md](progress/compiler-emitted-instances-00420000.md) | Compiler-emitted instances   | `0x00420000`-`0x00430000` |        4 |    0 |   0.0% |
