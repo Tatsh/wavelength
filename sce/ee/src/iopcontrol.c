@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
+#include <eekernel.h>
 #include <libcconsole.h>
 #include <sifcmd.h>
 #include <sifdev.h>
@@ -60,7 +60,7 @@ int sceSifRebootIop(const char *imgname) {
     char szArg[SIF_CMD_RESET_ARG_MAX];
 
     if (strlen(imgname) + sizeof(kUdnlPrefix) > SIF_CMD_RESET_ARG_MAX) {
-        printf(kTooLongFormat, imgname);
+        scePrintf(kTooLongFormat, imgname);
         return 0;
     }
     sceSifInitRpc(0);
