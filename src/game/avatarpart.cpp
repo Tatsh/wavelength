@@ -1,0 +1,258 @@
+#include "game/avatarpart.h"
+
+#include <cstring>
+
+#include "game/avatar.h"
+#include "game/avatarpartset.h"
+#include "math/transform.h"
+#include "os/debug.h"
+#include "os/string.h"
+#include "os/system.h"
+
+namespace {
+
+// The first node of the `anims` array is its tag.
+constexpr int kFirstAnim = 1;
+
+// A choice of the `types` array lists its first file, then a second file or an empty symbol.
+constexpr int kFirstFile = 1;
+constexpr int kSecondFile = 2;
+
+// The loads of the files of a part.
+constexpr int kLoaderFlags = RndLoader::kAsync | RndLoader::kDeleteObjects;
+
+// The bones that retain the translation keys of the shared animation, the pelvis and the arm
+// bones, whose names start with a side letter and `arm_`.
+const char *const kPelvisBone = "pelvis";
+const char *const kArmBonePrefix = "arm_";
+constexpr int kArmBonePrefixLength = 4;
+constexpr int kSideLetterLength = 1;
+
+// The results of the load callback.
+constexpr int kCreateObject = 1;
+constexpr int kStopLoad = -1;
+
+} // namespace
+
+AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
+    : mCallback(this), mType(nullptr), mPendingType(nullptr), mColor{1.0f, 1.0f, 1.0f, 1.0f},
+      mMesh(nullptr), mTransRoot(nullptr), mJoint(nullptr), mMat(nullptr), mParent(nullptr),
+      mAvatar(pAvatar), mLoader(nullptr), mPendingLoader(nullptr), mPendingExtraLoader(nullptr) {
+    mData = SystemConfig()
+                ->FindArray("db", true)
+                ->FindArray("avatar", true)
+                ->FindArray("parts", true)
+                ->FindArray(nPart);
+    if (nParent != AvatarPartSet::kNumParts) {
+        mParent = pAvatar->GetPart(nParent);
+    }
+    DataArray *pAnims = mData->FindArray("anims", false);
+    if (pAnims == nullptr) {
+        mAnims.resize(0, nullptr);
+        return;
+    }
+    mAnims.resize(pAnims->Size() - kFirstAnim, nullptr);
+    for (size_t i = 0; i < mAnims.size(); ++i) {
+        const char *pszName = pAnims->Sym(static_cast<int>(i) + kFirstAnim);
+        RndTransAnim *pBase =
+            dynamic_cast<RndTransAnim *>(TheManager.Find(FormatString("fbase_%s.tnm", pszName)));
+        mAnims[i] = dynamic_cast<RndTransAnim *>(TheManager.Create(
+            RndTransAnim::sClassName, FormatString("avatar%d_%s.tnm", mAvatar->mIndex, pszName)));
+        mAnims[i]->mTransInterp = RndTransAnim::kInterpLinear;
+        mAnims[i]->SetFramesOwner(pBase);
+        // The keys belong to the shared `fbase_` animation, and every avatar clears them again.
+        mAnims[i]->mFramesOwner->mScaleKeys.clear();
+        if (std::strcmp(pszName, kPelvisBone) != 0 &&
+            std::strncmp(pszName + kSideLetterLength, kArmBonePrefix, kArmBonePrefixLength) != 0) {
+            mAnims[i]->mFramesOwner->mTransKeys.clear();
+        }
+    }
+}
+
+AvatarPart::~AvatarPart() {
+    for (size_t i = 0; i < mAnims.size(); ++i) {
+        if (mAnims[i] != nullptr) {
+            delete mAnims[i];
+        }
+    }
+    delete mPendingLoader;
+    mPendingLoader = nullptr;
+    delete mPendingExtraLoader;
+    mPendingExtraLoader = nullptr;
+    delete mLoader;
+    mLoader = nullptr;
+}
+
+void AvatarPart::SetType(const char *pszType) {
+    if (pszType == mType) {
+        return;
+    }
+    mPendingType = pszType;
+    const char *pszDir;
+    mData->FindSymbol("rnd_dir", &pszDir, true);
+    DataArray *pType = mData->FindArray("types", true)->FindArray(pszType, true);
+    delete mPendingLoader;
+    mPendingLoader = nullptr;
+    delete mPendingExtraLoader;
+    mPendingExtraLoader = nullptr;
+    mPendingLoader = TheManager.AddLoader(FormatString("%s/%s.rnd", pszDir, pType->Sym(kFirstFile)),
+                                          kLoaderFlags,
+                                          &mCallback,
+                                          nullptr);
+    if (pType->Sym(kSecondFile)[0] != '\0') {
+        mPendingExtraLoader =
+            TheManager.AddLoader(FormatString("%s/%s.rnd", pszDir, pType->Sym(kSecondFile)),
+                                 kLoaderFlags,
+                                 &mCallback,
+                                 nullptr);
+    }
+}
+
+void AvatarPart::ReleaseType() {
+    delete mPendingLoader;
+    mPendingLoader = nullptr;
+    delete mPendingExtraLoader;
+    mPendingExtraLoader = nullptr;
+    mPendingType = mType;
+}
+
+void AvatarPart::SetMatTree(RndMesh *pMesh) {
+    pMesh->SetMat(mMat);
+    for (RndDrawable *pChild : pMesh->mDraws) {
+        // A child that is not a mesh is passed on as null, as in the binary.
+        SetMatTree(dynamic_cast<RndMesh *>(pChild));
+    }
+}
+
+void AvatarPart::Draw() {
+    if (mMesh != nullptr) {
+        mMesh->Draw();
+    }
+}
+
+void AvatarPart::SetBlend(float fBlend) {
+    if (mMat != nullptr) {
+        mMat->SetAlpha(fBlend);
+    }
+}
+
+void AvatarPart::SetFrame(float fFrame) {
+    const int nAnims = static_cast<int>(mAnims.size());
+    for (int i = 0; i < nAnims; ++i) {
+        mAnims[i]->SetFrame(fFrame);
+    }
+}
+
+void AvatarPart::SetFrames(float fFrom, float fTo, float fBlend) {
+    for (size_t i = 0; i < mAnims.size(); ++i) {
+        RndTransAnim *pAnim = mAnims[i];
+        if (!pAnim->mFramesOwner->mTransKeys.empty()) {
+            Vector3 translation;
+            BlendTranslation(pAnim, fFrom, fTo, fBlend, translation);
+            pAnim->mTrans->mDirty = 1;
+            pAnim->mTrans->mLocalXfm.mTranslation = translation;
+        }
+        Quat rotation;
+        BlendRotation(pAnim, fFrom, fTo, fBlend, rotation);
+        Transform basis;
+        Rnd::MakeRotMatrix(rotation, &basis.mBasisX.x);
+        pAnim->mTrans->mLocalXfm.mBasisX = basis.mBasisX;
+        pAnim->mTrans->mLocalXfm.mBasisY = basis.mBasisY;
+        pAnim->mTrans->mLocalXfm.mBasisZ = basis.mBasisZ;
+        pAnim->mTrans->mDirty = 1;
+    }
+}
+
+bool AvatarPart::Rebuild() {
+    if (mType == mPendingType) {
+        return true;
+    }
+    if (mPendingLoader != nullptr) {
+        if (!mPendingLoader->IsLoaded()) {
+            return false;
+        }
+        if (mPendingExtraLoader != nullptr && !mPendingExtraLoader->IsLoaded()) {
+            return false;
+        }
+        delete mLoader;
+        mLoader = mPendingLoader;
+        mPendingLoader = nullptr;
+        if (mPendingExtraLoader != nullptr) {
+            mLoader->mObjects.splice(mLoader->mObjects.end(), mPendingExtraLoader->mObjects);
+            delete mPendingExtraLoader;
+            mPendingExtraLoader = nullptr;
+        }
+        for (RndObject *pObject : mLoader->mObjects) {
+            pObject->SetName(FormatString("avatar%d_%s", mAvatar->mIndex, pObject->mName.c_str()));
+        }
+    }
+
+    const char *pszRoot;
+    mData->FindSymbol("draw_root", &pszRoot, true);
+    mMesh = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->mIndex, pszRoot));
+    mData->FindSymbol("trans_root", &pszRoot, true);
+    mTransRoot = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->mIndex, pszRoot));
+    ResetLocalXfm(mTransRoot);
+
+    if (mLoader != nullptr) {
+        mMat = nullptr;
+        for (RndObject *pLoaded : mLoader->mObjects) {
+            mMat = dynamic_cast<RndMat *>(pLoaded);
+            if (mMat != nullptr) {
+                break;
+            }
+        }
+        mMat->SetLightColor(mColor); // The binary does not check for a file without a material.
+    }
+    SetMatTree(mMesh);
+
+    DataArray *pAnims = mData->FindArray("anims", false);
+    if (pAnims != nullptr) {
+        for (size_t i = 0; i < mAnims.size(); ++i) {
+            mAnims[i]->SetTrans(
+                FindMesh(FormatString("avatar%d_%s.mesh",
+                                      mAvatar->mIndex,
+                                      pAnims->Sym(static_cast<int>(i) + kFirstAnim))));
+        }
+    }
+    for (int i = 0; i < AvatarPartSet::kNumParts; ++i) {
+        AvatarPart *pPart = mAvatar->GetPart(i);
+        if (pPart->mParent == this) {
+            pPart->FindJoint();
+        }
+    }
+    mType = mPendingType;
+    return true;
+}
+
+void AvatarPart::Update() {
+    if (mJoint != nullptr && mTransRoot != nullptr) {
+        mTransRoot->UpdateWorldXfm(mJoint, 1);
+    }
+}
+
+void AvatarPart::FindJoint() {
+    const char *pszRoot;
+    mData->FindSymbol("trans_root", &pszRoot, true);
+    mJoint = FindMesh(FormatString("avatar%d_%s_joint.mesh", mAvatar->mIndex, pszRoot));
+}
+
+void AvatarPart::SetColor(const Color *pColor) {
+    mColor.r = pColor->r;
+    mColor.g = pColor->g;
+    mColor.b = pColor->b;
+    if (mMat != nullptr) {
+        mMat->SetLightColor(mColor);
+    }
+}
+
+int AvatarPart::Callback::ShouldLoad(RndObject *pExisting,
+                                     [[maybe_unused]] const char *pszName,
+                                     [[maybe_unused]] const char *pszClass) {
+    if (pExisting == nullptr) {
+        return kCreateObject;
+    }
+    DebugPrint("Resetting avatar because found %s\n", pExisting->mName.c_str());
+    mOwner->SetType(mOwner->mPendingType);
+    return kStopLoad;
+}

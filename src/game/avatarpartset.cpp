@@ -1,8 +1,13 @@
 #include "game/avatarpartset.h"
 
+#include <algorithm>
+#include <cstring>
+
 #include "game/avatar.h"
+#include "game/torsopart.h"
 #include "os/debug.h"
 #include "os/system.h"
+#include "rnd/rndrenderer.h"
 #include "script/symbol.h"
 
 namespace {
@@ -30,6 +35,24 @@ constexpr int kRed = 0;
 constexpr int kGreen = 1;
 constexpr int kBlue = 2;
 
+// A count above the differences of any avatar, where AcquirePlayer() starts its search.
+constexpr int kMoreDifferences = 666;
+
+// The fewest parts AcquirePlayer() leaves pending.
+constexpr int kOnePending = 1;
+
+// The prefix of the `win` animations.
+const char *const kWinAnimPrefix = "win";
+constexpr int kWinAnimPrefixLength = 3;
+
+// The time Poll() starts from.
+constexpr float kNoTime = -99999.0f;
+
+// Write one byte of a set.
+inline void WriteByte(BinStream &stream, unsigned char nByte) {
+    stream.Write(&nByte, sizeof(nByte));
+}
+
 DataArray *PartTypes(int nPart) {
     return AvatarPartSet::sParts->FindArray(nPart)->FindArray("types", true);
 }
@@ -52,6 +75,7 @@ void ListTypes(DataArray *pTypes, std::vector<const char *> *pList) {
 } // namespace
 
 DataArray *AvatarPartSet::sParts = nullptr;
+float AvatarPartSet::sLastTime = kNoTime;
 
 void AvatarPartSet::Init() {
     Avatar::Init();
@@ -235,4 +259,181 @@ Color AvatarPartSet::PartColor(int nPart) const {
     color.b = ByteToColor(mParts[nPart].mColor[kBlue]);
     color.a = kOpaque;
     return color;
+}
+
+void AvatarPartSet::Poll(float fTime) {
+    if (fTime != sLastTime) {
+        sLastTime = fTime;
+        Avatar::Poll(fTime);
+    }
+    const int nStaleFrame = TheRnd->mFrameCount - 1;
+    for (int i = 0; i < Avatar::NumAvatars(); ++i) {
+        AvatarPartSet *pUser = Avatar::GetAvatar(i)->mUser;
+        if (pUser != nullptr && pUser->mFrame < nStaleFrame) {
+            pUser->ReleasePlayer();
+        }
+    }
+}
+
+int AvatarPartSet::CountDifferences(Avatar *pAvatar) const {
+    int nDifferences = 0;
+    for (int i = 0; i < kPartInstrument; ++i) {
+        if (i == kPartRightArm) {
+            continue;
+        }
+        const char *pszType = pAvatar->GetPart(i)->mType;
+        if (pszType == nullptr || FindPartType(i, pszType) != mParts[i].mType) {
+            ++nDifferences;
+        }
+    }
+    const char *pszEmblem = static_cast<TorsoPart *>(pAvatar->GetPart(kPartTorso))->mEmblem;
+    if (pszEmblem == nullptr || FindEmblem(pszEmblem) != mEmblem) {
+        ++nDifferences;
+    }
+    return nDifferences;
+}
+
+void AvatarPartSet::ReleasePlayer() {
+    if (mPlayer == nullptr) {
+        return;
+    }
+    if (mPending != 0) {
+        for (int i = 0; i < kNumParts; ++i) {
+            mPlayer->GetPart(i)->ReleaseType();
+        }
+    }
+    mPending = 0;
+    mPlayer->SetUser(nullptr);
+    mPlayer = nullptr;
+}
+
+void AvatarPartSet::AcquirePlayer() {
+    if (mPlayer != nullptr) {
+        return;
+    }
+    int nFewest = kMoreDifferences;
+    for (int i = 0; i < Avatar::NumAvatars(); ++i) {
+        Avatar *pAvatar = Avatar::GetAvatar(i);
+        if (pAvatar->mUser != nullptr) {
+            continue;
+        }
+        const int nDifferences = CountDifferences(pAvatar);
+        if (nDifferences < nFewest) {
+            nFewest = nDifferences;
+            mPlayer = pAvatar;
+        }
+    }
+    mPlayer->SetUser(this);
+    for (int i = 0; i < kNumParts; ++i) {
+        mPlayer->GetPart(i)->SetType(PartName(i));
+    }
+    static_cast<TorsoPart *>(mPlayer->GetPart(kPartTorso))->SetEmblem(EmblemName());
+    mPending = std::max(nFewest, kOnePending);
+}
+
+bool AvatarPartSet::UpdatePlayer() {
+    if (mPending == 0) {
+        return true;
+    }
+    for (int i = 0; i < kNumParts; ++i) {
+        if (!mPlayer->GetPart(i)->Rebuild()) {
+            return false;
+        }
+    }
+    if (!static_cast<TorsoPart *>(mPlayer->GetPart(kPartTorso))->RebuildEmblem()) {
+        return false;
+    }
+    for (int i = 0; i < kNumParts; ++i) {
+        Color color;
+        color.r = ByteToColor(mParts[i].mColor[kRed]);
+        color.g = ByteToColor(mParts[i].mColor[kGreen]);
+        color.b = ByteToColor(mParts[i].mColor[kBlue]);
+        color.a = kOpaque;
+        mPlayer->GetPart(i)->SetColor(&color);
+    }
+    mPlayer->Reset();
+    if (mPoseAnim != nullptr) {
+        mPlayer->SetPose(mPoseAnim, true);
+    }
+    if (mBaseAnim != nullptr) {
+        mPlayer->SetBaseAnim(mBaseAnim, mBaseAnimFlags != 0, true);
+    }
+    mPending = 0;
+    return true;
+}
+
+void AvatarPartSet::Render(const Rect *pScreenRect) {
+    AcquirePlayer();
+    mFrame = TheRnd->mFrameCount;
+    // An avatar one part away from the set is drawn while that part loads.
+    if (UpdatePlayer() || mPending == kOnePending) {
+        mPlayer->Draw(pScreenRect);
+    } else {
+        Avatar::DrawCamera();
+    }
+}
+
+void AvatarPartSet::SetPose(const char *pszPose) {
+    if (mPlayer != nullptr) {
+        mPlayer->SetPose(pszPose, false);
+    }
+    mPoseAnim = LookupSymbol(pszPose);
+}
+
+void AvatarPartSet::SetBaseAnim(const char *pszAnim, int nFlags) {
+    if (mPlayer != nullptr) {
+        mPlayer->SetBaseAnim(pszAnim, nFlags != 0, false);
+    }
+    mBaseAnimFlags = nFlags;
+    mBaseAnim = LookupSymbol(pszAnim);
+}
+
+void AvatarPartSet::CatchGem(int nLane, int nCatch) {
+    if (mPlayer != nullptr) {
+        mPlayer->CatchGem(nLane, nCatch);
+    }
+}
+
+void AvatarPartSet::ClearAnims() {
+    if (mPlayer != nullptr) {
+        mPlayer->Reset();
+    }
+    mBaseAnim = nullptr;
+    mPoseAnim = nullptr;
+}
+
+void AvatarPartSet::Save(BinStream &stream) const {
+    WriteByte(stream, mVersion);
+    WriteByte(stream, mEmblem);
+    for (const PartSetting &part : mParts) {
+        WriteByte(stream, part.mType);
+        WriteByte(stream, part.mColor[kRed]);
+        WriteByte(stream, part.mColor[kGreen]);
+        WriteByte(stream, part.mColor[kBlue]);
+    }
+}
+
+void AvatarPartSet::Load(BinStream &stream) {
+    stream.Read(&mVersion, sizeof(mVersion));
+    stream.Read(&mEmblem, sizeof(mEmblem));
+    // Both clamps let through the index one past the last choice, as in the binary.
+    if (mEmblem >= EmblemTypes()->Size()) {
+        mEmblem = 0;
+    }
+    for (int i = 0; i < kNumParts; ++i) {
+        PartSetting &part = mParts[i];
+        stream.Read(&part.mType, sizeof(part.mType));
+        stream.Read(&part.mColor[kRed], sizeof(part.mColor[kRed]));
+        stream.Read(&part.mColor[kGreen], sizeof(part.mColor[kGreen]));
+        stream.Read(&part.mColor[kBlue], sizeof(part.mColor[kBlue]));
+        DataArray *pTypes = PartTypes(i);
+        if (part.mType >= pTypes->Size()) {
+            part.mType = static_cast<unsigned char>(pTypes->Size() - 1);
+        }
+    }
+}
+
+bool AvatarPartSet::IsWinAnim() const {
+    return mBaseAnim != nullptr &&
+           std::strncmp(mBaseAnim, kWinAnimPrefix, kWinAnimPrefixLength) == 0;
 }

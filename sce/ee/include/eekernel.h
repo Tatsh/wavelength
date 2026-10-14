@@ -621,6 +621,17 @@ void kprintf(const char *format, ...);
  */
 void scePrintf(const char *format, ...);
 
+/**
+ * Replace the running program with an executable.
+ *
+ * @param filename The path of the executable.
+ * @param argc The number of arguments.
+ * @param argv The arguments.
+ * @ghidraAddress NTSC-U/C: 0x0031caf0
+ * @ghidraAddress PAL: 0x00389408
+ */
+void LoadExecPS2(const char *filename, int argc, char *argv[]);
+
 #ifdef __cplusplus
 }
 #endif

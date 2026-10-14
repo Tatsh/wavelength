@@ -32,6 +32,7 @@ set(WAVELENGTH_NETFLOW_SRCS
     getlobbyplayerstask.cpp
     getpolicytask.cpp
     hostpadrt.cpp
+    inetimpl.cpp
     initmgcltask.cpp
     initrttask.cpp
     joinchanneltask.cpp
@@ -61,6 +62,7 @@ set(WAVELENGTH_NETFLOW_SRCS
     netcrypt.cpp
     netdisconnecttask.cpp
     netflow.c
+    netgameparams.cpp
     nethosttask.cpp
     netmessages.cpp
     nettask.cpp

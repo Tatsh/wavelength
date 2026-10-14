@@ -283,6 +283,16 @@ sceCdCBFunc sceCdCallback(sceCdCBFunc func);
 sceCdPOffFunc sceCdPOffCallback(sceCdPOffFunc func, void *addr);
 
 /**
+ * Switch the console off.
+ *
+ * @param result Receives the status of the drive.
+ * @return 1 when the request was sent, otherwise 0.
+ * @ghidraAddress NTSC-U/C: 0x00315398
+ * @ghidraAddress PAL: 0x00381b80
+ */
+int sceCdPowerOff(int *result);
+
+/**
  * Prepare sector streaming into a ring buffer in IOP memory.
  *
  * @param bufmax Ring buffer size in sectors.

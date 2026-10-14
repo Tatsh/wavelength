@@ -2,6 +2,7 @@ set(WAVELENGTH_MSG_SRCS
     arbiterpacket.cpp
     bumperpacket.cpp
     capturepacket.cpp
+    chatmsg.cpp
     cripplerpacket.cpp
     editgempacket.cpp
     erasebarpacket.cpp

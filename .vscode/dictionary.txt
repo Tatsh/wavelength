@@ -67,6 +67,7 @@ arkfile
 arkfiles
 arkhash
 arle
+armpart
 arrghghghgh
 asyncblock
 asynccallback
@@ -89,6 +90,7 @@ avatarbodyanimateaction
 avatargemcatchaction
 avatarinstrumentaction
 avatarpanel
+avatarpart
 avatarpartset
 averager
 avoll
@@ -164,6 +166,7 @@ catchtrackdata
 catchtrackdisplay
 catchtrackmusic
 catchtrackstate
+cdbuild
 cdread
 cdreadstm
 cdrom
@@ -171,6 +174,7 @@ changelyricaction
 changescreenaction
 changesectionevent
 channelinfotask
+chatmsg
 chatpanel
 chattextentry
 chcr
@@ -199,6 +203,7 @@ collectchildren
 collideable
 collideables
 color
+combolist
 commandid
 conductorbuilder
 conexant
@@ -543,6 +548,7 @@ inetctl
 inete
 ineteventqueue
 ineti
+inetimpl
 inett
 inited
 initmgcltask
@@ -553,6 +559,7 @@ inputlost
 inputmap
 inputmgr
 insize
+instrpart
 intdialog
 intdir
 internel
@@ -922,7 +929,9 @@ netfaker
 netflashupdate
 netflow
 netfoundplayerpanel
+netgameparams
 netgetdownloadsscreen
+netgui
 nethostattemptscreen
 nethostingscreen
 nethostlpadbuttonpanel
@@ -1002,6 +1011,9 @@ notexclusiveacquired
 nounistd
 nowbdc
 noyywrap
+ntguicd
+ntguidvd
+ntguihost
 nulled
 nullptr
 numplayersscreen
@@ -1357,6 +1369,7 @@ solosong
 solotut
 solowinstatspanel
 songdecryptscreen
+songentry
 songpicpanel
 songpos
 songpreview
@@ -1368,6 +1381,7 @@ sonylibs
 sourceimage
 spaceerrorscreen
 spdif
+spduart
 specication
 spewregister
 spewtable
@@ -1494,6 +1508,7 @@ tnltrackrange
 tnlwave
 tnlwinshell
 tnlz
+torsopart
 tostring
 totbytes
 toupper
@@ -1639,6 +1654,7 @@ worldlogic
 worldmgr
 worldtrack
 writx
+wstringop
 wuninitialized
 wuse
 xdir

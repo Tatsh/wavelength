@@ -315,6 +315,26 @@ int sceSifStopModule(int modid, int args, const char *argp, int *result);
 int sceSifUnloadModule(int modid);
 
 /**
+ * Send a control request to a device of the IOP.
+ *
+ * @param name The device, such as `dev9x:`.
+ * @param cmd The request.
+ * @param arg The argument of the request, or null.
+ * @param arglen The size of the argument in bytes.
+ * @param bufp Receives the result, or null.
+ * @param buflen The size of the result buffer in bytes.
+ * @return 0, or a negative value on failure.
+ * @ghidraAddress NTSC-U/C: 0x0031b7d0
+ * @ghidraAddress PAL: 0x003880e8
+ */
+int sceDevctl(const char *name,
+              int cmd,
+              const void *arg,
+              unsigned int arglen,
+              void *bufp,
+              unsigned int buflen);
+
+/**
  * Find a loaded IOP module by name.
  *
  * @param modulename Module name, cut to 251 characters.

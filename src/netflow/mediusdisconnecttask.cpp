@@ -12,6 +12,6 @@ void MediusDisconnectTask::OnPoll() {
     }
     (void)rtMediusDisconnect();
     TheLobbyRT->mMediusConnected = 0;
-    ChatMsg::ClearHandlers();
+    ChatMsg::ClearPartialLines();
     Finish(true, 0);
 }

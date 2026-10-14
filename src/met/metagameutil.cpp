@@ -213,7 +213,7 @@ void DrawAvatarOnMesh(AvatarPartSet *pAvatar, Rnd::Mesh *pMesh) {
     for (int i = 0; i < kNumMeshCorners; ++i) {
         Rnd::Cam::sCurrent->WorldToScreen(corners[i], ptScreen[i]);
     }
-    const Rnd::Cam::Rect rect{
+    const Rect rect{
         ptScreen[0].x, ptScreen[0].y, ptScreen[1].x - ptScreen[0].x, ptScreen[1].y - ptScreen[0].y};
 
     float fNear;

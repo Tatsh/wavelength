@@ -24,17 +24,26 @@ public:
     NetLobby() : mSink(nullptr) {
     }
 
-    /** Release the service. */
-    virtual ~NetLobby();
+    /**
+     * Release the service.
+     *
+     * Inline.
+     */
+    virtual ~NetLobby() {
+    }
 
     /**
      * Make a sink the receiver of the lobby's result messages. Vtable slot 2.
+     *
+     * Inline.
      *
      * @param pSink The sink.
      * @ghidraAddress NTSC-U/C: 0x0039afb0
      * @ghidraAddress PAL: 0x00409bf8
      */
-    virtual void SetSink(MsgSink *pSink);
+    virtual void SetSink(MsgSink *pSink) {
+        mSink = pSink;
+    }
 
     /**
      * Take the name, the password, and the Freq of the local player.

@@ -4,6 +4,7 @@
 
 #include "msg/message.h"
 #include "netflow/inetconfig.h"
+#include "os/mem.h"
 
 /**
  * Identity that InetConfigsResultMsg::Type() reports.
@@ -15,17 +16,39 @@ extern int g_nInetConfigsResultMsgType;
 /**
  * Message that reports the network configurations NetInet::RequestConfigs() found.
  *
- * The RTTI records the class as deriving from Message. Only the members its callers here use are
- * declared.
+ * The RTTI records the class as deriving from Message. The vtable is at `0x003d64c8`. The
+ * destructor, Clone(), Type(), and GetName() are inline.
  */
 class InetConfigsResultMsg : public Message {
 public:
     /**
-     * Release the message and its configurations.
+     * Construct a result with no configurations.
      *
-     * @ghidraAddress NTSC-U/C: 0x0039dc98
+     * Inline.
+     *
+     * @param nResult The outcome, negative when the search failed.
      */
-    ~InetConfigsResultMsg() override;
+    explicit InetConfigsResultMsg(int nResult) : mResult(nResult) {
+    }
+
+    /**
+     * Allocate a message, billed to the class name.
+     *
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
+     */
+    void *operator new(size_t nSize) {
+        return PoolMemAlloc(static_cast<int>(nSize), "InetConfigsResultMsg", 0);
+    }
+
+    /**
+     * Release a message.
+     *
+     * @param pBlock The block.
+     */
+    void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
 
     /**
      * Produce a heap copy of this message.
@@ -33,7 +56,9 @@ public:
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0039dd70
      */
-    Message *Clone() override;
+    Message *Clone() override {
+        return new InetConfigsResultMsg(*this);
+    }
 
     /**
      * Report this message's registered identity.
@@ -41,7 +66,9 @@ public:
      * @return g_nInetConfigsResultMsgType.
      * @ghidraAddress NTSC-U/C: 0x0039ddb0
      */
-    int Type() override;
+    int Type() override {
+        return g_nInetConfigsResultMsgType;
+    }
 
     /**
      * Report this message's class name.
@@ -49,7 +76,9 @@ public:
      * @return The literal `InetConfigsResultMsg`.
      * @ghidraAddress NTSC-U/C: 0x0039ddc0
      */
-    const char *GetName() const override;
+    const char *GetName() const override {
+        return "InetConfigsResultMsg";
+    }
 
     /**
      * Write the result, and the configurations after a success.
@@ -60,6 +89,6 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
-    int mResult;                    /*!< The outcome, negative when the search failed. +0x04 */
-    std::list<InetConfig> mConfigs; /*!< The configurations found. +0x08 */
+    int mResult;                    /*!< The outcome, negative when the search failed. */
+    std::list<InetConfig> mConfigs; /*!< The configurations found. */
 };

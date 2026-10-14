@@ -14,11 +14,18 @@ class NetInet {
 public:
     /** Values GetConnectionType() reports. */
     enum ConnectionType {
-        kConnectionSlow = 1, /*!< A connection the game gives more time per packet. */
+        kConnectionSlow = 1, /*!< A modem, which the game gives more time per packet. */
+        kConnectionFast = 2, /*!< An Ethernet adaptor. */
+        kConnectionNone = 3, /*!< No connection is up. */
     };
 
-    /** Vtable slot 1. Release the connection. */
-    virtual ~NetInet();
+    /**
+     * Vtable slot 1. Release the connection.
+     *
+     * Inline.
+     */
+    virtual ~NetInet() {
+    }
 
     /** Vtable slot 2. Start the program that creates a network configuration. */
     virtual void LaunchConfigTool() = 0;
@@ -41,11 +48,11 @@ public:
     virtual void Connect(MsgSink *pSink, int nConfig) = 0;
 
     /**
-     * Vtable slot 5. Set the receiver of the result messages.
+     * Vtable slot 5. Request that the connection go down.
      *
-     * @param pSink The receiver, or null.
+     * @param pSink The receiver of the InetDisconnectResultMsg.
      */
-    virtual void SetSink(MsgSink *pSink) = 0;
+    virtual void Disconnect(MsgSink *pSink) = 0;
 
     /**
      * Vtable slot 6. Start looking up the address of a host.
@@ -55,7 +62,7 @@ public:
      */
     virtual void LookupHost(MsgSink *pSink, const char *pszHost) = 0;
 
-    /** Vtable slot 7. Clear the pending lookup. */
+    /** Vtable slot 7. Forget the receiver of the pending lookup. */
     virtual void ClearPending() = 0;
 
     /**
@@ -68,12 +75,12 @@ public:
     /**
      * Vtable slot 9. Report the kind of connection.
      *
-     * @return The kind.
+     * @return One of ConnectionType.
      */
     virtual int GetConnectionType() = 0;
 
-    /** Vtable slot 10. Mark the connection ready. */
-    virtual void SetReady() = 0;
+    /** Vtable slot 10. Request that the next poll switch the console off. */
+    virtual void PowerOff() = 0;
 };
 
 /**

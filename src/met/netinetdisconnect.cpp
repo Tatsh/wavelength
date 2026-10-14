@@ -27,7 +27,7 @@ bool NetInetDisconnect::DispatchPriv(Message *pMsg) {
 
 bool NetInetDisconnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
-        TheNetInet->SetSink(this);
+        TheNetInet->Disconnect(this);
     }
     return false;
 }

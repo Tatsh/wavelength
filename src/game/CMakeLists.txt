@@ -3,10 +3,12 @@ set(WAVELENGTH_GAME_SRCS
     animatetoaction.cpp
     animchildaction.cpp
     animcondition.cpp
+    armpart.cpp
     avatar.cpp
     avatarbodyanimateaction.cpp
     avatargemcatchaction.cpp
     avatarinstrumentaction.cpp
+    avatarpart.cpp
     avatarpartset.cpp
     axetrack.cpp
     axetrackcontourbuilder.cpp
@@ -57,6 +59,7 @@ set(WAVELENGTH_GAME_SRCS
     helptext.cpp
     inputmap.cpp
     inputmgr.cpp
+    instrpart.cpp
     juicemeter.cpp
     levelmidibuilder.cpp
     lineartransform.cpp
@@ -106,11 +109,13 @@ set(WAVELENGTH_GAME_SRCS
     slotgrid.cpp
     sologamelogic.cpp
     song.cpp
+    songentry.cpp
     songstats.cpp
     stats.cpp
     streamqueue.cpp
     streamtask.cpp
     stutter.cpp
+    torsopart.cpp
     trackcapturer.cpp
     track.cpp
     trackselector.cpp

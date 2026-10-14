@@ -326,7 +326,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00272518
      * @ghidraAddress PAL: 0x0027c0c8
      */
-    void Render(const Rnd::Cam::Rect *pScreenRect);
+    void Render(const Rect *pScreenRect);
 
     /**
      * Report the name of the emblem.
@@ -373,6 +373,38 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003b14fc
      */
     static DataArray *sParts;
+
+private:
+    /**
+     * Borrow the free avatar that needs the fewest parts changed, and start loading the parts of
+     * the set on it. A set that already has a player keeps it.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00272250
+     * @ghidraAddress PAL: 0x0027be00
+     */
+    void AcquirePlayer();
+
+    /**
+     * Count the parts of an avatar that differ from the set, the emblem included.
+     *
+     * The right arm and the instrument are not compared. A part without a choice counts as
+     * different. The name is inferred.
+     *
+     * @param pAvatar The avatar.
+     * @return The number of differences.
+     * @ghidraAddress NTSC-U/C: 0x002720f0
+     * @ghidraAddress PAL: 0x0027bca0
+     */
+    int CountDifferences(Avatar *pAvatar) const;
+
+    /**
+     * The time Poll() last advanced the avatars to, -99999 before the first.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003b1500
+     */
+    static float sLastTime;
 };
 
 /**
