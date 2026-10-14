@@ -593,13 +593,12 @@ void GfxManager::Load(float fTime) {
             if (pRuleSets != nullptr) {
                 bool bMatch = false;
                 for (int j = 1; j < pRuleSets->Size(); ++j) {
-                    const int nType = pRuleSets->Type(j);
-                    if (nType == DataArray::kNodeSymbol) {
+                    if (pRuleSets->Type(j) == DataArray::kNodeSymbol) {
                         if (strcmp(pRuleSets->Sym(j), "tutorial") == 0 &&
                             TheGameDb->mTutorial != 0) {
                             bMatch = true;
                         }
-                    } else if (nType == DataArray::kNodeInt) {
+                    } else if (pRuleSets->Type(j) == DataArray::kNodeInt) {
                         if (pRuleSets->Int(j) == TheGameDb->mRuleSet) {
                             bMatch = true;
                             break;
