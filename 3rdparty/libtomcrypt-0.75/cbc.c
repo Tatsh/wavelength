@@ -5,20 +5,20 @@
 int cbc_start(int cipher, const unsigned char *IV, const unsigned char *key, 
               int keylen, int num_rounds, symmetric_CBC *cbc)
 {
-   int x, errno;
- 
+   int x;
+
    _ARGCHK(IV != NULL);
    _ARGCHK(key != NULL);
    _ARGCHK(cbc != NULL);
 
    /* bad param? */
-   if ((errno = cipher_is_valid(cipher)) != CRYPT_OK) {
-      return errno;
+   if (cipher_is_valid(cipher) != CRYPT_OK) {
+      return CRYPT_ERROR;
    }
 
    /* setup cipher */
-   if ((errno = cipher_descriptor[cipher].setup(key, keylen, num_rounds, &cbc->key)) != CRYPT_OK) {
-      return errno;
+   if (cipher_descriptor[cipher].setup(key, keylen, num_rounds, &cbc->key) != CRYPT_OK) {
+      return CRYPT_ERROR;
    }
 
    /* copy IV */
@@ -42,20 +42,20 @@ int cbc_setiv(int cipher, const unsigned char *IV, symmetric_CBC *cbc)
 
 int cbc_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_CBC *cbc)
 {
-   int x, errno;
+   int x;
    unsigned char tmp[MAXBLOCKSIZE];
 
    _ARGCHK(pt != NULL);
    _ARGCHK(ct != NULL);
    _ARGCHK(cbc != NULL);
 
-   if ((errno = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
-       return errno;
-   }
-
    /* xor IV against plaintext */
    for (x = 0; x < cbc->blocklen; x++) {
        tmp[x] = pt[x] ^ cbc->IV[x];
+   }
+
+   if (cipher_is_valid(cbc->cipher) != CRYPT_OK) {
+       return CRYPT_ERROR;
    }
 
    /* encrypt */
@@ -74,7 +74,7 @@ int cbc_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_CBC *cbc)
 
 int cbc_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_CBC *cbc)
 {
-   int x, errno;
+   int x;
    unsigned char tmp[MAXBLOCKSIZE], tmp2[MAXBLOCKSIZE];
 
    _ARGCHK(pt != NULL);
@@ -82,8 +82,8 @@ int cbc_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_CBC *cbc)
    _ARGCHK(cbc != NULL);
 
    /* decrypt the block from ct into tmp */
-   if ((errno = cipher_is_valid(cbc->cipher)) != CRYPT_OK) {
-       return errno;
+   if (cipher_is_valid(cbc->cipher) != CRYPT_OK) {
+       return CRYPT_ERROR;
    }
    cipher_descriptor[cbc->cipher].ecb_decrypt(ct, tmp, &cbc->key);
 

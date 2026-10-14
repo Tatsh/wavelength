@@ -86,6 +86,27 @@ target_link_libraries(wavelength_netflow PRIVATE wavelength_common)
 target_compile_options(wavelength_netflow PRIVATE -Wno-stringop-truncation)
 
 # The cipher comes from the vendored LibTomCrypt, built with Blowfish and CBC mode only.
+set(_tomcrypt "${CMAKE_SOURCE_DIR}/3rdparty/libtomcrypt-0.75")
+add_library(wavelength_tomcrypt STATIC "${_tomcrypt}/blowfish.c" "${_tomcrypt}/cbc.c"
+                                       "${_tomcrypt}/crypt.c" "${_tomcrypt}/mem.c")
+target_link_libraries(wavelength_tomcrypt PRIVATE wavelength_common)
+# The game's build settings string lists MD5, BASE64, HMAC, SMALL_PRIME_TAB, and little-endian
+# 64-bit words beside Blowfish and CBC. The compiler does not define the R5900 macros upstream
+# detects. The game has no argument checks (ARGTYPE 2).
+target_compile_definitions(
+  wavelength_tomcrypt
+  PRIVATE ARGTYPE=2
+          BASE64
+          BLOWFISH
+          CBC
+          ENDIAN_64BITWORD
+          ENDIAN_LITTLE
+          HMAC
+          MD5
+          SMALL_PRIME_TAB)
+target_include_directories(wavelength_tomcrypt PRIVATE "${_tomcrypt}")
+# These warnings concern upstream style.
+target_compile_options(wavelength_tomcrypt PRIVATE -Wno-unused-parameter)
 set_source_files_properties(
-  netcrypt.cpp PROPERTIES INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/3rdparty/libtomcrypt-0.75"
+  netcrypt.cpp PROPERTIES INCLUDE_DIRECTORIES "${_tomcrypt}"
                           COMPILE_DEFINITIONS "BLOWFISH;CBC")

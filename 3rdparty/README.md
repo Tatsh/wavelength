@@ -67,8 +67,27 @@ The game uses Blowfish, CBC mode, the cipher registry, and `zeromem()`. The impo
 `crypt.tex`, the manual that records the licence terms. Three differences from 0.70 are known. 0.71
 replaced the error strings with error codes, the game's `cbc_encrypt()` applies the IV before it
 checks the cipher index, and the game's `cbc.c` has a routine between `cbc_start()` and
-`cbc_encrypt()` that copies a new IV into a CBC state. The port is to make these files match 0.70 in
-place. The port adds that routine to `cbc.c` as `cbc_setiv()`, a name that is inferred.
+`cbc_encrypt()` that copies a new IV into a CBC state. The port edits these files in place to match
+0.70.
+
+- `mycrypt.h` reports version 0.70, the version in the game's build settings string.
+- `mycrypt_cfg.h` defines `ARGTYPE` only when the build has not. The game has no argument checks,
+  and the build sets `ARGTYPE` to 2.
+- `crypt.c` defines `crypt_error`, the message pointer that `mycrypt_macros.h` declares. Each
+  failing registry routine sets the message the game has for it, and the index checks return
+  `CRYPT_ERROR`. The game links only `find_cipher()`, `register_cipher()`, and `cipher_is_valid()`,
+  but the messages of the hash and pseudo-random generator routines are among its strings.
+- `cbc.c` adds `cbc_setiv()`, a name that is inferred. `cbc_start()`, `cbc_encrypt()`, and
+  `cbc_decrypt()` return `CRYPT_ERROR` on every failure, and `cbc_encrypt()` applies the IV before
+  it checks the cipher index.
+- `blowfish.c` limits the result of `F()` to 32 bits. `blowfish_setup()` and `blowfish_test()` set
+  the game's messages and return `CRYPT_ERROR`, and `blowfish_keysize()` returns `CRYPT_ERROR` for a
+  short key.
+
+The build defines `BLOWFISH`, `CBC`, `MD5`, `BASE64`, `HMAC`, and `SMALL_PRIME_TAB`, the features in
+the game's build settings string. It also defines `ENDIAN_LITTLE` and `ENDIAN_64BITWORD`, the word
+format in the string. The compiler does not define the R5900 macros that `mycrypt_cfg.h` checks.
+`CLEAN_STACK` is not defined.
 
 ## Verification
 

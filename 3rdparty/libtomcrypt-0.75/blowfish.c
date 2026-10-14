@@ -286,7 +286,7 @@ static unsigned long F(unsigned long x, symmetric_key *key)
    return (((key->blowfish.S[0][(x>>24)&255] +
             key->blowfish.S[1][(x>>16)&255]) ^
             key->blowfish.S[2][(x>>8)&255]) +
-            key->blowfish.S[3][(x>>0)&255]);
+            key->blowfish.S[3][(x>>0)&255]) & 0xFFFFFFFFUL;
 }
 
 int blowfish_setup(const unsigned char *key, int keylen, int num_rounds,
@@ -300,13 +300,15 @@ int blowfish_setup(const unsigned char *key, int keylen, int num_rounds,
 
    /* check key length */
    if (keylen < 8 || keylen > 56) {
-      return CRYPT_INVALID_KEYSIZE;
+      crypt_error = "Invalid key length for blowfish.";
+      return CRYPT_ERROR;
    }
 
    /* check rounds */
    if (num_rounds != 0 && num_rounds != 16) {
-      return CRYPT_INVALID_ROUNDS;
-   }   
+      crypt_error = "Invalid number of rounds for blowfish.";
+      return CRYPT_ERROR;
+   }
 
    /* load in key bytes (Supplied by David Hopwood) */
    for (x = y = 0; x < 18; x++) {
@@ -457,7 +459,6 @@ void blowfish_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_
 
 int blowfish_test(void)
 {
-   int errno;
    symmetric_key key;
    static const struct {
           unsigned char key[8], pt[8], ct[8];
@@ -638,8 +639,8 @@ int blowfish_test(void)
 
    for (x = failed = 0; x < (int)(sizeof(tests) / sizeof(tests[0])); x++) {
       /* setup key */
-      if ((errno = blowfish_setup(tests[x].key, 8, 16, &key)) != CRYPT_OK) {
-         return errno;
+      if (blowfish_setup(tests[x].key, 8, 16, &key) != CRYPT_OK) {
+         return CRYPT_ERROR;
       }
 
       /* encrypt and decrypt */
@@ -669,7 +670,8 @@ int blowfish_test(void)
    }
 
    if (failed == 1) {
-      return CRYPT_FAIL_TESTVECTOR;
+      crypt_error = "Blowfished failed to meet test vectors.";
+      return CRYPT_ERROR;
    } else {
       return CRYPT_OK;
    }
@@ -680,7 +682,7 @@ int blowfish_keysize(int *desired_keysize)
    _ARGCHK(desired_keysize != NULL);
 
    if (*desired_keysize < 8) {
-      return CRYPT_INVALID_KEYSIZE;
+      return CRYPT_ERROR;
    } else if (*desired_keysize > 56) {
       *desired_keysize = 56;
    }

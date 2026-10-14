@@ -1,6 +1,8 @@
 #include "mycrypt.h"
 #include <signal.h>
 
+char *crypt_error;
+
 struct _cipher_descriptor cipher_descriptor[32] = {
 { NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL },
 { NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL },
@@ -201,6 +203,7 @@ int register_cipher(const struct _cipher_descriptor *cipher)
    }
 
    /* no spot */
+   crypt_error = "No spot in cipher descriptor table.";
    return -1;
 }
 
@@ -217,6 +220,7 @@ int unregister_cipher(const struct _cipher_descriptor *cipher)
           return CRYPT_OK;
        }
    }
+   crypt_error = "Cipher not previously registered.";
    return CRYPT_ERROR;
 }
 
@@ -242,6 +246,7 @@ int register_hash(const struct _hash_descriptor *hash)
    }
 
    /* no spot */
+   crypt_error = "No spot in hash descriptor table.";
    return -1;
 }
 
@@ -258,6 +263,7 @@ int unregister_hash(const struct _hash_descriptor *hash)
           return CRYPT_OK;
        }
    }
+   crypt_error = "Hash not previously registered.";
    return CRYPT_ERROR;
 }
 
@@ -283,6 +289,7 @@ int register_prng(const struct _prng_descriptor *prng)
    }
 
    /* no spot */
+   crypt_error = "No spot in prng descriptor table.";
    return -1;
 }
 
@@ -299,13 +306,15 @@ int unregister_prng(const struct _prng_descriptor *prng)
           return CRYPT_OK;
        }
    }
+   crypt_error = "prng not previously registered.";
    return CRYPT_ERROR;
 }
 
 int cipher_is_valid(int idx)
 {
    if (idx < 0 || idx > 32 || cipher_descriptor[idx].name == NULL) {
-      return CRYPT_INVALID_CIPHER;
+      crypt_error = "Invalid cipher index number used in function call.";
+      return CRYPT_ERROR;
    }
    return CRYPT_OK;
 }
@@ -313,7 +322,8 @@ int cipher_is_valid(int idx)
 int hash_is_valid(int idx)
 {
    if (idx < 0 || idx > 32 || hash_descriptor[idx].name == NULL) {
-      return CRYPT_INVALID_HASH;
+      crypt_error = "Invalid hash index number used in function call.";
+      return CRYPT_ERROR;
    }
    return CRYPT_OK;
 }
@@ -321,7 +331,8 @@ int hash_is_valid(int idx)
 int prng_is_valid(int idx)
 {
    if (idx < 0 || idx > 32 || prng_descriptor[idx].name == NULL) {
-      return CRYPT_INVALID_PRNG;
+      crypt_error = "Invalid prng index number used in function call.";
+      return CRYPT_ERROR;
    }
    return CRYPT_OK;
 }

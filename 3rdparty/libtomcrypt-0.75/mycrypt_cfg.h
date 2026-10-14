@@ -16,7 +16,9 @@ extern void XFREE(void *p);
 extern clock_t XCLOCK(void);
 
 /* type of argument checking, 0=default, 1=fatal and 2=none */
+#ifndef ARGTYPE
 #define ARGTYPE  0
+#endif
 
 /* Controls endianess and size of registers.  Leave uncommented to get platform neutral [slower] code */
 /* detect x86-32 machines somewhat */

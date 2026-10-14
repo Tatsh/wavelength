@@ -57,7 +57,7 @@ list(APPEND WAVELENGTH_LIBRARIES wavelength_ezmpeg wavelength_eznet)
 list(APPEND WAVELENGTH_LIBRARIES wavelength_sonylibs)
 
 # The vendored third-party libraries the game links.
-list(APPEND WAVELENGTH_LIBRARIES wavelength_expat)
+list(APPEND WAVELENGTH_LIBRARIES wavelength_expat wavelength_tomcrypt)
 
 add_custom_target(archives DEPENDS ${WAVELENGTH_LIBRARIES})
 
