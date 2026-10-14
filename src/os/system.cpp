@@ -65,7 +65,7 @@ const char *const kLanguageKeys[] = {
     "japanese", "english", "french", "spanish", "german", "italian"};
 
 // NTSC-U/C: 0x003b2120
-int gPadCheck;
+int gPadCheck = 1;
 
 // Whether a multitap was connected to each port at the last check.
 // NTSC-U/C: 0x00481980
@@ -95,7 +95,7 @@ char gConfigPath[kConfigPathSize];
 DataArray *gConfig;
 
 // NTSC-U/C: 0x003b2238
-const char *gLanguage;
+const char *gLanguage = "english";
 
 // NTSC-U/C: 0x003b223c
 char *gDebugBuffer; // Yes, the binary never sets it.

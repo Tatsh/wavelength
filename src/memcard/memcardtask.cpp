@@ -12,7 +12,7 @@ constexpr int kLowestCardError = -9;
 
 } // namespace
 
-int MemcardTask::sFd;
+int MemcardTask::sFd = -1;
 int MemcardTask::sResult;
 int MemcardTask::sStatus;
 MemcardDirEntry *MemcardTask::sDirEntries;

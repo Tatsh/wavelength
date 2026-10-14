@@ -6,14 +6,16 @@ constexpr int kNodesPerChunk = 20;
 constexpr int kWordBytes = 4;
 constexpr int kWordShift = 2;
 constexpr int kHunkAlign = 16;
+// The size of a hunk until FreeStore::Configure() reads the configuration.
+constexpr int kDefaultHunkSize = 358400;
 
 } // namespace
 
 // NTSC-U/C: 0x003b2418
-static int g_nBigHunkSize;
+static int g_nBigHunkSize = kDefaultHunkSize;
 
 // NTSC-U/C: 0x003b241c
-static int g_nSmallHunkSize;
+static int g_nSmallHunkSize = kDefaultHunkSize;
 
 int FreeStore::sHunkBytes;
 

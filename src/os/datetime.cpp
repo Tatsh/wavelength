@@ -34,7 +34,7 @@ constexpr int kMonthShift = 8;
 int sClockStarted;
 
 // NTSC-U/C: 0x003b20c8
-float sNextClockRead;
+float sNextClockRead = kNoClockRead;
 
 // NTSC-U/C: 0x0047fa68
 sceCdCLOCK sClock;
