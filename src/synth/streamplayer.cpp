@@ -8,7 +8,7 @@ namespace {
 constexpr float kNoEndMs = -1.0f;
 
 // NTSC-U/C: 0x003b0aa8
-float g_flStreamEndDelayMs = 40.0f;
+float g_flStreamEndDelayMs = 640.0f;
 
 } // namespace
 

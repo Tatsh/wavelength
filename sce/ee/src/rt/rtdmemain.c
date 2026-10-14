@@ -16,6 +16,8 @@ enum {
     kChannelAllPeers = 0xfffe,
     // The size of a client record.
     kClientRecordSize = 104,
+    // The size of each queue of the datagram service.
+    kServiceQueueSize = 8192,
     // The latency samples per percentile step.
     kLatencySamplesPerStep = 20,
     // The milliseconds of silence that drop a client of the datagram service.
@@ -266,11 +268,11 @@ unsigned char g_bDmeReceiveError;
 unsigned char g_bDmeConnectWaiting;
 // NTSC-U/C: 0x003b6c2a
 unsigned char g_bDmeConnectReported;
-// The sizes of the queues of the datagram service. Yes, the binary never sets them.
+// The sizes of the queues of the datagram service. Yes, the binary only reads them.
 // NTSC-U/C: 0x003b6c2c
-static unsigned int g_uDmeServiceSendSize;
+static unsigned int g_uDmeServiceSendSize = kServiceQueueSize;
 // NTSC-U/C: 0x003b6c30
-static unsigned int g_uDmeServiceReceiveSize;
+static unsigned int g_uDmeServiceReceiveSize = kServiceQueueSize;
 // NTSC-U/C: 0x003b6c34
 unsigned char g_bDmeListening;
 // NTSC-U/C: 0x003b6c38
