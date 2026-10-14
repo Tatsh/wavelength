@@ -29,13 +29,9 @@ inline unsigned int PackMessage(unsigned char nStatus, unsigned char nData1, uns
 
 } // namespace
 
-Mix::Mix() {
-    mStartTick = -1;
-    mLoopTicks = -1;
-    mFadeTicks = -1;
-    mMixes.assign(kNumMixes, std::vector<String>());
-    mMix = kNoMix;
-    mStopCmd = Ptr<Command>(NewMemFunCommand(this, &Mix::StopTracks));
+Mix::Mix()
+    : mLoopTicks(-1), mFadeTicks(-1), mStartTick(-1), mMixes(kNumMixes, std::vector<String>()),
+      mMix(kNoMix), mStopCmd(NewMemFunCommand(this, &Mix::StopTracks)) {
     DataArray *pMetagame = SystemConfig()->FindArray("metagame", false);
     int nBars = 0;
     pMetagame->FindInt("music_bars", &nBars, true);
