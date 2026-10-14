@@ -565,28 +565,28 @@ void Overlay::HighlightSection(int nIndex) {
 void Overlay::SetRemixPanelText(int nPlayer, int nIndex, const char *pszText, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
     if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel)->SetText(nIndex, pszText);
+        pLocal->mRemix->FindSubPanel(nPanel, 0)->SetText(nIndex, pszText);
     }
 }
 
 void Overlay::SelectRemixPanelEntry(int nPlayer, int nIndex, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
     if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel)->Select(nIndex);
+        pLocal->mRemix->FindSubPanel(nPanel, 0)->Select(nIndex);
     }
 }
 
 void Overlay::FlashRemixPanel(int nPlayer, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
     if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel)->Flash();
+        pLocal->mRemix->FindSubPanel(nPanel, 0)->Flash();
     }
 }
 
 void Overlay::SetRemixPanelLit(int nPlayer, int nIndex, int bLit, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
     if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel)->SetLit(nIndex, bLit);
+        pLocal->mRemix->FindSubPanel(nPanel, 0)->SetLit(nIndex, bLit);
     }
 }
 

@@ -74,11 +74,12 @@ public:
      * Find the panel of a type.
      *
      * @param nType The type, one of GfxManager::RemixSubPanel.
+     * @param nUnused Zero from every caller. The routine does not read it.
      * @return This display for the main panel, the effect panel of the type, or null.
      * @ghidraAddress NTSC-U/C: 0x001b8400
      * @ghidraAddress PAL: 0x001c11a0
      */
-    OvyRemixGenPanel *FindSubPanel(int nType);
+    OvyRemixGenPanel *FindSubPanel(int nType, int nUnused);
 
     /**
      * Read the places of the remix panels from `remix_panel_positions`.

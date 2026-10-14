@@ -125,7 +125,7 @@ void OvyRemixPanel::ShowSubPanel(int nType) {
     }
 }
 
-OvyRemixGenPanel *OvyRemixPanel::FindSubPanel(int nType) {
+OvyRemixGenPanel *OvyRemixPanel::FindSubPanel(int nType, [[maybe_unused]] int nUnused) {
     if (nType == GfxManager::kRemixSubPanelMain) {
         return this;
     }
