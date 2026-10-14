@@ -1,5 +1,5 @@
-# The kernel system call stubs the game uses. Each loads its call number into v1 and traps. A
-# negative number selects the form that is safe inside an interrupt handler.
+# The kernel system call stubs the library links in. Each loads its call number into v1 and traps.
+# A negative number selects the form that is safe inside an interrupt handler.
 
     .set noreorder
 
@@ -18,17 +18,59 @@
 
     .text
 
+# NTSC-U/C: 0x00316b00
+    SYSCALL_STUB RFU000, 0
+
+# NTSC-U/C: 0x00316b10
+    SYSCALL_STUB ResetEE, 1
+
 # NTSC-U/C: 0x00316b20, PAL: 0x003833e0
     SYSCALL_STUB SetGsCrt, 2
+
+# NTSC-U/C: 0x00316b30
+    SYSCALL_STUB RFU003, 3
 
 # NTSC-U/C: 0x00316b40, PAL: 0x00383400
     SYSCALL_STUB _Exit, 4
 
+# NTSC-U/C: 0x00316b50
+    SYSCALL_STUB ResumeIntrDispatch, 5
+
 # NTSC-U/C: 0x00316b60, PAL: 0x00383420
     SYSCALL_STUB _LoadExecPS2, 6
 
+# NTSC-U/C: 0x00316b70
+    SYSCALL_STUB _ExecPS2, 7
+
+# NTSC-U/C: 0x00316b80
+    SYSCALL_STUB ResumeT3IntrDispatch, 8
+
+# NTSC-U/C: 0x00316b90
+    SYSCALL_STUB RFU009, 9
+
+# NTSC-U/C: 0x00316ba0
+    SYSCALL_STUB AddSbusIntcHandler, 10
+
+# NTSC-U/C: 0x00316bb0
+    SYSCALL_STUB RemoveSbusIntcHandler, 11
+
+# NTSC-U/C: 0x00316bc0
+    SYSCALL_STUB Interrupt2Iop, 12
+
+# NTSC-U/C: 0x00316bd0
+    SYSCALL_STUB SetVTLBRefillHandler, 13
+
+# NTSC-U/C: 0x00316be0
+    SYSCALL_STUB SetVCommonHandler, 14
+
+# NTSC-U/C: 0x00316bf0
+    SYSCALL_STUB SetVInterruptHandler, 15
+
 # NTSC-U/C: 0x00316c00, PAL: 0x003834c0
     SYSCALL_STUB AddIntcHandler, 16
+
+# NTSC-U/C: 0x00316c10
+    SYSCALL_STUB AddIntcHandler2, 16
 
 # NTSC-U/C: 0x00316c20, PAL: 0x003834e0
     SYSCALL_STUB RemoveIntcHandler, 17
@@ -57,8 +99,26 @@
 # NTSC-U/C: 0x00316ca0, PAL: 0x00383570
     SYSCALL_STUB SetAlarm, 252
 
+# NTSC-U/C: 0x00316cb0
+    SYSCALL_STUB ReleaseAlarm, 253
+
+# NTSC-U/C: 0x00316cc0
+    SYSCALL_STUB _iEnableIntc, -26
+
+# NTSC-U/C: 0x00316cd0
+    SYSCALL_STUB _iDisableIntc, -27
+
+# NTSC-U/C: 0x00316ce0
+    SYSCALL_STUB _iEnableDmac, -28
+
+# NTSC-U/C: 0x00316cf0
+    SYSCALL_STUB _iDisableDmac, -29
+
 # NTSC-U/C: 0x00316d00, PAL: 0x003835c0
     SYSCALL_STUB iSetAlarm, -254
+
+# NTSC-U/C: 0x00316d10
+    SYSCALL_STUB iReleaseAlarm, -255
 
 # NTSC-U/C: 0x00316d20, PAL: 0x003835e0
     SYSCALL_STUB CreateThread, 32
@@ -69,23 +129,50 @@
 # NTSC-U/C: 0x00316d40, PAL: 0x00383630
     SYSCALL_STUB StartThread, 34
 
+# NTSC-U/C: 0x00316d50
+    SYSCALL_STUB ExitThread, 35
+
 # NTSC-U/C: 0x00316d60
     SYSCALL_STUB ExitDeleteThread, 36
 
 # NTSC-U/C: 0x00316d70
     SYSCALL_STUB TerminateThread, 37
 
+# NTSC-U/C: 0x00316d80
+    SYSCALL_STUB iTerminateThread, -38
+
+# NTSC-U/C: 0x00316d90
+    SYSCALL_STUB DisableDispatchThread, 39
+
+# NTSC-U/C: 0x00316da0
+    SYSCALL_STUB EnableDispatchThread, 40
+
 # NTSC-U/C: 0x00316db0, PAL: 0x00383670
     SYSCALL_STUB ChangeThreadPriority, 41
 
+# NTSC-U/C: 0x00316dc0
+    SYSCALL_STUB iChangeThreadPriority, -42
+
 # NTSC-U/C: 0x00316dd0, PAL: 0x00383690
     SYSCALL_STUB RotateThreadReadyQueue, 43
+
+# NTSC-U/C: 0x00316de0
+    SYSCALL_STUB _iRotateThreadReadyQueue, -44
+
+# NTSC-U/C: 0x00316df0
+    SYSCALL_STUB ReleaseWaitThread, 45
+
+# NTSC-U/C: 0x00316e00
+    SYSCALL_STUB iReleaseWaitThread, -46
 
 # NTSC-U/C: 0x00316e10, PAL: 0x003836d0
     SYSCALL_STUB GetThreadId, 47
 
 # NTSC-U/C: 0x00316e20, PAL: 0x003836e0
     SYSCALL_STUB ReferThreadStatus, 48
+
+# NTSC-U/C: 0x00316e30
+    SYSCALL_STUB iReferThreadStatus, -49
 
 # NTSC-U/C: 0x00316e40, PAL: 0x00383700
     SYSCALL_STUB SleepThread, 50
@@ -96,11 +183,38 @@
 # NTSC-U/C: 0x00316e60, PAL: 0x00383720
     SYSCALL_STUB _iWakeupThread, -52
 
+# NTSC-U/C: 0x00316e70
+    SYSCALL_STUB CancelWakeupThread, 53
+
+# NTSC-U/C: 0x00316e80
+    SYSCALL_STUB iCancelWakeupThread, -54
+
 # NTSC-U/C: 0x00316e90, PAL: 0x00383750
     SYSCALL_STUB SuspendThread, 55
 
+# NTSC-U/C: 0x00316ea0
+    SYSCALL_STUB _iSuspendThread, -56
+
+# NTSC-U/C: 0x00316eb0
+    SYSCALL_STUB ResumeThread, 57
+
+# NTSC-U/C: 0x00316ec0
+    SYSCALL_STUB iResumeThread, -58
+
+# NTSC-U/C: 0x00316ed0
+    SYSCALL_STUB RFU059, 59
+
+# NTSC-U/C: 0x00316ee0
+    SYSCALL_STUB SetupThread, 60
+
+# NTSC-U/C: 0x00316ef0
+    SYSCALL_STUB SetupHeap, 61
+
 # NTSC-U/C: 0x00316f00, PAL: 0x003837c0
     SYSCALL_STUB EndOfHeap, 62
+
+# NTSC-U/C: 0x00316f10
+    SYSCALL_STUB RFU063, 63
 
 # NTSC-U/C: 0x00316f20, PAL: 0x003837e0
     SYSCALL_STUB CreateSema, 64
@@ -120,14 +234,131 @@
 # NTSC-U/C: 0x00316f70, PAL: 0x00383830
     SYSCALL_STUB PollSema, 69
 
+# NTSC-U/C: 0x00316f80
+    SYSCALL_STUB iPollSema, -70
+
+# NTSC-U/C: 0x00316f90
+    SYSCALL_STUB ReferSemaStatus, 71
+
+# NTSC-U/C: 0x00316fa0
+    SYSCALL_STUB iReferSemaStatus, -72
+
+# NTSC-U/C: 0x00316fb0
+    SYSCALL_STUB iDeleteSema, 73
+
 # NTSC-U/C: 0x00316fc0, PAL: 0x00383880
     SYSCALL_STUB SetOsdConfigParam, 74
 
 # NTSC-U/C: 0x00316fd0, PAL: 0x00383890
     SYSCALL_STUB GetOsdConfigParam, 75
 
+# NTSC-U/C: 0x00316fe0
+    SYSCALL_STUB GetGsHParam, 76
+
+# NTSC-U/C: 0x00316ff0
+    SYSCALL_STUB GetGsVParam, 77
+
+# NTSC-U/C: 0x00317000
+    SYSCALL_STUB SetGsHParam, 78
+
+# NTSC-U/C: 0x00317010
+    SYSCALL_STUB SetGsVParam, 79
+
+# NTSC-U/C: 0x00317020
+    SYSCALL_STUB CreateEventFlag, 80
+
+# NTSC-U/C: 0x00317030
+    SYSCALL_STUB DeleteEventFlag, 81
+
+# NTSC-U/C: 0x00317040
+    SYSCALL_STUB SetEventFlag, 82
+
+# NTSC-U/C: 0x00317050
+    SYSCALL_STUB iSetEventFlag, -83
+
+# NTSC-U/C: 0x00317060
+    SYSCALL_STUB xlaunch, 84
+
+# NTSC-U/C: 0x00317070
+    SYSCALL_STUB iPutTLBEntry, -85
+
+# NTSC-U/C: 0x00317080
+    SYSCALL_STUB _SetTLBEntry, 86
+
+# NTSC-U/C: 0x00317090
+    SYSCALL_STUB GetTLBEntry, 87
+
+# NTSC-U/C: 0x003170a0
+    SYSCALL_STUB iProbeTLBEntry, -88
+
+# NTSC-U/C: 0x003170b0
+    SYSCALL_STUB ExpandScratchPad, 89
+
+# NTSC-U/C: 0x003170c0
+    SYSCALL_STUB iCopy, -90
+
+# NTSC-U/C: 0x003170d0
+    SYSCALL_STUB GetEntryAddress, 91
+
+# NTSC-U/C: 0x003170e0
+    SYSCALL_STUB EnableIntcHandler, 92
+
+# NTSC-U/C: 0x003170f0
+    SYSCALL_STUB iEnableIntcHandler, -92
+
+# NTSC-U/C: 0x00317100
+    SYSCALL_STUB DisableIntcHandler, 93
+
+# NTSC-U/C: 0x00317110
+    SYSCALL_STUB iDisableIntcHandler, -93
+
+# NTSC-U/C: 0x00317120
+    SYSCALL_STUB EnableDmacHandler, 94
+
+# NTSC-U/C: 0x00317130
+    SYSCALL_STUB iEnableDmacHandler, -94
+
+# NTSC-U/C: 0x00317140
+    SYSCALL_STUB DisableDmacHandler, 95
+
+# NTSC-U/C: 0x00317150
+    SYSCALL_STUB iDisableDmacHandler, -95
+
+# NTSC-U/C: 0x00317160
+    SYSCALL_STUB KSeg0, 96
+
+# NTSC-U/C: 0x00317170
+    SYSCALL_STUB EnableCache, 97
+
+# NTSC-U/C: 0x00317180
+    SYSCALL_STUB DisableCache, 98
+
+# NTSC-U/C: 0x00317190
+    SYSCALL_STUB GetCop0, 99
+
 # NTSC-U/C: 0x003171a0, PAL: 0x00383a60
     SYSCALL_STUB FlushCache, 100
+
+# NTSC-U/C: 0x003171b0
+    SYSCALL_STUB CpuConfig, 102
+
+# NTSC-U/C: 0x003171c0
+    SYSCALL_STUB iGetCop0, -103
+
+# NTSC-U/C: 0x003171d0
+    SYSCALL_STUB iFlushCache, -104
+
+# NTSC-U/C: 0x003171e0
+    SYSCALL_STUB iCpuConfig, -106
+
+# NTSC-U/C: 0x00317200
+    SYSCALL_STUB SetCPUTimerHandler, 108
+
+# NTSC-U/C: 0x00317210
+    SYSCALL_STUB SetCPUTimer, 109
+
+# NTSC-U/C: 0x00317220
+    SYSCALL_STUB SetOsdConfigParam2, 110
 
 # NTSC-U/C: 0x00317230, PAL: 0x00383af0
     SYSCALL_STUB GetOsdConfigParam2, 111
@@ -135,14 +366,38 @@
 # NTSC-U/C: 0x00317240, PAL: 0x00383b00
     SYSCALL_STUB GsGetIMR, 112
 
+# NTSC-U/C: 0x00317250
+    SYSCALL_STUB iGsGetIMR, -112
+
 # NTSC-U/C: 0x00317260, PAL: 0x00383b20
     SYSCALL_STUB GsPutIMR, 113
+
+# NTSC-U/C: 0x00317270
+    SYSCALL_STUB iGsPutIMR, -113
+
+# NTSC-U/C: 0x00317280
+    SYSCALL_STUB SetPgifHandler, 114
 
 # NTSC-U/C: 0x00317290, PAL: 0x00383b50
     SYSCALL_STUB SetVSyncFlag, 115
 
+# NTSC-U/C: 0x003172a0
+    SYSCALL_STUB SetSyscall, 116
+
+# NTSC-U/C: 0x003172b0
+    SYSCALL_STUB _print, 117
+
+# NTSC-U/C: 0x00317340
+    SYSCALL_STUB _ExecOSD, 123
+
 # NTSC-U/C: 0x00317350, PAL: 0x00383c10
     SYSCALL_STUB Deci2Call, 124
+
+# NTSC-U/C: 0x00317360
+    SYSCALL_STUB PSMode, 125
+
+# NTSC-U/C: 0x00317370
+    SYSCALL_STUB MachineType, 126
 
 # NTSC-U/C: 0x00317380, PAL: 0x00383c40
     SYSCALL_STUB GetMemorySize, 127

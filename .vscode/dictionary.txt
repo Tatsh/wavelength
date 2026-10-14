@@ -1050,6 +1050,7 @@ pels
 periodictimer
 pextlb
 pextub
+pgif
 phdrs
 pickability
 pickable
@@ -1274,6 +1275,7 @@ saveremixscreen
 savesettingsscreen
 sbclaude
 sbss
+sbus
 scax
 scay
 sces
@@ -1623,6 +1625,7 @@ vrsqrt
 vsint
 vsmsk
 vtable
+vtlb
 vudata
 vutext
 waitforkeytask
@@ -1665,6 +1668,7 @@ xdir
 xfer
 xfms
 xgkick
+xlaunch
 xmlparse
 xmlrole
 xmltok
