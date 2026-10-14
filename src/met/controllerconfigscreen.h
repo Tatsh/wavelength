@@ -13,10 +13,10 @@
  * The controller menu, which assigns each game event to a button or a stick.
  *
  * The RTTI records the class as deriving from FreqScreen. The object is 0xb0 bytes and its vtable
- * is at `0x003cc310`. The `controller_config` entry of the metagame configuration lists the events
- * in `button_events` and `stick_events` and, in `choice_lists`, the buttons or sticks each event
- * may take. Each event entry gives its name, the InputMap action it binds, and the name of its
- * choice list. Each component of the `o_controller` panel is named after an event and shows the
+ * is at `0x003cc310`. The `metagame` entry of the system configuration lists the events in
+ * `button_events` and `stick_events` and, in `control_choice_lists`, the buttons or sticks each
+ * event may take. Each event entry gives its name, the InputMap action it binds, and the name of
+ * its choice list. Each component of the `o_controller` panel is named after an event and shows the
  * button or stick chosen for it, as a column of its choice list.
  */
 class ControllerConfigScreen : public FreqScreen {
@@ -293,7 +293,7 @@ public:
     UIScreen *mReturnScreen;         /*!< The screen the menu was entered from, or null. */
     const char *mFocusName;          /*!< The component of the event the focus is on. */
     int mActive;                     /*!< Whether the screen shows, between Enter() and Exit(). */
-    DataArray *mChoiceLists;         /*!< The `choice_lists` entry. */
+    DataArray *mChoiceLists;         /*!< The `control_choice_lists` entry. */
     DataArray *mButtonEvents;        /*!< The `button_events` entry. */
     DataArray *mStickEvents;         /*!< The `stick_events` entry. */
     std::vector<int> mButtonChoices; /*!< The chosen column of each button event. */

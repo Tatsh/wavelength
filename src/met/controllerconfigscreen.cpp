@@ -20,7 +20,7 @@
 namespace {
 
 constexpr char kMetagameTag[] = "metagame";
-constexpr char kChoiceListsTag[] = "choice_lists";
+constexpr char kChoiceListsTag[] = "control_choice_lists";
 constexpr char kButtonEventsTag[] = "button_events";
 constexpr char kStickEventsTag[] = "stick_events";
 
