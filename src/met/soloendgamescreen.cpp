@@ -69,8 +69,7 @@ void SoloEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
             pPanel->SetFocus(pPanel->FindComponent(kContinueButton, false), kPadNone);
         }
     } else {
-        UILabel *pReplay =
-            dynamic_cast<UILabel *>(TheUI.FindComponent("s_g_end_lose", kReplayButton, false));
+        UIComponent *pReplay = TheUI.FindComponent("s_g_end_lose", kReplayButton, false);
         if (TheGameDb->mPracticeMode) {
             pReplay->SetText(TheLocale.Localize("s_g_end_lose_play", true));
         } else {
