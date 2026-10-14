@@ -52,6 +52,7 @@ set(WAVELENGTH_OS_SRCS
     mem.cpp
     memhandle.cpp
     memmgr.cpp
+    memstream.cpp
     memtrack.cpp
     namedobjectregistry.cpp
     openarkobject.cpp
