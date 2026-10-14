@@ -25,8 +25,8 @@ constexpr uintptr_t kDataAlign = 16;
 constexpr int kHandleHeaderWord = 3;
 constexpr int kHandleDataWord = 4;
 
-// Words a quadword copy moves at once.
-constexpr int kQuadWords = 4;
+// The shift from words to the quadwords a quadword copy moves at once.
+constexpr int kQuadWordShift = 2;
 
 // The data cache write-back FlushCache() performs.
 constexpr int kWritebackDataCache = 0;
@@ -55,7 +55,7 @@ inline int AddressWords(const void *pAddress) {
 static void MoveQuadwords(int *pDest, int *pSource, int nWords) {
     u_long128 *pTo = reinterpret_cast<u_long128 *>(pDest);
     const u_long128 *pFrom = reinterpret_cast<const u_long128 *>(pSource);
-    const u_long128 *pEnd = &pTo[nWords / kQuadWords];
+    const u_long128 *pEnd = &pTo[nWords >> kQuadWordShift];
     while (pTo < pEnd) {
         *pTo++ = *pFrom++;
     }
