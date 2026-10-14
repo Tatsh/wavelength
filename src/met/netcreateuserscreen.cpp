@@ -52,7 +52,7 @@ constexpr int kHidePassword = 1;
 constexpr int kSingleLine = 0;
 
 // Show an error screen that leads back to this screen.
-void ShowEntryError(const char *pszScreen) {
+inline void ShowEntryError(const char *pszScreen) {
     UIScreen *pError = TheUI.FindScreen(pszScreen, false);
     pError->ClearTransitions();
     pError->AddTransition(kErrorOkButton, kPadNone, kErrorReturnScreen);
