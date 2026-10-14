@@ -25,7 +25,7 @@ inline Vector3 LerpCorner(const Vector3 &from, const Vector3 &to, float flT) {
     return corner;
 }
 
-void ReadCorner(DataArray *pCorner, Vector3 &corner) {
+inline void ReadCorner(DataArray *pCorner, Vector3 &corner) {
     const float flX = pCorner->Float(0);
     const float flY = pCorner->Float(1);
     corner.z = pCorner->Float(2);

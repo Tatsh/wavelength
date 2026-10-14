@@ -44,9 +44,10 @@ inline void SetMatAction::CheckStage(DataArray *pAction, int nStage) {
     if (static_cast<int>(mMat->mStages.size()) >= nStage) {
         return;
     }
+    // Yes, the binary passes the stage before the name, the reverse of the format's order.
     DebugWarn("Mat '%s' doesn't have stage %d (file %s, line %d)",
-              pAction->Sym(1),
               nStage,
+              pAction->Sym(1),
               pAction->mFile,
               pAction->mLine);
 }
