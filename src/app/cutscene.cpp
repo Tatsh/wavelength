@@ -437,7 +437,7 @@ int strFileOpen(const char *pszName) {
 int strFileClose() {
     if (g_inFile.isOnCD != 0) {
         sceCdStStop();
-        sceSifFreeIopHeap(g_inFile.iopBuffer);
+        sceSifFreeSysMemory(g_inFile.iopBuffer);
     } else {
         sceClose(g_inFile.fd);
     }
@@ -611,8 +611,8 @@ bool PlayMovieFile(const char *pszPath) {
     PoolMemFree(param.path3Tags);
     PoolMemFree(param.demux);
     PoolMemFree(param.audio);
-    sceSifFreeIopHeap(param.iopAudio);
+    sceSifFreeSysMemory(param.iopAudio);
     PoolMemFree(param.zero);
-    sceSifFreeIopHeap(param.iopZero);
+    sceSifFreeSysMemory(param.iopZero);
     return true;
 }
