@@ -7,16 +7,6 @@
 
 namespace {
 
-// The labels of the instruments, indexed by GfxManager::Instrument.
-const char *const kInstrumentLabels[] = {
-    "DRUM_LABEL",
-    "BASS_LABEL",
-    "SYNTH_LABEL",
-    "GUITAR_LABEL",
-    "VOCAL_LABEL",
-    "FX_LABEL",
-};
-
 // The kinds of track that show a label.
 constexpr int kLabelledKind = 2;
 constexpr int kFirstLabelledKindOfRange = 4;
@@ -52,9 +42,27 @@ void OvyTrackLabel::SetTrack(int nPlayer, int nInstrument, int nTrackKind) {
     const char *pszLabel = nullptr;
     if (nTrackKind == kLabelledKind ||
         (nTrackKind >= kFirstLabelledKindOfRange && nTrackKind < kEndLabelledKindOfRange)) {
-        if (nInstrument >= GfxManager::kInstrumentDrum &&
-            nInstrument < GfxManager::kNumInstruments) {
-            pszLabel = TheLocale.Localize(kInstrumentLabels[nInstrument], true);
+        switch (nInstrument) {
+        case GfxManager::kInstrumentDrum:
+            pszLabel = TheLocale.Localize("DRUM_LABEL", true);
+            break;
+        case GfxManager::kInstrumentBass:
+            pszLabel = TheLocale.Localize("BASS_LABEL", true);
+            break;
+        case GfxManager::kInstrumentSynth:
+            pszLabel = TheLocale.Localize("SYNTH_LABEL", true);
+            break;
+        case GfxManager::kInstrumentGuitar:
+            pszLabel = TheLocale.Localize("GUITAR_LABEL", true);
+            break;
+        case GfxManager::kInstrumentVocal:
+            pszLabel = TheLocale.Localize("VOCAL_LABEL", true);
+            break;
+        case GfxManager::kInstrumentFx:
+            pszLabel = TheLocale.Localize("FX_LABEL", true);
+            break;
+        default:
+            break;
         }
         mMat->SetBaseColor(*TheGfxManager.GetInstrumentBgColor(nInstrument));
     }

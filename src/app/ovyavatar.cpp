@@ -26,16 +26,6 @@ constexpr float kLeaderLabelAlpha = 1.0f;
 const Color kNoNameColor{0.0f, 0.0f, 0.0f, 1.0f};
 const Color kNoBackgroundColor{1.0f, 1.0f, 1.0f, 1.0f};
 
-// The labels of the instruments, indexed by GfxManager::Instrument.
-const char *const kInstrumentLabels[] = {
-    "DRUM_LABEL",
-    "BASS_LABEL",
-    "SYNTH_LABEL",
-    "GUITAR_LABEL",
-    "VOCAL_LABEL",
-    "FX_LABEL",
-};
-
 // Stop the animations of every avatar of the game.
 void ClearAllAnims(AvatarPartSet *pSoloAvatar) {
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
@@ -198,9 +188,29 @@ void OvyAvatar::SetInstrument([[maybe_unused]] int nPlayer,
     if (mName == nullptr) {
         return;
     }
-    const char *pszLabel = "";
-    if (nInstrument >= GfxManager::kInstrumentDrum && nInstrument < GfxManager::kNumInstruments) {
-        pszLabel = TheLocale.Localize(kInstrumentLabels[nInstrument], true);
+    const char *pszLabel;
+    switch (nInstrument) {
+    case GfxManager::kInstrumentDrum:
+        pszLabel = TheLocale.Localize("DRUM_LABEL", true);
+        break;
+    case GfxManager::kInstrumentBass:
+        pszLabel = TheLocale.Localize("BASS_LABEL", true);
+        break;
+    case GfxManager::kInstrumentSynth:
+        pszLabel = TheLocale.Localize("SYNTH_LABEL", true);
+        break;
+    case GfxManager::kInstrumentGuitar:
+        pszLabel = TheLocale.Localize("GUITAR_LABEL", true);
+        break;
+    case GfxManager::kInstrumentVocal:
+        pszLabel = TheLocale.Localize("VOCAL_LABEL", true);
+        break;
+    case GfxManager::kInstrumentFx:
+        pszLabel = TheLocale.Localize("FX_LABEL", true);
+        break;
+    default:
+        pszLabel = "";
+        break;
     }
     mNameColor = *TheGfxManager.GetInstrumentBgColor(nInstrument);
     mName->SetText(pszLabel);
