@@ -32,7 +32,7 @@ python3 .wiswa-ci/port/progress.py --write
 | Stubbed (not counted as done)          |      0 |
 | Declared only (not counted as done)    |     85 |
 | Share done                             | 83.88% |
-| FreQuency annotations left in the tree |  2,557 |
+| FreQuency annotations left in the tree |    187 |
 
 ## By component
 
