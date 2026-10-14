@@ -1737,8 +1737,10 @@ static int ReadMpegMacroblockAddressIncrement(MpegContext *w) {
             nMore = 1;
         } else if (nCode < kMbaiEscape) {
             if (nCode == 0) {
-                // Yes, the binary takes the stuffing code in an MPEG-2 stream only.
-                if (w->mMpeg2 != 0 && PeekIpuBits(w, 11) == kMbaiStuffingCode) {
+                // The binary peeks before it tests the stream, and takes the stuffing code in an
+                // MPEG-2 stream only.
+                const unsigned int nPeek = PeekIpuBits(w, 11);
+                if (w->mMpeg2 != 0 && nPeek == kMbaiStuffingCode) {
                     ConsumeIpuBits(w, 11);
                     nMore = 1;
                 } else {
