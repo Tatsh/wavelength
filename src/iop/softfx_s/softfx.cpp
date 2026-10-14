@@ -56,7 +56,7 @@ enum InputRoute {
 };
 
 constexpr char kVoiceTransErrorMessage[] =
-    "************sceSdBlockTrans() error ::SCESD_EINVALID_ARGUMENT.************\n";
+    "****************sceSdBlockTrans() error ::SCESD_EINVALID_ARGUMENT.**************\n";
 constexpr char kCaptureCoreErrorMessage[] =
     "What up? Callback but no valid core? gActiveCores = %i.\n";
 
