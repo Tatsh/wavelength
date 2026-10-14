@@ -9,21 +9,6 @@ void Rnd::Add(const Vector2 &a, const Vector2 &b, Vector2 &out) {
     out.x = a.x + b.x;
 }
 
-void SubVec2(const float *pA, const float *pB, float *pOut) {
-    pOut[1] = pA[1] - pB[1];
-    pOut[0] = pA[0] - pB[0];
-}
-
-void Rnd::Multiply(const Vector2 &v, float flScale, Vector2 &out) {
-    out.y = v.y * flScale;
-    out.x = v.x * flScale;
-}
-
-void Rnd::Negate(const Vector2 &v, Vector2 &out) {
-    out.y = -v.y;
-    out.x = -v.x;
-}
-
 void Rnd::Normalize(const Vector2 &v, Vector2 &out) {
     if (v.x == 0.0f && v.y == 0.0f) {
         out.y = 0.0f;

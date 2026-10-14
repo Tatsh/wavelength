@@ -978,7 +978,6 @@ oleverb
 oneline
 optionprocessor
 orthonormalised
-orthonormalize
 otherapphasprio
 outcnt
 ovyallplayer

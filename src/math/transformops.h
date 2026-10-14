@@ -48,18 +48,6 @@ void sceVu0MulAffineMatrixXyz(float *pDst, const float *pA, const float *pB);
 
 } // extern "C"
 
-/**
- * Compose two transforms on VU0.
- *
- * Each row of the second transform is applied to the first, which makes the result the transform
- * that applies pA and then pB.
- *
- * @param pA The transform applied first, four rows of four floats.
- * @param pB The transform applied second, four rows of four floats.
- * @param pOut Receives the composition and may alias either input.
- */
-void XfmConcat(const float *pA, const float *pB, float *pOut);
-
 namespace Rnd {
 
 /**
@@ -100,51 +88,6 @@ void MakeRotMatrix(const float *pAngles, float *pMat3Rows);
  */
 void Mat33BuildOrthonormal(const float *pAxisY, const float *pReference, float *pMat3Rows);
 
-/**
- * Rebuild a basis as orthonormal around its Y row.
- *
- * The Y row is normalised. The X row becomes that Y row crossed with the source Z row, normalised,
- * and the Z row becomes X crossed with Y. Each row is written as a whole quadword, and the cross
- * products propagate the fourth word of the source Y row into the other two rows. pDst may be pSrc.
- * The source Z row is read before the destination Z row is written.
- * Rnd::Transformable::GetDrawXfm() rebuilds its camera-facing basis in place with it, and the
- * routines at `0x00254b30` and `0x00254c20` also call it.
- *
- * @param pSrc The basis to rebuild, three rows of four floats.
- * @param pDst Receives the orthonormal basis, three rows of four floats.
- */
-void Mat33OrthonormalizeAroundY(const float *pSrc, float *pDst);
-
-/**
- * Split a basis into Euler angles and per-axis scales.
- *
- * Each scale is the length of the matching row. The Z scale is negated when the three rows are
- * left handed. Negating it is the only way the remaining rotation can stay a pure rotation.
- * The angles are then extracted from the rows divided by their scales, and the extraction
- * inverts Rnd::MakeRotMatrix() from three angles. A basis at the gimbal lock limit yields a Y
- * angle of zero and folds the whole remaining rotation into the Z angle.
- *
- * @param pMat3Rows The basis, three rows of four floats.
- * @param pAngles Receives the three angles in radians, ordered X, Y, and Z.
- * @param pScale Receives the three scales.
- */
-void Mat34DecomposeEulerScale(const float *pMat3Rows, float *pAngles, float *pScale);
-
-/**
- * Multiply two rotation matrices on VU0.
- *
- * Every row of pMatA is pushed through pMatB. A destination that is the right factor is routed
- * through three scratch quadwords. A destination that is the left factor needs no special
- * handling and gets none, because each row of pMatA is consumed before that row is written.
- * Each row is stored as a whole quadword, and the fourth word of the result comes from the
- * fourth word of the matching row of pMatA.
- *
- * @param pMatA The left factor, three rows of four floats.
- * @param pMatB The right factor, three rows of four floats.
- * @param pOut Receives the product, and may alias either factor.
- */
-void MultiplyMat3VU0(const float *pMatA, const float *pMatB, float *pOut);
-
 namespace Rnd {
 
 /**
@@ -161,16 +104,3 @@ namespace Rnd {
 void Scale(const float *pScale, const float *pMat3Rows, float *pOut);
 
 } // namespace Rnd
-
-/**
- * Transform a three-component vector by a rotation matrix on VU0.
- *
- * The vector is treated as a row vector, and each component selects a row of the matrix. The
- * store moves a whole quadword while the accumulate stage writes only three components. The
- * fourth word of the destination therefore receives the fourth word of the source.
- *
- * @param pVec The vector to transform, four floats.
- * @param pMat3Rows The rotation, three rows of four floats.
- * @param pOut Receives the transformed vector, and may alias pVec.
- */
-void TransformVec3ByMat3VU0(const float *pVec, const float *pMat3Rows, float *pOut);

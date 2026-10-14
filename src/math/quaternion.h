@@ -61,21 +61,7 @@ public:
  */
 PrnStream &operator<<(PrnStream &stream, const Quat &quat);
 
-namespace Rnd {
-
-/**
- * Recover the axis and angle of a rotation quaternion.
- *
- * A scalar part above one yields a zero angle rather than a domain error from the arc cosine. A
- * zero angle yields the Z axis, because the axis is otherwise indeterminate.
- *
- * @param quat The quaternion, treated as unit length.
- * @param pAxis Receives the axis, three floats.
- * @param pflAngle Receives the angle in radians.
- */
-void MakeAxisAngle(const Quat &quat, float *pAxis, float *pflAngle);
-
-} // namespace Rnd
+namespace Rnd {} // namespace Rnd
 
 /**
  * Build a rotation quaternion from three Euler angles.
@@ -90,31 +76,6 @@ void MakeAxisAngle(const Quat &quat, float *pAxis, float *pflAngle);
  * @ghidraAddress PAL: 0x0029bfa0
  */
 Quat EulerAnglesToQuat(const float *pAngles);
-
-/**
- * Compose two rotation quaternions.
- *
- * The product is the Hamilton product of a and b in that order.
- *
- * @param a The left factor.
- * @param b The right factor.
- * @param out Receives the product. Every component of both factors is loaded before the first
- *            store, which permits the destination to alias either factor.
- */
-void QuatMultiply(const Quat &a, const Quat &b, Quat &out);
-
-/**
- * Compose a rotation quaternion with a rotation vector.
- *
- * The rotation vector encodes its axis by direction and its angle by length. The result is the
- * Hamilton product of the quaternion with the vector's own quaternion, in that order. A
- * zero-length vector divides by zero and is not guarded against.
- *
- * @param quat The rotation to start from.
- * @param pRotVec The rotation vector, three floats.
- * @return The composed rotation.
- */
-Quat QuatRotateByVector(const Quat &quat, const float *pRotVec);
 
 /**
  * Interpolate between two rotation quaternions along the shorter arc.
@@ -149,20 +110,6 @@ namespace Rnd {
  */
 void MakeRotMatrix(const Quat &quat, float *pMat3Rows);
 
-/**
- * Extract Euler angles from a rotation matrix, inverting MakeRotMatrix() from three angles.
- *
- * The rows are taken as a pure rotation and are not normalised. When the Z component of the Y
- * row is beyond the gimbal lock limit, the X angle is a quarter turn with that component's sign,
- * the Y angle is zero, and the whole remaining rotation goes to the Z angle.
- * Mat34DecomposeEulerScale() performs the same extraction inline, and no call site of this copy
- * survives in the shipped program.
- *
- * @param pMat3Rows The rotation, three rows of four floats.
- * @param pAngles Receives the three angles in radians, ordered X, Y, and Z.
- */
-void MakeEuler(const float *pMat3Rows, float *pAngles);
-
 } // namespace Rnd
 
 /**
@@ -177,17 +124,3 @@ void MakeEuler(const float *pMat3Rows, float *pAngles);
  * @ghidraAddress PAL: 0x0029beb8
  */
 void Mat33ExtractScale(const float *pMat3Rows, float *pScale);
-
-/**
- * Interpolate between two sets of Euler angles the shorter way round each axis.
- *
- * Each component's difference is wrapped into the half-open range from minus one half turn to one
- * half turn with fmodf(), scaled by flT, and added to the starting angle. No call site survives in
- * the shipped program.
- *
- * @param pFrom The angles at a parameter of zero, three floats.
- * @param pTo The angles at a parameter of one, three floats.
- * @param pOut Receives the interpolated angles, three floats.
- * @param flT The interpolation parameter.
- */
-void LerpEulerAngles(const float *pFrom, const float *pTo, float *pOut, float flT);

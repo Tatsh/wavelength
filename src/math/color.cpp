@@ -1,38 +1,5 @@
 #include "math/color.h"
 
-void AddColor(const Color &left, const Color &right, Color &result) {
-    const float flAlpha = left.a + right.a;
-    const float flRed = left.r + right.r;
-    const float flGreen = left.g + right.g;
-    const float flBlue = left.b + right.b;
-    result.a = flAlpha;
-    result.r = flRed;
-    result.g = flGreen;
-    result.b = flBlue;
-}
-
-void SubColor(const Color &left, const Color &right, Color &result) {
-    const float flAlpha = left.a - right.a;
-    const float flRed = left.r - right.r;
-    const float flGreen = left.g - right.g;
-    const float flBlue = left.b - right.b;
-    result.a = flAlpha;
-    result.r = flRed;
-    result.g = flGreen;
-    result.b = flBlue;
-}
-
-void ScaleColor(const Color &source, float flScale, Color &result) {
-    const float flAlpha = source.a * flScale;
-    const float flRed = source.r * flScale;
-    const float flGreen = source.g * flScale;
-    const float flBlue = source.b * flScale;
-    result.a = flAlpha;
-    result.r = flRed;
-    result.g = flGreen;
-    result.b = flBlue;
-}
-
 namespace {
 
 // The ceiling the vector unit broadcasts into the minimum stage.
@@ -52,13 +19,6 @@ inline float ClampComponent(float flValue) {
 }
 
 } // namespace
-
-void ClampColorToUnitRange(const Color &source, Color &result) {
-    result.r = ClampComponent(source.r);
-    result.g = ClampComponent(source.g);
-    result.b = ClampComponent(source.b);
-    result.a = ClampComponent(source.a);
-}
 
 PrnStream &operator<<(PrnStream &stream, const Color &color) {
     stream << "(r:" << color.r << " g:" << color.g << " b:" << color.b << " a:" << color.a << ")";

@@ -59,31 +59,6 @@ void Subtract(const float *pA, const float *pB, float *pOut);
 } // namespace Rnd
 
 /**
- * Multiply a three-component vector by a scalar.
- *
- * Writes three components and does not touch the fourth word of the destination. The source
- * arrives in $a0, the destination in $a1, and the factor in $f12. Integer and float argument
- * registers are allocated independently on this target. The declared position of the factor is
- * therefore an inference from the destination-last order the other helpers here use, and the
- * register evidence alone does not fix it.
- *
- * @param pSrc The vector to scale.
- * @param flScale The factor to apply.
- * @param pOut Receives the product, and may alias pSrc.
- */
-void Vec3Scale(const float *pSrc, float flScale, float *pOut);
-
-/**
- * Negate a three-component vector.
- *
- * Writes three components and does not touch the fourth word of the destination.
- *
- * @param pSrc The vector to negate.
- * @param pOut Receives the negation, and may alias pSrc.
- */
-void NegateVec3(const float *pSrc, float *pOut);
-
-/**
  * Scale a three-component vector to unit length.
  *
  * The vector unit takes the reciprocal square root of the dot of the first three components with

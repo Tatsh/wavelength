@@ -71,22 +71,6 @@ Quat &Quat::Set(const float *pAxis, float flAngle) {
     return *this;
 }
 
-void Rnd::MakeAxisAngle(const Quat &quat, float *pAxis, float *pflAngle) {
-    *pflAngle = (quat.w > 1.0f) ? 0.0f : (2.0f * acosf(quat.w));
-
-    if (*pflAngle == 0.0f) {
-        pAxis[0] = 0.0f;
-        pAxis[1] = 0.0f;
-        pAxis[2] = 1.0f;
-        return;
-    }
-
-    const float flScale = 1.0f / sinf(*pflAngle * 0.5f);
-    pAxis[0] = quat.x * flScale;
-    pAxis[1] = quat.y * flScale;
-    pAxis[2] = quat.z * flScale;
-}
-
 Quat EulerAnglesToQuat(const float *pAngles) {
     const float flHalfX = pAngles[kX] * 0.5f;
     const float flHalfY = pAngles[kY] * 0.5f;
@@ -151,33 +135,6 @@ Quat &Quat::Set(const float *pMat3Rows) {
             flRoot;
     }
     return *this;
-}
-
-void QuatMultiply(const Quat &a, const Quat &b, Quat &out) {
-    const float flX = (((a.w * b.x) + (a.x * b.w)) + (a.y * b.z)) - (a.z * b.y);
-    const float flY = (((a.w * b.y) + (a.y * b.w)) + (a.z * b.x)) - (a.x * b.z);
-    const float flZ = (((a.w * b.z) + (a.z * b.w)) + (a.x * b.y)) - (a.y * b.x);
-    const float flW = (((a.w * b.w) - (a.x * b.x)) - (a.y * b.y)) - (a.z * b.z);
-
-    out.x = flX;
-    out.y = flY;
-    out.z = flZ;
-    out.w = flW;
-}
-
-Quat QuatRotateByVector(const Quat &quat, const float *pRotVec) {
-    const float flAngle =
-        sqrtf((pRotVec[0] * pRotVec[0]) + (pRotVec[1] * pRotVec[1]) + (pRotVec[2] * pRotVec[2]));
-
-    Vector3 axis;
-    axis.w = 1.0f;
-    Vec3Scale(pRotVec, 1.0f / flAngle, &axis.x);
-
-    Quat delta;
-    delta.Set(&axis.x, flAngle);
-    Quat out;
-    QuatMultiply(quat, delta, out);
-    return out;
 }
 
 void QuatSlerp(const Quat &from, const Quat &to, Quat &out, float flT) {
@@ -250,20 +207,6 @@ void Rnd::MakeRotMatrix(const Quat &quat, float *pMat3Rows) {
     pMat3Rows[6] = flYz + flWx;
 }
 
-void Rnd::MakeEuler(const float *pMat3Rows, float *pAngles) {
-    const float flYRowZ = MatAt(pMat3Rows, kRowY, kZ);
-    if (fabsf(flYRowZ) > kGimbalLockLimit) {
-        pAngles[kX] = (flYRowZ > 0.0f) ? kQuarterTurn : -kQuarterTurn;
-        pAngles[kZ] = atan2f(MatAt(pMat3Rows, kRowX, kY), MatAt(pMat3Rows, kRowX, kX));
-        pAngles[kY] = 0.0f;
-        return;
-    }
-
-    pAngles[kZ] = atan2f(-MatAt(pMat3Rows, kRowY, kX), MatAt(pMat3Rows, kRowY, kY));
-    pAngles[kX] = asinf(flYRowZ);
-    pAngles[kY] = atan2f(-MatAt(pMat3Rows, kRowX, kZ), MatAt(pMat3Rows, kRowZ, kZ));
-}
-
 void Mat33ExtractScale(const float *pMat3Rows, float *pScale) {
     const float flLenZ = RowLength(pMat3Rows, kRowZ);
     const float flLenX = RowLength(pMat3Rows, kRowX);
@@ -283,19 +226,4 @@ void Mat33ExtractScale(const float *pMat3Rows, float *pScale) {
     pScale[kZ] = (flHandedness > 0.0f) ? flLenZ : -flLenZ;
     pScale[kX] = flLenX;
     pScale[kY] = flLenY;
-}
-
-void LerpEulerAngles(const float *pFrom, const float *pTo, float *pOut, float flT) {
-    // The image reads every input before it writes the first output.
-    float aflOut[kComponentCount];
-    for (int i = 0; i < kComponentCount; ++i) {
-        float flDelta = fmodf((pTo[i] - pFrom[i]) + kHalfTurn, kFullTurn);
-        if (flDelta < 0.0f) {
-            flDelta += kFullTurn;
-        }
-        aflOut[i] = ((flDelta - kHalfTurn) * flT) + pFrom[i];
-    }
-    for (int i = 0; i < kComponentCount; ++i) {
-        pOut[i] = aflOut[i];
-    }
 }
