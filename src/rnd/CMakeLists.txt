@@ -1,33 +1,5 @@
 set(WAVELENGTH_RND_SRCS
-    amovieset.cpp
-    animatable.cpp
-    arena.cpp
-    blur.cpp
-    bufstream.cpp
-    button.cpp
-    cam.cpp
-    collideable.cpp
     dmapacket.cpp
-    drawable.cpp
-    environ.cpp
-    filestream.cpp
-    font.cpp
-    generator.cpp
-    keychannel.cpp
-    light.cpp
-    lightanim.cpp
-    lodmesh.cpp
-    manager.cpp
-    mat.cpp
-    matanim.cpp
-    memstream.cpp
-    mesh.cpp
-    meshanim.cpp
-    movie.cpp
-    multimesh.cpp
-    object.cpp
-    particlesys.cpp
-    particlesysanim.cpp
     ps.cpp
     pscam.cpp
     psenviron.cpp
@@ -37,7 +9,6 @@ set(WAVELENGTH_RND_SRCS
     psmultimesh.cpp
     psparticlesys.cpp
     pstex.cpp
-    raytest.cpp
     rndanimatable.cpp
     rndarena.cpp
     rndbitmap.cpp
@@ -69,18 +40,7 @@ set(WAVELENGTH_RND_SRCS
     rndtext.cpp
     rndtransanim.cpp
     rndtransformable.cpp
-    rndview.cpp
-    stream.cpp
-    string.cpp
-    text.cpp
-    transanim.cpp
-    transformable.cpp
-    tunnel.cpp
-    tunnelevent.cpp
-    tunnelseeker.cpp
-    tunnelseeksection.cpp
-    tunnelseekstrip.cpp
-    view.cpp)
+    rndview.cpp)
 
 add_library(wavelength_rnd STATIC ${WAVELENGTH_RND_SRCS})
 target_link_libraries(wavelength_rnd PRIVATE wavelength_common)

@@ -24,7 +24,6 @@ set(WAVELENGTH_OS_SRCS
     commandid.cpp
     cycles.cpp
     datetime.cpp
-    dbg.cpp
     debug.cpp
     devconsole.cpp
     file.cpp

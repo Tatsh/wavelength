@@ -4,7 +4,6 @@
 
 #include "math/sphere.h"
 #include "math/vector3.h"
-#include "os/dbg.h"
 
 namespace {
 
@@ -32,21 +31,6 @@ inline void GetPlanes(const Frustum &frustum, const Plane *apPlanes[]) {
 }
 
 constexpr int kPlaneCount = 6;
-
-// One plane under its title, the way the frustum printer writes each of the six. Every call after
-// the title goes to the sink the previous call returned.
-void PrintPlane(Rnd::Dbg &sink, const char *pszTitle, const Plane &plane) {
-    sink.Print(pszTitle)
-        ->Print("(a:")
-        ->Format("%.2f", plane.a)
-        ->Print(" b:")
-        ->Format("%.2f", plane.b)
-        ->Print(" c:")
-        ->Format("%.2f", plane.c)
-        ->Print(" d:")
-        ->Format("%.2f", plane.d)
-        ->Print(")");
-}
 
 } // namespace
 
@@ -84,16 +68,6 @@ PrnStream &operator<<(PrnStream &stream, const Frustum &frustum) {
     stream << "\n\ttop:" << frustum.mTop;
     stream << "\n\tbottom:" << frustum.mBottom;
     return stream;
-}
-
-Rnd::Dbg &operator<<(Rnd::Dbg &sink, const Frustum &frustum) {
-    PrintPlane(sink, "\n\tfront:", frustum.mFront);
-    PrintPlane(sink, "\n\tback:", frustum.mBack);
-    PrintPlane(sink, "\n\tleft:", frustum.mLeft);
-    PrintPlane(sink, "\n\tright:", frustum.mRight);
-    PrintPlane(sink, "\n\ttop:", frustum.mTop);
-    PrintPlane(sink, "\n\tbottom:", frustum.mBottom);
-    return sink;
 }
 
 int IsSphereOutsideFrustum(const Sphere &sphere, const Frustum &frustum) {

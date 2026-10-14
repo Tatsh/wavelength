@@ -3,9 +3,6 @@
 #include "math/plane.h"
 #include "os/prnstream.h"
 
-namespace Rnd {
-class Dbg;
-} // namespace Rnd
 class Sphere;
 
 /**
@@ -54,18 +51,6 @@ public:
  * @ghidraAddress PAL: 0x00299ea8
  */
 PrnStream &operator<<(PrnStream &stream, const Frustum &frustum);
-
-/**
- * Write the six planes of a view volume to a diagnostic sink.
- *
- * Each plane goes on its own tab-indented line under its title, as `(a: b: c: d:)` with two
- * decimals. Rnd::Cam::DumpText() is the one caller.
- *
- * @param sink The sink to write to.
- * @param frustum The view volume.
- * @return The sink.
- */
-Rnd::Dbg &operator<<(Rnd::Dbg &sink, const Frustum &frustum);
 
 /** Bit of the VU0 status flag IsSphereOutsideFrustum() reports, the sticky sign flag. */
 constexpr int kVu0StatusStickySign = 0x80;
