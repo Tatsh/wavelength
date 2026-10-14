@@ -74,12 +74,14 @@ add_custom_target(archives DEPENDS ${WAVELENGTH_LIBRARIES})
 add_executable(${CMAKE_PROJECT_NAME} $<TARGET_OBJECTS:wavelength_main>
                                      "${CMAKE_SOURCE_DIR}/sce/ee/src/crt0.s")
 enable_language(ASM)
-# The original linked every object. The metagame screens and the script interface register
-# themselves from static initialisation with nothing else referring to them. Both therefore link
-# whole. The system layer links whole as well. Otherwise the C library pulls its own _isatty()
-# before the layer's object, and both definitions meet in the link.
-set(WAVELENGTH_ARCHIVE_LIBRARIES ${WAVELENGTH_LIBRARIES})
-list(REMOVE_ITEM WAVELENGTH_ARCHIVE_LIBRARIES wavelength_main wavelength_met wavelength_script)
+# The original linked every object of the game and of the Sony libraries, whether or not anything
+# referred to it, so those archives link whole. The system layer links whole as well. Otherwise the
+# C library pulls its own _isatty() before the layer's object, and both definitions meet in the
+# link. The original left out the routines of Expat and LibTomCrypt that nothing calls, so those two
+# archives link only the objects the game reaches.
+set(WAVELENGTH_PARTIAL_LIBRARIES wavelength_expat wavelength_tomcrypt)
+set(WAVELENGTH_WHOLE_LIBRARIES ${WAVELENGTH_LIBRARIES})
+list(REMOVE_ITEM WAVELENGTH_WHOLE_LIBRARIES wavelength_main ${WAVELENGTH_PARTIAL_LIBRARIES})
 foreach(_crt crti.o crtbegin.o crtend.o crtn.o)
   execute_process(
     COMMAND ${CMAKE_C_COMPILER} -print-file-name=${_crt}
@@ -93,12 +95,11 @@ target_link_libraries(
   PRIVATE "${WAVELENGTH_crti_o}"
           "${WAVELENGTH_crtbegin_o}"
           -Wl,--whole-archive
-          wavelength_met
-          wavelength_script
+          ${WAVELENGTH_WHOLE_LIBRARIES}
           wavelength_runtime
           -Wl,--no-whole-archive
           -Wl,--start-group
-          ${WAVELENGTH_ARCHIVE_LIBRARIES}
+          ${WAVELENGTH_PARTIAL_LIBRARIES}
           stdc++
           m
           c
