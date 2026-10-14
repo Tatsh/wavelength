@@ -50,9 +50,7 @@ static int g_nDataReadCompiled = 0;
 
 static DataArray *ParseBlock();
 
-// Parse a data file in text form, or the stream when one is given.
-// NTSC-U/C: 0x002980d8, PAL: 0x002a1ce0
-static DataArray *ReadText(const char *pszPath, BinStream *pStream) {
+DataArray *DataArray::ReadText(const char *pszPath, BinStream *pStream) {
     if (pStream != nullptr) {
         g_pDataParseStream = pStream;
     } else {
@@ -109,7 +107,7 @@ static DataArray *Include(int nDelimiters) {
     if (!FileIsAbsolute(pszPath)) {
         pszPath = FormatString("%s/%s", FileGetPath(g_pszDataParseFile), pszPath);
     }
-    DataArray *pResult = ReadText(FileNormalizePath(pszPath), nullptr);
+    DataArray *pResult = DataArray::ReadText(FileNormalizePath(pszPath), nullptr);
 
     g_pszDataParseFile = pszFile;
     g_nDataParseNode = nNode;
