@@ -128,7 +128,8 @@ static inline LibnetAsyncBlock *BlockAt(const LibnetAsyncInfo *pInfo, unsigned i
 }
 
 static inline void RetryDelay(void) {
-    for (volatile int i = kRetryDelay; i != -1; i -= kRetryDelayStep) {
+    for (int i = kRetryDelay; i != -1; i -= kRetryDelayStep) {
+        __asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop");
     }
 }
 
