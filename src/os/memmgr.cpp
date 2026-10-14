@@ -270,6 +270,22 @@ void operator delete[](void *pBlock) noexcept {
     PoolMemFree(pBlock);
 }
 
+void *operator new(size_t nSize, std::align_val_t nAlign) {
+    return PoolMemAlloc(static_cast<int>(nSize), "new", static_cast<int>(nAlign));
+}
+
+void *operator new[](size_t nSize, std::align_val_t nAlign) {
+    return PoolMemAlloc(static_cast<int>(nSize), "new[]", static_cast<int>(nAlign));
+}
+
+void operator delete(void *pBlock, std::align_val_t) noexcept {
+    PoolMemFree(pBlock);
+}
+
+void operator delete[](void *pBlock, std::align_val_t) noexcept {
+    PoolMemFree(pBlock);
+}
+
 void *PoolAlloc(int nSize, int /* nBlockSize */, const char *pszTag, int nUnused) {
     if (g_pSmallBlockPool == nullptr) {
         g_pSmallBlockPool = new FixedSizeAlloc();

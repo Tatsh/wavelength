@@ -5,6 +5,8 @@
 #include <stdio.h>
 
 #ifdef __cplusplus
+#include <new>
+
 #include "os/prnstream.h"
 #endif
 
@@ -32,6 +34,28 @@ void *operator new[](size_t nSize);
  * @ghidraAddress PAL: 0x002a4dc8
  */
 void *operator new(size_t nSize);
+
+/**
+ * Allocate an over-aligned object from the pool heaps.
+ *
+ * The original compiler had no aligned `operator new`, so every allocation used the pool heaps.
+ * Without this form, an object with an `alignas` member would be allocated by the C runtime, whose
+ * heap the pool heaps leave empty.
+ *
+ * @param nSize The block size in bytes.
+ * @param nAlign The alignment in bytes.
+ * @return The block.
+ */
+void *operator new(size_t nSize, std::align_val_t nAlign);
+
+/**
+ * Allocate an over-aligned array from the pool heaps.
+ *
+ * @param nSize The block size in bytes.
+ * @param nAlign The alignment in bytes.
+ * @return The block.
+ */
+void *operator new[](size_t nSize, std::align_val_t nAlign);
 #endif
 
 /**
@@ -248,6 +272,22 @@ void operator delete[](void *pBlock) noexcept;
  * @ghidraAddress PAL: 0x002a4df0
  */
 void operator delete(void *pBlock) noexcept;
+
+/**
+ * Release an over-aligned object through PoolMemFree().
+ *
+ * @param pBlock The block to release.
+ * @param nAlign The alignment the block was allocated with.
+ */
+void operator delete(void *pBlock, std::align_val_t nAlign) noexcept;
+
+/**
+ * Release an over-aligned array through PoolMemFree().
+ *
+ * @param pBlock The block to release.
+ * @param nAlign The alignment the block was allocated with.
+ */
+void operator delete[](void *pBlock, std::align_val_t nAlign) noexcept;
 #endif
 
 /**
