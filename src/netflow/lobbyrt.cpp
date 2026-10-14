@@ -663,7 +663,7 @@ void LobbyRT::LoadConfig() {
     }
     // Yes, the binary reads mSecure even when `server.cfg` did not set it.
     if (mSecure != 0) {
-        rtNetGenerateKeyPair(mPublicKey, mPrivateKey);
+        rtNetGenerateKeyPair(&mKeyPair.modulus, &mKeyPair.privateExponent);
     }
 }
 

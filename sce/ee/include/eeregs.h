@@ -12,6 +12,12 @@
 #define T0_COUNT ((volatile unsigned int *)0x10000000)
 /** Timer 0 mode register. */
 #define T0_MODE ((volatile unsigned int *)0x10000010)
+/** Timer 1 counter register. */
+#define T1_COUNT ((volatile unsigned int *)0x10000800)
+/** Timer 2 counter register. */
+#define T2_COUNT ((volatile unsigned int *)0x10001000)
+/** Timer 3 counter register. */
+#define T3_COUNT ((volatile unsigned int *)0x10001800)
 /** Timer 3 mode register. */
 #define T3_MODE ((volatile unsigned int *)0x10001810)
 

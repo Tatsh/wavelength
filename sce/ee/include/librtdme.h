@@ -20,6 +20,12 @@ extern "C" {
 /** The size of the public key of a server. */
 #define RT_NET_SERVER_KEY_SIZE 64
 
+/** A key of 512 bits. A key may lie at any address of a packet, so it has no alignment. */
+typedef union __attribute__((packed)) {
+    unsigned char bytes[RT_NET_SERVER_KEY_SIZE];                       /*!< The bytes. */
+    unsigned int words[RT_NET_SERVER_KEY_SIZE / sizeof(unsigned int)]; /*!< The words. */
+} rtNetKey;
+
 /** The size of the session and access keys, the terminator included. */
 #define RT_NET_KEY_SIZE 17
 
@@ -58,12 +64,12 @@ typedef struct {
  * Receiver of the messages of one registered type.
  *
  * @param connection The connection the message arrived on.
- * @param type The registered type.
+ * @param worldId The session of the connection.
  * @param sender The peer that sent the message.
  * @param message The message.
  * @return The number of bytes the receiver consumed.
  */
-typedef int (*rtDmeMessageHandler)(int connection, int type, int sender, rtDmeMessage *message);
+typedef int (*rtDmeMessageHandler)(int connection, int worldId, int sender, rtDmeMessage *message);
 
 /**
  * Allocator the library takes its memory from.
@@ -80,17 +86,31 @@ typedef void *(*rtAllocFunc)(int size);
  */
 typedef void (*rtFreeFunc)(void *block);
 
-/** The parameters of rtNetInitialize(). 0x10 bytes. */
+/** An RSA key pair. */
 typedef struct {
-    int reserved00;                 /* +0x00, set by rtNetDefaultSettings(). */
-    int applicationId;              /*!< The identifier of the game. */
-    const unsigned char *publicKey; /*!< The public key of the console, or null. */
-    int reserved0C;                 /* +0x0c, set by rtNetDefaultSettings(). */
+    rtNetKey modulus;         /*!< The modulus, the public key. */
+    rtNetKey privateExponent; /*!< The private exponent. */
+} rtNetKeyPair;
+
+/** The version of the parameters and the status of rtNetInitialize(). */
+#define RT_NET_SETTINGS_VERSION 1
+
+/** The size of the text of the version of the library, the terminator included. */
+#define RT_NET_VERSION_SIZE 16
+
+/** The parameters of rtNetInitialize(). */
+typedef struct {
+    int version;                 /*!< RT_NET_SETTINGS_VERSION. */
+    int applicationId;           /*!< The identifier of the game. */
+    const rtNetKeyPair *keyPair; /*!< The key pair of the console, or null. */
+    int port;                    /*!< The port of the peers, or 0 for the default. */
 } rtNetSettings;
 
-/** The status rtNetInitialize() fills. 0x18 bytes. */
+/** The status rtNetInitialize() fills. */
 typedef struct {
-    int reserved[6]; /* +0x00, not read by the game. */
+    int version;                              /*!< RT_NET_SETTINGS_VERSION. */
+    int result;                               /*!< 0, or an error code. */
+    char libraryVersion[RT_NET_VERSION_SIZE]; /*!< The version of the library. */
 } rtNetInitStatus;
 
 /**
@@ -131,14 +151,14 @@ int rtNetInitialize(const rtNetSettings *params, rtNetInitStatus *status);
 int rtNetClose(void);
 
 /**
- * Set the sizes of the buffers of the library.
+ * Start the datagram service of the peers with the sizes of its queues.
  *
- * @param receiveSize The size of the receive buffer in bytes.
- * @param sendSize The size of the send buffer in bytes.
+ * @param sendSize The size of the send queue in bytes.
+ * @param receiveSize The size of the receive queue in bytes.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8868
  */
-int rtNetSetBufferSizes(int receiveSize, int sendSize);
+int rtNetSetBufferSizes(int sendSize, int receiveSize);
 
 /**
  * Generate the key pair of the console.
@@ -147,8 +167,7 @@ int rtNetSetBufferSizes(int receiveSize, int sendSize);
  * @param privateKey Receives the private key.
  * @ghidraAddress NTSC-U/C: 0x002a9f74
  */
-void rtNetGenerateKeyPair(unsigned char publicKey[RT_NET_SERVER_KEY_SIZE],
-                          unsigned char privateKey[RT_NET_SERVER_KEY_SIZE]);
+void rtNetGenerateKeyPair(rtNetKey *publicKey, rtNetKey *privateKey);
 
 /**
  * Receiver of the result of rtDmeHost() and rtDmeConnect().

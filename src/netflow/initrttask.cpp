@@ -15,9 +15,9 @@ namespace {
 // The alignment of the blocks of the library.
 constexpr int kBlockAlignment = 16;
 
-// The sizes of the receive and send buffers of the library in bytes.
-constexpr int kReceiveBufferSize = 65536;
-constexpr int kSendBufferSize = 32768;
+// The sizes of the send and receive queues of the datagram service in bytes.
+constexpr int kSendBufferSize = 65536;
+constexpr int kReceiveBufferSize = 32768;
 
 // The wait for an answer of the lobby server, in milliseconds.
 constexpr int kMediusTimeoutMs = 15000;
@@ -39,14 +39,14 @@ void InitRTTask::OnStart() {
         (void)rtNetDefaultSettings(&settings);
         settings.applicationId = LobbyRT::kApplicationId;
         if (TheLobbyRT->mSecure != 0) {
-            settings.publicKey = TheLobbyRT->mPublicKey;
+            settings.keyPair = &TheLobbyRT->mKeyPair;
         }
         rtNetInitStatus status;
         memset(&status, 0, sizeof(status));
         nError = rtNetInitialize(&settings, &status);
         LobbyRT::ReportNetError(__LINE__, nError);
         if (nError == 0) {
-            nError = rtNetSetBufferSizes(kReceiveBufferSize, kSendBufferSize);
+            nError = rtNetSetBufferSizes(kSendBufferSize, kReceiveBufferSize);
             LobbyRT::ReportNetError(__LINE__, nError); // Yes, the binary goes on after an error.
             if (LaunchpadRT::RegisterMessages() == 0) {
                 rtMediusInitParams params;

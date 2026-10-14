@@ -53,7 +53,29 @@ set(WAVELENGTH_SONYLIB_SRCS
     src/tty.c)
 
 # The SCE-RT network library.
-set(WAVELENGTH_RT_SRCS src/rt/libnet.c src/rt/mgcl.c src/rt/rtmediushandlers.c)
+set(WAVELENGTH_RT_SRCS
+    src/rt/libnet.c
+    src/rt/mgcl.c
+    src/rt/rtchannel.c
+    src/rt/rtchannelapi.c
+    src/rt/rtclock.c
+    src/rt/rtdmemain.c
+    src/rt/rtlargeintcore.c
+    src/rt/rtmediushandlers.c
+    src/rt/rtmemory.c
+    src/rt/rtmutex.c
+    src/rt/rtrandom.c
+    src/rt/rtrc4.c
+    src/rt/rtrecord.c
+    src/rt/rtringbuffer.c
+    src/rt/rtrsa.c
+    src/rt/rtsecurity.c
+    src/rt/rtsha1.c
+    src/rt/rtstats.c
+    src/rt/rtstream.c
+    src/rt/rttime.c
+    src/rt/rtupnp.c
+    src/rt/rtupnpxml.c)
 
 add_library(wavelength_sonylibs STATIC ${WAVELENGTH_SONYLIB_SRCS} ${WAVELENGTH_RT_SRCS})
 target_link_libraries(wavelength_sonylibs PRIVATE wavelength_common)
@@ -64,7 +86,8 @@ set_source_files_properties(src/rt/mgcl.c PROPERTIES COMPILE_OPTIONS -Wno-string
 # Most receivers of the lobby messages only report the size of the record.
 set_source_files_properties(src/rt/rtmediushandlers.c PROPERTIES COMPILE_OPTIONS -Wno-unused-parameter)
 target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include"
-                                                      "${CMAKE_SOURCE_DIR}/sce/ee/src")
+                                                      "${CMAKE_SOURCE_DIR}/sce/ee/src"
+                                                      "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse")
 
 # The system layer the compiler's C and C++ runtime needs, over the reconstructed kernel.
 add_library(wavelength_runtime STATIC runtime/newlib.c runtime/pthread.c runtime/softfloat.c)

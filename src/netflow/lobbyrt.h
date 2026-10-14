@@ -618,33 +618,32 @@ public:
      */
     static int sUnlimitedUpload;
 
-    int mDisconnectReason;              /*!< One of DisconnectReason. */
-    int mDisconnected;                  /*!< Non-zero once the connection failed. */
-    NetMultiTask mConnectTask;          /*!< The chain of Connect(). */
-    NetMultiTask mDisconnectTask;       /*!< The chain of Disconnect() and Fail(). */
-    NetMultiTask mCreateAccountTask;    /*!< The chain of CreateAccount(). */
-    NetMultiTask mDeleteAccountTask;    /*!< The chain of DeleteAccount(). */
-    NetMultiTask mChangePasswordTask;   /*!< The chain of ChangePassword(). */
-    NetMultiTask mLoginTask;            /*!< The chain of Login(). */
-    NetMultiTask mChatroomsTask;        /*!< The chain of RequestChatrooms(). */
-    NetMultiTask mJoinChatroomTask;     /*!< The chain of JoinChatroom(). */
-    NetMultiTask mCreateChatroomTask;   /*!< The chain of CreateChatroom(). */
-    NetMultiTask mLobbyPlayersTask;     /*!< The chain of RequestLobbyPlayers(). */
-    NetMultiTask mLaunchpadPlayersTask; /*!< The chain of RequestLaunchpadPlayers(). */
-    NetMultiTask mLaunchpadsTask;       /*!< The chain of RequestLaunchpads(). */
-    NetMultiTask mFindPlayerTask;       /*!< The chain of FindPlayer(). */
-    NetMultiTask mRanksTask;            /*!< The chain of RequestRanks(). */
-    NetMultiTask mDownloadTask;         /*!< The chain of the downloads. */
-    NetMultiTask mUploadTask;           /*!< The chain of the uploads. */
-    NetMultiTask mFileListTask;         /*!< The chain of RequestFiles(). */
-    NetMultiTask mDeleteFileTask;       /*!< The chain of DeleteFile(). */
-    TaskList mTasks;                    /*!< The steps that run on their own. */
-    PeriodicTask mCheckInet;            /*!< The check of the network connection each second. */
-    int mRtReady;                       /*!< Non-zero while the library is started. */
-    int mMediusConnected;               /*!< Non-zero while the lobby server is connected. */
-    String mSessionKey;                 /*!< The key of the lobby session. */
-    unsigned char mPublicKey[RT_NET_SERVER_KEY_SIZE];  /*!< The public key of the console. */
-    unsigned char mPrivateKey[RT_NET_SERVER_KEY_SIZE]; /*!< The private key of the console. */
+    int mDisconnectReason;                /*!< One of DisconnectReason. */
+    int mDisconnected;                    /*!< Non-zero once the connection failed. */
+    NetMultiTask mConnectTask;            /*!< The chain of Connect(). */
+    NetMultiTask mDisconnectTask;         /*!< The chain of Disconnect() and Fail(). */
+    NetMultiTask mCreateAccountTask;      /*!< The chain of CreateAccount(). */
+    NetMultiTask mDeleteAccountTask;      /*!< The chain of DeleteAccount(). */
+    NetMultiTask mChangePasswordTask;     /*!< The chain of ChangePassword(). */
+    NetMultiTask mLoginTask;              /*!< The chain of Login(). */
+    NetMultiTask mChatroomsTask;          /*!< The chain of RequestChatrooms(). */
+    NetMultiTask mJoinChatroomTask;       /*!< The chain of JoinChatroom(). */
+    NetMultiTask mCreateChatroomTask;     /*!< The chain of CreateChatroom(). */
+    NetMultiTask mLobbyPlayersTask;       /*!< The chain of RequestLobbyPlayers(). */
+    NetMultiTask mLaunchpadPlayersTask;   /*!< The chain of RequestLaunchpadPlayers(). */
+    NetMultiTask mLaunchpadsTask;         /*!< The chain of RequestLaunchpads(). */
+    NetMultiTask mFindPlayerTask;         /*!< The chain of FindPlayer(). */
+    NetMultiTask mRanksTask;              /*!< The chain of RequestRanks(). */
+    NetMultiTask mDownloadTask;           /*!< The chain of the downloads. */
+    NetMultiTask mUploadTask;             /*!< The chain of the uploads. */
+    NetMultiTask mFileListTask;           /*!< The chain of RequestFiles(). */
+    NetMultiTask mDeleteFileTask;         /*!< The chain of DeleteFile(). */
+    TaskList mTasks;                      /*!< The steps that run on their own. */
+    PeriodicTask mCheckInet;              /*!< The check of the network connection each second. */
+    int mRtReady;                         /*!< Non-zero while the library is started. */
+    int mMediusConnected;                 /*!< Non-zero while the lobby server is connected. */
+    String mSessionKey;                   /*!< The key of the lobby session. */
+    rtNetKeyPair mKeyPair;                /*!< The key pair of the console. */
     int mSecure;                          /*!< Non-zero when the connection is encrypted. */
     const char *mServerName;              /*!< The host name of the lobby server. */
     int mServerPort;                      /*!< The port of the lobby server. */
