@@ -10,7 +10,7 @@ OvyAllPlayer::OvyAllPlayer(int nPlayer, int nIndex, RndView *pHudView) {
     if (TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
         mScore = new OvyScore(nPlayer, nIndex, pHudView);
     } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
-        mDuelScore = new OvyDuelScore(nIndex);
+        mDuelScore = new OvyDuelScore(nIndex, pHudView);
     }
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
         TheGameDb->mRuleSet == GameDb::kRuleSetDuel ||

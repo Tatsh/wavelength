@@ -16,7 +16,8 @@ constexpr float kFlashTime = 960.0f;
 
 } // namespace
 
-OvyDuelScore::OvyDuelScore(int nIndex) : HideablePanel(nullptr, nullptr, false) {
+OvyDuelScore::OvyDuelScore(int nIndex, [[maybe_unused]] RndView *pHudView)
+    : HideablePanel(nullptr, nullptr, false) {
     mLitCount = 0;
     mFlashTime = kNoFlash;
     mView = dynamic_cast<RndView *>(TheManager.Find(FormatString("HUDd letters %d.view", nIndex)));
