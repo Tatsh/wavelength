@@ -133,6 +133,8 @@ public:
 /**
  * Write a message as its 16-bit identity and then its payload through saveGuts().
  *
+ * Type() is dispatched twice with the first result discarded.
+ *
  * @param stream The stream.
  * @param pMsg The message.
  * @return The stream.

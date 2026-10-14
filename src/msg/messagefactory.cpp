@@ -2,7 +2,6 @@
 
 #include <algorithm>
 
-#include "msg/messageio.h"
 #include "os/debug.h"
 
 std::vector<MessageFactory::Entry> *MessageFactory::List() {
