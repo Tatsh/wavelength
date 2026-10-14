@@ -108,9 +108,6 @@ public:
 
     /**
      * Register the loadable renderer classes.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00236800
-     * @ghidraAddress PAL: 0x0023f380
      */
     void Init();
 
@@ -447,8 +444,6 @@ private:
 
 /**
  * The renderer's object registry.
- *
- * @ghidraAddress NTSC-U/C: 0x0043c798
  */
 extern Manager TheManager;
 

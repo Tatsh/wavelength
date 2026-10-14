@@ -10,6 +10,7 @@
 #include "os/system.h"
 #include "rnd/manager.h"
 #include "rnd/object.h"
+#include "rnd/rndmanager.h"
 #include "rnd/rndrenderer.h"
 #include "script/scriptfunction.h"
 #include "synth/synth.h"
@@ -234,7 +235,7 @@ void UpdateAppFrame() {
 // NTSC-U/C: 0x001009e0
 void InitializeAppSubsystems(int argc, char **argv) {
     SystemInit(argc, argv, kConfigFile);
-    Rnd::TheManager.Init();
+    ::TheManager.Init();
     TheRnd->Init();
     TheMetagame.ShowLoadingScreen();
     Synth::Create();
