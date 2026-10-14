@@ -40,8 +40,8 @@ constexpr int kDefaultAnimRange = 1;
 // The number of avatars when `num_avatars` is missing.
 constexpr int kDefaultAvatarCount = 4;
 
-// The loader of the base model runs the post-load pass and deletes its objects with it.
-constexpr int kBaseLoaderFlags = RndLoader::kPostLoad | RndLoader::kDeleteObjects;
+// The loader of the base model reports the objects that exist and deletes its objects with it.
+constexpr int kBaseLoaderFlags = RndLoader::kReportExisting | RndLoader::kDeleteObjects;
 
 // The camera Init() starts at, and the cameras of the avatar display sizes.
 constexpr char kStartCam[] = "bust";
