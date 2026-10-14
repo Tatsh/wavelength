@@ -31,10 +31,15 @@ constexpr int kSemaphoreAttribute = 1;
 constexpr int kResultBadArgument = 2;
 constexpr int kResultDmaFull = 4;
 
+// The __DATE__ and __TIME__ texts of the retail build.
 #ifdef VIDEO_STANDARD_PAL
 constexpr char kVersionText[] = "libnetb version: 1.09.0003";
+constexpr char kBuildDate[] = "May 10 2003";
+constexpr char kBuildTime[] = "16:49:19";
 #else
 constexpr char kVersionText[] = "libnetb version: 1.09.0002";
+constexpr char kBuildDate[] = "Dec  2 2002";
+constexpr char kBuildTime[] = "12:00:21";
 #endif
 constexpr char kVerboseOption[] = "-verbose";
 constexpr char kSendDelayOption[] = "-send_delay=";
@@ -42,8 +47,7 @@ constexpr int kSendDelayOptionLength = sizeof(kSendDelayOption) - 1;
 constexpr char kMonthNames[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
 constexpr int kMonthNameLength = 3;
 constexpr char kMonthFormat[] = "%.3s";
-// Offsets into the __DATE__ text, which reads "Mmm dd yyyy", and the __TIME__ text, which reads
-// "hh:mm:ss".
+// Offsets into kBuildDate, which reads "Mmm dd yyyy", and kBuildTime, which reads "hh:mm:ss".
 constexpr int kDateDayOffset = 4;
 constexpr int kDateYearOffset = 7;
 constexpr int kTimeMinuteOffset = 3;
@@ -494,22 +498,20 @@ bool Libnet::FormatBuildDate(char *text, int size) {
     if (text == nullptr) {
         return false;
     }
-    constexpr char kDate[] = __DATE__;
-    constexpr char kTime[] = __TIME__;
     char month[8];
-    sprintf(month, kMonthFormat, kDate);
+    sprintf(month, kMonthFormat, kBuildDate);
     const int monthNumber =
         static_cast<int>(strstr(kMonthNames, month) - kMonthNames) / kMonthNameLength + 1;
-    const int day = static_cast<int>(strtol(&kDate[kDateDayOffset], nullptr, kDecimal));
+    const int day = static_cast<int>(strtol(&kBuildDate[kDateDayOffset], nullptr, kDecimal));
     char formatted[32];
     sprintf(formatted,
             kBuildDateFormat,
             monthNumber,
             day,
-            &kDate[kDateYearOffset],
-            kTime,
-            &kTime[kTimeMinuteOffset],
-            &kTime[kTimeSecondOffset]);
+            &kBuildDate[kDateYearOffset],
+            kBuildTime,
+            &kBuildTime[kTimeMinuteOffset],
+            &kBuildTime[kTimeSecondOffset]);
     strncpy(text, formatted, size);
     return true;
 }
