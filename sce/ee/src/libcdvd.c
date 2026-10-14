@@ -10,7 +10,7 @@ enum {
     kCdServerSCmd = 0x80000593,
     kCdServerNCmd = 0x80000595,
     kCdServerSearchFile = 0x80000597,
-    kCdServerDiskReady = 0x8000059a,
+    kCdServerDiskReady = 0x8000059c,
     // The SIF command the IOP raises before the console powers off.
     kCdPOffCommand = 0x80000012,
 
