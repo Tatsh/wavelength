@@ -17,6 +17,7 @@
 
 namespace {
 
+constexpr char kCursorComponent[] = "cursor";
 constexpr char kIsEditTag[] = "is_edit";
 constexpr char kModeFormatToken[] = "NET_HOST_MODE";
 constexpr char kGameToken[] = "mode_game";
@@ -287,8 +288,14 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         return NetParamsScreen::HandleSelect(pMsg);
     }
     if (std::strcmp(pMsg->mComponent->mName, kHostComponent) != 0) {
-        UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
-        pPanel->SetFocus(pPanel->FindComponent(kHostComponent, false), kPadNone);
+        // Yes, the binary focuses the host button on both paths.
+        if (std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
+            UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
+            pPanel->SetFocus(pPanel->FindComponent(kHostComponent, false), kPadNone);
+        } else {
+            UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
+            pPanel->SetFocus(pPanel->FindComponent(kHostComponent, false), kPadNone);
+        }
         return NetParamsScreen::HandleSelect(pMsg);
     }
 
