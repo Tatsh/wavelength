@@ -7,6 +7,7 @@
 #include "gfx/gfxmanager.h"
 #include "gfx/gfxutil.h"
 #include "gfx/tnlgeom.h"
+#include "gfx/unreadvector.h"
 #include "math/rand.h"
 #include "math/sine.h"
 #include "math/transformops.h"

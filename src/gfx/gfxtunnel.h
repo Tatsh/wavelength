@@ -1391,13 +1391,6 @@ public:
     static float sPanelWidth;
 
     /**
-     * Set to 7 in each component and never read.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0043b310
-     */
-    static Vector3 sReserved310;
-
-    /**
      * The offset of the boundaries between the sections, `boundary_offset`.
      *
      * @ghidraAddress NTSC-U/C: 0x0043b320

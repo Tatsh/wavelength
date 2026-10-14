@@ -7,6 +7,7 @@
 #include "gfx/gfxmanager.h"
 #include "gfx/playercamfx.h"
 #include "gfx/tnlgeom.h"
+#include "gfx/unreadvector.h"
 #include "math/transformops.h"
 
 namespace {

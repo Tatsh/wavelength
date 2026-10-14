@@ -9,6 +9,7 @@
 #include "game/triggermgr.h"
 #include "gfx/camslide.h"
 #include "gfx/gfxconfig.h"
+#include "gfx/unreadvector.h"
 #include "os/debug.h"
 #include "os/locale.h"
 #include "os/system.h"
@@ -162,8 +163,6 @@ RndView *FindView(const char *pszName) {
 // NTSC-U/C: 0x001b6258, PAL: 0x001beff8
 // NTSC-U/C: 0x001b6500, PAL: 0x001bf2a0
 // NTSC-U/C: 0x001b6520, PAL: 0x001bf2c0
-
-Vector3 GfxManager::sReservedAe90{7.0f, 7.0f, 7.0f, 7.0f};
 
 Color GfxManager::sInstrumentColors[kNumInstruments] = {
     {1.0f, 0.1f, 1.0f, 1.0f},

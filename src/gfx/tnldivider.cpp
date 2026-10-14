@@ -6,6 +6,7 @@
 #include "game/gamedb.h"
 #include "gfx/gfxutil.h"
 #include "gfx/playercamfx.h"
+#include "gfx/unreadvector.h"
 #include "os/locale.h"
 #include "rnd/rndcollideable.h"
 #include "rnd/rndenviron.h"

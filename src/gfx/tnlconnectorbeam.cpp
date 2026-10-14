@@ -8,6 +8,7 @@
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
 #include "gfx/polynomial.h"
+#include "gfx/unreadvector.h"
 #include "math/interpolator.h"
 #include "math/rand.h"
 #include "math/transform.h"

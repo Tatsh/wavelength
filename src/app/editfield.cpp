@@ -1,5 +1,6 @@
 #include "app/editfield.h"
 
+#include "gfx/unreadvector.h"
 #include "os/keyboard.h"
 
 namespace {

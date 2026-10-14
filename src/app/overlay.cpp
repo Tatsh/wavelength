@@ -10,6 +10,7 @@
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
 #include "gfx/gfxutil.h"
+#include "gfx/unreadvector.h"
 #include "math/interpolator.h"
 #include "os/string.h"
 #include "os/system.h"

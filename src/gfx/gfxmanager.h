@@ -1383,13 +1383,6 @@ public:
     const Color *GetPlayerBgColor(int nPlayer) const;
 
     /**
-     * Set to 7 in each component and never read.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0043ae90
-     */
-    static Vector3 sReservedAe90;
-
-    /**
      * The colours of the instruments, indexed by Instrument.
      *
      * @ghidraAddress NTSC-U/C: 0x0043aea0

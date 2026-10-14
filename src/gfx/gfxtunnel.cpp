@@ -32,6 +32,7 @@
 #include "gfx/tnlstreakgemfx.h"
 #include "gfx/tnltrackfx.h"
 #include "gfx/tnlwinshell.h"
+#include "gfx/unreadvector.h"
 #include "math/rand.h"
 #include "math/vector2.h"
 #include "math/vector3.h"
@@ -253,7 +254,6 @@ float GfxTunnel::sPreviewCamChangeTime = 1000.0f;
 float GfxTunnel::sDuelFailDarkening = 0.5f;
 float GfxTunnel::sMeshGemScale = 1.0f;
 float GfxTunnel::sPanelWidth = 0.841903567f;
-Vector3 GfxTunnel::sReserved310{7.0f, 7.0f, 7.0f, 7.0f};
 // Yes, the fourth word of these vectors is zero because the binary never writes it.
 Vector3 GfxTunnel::sBoundaryOffset{0.0f, 0.0f, -1.0f, 0.0f};
 Color GfxTunnel::sSeekerColor{0.0f, 0.0f, 0.0f, 0.0f};

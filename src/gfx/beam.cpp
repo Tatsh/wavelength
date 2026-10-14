@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "game/gamedb.h"
+#include "gfx/unreadvector.h"
 #include "math/rand.h"
 #include "math/sine.h"
 #include "os/string.h"

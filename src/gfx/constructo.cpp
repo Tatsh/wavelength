@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "gfx/unreadvector.h"
 #include "os/debug.h"
 #include "os/string.h"
 #include "rnd/rndmanager.h"

@@ -8,6 +8,7 @@
 #include "gfx/gfxconfig.h"
 #include "gfx/gfxmanager.h"
 #include "gfx/meshrotation.h"
+#include "gfx/unreadvector.h"
 #include "os/debug.h"
 #include "os/string.h"
 #include "rnd/rnddrawable.h"

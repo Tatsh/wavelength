@@ -7,6 +7,7 @@
 #include "game/triggermgr.h"
 #include "gfx/constructo.h"
 #include "gfx/gfxmanager.h"
+#include "gfx/unreadvector.h"
 #include "math/key.h"
 #include "math/vector2.h"
 #include "os/string.h"

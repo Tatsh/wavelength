@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "gfx/unreadvector.h"
 #include "math/transformops.h"
 #include "math/vector3.h"
 #include "os/joypad.h"

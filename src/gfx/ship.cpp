@@ -11,6 +11,7 @@
 #include "gfx/gfxtunnel.h"
 #include "gfx/gfxutil.h"
 #include "gfx/shipflyin.h"
+#include "gfx/unreadvector.h"
 #include "math/rand.h"
 #include "math/transformops.h"
 #include "os/string.h"

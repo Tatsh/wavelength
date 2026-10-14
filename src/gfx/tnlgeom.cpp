@@ -5,6 +5,7 @@
 
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
+#include "gfx/unreadvector.h"
 #include "math/transformops.h"
 #include "math/vector3.h"
 #include "os/debug.h"
