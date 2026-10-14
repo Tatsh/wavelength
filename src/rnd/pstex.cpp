@@ -19,8 +19,8 @@ constexpr int kAlignPageBlocks = 16;
 constexpr int kAlign16Blocks = 8;
 constexpr int kAlign8Blocks = 4;
 constexpr int kAlign4Blocks = 2;
-constexpr int kWordsPerBlock = 64;
-constexpr int kBlockWordsRound = kWordsPerBlock - 1;
+constexpr int kWordsPerBlockShift = 6;
+constexpr int kBlockWordsRound = (1 << kWordsPerBlockShift) - 1;
 
 // The GS registers a texture writes.
 constexpr int kGsRegTex01 = 0x06;
@@ -423,7 +423,7 @@ int PsTex::FreeBlockCount() {
 }
 
 void PsTex::ReserveDisplayMemory() {
-    const int nReserved = (ThePs.GetReservedVramWords() + kBlockWordsRound) / kWordsPerBlock;
+    const int nReserved = (ThePs.GetReservedVramWords() + kBlockWordsRound) >> kWordsPerBlockShift;
     const FreeRange free{static_cast<unsigned short>(nReserved),
                          static_cast<unsigned short>(kGsBlockCount - nReserved)};
     sFreeRanges.clear();
