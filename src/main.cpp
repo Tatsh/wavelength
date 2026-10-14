@@ -29,16 +29,19 @@ constexpr int kDefaultRndHeapCompactBytes = 100000;
 constexpr int kLoadedRndHeapCompactBytes = 40000;
 
 // NTSC-U/C: 0x003ae480
-bool g_bQuitRequested = false;
+int g_bQuitRequested = 0;
 
 // NTSC-U/C: 0x003ae484
 int g_nRndHeapCompactBytes = kDefaultRndHeapCompactBytes;
 
 // NTSC-U/C: 0x003ae488
-bool g_bRndHeapCompactStrict = false;
+int g_bRndHeapCompactStrict = 0;
 
 // NTSC-U/C: 0x00100200, PAL: 0x00100200
 void CheckLeftoverObjects() {
+    if (TheManager.mObjects.empty()) {
+        return;
+    }
     bool bLeftover = false;
     for (const auto &entry : TheManager.mObjects) {
         if (entry.second->mInternal == 0) {
@@ -60,7 +63,7 @@ void CheckLeftoverObjects() {
 
 // NTSC-U/C: 0x00100318, PAL: 0x00100318
 void QuitApp([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    g_bQuitRequested = true;
+    g_bQuitRequested = 1;
 }
 
 // NTSC-U/C: 0x00100328, PAL: 0x00100328
@@ -73,7 +76,7 @@ void HandleMetagameFrontEnd(int nMetagameEvent) {
         TheRnd->EndFrame();
         TheWorldMgr->Load();
     } else if (nMetagameEvent == Metagame::kEventQuit) {
-        g_bQuitRequested = true;
+        g_bQuitRequested = 1;
     }
 }
 
@@ -89,7 +92,7 @@ void HandleMetagamePlaying(int nMetagameEvent) {
         (void)TheWorldMgr->GetState();
     }
     if (nMetagameEvent == Metagame::kEventQuit) {
-        g_bQuitRequested = true;
+        g_bQuitRequested = 1;
     } else if (nMetagameEvent == Metagame::kEventLeaveGame) {
         TheWorldMgr->Unload();
         TheMetagame.EnterLeaving();
@@ -212,9 +215,9 @@ void UpdateAppFrame() {
     const int nWorldEvent = TheWorldMgr->Poll();
     if (nWorldEvent == WorldMgr::kEventLoaded) {
         g_nRndHeapCompactBytes = kLoadedRndHeapCompactBytes;
-        g_bRndHeapCompactStrict = true;
+        g_bRndHeapCompactStrict = 1;
     } else if (nWorldEvent == WorldMgr::kEventUnloaded) {
-        g_bRndHeapCompactStrict = false;
+        g_bRndHeapCompactStrict = 0;
         g_nRndHeapCompactBytes = kDefaultRndHeapCompactBytes;
     }
 
