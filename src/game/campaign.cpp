@@ -464,16 +464,16 @@ void Campaign::RecordPrefabPart(DataArray *pPart, std::vector<UnlockableItem> *p
 const char *Campaign::FindFirstUnfinishedSong(int nSkillLevel) {
     std::vector<const char *> arenas;
     TheGameDb->GetUnlockedArenas(&arenas, nSkillLevel, true, false);
-    for (const char *pszArena : arenas) {
+    for (unsigned i = 0; i < arenas.size(); ++i) {
         std::vector<const char *> songs;
-        ExceptType(SongEntry::kTypeBonus, pszArena, nSkillLevel, &songs);
-        for (const char *pszSong : songs) {
-            if (IsSongFinished(pszSong, nSkillLevel)) {
+        ExceptType(SongEntry::kTypeBonus, arenas[i], nSkillLevel, &songs);
+        for (unsigned j = 0; j < songs.size(); ++j) {
+            if (IsSongFinished(songs[j], nSkillLevel)) {
                 continue;
             }
-            const SongEntry song{TheGameDb->FindSong(pszSong)};
+            const SongEntry song{TheGameDb->FindSong(songs[j])};
             if (song.GetType() != SongEntry::kTypeSecret) {
-                return pszSong;
+                return songs[j];
             }
         }
     }
