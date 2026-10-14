@@ -19,20 +19,20 @@ python3 .wiswa-ci/port/progress.py --write
 
 ## Summary
 
-| Measure                                |  Count |
-| -------------------------------------- | -----: |
-| Functions in the program               | 13,225 |
-| Excluded: Compiler-emitted instance    |  2,111 |
-| Excluded: Compiler RTTI                |  1,357 |
-| Excluded: STL instance (GCC library)   |    526 |
-| Excluded: C and compiler runtime       |    342 |
-| Excluded: Vendored under 3rdparty      |    296 |
-| To port                                |  8,593 |
-| Done                                   |  8,507 |
-| Stubbed (not counted as done)          |      0 |
-| Declared only (not counted as done)    |      1 |
-| Share done                             | 99.00% |
-| FreQuency annotations left in the tree |      0 |
+| Measure                                |   Count |
+| -------------------------------------- | ------: |
+| Functions in the program               |  13,225 |
+| Excluded: Compiler-emitted instance    |   2,111 |
+| Excluded: Compiler RTTI                |   1,357 |
+| Excluded: STL instance (GCC library)   |     526 |
+| Excluded: C and compiler runtime       |     342 |
+| Excluded: Vendored under 3rdparty      |     296 |
+| To port                                |   8,593 |
+| Done                                   |   8,593 |
+| Stubbed (not counted as done)          |       0 |
+| Declared only (not counted as done)    |       0 |
+| Share done                             | 100.00% |
+| FreQuency annotations left in the tree |       0 |
 
 ## By component
 
@@ -40,7 +40,7 @@ python3 .wiswa-ci/port/progress.py --write
 | ---------------------------- | -------: | ----: | -----: |
 | Game code                    |    6,807 | 6,807 | 100.0% |
 | Sony online library (SCE-RT) |    1,237 | 1,237 | 100.0% |
-| Sony EE libraries            |      549 |   463 |  84.3% |
+| Sony EE libraries            |      549 |   549 | 100.0% |
 
 ## IOP modules
 
@@ -97,4 +97,4 @@ Each part lists the routines of one component in a 64 KiB address block.
 | [sony-online-library-sce-rt-002f0000.md](progress/sony-online-library-sce-rt-002f0000.md) | Sony online library (SCE-RT) | `0x002f0000`-`0x00300000` |      160 |  160 | 100.0% |
 | [sony-online-library-sce-rt-00300000.md](progress/sony-online-library-sce-rt-00300000.md) | Sony online library (SCE-RT) | `0x00300000`-`0x00310000` |      299 |  299 | 100.0% |
 | [sony-ee-libraries-00300000.md](progress/sony-ee-libraries-00300000.md)                   | Sony EE libraries            | `0x00300000`-`0x00310000` |      144 |  144 | 100.0% |
-| [sony-ee-libraries-00310000.md](progress/sony-ee-libraries-00310000.md)                   | Sony EE libraries            | `0x00310000`-`0x00320000` |      405 |  319 |  78.8% |
+| [sony-ee-libraries-00310000.md](progress/sony-ee-libraries-00310000.md)                   | Sony EE libraries            | `0x00310000`-`0x00320000` |      405 |  405 | 100.0% |
