@@ -688,7 +688,7 @@ public:
      *
      * @param pConfig The configuration section, or null.
      * @param pDefaults The section of defaults, or null.
-     * @param bUnused Not read.
+     * @param bUnused Passed to OvyRemixPanel::LoadPositions(), which does not read it.
      * @ghidraAddress NTSC-U/C: 0x001c3690
      * @ghidraAddress PAL: 0x001cc430
      */

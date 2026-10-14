@@ -85,10 +85,11 @@ public:
      *
      * @param pConfig The configuration section, or null.
      * @param pDefaults The section of defaults, or null.
+     * @param bUnused Not read.
      * @ghidraAddress NTSC-U/C: 0x001b6980
      * @ghidraAddress PAL: 0x001bf720
      */
-    static void LoadPositions(DataArray *pConfig, DataArray *pDefaults);
+    static void LoadPositions(DataArray *pConfig, DataArray *pDefaults, bool bUnused);
 
     /**
      * The places a remix panel can sit at, read by LoadPositions().

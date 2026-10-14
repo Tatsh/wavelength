@@ -62,7 +62,7 @@ void Overlay::SetHudPrefix() {
     }
 }
 
-void Overlay::LoadConfig(DataArray *pConfig, DataArray *pDefaults, [[maybe_unused]] bool bUnused) {
+void Overlay::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bUnused) {
     FindConfigFloat(pConfig, pDefaults, "assembly_time", &sAssemblyTime, true);
     FindConfigVector3(pConfig, pDefaults, "song_pos_start_pos", &OvySongPos::sStartPos, true);
     FindConfigVector3(pConfig, pDefaults, "song_pos_end_pos", &OvySongPos::sEndPos, true);
@@ -102,7 +102,7 @@ void Overlay::LoadConfig(DataArray *pConfig, DataArray *pDefaults, [[maybe_unuse
     FindConfigFloat(pConfig, pDefaults, "hud_points_scale", &sPointsScale, true);
     FindConfigFloat(pConfig, pDefaults, "duel_points_move_ticks", &sDuelPointsMoveTicks, true);
     sDuelPointsMoveRate = 1.0f / sDuelPointsMoveTicks;
-    OvyRemixPanel::LoadPositions(pConfig, pDefaults);
+    OvyRemixPanel::LoadPositions(pConfig, pDefaults, bUnused);
 }
 
 Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mCommon(nullptr), mStarted(0) {

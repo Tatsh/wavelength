@@ -135,7 +135,9 @@ OvyRemixGenPanel *OvyRemixPanel::FindSubPanel(int nType) {
     return it != mSubPanels.end() ? *it : nullptr;
 }
 
-void OvyRemixPanel::LoadPositions(DataArray *pConfig, DataArray *pDefaults) {
+void OvyRemixPanel::LoadPositions(DataArray *pConfig,
+                                  DataArray *pDefaults,
+                                  [[maybe_unused]] bool bUnused) {
     DataArray *pPositions;
     FindConfigArray(pConfig, pDefaults, "remix_panel_positions", &pPositions, true);
     for (int i = 0; i < kNumPositions; ++i) {
