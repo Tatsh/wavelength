@@ -21,7 +21,7 @@ public:
      * configuration, which every icon shares.
      *
      * @param nLane The lane.
-     * @param pHudView The layout view of the head-up display, which is not used.
+     * @param pHudView The layout view of the head-up display. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001bfa88
      * @ghidraAddress PAL: 0x001c8828
      */

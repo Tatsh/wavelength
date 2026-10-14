@@ -29,7 +29,7 @@ public:
      * `HUDd letters <n>.tnm`, and the letters `HUDd letter<i> <n>.txt`.
      *
      * @param nIndex The number of the score, from 0.
-     * @param pHudView The layout view of the head-up display, which is not used.
+     * @param pHudView The layout view of the head-up display. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001bde48
      * @ghidraAddress PAL: 0x001c6be8
      */
