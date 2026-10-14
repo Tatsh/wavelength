@@ -15,6 +15,8 @@ constexpr int kClipCeiling = 0x4000;
 // One third in Q13. A swept filter reaches its target in three steps.
 constexpr short kInterpolationScale = 0x0aab;
 constexpr unsigned int kInterpolationSteps = 3;
+constexpr unsigned int kLowHalfMask = 0x0000ffff;
+constexpr unsigned int kHighHalfMask = 0xffff0000;
 
 // Coefficients of the cubic saturation curve in Q13.
 constexpr short kSaturationCubic = 0x1000;
@@ -187,13 +189,19 @@ inline void ShiftDelayLine(const SampleBlock *input) {
     memcpy(&g_delayLine[kDelayHistory], input, sizeof(SampleBlock));
 }
 
+// Adds a step to the low 16 bits of a parameter. Yes, the binary preserves the high 16 bits, which
+// the filters read.
+inline void StepLowHalf(int &field, int step) {
+    field = static_cast<int>((static_cast<unsigned int>(field) & kHighHalfMask) |
+                             (static_cast<unsigned int>(field + step) & kLowHalfMask));
+}
+
 // Moves the current left parameters one step toward their targets, three times after an update.
 inline void StepCurrentParams() {
     if (g_nInterpolationCount < kInterpolationSteps) {
-        g_currentLeft.mLevel = static_cast<short>(g_currentLeft.mLevel + g_stepLeft.mLevel);
-        g_currentLeft.mCutoff = static_cast<short>(g_currentLeft.mCutoff + g_stepLeft.mCutoff);
-        g_currentLeft.mFeedback =
-            static_cast<short>(g_currentLeft.mFeedback + g_stepLeft.mFeedback);
+        StepLowHalf(g_currentLeft.mLevel, g_stepLeft.mLevel);
+        StepLowHalf(g_currentLeft.mCutoff, g_stepLeft.mCutoff);
+        StepLowHalf(g_currentLeft.mFeedback, g_stepLeft.mFeedback);
     }
     ++g_nInterpolationCount;
 }
