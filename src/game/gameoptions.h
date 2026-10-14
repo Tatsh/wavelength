@@ -71,27 +71,6 @@ public:
     void SetForceFeedback(int nForceFeedback);
 
     /**
-     * Record the clock reading in mDate and mark the settings modified.
-     *
-     * The name is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0027ca50
-     * @ghidraAddress PAL: 0x002863c0
-     */
-    void UpdateDate();
-
-    /**
-     * Report whether mDate falls on the day the clock reads.
-     *
-     * The name is inferred.
-     *
-     * @return Whether the day, month, and year match.
-     * @ghidraAddress NTSC-U/C: 0x0027ca80
-     * @ghidraAddress PAL: 0x002863f0
-     */
-    bool IsToday() const;
-
-    /**
      * Apply the speaker output mode to the synthesiser.
      *
      * An unknown mode is reported and changes nothing.

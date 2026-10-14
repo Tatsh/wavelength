@@ -27,11 +27,11 @@ void ScratchTrackData::SetScratcher(int nTick, int nIndex, Scratcher *pScratcher
     }
 
     TickObj<ScratcherSet> entry;
-    entry.mPosition.mTick = nTick;
+    entry.mPosition = nTick;
     entry.mValue = {};
     auto it = UpperBoundByEntry(mSets, entry);
     it = (it == mSets.begin()) ? mSets.end() : (it - 1);
-    if ((it != mSets.end()) && (it->mPosition.mTick == nTick)) {
+    if ((it != mSets.end()) && (it->mPosition == nTick)) {
         it->mValue.mScratchers[nIndex] = pScratcher;
         return;
     }
@@ -52,5 +52,5 @@ int ScratchTrackData::GetScratchers(int nTick,
     if (it == mSets.end()) {
         return kNoNextSet;
     }
-    return it->mPosition.mTick;
+    return it->mPosition;
 }

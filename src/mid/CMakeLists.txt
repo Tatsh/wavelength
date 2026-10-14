@@ -2,7 +2,6 @@ set(WAVELENGTH_MID_SRCS
     mbt.cpp
     midivalidator.cpp
     midireader.cpp
-    tick.cpp
     trackbuilder.cpp)
 
 add_library(wavelength_mid STATIC ${WAVELENGTH_MID_SRCS})

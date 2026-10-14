@@ -1,6 +1,5 @@
 set(WAVELENGTH_SYNTH_SRCS
     bankfileio.cpp
-    callbackxferbdtoiop.cpp
     fxmidi.cpp
     lazyfilestream.cpp
     lfo.cpp

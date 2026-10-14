@@ -13,7 +13,7 @@ ScriptTrackData::~ScriptTrackData() {
 
 void ScriptTrackData::AddCommand(int nTick, DataArray *pCommand) {
     TickObj<DataArray *> entry;
-    entry.mPosition.mTick = nTick;
+    entry.mPosition = nTick;
     entry.mValue = pCommand;
     mCommands.insert(UpperBoundByEntry(mCommands, entry), entry);
 }

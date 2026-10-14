@@ -62,7 +62,7 @@ public:
     void ScheduleNext() {
         if (mNextCommand < mTrack->NumCommands()) {
             TheSongScheduler.PostAt(
-                this, mStartTick + mTrack->GetCommand(mNextCommand)->mPosition.mTick, false);
+                this, mStartTick + mTrack->GetCommand(mNextCommand)->mPosition, false);
         } else if (mWaitingTask != nullptr) {
             TaskDoneNotifier::ReportDone(mWaitingTask);
         }

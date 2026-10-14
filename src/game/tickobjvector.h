@@ -29,7 +29,7 @@
  */
 template <typename T>
 bool TickObjLess(TickObj<T> first, TickObj<T> second) {
-    return first.mPosition.mTick < second.mPosition.mTick;
+    return first.mPosition < second.mPosition;
 }
 
 /**
@@ -41,7 +41,7 @@ bool TickObjLess(TickObj<T> first, TickObj<T> second) {
  */
 template <typename T>
 bool TickObjBefore(int nTick, TickObj<T> entry) {
-    return nTick < entry.mPosition.mTick;
+    return nTick < entry.mPosition;
 }
 
 /**
@@ -53,7 +53,7 @@ bool TickObjBefore(int nTick, TickObj<T> entry) {
  */
 template <typename T>
 bool TickObjAfter(TickObj<T> entry, int nTick) {
-    return entry.mPosition.mTick < nTick;
+    return entry.mPosition < nTick;
 }
 
 /**
@@ -154,7 +154,7 @@ FindAtOrAfter(const std::vector<TickObj<T> > &values, int nTick) {
  */
 template <typename T>
 void InsertSorted(std::vector<TickObj<T> > &values, const TickObj<T> &value) {
-    if (values.size() != 0 && !(value.mPosition.mTick < values.back().mPosition.mTick)) {
+    if (values.size() != 0 && !(value.mPosition < values.back().mPosition)) {
         values.push_back(value);
         return;
     }
@@ -312,10 +312,10 @@ typename std::vector<T>::const_iterator FindOrdered(const T &key, const std::vec
 template <typename T>
 void SetAtTick(std::vector<TickObj<T> > &values, const T &value, int nTick) {
     TickObj<T> entry;
-    entry.mPosition.mTick = nTick;
+    entry.mPosition = nTick;
     entry.mValue = value;
     typename std::vector<TickObj<T> >::iterator it = LowerBoundByEntry(values, entry);
-    if (it != values.end() && it->mPosition.mTick == nTick) {
+    if (it != values.end() && it->mPosition == nTick) {
         *it = entry;
         return;
     }
@@ -345,7 +345,7 @@ void InsertAtLowerBound(std::vector<TickObj<T> > &values, const TickObj<T> &valu
 template <typename T>
 void InsertAtTick(std::vector<TickObj<T> > &values, const T &value, int nTick) {
     TickObj<T> entry;
-    entry.mPosition.mTick = nTick;
+    entry.mPosition = nTick;
     entry.mValue = value;
     InsertSorted(values, entry);
 }

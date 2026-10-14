@@ -45,12 +45,12 @@ void GameOptions::SetForceFeedback(int nForceFeedback) {
     mModified = 1;
 }
 
-void GameOptions::UpdateDate() {
+void GameOptions::RecordUpload() {
     (void)mDate.ReadClock(); // Yes, the binary discards the result.
     mModified = 1;
 }
 
-bool GameOptions::IsToday() const {
+bool GameOptions::UploadedToday() const {
     DateTime now;
     memset(static_cast<void *>(&now), 0, sizeof(now));
     (void)now.ReadClock(); // Yes, the binary discards the result.

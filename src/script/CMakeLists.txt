@@ -1,4 +1,4 @@
-set(WAVELENGTH_SCRIPT_SRCS dataarray.cpp datafile.cpp datalex.cpp scriptfunction.cpp scripttemplatemap.cpp
+set(WAVELENGTH_SCRIPT_SRCS dataarray.cpp datafile.cpp datalex.cpp scriptfunction.cpp
                           symbol.cpp)
 
 add_library(wavelength_script STATIC ${WAVELENGTH_SCRIPT_SRCS})

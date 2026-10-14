@@ -113,10 +113,7 @@ private:
      * @return The entry.
      */
     static TickObj<RiffSet> MakeEntry(int nTick, Muse *pRiff0, Muse *pRiff1, Muse *pRiff2) {
-        TickObj<RiffSet> entry{Sch::Tick(),
-                               {{Ptr<Muse>(pRiff0), Ptr<Muse>(pRiff1), Ptr<Muse>(pRiff2)}}};
-        entry.mPosition.mTick = nTick;
-        return entry;
+        return TickObj<RiffSet>{nTick, {{Ptr<Muse>(pRiff0), Ptr<Muse>(pRiff1), Ptr<Muse>(pRiff2)}}};
     }
 
     /**
@@ -129,7 +126,7 @@ private:
      * @return Whether first starts before second.
      */
     static bool TickBefore(const TickObj<RiffSet> &first, const TickObj<RiffSet> &second) {
-        return first.mPosition.mTick < second.mPosition.mTick;
+        return first.mPosition < second.mPosition;
     }
 
 public:

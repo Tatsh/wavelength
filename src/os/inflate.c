@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "os/log.h"
-
 // Tables come from the fixed pool, and releasing one does nothing. inflate() rewinds the pool.
 #define malloc(size) HuftMalloc((size) / sizeof(struct huft))
 #define free(p) ((void)(p))

@@ -1,8 +1,4 @@
 set(WAVELENGTH_APP_SRCS
-    animhelper.cpp
-    appactivefilter.cpp
-    appticktask.cpp
-    apptimetask.cpp
     attachment.cpp
     cutscene.cpp
     editfield.cpp
@@ -17,13 +13,10 @@ set(WAVELENGTH_APP_SRCS
     hudstick.cpp
     hudtextmessage.cpp
     hudtextnode.cpp
-    linearanim.cpp
-    longop.cpp
     msgsink.cpp
     msgsource.cpp
     overlay.cpp
     ovyallplayer.cpp
-    ovyassembly.cpp
     ovyavatar.cpp
     ovychat.cpp
     ovycontroller.cpp
@@ -38,12 +31,8 @@ set(WAVELENGTH_APP_SRCS
     ovysectionpanel.cpp
     ovysongpos.cpp
     ovytracklabel.cpp
-    playbacker.cpp
     rampanimator.cpp
-    recorder.cpp
-    scheduler.cpp
-    task.cpp
-    timeclock.cpp)
+)
 
 add_library(wavelength_app STATIC ${WAVELENGTH_APP_SRCS})
 target_link_libraries(wavelength_app PRIVATE wavelength_common)

@@ -1,11 +1,8 @@
 set(WAVELENGTH_OS_SRCS
-    acircbuff.cpp
     allocinfo.cpp
     archive.cpp
     arkfile.cpp
     arkhash.cpp
-    assert.cpp
-    asynccallback.cpp
     asyncfile.cpp
     asyncstream.cpp
     asynctask.cpp
@@ -21,58 +18,43 @@ set(WAVELENGTH_OS_SRCS
     bufstream.cpp
     cheatsmanager.cpp
     chunkstream.cpp
+    command.cpp
     commandid.cpp
     cycles.cpp
     datetime.cpp
     debug.cpp
-    devconsole.cpp
     file.cpp
-    filelog.cpp
     filepath.cpp
     filestream.cpp
     filestreambuffer.cpp
     fileutil.cpp
     fixedsizealloc.cpp
-    formatmessage.cpp
     freestore.cpp
-    genpath.cpp
     heap.cpp
     heaptracker.cpp
-    hostmode.cpp
-    hxstr.cpp
     inflate.c
-    iop.cpp
     irx.cpp
     joypad.cpp
     keyboard.cpp
-    loadfile.cpp
     locale.cpp
-    log.cpp
-    mem.cpp
     memhandle.cpp
     memmgr.cpp
     memstream.cpp
     memtrack.cpp
     namedobjectregistry.cpp
-    openarkobject.cpp
     option.cpp
     optionprocessor.cpp
     prnstream.cpp
     ramp.cpp
-    random.cpp
     scheduler.cpp
     schedulerclock.cpp
-    seccache.cpp
     serialtasks.cpp
-    spewregister.cpp
-    spewtable.cpp
     streambuffer.cpp
     stringoption.cpp
     string.cpp
     system.cpp
     task.cpp
-    timer.cpp
-    zone.cpp)
+    timer.cpp)
 
 # The modules of the vendored gzip 1.2.4 the game links beside inflate.c, edited to match the game.
 set(WAVELENGTH_GZIP_SRCS

@@ -30,12 +30,8 @@ set(WAVELENGTH_SUBSYSTEMS
     msg
     netflow
     os
-    profile
     rnd
-    rndartt
-    sch
     script
-    stream
     synth
     ui)
 

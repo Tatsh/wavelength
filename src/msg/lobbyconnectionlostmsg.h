@@ -2,6 +2,7 @@
 
 #include "msg/message.h"
 #include "netflow/lobbymsgtypes.h"
+#include "os/mem.h"
 
 /**
  * Message that reports that the connection to the online lobby was lost.
@@ -19,6 +20,25 @@ public:
      * @ghidraAddress PAL: 0x00409c00
      */
     ~LobbyConnectionLostMsg() override = default;
+
+    /**
+     * Allocate a message, billed to the class name.
+     *
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
+     */
+    void *operator new(size_t nSize) {
+        return PoolMemAlloc(static_cast<int>(nSize), "LobbyConnectionLostMsg", 0);
+    }
+
+    /**
+     * Release a message.
+     *
+     * @param pBlock The block.
+     */
+    void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
 
     /** The error code of a connection to the internet that went down. */
     static constexpr int kInternetDown = -91;

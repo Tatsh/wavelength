@@ -61,7 +61,6 @@ set(WAVELENGTH_NETFLOW_SRCS
     netconnecttask.cpp
     netcrypt.cpp
     netdisconnecttask.cpp
-    netflow.c
     netgameparams.cpp
     nethosttask.cpp
     netmessages.cpp

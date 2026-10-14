@@ -40,31 +40,6 @@
 class Message {
 public:
     /**
-     * Allocate a message from the tagged heap under the tag `MSG`.
-     *
-     * Defined in the class, because 69 byte-identical copies exist, one in every translation unit
-     * that allocates a message, and no call to any of them remains outside those units. The address
-     * below is the first copy.
-     *
-     * @param nSize The object size the compiler supplies.
-     * @return The block.
-     */
-    void *operator new(size_t nSize) {
-        return AllocateTaggedMemory(nSize, "MSG");
-    }
-
-    /**
-     * Release a message to the tagged heap under the tag `MSG`.
-     *
-     * Defined in the class for the same reason as operator new(), with 69 copies.
-     *
-     * @param pBlock The block.
-     */
-    void operator delete(void *pBlock) {
-        OperatorDeleteOverride(pBlock, "MSG");
-    }
-
-    /**
      * Vtable slot 1. The body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x00334820

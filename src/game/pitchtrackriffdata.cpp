@@ -18,7 +18,7 @@ PitchTrackRiffData::~PitchTrackRiffData() {
 
 void PitchTrackRiffData::AddRiffs(int nTick, Muse *pRiff0, Muse *pRiff1, Muse *pRiff2) {
     const TickObj<RiffSet> entry = MakeEntry(nTick, pRiff0, pRiff1, pRiff2);
-    if (mRiffSets.empty() || mRiffSets.back().mPosition.mTick < nTick) {
+    if (mRiffSets.empty() || mRiffSets.back().mPosition < nTick) {
         mRiffSets.push_back(entry);
         return;
     }

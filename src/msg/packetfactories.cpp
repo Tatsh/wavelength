@@ -84,6 +84,25 @@ const MessageFactory kPreviewPacketFactory(kPreviewPacketType, PreviewPacket::Ne
 
 } // namespace
 
+int g_nPlayerUpdatePacketType = kPlayerUpdatePacketType;
+int g_nArbiterPacketType = kArbiterPacketType;
+int g_nCapturePacketType = kCapturePacketType;
+int g_nBumperPacketType = kBumperPacketType;
+int g_nCripplerPacketType = kCripplerPacketType;
+int g_nSlowdownPacketType = kSlowdownPacketType;
+int g_nMultiplierPacketType = kMultiplierPacketType;
+int g_nFreestylePacketType = kFreestylePacketType;
+int g_nFreestyleBumpPacketType = kFreestyleBumpPacketType;
+int g_nFinalScorePacketType = kFinalScorePacketType;
+int g_nRemixerUpdatePacketType = kRemixerUpdatePacketType;
+int g_nSectionChangePacketType = kSectionChangePacketType;
+int g_nFXPacketType = kFXPacketType;
+int g_nMuteVocalsPacketType = kMuteVocalsPacketType;
+int g_nEditGemPacketType = kEditGemPacketType;
+int g_nEraseBarPacketType = kEraseBarPacketType;
+int g_nEraseSectionPacketType = kEraseSectionPacketType;
+int g_nPreviewPacketType = kPreviewPacketType;
+
 Message *PlayerUpdatePacket::New() {
     return new PlayerUpdatePacket;
 }

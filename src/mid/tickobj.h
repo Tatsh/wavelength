@@ -1,7 +1,5 @@
 #pragma once
 
-#include "mid/tick.h"
-
 /**
  * One value at one song position.
  *
@@ -10,7 +8,7 @@
  * instantiation the image has, and MultiMuse's vector is an array of it.
  *
  * The layout comes from MultiMuse::SaveFields(), which advances eight bytes per element and writes
- * the first word through Sch::Tick::saveGuts() and the second as a message pointer. The class emits
+ * the first word as the position and the second as a message pointer. The class emits
  * no descriptor of its own, which is consistent with it having no virtual member.
  *
  * Both members are public because MultiMuse::SaveFields() and MultiMusePlayer::Start() read them
@@ -18,8 +16,8 @@
  */
 template <typename T>
 struct TickObj {
-    Sch::Tick mPosition; /*!< Song position, in MIDI ticks. +0x00 */
-    T mValue;            /*!< The value at that position. +0x04 */
+    int mPosition; /*!< Song position, in MIDI ticks. +0x00 */
+    T mValue;      /*!< The value at that position. +0x04 */
 };
 
 /**
@@ -31,5 +29,5 @@ struct TickObj {
  */
 template <typename T>
 bool operator<(const TickObj<T> &first, const TickObj<T> &second) {
-    return first.mPosition.mTick < second.mPosition.mTick;
+    return first.mPosition < second.mPosition;
 }

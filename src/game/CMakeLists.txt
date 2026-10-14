@@ -62,7 +62,6 @@ set(WAVELENGTH_GAME_SRCS
     instrpart.cpp
     juicemeter.cpp
     levelmidibuilder.cpp
-    lineartransform.cpp
     localplayer.cpp
     lyric.cpp
     mixer.cpp
