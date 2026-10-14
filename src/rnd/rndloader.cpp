@@ -187,12 +187,15 @@ void RndLoader::PreloadHeader(float fDeadlineMs) {
         Finish();
         return;
     }
-    if (mVersion < kFirstAsyncVersion && (mFlags & kAsync) != 0) {
-        DebugNotify("Can't load %s async", mFile.c_str());
-        Finish();
-        return;
+    // Files older than the async version store their names as NUL-terminated text.
+    if (mVersion < kFirstAsyncVersion) {
+        if ((mFlags & kAsync) != 0) {
+            DebugNotify("Can't load %s async", mFile.c_str());
+            Finish();
+            return;
+        }
+        SetStringReadsText(1);
     }
-    SetStringReadsText(1);
     mStream->ReadEndian(&mRemaining, sizeof(mRemaining));
     if (mCallback != nullptr) {
         mCallback->SetObjectCount(mRemaining);
