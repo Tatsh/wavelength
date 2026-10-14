@@ -501,11 +501,11 @@ public:
     std::map<String, ScreenFactory> mScreenFactories; /*!< The screen types. */
     std::map<String, StyleFactory> mStyleFactories;   /*!< The style types. */
     std::map<String, ComponentFactory> mComponentFactories; /*!< The component types. */
-    int mRepeatButton;   /*!< The directional button that repeats. */
-    int mRepeatPad;      /*!< The controller whose button repeats, or -1 for none. */
-    float mRepeatTime;   /*!< The time of the next repeat, or 0 when no button repeats. */
-    bool mRepeatPending; /*!< Whether mRepeatTime still holds a delay rather than a time. */
-    int mRepeatCount;    /*!< The number of repeats so far. */
+    int mRepeatButton;  /*!< The directional button that repeats. */
+    int mRepeatPad;     /*!< The controller whose button repeats, or -1 for none. */
+    float mRepeatTime;  /*!< The time of the next repeat, or 0 when no button repeats. */
+    int mRepeatPending; /*!< Non-zero while mRepeatTime still holds a delay rather than a time. */
+    int mRepeatCount;   /*!< The number of repeats so far. */
 
 private:
     /**

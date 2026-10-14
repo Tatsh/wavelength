@@ -71,7 +71,7 @@ void UIManager::Callback::Report() {
 }
 
 UIManager::UIManager() : mTime(1.0f), mEditMode(false), mRepeatPad(kNoRepeatPad) {
-    mRepeatPending = true;
+    mRepeatPending = 1;
     mRepeatTime = 0.0f;
 }
 
@@ -182,7 +182,7 @@ bool UIManager::HandleJoypad(JoypadInputMsg *pMsg) {
         }
     } else if (pMsg->mPad == mRepeatPad || mRepeatPad == kNoRepeatPad) {
         mRepeatButton = pMsg->mButton;
-        mRepeatPending = true;
+        mRepeatPending = 1;
         mRepeatPad = pMsg->mPad;
         mRepeatTime = RepeatDelay(mRepeatCount);
         ++mRepeatCount;
@@ -216,9 +216,9 @@ void UIManager::Poll(float fTime) {
         mRepeatTime = 0.0f;
         return;
     }
-    if (mRepeatPending) {
+    if (mRepeatPending != 0) {
         const float fNextRepeat = fTime + mRepeatTime;
-        mRepeatPending = false;
+        mRepeatPending = 0;
         mRepeatTime = fNextRepeat;
         return;
     }
