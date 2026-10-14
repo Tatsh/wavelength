@@ -19,6 +19,14 @@ extern int g_nEditGemPacketType;
 class EditGemPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00335808
+     * @ghidraAddress PAL: 0x003a2db8
+     */
+    ~EditGemPacket() override = default;
+
+    /**
      * Construct a packet with no track and no gem.
      *
      * Inline. New() expands it.

@@ -13,6 +13,22 @@
 class MCFindRemixTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352d60
+     * @ghidraAddress PAL: 0x003c0068
+     */
+    ~MCFindRemixTask() override = default;
+
+    /**
+     * Construct the task.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352e40
+     * @ghidraAddress PAL: 0x003c0148
+     */
+    MCFindRemixTask() = default;
+
+    /**
      * Prepare the task.
      *
      * @param nPort The memory card slot.

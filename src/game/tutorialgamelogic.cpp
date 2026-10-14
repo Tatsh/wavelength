@@ -99,8 +99,9 @@ constexpr float kFullProgress = 1.0f;
 constexpr int kMaxSeed = INT_MAX;
 
 // The bindings of the first player before the tutorial replaced them.
-// The unit's static initialiser at NTSC-U/C: 0x001411b8, PAL: 0x00142b78, and its global
-// constructor at NTSC-U/C: 0x001411f8, PAL: 0x00142bb8, construct and destroy it.
+// The unit's static initialiser at NTSC-U/C: 0x001411b8, PAL: 0x00142b78, its global
+// constructor at NTSC-U/C: 0x001411f8, PAL: 0x00142bb8, and its global destructor at
+// NTSC-U/C: 0x00141218, PAL: 0x00142bd8, construct and destroy it.
 // NTSC-U/C: 0x004361e0
 InputMap gSavedInputMap;
 

@@ -19,6 +19,14 @@
 class MCSaveRemixTask : public MemcardSerialTask, public SaveSpaceUser {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00353580
+     * @ghidraAddress PAL: 0x003c0888
+     */
+    ~MCSaveRemixTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x00161810

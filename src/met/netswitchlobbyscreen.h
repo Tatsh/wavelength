@@ -15,6 +15,14 @@
 class NetSwitchLobbyScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035b9f8
+     * @ghidraAddress PAL: 0x003c9550
+     */
+    ~NetSwitchLobbyScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no room chosen.
      *
      * @param pData The script description.

@@ -4,6 +4,7 @@
 
 #include "game/gamedb.h"
 #include "met/songpicpanel.h"
+#include "os/listat.h"
 #include "os/string.h"
 #include "ui/uicomponent.h"
 #include "ui/uilabel.h"
@@ -37,7 +38,7 @@ void RemixDownloadList::SetRemixes(const std::list<NetRepoRemix> &remixes) {
 }
 
 void RemixDownloadList::UpdateRow(int nRow, int nItem) {
-    const NetRepoRemix &remix = *std::next(mRemixes.begin(), nItem);
+    const NetRepoRemix &remix = *ListAt(mRemixes, nItem);
     String date;
     remix.mInfo.mDate.FormatMonthDay(date);
     SetCellText(nRow, 0, date.c_str());
@@ -49,7 +50,7 @@ void RemixDownloadList::UpdateCursor() {
     if (mRemixes.empty()) {
         return;
     }
-    const NetRepoRemix &remix = *std::next(mRemixes.begin(), mSelected);
+    const NetRepoRemix &remix = *ListAt(mRemixes, mSelected);
     mSong.mData = TheGameDb->FindSong(remix.mInfo.mSong);
     remix.mInfo.ShowDetails(mPicPanel);
     dynamic_cast<UILabel *>(TheUI.FindComponent(mPicPanel, kNoteLabel, false))

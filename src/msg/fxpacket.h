@@ -19,6 +19,14 @@ extern int g_nFXPacketType;
 class FXPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0034bef0
+     * @ghidraAddress PAL: 0x003b9320
+     */
+    ~FXPacket() override = default;
+
+    /**
      * Construct a packet with no section and no track.
      *
      * Inline. New() expands it.

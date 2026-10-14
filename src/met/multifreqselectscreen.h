@@ -18,6 +18,14 @@
 class MultiFreqSelectScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035d758
+     * @ghidraAddress PAL: 0x003cb808
+     */
+    ~MultiFreqSelectScreen() override = default;
+
+    /**
      * Construct the screen from its script description, reading `num_players`.
      *
      * @param pData The script description.

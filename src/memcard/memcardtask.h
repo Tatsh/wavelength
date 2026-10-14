@@ -14,6 +14,14 @@
  */
 class MemcardTask : public Task, public MemcardCBHandler {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351488
+     * @ghidraAddress PAL: 0x003be700
+     */
+    ~MemcardTask() override = default;
+
     /** Values of sStatus, the outcome every memory card task and user reports. */
     enum Status {
         kStatusOk = 0,           /*!< The work succeeded. */

@@ -11,6 +11,14 @@
  */
 class MCMkDirTask : public MemcardTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351c70
+     * @ghidraAddress PAL: 0x003beef0
+     */
+    ~MCMkDirTask() override = default;
+
     /** Construct an idle task. */
     MCMkDirTask() : mName(nullptr) {
     }

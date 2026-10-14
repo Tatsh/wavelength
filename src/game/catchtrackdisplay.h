@@ -23,6 +23,14 @@ public:
     class UpdateDisplayCmd : public Command {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034d460
+         * @ghidraAddress PAL: 0x003ba890
+         */
+        ~UpdateDisplayCmd() override = default;
+
+        /**
          * Construct the command of a display.
          *
          * @param pDisplay The display.

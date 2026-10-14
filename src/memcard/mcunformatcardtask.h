@@ -13,6 +13,14 @@
 class MCUnformatCardTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003520f0
+     * @ghidraAddress PAL: 0x003bf370
+     */
+    ~MCUnformatCardTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x0015e278

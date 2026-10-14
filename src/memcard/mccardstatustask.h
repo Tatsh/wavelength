@@ -11,6 +11,14 @@
 class MCCardStatusTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352410
+     * @ghidraAddress PAL: 0x003bf690
+     */
+    ~MCCardStatusTask() override = default;
+
+    /**
      * Construct the step.
      *
      * @ghidraAddress NTSC-U/C: 0x0015e9a8

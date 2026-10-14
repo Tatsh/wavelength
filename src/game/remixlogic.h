@@ -75,11 +75,13 @@ public:
     /**
      * Report whether the song is to start again once it ends.
      *
-     * @return Non-zero when the song restarts.
+     * @return 0.
      * @ghidraAddress NTSC-U/C: 0x0033f070
      * @ghidraAddress PAL: 0x003ac5a8
      */
-    int IsRestartRequested() const override;
+    int IsRestartRequested() const override {
+        return 0;
+    }
 
     /**
      * Report whether a player plays the freestyle track.
@@ -153,22 +155,24 @@ public:
     void HandleInput(const BtnEvent<3> &event) override;
 
     /**
-     * Act on a button event.
+     * Ignore a button event.
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x0033f078
      * @ghidraAddress PAL: 0x003ac5b0
      */
-    void HandleInput(const BtnEvent<4> &event) override;
+    void HandleInput([[maybe_unused]] const BtnEvent<4> &event) override {
+    }
 
     /**
-     * Act on a button event.
+     * Ignore a button event.
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x0033f080
      * @ghidraAddress PAL: 0x003ac5b8
      */
-    void HandleInput(const BtnEvent<5> &event) override;
+    void HandleInput([[maybe_unused]] const BtnEvent<5> &event) override {
+    }
 
     /**
      * Act on a section change.

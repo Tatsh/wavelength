@@ -22,8 +22,13 @@ public:
     explicit BinStream(bool bLittleEndian) : mLittleEndian(bLittleEndian) {
     }
 
-    /** Release the stream. */
-    virtual ~BinStream();
+    /**
+     * Release the stream.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00339f10
+     */
+    virtual ~BinStream() {
+    }
 
     /**
      * Read bytes.

@@ -13,6 +13,14 @@
 class LaunchScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035e0f8
+     * @ghidraAddress PAL: 0x003cc1d8
+     */
+    ~LaunchScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

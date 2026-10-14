@@ -10,6 +10,14 @@
 class MCSeekTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351820
+     * @ghidraAddress PAL: 0x003beaa0
+     */
+    ~MCSeekTask() override = default;
+
+    /**
      * Prepare the task. The slot is not changed.
      *
      * @param nOffset The offset.

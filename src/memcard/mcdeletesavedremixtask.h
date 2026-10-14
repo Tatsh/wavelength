@@ -11,6 +11,14 @@
 class MCDeleteSavedRemixTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003527b0
+     * @ghidraAddress PAL: 0x003bfab8
+     */
+    ~MCDeleteSavedRemixTask() override = default;
+
+    /**
      * Prepare the task.
      *
      * @param nPort The memory card slot.

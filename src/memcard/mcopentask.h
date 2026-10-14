@@ -10,6 +10,14 @@
  */
 class MCOpenTask : public MemcardTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003515f8
+     * @ghidraAddress PAL: 0x003be878
+     */
+    ~MCOpenTask() override = default;
+
     /** Construct an idle task. */
     MCOpenTask() : mName(nullptr) {
     }

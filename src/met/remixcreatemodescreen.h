@@ -15,6 +15,14 @@
 class RemixCreateModeScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035c8d0
+     * @ghidraAddress PAL: 0x003ca9a8
+     */
+    ~RemixCreateModeScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

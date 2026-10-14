@@ -55,6 +55,18 @@ void Debug::CloseLog() {
     mLog = nullptr;
 }
 
+void DebugPrint([[maybe_unused]] const char *pszFormat, ...) {
+}
+
+void DebugWarn([[maybe_unused]] const char *pszFormat, ...) {
+}
+
+void DebugNotify([[maybe_unused]] const char *pszFormat, ...) {
+}
+
+void DebugError([[maybe_unused]] const char *pszFormat, ...) {
+}
+
 // The unit's static initialiser constructs and destroys TheDebug, and the global constructor and
 // the global destructor of the unit run the initialiser.
 // NTSC-U/C: 0x002890a8, PAL: 0x002928a0

@@ -18,6 +18,14 @@
 class RemixSongScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035c2b8
+     * @ghidraAddress PAL: 0x003ca390
+     */
+    ~RemixSongScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no songs.
      *
      * @param pData The script description.

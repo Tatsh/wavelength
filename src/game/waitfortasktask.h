@@ -11,6 +11,14 @@
 class WaitForTaskTask : public Task {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00344098
+     * @ghidraAddress PAL: 0x003b15d0
+     */
+    ~WaitForTaskTask() override = default;
+
+    /**
      * Construct a task that waits for the named work.
      *
      * The task records the name pointer and does not copy the text.

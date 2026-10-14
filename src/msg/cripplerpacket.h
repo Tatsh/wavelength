@@ -19,6 +19,14 @@ extern int g_nCripplerPacketType;
 class CripplerPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0034b028
+     * @ghidraAddress PAL: 0x003b8458
+     */
+    ~CripplerPacket() override = default;
+
+    /**
      * Construct a packet with no victim.
      *
      * Inline. New() expands it.

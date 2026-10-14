@@ -11,6 +11,14 @@
 class MCOpenCurrRemixTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00353120
+     * @ghidraAddress PAL: 0x003c0428
+     */
+    ~MCOpenCurrRemixTask() override = default;
+
+    /**
      * Prepare the task.
      *
      * @param nPort The memory card slot.

@@ -210,8 +210,9 @@
 #include "synth/synth.h"
 #include "ui/uimanager.h"
 
-// The unit's static initialiser at NTSC-U/C: 0x00169300, PAL: 0x0016c488, and its global
-// constructor at NTSC-U/C: 0x00169340, PAL: 0x0016c4c8, construct and destroy it.
+// The unit's static initialiser at NTSC-U/C: 0x00169300, PAL: 0x0016c488, its global
+// constructor at NTSC-U/C: 0x00169340, PAL: 0x0016c4c8, and its global destructor at
+// NTSC-U/C: 0x00169360, PAL: 0x0016c4e8, construct and destroy it.
 Metagame TheMetagame;
 
 namespace {

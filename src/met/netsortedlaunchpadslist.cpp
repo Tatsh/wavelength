@@ -5,6 +5,7 @@
 #include "met/netsorteddatapanel.h"
 #include "met/netsortedlaunchpadspanel.h"
 #include "netflow/netlobby.h"
+#include "os/listat.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -26,7 +27,7 @@ void NetSortedLaunchpadsList::UpdateCursor() {
     if (mLaunchpads.empty()) {
         return;
     }
-    NetLaunchpadInfo *pLaunchpad = &*std::next(mLaunchpads.begin(), mSelected);
+    NetLaunchpadInfo *pLaunchpad = &*ListAt(mLaunchpads, mSelected);
     pPanel->ShowLaunchpad(pLaunchpad);
     TheNetLobby->RequestLaunchpadPlayers(TheUI.FindScreen(kSortedScreen, false),
                                          pLaunchpad->mLaunchpadId);

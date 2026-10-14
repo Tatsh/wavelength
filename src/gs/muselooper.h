@@ -21,6 +21,14 @@ public:
     class RepeatCmd : public Command {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034ee50
+         * @ghidraAddress PAL: 0x003bc278
+         */
+        ~RepeatCmd() override = default;
+
+        /**
          * Construct the command of a looper.
          *
          * @param pLooper The looper.

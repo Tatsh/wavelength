@@ -11,6 +11,14 @@
 class MCGetInfoTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351b98
+     * @ghidraAddress PAL: 0x003bee18
+     */
+    ~MCGetInfoTask() override = default;
+
+    /**
      * Prepare the task.
      *
      * @param pOwner The task that learns when this one ends through OnCardInfo(), or null.

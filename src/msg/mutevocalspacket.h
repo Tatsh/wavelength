@@ -19,6 +19,14 @@ extern int g_nMuteVocalsPacketType;
 class MuteVocalsPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033c568
+     * @ghidraAddress PAL: 0x003a9aa0
+     */
+    ~MuteVocalsPacket() override = default;
+
+    /**
      * Construct a packet with no section and no track.
      *
      * Inline. New() expands it.

@@ -19,7 +19,12 @@ public:
      */
     class NoteCB {
     public:
-        /** Release the receiver. */
+        /**
+         * Release the receiver.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034ad30
+         * @ghidraAddress PAL: 0x003b8160
+         */
         virtual ~NoteCB() {
         }
 

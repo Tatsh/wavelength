@@ -26,6 +26,14 @@ public:
     class StdMidiCommand : public Command {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034f0d0
+         * @ghidraAddress PAL: 0x003bc4f8
+         */
+        ~StdMidiCommand() override = default;
+
+        /**
          * Construct the command of a muse.
          *
          * @param pMuse The muse.

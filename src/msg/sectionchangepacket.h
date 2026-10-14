@@ -21,6 +21,14 @@ extern int g_nSectionChangePacketType;
 class SectionChangePacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00340908
+     * @ghidraAddress PAL: 0x003ade40
+     */
+    ~SectionChangePacket() override = default;
+
+    /**
      * Construct a packet with no section.
      *
      * Inline. New() expands it.

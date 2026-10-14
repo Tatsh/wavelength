@@ -16,6 +16,14 @@
 class IntroScreen : public UIScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035cfc8
+     * @ghidraAddress PAL: 0x003cb0a0
+     */
+    ~IntroScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * The `next_screen` entry is required. The `hold_time` entry is optional and defaults to one

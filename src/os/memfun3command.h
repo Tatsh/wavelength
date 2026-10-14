@@ -6,7 +6,9 @@
  * Command that calls a member function of an object with three arguments.
  *
  * The RTTI records each instantiation under its template arguments, the member function type, the
- * object class, and the three argument types, and records Command as the base.
+ * object class, and the three argument types, and records Command as the base. Each
+ * instantiation has its own out-of-line copies of the members, and each address listed is one
+ * instantiation's.
  *
  * @tparam Function The member function type.
  * @tparam Object The class of the object.
@@ -39,7 +41,24 @@ public:
           mArgument3(argument3) {
     }
 
-    /** Call the member function with the arguments. */
+    /**
+     * Release the command.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033c838
+     * @ghidraAddress PAL: 0x003a9d70
+     * @ghidraAddress NTSC-U/C: 0x003478f0
+     * @ghidraAddress PAL: 0x003b4d20
+     */
+    ~MemFun3Command() override = default;
+
+    /**
+     * Call the member function with the arguments.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033c8b0
+     * @ghidraAddress PAL: 0x003a9de8
+     * @ghidraAddress NTSC-U/C: 0x00347968
+     * @ghidraAddress PAL: 0x003b4d98
+     */
     void Execute() override {
         (mObject->*mMember)(mArgument1, mArgument2, mArgument3);
     }
@@ -107,10 +126,22 @@ public:
     }
 
     /**
+     * Release the command.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033c228
+     * @ghidraAddress PAL: 0x003a9760
+     * @ghidraAddress NTSC-U/C: 0x00341220
+     * @ghidraAddress PAL: 0x003ae758
+     */
+    ~MemFun3Command() override = default;
+
+    /**
      * Call the member function with the arguments and the default fourth argument.
      *
      * @ghidraAddress NTSC-U/C: 0x00341298
      * @ghidraAddress PAL: 0x003ae7d0
+     * @ghidraAddress NTSC-U/C: 0x0033c398
+     * @ghidraAddress PAL: 0x003a98d0
      */
     void Execute() override {
         (mObject->*mMember)(mArgument1, mArgument2, mArgument3, kDefaultArgument);
@@ -134,6 +165,12 @@ public:
  * @return The command, with no reference taken.
  * @ghidraAddress NTSC-U/C: 0x00340d08
  * @ghidraAddress PAL: 0x003ae240
+ * @ghidraAddress NTSC-U/C: 0x0033c710
+ * @ghidraAddress PAL: 0x003a9c48
+ * @ghidraAddress NTSC-U/C: 0x003477e0
+ * @ghidraAddress PAL: 0x003b4c10
+ * @ghidraAddress NTSC-U/C: 0x0033bf80
+ * @ghidraAddress PAL: 0x003a94b8
  */
 template <typename Function,
           typename Object,

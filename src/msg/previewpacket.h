@@ -19,6 +19,14 @@ extern int g_nPreviewPacketType;
 class PreviewPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033df10
+     * @ghidraAddress PAL: 0x003ab448
+     */
+    ~PreviewPacket() override = default;
+
+    /**
      * Construct a packet with no section.
      *
      * Inline. New() expands it. mPreviewing is left unset.

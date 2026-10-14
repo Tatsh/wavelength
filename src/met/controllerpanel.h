@@ -15,6 +15,14 @@
  */
 class ControllerPanel : public FreqPanel {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00356b40
+     * @ghidraAddress PAL: 0x003c3da0
+     */
+    ~ControllerPanel() override = default;
+
     /** The number of regions, one for each button and stick. */
     static constexpr int kNumRegions = 16;
 

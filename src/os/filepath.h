@@ -14,6 +14,14 @@
 class FilePath : public String {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00357028
+     * @ghidraAddress PAL: 0x003c4288
+     */
+    ~FilePath() override = default;
+
+    /**
      * Set the root directory that relative paths resolve against.
      *
      * An absolute path replaces the root. A relative one is appended to the current root.

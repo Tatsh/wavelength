@@ -15,6 +15,14 @@
 class PauseScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035e010
+     * @ghidraAddress PAL: 0x003cc0f0
+     */
+    ~PauseScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

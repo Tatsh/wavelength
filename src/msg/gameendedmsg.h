@@ -106,6 +106,15 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /**
+     * Copy another message.
+     *
+     * @param other The message.
+     * @ghidraAddress NTSC-U/C: 0x003455e0
+     * @ghidraAddress PAL: 0x003b2b18
+     */
+    GameEndedMsg(const GameEndedMsg &other) = default;
+
     int mResult;                       /*!< One of Result. */
     std::vector<NetGameScore> mScores; /*!< The final score of each player. */
 };

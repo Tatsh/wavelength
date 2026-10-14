@@ -11,6 +11,14 @@
  */
 class MCDeleteTask : public MemcardTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351a78
+     * @ghidraAddress PAL: 0x003becf8
+     */
+    ~MCDeleteTask() override = default;
+
     /** Construct an idle task. */
     MCDeleteTask() : mName(nullptr) {
     }

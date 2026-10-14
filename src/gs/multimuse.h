@@ -34,6 +34,14 @@ public:
     class MultiMuseCmd : public Command {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034e468
+         * @ghidraAddress PAL: 0x003bb890
+         */
+        ~MultiMuseCmd() override = default;
+
+        /**
          * Construct the command of a sequence.
          *
          * @param pMulti The sequence.

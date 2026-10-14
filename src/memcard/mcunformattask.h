@@ -10,6 +10,14 @@
 class MCUnformatTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351f88
+     * @ghidraAddress PAL: 0x003bf208
+     */
+    ~MCUnformatTask() override = default;
+
+    /**
      * Record the outcome and finish.
      *
      * @param nResult The library's result.

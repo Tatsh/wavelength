@@ -14,7 +14,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00359c58
      * @ghidraAddress PAL: 0x003c6fc0
      */
-    virtual ~KeyboardUser();
+    virtual ~KeyboardUser() {
+    }
 
     /**
      * Receive the text the player typed.

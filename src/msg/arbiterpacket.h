@@ -20,8 +20,34 @@ extern int g_nArbiterPacketType;
  */
 class ArbiterPacket : public ExternalPacket {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003479f0
+     * @ghidraAddress PAL: 0x003b4e20
+     */
+    ~ArbiterPacket() override = default;
+
     /** One player's assignment. */
-    struct PlayerData {
+    class PlayerData {
+    public:
+        /** Construct an assignment with every field unset. */
+        PlayerData() = default;
+
+        /**
+         * Construct an assignment.
+         *
+         * @param nNetOrder The player's session order.
+         * @param nVersion The sequence number of the player's last update.
+         * @param nTrack The track assigned to the player.
+         * @param nSlot The slot assigned to the player.
+         * @ghidraAddress NTSC-U/C: 0x0033c7a8
+         * @ghidraAddress PAL: 0x003a9ce0
+         */
+        PlayerData(int nNetOrder, int nVersion, int nTrack, int nSlot)
+            : mNetOrder(nNetOrder), mVersion(nVersion), mTrack(nTrack), mSlot(nSlot) {
+        }
+
         int mNetOrder; /*!< The player's session order. */
         int mVersion;  /*!< The sequence number of the player's last update. */
         int mTrack;    /*!< The track assigned to the player. */

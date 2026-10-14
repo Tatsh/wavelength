@@ -13,6 +13,14 @@
 class XProceedScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035cea8
+     * @ghidraAddress PAL: 0x003caf80
+     */
+    ~XProceedScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

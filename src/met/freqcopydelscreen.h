@@ -15,6 +15,14 @@
 class FreqCopyDelScreen : public SelLoadedFreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00356d88
+     * @ghidraAddress PAL: 0x003c3fe8
+     */
+    ~FreqCopyDelScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

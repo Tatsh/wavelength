@@ -6,7 +6,8 @@
  * Command that calls a member function of an object with four arguments.
  *
  * The RTTI records each instantiation under its template arguments, the member function type, the
- * object class, and the four argument types, and records Command as the base.
+ * object class, and the four argument types, and records Command as the base. Each instantiation
+ * has its own out-of-line copies of the members, and each address listed is one instantiation's.
  *
  * @tparam Function The member function type.
  * @tparam Object The class of the object.
@@ -43,7 +44,28 @@ public:
           mArgument3(argument3), mArgument4(argument4) {
     }
 
-    /** Call the member function with the arguments. */
+    /**
+     * Release the command.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033f428
+     * @ghidraAddress PAL: 0x003ac960
+     * @ghidraAddress NTSC-U/C: 0x0033f590
+     * @ghidraAddress PAL: 0x003acac8
+     * @ghidraAddress NTSC-U/C: 0x0034c410
+     * @ghidraAddress PAL: 0x003b9840
+     */
+    ~MemFun4Command() override = default;
+
+    /**
+     * Call the member function with the arguments.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033f708
+     * @ghidraAddress PAL: 0x003acc40
+     * @ghidraAddress NTSC-U/C: 0x0033f858
+     * @ghidraAddress PAL: 0x003acd90
+     * @ghidraAddress NTSC-U/C: 0x0034c488
+     * @ghidraAddress PAL: 0x003b98b8
+     */
     void Execute() override {
         (mObject->*mMember)(mArgument1, mArgument2, mArgument3, mArgument4);
     }
@@ -59,8 +81,8 @@ public:
 /**
  * Allocate a command that calls a member function of an object with four arguments.
  *
- * The address listed is that of the instantiation for GfxManager with the arguments of
- * GfxManager::SetRemixPanelText().
+ * Each address listed is one instantiation's. The first is the instantiation for GfxManager with
+ * the arguments of GfxManager::SetRemixPanelText().
  *
  * @param pObject The object.
  * @param pfnMember The member function.
@@ -70,6 +92,10 @@ public:
  * @param argument4 The fourth argument.
  * @return The command, with no reference taken.
  * @ghidraAddress NTSC-U/C: 0x0034c1d8
+ * @ghidraAddress NTSC-U/C: 0x0033ed38
+ * @ghidraAddress PAL: 0x003ac270
+ * @ghidraAddress NTSC-U/C: 0x0033eef0
+ * @ghidraAddress PAL: 0x003ac428
  */
 template <typename Function,
           typename Object,

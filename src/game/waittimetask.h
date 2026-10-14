@@ -10,6 +10,14 @@
 class WaitTimeTask : public Task {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00344108
+     * @ghidraAddress PAL: 0x003b1640
+     */
+    ~WaitTimeTask() override = default;
+
+    /**
      * Construct a task that waits for a time.
      *
      * @param fSeconds The time to wait, in seconds.

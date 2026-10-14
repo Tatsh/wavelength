@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "game/tickobjvector.h"
+
 namespace {
 
 constexpr int kNotFound = -1;
@@ -20,8 +22,7 @@ void PitchTrackRiffData::AddRiffs(int nTick, Muse *pRiff0, Muse *pRiff1, Muse *p
         mRiffSets.push_back(entry);
         return;
     }
-    mRiffSets.insert(std::lower_bound(mRiffSets.begin(), mRiffSets.end(), entry, TickBefore),
-                     entry);
+    InsertOrdered(entry, mRiffSets);
 }
 
 void PitchTrackRiffData::GetRiffs(int nIndex,

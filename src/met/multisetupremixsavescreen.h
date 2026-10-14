@@ -15,6 +15,14 @@
 class MultiSetupRemixSaveScreen : public SetupRemixSaveScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035c698
+     * @ghidraAddress PAL: 0x003ca770
+     */
+    ~MultiSetupRemixSaveScreen() override = default;
+
+    /**
      * Construct the screen from its script description, for the player its name ends with.
      *
      * A name that does not end with 1 to 4 means the first player.

@@ -23,6 +23,14 @@
 class MetaStartScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035d328
+     * @ghidraAddress PAL: 0x003cb400
+     */
+    ~MetaStartScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no attract time.
      *
      * @param pData The script description.

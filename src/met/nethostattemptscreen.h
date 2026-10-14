@@ -17,6 +17,14 @@
 class NetHostAttemptScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035b608
+     * @ghidraAddress PAL: 0x003c9160
+     */
+    ~NetHostAttemptScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

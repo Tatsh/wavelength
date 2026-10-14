@@ -33,6 +33,14 @@ public:
     GameConfig();
 
     /**
+     * Release the tables.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00336db8
+     * @ghidraAddress PAL: 0x003a4368
+     */
+    ~GameConfig() = default;
+
+    /**
      * Read the "game" section of the configuration and register the cheat script commands.
      *
      * @ghidraAddress NTSC-U/C: 0x0010f990

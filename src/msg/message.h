@@ -71,12 +71,8 @@ public:
     /**
      * Vtable slot 1. The body is empty.
      *
-     * A second emission at `0x003da2f0`, with forty copies in other units, is the same destructor
-     * releasing through the class operator delete, OperatorDeleteOverride() under the tag `MSG`,
-     * where `0x001051c0` releases through the scalar free. It has no source of its own.
-     *
-     * @ghidraAddress NTSC-U/C: 0x001051c0
-     * @ghidraAddress PAL: 0x001051c0
+     * @ghidraAddress NTSC-U/C: 0x00334820
+     * @ghidraAddress PAL: 0x003a1dd0
      */
     virtual ~Message();
 

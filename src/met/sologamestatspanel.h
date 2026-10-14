@@ -14,6 +14,14 @@
 class SoloGameStatsPanel : public FreqPanel, public StatsPanel {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00357298
+     * @ghidraAddress PAL: 0x003c44f8
+     */
+    ~SoloGameStatsPanel() override = default;
+
+    /**
      * Construct the panel from its script description.
      *
      * @param pData The script description.

@@ -19,6 +19,14 @@ extern int g_nCapturePacketType;
 class CapturePacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00349e60
+     * @ghidraAddress PAL: 0x003b7290
+     */
+    ~CapturePacket() override = default;
+
+    /**
      * Construct a packet with no track and no bar.
      *
      * Inline. New() expands it.

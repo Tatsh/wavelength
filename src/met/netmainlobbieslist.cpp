@@ -4,6 +4,7 @@
 
 #include "met/netswitchlobbyscreen.h"
 #include "os/joypad.h"
+#include "os/listat.h"
 #include "os/string.h"
 #include "ui/uimanager.h"
 
@@ -21,7 +22,7 @@ enum Column {
 } // namespace
 
 void NetMainLobbiesList::UpdateRow(int nRow, int nItem) {
-    const NetChatroomInfo &chatroom = *std::next(mChatrooms.begin(), nItem);
+    const NetChatroomInfo &chatroom = *ListAt(mChatrooms, nItem);
     SetCellText(nRow, kColumnName, chatroom.mName.c_str());
     SetCellText(nRow,
                 kColumnPlayers,
@@ -37,7 +38,7 @@ bool NetMainLobbiesList::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mButton == kPadCross && pMsg->mPressed != 0) {
         auto *pScreen =
             dynamic_cast<NetSwitchLobbyScreen *>(TheUI.FindScreen(kSwitchScreen, false));
-        pScreen->mChatroomId = std::next(mChatrooms.begin(), mSelected)->mId;
+        pScreen->mChatroomId = ListAt(mChatrooms, mSelected)->mId;
     }
     return UIList::HandleJoypad(pMsg);
 }

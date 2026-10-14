@@ -18,6 +18,22 @@
 class MCNetConfigTask : public MemcardTask, public MsgSink {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003539a8
+     * @ghidraAddress PAL: 0x003c0cb0
+     */
+    ~MCNetConfigTask() override = default;
+
+    /**
+     * Construct the task.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00353a60
+     * @ghidraAddress PAL: 0x003c0d68
+     */
+    MCNetConfigTask() = default;
+
+    /**
      * Prepare the task. The task ignores the slot.
      *
      * @param nPort The memory card slot.

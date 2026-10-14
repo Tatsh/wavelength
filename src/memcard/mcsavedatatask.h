@@ -13,6 +13,14 @@
 class MCSaveDataTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003529a8
+     * @ghidraAddress PAL: 0x003bfcb0
+     */
+    ~MCSaveDataTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x0015ffa0

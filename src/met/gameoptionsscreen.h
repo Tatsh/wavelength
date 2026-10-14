@@ -15,6 +15,14 @@
  */
 class GameOptionsScreen : public FreqScreen {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003568e0
+     * @ghidraAddress PAL: 0x003c3b40
+     */
+    ~GameOptionsScreen() override = default;
+
     /** Bits of mToggles. */
     enum Toggle {
         kToggleForceFeedback = 1, /*!< Controller vibration. */

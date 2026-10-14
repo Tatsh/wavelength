@@ -19,6 +19,14 @@ extern int g_nEraseSectionPacketType;
 class EraseSectionPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0034b2a0
+     * @ghidraAddress PAL: 0x003b86d0
+     */
+    ~EraseSectionPacket() override = default;
+
+    /**
      * Construct a packet with no track and no section.
      *
      * Inline. New() expands it.

@@ -14,6 +14,14 @@
 class UnlockScreen : public XProceedScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035e808
+     * @ghidraAddress PAL: 0x003cc8e8
+     */
+    ~UnlockScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

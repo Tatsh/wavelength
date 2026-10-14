@@ -19,6 +19,14 @@ extern int g_nFinalScorePacketType;
 class FinalScorePacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003359a8
+     * @ghidraAddress PAL: 0x003a2f58
+     */
+    ~FinalScorePacket() override = default;
+
+    /**
      * Construct a packet with no score.
      *
      * Inline. New() expands it.

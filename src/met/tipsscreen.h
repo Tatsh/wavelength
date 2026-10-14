@@ -15,6 +15,14 @@
 class TipsScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035e440
+     * @ghidraAddress PAL: 0x003cc520
+     */
+    ~TipsScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

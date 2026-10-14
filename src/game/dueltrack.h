@@ -316,6 +316,14 @@ private:
     class CatchReceiver : public GemCatcher::Receiver {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x00335308
+         * @ghidraAddress PAL: 0x003a28b8
+         */
+        ~CatchReceiver() override = default;
+
+        /**
          * Construct a receiver for a track.
          *
          * @param pOwner The track.
@@ -370,6 +378,14 @@ private:
      */
     class PitchReceiver : public DuelTrackPitcher::Receiver {
     public:
+        /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x00335418
+         * @ghidraAddress PAL: 0x003a29c8
+         */
+        ~PitchReceiver() override = default;
+
         /**
          * Construct a receiver for a track.
          *

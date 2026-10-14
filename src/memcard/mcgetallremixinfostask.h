@@ -16,6 +16,14 @@
 class MCGetAllRemixInfosTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00353470
+     * @ghidraAddress PAL: 0x003c0778
+     */
+    ~MCGetAllRemixInfosTask() override = default;
+
+    /**
      * Prepare the task.
      *
      * @param nPort The memory card slot.

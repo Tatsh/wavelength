@@ -7,6 +7,7 @@
 #include "met/avatarpanel.h"
 #include "met/metagameutil.h"
 #include "met/netrankingscreen.h"
+#include "os/listat.h"
 #include "os/locale.h"
 #include "os/string.h"
 #include "rnd/manager.h"
@@ -86,7 +87,7 @@ void NetRankedPlayersList::ScrollDown() {
 
 void NetRankedPlayersList::UpdateRow(int nRow, int nItem) {
     if (static_cast<unsigned int>(nItem) < mPlayers.size()) {
-        const LobbyPlayer &player = *std::next(mPlayers.begin(), nItem);
+        const LobbyPlayer &player = *ListAt(mPlayers, nItem);
         if (player.IsNewbie()) {
             SetCellText(nRow, kColumnRank, TheLocale.Localize(kNewbieToken, true));
         } else {
@@ -114,7 +115,7 @@ void NetRankedPlayersList::UpdateCursor() {
     pView->SetShowing(true);
 
     UIComponent *pName = TheUI.FindComponent(kDetailPanel, kNameComponent, false);
-    LobbyPlayer &player = *std::next(mPlayers.begin(), mSelected);
+    LobbyPlayer &player = *ListAt(mPlayers, mSelected);
     pName->SetText(player.mName.c_str());
 
     UIComponent *pRank = TheUI.FindComponent(kDetailPanel, kRankComponent, false);

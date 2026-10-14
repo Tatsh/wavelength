@@ -15,6 +15,14 @@
 class MCGetDirTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351d90
+     * @ghidraAddress PAL: 0x003bf010
+     */
+    ~MCGetDirTask() override = default;
+
+    /**
      * Prepare the task.
      *
      * @param pOwner The task that learns when this one ends through OnDirListed(), or null.

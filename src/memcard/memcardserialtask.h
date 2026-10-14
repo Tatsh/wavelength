@@ -13,6 +13,14 @@
 class MemcardSerialTask : public SerialTasks {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00351508
+     * @ghidraAddress PAL: 0x003be780
+     */
+    ~MemcardSerialTask() override = default;
+
+    /**
      * Report the outcome of the work.
      *
      * @return One of MemcardTask::Status.

@@ -20,8 +20,31 @@ extern int g_nBumperPacketType;
  */
 class BumperPacket : public ExternalPacket {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00349bc8
+     * @ghidraAddress PAL: 0x003b6ff8
+     */
+    ~BumperPacket() override = default;
+
     /** One player the bumper struck. */
-    struct VictimData {
+    class VictimData {
+    public:
+        /** Construct an entry with every field unset. */
+        VictimData() = default;
+
+        /**
+         * Construct an entry.
+         *
+         * @param nNetOrder The player's session order.
+         * @param nTrack The track the player was moved to.
+         * @ghidraAddress NTSC-U/C: 0x0033c128
+         * @ghidraAddress PAL: 0x003a9660
+         */
+        VictimData(int nNetOrder, int nTrack) : mNetOrder(nNetOrder), mTrack(nTrack) {
+        }
+
         int mNetOrder; /*!< The player's session order. */
         int mTrack;    /*!< The track the player was moved to. */
     };
@@ -33,6 +56,15 @@ public:
      */
     BumperPacket() : ExternalPacket(kFlagGuaranteed) {
     }
+
+    /**
+     * Copy another packet.
+     *
+     * @param other The packet.
+     * @ghidraAddress NTSC-U/C: 0x00349d50
+     * @ghidraAddress PAL: 0x003b7180
+     */
+    BumperPacket(const BumperPacket &other) = default;
 
     /**
      * Produce a default-constructed packet on the heap.

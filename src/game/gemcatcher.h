@@ -67,6 +67,14 @@ public:
     class CatchCheckCmd : public Command {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x003385b8
+         * @ghidraAddress PAL: 0x003a5b68
+         */
+        ~CatchCheckCmd() override = default;
+
+        /**
          * Construct the command for a lane.
          *
          * @param pReceiver The receiver of the judgements.

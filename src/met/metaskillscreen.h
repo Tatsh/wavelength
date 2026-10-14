@@ -18,6 +18,14 @@
 class MetaSkillScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035da08
+     * @ghidraAddress PAL: 0x003cbae0
+     */
+    ~MetaSkillScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

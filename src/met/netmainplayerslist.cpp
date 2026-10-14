@@ -8,6 +8,7 @@
 #include "met/metagameutil.h"
 #include "netflow/netlobby.h"
 #include "os/joypad.h"
+#include "os/listat.h"
 #include "os/locale.h"
 #include "os/string.h"
 #include "rnd/manager.h"
@@ -56,7 +57,7 @@ NetMainPlayersList::NetMainPlayersList(DataArray *pData, const char *pszPanel)
 }
 
 void NetMainPlayersList::UpdateRow(int nRow, int nItem) {
-    const LobbyPlayer &player = *std::next(mPlayers.begin(), nItem);
+    const LobbyPlayer &player = *ListAt(mPlayers, nItem);
     SetCellMat(nRow, kColumnRank, FindRankMaterial(player.mRankIcon));
     SetCellText(nRow, kColumnName, player.mName.c_str());
     if (player.mMuted != 0) {
@@ -82,7 +83,7 @@ void NetMainPlayersList::UpdateCursor() {
         return;
     }
 
-    LobbyPlayer &player = *std::next(mPlayers.begin(), mSelected);
+    LobbyPlayer &player = *ListAt(mPlayers, mSelected);
     UIComponent *pRank = TheUI.FindComponent(kDetailPanel, kRankComponent, false);
     char szRank[kRankTextSize];
     if (player.IsNewbie()) {
@@ -136,12 +137,12 @@ AvatarPartSet *NetMainPlayersList::SelectedAvatar() {
     if (mPlayers.empty()) {
         return nullptr;
     }
-    return &std::next(mPlayers.begin(), mSelected)->mAvatar;
+    return &ListAt(mPlayers, mSelected)->mAvatar;
 }
 
 bool NetMainPlayersList::HandleJoypad(JoypadInputMsg *pMsg) {
     if (mMuteEnabled != 0 && pMsg->mButton == kPadSquare && pMsg->mPressed != 0) {
-        LobbyPlayer &player = *std::next(mPlayers.begin(), mSelected);
+        LobbyPlayer &player = *ListAt(mPlayers, mSelected);
         if (TheNetLobby->GetAccountId() != player.mId) {
             FxMidi::PlaySquare();
             player.mMuted ^= 1;

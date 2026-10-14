@@ -16,6 +16,14 @@
 class SongDecryptScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035ed98
+     * @ghidraAddress PAL: 0x003cce78
+     */
+    ~SongDecryptScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no song.
      *
      * @param pData The script description.

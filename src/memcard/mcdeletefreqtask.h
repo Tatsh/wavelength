@@ -12,6 +12,14 @@
 class MCDeleteFreqTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352cb0
+     * @ghidraAddress PAL: 0x003bffb8
+     */
+    ~MCDeleteFreqTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x00160a38

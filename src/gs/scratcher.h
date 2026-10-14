@@ -30,6 +30,14 @@ public:
     class ScratchNoteCB : public Muse::NoteCB {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034c688
+         * @ghidraAddress PAL: 0x003b9ab8
+         */
+        ~ScratchNoteCB() override = default;
+
+        /**
          * Show a note at the current tick.
          *
          * @param nNote The MIDI note number. The body does not read it.

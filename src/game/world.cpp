@@ -96,19 +96,79 @@ public:
     explicit InputCmd(BinStream &stream) : mEvent(stream) {
     }
 
+    // One copy for each event, in the order RotateEvent, PlayNoteEvent, BtnEvent<8>,
+    // StickEvent<2>, StickEvent<6>, BtnEvent<3>, BtnEvent<4>, BtnEvent<5>, ChangeSectionEvent,
+    // BtnEvent<9>, and BtnEvent<10>. The other members list their copies in the same order.
+    // NTSC-U/C: 0x00345770, PAL: 0x003b2ca8
+    // NTSC-U/C: 0x003457e8, PAL: 0x003b2d20
+    // NTSC-U/C: 0x00345860, PAL: 0x003b2d98
+    // NTSC-U/C: 0x003458d8, PAL: 0x003b2e10
+    // NTSC-U/C: 0x00345950, PAL: 0x003b2e88
+    // NTSC-U/C: 0x003459c8, PAL: 0x003b2f00
+    // NTSC-U/C: 0x00345a40, PAL: 0x003b2f78
+    // NTSC-U/C: 0x00345ab8, PAL: 0x003b2ff0
+    // NTSC-U/C: 0x00345b30, PAL: 0x003b3068
+    // NTSC-U/C: 0x00345ba8, PAL: 0x003b30e0
+    // NTSC-U/C: 0x00345c20, PAL: 0x003b3158
+    ~InputCmd() override = default;
+
+    // NTSC-U/C: 0x00346590, PAL: 0x003b39d8
+    // NTSC-U/C: 0x00346508, PAL: 0x003b3950
+    // NTSC-U/C: 0x00346448, PAL: 0x003b38b0
+    // NTSC-U/C: 0x00346310, PAL: 0x003b3790
+    // NTSC-U/C: 0x003461d8, PAL: 0x003b3670
+    // NTSC-U/C: 0x00346118, PAL: 0x003b35d0
+    // NTSC-U/C: 0x00346058, PAL: 0x003b3530
+    // NTSC-U/C: 0x00345f98, PAL: 0x003b3490
+    // NTSC-U/C: 0x00345f10, PAL: 0x003b3408
+    // NTSC-U/C: 0x00345e50, PAL: 0x003b3368
+    // NTSC-U/C: 0x00345d90, PAL: 0x003b32c8
     void Execute() override {
         TheWorldLogic->HandleInput(mEvent);
     }
 
+    // NTSC-U/C: 0x003465d8, PAL: 0x003b3a20
+    // NTSC-U/C: 0x00346550, PAL: 0x003b3998
+    // NTSC-U/C: 0x00346490
+    // NTSC-U/C: 0x00346358, PAL: 0x003b37d8
+    // NTSC-U/C: 0x00346220, PAL: 0x003b36b8
+    // NTSC-U/C: 0x00346160
+    // NTSC-U/C: 0x003460a0
+    // NTSC-U/C: 0x00345fe0
+    // NTSC-U/C: 0x00345f58, PAL: 0x003b3450
+    // NTSC-U/C: 0x00345e98
+    // NTSC-U/C: 0x00345dd8
     void Save(BinStream &stream) const override {
         mEvent.Save(stream);
     }
 
+    // NTSC-U/C: 0x003465f8, PAL: 0x003b3a40
+    // NTSC-U/C: 0x00346570, PAL: 0x003b39b8
+    // NTSC-U/C: 0x003464d0
+    // NTSC-U/C: 0x003463e0, PAL: 0x003b3850
+    // NTSC-U/C: 0x003462a8, PAL: 0x003b3730
+    // NTSC-U/C: 0x003461a0
+    // NTSC-U/C: 0x003460e0
+    // NTSC-U/C: 0x00346020
+    // NTSC-U/C: 0x00345f78, PAL: 0x003b3470
+    // NTSC-U/C: 0x00345ed8
+    // NTSC-U/C: 0x00345e18
     void Load(BinStream &stream) override {
         mEvent.Load(stream);
     }
 
     // Post the event to run at once while the logic runs and the clock runs.
+    // NTSC-U/C: 0x003447c8, PAL: 0x003b1d00
+    // NTSC-U/C: 0x00344868, PAL: 0x003b1da0
+    // NTSC-U/C: 0x00344918, PAL: 0x003b1e50
+    // NTSC-U/C: 0x003449b0, PAL: 0x003b1ee8
+    // NTSC-U/C: 0x00344a58, PAL: 0x003b1f90
+    // NTSC-U/C: 0x00344b00, PAL: 0x003b2038
+    // NTSC-U/C: 0x00344b98, PAL: 0x003b20d0
+    // NTSC-U/C: 0x00344c30, PAL: 0x003b2168
+    // NTSC-U/C: 0x00344cc8, PAL: 0x003b2200
+    // NTSC-U/C: 0x00344d68, PAL: 0x003b22a0
+    // NTSC-U/C: 0x00344e00, PAL: 0x003b2338
     static void Post(const Event &event) {
         if (!TheWorldLogic->IsFinished() && TheSongScheduler.IsRunning()) {
             TheSongScheduler.PostIn(new InputCmd(event), 0, true);

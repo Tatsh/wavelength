@@ -21,6 +21,14 @@ constexpr int kSaveSpaceListingCount = 2;
 class MCCheckSaveSpaceNeededTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352278
+     * @ghidraAddress PAL: 0x003bf4f8
+     */
+    ~MCCheckSaveSpaceNeededTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x0015ea48

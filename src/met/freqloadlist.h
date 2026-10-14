@@ -17,6 +17,14 @@
 class FreqLoadList : public FreqList {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035fb30
+     * @ghidraAddress PAL: 0x003cddb8
+     */
+    ~FreqLoadList() override = default;
+
+    /**
      * Construct the list from its script description, listing no Freq.
      *
      * @param pData The script description.

@@ -26,6 +26,14 @@ public:
     class AxeNoteCB : public Muse::NoteCB {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034d340
+         * @ghidraAddress PAL: 0x003ba770
+         */
+        ~AxeNoteCB() override = default;
+
+        /**
          * Construct the receiver of a contour.
          *
          * @param pContour The contour.

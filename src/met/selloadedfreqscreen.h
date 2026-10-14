@@ -20,6 +20,14 @@
 class SelLoadedFreqScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035d5d0
+     * @ghidraAddress PAL: 0x003cb6a8
+     */
+    ~SelLoadedFreqScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no Freqs.
      *
      * @param pData The script description.

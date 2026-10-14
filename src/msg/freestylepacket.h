@@ -19,6 +19,14 @@ extern int g_nFreestylePacketType;
 class FreestylePacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0034b8d0
+     * @ghidraAddress PAL: 0x003b8d00
+     */
+    ~FreestylePacket() override = default;
+
+    /**
      * Construct an inactive packet.
      *
      * Inline. New() expands it.

@@ -13,6 +13,14 @@
 class RemixOrFreqScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00356d30
+     * @ghidraAddress PAL: 0x003c3f90
+     */
+    ~RemixOrFreqScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

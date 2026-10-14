@@ -9,6 +9,7 @@
 #include "met/netmainlaunchpadspanel.h"
 #include "netflow/netlobby.h"
 #include "os/joypad.h"
+#include "os/listat.h"
 #include "os/locale.h"
 #include "os/string.h"
 #include "rnd/font.h"
@@ -50,7 +51,7 @@ void NetMainLaunchpadsList::SetLaunchpads(std::list<NetLaunchpadInfo> *pLaunchpa
 }
 
 void NetMainLaunchpadsList::UpdateRow(int nRow, int nItem) {
-    const NetLaunchpadInfo &launchpad = *std::next(mLaunchpads.begin(), nItem);
+    const NetLaunchpadInfo &launchpad = *ListAt(mLaunchpads, nItem);
     const NetGameParams &params = launchpad.mParams;
     const bool bGrey = launchpad.mStatus != NetLaunchpadInfo::kStatusOpen || launchpad.mOpen == 0;
 
@@ -107,7 +108,7 @@ void NetMainLaunchpadsList::UpdateCursor() {
     auto *pPanel = static_cast<NetMainLaunchpadsPanel *>(TheUI.FindPanel(mPanelName, false));
     pPanel->HidePlayers();
     if (static_cast<unsigned int>(mSelected) < mLaunchpads.size()) {
-        NetLaunchpadInfo *pLaunchpad = &*std::next(mLaunchpads.begin(), mSelected);
+        NetLaunchpadInfo *pLaunchpad = &*ListAt(mLaunchpads, mSelected);
         pPanel->ShowLaunchpad(pLaunchpad);
         TheNetLobby->RequestLaunchpadPlayers(TheUI.FindScreen(kPlayersScreen, false),
                                              pLaunchpad->mLaunchpadId);
@@ -119,7 +120,7 @@ bool NetMainLaunchpadsList::HandleJoypad(JoypadInputMsg *pMsg) {
         if (mLaunchpads.empty()) {
             return false;
         }
-        const NetLaunchpadInfo &launchpad = *std::next(mLaunchpads.begin(), mSelected);
+        const NetLaunchpadInfo &launchpad = *ListAt(mLaunchpads, mSelected);
         if (launchpad.mOpen == 0 || launchpad.mStatus != NetLaunchpadInfo::kStatusOpen) {
             return false;
         }

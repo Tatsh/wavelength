@@ -22,6 +22,14 @@
 class MCCheckRemixSpaceNeededTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352548
+     * @ghidraAddress PAL: 0x003bf7c8
+     */
+    ~MCCheckRemixSpaceNeededTask() override = default;
+
+    /**
      * Construct the steps, one listing for each remix directory.
      *
      * @ghidraAddress NTSC-U/C: 0x0015ef00

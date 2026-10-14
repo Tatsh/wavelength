@@ -16,6 +16,14 @@
 class WaitInteractiveTask : public Task, public GameCallback {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00344178
+     * @ghidraAddress PAL: 0x003b16b0
+     */
+    ~WaitInteractiveTask() override = default;
+
+    /**
      * Construct a task for one tutorial step.
      *
      * @param pStep The step, with the conditions to wait for.

@@ -10,6 +10,14 @@
 class MCReadTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003517f0
+     * @ghidraAddress PAL: 0x003bea70
+     */
+    ~MCReadTask() override = default;
+
+    /**
      * Prepare the task.
      *
      * @param pBuffer Receives the bytes. The caller retains it.

@@ -15,6 +15,14 @@
 class BonusPicPanel : public FreqPanel {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035ebe0
+     * @ghidraAddress PAL: 0x003cccc0
+     */
+    ~BonusPicPanel() override = default;
+
+    /**
      * Construct the panel from its script description, with no song.
      *
      * @param pData The script description.

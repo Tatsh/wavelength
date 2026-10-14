@@ -19,6 +19,14 @@ extern int g_nFreestyleBumpPacketType;
 class FreestyleBumpPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0034b460
+     * @ghidraAddress PAL: 0x003b8890
+     */
+    ~FreestyleBumpPacket() override = default;
+
+    /**
      * Construct a packet with no player and no track.
      *
      * Inline. New() expands it.

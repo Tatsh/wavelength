@@ -26,6 +26,14 @@
  */
 class MetaSongScreen : public FreqScreen {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035dd20
+     * @ghidraAddress PAL: 0x003cbdf8
+     */
+    ~MetaSongScreen() override = default;
+
     /** The number of song buttons in the `s_g_sel_song_band` panel. */
     static constexpr int kNumSongButtons = 6;
 

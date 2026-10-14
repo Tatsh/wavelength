@@ -53,6 +53,14 @@ public:
         }
 
         /**
+         * Release the command.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034ebc8
+         * @ghidraAddress PAL: 0x003bbff0
+         */
+        ~NoteCommand() override = default;
+
+        /**
          * Send the note on, or the note off when the note sounds.
          *
          * @ghidraAddress NTSC-U/C: 0x0034ec20

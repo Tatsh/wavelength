@@ -20,6 +20,14 @@ extern int g_nPlayerUpdatePacketType;
 class PlayerUpdatePacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033dcd0
+     * @ghidraAddress PAL: 0x003ab208
+     */
+    ~PlayerUpdatePacket() override = default;
+
+    /**
      * Construct a packet with no track and no score.
      *
      * Inline. New() expands it.

@@ -16,6 +16,14 @@
 class NetSearchScreen : public NetParamsScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035b6f0
+     * @ghidraAddress PAL: 0x003c9248
+     */
+    ~NetSearchScreen() override = default;
+
+    /**
      * Construct the screen from its script description.
      *
      * @param pData The script description.

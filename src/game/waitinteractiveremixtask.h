@@ -15,6 +15,14 @@
 class WaitInteractiveRemixTask : public Task, public GameCallback {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00344208
+     * @ghidraAddress PAL: 0x003b1740
+     */
+    ~WaitInteractiveRemixTask() override = default;
+
+    /**
      * Construct a task for one tutorial step.
      *
      * @param pStep The step, with the conditions to wait for.

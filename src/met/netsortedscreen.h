@@ -18,6 +18,14 @@
 class NetSortedScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035b800
+     * @ghidraAddress PAL: 0x003c9358
+     */
+    ~NetSortedScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no search.
      *
      * @param pData The script description.

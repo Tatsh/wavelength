@@ -12,6 +12,14 @@
 class StreamTask : public Task {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00344028
+     * @ghidraAddress PAL: 0x003b1560
+     */
+    ~StreamTask() override = default;
+
+    /**
      * Construct a task for a stream file.
      *
      * The task records the pointers and does not copy the text.

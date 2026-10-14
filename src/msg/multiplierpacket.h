@@ -19,6 +19,14 @@ extern int g_nMultiplierPacketType;
 class MultiplierPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033ac48
+     * @ghidraAddress PAL: 0x003a8180
+     */
+    ~MultiplierPacket() override = default;
+
+    /**
      * Produce a default-constructed packet on the heap.
      *
      * @return The packet.

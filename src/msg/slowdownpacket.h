@@ -19,6 +19,14 @@ extern int g_nSlowdownPacketType;
 class SlowdownPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033b2f8
+     * @ghidraAddress PAL: 0x003a8830
+     */
+    ~SlowdownPacket() override = default;
+
+    /**
      * Construct a packet.
      *
      * Inline. New() expands it.

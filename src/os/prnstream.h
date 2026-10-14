@@ -29,7 +29,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00339ea0
      * @ghidraAddress PAL: 0x003a7450
      */
-    virtual ~PrnStream();
+    virtual ~PrnStream() {
+    }
 
     /**
      * Write text to the stream's destination.
@@ -220,13 +221,35 @@ PrnStream &operator<<(PrnStream &stream, const std::vector<T> &elements) {
  * Write a map as its size followed by one tab-indented key and value line per entry.
  *
  * The output starts with "(size:", the entry count, and ")". Each entry then writes a newline and a
- * tab, "key:", the key, " value:", and the value.
+ * tab, "key:", the key, " value:", and the value. The address is of the instantiation for the
+ * objects of RndManager.
  *
+ * @tparam Key The type of the keys.
+ * @tparam Value The type of the values.
+ * @tparam Compare The ordering of the keys.
  * @param stream The stream to write to.
  * @param map The map to write.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x00333a20
  * @ghidraAddress PAL: 0x003a0fd0
+ */
+template <typename Key, typename Value, typename Compare>
+PrnStream &operator<<(PrnStream &stream, const std::map<Key, Value, Compare> &map) {
+    stream << "(size:" << static_cast<unsigned int>(map.size()) << ")";
+    for (const auto &entry : map) {
+        stream << "\n\t" << "key:" << entry.first << " value:" << entry.second;
+    }
+    return stream;
+}
+
+/**
+ * Write a map in the default key order, in the form of the map writer above.
+ *
+ * @tparam Key The type of the keys.
+ * @tparam Value The type of the values.
+ * @param stream The stream to write to.
+ * @param map The map to write.
+ * @return The stream.
  */
 template <typename Key, typename Value>
 PrnStream &operator<<(PrnStream &stream, const std::map<Key, Value> &map);

@@ -17,6 +17,14 @@
  */
 class MCCreateSaveDirTask : public MemcardTask {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352670
+     * @ghidraAddress PAL: 0x003be278
+     */
+    ~MCCreateSaveDirTask() override = default;
+
     /** One file the task saves. */
     struct FileData {
         String mName;      /*!< The path of the file. */

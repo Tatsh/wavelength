@@ -23,6 +23,14 @@
 class MetaArenaScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035dc38
+     * @ghidraAddress PAL: 0x003cbd10
+     */
+    ~MetaArenaScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no pending change.
      *
      * @param pData The script description.

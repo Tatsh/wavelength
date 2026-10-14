@@ -21,6 +21,14 @@ extern int g_nRemixerUpdatePacketType;
 class RemixerUpdatePacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0033e0c8
+     * @ghidraAddress PAL: 0x003ab600
+     */
+    ~RemixerUpdatePacket() override = default;
+
+    /**
      * Construct a packet with no track.
      *
      * Inline. New() expands it.

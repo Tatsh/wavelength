@@ -31,7 +31,7 @@ void AxeTrackData::AddHarmony(int nTick, const AxeHarmony *pHarmony) {
     TickObj<const AxeHarmony *> entry;
     entry.mPosition.mTick = nTick;
     entry.mValue = pHarmony;
-    InsertSorted(mHarmonies, entry);
+    AddOrdered(entry, mHarmonies);
 }
 
 void AxeTrackData::AddContours(int nTick,
@@ -49,14 +49,16 @@ void AxeTrackData::AddContours(int nTick,
     entry.mValue.mContours[0] = pFirst;
     entry.mValue.mContours[1] = pSecond;
     entry.mValue.mContours[2] = pThird;
-    InsertSorted(mContours, entry);
+    AddOrdered(entry, mContours);
 }
 
 int AxeTrackData::GetContours(int nTick,
                               AxeContour **ppFirst,
                               AxeContour **ppSecond,
                               AxeContour **ppThird) const {
-    auto it = FindAtOrBefore(mContours, nTick);
+    TickObj<ContourSet> key{};
+    key.mPosition.mTick = nTick;
+    auto it = FindOrdered(key, mContours);
     *ppFirst = it->mValue.mContours[0];
     *ppSecond = it->mValue.mContours[1];
     *ppThird = it->mValue.mContours[2];
@@ -68,7 +70,9 @@ int AxeTrackData::GetContours(int nTick,
 }
 
 int AxeTrackData::GetHarmony(int nTick, const AxeHarmony **ppHarmony) const {
-    auto it = FindAtOrBefore(mHarmonies, nTick);
+    TickObj<const AxeHarmony *> key{};
+    key.mPosition.mTick = nTick;
+    auto it = FindOrdered(key, mHarmonies);
     *ppHarmony = it->mValue;
     ++it;
     if (it == mHarmonies.end()) {

@@ -10,6 +10,14 @@
 class MCCloseTask : public MemcardTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x003518f8
+     * @ghidraAddress PAL: 0x003beb78
+     */
+    ~MCCloseTask() override = default;
+
+    /**
      * Record the outcome and finish.
      *
      * @param nResult The library's result.

@@ -18,6 +18,14 @@
 class ChooseMemCardScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00356b98
+     * @ghidraAddress PAL: 0x003c3df8
+     */
+    ~ChooseMemCardScreen() override = default;
+
+    /**
      * Construct the screen from its script description, with no cards.
      *
      * @param pData The script description.

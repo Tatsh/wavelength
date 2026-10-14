@@ -11,6 +11,14 @@
 class ForceFeedbackMgr::MotorEffect::OffCmd : public Command {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00335f90
+     * @ghidraAddress PAL: 0x003a3540
+     */
+    ~OffCmd() override = default;
+
+    /**
      * Construct the command of an effect.
      *
      * @param pEffect The effect.

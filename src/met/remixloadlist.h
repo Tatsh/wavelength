@@ -17,6 +17,14 @@
 class RemixLoadList : public FreqList {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035fcc8
+     * @ghidraAddress PAL: 0x003cdf50
+     */
+    ~RemixLoadList() override = default;
+
+    /**
      * Construct the list from its script description, listing no remix.
      *
      * @param pData The script description.

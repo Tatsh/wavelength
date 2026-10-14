@@ -17,6 +17,14 @@
 class MCListRemixesTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00353720
+     * @ghidraAddress PAL: 0x003c0a28
+     */
+    ~MCListRemixesTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x00161c70

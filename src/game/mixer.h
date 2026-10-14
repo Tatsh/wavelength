@@ -57,6 +57,14 @@ public:
     class VolumeRamp : public Ramp {
     public:
         /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0033bca8
+         * @ghidraAddress PAL: 0x003a91e0
+         */
+        ~VolumeRamp() override = default;
+
+        /**
          * Construct a ramp at full volume for a channel.
          *
          * Inline. The Mixer constructor expands it.

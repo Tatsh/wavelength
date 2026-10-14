@@ -5,6 +5,7 @@
 
 #include "met/netinetconnect.h"
 #include "os/joypad.h"
+#include "os/listat.h"
 #include "os/string.h"
 #include "rnd/manager.h"
 #include "rnd/text.h"
@@ -45,7 +46,7 @@ void NetChooseIConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         auto *pButton = dynamic_cast<UIButton *>(
             TheUI.FindComponent(kConfigPanel, FormatString(kConfigButtonFormat, i + 1), false));
         if (i < nCount) {
-            pButton->SetText(std::next(mConfigs.begin(), i)->mName.c_str());
+            pButton->SetText(ListAt(mConfigs, i)->mName.c_str());
             pButton->SetShowing(true);
         } else {
             pButton->SetState(UIComponent::kStateDisabled, false);
@@ -76,7 +77,7 @@ void NetChooseIConfigScreen::ShowDescription(bool bShow) {
     auto *pText = dynamic_cast<Rnd::Text *>(Rnd::TheManager.Find(kDescriptionText));
     pText->SetShowing(bShow);
     if (bShow) {
-        pText->SetText(std::next(mConfigs.begin(), mSelected)->mDescription.c_str());
+        pText->SetText(ListAt(mConfigs, mSelected)->mDescription.c_str());
     }
 }
 
@@ -97,8 +98,7 @@ bool NetChooseIConfigScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
             TheUI.GotoScreen(kCreateConfigScreen);
         } else {
             UIScreen *pConnect = TheUI.FindScreen(kConnectScreen, false);
-            static_cast<NetInetConnect *>(pConnect)->mConfig =
-                std::next(mConfigs.begin(), mSelected)->mId;
+            static_cast<NetInetConnect *>(pConnect)->mConfig = ListAt(mConfigs, mSelected)->mId;
             TheUI.GotoScreen(pConnect);
         }
     }

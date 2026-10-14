@@ -12,6 +12,14 @@
 class ScriptTask : public Task {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00343fb8
+     * @ghidraAddress PAL: 0x003b14f0
+     */
+    ~ScriptTask() override = default;
+
+    /**
      * Construct a task that runs a command.
      *
      * @param pCommand The command.

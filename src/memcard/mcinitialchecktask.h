@@ -18,6 +18,14 @@ constexpr int kInitialCheckListingCount = 2;
 class MCInitialCheckTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352350
+     * @ghidraAddress PAL: 0x003bf5d0
+     */
+    ~MCInitialCheckTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x0015e688

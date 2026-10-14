@@ -17,6 +17,14 @@
 class SongSelList : public FreqList {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035ff98
+     * @ghidraAddress PAL: 0x003ce4b0
+     */
+    ~SongSelList() override = default;
+
+    /**
      * Construct the list from its script description, listing nothing.
      *
      * @param pData The script description.

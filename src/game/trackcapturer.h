@@ -30,7 +30,12 @@ public:
      */
     class Receiver {
     public:
-        /** Release the receiver. */
+        /**
+         * Release the receiver.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034acc0
+         * @ghidraAddress PAL: 0x003b80f0
+         */
         virtual ~Receiver() {
         }
 
@@ -61,6 +66,14 @@ public:
      */
     class CatchReceiver : public GemCatcher::Receiver {
     public:
+        /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034d108
+         * @ghidraAddress PAL: 0x003ba538
+         */
+        ~CatchReceiver() override = default;
+
         /**
          * Construct the receiver of a capturer.
          *
@@ -117,6 +130,14 @@ public:
      */
     class SetCaptureStartCmd : public Command {
     public:
+        /**
+         * Destroy the object.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0034d070
+         * @ghidraAddress PAL: 0x003ba4a0
+         */
+        ~SetCaptureStartCmd() override = default;
+
         /**
          * Construct the command of a capturer.
          *

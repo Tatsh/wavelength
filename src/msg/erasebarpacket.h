@@ -19,6 +19,14 @@ extern int g_nEraseBarPacketType;
 class EraseBarPacket : public ExternalPacket {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0034b158
+     * @ghidraAddress PAL: 0x003b8588
+     */
+    ~EraseBarPacket() override = default;
+
+    /**
      * Construct a packet with no track and no bar.
      *
      * Inline. New() expands it.

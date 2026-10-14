@@ -21,3 +21,15 @@ struct TickObj {
     Sch::Tick mPosition; /*!< Song position, in MIDI ticks. +0x00 */
     T mValue;            /*!< The value at that position. +0x04 */
 };
+
+/**
+ * Order two entries by song position.
+ *
+ * @param first The first entry.
+ * @param second The second entry.
+ * @return Whether first comes strictly before second.
+ */
+template <typename T>
+bool operator<(const TickObj<T> &first, const TickObj<T> &second) {
+    return first.mPosition.mTick < second.mPosition.mTick;
+}

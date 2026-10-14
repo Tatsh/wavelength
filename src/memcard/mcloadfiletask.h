@@ -14,6 +14,14 @@
 class MCLoadFileTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352250
+     * @ghidraAddress PAL: 0x003bf4d0
+     */
+    ~MCLoadFileTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x0015e4b8

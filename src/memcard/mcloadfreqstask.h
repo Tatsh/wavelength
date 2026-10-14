@@ -16,6 +16,14 @@
 class MCLoadFreqsTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00352c00
+     * @ghidraAddress PAL: 0x003bff08
+     */
+    ~MCLoadFreqsTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x00160850

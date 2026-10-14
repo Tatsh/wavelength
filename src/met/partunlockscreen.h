@@ -24,6 +24,14 @@
 class PartUnlockScreen : public FreqScreen {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035e928
+     * @ghidraAddress PAL: 0x003cca08
+     */
+    ~PartUnlockScreen() override = default;
+
+    /**
      * Construct the screen from its script description, listing no item.
      *
      * @param pData The script description.

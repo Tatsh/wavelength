@@ -13,6 +13,14 @@
  */
 class ForceFeedbackMgr::BeatCmd : public Command {
 public:
+    /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00335d90
+     * @ghidraAddress PAL: 0x003a3340
+     */
+    ~BeatCmd() override = default;
+
     /** Construct the command with no period. */
     BeatCmd() : mPeriod(0) {
     }

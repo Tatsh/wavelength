@@ -130,7 +130,12 @@ public:
         explicit BuilderReceiver(LevelMidiBuilder *pOwner) : mOwner(pOwner) {
         }
 
-        /** Release the receiver. */
+        /**
+         * Release the receiver.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0033a6d0
+         * @ghidraAddress PAL: 0x003a7c08
+         */
         ~BuilderReceiver() override {
         }
 
@@ -138,17 +143,29 @@ public:
          * Pass the start of a track to the builder.
          *
          * @param nTrack The track.
+         * @ghidraAddress NTSC-U/C: 0x0033a750
+         * @ghidraAddress PAL: 0x003a7c88
          */
         void OnNewTrack(unsigned char nTrack) override {
             mOwner->OnNewTrack(nTrack);
         }
 
-        /** Pass the end of a track to the builder. */
+        /**
+         * Pass the end of a track to the builder.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0033a770
+         * @ghidraAddress PAL: 0x003a7ca8
+         */
         void OnEndTrack() override {
             mOwner->OnEndTrack();
         }
 
-        /** Pass the end of the file to the builder. */
+        /**
+         * Pass the end of the file to the builder.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0033a790
+         * @ghidraAddress PAL: 0x003a7cc8
+         */
         void OnAllDone() override {
             mOwner->OnAllDone();
         }
@@ -160,6 +177,8 @@ public:
          * @param nStatus The status byte.
          * @param nData1 The first data byte.
          * @param nData2 The second data byte.
+         * @ghidraAddress NTSC-U/C: 0x0033a7b0
+         * @ghidraAddress PAL: 0x003a7ce8
          */
         void OnMidi(int nTick,
                     unsigned char nStatus,
@@ -173,6 +192,8 @@ public:
          *
          * @param nTick The tick.
          * @param nMicrosecondsPerBeat The tempo.
+         * @ghidraAddress NTSC-U/C: 0x0033a7d8
+         * @ghidraAddress PAL: 0x003a7d10
          */
         void OnTempo(int nTick, int nMicrosecondsPerBeat) override {
             mOwner->OnTempo(nTick, nMicrosecondsPerBeat);
@@ -184,6 +205,8 @@ public:
          * @param nTick The tick.
          * @param pszText The text.
          * @param nType The type of the event.
+         * @ghidraAddress NTSC-U/C: 0x0033a7f8
+         * @ghidraAddress PAL: 0x003a7d30
          */
         void OnText(int nTick, const char *pszText, unsigned char nType) override {
             mOwner->OnText(nTick, pszText, nType);
@@ -195,6 +218,8 @@ public:
          * @param nTick The tick.
          * @param nNumerator The beats in a bar.
          * @param nDenominator The length of a beat.
+         * @ghidraAddress NTSC-U/C: 0x0033a818
+         * @ghidraAddress PAL: 0x003a7d50
          */
         void OnTimeSignature(int nTick, int nNumerator, int nDenominator) override {
             mOwner->OnTimeSignature(nTick, nNumerator, nDenominator);

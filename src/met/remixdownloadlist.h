@@ -17,6 +17,14 @@
 class RemixDownloadList : public FreqList {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035fe50
+     * @ghidraAddress PAL: 0x003ce368
+     */
+    ~RemixDownloadList() override = default;
+
+    /**
      * Construct the list from its script description, listing no remix and showing the note.
      *
      * @param pData The script description.

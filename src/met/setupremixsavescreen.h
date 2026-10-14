@@ -22,6 +22,14 @@
 class SetupRemixSaveScreen : public NeedsDialogScreen, public KeyboardUser {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0035c578
+     * @ghidraAddress PAL: 0x003ca650
+     */
+    ~SetupRemixSaveScreen() override = default;
+
+    /**
      * Construct the screen from its script description, for the first player.
      *
      * @param pData The script description.

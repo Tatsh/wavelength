@@ -17,6 +17,14 @@
 class MCListNetConfigsTask : public MemcardSerialTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00353bb0
+     * @ghidraAddress PAL: 0x003c0eb8
+     */
+    ~MCListNetConfigsTask() override = default;
+
+    /**
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x00162588
