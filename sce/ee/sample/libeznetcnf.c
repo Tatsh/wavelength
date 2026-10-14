@@ -50,7 +50,8 @@ int ezNetCnfInit(void) {
         if (g_eznetcnfClient.serve != 0) {
             break;
         }
-        for (volatile int i = kEzNetCnfBindDelay; i > 0; --i) {
+        for (int i = kEzNetCnfBindDelay; i != -1; --i) {
+            __asm__ volatile("nop\n\tnop\n\tnop\n\tnop\n\tnop");
         }
     }
     g_nEznetcnfBound = 1;
