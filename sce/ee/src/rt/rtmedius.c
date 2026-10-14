@@ -515,7 +515,7 @@ int g_nMediusConnection = -1;
 // NTSC-U/C: 0x003c25d8
 char g_szMediusSessionKey[RT_MEDIUS_SESSION_KEY_SIZE];
 // NTSC-U/C: 0x003c25f0
-rtMediusCallback g_pfnMediusNoticeCallback;
+rtMediusCallback g_pfnMediusErrorMessageCallback;
 // NTSC-U/C: 0x003c25f4
 rtMediusSessionBeginCallback g_pfnMediusSessionBeginCallback;
 // NTSC-U/C: 0x003c25f8
@@ -525,29 +525,29 @@ rtMediusAccountGetIdCallback g_pfnMediusAccountGetIdCallback;
 // NTSC-U/C: 0x003c2600
 rtMediusLoginCallback g_pfnMediusAccountLoginCallback;
 // NTSC-U/C: 0x003c2604
-rtMediusCallback g_pfnMediusMessage022Callback;
+rtMediusCallback g_pfnMediusAccountLogoutCallback;
 // NTSC-U/C: 0x003c2608
 rtMediusCallback g_pfnMediusAccountRegistrationCallback;
 // NTSC-U/C: 0x003c260c
-rtMediusCallback g_pfnMediusMessage014Callback;
+rtMediusCallback g_pfnMediusAccountUpdateProfileCallback;
 // NTSC-U/C: 0x003c2610
 rtMediusCallback g_pfnMediusChangePasswordCallback;
 // NTSC-U/C: 0x003c2614
-rtMediusCallback g_pfnMediusUpdateStatsCallback;
+rtMediusCallback g_pfnMediusAccountUpdateStatsCallback;
 // NTSC-U/C: 0x003c2618
-rtMediusCallback g_pfnMediusMessage012Callback;
+rtMediusCallback g_pfnMediusAccountGetProfileCallback;
 // NTSC-U/C: 0x003c261c
 rtMediusCallback g_pfnMediusAccountDeleteCallback;
 // NTSC-U/C: 0x003c2620
 rtMediusLoginCallback g_pfnMediusAnonymousLoginCallback;
 // NTSC-U/C: 0x003c2624
-rtMediusChannelPlayersCallback g_pfnMediusChannelPlayersCallback;
+rtMediusChannelPlayersCallback g_pfnMediusLobbyWorldPlayerListCallback;
 // NTSC-U/C: 0x003c2628
-rtMediusGamePlayersCallback g_pfnMediusGamePlayersCallback;
+rtMediusGamePlayersCallback g_pfnMediusGameWorldPlayerListCallback;
 // NTSC-U/C: 0x003c262c
-rtMediusCallback g_pfnMediusMessage030Callback;
+rtMediusCallback g_pfnMediusCreateGameCallback;
 // NTSC-U/C: 0x003c2630
-rtMediusCallback g_pfnMediusMessage032Callback;
+rtMediusCallback g_pfnMediusCreateGameOnSelfCallback;
 // NTSC-U/C: 0x003c2634
 rtMediusCreateChannelCallback g_pfnMediusCreateChannelCallback;
 // NTSC-U/C: 0x003c2638
@@ -561,53 +561,53 @@ rtMediusChannelListCallback g_pfnMediusChannelListCallback;
 // NTSC-U/C: 0x003c2648
 rtMediusPlayerInfoCallback g_pfnMediusPlayerInfoCallback;
 // NTSC-U/C: 0x003c264c
-rtMediusCallback g_pfnMediusMessage052Callback;
+rtMediusCallback g_pfnMediusGameInfoResponse0Callback;
 // NTSC-U/C: 0x003c2650
 rtMediusChannelInfoCallback g_pfnMediusChannelInfoCallback;
 // NTSC-U/C: 0x003c2654
-rtMediusCallback g_pfnMediusMessage056Callback;
+rtMediusCallback g_pfnMediusFindWorldByNameCallback;
 // NTSC-U/C: 0x003c2658
 rtMediusFindPlayerCallback g_pfnMediusFindPlayerCallback;
 // NTSC-U/C: 0x003c265c
-rtMediusChatHandler g_pfnMediusChatMessageCallback;
+rtMediusChatHandler g_pfnMediusChatFwdMessageCallback;
 // NTSC-U/C: 0x003c2660
-rtMediusCallback g_pfnMediusMessage062Callback;
+rtMediusCallback g_pfnMediusGetBuddyListCallback;
 // NTSC-U/C: 0x003c2664
-rtMediusCallback g_pfnMediusMessage064Callback;
+rtMediusCallback g_pfnMediusAddToBuddyListCallback;
 // NTSC-U/C: 0x003c2668
-rtMediusCallback g_pfnMediusMessage066Callback;
+rtMediusCallback g_pfnMediusRemoveFromBuddyListCallback;
 // NTSC-U/C: 0x003c266c
-rtMediusCallback g_pfnMediusInitHandler04Callback;
+rtMediusCallback g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback;
 // NTSC-U/C: 0x003c2670
-rtMediusCallback g_pfnMediusMessage068Callback;
+rtMediusCallback g_pfnMediusAddToBuddyListConfirmationCallback;
 // NTSC-U/C: 0x003c2674
-rtMediusCallback g_pfnMediusMessage193Callback;
+rtMediusCallback g_pfnMediusGetIgnoreListCallback;
 // NTSC-U/C: 0x003c2678
-rtMediusCallback g_pfnMediusMessage195Callback;
+rtMediusCallback g_pfnMediusAddToIgnoreListCallback;
 // NTSC-U/C: 0x003c267c
-rtMediusCallback g_pfnMediusMessage197Callback;
+rtMediusCallback g_pfnMediusRemoveFromIgnoreListCallback;
 // NTSC-U/C: 0x003c2680
-rtMediusPolicyCallback g_pfnMediusGetPolicyCallback;
+rtMediusPolicyCallback g_pfnMediusPolicyCallback;
 // NTSC-U/C: 0x003c2684
 rtMediusAnnouncementCallback g_pfnMediusGetAnnouncementsCallback;
 // NTSC-U/C: 0x003c2688
-rtMediusCallback g_pfnMediusSetGameListFilterCallback;
+rtMediusCallback g_pfnMediusSetGameListFilterResponse0Callback;
 // NTSC-U/C: 0x003c268c
 rtMediusCallback g_pfnMediusClearGameListFilterCallback;
 // NTSC-U/C: 0x003c2690
-rtMediusCallback g_pfnMediusMessage083Callback;
+rtMediusCallback g_pfnMediusGetGameListFilterResponse0Callback;
 // NTSC-U/C: 0x003c2694
 rtMediusVersionCallback g_pfnMediusVersionServerCallback;
 // NTSC-U/C: 0x003c2698
-rtMediusCallback g_pfnMediusMessage028Callback;
+rtMediusCallback g_pfnMediusGetMyIPCallback;
 // NTSC-U/C: 0x003c269c
-rtMediusCallback g_pfnMediusMessage137Callback;
+rtMediusCallback g_pfnMediusGetWorldSecurityLevelCallback;
 // NTSC-U/C: 0x003c26a0
 rtMediusCallback g_pfnMediusBanPlayerCallback;
 // NTSC-U/C: 0x003c26a4
-rtMediusCallback g_pfnMediusMessage141Callback;
+rtMediusCallback g_pfnMediusGetLocationsCallback;
 // NTSC-U/C: 0x003c26a8
-rtMediusCallback g_pfnMediusMessage143Callback;
+rtMediusCallback g_pfnMediusPickLocationCallback;
 // NTSC-U/C: 0x003c26ac
 rtMediusLadderPositionCallback g_pfnMediusLadderPositionCallback;
 // NTSC-U/C: 0x003c26b0
@@ -615,33 +615,33 @@ rtMediusLadderPositionCallback g_pfnMediusLadderPositionFastCallback;
 // NTSC-U/C: 0x003c26b4
 rtMediusLadderListCallback g_pfnMediusLadderListCallback;
 // NTSC-U/C: 0x003c26b8
-rtMediusCallback g_pfnMediusMessage151Callback;
+rtMediusCallback g_pfnMediusChatToggleCallback;
 // NTSC-U/C: 0x003c26bc
 rtMediusTextFilterCallback g_pfnMediusTextFilterCallback;
 // NTSC-U/C: 0x003c26c0
-rtMediusCallback g_pfnMediusInitHandler0CCallback;
+rtMediusCallback g_pfnMediusServerReassignGameMediusWorldIDCallback;
 // NTSC-U/C: 0x003c26c4
-rtMediusCallback g_pfnMediusMessage156Callback;
+rtMediusCallback g_pfnMediusGetTotalGamesCallback;
 // NTSC-U/C: 0x003c26c8
-rtMediusCallback g_pfnMediusMessage158Callback;
+rtMediusCallback g_pfnMediusGetTotalChannelsCallback;
 // NTSC-U/C: 0x003c26cc
-rtMediusCallback g_pfnMediusMessage160Callback;
+rtMediusCallback g_pfnMediusGetLobbyPlayerNamesCallback;
 // NTSC-U/C: 0x003c26d0
-rtMediusCallback g_pfnMediusMessage162Callback;
+rtMediusCallback g_pfnMediusGetTotalUsersCallback;
 // NTSC-U/C: 0x003c26d4
-rtMediusCallback g_pfnMediusMessage164Callback;
+rtMediusCallback g_pfnMediusSetLocalizationParamsCallback;
 // NTSC-U/C: 0x003c26d8
-rtMediusCallback g_pfnMediusMessage199Callback;
+rtMediusCallback g_pfnMediusSetMessageAsReadCallback;
 // NTSC-U/C: 0x003c26dc
-rtMediusCallback g_pfnMediusMessage200Callback;
+rtMediusCallback g_pfnMediusGetUniverseInformationCallback;
 // NTSC-U/C: 0x003c26e0
-rtMediusCallback g_pfnMediusMessage201Callback;
+rtMediusCallback g_pfnMediusUniverseNewsCallback;
 // NTSC-U/C: 0x003c26e4
-rtMediusCallback g_pfnMediusMessage202Callback;
+rtMediusCallback g_pfnMediusUniverseStatusListCallback;
 // NTSC-U/C: 0x004357f4
 rtMediusFileCallback g_pfnMediusFileCreateCallback;
 // NTSC-U/C: 0x004357f8
-rtMediusFileTransferCallback g_pfnMediusFileUploadCallback;
+rtMediusFileTransferCallback g_pfnMediusFileUploadServerReqCallback;
 // NTSC-U/C: 0x004357fc
 const char *g_pMediusUploadBuffer;
 // NTSC-U/C: 0x00435800
@@ -651,23 +651,23 @@ rtMediusFileCallback g_pfnMediusFileCloseCallback;
 // NTSC-U/C: 0x00435808
 rtMediusFileTransferCallback g_pfnMediusFileDownloadCallback;
 // NTSC-U/C: 0x0043580c
-rtMediusCallback g_pfnMediusMessage175Callback;
+rtMediusCallback g_pfnMediusFileDownloadStreamCallback;
 // NTSC-U/C: 0x00435810
 rtMediusFileDeleteCallback g_pfnMediusFileDeleteCallback;
 // NTSC-U/C: 0x00435814
-rtMediusFileCallback g_pfnMediusFileListCallback;
+rtMediusFileCallback g_pfnMediusFileListFilesCallback;
 // NTSC-U/C: 0x00435818
-rtMediusCallback g_pfnMediusMessage181Callback;
+rtMediusCallback g_pfnMediusFileUpdateAttributesCallback;
 // NTSC-U/C: 0x0043581c
 rtMediusFileAttributesCallback g_pfnMediusFileGetAttributesCallback;
 // NTSC-U/C: 0x00435820
-rtMediusCallback g_pfnMediusMessage185Callback;
+rtMediusCallback g_pfnMediusFileUpdateMetaDataCallback;
 // NTSC-U/C: 0x00435824
-rtMediusCallback g_pfnMediusMessage187Callback;
+rtMediusCallback g_pfnMediusFileGetMetaDataCallback;
 // NTSC-U/C: 0x00435828
-rtMediusCallback g_pfnMediusMessage189Callback;
+rtMediusCallback g_pfnMediusFileSearchByMetaDataCallback;
 // NTSC-U/C: 0x0043582c
-rtMediusCallback g_pfnMediusMessage191Callback;
+rtMediusCallback g_pfnMediusFileCancelOperationCallback;
 // NTSC-U/C: 0x00435830
 int g_nMediusFileCreateType;
 // NTSC-U/C: 0x00435834
@@ -1081,57 +1081,57 @@ static int g_nMediusMachineSignaturePostType;
 // NTSC-U/C: 0x00435b64
 static int g_nMediusLadderPositionFastResponseType;
 // NTSC-U/C: 0x00435b68
-rtMediusCallback g_pfnMediusMessage085Callback;
+rtMediusCallback g_pfnMediusCreateClanCallback;
 // NTSC-U/C: 0x00435b6c
-rtMediusCallback g_pfnMediusMessage087Callback;
+rtMediusCallback g_pfnMediusDisbandClanCallback;
 // NTSC-U/C: 0x00435b70
-rtMediusCallback g_pfnMediusMessage089Callback;
+rtMediusCallback g_pfnMediusGetClanByIDCallback;
 // NTSC-U/C: 0x00435b74
-rtMediusCallback g_pfnMediusMessage091Callback;
+rtMediusCallback g_pfnMediusGetClanByNameCallback;
 // NTSC-U/C: 0x00435b78
-rtMediusCallback g_pfnMediusMessage093Callback;
+rtMediusCallback g_pfnMediusTransferClanLeadershipCallback;
 // NTSC-U/C: 0x00435b7c
-rtMediusCallback g_pfnMediusMessage095Callback;
+rtMediusCallback g_pfnMediusAddPlayerToClanCallback;
 // NTSC-U/C: 0x00435b80
-rtMediusCallback g_pfnMediusMessage097Callback;
+rtMediusCallback g_pfnMediusRemovePlayerFromClanCallback;
 // NTSC-U/C: 0x00435b84
-rtMediusCallback g_pfnMediusMessage099Callback;
+rtMediusCallback g_pfnMediusInvitePlayerToClanCallback;
 // NTSC-U/C: 0x00435b88
-rtMediusCallback g_pfnMediusMessage101Callback;
+rtMediusCallback g_pfnMediusCheckMyClanInvitationsCallback;
 // NTSC-U/C: 0x00435b8c
-rtMediusCallback g_pfnMediusMessage123Callback;
+rtMediusCallback g_pfnMediusGetClanInvitationsSentCallback;
 // NTSC-U/C: 0x00435b90
-rtMediusCallback g_pfnMediusMessage103Callback;
+rtMediusCallback g_pfnMediusRespondToClanInvitationCallback;
 // NTSC-U/C: 0x00435b94
-rtMediusCallback g_pfnMediusMessage105Callback;
+rtMediusCallback g_pfnMediusRevokeClanInvitationCallback;
 // NTSC-U/C: 0x00435b98
-rtMediusCallback g_pfnMediusMessage107Callback;
+rtMediusCallback g_pfnMediusRequestClanTeamChallengeCallback;
 // NTSC-U/C: 0x00435b9c
-rtMediusCallback g_pfnMediusMessage109Callback;
+rtMediusCallback g_pfnMediusGetMyClanMessagesCallback;
 // NTSC-U/C: 0x00435ba0
-rtMediusCallback g_pfnMediusMessage111Callback;
+rtMediusCallback g_pfnMediusSendClanMessageCallback;
 // NTSC-U/C: 0x00435ba4
-rtMediusCallback g_pfnMediusMessage113Callback;
+rtMediusCallback g_pfnMediusModifyClanMessageCallback;
 // NTSC-U/C: 0x00435ba8
-rtMediusCallback g_pfnMediusMessage115Callback;
+rtMediusCallback g_pfnMediusDeleteClanMessageCallback;
 // NTSC-U/C: 0x00435bac
-rtMediusCallback g_pfnMediusMessage117Callback;
+rtMediusCallback g_pfnMediusRespondToClanTeamChallengeCallback;
 // NTSC-U/C: 0x00435bb0
-rtMediusCallback g_pfnMediusMessage119Callback;
+rtMediusCallback g_pfnMediusRevokeClanTeamChallengeCallback;
 // NTSC-U/C: 0x00435bb4
-rtMediusCallback g_pfnMediusMessage125Callback;
+rtMediusCallback g_pfnMediusGetMyClansCallback;
 // NTSC-U/C: 0x00435bb8
-rtMediusCallback g_pfnMediusMessage131Callback;
+rtMediusCallback g_pfnMediusGetClanTeamChallengesCallback;
 // NTSC-U/C: 0x00435bbc
-rtMediusCallback g_pfnMediusMessage129Callback;
+rtMediusCallback g_pfnMediusConfirmClanTeamChallengeCallback;
 // NTSC-U/C: 0x00435bc0
-rtMediusCallback g_pfnMediusMessage127Callback;
+rtMediusCallback g_pfnMediusGetAllClanMessagesCallback;
 // NTSC-U/C: 0x00435bc4
-rtMediusCallback g_pfnMediusMessage121Callback;
+rtMediusCallback g_pfnMediusGetClanTeamChallengeHistoryCallback;
 // NTSC-U/C: 0x00435bc8
-rtMediusCallback g_pfnMediusMessage133Callback;
+rtMediusCallback g_pfnMediusUpdateClanStatsCallback;
 // NTSC-U/C: 0x00435bcc
-rtMediusCallback g_pfnMediusMessage145Callback;
+rtMediusCallback g_pfnMediusGetClanMemberListCallback;
 
 // NTSC-U/C: 0x003c25d0
 static unsigned int g_uMediusKeepAliveMs;
@@ -1219,7 +1219,7 @@ int rtMediusFileUpload(rtMediusFileUploadRequest *request, rtMediusFileTransferC
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusFileUploadCallback = callback;
+    g_pfnMediusFileUploadServerReqCallback = callback;
     g_pMediusUploadBuffer = request->buffer;
     g_nMediusUploadSize = request->bufferSize;
     return rtMediusSendRecord(g_nMediusFileUploadType, sizeof(*request), request);
@@ -1269,7 +1269,7 @@ int rtMediusFileList(rtMediusFileListRequest *request, rtMediusFileCallback call
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusFileListCallback = callback;
+    g_pfnMediusFileListFilesCallback = callback;
     return rtMediusSendRecord(g_nMediusFileListType, sizeof(*request), request);
 }
 
@@ -1432,12 +1432,12 @@ int rtMediusInitialize(const rtMediusInitParams *params, int *status) {
         return RT_MEDIUS_ERROR_CLOSE_BARE_BEFORE_REINIT;
     }
     rtMediusSetQueryState(kQueryIdle);
-    g_pfnMediusChatMessageCallback = params->onChat;
-    g_pfnMediusInitHandler04Callback = params->onMessage069;
-    g_pfnMediusNoticeCallback = params->onNotice;
-    g_pfnMediusInitHandler0CCallback = params->onMessage154;
+    g_pfnMediusChatFwdMessageCallback = params->onChat;
+    g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback = params->onMessage069;
+    g_pfnMediusErrorMessageCallback = params->onNotice;
+    g_pfnMediusServerReassignGameMediusWorldIDCallback = params->onMessage154;
     g_uMediusKeepAliveMs = params->timeoutMs;
-    (void)rtDmeGetTimestamp(&g_uMediusLastKeepAlive); // Yes, the binary discards the result.
+    (void)rtDmeGetLocalTime(&g_uMediusLastKeepAlive); // Yes, the binary discards the result.
     if (rtMediusRegisterMessages() != 0) {
         *status = kErrorRegistration;
         return kErrorRegistration;
@@ -1526,7 +1526,7 @@ int rtMediusUpdate(void) {
     unsigned int uNow = 0;
     int nResult;
 
-    (void)rtDmeGetTimestamp(&uNow); // Yes, the binary discards the result.
+    (void)rtDmeGetLocalTime(&uNow); // Yes, the binary discards the result.
     if (g_nMediusInitialized != 1) {
         return RT_MEDIUS_ERROR_NOT_INITIALIZED;
     }
@@ -1634,7 +1634,7 @@ int rtMediusUpdateStats(rtMediusUpdateStatsRequest *request, rtMediusCallback ca
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusUpdateStatsCallback = callback;
+    g_pfnMediusAccountUpdateStatsCallback = callback;
     return rtMediusSendRecord(g_nMediusUpdateStatsType, sizeof(*request), request);
 }
 
@@ -1765,7 +1765,7 @@ int rtMediusChannelPlayers(rtMediusIdRequest *request, rtMediusChannelPlayersCal
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusChannelPlayersCallback = callback;
+    g_pfnMediusLobbyWorldPlayerListCallback = callback;
     return rtMediusSendRecord(g_nMediusChannelPlayersType, sizeof(*request), request);
 }
 
@@ -1777,7 +1777,7 @@ int rtMediusGamePlayers(rtMediusIdRequest *request, rtMediusGamePlayersCallback 
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusGamePlayersCallback = callback;
+    g_pfnMediusGameWorldPlayerListCallback = callback;
     return rtMediusSendRecord(g_nMediusGamePlayersType, sizeof(*request), request);
 }
 
@@ -1838,7 +1838,7 @@ int rtMediusGetPolicy(rtMediusIdRequest *request, rtMediusPolicyCallback callbac
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusGetPolicyCallback = callback;
+    g_pfnMediusPolicyCallback = callback;
     return rtMediusSendRecord(g_nMediusGetPolicyType, sizeof(*request), request);
 }
 
@@ -1900,7 +1900,7 @@ int rtMediusSetGameListFilter(rtMediusGameListFilterRequest *request, rtMediusCa
     if (nError != 0) {
         return nError;
     }
-    g_pfnMediusSetGameListFilterCallback = callback;
+    g_pfnMediusSetGameListFilterResponse0Callback = callback;
     return rtMediusSendRecord(g_nMediusSetGameListFilterType, sizeof(*request), request);
 }
 

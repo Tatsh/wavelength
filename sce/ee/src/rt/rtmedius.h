@@ -2063,18 +2063,6 @@ int rtMediusOnUniverseStatusListResponse(int connection,
  */
 int rtMediusOnFileUploadServerReq(int connection, int type, int sender, rtDmeMessage *message);
 
-// Routines of the DME core that the DME core headers do not declare yet.
-
-/**
- * Report the time of this console in milliseconds, taking the lock of the library.
- *
- * @param time Receives the time.
- * @return 0, or an error code.
- * @ghidraAddress NTSC-U/C: 0x002a8b30
- * @ghidraAddress PAL: 0x002b2aa0
- */
-int rtDmeGetTimestamp(unsigned int *time);
-
 #ifdef __cplusplus
 }
 #endif
