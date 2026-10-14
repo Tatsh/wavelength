@@ -1,6 +1,6 @@
 # Compiler-emitted instances, `0x003a0000` to `0x003b0000`
 
-9 of 107 routines done.
+12 of 107 routines done.
 
 Sorted by length, then reference count, then status (remaining first),
 then name. Signatures are the current Ghidra prototypes and are
@@ -48,8 +48,8 @@ preliminary.
 | `ResolveDescriptorForStringOptionObject`           |        :x:         |      0 |    120 | `0x003ab660` | `0x0041a3c0` | `undefined ResolveDescriptorForStringOptionObject()`                               |
 | `JoypadInputMsg__Clone`                            |        :x:         |      1 |    116 | `0x003a7228` | `0x00415eb0` | `void JoypadInputMsg__Clone(int pSrcMsg)`                                          |
 | `DestroyMemStreamObject`                           |        :x:         |      0 |    112 | `0x003ab1a8` | `0x00419f18` | `undefined DestroyMemStreamObject()`                                               |
-| `DestroyMsgSinkListObject`                         |        :x:         |      0 |    108 | `0x003ab3d0` | `0x0041a130` | `undefined DestroyMsgSinkListObject()`                                             |
 | `DestroyJoypadMsgSource`                           | :white_check_mark: |      0 |    108 | `0x003a6fb0` | `0x00415c90` | `void DestroyJoypadMsgSource(void * pThis, ulong nFlags)`                          |
+| `DestroyMsgSinkListObject`                         | :white_check_mark: |      0 |    108 | `0x003ab3d0` | `0x0041a130` | `undefined DestroyMsgSinkListObject()`                                             |
 | `CreateRampMidiObject`                             |        :x:         |      1 |    104 | `0x003a6620` | `0x00415300` | `undefined4 * CreateRampMidiObject(undefined4 nValue, undefined8 param2)`          |
 | `GetTypeInfoForAsyncTaskListNodePtr`               |        :x:         |      5 |     80 | `0x003a83e0` | `0x004170c0` | `undefined GetTypeInfoForAsyncTaskListNodePtr()`                                   |
 | `GetTypeInfoForCharPtrListNodePtr`                 |        :x:         |      4 |     80 | `0x003a6de0` | `0x00415ac0` | `undefined GetTypeInfoForCharPtrListNodePtr()`                                     |
@@ -102,8 +102,8 @@ preliminary.
 | `DestroyMemcardSyncHandler`                        | :white_check_mark: |      0 |     48 | `0x003a7020` | `0x00415d00` | `void DestroyMemcardSyncHandler(undefined4 * pThis, ulong nFlags)`                 |
 | `DestroyDerivedMidiReceiverObject`                 |        :x:         |      0 |     40 | `0x003a6458` | `0x00415138` | `void DestroyDerivedMidiReceiverObject(int pThis)`                                 |
 | `DestroyMidiReceiverSubobjectVariantB`             |        :x:         |      0 |     40 | `0x003a66c8` | `0x004153a8` | `void DestroyMidiReceiverSubobjectVariantB(int pThis)`                             |
-| `RegisterBoolOptionParser`                         |        :x:         |      0 |     36 | `0x003ab5f8` | `0x0041a358` | `undefined RegisterBoolOptionParser()`                                             |
-| `RegisterStringOptionParser`                       |        :x:         |      0 |     36 | `0x003ab6d8` | `0x0041a438` | `undefined RegisterStringOptionParser()`                                           |
+| `RegisterBoolOptionParser`                         | :white_check_mark: |      0 |     36 | `0x003ab5f8` | `0x0041a358` | `undefined RegisterBoolOptionParser()`                                             |
+| `RegisterStringOptionParser`                       | :white_check_mark: |      0 |     36 | `0x003ab6d8` | `0x0041a438` | `undefined RegisterStringOptionParser()`                                           |
 | `DestructAvatarPartThunkAlpha`                     |        :x:         |      0 |     28 | `0x003a3478` | `0x00412158` | `undefined DestructAvatarPartThunkAlpha()`                                         |
 | `DestructAvatarPartThunkBeta`                      |        :x:         |      0 |     28 | `0x003a3588` | `0x00412268` | `undefined DestructAvatarPartThunkBeta()`                                          |
 | `AsyncStream__Eof`                                 | :white_check_mark: |      0 |     20 | `0x003a8a80` |              | `bool AsyncStream__Eof(AsyncStream * this)`                                        |
