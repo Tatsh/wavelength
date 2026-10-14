@@ -1036,7 +1036,8 @@ int sceUsbKbInit(int *pMaxConnect) {
         if (g_UsbKbRpcClientData.serve != NULL) {
             break;
         }
-        for (nDelay = kBindDelay; nDelay >= 0; --nDelay) {
+        for (nDelay = kBindDelay; nDelay != -1; --nDelay) {
+            __asm__ volatile("nop\n\tnop\n\tnop\n\tnop");
         }
     }
 
