@@ -21,7 +21,7 @@ void MCCreateSaveDirTask::Set(int nPort, const char *pszTitle) {
     SetPort(nPort);
     char szTitle[kTitleBufferSize];
     AsciiToShiftJis(pszTitle, szTitle);
-    memcpy(g_MemcardIconSys.TitleName, szTitle, strlen(szTitle) + 1);
+    strcpy(reinterpret_cast<char *>(g_MemcardIconSys.TitleName), szTitle);
 }
 
 void MCCreateSaveDirTask::OnStart() {
