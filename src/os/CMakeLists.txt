@@ -30,6 +30,7 @@ set(WAVELENGTH_OS_SRCS
     file.cpp
     filelog.cpp
     filepath.cpp
+    filestream.cpp
     filestreambuffer.cpp
     fileutil.cpp
     fixedsizealloc.cpp
