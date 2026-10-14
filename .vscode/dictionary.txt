@@ -568,6 +568,7 @@ ipudma
 ipuinit
 ipum
 irqa
+isatty
 isce
 isub
 isubiu

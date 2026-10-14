@@ -69,7 +69,8 @@ add_executable(${CMAKE_PROJECT_NAME} $<TARGET_OBJECTS:wavelength_main>
 enable_language(ASM)
 # The original linked every object. The metagame screens and the script interface register
 # themselves from static initialisation with nothing else referring to them. Both therefore link
-# whole.
+# whole. The system layer links whole as well. Otherwise the C library pulls its own _isatty()
+# before the layer's object, and both definitions meet in the link.
 set(WAVELENGTH_ARCHIVE_LIBRARIES ${WAVELENGTH_LIBRARIES})
 list(REMOVE_ITEM WAVELENGTH_ARCHIVE_LIBRARIES wavelength_main wavelength_met wavelength_script)
 foreach(_crt crti.o crtbegin.o crtend.o crtn.o)
@@ -87,10 +88,10 @@ target_link_libraries(
           -Wl,--whole-archive
           wavelength_met
           wavelength_script
+          wavelength_runtime
           -Wl,--no-whole-archive
           -Wl,--start-group
           ${WAVELENGTH_ARCHIVE_LIBRARIES}
-          wavelength_runtime
           stdc++
           m
           c
