@@ -59,7 +59,11 @@ set(WAVELENGTH_RT_SRCS
     src/rt/rtchannel.c
     src/rt/rtchannelapi.c
     src/rt/rtclock.c
+    src/rt/rtdmeapi.c
     src/rt/rtdmemain.c
+    src/rt/rtdmemessage.c
+    src/rt/rtdmeobjects.c
+    src/rt/rtdmevoice.c
     src/rt/rtlargeintcore.c
     src/rt/rtmediushandlers.c
     src/rt/rtmemory.c
@@ -74,6 +78,7 @@ set(WAVELENGTH_RT_SRCS
     src/rt/rtstats.c
     src/rt/rtstream.c
     src/rt/rttime.c
+    src/rt/rttitle.c
     src/rt/rtupnp.c
     src/rt/rtupnpxml.c)
 

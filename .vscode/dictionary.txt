@@ -1189,7 +1189,11 @@ rtchannel
 rtchannelapi
 rtclock
 rtdme
+rtdmeapi
 rtdmemain
+rtdmemessage
+rtdmeobjects
+rtdmevoice
 rtlargeint
 rtlargeintcore
 rtmedius
@@ -1581,6 +1585,7 @@ wandsl
 wanip
 wanpots
 wanppp
+warray
 wbdc
 wchar
 wctype

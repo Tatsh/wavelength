@@ -170,48 +170,132 @@ int rtNetSetBufferSizes(int sendSize, int receiveSize);
 void rtNetGenerateKeyPair(rtNetKey *publicKey, rtNetKey *privateKey);
 
 /**
- * Receiver of the result of rtDmeHost() and rtDmeConnect().
+ * Receiver of the result of rtDmeHost() and rtDmeConnect(), and of a status of the connection.
  *
- * @param connection The connection.
- * @param reserved1 Not read by the game.
- * @param reserved2 Not read by the game.
- * @param status 0 for success, otherwise an error.
+ * @param connection The connection, or -1 when none was opened.
+ * @param state The state of the connection: 0 idle, 1 connected, 2 connecting, or 3 failed.
+ * @param status The status the server or the channels reported.
+ * @param result 0 for success, otherwise an error.
  */
-typedef void (*rtDmeConnectCallback)(int connection, int reserved1, int reserved2, int status);
+typedef void (*rtDmeConnectCallback)(int connection, int state, int status, int result);
 
 /**
  * Receiver of a peer that joined or left a connection.
  *
  * @param connection The connection.
  * @param client The peer.
+ * @param address The address the peer was reported at.
  */
-typedef void (*rtDmeClientCallback)(int connection, int client);
+typedef void (*rtDmeClientCallback)(int connection, int client, const char *address);
+
+/** The arguments of the receiver of a change of host. */
+typedef struct {
+    int connection; /*!< The connection, always 0. */
+    int host;       /*!< The new host. */
+    int argument;   /*!< The argument given with the receiver. */
+} rtDmeHostChange;
+
+/**
+ * Receiver of a change of the host of connection 0.
+ *
+ * @param change The change.
+ */
+typedef void (*rtDmeHostChangeCallback)(const rtDmeHostChange *change);
+
+/** The arguments of the receiver of the events of the voice. */
+typedef struct {
+    int event;    /*!< Set by the receiver, below 5. */
+    int value1;   /*!< The first value of the device. */
+    int value2;   /*!< The second value of the device. */
+    int result;   /*!< Set by the receiver, the result given to the device. */
+    int argument; /*!< The argument given with the receiver. */
+} rtDmeVoiceEvent;
+
+/** The arguments of the receiver of the state changes of the voice. */
+typedef struct {
+    int state;    /*!< The state, below 5. */
+    int level;    /*!< The level the device reports. */
+    int value1;   /*!< The first value of the device. */
+    int value2;   /*!< The second value of the device. */
+    int result;   /*!< Starts as value2, and is given back to the device. */
+    int argument; /*!< The argument given with the receiver. */
+} rtDmeVoiceState;
+
+/** The arguments of the receiver of the voice data. */
+typedef struct {
+    int value1;   /*!< The first value of the device. */
+    int value2;   /*!< The second value of the device. */
+    int value3;   /*!< The third value of the device. */
+    int result;   /*!< Set by the receiver, the result given to the device. */
+    int argument; /*!< The argument given with the receiver. */
+} rtDmeVoiceData;
+
+/** The arguments of the receiver of the end of the voice data. */
+typedef struct {
+    int value1;   /*!< The first value of the device. */
+    int value2;   /*!< The second value of the device. */
+    int result;   /*!< Set by the receiver, the result given to the device. */
+    int argument; /*!< The argument given with the receiver. */
+} rtDmeVoiceEnd;
+
+/** Receiver of the events of the voice. */
+typedef void (*rtDmeVoiceEventCallback)(rtDmeVoiceEvent *event);
+/** Receiver of the state changes of the voice. */
+typedef void (*rtDmeVoiceStateCallback)(rtDmeVoiceState *state);
+/** Receiver of the voice data. */
+typedef void (*rtDmeVoiceDataCallback)(rtDmeVoiceData *data);
+/** Receiver of the end of the voice data. */
+typedef void (*rtDmeVoiceEndCallback)(rtDmeVoiceEnd *end);
+
+/** The settings of the voice of a connection. 0x54 bytes. */
+typedef struct {
+    int version;                     /*!< 1. */
+    int enabled;                     /*!< 1 to open the voice with the connection. */
+    int port;                        /*!< The port of the device. */
+    int channelCount;                /*!< The channels of the device, at most 16. */
+    int mode;                        /*!< 0 or 1, the mode the channels open in. */
+    int format[6];                   /*!< The format values handed to the device. */
+    rtDmeVoiceEventCallback onEvent; /*!< Receives the events, or null. */
+    int eventArgument;               /*!< The argument of onEvent. */
+    rtDmeVoiceStateCallback onState; /*!< Receives the state changes, or null. */
+    int stateArgument;               /*!< The argument of onState. */
+    int device[2];                   /*!< Values handed to the device. */
+    rtDmeVoiceDataCallback onData;   /*!< Receives the data, or null. */
+    int dataArgument;                /*!< The argument of onData. */
+    rtDmeVoiceEndCallback onEnd;     /*!< Receives the end of the data, or null. */
+    int endArgument;                 /*!< The argument of onEnd. */
+} rtDmeVoiceSettings;
 
 /** The parameters of rtDmeHost(). 0x68 bytes. */
 typedef struct {
-    int reserved00;                    /* +0x00, set by rtDmeInitHostParams(). */
+    int version;                       /*!< Set by rtDmeInitHostParams(). */
     rtDmeConnectCallback onConnect;    /*!< Receives the result. */
     rtDmeClientCallback onClientJoin;  /*!< Receives a peer that joined. */
     rtDmeClientCallback onClientLeave; /*!< Receives a peer that left. */
     int maxClients;                    /*!< The peers the connection takes. */
-    char reserved14[0x54];             /* +0x14, set by rtDmeInitHostParams(). */
+    rtDmeVoiceSettings voice;          /*!< The voice of the connection. */
 } rtDmeHostParams;
 
 /** The parameters of rtDmeConnect(). 0x114 bytes. */
 typedef struct {
-    int reserved00;                    /* +0x00, set by rtDmeInitConnectParams(). */
-    int maxClients;                    /*!< The peers the connection takes. */
-    rtNetConnectionInfo info;          /*!< The session to connect to. */
-    rtDmeConnectCallback onConnect;    /*!< Receives the result. */
-    rtDmeClientCallback onClientReady; /*!< Unset by the game. */
-    rtDmeClientCallback onClientJoin;  /*!< Receives a peer that joined. */
-    rtDmeClientCallback onClientLeave; /*!< Receives a peer that left. */
-    char reservedB4[0x60];             /* +0xb4, set by rtDmeInitConnectParams(). */
+    int version;                          /*!< Set by rtDmeInitConnectParams(). */
+    int maxClients;                       /*!< The peers the connection takes. */
+    rtNetConnectionInfo info;             /*!< The session to connect to. */
+    rtDmeConnectCallback onConnect;       /*!< Receives the result. */
+    rtDmeConnectCallback onStatus;        /*!< Receives the statuses of the server. Unset. */
+    rtDmeClientCallback onClientJoin;     /*!< Receives a peer that joined. */
+    rtDmeClientCallback onClientLeave;    /*!< Receives a peer that left. */
+    int port;                             /*!< The port of a datagram connection. */
+    rtDmeHostChangeCallback onHostChange; /*!< Receives the changes of host, or null. */
+    int hostChangeArgument;               /*!< The argument of onHostChange. */
+    rtDmeVoiceSettings voice;             /*!< The voice of the connection. */
 } rtDmeConnectParams;
 
 /** The status rtDmeHost() and rtDmeConnect() fill. 0xc bytes. */
 typedef struct {
-    int reserved[3]; /* +0x00, not read by the game. */
+    int version;    /*!< 1. */
+    int result;     /*!< 0, or an error code. */
+    int connection; /*!< The connection, or -1. */
 } rtDmeConnectStatus;
 
 /**
@@ -290,14 +374,14 @@ int rtDmeDisconnect(int connection);
 int rtDmeBeginFields(void);
 
 /**
- * Append a field to the field list of a message type.
+ * Append a field to the field list of a message type. The library stores the two addresses and
+ * the two numbers, and does not read them back.
  *
- * The field is described by its offset in the record, the size of its elements, and their count.
- *
- * @param record The address of a record of the type.
- * @param field The address of the field in the record.
- * @param size The size of an element of the field in bytes.
- * @param count The number of elements.
+ * @param record The address of a record of the type, not null.
+ * @param field The address of the field in the record, not null.
+ * @param size A positive number, by convention the size of an element in bytes. Callers also pass
+ * the size of the whole field here with the same value as the count.
+ * @param count A positive number, by convention the number of elements.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a7f60
  */
@@ -367,8 +451,8 @@ int rtDmeRegisterClassMessage(int *type, int messageClass, rtDmeMessageHandler h
 int rtDmeSendClassMessage(signed char flags,
                           int connection,
                           int receiver,
-                          int messageClass,
-                          int type,
+                          unsigned int messageClass,
+                          unsigned int type,
                           int size,
                           const void *record);
 
@@ -388,14 +472,14 @@ typedef void (*rtDmeAddressCallback)(const rtDmeAddressResult *result);
 
 /** The parameters of rtDmeQueryAddresses(). 0x20 bytes. */
 typedef struct {
-    int reserved00;                /* +0x00, set by rtDmeInitAddressQuery(). */
+    int version;                   /*!< Set by rtDmeInitAddressQuery(). */
     rtDmeAddressCallback onResult; /*!< Receives the result. */
     rtNetAddress server;           /*!< The server to ask. */
 } rtDmeAddressQuery;
 
 /** The parameters of rtDmeReportAddresses(). 0x34 bytes. */
 typedef struct {
-    int reserved00;                               /* +0x00, set by rtDmeInitAddressReport(). */
+    int version;                                  /*!< Set by rtDmeInitAddressReport(). */
     rtNetAddress addresses[RT_NET_ADDRESS_COUNT]; /*!< The addresses of the peer. */
 } rtDmeAddressReport;
 
@@ -452,6 +536,24 @@ int rtDmeReportAddresses(const rtDmeAddressReport *report, rtDmeConnectStatus *s
 int rtDmeGetLocalAddress(char address[RT_NET_ADDRESS_SIZE]);
 
 /**
+ * Report the address of the sender of the last datagram.
+ *
+ * @param address Receives the 4 bytes of the address.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a89e8
+ */
+int rtDmeGetSenderAddress(unsigned char address[4]);
+
+/**
+ * Report the time of this console in milliseconds.
+ *
+ * @param time Receives the time.
+ * @return 0, or an error code.
+ * @ghidraAddress NTSC-U/C: 0x002a8b30
+ */
+int rtDmeGetLocalTime(unsigned int *time);
+
+/**
  * Service the library once per frame.
  *
  * @return 0, or an error code.
@@ -459,6 +561,25 @@ int rtDmeGetLocalAddress(char address[RT_NET_ADDRESS_SIZE]);
  * @ghidraAddress PAL: 0x002b2b68
  */
 int rtDmeUpdate(void);
+
+/**
+ * Parse dotted decimal text into an address, its first number in the top byte. Characters other
+ * than digits and dots are skipped.
+ *
+ * @param address The text, or null.
+ * @return The address, 0 for null text.
+ * @ghidraAddress NTSC-U/C: 0x002af95c
+ */
+unsigned int rtNetParseAddress(const char *address);
+
+/**
+ * Write an address as dotted decimal text, its top byte first.
+ *
+ * @param value The address.
+ * @param address Receives the text, RT_NET_ADDRESS_SIZE bytes. Nothing is written when it is null.
+ * @ghidraAddress NTSC-U/C: 0x002af9cc
+ */
+void rtNetFormatAddress(unsigned int value, char *address);
 
 #ifdef __cplusplus
 }

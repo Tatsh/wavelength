@@ -4,6 +4,7 @@
 #include <librtdme.h>
 
 #include "rt/rtchannel.h"
+#include "rt/rtringbuffer.h"
 #include "rt/rttime.h"
 
 #ifdef __cplusplus
@@ -76,15 +77,22 @@ extern "C" {
 #define RT_DME_DEFAULT_PORT 10075
 
 /** The results of the engine. */
+#define RT_DME_RESULT_FAILED 3          /*!< The connection failed. */
 #define RT_DME_RESULT_OUT_OF_RANGE 8    /*!< An index is out of range. */
 #define RT_DME_RESULT_NO_RECORD 10      /*!< A record or an address is missing. */
+#define RT_DME_RESULT_ERROR_RECEIVED 12 /*!< A message received could not be dispatched. */
 #define RT_DME_RESULT_SEND_FAILED 13    /*!< The channel did not take a message. */
+#define RT_DME_RESULT_TIMED_OUT 14      /*!< An answer did not come in time. */
 #define RT_DME_RESULT_BAD_CONNECTION 15 /*!< The connection index is out of range. */
 #define RT_DME_RESULT_NOT_STARTED 17    /*!< The engine is not started. */
 #define RT_DME_RESULT_STARTUP_FAILED 18 /*!< The channels did not start. */
 #define RT_DME_RESULT_NO_MEMORY 22      /*!< An allocation failed. */
 #define RT_DME_RESULT_INVALID 23        /*!< An argument is null or out of range. */
 #define RT_DME_RESULT_SERVICE 24        /*!< The default for a failure of the channels. */
+#define RT_DME_RESULT_NO_PROBE 25       /*!< Every latency probe is outstanding. */
+#define RT_DME_RESULT_NO_SERVICE 26     /*!< The datagram service is not started. */
+#define RT_DME_RESULT_FULL 28           /*!< The session has no room for this console. */
+#define RT_DME_RESULT_HOST_FAILED 29    /*!< The default result of hosting. */
 #define RT_DME_RESULT_MAPPING 30        /*!< The default for a failure of a port mapping. */
 #define RT_DME_RESULT_TOO_LARGE 31      /*!< A message is too large. */
 #define RT_DME_RESULT_BAD_VERSION 38    /*!< The settings have another version. */
@@ -101,7 +109,10 @@ extern "C" {
 #define RT_DME_ADDRESS_INDEX_PUBLIC 0     /*!< The public address works. */
 #define RT_DME_ADDRESS_INDEX_PRIVATE 1    /*!< The private address works. */
 #define RT_DME_ADDRESS_INDEX_UNRESOLVED 2 /*!< No address was tried yet. */
-#define RT_DME_ADDRESS_INDEX_NONE 3       /*!< The client does not exist. */
+#define RT_DME_ADDRESS_INDEX_NONE 3       /*!< No address of the client responded. */
+
+/** The flags a client announces. */
+#define RT_DME_CLIENT_FLAG_DATAGRAMS 1 /*!< The client takes datagrams. */
 
 /** The states of a connection. */
 #define RT_DME_CONNECTION_IDLE 0       /*!< Not connected. */
@@ -146,20 +157,6 @@ typedef void (*RtDmeClientLeaveFunc)(int nConnection, int nClient, const char *p
  */
 typedef void (*RtDmeConnectFunc)(int nConnection, int nState, int nStatus, int nResult);
 
-/** The arguments of the receiver of a change of host. */
-typedef struct {
-    int nConnection; /*!< The connection, always 0. */
-    int nHost;       /*!< The new host. */
-    int nArgument;   /*!< The argument given with the receiver. */
-} RtDmeHostChange;
-
-/**
- * Receiver of a change of the host of connection 0.
- *
- * @param pChange The change.
- */
-typedef void (*RtDmeHostChangeFunc)(const RtDmeHostChange *pChange);
-
 /**
  * Receiver of a new shared object.
  *
@@ -186,13 +183,34 @@ typedef void (*RtDmeObjectChangedFunc)(int nOwner, int nObject, int nField);
 typedef void (*RtDmeObjectRemovedFunc)(int nOwner, int nObject);
 
 /**
- * Receiver of the result of a latency probe.
+ * Receiver of the result of a latency probe of the game.
  *
- * @param nResult The result.
- * @param pbAddress The 4 bytes of the address probed.
+ * @param nResult The result, 0 or RT_DME_RESULT_TIMED_OUT.
+ * @param pszAddress The address probed, in a buffer the receiver may write.
  * @param nLatency The milliseconds the answer took.
+ * @param uRemoteTime The session time the answer carried.
  */
-typedef void (*RtDmePingFunc)(int nResult, const unsigned char *pbAddress, int nLatency);
+typedef void (*RtDmePingFunc)(int nResult,
+                              char *pszAddress,
+                              int nLatency,
+                              unsigned int uRemoteTime);
+
+/**
+ * Receiver of the result of a latency probe of a client.
+ *
+ * @param nResult The result, 0 or RT_DME_RESULT_TIMED_OUT.
+ * @param pszAddress The address probed, in a buffer the receiver may write.
+ * @param nLatency The milliseconds the answer took.
+ * @param uRemoteTime The session time the answer carried.
+ * @param nConnection The connection of the client.
+ * @param nClient The client.
+ */
+typedef void (*RtDmeClientPingFunc)(int nResult,
+                                    char *pszAddress,
+                                    int nLatency,
+                                    unsigned int uRemoteTime,
+                                    int nConnection,
+                                    int nClient);
 
 /** One field of a message type. */
 typedef struct {
@@ -212,14 +230,19 @@ typedef struct {
 typedef struct {
     rtNetAddress addresses[RT_DME_ADDRESS_COUNT]; /*!< The public and the private address. */
     int nRole;                                    /*!< An RT_DME_ROLE_ value, or 0. */
-    int anReserved34[2];                          /* +0x34, cleared when the local client is set */
-    unsigned char abReserved3c[28];               /* +0x3c, not read by this part of the engine */
-    unsigned char uAddressIndex;                  /*!< An RT_DME_ADDRESS_INDEX_ value. */
-    unsigned char bJoined;                        /*!< Non-zero once the client joined. */
-    RtTime lastHeard;          /*!< When the client joined or last sent a datagram. */
-    unsigned char bCleared;    /*!< Set when the record is cleared. */
-    unsigned char uReserved65; /* +0x65 */
-    signed char nFlags;        /*!< The flags the client announces, bit 0 for datagrams. */
+    int anState[2];                               /*!< The two state values the client announces. */
+    unsigned short uObjectCount;   /*!< The persistent objects the client announced. */
+    unsigned char abReserved3e[2]; /* +0x3e */
+    int nHostRank;                 /*!< The rank of a candidate host, lowest first, 0 for none. */
+    RtTime lastProbe;              /*!< When the addresses of the client were last probed. */
+    int nProbeCount;               /*!< The probes of the addresses not answered. */
+    unsigned char abReserved50[8]; /* +0x50 */
+    unsigned char uAddressIndex;   /*!< An RT_DME_ADDRESS_INDEX_ value. */
+    unsigned char bJoined;         /*!< Non-zero once the client joined. */
+    RtTime lastHeard;              /*!< When the client joined or last sent a datagram. */
+    unsigned char bCleared;        /*!< Set when the record is cleared. */
+    unsigned char bObjectsJoined;  /*!< Set once the objects of the client were claimed. */
+    signed char nFlags;            /*!< The flags the client announces, bit 0 for datagrams. */
 } RtDmeClient;
 
 /** A connection. */
@@ -241,50 +264,414 @@ typedef struct {
 typedef struct {
     unsigned int auSamples[RT_DME_LATENCY_SAMPLES]; /*!< The latencies in milliseconds. */
     int nSampleCount;                               /*!< The samples recorded. */
-    int nReserved194;                               /* +0x194 */
+    int nNextSample;                                /*!< The sample the next result replaces. */
     RtTime lastProbe;                               /*!< When the client was last probed. */
 } RtDmeClientStats;
 
-/** The objects a client owns. */
+/** The size of the name of an object range, the terminator included. */
+#define RT_DME_RANGE_NAME_SIZE 14
+
+/** The objects and the stream slots a client owns. 28 bytes. */
 typedef struct {
-    unsigned char abReserved00[6]; /* +0x00 */
-    unsigned short uFirstObject;   /*!< The first object of the client. */
-    unsigned short uObjectCount;   /*!< The number of objects of the client. */
+    unsigned int uJoinTime;              /*!< The session time the client claimed them at. */
+    unsigned short uObjectLimit;         /*!< The objects of the session, set when opened. */
+    unsigned short uFirstObject;         /*!< The first object of the client. */
+    unsigned short uObjectCount;         /*!< The number of objects of the client. */
+    unsigned short uFirstStream;         /*!< The first stream slot of the client. */
+    unsigned short uStreamCount;         /*!< The number of stream slots of the client. */
+    char szName[RT_DME_RANGE_NAME_SIZE]; /*!< The name of the range. */
 } RtDmeObjectRange;
+
+/** The lifetimes of an object that outlive its owner. */
+#define RT_DME_OBJECT_LIFETIME_SESSION 3 /*!< The object passes to the host. */
+#define RT_DME_OBJECT_LIFETIME_HOST 4    /*!< The object passes to the host. */
+
+/** The number of fields of an object type. */
+#define RT_DME_OBJECT_FIELD_COUNT 64
 
 /** A shared object. */
 typedef struct {
     unsigned char uType;              /*!< The type, which selects the receivers. */
-    unsigned char abReserved01[7];    /* +0x01 */
+    unsigned char uFilter;            /*!< The filter of the clients that see the object, or 0. */
+    unsigned char uLifetime;          /*!< What happens to the object when its owner leaves. */
+    unsigned char uFlags;             /*!< A value sent with the object and not read. */
+    int nLockClient;                  /*!< The client that holds the object, or -1. */
     int nOwner;                       /*!< The client that owns the object. */
     char szName[RT_DME_ADDRESS_SIZE]; /*!< The name of the object. */
     unsigned char *pbData;            /*!< The data of the object. */
     unsigned char *pbShadow;          /*!< The copy of the data last sent. */
+    int nReserved24;                  /* +0x24 */
+    unsigned int uFullInterval;       /*!< The milliseconds between full sends, or 0. */
+    unsigned int uLastFullTime;       /*!< The session time of the last full send, 0 for none. */
+    /** The session time the object was last sent whole to each client. */
+    unsigned int auClientSendTime[RT_DME_CLIENT_COUNT];
+    /** The session time each field was last sent. */
+    unsigned int auFieldSendTime[RT_DME_OBJECT_FIELD_COUNT];
+    int nReserved530; /* +0x530 */
 } RtDmeObject;
 
-/** A slot of an object stream. */
+/** The arguments of the test of a field that the game provides. */
 typedef struct {
-    unsigned char bUsed;            /*!< Non-zero while the slot is used. */
-    unsigned char abReserved01[67]; /* +0x01 */
+    int nObject;                /*!< The object. */
+    int nField;                 /*!< The field. */
+    int nElementSize;           /*!< The size of an element of the field. */
+    int nElementCount;          /*!< The elements of the field. */
+    const unsigned char *pbNew; /*!< The current value. */
+    const unsigned char *pbOld; /*!< The value last sent. */
+} RtDmeFieldTest;
+
+/**
+ * Test of a field that the game provides.
+ *
+ * @param pTest The field.
+ * @return Non-zero in its low byte when the field changed enough to be sent.
+ */
+typedef int (*RtDmeFieldTestFunc)(const RtDmeFieldTest *pTest);
+
+/** How the values of a field are compared, an index of RtDmeObjectField::nCompare. */
+#define RT_DME_COMPARE_S8 0         /*!< A signed byte. */
+#define RT_DME_COMPARE_U8 1         /*!< An unsigned byte. */
+#define RT_DME_COMPARE_S16 2        /*!< A signed halfword. */
+#define RT_DME_COMPARE_U16 3        /*!< An unsigned halfword. */
+#define RT_DME_COMPARE_S32 4        /*!< A signed word. */
+#define RT_DME_COMPARE_U32 5        /*!< An unsigned word. */
+#define RT_DME_COMPARE_FLOAT 6      /*!< A float. */
+#define RT_DME_COMPARE_DOUBLE 7     /*!< A double. */
+#define RT_DME_COMPARE_S16_2D 8     /*!< A point of 2 halfwords, by distance. */
+#define RT_DME_COMPARE_S16_3D 9     /*!< A point of 3 halfwords, by distance. */
+#define RT_DME_COMPARE_S32_2D 10    /*!< A point of 2 words, by distance. */
+#define RT_DME_COMPARE_S32_3D 11    /*!< A point of 3 words, by distance. */
+#define RT_DME_COMPARE_FLOAT_2D 12  /*!< A point of 2 floats, by distance. */
+#define RT_DME_COMPARE_FLOAT_3D 13  /*!< A point of 3 floats, by distance. */
+#define RT_DME_COMPARE_DOUBLE_2D 14 /*!< A point of 2 doubles, by distance. */
+#define RT_DME_COMPARE_DOUBLE_3D 15 /*!< A point of 3 doubles, by distance. */
+#define RT_DME_COMPARE_COUNT 16     /*!< The number of comparisons. */
+
+/** When a field is sent, the values of RtDmeObjectField::nMode. */
+#define RT_DME_FIELD_NEVER 0   /*!< The field is not sent. */
+#define RT_DME_FIELD_CHANGED 1 /*!< The field is sent when it changed at all. */
+#define RT_DME_FIELD_CUSTOM 5  /*!< The test of the game decides. */
+
+/** A field of an object type. */
+typedef struct {
+    int nReserved00;        /* +0x00 */
+    int nElementSize;       /*!< The size of an element in bytes. */
+    int nElementCount;      /*!< The elements of the field. */
+    int nCompare;           /*!< An RT_DME_COMPARE_ value. */
+    unsigned int uInterval; /*!< The milliseconds between sends of the field. */
+    int nMode;              /*!< An RT_DME_FIELD_ value, or another for a threshold. */
+    union {
+        double dThreshold;          /*!< The change that sends the field. */
+        RtDmeFieldTestFunc pfnTest; /*!< The test of RT_DME_FIELD_CUSTOM. */
+    } test;                         /*!< The test of the field. */
+    signed char nSendFlags;         /*!< The send flags the field adds to an update. */
+} RtDmeObjectField;
+
+/** An object type. 552 bytes. */
+typedef struct {
+    int nDataSize;                  /*!< The size of the data of an object. */
+    int nFieldCount;                /*!< The fields. */
+    unsigned char abReserved08[32]; /* +0x08 */
+    RtDmeObjectField *apFields[RT_DME_OBJECT_FIELD_COUNT]; /*!< The fields, null where none. */
+    int anFieldOffsets[RT_DME_OBJECT_FIELD_COUNT];         /*!< The offsets of the fields. */
+} RtDmeObjectType;
+
+/**
+ * Filter of the clients that see an object.
+ *
+ * @param nClient The client.
+ * @param nObject The object.
+ * @return Non-zero when the client sees the object.
+ */
+typedef int (*RtDmeObjectFilterFunc)(int nClient, int nObject);
+
+/** The states of a stream slot. */
+#define RT_DME_STREAM_FREE 0     /*!< The slot is free. */
+#define RT_DME_STREAM_RESERVED 1 /*!< The slot belongs to a client. */
+#define RT_DME_STREAM_OPEN 2     /*!< The slot carries a stream. */
+
+/** The number of kinds of stream. */
+#define RT_DME_STREAM_KIND_COUNT 16
+
+/** A slot of an object stream. 68 bytes. */
+typedef struct {
+    unsigned char uState;          /*!< An RT_DME_STREAM_ value. */
+    unsigned char uKind;           /*!< A value sent with the stream. */
+    unsigned char bOwnsData;       /*!< Non-zero when the slot allocated its data. */
+    unsigned char uRoute;          /*!< The kind of the stream, an index of g_anDmeStreamRelay. */
+    unsigned char bClosing;        /*!< Set to close the stream once it is sent. */
+    unsigned char bToHost;         /*!< Non-zero to send the stream through the host. */
+    unsigned char abReserved06[2]; /* +0x06 */
+    int nReceiver;                 /*!< The client the stream goes to. */
+    int nReserved0c;               /* +0x0c */
+    unsigned char *pbData;         /*!< The data of the stream. */
+    unsigned char *pbStart;        /*!< A position in the data, sent as an offset. */
+    unsigned char *pbEnd;          /*!< A position in the data, sent as an offset. */
+    int nReserved1c;               /* +0x1c */
+    int nRate;                     /*!< The rate the stream is sent at. */
+    unsigned short uReserved24;    /* +0x24 */
+    unsigned short uMaxChunk;      /*!< The most bytes sent at once. */
+    unsigned int uLastSendTime;    /*!< The session time of the last send. */
+    RtRingBuffer queue;            /*!< The bytes not sent yet. */
 } RtDmeStream;
+
+/** The arguments of the receiver of the objects of a client. */
+typedef struct {
+    int nEvent;      /*!< 0 when the client claimed its objects, 1 when it released them. */
+    int nConnection; /*!< The connection. */
+    int nClient;     /*!< The client. */
+    int nArgument;   /*!< The argument given with the receiver. */
+} RtDmeObjectRangeEvent;
+
+/**
+ * Receiver of a client that claimed or released its objects.
+ *
+ * @param pEvent The event.
+ */
+typedef void (*RtDmeObjectRangeFunc)(const RtDmeObjectRangeEvent *pEvent);
+
+/** The object ranges of a client, as the system message carries it. 36 bytes. */
+typedef struct {
+    unsigned char uClient;               /*!< The client. */
+    unsigned char uReserved01;           /* +0x01, a registered field, sent uninitialised */
+    unsigned char abReserved02[2];       /* +0x02, sent uninitialised */
+    unsigned int uReserved04;            /* +0x04, a registered field, sent uninitialised */
+    unsigned short uObjectLimit;         /*!< The objects of the session. */
+    unsigned short uFirstObject;         /*!< The first object. */
+    unsigned short uObjectCount;         /*!< The number of objects. */
+    unsigned short uFirstStream;         /*!< The first stream slot. */
+    unsigned short uStreamCount;         /*!< The number of stream slots. */
+    unsigned char abReserved12[4];       /* +0x12, sent uninitialised */
+    char szName[RT_DME_RANGE_NAME_SIZE]; /*!< The name of the range. */
+} RtDmeObjectRangeMessage;
+
+/** The state of a client, as the system message carries it. 12 bytes. */
+typedef struct {
+    unsigned char uRole;           /*!< The role of the client. */
+    unsigned char uClient;         /*!< The client. */
+    unsigned char auState[2];      /*!< The two state values of the client. */
+    unsigned short uObjectCount;   /*!< The persistent objects the client owns. */
+    unsigned char abReserved06[2]; /* +0x06, sent uninitialised */
+    int nHostRank;                 /*!< The rank of the client as a candidate host. */
+} RtDmeClientStateMessage;
+
+/** The port of the first voice device. */
+#define RT_DME_VOICE_FIRST_PORT 10076
+
+/** The voice channels of a device. */
+#define RT_DME_VOICE_CHANNEL_COUNT 16
+
+/** The voice address of a client, as the system message carries it. 28 bytes. */
+typedef struct {
+    int nConnection;            /*!< The connection. */
+    int nClient;                /*!< The client. */
+    unsigned int uLocalAddress; /*!< The private address. */
+    int nLocalPort;             /*!< The private port. */
+    unsigned int uAddress;      /*!< The public address. */
+    int nPort;                  /*!< The public port. */
+    int nReserved18;            /*!< A further value of the device. */
+} RtDmeVoicePeerMessage;
+
+/**
+ * @name The voice device.
+ * These routines belong to the device layer of the library, ported separately.
+ * @{
+ */
+
+/** A voice device. */
+typedef struct RtDmeDevice RtDmeDevice;
+
+/** The voice address of a device. 24 bytes. */
+typedef struct {
+    unsigned int uAddress;      /*!< The public address. */
+    unsigned int uLocalAddress; /*!< The private address. */
+    int nPort;                  /*!< The public port. */
+    int nLocalPort;             /*!< The private port. */
+    int nReserved10;            /*!< A further value of the device. */
+    int nClient;                /*!< The client the device belongs to. */
+} RtDmeDevicePeer;
+
+/** The status a device reports. 24 bytes. */
+typedef struct {
+    int anReserved[5]; /* +0x00, not read by the engine */
+    int nLevel;        /*!< The level of the device. */
+} RtDmeDeviceStatus;
+
+/** Receiver of the events of a device. */
+typedef int (*RtDmeDeviceEventFunc)(RtDmeDevice *pDevice, int *pnEvent, int nValue1, int nValue2);
+/** Receiver of the state changes of a device. */
+typedef int (*RtDmeDeviceStateFunc)(RtDmeDevice *pDevice, int nState, int nValue1, int nValue2);
+/** Receiver of the data of a device. */
+typedef int (*RtDmeDeviceDataFunc)(RtDmeDevice *pDevice, int nValue1, int nValue2, int nValue3);
+/** Receiver of the end of the data of a device. */
+typedef int (*RtDmeDeviceEndFunc)(RtDmeDevice *pDevice, int nValue1, int nValue2);
+/** Receiver of the start of the stream of a device. */
+typedef int (*RtDmeDeviceStreamFunc)(RtDmeDevice *pDevice, unsigned int uAddress, int nPort);
+
+/** The settings of a device. 52 bytes. */
+typedef struct {
+    int nPort;                     /*!< The port. */
+    int anFormat[6];               /*!< The format values. */
+    int anDevice[2];               /*!< Further values. */
+    RtDmeDeviceEventFunc pfnEvent; /*!< Receives the events, or null. */
+    RtDmeDeviceStateFunc pfnState; /*!< Receives the state changes, or null. */
+    RtDmeDeviceDataFunc pfnData;   /*!< Receives the data, or null. */
+    RtDmeDeviceEndFunc pfnEnd;     /*!< Receives the end of the data, or null. */
+} RtDmeDeviceSettings;
+
+/**
+ * Allocate a device.
+ *
+ * @return The device.
+ * @ghidraAddress NTSC-U/C: 0x002e4840
+ */
+RtDmeDevice *RtDmeDeviceAlloc(void);
+
+/**
+ * Release a device.
+ *
+ * @param pDevice The device.
+ * @ghidraAddress NTSC-U/C: 0x002e48c4
+ */
+void RtDmeDeviceDestroy(RtDmeDevice *pDevice);
+
+/**
+ * Start a device.
+ *
+ * @param pDevice The device.
+ * @param pSettings The settings.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e4934
+ */
+int RtDmeDeviceInit(RtDmeDevice *pDevice, const RtDmeDeviceSettings *pSettings);
+
+/**
+ * Reach a device through a gateway.
+ *
+ * @param pDevice The device.
+ * @param pszAddress The address of the gateway.
+ * @param nPort The port of the gateway.
+ * @param pfnStream Receives the start of the stream.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e4e34
+ */
+int RtDmeDeviceConnect(RtDmeDevice *pDevice,
+                       const char *pszAddress,
+                       int nPort,
+                       RtDmeDeviceStreamFunc pfnStream);
+
+/**
+ * Stop a device.
+ *
+ * @param pDevice The device.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e4fbc
+ */
+int RtDmeDeviceStop(RtDmeDevice *pDevice);
+
+/**
+ * Run a device once.
+ *
+ * @param pDevice The device.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e501c
+ */
+int RtDmeDeviceUpdate(RtDmeDevice *pDevice);
+
+/**
+ * Open a named channel of a device.
+ *
+ * @param pDevice The device.
+ * @param nMode The mode.
+ * @param pnChannel Receives the channel.
+ * @param pszName The name.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e541c
+ */
+int RtDmeDeviceOpenChannel(RtDmeDevice *pDevice, int nMode, int *pnChannel, const char *pszName);
+
+/**
+ * Select the channel of a device that sends.
+ *
+ * @param pDevice The device.
+ * @param nChannel The channel.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e6d9c
+ */
+int RtDmeDeviceSelectChannel(RtDmeDevice *pDevice, int nChannel);
+
+/**
+ * Set the client of a device.
+ *
+ * @param pDevice The device.
+ * @param nClient The client.
+ * @return 0.
+ * @ghidraAddress NTSC-U/C: 0x002e6e84
+ */
+int RtDmeDeviceSetClient(RtDmeDevice *pDevice, int nClient);
+
+/**
+ * Copy the voice address of a device.
+ *
+ * @param pDevice The device.
+ * @param pPeer Receives the address.
+ * @return 0.
+ * @ghidraAddress NTSC-U/C: 0x002e6e98
+ */
+int RtDmeDeviceGetPeer(RtDmeDevice *pDevice, RtDmeDevicePeer *pPeer);
+
+/**
+ * Add a peer to a device.
+ *
+ * @param pDevice The device.
+ * @param pPeer The address of the peer.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e6ed4
+ */
+int RtDmeDeviceAddPeer(RtDmeDevice *pDevice, const RtDmeDevicePeer *pPeer);
+
+/**
+ * Remove a peer from a device.
+ *
+ * @param pDevice The device.
+ * @param nClient The client of the peer.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e6fa0
+ */
+int RtDmeDeviceRemovePeer(RtDmeDevice *pDevice, int nClient);
+
+/**
+ * Report the status of a device.
+ *
+ * @param pDevice The device.
+ * @param pStatus Receives the status.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002e7094
+ */
+int RtDmeDeviceGetStatus(RtDmeDevice *pDevice, RtDmeDeviceStatus *pStatus);
+
+/** @} */
 
 /** A set of clients, as a bitmap with its first and last members. */
 typedef struct {
-    unsigned char abBits[RT_DME_CLIENT_COUNT / 8]; /*!< One bit per client. */
-    int nReserved20;                               /* +0x20 */
-    int nFirst;                                    /*!< The lowest client of the set. */
-    int nLast;                                     /*!< The highest client of the set. */
+    /** One bit per client, and a spare byte the engine clears with them. */
+    unsigned char abBits[RT_DME_CLIENT_COUNT / 8 + 1];
+    int nFirst; /*!< The lowest client of the set. */
+    int nLast;  /*!< The highest client of the set. */
 } RtDmeClientSet;
 
 /** An outstanding latency probe. */
 typedef struct {
     unsigned char abAddress[4]; /*!< The address probed. */
     unsigned short uPort;       /*!< The port probed. */
-    int nReserved08;            /* +0x08, cleared when the probe is sent */
-    RtDmePingFunc pfnDone;      /*!< Receives the result, null when the slot is free. */
-    unsigned int uSentTime;     /*!< When the probe was sent, in milliseconds. */
-    int nConnection;            /*!< The connection of the client probed. */
-    int nClient;                /*!< The client probed, or RT_DME_NO_CLIENT. */
+    int bClientProbe; /*!< 1 when the engine probes a client, 0 for a probe of the game. */
+    union {
+        RtDmePingFunc pfnDone;             /*!< Receives the result of a probe of the game. */
+        RtDmeClientPingFunc pfnClientDone; /*!< Receives the result of a probe of a client. */
+    } done;                                /*!< The receiver, null when the slot is free. */
+    unsigned int uSentTime;                /*!< When the probe was sent, in milliseconds. */
+    int nConnection;                       /*!< The connection of the client probed. */
+    int nClient;                           /*!< The client probed, or RT_DME_NO_CLIENT. */
 } RtDmePing;
 
 /**
@@ -306,20 +693,6 @@ typedef struct {
     RtDmePollFunc pfnDone;                   /*!< Receives the result. */
 } RtDmePoll;
 
-/** The result of a port mapping, as the receiver of rtDme mappings gets it. */
-typedef struct {
-    int bDone;                                    /*!< Non-zero once the mapping finished. */
-    int nResult;                                  /*!< 0, or an error code. */
-    rtNetAddress addresses[RT_DME_ADDRESS_COUNT]; /*!< The public and the private address. */
-} RtDmeMapping;
-
-/**
- * Receiver of a finished port mapping.
- *
- * @param pMapping The result.
- */
-typedef void (*RtDmeMappingFunc)(const RtDmeMapping *pMapping);
-
 /** Non-zero while the engine is started. */
 extern int g_nDmeRunning;
 /** The connection the engine serves. */
@@ -329,7 +702,7 @@ extern int g_nDmeObjectCount;
 /** Receives the result of the next connection, then is cleared. */
 extern RtDmeConnectFunc g_pfnDmeConnect;
 /** Receives the changes of host of connection 0. */
-extern RtDmeHostChangeFunc g_pfnDmeHostChange;
+extern rtDmeHostChangeCallback g_pfnDmeHostChange;
 /** The argument given to g_pfnDmeHostChange. */
 extern int g_nDmeHostChangeArgument;
 /** Non-zero while the datagram service is started. */
@@ -361,7 +734,7 @@ extern RtDmeConnection *g_apDmeConnections[RT_DME_CONNECTION_COUNT];
 /** The latency records of the clients, allocated when first used. */
 extern RtDmeClientStats *g_apDmeClientStats[RT_DME_CLIENT_COUNT];
 /** The result of the last port mapping. */
-extern RtDmeMapping g_dmeMapping;
+extern rtDmeAddressResult g_dmeMapping;
 /** The pending listener polls. */
 extern RtDmePoll g_aDmePolls[RT_DME_POLL_COUNT];
 /** The registered message types. */
@@ -391,6 +764,145 @@ extern int g_nDmeClientJoinMessage;
 extern int g_nDmeFragmentMessage;
 /** The system message that announces the addresses of a client that left. */
 extern int g_nDmeClientAddressesMessage;
+/** The system message that announces the voice address of a client. */
+extern int g_nDmeVoicePeerMessage;
+/** The system message that announces the object ranges of a client. */
+extern int g_nDmeObjectRangeMessage;
+/** The system message that announces the state of a client. */
+extern int g_nDmeClientStateMessage;
+/** Receives the clients that claimed or released their objects. */
+extern RtDmeObjectRangeFunc g_pfnDmeObjectRange;
+/** The argument given to g_pfnDmeObjectRange. */
+extern int g_nDmeObjectRangeArgument;
+/** Receives the hosts of the objects of connection 0 that a departure picked. */
+extern rtDmeHostChangeCallback g_pfnDmeObjectHost;
+/** The argument given to g_pfnDmeObjectHost. */
+extern int g_nDmeObjectHostArgument;
+/** Receives the result of the last port mapping. */
+extern rtDmeAddressCallback g_pfnDmeMapping;
+/** Non-zero once the session of the active connection was reported ready. */
+extern unsigned char g_bDmeObjectRangesSent;
+/** Non-zero while the objects of the active connection are shared. */
+extern unsigned char g_bDmeObjectsShared;
+/** Receives the statuses of the server of the next connection. */
+extern RtDmeConnectFunc g_pfnDmeStatus;
+/** Non-zero while rtDmeConnect() waits for a peer-to-peer connection. */
+extern unsigned char g_bDmeConnectWaiting;
+/** The gateway the port mappings of the peers go through. */
+extern rtNetAddress g_dmeGatewayAddress;
+/** The object types. */
+extern RtDmeObjectType g_aDmeObjectTypes[RT_DME_OBJECT_TYPE_COUNT];
+/** Non-zero for the kinds of stream that a client other than the host sends through the host. */
+extern int g_anDmeStreamRelay[RT_DME_STREAM_KIND_COUNT];
+/** The filters of the clients that see an object, by RtDmeObject::uFilter. */
+extern RtDmeObjectFilterFunc g_apfnDmeObjectFilter[RT_DME_OBJECT_TYPE_COUNT];
+/** The system message of a client that left the session. */
+extern int g_nDmeClientLeftMessage;
+/** The system message of a latency probe and its answer. */
+extern int g_nDmePingMessage;
+/** The system message of a whole object. */
+extern int g_nDmeObjectMessage;
+/** The system message of the changed fields of an object. */
+extern int g_nDmeObjectUpdateMessage;
+/** The system message of a stream that closed. */
+extern int g_nDmeStreamClosedMessage;
+/** The system message of the data of a stream. */
+extern int g_nDmeStreamDataMessage;
+/** The system message that probes the addresses of a client. */
+extern int g_nDmeAddressProbeMessage;
+/** The system message of a console that disconnects. */
+extern int g_nDmeDisconnectMessage;
+/** The system message that destroys an object. */
+extern int g_nDmeObjectDestroyMessage;
+/** The system message that asks the owner of an object to lend it. */
+extern int g_nDmeObjectLockMessage;
+/** The system message that announces the client that holds an object. */
+extern int g_nDmeObjectLockedMessage;
+/** The system message that announces an object nobody holds. */
+extern int g_nDmeObjectUnlockMessage;
+/** The system message that asks whether a console hosts a session. */
+extern int g_nDmeHostQueryMessage;
+/** The system message that answers g_nDmeHostQueryMessage. */
+extern int g_nDmeHostReplyMessage;
+/** The system message that asks the host for the objects and the stream slots of a client. */
+extern int g_nDmeObjectRequestMessage;
+/** The system message of the host that grants a client its objects and stream slots. */
+extern int g_nDmeObjectGrantMessage;
+/** The system message that reports a client ready to the host. */
+extern int g_nDmeClientReadyMessage;
+/** The system message that refuses a console a place in the session. */
+extern int g_nDmeSessionFullMessage;
+/** The system message that introduces a client and its addresses. */
+extern int g_nDmeClientInfoMessage;
+/** The system message of the name of a session. */
+extern int g_nDmeSessionNameMessage;
+/** The system message of the clock of the host. */
+extern int g_nDmeClockMessage;
+/** The system message of the rank of a client as a candidate host. */
+extern int g_nDmeHostRankMessage;
+/** A system message the engine receives and ignores. */
+extern int g_nDmeIgnoredMessage;
+
+/**
+ * Receiver of the data of a stream.
+ *
+ * @param nSender The client that sent the data.
+ * @param nStream The stream.
+ * @param pbData The data.
+ * @param nSize The size of the data.
+ */
+typedef void (*RtDmeStreamDataFunc)(int nSender,
+                                    int nStream,
+                                    const unsigned char *pbData,
+                                    int nSize);
+
+/**
+ * Receiver of a stream that closed.
+ *
+ * @param nSender The client that closed the stream.
+ * @param nStream The stream.
+ */
+typedef void (*RtDmeStreamClosedFunc)(int nSender, int nStream);
+
+/**
+ * Receiver of the answer of a host to g_nDmeHostQueryMessage.
+ *
+ * @param pszAddress The address of the host.
+ * @param nPort The port the host answered with.
+ */
+typedef void (*RtDmeHostReplyFunc)(const char *pszAddress, int nPort);
+
+/** The receivers of the data of the streams, by RtDmeStream::uRoute. */
+extern RtDmeStreamDataFunc g_apfnDmeStreamData[RT_DME_STREAM_KIND_COUNT];
+/** The receivers of the streams that closed, by RtDmeStream::uRoute. */
+extern RtDmeStreamClosedFunc g_apfnDmeStreamClosed[RT_DME_STREAM_KIND_COUNT];
+/** The private address this console announces when g_bDmeUseFixedAddress is set. */
+extern unsigned char g_abDmeFixedAddress[4];
+/** Receives the answers to g_nDmeHostQueryMessage, or null. */
+extern RtDmeHostReplyFunc g_pfnDmeHostReply;
+/**
+ * How the objects of a session are shared. 1 and 2 let a new host be elected, and 1 also leaves
+ * the objects when the host grants them.
+ */
+extern int g_nDmeObjectMode;
+
+/** The arguments of the receiver of a session that became ready. */
+typedef struct {
+    int nEvent;    /*!< 0 when the session is ready, otherwise the code of the failure. */
+    int nArgument; /*!< The argument given with the receiver. */
+} RtDmeSessionReady;
+
+/**
+ * Receiver of a session that became ready.
+ *
+ * @param pReady The event.
+ */
+typedef void (*RtDmeSessionReadyFunc)(const RtDmeSessionReady *pReady);
+
+/** Receives the next session that becomes ready, then is cleared. */
+extern RtDmeSessionReadyFunc g_pfnDmeSessionReady;
+/** The argument given to g_pfnDmeSessionReady. */
+extern int g_nDmeSessionReadyArgument;
 
 /**
  * Report the version of the library.
@@ -419,6 +931,36 @@ int RtDmeVoiceStartup(void);
  * @ghidraAddress PAL: 0x002b8040
  */
 int RtDmeVoiceShutdown(void);
+
+/**
+ * Set the defaults of the voice settings, with the first free port of the devices.
+ *
+ * @param pSettings The settings.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002ae120
+ */
+int RtDmeVoiceInitSettings(rtDmeVoiceSettings *pSettings);
+
+/**
+ * Run the device of the voice of a connection once.
+ *
+ * @param nConnection The connection.
+ * @param bStarted The started flag the voice has while its device runs.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002ae1c0
+ */
+int RtDmeVoiceUpdate(int nConnection, unsigned char bStarted);
+
+/**
+ * Open the voice of a connection and its device.
+ *
+ * @param nConnection The connection.
+ * @param nMaxClients The clients the connection takes.
+ * @param pSettings The settings.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002ae248
+ */
+int RtDmeVoiceOpen(int nConnection, int nMaxClients, const rtDmeVoiceSettings *pSettings);
 
 /**
  * Close the voice of a connection.
@@ -474,13 +1016,21 @@ int RtDmeVoiceAddClient(int nConnection, int nClient);
 int RtDmeVoiceRemoveClient(int nConnection, int nClient);
 
 /**
+ * Add the voice address a client announced to the voice of its connection.
+ *
+ * @param pMessage The announcement.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002af220
+ */
+int RtDmeVoiceAddPeer(const RtDmeVoicePeerMessage *pMessage);
+
+/**
  * Allocate the object ranges of the clients.
  *
- * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002afc20
  * @ghidraAddress PAL: 0x002b9b90
  */
-int RtDmeInitObjectRanges(void);
+void RtDmeInitObjectRanges(void);
 
 /**
  * Look up the object range of a client.
@@ -495,15 +1045,74 @@ int RtDmeInitObjectRanges(void);
 int RtDmeGetObjectRange(RtDmeObjectRange **ppRange, int nConnection, int nClient);
 
 /**
- * Release the objects of a client.
+ * Allocate the object range of a client.
  *
  * @param nConnection The connection.
  * @param nClient The client.
+ * @return The range, or null for a bad index.
+ * @ghidraAddress NTSC-U/C: 0x002afcd8
+ */
+RtDmeObjectRange *RtDmeCreateObjectRange(unsigned int nConnection, unsigned int nClient);
+
+/**
+ * Release the object ranges of the clients of a connection.
+ *
+ * @param nConnection The connection.
+ * @ghidraAddress NTSC-U/C: 0x002afdf0
+ */
+void RtDmeFreeConnectionObjectRanges(unsigned int nConnection);
+
+/**
+ * Release the object ranges of every connection.
+ *
+ * @ghidraAddress NTSC-U/C: 0x002afe58
+ */
+void RtDmeFreeAllObjectRanges(void);
+
+/**
+ * Release the table of the object ranges.
+ *
+ * @ghidraAddress NTSC-U/C: 0x002afea8
+ */
+void RtDmeFreeObjectRangeTable(void);
+
+/**
+ * Send the object range of the local client to a client, or to every client.
+ *
+ * @param nConnection The connection.
+ * @param nClient The client, or RT_DME_ALL_CLIENTS.
  * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002affb8
+ */
+int RtDmeSendObjectRange(unsigned int nConnection, int nClient);
+
+/**
+ * Open the object range of a client, announce it, and claim its objects.
+ *
+ * @param nConnection The connection.
+ * @param nClient The client.
+ * @ghidraAddress NTSC-U/C: 0x002b00f0
+ */
+void RtDmeOpenObjectRange(unsigned int nConnection, int nClient);
+
+/**
+ * Claim the objects of a client that joined, and send it the object range of this console.
+ *
+ * @param nConnection The connection.
+ * @param nClient The client.
+ * @ghidraAddress NTSC-U/C: 0x002b0188
+ */
+void RtDmeJoinObjects(unsigned int nConnection, int nClient);
+
+/**
+ * Release the objects of a client, passing the persistent ones to the host.
+ *
+ * @param nConnection The connection.
+ * @param nClient The client.
  * @ghidraAddress NTSC-U/C: 0x002b0290
  * @ghidraAddress PAL: 0x002ba200
  */
-int RtDmeReleaseClientObjects(int nConnection, int nClient);
+void RtDmeReleaseClientObjects(unsigned int nConnection, int nClient);
 
 /**
  * Send the state of a client to the others.
@@ -515,6 +1124,16 @@ int RtDmeReleaseClientObjects(int nConnection, int nClient);
  * @ghidraAddress PAL: 0x002ba670
  */
 int RtDmeSendClientState(int nConnection, int nClient);
+
+/**
+ * Receive the result of the port mapping of the peers.
+ *
+ * @param pszAddress The public address.
+ * @param uPort The public port.
+ * @param nResult The result of the mapping.
+ * @ghidraAddress NTSC-U/C: 0x002b0980
+ */
+void RtDmeOnPortMapped(const char *pszAddress, unsigned short uPort, int nResult);
 
 /**
  * Convert an index of a connection to the identifier of its channel.
@@ -593,7 +1212,7 @@ int RtDmeGetLocalClient(int *pnClient, int nConnection);
  * @ghidraAddress NTSC-U/C: 0x002b11b8
  * @ghidraAddress PAL: 0x002bb128
  */
-int RtDmeSetHostChangeHook(RtDmeHostChangeFunc pfnHook, int nArgument);
+int RtDmeSetHostChangeHook(rtDmeHostChangeCallback pfnHook, int nArgument);
 
 /**
  * Set the time of the session.
@@ -850,28 +1469,6 @@ int RtDmeBroadcastDatagram(unsigned char bIncludeSelf,
                            const void *pData);
 
 /**
- * Send a message of any length to a client, the server, or every client of a connection.
- *
- * @param nFlags The send flags.
- * @param nConnection The connection.
- * @param nClient The client, RT_DME_SERVER_CLIENT, or RT_DME_ALL_CLIENTS.
- * @param nClass The class of the message.
- * @param nType The type of the message.
- * @param nSize The size of the message.
- * @param pData The message.
- * @return 0, or an error.
- * @ghidraAddress NTSC-U/C: 0x002b22d8
- * @ghidraAddress PAL: 0x002bc248
- */
-int RtDmeSend(signed char nFlags,
-              int nConnection,
-              int nClient,
-              unsigned int nClass,
-              unsigned int nType,
-              int nSize,
-              const void *pData);
-
-/**
  * Send a message to the clients of a set.
  *
  * @param nFlags The send flags.
@@ -1054,6 +1651,164 @@ int RtDmeConvertStatus(int *pnStatus, unsigned int nChannelStatus);
  * @ghidraAddress PAL: 0x002bdb08
  */
 void RtDmeSetConnectResult(int nConnection, int nClient, unsigned char bConnected, int nReason);
+
+/**
+ * Set the defaults of the parameters of RtDmeConnect().
+ *
+ * @param pParams The parameters.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b40b0
+ */
+int RtDmeInitConnectParams(rtDmeConnectParams *pParams);
+
+/**
+ * Connect to a session, over a channel for the types 1 and 3 or as datagrams for the type 2.
+ *
+ * @param pParams The parameters.
+ * @param pStatus Receives the status.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b4130
+ */
+int RtDmeConnect(const rtDmeConnectParams *pParams, rtDmeConnectStatus *pStatus);
+
+/**
+ * Set the defaults of the parameters of RtDmeHost().
+ *
+ * @param pParams The parameters.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b4a70
+ */
+int RtDmeInitHostParams(rtDmeHostParams *pParams);
+
+/**
+ * Host a peer-to-peer session on connection 0.
+ *
+ * @param pParams The parameters.
+ * @param pStatus Receives the status.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b4ad0
+ */
+int RtDmeHost(const rtDmeHostParams *pParams, rtDmeConnectStatus *pStatus);
+
+/**
+ * Set the defaults of an address query.
+ *
+ * @param pQuery The query.
+ * @return 0, or RT_DME_RESULT_INVALID.
+ * @ghidraAddress NTSC-U/C: 0x002b4e10
+ */
+int RtDmeInitAddressQuery(rtDmeAddressQuery *pQuery);
+
+/**
+ * Learn the public address of this console, by a port mapping through the gateway.
+ *
+ * @param pQuery The query.
+ * @param pStatus Receives the status.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b4e50
+ */
+int RtDmeQueryAddresses(const rtDmeAddressQuery *pQuery, rtDmeConnectStatus *pStatus);
+
+/**
+ * Set the defaults of an address report.
+ *
+ * @param pReport The report.
+ * @return 0, or RT_DME_RESULT_INVALID.
+ * @ghidraAddress NTSC-U/C: 0x002b4fc0
+ */
+int RtDmeInitAddressReport(rtDmeAddressReport *pReport);
+
+/**
+ * Add a peer the server reported to connection 0, when this console is the host.
+ *
+ * @param pReport The addresses of the peer.
+ * @param pStatus Receives the status.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b5000
+ */
+int RtDmeReportAddresses(const rtDmeAddressReport *pReport, rtDmeConnectStatus *pStatus);
+
+/**
+ * Add a peer to connection 0 under its addresses, replacing a client with the same addresses.
+ *
+ * @param pReport The addresses of the peer.
+ * @param pStatus Receives the status.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b50f0
+ */
+int RtDmeAddReportedPeer(const rtDmeAddressReport *pReport, rtDmeConnectStatus *pStatus);
+
+/**
+ * Enable or disable the messages of a connection for the local client, and announce it.
+ *
+ * @param nConnection The connection.
+ * @param bEnable Non-zero to enable the messages.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b5468
+ */
+int RtDmeEnableConnection(int nConnection, int bEnable);
+
+/**
+ * Leave the objects of the session of a connection, keeping the connection.
+ *
+ * @param nConnection The connection.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b55a8
+ */
+int RtDmeLeaveSession(int nConnection);
+
+/**
+ * Probe the latency of a client of the active connection.
+ *
+ * @param nClient The client.
+ * @ghidraAddress NTSC-U/C: 0x002b58f8
+ */
+void RtDmeProbeClient(unsigned int nClient);
+
+/**
+ * Run the engine once: the channels, the clock, the objects, the probes, and the peers.
+ *
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b7728
+ */
+int RtDmeUpdate(void);
+
+/**
+ * Close a connection and clear its clients.
+ *
+ * @param nConnection The connection.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b7980
+ */
+int RtDmeDisconnect(int nConnection);
+
+/**
+ * Stop the engine and release everything it holds.
+ *
+ * @return 0, or RT_DME_RESULT_NOT_STARTED.
+ * @ghidraAddress NTSC-U/C: 0x002b7bb0
+ */
+int RtDmeShutdown(void);
+
+/**
+ * Set the flags of a client.
+ *
+ * @param nConnection The connection.
+ * @param nClient The client.
+ * @param nFlags The flags.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b8828
+ */
+int RtDmeSetClientFlags(unsigned int nConnection, int nClient, signed char nFlags);
+
+/**
+ * Report whether this console is the host of connection 0.
+ *
+ * @param pbHost Receives 1 when it is the host.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002b8ee8
+ */
+int RtDmeIsLocalHost(unsigned char *pbHost);
 
 /**
  * Convert a result of the channels to a result of the engine.
@@ -1250,12 +2005,12 @@ int RtDmeSetHostClient(unsigned int nConnection, int nClient);
  *
  * @param nClient The client.
  * @param uTimeout The milliseconds of silence that drop it.
- * @param bForce Non-zero to drop it at once.
+ * @param bAnnounce Non-zero to announce the departure to the other clients.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b8ad8
  * @ghidraAddress PAL: 0x002c2a48
  */
-int RtDmeExpireClient(int nClient, unsigned int uTimeout, unsigned char bForce);
+int RtDmeExpireClient(int nClient, unsigned int uTimeout, unsigned char bAnnounce);
 
 /**
  * Finish the departure of a client of connection 0.
@@ -1300,26 +2055,94 @@ int RtDmeIsClientIndex(unsigned int nClient);
 unsigned char RtDmeClientToByte(int nClient);
 
 /**
- * Pick a new host for a connection.
+ * Check a connection index.
  *
  * @param nConnection The connection.
- * @param nArgument1 The first argument of the election.
- * @param nArgument2 The second argument of the election.
- * @param nArgument3 The third argument of the election.
- * @return 0, or an error.
+ * @return 1 when the index is below RT_DME_CONNECTION_COUNT.
+ * @ghidraAddress NTSC-U/C: 0x002b9b40
+ */
+int RtDmeIsConnectionIndex(unsigned int nConnection);
+
+/**
+ * Report the address of the gateway the voice of the peers goes through.
+ *
+ * @param ppAddress Receives the address.
+ * @return 0, or RT_DME_RESULT_INVALID.
+ * @ghidraAddress NTSC-U/C: 0x002b9b48
+ */
+int RtDmeGetGatewayAddress(rtNetAddress **ppAddress);
+
+/**
+ * Pick a new host for a connection when this console is the first joined candidate, and take
+ * over the objects of the session.
+ *
+ * @param nConnection The connection.
+ * @param nClient Not read.
+ * @param nState0 Not read.
+ * @param nState1 Not read.
  * @ghidraAddress NTSC-U/C: 0x002bc930
  * @ghidraAddress PAL: 0x002c68a0
  */
-int RtDmeElectHost(int nConnection, int nArgument1, int nArgument2, int nArgument3);
+void RtDmeElectHost(int nConnection, int nClient, int nState0, int nState1);
 
 /**
  * Register the message types of the engine.
  *
- * @return 0, or an error.
+ * @return The result of the last registration.
  * @ghidraAddress NTSC-U/C: 0x002bcbe8
  * @ghidraAddress PAL: 0x002c6b58
  */
 int RtDmeRegisterSystemMessages(void);
+
+/**
+ * Start the field list of a message type.
+ *
+ * @return 0, or RT_DME_RESULT_NOT_STARTED.
+ * @ghidraAddress NTSC-U/C: 0x002a8d38
+ */
+int RtDmeBeginFields(void);
+
+/**
+ * Append a field to the field list of a message type. The list stores the record address minus
+ * the field address with the two numbers as given, and the engine does not read them back.
+ *
+ * @param pRecord The address of a record of the type.
+ * @param pField The address of the field in the record.
+ * @param nSize A positive number stored with the field, the size of an element by convention.
+ * @param nCount A positive number stored with the field, the count of elements by convention.
+ * @return 0, RT_DME_RESULT_NOT_STARTED, or RT_DME_RESULT_INVALID.
+ * @ghidraAddress NTSC-U/C: 0x002a8d60
+ */
+int RtDmeAddField(const void *pRecord, const void *pField, int nSize, int nCount);
+
+/**
+ * Register a message type of a class with the field list and its receiver.
+ *
+ * @param pnType Receives the registered type.
+ * @param nClass The class.
+ * @param pfnHandler The receiver.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002a8df8
+ */
+int RtDmeRegisterMessageType(int *pnType, unsigned int nClass, rtDmeMessageHandler pfnHandler);
+
+/**
+ * Register a message type of the game with the field list and its receiver.
+ *
+ * @param pnType Receives the registered type.
+ * @param pfnHandler The receiver.
+ * @return 0, or an error.
+ * @ghidraAddress NTSC-U/C: 0x002a8ed8
+ */
+int RtDmeRegisterApplicationMessage(int *pnType, rtDmeMessageHandler pfnHandler);
+
+/**
+ * Free the long messages whose parts stopped arriving for 30 seconds.
+ *
+ * @return 0.
+ * @ghidraAddress NTSC-U/C: 0x002be128
+ */
+int RtDmeExpireReassembly(void);
 
 /**
  * Clear the reassembly table of the long messages.

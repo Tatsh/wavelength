@@ -439,15 +439,17 @@ void LaunchpadRT::OnNetConnect(int nConnection, int nReserved1, int nReserved2, 
     sNetTask->Finish(bSucceeded, nReason);
 }
 
-void LaunchpadRT::OnNetClientJoin(int nConnection, int nClient) {
+void LaunchpadRT::OnNetClientJoin(int nConnection, int nClient, const char *pszAddress) {
     (void)nConnection;
+    (void)pszAddress;
     if (TheLaunchpadRT != nullptr) {
         TheLaunchpadRT->AddClient(nClient);
     }
 }
 
-void LaunchpadRT::OnNetClientLeave(int nConnection, int nClient) {
+void LaunchpadRT::OnNetClientLeave(int nConnection, int nClient, const char *pszAddress) {
     (void)nConnection;
+    (void)pszAddress;
     if (TheLaunchpadRT != nullptr) {
         TheLaunchpadRT->RemovePlayer(nClient);
     }

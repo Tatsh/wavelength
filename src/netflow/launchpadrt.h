@@ -585,10 +585,11 @@ public:
      *
      * @param nConnection The connection.
      * @param nClient The identifier of the console.
+     * @param pszAddress The address of the console. Not read.
      * @ghidraAddress NTSC-U/C: 0x0025be58
      * @ghidraAddress PAL: 0x00264eb0
      */
-    static void OnNetClientJoin(int nConnection, int nClient);
+    static void OnNetClientJoin(int nConnection, int nClient, const char *pszAddress);
 
     /**
      * Remove a console that left the session.
@@ -597,10 +598,11 @@ public:
      *
      * @param nConnection The connection.
      * @param nClient The identifier of the console.
+     * @param pszAddress The address the departure was reported for. Not read.
      * @ghidraAddress NTSC-U/C: 0x0025be90
      * @ghidraAddress PAL: 0x00264ee8
      */
-    static void OnNetClientLeave(int nConnection, int nClient);
+    static void OnNetClientLeave(int nConnection, int nClient, const char *pszAddress);
 
     int mWorldId;                        /*!< The session on the game server, or kNoWorld. */
     rtNetConnectionInfo mConnectionInfo; /*!< The connection to the session. */

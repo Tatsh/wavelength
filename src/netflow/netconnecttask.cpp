@@ -25,7 +25,7 @@ void NetConnectTask::OnStart() {
     params.onClientLeave = LaunchpadRT::OnNetClientLeave;
     params.onConnect = LaunchpadRT::OnNetConnect;
     params.onClientJoin = LaunchpadRT::OnNetClientJoin;
-    params.onClientReady = nullptr;
+    params.onStatus = nullptr;
     rtDmeConnectStatus status;
     memset(&status, 0, sizeof(status));
     LaunchpadRT::sNetTask = this;

@@ -609,7 +609,7 @@ int rtMgclConnect(const rtMgclConnectParams *params, int *status) {
         return kErrorConnect;
     }
     if (params->onConnect == NULL) {
-        g_nConnection = connectStatus.reserved[2]; // The connection the status reports.
+        g_nConnection = connectStatus.connection;
         *status = 0;
     }
     return 0;
