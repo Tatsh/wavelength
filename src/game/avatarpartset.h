@@ -406,10 +406,3 @@ private:
      */
     static float sLastTime;
 };
-
-/**
- * The texture the avatar renders into.
- *
- * @ghidraAddress NTSC-U/C: 0x003b14cc
- */
-extern RndTex *g_pAvatarTex;
