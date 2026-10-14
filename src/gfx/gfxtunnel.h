@@ -524,8 +524,8 @@ public:
     /**
      * Update the trail of the freestyle of each player.
      *
-     * @param fTicks The ticks since the last poll. The routine does not read it.
-     * @param fTime The time since the last poll. The routine does not read it.
+     * @param fTicks The ticks since the last poll, passed on to each player.
+     * @param fTime The time since the last poll, passed on to each player.
      * @ghidraAddress NTSC-U/C: 0x001dec18
      * @ghidraAddress PAL: 0x001e79b8
      */

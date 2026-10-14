@@ -101,10 +101,12 @@ public:
     /**
      * Draw the needle of the scratch freestyle.
      *
+     * @param flTicks The ticks since the last poll. The routine does not read it.
+     * @param flTime The milliseconds since the last poll. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001d6ed0
      * @ghidraAddress PAL: 0x001dfc70
      */
-    void UpdateTrail();
+    void UpdateTrail(float flTicks, float flTime);
 
     int mCamNumber;                  /*!< The camera plus one, the number of its views. */
     RndCam *mCam;                    /*!< `tnl cam<n>`, or null. */

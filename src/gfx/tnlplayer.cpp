@@ -114,6 +114,6 @@ void TnlPlayer::Update([[maybe_unused]] GfxArena *pArena, float flTicks, float f
     mCursor.Poll(mTunnel->IsTrackCaptured(nTrack), flTicks, flTime);
 }
 
-void TnlPlayer::UpdateTrail() {
+void TnlPlayer::UpdateTrail([[maybe_unused]] float flTicks, [[maybe_unused]] float flTime) {
     mFreestyle.UpdateTrail();
 }

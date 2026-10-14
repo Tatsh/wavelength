@@ -1590,10 +1590,9 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
     }
 }
 
-void GfxTunnel::PollCameras([[maybe_unused]] float fTicks, [[maybe_unused]] float fTime) {
+void GfxTunnel::PollCameras(float fTicks, float fTime) {
     for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
-        // Yes, the binary passes the ticks and the time on, and UpdateTrail() does not read them.
-        (*it)->UpdateTrail();
+        (*it)->UpdateTrail(fTicks, fTime);
     }
 }
 
