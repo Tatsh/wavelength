@@ -12,6 +12,7 @@
 namespace {
 
 constexpr char kLocalSaveFormat[] = "m_r_end_remix_%d";
+constexpr char kYesButton[] = "yes";
 
 // IsGuest() reports this value for the host.
 constexpr int kHostIndex = 0;
@@ -35,18 +36,17 @@ bool RemixDiscardScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 
     String button(pMsg->mComponent->mName);
     String next;
-    const bool bYes = button == "yes";
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        next = bYes ? "s_r_mode" : "s_r_end_remix";
+        next = button == kYesButton ? "s_r_mode" : "s_r_end_remix";
     } else if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
-        if (!bYes) {
+        if (!(button == kYesButton)) {
             next = FormatString(kLocalSaveFormat, mPlayer);
         } else if (mPlayer == TheGameDb->GetNumPlayers()) {
             next = "m_r_mode";
         } else {
             next = FormatString(kLocalSaveFormat, mPlayer + 1);
         }
-    } else if (!bYes) {
+    } else if (!(button == kYesButton)) {
         next = "net_end_remix";
     } else if (TheNetLaunchpad == nullptr) {
         if (TheMetagame.mNetScreenPending != 0) {

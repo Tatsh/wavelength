@@ -31,7 +31,10 @@ enum Column {
 constexpr int kAllEntry = 0;
 
 RndMat *FindLightMat(int nSelected) {
-    return dynamic_cast<RndMat *>(TheManager.Find(nSelected != 0 ? kLightOnMat : kLightOffMat));
+    if (nSelected != 0) {
+        return dynamic_cast<RndMat *>(TheManager.Find(kLightOnMat));
+    }
+    return dynamic_cast<RndMat *>(TheManager.Find(kLightOffMat));
 }
 
 RndFont *FindFont(const char *pszFont) {
