@@ -161,24 +161,25 @@ inline Vector3 RotateDir(const Vector3 *pBasis, const Vector3 &dir) {
                    dir.w};
 }
 
-// Wrap a track into [0, nNumTracks).
-inline float WrapTrack(float flTrack, float flNumTracks) {
-    float flWrapped = std::fmod(flTrack, flNumTracks);
-    if (flWrapped < 0.0f) {
-        flWrapped += flNumTracks;
-    }
-    return flWrapped;
-}
-
-// Wrap a distance between tracks into [-nNumTracks / 2, nNumTracks / 2).
-inline float WrapDistance(float flDistance, float flNumTracks) {
-    const float flLow = -(flNumTracks * 0.5f);
-    const float flSpan = (flNumTracks * 0.5f) - flLow;
-    float flWrapped = std::fmod(flDistance - flLow, flSpan);
+// Wrap a value into [flLow, flHigh). The lower bound is added back last, which turns a wrapped -0
+// into +0.
+inline float Wrap(float flValue, float flLow, float flHigh) {
+    const float flSpan = flHigh - flLow;
+    float flWrapped = std::fmod(flValue - flLow, flSpan);
     if (flWrapped < 0.0f) {
         flWrapped += flSpan;
     }
     return flLow + flWrapped;
+}
+
+// Wrap a track into [0, nNumTracks).
+inline float WrapTrack(float flTrack, float flNumTracks) {
+    return Wrap(flTrack, 0.0f, flNumTracks);
+}
+
+// Wrap a distance between tracks into [-nNumTracks / 2, nNumTracks / 2).
+inline float WrapDistance(float flDistance, float flNumTracks) {
+    return Wrap(flDistance, flNumTracks * -0.5f, flNumTracks * 0.5f);
 }
 
 // Wrap a track index into [0, nNumTracks).
