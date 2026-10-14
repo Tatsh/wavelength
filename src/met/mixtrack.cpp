@@ -28,12 +28,10 @@ void MixTrack::VolumeRamp::Apply(float fValue, [[maybe_unused]] int nTick) {
     mOwner->SetVolume(fValue);
 }
 
-MixTrack::MixTrack(Muse *pMuse, int nLength, unsigned char nChannel) : MuseLooper(pMuse, nLength) {
-    VolumeRamp *pRamp = new VolumeRamp(this);
-    mChannel = nChannel;
-    mRamp = pRamp;
-    mMaxVolume = kFullVolume;
-    mStopCmd = Ptr<Command>(NewMemFunCommand(static_cast<MuseLooper *>(this), &MuseLooper::Stop));
+MixTrack::MixTrack(Muse *pMuse, int nLength, unsigned char nChannel)
+    : MuseLooper(pMuse, nLength), mRamp(new VolumeRamp(this)), mChannel(nChannel),
+      mMaxVolume(kFullVolume),
+      mStopCmd(NewMemFunCommand(static_cast<MuseLooper *>(this), &MuseLooper::Stop)) {
     SystemConfig()->FindArray("metagame", true)->FindFloat("music_max_volume", &mMaxVolume, true);
 }
 
