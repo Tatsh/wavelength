@@ -85,9 +85,9 @@ void PitchTrackMusic::PlayGem() {
         return;
     }
 
-    if (mBar.TickAt(mNextGem) == nNow) {
+    const PitchGem &gem = mBar.At(mNextGem);
+    if (gem.mTick + mBar.mOffset == nNow) {
         if (mMuted == 0) {
-            const PitchGem &gem = mBar.At(mNextGem);
             if (mPlaying != nullptr) {
                 mPlaying->Stop();
             }

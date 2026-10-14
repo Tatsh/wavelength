@@ -86,8 +86,12 @@ int RndParticleSysAnim::SetFrameSelf(float fFrame) {
         if (emitRate.x != 0.0f) {
             mEmitRateRatio = emitRate.y / emitRate.x;
         }
+        // InterpKeys() sets the rate from the keys, which are not empty here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         emitRate.x = fEmitRate;
         emitRate.y = fEmitRate * mEmitRateRatio;
+#pragma GCC diagnostic pop
     }
     return 1;
 }

@@ -229,18 +229,19 @@ float KeyValue(const std::vector<FloatKey> &keys, float fFrame) {
     int nHigh = static_cast<int>(keys.size()) - 1;
     while (nLow + 1 < nHigh) {
         const int nMiddle = (nLow + nHigh) / 2;
-        if (fFrame == keys[nMiddle].mFrame) {
-            return keys[nMiddle].mValue;
+        const FloatKey &middle = keys.at(nMiddle);
+        if (fFrame == middle.mFrame) {
+            return middle.mValue;
         }
-        if (keys[nMiddle].mFrame < fFrame) {
+        if (middle.mFrame < fFrame) {
             nLow = nMiddle;
         } else {
             nHigh = nMiddle;
         }
     }
-    const FloatKey &from = keys[nLow];
-    const FloatKey &to = keys[nHigh];
-    const float fBlend = (fFrame - from.mFrame) / (to.mFrame - from.mFrame);
+    const FloatKey &from = keys.at(nLow);
+    const FloatKey &to = keys.at(nHigh);
+    const float fBlend = (fFrame - keys.at(nLow).mFrame) / (to.mFrame - from.mFrame);
     return from.mValue + ((to.mValue - from.mValue) * fBlend);
 }
 

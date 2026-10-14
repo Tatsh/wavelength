@@ -218,8 +218,9 @@ void PitchTrackDisplay::DrawGems(
         }
         const GemSlice gems = mGems->GetBar(nBar);
         for (int i = 0; i < gems.Size(); ++i) {
-            const int nTick = gems.TickAt(i);
-            const int nGemOwner = nOwner == kNoOwner ? gems.At(i).mOwner : nOwner;
+            const PitchGem &gem = gems.At(i);
+            const int nTick = gem.mTick + gems.mOffset;
+            const int nGemOwner = nOwner == kNoOwner ? gem.mOwner : nOwner;
             TheGfxManager.PlaceGem(
                 mTrack, gems.At(i).mSlot, nGemOwner, static_cast<float>(nTick), mStyle, 0);
         }

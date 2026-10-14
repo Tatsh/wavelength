@@ -34,15 +34,21 @@ inline int KeyIndex(const std::vector<FloatKey> &keys, float fFrame) {
     int nHigh = nSize - 1;
     while ((nLow + 1) < nHigh) {
         const int nMiddle = (nLow + nHigh) >> 1;
-        if (fFrame == keys[nMiddle].mFrame) {
+        const float fMiddle = keys.at(nMiddle).mFrame;
+        if (fFrame == fMiddle) {
             return nMiddle;
         }
-        if (keys[nMiddle].mFrame < fFrame) {
+        if (fMiddle < fFrame) {
             nLow = nMiddle;
         } else {
             nHigh = nMiddle;
         }
     }
+    // Yes, the binary range-checks the keys on either side of the frame, and the lower one again,
+    // and returns only the index.
+    (void)keys.at(nLow);
+    (void)keys.at(nHigh);
+    (void)keys.at(nLow);
     return nHigh;
 }
 

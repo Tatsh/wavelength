@@ -71,7 +71,7 @@ int AtFrame(const std::vector<Key<T>> &keys,
     int nHigh = static_cast<int>(keys.size()) - 1;
     while (nLow + 1 < nHigh) {
         const int nMiddle = (nLow + nHigh) >> 1;
-        const Key<T> &middle = keys[nMiddle];
+        const Key<T> &middle = keys.at(nMiddle);
         if (fFrame == middle.frame) {
             pPrev = &middle;
             pNext = &middle;
@@ -84,9 +84,9 @@ int AtFrame(const std::vector<Key<T>> &keys,
             nHigh = nMiddle;
         }
     }
-    pPrev = &keys[nLow];
-    pNext = &keys[nHigh];
-    fRatio = (fFrame - pPrev->frame) / (pNext->frame - pPrev->frame);
+    pPrev = &keys.at(nLow);
+    pNext = &keys.at(nHigh);
+    fRatio = (fFrame - keys.at(nLow).frame) / (keys.at(nHigh).frame - pPrev->frame);
     return nHigh;
 }
 

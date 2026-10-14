@@ -380,11 +380,15 @@ void RndTransAnim::MakeTransform(float fFrame, Transform &xfm, int bWhole) {
                      xfm.mTranslation,
                      mFollowPath != 0 ? &tangent : nullptr,
                      fFrame);
+        // The offset is set above whenever mRepeatTrans is.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         if (mRepeatTrans != 0) {
             xfm.mTranslation.x += loopOffset.x;
             xfm.mTranslation.y += loopOffset.y;
             xfm.mTranslation.z += loopOffset.z;
         }
+#pragma GCC diagnostic pop
     } else if (bWhole != 0) {
         xfm.mTranslation = Vector3{0.0f, 0.0f, 0.0f, 1.0f};
     }
