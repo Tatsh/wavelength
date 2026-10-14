@@ -7,8 +7,8 @@
   want_codeql: false,
   want_tests: false,
   want_winget: false,
-  clang_format_args: "$(git ls-files 'sce/*.c' 'sce/*.h' 'src/*.h' 'src/*.cpp' 'tools/*.h' " +
-                     "'tools/*.cpp')",
+  clang_format_args: "$(git ls-files 'sce/*.c' 'sce/*.h' 'src/*.c' 'src/*.h' 'src/*.cpp' " +
+                     "'tools/*.h' 'tools/*.cpp')",
   clang_format+: {
     BreakInheritanceList: 'AfterColon',
     IncludeBlocks: 'Regroup',
