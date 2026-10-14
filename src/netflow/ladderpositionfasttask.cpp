@@ -13,7 +13,7 @@ void LadderPositionFastTask::OnStart() {
     request.accountId = mPlayer->mId;
     request.statValue = mPlayer->mRating;
     const int nError = rtMediusLadderPositionFast(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1675, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

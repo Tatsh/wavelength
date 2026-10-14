@@ -20,7 +20,7 @@ void GetAnnouncementsTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = LobbyRT::kApplicationId;
     const int nError = rtMediusGetAnnouncements(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1048, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

@@ -12,7 +12,7 @@ void AccountUpdateStatsTask::OnStart() {
     MakeTag(this, request.header.messageId);
     strncpy(request.stats, TheLobbyRT->GetPlayerStats(), RT_MEDIUS_STATS_SIZE);
     const int nError = rtMediusUpdateStats(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(838, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultStatsFailed);
     }

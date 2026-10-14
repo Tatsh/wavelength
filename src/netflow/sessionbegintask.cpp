@@ -12,7 +12,7 @@ void SessionBeginTask::OnStart() {
     request.connectionClass = LobbyRT::ConnectionClassOf(TheNetInet->GetConnectionType());
     MakeTag(this, request.messageId);
     const int nError = rtMediusSessionBegin(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(400, nError);
     if (nError != 0) {
         Finish(false, LobbyConnectResultMsg::kResultSessionFailed);
     }

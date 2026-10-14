@@ -23,7 +23,7 @@ void SetGameListFilterTask::OnStart() {
         request.comparison = filter.mComparison;
         request.value = filter.mValue;
         const int nError = rtMediusSetGameListFilter(&request, OnResponse);
-        LobbyRT::ReportMediusError(__LINE__, nError);
+        LobbyRT::ReportMediusError(1957, nError);
         if (nError != 0) {
             Finish(false, JoinChatroomResultMsg::kResultFailed);
             return;

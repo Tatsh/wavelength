@@ -12,7 +12,7 @@ void FileCloseTask::OnStart() {
     MakeTag(this, request.messageId);
     strncpy(request.file.fileName, mName->c_str(), RT_MEDIUS_FILE_NAME_SIZE);
     const int nError = rtMediusFileClose(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(2271, nError);
     if (nError != 0) {
         Finish(false, RepoRemixStatusMsg::kStatusFailed);
     }

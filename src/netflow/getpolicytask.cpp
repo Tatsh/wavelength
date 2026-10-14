@@ -19,7 +19,7 @@ void GetPolicyTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = kUsagePolicy;
     const int nError = rtMediusGetPolicy(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1133, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

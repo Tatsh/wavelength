@@ -16,7 +16,7 @@ void AnonymousLoginTask::OnStart() {
     strncpy(request.accountName, TheLobbyRT->GetName(), RT_MEDIUS_PLAYER_NAME_SIZE);
     strncpy(request.stats, TheLobbyRT->GetPlayerStats(), RT_MEDIUS_STATS_SIZE);
     const int nError = rtMediusAnonymousLogin(&request, AccountLoginTask::OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(742, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

@@ -16,7 +16,7 @@ void GetGamesTask::OnStart() {
     request.pageId = static_cast<short>(TheLobbyRT->mLaunchpadsPage + 1);
     request.pageSize = static_cast<short>(TheLobbyRT->mLaunchpadsPageSize);
     const int nError = rtMediusGameList(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1252, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

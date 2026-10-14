@@ -27,7 +27,7 @@ void ChannelInfoTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = mChatroom->mId;
     const int nError = rtMediusChannelInfo(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(984, nError);
     if (nError != 0) {
         Finish(false, JoinChatroomResultMsg::kResultFailed);
     }

@@ -13,7 +13,7 @@ void JoinChannelTask::OnStart() {
     request.worldId = TheLobbyRT->mJoinChatroomId;
     request.password[0] = '\0';
     const int nError = rtMediusJoinChannel(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1789, nError);
     if (nError != 0) {
         Finish(false, JoinChatroomResultMsg::kResultFailed);
     }

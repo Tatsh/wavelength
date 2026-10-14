@@ -22,7 +22,7 @@ void AccountLoginTask::OnStart() {
     strncpy(request.accountName, TheLobbyRT->GetName(), RT_MEDIUS_PLAYER_NAME_SIZE);
     strncpy(request.password, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusAccountLogin(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(764, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

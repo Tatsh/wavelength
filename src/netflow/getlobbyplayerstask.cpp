@@ -13,7 +13,7 @@ void GetLobbyPlayersTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = TheLobbyRT->mChatroom.mId;
     const int nError = rtMediusChannelPlayers(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1315, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

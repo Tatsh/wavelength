@@ -35,7 +35,7 @@ void AccountRegistrationTask::OnStart() {
     strncpy(request.accountName, TheLobbyRT->GetName(), RT_MEDIUS_PLAYER_NAME_SIZE);
     strncpy(request.password, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusAccountRegistration(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(666, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

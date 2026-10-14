@@ -26,7 +26,7 @@ void ClearGameListFilterTask::OnStart() {
         MakeTag(this, request.header.messageId);
         request.id = filter.mField;
         const int nError = rtMediusClearGameListFilter(&request, OnResponse);
-        LobbyRT::ReportMediusError(__LINE__, nError);
+        LobbyRT::ReportMediusError(1898, nError);
         if (nError != 0) {
             Finish(false, JoinChatroomResultMsg::kResultFailed);
             return;

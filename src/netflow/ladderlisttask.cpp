@@ -37,7 +37,7 @@ void LadderListTask::OnStart() {
     request.startPosition = TheLobbyRT->mRanksPageSize * TheLobbyRT->mRanksPage + 1;
     request.pageSize = TheLobbyRT->mRanksPageSize;
     const int nError = rtMediusLadderList(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1456, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

@@ -13,7 +13,7 @@ void AccountDeleteTask::OnStart() {
     MakeTag(this, request.header.messageId);
     strncpy(request.password, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusAccountDelete(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(710, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

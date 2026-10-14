@@ -18,6 +18,6 @@ void UpdateClientStateTask::OnStart() {
     memset(&state, 0, sizeof(state));
     strcpy(state.sessionKey, TheLobbyRT->mSessionKey.c_str());
     state.userAction = kUserActionInLobby;
-    LobbyRT::ReportMediusError(__LINE__, rtMediusUpdateUserState(&state));
+    LobbyRT::ReportMediusError(1024, rtMediusUpdateUserState(&state));
     Finish(true, 0);
 }

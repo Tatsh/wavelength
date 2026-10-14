@@ -25,7 +25,7 @@ void TextFilterTask::OnStart() {
     request.filterLevel = kFilterLevel;
     strncpy(request.text, mText->c_str(), RT_MEDIUS_TEXT_SIZE);
     const int nError = rtMediusTextFilter(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(611, nError);
     if (nError != 0) {
         Finish(false, CreateAccountResultMsg::kResultVulgarName);
     }

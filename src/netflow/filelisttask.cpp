@@ -26,7 +26,7 @@ void FileListTask::OnStart() {
     request.fileSizeGreaterThan = 0;
     request.startingEntry = 0;
     const int nError = rtMediusFileList(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(2312, nError);
     if (nError != 0) {
         Finish(false, RepoRemixStatusMsg::kStatusFailed);
     }

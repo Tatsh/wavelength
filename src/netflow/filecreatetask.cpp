@@ -23,7 +23,7 @@ void FileCreateTask::OnStart() {
     request.file.ownerPermissions = kPermissionAll;
     request.file.groupPermissions = kPermissionAll;
     const int nError = rtMediusFileCreate(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(2151, nError);
     if (nError != 0) {
         Finish(false, RepoRemixStatusMsg::kStatusFailed);
     }

@@ -22,7 +22,7 @@ void GetChannelsTask::OnStart() {
     request.pageId = kFirstPage;
     request.pageSize = kPageSize;
     const int nError = rtMediusChannelList(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1189, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

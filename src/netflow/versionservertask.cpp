@@ -11,7 +11,7 @@ void VersionServerTask::OnStart() {
     strcpy(request.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.messageId);
     const int nError = rtMediusVersionServer(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(494, nError);
     if (nError != 0) {
         Finish(true, 0);
     }

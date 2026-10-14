@@ -53,7 +53,7 @@ void MediusConnectTask::OnStart() {
     sTask = this;
     sConnecting = 1;
     const int nError = rtMediusConnect(&params, &status);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(335, nError);
     if (nError != 0) {
         sConnecting = 0;
         Finish(false, LobbyConnectResultMsg::kResultConnectFailed);

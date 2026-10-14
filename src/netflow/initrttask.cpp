@@ -32,7 +32,7 @@ InitRTTask *InitRTTask::sTask;
 
 void InitRTTask::OnStart() {
     int nError = rtNetSetMemoryFunctions(AllocBlock, FreeBlock);
-    LobbyRT::ReportNetError(__LINE__, nError);
+    LobbyRT::ReportNetError(167, nError);
     if (nError == 0) {
         rtNetSettings settings;
         memset(&settings, 0, sizeof(settings));
@@ -44,10 +44,10 @@ void InitRTTask::OnStart() {
         rtNetInitStatus status;
         memset(&status, 0, sizeof(status));
         nError = rtNetInitialize(&settings, &status);
-        LobbyRT::ReportNetError(__LINE__, nError);
+        LobbyRT::ReportNetError(187, nError);
         if (nError == 0) {
             nError = rtNetSetBufferSizes(kSendBufferSize, kReceiveBufferSize);
-            LobbyRT::ReportNetError(__LINE__, nError); // Yes, the binary goes on after an error.
+            LobbyRT::ReportNetError(209, nError); // Yes, the binary goes on after an error.
             if (LaunchpadRT::RegisterMessages() == 0) {
                 rtMediusInitParams params;
                 memset(&params, 0, sizeof(params));
@@ -58,7 +58,7 @@ void InitRTTask::OnStart() {
                 int nStatus;
                 memset(&nStatus, 0, sizeof(nStatus));
                 nError = rtMediusInitialize(&params, &nStatus);
-                LobbyRT::ReportMediusError(__LINE__, nError);
+                LobbyRT::ReportMediusError(230, nError);
                 if (nError == 0) {
                     char szVersion[kVersionBufferSize];
                     szVersion[0] = '\0';

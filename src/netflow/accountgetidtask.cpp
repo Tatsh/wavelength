@@ -13,7 +13,7 @@ void AccountGetIDTask::OnStart() {
     MakeTag(this, request.header.messageId);
     strncpy(request.accountName, mPlayer->mName.c_str(), RT_MEDIUS_PLAYER_NAME_SIZE);
     const int nError = rtMediusAccountGetId(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(900, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultAccountNotFound);
     }

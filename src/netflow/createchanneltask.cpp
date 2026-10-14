@@ -23,7 +23,7 @@ void CreateChannelTask::OnStart() {
     request.password[0] = '\0';
     strncpy(request.name, TheLobbyRT->mNewChatroomName.c_str(), RT_MEDIUS_GAME_NAME_SIZE);
     const int nError = rtMediusCreateChannel(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1831, nError);
     if (nError != 0) {
         Finish(false, JoinChatroomResultMsg::kResultFailed);
     }

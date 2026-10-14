@@ -24,7 +24,7 @@ void LadderPosition2Task::OnStart() {
     request.statId = kLadderStat;
     request.reserved34 = 0;
     const int nError = rtMediusLadderPosition(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(1625, nError);
     if (nError != 0) {
         Finish(true, 0);
         if (mSink != nullptr) {

@@ -13,7 +13,7 @@ void PlayerInfoTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = mPlayer->mId;
     const int nError = rtMediusPlayerInfo(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(932, nError);
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultAccountNotFound);
     }

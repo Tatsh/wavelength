@@ -14,7 +14,7 @@ void AccountUpdatePasswordTask::OnStart() {
     strncpy(request.oldPassword, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     strncpy(request.newPassword, pszNewPassword, RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusChangePassword(&request, OnResponse);
-    LobbyRT::ReportMediusError(__LINE__, nError);
+    LobbyRT::ReportMediusError(872, nError);
     if (nError != 0) {
         Finish(false, ChangePasswordResultMsg::kResultUpdateFailed);
     }
