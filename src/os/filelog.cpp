@@ -337,7 +337,7 @@ extern "C" int _isatty(int nFile) {
 // buffers a stream by line, and Python's modification time lookup succeeds for an archive stream.
 // NTSC-U/C: 0x003176a8, PAL: 0x00383f90
 extern "C" int _fstat(int /* nFile */, struct stat *pStat) {
-    memset(pStat, 0, sizeof(*pStat));
+    pStat->st_mtime = 0;
     pStat->st_mode = S_IFCHR;
     return 0;
 }
