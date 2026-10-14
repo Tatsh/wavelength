@@ -1,82 +1,64 @@
 #pragma once
 
-#include "rnd/multimesh.h"
-
-class HxStr;
-
-namespace Rnd {
+#include "rnd/rndmultimesh.h"
 
 /**
- * PlayStation 2 multi-mesh, which submits one GIF packet run per instance.
+ * Multimesh, PlayStation 2.
  *
- * Its RTTI descriptor is at `0x008ef490`. It has `Rnd::MultiMesh` as its one public base at offset
- * 0. The class does not declare a data member. It is the same 0x38 bytes the base occupies, and
- * the creator at `0x005b5c28` allocates exactly that. Its two vtables at `0x00833d80` and
- * `0x00833dc8` differ from the Rnd::MultiMesh pair only in the type info accessor, the destructor,
- * and DrawShowing().
+ * The RTTI includes the class name and records RndMultiMesh as the one base. The class adds no
+ * data member. The face packet of the mesh is sent to VU1 once for each pass, and the transforms
+ * of the instances follow in batches that the instanced microprogram draws the faces with.
  */
-class PsMultiMesh : public MultiMesh {
+class PsMultiMesh : public RndMultiMesh {
 public:
     /**
-     * Construct an empty PlayStation 2 multi-mesh.
+     * Construct a multimesh.
      *
-     * The body is empty beyond the base construction. Rnd::NewPsMultiMesh() is the only
-     * construction site.
-     *
-     * @param name The object name, passed to the Rnd::Object constructor.
-     * @ghidraAddress NTSC-U/C: 0x005b2fd8
-     * @ghidraAddress PAL: 0x005f55c0
+     * @param pszName The registry key.
+     * @ghidraAddress NTSC-U/C: 0x0021ab00
+     * @ghidraAddress PAL: 0x00223918
      */
-    PsMultiMesh(const HxStr &name);
+    explicit PsMultiMesh(const char *pszName);
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x005b5a40
-     * @ghidraAddress PAL: 0x005f8090
+     * @ghidraAddress NTSC-U/C: 0x0037d920
+     * @ghidraAddress PAL: 0x003ec050
      */
-    virtual ~PsMultiMesh();
-
-protected:
-    /**
-     * Draw every instance through the vector unit path.
-     *
-     * Rnd::Drawable vtable slot 3. Falls back on Rnd::MultiMesh::DrawShowing() while the device
-     * submits geometry through the software path. An empty transform list, an absent mesh, and a
-     * mesh with no faces all yield without drawing. Otherwise the material passes run in a loop,
-     * each one selecting the depth registers and the material and then submitting the whole
-     * instance run.
-     *
-     * @return Non-zero, always, so the children are drawn as well.
-     * @ghidraAddress NTSC-U/C: 0x005b2ed0
-     * @ghidraAddress PAL: 0x005f54b8
-     */
-    virtual int DrawShowing();
+    ~PsMultiMesh() override {
+    }
 
     /**
-     * Submit the GIF packets for every instance of the current material pass.
+     * Draw every instance in each pass of the material of the mesh.
      *
-     * Adds the instance count times the face count to the triangle statistic, closes the open GIF
-     * tag, sends the mesh's face run through Rnd::PsMesh::EmitMultiMeshFaceRun(), and then sends
-     * the transforms in batches. Each batch holds as many transforms as fit in the VU1 data memory
-     * the face run leaves, unpacked behind a count quadword. The first batch calls the instanced
-     * microprogram and every later one continues it.
+     * Nothing draws without instances, without a mesh, or for a mesh without faces.
      *
-     * @ghidraAddress NTSC-U/C: 0x005b2c60
-     * @ghidraAddress PAL: 0x005f5248
+     * @return 1, to draw the children.
+     * @ghidraAddress NTSC-U/C: 0x0021aa40
+     * @ghidraAddress PAL: 0x00223858
      */
-    void SubmitInstanceGifPackets();
+    int DrawShowing() override;
+
+    /**
+     * Send the settings of the instanced microprogram and the face packet of the mesh, then the
+     * transforms in batches, each batch followed by a frame flush.
+     *
+     * A batch is as many transforms as fit in the VU1 data memory after the face packet. The
+     * transforms are sent by reference. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0021a4d0
+     * @ghidraAddress PAL: 0x002232e8
+     */
+    void DrawInstances();
+
+    /**
+     * Create a multimesh.
+     *
+     * @param pszName The registry key.
+     * @return The multimesh.
+     * @ghidraAddress NTSC-U/C: 0x0037dac0
+     * @ghidraAddress PAL: 0x003ec1f0
+     */
+    static RndObject *New(const char *pszName) {
+        return new PsMultiMesh(pszName);
+    }
 };
-
-/**
- * Allocate and construct a PlayStation 2 multi-mesh.
- *
- * GfxDevice::Init() installs this creator in Rnd::g_pfnNewMultiMesh at `0x0049af88`, so a
- * multi-mesh loaded from a file on the PlayStation 2 is a PsMultiMesh.
- *
- * @param name The object name.
- * @return The new multi-mesh.
- * @ghidraAddress NTSC-U/C: 0x005b5c28
- * @ghidraAddress PAL: 0x005f8278
- */
-MultiMesh *NewPsMultiMesh(const HxStr &name);
-
-} // namespace Rnd

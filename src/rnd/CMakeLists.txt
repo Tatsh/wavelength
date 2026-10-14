@@ -9,7 +9,6 @@ set(WAVELENGTH_RND_SRCS
     collideable.cpp
     dmapacket.cpp
     drawable.cpp
-    drawverts.cpp
     environ.cpp
     filestream.cpp
     font.cpp
@@ -29,22 +28,28 @@ set(WAVELENGTH_RND_SRCS
     object.cpp
     particlesys.cpp
     particlesysanim.cpp
+    ps.cpp
     pscam.cpp
     psenviron.cpp
     psmat.cpp
     psmesh.cpp
+    psmovie.cpp
     psmultimesh.cpp
     psparticlesys.cpp
     pstex.cpp
     raytest.cpp
     rndanimatable.cpp
+    rndarena.cpp
     rndbitmap.cpp
+    rndblur.cpp
+    rndbutton.cpp
     rndcam.cpp
     rndcollideable.cpp
     rnddrawable.cpp
     rndenviron.cpp
     rndfont.cpp
     rndlight.cpp
+    rndlightanim.cpp
     rndline.cpp
     rndmanager.cpp
     rndmat.cpp
@@ -54,6 +59,7 @@ set(WAVELENGTH_RND_SRCS
     rndmovie.cpp
     rndmultimesh.cpp
     rndobject.cpp
+    rndparticlesysanim.cpp
     rndrenderer.cpp
     rndtex.cpp
     rndtext.cpp

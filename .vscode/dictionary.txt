@@ -6,6 +6,11 @@ aboutdll
 acanvas
 acanvaslin
 accel
+accw
+accx
+accxy
+accxyz
+accxyzw
 acircbuff
 adcb
 adce
@@ -158,9 +163,6 @@ chpt
 chunkstream
 circbuff
 ckpt
-clippedlines
-clippedsprites
-clippedtris
 clipw
 clut
 cmdc
@@ -204,7 +206,6 @@ cscript
 ctype
 cxtmdm
 cxtmodem
-cycl
 daddu
 dashcam
 datafuncaction
@@ -262,7 +263,6 @@ dpadl
 dpadr
 dpadu
 dpsm
-drawverts
 drumnbass
 dsay
 dsllv
@@ -323,7 +323,6 @@ eznet
 eznetcnf
 eznetctl
 faild
-fbmsk
 fbrst
 fbss
 fcand
@@ -331,6 +330,7 @@ fcget
 fcntl
 fcset
 fdata
+fdec
 fenv
 ffmd
 fileflags
@@ -342,12 +342,9 @@ finalscorepacket
 findctp
 fini
 floatlist
-flusha
 flushe
 fmacro
 focuschangepanel
-fogcol
-fogcol's
 forcefeedbackmgr
 forcefeedbackmgrcontroller
 forcefeedbackmgrmotoreffect
@@ -399,7 +396,6 @@ generateaction
 genpath
 gfxarena
 gfxconfig
-gfxdevice
 gfxmanager
 gfxutil
 ghidra
@@ -420,6 +416,7 @@ hblank
 hblanks
 hblkhd
 hblks
+heapnum
 heff
 helppanel
 helpstring
@@ -458,10 +455,12 @@ hxstr
 hxstream
 hxvarlennumber
 iadd
+iaddi
 iaddiu
 iand
 ibeq
 ibfilestream
+ibgtz
 ibne
 ibstream
 iconerror
@@ -505,6 +504,10 @@ iopimports
 iopmod
 ioprp
 ioputil
+ipubp
+ipuctrl
+ipudma
+ipum
 irqa
 isce
 isub
@@ -522,7 +525,6 @@ jsonnet
 jsonschema
 juicemeter
 jukeboxscreen
-kapsz
 kasson
 keyboardkey
 keyboardkeymsg
@@ -537,7 +539,6 @@ koff
 kprintf
 kputchar
 kputs
-kseg
 labl
 launchmtvpanel
 launchscreen
@@ -558,6 +559,7 @@ libera
 libgcc
 libgifpk
 libgraph
+libipu
 libkernel
 libkernl
 libmc
@@ -612,6 +614,7 @@ macroblock
 macroblock's
 macroblocks
 madd
+madda
 maddaq
 maddaw
 maddax
@@ -619,7 +622,6 @@ madday
 maddaz
 maddq
 maddw
-maddx
 maddz
 madr
 magick
@@ -706,6 +708,7 @@ midichannelstate
 midieventqueue
 midireader
 midl
+minii
 miniw
 mipsel
 miptbp
@@ -715,7 +718,6 @@ mixtrack
 mktemp
 mktg
 mktyplib
-mmag
 mmix
 modalframe
 modescreen
@@ -740,6 +742,8 @@ mtapman's
 mtba
 mtir
 mtsab
+mula
+mulaq
 mulaw
 mulax
 mulq
@@ -763,7 +767,6 @@ multitaps
 multitut
 mulw
 mulx
-muly
 mulz
 musefactory
 muselooper
@@ -917,7 +920,6 @@ packetfactories
 paddh
 padman
 padman's
-paletted
 palettization
 particlearm
 particlearms
@@ -983,7 +985,7 @@ psllh
 psmat
 psmct
 psmesh
-psmt
+psmovie
 psmultimesh
 psparticlesys
 psrah
@@ -1001,6 +1003,8 @@ pyinstaller
 pylock
 pyproject
 qfsrv
+qmfc
+qmtc
 quadraticapproach
 quadword
 quadwords
@@ -1056,8 +1060,11 @@ ringbuffer
 ripgreprc
 rmode
 rndanimatable
+rndarena
 rndartt
 rndbitmap
+rndblur
+rndbutton
 rndcam
 rndcollideable
 rnddrawable
@@ -1066,6 +1073,7 @@ rndfile
 rndfont
 rndglobal
 rndlight
+rndlightanim
 rndline
 rndmanager
 rndmat
@@ -1075,6 +1083,7 @@ rndmeshanim
 rndmovie
 rndmultimesh
 rndobject
+rndparticlesysanim
 rndrenderer
 rndtex
 rndtext
@@ -1087,6 +1096,7 @@ rotateevent
 rpcd
 rpcm
 rshift
+rsqrt
 rtti
 safn
 sampledesc
@@ -1244,11 +1254,14 @@ strncmp
 strncpy
 strstr
 strtol
+subi
 sublang
 substepparticles
 subu
+subw
 subx
 suby
+subz
 sutructure
 svdata
 synthcontrol
@@ -1364,7 +1377,6 @@ unlockavatarpanel
 unlockscreen
 unmute
 unmutes
-unpaletted
 unrecovered
 uordblks
 updateworldxfm
@@ -1377,7 +1389,7 @@ usbkbinfo
 usrdll
 vars
 vbext
-vclipw
+vcallms
 vdec
 vendored
 venv
@@ -1389,7 +1401,6 @@ vmadday
 vmaddaz
 vmaddw
 vmaddx
-vmaddz
 vmix
 vmixel
 vmixer
@@ -1406,7 +1417,6 @@ voxing
 voxtrack
 voxtrackdisplay
 voxtrackmusic
-vramk
 vrsqrt
 vtable
 vudata
@@ -1445,6 +1455,7 @@ xproceedscreen
 xtop
 xyoffset
 xyzf
+xyzw
 yarnrc
 yougotit
 yyleng
@@ -1455,8 +1466,6 @@ zbuf
 ziparchive
 zizmor
 zmsk
-zpsm
 zstd
-ztest
 ztst
 Ångström

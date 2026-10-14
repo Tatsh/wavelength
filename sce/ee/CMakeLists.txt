@@ -1,4 +1,4 @@
-set(WAVELENGTH_EZMPEG_SRCS sample/audiodec.c sample/ldimage.c)
+set(WAVELENGTH_EZMPEG_SRCS sample/audiodec.c sample/ipudma.c sample/ldimage.c)
 
 add_library(wavelength_ezmpeg STATIC ${WAVELENGTH_EZMPEG_SRCS})
 target_link_libraries(wavelength_ezmpeg PRIVATE wavelength_common)

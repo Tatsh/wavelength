@@ -1,295 +1,231 @@
 #pragma once
 
-#include <list>
-#include <vector>
+#include <cstddef>
 
-#include "rnd/mesh.h"
-
-class HxStr;
-
-namespace Rnd {
+#include "math/transform.h"
+#include "os/mem.h"
+#include "os/memhandle.h"
+#include "rnd/rndmesh.h"
 
 /**
- * PlayStation 2 mesh, which draws through VU1 and the GS.
+ * Mesh, PlayStation 2.
  *
- * Its RTTI descriptor is at `0x008efd60`. It has `Rnd::Mesh` as its one public base at offset 0.
- * The shared Rnd::Object subobject moves to `+0x160` and the factory allocates 0x180 bytes. The two
- * lists below therefore occupy `+0x150` through `+0x15f`.
- *
- * The subclass supplies the drawing the base class omits. Its Sync() converts the face vector into
- * triangle strips, and AddRefObjects() runs the base fix-up and then clamps every vertex colour.
- * GfxDevice::Init() installs the creator at `0x00606928` over the mesh creator hook, so a mesh
- * loaded from a file is a PsMesh.
- *
- * Both the constructor body and the destructor body are empty. The constructor at `0x00602600` is
- * the virtual-base and vptr setup, the Rnd::Mesh constructor, and the two list members, and the
- * destructor at `0x00605f48` is the two list members followed by the whole inlined Rnd::Mesh
- * destructor.
- *
- * Sync() rebuilds the cache on whichever mesh owns the faces rather than on this one. It reads
- * mFacesOwner and works through that mesh's two lists, iterating to the owner's edge vector end at
- * `+0x104`, so a mesh that shares its geometry also shares the strips built from it. The cache is a
- * bit array allocated in 16-byte groups, one group per eight halfwords of index. Sync() makes no
- * contact with the VU1 microcode; it emits no VIF code and calls no microprogram, so the geometry
- * half of the draw path is recoverable from the MIPS text alone.
- *
- * The VU1 paths upload geometry rather than register state. Both walk the 16-bit index list,
- * scaling each index by 0x40 to reach an Rnd::MeshVert, and copy the vertex into an UNPACK V4-32
- * batch whose VIFcode header they reserve ahead of the data and patch once the count is known. The
- * face path closes and reopens that batch every 252 quadwords. Each index list travels separately
- * in its packed form, UNPACK V3-16 for faces and V2-16 for edges, addressed immediately after the
- * vertex data rather than to VU address 0. A face batch enters the microprogram through MSCAL on
- * the first run of the list alone and MSCNT on every run after it, and an edge batch enters
- * through MSCAL 0x1c2 every time.
- *
- * How much of a vertex reaches VU1 depends on Rnd::g_nStageTextureBound, which
- * Rnd::PsMat::BindStageTexture() sets to 1 when a stage has a texture and 0 when it does not. With
- * a texture, DrawFacesVU1() uploads all four quadwords per vertex under STCYCL 1:1 and calls
- * microprogram address 0; without one it uploads three under STCYCL 4:3, leaving every fourth
- * destination quadword untouched, and calls 0x4ce. The write cycle retains the destination stride
- * of four either way, so the fourth quadword of Rnd::MeshVert is the texture coordinate and the
- * untextured path simply omits it.
- *
- * Neither path builds a GIFtag itself, and the microprogram cannot store one: the whole `.vutext`
- * section is 1140 instruction pairs with exactly three literals, all three 255.0f. The GIFtags
- * travel in the setup block EmitFaceVu1Setup() or EmitEdgeVu1Setup() sends to VU address 0 ahead of
- * the runs, built there from the cached material state. The parameter quadword the EE unpacks to VU
- * address 8 for edges and 0x12 for faces holds the vertex count, the primitive count, the
- * microprogram entry EmitFaceVu1Setup() chose for the lighting, and the clipping flag.
- *
- * Every member of the class is reconstructed. Sync() at `0x00600590` is 793 instructions, of
- * which the strip builder is the part that belongs here and the rest is inlined container work.
- *
- * The routines between `0x00604da0` and `0x00606678`, along with `0x00607170` and `0x00607198`,
- * are `std::vector`, `std::list`, `std::fill_n`, and `std::find` instantiations over
- * `unsigned short` and over the list element below. All of them are toolchain code, so none is
- * reconstructed here.
+ * The RTTI includes the class name and records RndMesh as the one base. Sync() turns the faces and
+ * the edges into VIF packets for the VU1 microprogram and then releases them. Each packet is a run
+ * of batches. A batch unpacks the vertices it uses and the indices of its faces or edges, and then
+ * starts the microprogram. A mesh that is not mutable has its vertices copied into the packets and
+ * releases them too. A mutable mesh retains them, and its packets refer to them with DMA REF tags.
+ * A mesh with bones is mutable, and SkinXfm() moves its vertices into world space every frame.
  */
-class PsMesh : public Mesh {
+class PsMesh : public RndMesh {
 public:
-    /**
-     * Construct an empty PlayStation 2 mesh.
-     *
-     * The body is empty. Rnd::NewPsMesh() is the only construction site.
-     *
-     * @param name The object name, passed to the Rnd::Object constructor.
-     * @ghidraAddress NTSC-U/C: 0x00602600
-     * @ghidraAddress PAL: 0x006431f0
-     */
-    PsMesh(const HxStr &name);
+    /** The number of entries of g_vertexCache. */
+    static constexpr int kVertexCacheSize = 256;
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x00605f48
-     * @ghidraAddress PAL: 0x00646ba0
+     * The bind pose of a skinned vertex, with the weight of each bone in the fourth word.
+     *
+     * The structure is not polymorphic and emits no RTTI descriptor. The name is inferred.
      */
-    virtual ~PsMesh();
-
-    /**
-     * Write the GS depth mask and depth test a mesh needs for one material pass.
-     *
-     * Does nothing while the current camera renders to a texture, and nothing from the third pass
-     * onward. DrawShowing() expands the same decision inline for its own passes, and this
-     * out-of-line copy exists because Rnd::PsMultiMesh::DrawShowing() in another translation unit
-     * is its only caller. Static rather than an instance method because the mesh arrives as an
-     * argument, and the body reads only the two Rnd::Mesh depth fields.
-     *
-     * @param mesh The mesh whose depth mode and depth function decide the registers.
-     * @param nPass The material pass index, counted from zero.
-     * @ghidraAddress NTSC-U/C: 0x00606d38
-     * @ghidraAddress PAL: 0x00647990
-     */
-    static void SelectDepthRegsForPass(const Mesh &mesh, int nPass);
-
-    /**
-     * Upload the first face run of mFacesOwner to VU1 once, for Rnd::PsMultiMesh to draw per
-     * instance.
-     *
-     * One UNPACK to VU address 0 carries the projection g_viewProjectXfm, the colour scale, the
-     * viewport scale and offset, the texture coordinate transform, a triangle GIFtag without fog,
-     * the material colours and vertex colour flags when lighting is on, the parameter quadword, and
-     * the run's vertices at four quadwords each. The packed index data follows under its own UNPACK
-     * V3-16. Only the first run is sent, whatever the mesh holds.
-     *
-     * The routine lies in the Rnd::PsCam unit beside the other VU1 setup emitters. The name is
-     * inferred.
-     *
-     * @return The VU address just past the index data, the vertex quadwords plus 16 plus the
-     *         triangle count.
-     * @ghidraAddress NTSC-U/C: 0x00583ba0
-     * @ghidraAddress PAL: 0x005c6d98
-     */
-    int EmitMultiMeshFaceRun();
-
-protected:
-    /**
-     * Draw the mesh.
-     *
-     * Rejects the mesh through Mesh::CheckDrawVisible(), which also yields the world bounding
-     * sphere, then tests that sphere against the view frustum to decide whether the draw needs
-     * clipping. The face pass repeats once per material pass: it reserves GIF space, programs
-     * ZBUF_1.ZMSK and TEST_1.ZTST from mZMode and mZFunc, selects the material, and submits either
-     * DrawFacesVU1() or the software path fronted by TransformAndLightMeshVerts(). The edge pass
-     * repeats the same shape once, always with depth writes masked off and with the material
-     * forced to source-alpha blending.
-     *
-     * @return Non-zero when the children are to be drawn as well.
-     * @ghidraAddress NTSC-U/C: 0x00602128
-     * @ghidraAddress PAL: 0x00642d18
-     */
-    virtual int DrawShowing();
-
-    /**
-     * Rebuild the draw runs from the face and the edge vectors.
-     *
-     * Each run is filled until the next primitive would not fit in the VU1 data memory a run may
-     * occupy, then closed and a fresh one started. A vertex already in the run is reused rather
-     * than sent twice, which is what makes a run a strip rather than a list of separate triangles.
-     * The budget is expressed in VU1 destination quadwords, four for a face vertex and two for an
-     * edge vertex, which agrees with the write cycle each VU1 batch programs, plus one per
-     * primitive for its indices. A primitive that does not fit is un-done and reprocessed at the
-     * head of the next run.
-     *
-     * The runs are built on mFacesOwner, so a mesh that shares its geometry shares them.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00600590
-     * @ghidraAddress PAL: 0x00641180
-     */
-    virtual void Sync();
-
-    /**
-     * Restore the references, resynchronise, and clamp every vertex colour to the unit range.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00606a00
-     * @ghidraAddress PAL: 0x00647658
-     */
-    virtual void AddRefObjects();
-
-private:
-    /**
-     * One batch of geometry the VU1 and software paths submit in a single go.
-     *
-     * The layout comes from the two VU1 paths, which read every field. mIndices is a packed VIF
-     * data block copied to the GIF stream a quadword at a time, `(mIndexCount + 7) / 8` of them,
-     * which is what identifies mIndexCount as a count of halfwords. Dividing it by three yields
-     * the UNPACK V3-16 element count for a face run, and by two the UNPACK V2-16 count for an edge
-     * run. mVertIndices selects which vertices of mVertsOwner travel with the batch, one 16-bit
-     * index each, scaled by 0x40 to reach a Rnd::MeshVert.
-     *
-     * The structure is 0x14 bytes inside a 0x1c-byte list node, which the constructor draws from
-     * the 0x20-byte allocator bucket. The copy constructor at `0x00606678` is implicitly
-     * defined, copying each member in turn.
-     */
-    class DrawRun {
-    public:
-        /** Packed VIF index data, in halfwords. +0x00 */
-        unsigned short *mIndices = {};
-        /** Halfwords of index data at mIndices. +0x04 */
-        int mIndexCount = {};
-        /** Vertices of mVertsOwner this batch uploads. +0x08 */
-        std::vector<unsigned short> mVertIndices;
-
-        /**
-         * Release mIndices through the global operator delete[] and zero both index fields.
-         *
-         * The node destructor at `0x006056f8` and both AppendRun() sites in Sync() expand it.
-         */
-        ~DrawRun() {
-            if (mIndices != nullptr) {
-                delete[] mIndices;
-            }
-            mIndices = nullptr;
-            mIndexCount = 0;
-        }
-
-        /**
-         * Replace mIndices with a block large enough for nIndexCount halfwords.
-         *
-         * The block is reallocated only when mIndexCount is below the quadword count nIndexCount
-         * needs. The test compares a halfword count with a quadword count, which is what the
-         * binary does, so a run that already has a block rarely grows it. Both AppendRun() sites
-         * in Sync() expand the body. The out-of-line copy has no caller.
-         *
-         * @param nIndexCount Halfwords of index data the block is to receive.
-         * @ghidraAddress NTSC-U/C: 0x006069a0
-         * @ghidraAddress PAL: 0x006475f8
-         */
-        void ReserveIndices(int nIndexCount);
+    struct SkinVert {
+        float mPos[3];  /*!< The position. */
+        float mWeight1; /*!< The weight of the first bone. */
+        float mNorm[3]; /*!< The normal. */
+        float mWeight2; /*!< The weight of the second bone. */
     };
 
-    // Sync() builds both. Every reader takes them off mFacesOwner rather than off this mesh, so a
-    // mesh that shares its geometry shares the batches built from it. No class derives from
-    // Rnd::PsMesh, so both are private.
-    std::list<DrawRun> mFaceRuns; // +0x150
-    std::list<DrawRun> mEdgeRuns; // +0x154
-
-    // Close one run, moving the two scratch index lists into a new node of runs. The compiler
-    // inlined this at both of its call sites in Sync(), which is the only reason no address
-    // belongs to it.
-    static void AppendRun(std::list<DrawRun> &runs,
-                          const std::vector<unsigned short> &vertIndices,
-                          const std::vector<unsigned short> &primIndices);
+    /**
+     * Construct a mesh without packets.
+     *
+     * @param pszName The registry key.
+     * @ghidraAddress NTSC-U/C: 0x00216050
+     * @ghidraAddress PAL: 0x0021ee68
+     */
+    explicit PsMesh(const char *pszName);
 
     /**
-     * Submit every face run of mFacesOwner through VU1.
+     * Release the packets after the frame and the bind pose.
      *
-     * Advances the triangle counter by the face count, opens a VIF DMA chain, and builds the
-     * render-state word from pXfm and mSphere. Then, once per run: the parameter quadword goes to
-     * VU address 0x12 as {mVertIndices count, mIndexCount / 3, render state, nClip}, the selected
-     * vertices follow it contiguously, the packed index data follows those, and the run enters the
-     * microprogram. With a stage texture bound each vertex contributes all four of its quadwords
-     * under the default write cycle and the program entry is address 0; without one each vertex
-     * contributes three under STCYCL CL=4 WL=3, which retains the destination stride of four, and
-     * the entry is 0x4ce. The textured path also closes and reopens the UNPACK every 252
-     * destination quadwords, because the VIFcode NUM field is eight bits.
-     *
-     * @ghidraAddress NTSC-U/C: 0x006019e0
-     * @ghidraAddress PAL: 0x006425d0
+     * @ghidraAddress NTSC-U/C: 0x00214e88
+     * @ghidraAddress PAL: 0x0021dca0
      */
-    void DrawFacesVU1(const float *pXfm, int nClip);
+    ~PsMesh() override;
 
     /**
-     * Submit every edge run of mFacesOwner through VU1.
+     * Allocate a mesh from its pool.
      *
-     * Advances the line counter by the edge count and builds the render-state word from pXfm and
-     * the material specular colour, or from white when the mesh has no material. Each run then
-     * sends its parameter quadword to VU address 8, the vertex positions to address 9 as one
-     * quadword each under STCYCL CL=2 WL=1, and the packed index data after those. Only the first
-     * quadword of each vertex travels, which is why an edge needs no normal, no colour, and no
-     * texture coordinate. As with faces, the first run of the list enters through MSCAL, at 0x1c2,
-     * and every run after it through MSCNT.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00601de0
-     * @ghidraAddress PAL: 0x006429d0
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
      */
-    void DrawEdgesVU1(const float *pXfm);
+    void *operator new(size_t nSize) {
+        return PoolAlloc(static_cast<int>(nSize), sizeof(PsMesh), "PsMesh", 0);
+    }
 
     /**
-     * Submit the faces of mFacesOwner from the already transformed vertex buffer.
+     * Return a mesh to its pool.
      *
-     * @ghidraAddress NTSC-U/C: 0x00601410
-     * @ghidraAddress PAL: 0x00642000
+     * @param pBlock The block.
      */
-    void DrawFacesSoftware(int nClip);
+    void operator delete(void *pBlock) {
+        PoolFree(sizeof(PsMesh), pBlock);
+    }
 
     /**
-     * Submit the edges of mFacesOwner from the already transformed vertex buffer.
+     * Copy another mesh, then copy each of its packets this mesh does not have.
      *
-     * @ghidraAddress NTSC-U/C: 0x006017c0
-     * @ghidraAddress PAL: 0x006423b0
+     * The source has to be a PsMesh.
+     *
+     * @param pSource The mesh to copy from.
+     * @param nFlags The set of fields to copy.
+     * @ghidraAddress NTSC-U/C: 0x00213f68
+     * @ghidraAddress PAL: 0x0021cd80
      */
-    void DrawEdgesSoftware(int nClip);
+    void Copy(const RndObject *pSource, int nFlags) override;
+
+    /**
+     * Rebuild the bind pose, the face packet, and the edge packet a set of flags covers, on the
+     * mesh that has the geometry.
+     *
+     * The faces and the edges are released once their packet is built, and the vertices are
+     * released unless the mesh is mutable. A mesh with bones becomes mutable.
+     *
+     * @param nFlags The RndMesh::SyncFlags.
+     * @ghidraAddress NTSC-U/C: 0x00214af8
+     * @ghidraAddress PAL: 0x0021d910
+     */
+    void Sync(int nFlags) override;
+
+    /**
+     * Draw each pass of the faces, then the edges, when the level of detail selects the mesh.
+     *
+     * @return 1 when the mesh is drawn, or 0.
+     * @ghidraAddress NTSC-U/C: 0x00215f30
+     * @ghidraAddress PAL: 0x0021ed48
+     */
+    int DrawShowing() override;
+
+    /**
+     * Build the face packet from the faces and the vertices.
+     *
+     * The previous packet is released after the frame. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00214150
+     * @ghidraAddress PAL: 0x0021cf68
+     */
+    void BuildFacesPacket();
+
+    /**
+     * Build the edge packet from the edges and the vertices.
+     *
+     * The previous packet is released after the frame. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00214710
+     * @ghidraAddress PAL: 0x0021d528
+     */
+    void BuildEdgesPacket();
+
+    /**
+     * Set the GS depth test and depth write of a pass from the depth mode and comparison.
+     *
+     * Passes 0 and 1 draw faces and edges. A later pass changes nothing. Edges never write depth.
+     * The name is inferred.
+     *
+     * @param nPass The pass.
+     * @ghidraAddress NTSC-U/C: 0x002154e0
+     * @ghidraAddress PAL: 0x0021e2f8
+     */
+    void SetZTest(int nPass);
+
+    /**
+     * Send the settings of the face microprogram and the face packet of the mesh with the geometry.
+     *
+     * The name is inferred.
+     *
+     * @param xfm The transform of the mesh.
+     * @ghidraAddress NTSC-U/C: 0x002155b0
+     * @ghidraAddress PAL: 0x0021e3c8
+     */
+    void DrawFaces(const Transform &xfm);
+
+    /**
+     * Send the settings of the edge microprogram and the edge packet of the mesh with the geometry.
+     *
+     * The edges take the edge colour of the material, or white without one. The name is inferred.
+     *
+     * @param xfm The transform of the mesh.
+     * @ghidraAddress NTSC-U/C: 0x002159b0
+     * @ghidraAddress PAL: 0x0021e7c8
+     */
+    void DrawEdges(const Transform &xfm);
+
+    /**
+     * Report the transform to draw the mesh with, skinning its vertices first when it has bones.
+     *
+     * A skinned mesh has its vertices moved into world space on VU0 and draws with the identity.
+     * The name is inferred.
+     *
+     * @return The transform.
+     * @ghidraAddress NTSC-U/C: 0x00215d18
+     * @ghidraAddress PAL: 0x0021eb30
+     */
+    const Transform &SkinXfm();
+
+    /**
+     * Report the face packet of the mesh with the geometry and how the first batch is laid out.
+     *
+     * The name is inferred.
+     *
+     * @param pPacket Receives the face packet.
+     * @param nSetupQwords Receives the quadwords up to and including the start of the first batch.
+     * @param nVuEnd Receives the VU1 address after the data of the last batch.
+     * @ghidraAddress NTSC-U/C: 0x002161b0
+     * @ghidraAddress PAL: 0x0021efc8
+     */
+    void FacesPacket(MemHandle *&pPacket, int &nSetupQwords, int &nVuEnd) const;
+
+    /**
+     * Install the mesh factory for the class `Mesh` of a `.rnd` file, and set g_identityXfm.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x002161d0
+     * @ghidraAddress PAL: 0x0021efe8
+     */
+    static void Init();
+
+    /**
+     * Create a mesh.
+     *
+     * @param pszName The registry key.
+     * @return The mesh.
+     * @ghidraAddress NTSC-U/C: 0x0037cc78
+     * @ghidraAddress PAL: 0x003eb3a8
+     */
+    static RndObject *New(const char *pszName) {
+        return new PsMesh(pszName);
+    }
+
+    SkinVert *mSkinVerts;             /*!< The bind pose of a mesh with bones, or null. */
+    MemHandle *mFacesPacket;          /*!< The face packet, or null. */
+    MemHandle *mEdgesPacket;          /*!< The edge packet, or null. */
+    unsigned short mFacesQwords;      /*!< The size of the face packet in quadwords. */
+    unsigned short mEdgesQwords;      /*!< The size of the edge packet in quadwords. */
+    unsigned short mNumFaces;         /*!< The number of faces before Sync() released them. */
+    unsigned short mNumEdges;         /*!< The number of edges before Sync() released them. */
+    unsigned short mFacesSetupQwords; /*!< The quadwords FacesPacket() reports. */
+    unsigned short mFacesVuEnd;       /*!< The VU1 address FacesPacket() reports. */
 };
 
 /**
- * Allocate and construct a PlayStation 2 mesh.
+ * The identity transform a skinned mesh draws with.
  *
- * GfxDevice::Init() stores this creator in the mesh creator hook at `0x006eed60`.
- *
- * @param name The object name.
- * @return The new mesh.
- * @ghidraAddress NTSC-U/C: 0x00606928
- * @ghidraAddress PAL: 0x00647580
+ * @ghidraAddress NTSC-U/C: 0x0043c3c0
  */
-Mesh *NewPsMesh(const HxStr &name);
+extern Transform g_identityXfm;
 
-} // namespace Rnd
+/**
+ * The vertex indices of the batch being built, in the order the batch unpacks them.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c400
+ */
+extern unsigned short g_vertexCache[PsMesh::kVertexCacheSize];

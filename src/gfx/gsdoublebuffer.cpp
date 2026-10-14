@@ -155,13 +155,7 @@ inline void WriteDisplayRegisters(GsDoubleBuffer::DispEnv &env, int bEnableCircu
 
 } // namespace
 
-void GsDoubleBuffer::SetDefaults(
-    short nWidth, short nHeight, short nPsm, short nZTest, short nZPsm, short nClear) {
-    mWidth = nWidth;
-    mHeight = nHeight;
-    mPsm = nPsm;
-    mZPsm = nZPsm;
-
+void GsDoubleBuffer::SetBufferPages(short nWidth, short nHeight, short nPsm) {
     int nBytesPerPixel;
     switch (nPsm) {
     case kGsPsmCt32:
@@ -180,28 +174,36 @@ void GsDoubleBuffer::SetDefaults(
 
     const int nPages = (nWidth * nHeight * nBytesPerPixel) >> kGsPageShift;
     mFbp0 = 0;
-    mZbp = static_cast<short>(nPages * kFrameBufferCount);
     mFbp1 = static_cast<short>(nPages);
-    SetDispBuffers(this, nWidth, nHeight, nPsm, mFbp0, mFbp1);
-    SetDrawBuffersSmall(this, nWidth, nHeight, nPsm, mFbp0, mFbp1, mZbp, nZTest, nZPsm, nClear);
+    mZbp = static_cast<short>(nPages * kFrameBufferCount);
 }
 
-void SetDispBuffers(
-    GsDoubleBuffer *pBuffers, short nWidth, short nHeight, short nPsm, short nFbp0, short nFbp1) {
-    BuildDispEnv(pBuffers->mDisp[0], nWidth, nHeight, nPsm, nFbp0);
-    BuildDispEnv(pBuffers->mDisp[1], nWidth, nHeight, nPsm, nFbp1);
+void GsDoubleBuffer::SetDefaults(
+    short nWidth, short nHeight, short nPsm, short nZTest, short nZPsm, short nClear) {
+    mWidth = nWidth;
+    mHeight = nHeight;
+    mPsm = nPsm;
+    mZPsm = nZPsm;
+    SetBufferPages(nWidth, nHeight, nPsm);
+    SetDispBuffers(nWidth, nHeight, nPsm, mFbp0, mFbp1);
+    SetDrawBuffersSmall(nWidth, nHeight, nPsm, mFbp0, mFbp1, mZbp, nZTest, nZPsm, nClear);
 }
 
-void SetDrawBuffersSmall(GsDoubleBuffer *pBuffers,
-                         short nWidth,
-                         short nHeight,
-                         short nPsm,
-                         short nFbp0,
-                         short nFbp1,
-                         short nZbp,
-                         short nZTest,
-                         short nZPsm,
-                         [[maybe_unused]] short nClear) {
+void GsDoubleBuffer::SetDispBuffers(
+    short nWidth, short nHeight, short nPsm, short nFbp0, short nFbp1) {
+    BuildDispEnv(mDisp[0], nWidth, nHeight, nPsm, nFbp0);
+    BuildDispEnv(mDisp[1], nWidth, nHeight, nPsm, nFbp1);
+}
+
+void GsDoubleBuffer::SetDrawBuffersSmall(short nWidth,
+                                         short nHeight,
+                                         short nPsm,
+                                         short nFbp0,
+                                         short nFbp1,
+                                         short nZbp,
+                                         short nZTest,
+                                         short nZPsm,
+                                         [[maybe_unused]] short nClear) {
     // The page is sign-extended into the whole word, and a zero depth test also masks depth
     // writes.
     unsigned long long qwZbuf = static_cast<unsigned long long>(static_cast<long long>(nZbp)) |
@@ -209,26 +211,25 @@ void SetDrawBuffersSmall(GsDoubleBuffer *pBuffers,
     if (nZTest == 0) {
         qwZbuf |= kZbufZmsk;
     }
-    BuildDrawHalf(pBuffers->mHalves[0], nWidth, nHeight, nPsm, nFbp0, qwZbuf, nZTest, nZPsm);
-    BuildDrawHalf(pBuffers->mHalves[1], nWidth, nHeight, nPsm, nFbp1, qwZbuf, nZTest, nZPsm);
+    BuildDrawHalf(mHalves[0], nWidth, nHeight, nPsm, nFbp0, qwZbuf, nZTest, nZPsm);
+    BuildDrawHalf(mHalves[1], nWidth, nHeight, nPsm, nFbp1, qwZbuf, nZTest, nZPsm);
 }
 
-void PutDrawBufferSmall(GsDoubleBuffer *pBuffers, int nHalf, int bClear) {
-    const unsigned long long qwLoops = bClear != 0 ? kDrawAndClearPairs : kDrawEnvPairs;
-    GsDoubleBuffer::DrawHalf *pHalves = pBuffers->mHalves;
-    pHalves[0].mGifTag.mWords[0] = (pHalves[0].mGifTag.mWords[0] & ~kGifTagNLoopMask) | qwLoops;
-    pHalves[1].mGifTag.mWords[0] = (pHalves[1].mGifTag.mWords[0] & ~kGifTagNLoopMask) | qwLoops;
+void GsDoubleBuffer::PutDispBuffer(int nHalf, int bEnableCircuit1) {
     if (nHalf == 0) {
-        sceGsPutDrawEnv(&pHalves[0].mGifTag);
+        WriteDisplayRegisters(mDisp[0], bEnableCircuit1);
     } else {
-        sceGsPutDrawEnv(&pHalves[1].mGifTag);
+        WriteDisplayRegisters(mDisp[1], bEnableCircuit1);
     }
 }
 
-void PutDispBuffer(GsDoubleBuffer *pBuffers, int nHalf, int bEnableCircuit1) {
+void GsDoubleBuffer::PutDrawBufferSmall(int nHalf, int bClear) {
+    const unsigned long long qwLoops = bClear != 0 ? kDrawAndClearPairs : kDrawEnvPairs;
+    mHalves[0].mGifTag.mWords[0] = (mHalves[0].mGifTag.mWords[0] & ~kGifTagNLoopMask) | qwLoops;
+    mHalves[1].mGifTag.mWords[0] = (mHalves[1].mGifTag.mWords[0] & ~kGifTagNLoopMask) | qwLoops;
     if (nHalf == 0) {
-        WriteDisplayRegisters(pBuffers->mDisp[0], bEnableCircuit1);
+        sceGsPutDrawEnv(&mHalves[0].mGifTag);
     } else {
-        WriteDisplayRegisters(pBuffers->mDisp[1], bEnableCircuit1);
+        sceGsPutDrawEnv(&mHalves[1].mGifTag);
     }
 }

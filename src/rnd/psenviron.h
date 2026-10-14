@@ -1,254 +1,154 @@
 #pragma once
 
-#include <vector>
-
 #include "math/color.h"
+#include "math/sphere.h"
+#include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/environ.h"
-
-class HxStr;
-struct GifQuadword;
-class Sphere;
-namespace Rnd {
-class Light;
-}
-
-namespace Rnd {
+#include "rnd/rndenviron.h"
 
 /**
- * One directional light as the vertex lighting path consumes it.
+ * Environment, PlayStation 2.
  *
- * The record is not polymorphic and does not emit an RTTI descriptor. The name is inferred.
- * PsEnviron::DrawShowing() fills every member except mTransformedDirection.
+ * The RTTI includes the class name and records RndEnviron as the one base. The class adds no data
+ * member. DrawShowing() turns the fog and the lights into the globals below, and SelectLights()
+ * sends them to VU1 ahead of each mesh. One point light, or else up to three directional lights,
+ * light the meshes. Spot lights are ignored.
  */
-struct DirectionalLightRecord {
-    Vector3 mDirection; /*!< Negated second row of the light's world transform. */
-    /** mDirection in the space of the transform TransformLightRecords() last took. +0x10 */
-    Vector3 mTransformedDirection;
-    Color mAmbient; /*!< Copied from Rnd::Light::mAmbient. */
-    Color mDiffuse; /*!< Copied from Rnd::Light::mDiffuse. */
-};
-
-/**
- * One point light as the vertex lighting path consumes it.
- *
- * The record is not polymorphic and does not emit an RTTI descriptor. The name is inferred.
- * PsEnviron::DrawShowing() fills mPosition, mAmbient, and mDiffuse.
- */
-struct PointLightRecord {
-    /*!< Translation row of the light's world transform, with Rnd::Light::mRange in the padding
-         word. */
-    Vector3 mPosition;
-    /**
-     * mPosition in the space of the transform TransformLightRecords() or SelectLightForVertex()
-     * last took. The fourth word carries the range over unchanged, and the reach test reads it
-     * from here. +0x10
-     */
-    Vector3 mTransformedPosition;
-    Color mAmbient; /*!< Copied from Rnd::Light::mAmbient. */
-    Color mDiffuse; /*!< Copied from Rnd::Light::mDiffuse. */
-    /** 1 when TransformLightRecords() found the light out of reach of the bounding sphere. +0x40 */
-    int mCulled;
-    unsigned mReserved44[3]; /*!< Pads the record to 0x50 bytes. +0x44 */
-};
-
-/**
- * Bring every light record into an object's space and cull the point lights against its bounds.
- *
- * Each directional record receives its direction rotated by the inverse of pXfm, and each point
- * record its position transformed by it. A point light is culled when the distance from the sphere
- * centre exceeds its range plus the sphere radius. A null sphere or one of zero radius culls
- * nothing. TransformAndLightMeshVerts() is the one caller.
- *
- * The name is inferred.
- *
- * @param pDirectionalBegin Receives the first directional record.
- * @param pDirectionalEnd Receives the end of the directional records.
- * @param pPointBegin Receives the first point record.
- * @param pPointEnd Receives the end of the point records.
- * @param pXfm The object transform, four rows of four floats.
- * @param pSphere The object bounds, or null.
- * @return The directional lights plus the point lights not culled.
- * @ghidraAddress NTSC-U/C: 0x005af0c8
- * @ghidraAddress PAL: 0x005f1670
- */
-int TransformLightRecords(DirectionalLightRecord *&pDirectionalBegin,
-                          DirectionalLightRecord *&pDirectionalEnd,
-                          PointLightRecord *&pPointBegin,
-                          PointLightRecord *&pPointEnd,
-                          const float *pXfm,
-                          const Sphere *pSphere);
-
-/**
- * Choose the one light the VU1 face program applies to an object and write its parameters.
- *
- * With lighting off the unlit program is chosen and nothing is written. Otherwise the first
- * directional light wins, and failing one the first point light that reaches the bounding sphere.
- * The light's direction or position in object space goes to pLight, and its ambient and diffuse
- * colours scale the material colours at pAmbient and pDiffuse, or replace them where the
- * material takes that term from the vertex colours.
- *
- * The name is inferred.
- *
- * @param pLight Receives the light direction or position, one packet quadword.
- * @param pAmbient The material ambient colour in the packet, updated in place.
- * @param pDiffuse The material diffuse colour in the packet, updated in place.
- * @param pXfm The object transform, four rows of four floats.
- * @param pSphere The object bounds, or null.
- * @return The VU1 program entry: 0x2ee unlit, 0x2f8 directional, 0x35c point, or 0x3d4 when lit
- *         by no light.
- * @ghidraAddress NTSC-U/C: 0x005af2c0
- * @ghidraAddress PAL: 0x005f1868
- */
-int SelectLightForVertex(GifQuadword *pLight,
-                         GifQuadword *pAmbient,
-                         GifQuadword *pDiffuse,
-                         const float *pXfm,
-                         const Sphere *pSphere);
-
-/**
- * Lighting and fog a subtree is drawn under, PlayStation 2.
- *
- * Its RTTI descriptor is at `0x008ef250`. It has `Rnd::Environ` as its only public non-virtual base
- * at offset 0. The class does not add a data member. Its allocator at `0x005b27b0` requests the
- * same 0x80 bytes the base does, under the same "Rnd::Environ" tag, and its constructor writes only
- * the two vtable pointers.
- *
- * Two vtables belong to the class. The four-entry table at `0x00833968` is addressed by the
- * `Rnd::Drawable` vptr at `0x10`, and the eight-entry table at `0x00833920` by the `Rnd::Object`
- * subobject vptr. DrawShowing() is the only entry that is not the base implementation.
- */
-class PsEnviron : public Environ {
+class PsEnviron : public RndEnviron {
 public:
-    /**
-     * Directional lights of the current environment, rebuilt by DrawShowing().
-     *
-     * @ghidraAddress NTSC-U/C: 0x00776120
-     * @ghidraAddress PAL: 0x007b9ff8
-     */
-    static std::vector<DirectionalLightRecord> sDirLights;
+    /** The VU1 lighting microprograms, by their addresses in VU1 code memory. */
+    enum LightProgram {
+        kLightProgramPoint = 0x6c,        /*!< One point light. */
+        kLightProgramDirectional = 0x260, /*!< Up to three directional lights. */
+        kLightProgramAmbient = 0x373,     /*!< The ambient colour only. */
+        kLightProgramUnlit = 0x3d7,       /*!< No lighting. */
+    };
 
     /**
-     * Point lights of the current environment, rebuilt by DrawShowing().
+     * Construct an environment.
      *
-     * @ghidraAddress NTSC-U/C: 0x00776130
-     * @ghidraAddress PAL: 0x007ba008
+     * The binary expands the constructor inline in New().
+     *
+     * @param pszName The registry key.
      */
-    static std::vector<PointLightRecord> sPointLights;
-
-    /**
-     * Construct an environment with no lights and no fog.
-     *
-     * NewEnviron() and Init() both open-code the body. The out-of-line copy has no caller.
-     *
-     * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x005b2648
-     * @ghidraAddress PAL: 0x005f4c18
-     */
-    explicit PsEnviron(const HxStr &name) : Object(name), Environ(name) {
+    explicit PsEnviron(const char *pszName) : RndObject(pszName), RndEnviron(pszName) {
     }
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x005b2200
-     * @ghidraAddress PAL: 0x005f47d0
+     * @ghidraAddress NTSC-U/C: 0x0037d2e0
+     * @ghidraAddress PAL: 0x003eba10
      */
-    virtual ~PsEnviron();
+    ~PsEnviron() override {
+    }
 
     /**
-     * Build a PlayStation 2 environment the class registry vends.
+     * Set the fog and the lights up for the drawables after the environment, and make it current.
      *
-     * The return type is the base class, which is what lets Init() store the routine in
-     * Rnd::g_pfnNewEnviron.
-     *
-     * @param name The registry key for the new environment.
-     * @return The new environment.
-     * @ghidraAddress NTSC-U/C: 0x005b27b0
-     * @ghidraAddress PAL: 0x005f4d80
+     * @return 1, to draw the children.
+     * @ghidraAddress NTSC-U/C: 0x00219470
+     * @ghidraAddress PAL: 0x00222288
      */
-    static Environ *NewEnviron(const HxStr &name);
+    int DrawShowing() override;
 
     /**
-     * Install the PlayStation 2 environment factory and build the default scene fixtures.
+     * Add the lighting block of the VU1 mesh microprogram to the packet, eight quadwords.
      *
-     * Rnd::g_pfnNewEnviron becomes NewEnviron(), which is how a `.rnd` file naming the unchanged
-     * "Environ" key loads this subclass. The environment named "[default environ]" is then built
-     * with a direct allocation rather than through the factory, marked internal, and added to the
-     * draw list of Rnd::PsCam::sDefault. A light named "[default light]" follows, built through
-     * Rnd::g_pfnNewLight, marked internal, added to the environment, and made a transform child of
-     * Rnd::PsCam::sDefault.
+     * The block is a quadword of settings, the base colour, and the lights moved into the space of
+     * the object. Without lighting the block is the settings alone and the cursor skips the rest.
+     * A point light out of reach of the bounds of the object, and an object without a transform,
+     * take the ambient program. The name is inferred.
      *
-     * @ghidraAddress NTSC-U/C: 0x005aea68
-     * @ghidraAddress PAL: 0x005f0fd0
+     * @param pXfm The transform of the object drawn, or null.
+     * @param pSphere The bounding sphere of the object in its own space. A radius of 0 skips the
+     * reach test. It is read only for a point light and a transform.
+     * @ghidraAddress NTSC-U/C: 0x002197a0
+     * @ghidraAddress PAL: 0x002225b8
+     */
+    static void SelectLights(const Transform *pXfm, const Sphere *pSphere);
+
+    /**
+     * Install the environment factory for the class `Environ` of a `.rnd` file, and create the
+     * default environment and light.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00219268
+     * @ghidraAddress PAL: 0x00222080
      */
     static void Init();
 
     /**
-     * Undo what Init() installs.
+     * Restore the generic environment factory.
      *
-     * Destroys g_pDefaultEnviron and then g_pDefaultLight through their virtual destructors,
-     * without clearing either pointer, and then expands the "Environ" class registration, whose
-     * out-of-line copy is at `0x00518e70`. GfxDevice::Terminate() is the one caller. The name is
-     * inferred from GfxDevice::Terminate().
+     * The name is inferred.
      *
-     * @ghidraAddress NTSC-U/C: 0x005b2888
-     * @ghidraAddress PAL: 0x005f4e58
+     * @ghidraAddress NTSC-U/C: 0x00219370
+     * @ghidraAddress PAL: 0x00222188
      */
     static void Terminate();
 
-protected:
     /**
-     * Make this environment the current one, program fog, and build the light records.
+     * Create an environment.
      *
-     * Vtable slot 3 of the Rnd::Drawable table. Rnd::g_nFogEnabled becomes non-zero whenever the
-     * fog mode is anything other than None, and the two fog terms are then set so that a camera
-     * space depth maps onto the byte range the GS fog register takes. The scale is 255.0 divided
-     * by the fog start less the fog end, and the offset is the negated fog end scaled by it. With
-     * no fog the scale is zero and the offset 255.0, which fogs no pixel at all. The fog colour
-     * is packed into the low three bytes of GS register 0x3d.
-     *
-     * Both record vectors are then emptied and each entry of mLights appended to one of them, a
-     * directional light contributing the negated second basis row of its world transform and a
-     * point light its translation row and its range. A spot light is skipped. The routine ends by
-     * making this environment Rnd::Environ::sCurrent.
-     *
-     * @return Non-zero, which draws the children as well.
-     * @ghidraAddress NTSC-U/C: 0x005aecb8
-     * @ghidraAddress PAL: 0x005f1260
+     * @param pszName The registry key.
+     * @return The environment.
+     * @ghidraAddress NTSC-U/C: 0x0037d680
+     * @ghidraAddress PAL: 0x003ebd38
      */
-    virtual int DrawShowing();
+    static RndObject *New(const char *pszName) {
+        return new PsEnviron(pszName);
+    }
 };
 
 /**
- * Environment the renderer falls back on when a scene selects none.
+ * Scale from a depth to the GS fog range, 255 over the fog distance, or 0 without fog.
  *
- * @ghidraAddress NTSC-U/C: 0x0077613c
- * @ghidraAddress PAL: 0x007ba014
+ * @ghidraAddress NTSC-U/C: 0x003b07e0
  */
-extern PsEnviron *g_pDefaultEnviron;
+extern float g_fogScale;
 
 /**
- * Light the default environment applies when a scene supplies none.
+ * Offset of the GS fog range, minus the fog end times g_fogScale, or 255 without fog.
  *
- * @ghidraAddress NTSC-U/C: 0x00776140
- * @ghidraAddress PAL: 0x007ba018
+ * @ghidraAddress NTSC-U/C: 0x003b07e4
  */
-extern Light *g_pDefaultLight;
+extern float g_fogOffset;
 
 /**
- * Scale a camera space depth is multiplied by to arrive at the byte range of the GS fog
- * register.
+ * Non-zero while the current environment has fog.
  *
- * @ghidraAddress NTSC-U/C: 0x00776110
- * @ghidraAddress PAL: 0x007b9fe8
+ * @ghidraAddress NTSC-U/C: 0x003b07e8
  */
-extern float g_flFogScale;
+extern int g_nFogEnabled;
 
 /**
- * Offset added after g_flFogScale has been applied.
+ * The lighting microprogram of the current environment.
  *
- * @ghidraAddress NTSC-U/C: 0x00776114
- * @ghidraAddress PAL: 0x007b9fec
+ * @ghidraAddress NTSC-U/C: 0x003b07ec
  */
-extern float g_flFogOffset;
+extern PsEnviron::LightProgram g_lightProgram;
 
-} // namespace Rnd
+/**
+ * Ambient colour of the current environment, with alpha 1.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c610
+ */
+extern Color g_ambientColor;
+
+/**
+ * The lights of the current environment as a matrix.
+ *
+ * For directional lights, column n of the first three components is the negated direction of
+ * light n. For a point light, the first row is the position, and the fourth components are -1
+ * over the range, the range squared, and the range.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c620
+ */
+extern Vector3 g_lightMatrix[3];
+
+/**
+ * Colour of each light of the current environment, with alpha 0. Unused rows are black.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c650
+ */
+extern Color g_lightColors[3];

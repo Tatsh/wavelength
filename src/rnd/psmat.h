@@ -1,257 +1,238 @@
 #pragma once
 
+#include <cstddef>
+
+#include "math/color.h"
+#include "math/transform.h"
 #include "math/vector3.h"
-#include "rnd/mat.h"
-
-struct Color;
-struct Transform;
-
-namespace Rnd {
+#include "os/mem.h"
+#include "rnd/rndmat.h"
 
 /**
- * PlayStation 2 material, which drives the GS register state.
+ * Material, PlayStation 2.
  *
- * Its RTTI descriptor is at `0x008efe50`. It has `Rnd::Mat` as its one public base at offset 0 and
- * no member. The sixteen-entry vtable at `0x00830f98` differs from the `Rnd::Mat` table
- * at `0x00822dd8` in six slots, the destructor at slot 1 and the five colour setters at slots 9
- * through 13.
- *
- * Every override below performs the base assignment and then clears sCurrent, which
- * forces the next draw to re-emit the material registers.
- *
- * The constructor body is empty and the destructor body is one statement. The factory at
- * `0x005914b8` inlines the constructor, and the destructor at `0x00591590` inlines the whole
- * `Rnd::Mat` destructor after its one statement.
- *
- * The hardware binding path is the rest of the file, and every title in it is inferred from the
- * register writes and from the cache global each routine maintains.
- *
- * Which class declares that path is ambiguous. Every call site passes a plain `Rnd::Mat *`,
- * `Rnd::Mesh::DrawInstanced` at `0x005b2f84`, `Rnd::PsParticleSys::Draw` at `0x005fcbcc` and
- * `0x005fcc20`, and `Rnd::PsMesh::DrawShowing` at `0x0060239c` and `0x00602518`, and an upcast to a
- * base at offset 0 emits no instruction, so the image cannot separate a platform-implemented
- * `Rnd::Mat` member from a `Rnd::PsMat` member the caller narrowed to. The declarations are here
- * because the rest of this tree places a platform surface on the `Ps` subclass, as `Rnd::PsTex`
- * does with its GS binding. Moving them to `mat.h` unchanged is the alternative reading.
+ * The RTTI includes the class name and records RndMat as the one base. The class adds no data
+ * member and overrides only the destructor. It selects a material for drawing: the GS blend,
+ * alpha test, and clamp registers, the stage texture, and the globals the mesh and particle paths
+ * read. The material last selected is cached in sCurrent.
  */
-class PsMat : public Mat {
+class PsMat : public RndMat {
 public:
     /**
-     * Material that Rnd::Mat::SelectMaterial() last applied, or null when the applied state is
-     * stale.
+     * Construct a material.
      *
-     * Selecting a material stores it here, and the PlayStation 2 entry point compares against it
-     * to skip work that is already done. Every property setter writes null to make the next
-     * selection apply the change, and Rnd::PsMat's destructor clears it when the material being
-     * destroyed is the selected one.
+     * The binary expands the constructor inline in New().
      *
-     * @ghidraAddress NTSC-U/C: 0x0076d658
-     * @ghidraAddress PAL: 0x007b13b0
+     * @param pszName The registry key.
      */
-    static Mat *sCurrent;
+    explicit PsMat(const char *pszName) : RndMat(pszName) {
+    }
 
     /**
-     * Construct a material with the default surface.
+     * @ghidraAddress NTSC-U/C: 0x0037cb18
+     * @ghidraAddress PAL: 0x003eb248
+     */
+    ~PsMat() override {
+    }
+
+    /**
+     * Allocate a material from its pool.
      *
-     * The body is empty. Rnd::NewPsMat() is the only construction site.
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
+     */
+    void *operator new(size_t nSize) {
+        return PoolAlloc(static_cast<int>(nSize), sizeof(PsMat), "PsMat", 0);
+    }
+
+    /**
+     * Return a material to its pool.
      *
-     * @param name The object name, passed to the Rnd::Object constructor.
+     * @param pBlock The block.
      */
-    PsMat(const HxStr &name);
+    void operator delete(void *pBlock) {
+        PoolFree(sizeof(PsMat), pBlock);
+    }
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x00591590
-     * @ghidraAddress PAL: 0x005d4928
-     */
-    virtual ~PsMat();
-
-    /**
-     * Install the PlayStation 2 material creator and build the fixed sphere-map UV transform.
+     * Select one pass of the material for drawing.
      *
-     * GfxDevice::Init() invokes this at `0x0049af48`. The title is inferred from the creator hook
-     * the routine overwrites.
+     * A material that is already selected and has fewer than two stages changes nothing, beyond
+     * selecting its blend again after SelectAlphaBlend(). Otherwise the blend, the stage texture,
+     * and the texture coordinate transform of the pass are selected.
      *
-     * @ghidraAddress NTSC-U/C: 0x00591240
-     * @ghidraAddress PAL: 0x005d45c0
+     * @param nPass The pass. The pass is also the stage.
+     * @return The next pass, or 0 after the last.
+     * @ghidraAddress NTSC-U/C: 0x00213698
+     * @ghidraAddress PAL: 0x0021c4b0
      */
-    static void InstallCreator();
+    int Select(int nPass);
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x005916b0
-     * @ghidraAddress PAL: 0x005d4a48
-     */
-    virtual void SetAmbient(const Color &color);
-
-    /**
-     * @ghidraAddress NTSC-U/C: 0x005916c8
-     * @ghidraAddress PAL: 0x005d4a60
-     */
-    virtual void SetDiffuse(const Color &color);
-
-    /**
-     * @ghidraAddress NTSC-U/C: 0x005916f0
-     * @ghidraAddress PAL: 0x005d4a88
-     */
-    virtual void SetEmissive(const Color &color);
-
-    /**
-     * @ghidraAddress NTSC-U/C: 0x00591730
-     * @ghidraAddress PAL: 0x005d4ac8
-     */
-    virtual void SetAlpha(float flAlpha);
-
-    /**
-     * @ghidraAddress NTSC-U/C: 0x00591708
-     * @ghidraAddress PAL: 0x005d4aa0
-     */
-    virtual void SetSpecular(const Color &color, float flAlpha);
-
-    /**
-     * Apply the next pass of this material to the GS.
+     * Program the GS blend, dither, alpha test, and alpha correction for a pass.
      *
-     * A material that is already selected and has at most one stage re-emits ALPHA_1 alone, and
-     * only when SelectAlphaBlend() overrode it. Otherwise the stage index resets or advances, and
-     * the blend mode, the stage texture, and the UV transform are all reselected.
+     * The first pass takes the surface blend and the later passes the blend of their stage. The
+     * name is inferred.
      *
-     * @return Non-zero while further stages remain, which asks the caller to draw again.
-     * @ghidraAddress NTSC-U/C: 0x0058eb40
-     * @ghidraAddress PAL: 0x005d1e98
+     * @param nPass The pass.
+     * @ghidraAddress NTSC-U/C: 0x00213788
+     * @ghidraAddress PAL: 0x0021c5a0
      */
-    int Select();
+    void SelectBlendMode(int nPass);
 
     /**
-     * Drop the cached material state and program the GS for the default opaque surface.
+     * Clamp the texture coordinates of a stage, or let them repeat.
      *
-     * GfxDevice::BeginFrame() invokes this once per frame, and a draw of a mesh with no material
-     * invokes it in place of Select().
+     * The name is inferred.
      *
-     * @ghidraAddress NTSC-U/C: 0x005910b0
-     * @ghidraAddress PAL: 0x005d4430
+     * @param stage The stage.
+     * @ghidraAddress NTSC-U/C: 0x00213a88
+     * @ghidraAddress PAL: 0x0021c8a0
+     */
+    void SelectStageClamp(const Stage &stage);
+
+    /**
+     * Report the GS texture function a blend draws its texture with.
+     *
+     * The name is inferred.
+     *
+     * @param nBlend The Blend.
+     * @return The TFX field of TEX0.
+     * @ghidraAddress NTSC-U/C: 0x00213ad8
+     * @ghidraAddress PAL: 0x0021c8f0
+     */
+    int TexFunction(int nBlend);
+
+    /**
+     * Bind the texture of a pass's stage and set the colour scale for its texture function.
+     *
+     * A stage without a texture, or with RndMat::kBlendDest, binds nothing. The name is inferred.
+     *
+     * @param nPass The pass.
+     * @ghidraAddress NTSC-U/C: 0x00213af0
+     * @ghidraAddress PAL: 0x0021c908
+     */
+    void BindStageTexture(int nPass);
+
+    /**
+     * Build the texture coordinate transform of a pass's stage into g_uvXfm and g_stageXfm.
+     *
+     * The name is inferred.
+     *
+     * @param nPass The pass.
+     * @ghidraAddress NTSC-U/C: 0x00213c70
+     * @ghidraAddress PAL: 0x0021ca88
+     */
+    void SetupUvXfm(int nPass);
+
+    /**
+     * Forget the selected material and return the GS to opaque drawing with the default dither.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00213570
+     * @ghidraAddress PAL: 0x0021c388
      */
     static void SelectDefault();
 
     /**
-     * Force ALPHA_1 to the standard source-alpha equation whatever the material blend is.
+     * Blend by the source alpha, and make the next Select() of the selected material select its
+     * blend again.
      *
-     * The override is recorded, so the next Select() on the same material restores the material
-     * blend. The edge pass of Rnd::PsMesh::DrawShowing() is the only call site.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00591170
-     * @ghidraAddress PAL: 0x005d44f0
+     * @ghidraAddress NTSC-U/C: 0x00213660
+     * @ghidraAddress PAL: 0x0021c478
      */
-    void SelectAlphaBlend();
-
-private:
-    /**
-     * Program FBA_1, ALPHA_1, DIMX, and TEST_1 for the blend of the selected stage, or for the
-     * material blend while stage 0 is selected.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0058ec80
-     * @ghidraAddress PAL: 0x005d1fd8
-     */
-    void SelectBlendMode();
+    static void SelectAlphaBlend();
 
     /**
-     * Bind the texture of the selected stage, publishing the lighting enable and the texture bound
-     * flags the vertex paths read.
+     * Install the material factory for the class `Mat` of a `.rnd` file.
      *
-     * @ghidraAddress NTSC-U/C: 0x0058eef8
-     * @ghidraAddress PAL: 0x005d2250
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00213e38
+     * @ghidraAddress PAL: 0x0021cc50
      */
-    void BindStageTexture();
+    static void Init();
 
     /**
-     * Choose the UV transform the selected stage requires.
+     * Create a material.
      *
-     * @ghidraAddress NTSC-U/C: 0x0058f038
-     * @ghidraAddress PAL: 0x005d2390
+     * @param pszName The registry key.
+     * @return The material.
+     * @ghidraAddress NTSC-U/C: 0x0037ca68
+     * @ghidraAddress PAL: 0x003eb198
      */
-    void SetupUvXfm();
+    static RndObject *New(const char *pszName) {
+        return new PsMat(pszName);
+    }
 
     /**
-     * Program CLAMP_1 from a stage wrap mode.
+     * The material Select() last selected, or null.
      *
-     * The compiler inlined this into BindStageTexture(), and no call site references the
-     * out-of-line body, so that body is dead in the shipped image.
-     *
-     * @ghidraAddress NTSC-U/C: 0x005911d8
-     * @ghidraAddress PAL: 0x005d4558
+     * @ghidraAddress NTSC-U/C: 0x003b0768
      */
-    void SelectStageClamp(const Stage &stage);
+    static PsMat *sCurrent;
 };
 
 /**
- * Allocate and construct a PlayStation 2 material.
+ * Texture coordinate generation mode of the stage PsMat::SetupUvXfm() last processed.
  *
- * PsMat::InstallCreator() stores this creator in the material creator hook at `0x00700418`.
- *
- * @param name The object name.
- * @return The new material.
- * @ghidraAddress NTSC-U/C: 0x005914b8
- * @ghidraAddress PAL: 0x005d4850
- */
-Mat *NewPsMat(const HxStr &name);
-
-/**
- * Coordinate generation mode of the stage Rnd::PsMat::SetupUvXfm() last processed.
- *
- * @ghidraAddress NTSC-U/C: 0x0076d660
- * @ghidraAddress PAL: 0x007b13b8
+ * @ghidraAddress NTSC-U/C: 0x003b076c
  */
 extern int g_nSelectedGenMode;
 
 /**
  * Flat shading flag of the selected material.
  *
- * @ghidraAddress NTSC-U/C: 0x0076d664
- * @ghidraAddress PAL: 0x007b13bc
+ * @ghidraAddress NTSC-U/C: 0x003b0770
  */
 extern int g_nSelectedFlat;
 
 /**
- * Non-zero once the GS ALPHA_1 register holds a blending equation rather than an opaque copy.
+ * Non-zero while a stage texture is bound.
  *
- * @ghidraAddress NTSC-U/C: 0x0076d66c
- * @ghidraAddress PAL: 0x007b13c4
+ * @ghidraAddress NTSC-U/C: 0x003b0774
+ */
+extern int g_nTextured;
+
+/**
+ * Non-zero once ALPHA_1 is a blending equation rather than an opaque copy.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b0778
  */
 extern int g_nAlphaBlendEnabled;
 
 /**
- * Non-zero when the bound stage blend is Rnd::Mat::kBlendModeMultiply2.
+ * Lighting flag of the selected material, cleared when the stage texture is applied as a decal.
  *
- * @ghidraAddress NTSC-U/C: 0x0076d670
- * @ghidraAddress PAL: 0x007b13c8
- */
-extern int g_nStageBlendDoubles;
-
-/**
- * Fixed UV transform the selected stage requires, or null when the stage needs none.
- *
- * A sphere generation mode yields the sphere-map transform, and any other mode with a stage
- * transform yields the composed transform.
- *
- * @ghidraAddress NTSC-U/C: 0x0076d674
- * @ghidraAddress PAL: 0x007b13cc
- */
-extern Transform *g_pSelectedUvXfm;
-
-/**
- * Stage transform of the selected stage when it uses one, otherwise null.
- *
- * Only a sphere generation mode publishes a value here, because the other modes fold the stage
- * transform into g_pSelectedUvXfm instead.
- *
- * @ghidraAddress NTSC-U/C: 0x0076d678
- * @ghidraAddress PAL: 0x007b13d0
- */
-extern Transform *g_pSelectedStageXfm;
-
-/**
- * Lighting enable flag of the selected material, cleared when the stage texture function is decal.
- *
- * @ghidraAddress NTSC-U/C: 0x0076d67c
- * @ghidraAddress PAL: 0x007b13d4
+ * @ghidraAddress NTSC-U/C: 0x003b077c
  */
 extern int g_nLightingEnabled;
 
-} // namespace Rnd
+/**
+ * Non-zero after PsMat::SelectAlphaBlend(), until the next PsMat::Select() of the selected
+ * material selects its blend again.
+ *
+ * @ghidraAddress NTSC-U/C: 0x003b0780
+ */
+extern int g_nReselectBlend;
+
+/**
+ * Scale from a vertex colour component to the GS range, 128 for a modulated texture and 255
+ * otherwise, with alpha always 128.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c340
+ */
+extern Color g_colorScale;
+
+/**
+ * Transform of the texture coordinates of the selected stage.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c350
+ */
+extern Transform g_uvXfm;
+
+/**
+ * Basis rows of the stage transform a sphere-mapped stage applies before its sphere map.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c390
+ */
+extern Vector3 g_stageXfm[3];

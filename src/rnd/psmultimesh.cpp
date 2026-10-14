@@ -1,159 +1,217 @@
 #include "rnd/psmultimesh.h"
 
-#include <algorithm>
-#include <list>
+#include <cstdint>
+#include <cstring>
 
-#include "gfx/gfxdevice.h"
-#include "gfx/renderstats.h"
-#include "math/transform.h"
-#include "os/hxstr.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include <eekernel.h>
+
+#include "os/memhandle.h"
+#include "rnd/dmapacket.h"
+#include "rnd/ps.h"
+#include "rnd/pscam.h"
+#include "rnd/psenviron.h"
 #include "rnd/psmat.h"
 #include "rnd/psmesh.h"
 
-namespace Rnd {
-
 namespace {
 
-// Quadwords reserved ahead of one material pass, the same budget Rnd::PsMesh::DrawShowing()
-// reserves.
-constexpr int kGifReserveQuadwords = 32;
+// VIF codes. UNPACK V4-32 to an address relative to the double buffer, then MSCAL or MSCNT.
+constexpr unsigned int kVifUnpackV4 = 0x6c000000;
+constexpr unsigned int kVifUnpackFlg = 0x8000;
+constexpr int kVifUnpackNumShift = 16;
+constexpr unsigned int kVifMscalInstanced = 0x140003dc;
+constexpr unsigned int kVifMscnt = 0x17000000;
+constexpr int kVifCodeWord = 3;
 
-// VU1 data quadwords an instance batch may share with the face run, and the most one UNPACK may
-// carry. The transforms of a batch fill whatever the face run leaves under both.
-constexpr int kVu1InstanceQuadwordBudget = 0x14d;
-constexpr int kInstanceUnpackQuadwordLimit = 0xfe;
+// The constants of the microprogram, the projection, the colour scale, the viewport scale and
+// offset, the texture coordinate transform, the GIF tag, and the lighting block.
+constexpr int kConstantQwords = 0x13;
 
-// One instance transform is four quadword rows.
-constexpr int kQuadwordsPerTransform = 4;
+// GIF tag of the faces, nine registers of ST, RGBAQ, and XYZF2 for the three corners, with a
+// triangle primitive that is Gouraud shaded unless flat and, as selected, textured and blended.
+constexpr unsigned long long kFaceGifTag = 0x9000400000008000ULL;
+constexpr unsigned long long kFaceGifRegs = 0x412412412ULL;
+constexpr unsigned long long kPrimTriangle = 3;
+constexpr int kPrimIipShift = 3;
+constexpr int kPrimTmeShift = 4;
+constexpr int kPrimAbeShift = 6;
+constexpr int kGifTagPrimShift = 47;
 
-// The batch header quadword that carries the instance count ahead of the transforms.
-constexpr int kBatchHeaderQuadwords = 1;
+// DMA tags. A REF tag of a transform moves its four quadwords from where it is.
+constexpr int kDmaTagIdCnt = 1;
+constexpr int kDmaTagIdRef = 3;
+constexpr unsigned long long kDmaRefTransformTag = 0x30000004;
+constexpr int kDmaTagAddressShift = 32;
+constexpr int kDmaChannelToSpr = 9;
 
-// VIFcode fields, as Rnd::PsMesh assembles them.
-constexpr unsigned kVifCmdMsCal = 0x14;
-constexpr unsigned kVifCmdMsCnt = 0x17;
-constexpr unsigned kVifCmdUnpackV4_32 = 0x6c;
-constexpr int kVifCmdShift = 24;
-constexpr int kVifNumShift = 16;
-constexpr unsigned kVifUnpackFlg = 0x8000;
+// The instances unpack after the face data, below the end of the VU1 data buffer, at most 254
+// quadwords at a time.
+constexpr int kVuDataEnd = 0x14e;
+constexpr int kMaxUnpackQwords = 0xfe;
+constexpr int kTransformQwords = 4;
 
-// Vu1DrawInstances is the instanced face path. The first batch calls it, and every later batch
-// continues the program instead.
-constexpr unsigned kVu1InstanceEntry = 0x406;
+constexpr int kLowDword = 0;
+constexpr int kHighDword = 1;
 
-inline unsigned MakeVifCode(unsigned nCmd, int nNum, unsigned nImmediate) {
-    return (nCmd << kVifCmdShift) | (static_cast<unsigned>(nNum) << kVifNumShift) | nImmediate;
+inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
+    DmaPacket &packet = DmaPacket::shared();
+    packet.mCursor->mDword[kLowDword] = qwLow;
+    packet.mCursor->mDword[kHighDword] = qwHigh;
+    ++packet.mCursor;
 }
 
-// Two 32-bit words ride in each half of a packet quadword, the first in the low bits.
-inline unsigned long long PackWordPair(unsigned nLow, unsigned nHigh) {
-    return nLow | (static_cast<unsigned long long>(nHigh) << 32);
+inline void PushFloats(float fX, float fY, float fZ, float fW) {
+    DmaPacket &packet = DmaPacket::shared();
+    const float afValues[] = {fX, fY, fZ, fW};
+    std::memcpy(packet.mCursor, afValues, sizeof(afValues));
+    ++packet.mCursor;
 }
 
-// The packet buffer is untyped quadwords, and a transform is copied into it row by row.
-inline const GifQuadword *AsQuadwords(const void *pRecord) {
-    return static_cast<const GifQuadword *>(pRecord);
+inline void PushVector(const Vector3 &vector) {
+    PushFloats(vector.x, vector.y, vector.z, vector.w);
+}
+
+// A quadword of three VIF NOPs and one VIF code.
+inline void PushVifCode(unsigned int nCode) {
+    DmaPacket &packet = DmaPacket::shared();
+    packet.mCursor->mWord[0] = 0;
+    packet.mCursor->mWord[1] = 0;
+    packet.mCursor->mWord[2] = 0;
+    packet.mCursor->mWord[kVifCodeWord] = nCode;
+    ++packet.mCursor;
+}
+
+inline DmaQuadword *PushClearedQuadword() {
+    DmaPacket &packet = DmaPacket::shared();
+    DmaQuadword *pQuadword = packet.mCursor;
+    pQuadword->mDword[kLowDword] = 0;
+    pQuadword->mDword[kHighDword] = 0;
+    ++packet.mCursor;
+    return pQuadword;
+}
+
+inline unsigned int UnpackCode(int nAddress, int nQwords) {
+    return static_cast<unsigned int>(nAddress) |
+           (static_cast<unsigned int>(nQwords) << kVifUnpackNumShift) | kVifUnpackFlg |
+           kVifUnpackV4;
+}
+
+inline unsigned int DmaAddressOf(const void *pAddress) {
+    return static_cast<unsigned int>(reinterpret_cast<std::uintptr_t>(pAddress));
 }
 
 } // namespace
 
-MultiMesh *NewPsMultiMesh(const HxStr &name) {
-    // The binary allocates the 0x38 bytes the object occupies.
-    return new PsMultiMesh(name);
-}
-
-PsMultiMesh::PsMultiMesh(const HxStr &name) : Object(name), MultiMesh(name) {
-}
-
-PsMultiMesh::~PsMultiMesh() {
+PsMultiMesh::PsMultiMesh(const char *pszName) : RndObject(pszName), RndMultiMesh(pszName) {
 }
 
 int PsMultiMesh::DrawShowing() {
-    ++g_renderStats.mnMeshDraws;
-    if (Rnd::ThePs.mnUseVu1 == 0) {
-        return MultiMesh::DrawShowing();
-    }
-
     if (mTransforms.empty()) {
         return 1;
     }
-    if (mMesh == nullptr) {
+    RndMesh *pMesh = mMesh;
+    if (pMesh == nullptr) {
         return 1;
     }
-    if (mMesh->mFacesOwner->mFaces.size() == 0) {
+    if (static_cast<PsMesh *>(pMesh->mGeomOwner)->mNumFaces == 0) {
         return 1;
     }
 
-    Mat *pMat = mMesh->mMat;
     int nPass = 0;
-    int nMorePasses = 0;
+    RndMat *pMat = pMesh->mMat;
+    // The binary ends the range 15 bytes after the end node of the list. The end node has no
+    // address in portable C++. The range ends after the last transform instead.
+    SyncDCache(&mTransforms.front(), &mTransforms.back() + 1);
     do {
-        Rnd::ThePs.ReserveGifSpace(kGifReserveQuadwords);
-        PsMesh::SelectDepthRegsForPass(*mMesh, nPass);
+        static_cast<PsMesh *>(mMesh)->SetZTest(nPass);
         if (pMat != nullptr) {
-            // The narrowing is what psmat.h records as undecidable. Every material on this target
-            // is a PsMat, because GfxDevice::Init() installs that creator.
-            nMorePasses = static_cast<PsMat *>(pMat)->Select();
+            nPass = static_cast<PsMat *>(pMat)->Select(nPass);
         } else {
             PsMat::SelectDefault();
         }
-        SubmitInstanceGifPackets();
-        ++nPass;
-    } while (nMorePasses != 0);
+        DrawInstances();
+    } while (nPass != 0);
     return 1;
 }
 
-void PsMultiMesh::SubmitInstanceGifPackets() {
-    const int nInstances = static_cast<int>(mTransforms.size());
-    g_renderStats.mnTriangles += nInstances * static_cast<int>(mMesh->mFacesOwner->mFaces.size());
+void PsMultiMesh::DrawInstances() {
+    DmaPacket &frame = DmaPacket::shared();
+    frame.CloseGifTag(1, 0);
 
-    Rnd::ThePs.CloseGifTag(1);
-    Rnd::ThePs.SwapGifWrite();
-    // The same narrowing DrawShowing() makes for the material. Every mesh on this target is a
-    // PsMesh.
-    const int nFaceQuadwords = static_cast<PsMesh *>(mMesh)->EmitMultiMeshFaceRun();
-    const int nBatchLimit =
-        std::min(kVu1InstanceQuadwordBudget - nFaceQuadwords, kInstanceUnpackQuadwordLimit) /
-        kQuadwordsPerTransform;
+    PushVifCode(UnpackCode(0, kConstantQwords));
+    PushVector(g_viewProjectXfm.mBasisX);
+    PushVector(g_viewProjectXfm.mBasisY);
+    PushVector(g_viewProjectXfm.mBasisZ);
+    PushVector(g_viewProjectXfm.mTranslation);
+    PushFloats(g_colorScale.r, g_colorScale.g, g_colorScale.b, g_colorScale.a);
+    PushFloats(g_viewportXfm.mBasisX.x, g_viewportXfm.mBasisY.y, g_viewportXfm.mBasisZ.z, 0.0f);
+    PushFloats(g_viewportXfm.mTranslation.x,
+               g_viewportXfm.mTranslation.y,
+               g_viewportXfm.mTranslation.z,
+               0.0f);
+    PushVector(g_uvXfm.mBasisX);
+    PushVector(g_uvXfm.mBasisY);
+    PushVector(g_uvXfm.mTranslation);
+    const unsigned long long qwPrim =
+        kPrimTriangle | (static_cast<unsigned long long>(g_nSelectedFlat ^ 1) << kPrimIipShift) |
+        (static_cast<unsigned long long>(g_nTextured) << kPrimTmeShift) |
+        (static_cast<unsigned long long>(g_nAlphaBlendEnabled) << kPrimAbeShift);
+    PushQuadword((qwPrim << kGifTagPrimShift) | kFaceGifTag, kFaceGifRegs);
+    PsEnviron::SelectLights(nullptr, nullptr);
 
-    int bFirstBatch = 1;
-    std::list<Transform>::iterator it = mTransforms.begin();
+    MemHandle *pPacket;
+    int nSetupQwords;
+    int nVuEnd;
+    static_cast<PsMesh *>(mMesh)->FacesPacket(pPacket, nSetupQwords, nVuEnd);
+    auto *pData = static_cast<DmaQuadword *>(pPacket->Lock());
+    if (mMesh->mGeomOwner->mMutable == 0) {
+        frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+        frame.OpenDmaTag();
+        frame.CloseDmaTag(kDmaTagIdRef, DmaAddressOf(pData), nSetupQwords);
+        frame.OpenDmaTag();
+    } else {
+        (void)ThePs.PacketQwordsFree(); // Yes, the binary discards this call's result.
+        frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+        DmaQuadword *pDest = frame.mCursor;
+        DmaPacket packet;
+        packet.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+        packet.Init(pData, kDmaChannelToSpr, 1);
+        packet.mCursor = pData + nSetupQwords;
+        packet.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
+        frame.mCursor = pDest + nSetupQwords;
+        frame.OpenDmaTag();
+    }
+    pPacket->Unlock();
+
+    const int nRoom =
+        kVuDataEnd - nVuEnd < kMaxUnpackQwords ? kVuDataEnd - nVuEnd : kMaxUnpackQwords;
+    const int nPerBatch = nRoom / kTransformQwords;
+    bool bFirst = true;
+    auto it = mTransforms.begin();
     while (it != mTransforms.end()) {
-        GifQuadword *pHeader = Rnd::ThePs.mpWrite;
-        pHeader[0] = GifQuadword{0, 0};
-        pHeader[1] = GifQuadword{0, 0};
-        GifQuadword *pWrite = pHeader + 2;
-
-        int nBatch = 0;
-        while (nBatch < nBatchLimit && it != mTransforms.end()) {
-            const GifQuadword *pRows = AsQuadwords(&*it);
-            for (int i = 0; i < kQuadwordsPerTransform; ++i) {
-                pWrite[i] = pRows[i];
+        DmaQuadword *pUnpack = PushClearedQuadword();
+        DmaQuadword *pCount = PushClearedQuadword();
+        frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+        int nCount = 0;
+        if (nPerBatch > 0) {
+            while (it != mTransforms.end()) {
+                ++nCount;
+                PushQuadword(
+                    (static_cast<unsigned long long>(DmaAddressOf(&*it)) << kDmaTagAddressShift) |
+                        kDmaRefTransformTag,
+                    0);
+                ++it;
+                if (nCount >= nPerBatch) {
+                    break;
+                }
             }
-            pWrite += kQuadwordsPerTransform;
-            ++nBatch;
-            ++it;
         }
+        frame.OpenDmaTag();
+        pUnpack->mWord[kVifCodeWord] = UnpackCode(nVuEnd, nCount * kTransformQwords + 1);
+        pCount->mWord[0] = static_cast<unsigned int>(nCount);
 
-        pHeader[0].mHi =
-            PackWordPair(0,
-                         MakeVifCode(kVifCmdUnpackV4_32,
-                                     nBatch * kQuadwordsPerTransform + kBatchHeaderQuadwords,
-                                     kVifUnpackFlg | static_cast<unsigned>(nFaceQuadwords)));
-        Rnd::ThePs.mpWrite = pWrite;
-        pHeader[1].mLo = static_cast<unsigned>(nBatch);
-        Rnd::ThePs.FlushReservedGif();
-
-        GifQuadword *pCall = Rnd::ThePs.mpWrite;
-        Rnd::ThePs.mpWrite = pCall + 1;
-        pCall->mHi = 0;
-        pCall->mLo = bFirstBatch != 0 ? MakeVifCode(kVifCmdMsCal, 0, kVu1InstanceEntry) :
-                                        MakeVifCode(kVifCmdMsCnt, 0, 0);
-        bFirstBatch = 0;
-        Rnd::ThePs.FlushGifPacket(0, 0);
+        PushVifCode(bFirst ? kVifMscalInstanced : kVifMscnt);
+        bFirst = false;
+        ThePs.Flush();
     }
 }
-
-} // namespace Rnd

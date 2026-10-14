@@ -15,7 +15,7 @@ Debug::Debug() {
     mReserved08 = 0;
     mReserved0C = 0;
     mLog = nullptr;
-    mReserved18 = 0;
+    mModalCallback = nullptr;
 }
 
 Debug::~Debug() {

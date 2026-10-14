@@ -1,791 +1,930 @@
 #include "rnd/psmesh.h"
 
-#include <algorithm>
+#include <cstdint>
+#include <cstring>
+#include <vector>
 
-#include "gfx/gfxdevice.h"
-#include "gfx/renderstats.h"
-#include "math/color.h"
+#include <eekernel.h>
+
 #include "math/sphere.h"
-#include "os/dbg.h"
-#include "os/hxstr.h"
-#include "rnd/cam.h"
-#include "rnd/drawverts.h"
-#include "rnd/mat.h"
-#include "rnd/mesh.h"
+#include "math/transformops.h"
+#include "rnd/dmapacket.h"
+#include "rnd/ps.h"
+#include "rnd/pscam.h"
+#include "rnd/psenviron.h"
 #include "rnd/psmat.h"
-#include "rnd/transformable.h"
-#include "rnd/view.h"
-
-namespace Rnd {
+#include "rnd/rndmanager.h"
 
 namespace {
 
-// GS general-purpose register indices. The shipped build took these from the PlayStation 2 SDK
-// headers, which this tree does not reproduce.
+constexpr int kNoHeap = -1;
+constexpr int kQwordBytes = 16;
+constexpr int kPacketBytes = 0x30000;
+
+// VIF codes. An UNPACK code has its count at bit 16 and adds the TOPS register to its address.
+constexpr unsigned int kVifStcycl = 0x01000000;
+constexpr unsigned int kVifMscal = 0x14000000;
+constexpr unsigned int kVifMscnt = 0x17000000;
+constexpr unsigned int kVifUnpackV2_32 = 0x64000000;
+constexpr unsigned int kVifUnpackV2_16 = 0x65000000;
+constexpr unsigned int kVifUnpackV3_32 = 0x68000000;
+constexpr unsigned int kVifUnpackV3_16 = 0x69000000;
+constexpr unsigned int kVifUnpackV4_32 = 0x6c000000;
+constexpr int kVifNumShift = 16;
+constexpr unsigned int kVifNumMask = 0xff;
+constexpr unsigned int kVifUnpackTops = 0x8000;
+constexpr int kStcyclWlShift = 8;
+
+// STCYCL settings, write cycle and cycle length.
+constexpr unsigned int kStcycl1Of1 = kVifStcycl | (1 << kStcyclWlShift) | 1;
+constexpr unsigned int kStcycl1Of2 = kVifStcycl | (1 << kStcyclWlShift) | 2;
+constexpr unsigned int kStcycl1Of4 = kVifStcycl | (1 << kStcyclWlShift) | 4;
+constexpr unsigned int kStcycl2Of4 = kVifStcycl | (2 << kStcyclWlShift) | 4;
+
+// DMA tags of a mutable mesh, CNT for the VIF codes and REF for each vertex.
+constexpr unsigned long long kDmaTagCnt = 0x10000000;
+constexpr unsigned long long kDmaTagRef = 0x30000000;
+constexpr int kDmaTagAddressShift = 32;
+constexpr int kDmaTagIdCnt = 1;
+constexpr int kDmaTagIdRef = 3;
+
+// The face microprogram. Each vertex occupies four quadwords from kFaceVuVerts, the batch settings
+// are at kFaceVuSettings, and the indices follow the vertices, one V3-16 vector for each face.
+// A batch takes vertices while the budget lasts, at a cost of 4 a vertex and 1 a face.
+constexpr unsigned int kFaceProgram = 0x63e;
+constexpr int kFaceVuSettings = 0x15;
+constexpr int kFaceVuVerts = 0x16;
+constexpr int kFaceVertQwords = 4;
+constexpr int kFaceVertCost = 4;
+constexpr int kFaceBatchBudget = 0x12b;
+constexpr int kFaceIndices = 3;
+constexpr int kFaceUnpackVerts = 64;
+constexpr int kFaceColorOffset = 2;
+constexpr int kFaceTexOffset = 3;
+
+// The edge microprogram. Each vertex is a position and a colour slot from kEdgeVuVerts, the batch
+// settings are at kEdgeVuSettings, and the indices follow, one V2-16 vector for each edge.
+constexpr unsigned int kEdgeProgram = 0x5a8;
+constexpr int kEdgeVuSettings = 8;
+constexpr int kEdgeVuVerts = 9;
+constexpr int kEdgeVertQwords = 2;
+constexpr int kEdgeVertCost = 2;
+constexpr int kEdgeBatchBudget = 0x140;
+constexpr int kEdgeIndices = 2;
+
+// A vertex of RndMesh is four quadwords, and a REF tag sends the whole vertex or its position.
+constexpr unsigned long long kVertQwords = 4;
+constexpr unsigned long long kVertPositionQwords = 1;
+
+// The settings the draw routines unpack ahead of the lighting block, 21 quadwords for faces and 8
+// for edges, from VU1 address 0.
+constexpr unsigned int kFaceSettingsQwords = 0x15;
+constexpr unsigned int kEdgeSettingsQwords = 8;
+
+// GIF tags the microprograms send with each primitive, PRE and EOP set, PRIM at bit 47.
+constexpr unsigned long long kGifTagTriangles = 0x9000400000008000ULL;
+constexpr unsigned long long kGifRegsTriangles = 0x412412412ULL;
+constexpr unsigned long long kGifTagVertex = 0x3000400000008000ULL;
+constexpr unsigned long long kGifRegsVertex = 0x412;
+constexpr unsigned long long kGifRegsLine = 0x441;
+constexpr int kGifTagPrimShift = 47;
+constexpr unsigned int kPrimLine = 1;
+constexpr unsigned int kPrimTriangle = 3;
+constexpr unsigned int kPrimTriangleFan = 5;
+constexpr int kPrimIipShift = 3;
+constexpr int kPrimTmeShift = 4;
+constexpr int kPrimFgeShift = 5;
+constexpr int kPrimAbeShift = 6;
+constexpr unsigned int kPrimAbe = 1 << kPrimAbeShift;
+constexpr unsigned int kPrimAa1 = 0x80;
+
+// The depth registers of SetZTest().
 constexpr int kGsRegTest1 = 0x47;
 constexpr int kGsRegZbuf1 = 0x4e;
+constexpr unsigned long long kZbufZmskMask = 1ULL << 32;
+constexpr int kZbufZmskShift = 32;
+constexpr int kTestZtstShift = 17;
+constexpr unsigned long long kTestZtstMask = 0x60000;
+constexpr unsigned long long kZtstNever = 0;
+constexpr unsigned long long kZtstAlways = 1;
+constexpr unsigned long long kZtstGequal = 2;
+constexpr unsigned long long kZtstGreater = 3;
+constexpr int kPassFaces = 0;
+constexpr int kPassEdges = 1;
+constexpr int kPassCount = 2;
 
-// ZBUF_1.ZMSK, which suppresses the depth write when it is set.
-constexpr int kZbufZMaskShift = 32;
-constexpr unsigned long long kZbufZMaskField = 1ULL << kZbufZMaskShift;
+constexpr float kColorScale = 255.0f;
+constexpr float kAlphaScale = 128.0f;
 
-// TEST_1.ZTST. The GS compares a larger depth as nearer, so the inverse of each mesh depth
-// function is what reaches the register.
-constexpr int kTestZTestShift = 17;
-constexpr unsigned long long kTestZTestField = 3ULL << kTestZTestShift;
-constexpr int kGsZTestNever = 0;
-constexpr int kGsZTestAlways = 1;
-constexpr int kGsZTestGEqual = 2;
-constexpr int kGsZTestGreater = 3;
+// The VU0 microprograms that skin one vertex with one bone or with two.
+constexpr int kLowDword = 0;
+constexpr int kHighDword = 1;
+constexpr int kWordX = 0;
+constexpr int kWordY = 1;
+constexpr int kWordZ = 2;
+constexpr int kWordW = 3;
 
-// Quadwords of GIF space each pass reserves before it programs any register.
-constexpr int kGifReserveQuadwords = 32;
-
-// Passes beyond the second reuse the depth state the second pass programmed.
-constexpr int kDepthProgramPassLimit = 2;
-
-// Vertices the transformed vertex buffer holds. The software path reports an overflow rather than
-// clipping the count.
-constexpr unsigned kMaxSoftwareVerts = 2500;
-
-// GS PRIM fields. Both software paths program the whole of the register that matters and leave
-// the context and fixed-fragment bits alone.
-constexpr int kGsRegPrim = 0;
-constexpr unsigned kGsPrimLine = 1;
-constexpr unsigned kGsPrimTriangle = 3;
-constexpr int kGsPrimIipShift = 3;
-constexpr int kGsPrimTmeShift = 4;
-constexpr int kGsPrimFgeShift = 5;
-constexpr int kGsPrimAbeShift = 6;
-constexpr unsigned kGsPrimAa1 = 1u << 7;
-constexpr unsigned long long kGsPrimFieldMask = 0x7ff;
-
-// GIFtag register descriptors, four bits each, consumed from the low nibble upward. Every packet
-// here is the PACKED format, so FLG stays zero and one register spends one quadword.
-constexpr unsigned long long kGifRegsTexturedTri = 0x412412412ULL;
-constexpr unsigned long long kGifRegsUntexturedTri = 0x414141ULL;
-constexpr unsigned long long kGifRegsLine = 0x441ULL;
-constexpr int kGifNRegTexturedTri = 9;
-constexpr int kGifNRegUntexturedTri = 6;
-constexpr int kGifNRegLine = 3;
-constexpr int kGifTagNRegShift = 60;
-
-// Quadwords of a transformed vertex each path submits. A textured triangle sends the texture
-// coordinate, the colour, and the position; an untextured one starts at the colour; a line takes
-// its colour from the material and sends the position alone.
-constexpr int kDrawVertQuadwordsTextured = 3;
-constexpr int kDrawVertQuadwordsUntextured = 2;
-constexpr int kDrawVertQuadwordsLine = 1;
-
-// The GS takes eight-bit colour and seven-bit alpha, so alpha scales to half of the full range.
-constexpr float kGsColorScale = 255.0f;
-constexpr float kGsAlphaScale = 128.0f;
-
-// VU1 destination quadwords a run may occupy, and what each item spends. A face vertex lands as
-// four quadwords and an edge vertex as two, which is the destination stride the write cycle of
-// each VU1 batch arranges, and each primitive spends one more for its indices. A run closes
-// rather than starting a primitive it cannot finish, so the reserve covers a whole one.
-constexpr int kFaceRunQuadwordBudget = 315;
-constexpr int kEdgeRunQuadwordBudget = 325;
-constexpr int kFaceVertQuadwordCost = 4;
-constexpr int kEdgeVertQuadwordCost = 2;
-constexpr int kFaceRunReserve = 5;
-constexpr int kEdgeRunReserve = 3;
-
-// Scratch capacity the strip builder starts each list at.
-constexpr int kRunVertCapacity = 128;
-constexpr int kRunIndexCapacity = 330;
-
-// A run index addresses VU1 memory rather than the vertex list, so it is scaled by the quadwords
-// a vertex occupies there. That is four for a face vertex and two for an edge vertex.
-constexpr int kVu1VertStride = 4;
-constexpr int kVu1EdgeVertStride = 2;
-
-// The clipper appends its output above the mesh vertex cap and reports the next free index. A
-// result of fewer than three vertices describes nothing.
-constexpr int kClipScratchBase = kDrawVertCapacity;
-constexpr int kClipMinFanIndex = kDrawVertCapacity + 3;
-
-// VIFcode CMD field values, from the codes the two VU1 paths assemble.
-constexpr unsigned kVifCmdStCycl = 0x01;
-constexpr unsigned kVifCmdMsCal = 0x14;
-constexpr unsigned kVifCmdMsCnt = 0x17;
-constexpr unsigned kVifCmdUnpackV2_16 = 0x65;
-constexpr unsigned kVifCmdUnpackV3_16 = 0x69;
-constexpr unsigned kVifCmdUnpackV4_32 = 0x6c;
-constexpr int kVifCmdShift = 24;
-constexpr int kVifNumShift = 16;
-
-// Bit 15 of an UNPACK immediate, which adds the double-buffer offset to the destination address.
-constexpr unsigned kVifUnpackFlg = 0x8000;
-
-// STCYCL immediates, as the write length in the upper byte and the cycle length in the lower one.
-constexpr unsigned kVifStCyclWl1Cl1 = 0x0101;
-constexpr unsigned kVifStCyclWl1Cl2 = 0x0102;
-constexpr unsigned kVifStCyclWl3Cl4 = 0x0304;
-
-// VU1 data addresses each batch unpacks to. A face batch puts its parameter quadword at the first
-// and its vertices immediately after; an edge batch separates the two.
-constexpr int kVu1FaceParamAddr = 0x12;
-constexpr int kVu1EdgeParamAddr = 8;
-constexpr int kVu1EdgeVertAddr = 9;
-
-// Microprogram entry points. A textured face batch enters at the start of the program and an
-// untextured one skips to the shorter path.
-constexpr int kVu1FaceEntryTextured = 0x000;
-constexpr int kVu1FaceEntryUntextured = 0x4ce;
-constexpr int kVu1EdgeEntry = 0x1c2;
-
-// A VIFcode NUM field is eight bits, so one UNPACK cannot describe more destination quadwords
-// than this. The textured face path closes and reopens its batch on reaching the limit.
-constexpr int kVifUnpackQuadwordLimit = 0xfc;
-
-// Quadwords of a Rnd::MeshVert each path sends. An untextured face batch omits the texture
-// coordinate quadword, but its destination stride stays at four. An edge batch sends the position
-// alone under STCYCL CL=2 WL=1, at a destination stride of two.
-constexpr int kVertQuadwordsTextured = 4;
-constexpr int kVertQuadwordsUntextured = 3;
-constexpr int kVertQuadwordsEdge = 1;
-constexpr int kVertQuadwordStride = 4;
-
-// Indices one primitive consumes, and how many 16-bit indices fit in a quadword.
-constexpr int kFaceIndicesPerPrim = 3;
-constexpr int kEdgeIndicesPerPrim = 2;
-constexpr int kIndexHalfwordsPerQuadword = 8;
-constexpr int kIndexHalfwordShift = 3;
-
-// Assemble one VIFcode.
-inline unsigned MakeVifCode(unsigned nCmd, int nNum, unsigned nImmediate) {
-    return (nCmd << kVifCmdShift) | (static_cast<unsigned>(nNum) << kVifNumShift) | nImmediate;
-}
-
-// Two 32-bit words ride in each half of a packet quadword, the first in the low bits.
-inline unsigned long long PackWordPair(unsigned nLow, unsigned nHigh) {
-    return nLow | (static_cast<unsigned long long>(nHigh) << 32);
-}
-
-// Take the next quadword of the packet buffer.
-inline GifQuadword *TakeQuadword() {
-    GifQuadword *pQuad = Rnd::ThePs.mpWrite;
-    Rnd::ThePs.mpWrite = pQuad + 1;
-    return pQuad;
-}
-
-// The packet buffer is untyped quadwords. These are the only two places a typed record is copied
-// into it, a vertex and a packed index block, so the one conversion lives here.
-inline const GifQuadword *AsQuadwords(const void *pRecord) {
-    return static_cast<const GifQuadword *>(pRecord);
-}
-
-inline GifQuadword *AsWritableQuadwords(void *pRecord) {
-    return static_cast<GifQuadword *>(pRecord);
-}
-
-// Copy a packed index block into the stream a quadword at a time. Both VU1 paths expand this.
-inline void AppendIndexData(const unsigned short *pIndices, int nIndexCount) {
-    const GifQuadword *pSource = AsQuadwords(pIndices);
-    const int nQuadwords =
-        (nIndexCount + kIndexHalfwordsPerQuadword - 1) / kIndexHalfwordsPerQuadword;
-    for (int i = 0; i < nQuadwords; ++i) {
-        GifQuadword *pDest = Rnd::ThePs.mpWrite;
-        *pDest = pSource[i];
-        Rnd::ThePs.mpWrite = pDest + 1;
+// Writes halfwords one after another into quadwords.
+class HalfwordWriter {
+public:
+    explicit HalfwordWriter(DmaQuadword *pQuad) : mQuad(pQuad), mCount(0) {
     }
-}
 
-// Append part of a vertex and report where the next one goes. The caller writes the advanced
-// pointer back to the device once, rather than once per vertex.
-inline GifQuadword *AppendVert(GifQuadword *pWrite, const MeshVert &vert, int nQuadwords) {
-    const GifQuadword *pSource = AsQuadwords(&vert);
-    for (int i = 0; i < nQuadwords; ++i) {
-        pWrite[i] = pSource[i];
+    void Put(int nValue) {
+        mQuad[mCount / kHalves].mHalf[mCount % kHalves] = static_cast<unsigned short>(nValue);
+        ++mCount;
     }
-    return pWrite + nQuadwords;
-}
 
-// Append part of a transformed vertex to the stream, one quadword at a time as the binary does.
-inline void AppendDrawVert(const DrawVert &vert, int nFirstQuadword, int nQuadwords) {
-    const GifQuadword *pSource = AsQuadwords(&vert) + nFirstQuadword;
-    for (int i = 0; i < nQuadwords; ++i) {
-        GifQuadword *pDest = Rnd::ThePs.mpWrite;
-        *pDest = pSource[i];
-        Rnd::ThePs.mpWrite = pDest + 1;
+    int Count() const {
+        return mCount;
     }
+
+    // Pad with zero to a whole quadword and report the quadword after.
+    DmaQuadword *Align() {
+        while (mCount % kHalves != 0) {
+            Put(0);
+        }
+        return mQuad + mCount / kHalves;
+    }
+
+private:
+    static constexpr int kHalves = 8;
+
+    DmaQuadword *mQuad;
+    int mCount;
+};
+
+// Writes words and floats one after another into quadwords.
+class WordWriter {
+public:
+    WordWriter(DmaQuadword *pQuad, int nFirst) : mQuad(pQuad), mCount(nFirst) {
+    }
+
+    void Put(unsigned int nValue) {
+        mQuad[mCount / kWords].mWord[mCount % kWords] = nValue;
+        ++mCount;
+    }
+
+    void Put(float fValue) {
+        mQuad[mCount / kWords].mFloat[mCount % kWords] = fValue;
+        ++mCount;
+    }
+
+    // Pad with zero to a whole quadword and report the quadword after.
+    DmaQuadword *Align() {
+        while (mCount % kWords != 0) {
+            Put(0U);
+        }
+        return mQuad + mCount / kWords;
+    }
+
+private:
+    static constexpr int kWords = 4;
+
+    DmaQuadword *mQuad;
+    int mCount;
+};
+
+inline unsigned int DmaAddressOf(const void *pAddress) {
+    return static_cast<unsigned int>(reinterpret_cast<std::uintptr_t>(pAddress));
 }
 
-// NTSC-U/C: 0x00606a60, PAL: 0x006476b8
-// Submit one triangle of transformed vertices, clipping it first when asked.
-//
-// Rnd::PsMesh::DrawFacesSoftware() inlines one level of this and the recursion uses the body here.
-// A triangle no plane crosses goes straight out. One that any vertex places beyond the far plane
-// is dropped, as is one whose three vertices share a plane, because that puts the whole triangle
-// outside it. Anything else is clipped into the scratch above the vertex cap and the result fans
-// out as triangles, each submitted on its own so that a full buffer is sent mid-fan.
-void EmitTriangle(unsigned nIdx0, unsigned nIdx1, unsigned nIdx2, int bClip) {
-    if (bClip != 0) {
-        const int nFlags = g_aDrawVerts[nIdx0].mClipFlags | g_aDrawVerts[nIdx1].mClipFlags |
-                           g_aDrawVerts[nIdx2].mClipFlags;
-        if ((nFlags & kDrawVertClipAnyPlane) != 0) {
-            ++g_renderStats.mnFacesClipped;
-            if ((nFlags & kDrawVertClipFarPlane) != 0) {
-                return;
-            }
-            const int nShared = g_aDrawVerts[nIdx0].mClipFlags & g_aDrawVerts[nIdx1].mClipFlags &
-                                g_aDrawVerts[nIdx2].mClipFlags;
-            if ((nShared & kDrawVertClipOtherPlanes) != 0) {
-                return;
-            }
+// The last byte before an end, the end SyncDCache() takes.
+inline void *ByteBefore(void *pEnd) {
+    return static_cast<unsigned char *>(pEnd) - 1;
+}
 
-            int nNextIndex = kClipScratchBase;
-            ClipTriangleToFrustum(nIdx0, nIdx1, nIdx2, g_aDrawVerts, &nNextIndex);
-            while (nNextIndex >= kClipMinFanIndex) {
-                const unsigned nFanIndex = static_cast<unsigned>(nNextIndex);
-                EmitTriangle(
-                    kClipScratchBase, (nFanIndex - 2) & 0xffff, (nFanIndex - 1) & 0xffff, 0);
-                Rnd::ThePs.FlushGifPacket(1, 1);
-                --nNextIndex;
-            }
-            return;
+inline unsigned int VifUnpack(unsigned int nCode, unsigned int nCount, int nAddress) {
+    return nCode | (nCount << kVifNumShift) | kVifUnpackTops | static_cast<unsigned int>(nAddress);
+}
+
+// The heap the packets come from, rnd, looked up once for each call site. A missing heap is 0.
+inline int RndHeap(int &nCached) {
+    if (nCached == kNoHeap) {
+        nCached = MemFindHeap("rnd");
+        if (nCached == kNoHeap) {
+            return 0;
         }
     }
-
-    // The second and third vertices precede the first, which is the order the strips Sync() builds
-    // expect.
-    if (g_nStageTextureBound != 0) {
-        AppendDrawVert(g_aDrawVerts[nIdx1], 0, kDrawVertQuadwordsTextured);
-        AppendDrawVert(g_aDrawVerts[nIdx2], 0, kDrawVertQuadwordsTextured);
-        AppendDrawVert(g_aDrawVerts[nIdx0], 0, kDrawVertQuadwordsTextured);
-    } else {
-        AppendDrawVert(g_aDrawVerts[nIdx1], 1, kDrawVertQuadwordsUntextured);
-        AppendDrawVert(g_aDrawVerts[nIdx2], 1, kDrawVertQuadwordsUntextured);
-        AppendDrawVert(g_aDrawVerts[nIdx0], 1, kDrawVertQuadwordsUntextured);
-    }
-    ++g_renderStats.mnTriangles;
+    return nCached;
 }
 
-// A negative cap draws every vertex. 0x006023f4, 0x00602448, and 0x0060258c all expand this.
-inline int DrawVertCount(int nMaxVerts, int nVerts) {
-    if (nMaxVerts < 0 || nVerts < nMaxVerts) {
-        return nVerts;
-    }
-    return nMaxVerts;
+inline void PushVector(const Vector3 &v) {
+    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    quad.mFloat[kWordX] = v.x;
+    quad.mFloat[kWordY] = v.y;
+    quad.mFloat[kWordZ] = v.z;
+    quad.mFloat[kWordW] = v.w;
+    ++DmaPacket::shared().mCursor;
 }
 
-// 0x006022e8 and 0x006024bc both expand this.
-inline void SelectDepthRegs(int nZMask, int nZTest) {
-    Rnd::ThePs.SetGsReg(
-        kGsRegZbuf1, static_cast<unsigned long long>(nZMask) << kZbufZMaskShift, kZbufZMaskField);
-    Rnd::ThePs.SetGsReg(
-        kGsRegTest1, static_cast<unsigned long long>(nZTest) << kTestZTestShift, kTestZTestField);
+inline void PushFloats(float fX, float fY, float fZ, float fW) {
+    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    quad.mFloat[kWordX] = fX;
+    quad.mFloat[kWordY] = fY;
+    quad.mFloat[kWordZ] = fZ;
+    quad.mFloat[kWordW] = fW;
+    ++DmaPacket::shared().mCursor;
+}
+
+inline void PushDwords(unsigned long long qwLow, unsigned long long qwHigh) {
+    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    quad.mDword[kLowDword] = qwLow;
+    quad.mDword[kHighDword] = qwHigh;
+    ++DmaPacket::shared().mCursor;
+}
+
+inline void PushTransform(const Transform &xfm) {
+    PushVector(xfm.mBasisX);
+    PushVector(xfm.mBasisY);
+    PushVector(xfm.mBasisZ);
+    PushVector(xfm.mTranslation);
+}
+
+// Open the settings of a microprogram, an UNPACK of a count of quadwords to VU1 address 0.
+inline void PushSettingsUnpack(unsigned int nQwords) {
+    DmaPacket &packet = DmaPacket::shared();
+    packet.CloseGifTag(1, 0);
+    packet.mCursor->mWord[kWordX] = 0;
+    packet.mCursor->mWord[kWordY] = 0;
+    packet.mCursor->mWord[kWordZ] = 0;
+    packet.mCursor->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, nQwords, 0);
+    ++packet.mCursor;
+}
+
+// Send a packet of a geometry. A mesh that is not mutable sends it by reference. A mutable mesh
+// copies it into the frame by DMA, for its REF tags are only valid in a DMA chain run from main
+// memory.
+inline void SendPacket(const PsMesh &geom, DmaQuadword *pData, int nQwords) {
+    DmaPacket &frame = DmaPacket::shared();
+    if (geom.mMutable == 0) {
+        frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+        frame.OpenDmaTag();
+        frame.CloseDmaTag(kDmaTagIdRef, DmaAddressOf(pData), nQwords);
+        frame.OpenDmaTag();
+        return;
+    }
+    (void)ThePs.PacketQwordsFree(); // Yes, the binary discards this call's result.
+    frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+    DmaQuadword *pDest = frame.mCursor;
+    DmaPacket copy;
+    copy.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+    copy.Init(pData, DMAC_TO_SPR, 1);
+    copy.mCursor = pData + nQwords;
+    copy.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
+    frame.mCursor = pDest + nQwords;
+    ThePs.Flush();
 }
 
 } // namespace
 
-void PsMesh::SelectDepthRegsForPass(const Mesh &mesh, int nPass) {
-    if (Cam::sCurrent->mpTargetTex != nullptr || nPass >= kDepthProgramPassLimit) {
-        return;
-    }
+alignas(16) Transform g_identityXfm;
+unsigned short g_vertexCache[PsMesh::kVertexCacheSize];
 
-    int nZMask = 0;
-    if (nPass != 0 || mesh.mZMode == kZModeDisable || mesh.mZMode == kZModeZReadOnly ||
-        mesh.mZMode == kZModeWReadOnly) {
-        nZMask = 1;
-    }
-
-    int nZTest = kGsZTestGEqual;
-    if (mesh.mZMode == kZModeDisable || mesh.mZFunc == kZFuncAlways) {
-        nZTest = kGsZTestAlways;
-    } else if (nPass == 0 && mesh.mZFunc != kZFuncLessEqual && mesh.mZFunc != kZFuncEqual) {
-        nZTest = mesh.mZFunc == kZFuncLess ? kGsZTestGreater : kGsZTestNever;
-    }
-    SelectDepthRegs(nZMask, nZTest);
-}
-
-PsMesh::PsMesh(const HxStr &name) : Object(name), Mesh(name) {
+PsMesh::PsMesh(const char *pszName)
+    : RndObject(pszName), RndMesh(pszName), mSkinVerts(nullptr), mFacesPacket(nullptr),
+      mEdgesPacket(nullptr) {
 }
 
 PsMesh::~PsMesh() {
+    ThePs.ReleaseAfterFrame(mFacesPacket);
+    ThePs.ReleaseAfterFrame(mEdgesPacket);
+    delete[] mSkinVerts;
+    mSkinVerts = nullptr;
+}
+
+void PsMesh::Copy(const RndObject *pSource, int nFlags) {
+    RndMesh::Copy(pSource, nFlags);
+    // A source that is not a PsMesh is not handled.
+    const PsMesh *pMesh = pSource != nullptr ? dynamic_cast<const PsMesh *>(pSource) : nullptr;
+
+    if (mFacesPacket == nullptr && pMesh->mFacesPacket != nullptr) {
+        mFacesSetupQwords = pMesh->mFacesSetupQwords;
+        mFacesVuEnd = pMesh->mFacesVuEnd;
+        mFacesQwords = pMesh->mFacesQwords;
+        const int nBytes = mFacesQwords * kQwordBytes;
+        // NTSC-U/C: 0x003b07c0
+        static int sHeap = kNoHeap;
+        MemPushHeap(RndHeap(sHeap));
+        mFacesPacket = MemHandle::Alloc(nBytes, "mFacesPacket");
+        MemPopHeap();
+        const void *pFrom = pMesh->mFacesPacket->Lock();
+        std::memcpy(mFacesPacket->Lock(), pFrom, nBytes);
+        pMesh->mFacesPacket->Unlock();
+        mFacesPacket->Unlock();
+    }
+
+    if (mEdgesPacket == nullptr && pMesh->mEdgesPacket != nullptr) {
+        mEdgesQwords = pMesh->mEdgesQwords;
+        // NTSC-U/C: 0x003b07c4
+        static int sHeap = kNoHeap;
+        MemPushHeap(RndHeap(sHeap));
+        mEdgesPacket = MemHandle::Alloc(mEdgesQwords * kQwordBytes, "mEdgesPacket");
+        MemPopHeap();
+        const void *pFrom = pMesh->mEdgesPacket->Lock();
+        std::memcpy(mEdgesPacket->Lock(), pFrom, mEdgesQwords * kQwordBytes);
+        mEdgesPacket->Unlock();
+        pMesh->mEdgesPacket->Unlock();
+    }
+}
+
+void PsMesh::BuildFacesPacket() {
+    ThePs.ReleaseAfterFrame(mFacesPacket);
+    mFacesPacket = nullptr;
+    if (mFaces.empty() || mVerts.empty()) {
+        return;
+    }
+
+    // NTSC-U/C: 0x003b07c8
+    static int sHeap = kNoHeap;
+    MemPushHeap(RndHeap(sHeap));
+    mFacesPacket = MemHandle::Alloc(kPacketBytes, "mFacesPacket");
+    MemPopHeap();
+
+    auto *pBase = static_cast<DmaQuadword *>(mFacesPacket->Lock());
+    DmaQuadword *pTag = nullptr;
+    DmaQuadword *pCursor = pBase;
+    if (mMutable != 0) {
+        pTag = pBase;
+        pCursor = pBase + 1;
+    }
+
+    bool bFirst = true;
+    auto face = mFaces.begin();
+    while (face != mFaces.end()) {
+        DmaQuadword *pHeader = pCursor;
+        *pCursor = DmaQuadword{};
+        ++pCursor;
+        int nBudget = kFaceBatchBudget;
+        int nCached = 0;
+        HalfwordWriter indices(pCursor);
+        while (face != mFaces.end()) {
+            for (int k = 0; k < kFaceIndices; ++k) {
+                const unsigned short nVert = face->mVerts[k];
+                int i = nCached - 1;
+                while (i >= 0 && g_vertexCache[i] != nVert) {
+                    --i;
+                }
+                if (i >= 0) {
+                    indices.Put(i * kFaceVertQwords);
+                } else {
+                    nBudget -= kFaceVertCost;
+                    g_vertexCache[nCached] = nVert;
+                    indices.Put(nCached * kFaceVertQwords);
+                    ++nCached;
+                }
+            }
+            ++face;
+            if (--nBudget < 0) {
+                break;
+            }
+        }
+
+        const int nFaces = indices.Count() / kFaceIndices;
+        pHeader->mWord[kWordW] =
+            VifUnpack(kVifUnpackV3_16, nFaces, nCached * kFaceVertQwords + kFaceVuVerts);
+        pCursor = indices.Align();
+
+        pCursor->mDword[kLowDword] = 0;
+        pCursor->mWord[kWordZ] = 0;
+        pCursor->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, 1, kFaceVuSettings);
+        ++pCursor;
+        pCursor->mWord[kWordW] = nFaces + nCached * kFaceVertQwords;
+        pCursor->mWord[kWordZ] = 1;
+        pCursor->mWord[kWordX] = nCached;
+        pCursor->mWord[kWordY] = nFaces;
+        mFacesVuEnd = nFaces + kFaceVuVerts + nCached * kFaceVertQwords;
+        ++pCursor;
+
+        int nVuAddress = kFaceVuVerts;
+        int nRemaining = nCached;
+        const unsigned short *pIndex = g_vertexCache;
+        do {
+            const int nChunk = nRemaining > kFaceUnpackVerts ? kFaceUnpackVerts : nRemaining;
+            nRemaining -= nChunk;
+            const unsigned short *pEnd = pIndex + nChunk;
+            if (mMutable != 0) {
+                pCursor->mDword[kLowDword] = 0;
+                pCursor->mWord[kWordZ] = 0;
+                pCursor->mWord[kWordW] = VifUnpack(
+                    kVifUnpackV4_32, (nChunk * kFaceVertQwords) & kVifNumMask, nVuAddress);
+                ++pCursor;
+                pTag->mDword[kLowDword] =
+                    kDmaTagCnt | static_cast<unsigned long long>(pCursor - pTag - 1);
+                for (; pIndex != pEnd; ++pIndex) {
+                    pCursor->mDword[kLowDword] =
+                        (static_cast<unsigned long long>(DmaAddressOf(&mVerts[*pIndex]))
+                         << kDmaTagAddressShift) |
+                        kDmaTagRef | kVertQwords;
+                    ++pCursor;
+                }
+                pTag = pCursor;
+                ++pCursor;
+            } else {
+                WordWriter words(pCursor, 0);
+                words.Put(kStcycl2Of4);
+                words.Put(VifUnpack(kVifUnpackV3_32, nChunk * 2, nVuAddress));
+                for (const unsigned short *p = pIndex; p != pEnd; ++p) {
+                    const Vert &vert = mVerts[*p];
+                    words.Put(vert.mPos.x);
+                    words.Put(vert.mPos.y);
+                    words.Put(vert.mPos.z);
+                    words.Put(vert.mNorm.x);
+                    words.Put(vert.mNorm.y);
+                    words.Put(vert.mNorm.z);
+                }
+                words.Put(kStcycl1Of4);
+                words.Put(VifUnpack(kVifUnpackV4_32, nChunk, nVuAddress + kFaceColorOffset));
+                for (const unsigned short *p = pIndex; p != pEnd; ++p) {
+                    const Vert &vert = mVerts[*p];
+                    words.Put(vert.mColor.r);
+                    words.Put(vert.mColor.g);
+                    words.Put(vert.mColor.b);
+                    words.Put(vert.mColor.a);
+                }
+                words.Put(VifUnpack(kVifUnpackV2_32, nChunk, nVuAddress + kFaceTexOffset));
+                for (; pIndex != pEnd; ++pIndex) {
+                    const Vert &vert = mVerts[*pIndex];
+                    words.Put(vert.mTex.x);
+                    words.Put(vert.mTex.y);
+                }
+                words.Put(kStcycl1Of1);
+                pCursor = words.Align();
+            }
+            nVuAddress += nChunk * kFaceVertQwords;
+        } while (nRemaining != 0);
+
+        if (bFirst) {
+            bFirst = false;
+            pCursor->mWord[kWordX] = kVifMscal | kFaceProgram;
+            mFacesSetupQwords = static_cast<unsigned short>(pCursor - pBase - mMutable);
+        } else {
+            pCursor->mWord[kWordX] = kVifMscnt;
+        }
+        pCursor->mWord[kWordY] = 0;
+        pCursor->mDword[kHighDword] = 0;
+        ++pCursor;
+    }
+    if (mMutable != 0) {
+        pTag->mDword[kLowDword] = kDmaTagCnt | static_cast<unsigned long long>(pCursor - pTag - 1);
+    }
+
+    mFacesQwords = static_cast<unsigned short>(pCursor - pBase);
+    const int nBytes = mFacesQwords * kQwordBytes;
+    mFacesPacket->Resize(nBytes);
+    SyncDCache(pBase, ByteBefore(pBase + mFacesQwords));
+    mFacesPacket->Unlock();
+}
+
+void PsMesh::BuildEdgesPacket() {
+    ThePs.ReleaseAfterFrame(mEdgesPacket);
+    mEdgesPacket = nullptr;
+    if (mEdges.empty() || mVerts.empty()) {
+        return;
+    }
+
+    // NTSC-U/C: 0x003b07cc
+    static int sHeap = kNoHeap;
+    MemPushHeap(RndHeap(sHeap));
+    mEdgesPacket = MemHandle::Alloc(kPacketBytes, "mEdgesPacket");
+    MemPopHeap();
+
+    auto *pBase = static_cast<DmaQuadword *>(mEdgesPacket->Lock());
+    DmaQuadword *pTag = nullptr;
+    DmaQuadword *pCursor = pBase;
+    if (mMutable != 0) {
+        pTag = pBase;
+        pCursor = pBase + 1;
+    }
+
+    bool bFirst = true;
+    auto edge = mEdges.begin();
+    while (edge != mEdges.end()) {
+        DmaQuadword *pHeader = pCursor;
+        *pCursor = DmaQuadword{};
+        ++pCursor;
+        int nBudget = kEdgeBatchBudget;
+        int nCached = 0;
+        HalfwordWriter indices(pCursor);
+        while (edge != mEdges.end()) {
+            for (int k = 0; k < kEdgeIndices; ++k) {
+                const unsigned short nVert = edge->mVerts[k];
+                int i = nCached - 1;
+                while (i >= 0 && g_vertexCache[i] != nVert) {
+                    --i;
+                }
+                if (i >= 0) {
+                    indices.Put(i * kEdgeVertQwords);
+                } else {
+                    g_vertexCache[nCached] = nVert;
+                    indices.Put(nCached * kEdgeVertQwords);
+                    ++nCached;
+                    nBudget -= kEdgeVertCost;
+                }
+            }
+            ++edge;
+            if (--nBudget < 0) {
+                break;
+            }
+        }
+
+        const int nEdges = indices.Count() / kEdgeIndices;
+        pHeader->mWord[kWordW] =
+            VifUnpack(kVifUnpackV2_16, nEdges, nCached * kEdgeVertQwords + kEdgeVuVerts);
+        pCursor = indices.Align();
+
+        pCursor->mDword[kLowDword] = 0;
+        pCursor->mWord[kWordZ] = 0;
+        pCursor->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, 1, kEdgeVuSettings);
+        ++pCursor;
+        pCursor->mWord[kWordX] = nCached;
+        pCursor->mWord[kWordY] = nEdges;
+        pCursor->mDword[kHighDword] = 0;
+        ++pCursor;
+        pCursor->mWord[kWordZ] = kStcycl1Of2;
+        pCursor->mDword[kLowDword] = 0;
+
+        const unsigned short *pIndex = g_vertexCache;
+        const unsigned short *pEnd = g_vertexCache + nCached;
+        if (mMutable != 0) {
+            pCursor->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, nCached, kEdgeVuVerts);
+            ++pCursor;
+            pTag->mDword[kLowDword] =
+                kDmaTagCnt | static_cast<unsigned long long>(pCursor - pTag - 1);
+            for (; pIndex != pEnd; ++pIndex) {
+                pCursor->mDword[kLowDword] =
+                    (static_cast<unsigned long long>(DmaAddressOf(&mVerts[*pIndex]))
+                     << kDmaTagAddressShift) |
+                    kDmaTagRef | kVertPositionQwords;
+                ++pCursor;
+            }
+            pTag = pCursor;
+            ++pCursor;
+        } else {
+            pCursor->mWord[kWordW] = VifUnpack(kVifUnpackV3_32, nCached, kEdgeVuVerts);
+            WordWriter words(pCursor + 1, 0);
+            for (; pIndex != pEnd; ++pIndex) {
+                const Vert &vert = mVerts[*pIndex];
+                words.Put(vert.mPos.x);
+                words.Put(vert.mPos.y);
+                words.Put(vert.mPos.z);
+            }
+            pCursor = words.Align();
+        }
+
+        if (bFirst) {
+            bFirst = false;
+            pCursor->mWord[kWordX] = kVifMscal | kEdgeProgram;
+        } else {
+            pCursor->mWord[kWordX] = kVifMscnt;
+        }
+        pCursor->mDword[kHighDword] = 0;
+        pCursor->mWord[kWordY] = kStcycl1Of1;
+        ++pCursor;
+    }
+    if (mMutable != 0) {
+        pTag->mDword[kLowDword] = kDmaTagCnt | static_cast<unsigned long long>(pCursor - pTag - 1);
+    }
+
+    mEdgesQwords = static_cast<unsigned short>(pCursor - pBase);
+    const int nBytes = mEdgesQwords * kQwordBytes;
+    mEdgesPacket->Resize(nBytes);
+    SyncDCache(pBase, ByteBefore(pBase + mEdgesQwords));
+    mEdgesPacket->Unlock();
+}
+
+void PsMesh::Sync(int nFlags) {
+    if (mGeomOwner != this) {
+        return;
+    }
+    const int nEdges = nFlags & kSyncEdges;
+    const int nFaces = nFlags & kSyncFaces;
+
+    if ((nFlags & kSyncVertexData) != 0) {
+        delete[] mSkinVerts;
+        mSkinVerts = nullptr;
+        if (mBones != nullptr) {
+            mMutable = 1;
+            mSkinVerts = new SkinVert[mVerts.size()];
+            SkinVert *pSkin = mSkinVerts;
+            for (const auto &vert : mVerts) {
+                pSkin->mPos[kWordX] = vert.mPos.x;
+                pSkin->mPos[kWordY] = vert.mPos.y;
+                pSkin->mPos[kWordZ] = vert.mPos.z;
+                pSkin->mWeight1 = vert.mWeight1;
+                pSkin->mNorm[kWordX] = vert.mNorm.x;
+                pSkin->mNorm[kWordY] = vert.mNorm.y;
+                pSkin->mNorm[kWordZ] = vert.mNorm.z;
+                pSkin->mWeight2 = vert.mWeight2;
+                ++pSkin;
+            }
+            FlushCache(WRITEBACK_DCACHE);
+        }
+    }
+
+    if (nFaces != 0) {
+        BuildFacesPacket();
+        mNumFaces = static_cast<unsigned short>(mFaces.size());
+        std::vector<Face>().swap(mFaces);
+    }
+    if (nEdges != 0) {
+        BuildEdgesPacket();
+        mNumEdges = static_cast<unsigned short>(mEdges.size());
+        std::vector<Edge>().swap(mEdges);
+    }
+    if (mMutable == 0) {
+        std::vector<Vert>().swap(mVerts);
+    } else {
+        SyncDCache(mVerts.data(), ByteBefore(mVerts.data() + mVerts.size()));
+    }
+}
+
+void PsMesh::SetZTest(int nPass) {
+    if (nPass >= kPassCount) {
+        return;
+    }
+    bool bNoWrite = false;
+    if (nPass != kPassFaces || mZMode == kZModeDisable || mZMode == kZModeZReadOnly ||
+        mZMode == kZModeWReadOnly) {
+        bNoWrite = true;
+    }
+
+    unsigned long long qwTest;
+    if (mZMode == kZModeDisable || mZFunc == kZFuncAlways) {
+        qwTest = kZtstAlways;
+    } else if (nPass != kPassFaces) {
+        qwTest = kZtstGequal;
+    } else if (mZFunc == kZFuncLessEqual || mZFunc == kZFuncEqual) {
+        qwTest = kZtstGequal;
+    } else {
+        qwTest = mZFunc == kZFuncLess ? kZtstGreater : kZtstNever;
+    }
+    ThePs.SetGsReg(
+        kGsRegZbuf1, static_cast<unsigned long long>(bNoWrite) << kZbufZmskShift, kZbufZmskMask);
+    ThePs.SetGsReg(kGsRegTest1, qwTest << kTestZtstShift, kTestZtstMask);
+}
+
+void PsMesh::DrawFaces(const Transform &xfm) {
+    PushSettingsUnpack(kFaceSettingsQwords);
+    PushVector(g_invGuardBandScale);
+    Transform viewProject;
+    sceVu0MulAffineMatrix(
+        &viewProject.mBasisX.x, &g_viewProjectUnscaledXfm.mBasisX.x, &xfm.mBasisX.x);
+    PushTransform(viewProject);
+    PushFloats(g_colorScale.r, g_colorScale.g, g_colorScale.b, g_colorScale.a);
+    PushFloats(g_viewportUnscaledXfm.mBasisX.x,
+               g_viewportUnscaledXfm.mBasisY.y,
+               g_viewportUnscaledXfm.mBasisZ.z,
+               g_fogScale);
+    PushFloats(g_viewportUnscaledXfm.mTranslation.x,
+               g_viewportUnscaledXfm.mTranslation.y,
+               g_viewportUnscaledXfm.mTranslation.z,
+               g_fogOffset);
+    PushVector(g_uvXfm.mBasisX);
+    PushVector(g_uvXfm.mBasisY);
+    PushVector(g_uvXfm.mTranslation);
+
+    const unsigned long long qwIip =
+        static_cast<unsigned long long>(static_cast<unsigned int>(g_nSelectedFlat ^ 1))
+        << kPrimIipShift;
+    const unsigned long long qwTme =
+        static_cast<unsigned long long>(static_cast<unsigned int>(g_nTextured)) << kPrimTmeShift;
+    const unsigned long long qwFge =
+        static_cast<unsigned long long>(static_cast<unsigned int>(g_nFogEnabled)) << kPrimFgeShift;
+    const unsigned long long qwAbe =
+        static_cast<unsigned long long>(static_cast<unsigned int>(g_nAlphaBlendEnabled))
+        << kPrimAbeShift;
+    const unsigned long long qwTriangles = qwTme | kPrimTriangle | qwIip | qwFge | qwAbe;
+    const unsigned long long qwFan = qwIip | qwTme | kPrimTriangleFan | qwFge | qwAbe;
+    PushDwords((qwTriangles << kGifTagPrimShift) | kGifTagTriangles, kGifRegsTriangles);
+    PushDwords((qwFan << kGifTagPrimShift) | kGifTagVertex, kGifRegsVertex);
+
+    PsEnviron::SelectLights(&xfm, &mSphere);
+
+    auto *pGeom = static_cast<PsMesh *>(mGeomOwner);
+    auto *pData = static_cast<DmaQuadword *>(pGeom->mFacesPacket->Lock());
+    SendPacket(*pGeom, pData, pGeom->mFacesQwords);
+    pGeom->mFacesPacket->Unlock();
+}
+
+void PsMesh::DrawEdges(const Transform &xfm) {
+    PushSettingsUnpack(kEdgeSettingsQwords);
+    Transform viewProject;
+    sceVu0MulAffineMatrix(
+        &viewProject.mBasisX.x, &g_viewProjectBiasedXfm.mBasisX.x, &xfm.mBasisX.x);
+    PushTransform(viewProject);
+    const unsigned long long qwLine =
+        (static_cast<unsigned long long>(static_cast<unsigned int>(g_nFogEnabled))
+         << kPrimFgeShift) |
+        kPrimAa1 | kPrimAbe | kPrimLine;
+    PushDwords((qwLine << kGifTagPrimShift) | kGifTagVertex, kGifRegsLine);
+    PushFloats(
+        g_viewportXfm.mBasisX.x, g_viewportXfm.mBasisY.y, g_viewportXfm.mBasisZ.z, g_fogScale);
+    PushFloats(g_viewportXfm.mTranslation.x,
+               g_viewportXfm.mTranslation.y,
+               g_viewportXfm.mTranslation.z,
+               g_fogOffset);
+
+    const Color color = mMat != nullptr ? mMat->mEdgeColor : Color{1.0f, 1.0f, 1.0f, 1.0f};
+    const auto nRed = static_cast<unsigned int>(color.r * kColorScale);
+    const auto nGreen = static_cast<unsigned int>(color.g * kColorScale);
+    const auto nBlue = static_cast<unsigned int>(color.b * kColorScale);
+    const auto nAlpha = static_cast<unsigned int>(color.a * kAlphaScale);
+    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    quad.mWord[kWordX] = nRed;
+    quad.mWord[kWordY] = nGreen;
+    quad.mWord[kWordZ] = nBlue;
+    quad.mWord[kWordW] = nAlpha;
+    ++DmaPacket::shared().mCursor;
+
+    auto *pGeom = static_cast<PsMesh *>(mGeomOwner);
+    auto *pData = static_cast<DmaQuadword *>(pGeom->mEdgesPacket->Lock());
+    if (pGeom->mMutable == 0) {
+        DmaPacket &frame = DmaPacket::shared();
+        frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+        frame.OpenDmaTag();
+        frame.CloseDmaTag(kDmaTagIdRef, DmaAddressOf(pData), pGeom->mEdgesQwords);
+        frame.OpenDmaTag();
+    } else {
+        (void)ThePs.PacketQwordsFree(); // Yes, the binary discards this call's result.
+        DmaPacket &frame = DmaPacket::shared();
+        frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
+        for (int n = pGeom->mEdgesQwords; n-- != 0;) {
+            *frame.mCursor = *pData;
+            ++frame.mCursor;
+            ++pData;
+        }
+        ThePs.Flush();
+    }
+    pGeom->mEdgesPacket->Unlock();
+}
+
+const Transform &PsMesh::SkinXfm() {
+    if (mBones == nullptr) {
+        return mTransOwner->BillboardXfm();
+    }
+
+    Transform first;
+    Multiply(first, mBones->mTrans[0]->mWorldXfm, mBones->mXfms[0]);
+    const Transform &world = mTransOwner->mWorldXfm;
+    const SkinVert *pSkin = mSkinVerts;
+    Vert *pOut = mVerts.data();
+    const SkinVert *pEnd = mSkinVerts + mVerts.size();
+    if (mBones->mTrans[1] != nullptr) {
+        Transform second;
+        Multiply(second, mBones->mTrans[1]->mWorldXfm, mBones->mXfms[1]);
+        // The VU0 microprogram at instruction 0x156, byte 0xab0, blends the two bones. Each run
+        // takes the next bind pose while the results of the run before are read.
+        __asm__ volatile(
+            ".set noreorder\n"
+            "lqc2 $vf18, 0x0(%[second])\n"
+            "lqc2 $vf19, 0x10(%[second])\n"
+            "lqc2 $vf20, 0x20(%[second])\n"
+            "lqc2 $vf21, 0x30(%[second])\n"
+            "lqc2 $vf3, 0x0(%[world])\n"
+            "lqc2 $vf4, 0x10(%[world])\n"
+            "lqc2 $vf5, 0x20(%[world])\n"
+            "lqc2 $vf6, 0x30(%[world])\n"
+            "lqc2 $vf7, 0x0(%[first])\n"
+            "lqc2 $vf8, 0x10(%[first])\n"
+            "lqc2 $vf9, 0x20(%[first])\n"
+            "lqc2 $vf10, 0x30(%[first])\n"
+            "lq $2, 0x0(%[skin])\n"
+            "lq $3, 0x10(%[skin])\n"
+            "qmtc2 $2, $vf11\n"
+            "qmtc2 $3, $vf15\n"
+            "vcallms 0xab0\n"
+            "addi %[skin], %[skin], 0x20\n"
+            "lq $2, 0x0(%[skin])\n"
+            "lq $3, 0x10(%[skin])\n"
+            "1:\n"
+            "qmtc2.i $2, $vf11\n"
+            "qmtc2 $3, $vf15\n"
+            "vcallms 0xab0\n"
+            "qmfc2 $2, $vf16\n"
+            "qmfc2 $3, $vf12\n"
+            "sq $2, 0x10(%[out])\n"
+            "sq $3, 0x0(%[out])\n"
+            "addi %[out], %[out], 0x40\n"
+            "addi %[skin], %[skin], 0x20\n"
+            "lq $2, 0x0(%[skin])\n"
+            "lq $3, 0x10(%[skin])\n"
+            "bne %[skin], %[end], 1b\n"
+            "nop\n"
+            "nop\n"
+            "qmfc2.i $2, $vf16\n"
+            "qmfc2 $3, $vf12\n"
+            "sq $2, 0x10(%[out])\n"
+            "sq $3, 0x0(%[out])\n"
+            ".set reorder\n"
+            : [skin] "+r"(pSkin), [out] "+r"(pOut)
+            : [first] "r"(&first), [second] "r"(&second), [world] "r"(&world), [end] "r"(pEnd)
+            : "$2", "$3", "memory");
+    } else {
+        // The VU0 microprogram at instruction 0x1ba, byte 0xdd0, moves each vertex by the one
+        // bone, in the same pipeline.
+        __asm__ volatile(".set noreorder\n"
+                         "lqc2 $vf3, 0x0(%[world])\n"
+                         "lqc2 $vf4, 0x10(%[world])\n"
+                         "lqc2 $vf5, 0x20(%[world])\n"
+                         "lqc2 $vf6, 0x30(%[world])\n"
+                         "lqc2 $vf7, 0x0(%[first])\n"
+                         "lqc2 $vf8, 0x10(%[first])\n"
+                         "lqc2 $vf9, 0x20(%[first])\n"
+                         "lqc2 $vf10, 0x30(%[first])\n"
+                         "lq $2, 0x0(%[skin])\n"
+                         "lq $3, 0x10(%[skin])\n"
+                         "qmtc2 $2, $vf11\n"
+                         "qmtc2 $3, $vf15\n"
+                         "vcallms 0xdd0\n"
+                         "addi %[skin], %[skin], 0x20\n"
+                         "lq $2, 0x0(%[skin])\n"
+                         "lq $3, 0x10(%[skin])\n"
+                         "1:\n"
+                         "qmtc2.i $2, $vf11\n"
+                         "qmtc2 $3, $vf15\n"
+                         "vcallms 0xdd0\n"
+                         "qmfc2 $2, $vf16\n"
+                         "qmfc2 $3, $vf12\n"
+                         "sq $2, 0x10(%[out])\n"
+                         "sq $3, 0x0(%[out])\n"
+                         "addi %[out], %[out], 0x40\n"
+                         "addi %[skin], %[skin], 0x20\n"
+                         "lq $2, 0x0(%[skin])\n"
+                         "lq $3, 0x10(%[skin])\n"
+                         "bne %[skin], %[end], 1b\n"
+                         "nop\n"
+                         "nop\n"
+                         "qmfc2.i $2, $vf16\n"
+                         "qmfc2 $3, $vf12\n"
+                         "sq $2, 0x10(%[out])\n"
+                         "sq $3, 0x0(%[out])\n"
+                         ".set reorder\n"
+                         : [skin] "+r"(pSkin), [out] "+r"(pOut)
+                         : [first] "r"(&first), [world] "r"(&world), [end] "r"(pEnd)
+                         : "$2", "$3", "memory");
+    }
+    SyncDCache(mVerts.data(), ByteBefore(mVerts.data() + mVerts.size()));
+    return g_identityXfm;
 }
 
 int PsMesh::DrawShowing() {
-    ++g_renderStats.mnMeshDraws;
-
     Sphere worldSphere;
-    worldSphere.mCenter.w = 1.0f;
-    if (PrepareDraw(worldSphere) == 0) {
-        // A culled mesh that owns geometry suppresses its children as well, and one with neither
-        // faces nor edges lets them draw.
-        return mFacesOwner->mFaces.size() == 0 && mFacesOwner->mEdges.size() == 0;
-    }
-
-    const int nUseVu1 = Rnd::ThePs.mnUseVu1;
-    if (nUseVu1 == 0 && mVertsOwner->mVerts.size() > kMaxSoftwareVerts) {
-        Rnd::TheDbg.Notify("DrawShowing vert buffer overflow... %d\n", mVertsOwner->mVerts.size());
-        if (Rnd::TheDbg.mAbortProc != nullptr) {
-            Rnd::TheDbg.mAbortProc();
-        } else {
-            throw; // With no handler the binary rethrows the exception in flight.
-        }
+    if (!CheckLod(worldSphere)) {
         return 0;
     }
+    const Transform &xfm = SkinXfm();
+    auto *pGeom = static_cast<PsMesh *>(mGeomOwner);
 
-    int nClip = 1;
-    if (mSphere.mRadius != 0.0f && IsSphereInsideFrustum(worldSphere, g_drawFrustum) != 0) {
-        nClip = 0;
-    }
-
-    const float *pXfm = mTransOwner->GetDrawXfm();
-    int nPass = 0;
-    int nMorePasses = 0;
-    if (mFacesOwner->mFaces.size() != 0) {
+    if (pGeom->mFacesPacket != nullptr) {
+        int nPass = 0;
         do {
-            Rnd::ThePs.ReserveGifSpace(kGifReserveQuadwords);
-            if (Cam::sCurrent->mpTargetTex == nullptr && nPass < kDepthProgramPassLimit) {
-                int nZMask = 0;
-                if (nPass != 0 || mZMode == kZModeDisable || mZMode == kZModeZReadOnly ||
-                    mZMode == kZModeWReadOnly) {
-                    nZMask = 1;
-                }
-
-                int nZTest = kGsZTestGEqual;
-                if (mZMode == kZModeDisable || mZFunc == kZFuncAlways) {
-                    nZTest = kGsZTestAlways;
-                } else if (nPass == 0 && mZFunc != kZFuncLessEqual && mZFunc != kZFuncEqual) {
-                    nZTest = mZFunc == kZFuncLess ? kGsZTestGreater : kGsZTestNever;
-                }
-                SelectDepthRegs(nZMask, nZTest);
-            }
-
+            SetZTest(nPass);
             if (mMat != nullptr) {
-                // The narrowing is what psmat.h records as undecidable. Every material on this
-                // target is a PsMat, because GfxDevice::Init() installs that creator.
-                nMorePasses = static_cast<PsMat *>(mMat)->Select();
+                nPass = static_cast<PsMat *>(mMat)->Select(nPass);
             } else {
                 PsMat::SelectDefault();
             }
-
-            if (nUseVu1 != 0) {
-                DrawFacesVU1(pXfm, nClip);
-            } else {
-                const int nVerts =
-                    DrawVertCount(mMaxVerts, static_cast<int>(mVertsOwner->mVerts.size()));
-                if (nPass == 0) {
-                    TransformAndLightMeshVerts(
-                        g_aDrawVerts, pXfm, &mVertsOwner->mVerts[0], nVerts, nClip, mSphere);
-                } else {
-                    TransformMeshVertsNoLight(g_aDrawVerts, &mVertsOwner->mVerts[0], nVerts, pXfm);
-                }
-                DrawFacesSoftware(nClip);
-            }
-            ++nPass;
-        } while (nMorePasses != 0);
+            DrawFaces(xfm);
+        } while (nPass != 0);
     }
 
-    if (mFacesOwner->mEdges.size() == 0) {
-        return 1;
-    }
-
-    Rnd::ThePs.ReserveGifSpace(kGifReserveQuadwords);
-    if (Cam::sCurrent->mpTargetTex == nullptr) {
-        int nZTest = kGsZTestGEqual;
-        if (mZMode == kZModeDisable || mZFunc == kZFuncAlways) {
-            nZTest = kGsZTestAlways;
+    if (pGeom->mEdgesPacket != nullptr) {
+        SetZTest(kPassEdges);
+        if (mMat != nullptr) {
+            PsMat::SelectAlphaBlend();
+        } else if (pGeom->mFaces.empty()) {
+            PsMat::SelectDefault();
         }
-        SelectDepthRegs(1, nZTest);
+        DrawEdges(xfm);
     }
 
-    if (mMat != nullptr) {
-        static_cast<PsMat *>(mMat)->SelectAlphaBlend();
-    } else if (mFacesOwner->mFaces.size() == 0) {
-        PsMat::SelectDefault();
+    if (mMutable == 0) {
+        ThePs.Flush();
     }
-
-    if (nUseVu1 != 0) {
-        DrawEdgesVU1(pXfm);
-        return 1;
-    }
-
-    // The face pass has already filled the buffer unless there were no faces to draw.
-    if (mFacesOwner->mFaces.size() == 0) {
-        const int nVerts = DrawVertCount(mMaxVerts, static_cast<int>(mVertsOwner->mVerts.size()));
-        TransformAndLightMeshVerts(
-            g_aDrawVerts, pXfm, &mVertsOwner->mVerts[0], nVerts, nClip, mSphere);
-    }
-    DrawEdgesSoftware(nClip);
     return 1;
 }
 
-void PsMesh::AddRefObjects() {
-    Mesh::AddRefObjects();
-    for (auto &vert : mVerts) {
-        ClampColorToUnitRange(vert.mColor, vert.mColor);
-    }
+void PsMesh::FacesPacket(MemHandle *&pPacket, int &nSetupQwords, int &nVuEnd) const {
+    const auto *pGeom = static_cast<const PsMesh *>(mGeomOwner);
+    pPacket = pGeom->mFacesPacket;
+    nSetupQwords = pGeom->mFacesSetupQwords;
+    nVuEnd = pGeom->mFacesVuEnd;
 }
 
-void PsMesh::DrawFacesVU1(const float *pXfm, int nClip) {
-    g_renderStats.mnTriangles += static_cast<int>(mFacesOwner->mFaces.size());
-    Rnd::ThePs.CloseGifTag(1);
-    Rnd::ThePs.SwapGifWrite();
-    const int nSetup = EmitFaceVu1Setup(pXfm, mSphere);
-    const int nTextured = g_nStageTextureBound;
-
-    // The batches belong to whichever mesh owns the faces, and on this target that mesh is a
-    // PsMesh, because GfxDevice::Init() installs the PsMesh creator over the mesh hook.
-    PsMesh *pOwner = static_cast<PsMesh *>(mFacesOwner);
-    for (auto &run : pOwner->mFaceRuns) {
-        const int nVertCount = static_cast<int>(run.mVertIndices.size());
-        const int nPrimCount = run.mIndexCount / kFaceIndicesPerPrim;
-
-        // The header quadword reaches the hardware before the batch length is known, so its
-        // VIFcode slot is reserved here and filled in once the vertices have been counted.
-        GifQuadword *pBatchCode = TakeQuadword();
-        pBatchCode->mLo = 0;
-        pBatchCode->mHi = 0;
-        GifQuadword *pParam = TakeQuadword();
-        pParam->mLo = PackWordPair(nVertCount, nPrimCount);
-        pParam->mHi = PackWordPair(nSetup, nClip);
-
-        GifQuadword *pWrite = Rnd::ThePs.mpWrite;
-        int nVuAddr = kVu1FaceParamAddr;
-        int nBatchQuadwords = 1;
-        if (nTextured != 0) {
-            for (auto nIndex : run.mVertIndices) {
-                if (nBatchQuadwords >= kVifUnpackQuadwordLimit) {
-                    pBatchCode->mHi =
-                        PackWordPair(0,
-                                     MakeVifCode(kVifCmdUnpackV4_32,
-                                                 nBatchQuadwords,
-                                                 kVifUnpackFlg | static_cast<unsigned>(nVuAddr)));
-                    nVuAddr += nBatchQuadwords;
-                    nBatchQuadwords = 0;
-                    pBatchCode = pWrite;
-                    pBatchCode->mLo = 0;
-                    pBatchCode->mHi = 0;
-                    ++pWrite;
-                }
-                pWrite = AppendVert(pWrite, mVertsOwner->mVerts[nIndex], kVertQuadwordsTextured);
-                nBatchQuadwords += kVertQuadwordsTextured;
-            }
-            pBatchCode->mHi =
-                PackWordPair(0,
-                             MakeVifCode(kVifCmdUnpackV4_32,
-                                         nBatchQuadwords,
-                                         kVifUnpackFlg | static_cast<unsigned>(nVuAddr)));
-        } else {
-            // Without a texture the parameter quadword travels under its own UNPACK, because the
-            // vertices that follow it need a write cycle it must not be subject to.
-            pBatchCode->mHi = PackWordPair(
-                0, MakeVifCode(kVifCmdUnpackV4_32, 1, kVifUnpackFlg | kVu1FaceParamAddr));
-            nVuAddr = kVu1FaceParamAddr + 1;
-            nBatchQuadwords = nVertCount * kVertQuadwordStride;
-
-            GifQuadword *pVertCode = pWrite;
-            ++pWrite;
-            pVertCode->mLo = 0;
-            pVertCode->mHi =
-                PackWordPair(MakeVifCode(kVifCmdStCycl, 0, kVifStCyclWl3Cl4),
-                             MakeVifCode(kVifCmdUnpackV4_32,
-                                         nVertCount * kVertQuadwordsUntextured,
-                                         kVifUnpackFlg | static_cast<unsigned>(nVuAddr)));
-            for (auto nIndex : run.mVertIndices) {
-                pWrite = AppendVert(pWrite, mVertsOwner->mVerts[nIndex], kVertQuadwordsUntextured);
-            }
-        }
-        nVuAddr += nBatchQuadwords;
-        Rnd::ThePs.mpWrite = pWrite;
-
-        GifQuadword *pIndexCode = TakeQuadword();
-        pIndexCode->mLo = 0;
-        pIndexCode->mHi = PackWordPair(MakeVifCode(kVifCmdStCycl, 0, kVifStCyclWl1Cl1),
-                                       MakeVifCode(kVifCmdUnpackV3_16,
-                                                   nPrimCount,
-                                                   kVifUnpackFlg | static_cast<unsigned>(nVuAddr)));
-        AppendIndexData(run.mIndices, run.mIndexCount);
-
-        Rnd::ThePs.FlushReservedGif();
-        GifQuadword *pEntry = TakeQuadword();
-        pEntry->mHi = 0;
-        if (&run == &pOwner->mFaceRuns.front()) {
-            pEntry->mLo =
-                MakeVifCode(kVifCmdMsCal,
-                            0,
-                            nTextured != 0 ? kVu1FaceEntryTextured :
-                                             static_cast<unsigned>(kVu1FaceEntryUntextured));
-        } else {
-            pEntry->mLo = MakeVifCode(kVifCmdMsCnt, 0, 0);
-        }
-        Rnd::ThePs.FlushGifPacket(0, 0);
-    }
+void PsMesh::Init() {
+    TheManager.mClasses[RndMesh::sClassName] = PsMesh::New;
+    g_identityXfm.mBasisX.x = 1.0f;
+    g_identityXfm.mBasisX.y = 0.0f;
+    g_identityXfm.mBasisX.z = 0.0f;
+    g_identityXfm.mBasisY.x = 0.0f;
+    g_identityXfm.mBasisY.y = 1.0f;
+    g_identityXfm.mBasisY.z = 0.0f;
+    g_identityXfm.mBasisZ.x = 0.0f;
+    g_identityXfm.mBasisZ.y = 0.0f;
+    g_identityXfm.mBasisZ.z = 1.0f;
+    g_identityXfm.mTranslation = Vector3{0.0f, 0.0f, 0.0f, 1.0f};
 }
 
-void PsMesh::DrawEdgesVU1(const float *pXfm) {
-    g_renderStats.mnLines += static_cast<int>(mFacesOwner->mEdges.size());
-    Rnd::ThePs.CloseGifTag(1);
-    Rnd::ThePs.SwapGifWrite();
-
-    Color edgeColor;
-    if (mMat != nullptr) {
-        edgeColor = mMat->mSpecular;
-    } else {
-        edgeColor.r = 1.0f;
-        edgeColor.g = 1.0f;
-        edgeColor.b = 1.0f;
-        edgeColor.a = 1.0f;
-    }
-    EmitEdgeVu1Setup(pXfm, edgeColor);
-
-    PsMesh *pOwner = static_cast<PsMesh *>(mFacesOwner);
-    for (auto &run : pOwner->mEdgeRuns) {
-        // An edge batch knows its length up front, because it never splits, so the header
-        // VIFcode is complete when it is written.
-        GifQuadword *pParamCode = TakeQuadword();
-        pParamCode->mLo = 0;
-        pParamCode->mHi =
-            PackWordPair(0, MakeVifCode(kVifCmdUnpackV4_32, 1, kVifUnpackFlg | kVu1EdgeParamAddr));
-
-        const int nVertCount = static_cast<int>(run.mVertIndices.size());
-        const int nPrimCount = run.mIndexCount / kEdgeIndicesPerPrim;
-        GifQuadword *pParam = TakeQuadword();
-        pParam->mLo = PackWordPair(nVertCount, nPrimCount);
-        pParam->mHi = 0;
-
-        GifQuadword *pVertCode = TakeQuadword();
-        pVertCode->mLo = 0;
-        pVertCode->mHi = PackWordPair(
-            MakeVifCode(kVifCmdStCycl, 0, kVifStCyclWl1Cl2),
-            MakeVifCode(kVifCmdUnpackV4_32, nVertCount, kVifUnpackFlg | kVu1EdgeVertAddr));
-
-        GifQuadword *pWrite = Rnd::ThePs.mpWrite;
-        for (auto nIndex : run.mVertIndices) {
-            pWrite = AppendVert(pWrite, mVertsOwner->mVerts[nIndex], kVertQuadwordsEdge);
-        }
-        Rnd::ThePs.mpWrite = pWrite;
-
-        GifQuadword *pIndexCode = TakeQuadword();
-        pIndexCode->mLo = 0;
-        // Each V2-16 element is the index pair of one edge.
-        pIndexCode->mHi = PackWordPair(
-            MakeVifCode(kVifCmdStCycl, 0, kVifStCyclWl1Cl1),
-            (kVifCmdUnpackV2_16 << kVifCmdShift) |
-                (static_cast<unsigned>(nPrimCount) << kVifNumShift) | kVifUnpackFlg |
-                static_cast<unsigned>(nVertCount * kVu1EdgeVertStride + kVu1EdgeVertAddr));
-        AppendIndexData(run.mIndices, run.mIndexCount);
-
-        Rnd::ThePs.FlushReservedGif();
-        GifQuadword *pEntry = TakeQuadword();
-        pEntry->mHi = 0;
-        if (&run == &pOwner->mEdgeRuns.front()) {
-            pEntry->mLo = MakeVifCode(kVifCmdMsCal, 0, kVu1EdgeEntry);
-        } else {
-            pEntry->mLo = MakeVifCode(kVifCmdMsCnt, 0, 0);
-        }
-        Rnd::ThePs.FlushGifPacket(0, 0);
-    }
-}
-
-void PsMesh::DrawFacesSoftware(int nClip) {
-    const int nTextured = g_nStageTextureBound;
-    const unsigned long long qwPrim =
-        kGsPrimTriangle |
-        (static_cast<unsigned long long>(g_nSelectedFlat ^ 1) << kGsPrimIipShift) |
-        (static_cast<unsigned long long>(nTextured) << kGsPrimTmeShift) |
-        (static_cast<unsigned long long>(g_nFogEnabled) << kGsPrimFgeShift) |
-        (static_cast<unsigned long long>(g_nAlphaBlendEnabled) << kGsPrimAbeShift);
-    Rnd::ThePs.SetGsReg(kGsRegPrim, qwPrim, kGsPrimFieldMask);
-
-    GifQuadword tag;
-    if (nTextured != 0) {
-        tag.mLo = static_cast<unsigned long long>(kGifNRegTexturedTri) << kGifTagNRegShift;
-        tag.mHi = kGifRegsTexturedTri;
-    } else {
-        tag.mLo = static_cast<unsigned long long>(kGifNRegUntexturedTri) << kGifTagNRegShift;
-        tag.mHi = kGifRegsUntexturedTri;
-    }
-    Rnd::ThePs.WriteGifTag(&tag);
-
-    for (auto &face : mFacesOwner->mFaces) {
-        EmitTriangle(face.mV1, face.mV2, face.mV3, nClip);
-        Rnd::ThePs.FlushGifPacket(1, 1);
-    }
-}
-
-void PsMesh::DrawEdgesSoftware(int nClip) {
-    const unsigned long long qwPrim =
-        kGsPrimLine | kGsPrimAa1 |
-        (static_cast<unsigned long long>(g_nFogEnabled) << kGsPrimFgeShift);
-    Rnd::ThePs.SetGsReg(kGsRegPrim, qwPrim, kGsPrimFieldMask);
-
-    GifQuadword tag;
-    tag.mLo = static_cast<unsigned long long>(kGifNRegLine) << kGifTagNRegShift;
-    tag.mHi = kGifRegsLine;
-    Rnd::ThePs.WriteGifTag(&tag);
-
-    // Every edge of the mesh draws in one colour, so the packed RGBAQ quadword is built once.
-    Color edgeColor;
-    if (mMat != nullptr) {
-        edgeColor = mMat->mSpecular;
-    } else {
-        edgeColor.r = 1.0f;
-        edgeColor.g = 1.0f;
-        edgeColor.b = 1.0f;
-        edgeColor.a = 1.0f;
-    }
-    GifQuadword rgbaq;
-    rgbaq.mLo = PackWordPair(static_cast<unsigned>(static_cast<int>(edgeColor.r * kGsColorScale)),
-                             static_cast<unsigned>(static_cast<int>(edgeColor.g * kGsColorScale)));
-    rgbaq.mHi = PackWordPair(static_cast<unsigned>(static_cast<int>(edgeColor.b * kGsColorScale)),
-                             static_cast<unsigned>(static_cast<int>(edgeColor.a * kGsAlphaScale)));
-
-    for (auto &edge : mFacesOwner->mEdges) {
-        if (nClip != 0) {
-            const int nFlags =
-                g_aDrawVerts[edge.mV1].mClipFlags | g_aDrawVerts[edge.mV2].mClipFlags;
-            if ((nFlags & kDrawVertClipAnyPlane) != 0) {
-                // An edge is dropped rather than clipped, which is why a long edge crossing the
-                // view plane disappears instead of being shortened.
-                ++g_renderStats.mnEdgesClipped;
-                Rnd::ThePs.FlushGifPacket(1, 1);
-                continue;
-            }
-        }
-        GifQuadword *pColor = TakeQuadword();
-        *pColor = rgbaq;
-        AppendDrawVert(g_aDrawVerts[edge.mV1], 2, kDrawVertQuadwordsLine);
-        AppendDrawVert(g_aDrawVerts[edge.mV2], 2, kDrawVertQuadwordsLine);
-        ++g_renderStats.mnLines;
-        Rnd::ThePs.FlushGifPacket(1, 1);
-    }
-}
-
-inline void PsMesh::DrawRun::ReserveIndices(int nIndexCount) {
-    // The binary rounds with a plain arithmetic shift rather than a signed division.
-    const int nQuadwords = (nIndexCount + kIndexHalfwordsPerQuadword - 1) >> kIndexHalfwordShift;
-    if (mIndexCount < nQuadwords) {
-        mIndexCount = nIndexCount;
-        if (mIndices != nullptr) {
-            delete[] mIndices;
-        }
-        mIndices = new unsigned short[nQuadwords * kIndexHalfwordsPerQuadword];
-    }
-}
-
-void PsMesh::AppendRun(std::list<DrawRun> &runs,
-                       const std::vector<unsigned short> &vertIndices,
-                       const std::vector<unsigned short> &primIndices) {
-    // The compiler inlined this at both of its call sites in Sync().
-    runs.push_back(DrawRun());
-
-    DrawRun &run = runs.back();
-    run.mVertIndices = vertIndices;
-
-    // A node arrives here with a count of zero, so the block is always allocated once.
-    run.ReserveIndices(static_cast<int>(primIndices.size()));
-
-    // The block travels a whole quadword at a time, so the padding past the last index is cleared
-    // rather than sent as whatever the allocator returned.
-    const int nBlockQuadwords =
-        (run.mIndexCount + kIndexHalfwordsPerQuadword - 1) >> kIndexHalfwordShift;
-    GifQuadword *pBlock = AsWritableQuadwords(run.mIndices);
-    pBlock[nBlockQuadwords - 1].mLo = 0;
-    pBlock[nBlockQuadwords - 1].mHi = 0;
-    std::copy(primIndices.begin(), primIndices.end(), run.mIndices);
-}
-
-void PsMesh::Sync() {
-    // Both scratch lists start at the largest run either pass can produce and are emptied before
-    // each run, so no run reallocates them.
-    std::vector<unsigned short> vertIndices(kRunVertCapacity, 0);
-    std::vector<unsigned short> primIndices(kRunIndexCapacity, 0);
-
-    static_cast<PsMesh *>(mFacesOwner)->mFaceRuns.clear();
-    auto face = mFacesOwner->mFaces.begin();
-    while (face != mFacesOwner->mFaces.end()) {
-        int nBudget = kFaceRunQuadwordBudget;
-        vertIndices.resize(0);
-        primIndices.resize(0);
-        while (face != mFacesOwner->mFaces.end()) {
-            // The corners are visited from the second, which the binary expresses as a modulo
-            // over the three and which the draw paths match when they submit a triangle.
-            const unsigned short anCorners[] = {face->mV2, face->mV3, face->mV1};
-            int nPrimVerts = 0;
-            for (int nCorner = 0; nCorner < kFaceIndicesPerPrim; ++nCorner) {
-                auto found = std::find(vertIndices.begin(), vertIndices.end(), anCorners[nCorner]);
-                if (found != vertIndices.end()) {
-                    primIndices.push_back(static_cast<unsigned short>(
-                        (found - vertIndices.begin()) * kVu1VertStride));
-                    continue;
-                }
-                if (nBudget < kFaceRunReserve) {
-                    // Un-do the part of this face already recorded, and step back so the advance
-                    // below closes the run with this face at the head of the next one.
-                    primIndices.resize(primIndices.size() - nCorner);
-                    vertIndices.resize(vertIndices.size() - nPrimVerts);
-                    nBudget = 1;
-                    --face;
-                    break;
-                }
-                vertIndices.push_back(anCorners[nCorner]);
-                ++nPrimVerts;
-                nBudget -= kFaceVertQuadwordCost;
-                primIndices.push_back(
-                    static_cast<unsigned short>((vertIndices.size() - 1) * kVu1VertStride));
-            }
-            --nBudget;
-            ++face;
-            if (nBudget == 0) {
-                break;
-            }
-        }
-        AppendRun(static_cast<PsMesh *>(mFacesOwner)->mFaceRuns, vertIndices, primIndices);
-    }
-
-    static_cast<PsMesh *>(mFacesOwner)->mEdgeRuns.clear();
-    auto edge = mFacesOwner->mEdges.begin();
-    while (edge != mFacesOwner->mEdges.end()) {
-        int nBudget = kEdgeRunQuadwordBudget;
-        vertIndices.resize(0);
-        primIndices.resize(0);
-        while (edge != mFacesOwner->mEdges.end()) {
-            const unsigned short anCorners[] = {edge->mV1, edge->mV2};
-            int nPrimVerts = 0;
-            for (int nCorner = 0; nCorner < kEdgeIndicesPerPrim; ++nCorner) {
-                auto found = std::find(vertIndices.begin(), vertIndices.end(), anCorners[nCorner]);
-                if (found != vertIndices.end()) {
-                    primIndices.push_back(static_cast<unsigned short>(
-                        (found - vertIndices.begin()) * kVu1EdgeVertStride));
-                    continue;
-                }
-                if (nBudget < kEdgeRunReserve) {
-                    primIndices.resize(primIndices.size() - nCorner);
-                    vertIndices.resize(vertIndices.size() - nPrimVerts);
-                    nBudget = 1;
-                    --edge;
-                    break;
-                }
-                vertIndices.push_back(anCorners[nCorner]);
-                ++nPrimVerts;
-                nBudget -= kEdgeVertQuadwordCost;
-                primIndices.push_back(
-                    static_cast<unsigned short>((vertIndices.size() - 1) * kVu1EdgeVertStride));
-            }
-            --nBudget;
-            ++edge;
-            if (nBudget == 0) {
-                break;
-            }
-        }
-        AppendRun(static_cast<PsMesh *>(mFacesOwner)->mEdgeRuns, vertIndices, primIndices);
-    }
-}
-
-Mesh *NewPsMesh(const HxStr &name) {
-    // The binary bills the allocation to the tag "Rnd::Mesh" and rounds the 0x170-byte object up
-    // to 0x180 bytes.
-    return new PsMesh(name);
-}
-
-DrawVert g_aDrawVerts[kDrawVertCapacity + 16];
-
-} // namespace Rnd
-
-RenderStats g_renderStats;
+// The unit's static initialiser at NTSC-U/C: 0x00216318, PAL: 0x0021f130, and its global
+// constructor at NTSC-U/C: 0x00216320, PAL: 0x0021f138, are empty.

@@ -1,279 +1,156 @@
 #pragma once
 
+#include <cstddef>
+
+#include "math/frustum.h"
 #include "math/transform.h"
-#include "math/vector2.h"
 #include "math/vector3.h"
-#include "rnd/cam.h"
-
-class HxStr;
-namespace Rnd {
-class Tex;
-}
-
-namespace Rnd {
+#include "os/mem.h"
+#include "rnd/rndcam.h"
 
 /**
  * Camera, PlayStation 2.
  *
- * Its RTTI descriptor is at `0x008efdc0`. It has `Rnd::Cam` as its only public non-virtual base at
- * offset 0. The class does not add a data member. Its allocator at `0x00588500` requests the same
- * 0x330 bytes the base does, under the same "Rnd::Cam" tag, and its constructor writes only the
- * four vtable pointers.
- *
- * Four vtables belong to the class. The seven-entry table at `0x0082f2e0` is addressed by the
- * `Rnd::Drawable` vptr at `0x10`, the three-entry table at `0x0082f2c0` by the
- * `Rnd::Transformable` vptr at `0xc8`, the three-entry table at `0x0082f2a0` by the
- * `Rnd::Collideable` vptr at `0xd8`, and the eight-entry table at `0x0082f258` by the
- * `Rnd::Object` subobject vptr. Every entry beyond the ones below stores the implementation
- * `Rnd::Cam` supplies.
- *
- * The seventh entry of the first table proves SetTargetTex() is a virtual declared here rather
- * than an override. The base table has six entries and this one has seven.
+ * The RTTI includes the class name and records RndCam as the one base. The class adds no data
+ * member. DrawShowing() programs the GS scissor and fills the transforms the mesh and particle
+ * paths read.
  */
-class PsCam : public Cam {
+class PsCam : public RndCam {
 public:
-    /**
-     * Camera the renderer falls back on when a scene selects none.
-     *
-     * Rnd::GfxDevice::BeginFrame() reads it, and Rnd::PsEnviron::Init() makes the default
-     * environment and the default light children of it.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00768410
-     * @ghidraAddress PAL: 0x007ac160
-     */
-    static PsCam *sDefault;
-
     /**
      * Construct a camera with the default projection.
      *
-     * @param name The registry key for this object.
-     * @ghidraAddress NTSC-U/C: 0x00582558
-     * @ghidraAddress PAL: 0x005c5750
+     * @param pszName The registry key.
+     * @ghidraAddress NTSC-U/C: 0x00212648
+     * @ghidraAddress PAL: 0x0021b460
      */
-    explicit PsCam(const HxStr &name);
+    explicit PsCam(const char *pszName);
 
     /**
-     * @ghidraAddress NTSC-U/C: 0x005826e0
-     * @ghidraAddress PAL: 0x005c58d8
+     * @ghidraAddress NTSC-U/C: 0x002127a0
+     * @ghidraAddress PAL: 0x0021b5b8
      */
-    virtual ~PsCam();
+    ~PsCam() override;
 
     /**
-     * Make this camera the one the frame is drawn through and submit its display registers.
+     * Allocate a camera, billed to the base class name.
      *
-     * Vtable slot 3 of the Rnd::Drawable table. A render target is bound through
-     * Rnd::PsTex::BindAsRenderTarget(), and a camera following one that drew into a texture points
-     * the GS back at the display buffer. The routine then computes the guard band, widens the four
-     * side planes of the local frustum by it, moves all six planes into world space as
-     * Rnd::g_drawFrustum, builds the viewport and projection transforms, programs
-     * SCISSOR_1 from the screen rectangle clamped to the unit square, and stores itself in
-     * Cam::sCurrent. It does not call the base implementation.
-     *
-     * @return Non-zero, which draws the children as well.
-     * @ghidraAddress NTSC-U/C: 0x00582830
-     * @ghidraAddress PAL: 0x005c5a28
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
      */
-    virtual int DrawShowing();
+    void *operator new(size_t nSize) {
+        return PoolMemAlloc(static_cast<int>(nSize), "Cam", 0);
+    }
 
     /**
-     * Place a point of the screen rectangle in render target pixels.
+     * Release a camera.
      *
-     * Vtable slot 4 of the Rnd::Drawable table. The point is scaled by the screen rectangle
-     * extents and offset by its origin, then scaled again by the size of the render target, or by
-     * the display size of Rnd::ThePs when there is no render target.
-     *
-     * @param ptScreen The point, in the coordinates the screen rectangle is expressed in.
-     * @return The same point in render target pixels.
-     * @ghidraAddress NTSC-U/C: 0x005885b0
-     * @ghidraAddress PAL: 0x005cb810
+     * @param pBlock The block.
      */
-    virtual Vector2 ScreenToPixels(const Vector2 &ptScreen);
+    void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
 
     /**
-     * Take the aspect ratio from the render target and rebuild the projection.
+     * Make this camera the one the frame is drawn through.
      *
-     * Vtable slot 5 of the Rnd::Drawable table. With no render target the vertical ratio becomes
-     * the 0.75 of a four by three display, which is the default the base implementation has no way
-     * to supply. The base then runs.
+     * A camera following one that drew into a texture flushes the texture cache first. A render
+     * target is bound with PsTex::BindAsRenderTarget(), and otherwise a camera following one that
+     * drew into a texture points the GS back at the display buffer. The routine then computes the
+     * guard band, widens the four side planes of the local frustum by it, moves all six planes
+     * into world space as g_drawFrustum, builds the viewport and projection transforms, and
+     * programs SCISSOR_1 from the screen rectangle clamped to the unit square. A render target is
+     * then cleared to black with depth writes enabled. The camera becomes RndCam::sCurrent. The
+     * base implementation is not called.
      *
-     * @ghidraAddress NTSC-U/C: 0x00588578
-     * @ghidraAddress PAL: 0x005cb7d8
+     * @return 1, to draw the children.
+     * @ghidraAddress NTSC-U/C: 0x002128f0
+     * @ghidraAddress PAL: 0x0021b708
      */
-    virtual void UpdateTargetAspect();
+    int DrawShowing() override;
 
     /**
-     * Set the texture this camera draws into, or none to draw into the frame buffer.
+     * Install the camera factory and build the default camera.
      *
-     * Vtable slot 6 of the Rnd::Drawable table, which is a slot of its own rather than an override
-     * of the base routine of the same title. The base routine runs first, and clearing the render
-     * target then restores the vertical ratio of a four by three display.
+     * A `.rnd` file naming the class `Cam` then loads this subclass. The name is inferred.
      *
-     * @param pTex The render target, or null to draw into the frame buffer.
-     * @ghidraAddress NTSC-U/C: 0x00588498
-     * @ghidraAddress PAL: 0x005cb6f8
-     */
-    virtual void SetTargetTex(Tex *pTex);
-
-    /**
-     * Build a camera the class registry vends.
-     *
-     * The return type is the base class, which is what lets Init() store the routine in
-     * Rnd::Cam::sNew.
-     *
-     * @param name The registry key for the new camera.
-     * @return The new camera.
-     * @ghidraAddress NTSC-U/C: 0x00588500
-     * @ghidraAddress PAL: 0x005cb760
-     */
-    static Cam *NewCam(const HxStr &name);
-
-    /**
-     * Install the PlayStation 2 camera factory and build the default camera.
-     *
-     * Rnd::Cam::sNew becomes NewCam(), which is how a `.rnd` file naming the unchanged "Cam"
-     * key loads this subclass. The camera named "[default cam]" is then built, marked internal,
-     * and placed at the translation (0, -150, 0) with its dirty flag set, which puts the default
-     * viewpoint 150 units back along the axis this engine looks down.
-     *
-     * @ghidraAddress NTSC-U/C: 0x00582430
-     * @ghidraAddress PAL: 0x005c5608
+     * @ghidraAddress NTSC-U/C: 0x00212548
+     * @ghidraAddress PAL: 0x0021b360
      */
     static void Init();
 
     /**
-     * Undo what Init() installs.
+     * Create a camera.
      *
-     * Destroys PsCam::sDefault through its virtual destructor, without clearing the pointer, and
-     * then runs Rnd::RegisterCamClass(). The out-of-line copy has no caller, and
-     * GfxDevice::Terminate() expands the body at `0x0049b01c`. The name is inferred from
-     * GfxDevice::Terminate().
-     *
-     * @ghidraAddress NTSC-U/C: 0x00588428
-     * @ghidraAddress PAL: 0x005cb688
+     * @param pszName The registry key.
+     * @return The camera.
+     * @ghidraAddress NTSC-U/C: 0x0037ca10
+     * @ghidraAddress PAL: 0x003eb140
      */
-    static void Terminate();
+    static RndObject *New(const char *pszName) {
+        return new PsCam(pszName);
+    }
 };
 
-inline void PsCam::Terminate() {
-    delete PsCam::sDefault;
-    RegisterCamClass();
-}
-
-// The globals below are the draw state PsCam::DrawShowing() leaves for the software and VU1 paths.
-// Every title is inferred from the computation that fills the global, because the image
-// retains no name for any of them.
+// The globals below are the draw state PsCam::DrawShowing() sets up for the mesh and particle
+// paths. Every title is inferred from the computation that fills the global.
 
 /**
- * Camera to clip transform, the local projection widened by the guard band and then preceded by
- * the camera's world to camera transform.
+ * Reciprocal of the factor the view is widened by on each axis before clipping.
  *
- * @ghidraAddress NTSC-U/C: 0x008e4020
- * @ghidraAddress PAL: 0x009293a0
- */
-extern Transform g_viewProjectXfm;
-
-/**
- * The same transform without the guard band widening.
+ * Each axis of the factor is the room left in the 4096-unit GS coordinate space around the screen
+ * rectangle, divided by the rectangle's extent with a 2 per cent margin. Primitives inside the
+ * widened view need no clipping, because the GS scissors them. The third component is 1.
  *
- * @ghidraAddress NTSC-U/C: 0x008e4060
- * @ghidraAddress PAL: 0x009293e0
- */
-extern Transform g_viewProjectUnscaledXfm;
-
-/**
- * Clip to GS coordinate transform, scaled by the guard band.
- *
- * @ghidraAddress NTSC-U/C: 0x008e40a0
- * @ghidraAddress PAL: 0x00929420
- */
-extern Transform g_viewportXfm;
-
-/**
- * The same transform without the guard band scaling.
- *
- * @ghidraAddress NTSC-U/C: 0x008e40e0
- * @ghidraAddress PAL: 0x00929460
- */
-extern Transform g_viewportUnscaledXfm;
-
-/**
- * g_viewportXfm with a small depth bias added to the translation.
- *
- * @ghidraAddress NTSC-U/C: 0x008e4120
- * @ghidraAddress PAL: 0x009294a0
- */
-extern Transform g_viewportBiasedXfm;
-
-/**
- * Screen scale of a particle's extent, the widened projection scale times the viewport scale.
- *
- * @ghidraAddress NTSC-U/C: 0x008e4160
- * @ghidraAddress PAL: 0x009294e0
- */
-extern Vector3 g_particleScreenScale;
-
-/**
- * The widened projection scale on each axis, with y negated.
- *
- * @ghidraAddress NTSC-U/C: 0x008e4170
- * @ghidraAddress PAL: 0x009294f0
- */
-extern Vector3 g_particleProjectScale;
-
-/**
- * Factor the view is widened by on each axis before clipping.
- *
- * Each axis is the room left in the 4096-unit GS coordinate space around the screen rectangle,
- * divided by the rectangle's extent with a 2 per cent margin. Primitives inside the widened view
- * need no clipping, because the GS scissors them.
- *
- * @ghidraAddress NTSC-U/C: 0x008e4180
- * @ghidraAddress PAL: 0x00929500
- */
-extern Vector3 g_guardBandScale;
-
-/**
- * Reciprocal of g_guardBandScale, left unchanged when either axis of it is zero.
- *
- * @ghidraAddress NTSC-U/C: 0x008e4190
- * @ghidraAddress PAL: 0x00929510
+ * @ghidraAddress NTSC-U/C: 0x0043c180
  */
 extern Vector3 g_invGuardBandScale;
 
 /**
- * Near plane distance of the camera last drawn through.
+ * The widened projection scale on each axis, with y negated, and two zero components.
  *
- * @ghidraAddress NTSC-U/C: 0x008e41a0
- * @ghidraAddress PAL: 0x00929520
+ * @ghidraAddress NTSC-U/C: 0x0043c190
  */
-extern float g_flCamNear;
+extern Vector3 g_particleProjectScale;
 
 /**
- * Scissor rectangle of the camera last drawn through, in GS primitive coordinates of 1/16 pixel.
+ * The view volume widened by the guard band, in world space.
  *
- * DrawShowing() first stores pixel bounds here to program SCISSOR_1 and then converts them.
+ * @ghidraAddress NTSC-U/C: 0x0043c1a0
+ */
+extern Frustum g_drawFrustum;
+
+/**
+ * World to clip transform without the guard band widening.
  *
- * @ghidraAddress NTSC-U/C: 0x008e41a4
- * @ghidraAddress PAL: 0x00929524
+ * @ghidraAddress NTSC-U/C: 0x0043c200
  */
-extern int g_nScissorX0;
+extern Transform g_viewProjectUnscaledXfm;
 
 /**
- * @ghidraAddress NTSC-U/C: 0x008e41a8
- * @ghidraAddress PAL: 0x00929528
+ * World to clip transform, the projection widened by the guard band.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c240
  */
-extern int g_nScissorX1;
+extern Transform g_viewProjectXfm;
 
 /**
- * @ghidraAddress NTSC-U/C: 0x008e41ac
- * @ghidraAddress PAL: 0x0092952c
+ * g_viewProjectXfm with the depth of a perspective projection moved one depth unit nearer.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c280
  */
-extern int g_nScissorY0;
+extern Transform g_viewProjectBiasedXfm;
 
 /**
- * @ghidraAddress NTSC-U/C: 0x008e41b0
- * @ghidraAddress PAL: 0x00929530
+ * Clip to GS coordinate transform without the guard band scaling.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c2c0
  */
-extern int g_nScissorY1;
+extern Transform g_viewportUnscaledXfm;
 
-} // namespace Rnd
+/**
+ * Clip to GS coordinate transform, scaled by the guard band.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0043c300
+ */
+extern Transform g_viewportXfm;

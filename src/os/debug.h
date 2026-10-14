@@ -57,12 +57,26 @@ public:
      */
     void CloseLog();
 
+    /**
+     * Routine that shows a message on the screen and waits for the player.
+     *
+     * The state is the caller's. A state of 2 is cleared when the player presses the button that
+     * dismisses the message.
+     *
+     * @param pState The caller's state.
+     * @param pszMessage The message.
+     */
+    typedef void (*ModalCallback)(int *pState, const char *pszMessage);
+
 private:
     int mReserved08; // +0x08, cleared by the constructor and not yet identified.
     int mReserved0C; // +0x0c, cleared by the constructor and not yet identified.
     int mEnabled;    // Non-zero while the stream writes.
     BinStream *mLog; // The log file, or null for standard output.
-    int mReserved18; // +0x18, cleared by the constructor and not yet identified.
+
+public:
+    /** The routine the renderer installs to show a message, or null. The name is inferred. */
+    ModalCallback mModalCallback;
 };
 
 /**

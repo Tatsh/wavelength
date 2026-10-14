@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
 #include "os/binstream.h"
 #include "os/file.h"
@@ -328,6 +329,55 @@ BinStream &operator>>(BinStream &stream, std::list<T *> &list) {
     stream.ReadEndian(&nSize, sizeof(nSize));
     list.resize(nSize, nullptr);
     for (T *&pElement : list) {
+        String name;
+        stream >> name;
+        if (name.mLength == 0) {
+            pElement = nullptr;
+        } else {
+            pElement = dynamic_cast<T *>(TheManager.Find(name.c_str()));
+        }
+    }
+    return stream;
+}
+
+/**
+ * Write a vector of objects as its size followed by each object's name.
+ *
+ * A null entry writes an empty name. Each element type has its own instance. The RndMat instance
+ * is at `0x003951a0` and the RndFont instance at `0x00395250`.
+ *
+ * @param stream The stream to write to.
+ * @param objects The vector.
+ * @return The stream.
+ */
+template <typename T>
+BinStream &operator<<(BinStream &stream, const std::vector<T *> &objects) {
+    const int nSize = static_cast<int>(objects.size());
+    stream.WriteEndian(&nSize, sizeof(nSize));
+    for (T *pElement : objects) {
+        const RndObject *pObject = pElement;
+        stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    }
+    return stream;
+}
+
+/**
+ * Read a vector of objects the vector writer wrote, resolving each name in TheManager.
+ *
+ * An empty name, an unknown name, or an object of another class reads as null. Each element type
+ * has its own instance. The RndMat instance is at `0x00395300` and the RndFont instance at
+ * `0x00395718`.
+ *
+ * @param stream The stream to read from.
+ * @param objects Receives the objects.
+ * @return The stream.
+ */
+template <typename T>
+BinStream &operator>>(BinStream &stream, std::vector<T *> &objects) {
+    int nSize;
+    stream.ReadEndian(&nSize, sizeof(nSize));
+    objects.resize(nSize, nullptr);
+    for (T *&pElement : objects) {
         String name;
         stream >> name;
         if (name.mLength == 0) {

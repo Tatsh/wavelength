@@ -1,284 +1,264 @@
 #include "rnd/psenviron.h"
 
-#include <math.h>
-#include <string.h>
-#include <vector>
+#include <cmath>
+#include <cstring>
 
-#include "gfx/gfxdevice.h"
-#include "math/sphere.h"
-#include "math/transformops.h"
-#include "math/vector3.h"
-#include "os/hxstr.h"
-#include "rnd/drawverts.h"
-#include "rnd/environ.h"
-#include "rnd/light.h"
-#include "rnd/mat.h"
-#include "rnd/pscam.h"
+#include "rnd/dmapacket.h"
+#include "rnd/ps.h"
 #include "rnd/psmat.h"
-#include "rnd/transformable.h"
-
-namespace Rnd {
+#include "rnd/rndlight.h"
+#include "rnd/rndmanager.h"
 
 namespace {
 
-// The GS fog register takes a byte, and the fog terms map camera depth onto its range.
-constexpr float kFogByteRange = 255.0f;
+// The fog value of no fog, and the scale from a colour component to a GS byte.
+constexpr float kFogValueClear = 255.0f;
+constexpr float kByteScale = 255.0f;
 
-// FOGCOL and the 24 bits of it the colour occupies, one byte per component from red upwards.
 constexpr int kGsRegFogCol = 0x3d;
 constexpr unsigned long long kFogColMask = 0xffffff;
 constexpr int kFogColGreenShift = 8;
 constexpr int kFogColBlueShift = 16;
 
-// Row of a world transform a directional light shines along, negated, and the translation row.
-constexpr int kXfmRowLightAxis = 1;
-constexpr int kXfmRowTranslation = 3;
+// One point light, or up to three directional lights.
+constexpr int kMaxDirectionalLights = 3;
 
-// SelectLightForVertex() chooses Vu1LightUnlit, Vu1LightDirectional, Vu1LightPoint, or
-// Vu1LightNone.
-constexpr int kVu1EntryUnlit = 0x2ee;
-constexpr int kVu1EntryDirectional = 0x2f8;
-constexpr int kVu1EntryPoint = 0x35c;
-constexpr int kVu1EntryNoLight = 0x3d4;
+// The words of the header quadword of a lighting block, and the size of the block.
+constexpr int kHeaderProgram = 0;
+constexpr int kHeaderVertBase = 1;
+constexpr int kHeaderVertLight = 2;
+constexpr int kHeaderReserved = 3;
+constexpr int kLightBlockQwords = 8;
+constexpr int kAmbientTailQwords = 6;
+constexpr int kPointTailQwords = 2;
 
-// The inverse of a rigid transform. The binary presets the fourth word of every row, and
-// InversMatrix() then overwrites every word.
-inline void InvertWithUnitW(const float *pXfm, float aflInverse[kXfmRowCount][kXfmRowFloatCount]) {
-    for (int nRow = 0; nRow < kXfmRowCount; ++nRow) {
-        aflInverse[nRow][kXfmRowFloatCount - 1] = 1.0f;
+constexpr int kLowDword = 0;
+constexpr int kHighDword = 1;
+
+// The components of a quadword vector.
+enum Component {
+    kComponentX = 0,
+    kComponentY = 1,
+    kComponentZ = 2,
+};
+
+inline void PushFloats(float fX, float fY, float fZ, float fW) {
+    DmaPacket &packet = DmaPacket::shared();
+    const float afValues[] = {fX, fY, fZ, fW};
+    std::memcpy(packet.mCursor, afValues, sizeof(afValues));
+    ++packet.mCursor;
+}
+
+inline void PushColor(const Color &color) {
+    PushFloats(color.r, color.g, color.b, color.a);
+}
+
+inline void PushVector(const Vector3 &vector) {
+    PushFloats(vector.x, vector.y, vector.z, vector.w);
+}
+
+inline void PushProduct(const Color &first, const Color &second) {
+    PushFloats(first.r * second.r, first.g * second.g, first.b * second.b, first.a * second.a);
+}
+
+inline float &ComponentOf(Vector3 &vector, int nComponent) {
+    switch (nComponent) {
+    case kComponentX:
+        return vector.x;
+    case kComponentY:
+        return vector.y;
+    default:
+        return vector.z;
     }
-    InversMatrix(&aflInverse[0][0], pXfm);
 }
 
-// On VU0 as vmulax, vmadday, vmaddz. The fourth word is carried over from the source.
-inline Vector3 RotateByRows(const float aflRows[kXfmRowCount][kXfmRowFloatCount],
-                            const Vector3 &vec) {
-    Vector3 rotated = vec;
-    rotated.x = aflRows[0][0] * vec.x + aflRows[1][0] * vec.y + aflRows[2][0] * vec.z;
-    rotated.y = aflRows[0][1] * vec.x + aflRows[1][1] * vec.y + aflRows[2][1] * vec.z;
-    rotated.z = aflRows[0][2] * vec.x + aflRows[1][2] * vec.y + aflRows[2][2] * vec.z;
-    return rotated;
+// The lighting block of an object without lights to send, the ambient program.
+inline void SendAmbient(DmaQuadword *pHeader, const PsMat *pMat) {
+    pHeader->mWord[kHeaderProgram] = PsEnviron::kLightProgramAmbient;
+    pHeader->mWord[kHeaderVertBase] = pMat->mVertBase;
+    DmaPacket::shared().mCursor += kAmbientTailQwords;
 }
 
-// On VU0 as vmulax, vmadday, vmaddaz, vmaddw. The fourth word is carried over from the source.
-inline Vector3 TransformByRows(const float aflRows[kXfmRowCount][kXfmRowFloatCount],
-                               const Vector3 &vec) {
-    Vector3 transformed = RotateByRows(aflRows, vec);
-    transformed.x += aflRows[kXfmRowTranslation][0];
-    transformed.y += aflRows[kXfmRowTranslation][1];
-    transformed.z += aflRows[kXfmRowTranslation][2];
-    return transformed;
-}
-
-inline float LightDistanceToSphere(const PointLightRecord &light, const Sphere &sphere) {
-    Vector3 offset;
-    offset.w = 1.0f;
-    Rnd::Subtract(&light.mTransformedPosition.x, &sphere.mCenter.x, &offset.x);
-    return sqrtf(offset.x * offset.x + offset.y * offset.y + offset.z * offset.z);
-}
-
-// Whether a point light, already in the sphere's space, reaches a bounding sphere. A sphere with no
-// radius is always reached. The range is the fourth word of the transformed position, which the
-// transform carries over from the range in mPosition.
-inline bool LightReachesSphere(const PointLightRecord &light, const Sphere *pSphere) {
-    if (pSphere == nullptr || pSphere->mRadius == 0.0f) {
-        return true;
-    }
-    return LightDistanceToSphere(light, *pSphere) <=
-           light.mTransformedPosition.w + pSphere->mRadius;
-}
-
-// The culling pass writes its test the other way round from LightReachesSphere().
-inline bool LightFallsShortOfSphere(const PointLightRecord &light, const Sphere *pSphere) {
-    if (pSphere == nullptr || pSphere->mRadius == 0.0f) {
-        return false;
-    }
-    return light.mTransformedPosition.w + pSphere->mRadius < LightDistanceToSphere(light, *pSphere);
-}
-
-// Scale a packet colour by a light colour, or replace it when the material takes that term from
-// the vertex colours. The fourth word is untouched.
-inline void ApplyLightColor(GifQuadword *pQuad, const Color &light, int bFromVertex) {
-    Color color;
-    memcpy(&color, pQuad, sizeof(color));
-    if (bFromVertex == 0) {
-        color.r *= light.r;
-        color.g *= light.g;
-        color.b *= light.b;
-    } else {
-        color.r = light.r;
-        color.g = light.g;
-        color.b = light.b;
-    }
-    memcpy(pQuad, &color, sizeof(color));
+// Each light direction, a column of g_lightMatrix, moved into the space of a basis row.
+inline Vector3 LightsAlong(const Vector3 &row) {
+    Vector3 out;
+    out.x = g_lightMatrix[0].x * row.x + g_lightMatrix[1].x * row.y + g_lightMatrix[2].x * row.z;
+    out.y = g_lightMatrix[0].y * row.x + g_lightMatrix[1].y * row.y + g_lightMatrix[2].y * row.z;
+    out.z = g_lightMatrix[0].z * row.x + g_lightMatrix[1].z * row.y + g_lightMatrix[2].z * row.z;
+    out.w = row.w;
+    return out;
 }
 
 } // namespace
 
-int TransformLightRecords(DirectionalLightRecord *&pDirectionalBegin,
-                          DirectionalLightRecord *&pDirectionalEnd,
-                          PointLightRecord *&pPointBegin,
-                          PointLightRecord *&pPointEnd,
-                          const float *pXfm,
-                          const Sphere *pSphere) {
-    int nActive = 0;
-    pDirectionalBegin = PsEnviron::sDirLights.data();
-    pDirectionalEnd = PsEnviron::sDirLights.data() + PsEnviron::sDirLights.size();
-    pPointBegin = PsEnviron::sPointLights.data();
-    pPointEnd = PsEnviron::sPointLights.data() + PsEnviron::sPointLights.size();
-
-    float aflInverse[kXfmRowCount][kXfmRowFloatCount];
-    InvertWithUnitW(pXfm, aflInverse);
-
-    for (DirectionalLightRecord *pLight = pDirectionalBegin; pLight != pDirectionalEnd; ++pLight) {
-        pLight->mTransformedDirection = RotateByRows(aflInverse, pLight->mDirection);
-        ++nActive;
-    }
-    for (PointLightRecord *pLight = pPointBegin; pLight != pPointEnd; ++pLight) {
-        pLight->mTransformedPosition = TransformByRows(aflInverse, pLight->mPosition);
-        pLight->mCulled = LightFallsShortOfSphere(*pLight, pSphere) ? 1 : 0;
-        nActive += pLight->mCulled ^ 1;
-    }
-    return nActive;
-}
-
-int SelectLightForVertex(GifQuadword *pLight,
-                         GifQuadword *pAmbient,
-                         GifQuadword *pDiffuse,
-                         const float *pXfm,
-                         const Sphere *pSphere) {
-    if (g_nLightingEnabled == 0) {
-        return kVu1EntryUnlit;
-    }
-
-    float aflInverse[kXfmRowCount][kXfmRowFloatCount];
-    if (!PsEnviron::sDirLights.empty()) {
-        const DirectionalLightRecord &light = PsEnviron::sDirLights.front();
-        InvertWithUnitW(pXfm, aflInverse);
-        const Vector3 direction = RotateByRows(aflInverse, light.mDirection);
-        memcpy(pLight, &direction, sizeof(direction));
-        ApplyLightColor(pAmbient, light.mAmbient, PsMat::sCurrent->mVertAmbient);
-        ApplyLightColor(pDiffuse, light.mDiffuse, PsMat::sCurrent->mVertDiffuse);
-        return kVu1EntryDirectional;
-    }
-
-    if (PsEnviron::sPointLights.empty()) {
-        return kVu1EntryNoLight;
-    }
-    InvertWithUnitW(pXfm, aflInverse);
-    for (PointLightRecord &light : PsEnviron::sPointLights) {
-        light.mTransformedPosition = TransformByRows(aflInverse, light.mPosition);
-        if (LightReachesSphere(light, pSphere)) {
-            ApplyLightColor(pAmbient, light.mAmbient, PsMat::sCurrent->mVertAmbient);
-            ApplyLightColor(pDiffuse, light.mDiffuse, PsMat::sCurrent->mVertDiffuse);
-            memcpy(pLight, &light.mTransformedPosition, sizeof(light.mTransformedPosition));
-            return kVu1EntryPoint;
-        }
-    }
-    return kVu1EntryNoLight;
-}
-
-// NTSC-U/C: 0x00776118, PAL: 0x007b9ff0
+float g_fogScale;
+float g_fogOffset = kFogValueClear;
 int g_nFogEnabled;
+PsEnviron::LightProgram g_lightProgram = PsEnviron::kLightProgramUnlit;
+alignas(16) Color g_ambientColor;
+alignas(16) Vector3 g_lightMatrix[3];
+alignas(16) Color g_lightColors[3];
 
-// NTSC-U/C: 0x00776120, PAL: 0x007b9ff8
-std::vector<DirectionalLightRecord> PsEnviron::sDirLights;
-
-// NTSC-U/C: 0x00776130, PAL: 0x007ba008
-std::vector<PointLightRecord> PsEnviron::sPointLights;
-
-// NTSC-U/C: 0x0077613c, PAL: 0x007ba014
-PsEnviron *g_pDefaultEnviron;
-
-// NTSC-U/C: 0x00776140, PAL: 0x007ba018
-Light *g_pDefaultLight;
-
-// NTSC-U/C: 0x00776110, PAL: 0x007b9fe8
-float g_flFogScale;
-
-// NTSC-U/C: 0x00776114, PAL: 0x007b9fec
-float g_flFogOffset = 255.0f;
-
-PsEnviron::~PsEnviron() {
-}
-
-Environ *PsEnviron::NewEnviron(const HxStr &name) {
-    // The binary bills the allocation to the tag "Rnd::Environ" and the object is 0x80 bytes.
-    return new PsEnviron(name);
-}
-
-void PsEnviron::Init() {
-    g_pfnNewEnviron = NewEnviron;
-    g_pDefaultEnviron = new PsEnviron(HxStr("[default environ]"));
-    g_pDefaultEnviron->mInternal = 1;
-    PsCam::sDefault->AddDraw(g_pDefaultEnviron, nullptr);
-
-    {
-        const HxStr lightName("[default light]");
-        // The binary's handler covers only the factory call and returns null.
-        try {
-            g_pDefaultLight = g_pfnNewLight(lightName);
-        } catch (...) {
-            g_pDefaultLight = nullptr;
-        }
-    }
-    g_pDefaultLight->mInternal = 1;
-    g_pDefaultEnviron->AddLight(g_pDefaultLight);
-    PsCam::sDefault->AddTrans(g_pDefaultLight);
-}
-
-void PsEnviron::Terminate() {
-    delete g_pDefaultEnviron;
-    delete g_pDefaultLight;
-    RegisterEnvironClass();
-}
+// The unit's static initialiser runs an empty constructor over the three elements of a light
+// array, and its global constructor calls the static initialiser.
+// NTSC-U/C: 0x00219ec0, PAL: 0x00222cd8
+// NTSC-U/C: 0x00219f08, PAL: 0x00222d20
 
 int PsEnviron::DrawShowing() {
-    g_nFogEnabled = mFogMode != kFogModeNone;
-    if (g_nFogEnabled != 0) {
-        g_flFogScale = kFogByteRange / (mFogStart - mFogEnd);
-        g_flFogOffset = -mFogEnd * g_flFogScale;
+    g_nFogEnabled = mFogMode != kFogNone;
+    if (g_nFogEnabled) {
+        g_fogScale = kFogValueClear / (mFogStart - mFogEnd);
+        g_fogOffset = -mFogEnd * g_fogScale;
     } else {
-        g_flFogScale = 0.0f;
-        g_flFogOffset = kFogByteRange;
+        g_fogScale = 0.0f;
+        g_fogOffset = kFogValueClear;
     }
+    const auto nRed = static_cast<unsigned long long>(static_cast<int>(mFogColor.r * kByteScale));
+    const auto nGreen = static_cast<unsigned long long>(static_cast<int>(mFogColor.g * kByteScale));
+    const auto nBlue = static_cast<unsigned long long>(static_cast<int>(mFogColor.b * kByteScale));
+    ThePs.SetGsReg(kGsRegFogCol,
+                   nRed | (nGreen << kFogColGreenShift) | (nBlue << kFogColBlueShift),
+                   kFogColMask);
 
-    const unsigned long long qwRed = static_cast<int>(mFogColor.r * kFogByteRange);
-    const unsigned long long qwGreen = static_cast<int>(mFogColor.g * kFogByteRange);
-    const unsigned long long qwBlue = static_cast<int>(mFogColor.b * kFogByteRange);
-    Rnd::ThePs.SetGsReg(kGsRegFogCol,
-                        qwRed | (qwGreen << kFogColGreenShift) | (qwBlue << kFogColBlueShift),
-                        kFogColMask);
+    g_ambientColor.r = mAmbientColor.r;
+    g_ambientColor.g = mAmbientColor.g;
+    g_ambientColor.b = mAmbientColor.b;
+    g_ambientColor.a = 1.0f;
+    g_lightProgram = kLightProgramAmbient;
 
-    // The binary resizes both vectors from a temporary record whose padding words are 1.0.
-    PsEnviron::sDirLights.resize(0);
-    PsEnviron::sPointLights.resize(0);
-
-    for (Light *pLight : mLights) {
-        if (pLight->mType == Light::kLightTypeDirectional) {
-            PsEnviron::sDirLights.resize(PsEnviron::sDirLights.size() + 1);
-            DirectionalLightRecord &record = PsEnviron::sDirLights.back();
-            Vector3 direction;
-            direction.w = 1.0f;
-            NegateVec3(pLight->mWorldXfm[kXfmRowLightAxis], &direction.x);
-            record.mDirection = direction;
-            record.mAmbient = pLight->mAmbient;
-            record.mDiffuse = pLight->mDiffuse;
-        } else if (pLight->mType == Light::kLightTypePoint) {
-            PsEnviron::sPointLights.resize(PsEnviron::sPointLights.size() + 1);
-            PointLightRecord &record = PsEnviron::sPointLights.back();
-            const float *pTranslation = pLight->mWorldXfm[kXfmRowTranslation];
-            record.mPosition.x = pTranslation[0];
-            record.mPosition.y = pTranslation[1];
-            record.mPosition.z = pTranslation[2];
-            record.mPosition.w = pLight->mRange;
-            record.mDiffuse = pLight->mDiffuse;
-            record.mAmbient = pLight->mAmbient;
+    auto point = mLights.begin();
+    while (point != mLights.end() && (*point)->mType != RndLight::kTypePoint) {
+        ++point;
+    }
+    if (point != mLights.end()) {
+        const RndLight *pLight = *point;
+        g_lightProgram = kLightProgramPoint;
+        g_lightMatrix[0] = pLight->mWorldXfm.mTranslation;
+        g_lightMatrix[0].w = -1.0f / pLight->mRange;
+        g_lightMatrix[1].w = pLight->mRange * pLight->mRange;
+        g_lightMatrix[2].w = pLight->mRange;
+        g_lightColors[0] = pLight->mColor;
+        g_lightColors[0].a = 0.0f;
+    } else {
+        int nLights = 0;
+        for (auto it = mLights.begin(); it != mLights.end() && nLights < kMaxDirectionalLights;
+             ++it) {
+            const RndLight *pLight = *it;
+            if (pLight->mType != RndLight::kTypeDirectional) {
+                continue;
+            }
+            g_lightProgram = kLightProgramDirectional;
+            const Vector3 &dir = pLight->mWorldXfm.mBasisY;
+            const float fScale = 1.0f / std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+            ComponentOf(g_lightMatrix[0], nLights) = -(dir.x * fScale);
+            ComponentOf(g_lightMatrix[1], nLights) = -(dir.y * fScale);
+            ComponentOf(g_lightMatrix[2], nLights) = -(dir.z * fScale);
+            g_lightColors[nLights] = pLight->mColor;
+            g_lightColors[nLights].a = 0.0f;
+            ++nLights;
+        }
+        if (g_lightProgram == kLightProgramDirectional) {
+            for (; nLights < kMaxDirectionalLights; ++nLights) {
+                g_lightColors[nLights] = Color{0.0f, 0.0f, 0.0f, 0.0f};
+            }
         }
     }
 
-    Environ::sCurrent = this;
+    sCurrent = this;
     return 1;
 }
 
-} // namespace Rnd
+void PsEnviron::SelectLights(const Transform *pXfm, const Sphere *pSphere) {
+    DmaPacket &frame = DmaPacket::shared();
+    DmaQuadword *pHeader = frame.mCursor;
+    if (g_nLightingEnabled == 0) {
+        pHeader->mWord[kHeaderProgram] = kLightProgramUnlit;
+        pHeader->mWord[kHeaderVertBase] = 0;
+        pHeader->mWord[kHeaderVertLight] = 0;
+        pHeader->mWord[kHeaderReserved] = 0;
+        frame.mCursor += kLightBlockQwords;
+        return;
+    }
+
+    const PsMat *pMat = PsMat::sCurrent;
+    pHeader->mDword[kLowDword] = 0;
+    pHeader->mDword[kHighDword] = 0;
+    ++frame.mCursor;
+    if (pMat->mVertBase != 0) {
+        if (pMat->mBaseAmbient != 0) {
+            PushColor(g_ambientColor);
+        } else if (g_lightProgram == kLightProgramAmbient) {
+            pHeader->mWord[kHeaderProgram] = kLightProgramUnlit;
+            frame.mCursor += kLightBlockQwords - 1;
+            return;
+        } else {
+            PushFloats(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    } else if (pMat->mBaseAmbient != 0) {
+        PushProduct(pMat->mBaseColor, g_ambientColor);
+    } else {
+        PushColor(pMat->mBaseColor);
+    }
+
+    if (pXfm == nullptr || g_lightProgram == kLightProgramAmbient) {
+        SendAmbient(pHeader, pMat);
+        return;
+    }
+
+    if (g_lightProgram == kLightProgramDirectional) {
+        pHeader->mWord[kHeaderProgram] = kLightProgramDirectional;
+        pHeader->mWord[kHeaderVertBase] = pMat->mVertBase;
+        pHeader->mWord[kHeaderVertLight] = pMat->mVertLight;
+        const Vector3 rowX = LightsAlong(pXfm->mBasisX);
+        const Vector3 rowY = LightsAlong(pXfm->mBasisY);
+        const Vector3 rowZ = LightsAlong(pXfm->mBasisZ);
+        PushVector(rowX);
+        PushVector(rowY);
+        PushVector(rowZ);
+        for (const Color &color : g_lightColors) {
+            if (pMat->mVertLight == 0) {
+                PushProduct(pMat->mLightColor, color);
+            } else {
+                PushColor(color);
+            }
+        }
+        return;
+    }
+
+    Transform inverse;
+    Invert(inverse, *pXfm);
+    Vector3 position;
+    MultiplyPoint(inverse, g_lightMatrix[0], position);
+    if (pSphere->mRadius != 0.0f) {
+        const float fX = position.x - pSphere->mCenter.x;
+        const float fY = position.y - pSphere->mCenter.y;
+        const float fZ = position.z - pSphere->mCenter.z;
+        const float fReach = g_lightMatrix[2].w + pSphere->mRadius;
+        if (fReach * fReach < fX * fX + fY * fY + fZ * fZ) {
+            SendAmbient(pHeader, pMat);
+            return;
+        }
+    }
+    pHeader->mWord[kHeaderProgram] = kLightProgramPoint;
+    pHeader->mWord[kHeaderVertBase] = pMat->mVertBase;
+    pHeader->mWord[kHeaderVertLight] = pMat->mVertLight;
+    PushFloats(position.x, 0.0f, 0.0f, g_lightMatrix[0].w);
+    PushFloats(position.y, 0.0f, 0.0f, g_lightMatrix[1].w);
+    PushFloats(position.z, 0.0f, 0.0f, 0.0f);
+    if (pMat->mVertLight == 0) {
+        PushProduct(pMat->mLightColor, g_lightColors[0]);
+    } else {
+        PushColor(g_lightColors[0]);
+    }
+    frame.mCursor += kPointTailQwords;
+}
+
+void PsEnviron::Init() {
+    TheManager.mClasses[RndEnviron::sClassName] = PsEnviron::New;
+    RndEnviron::CreateDefault();
+    RndLight::CreateDefault();
+}
+
+void PsEnviron::Terminate() {
+    TheManager.mClasses[RndEnviron::sClassName] = RndEnviron::New;
+}

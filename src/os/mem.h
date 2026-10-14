@@ -474,6 +474,38 @@ void ReportHeapCapacity();
 int MemFindHeap(const char *pszName);
 
 /**
+ * Make a heap the one allocations come from until the matching MemPopHeap().
+ *
+ * The name is inferred.
+ *
+ * @param nHeap The table index MemFindHeap() reported.
+ * @ghidraAddress NTSC-U/C: 0x0029a728
+ * @ghidraAddress PAL: 0x002a4348
+ */
+void MemPushHeap(int nHeap);
+
+/**
+ * Return to the heap in use before the last MemPushHeap().
+ *
+ * The name is inferred.
+ *
+ * @ghidraAddress NTSC-U/C: 0x0029a750
+ * @ghidraAddress PAL: 0x002a4370
+ */
+void MemPopHeap();
+
+/**
+ * Report how many heaps the heap table has.
+ *
+ * The name is inferred.
+ *
+ * @return The heap count.
+ * @ghidraAddress NTSC-U/C: 0x0029ae18
+ * @ghidraAddress PAL: 0x002a4a38
+ */
+int MemNumHeaps();
+
+/**
  * Move live blocks of one heap together to merge its free space.
  *
  * A negative heap index is ignored. With bStrictBudget set, compaction stops before the first block

@@ -1,366 +1,324 @@
 #include "rnd/psmat.h"
 
-#include "gfx/gfxdevice.h"
-#include "gfx/renderstats.h"
-#include "math/color.h"
-#include "math/transform.h"
-#include "math/vector3.h"
-#include "os/hxstr.h"
-#include "rnd/mat.h"
+#include "rnd/ps.h"
 #include "rnd/pstex.h"
-#include "rnd/tex.h"
-#include "rndartt/apalette.h"
-
-namespace Rnd {
+#include "rnd/rndmanager.h"
 
 namespace {
 
-// GS general-purpose register indices. The shipped build took these from the PlayStation 2 SDK
-// headers, which this tree does not reproduce.
+// The GS registers a material programs.
 constexpr int kGsRegClamp1 = 0x08;
 constexpr int kGsRegAlpha1 = 0x42;
-constexpr int kGsRegDimx = 0x44;
+constexpr int kGsRegDimX = 0x44;
 constexpr int kGsRegTest1 = 0x47;
 constexpr int kGsRegFba1 = 0x4a;
 
-// ALPHA_1 equations, as the A, B, C, and D selector pairs of the register. Each name states the
-// result the selectors produce, where Cs is the source colour, Cd the destination colour, As the
-// source alpha, Ad the destination alpha, and FIX the fixed term in the top byte.
+// ALPHA_1 equations as A, B, C, and D fields, (A - B) * C + D, where 0 is the source colour, 1 the
+// destination colour, and 2 zero or, for C, the fixed alpha. The fixed alpha of 128 is 1.0.
 constexpr unsigned long long kAlphaKeepDest = 0x4a;
-constexpr unsigned long long kAlphaAddFixed = 0x8000000068ULL;
-constexpr unsigned long long kAlphaSrcAlphaAdd = 0x48;
-constexpr unsigned long long kAlphaSrcAlpha = 0x44;
-constexpr unsigned long long kAlphaInvSrcAlpha = 0x01;
-constexpr unsigned long long kAlphaDestAlpha = 0x54;
-constexpr unsigned long long kAlphaInvDestAlpha = 0x11;
-constexpr unsigned long long kAlphaSrcAlphaOpaque = 0x88;
+constexpr unsigned long long kAlphaAddFix = 0x68;
+constexpr unsigned long long kAlphaSubtractFix = 0xa1;
+constexpr unsigned long long kAlphaBlendSrc = 0x44;
+constexpr unsigned long long kAlphaAddSrcAlpha = 0x48;
+constexpr unsigned long long kAlphaBlendInvSrc = 0x01;
+constexpr unsigned long long kAlphaBlendDest = 0x54;
+constexpr unsigned long long kAlphaBlendInvDest = 0x11;
+constexpr unsigned long long kAlphaScaleSrc = 0x88;
+constexpr unsigned long long kAlphaFixOne = 0x80ULL << 32;
+constexpr unsigned long long kAlphaMask = 0xff;
+constexpr unsigned long long kAlphaFixMask = 0xff000000ffULL;
 
-// The four selector pairs alone, and the same four plus the fixed term.
-constexpr unsigned long long kAlphaSelectorMask = 0xff;
-constexpr unsigned long long kAlphaSelectorAndFixedMask = 0xff000000ffULL;
+// DIMX dither matrices, one for blends that add to the destination and one for the rest. The mask
+// covers the three bits of each entry.
+constexpr unsigned long long kDimXAdditive = 0x1212303012120303ULL;
+constexpr unsigned long long kDimXDefault = 0x2435607135247160ULL;
+constexpr unsigned long long kDimXMask = 0x7777777777777777ULL;
 
-// The two 4x4 dither matrices the blend modes choose between. The first has a shorter range and
-// serves the modes that preserve or add to the destination.
-constexpr unsigned long long kDimxGentle = 0x1212303012120303ULL;
-constexpr unsigned long long kDimxStandard = 0x2435607135247160ULL;
-constexpr unsigned long long kDimxMask = ~0ULL;
+// TEST_1 settings. An alpha-blended surface passes pixels of alpha above 0 and, failing that,
+// still writes depth. A cutout passes the same pixels and writes nothing for the others.
+constexpr unsigned long long kTestAlphaGreaterZOnly = 0x200d;
+constexpr unsigned long long kTestAlphaGreater = 0xd;
+constexpr unsigned long long kTestAlphaMask = 0x3fff;
+constexpr unsigned long long kTestAte = 1;
+constexpr unsigned long long kFbaFba = 1;
 
-// TEST_1 with the alpha test enabled, greater than a reference of zero, which discards a fully
-// transparent pixel. The first value also sets the failing pixel to update the depth buffer alone.
-constexpr unsigned long long kTestDiscardClearZOnly = 0x200d;
-constexpr unsigned long long kTestDiscardClear = 0x0d;
-constexpr unsigned long long kTestAlphaAndFailMask = 0x3fff;
-constexpr unsigned long long kTestAlphaEnableMask = 0x01;
+// CLAMP_1 wrap modes on both axes, and the mask of the two mode fields.
+constexpr unsigned long long kClampBothAxes = 5;
+constexpr unsigned long long kRepeatBothAxes = 0;
+constexpr unsigned long long kClampMask = 0xf;
 
-// FBA_1 alpha correction.
-constexpr unsigned long long kFbaMask = 0x01;
+// The colour scales. A modulated texture halves the vertex colour range.
+constexpr float kColorScaleFull = 255.0f;
+constexpr float kColorScaleModulate = 128.0f;
+constexpr float kAlphaScale = 128.0f;
 
-// CLAMP_1 with both axes clamped, and with both axes repeating.
-constexpr unsigned long long kClampBothAxes = 0x05;
-constexpr unsigned long long kRepeatBothAxes = 0x00;
-constexpr unsigned long long kClampModeMask = 0x0f;
+// The TEX0 texture functions.
+constexpr int kTexFunctionModulate = 0;
+constexpr int kTexFunctionDecal = 1;
+constexpr int kTexFunctionHighlight = 2;
+constexpr int kTexFunctionHighlight2 = 3;
 
-// mMultiPass value that makes a later stage modulate rather than replace.
-constexpr int kMultiPassModulate = 2;
+// The second and later passes draw their texture as a decal, or as a second highlight when the
+// material draws two extra passes.
+constexpr int kMultiPassDouble = 2;
+constexpr int kStageCountShared = 2;
 
-// NTSC-U/C: 0x0076d688, PAL: 0x007b13e0
-// Rnd::Mat::BlendMode to GS TEX0.TFX, where 0 is MODULATE, 1 DECAL, 2 HIGHLIGHT, and
-// 3 HIGHLIGHT2. Every mode this table does not distinguish modulates.
-int g_anStageBlendTexFunc[] = {0, 1, 3, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0};
+// The sphere map moves the texture coordinates from the unit square centred on 0 to the unit
+// square from 0 to 1, flipping v.
+constexpr float kSphereMapScale = 0.5f;
+constexpr float kTexelCentreOffset = 0.5f;
 
-// NTSC-U/C: 0x0076d65c, PAL: 0x007b13b4
-int g_nSelectedStage;
+// NTSC-U/C: 0x003b0788
+const int kTexFunctions[] = {
+    kTexFunctionModulate,
+    kTexFunctionDecal,
+    kTexFunctionHighlight2,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionHighlight,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+    kTexFunctionModulate,
+};
 
-// Set by PsMat::SelectAlphaBlend() and cleared once PsMat::Select() has restored the material
-// blend.
-// NTSC-U/C: 0x0076d680, PAL: 0x007b13d8
-int g_nBlendOverridden;
+// Set the first three rows to the identity without touching their padding words, and the
+// translation row to the origin.
+inline void SetIdentityUvXfm() {
+    g_uvXfm.mBasisZ.z = 1.0f;
+    g_uvXfm.mBasisX.x = 1.0f;
+    g_uvXfm.mBasisY.z = 0.0f;
+    g_uvXfm.mBasisX.y = 0.0f;
+    g_uvXfm.mBasisX.z = 0.0f;
+    g_uvXfm.mBasisY.x = 0.0f;
+    g_uvXfm.mBasisY.y = 1.0f;
+    g_uvXfm.mBasisZ.x = 0.0f;
+    g_uvXfm.mBasisZ.y = 0.0f;
+    g_uvXfm.mTranslation.x = 0.0f;
+    g_uvXfm.mTranslation.y = 0.0f;
+    g_uvXfm.mTranslation.z = 0.0f;
+    g_uvXfm.mTranslation.w = 1.0f;
+}
 
-// The identity halved with V flipped and the translation moved to the texture centre, which is
-// the transform a sphere map needs.
-// NTSC-U/C: 0x008e41c0, PAL: 0x00929540
-Transform g_sphereMapUvXfm;
-
-// Scratch the non-sphere path composes a stage transform into.
-// NTSC-U/C: 0x008e4200, PAL: 0x00929580
-Transform g_stageUvXfm;
+inline void SetColorScale(float fScale) {
+    g_colorScale.r = fScale;
+    g_colorScale.a = kAlphaScale;
+    g_colorScale.b = fScale;
+    g_colorScale.g = fScale;
+}
 
 } // namespace
 
-// NTSC-U/C: 0x0076d658, PAL: 0x007b13b0
-Mat *PsMat::sCurrent;
-
-// NTSC-U/C: 0x0076d660, PAL: 0x007b13b8
+PsMat *PsMat::sCurrent;
 int g_nSelectedGenMode;
-
-// NTSC-U/C: 0x0076d664, PAL: 0x007b13bc
 int g_nSelectedFlat;
-
-// NTSC-U/C: 0x0076d668, PAL: 0x007b13c0
-int g_nStageTextureBound;
-
-// NTSC-U/C: 0x0076d66c, PAL: 0x007b13c4
+int g_nTextured;
 int g_nAlphaBlendEnabled;
-
-// NTSC-U/C: 0x0076d670, PAL: 0x007b13c8
-int g_nStageBlendDoubles;
-
-// NTSC-U/C: 0x0076d674, PAL: 0x007b13cc
-Transform *g_pSelectedUvXfm;
-
-// NTSC-U/C: 0x0076d678, PAL: 0x007b13d0
-Transform *g_pSelectedStageXfm;
-
-// NTSC-U/C: 0x0076d67c, PAL: 0x007b13d4
 int g_nLightingEnabled;
-
-PsMat::PsMat(const HxStr &name) : Mat(name) {
-    // The constructor body is empty. 0x005914b8 inlines the whole of it.
-}
-
-PsMat::~PsMat() {
-    if (PsMat::sCurrent == this) {
-        PsMat::sCurrent = nullptr;
-    }
-}
-
-void PsMat::InstallCreator() {
-    g_pfnNewMat = NewPsMat;
-    PsMat::sCurrent = nullptr;
-    // The emitted code writes an identity and then the four values after it, which is an inlined
-    // transform reset followed by the four assignments the source made.
-    g_sphereMapUvXfm.mBasisX.x = 1.0f;
-    g_sphereMapUvXfm.mBasisX.y = 0.0f;
-    g_sphereMapUvXfm.mBasisX.z = 0.0f;
-    g_sphereMapUvXfm.mBasisY.x = 0.0f;
-    g_sphereMapUvXfm.mBasisY.y = 1.0f;
-    g_sphereMapUvXfm.mBasisY.z = 0.0f;
-    g_sphereMapUvXfm.mBasisZ.x = 0.0f;
-    g_sphereMapUvXfm.mBasisZ.y = 0.0f;
-    g_sphereMapUvXfm.mBasisZ.z = 1.0f;
-    g_sphereMapUvXfm.mTranslation.x = 0.0f;
-    g_sphereMapUvXfm.mTranslation.y = 0.0f;
-    g_sphereMapUvXfm.mTranslation.z = 0.0f;
-    g_sphereMapUvXfm.mTranslation.w = 1.0f;
-    g_sphereMapUvXfm.mBasisX.x = 0.5f;
-    g_sphereMapUvXfm.mBasisY.y = -0.5f;
-    g_sphereMapUvXfm.mTranslation.x = 0.5f;
-    g_sphereMapUvXfm.mTranslation.y = 0.5f;
-}
-
-void PsMat::SetAmbient(const Color &color) {
-    mAmbient = color;
-    PsMat::sCurrent = nullptr;
-}
-
-void PsMat::SetDiffuse(const Color &color) {
-    mDiffuse.r = color.r;
-    mDiffuse.g = color.g;
-    mDiffuse.b = color.b;
-    PsMat::sCurrent = nullptr;
-}
-
-void PsMat::SetEmissive(const Color &color) {
-    mEmissive = color;
-    PsMat::sCurrent = nullptr;
-}
-
-void PsMat::SetAlpha(float flAlpha) {
-    mDiffuse.a = flAlpha;
-    PsMat::sCurrent = nullptr;
-}
-
-void PsMat::SetSpecular(const Color &color, float flAlpha) {
-    mSpecular.r = color.r;
-    mSpecular.g = color.g;
-    mSpecular.b = color.b;
-    mSpecular.a = flAlpha; // Yes, the binary discards color.a and stores the argument instead.
-    PsMat::sCurrent = nullptr;
-}
-
-Mat *NewPsMat(const HxStr &name) {
-    // The binary bills the allocation to the tag "Rnd::Mat" and rounds the object up to 0xa0
-    // bytes.
-    return new PsMat(name);
-}
-
-Mat *(*g_pfnNewMat)(const HxStr &name) = nullptr;
-
-int PsMat::Select() {
-    if (this == PsMat::sCurrent && mStages.size() < 2) {
-        if (g_nBlendOverridden != 0) {
-            g_nSelectedStage = 0;
-            SelectBlendMode();
-            g_nBlendOverridden = 0;
-        }
-        return 0;
-    }
-    ++g_renderStats.mnMatSelects;
-    if (this != PsMat::sCurrent || static_cast<unsigned>(g_nSelectedStage) >= mStages.size()) {
-        g_nSelectedStage = 0;
-    }
-    g_nSelectedFlat = mFlat;
-    SelectBlendMode();
-    BindStageTexture();
-    SetupUvXfm();
-    PsMat::sCurrent = this;
-    ++g_nSelectedStage;
-    return static_cast<unsigned>(g_nSelectedStage) < mStages.size();
-}
+int g_nReselectBlend;
+alignas(16) Color g_colorScale;
+alignas(16) Transform g_uvXfm;
+alignas(16) Vector3 g_stageXfm[3];
 
 void PsMat::SelectDefault() {
-    ++g_renderStats.mnMatSelects;
+    SetColorScale(kColorScaleFull);
     g_nAlphaBlendEnabled = 1;
-    g_nStageTextureBound = 0;
-    PsMat::sCurrent = nullptr;
     g_nSelectedFlat = 0;
+    g_nTextured = 0;
+    sCurrent = nullptr;
     g_nLightingEnabled = 0;
-    g_nBlendOverridden = 0;
-    Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaSrcAlpha, kAlphaSelectorMask);
-    Rnd::ThePs.SetGsReg(kGsRegFba1, 1, kFbaMask);
-    Rnd::ThePs.SetGsReg(kGsRegDimx, kDimxStandard, kDimxMask);
+    g_nReselectBlend = 0;
+    ThePs.SetGsReg(kGsRegAlpha1, kAlphaBlendSrc, kAlphaMask);
+    ThePs.SetGsReg(kGsRegFba1, kFbaFba, kFbaFba);
+    ThePs.SetGsReg(kGsRegDimX, kDimXDefault, kDimXMask);
 }
 
 void PsMat::SelectAlphaBlend() {
-    if (this == PsMat::sCurrent && g_nAlphaBlendEnabled != 0) {
-        return;
-    }
-    ++g_renderStats.mnMatSelects;
-    Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaSrcAlpha, kAlphaSelectorMask);
-    g_nBlendOverridden = 1;
+    ThePs.SetGsReg(kGsRegAlpha1, kAlphaBlendSrc, kAlphaMask);
+    g_nReselectBlend = 1;
 }
 
-void PsMat::SelectBlendMode() {
-    BlendMode nBlend = mBlend;
-    if (g_nSelectedStage != 0) {
-        nBlend = mStages[g_nSelectedStage].mBlend;
+int PsMat::Select(int nPass) {
+    if (this == sCurrent && mStages.size() < kStageCountShared) {
+        if (g_nReselectBlend != 0) {
+            SelectBlendMode(nPass);
+            g_nReselectBlend = 0;
+        }
+        return 0;
     }
-    Rnd::ThePs.SetGsReg(kGsRegFba1, nBlend != kBlendModeSrc, kFbaMask);
+    g_nSelectedFlat = mFlat;
+    SelectBlendMode(nPass);
+    BindStageTexture(nPass);
+    SetupUvXfm(nPass);
+    sCurrent = this;
+    const unsigned int nNext = nPass + 1;
+    return nNext < mStages.size() ? static_cast<int>(nNext) : 0;
+}
+
+void PsMat::SelectBlendMode(int nPass) {
+    const int nBlend = nPass == 0 ? mBlend : mStages[nPass].mBlend;
     switch (nBlend) {
-    case kBlendModeDest:
+    case kBlendDest:
         g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaKeepDest, kAlphaSelectorMask);
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaKeepDest, kAlphaMask);
         break;
-    case kBlendModeAdd:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaAddFixed, kAlphaSelectorAndFixedMask);
-        break;
-    case kBlendModeSrcAlphaAdd:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaSrcAlphaAdd, kAlphaSelectorMask);
-        break;
-    case kBlendModeSrcAlpha:
-    case kBlendModeSrcAlphaCutout:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaSrcAlpha, kAlphaSelectorMask);
-        break;
-    case kBlendModeInvSrcAlpha:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaInvSrcAlpha, kAlphaSelectorMask);
-        break;
-    case kBlendModeDestAlpha:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaDestAlpha, kAlphaSelectorMask);
-        break;
-    case kBlendModeInvDestAlpha:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaInvDestAlpha, kAlphaSelectorMask);
-        break;
-    case kBlendModeSrcAlphaOpaque:
-        g_nAlphaBlendEnabled = 1;
-        Rnd::ThePs.SetGsReg(kGsRegAlpha1, kAlphaSrcAlphaOpaque, kAlphaSelectorMask);
-        break;
-    // Src, Multiply, Multiply2, and SrcAdd turn frame buffer blending off, because the texture
-    // function performs the combine instead.
-    case kBlendModeSrc:
-    case kBlendModeMultiply:
-    case kBlendModeMultiply2:
-    case kBlendModeSrcAdd:
+    case kBlendSrc:
+    case kBlendMultiply:
+    case kBlendMultiply2:
+    case kBlendSrcAdd:
         g_nAlphaBlendEnabled = 0;
         break;
+    case kBlendAdd:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaFixOne | kAlphaAddFix, kAlphaFixMask);
+        break;
+    case kBlendSrcAlpha:
+    case kBlendSrcAlphaCutout:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaBlendSrc, kAlphaMask);
+        break;
+    case kBlendSrcAlphaAdd:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaAddSrcAlpha, kAlphaMask);
+        break;
+    case kBlendInvSrcAlpha:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaBlendInvSrc, kAlphaMask);
+        break;
+    case kBlendDestAlpha:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaBlendDest, kAlphaMask);
+        break;
+    case kBlendInvDestAlpha:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaBlendInvDest, kAlphaMask);
+        break;
+    case kBlendSrcAlphaOpaque:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaScaleSrc, kAlphaMask);
+        break;
+    case kBlendSubtract:
+        g_nAlphaBlendEnabled = 1;
+        ThePs.SetGsReg(kGsRegAlpha1, kAlphaFixOne | kAlphaSubtractFix, kAlphaFixMask);
+        break;
+    default:
+        break;
     }
-    if (nBlend == kBlendModeDest || nBlend == kBlendModeAdd || nBlend == kBlendModeSrcAlphaAdd) {
-        Rnd::ThePs.SetGsReg(kGsRegDimx, kDimxGentle, kDimxMask);
-    } else {
-        Rnd::ThePs.SetGsReg(kGsRegDimx, kDimxStandard, kDimxMask);
-    }
-    if (nBlend == kBlendModeSrcAlpha) {
-        Rnd::ThePs.SetGsReg(kGsRegTest1, kTestDiscardClearZOnly, kTestAlphaAndFailMask);
-    } else if (nBlend == kBlendModeSrcAlphaCutout) {
-        Rnd::ThePs.SetGsReg(kGsRegTest1, kTestDiscardClear, kTestAlphaAndFailMask);
-    } else {
-        Rnd::ThePs.SetGsReg(kGsRegTest1, 0, kTestAlphaEnableMask);
-    }
-}
 
-void PsMat::BindStageTexture() {
-    g_nLightingEnabled = mEnable;
-    if (mStages.size() == 0) {
-        g_nStageTextureBound = 0;
-        return;
+    if (nBlend == kBlendAdd || nBlend == kBlendDest || nBlend == kBlendSrcAlphaAdd ||
+        nBlend == kBlendSubtract) {
+        ThePs.SetGsReg(kGsRegDimX, kDimXAdditive, kDimXMask);
+    } else {
+        ThePs.SetGsReg(kGsRegDimX, kDimXDefault, kDimXMask);
     }
-    Stage &stage = mStages[g_nSelectedStage];
-    if (stage.mTex == nullptr || stage.mBlend == kBlendModeDest) {
-        g_nStageTextureBound = 0;
-        return;
-    }
-    BlendMode nTexBlend = stage.mBlend;
-    if (g_nSelectedStage != 0) {
-        nTexBlend = mMultiPass == kMultiPassModulate ? kBlendModeMultiply : kBlendModeSrc;
-    }
-    if (!static_cast<PsTex *>(stage.mTex)->BindToGsSlot(g_anStageBlendTexFunc[nTexBlend])) {
-        g_nStageTextureBound = 0;
-        return;
-    }
-    if (nTexBlend == kBlendModeSrc) {
-        g_nLightingEnabled = 0;
-    }
-    g_nStageTextureBound = 1;
-    g_nStageBlendDoubles = nTexBlend == kBlendModeMultiply2;
-    SelectStageClamp(stage);
-}
 
-void PsMat::SetupUvXfm() {
-    if (g_nStageTextureBound == 0) {
-        g_pSelectedUvXfm = nullptr;
-        return;
+    if (nBlend == kBlendSrcAlpha) {
+        ThePs.SetGsReg(kGsRegTest1, kTestAlphaGreaterZOnly, kTestAlphaMask);
+    } else if (nBlend == kBlendSrcAlphaCutout) {
+        ThePs.SetGsReg(kGsRegTest1, kTestAlphaGreater, kTestAlphaMask);
+    } else {
+        ThePs.SetGsReg(kGsRegTest1, 0, kTestAte);
     }
-    Stage &stage = mStages[g_nSelectedStage];
-    g_nSelectedGenMode = stage.mGenMode;
-    if (stage.mGenMode == kGenModeSphere) {
-        g_pSelectedUvXfm = &g_sphereMapUvXfm;
-        g_pSelectedStageXfm = stage.mUseXfm != 0 ? &stage.mXfm : nullptr;
-        return;
-    }
-    if (stage.mUseXfm == 0) {
-        g_pSelectedUvXfm = nullptr;
-        return;
-    }
-    // The V axis and the V translation invert, and both translations shift so that the transform
-    // turns about the texture centre rather than its corner.
-    constexpr float kTexCenter = 0.5f;
-    const float flU = -stage.mXfm.mTranslation.x - kTexCenter;
-    const float flV = stage.mXfm.mTranslation.y - kTexCenter;
-    g_stageUvXfm.mBasisX.x = stage.mXfm.mBasisX.x;
-    g_stageUvXfm.mBasisX.y = -stage.mXfm.mBasisX.y;
-    g_stageUvXfm.mBasisY.x = -stage.mXfm.mBasisY.x;
-    g_stageUvXfm.mBasisY.y = stage.mXfm.mBasisY.y;
-    g_stageUvXfm.mTranslation.x =
-        flU * g_stageUvXfm.mBasisX.x + flV * g_stageUvXfm.mBasisY.x + kTexCenter;
-    g_stageUvXfm.mTranslation.y =
-        flU * g_stageUvXfm.mBasisX.y + flV * g_stageUvXfm.mBasisY.y + kTexCenter;
-    g_pSelectedUvXfm = &g_stageUvXfm;
+    ThePs.SetGsReg(kGsRegFba1, nBlend != kBlendSrc, kFbaFba);
 }
 
 void PsMat::SelectStageClamp(const Stage &stage) {
-    // The compiler inlined this into BindStageTexture(). The out-of-line body is never called and
-    // is dead in the shipped image. Its receiver is unused, which identifies it as an instance
-    // method rather than a free function.
-    if (stage.mWrap == kWrapModeClamp) {
-        Rnd::ThePs.SetGsReg(kGsRegClamp1, kClampBothAxes, kClampModeMask);
+    if (stage.mWrap == kTexWrapClamp) {
+        ThePs.SetGsReg(kGsRegClamp1, kClampBothAxes, kClampMask);
     } else {
-        Rnd::ThePs.SetGsReg(kGsRegClamp1, kRepeatBothAxes, kClampModeMask);
+        ThePs.SetGsReg(kGsRegClamp1, kRepeatBothAxes, kClampMask);
     }
 }
 
-} // namespace Rnd
+int PsMat::TexFunction(int nBlend) {
+    return kTexFunctions[nBlend];
+}
+
+void PsMat::BindStageTexture(int nPass) {
+    g_nLightingEnabled = mEnable;
+    if (mStages.empty() || mStages[nPass].mTex == nullptr || mStages[nPass].mBlend == kBlendDest) {
+        g_colorScale.r = kColorScaleFull;
+        g_colorScale.a = kAlphaScale;
+        g_nTextured = 0;
+        g_colorScale.b = kColorScaleFull;
+        g_colorScale.g = kColorScaleFull;
+        return;
+    }
+    Stage &stage = mStages[nPass];
+    int nBlend;
+    if (nPass == 0) {
+        nBlend = stage.mBlend;
+    } else {
+        nBlend = mMultiPass == kMultiPassDouble ? kBlendMultiply : kBlendSrc;
+    }
+    static_cast<PsTex *>(stage.mTex)->Select(TexFunction(nBlend));
+    if (nBlend == kBlendSrc) {
+        g_nLightingEnabled = 0;
+    }
+    g_nTextured = 1;
+    if (nBlend == kBlendMultiply2) {
+        SetColorScale(kColorScaleFull);
+    } else {
+        SetColorScale(kColorScaleModulate);
+    }
+    SelectStageClamp(stage);
+}
+
+void PsMat::SetupUvXfm(int nPass) {
+    if (g_nTextured == 0) {
+        SetIdentityUvXfm();
+        return;
+    }
+    const Stage &stage = mStages[nPass];
+    g_nSelectedGenMode = stage.mGenMode;
+    if (stage.mGenMode == kTexGenSphere) {
+        SetIdentityUvXfm();
+        g_uvXfm.mTranslation.y = kSphereMapScale;
+        g_uvXfm.mBasisX.x = kSphereMapScale;
+        g_uvXfm.mBasisY.y = -kSphereMapScale;
+        g_uvXfm.mTranslation.x = kSphereMapScale;
+        if (stage.mUseXfm != 0) {
+            g_stageXfm[0] = stage.mXfm.mBasisX;
+            g_stageXfm[1] = stage.mXfm.mBasisY;
+            g_stageXfm[2] = stage.mXfm.mBasisZ;
+            return;
+        }
+        g_stageXfm[0].x = 1.0f;
+        g_stageXfm[2].z = 1.0f;
+        g_stageXfm[1].z = 0.0f;
+        g_stageXfm[2].x = 0.0f;
+        g_stageXfm[0].y = 0.0f;
+        g_stageXfm[0].z = 0.0f;
+        g_stageXfm[1].x = 0.0f;
+        g_stageXfm[1].y = 1.0f;
+        g_stageXfm[2].y = 0.0f;
+        return;
+    }
+    if (stage.mUseXfm == 0) {
+        SetIdentityUvXfm();
+        return;
+    }
+    // The stage transform is applied about the texel centre, with v flipped.
+    const Transform &xfm = stage.mXfm;
+    const float fOffsetU = -xfm.mTranslation.x - kTexelCentreOffset;
+    const float fOffsetV = xfm.mTranslation.y - kTexelCentreOffset;
+    g_uvXfm.mBasisX.x = xfm.mBasisX.x;
+    g_uvXfm.mBasisX.y = -xfm.mBasisX.y;
+    g_uvXfm.mBasisY.x = -xfm.mBasisY.x;
+    g_uvXfm.mBasisY.y = xfm.mBasisY.y;
+    g_uvXfm.mTranslation.x =
+        fOffsetU * g_uvXfm.mBasisX.x + fOffsetV * g_uvXfm.mBasisY.x + kTexelCentreOffset;
+    g_uvXfm.mTranslation.y =
+        fOffsetU * g_uvXfm.mBasisX.y + fOffsetV * g_uvXfm.mBasisY.y + kTexelCentreOffset;
+}
+
+void PsMat::Init() {
+    TheManager.mClasses[RndMat::sClassName] = PsMat::New;
+}
+
+// The unit's static initialiser at NTSC-U/C: 0x00213f40, PAL: 0x0021cd58, and its global
+// constructor at NTSC-U/C: 0x00213f48, PAL: 0x0021cd60, are empty.

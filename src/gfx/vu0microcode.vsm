@@ -1,5 +1,6 @@
-; GfxDevice::Init() sends the VU0 microprogram, from the .vutext section at 0x00666de0, through
-; VIF0 with the DMA chain below. Vu0BlendVectors has no end bit and is not called.
+; Ps::RestoreAfterMovie() sends the VU0 microprograms through VIF0 with the DMA chain below, at
+; 0x003ae240. PsMesh::SkinXfm() runs them with VCALLMS for each skinned vertex.
+; Vu0SkinOneBone moves a vertex by one bone, and Vu0SkinTwoBones blends two.
 
 	.data
 	.align 4
@@ -7,18 +8,70 @@
 g_vu0MicrocodeChain:
 	dmacnt *
 
-	mpg 0x0, *
-Vu0BlendVectors:
-	nop                             lqi VF03, (VI01++)
-	nop                             lqi VF04, (VI02++)
+	mpg 0x1ba, *
+Vu0SkinOneBone:
+	mulaw[i].xyzw accxyzw,vf06xyzw,vf00w loi 0.5
+	subw.w vf17w,vf00w,vf11w        nop
+	subi.w vf00w,vf11w,i            nop
+	maddax.xyzw accxyzw,vf03xyzw,vf11x nop
+	madday.xyzw accxyzw,vf04xyzw,vf11y nop
+	maddz.xyzw vf13xyzw,vf05xyzw,vf11z nop
+	mulaw.xyzw accxyzw,vf10xyzw,vf00w fsand vi01,2
+	maddax.xyzw accxyzw,vf07xyzw,vf11x nop
+	madday.xyzw accxyzw,vf08xyzw,vf11y ibne vi01,vi00,Vu0Addr01c7
+	maddz.xyzw vf14xyzw,vf09xyzw,vf11z nop
+	mulax.xyzw accxyzw,vf07xyzw,vf15x nop
+	madday.xyzw accxyzw,vf08xyzw,vf15y b Vu0Addr01ca
+	maddz.xyzw vf16xyzw,vf09xyzw,vf15z nop
+Vu0Addr01c7:
+	mulax.xyzw accxyzw,vf03xyzw,vf15x nop
+	madday.xyzw accxyzw,vf04xyzw,vf15y nop
+	maddz.xyzw vf16xyzw,vf05xyzw,vf15z nop
+Vu0Addr01ca:
+	mulaw.xyz accxyz,vf13xyz,vf17w  nop
+	maddw.xyz vf12xyz,vf14xyz,vf11w nop
+	nop[e]                          nop
 	nop                             nop
+	.endmpg
+
+	mpg 0x156, *
+Vu0SkinTwoBones:
+	subw.w vf17w,vf00w,vf11w        nop
+	mulaw.xyzw accxyzw,vf06xyzw,vf00w nop
+	maddax.xyzw accxyzw,vf03xyzw,vf11x nop
+	madday.xyzw accxyzw,vf04xyzw,vf11y nop
+	subw.w vf17w,vf17w,vf15w        nop
+	subw.w vf00w,vf11w,vf15w        nop
+	maddz.xyzw vf13xyzw,vf05xyzw,vf11z nop
+	mulaw.xyzw accxyzw,vf10xyzw,vf00w nop
+	subw.w vf00w,vf11w,vf17w        nop
+	subw.w vf00w,vf15w,vf17w        fsand vi01,2
+	maddax.xyzw accxyzw,vf07xyzw,vf11x nop
+	madday.xyzw accxyzw,vf08xyzw,vf11y nop
+	maddz.xyzw vf14xyzw,vf09xyzw,vf11z fsand vi04,2
+	mulaw.xyzw accxyzw,vf21xyzw,vf00w fsand vi05,2
+	maddax.xyzw accxyzw,vf18xyzw,vf11x nop
+	madday.xyzw accxyzw,vf19xyzw,vf11y ibne vi01,vi00,Vu0Addr016b
+	maddz.xyzw vf22xyzw,vf20xyzw,vf11z nop
+	nop                             ibne vi04,vi00,Vu0Addr016f
+	mulax.xyzw accxyzw,vf07xyzw,vf15x nop
+	madday.xyzw accxyzw,vf08xyzw,vf15y b Vu0Addr0172
+	maddz.xyzw vf16xyzw,vf09xyzw,vf15z nop
+Vu0Addr016b:
+	nop                             ibne vi05,vi00,Vu0Addr016f
+	mulax.xyzw accxyzw,vf18xyzw,vf15x nop
+	madday.xyzw accxyzw,vf19xyzw,vf15y b Vu0Addr0172
+	maddz.xyzw vf16xyzw,vf20xyzw,vf15z nop
+Vu0Addr016f:
+	mulax.xyzw accxyzw,vf03xyzw,vf15x nop
+	madday.xyzw accxyzw,vf04xyzw,vf15y nop
+	maddz.xyzw vf16xyzw,vf05xyzw,vf15z nop
+Vu0Addr0172:
+	mulaw.xyz accxyz,vf13xyz,vf17w  nop
+	maddaw.xyz accxyz,vf22xyz,vf15w nop
+	maddw.xyz vf12xyz,vf14xyz,vf11w nop
+	nop[e]                          nop
 	nop                             nop
-	mulax.xyz ACC, VF03, VF01x      nop
-	maddx.xyz VF05, VF04, VF02x     nop
-	nop                             nop
-	nop                             nop
-	nop                             nop
-	nop                             sq VF05, 0(VI03)
 	.endmpg
 	.enddmadata
 	dmaend

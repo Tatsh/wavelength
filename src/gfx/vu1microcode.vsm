@@ -1,11 +1,10 @@
-; GfxDevice::Init() sends the VU1 microprogram, from the .vutext section at 0x00664ab0, through
-; VIF1 with the DMA chain below. Each MPG block loads at the VU address it specifies. The entry
-; points are Vu1Init (MSCAL from GfxDevice::Init()), Vu1DrawTexturedFaces and
-; Vu1DrawUntexturedFaces (Rnd::PsMesh faces), Vu1DrawEdges (Rnd::PsMesh edges), Vu1DrawSprites
-; (Rnd::PsParticleSys), and Vu1DrawInstances (Rnd::PsMultiMesh). The face and instance paths
-; call a lighting routine through the address in the batch header (Vu1LightUnlit,
-; Vu1LightDirectional, Vu1LightPoint, or Vu1LightNone). The clipper selects a plane by jumping
-; into the table of four-instruction stubs at Vu1TexturedClipMinusZ or Vu1UntexturedClipMinusZ.
+; Ps::RestoreAfterMovie() sends the VU1 microprograms through VIF1 with the DMA chain below, at
+; 0x003ab970, and starts Vu1Init with MSCAL. Each MPG block loads at the VU address it specifies,
+; and a program longer than one MPG block continues in the next. The entry points are
+; Vu1DrawFaces and Vu1DrawEdges (PsMesh), Vu1DrawSprites (PsParticleSys), and Vu1DrawInstances
+; (PsMultiMesh). The face and instance programs call the lighting program at the address in the
+; batch header (Vu1LightPoint, Vu1LightDirectional, Vu1LightAmbient, or Vu1LightUnlit). The face
+; clipper selects a plane by jumping into the table of four-instruction stubs after Vu1Addr074d.
 ; The chain ends by resetting the double-buffer base, offset, and cycle.
 
 	.data
@@ -14,1252 +13,1427 @@
 g_vu1MicrocodeChain:
 	dmacnt *
 
-	mpg 0x0, *
-Vu1DrawTexturedFaces:
-	nop                             loi 255.0
-	addi.x VF13, VF00, I            xtop VI02
-	nop                             lqi VF03, (VI02++)
-	nop                             lqi VF04, (VI02++)
-	nop                             lqi VF05, (VI02++)
-	nop                             lqi VF06, (VI02++)
-	nop                             lqi VF07, (VI02++)
-	nop                             lqi VF10, (VI02++)
-	nop                             lqi VF11, (VI02++)
-	nop                             lqi VF12, (VI02++)
-	nop                             lqi VF16, (VI02++)
-	nop                             lqi VF17, (VI02++)
-	nop                             lqi VF18, (VI02++)
-	nop                             mtir VI05, VF02x
-	nop                             lqi VF01, (VI02++)
-	nop                             lqi VF27, (VI02++)
-	nop                             lqi VF26, (VI02++)
-	nop                             lqi VF19, (VI02++)
-	nop                             lqi VF20, (VI02++)
-	nop                             lqi VF21, (VI02++)
-	nop                             ilw.x VI10, 0(VI02)
-	nop                             ilw.y VI11, 0(VI02)
-	nop                             ilw.z VI12, 0(VI02)
-	nop                             ilw.w VI13, 0(VI02)
-	nop                             sqi VF01, (VI05++)
-	nop                             sq VF27, 995(VI00)
-Vu1TexturedNextBatch:
-	nop                             xtop VI02
-	nop                             ilw.z VI09, 18(VI02)
-	nop                             ilw.x VI03, 18(VI02)
-	nop                             iaddiu VI02, VI02, 0x13
-	nop                             lq VF23, 0(VI02)
-	nop                             jalr VI15, VI09
-	nop                             iaddiu VI14, VI00, 0xfff
-	mulaw ACC, VF07, VF00w          lq VF15, 3(VI02)
-	maddax ACC, VF04, VF23x         lq VF09, 2(VI02)
-	madday ACC, VF05, VF23y         b Vu1TexturedTransformFirst
-	maddz VF23, VF06, VF23z         iaddiu VI01, VI00, 0xfff
-Vu1TexturedTransformLoop:
-	mulaw ACC, VF07, VF00w          lq VF15, 3(VI02)
-	maddax ACC, VF04, VF23x         sq VF27, -1(VI02)
-	madday ACC, VF05, VF23y         lq VF09, 2(VI02)
-	maddz VF23, VF06, VF23z         sq VF08, -3(VI02)
-Vu1TexturedTransformFirst:
-	adda.xy ACC, VF18, VF00         isubiu VI03, VI03, 1
-	maddax.xy ACC, VF16, VF15x      mr32.z VF15, VF00
-	maddy.xy VF15, VF17, VF15y      iand VI14, VI14, VI01
-	mulaw.xyz ACC, VF12, VF23w      div Q, VF00w, VF23w
-	mulaw.w ACC, VF12, VF00         sq VF23, 0(VI02)
-	madd VF08, VF11, VF23           fcset 0
-	mul VF01, VF23, VF03            nop
-	clipw.xyz VF23, VF23w           nop
-	mul VF09, VF10, VF09            nop
-	minix.w VF08, VF08, VF13x       nop
-	clipw.xyz VF01, VF01w           nop
-	mulq.xyz VF08, VF08, Q          iaddiu VI02, VI02, 4
-	ftoi0 VF09, VF09                lq VF23, 0(VI02)
-	maxx.w VF08, VF08, VF00x        nop
-	mulq.xyz VF27, VF15, Q          fcget VI01
-	nop                             mfir.w VF27, VI01
-	nop                             ibne VI03, VI00, Vu1TexturedTransformLoop
-	ftoi4 VF08, VF08                sq VF09, -2(VI02)
-	nop                             iand VI14, VI14, VI01
-	nop                             ilw.x VI07, 0(VI02)
-	nop                             ibne VI14, VI00, Vu1TexturedBatchEnd
-	nop                             xtop VI09
-	nop                             ilw.y VI03, 18(VI09)
-	nop                             ilw.w VI08, 18(VI09)
-	nop                             iaddiu VI09, VI09, 0x13
-	nop                             iaddiu VI04, VI00, 0x12
-	nop                             sq VF27, -1(VI02)
-	nop                             sq VF08, -3(VI02)
-	nop                             ibeq VI08, VI00, Vu1TexturedUnclippedLoop
-	nop                             iadd VI07, VI07, VI09
-Vu1TexturedTriangleLoop:
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.y VI07, 0(VI02)
-	nop                             mtir VI08, VF15w
-	nop                             sq VF15, 0(VI05)
-	nop                             sq VF09, 1(VI05)
-	nop                             sq VF08, 2(VI05)
-	nop                             isubiu VI03, VI03, 1
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.z VI07, 0(VI02)
-	nop                             mtir VI01, VF15w
-	nop                             sq VF15, 3(VI05)
-	nop                             sq VF09, 4(VI05)
-	nop                             sq VF08, 5(VI05)
-	nop                             iand VI14, VI08, VI01
-	nop                             ior VI08, VI08, VI01
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.x VI07, 1(VI02)
-	nop                             mtir VI01, VF15w
-	nop                             sq VF15, 6(VI05)
-	nop                             sq VF09, 7(VI05)
-	nop                             sq VF08, 8(VI05)
-	nop                             iand VI14, VI14, VI01
-	nop                             ior VI08, VI08, VI01
-	nop                             ibne VI14, VI00, Vu1TexturedNextTriangle
-	nop                             iaddiu VI02, VI02, 1
-	nop                             iaddiu VI01, VI00, 0x3f
-	nop                             iand VI01, VI08, VI01
+	mpg 0x63e, *
+Vu1DrawFaces:
+	nop                             xtop vi05
+	nop                             lqi.xyzw vf19xyzw,(vi05++)
+	nop                             lqi.xyzw vf20xyzw,(vi05++)
+	nop                             lqi.xyzw vf21xyzw,(vi05++)
+	nop                             lqi.xyzw vf22xyzw,(vi05++)
+	nop                             lqi.xyzw vf23xyzw,(vi05++)
+	nop                             lqi.xyzw vf13xyzw,(vi05++)
+	nop                             lqi.xyzw vf14xyzw,(vi05++)
+	nop                             lqi.xyzw vf15xyzw,(vi05++)
+	nop                             lqi.xyzw vf16xyzw,(vi05++)
+	nop                             lqi.xyzw vf17xyzw,(vi05++)
+	nop                             lqi.xyzw vf18xyzw,(vi05++)
+	nop                             mtir vi12,vf02x
+	nop                             lqi.xyzw vf01xyzw,(vi05++)
+	nop                             lqi.xyzw vf09xyzw,(vi05++)
+	nop                             ilw.x vi13,0(vi05)x
+	nop                             ilw.y vi14,0(vi05)y
+	nop                             ilw.z vi15,0(vi05)z
+	nop                             iaddi vi05,vi05,1
+	nop                             lqi.xyzw vf25xyzw,(vi05++)
+	nop                             lqi.xyzw vf26xyzw,(vi05++)
+	nop                             lqi.xyzw vf27xyzw,(vi05++)
+	nop                             lqi.xyzw vf28xyzw,(vi05++)
+	nop                             lqi.xyzw vf29xyzw,(vi05++)
+	nop                             lqi.xyzw vf30xyzw,(vi05++)
+	nop                             lqi.xyzw vf31xyzw,(vi05++)
+	nop                             sqi.xyzw vf01xyzw,(vi12++)
+	nop                             sq.xyzw vf09xyzw,995(vi00)
+Vu1Addr065a:
+	nop                             jalr vi02,vi13
+	nop[i]                          loi 255
+Vu1Addr065c:
+	nop                             xtop vi05
+	nop                             iaddiu vi05,vi05,0x16
+	nop                             lq.xyzw vf06xyzw,0(vi05)
+	nop                             ilw.x vi03,-1(vi05)x
+	nop                             iaddiu vi10,vi00,0xfff
+	mulaw.xyzw accxyzw,vf23xyzw,vf00w lq.xyzw vf05xyzw,3(vi05)
+	maddax.xyzw accxyzw,vf20xyzw,vf06x lq.xyzw vf04xyzw,2(vi05)
+	madday.xyzw accxyzw,vf21xyzw,vf06y b Vu1Addr0669
+	maddz.xyzw vf06xyzw,vf22xyzw,vf06z iaddiu vi01,vi00,0xfff
+Vu1Addr0665:
+	mulaw.xyzw accxyzw,vf23xyzw,vf00w lq.xyzw vf05xyzw,3(vi05)
+	maddax.xyzw accxyzw,vf20xyzw,vf06x sq.xyzw vf09xyzw,-1(vi05)
+	madday.xyzw accxyzw,vf21xyzw,vf06y lq.xyzw vf04xyzw,2(vi05)
+	maddz.xyzw vf06xyzw,vf22xyzw,vf06z sq.xyzw vf03xyzw,-3(vi05)
+Vu1Addr0669:
+	adda.xy accxy,vf18xy,vf00xy     isubiu vi03,vi03,1
+	maddax.xy accxy,vf16xy,vf05x    mr32.z vf05z,vf00z
+	maddy.xy vf05xy,vf17xy,vf05y    iand vi10,vi10,vi01
+	mulaw.xyz accxyz,vf15xyz,vf06w  div q,vf00w,vf06w
+	mulaw.w accw,vf15w,vf00w        sq.xyzw vf06xyzw,0(vi05)
+	madd.xyzw vf03xyzw,vf14xyzw,vf06xyzw fcset 0
+	mul.xyz vf01xyz,vf06xyz,vf19xyz nop
+	clipw.xyz vf06xyz,vf06w         nop
+	mul.xyzw vf04xyzw,vf13xyzw,vf04xyzw nop
+	minii.w vf03w,vf03w,i           nop
+	clipw.xyz vf01xyz,vf06w         nop
+	mulq.xyz vf03xyz,vf03xyz,q      iaddiu vi05,vi05,4
+	ftoi0.xyzw vf04xyzw,vf04xyzw    lq.xyzw vf06xyzw,0(vi05)
+	maxx.w vf03w,vf03w,vf00x        nop
+	mulq.xyz vf09xyz,vf05xyz,q      fcget vi01
+	nop                             mfir.w vf09w,vi01
+	nop                             ibne vi03,vi00,Vu1Addr0665
+	ftoi4.xyzw vf03xyzw,vf03xyzw    sq.xyzw vf04xyzw,-2(vi05)
+	nop                             iand vi10,vi10,vi01
+	nop                             ilw.y vi07,0(vi05)y
+	nop                             ibne vi10,vi00,Vu1Addr074d
+	nop                             xtop vi09
+	nop                             ilw.y vi03,21(vi09)y
+	nop                             iaddiu vi09,vi09,0x16
+	nop                             iaddiu vi04,vi00,0x12
+	nop                             sq.xyzw vf09xyzw,-1(vi05)
+	nop                             sq.xyzw vf03xyzw,-3(vi05)
+	nop                             iadd vi07,vi07,vi09
+Vu1Addr0685:
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,1(vi07)
+	nop                             ilw.z vi07,0(vi05)z
+	nop                             mtir vi08,vf05w
+	nop                             sq.xyzw vf05xyzw,0(vi12)
+	itof4.xyz vf07xyz,vf03xyz       sq.xyzw vf04xyzw,1(vi12)
+	nop                             sq.xyzw vf03xyzw,2(vi12)
+	nop                             isubiu vi03,vi03,1
+	nop                             iadd vi07,vi07,vi09
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,1(vi07)
+	nop                             ilw.x vi07,0(vi05)x
+	nop                             mtir vi01,vf05w
+	nop                             sq.xyzw vf05xyzw,3(vi12)
+	itof4.xyz vf06xyz,vf03xyz       sq.xyzw vf04xyzw,4(vi12)
+	nop                             sq.xyzw vf03xyzw,5(vi12)
+	nop                             iand vi10,vi08,vi01
+	nop                             ior vi08,vi08,vi01
+	nop                             iadd vi07,vi07,vi09
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,1(vi07)
+	nop                             ilw.y vi07,1(vi05)y
+	nop                             mtir vi01,vf05w
+	nop                             sq.xyzw vf05xyzw,6(vi12)
+	itof4.xyz vf08xyz,vf03xyz       sq.xyzw vf04xyzw,7(vi12)
+	nop                             sq.xyzw vf03xyzw,8(vi12)
+	nop                             iand vi10,vi10,vi01
+	nop                             ior vi08,vi08,vi01
+	nop                             ibne vi10,vi00,Vu1Addr0749
+	nop                             iaddiu vi05,vi05,1
+	nop                             iaddiu vi01,vi00,0x3f
+	nop                             iand vi01,vi08,vi01
 	nop                             nop
-	nop                             ibne VI01, VI00, Vu1TexturedClipTriangle
-	nop                             iaddiu VI01, VI00, 0x10
-	nop                             isubiu VI04, VI04, 1
-	nop                             iaddiu VI05, VI05, 9
-	nop                             ibne VI04, VI00, Vu1TexturedNextTriangle
+	nop                             ibne vi01,vi00,Vu1Addr06b1
+	nop                             iaddiu vi01,vi00,0x10
+	nop                             isubiu vi04,vi04,1
+	nop                             iaddiu vi12,vi12,9
+	nop                             ibne vi04,vi00,Vu1Addr0749
 	nop                             nop
-	nop                             b Vu1TexturedKick
-	nop                             iaddiu VI15, VI00, Vu1TexturedNextTriangle
-Vu1TexturedClipTriangle:
-	nop                             iand VI01, VI08, VI01
-	nop                             isw.y VI03, 1023(VI00)
-	nop                             ibne VI01, VI00, Vu1TexturedNextTriangle
-	nop                             isw.x VI07, 1023(VI00)
-	nop                             isw.z VI05, 1023(VI00)
-	nop                             isw.w VI02, 1023(VI00)
-	nop                             iaddiu VI03, VI00, 0x4000
-	nop                             iaddiu VI03, VI03, 0x4000
-	nop                             isw.x VI03, 995(VI00)
-	nop                             ilw.x VI07, -1(VI02)
-	nop                             iaddiu VI01, VI00, 0x3e3
+	nop                             b Vu1Addr0765
+	nop                             iaddiu vi02,vi00,0x749
+Vu1Addr06b1:
+	nop                             iand vi01,vi08,vi01
+	nop                             isw.y vi03,1023(vi00)y
+	nop                             ibne vi01,vi00,Vu1Addr0749
+	nop                             isw.x vi07,1023(vi00)x
+	nop                             isw.z vi12,1023(vi00)z
+	nop                             isw.w vi05,1023(vi00)w
+	nop                             iaddiu vi03,vi00,0x4000
+	nop                             iaddiu vi03,vi03,0x4000
+	nop                             isw.x vi03,995(vi00)x
+	nop                             ilw.y vi07,-1(vi05)y
+	nop                             iaddiu vi01,vi00,0x3e3
 	nop                             nop
-	nop                             xgkick VI01
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF08, 0(VI07)
-	nop                             ilw.z VI07, -1(VI02)
-	nop                             nop
-	mulw.xyz VF15, VF15, VF08w      nop
-	nop                             sq VF08, 998(VI00)
-	nop                             iadd VI07, VI07, VI09
-	nop                             sq VF08, 1007(VI00)
-	nop                             sq VF15, 996(VI00)
-	nop                             sq VF15, 1005(VI00)
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 0(VI07)
-	nop                             ilw.y VI07, -1(VI02)
-	mulw.xyz VF15, VF15, VF08w      nop
-	itof0 VF09, VF09                nop
-	nop                             sq VF08, 1004(VI00)
-	nop                             iadd VI07, VI07, VI09
-	nop                             sq VF15, 1002(VI00)
-	nop                             sq VF09, 1003(VI00)
-	nop                             lq VF15, 3(VI07)
-	nop                             sq VF09, 997(VI00)
-	nop                             lq VF08, 0(VI07)
-	nop                             iaddiu VI03, VI00, 3
-	mulw.xyz VF15, VF15, VF08w      iaddiu VI06, VI00, Vu1TexturedClipMinusZ
-	nop                             iaddiu VI14, VI00, 0x20
-	nop                             sq VF08, 1001(VI00)
-	nop                             iaddiu VI02, VI00, 0x3e4
-	nop                             sq VF15, 999(VI00)
-	nop                             sq VF09, 1000(VI00)
-	nop                             sq VF09, 1006(VI00)
-Vu1TexturedClipPlaneLoop:
-	nop                             iand VI01, VI08, VI14
-	nop                             iaddiu VI15, VI00, 0
-	nop                             ibeq VI01, VI00, Vu1TexturedClipNextPlane
-	nop                             iaddiu VI05, VI00, 0x3e4
-	nop                             iaddiu VI08, VI00, 0
-Vu1TexturedClipEdgeLoop:
-	nop                             ilw.w VI01, 0(VI02)
-	nop                             ilw.w VI07, 3(VI02)
-	nop                             lq VF08, 2(VI02)
-	nop                             lq VF25, 5(VI02)
-	nop                             iand VI01, VI01, VI14
-	nop                             iand VI07, VI07, VI14
-	nop                             lq VF15, 0(VI02)
-	nop                             ibeq VI01, VI07, Vu1TexturedClipEdgeEnd
-	nop                             lq VF23, 3(VI02)
-	nop                             jr VI06
-	nop                             lq VF09, 1(VI02)
-Vu1TexturedClipIntersect:
-	nop                             div Q, VF01w, VF27w
-	sub VF25, VF25, VF08            nop
-	sub VF23, VF23, VF15            nop
-	sub VF24, VF24, VF09            fcset 0
-	nop                             nop
-	nop                             nop
-	nop                             nop
-	mulq VF25, VF25, Q              nop
-	mulq VF23, VF23, Q              nop
-	mulq VF24, VF24, Q              nop
-	nop                             nop
-	add VF08, VF25, VF08            nop
-	add VF15, VF23, VF15            nop
-	add VF09, VF24, VF09            nop
-	nop                             nop
-	clipw.xyz VF08, VF08w           sq VF08, 2(VI05)
-	clipw.xyz VF08, VF08w           sq VF15, 0(VI05)
-	nop                             sq VF09, 1(VI05)
-	nop                             iaddiu VI05, VI05, 3
-	nop                             iaddiu VI15, VI15, 1
-	nop                             fcget VI01
-	nop                             isw.w VI01, -3(VI05)
-	nop                             ior VI08, VI08, VI01
-Vu1TexturedClipEdgeEnd:
-	nop                             ibne VI07, VI00, Vu1TexturedClipNextEdge
-	nop                             lq VF15, 3(VI02)
-	nop                             lq VF09, 4(VI02)
-	nop                             lq VF08, 5(VI02)
-	nop                             iaddiu VI15, VI15, 1
-	nop                             mtir VI01, VF15w
-	nop                             sqi VF15, (VI05++)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             ior VI08, VI08, VI01
-Vu1TexturedClipNextEdge:
-	nop                             isubiu VI03, VI03, 1
-	nop                             iaddiu VI02, VI02, 3
-	nop                             ibne VI03, VI00, Vu1TexturedClipEdgeLoop
-	nop                             nop
-	nop                             ibeq VI15, VI00, Vu1TexturedClipRestore
-	nop                             iaddiu VI02, VI00, 0x3e4
-	nop                             lq VF15, 0(VI02)
-	nop                             lq VF09, 1(VI02)
-	nop                             lq VF08, 2(VI02)
-	nop                             iaddiu VI03, VI15, 0
-	nop                             sq VF15, 0(VI05)
-	nop                             sq VF09, 1(VI05)
-	nop                             sq VF08, 2(VI05)
-Vu1TexturedClipNextPlane:
-	nop                             iadd VI14, VI14, VI14
-	nop                             iaddiu VI01, VI00, 0x400
-	nop                             iaddiu VI06, VI06, 4
-	nop                             ibne VI14, VI01, Vu1TexturedClipPlaneLoop
-	nop                             nop
-	nop                             iaddiu VI15, VI03, 0
-	nop                             iaddiu VI02, VI00, 0x3e4
-Vu1TexturedClipProjectLoop:
-	nop                             lq VF08, 2(VI02)
-	nop                             lq VF15, 0(VI02)
-	nop                             lq VF09, 1(VI02)
-	nop                             nop
-	mul VF08, VF11, VF08            div Q, VF00w, VF08w
-	nop                             nop
-	ftoi0 VF09, VF09                nop
-	nop                             nop
-	add.w VF08, VF12, VF08          nop
+	nop                             xgkick vi01
+	nop                             iadd vi07,vi07,vi09
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,0(vi07)
+	nop                             ilw.z vi07,-1(vi05)z
+	mulw.xyz vf05xyz,vf05xyz,vf03w  nop
+	itof0.xyzw vf04xyzw,vf04xyzw    nop
+	nop                             sq.xyzw vf03xyzw,998(vi00)
+	nop                             iadd vi07,vi07,vi09
+	nop                             sq.xyzw vf05xyzw,996(vi00)
+	nop                             sq.xyzw vf04xyzw,997(vi00)
+	nop                             sq.xyzw vf03xyzw,1007(vi00)
+	nop                             sq.xyzw vf05xyzw,1005(vi00)
+	nop                             sq.xyzw vf04xyzw,1006(vi00)
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,0(vi07)
+	nop                             ilw.x vi07,-1(vi05)x
+	mulw.xyz vf05xyz,vf05xyz,vf03w  nop
+	itof0.xyzw vf04xyzw,vf04xyzw    nop
+	nop                             sq.xyzw vf03xyzw,1001(vi00)
+	nop                             iadd vi07,vi07,vi09
+	nop                             sq.xyzw vf05xyzw,999(vi00)
+	nop                             sq.xyzw vf04xyzw,1000(vi00)
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,0(vi07)
+	nop                             iaddiu vi03,vi00,3
+	mulw.xyz vf05xyz,vf05xyz,vf03w  iaddiu vi06,vi00,0x751
+	itof0.xyzw vf04xyzw,vf04xyzw    iaddiu vi10,vi00,0x20
+	nop                             sq.xyzw vf03xyzw,1004(vi00)
+	nop                             iaddiu vi05,vi00,0x3e4
+	nop                             sq.xyzw vf05xyzw,1002(vi00)
+	nop                             sq.xyzw vf04xyzw,1003(vi00)
+Vu1Addr06e0:
+	nop                             iand vi01,vi08,vi10
+	nop                             iaddiu vi11,vi00,0
+	nop                             ibeq vi01,vi00,Vu1Addr071e
+	nop                             iaddiu vi12,vi00,0x3e4
+	nop                             iaddiu vi08,vi00,0
+Vu1Addr06e5:
+	nop                             ilw.w vi01,0(vi05)w
+	nop                             ilw.w vi07,3(vi05)w
+	nop                             lq.xyzw vf03xyzw,2(vi05)
+	nop                             lq.xyzw vf07xyzw,5(vi05)
+	nop                             iand vi01,vi01,vi10
+	nop                             iand vi07,vi07,vi10
+	nop                             lq.xyzw vf05xyzw,0(vi05)
+	nop                             ibeq vi01,vi07,Vu1Addr0707
+	nop                             lq.xyzw vf06xyzw,3(vi05)
+	nop                             jr vi06
+	nop                             lq.xyzw vf04xyzw,1(vi05)
+Vu1Addr06f0:
+	nop                             div q,vf01w,vf09w
+	sub.xyzw vf07xyzw,vf07xyzw,vf03xyzw nop
+	sub.xyzw vf06xyzw,vf06xyzw,vf05xyzw nop
+	sub.xyzw vf08xyzw,vf08xyzw,vf04xyzw fcset 0
 	nop                             nop
 	nop                             nop
-	mulq.xyz VF08, VF08, Q          nop
-	minix.w VF08, VF08, VF13x       nop
-	mulq.xyz VF15, VF15, Q          nop
 	nop                             nop
-	add.xyz VF08, VF12, VF08        nop
-	maxx.w VF08, VF08, VF00x        nop
-	nop                             sqi VF15, (VI02++)
-	nop                             sqi VF09, (VI02++)
+	mulq.xyzw vf07xyzw,vf07xyzw,q   nop
+	mulq.xyzw vf06xyzw,vf06xyzw,q   nop
+	mulq.xyzw vf08xyzw,vf08xyzw,q   nop
 	nop                             nop
-	ftoi4 VF08, VF08                nop
-	nop                             isubiu VI15, VI15, 1
+	add.xyzw vf03xyzw,vf07xyzw,vf03xyzw nop
+	add.xyzw vf05xyzw,vf06xyzw,vf05xyzw nop
+	add.xyzw vf04xyzw,vf08xyzw,vf04xyzw nop
 	nop                             nop
-	nop                             ibne VI15, VI00, Vu1TexturedClipProjectLoop
-	nop                             sqi VF08, (VI02++)
-	nop                             iaddiu VI03, VI03, 0x4000
-	nop                             iaddiu VI03, VI03, 0x4000
+	clipw.xyz vf03xyz,vf03w         sq.xyzw vf03xyzw,2(vi12)
+	clipw.xyz vf03xyz,vf03w         sq.xyzw vf05xyzw,0(vi12)
+	nop                             sq.xyzw vf04xyzw,1(vi12)
+	nop                             iaddiu vi12,vi12,3
+	nop                             iaddiu vi11,vi11,1
+	nop                             fcget vi01
+	nop                             isw.w vi01,-3(vi12)w
+	nop                             ior vi08,vi08,vi01
+Vu1Addr0707:
+	nop                             ibne vi07,vi00,Vu1Addr0711
+	nop                             lq.xyzw vf05xyzw,3(vi05)
+	nop                             lq.xyzw vf04xyzw,4(vi05)
+	nop                             lq.xyzw vf03xyzw,5(vi05)
+	nop                             iaddiu vi11,vi11,1
+	nop                             mtir vi01,vf05w
+	nop                             sqi.xyzw vf05xyzw,(vi12++)
+	nop                             sqi.xyzw vf04xyzw,(vi12++)
+	nop                             sqi.xyzw vf03xyzw,(vi12++)
+	nop                             ior vi08,vi08,vi01
+Vu1Addr0711:
+	nop                             isubiu vi03,vi03,1
+	nop                             iaddiu vi05,vi05,3
+	nop                             ibne vi03,vi00,Vu1Addr06e5
+	nop                             nop
+	nop                             ibeq vi11,vi00,Vu1Addr0745
+	nop                             iaddiu vi05,vi00,0x3e4
+	nop                             lq.xyzw vf05xyzw,0(vi05)
+	nop                             lq.xyzw vf04xyzw,1(vi05)
+	nop                             lq.xyzw vf03xyzw,2(vi05)
+	nop                             iaddiu vi03,vi11,0
+	nop                             sq.xyzw vf05xyzw,0(vi12)
+	nop                             sq.xyzw vf04xyzw,1(vi12)
+	nop                             sq.xyzw vf03xyzw,2(vi12)
+Vu1Addr071e:
+	nop                             iadd vi10,vi10,vi10
+	nop                             iaddiu vi01,vi00,0x400
+	nop                             iaddiu vi06,vi06,4
+	nop                             ibne vi10,vi01,Vu1Addr06e0
+	nop                             nop
+	nop                             iaddiu vi11,vi03,0
+	nop                             iaddiu vi05,vi00,0x3e4
+Vu1Addr0725:
+	nop                             lq.xyzw vf03xyzw,2(vi05)
+	nop                             lq.xyzw vf05xyzw,0(vi05)
+	nop                             lq.xyzw vf04xyzw,1(vi05)
+	nop                             nop
+	mul.xyzw vf03xyzw,vf14xyzw,vf03xyzw div q,vf00w,vf03w
+	nop                             nop
+	ftoi0.xyzw vf04xyzw,vf04xyzw    nop
+	nop                             nop
+	add.w vf03w,vf15w,vf03w         nop
+	nop                             nop
+	nop                             nop
+	mulq.xyz vf03xyz,vf03xyz,q      nop
+	minii.w vf03w,vf03w,i           nop
+	mulq.xyz vf05xyz,vf05xyz,q      nop
+	nop                             nop
+	add.xyz vf03xyz,vf15xyz,vf03xyz nop
+	maxx.w vf03w,vf03w,vf00x        nop
+	nop                             sqi.xyzw vf05xyzw,(vi05++)
+	nop                             sqi.xyzw vf04xyzw,(vi05++)
+	nop                             nop
+	ftoi4.xyzw vf03xyzw,vf03xyzw    nop
+	nop                             isubiu vi11,vi11,1
+	nop                             nop
+	nop                             ibne vi11,vi00,Vu1Addr0725
+	nop                             sqi.xyzw vf03xyzw,(vi05++)
 	.endmpg
 
-	mpg 0x100, *
-	nop                             isw.x VI03, 995(VI00)
-	nop                             iaddiu VI01, VI00, 0x3e3
+	mpg 0x73e, *
+	nop                             iaddiu vi03,vi03,0x4000
+	nop                             iaddiu vi03,vi03,0x4000
+	nop                             isw.x vi03,995(vi00)x
+	nop                             iaddiu vi01,vi00,0x3e3
 	nop                             nop
 	nop                             nop
-	nop                             xgkick VI01
-Vu1TexturedClipRestore:
-	nop                             ilw.x VI07, 1023(VI00)
-	nop                             ilw.y VI03, 1023(VI00)
-	nop                             ilw.z VI05, 1023(VI00)
-	nop                             ilw.w VI02, 1023(VI00)
-Vu1TexturedNextTriangle:
-	nop                             ibne VI03, VI00, Vu1TexturedTriangleLoop
-	nop                             iadd VI07, VI07, VI09
-	nop                             bal VI15, Vu1TexturedKick
+	nop                             xgkick vi01
+Vu1Addr0745:
+	nop                             ilw.x vi07,1023(vi00)x
+	nop                             ilw.y vi03,1023(vi00)y
+	nop                             ilw.z vi12,1023(vi00)z
+	nop                             ilw.w vi05,1023(vi00)w
+Vu1Addr0749:
+	nop                             ibne vi03,vi00,Vu1Addr0685
+	nop                             iadd vi07,vi07,vi09
+	nop                             bal vi02,Vu1Addr0765
 	nop                             nop
-Vu1TexturedBatchEnd:
+Vu1Addr074d:
 	nop[e]                          nop
 	nop                             nop
-	nop                             b Vu1TexturedNextBatch
+	nop                             b Vu1Addr065a
 	nop                             nop
-Vu1TexturedClipMinusZ:
-	sub.zw VF27, VF08, VF25         lq VF24, 4(VI02)
-	addz.w VF01, VF08, VF08z        nop
-	nop                             b Vu1TexturedClipIntersect
-	addz.w VF27, VF27, VF27z        nop
-Vu1TexturedClipPlusX:
-	sub.xw VF27, VF08, VF25         lq VF24, 4(VI02)
-	subx.w VF01, VF08, VF08x        nop
-	nop                             b Vu1TexturedClipIntersect
-	subx.w VF27, VF27, VF27x        nop
-Vu1TexturedClipMinusX:
-	sub.xw VF27, VF08, VF25         lq VF24, 4(VI02)
-	addx.w VF01, VF08, VF08x        nop
-	nop                             b Vu1TexturedClipIntersect
-	addx.w VF27, VF27, VF27x        nop
-Vu1TexturedClipPlusY:
-	sub.yw VF27, VF08, VF25         lq VF24, 4(VI02)
-	suby.w VF01, VF08, VF08y        nop
-	nop                             b Vu1TexturedClipIntersect
-	suby.w VF27, VF27, VF27y        nop
-Vu1TexturedClipMinusY:
-	sub.yw VF27, VF08, VF25         lq VF24, 4(VI02)
-	addy.w VF01, VF08, VF08y        nop
-	nop                             b Vu1TexturedClipIntersect
-	addy.w VF27, VF27, VF27y        nop
-Vu1TexturedKick:
-	nop                             mtir VI01, VF02x
-	nop                             iaddiu VI08, VI00, 0x4012
-	nop                             isub VI04, VI08, VI04
-	nop                             iaddiu VI04, VI04, 0x4000
-	nop                             isw.x VI04, 0(VI01)
-	nop                             lq VF01, 0(VI01)
-	nop                             mtir VI05, VF02y
-	nop                             iaddiu VI04, VI00, 0x12
-	nop                             xgkick VI01
-	nop                             mr32 VF02, VF02
-	nop                             jr VI15
-	nop                             sqi VF01, (VI05++)
-Vu1TexturedUnclippedLoop:
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.y VI07, 0(VI02)
-	nop                             sqi VF15, (VI05++)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.z VI07, 0(VI02)
-	nop                             sqi VF15, (VI05++)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.x VI07, 1(VI02)
-	nop                             sqi VF15, (VI05++)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             isubiu VI04, VI04, 1
-	nop                             isubiu VI03, VI03, 1
-	nop                             ibne VI04, VI00, Vu1TexturedUnclippedNext
-	nop                             iaddiu VI02, VI02, 1
-	nop                             b Vu1TexturedKick
-	nop                             iaddiu VI15, VI00, Vu1TexturedUnclippedNext
-Vu1TexturedUnclippedNext:
-	nop                             ibne VI03, VI00, Vu1TexturedUnclippedLoop
-	nop                             iadd VI07, VI07, VI09
-	nop                             b Vu1TexturedKick
-	nop                             iaddiu VI15, VI00, Vu1TexturedBatchEnd
+	sub.zw vf09zw,vf03zw,vf07zw     lq.xyzw vf08xyzw,4(vi05)
+	addz.w vf01w,vf03w,vf03z        nop
+	nop                             b Vu1Addr06f0
+	addz.w vf09w,vf09w,vf09z        nop
+	sub.xw vf09xw,vf03xw,vf07xw     lq.xyzw vf08xyzw,4(vi05)
+	subx.w vf01w,vf03w,vf03x        nop
+	nop                             b Vu1Addr06f0
+	subx.w vf09w,vf09w,vf09x        nop
+	sub.xw vf09xw,vf03xw,vf07xw     lq.xyzw vf08xyzw,4(vi05)
+	addx.w vf01w,vf03w,vf03x        nop
+	nop                             b Vu1Addr06f0
+	addx.w vf09w,vf09w,vf09x        nop
+	sub.yw vf09yw,vf03yw,vf07yw     lq.xyzw vf08xyzw,4(vi05)
+	suby.w vf01w,vf03w,vf03y        nop
+	nop                             b Vu1Addr06f0
+	suby.w vf09w,vf09w,vf09y        nop
+	sub.yw vf09yw,vf03yw,vf07yw     lq.xyzw vf08xyzw,4(vi05)
+	addy.w vf01w,vf03w,vf03y        nop
+	nop                             b Vu1Addr06f0
+	addy.w vf09w,vf09w,vf09y        nop
+Vu1Addr0765:
+	nop                             mtir vi01,vf02x
+	nop                             iaddiu vi08,vi00,0x4012
+	nop                             isub vi04,vi08,vi04
+	nop                             iaddiu vi04,vi04,0x4000
+	nop                             isw.x vi04,0(vi01)x
+	nop                             lq.xyzw vf01xyzw,0(vi01)
+	nop                             mtir vi12,vf02y
+	nop                             iaddiu vi04,vi00,0x12
+	nop                             xgkick vi01
+	nop                             mr32.xyzw vf02xyzw,vf02xyzw
+	nop                             jr vi02
+	nop                             sqi.xyzw vf01xyzw,(vi12++)
 	.endmpg
 
-	mpg 0x1c2, *
+	mpg 0x5a8, *
 Vu1DrawEdges:
-	nop                             loi 255.0
-	addi.x VF13, VF00, I            xtop VI02
-	nop                             lqi VF04, (VI02++)
-	nop                             lqi VF05, (VI02++)
-	nop                             lqi VF06, (VI02++)
-	nop                             lqi VF07, (VI02++)
-	nop                             mtir VI05, VF02x
-	nop                             lqi VF01, (VI02++)
-	nop                             lqi VF11, (VI02++)
-	nop                             lqi VF12, (VI02++)
-	nop                             lqi VF19, (VI02++)
-	nop                             sqi VF01, (VI05++)
-Vu1EdgesNextBatch:
-	nop                             xtop VI02
-	nop                             lq VF23, 9(VI02)
-	nop                             ilw.x VI03, 8(VI02)
-	nop                             iaddiu VI02, VI02, 9
-	mulaw ACC, VF07, VF00w          nop
-	maddax ACC, VF04, VF23x         nop
-	madday ACC, VF05, VF23y         nop
-	maddz VF23, VF06, VF23z         nop
-	ftoi4 VF08, VF08                nop
-	nop                             iaddiu VI14, VI00, 0xfff
-	mulaw.w ACC, VF12, VF00         fcset 0
-	madd.w VF01, VF11, VF23         div Q, VF00w, VF23w
-	mulaw.xyz ACC, VF12, VF23w      b Vu1EdgesTransformFirst
-	madd.xyz VF08, VF11, VF23       nop
-Vu1EdgesTransformLoop:
-	maddax ACC, VF04, VF23x         nop
-	madday ACC, VF05, VF23y         nop
-	maddz VF23, VF06, VF23z         nop
-	ftoi4 VF08, VF08                isw.w VI08, -2(VI02)
-	nop                             iand VI14, VI14, VI08
-	mulaw.w ACC, VF12, VF00         fcset 0
-	madd.w VF01, VF11, VF23         div Q, VF00w, VF23w
-	mulaw.xyz ACC, VF12, VF23w      sq VF08, -1(VI02)
-	madd.xyz VF08, VF11, VF23       nop
-Vu1EdgesTransformFirst:
-	clipw.xyz VF23, VF23w           iaddiu VI02, VI02, 2
-	minix.w VF08, VF01, VF13x       isubiu VI03, VI03, 1
-	nop                             lq VF23, 0(VI02)
-	mulaw ACC, VF07, VF00w          nop
-	mulq.xyz VF08, VF08, Q          ibne VI03, VI00, Vu1EdgesTransformLoop
-	maxx.w VF08, VF08, VF00x        fcget VI08
-	nop                             ilw.x VI07, 0(VI02)
-	nop                             xtop VI09
-	ftoi4 VF08, VF08                ilw.y VI03, 8(VI09)
-	nop                             iand VI14, VI14, VI08
-	nop                             isw.w VI08, -2(VI02)
-	nop                             ibne VI14, VI00, Vu1EdgesBatchEnd
-	nop                             iaddiu VI09, VI09, 9
-	nop                             iaddiu VI04, VI00, 0x36
-	nop                             iadd VI07, VI07, VI09
-	nop                             sq VF08, -1(VI02)
-Vu1EdgesLineLoop:
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.w VI08, 0(VI07)
-	nop                             ilw.y VI07, 0(VI02)
-	nop                             sqi VF19, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             isubiu VI03, VI03, 1
-	nop                             iadd VI07, VI07, VI09
-	nop                             ilw.w VI01, 0(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             iaddiu VI02, VI02, 1
-	nop                             ilw.x VI07, 0(VI02)
-	nop                             ior VI08, VI08, VI01
-	nop                             sqi VF08, (VI05++)
-	nop                             ibne VI08, VI00, Vu1EdgesNextLine
-	nop                             isubiu VI05, VI05, 3
-	nop                             isubiu VI04, VI04, 1
-	nop                             iaddiu VI05, VI05, 3
-	nop                             ibne VI04, VI00, Vu1EdgesNextLine
-Vu1EdgesKick:
-	nop                             mtir VI01, VF02x
-	nop                             iaddiu VI08, VI00, 0x4036
-	nop                             isub VI04, VI08, VI04
-	nop                             iaddiu VI04, VI04, 0x4000
-	nop                             isw.x VI04, 0(VI01)
-	nop                             lq VF01, 0(VI01)
-	nop                             mtir VI05, VF02y
-	nop                             iaddiu VI04, VI00, 0x36
-	nop                             xgkick VI01
-	nop                             mr32 VF02, VF02
-	nop                             ibeq VI03, VI00, Vu1EdgesBatchEnd
-	nop                             sqi VF01, (VI05++)
-Vu1EdgesNextLine:
-	nop                             ibne VI03, VI00, Vu1EdgesLineLoop
-	nop                             iadd VI07, VI07, VI09
-	nop                             b Vu1EdgesKick
+	nop                             xtop vi05
+	nop                             lqi.xyzw vf28xyzw,(vi05++)
+	nop                             lqi.xyzw vf29xyzw,(vi05++)
+	nop                             lqi.xyzw vf30xyzw,(vi05++)
+	nop                             lqi.xyzw vf31xyzw,(vi05++)
+	nop                             mtir vi15,vf02x
+	nop                             lqi.xyzw vf01xyzw,(vi05++)
+	nop                             lqi.xyzw vf26xyzw,(vi05++)
+	nop                             lqi.xyzw vf27xyzw,(vi05++)
+	nop                             lqi.xyzw vf25xyzw,(vi05++)
+	nop                             sqi.xyzw vf01xyzw,(vi15++)
+Vu1Addr05b3:
+	nop                             xtop vi05
+	nop                             lq.xyzw vf04xyzw,9(vi05)
+	nop                             iaddiu vi05,vi05,9
+	nop                             ilw.x vi03,-1(vi05)x
+	mulaw[i].xyzw accxyzw,vf31xyzw,vf00w loi 255
+Vu1Addr05b8:
+	maddax.xyzw accxyzw,vf28xyzw,vf04x nop
+	madday.xyzw accxyzw,vf29xyzw,vf04y nop
+	maddz.xyzw vf04xyzw,vf30xyzw,vf04z nop
+	ftoi4.xyzw vf03xyzw,vf03xyzw    nop
+	nop                             iaddiu vi09,vi00,0xfff
+	mulaw.w accw,vf27w,vf00w        fcset 0
+	madd.w vf01w,vf26w,vf04w        div q,vf00w,vf04w
+	mulaw.xyz accxyz,vf27xyz,vf04w  b Vu1Addr05ca
+	madd.xyz vf03xyz,vf26xyz,vf04xyz nop
+Vu1Addr05c1:
+	maddax.xyzw accxyzw,vf28xyzw,vf04x nop
+	madday.xyzw accxyzw,vf29xyzw,vf04y nop
+	maddz.xyzw vf04xyzw,vf30xyzw,vf04z nop
+	ftoi4.xyzw vf03xyzw,vf03xyzw    isw.w vi07,-2(vi05)w
+	nop                             iand vi09,vi09,vi07
+	mulaw.w accw,vf27w,vf00w        fcset 0
+	madd.w vf01w,vf26w,vf04w        div q,vf00w,vf04w
+	mulaw.xyz accxyz,vf27xyz,vf04w  sq.xyzw vf03xyzw,-1(vi05)
+	madd.xyz vf03xyz,vf26xyz,vf04xyz nop
+Vu1Addr05ca:
+	clipw.xyz vf04xyz,vf04w         iaddiu vi05,vi05,2
+	minii.w vf03w,vf01w,i           isubiu vi03,vi03,1
+	nop                             lq.xyzw vf04xyzw,0(vi05)
+	mulaw.xyzw accxyzw,vf31xyzw,vf00w nop
+	mulq.xyz vf03xyz,vf03xyz,q      ibne vi03,vi00,Vu1Addr05c1
+	maxx.w vf03w,vf03w,vf00x        fcget vi07
+	nop                             ilw.x vi06,0(vi05)x
+	nop                             xtop vi08
+	ftoi4.xyzw vf03xyzw,vf03xyzw    ilw.y vi03,8(vi08)y
+	nop                             iand vi09,vi09,vi07
+	nop                             isw.w vi07,-2(vi05)w
+	nop                             ibne vi09,vi00,Vu1Addr05fc
+	nop                             iaddiu vi08,vi08,9
+	nop                             iaddiu vi04,vi00,0x36
+	nop                             iadd vi06,vi06,vi08
+	nop                             sq.xyzw vf03xyzw,-1(vi05)
+Vu1Addr05da:
+	nop                             lq.xyzw vf03xyzw,1(vi06)
+	nop                             ilw.w vi07,0(vi06)w
+	nop                             ilw.y vi06,0(vi05)y
+	nop                             sqi.xyzw vf25xyzw,(vi15++)
+	nop                             sqi.xyzw vf03xyzw,(vi15++)
+	nop                             isubiu vi03,vi03,1
+	nop                             iadd vi06,vi06,vi08
+	nop                             ilw.w vi01,0(vi06)w
+	nop                             lq.xyzw vf03xyzw,1(vi06)
+	nop                             iaddiu vi05,vi05,1
+	nop                             ilw.x vi06,0(vi05)x
+	nop                             ior vi07,vi07,vi01
+	nop                             sqi.xyzw vf03xyzw,(vi15++)
+	nop                             ibne vi07,vi00,Vu1Addr05f8
+	nop                             isubiu vi15,vi15,3
+	nop                             isubiu vi04,vi04,1
+	nop                             iaddiu vi15,vi15,3
+	nop                             ibne vi04,vi00,Vu1Addr05f8
+Vu1Addr05ec:
+	nop                             mtir vi01,vf02x
+	nop                             iaddiu vi07,vi00,0x4036
+	nop                             isub vi04,vi07,vi04
+	nop                             iaddiu vi04,vi04,0x4000
+	nop                             isw.x vi04,0(vi01)x
+	nop                             lq.xyzw vf01xyzw,0(vi01)
+	nop                             mtir vi15,vf02y
+	nop                             iaddiu vi04,vi00,0x36
+	nop                             xgkick vi01
+	nop                             mr32.xyzw vf02xyzw,vf02xyzw
+	nop                             ibeq vi03,vi00,Vu1Addr05fc
+	nop                             sqi.xyzw vf01xyzw,(vi15++)
+Vu1Addr05f8:
+	nop                             ibne vi03,vi00,Vu1Addr05da
+	nop                             iadd vi06,vi06,vi08
+	nop                             b Vu1Addr05ec
 	nop                             nop
-Vu1EdgesBatchEnd:
+Vu1Addr05fc:
 	nop[e]                          nop
 	nop                             nop
-	nop                             b Vu1EdgesNextBatch
+	nop                             b Vu1Addr05b3
 	nop                             nop
 	.endmpg
 
-	mpg 0x258, *
+	mpg 0x512, *
 Vu1DrawSprites:
-	nop                             xtop VI02
-	nop                             lqi VF04, (VI02++)
-	nop                             lqi VF05, (VI02++)
-	nop                             lqi VF06, (VI02++)
-	nop                             lqi VF07, (VI02++)
-	nop                             lqi VF10, (VI02++)
-	nop                             mtir VI05, VF02x
-	nop                             lqi VF01, (VI02++)
-	nop                             lqi VF11, (VI02++)
-	nop                             lqi VF12, (VI02++)
-	nop                             lqi VF19, (VI02++)
-	nop                             sqi VF01, (VI05++)
-Vu1SpritesNextBatch:
-	nop                             xtop VI02
-	nop                             iaddiu VI02, VI02, 10
-	nop                             lq VF08, 1(VI02)
-	nop                             ilw.x VI03, -1(VI02)
-	nop                             iaddiu VI04, VI00, 0x1b
-Vu1SpritesLoop:
-	mulaw ACC, VF07, VF00w          lq VF09, 0(VI02)
-	maddax ACC, VF04, VF08x         iaddiu VI02, VI02, 2
-	madday ACC, VF05, VF08y         isubiu VI03, VI03, 1
-	maddaz ACC, VF06, VF08z         nop
-	msubw VF27, VF19, VF08w         nop
-	maddw VF25, VF19, VF08w         nop
-	mul VF09, VF10, VF09            nop
+	nop                             xtop vi05
+	nop                             lqi.xyzw vf28xyzw,(vi05++)
+	nop                             lqi.xyzw vf29xyzw,(vi05++)
+	nop                             lqi.xyzw vf30xyzw,(vi05++)
+	nop                             lqi.xyzw vf31xyzw,(vi05++)
+	nop                             lqi.xyzw vf25xyzw,(vi05++)
+	nop                             mtir vi15,vf02x
+	nop                             lqi.xyzw vf01xyzw,(vi05++)
+	nop                             lqi.xyzw vf26xyzw,(vi05++)
+	nop                             lqi.xyzw vf27xyzw,(vi05++)
+	nop                             lqi.xyzw vf24xyzw,(vi05++)
+	nop                             sqi.xyzw vf01xyzw,(vi15++)
+Vu1Addr051e:
+	nop                             xtop vi05
+	nop                             iaddiu vi05,vi05,10
+	nop                             lq.xyzw vf03xyzw,1(vi05)
+	nop                             ilw.x vi03,-1(vi05)x
+	nop                             iaddiu vi04,vi00,0x1b
+Vu1Addr0523:
+	mulaw.xyzw accxyzw,vf31xyzw,vf00w lq.xyzw vf04xyzw,0(vi05)
+	maddax.xyzw accxyzw,vf28xyzw,vf03x iaddiu vi05,vi05,2
+	madday.xyzw accxyzw,vf29xyzw,vf03y isubiu vi03,vi03,1
+	maddaz.xyzw accxyzw,vf30xyzw,vf03z nop
+	msubw.xyzw vf07xyzw,vf24xyzw,vf03w nop
+	maddw.xyzw vf06xyzw,vf24xyzw,vf03w nop
+	mul.xyzw vf04xyzw,vf25xyzw,vf04xyzw nop
 	nop                             nop
-	clipw.xyz VF27, VF27w           div Q, VF00w, VF27w
-	clipw.xyz VF25, VF25w           nop
-	mulaw ACC, VF12, VF27w          nop
-	madd VF27, VF11, VF27           nop
-	madd VF25, VF11, VF25           nop
-	ftoi0 VF09, VF09                fcand VI01, 0xfff
-	nop                             ibne VI01, VI00, Vu1SpritesNext
-	mulq VF27, VF27, Q              lq VF08, 1(VI02)
-	mulq VF25, VF25, Q              isubiu VI04, VI04, 1
-	addq.xyz VF15, VF00, Q          iaddiu VI05, VI05, 6
-	nop                             sq VF00, -6(VI05)
-	ftoi4.xyz VF27, VF27            sq VF09, -5(VI05)
-	ftoi4.xyz VF25, VF25            sq VF09, -2(VI05)
-	nop                             sq VF15, -3(VI05)
+	clipw.xyz vf07xyz,vf07w         div q,vf00w,vf07w
+	clipw.xyz vf06xyz,vf06w         nop
+	mulaw.xyzw accxyzw,vf27xyzw,vf07w nop
+	madd.xyzw vf07xyzw,vf26xyzw,vf07xyzw nop
+	madd.xyzw vf06xyzw,vf26xyzw,vf06xyzw nop
+	ftoi0.xyzw vf04xyzw,vf04xyzw    fcand vi01,0xfff
+	nop                             ibne vi01,vi00,Vu1Addr0549
+	mulq.xyzw vf07xyzw,vf07xyzw,q   lq.xyzw vf03xyzw,1(vi05)
+	mulq.xyzw vf06xyzw,vf06xyzw,q   isubiu vi04,vi04,1
+	addq.xyz vf05xyz,vf00xyz,q      iaddiu vi15,vi15,6
+	nop                             sq.xyzw vf00xyzw,-6(vi15)
+	ftoi4.xyz vf07xyz,vf07xyz       sq.xyzw vf04xyzw,-5(vi15)
+	ftoi4.xyz vf06xyz,vf06xyz       sq.xyzw vf04xyzw,-2(vi15)
+	nop                             sq.xyzw vf05xyzw,-3(vi15)
 	nop                             nop
-	nop                             sq VF27, -4(VI05)
-	nop                             sq VF25, -1(VI05)
-	nop                             ibne VI04, VI00, Vu1SpritesNext
-Vu1SpritesKick:
-	nop                             mtir VI01, VF02x
-	nop                             iaddiu VI08, VI00, 0x401b
-	nop                             isub VI04, VI08, VI04
-	nop                             iaddiu VI04, VI04, 0x4000
-	nop                             isw.x VI04, 0(VI01)
-	nop                             lq VF01, 0(VI01)
-	nop                             mtir VI05, VF02y
-	nop                             iaddiu VI04, VI00, 0x1b
-	nop                             xgkick VI01
-	nop                             mr32 VF02, VF02
-	nop                             ibeq VI03, VI00, Vu1SpritesBatchEnd
-	nop                             sqi VF01, (VI05++)
-Vu1SpritesNext:
-	nop                             ibne VI03, VI00, Vu1SpritesLoop
+	nop                             sq.xyzw vf07xyzw,-4(vi15)
+	nop                             sq.xyzw vf06xyzw,-1(vi15)
+	nop                             ibne vi04,vi00,Vu1Addr0549
+Vu1Addr053d:
+	nop                             mtir vi01,vf02x
+	nop                             iaddiu vi06,vi00,0x401b
+	nop                             isub vi04,vi06,vi04
+	nop                             iaddiu vi04,vi04,0x4000
+	nop                             isw.x vi04,0(vi01)x
+	nop                             lq.xyzw vf01xyzw,0(vi01)
+	nop                             mtir vi15,vf02y
+	nop                             iaddiu vi04,vi00,0x1b
+	nop                             xgkick vi01
+	nop                             mr32.xyzw vf02xyzw,vf02xyzw
+	nop                             ibeq vi03,vi00,Vu1Addr054d
+	nop                             sqi.xyzw vf01xyzw,(vi15++)
+Vu1Addr0549:
+	nop                             ibne vi03,vi00,Vu1Addr0523
 	nop                             nop
-	nop                             b Vu1SpritesKick
+	nop                             b Vu1Addr053d
 	nop                             nop
-Vu1SpritesBatchEnd:
+Vu1Addr054d:
 	nop[e]                          nop
 	nop                             nop
-	nop                             b Vu1SpritesNextBatch
+	nop                             b Vu1Addr051e
 	nop                             nop
 	.endmpg
 
-	mpg 0x2ee, *
-Vu1LightUnlit:
-	nop                             jr VI15
-	nop                             nop
-	.endmpg
-
-	mpg 0x2f8, *
-Vu1LightDirectional:
-	mulx.xyz VF08, VF21, VF26x      lq VF09, 2(VI02)
-	muly.xyz VF15, VF21, VF26y      mr32.w VF22, VF00
-	mulz.xyz VF14, VF21, VF26z      move.w VF19, VF21
-	add.xyz VF22, VF20, VF00        isw.x VI02, 1023(VI00)
-	nop                             isw.y VI03, 1023(VI00)
-	nop                             iaddiu VI08, VI00, Vu1DirectionalStore
-Vu1DirectionalLoop:
-	mul.xyz VF01, VF21, VF09        ibeq VI11, VI00, Vu1DirectionalDiffuseMaterial
-	nop                             lq VF25, 1(VI02)
-	mul.xyz VF22, VF20, VF09        nop
-Vu1DirectionalDiffuseMaterial:
-	miniw VF27, VF27, VF00w         ibeq VI12, VI00, Vu1DirectionalEmissiveMaterial
-	nop                             mr32.w VF08, VF00
-	mulx.xyz VF08, VF01, VF26x      nop
-	muly.xyz VF15, VF01, VF26y      nop
-	mulz.xyz VF14, VF01, VF26z      nop
-Vu1DirectionalEmissiveMaterial:
-	nop                             ibeq VI10, VI00, Vu1DirectionalAlphaMaterial
-	mulax ACC, VF08, VF25x          isubiu VI03, VI03, 1
-	nop                             move.xyz VF19, VF09
-Vu1DirectionalAlphaMaterial:
-	maxx VF27, VF27, VF00x          ibeq VI13, VI00, Vu1DirectionalAccumulate
-	madday.xyz ACC, VF15, VF25y     nop
-	nop                             move.w VF19, VF09
-Vu1DirectionalAccumulate:
-	maddaz.xyz ACC, VF14, VF25z     jr VI08
-	nop                             nop
-Vu1DirectionalStore:
-	nop                             sq VF27, -2(VI02)
-	nop                             iaddiu VI02, VI02, 4
-	nop                             fsand VI01, 2
-	nop                             ibeq VI01, VI00, Vu1DirectionalAddAmbient
-	maddaw ACC, VF19, VF00w         lq VF09, 2(VI02)
-	mulaw ACC, VF19, VF00w          nop
-Vu1DirectionalAddAmbient:
-	maddw VF27, VF22, VF00w         ibne VI03, VI00, Vu1DirectionalLoop
-	nop                             iaddiu VI08, VI00, Vu1DirectionalStore
-	miniw VF27, VF27, VF00w         iaddiu VI01, VI02, 0
-	nop                             nop
-	nop                             nop
-	nop                             nop
-	maxx VF27, VF27, VF00x          nop
-	nop                             ilw.x VI02, 1023(VI00)
-	nop                             ilw.y VI03, 1023(VI00)
-	nop                             jr VI15
-	nop                             sq VF27, -2(VI01)
-	.endmpg
-
-	mpg 0x35c, *
-Vu1LightPoint:
-	mulw.xyz VF14, VF21, VF00w      lq VF08, 0(VI02)
-	mulw.xyz VF22, VF20, VF00w      mr32.w VF22, VF00
-	mul.w VF24, VF26, VF26          move.w VF19, VF21
-	nop                             isw.x VI02, 1023(VI00)
-	nop                             isw.y VI03, 1023(VI00)
-	nop                             lq VF09, 2(VI02)
-	nop                             lq VF25, 1(VI02)
-	nop                             iaddiu VI08, VI00, Vu1PointStore
-Vu1PointLoop:
-	sub.xyz VF27, VF26, VF08        ibeq VI10, VI00, Vu1PointAlphaMaterial
-	nop                             iaddiu VI02, VI02, 4
-	nop                             move.xyz VF19, VF09
-Vu1PointAlphaMaterial:
-	miniw VF01, VF01, VF00w         isubiu VI03, VI03, 1
-	mul.xyz VF15, VF27, VF27        ibeq VI13, VI00, Vu1PointAmbientMaterial
-	mul.xyz VF27, VF25, VF27        lq VF08, 0(VI02)
-	nop                             move.w VF19, VF09
-Vu1PointAmbientMaterial:
-	maxx VF01, VF01, VF00x          lq VF25, 1(VI02)
-	addy.x VF15, VF15, VF15y        ibeq VI11, VI00, Vu1PointDiffuseMaterial
-	addy.x VF27, VF27, VF27y        nop
-	mul.xyz VF22, VF20, VF09        nop
-Vu1PointDiffuseMaterial:
-	nop                             nop
-	addz.x VF15, VF15, VF15z        ibeq VI12, VI00, Vu1PointAttenuate
-	addz.x VF27, VF27, VF27z        nop
-	mul.xyz VF14, VF21, VF09        nop
-Vu1PointAttenuate:
-	nop                             lq VF09, 2(VI02)
-	subx.w VF15, VF24, VF15x        div Q, VF00w, VF15x
-	mul.x VF27, VF27, VF27          fsand VI01, 2
-	nop                             nop
-	nop                             jr VI08
-	nop                             fsand VI04, 2
-Vu1PointStore:
-	nop                             sq VF01, -6(VI02)
-	nop                             ibeq VI04, VI00, Vu1PointFacing
-	nop                             iaddiu VI08, VI00, Vu1PointStore
-	nop                             ibne VI03, VI00, Vu1PointLoop
-	nop                             move VF01, VF19
-	nop                             b Vu1PointDone
-Vu1PointFacing:
-	mulq.x VF27, VF27, Q            div Q, VF15w, VF24w
-	nop                             nop
-	nop                             nop
-	nop                             nop
-	mulx.xyz VF27, VF14, VF27x      nop
-	nop                             ibne VI01, VI00, Vu1PointAccumulate
-	mulaw ACC, VF19, VF00w          nop
-	nop                             nop
-	maddaq.xyz ACC, VF27, Q         nop
-Vu1PointAccumulate:
-	maddq VF01, VF22, Q             ibne VI03, VI00, Vu1PointLoop
-	nop                             nop
-Vu1PointDone:
-	miniw VF01, VF01, VF00w         iaddiu VI01, VI02, 0
-	nop                             nop
-	nop                             nop
-	nop                             nop
-	maxx VF01, VF01, VF00x          nop
-	nop                             ilw.x VI02, 1023(VI00)
-	nop                             ilw.y VI03, 1023(VI00)
-	nop                             jr VI15
-	nop                             sq VF01, -2(VI01)
-	.endmpg
-
-	mpg 0x3c0, *
+	mpg 0x508, *
 Vu1Init:
-	nop                             iaddiu VI01, VI00, 0x29d
-	nop                             mfir.x VF02, VI01
-	nop                             mfir.z VF02, VI01
-	nop                             iaddiu VI01, VI00, 0x340
-	nop[e]                          mfir.y VF02, VI01
-	nop                             mfir.w VF02, VI01
+	nop                             iaddiu vi01,vi00,0x29d
+	nop                             mfir.x vf02x,vi01
+	nop                             mfir.z vf02z,vi01
+	nop                             iaddiu vi01,vi00,0x340
+	nop[e]                          mfir.y vf02y,vi01
+	nop                             mfir.w vf02w,vi01
 	.endmpg
 
-	mpg 0x3d4, *
-Vu1LightNone:
-	nop                             iand VI01, VI10, VI13
-	nop                             isw.x VI02, 1023(VI00)
-	nop                             ibne VI01, VI00, Vu1NoLightDone
-	nop                             isw.y VI03, 1023(VI00)
-	nop                             ior VI01, VI10, VI13
-	nop                             move.w VF19, VF21
-	nop                             ibne VI01, VI00, Vu1NoLightMergeLoop
-	nop                             nop
-Vu1NoLightFillLoop:
-	nop                             isubiu VI03, VI03, 1
-	nop                             iaddiu VI02, VI02, 4
-	nop                             ibne VI03, VI00, Vu1NoLightFillLoop
-	nop                             sq VF19, -2(VI02)
-	nop                             b Vu1NoLightDone
-	nop                             nop
-Vu1NoLightMergeLoop:
-	nop                             ibne VI10, VI00, Vu1NoLightMaterialAlpha
-	nop                             lq VF09, 2(VI02)
-	nop                             b Vu1NoLightStore
-	nop                             move.xyz VF09, VF19
-Vu1NoLightMaterialAlpha:
-	nop                             move.w VF09, VF21
-Vu1NoLightStore:
-	nop                             isubiu VI03, VI03, 1
-	nop                             iaddiu VI02, VI02, 4
-	nop                             ibne VI03, VI00, Vu1NoLightMergeLoop
-	nop                             sq VF09, -2(VI02)
-Vu1NoLightDone:
-	nop                             ilw.x VI02, 1023(VI00)
-	nop                             jr VI15
-	nop                             ilw.y VI03, 1023(VI00)
-	.endmpg
-
-	mpg 0x406, *
+	mpg 0x3dc, *
 Vu1DrawInstances:
-	nop                             xtop VI02
-	nop                             lqi VF04, (VI02++)
-	nop                             lqi VF05, (VI02++)
-	nop                             lqi VF06, (VI02++)
-	nop                             lqi VF07, (VI02++)
-	nop                             lqi VF10, (VI02++)
-	nop                             lqi VF11, (VI02++)
-	nop                             lqi VF12, (VI02++)
-	nop                             lqi VF16, (VI02++)
-	nop                             lqi VF17, (VI02++)
-	nop                             lqi VF18, (VI02++)
-	nop                             mtir VI05, VF02x
-	nop                             lqi VF01, (VI02++)
-	nop                             lqi VF19, (VI02++)
-	nop                             lqi VF20, (VI02++)
-	nop                             lqi VF21, (VI02++)
-	nop                             ilw.x VI10, 0(VI02)
-	nop                             ilw.y VI11, 0(VI02)
-	nop                             ilw.z VI12, 0(VI02)
-	nop                             ilw.w VI13, 0(VI02)
-	nop                             iaddiu VI02, VI02, 1
-	nop                             sqi VF01, (VI05++)
-	nop                             ilw.z VI09, 0(VI02)
-	nop                             ilw.x VI03, 0(VI02)
-	nop                             ilw.y VI06, 0(VI02)
-	nop                             isw.x VI02, 1023(VI00)
-	nop                             jalr VI15, VI09
+	nop                             xtop vi05
+	nop                             lqi.xyzw vf16xyzw,(vi05++)
+	nop                             lqi.xyzw vf17xyzw,(vi05++)
+	nop                             lqi.xyzw vf18xyzw,(vi05++)
+	nop                             lqi.xyzw vf19xyzw,(vi05++)
+	nop                             lqi.xyzw vf23xyzw,(vi05++)
+	nop                             lqi.xyzw vf24xyzw,(vi05++)
+	nop                             lqi.xyzw vf15xyzw,(vi05++)
+	nop                             lqi.xyzw vf20xyzw,(vi05++)
+	nop                             lqi.xyzw vf21xyzw,(vi05++)
+	nop                             lqi.xyzw vf22xyzw,(vi05++)
+	nop                             mtir vi13,vf02x
+	nop                             lqi.xyzw vf01xyzw,(vi05++)
+	nop                             ilw.x vi12,0(vi05)x
+	nop                             ilw.y vi14,0(vi05)y
+	nop                             lq.xyzw vf25xyzw,1(vi05)
+	nop                             sqi.xyzw vf01xyzw,(vi13++)
+	nop                             jalr vi02,vi12
 	nop                             nop
-	nop                             iaddiu VI02, VI02, 1
-	nop                             lq VF09, 2(VI02)
-	nop                             lq VF15, 3(VI02)
-	nop                             nop
-	nop                             nop
-	mul VF25, VF10, VF09            b Vu1InstancesUvFirst
-	adda.xy ACC, VF18, VF00         nop
-Vu1InstancesUvLoop:
-	mul VF25, VF10, VF09            sq VF27, -1(VI02)
-	adda.xy ACC, VF18, VF00         sq VF01, -2(VI02)
-Vu1InstancesUvFirst:
-	maddax.xy ACC, VF16, VF15x      isubiu VI03, VI03, 1
-	maddy.xy VF27, VF17, VF15y      lq VF09, 6(VI02)
-	ftoi0 VF01, VF25                lq VF15, 7(VI02)
-	nop                             ibne VI03, VI00, Vu1InstancesUvLoop
-	nop                             iaddiu VI02, VI02, 4
-	nop                             sq VF27, -1(VI02)
-	nop                             sq VF01, -2(VI02)
-	nop                             iadd VI02, VI02, VI06
-Vu1InstancesBatch:
-	nop                             ilw.x VI06, 0(VI02)
-	nop                             iaddiu VI02, VI02, 1
-	nop                             iaddiu VI04, VI00, 0x12
-Vu1InstancesLoop:
-	nop                             lq VF24, 3(VI02)
-	nop                             lq VF27, 0(VI02)
-	nop                             lq VF26, 1(VI02)
-	mulaw ACC, VF07, VF00w          lq VF25, 2(VI02)
-	maddax ACC, VF04, VF24x         iaddiu VI02, VI02, 4
-	madday ACC, VF05, VF24y         isubiu VI06, VI06, 1
-	maddz VF24, VF06, VF24z         nop
-	mulax ACC, VF04, VF27x          nop
-	madday ACC, VF05, VF27y         nop
-	maddz VF27, VF06, VF27z         nop
-	mulax ACC, VF04, VF26x          nop
-	madday ACC, VF05, VF26y         nop
-	maddz VF26, VF06, VF26z         xtop VI14
-	mulax ACC, VF04, VF25x          lq VF23, 16(VI14)
-	madday ACC, VF05, VF25y         ilw.x VI03, 15(VI14)
-	maddz VF25, VF06, VF25z         iaddiu VI14, VI14, 0x10
-	mulaw ACC, VF24, VF00w          mr32.w VF01, VF00
-	maddax ACC, VF27, VF23x         nop
-	madday ACC, VF26, VF23y         iaddiu VI14, VI14, 4
-	maddz VF08, VF25, VF23z         lq VF23, 0(VI14)
+	nop                             xtop vi05
+	nop                             iaddiu vi05,vi05,0x16
+	nop                             lq.xyzw vf04xyzw,2(vi05)
+	nop                             lq.xyzw vf05xyzw,3(vi05)
+	nop                             ilw.x vi03,-1(vi05)x
+	nop                             ilw.y vi11,-1(vi05)y
+	mul.xyzw vf10xyzw,vf23xyzw,vf04xyzw b Vu1Addr03f9
+	adda.xy accxy,vf22xy,vf00xy     nop
+Vu1Addr03f7:
+	mul.xyzw vf10xyzw,vf23xyzw,vf04xyzw sq.xyzw vf11xyzw,-1(vi05)
+	adda.xy accxy,vf22xy,vf00xy     sq.xyzw vf01xyzw,-2(vi05)
+Vu1Addr03f9:
+	maddax.xy accxy,vf20xy,vf05x    isubiu vi03,vi03,1
+	maddy.xy vf11xy,vf21xy,vf05y    lq.xyzw vf04xyzw,6(vi05)
+	ftoi0.xyzw vf01xyzw,vf10xyzw    lq.xyzw vf05xyzw,7(vi05)
+	nop                             ibne vi03,vi00,Vu1Addr03f7
+	nop                             iaddiu vi05,vi05,4
+	nop                             sq.xyzw vf11xyzw,-1(vi05)
+	nop                             sq.xyzw vf01xyzw,-2(vi05)
+	nop                             iadd vi05,vi05,vi11
+Vu1Addr0401:
+	nop                             ilw.x vi06,0(vi05)x
+	nop                             iaddiu vi05,vi05,1
+	nop                             iaddiu vi04,vi00,0x12
+Vu1Addr0404:
+	nop                             lq.xyzw vf07xyzw,3(vi05)
+	nop                             lq.xyzw vf10xyzw,0(vi05)
+	nop                             lq.xyzw vf09xyzw,1(vi05)
+	mulaw.xyzw accxyzw,vf19xyzw,vf00w lq.xyzw vf08xyzw,2(vi05)
+	maddax.xyzw accxyzw,vf16xyzw,vf07x iaddiu vi05,vi05,4
+	madday.xyzw accxyzw,vf17xyzw,vf07y isubiu vi06,vi06,1
+	maddz.xyzw vf07xyzw,vf18xyzw,vf07z nop
+	mulax.xyzw accxyzw,vf16xyzw,vf10x nop
+	madday.xyzw accxyzw,vf17xyzw,vf10y nop
+	maddz.xyzw vf10xyzw,vf18xyzw,vf10z nop
+	mulax.xyzw accxyzw,vf16xyzw,vf09x nop
+	madday.xyzw accxyzw,vf17xyzw,vf09y nop
+	maddz.xyzw vf09xyzw,vf18xyzw,vf09z xtop vi10
+	mulax.xyzw accxyzw,vf16xyzw,vf08x lq.xyzw vf06xyzw,22(vi10)
+	madday.xyzw accxyzw,vf17xyzw,vf08y ilw.x vi03,21(vi10)x
+	maddz.xyzw vf08xyzw,vf18xyzw,vf08z iaddiu vi10,vi10,0x16
+	mulaw.xyzw accxyzw,vf07xyzw,vf00w mr32.w vf01w,vf00w
+	maddax.xyzw accxyzw,vf10xyzw,vf06x nop
+	madday.xyzw accxyzw,vf09xyzw,vf06y iaddiu vi10,vi10,4
+	maddz.xyzw vf03xyzw,vf08xyzw,vf06z lq.xyzw vf06xyzw,0(vi10)
 	nop                             fcset 0
-	nop                             isubiu VI03, VI03, 1
-	nop                             iaddiu VI08, VI00, 0xfff
-	clipw.xyz VF08, VF08w           div Q, VF00w, VF08w
-	mulaw.xyz ACC, VF12, VF08w      nop
-	nop                             ibeq VI03, VI00, Vu1InstancesTransformLast
-	madd.xyz VF01, VF11, VF08       nop
-Vu1InstancesTransformLoop:
-	mulaw ACC, VF24, VF00w          fcget VI01
-	maddax ACC, VF27, VF23x         lq VF15, -1(VI14)
-	madday ACC, VF26, VF23y         fcset 0
-	mulq.xyz VF01, VF01, Q          iaddiu VI14, VI14, 4
-	maddz VF08, VF25, VF23z         mfir.w VF15, VI01
-	addq.z VF15, VF00, Q            iand VI08, VI08, VI01
-	nop                             isubiu VI03, VI03, 1
-	ftoi4.xyz VF01, VF01            lq VF23, 0(VI14)
-	clipw.xyz VF08, VF08w           div Q, VF00w, VF08w
-	mulaw.xyz ACC, VF12, VF08w      sq VF15, -5(VI14)
-	nop                             ibne VI03, VI00, Vu1InstancesTransformLoop
-	madd.xyz VF01, VF11, VF08       sq VF01, -7(VI14)
-Vu1InstancesTransformLast:
-	nop                             fcget VI01
-	nop                             lq VF15, -1(VI14)
+	nop                             isubiu vi03,vi03,1
+	nop                             iaddiu vi08,vi00,0xfff
+	clipw.xyz vf03xyz,vf03w         div q,vf00w,vf03w
+	mulaw.xyz accxyz,vf15xyz,vf03w  nop
+	nop                             ibeq vi03,vi00,Vu1Addr042b
+	madd.xyz vf01xyz,vf24xyz,vf03xyz nop
+Vu1Addr041f:
+	mulaw.xyzw accxyzw,vf07xyzw,vf00w fcget vi01
+	maddax.xyzw accxyzw,vf10xyzw,vf06x lq.xyzw vf05xyzw,-1(vi10)
+	madday.xyzw accxyzw,vf09xyzw,vf06y fcset 0
+	mulq.xyz vf01xyz,vf01xyz,q      iaddiu vi10,vi10,4
+	maddz.xyzw vf03xyzw,vf08xyzw,vf06z mfir.w vf05w,vi01
+	addq.z vf05z,vf00z,q            iand vi08,vi08,vi01
+	nop                             isubiu vi03,vi03,1
+	ftoi4.xyz vf01xyz,vf01xyz       lq.xyzw vf06xyzw,0(vi10)
+	clipw.xyz vf03xyz,vf03w         div q,vf00w,vf03w
+	mulaw.xyz accxyz,vf15xyz,vf03w  sq.xyzw vf05xyzw,-5(vi10)
+	nop                             ibne vi03,vi00,Vu1Addr041f
+	madd.xyz vf01xyz,vf24xyz,vf03xyz sq.xyzw vf01xyzw,-7(vi10)
+Vu1Addr042b:
+	nop                             fcget vi01
+	nop                             lq.xyzw vf05xyzw,-1(vi10)
 	nop                             nop
-	mulq.xyz VF01, VF01, Q          ilw.x VI07, 0(VI14)
-	nop                             iand VI08, VI08, VI01
-	nop                             mfir.w VF15, VI01
-	nop                             ibne VI08, VI00, Vu1InstancesNextInstance
-	addq.z VF15, VF00, Q            xtop VI09
-	nop                             ilw.y VI03, 15(VI09)
-	ftoi4.xyz VF01, VF01            iaddiu VI09, VI09, 0x10
-	nop                             iadd VI07, VI07, VI09
-	nop                             sq VF15, -1(VI14)
-	nop                             sq VF01, -3(VI14)
-Vu1InstancesTriangleLoop:
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.y VI07, 0(VI14)
-	mulz.xy VF15, VF15, VF15z       mtir VI08, VF15w
-	nop                             sq VF09, 1(VI05)
-	nop                             sq VF08, 2(VI05)
-	nop                             isubiu VI03, VI03, 1
-	nop                             sq VF15, 0(VI05)
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.z VI07, 0(VI14)
-	mulz.xy VF15, VF15, VF15z       mtir VI01, VF15w
-	nop                             sq VF09, 4(VI05)
-	nop                             sq VF08, 5(VI05)
-	nop                             iadd VI07, VI07, VI09
-	nop                             ior VI08, VI08, VI01
-	nop                             sq VF15, 3(VI05)
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             iaddiu VI14, VI14, 1
-	mulz.xy VF15, VF15, VF15z       mtir VI01, VF15w
-	nop                             ilw.x VI07, 0(VI14)
-	nop                             sq VF09, 7(VI05)
-	nop                             sq VF08, 8(VI05)
-	nop                             ior VI08, VI08, VI01
-	nop                             sq VF15, 6(VI05)
-	nop                             ibne VI08, VI00, Vu1InstancesNextTriangle
+	mulq.xyz vf01xyz,vf01xyz,q      ilw.y vi07,0(vi10)y
+	nop                             iand vi08,vi08,vi01
+	nop                             mfir.w vf05w,vi01
+	nop                             ibne vi08,vi00,Vu1Addr0460
+	addq.z vf05z,vf00z,q            xtop vi09
+	nop                             ilw.y vi11,21(vi09)y
+	ftoi4.xyz vf01xyz,vf01xyz       iaddiu vi09,vi09,0x16
+	nop                             iadd vi07,vi07,vi09
+	nop                             sq.xyzw vf05xyzw,-1(vi10)
+	nop                             sq.xyzw vf01xyzw,-3(vi10)
+Vu1Addr0438:
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,1(vi07)
+	nop                             ilw.z vi07,0(vi10)z
+	mulz.xy vf05xy,vf05xy,vf05z     mtir vi08,vf05w
+	nop                             sq.xyzw vf04xyzw,1(vi13)
+	nop                             sq.xyzw vf03xyzw,2(vi13)
+	nop                             isubiu vi11,vi11,1
+	nop                             sq.xyzw vf05xyzw,0(vi13)
+	nop                             iadd vi07,vi07,vi09
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,1(vi07)
+	nop                             ilw.x vi07,0(vi10)x
+	mulz.xy vf05xy,vf05xy,vf05z     mtir vi01,vf05w
+	nop                             sq.xyzw vf04xyzw,4(vi13)
+	nop                             sq.xyzw vf03xyzw,5(vi13)
+	nop                             iadd vi07,vi07,vi09
+	nop                             ior vi08,vi08,vi01
+	nop                             sq.xyzw vf05xyzw,3(vi13)
+	nop                             lq.xyzw vf05xyzw,3(vi07)
+	nop                             lq.xyzw vf04xyzw,2(vi07)
+	nop                             lq.xyzw vf03xyzw,1(vi07)
+	nop                             iaddiu vi10,vi10,1
+	mulz.xy vf05xy,vf05xy,vf05z     mtir vi01,vf05w
+	nop                             ilw.y vi07,0(vi10)y
+	nop                             sq.xyzw vf04xyzw,7(vi13)
+	nop                             sq.xyzw vf03xyzw,8(vi13)
+	nop                             ior vi08,vi08,vi01
+	nop                             sq.xyzw vf05xyzw,6(vi13)
+	nop                             ibne vi08,vi00,Vu1Addr045e
 	nop                             nop
-	nop                             isubiu VI04, VI04, 1
-	nop                             iaddiu VI05, VI05, 9
-	nop                             ibne VI04, VI00, Vu1InstancesNextTriangle
-	nop                             iaddiu VI15, VI00, Vu1InstancesNextTriangle
-	nop                             b Vu1TexturedKick
+	nop                             isubiu vi04,vi04,1
+	nop                             iaddiu vi13,vi13,9
+	nop                             ibne vi04,vi00,Vu1Addr045e
 	nop                             nop
-Vu1InstancesNextTriangle:
-	nop                             ibne VI03, VI00, Vu1InstancesTriangleLoop
-	nop                             iadd VI07, VI07, VI09
-Vu1InstancesNextInstance:
-	nop                             ibne VI06, VI00, Vu1InstancesLoop
+	nop                             bal vi02,Vu1Addr0477
 	nop                             nop
-	nop                             bal VI15, Vu1TexturedKick
+Vu1Addr045e:
+	nop                             ibne vi11,vi00,Vu1Addr0438
+	nop                             iadd vi07,vi07,vi09
+Vu1Addr0460:
+	nop                             ibne vi06,vi00,Vu1Addr0404
 	nop                             nop
+	nop                             bal vi02,Vu1Addr0477
+	nop                             nop
+	nop                             xtop vi10
+	nop                             iaddiu vi10,vi10,0x15
 	nop[e]                          nop
 	nop                             nop
-	nop                             ilw.x VI14, 1023(VI00)
-	nop                             xtop VI02
-	nop                             iaddiu VI02, VI02, 15
+	nop                             xtop vi05
+	nop                             iaddiu vi05,vi05,0x15
 	nop                             nop
-	nop                             ilw.w VI01, 0(VI14)
-	nop                             lqi VF01, (VI14++)
-	nop                             lqi VF27, (VI14++)
-	nop                             isw.x VI02, 1023(VI00)
-	nop                             iadd VI01, VI01, VI14
-Vu1InstancesRestoreLoop:
-	nop                             sqi VF01, (VI02++)
-	nop                             ibeq VI14, VI01, Vu1InstancesRestoreDone
-	nop                             lqi VF01, (VI14++)
-	nop                             sqi VF27, (VI02++)
-	nop                             ibne VI14, VI01, Vu1InstancesRestoreLoop
-	nop                             lqi VF27, (VI14++)
-Vu1InstancesRestoreDone:
-	nop                             b Vu1InstancesBatch
+	nop                             ilw.w vi01,0(vi10)w
+	nop                             lqi.xyzw vf01xyzw,(vi10++)
+	nop                             lqi.xyzw vf11xyzw,(vi10++)
+	nop                             iadd vi01,vi01,vi10
+Vu1Addr046f:
+	nop                             sqi.xyzw vf01xyzw,(vi05++)
+	nop                             ibeq vi10,vi01,Vu1Addr0475
+	nop                             lqi.xyzw vf01xyzw,(vi10++)
+	nop                             sqi.xyzw vf11xyzw,(vi05++)
+	nop                             ibne vi10,vi01,Vu1Addr046f
+	nop                             lqi.xyzw vf11xyzw,(vi10++)
+Vu1Addr0475:
+	nop                             b Vu1Addr0401
+	nop                             nop
+Vu1Addr0477:
+	nop                             mtir vi01,vf02x
+	nop                             iaddiu vi08,vi00,0x4012
+	nop                             isub vi04,vi08,vi04
+	nop                             iaddiu vi04,vi04,0x4000
+	nop                             isw.x vi04,0(vi01)x
+	nop                             lq.xyzw vf01xyzw,0(vi01)
+	nop                             mtir vi13,vf02y
+	nop                             iaddiu vi04,vi00,0x12
+	nop                             xgkick vi01
+	nop                             mr32.xyzw vf02xyzw,vf02xyzw
+	nop                             jr vi02
+	nop                             sqi.xyzw vf01xyzw,(vi13++)
+	.endmpg
+
+	mpg 0x3d7, *
+Vu1LightUnlit:
+	nop                             jr vi02
 	nop                             nop
 	.endmpg
 
-	mpg 0x4ce, *
-Vu1DrawUntexturedFaces:
-	nop                             loi 255.0
-	addi.x VF13, VF00, I            xtop VI02
-	nop                             lqi VF03, (VI02++)
-	nop                             lqi VF04, (VI02++)
-	nop                             lqi VF05, (VI02++)
-	nop                             lqi VF06, (VI02++)
-	nop                             lqi VF07, (VI02++)
-	nop                             lqi VF10, (VI02++)
-	nop                             lqi VF11, (VI02++)
-	nop                             lqi VF12, (VI02++)
-	nop                             lqi VF16, (VI02++)
-	nop                             lqi VF17, (VI02++)
-	nop                             lqi VF18, (VI02++)
-	nop                             mtir VI05, VF02x
-	nop                             lqi VF01, (VI02++)
-	nop                             lqi VF27, (VI02++)
-	nop                             lqi VF26, (VI02++)
-	nop                             lqi VF19, (VI02++)
-	nop                             lqi VF20, (VI02++)
-	nop                             lqi VF21, (VI02++)
-	nop                             ilw.x VI10, 0(VI02)
-	nop                             ilw.y VI11, 0(VI02)
-	nop                             ilw.z VI12, 0(VI02)
-	nop                             ilw.w VI13, 0(VI02)
-	nop                             sqi VF01, (VI05++)
-	nop                             sq VF27, 995(VI00)
-Vu1UntexturedNextBatch:
-	nop                             xtop VI02
-	nop                             ilw.z VI09, 18(VI02)
-	nop                             ilw.x VI03, 18(VI02)
-	nop                             iaddiu VI02, VI02, 0x13
-	nop                             lq VF23, 0(VI02)
-	nop                             jalr VI15, VI09
-	nop                             iaddiu VI14, VI00, 0xfff
-	mulaw ACC, VF07, VF00w          nop
-	maddax ACC, VF04, VF23x         nop
-	madday ACC, VF05, VF23y         lq VF09, 2(VI02)
-	maddz VF23, VF06, VF23z         fcset 0
-	ftoi4 VF08, VF08                isubiu VI03, VI03, 1
-	mulaw.w ACC, VF12, VF00         nop
-	mul VF09, VF10, VF09            nop
-	mulaw.xyz ACC, VF12, VF23w      div Q, VF00w, VF23w
-	madd VF08, VF11, VF23           b Vu1UntexturedTransformFirst
-	mul VF01, VF23, VF03            sq VF23, 0(VI02)
-Vu1UntexturedTransformLoop:
-	mulaw ACC, VF07, VF00w          fcget VI01
-	maddax ACC, VF04, VF23x         isw.w VI01, -1(VI02)
-	madday ACC, VF05, VF23y         lq VF09, 2(VI02)
-	maddz VF23, VF06, VF23z         fcset 0
-	ftoi4 VF08, VF08                isubiu VI03, VI03, 1
-	mulaw.w ACC, VF12, VF00         nop
-	mul VF09, VF10, VF09            iand VI14, VI14, VI01
-	mulaw.xyz ACC, VF12, VF23w      div Q, VF00w, VF23w
-	madd VF08, VF11, VF23           sq VF08, -3(VI02)
-	mul VF01, VF23, VF03            sq VF23, 0(VI02)
-Vu1UntexturedTransformFirst:
-	clipw.xyz VF23, VF23w           nop
-	ftoi0 VF09, VF09                nop
-	minix.w VF08, VF08, VF13x       nop
-	clipw.xyz VF01, VF01w           lq VF23, 4(VI02)
-	mulq.xyz VF08, VF08, Q          iaddiu VI02, VI02, 4
-	nop                             ibne VI03, VI00, Vu1UntexturedTransformLoop
-	maxx.w VF08, VF08, VF00x        sq VF09, -2(VI02)
-	nop                             fcget VI01
-	nop                             iand VI14, VI14, VI01
-	nop                             isw.w VI01, -1(VI02)
-	ftoi4 VF08, VF08                ibne VI14, VI00, Vu1UntexturedBatchEnd
-	nop                             ilw.x VI07, 0(VI02)
-	nop                             xtop VI09
-	nop                             ilw.y VI03, 18(VI09)
-	nop                             ilw.w VI08, 18(VI09)
-	nop                             sq VF08, -3(VI02)
-	nop                             iaddiu VI09, VI09, 0x13
-	nop                             iaddiu VI04, VI00, 0x1b
-	nop                             ibeq VI08, VI00, Vu1UntexturedUnclippedLoop
-	nop                             iadd VI07, VI07, VI09
-Vu1UntexturedTriangleLoop:
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.w VI08, 3(VI07)
-	nop                             ilw.y VI07, 0(VI02)
-	nop                             sq VF09, 0(VI05)
-	nop                             sq VF08, 1(VI05)
-	nop                             isubiu VI03, VI03, 1
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.w VI01, 3(VI07)
-	nop                             ilw.z VI07, 0(VI02)
-	nop                             sq VF09, 2(VI05)
-	nop                             sq VF08, 3(VI05)
-	nop                             iand VI14, VI08, VI01
-	nop                             ior VI08, VI08, VI01
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.w VI01, 3(VI07)
-	nop                             ilw.x VI07, 1(VI02)
-	nop                             sq VF09, 4(VI05)
-	nop                             sq VF08, 5(VI05)
-	nop                             iand VI14, VI14, VI01
-	nop                             ior VI08, VI08, VI01
-	nop                             ibne VI14, VI00, Vu1UntexturedNextTriangle
-	nop                             iaddiu VI02, VI02, 1
-	nop                             iaddiu VI01, VI00, 0x3f
-	nop                             iand VI01, VI08, VI01
-	nop                             nop
-	nop                             ibne VI01, VI00, Vu1UntexturedClipTriangle
-	nop                             iaddiu VI01, VI00, 0x10
-	nop                             isubiu VI04, VI04, 1
-	nop                             iaddiu VI05, VI05, 6
-	nop                             ibne VI04, VI00, Vu1UntexturedNextTriangle
-	nop                             nop
-	nop                             b Vu1UntexturedKick
-	nop                             iaddiu VI15, VI00, Vu1UntexturedNextTriangle
-Vu1UntexturedClipTriangle:
-	nop                             iand VI01, VI08, VI01
-	nop                             isw.y VI03, 1023(VI00)
-	nop                             ibne VI01, VI00, Vu1UntexturedNextTriangle
-	nop                             isw.x VI07, 1023(VI00)
-	nop                             isw.z VI05, 1023(VI00)
-	nop                             isw.w VI02, 1023(VI00)
-	nop                             iaddiu VI03, VI00, 0x4000
-	nop                             iaddiu VI03, VI03, 0x4000
-	nop                             isw.x VI03, 995(VI00)
-	nop                             ilw.x VI07, -1(VI02)
-	nop                             iaddiu VI01, VI00, 0x3e3
-	nop                             nop
-	nop                             xgkick VI01
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF08, 0(VI07)
-	nop                             ilw.z VI07, -1(VI02)
-	nop                             nop
-	mulw.xyz VF15, VF15, VF08w      nop
-	nop                             sq VF08, 998(VI00)
-	nop                             iadd VI07, VI07, VI09
-	nop                             sq VF08, 1007(VI00)
-	nop                             sq VF15, 996(VI00)
-	nop                             sq VF15, 1005(VI00)
-	nop                             lq VF15, 3(VI07)
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 0(VI07)
-	nop                             ilw.y VI07, -1(VI02)
-	mulw.xyz VF15, VF15, VF08w      nop
-	itof0 VF09, VF09                nop
-	nop                             sq VF08, 1004(VI00)
-	nop                             iadd VI07, VI07, VI09
-	nop                             sq VF15, 1002(VI00)
-	nop                             sq VF09, 1003(VI00)
-	nop                             lq VF15, 3(VI07)
-	nop                             sq VF09, 997(VI00)
-	nop                             lq VF08, 0(VI07)
-	nop                             iaddiu VI03, VI00, 3
-	mulw.xyz VF15, VF15, VF08w      iaddiu VI06, VI00, Vu1UntexturedClipMinusZ
-	nop                             iaddiu VI14, VI00, 0x20
-	nop                             sq VF08, 1001(VI00)
-	nop                             iaddiu VI02, VI00, 0x3e4
-	nop                             sq VF15, 999(VI00)
-	nop                             sq VF09, 1000(VI00)
-	nop                             sq VF09, 1006(VI00)
-Vu1UntexturedClipPlaneLoop:
-	nop                             iand VI01, VI08, VI14
-	nop                             iaddiu VI15, VI00, 0
-	nop                             ibeq VI01, VI00, Vu1UntexturedClipNextPlane
-	nop                             iaddiu VI05, VI00, 0x3e4
-	nop                             iaddiu VI08, VI00, 0
-Vu1UntexturedClipEdgeLoop:
-	nop                             ilw.w VI01, 0(VI02)
-	nop                             ilw.w VI07, 3(VI02)
-	nop                             lq VF08, 2(VI02)
-	nop                             lq VF25, 5(VI02)
-	nop                             iand VI01, VI01, VI14
-	nop                             iand VI07, VI07, VI14
-	nop                             lq VF15, 0(VI02)
-	nop                             ibeq VI01, VI07, Vu1UntexturedClipEdgeEnd
-	nop                             lq VF23, 3(VI02)
-	nop                             jr VI06
-	nop                             lq VF09, 1(VI02)
-Vu1UntexturedClipIntersect:
-	nop                             div Q, VF01w, VF27w
-	sub VF25, VF25, VF08            nop
-	sub VF23, VF23, VF15            nop
-	sub VF24, VF24, VF09            fcset 0
+	mpg 0x373, *
+Vu1LightAmbient:
+	nop                             ibne vi14,vi00,Vu1Addr0389
+	nop                             isubiu vi01,vi00,2
+	miniw.xyzw vf25xyzw,vf25xyzw,vf00w xtop vi04
+	nop                             ilw.x vi03,21(vi04)x
+	nop                             iaddiu vi04,vi04,0x16
 	nop                             nop
 	nop                             nop
+	nop                             isubiu vi03,vi03,2
+Vu1Addr037b:
+	nop                             sq.xyzw vf25xyzw,2(vi04)
+	nop                             sq.xyzw vf25xyzw,6(vi04)
+	nop                             isubiu vi03,vi03,3
+	nop                             sq.xyzw vf25xyzw,10(vi04)
+	nop                             ibgtz vi03,Vu1Addr037b
+	nop                             iaddiu vi04,vi04,12
+	nop                             ibeq vi03,vi01,Vu1Addr0387
+	nop                             iaddiu vi01,vi01,1
+	nop                             sq.xyzw vf25xyzw,2(vi04)
+	nop                             ibeq vi03,vi01,Vu1Addr0387
 	nop                             nop
-	mulq VF25, VF25, Q              nop
-	mulq VF23, VF23, Q              nop
-	mulq VF24, VF24, Q              nop
+	nop                             sq.xyzw vf25xyzw,6(vi04)
+Vu1Addr0387:
+	nop                             jr vi02
 	nop                             nop
-	add VF08, VF25, VF08            nop
-	add VF15, VF23, VF15            nop
-	add VF09, VF24, VF09            nop
+Vu1Addr0389:
+	nop                             xtop vi04
+	nop                             lq.xyzw vf26xyzw,24(vi04)
+	nop                             lq.xyzw vf27xyzw,28(vi04)
+	nop                             lq.xyzw vf28xyzw,32(vi04)
+	nop                             iaddiu vi04,vi04,0x16
+	mul.xyzw vf26xyzw,vf26xyzw,vf25xyzw ilw.x vi03,-1(vi04)x
+	mul.xyzw vf27xyzw,vf27xyzw,vf25xyzw b Vu1Addr0395
+	mul.xyzw vf28xyzw,vf28xyzw,vf25xyzw isubiu vi03,vi03,3
+Vu1Addr0391:
+	mul.xyzw vf26xyzw,vf26xyzw,vf25xyzw sq.xyzw vf29xyzw,-10(vi04)
+	mul.xyzw vf27xyzw,vf27xyzw,vf25xyzw sq.xyzw vf30xyzw,-6(vi04)
+	nop                             isubiu vi03,vi03,3
+	mul.xyzw vf28xyzw,vf28xyzw,vf25xyzw sq.xyzw vf31xyzw,-2(vi04)
+Vu1Addr0395:
+	nop                             iaddiu vi04,vi04,12
+	miniw.xyzw vf29xyzw,vf26xyzw,vf00w lq.xyzw vf26xyzw,2(vi04)
+	miniw.xyzw vf30xyzw,vf27xyzw,vf00w lq.xyzw vf27xyzw,6(vi04)
+	nop                             ibgtz vi03,Vu1Addr0391
+	miniw.xyzw vf31xyzw,vf28xyzw,vf00w lq.xyzw vf28xyzw,10(vi04)
+	nop                             sq.xyzw vf29xyzw,-10(vi04)
+	nop                             ibeq vi03,vi01,Vu1Addr03a1
+	nop                             iaddiu vi01,vi01,1
+	nop                             sq.xyzw vf30xyzw,-6(vi04)
+	nop                             ibeq vi03,vi01,Vu1Addr03a1
 	nop                             nop
-	clipw.xyz VF08, VF08w           sq VF08, 2(VI05)
-	clipw.xyz VF08, VF08w           sq VF15, 0(VI05)
-	nop                             sq VF09, 1(VI05)
-	nop                             iaddiu VI05, VI05, 3
-	nop                             iaddiu VI15, VI15, 1
-	nop                             fcget VI01
-	nop                             isw.w VI01, -3(VI05)
-	nop                             ior VI08, VI08, VI01
-Vu1UntexturedClipEdgeEnd:
-	nop                             ibne VI07, VI00, Vu1UntexturedClipNextEdge
-	nop                             lq VF15, 3(VI02)
-	nop                             lq VF09, 4(VI02)
-	nop                             lq VF08, 5(VI02)
-	nop                             iaddiu VI15, VI15, 1
-	nop                             mtir VI01, VF15w
-	nop                             sqi VF15, (VI05++)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             ior VI08, VI08, VI01
-Vu1UntexturedClipNextEdge:
-	nop                             isubiu VI03, VI03, 1
-	nop                             iaddiu VI02, VI02, 3
-	nop                             ibne VI03, VI00, Vu1UntexturedClipEdgeLoop
-	nop                             nop
-	nop                             ibeq VI15, VI00, Vu1UntexturedClipRestore
-	nop                             iaddiu VI02, VI00, 0x3e4
-	nop                             lq VF15, 0(VI02)
-	nop                             lq VF09, 1(VI02)
-	nop                             lq VF08, 2(VI02)
-	nop                             iaddiu VI03, VI15, 0
-	nop                             sq VF15, 0(VI05)
-	nop                             sq VF09, 1(VI05)
-	nop                             sq VF08, 2(VI05)
-Vu1UntexturedClipNextPlane:
-	nop                             iadd VI14, VI14, VI14
-	nop                             iaddiu VI01, VI00, 0x400
-	nop                             iaddiu VI06, VI06, 4
-	nop                             ibne VI14, VI01, Vu1UntexturedClipPlaneLoop
-	nop                             nop
-	nop                             iaddiu VI15, VI03, 0
-	nop                             iaddiu VI02, VI00, 0x3e4
-Vu1UntexturedClipProjectLoop:
-	nop                             lq VF08, 2(VI02)
-	nop                             lq VF15, 0(VI02)
-	nop                             lq VF09, 1(VI02)
-	nop                             nop
-	mul VF08, VF11, VF08            div Q, VF00w, VF08w
-	nop                             nop
-	ftoi0 VF09, VF09                nop
-	nop                             nop
-	add.w VF08, VF12, VF08          nop
-	nop                             nop
-	nop                             nop
-	mulq.xyz VF08, VF08, Q          nop
-	minix.w VF08, VF08, VF13x       nop
-	mulq.xyz VF15, VF15, Q          nop
-	nop                             nop
-	add.xyz VF08, VF12, VF08        nop
-	maxx.w VF08, VF08, VF00x        nop
-	nop                             sqi VF15, (VI02++)
-	nop                             sqi VF09, (VI02++)
-	nop                             nop
-	ftoi4 VF08, VF08                nop
-	nop                             isubiu VI15, VI15, 1
-	nop                             nop
-	nop                             ibne VI15, VI00, Vu1UntexturedClipProjectLoop
-	nop                             sqi VF08, (VI02++)
-	nop                             iaddiu VI03, VI03, 0x4000
-	nop                             iaddiu VI03, VI03, 0x4000
-	nop                             isw.x VI03, 995(VI00)
-	nop                             iaddiu VI01, VI00, 0x3e3
-	nop                             nop
+	nop                             sq.xyzw vf31xyzw,-2(vi04)
+Vu1Addr03a1:
+	nop                             jr vi02
 	nop                             nop
 	.endmpg
 
-	mpg 0x5ce, *
-	nop                             xgkick VI01
-Vu1UntexturedClipRestore:
-	nop                             ilw.x VI07, 1023(VI00)
-	nop                             ilw.y VI03, 1023(VI00)
-	nop                             ilw.z VI05, 1023(VI00)
-	nop                             ilw.w VI02, 1023(VI00)
-Vu1UntexturedNextTriangle:
-	nop                             ibne VI03, VI00, Vu1UntexturedTriangleLoop
-	nop                             iadd VI07, VI07, VI09
-	nop                             bal VI15, Vu1UntexturedKick
+	mpg 0x260, *
+Vu1LightDirectional:
+	nop                             ibne vi15,vi00,Vu1Addr02c6
+	nop                             isubiu vi01,vi00,2
+	nop                             ibne vi14,vi00,Vu1Addr0295
 	nop                             nop
-Vu1UntexturedBatchEnd:
-	nop[e]                          nop
+	nop                             xtop vi03
+	nop                             lq.xyzw vf03xyzw,23(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             lq.xyzw vf04xyzw,5(vi03)
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z b Vu1Addr0278
+	maxx.xyz vf08xyz,vf08xyz,vf00x  nop
+Vu1Addr0270:
+	mulax.xyz accxyz,vf26xyz,vf03x  lq.xyzw vf04xyzw,5(vi03)
+	madday.xyz accxyz,vf27xyz,vf03y sq.xyzw vf06xyzw,-6(vi03)
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z nop
+	maxx.xyz vf08xyz,vf08xyz,vf00x  sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr0278:
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf09xyz,vf28xyz,vf03z iaddiu vi03,vi03,12
+	maxx.xyz vf04xyz,vf04xyz,vf00x  isubiu vi04,vi04,3
+	mulax.xyzw accxyzw,vf29xyzw,vf08x nop
+	madday.xyzw accxyzw,vf30xyzw,vf08y nop
+	maddaz.xyzw accxyzw,vf31xyzw,vf08z nop
+	maddw.xyzw vf05xyzw,vf25xyzw,vf00w nop
+	maxx.xyz vf09xyz,vf09xyz,vf00x  nop
+	mulax.xyzw accxyzw,vf29xyzw,vf04x nop
+	madday.xyzw accxyzw,vf30xyzw,vf04y nop
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w nop
+	maddaz.xyzw accxyzw,vf31xyzw,vf04z nop
+	maddw.xyzw vf06xyzw,vf25xyzw,vf00w nop
+	mulax.xyzw accxyzw,vf29xyzw,vf09x sq.xyzw vf05xyzw,-10(vi03)
+	madday.xyzw accxyzw,vf30xyzw,vf09y lq.xyzw vf03xyzw,1(vi03)
+	maddaz.xyzw accxyzw,vf31xyzw,vf09z nop
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w ibgtz vi04,Vu1Addr0270
+	maddw.xyzw vf07xyzw,vf25xyzw,vf00w nop
+	nop                             ibeq vi04,vi01,Vu1Addr0293
+	nop                             iaddiu vi01,vi01,1
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	nop                             ibeq vi04,vi01,Vu1Addr0293
 	nop                             nop
-	nop                             b Vu1UntexturedNextBatch
 	nop                             nop
-Vu1UntexturedClipMinusZ:
-	sub.zw VF27, VF08, VF25         lq VF24, 4(VI02)
-	addz.w VF01, VF08, VF08z        nop
-	nop                             b Vu1UntexturedClipIntersect
-	addz.w VF27, VF27, VF27z        nop
-Vu1UntexturedClipPlusX:
-	sub.xw VF27, VF08, VF25         lq VF24, 4(VI02)
-	subx.w VF01, VF08, VF08x        nop
-	nop                             b Vu1UntexturedClipIntersect
-	subx.w VF27, VF27, VF27x        nop
-Vu1UntexturedClipMinusX:
-	sub.xw VF27, VF08, VF25         lq VF24, 4(VI02)
-	addx.w VF01, VF08, VF08x        nop
-	nop                             b Vu1UntexturedClipIntersect
-	addx.w VF27, VF27, VF27x        nop
-Vu1UntexturedClipPlusY:
-	sub.yw VF27, VF08, VF25         lq VF24, 4(VI02)
-	suby.w VF01, VF08, VF08y        nop
-	nop                             b Vu1UntexturedClipIntersect
-	suby.w VF27, VF27, VF27y        nop
-Vu1UntexturedClipMinusY:
-	sub.yw VF27, VF08, VF25         lq VF24, 4(VI02)
-	addy.w VF01, VF08, VF08y        nop
-	nop                             b Vu1UntexturedClipIntersect
-	addy.w VF27, VF27, VF27y        nop
-Vu1UntexturedKick:
-	nop                             mtir VI01, VF02x
-	nop                             iaddiu VI08, VI00, 0x401b
-	nop                             isub VI04, VI08, VI04
-	nop                             iaddiu VI04, VI04, 0x4000
-	nop                             isw.x VI04, 0(VI01)
-	nop                             lq VF01, 0(VI01)
-	nop                             mtir VI05, VF02y
-	nop                             iaddiu VI04, VI00, 0x1b
-	nop                             xgkick VI01
-	nop                             mr32 VF02, VF02
-	nop                             jr VI15
-	nop                             sqi VF01, (VI05++)
-Vu1UntexturedUnclippedLoop:
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             ilw.y VI07, 0(VI02)
-	nop                             ilw.z VI01, 0(VI02)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             iadd VI07, VI07, VI09
-	nop                             lq VF09, 2(VI07)
-	nop                             lq VF08, 1(VI07)
-	nop                             iadd VI01, VI01, VI09
-	nop                             lq VF25, 2(VI01)
-	nop                             sqi VF09, (VI05++)
-	nop                             sqi VF08, (VI05++)
-	nop                             lq VF08, 1(VI01)
-	nop                             sqi VF25, (VI05++)
-	nop                             isubiu VI04, VI04, 1
-	nop                             isubiu VI03, VI03, 1
-	nop                             sqi VF08, (VI05++)
-	nop                             ilw.x VI07, 1(VI02)
-	nop                             ibne VI04, VI00, Vu1UntexturedUnclippedNext
-	nop                             iaddiu VI02, VI02, 1
-	nop                             b Vu1UntexturedKick
-	nop                             iaddiu VI15, VI00, Vu1UntexturedUnclippedNext
-Vu1UntexturedUnclippedNext:
-	nop                             ibne VI03, VI00, Vu1UntexturedUnclippedLoop
-	nop                             iadd VI07, VI07, VI09
-	nop                             b Vu1UntexturedKick
-	nop                             iaddiu VI15, VI00, Vu1UntexturedBatchEnd
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr0293:
+	nop                             jr vi02
+	nop                             nop
+Vu1Addr0295:
+	nop                             xtop vi03
+	nop                             lq.xyzw vf03xyzw,23(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             lq.xyzw vf04xyzw,5(vi03)
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z b Vu1Addr02a9
+	maxx.xyz vf08xyz,vf08xyz,vf00x  nop
+Vu1Addr02a1:
+	mulax.xyz accxyz,vf26xyz,vf03x  lq.xyzw vf04xyzw,5(vi03)
+	madday.xyz accxyz,vf27xyz,vf03y sq.xyzw vf06xyzw,-6(vi03)
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z nop
+	maxx.xyz vf08xyz,vf08xyz,vf00x  sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr02a9:
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y isubiu vi04,vi04,3
+	maddz.xyz vf09xyz,vf28xyz,vf03z iaddiu vi03,vi03,12
+	maxx.xyz vf04xyz,vf04xyz,vf00x  lq.xyzw vf10xyzw,-10(vi03)
+	mulax.xyzw accxyzw,vf29xyzw,vf08x nop
+	madday.xyzw accxyzw,vf30xyzw,vf08y nop
+	maddaz.xyzw accxyzw,vf31xyzw,vf08z nop
+	madd.xyzw vf05xyzw,vf25xyzw,vf10xyzw nop
+	maxx.xyz vf09xyz,vf09xyz,vf00x  nop
+	mulax.xyzw accxyzw,vf29xyzw,vf04x lq.xyzw vf10xyzw,-6(vi03)
+	madday.xyzw accxyzw,vf30xyzw,vf04y nop
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w nop
+	maddaz.xyzw accxyzw,vf31xyzw,vf04z nop
+	madd.xyzw vf06xyzw,vf25xyzw,vf10xyzw lq.xyzw vf10xyzw,-2(vi03)
+	mulax.xyzw accxyzw,vf29xyzw,vf09x sq.xyzw vf05xyzw,-10(vi03)
+	madday.xyzw accxyzw,vf30xyzw,vf09y lq.xyzw vf03xyzw,1(vi03)
+	maddaz.xyzw accxyzw,vf31xyzw,vf09z nop
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w ibgtz vi04,Vu1Addr02a1
+	madd.xyzw vf07xyzw,vf25xyzw,vf10xyzw nop
+	nop                             ibeq vi04,vi01,Vu1Addr02c4
+	nop                             iaddiu vi01,vi01,1
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	nop                             ibeq vi04,vi01,Vu1Addr02c4
+	nop                             nop
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr02c4:
+	nop                             jr vi02
+	nop                             nop
+Vu1Addr02c6:
+	nop                             ibne vi14,vi00,Vu1Addr02fa
+	nop                             xtop vi03
+	nop                             lq.xyzw vf03xyzw,23(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             lq.xyzw vf04xyzw,5(vi03)
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z b Vu1Addr02db
+	maxx.xyz vf08xyz,vf08xyz,vf00x  nop
+Vu1Addr02d3:
+	mulax.xyz accxyz,vf26xyz,vf03x  sq.xyzw vf05xyzw,-10(vi03)
+	madday.xyz accxyz,vf27xyz,vf03y lq.xyzw vf04xyzw,5(vi03)
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w sq.xyzw vf06xyzw,-6(vi03)
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z nop
+	maxx.xyz vf08xyz,vf08xyz,vf00x  sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr02db:
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf09xyz,vf28xyz,vf03z iaddiu vi03,vi03,12
+	maxx.xyz vf04xyz,vf04xyz,vf00x  isubiu vi04,vi04,3
+	mulax.xyzw accxyzw,vf29xyzw,vf08x nop
+	madday.xyzw accxyzw,vf30xyzw,vf08y nop
+	maddz.xyzw vf05xyzw,vf31xyzw,vf08z nop
+	maxx.xyz vf09xyz,vf09xyz,vf00x  lq.xyzw vf10xyzw,-10(vi03)
+	mulax.xyzw accxyzw,vf29xyzw,vf04x nop
+	madday.xyzw accxyzw,vf30xyzw,vf04y nop
+	maddz.xyzw vf06xyzw,vf31xyzw,vf04z nop
+	mula.xyzw accxyzw,vf05xyzw,vf10xyzw nop
+	maddw.xyzw vf05xyzw,vf25xyzw,vf00w lq.xyzw vf10xyzw,-6(vi03)
+	mulax.xyzw accxyzw,vf29xyzw,vf09x nop
+	madday.xyzw accxyzw,vf30xyzw,vf09y nop
+	maddz.xyzw vf07xyzw,vf31xyzw,vf09z lq.xyzw vf11xyzw,-2(vi03)
+	mula.xyzw accxyzw,vf06xyzw,vf10xyzw nop
+	maddw.xyzw vf06xyzw,vf25xyzw,vf00w nop
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w lq.xyzw vf03xyzw,1(vi03)
+	mula.xyzw accxyzw,vf07xyzw,vf11xyzw nop
+	maddw.xyzw vf07xyzw,vf25xyzw,vf00w ibgtz vi04,Vu1Addr02d3
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w nop
+	nop                             sq.xyzw vf05xyzw,-10(vi03)
+	nop                             ibeq vi04,vi01,Vu1Addr02f8
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w iaddiu vi01,vi01,1
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	nop                             ibeq vi04,vi01,Vu1Addr02f8
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr02f8:
+	nop                             jr vi02
+	nop                             nop
+Vu1Addr02fa:
+	nop                             xtop vi03
+	nop                             lq.xyzw vf03xyzw,23(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             lq.xyzw vf04xyzw,5(vi03)
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z b Vu1Addr030e
+	maxx.xyz vf08xyz,vf08xyz,vf00x  nop
+Vu1Addr0306:
+	mulax.xyz accxyz,vf26xyz,vf03x  sq.xyzw vf05xyzw,-10(vi03)
+	madday.xyz accxyz,vf27xyz,vf03y lq.xyzw vf04xyzw,5(vi03)
+	maddz.xyz vf08xyz,vf28xyz,vf03z nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w sq.xyzw vf06xyzw,-6(vi03)
+	mulax.xyz accxyz,vf26xyz,vf04x  lq.xyzw vf03xyzw,9(vi03)
+	madday.xyz accxyz,vf27xyz,vf04y nop
+	maddz.xyz vf04xyz,vf28xyz,vf04z nop
+	maxx.xyz vf08xyz,vf08xyz,vf00x  sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr030e:
+	mulax.xyz accxyz,vf26xyz,vf03x  nop
+	madday.xyz accxyz,vf27xyz,vf03y nop
+	maddz.xyz vf09xyz,vf28xyz,vf03z iaddiu vi03,vi03,12
+	maxx.xyz vf04xyz,vf04xyz,vf00x  isubiu vi04,vi04,3
+	mulax.xyzw accxyzw,vf29xyzw,vf08x nop
+	madday.xyzw accxyzw,vf30xyzw,vf08y nop
+	maddz.xyzw vf05xyzw,vf31xyzw,vf08z nop
+	maxx.xyz vf09xyz,vf09xyz,vf00x  lq.xyzw vf10xyzw,-10(vi03)
+	mulax.xyzw accxyzw,vf29xyzw,vf04x nop
+	madday.xyzw accxyzw,vf30xyzw,vf04y nop
+	maddz.xyzw vf06xyzw,vf31xyzw,vf04z nop
+	mula.xyzw accxyzw,vf05xyzw,vf10xyzw nop
+	madd.xyzw vf05xyzw,vf25xyzw,vf10xyzw lq.xyzw vf10xyzw,-6(vi03)
+	mulax.xyzw accxyzw,vf29xyzw,vf09x nop
+	madday.xyzw accxyzw,vf30xyzw,vf09y nop
+	maddz.xyzw vf07xyzw,vf31xyzw,vf09z lq.xyzw vf11xyzw,-2(vi03)
+	mula.xyzw accxyzw,vf06xyzw,vf10xyzw nop
+	madd.xyzw vf06xyzw,vf25xyzw,vf10xyzw nop
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w lq.xyzw vf03xyzw,1(vi03)
+	mula.xyzw accxyzw,vf07xyzw,vf11xyzw nop
+	madd.xyzw vf07xyzw,vf25xyzw,vf11xyzw ibgtz vi04,Vu1Addr0306
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w nop
+	nop                             sq.xyzw vf05xyzw,-10(vi03)
+	nop                             ibeq vi04,vi01,Vu1Addr032b
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w iaddiu vi01,vi01,1
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	nop                             ibeq vi04,vi01,Vu1Addr032b
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr032b:
+	nop                             jr vi02
+	nop                             nop
 	.endmpg
 
-	base 0
+	mpg 0x6c, *
+Vu1LightPoint:
+	nop                             ibne vi15,vi00,Vu1Addr0130
+	nop                             isubiu vi01,vi00,2
+	nop                             ibne vi14,vi00,Vu1Addr00d0
+	nop                             nop
+	nop                             xtop vi03
+	nop                             lq.xyzw vf04xyzw,22(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             nop
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        nop
+	subz.x vf10x,vf28x,vf04z        nop
+	nop                             lq.xyzw vf03xyzw,1(vi03)
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        rsqrt q,vf00w,vf12x
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        lq.xyzw vf03xyzw,5(vi03)
+	subz.x vf10x,vf28x,vf04z        fsand vi05,2
+	nop                             fsand vi06,2
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr00a3
+	madd.x vf12x,vf10x,vf10x        nop
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x b Vu1Addr00a3
+	nop                             nop
+Vu1Addr008a:
+	subx.x vf08x,vf26x,vf04x        fsand vi06,2
+	suby.x vf09x,vf27x,vf04y        iadd vi06,vi06,vi05
+	subz.x vf10x,vf28x,vf04z        lq.xyzw vf03xyzw,1(vi03)
+	mulx.xyzw vf07xyzw,vf29xyzw,vf11x ibeq vi06,vi00,Vu1Addr0090
+	mula.x accx,vf08x,vf08x         nop
+	mulx.xyzw vf07xyzw,vf00xyzw,vf00x nop
+Vu1Addr0090:
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w nop
+	maddaw.xyzw accxyzw,vf07xyzw,vf26w nop
+	maddq.xyzw vf07xyzw,vf07xyzw,q  rsqrt q,vf00w,vf12x
+	subx.w vf00w,vf27w,vf12x        fsand vi05,2
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        nop
+	miniw.x vf06x,vf06x,vf00w       nop
+	subz.x vf10x,vf28x,vf04z        fsand vi06,2
+	miniw.x vf07x,vf07x,vf00w       lq.xyzw vf03xyzw,5(vi03)
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         sq.xyzw vf06xyzw,-6(vi03)
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr00a3
+	madd.x vf12x,vf10x,vf10x        sq.xyzw vf07xyzw,-2(vi03)
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x nop
+Vu1Addr00a3:
+	mulax.x accx,vf08x,vf03x        nop
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        nop
+	mulaw.xyzw accxyzw,vf05xyzw,vf26w lq.xyzw vf04xyzw,8(vi03)
+	maddaq.xyzw accxyzw,vf05xyzw,q  rsqrt q,vf00w,vf12x
+	maddw.xyzw vf05xyzw,vf25xyzw,vf00w fsand vi05,2
+	mulx.xyzw vf06xyzw,vf29xyzw,vf11x fsand vi06,2
+	subx.x vf08x,vf26x,vf04x        iadd vi06,vi06,vi05
+	suby.x vf09x,vf27x,vf04y        nop
+	subz.x vf10x,vf28x,vf04z        ibeq vi06,vi00,Vu1Addr00b0
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w lq.xyzw vf03xyzw,9(vi03)
+	mulx.xyzw vf06xyzw,vf00xyzw,vf00x nop
+Vu1Addr00b0:
+	mula.x accx,vf08x,vf08x         iaddiu vi03,vi03,12
+	madda.x accx,vf09x,vf09x        isubiu vi04,vi04,3
+	madd.x vf12x,vf10x,vf10x        lq.xyzw vf04xyzw,0(vi03)
+	mulax.x accx,vf08x,vf03x        sq.xyzw vf05xyzw,-10(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        nop
+	mulaq.xyzw accxyzw,vf06xyzw,q   rsqrt q,vf00w,vf12x
+	maddaw.xyzw accxyzw,vf06xyzw,vf26w ibgtz vi04,Vu1Addr008a
+	maddw.xyzw vf06xyzw,vf25xyzw,vf00w fsand vi05,2
+	mulx.xyzw vf07xyzw,vf29xyzw,vf11x fsand vi06,2
+	nop                             iadd vi06,vi06,vi05
+	nop                             ibeq vi04,vi01,Vu1Addr00ce
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w iaddiu vi01,vi01,1
+	nop                             ibeq vi06,vi00,Vu1Addr00c1
+	nop                             nop
+	mulx.xyzw vf07xyzw,vf07xyzw,vf00x nop
+Vu1Addr00c1:
+	nop                             ibeq vi04,vi01,Vu1Addr00ce
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w nop
+	maddaw.xyzw accxyzw,vf07xyzw,vf26w nop
+	maddq.xyzw vf07xyzw,vf07xyzw,q  nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr00ce:
+	nop                             jr vi02
+	nop                             nop
+Vu1Addr00d0:
+	nop                             xtop vi03
+	nop                             lq.xyzw vf04xyzw,22(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             nop
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        nop
+	subz.x vf10x,vf28x,vf04z        nop
+	nop                             lq.xyzw vf03xyzw,1(vi03)
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        rsqrt q,vf00w,vf12x
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        lq.xyzw vf03xyzw,5(vi03)
+	subz.x vf10x,vf28x,vf04z        fsand vi05,2
+	nop                             fsand vi06,2
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr0103
+	madd.x vf12x,vf10x,vf10x        nop
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x b Vu1Addr0103
+	nop                             nop
+Vu1Addr00ea:
+	subx.x vf08x,vf26x,vf04x        fsand vi06,2
+	suby.x vf09x,vf27x,vf04y        iadd vi06,vi06,vi05
+	subz.x vf10x,vf28x,vf04z        lq.xyzw vf03xyzw,1(vi03)
+	mulx.xyzw vf07xyzw,vf29xyzw,vf11x ibeq vi06,vi00,Vu1Addr00f0
+	mula.x accx,vf08x,vf08x         nop
+	mulx.xyzw vf07xyzw,vf00xyzw,vf00x nop
+Vu1Addr00f0:
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        lq.xyzw vf30xyzw,-2(vi03)
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw nop
+	maddaw.xyzw accxyzw,vf07xyzw,vf26w nop
+	maddq.xyzw vf07xyzw,vf07xyzw,q  rsqrt q,vf00w,vf12x
+	subx.w vf00w,vf27w,vf12x        fsand vi05,2
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        nop
+	miniw.x vf06x,vf06x,vf00w       nop
+	subz.x vf10x,vf28x,vf04z        fsand vi06,2
+	miniw.x vf07x,vf07x,vf00w       lq.xyzw vf03xyzw,5(vi03)
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         sq.xyzw vf06xyzw,-6(vi03)
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr0103
+	madd.x vf12x,vf10x,vf10x        sq.xyzw vf07xyzw,-2(vi03)
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x nop
+Vu1Addr0103:
+	mulax.x accx,vf08x,vf03x        nop
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       lq.xyzw vf30xyzw,2(vi03)
+	subx.w vf00w,vf27w,vf12x        nop
+	mulaw.xyzw accxyzw,vf05xyzw,vf26w lq.xyzw vf04xyzw,8(vi03)
+	maddaq.xyzw accxyzw,vf05xyzw,q  rsqrt q,vf00w,vf12x
+	madd.xyzw vf05xyzw,vf25xyzw,vf30xyzw fsand vi05,2
+	mulx.xyzw vf06xyzw,vf29xyzw,vf11x fsand vi06,2
+	subx.x vf08x,vf26x,vf04x        iadd vi06,vi06,vi05
+	suby.x vf09x,vf27x,vf04y        nop
+	subz.x vf10x,vf28x,vf04z        ibeq vi06,vi00,Vu1Addr0110
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w lq.xyzw vf03xyzw,9(vi03)
+	mulx.xyzw vf06xyzw,vf00xyzw,vf00x nop
+Vu1Addr0110:
+	mula.x accx,vf08x,vf08x         iaddiu vi03,vi03,12
+	madda.x accx,vf09x,vf09x        isubiu vi04,vi04,3
+	madd.x vf12x,vf10x,vf10x        lq.xyzw vf04xyzw,0(vi03)
+	mulax.x accx,vf08x,vf03x        sq.xyzw vf05xyzw,-10(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       lq.xyzw vf30xyzw,-6(vi03)
+	subx.w vf00w,vf27w,vf12x        nop
+	mulaq.xyzw accxyzw,vf06xyzw,q   rsqrt q,vf00w,vf12x
+	maddaw.xyzw accxyzw,vf06xyzw,vf26w ibgtz vi04,Vu1Addr00ea
+	madd.xyzw vf06xyzw,vf25xyzw,vf30xyzw fsand vi05,2
+	mulx.xyzw vf07xyzw,vf29xyzw,vf11x fsand vi06,2
+	nop                             iadd vi06,vi06,vi05
+	nop                             ibeq vi04,vi01,Vu1Addr012e
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w iaddiu vi01,vi01,1
+	nop                             ibeq vi06,vi00,Vu1Addr0121
+	nop                             lq.xyzw vf30xyzw,-2(vi03)
+	mulx.xyzw vf07xyzw,vf07xyzw,vf00x nop
+Vu1Addr0121:
+	nop                             ibeq vi04,vi01,Vu1Addr012e
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw nop
+	maddaw.xyzw accxyzw,vf07xyzw,vf26w nop
+	maddq.xyzw vf07xyzw,vf07xyzw,q  nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr012e:
+	nop                             jr vi02
+	nop                             nop
+Vu1Addr0130:
+	nop                             ibne vi14,vi00,Vu1Addr0198
+	nop                             xtop vi03
+	nop                             lq.xyzw vf04xyzw,22(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             nop
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        nop
+	subz.x vf10x,vf28x,vf04z        nop
+	nop                             lq.xyzw vf03xyzw,1(vi03)
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        rsqrt q,vf00w,vf12x
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        lq.xyzw vf03xyzw,5(vi03)
+	subz.x vf10x,vf28x,vf04z        fsand vi05,2
+	nop                             fsand vi06,2
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr0166
+	madd.x vf12x,vf10x,vf10x        nop
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x b Vu1Addr0166
+	nop                             nop
+Vu1Addr014b:
+	subx.x vf08x,vf26x,vf04x        fsand vi06,2
+	suby.x vf09x,vf27x,vf04y        iadd vi06,vi06,vi05
+	subz.x vf10x,vf28x,vf04z        lq.xyzw vf03xyzw,1(vi03)
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w nop
+	madd.xyzw vf06xyzw,vf06xyzw,vf30xyzw ibeq vi06,vi00,Vu1Addr0152
+	mula.x accx,vf08x,vf08x         nop
+	mulx.xyzw vf07xyzw,vf00xyzw,vf00x nop
+Vu1Addr0152:
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	mulaw.xyzw accxyzw,vf07xyzw,vf26w lq.xyzw vf30xyzw,-2(vi03)
+	maddq.xyzw vf07xyzw,vf07xyzw,q  rsqrt q,vf00w,vf12x
+	subx.w vf00w,vf27w,vf12x        nop
+	subx.x vf08x,vf26x,vf04x        fsand vi05,2
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w nop
+	madd.xyzw vf07xyzw,vf07xyzw,vf30xyzw nop
+	suby.x vf09x,vf27x,vf04y        fsand vi06,2
+	miniw.x vf06x,vf06x,vf00w       nop
+	subz.x vf10x,vf28x,vf04z        nop
+	miniw.x vf07x,vf07x,vf00w       lq.xyzw vf03xyzw,5(vi03)
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         sq.xyzw vf06xyzw,-6(vi03)
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr0166
+	madd.x vf12x,vf10x,vf10x        sq.xyzw vf07xyzw,-2(vi03)
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x nop
+Vu1Addr0166:
+	mulax.x accx,vf08x,vf03x        nop
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        lq.xyzw vf04xyzw,8(vi03)
+	mulaw.xyzw accxyzw,vf05xyzw,vf26w lq.xyzw vf30xyzw,2(vi03)
+	maddq.xyzw vf05xyzw,vf05xyzw,q  rsqrt q,vf00w,vf12x
+	.endmpg
+
+	mpg 0x16c, *
+	mulx.xyzw vf06xyzw,vf29xyzw,vf11x fsand vi05,2
+	subx.x vf08x,vf26x,vf04x        fsand vi06,2
+	suby.x vf09x,vf27x,vf04y        iadd vi06,vi06,vi05
+	subz.x vf10x,vf28x,vf04z        nop
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w ibeq vi06,vi00,Vu1Addr0173
+	madd.xyzw vf05xyzw,vf05xyzw,vf30xyzw lq.xyzw vf03xyzw,9(vi03)
+	mulx.xyzw vf06xyzw,vf00xyzw,vf00x nop
+Vu1Addr0173:
+	mula.x accx,vf08x,vf08x         iaddiu vi03,vi03,12
+	madda.x accx,vf09x,vf09x        isubiu vi04,vi04,3
+	madd.x vf12x,vf10x,vf10x        lq.xyzw vf04xyzw,0(vi03)
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w nop
+	mulax.x accx,vf08x,vf03x        nop
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       lq.xyzw vf30xyzw,-6(vi03)
+	subx.w vf00w,vf27w,vf12x        sq.xyzw vf05xyzw,-10(vi03)
+	mulaq.xyzw accxyzw,vf06xyzw,q   rsqrt q,vf00w,vf12x
+	maddw.xyzw vf06xyzw,vf06xyzw,vf26w ibgtz vi04,Vu1Addr014b
+	mulx.xyzw vf07xyzw,vf29xyzw,vf11x fsand vi05,2
+	nop                             fsand vi06,2
+	nop                             iadd vi06,vi06,vi05
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w ibeq vi04,vi01,Vu1Addr0196
+	madd.xyzw vf06xyzw,vf06xyzw,vf30xyzw iaddiu vi01,vi01,1
+	nop                             ibeq vi06,vi00,Vu1Addr0185
+	nop                             nop
+	mulx.xyzw vf07xyzw,vf07xyzw,vf00x nop
+Vu1Addr0185:
+	nop                             nop
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w nop
+	nop                             nop
+	mulaw.xyzw accxyzw,vf07xyzw,vf26w lq.xyzw vf30xyzw,-2(vi03)
+	maddq.xyzw vf07xyzw,vf07xyzw,q  ibeq vi04,vi01,Vu1Addr0196
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	nop                             nop
+	mulaw.xyzw accxyzw,vf25xyzw,vf00w nop
+	madd.xyzw vf07xyzw,vf07xyzw,vf30xyzw nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr0196:
+	nop                             jr vi02
+	nop                             nop
+Vu1Addr0198:
+	nop                             xtop vi03
+	nop                             lq.xyzw vf04xyzw,22(vi03)
+	nop                             iaddiu vi03,vi03,0x16
+	nop                             ilw.x vi04,-1(vi03)x
+	nop                             nop
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        nop
+	subz.x vf10x,vf28x,vf04z        nop
+	nop                             lq.xyzw vf03xyzw,1(vi03)
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        rsqrt q,vf00w,vf12x
+	subx.x vf08x,vf26x,vf04x        nop
+	suby.x vf09x,vf27x,vf04y        lq.xyzw vf03xyzw,5(vi03)
+	subz.x vf10x,vf28x,vf04z        fsand vi05,2
+	nop                             fsand vi06,2
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         nop
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr01cd
+	madd.x vf12x,vf10x,vf10x        nop
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x b Vu1Addr01cd
+	nop                             nop
+Vu1Addr01b2:
+	subx.x vf08x,vf26x,vf04x        fsand vi06,2
+	suby.x vf09x,vf27x,vf04y        iadd vi06,vi06,vi05
+	subz.x vf10x,vf28x,vf04z        lq.xyzw vf03xyzw,1(vi03)
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw nop
+	madd.xyzw vf06xyzw,vf06xyzw,vf30xyzw ibeq vi06,vi00,Vu1Addr01b9
+	mula.x accx,vf08x,vf08x         nop
+	mulx.xyzw vf07xyzw,vf00xyzw,vf00x nop
+Vu1Addr01b9:
+	madda.x accx,vf09x,vf09x        nop
+	madd.x vf12x,vf10x,vf10x        nop
+	mulax.x accx,vf08x,vf03x        lq.xyzw vf04xyzw,4(vi03)
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	mulaw.xyzw accxyzw,vf07xyzw,vf26w lq.xyzw vf30xyzw,-2(vi03)
+	maddq.xyzw vf07xyzw,vf07xyzw,q  rsqrt q,vf00w,vf12x
+	subx.w vf00w,vf27w,vf12x        nop
+	subx.x vf08x,vf26x,vf04x        fsand vi05,2
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw nop
+	madd.xyzw vf07xyzw,vf07xyzw,vf30xyzw nop
+	suby.x vf09x,vf27x,vf04y        fsand vi06,2
+	miniw.x vf06x,vf06x,vf00w       nop
+	subz.x vf10x,vf28x,vf04z        nop
+	miniw.x vf07x,vf07x,vf00w       lq.xyzw vf03xyzw,5(vi03)
+	mulx.xyzw vf05xyzw,vf29xyzw,vf11x iadd vi06,vi06,vi05
+	mula.x accx,vf08x,vf08x         sq.xyzw vf06xyzw,-6(vi03)
+	madda.x accx,vf09x,vf09x        ibeq vi06,vi00,Vu1Addr01cd
+	madd.x vf12x,vf10x,vf10x        sq.xyzw vf07xyzw,-2(vi03)
+	mulx.xyzw vf05xyzw,vf00xyzw,vf00x nop
+Vu1Addr01cd:
+	mulax.x accx,vf08x,vf03x        nop
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       nop
+	subx.w vf00w,vf27w,vf12x        lq.xyzw vf04xyzw,8(vi03)
+	mulaw.xyzw accxyzw,vf05xyzw,vf26w lq.xyzw vf30xyzw,2(vi03)
+	maddq.xyzw vf05xyzw,vf05xyzw,q  rsqrt q,vf00w,vf12x
+	mulx.xyzw vf06xyzw,vf29xyzw,vf11x fsand vi05,2
+	subx.x vf08x,vf26x,vf04x        fsand vi06,2
+	suby.x vf09x,vf27x,vf04y        iadd vi06,vi06,vi05
+	subz.x vf10x,vf28x,vf04z        nop
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw ibeq vi06,vi00,Vu1Addr01da
+	madd.xyzw vf05xyzw,vf05xyzw,vf30xyzw lq.xyzw vf03xyzw,9(vi03)
+	mulx.xyzw vf06xyzw,vf00xyzw,vf00x nop
+Vu1Addr01da:
+	mula.x accx,vf08x,vf08x         iaddiu vi03,vi03,12
+	madda.x accx,vf09x,vf09x        isubiu vi04,vi04,3
+	madd.x vf12x,vf10x,vf10x        lq.xyzw vf04xyzw,0(vi03)
+	miniw.xyzw vf05xyzw,vf05xyzw,vf00w nop
+	mulax.x accx,vf08x,vf03x        nop
+	madday.x accx,vf09x,vf03y       nop
+	maddz.x vf11x,vf10x,vf03z       lq.xyzw vf30xyzw,-6(vi03)
+	subx.w vf00w,vf27w,vf12x        sq.xyzw vf05xyzw,-10(vi03)
+	mulaq.xyzw accxyzw,vf06xyzw,q   rsqrt q,vf00w,vf12x
+	maddw.xyzw vf06xyzw,vf06xyzw,vf26w ibgtz vi04,Vu1Addr01b2
+	mulx.xyzw vf07xyzw,vf29xyzw,vf11x fsand vi05,2
+	nop                             fsand vi06,2
+	nop                             iadd vi06,vi06,vi05
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw ibeq vi04,vi01,Vu1Addr01fd
+	madd.xyzw vf06xyzw,vf06xyzw,vf30xyzw iaddiu vi01,vi01,1
+	nop                             ibeq vi06,vi00,Vu1Addr01ec
+	nop                             nop
+	mulx.xyzw vf07xyzw,vf07xyzw,vf00x nop
+Vu1Addr01ec:
+	nop                             nop
+	miniw.xyzw vf06xyzw,vf06xyzw,vf00w nop
+	nop                             nop
+	mulaw.xyzw accxyzw,vf07xyzw,vf26w lq.xyzw vf30xyzw,-2(vi03)
+	maddq.xyzw vf07xyzw,vf07xyzw,q  ibeq vi04,vi01,Vu1Addr01fd
+	nop                             sq.xyzw vf06xyzw,-6(vi03)
+	nop                             nop
+	mula.xyzw accxyzw,vf25xyzw,vf30xyzw nop
+	madd.xyzw vf07xyzw,vf07xyzw,vf30xyzw nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	miniw.xyzw vf07xyzw,vf07xyzw,vf00w nop
+	nop                             nop
+	nop                             nop
+	nop                             nop
+	nop                             sq.xyzw vf07xyzw,-2(vi03)
+Vu1Addr01fd:
+	nop                             jr vi02
+	nop                             nop
+	.endmpg
+	base 0x0
 	offset 0x14e
 	stcycl 1, 1
 	.enddmadata

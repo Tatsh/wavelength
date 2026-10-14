@@ -1,11 +1,13 @@
 #pragma once
 
+#include <cstddef>
 #include <list>
 
 #include "math/frustum.h"
 #include "math/rect.h"
 #include "math/transform.h"
 #include "math/vector2.h"
+#include "os/mem.h"
 #include "rnd/rndcollideable.h"
 #include "rnd/rnddrawable.h"
 #include "rnd/rndtex.h"
@@ -36,6 +38,37 @@ public:
      * @ghidraAddress PAL: 0x0022a268
      */
     ~RndCam() override;
+
+    /**
+     * Allocate a camera, billed to the class name.
+     *
+     * @param nSize The object size the compiler supplies.
+     * @return The block.
+     */
+    void *operator new(size_t nSize) {
+        return PoolMemAlloc(static_cast<int>(nSize), "Cam", 0);
+    }
+
+    /**
+     * Release a camera.
+     *
+     * @param pBlock The block.
+     */
+    void operator delete(void *pBlock) {
+        PoolMemFree(pBlock);
+    }
+
+    /**
+     * Create a camera.
+     *
+     * @param pszName The registry key.
+     * @return The camera.
+     * @ghidraAddress NTSC-U/C: 0x0037f278
+     * @ghidraAddress PAL: 0x003ed990
+     */
+    static RndObject *New(const char *pszName) {
+        return new RndCam(pszName);
+    }
 
     /**
      * Add the camera itself to a list.

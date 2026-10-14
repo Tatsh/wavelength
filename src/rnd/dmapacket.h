@@ -6,6 +6,7 @@ struct alignas(16) DmaQuadword {
         unsigned long long mDword[2]; /*!< The two doublewords. */
         unsigned int mWord[4];        /*!< The four words. */
         unsigned short mHalf[8];      /*!< The eight halfwords. */
+        float mFloat[4];              /*!< The four words as floats. */
     };
 };
 

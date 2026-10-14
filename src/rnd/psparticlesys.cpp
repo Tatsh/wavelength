@@ -1,365 +1,175 @@
 #include "rnd/psparticlesys.h"
 
-#include "gfx/gfxdevice.h"
-#include "gfx/renderstats.h"
-#include "os/dbg.h"
-#include "os/hxstr.h"
-#include "rnd/drawverts.h"
-#include "rnd/particle.h"
-#include "rnd/particlesys.h"
-#include "rnd/psmat.h"
+#include <cstring>
 
-namespace Rnd {
+#include "rnd/dmapacket.h"
+#include "rnd/ps.h"
+#include "rnd/pscam.h"
+#include "rnd/psmat.h"
 
 namespace {
 
-// GS general-purpose register indices, and the PRIM fields both software emitters program. The
-// shipped build took the register numbers from the PlayStation 2 SDK headers.
-constexpr int kGsRegPrim = 0;
-constexpr int kGsRegTest1 = 0x47;
+// ZBUF_1 masks depth writes, and TEST_1 passes every pixel or only those nearer than the depth
+// buffer.
 constexpr int kGsRegZbuf1 = 0x4e;
-constexpr unsigned kGsPrimPoint = 0;
-constexpr unsigned kGsPrimLine = 1;
-constexpr unsigned kGsPrimSprite = 6;
-constexpr int kGsPrimIipShift = 3;
-constexpr int kGsPrimTmeShift = 4;
-constexpr int kGsPrimAbeShift = 6;
-constexpr unsigned kGsPrimIip = 1u << kGsPrimIipShift;
-constexpr unsigned kGsPrimAbe = 1u << kGsPrimAbeShift;
-constexpr unsigned long long kGsPrimFieldMask = 0x7ff;
+constexpr int kGsRegTest1 = 0x47;
+constexpr unsigned long long kZbufZmsk = 1ULL << 32;
+constexpr unsigned long long kTestZTestAlways = 0x20000;
+constexpr unsigned long long kTestZTestGreater = 0x60000;
+constexpr unsigned long long kTestZTestMask = 0x60000;
 
-// ZBUF_1.ZMSK, which suppresses the depth write, and TEST_1.ZTST.
-constexpr int kZbufZMaskShift = 32;
-constexpr unsigned long long kZbufZMaskField = 1ULL << kZbufZMaskShift;
-constexpr int kTestZTestShift = 17;
-constexpr unsigned long long kTestZTestField = 3ULL << kTestZTestShift;
-constexpr int kGsZTestAlways = 1;
-constexpr int kGsZTestGreater = 3;
+// VIF codes. UNPACK V4-32 to an address relative to the double buffer, then MSCAL or MSCNT.
+constexpr unsigned int kVifUnpackV4 = 0x6c000000;
+constexpr unsigned int kVifUnpackFlg = 0x8000;
+constexpr int kVifUnpackNumShift = 16;
+constexpr unsigned int kVifMscalSprite = 0x14000512;
+constexpr unsigned int kVifMscnt = 0x17000000;
+constexpr int kVifCodeWord = 3;
 
-// GIFtag NREG and its register descriptors, four bits each from the low nibble upward. Every
-// packet here is the PACKED format, so FLG stays zero and one register spends one quadword.
-constexpr int kGifTagNRegShift = 60;
-constexpr unsigned long long kGifTagEop = 1ULL << 15;
-constexpr unsigned long long kGifRegsPoint = 0x41ULL;
-constexpr unsigned long long kGifRegsLine = 0x4141ULL;
-constexpr unsigned long long kGifRegsTexturedSprite = 0x412412ULL;
-constexpr unsigned long long kGifRegsUntexturedSprite = 0x441ULL;
-constexpr int kGifNRegPoint = 2;
-constexpr int kGifNRegLine = 4;
-constexpr int kGifNRegTexturedSprite = 6;
-constexpr int kGifNRegUntexturedSprite = 3;
+// The constants of the microprogram, the projection, the colour scale, the GIF tag, the viewport
+// scale and offset, and the sprite scale.
+constexpr int kConstantQwords = 9;
 
-// Quadwords of a Rnd::DrawVert each emitter sends, and where in the record it starts. A point and
-// a line vertex send the colour and the position; a textured sprite vertex adds the texture
-// coordinate ahead of them and an untextured far corner sends its position alone.
-constexpr int kDrawVertColorQuadword = 1;
-constexpr int kDrawVertPosQuadword = 2;
-constexpr int kQuadwordsColorAndPos = 2;
-constexpr int kQuadwordsWholeVert = 3;
-constexpr int kQuadwordsPosOnly = 1;
+// GIF tag of the sprites, six registers of ST, RGBAQ, and XYZF2 for the two corners, with a
+// sprite primitive that is Gouraud shaded and, as selected, textured and blended.
+constexpr unsigned long long kSpriteGifTag = 0x6000400000008000ULL;
+constexpr unsigned long long kSpriteGifRegs = 0x412412;
+constexpr unsigned long long kPrimSpriteGouraud = 0xe;
+constexpr int kPrimTmeShift = 4;
+constexpr int kPrimAbeShift = 6;
+constexpr int kGifTagPrimShift = 47;
 
-// Packed vertices one particle occupies in the shared draw buffer. A point takes one and the other
-// two modes take a near and a far corner.
-constexpr int kVertsPerPointParticle = 1;
-constexpr int kVertsPerPairedParticle = 2;
+// A batch is at most 162 particles of two quadwords, and an unpack at most 254 quadwords.
+constexpr int kMaxBatchParticles = 0xa2;
+constexpr int kMaxUnpackQwords = 0xfe;
+constexpr int kParticleQwords = 2;
 
-// Screen bounds the sprite emitter rejects against, in the fixed-point units the GS takes.
-constexpr int kSpriteMinCoord = 0;
-constexpr int kSpriteMaxCoord = 0xffff;
+constexpr float kHalf = 0.5f;
 
-// Live particles a draw may submit through the software path. Exceeding it is reported rather than
-// clamped, which matches Rnd::PsMesh.
-constexpr int kMaxSoftwareParticles = 1250;
+constexpr int kLowDword = 0;
+constexpr int kHighDword = 1;
 
-// Quadwords of GIF space a pass reserves before it programs any register.
-constexpr int kGifReserveQuadwords = 32;
-
-// VIFcode fields the vector unit path assembles. These repeat the set src/rnd/psmesh.cpp declares
-// file-locally, because the two draw paths build their own codes and no shared header for the
-// encoding exists yet.
-constexpr unsigned kVifCmdMsCal = 0x14;
-constexpr unsigned kVifCmdMsCnt = 0x17;
-constexpr unsigned kVifCmdUnpackV4_32 = 0x6c;
-constexpr int kVifCmdShift = 24;
-constexpr int kVifNumShift = 16;
-constexpr unsigned kVifUnpackFlg = 0x8000;
-
-// VU1 data address a sprite batch unpacks to, and the microprogram it enters.
-constexpr int kVu1SpriteBatchAddr = 9;
-constexpr int kVu1SpriteEntry = 0x258;
-
-// A batch closes at whichever of these two limits it arrives at first. The particle ceiling is the
-// microprogram's own working set and the quadword ceiling is the eight-bit VIFcode NUM field.
-constexpr int kVu1ParticlesPerBatch = 0xa2;
-constexpr int kVifUnpackQuadwordLimit = 0xfe;
-
-// Quadwords of a Rnd::Particle the vector unit path uploads, the colour then the position.
-constexpr int kParticleUploadQuadwords = 2;
-
-// Half, which the upload writes into the fourth word of the position because a GS sprite takes a
-// centre and a half extent rather than two corners.
-constexpr float kSpriteHalfExtent = 0.5f;
-
-inline unsigned MakeVifCode(unsigned nCmd, int nNum, unsigned nImmediate) {
-    return (nCmd << kVifCmdShift) | (static_cast<unsigned>(nNum) << kVifNumShift) | nImmediate;
+inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
+    DmaPacket &packet = DmaPacket::shared();
+    packet.mCursor->mDword[kLowDword] = qwLow;
+    packet.mCursor->mDword[kHighDword] = qwHigh;
+    ++packet.mCursor;
 }
 
-inline unsigned long long PackWordPair(unsigned nLow, unsigned nHigh) {
-    return nLow | (static_cast<unsigned long long>(nHigh) << 32);
+inline void PushFloats(float fX, float fY, float fZ, float fW) {
+    DmaPacket &packet = DmaPacket::shared();
+    const float afValues[] = {fX, fY, fZ, fW};
+    std::memcpy(packet.mCursor, afValues, sizeof(afValues));
+    ++packet.mCursor;
 }
 
-inline GifQuadword *TakeQuadword() {
-    GifQuadword *pQuad = Rnd::ThePs.mpWrite;
-    Rnd::ThePs.mpWrite = pQuad + 1;
-    return pQuad;
+inline void PushVector(const Vector3 &vector) {
+    PushFloats(vector.x, vector.y, vector.z, vector.w);
 }
 
-// The packet buffer is untyped quadwords, so the one conversion into it lives here.
-inline const GifQuadword *AsQuadwords(const void *pRecord) {
-    return static_cast<const GifQuadword *>(pRecord);
+inline void PushColor(const Color &color) {
+    PushFloats(color.r, color.g, color.b, color.a);
 }
 
-// Append part of a packed vertex, one quadword at a time as the binary does.
-inline void AppendDrawVert(const DrawVert &vert, int nFirstQuadword, int nQuadwords) {
-    const GifQuadword *pSource = AsQuadwords(&vert) + nFirstQuadword;
-    for (int i = 0; i < nQuadwords; ++i) {
-        GifQuadword *pDest = Rnd::ThePs.mpWrite;
-        *pDest = pSource[i];
-        Rnd::ThePs.mpWrite = pDest + 1;
-    }
+// A quadword of three VIF NOPs and one VIF code.
+inline void PushVifCode(unsigned int nCode) {
+    DmaPacket &packet = DmaPacket::shared();
+    packet.mCursor->mWord[0] = 0;
+    packet.mCursor->mWord[1] = 0;
+    packet.mCursor->mWord[2] = 0;
+    packet.mCursor->mWord[kVifCodeWord] = nCode;
+    ++packet.mCursor;
 }
 
-// Start a PACKED GIFtag of the given register set. Every packet here sets end-of-packet up front
-// and lets CloseGifTag() fill in the loop count.
-inline void WritePackedGifTag(int nRegCount, unsigned long long qwRegs) {
-    GifQuadword tag;
-    tag.mLo = (static_cast<unsigned long long>(nRegCount) << kGifTagNRegShift) | kGifTagEop;
-    tag.mHi = qwRegs;
-    Rnd::ThePs.WriteGifTag(&tag);
+inline void ClearQuadword(DmaQuadword *pQuadword) {
+    pQuadword->mDword[kLowDword] = 0;
+    pQuadword->mDword[kHighDword] = 0;
 }
 
-// Screen-space reject for one sprite. The near corner must not fall below the origin and the far
-// corner must not pass the coordinate ceiling.
-inline bool IsSpriteOffScreen(const DrawVert &nearCorner, const DrawVert &farCorner) {
-    if (nearCorner.mPos[kDrawVertPosX] < kSpriteMinCoord ||
-        nearCorner.mPos[kDrawVertPosY] < kSpriteMinCoord) {
-        return true;
-    }
-    return farCorner.mPos[kDrawVertPosX] > kSpriteMaxCoord ||
-           farCorner.mPos[kDrawVertPosY] > kSpriteMaxCoord;
+inline unsigned int UnpackCode(int nAddress, int nQwords) {
+    return static_cast<unsigned int>(nAddress) |
+           (static_cast<unsigned int>(nQwords) << kVifUnpackNumShift) | kVifUnpackFlg |
+           kVifUnpackV4;
 }
 
 } // namespace
 
-PsParticleSys::PsParticleSys(const HxStr &name) : Object(name), ParticleSys(name) {
-}
-
-PsParticleSys::~PsParticleSys() {
-}
-
-inline void PsParticleSys::EmitGifPoints(int nVertCount) {
-    g_renderStats.mnPoints += nVertCount;
-    Rnd::ThePs.SetGsReg(kGsRegPrim, kGsPrimPoint | kGsPrimAbe, kGsPrimFieldMask);
-    WritePackedGifTag(kGifNRegPoint, kGifRegsPoint);
-    for (int i = 0; i < nVertCount; i += kVertsPerPointParticle) {
-        AppendDrawVert(g_aDrawVerts[i], kDrawVertColorQuadword, kQuadwordsColorAndPos);
-        Rnd::ThePs.FlushGifPacket(1, 1);
-    }
+PsParticleSys::PsParticleSys(const char *pszName) : RndObject(pszName), RndParticleSys(pszName) {
 }
 
 int PsParticleSys::DrawShowing() {
-    ++g_renderStats.mnMeshDraws;
-    if (mLiveParticles == nullptr) {
+    if (mLiveParticles == nullptr || mMode != kModeSprite) {
         return 1;
     }
-
-    if (mMode == kModeSprite) {
-        Rnd::ThePs.ReserveGifSpace(kGifReserveQuadwords);
-    }
-    Rnd::ThePs.SetGsReg(kGsRegZbuf1, kZbufZMaskField, kZbufZMaskField);
-    const int nZTest = mReadZ != 0 ? kGsZTestGreater : kGsZTestAlways;
-    Rnd::ThePs.SetGsReg(
-        kGsRegTest1, static_cast<unsigned long long>(nZTest) << kTestZTestShift, kTestZTestField);
-
-    int nMorePasses = 0;
-    if (mMat != nullptr) {
-        nMorePasses = static_cast<PsMat *>(mMat)->Select();
-    } else {
-        PsMat::SelectDefault();
-    }
-
-    if (Rnd::ThePs.mnUseVu1 != 0) {
-        // Only the sprite mode has a microprogram. A point or line system draws nothing at all on
-        // the vector unit path.
-        if (mMode != kModeSprite) {
-            return 1;
-        }
-        DrawSpritesDmaKicked();
-        while (nMorePasses != 0) {
-            Rnd::ThePs.ReserveGifSpace(kGifReserveQuadwords);
-            nMorePasses = static_cast<PsMat *>(mMat)->Select();
-            DrawSpritesDmaKicked();
-        }
-        return 1;
-    }
-
-    if (static_cast<int>(mParticlesOwner->mParticles.size()) > kMaxSoftwareParticles) {
-        // The guard measures the pool of whichever system owns the particles, and the message
-        // prints the size of this system's own pool. Faithful to the binary.
-        Rnd::TheDbg.Notify("DrawShowing particle buffer overflow... %d\n", mParticles.size());
-        if (Rnd::TheDbg.mAbortProc != nullptr) {
-            Rnd::TheDbg.mAbortProc();
+    int nPass = 0;
+    ThePs.SetGsReg(kGsRegZbuf1, kZbufZmsk, kZbufZmsk);
+    ThePs.SetGsReg(kGsRegTest1, mReadZ != 0 ? kTestZTestGreater : kTestZTestAlways, kTestZTestMask);
+    do {
+        if (mMat != nullptr) {
+            nPass = static_cast<PsMat *>(mMat)->Select(nPass);
         } else {
-            throw; // With no handler the binary rethrows the exception in flight.
+            PsMat::SelectDefault();
         }
-    }
-
-    const int nVertCount = PackParticleQuads(g_aDrawVerts, mMode, mLiveParticles, mLineLength);
-    if (mMode == kModePoint) {
-        EmitGifPoints(nVertCount);
-        return 1;
-    }
-    if (mMode == kModeLine) {
-        EmitGifLines(nVertCount);
-        return 1;
-    }
-    if (mMode == kModeSprite) {
-        EmitGifSprites(nVertCount);
-    }
+        DrawParticles();
+    } while (nPass != 0);
     return 1;
 }
 
-void PsParticleSys::EmitGifLines(int nVertCount) {
-    // The counter advances by the whole vertex count before any line is built, so it records what
-    // was offered rather than what was drawn.
-    g_renderStats.mnLines += nVertCount;
-    Rnd::ThePs.SetGsReg(kGsRegPrim, kGsPrimLine | kGsPrimIip | kGsPrimAbe, kGsPrimFieldMask);
-    WritePackedGifTag(kGifNRegLine, kGifRegsLine);
+void PsParticleSys::DrawParticles() {
+    DmaPacket &frame = DmaPacket::shared();
+    frame.CloseGifTag(1, 0);
 
-    for (int i = 0; i < nVertCount; i += kVertsPerPairedParticle) {
-        AppendDrawVert(g_aDrawVerts[i], kDrawVertColorQuadword, kQuadwordsColorAndPos);
-        AppendDrawVert(g_aDrawVerts[i + 1], kDrawVertColorQuadword, kQuadwordsColorAndPos);
-        Rnd::ThePs.FlushGifPacket(1, 1);
-    }
-}
-
-void PsParticleSys::EmitGifSprites(int nVertCount) {
-    const int nTextured = g_nStageTextureBound;
+    PushVifCode(UnpackCode(0, kConstantQwords));
+    PushVector(g_viewProjectXfm.mBasisX);
+    PushVector(g_viewProjectXfm.mBasisY);
+    PushVector(g_viewProjectXfm.mBasisZ);
+    PushVector(g_viewProjectXfm.mTranslation);
+    PushColor(g_colorScale);
     const unsigned long long qwPrim =
-        kGsPrimSprite | kGsPrimIip |
-        (static_cast<unsigned long long>(nTextured) << kGsPrimTmeShift) |
-        (static_cast<unsigned long long>(g_nAlphaBlendEnabled) << kGsPrimAbeShift);
-    Rnd::ThePs.SetGsReg(kGsRegPrim, qwPrim, kGsPrimFieldMask);
+        kPrimSpriteGouraud | (static_cast<unsigned long long>(g_nTextured) << kPrimTmeShift) |
+        (static_cast<unsigned long long>(g_nAlphaBlendEnabled) << kPrimAbeShift);
+    PushQuadword((qwPrim << kGifTagPrimShift) | kSpriteGifTag, kSpriteGifRegs);
+    PushFloats(g_viewportXfm.mBasisX.x, g_viewportXfm.mBasisY.y, g_viewportXfm.mBasisZ.z, 0.0f);
+    PushFloats(g_viewportXfm.mTranslation.x,
+               g_viewportXfm.mTranslation.y,
+               g_viewportXfm.mTranslation.z,
+               0.0f);
+    PushVector(g_particleProjectScale);
 
-    if (nTextured != 0) {
-        WritePackedGifTag(kGifNRegTexturedSprite, kGifRegsTexturedSprite);
-    } else {
-        WritePackedGifTag(kGifNRegUntexturedSprite, kGifRegsUntexturedSprite);
-    }
-
-    for (int i = 0; i < nVertCount; i += kVertsPerPairedParticle) {
-        const DrawVert &nearCorner = g_aDrawVerts[i];
-        const DrawVert &farCorner = g_aDrawVerts[i + 1];
-        if (IsSpriteOffScreen(nearCorner, farCorner)) {
-            // A rejected sprite does not offer the packet for submission, unlike a rejected mesh
-            // edge, which does.
-            ++g_renderStats.mnSpritesCulled;
-            continue;
-        }
-        ++g_renderStats.mnSpritesDrawn;
-        if (nTextured != 0) {
-            AppendDrawVert(nearCorner, 0, kQuadwordsWholeVert);
-            AppendDrawVert(farCorner, 0, kQuadwordsWholeVert);
-        } else {
-            AppendDrawVert(nearCorner, kDrawVertColorQuadword, kQuadwordsColorAndPos);
-            AppendDrawVert(farCorner, kDrawVertPosQuadword, kQuadwordsPosOnly);
-        }
-        Rnd::ThePs.FlushGifPacket(1, 1);
-    }
-}
-
-void PsParticleSys::DrawSpritesDmaKicked() {
-    Rnd::ThePs.CloseGifTag(1);
-    Rnd::ThePs.SwapGifWrite();
-    EmitParticleVu1Setup();
-
+    bool bFirst = true;
     Particle *pParticle = mLiveParticles;
-    if (pParticle == nullptr) {
-        return;
-    }
-
-    bool bFirstBatch = true;
     while (pParticle != nullptr) {
-        // The batch header reaches the hardware before the batch length is known, so its VIFcode
-        // slot is reserved here and filled in once the particles have been counted.
-        GifQuadword *pBatchCode = TakeQuadword();
-        pBatchCode->mLo = 0;
-        pBatchCode->mHi = 0;
-        GifQuadword *pCount = TakeQuadword();
-        pCount->mLo = 0;
-        pCount->mHi = 0;
+        DmaQuadword *pUnpack = frame.mCursor;
+        ClearQuadword(pUnpack);
+        ++frame.mCursor;
+        DmaQuadword *pCount = frame.mCursor;
+        ClearQuadword(pCount);
+        ++frame.mCursor;
 
-        GifQuadword *pWrite = Rnd::ThePs.mpWrite;
-        int nVuAddr = kVu1SpriteBatchAddr;
-        int nBatchQuadwords = 1;
-        int nEmitted = 0;
-        while (pParticle != nullptr) {
-            if (nBatchQuadwords >= kVifUnpackQuadwordLimit) {
-                pBatchCode->mHi =
-                    PackWordPair(0,
-                                 MakeVifCode(kVifCmdUnpackV4_32,
-                                             nBatchQuadwords,
-                                             kVifUnpackFlg | static_cast<unsigned>(nVuAddr)));
-                nVuAddr += nBatchQuadwords;
-                nBatchQuadwords = 0;
-                pBatchCode = pWrite;
-                pBatchCode->mLo = 0;
-                pBatchCode->mHi = 0;
-                ++pWrite;
+        int nAddress = kConstantQwords;
+        int nQwords = 1;
+        int nCount = 0;
+        do {
+            if (nQwords >= kMaxUnpackQwords) {
+                pUnpack->mWord[kVifCodeWord] = UnpackCode(nAddress, nQwords);
+                nAddress += nQwords;
+                nQwords = 0;
+                pUnpack = frame.mCursor;
+                ClearQuadword(pUnpack);
+                ++frame.mCursor;
             }
+            ++nCount;
+            nQwords += kParticleQwords;
+            pParticle->mPos.w = pParticle->mSize * kHalf;
+            PushColor(pParticle->mCol);
+            PushVector(pParticle->mPos);
+            pParticle = pParticle->mNext;
+        } while (nCount < kMaxBatchParticles && pParticle != nullptr);
+        pUnpack->mWord[kVifCodeWord] = UnpackCode(nAddress, nQwords);
+        pCount->mWord[0] = static_cast<unsigned int>(nCount);
 
-            pParticle->mPos.w = pParticle->mSize * kSpriteHalfExtent;
-            ++nEmitted;
-            nBatchQuadwords += kParticleUploadQuadwords;
-            pWrite[0] = *AsQuadwords(&pParticle->mCol);
-            pWrite[1] = *AsQuadwords(&pParticle->mPos);
-            pWrite += kParticleUploadQuadwords;
-
-            // The advance runs whether or not the ceiling ends the batch, so the next batch
-            // resumes at the particle after this one either way.
-            Particle *pNext = pParticle->mNext;
-            if (nEmitted >= kVu1ParticlesPerBatch) {
-                pParticle = pNext;
-                break;
-            }
-            pParticle = pNext;
-        }
-
-        pBatchCode->mHi = PackWordPair(0,
-                                       MakeVifCode(kVifCmdUnpackV4_32,
-                                                   nBatchQuadwords,
-                                                   kVifUnpackFlg | static_cast<unsigned>(nVuAddr)));
-        Rnd::ThePs.mpWrite = pWrite;
-        pCount->mLo = static_cast<unsigned>(nEmitted);
-        g_renderStats.mnSpritesDrawn += nEmitted;
-
-        Rnd::ThePs.FlushReservedGif();
-        GifQuadword *pEntry = TakeQuadword();
-        pEntry->mHi = 0;
-        if (bFirstBatch) {
-            pEntry->mLo = MakeVifCode(kVifCmdMsCal, 0, kVu1SpriteEntry);
-            bFirstBatch = false;
-        } else {
-            pEntry->mLo = MakeVifCode(kVifCmdMsCnt, 0, 0);
-        }
-        Rnd::ThePs.FlushGifPacket(0, 0);
+        PushVifCode(bFirst ? kVifMscalSprite : kVifMscnt);
+        bFirst = false;
+        ThePs.Flush();
     }
 }
-
-ParticleSys *NewPsParticleSys(const HxStr &name) {
-    // The binary bills the allocation to the tag "Rnd::ParticleSys" and the object is 0x220 bytes,
-    // the same size as the base, because the subclass adds no member.
-    return new PsParticleSys(name);
-}
-
-} // namespace Rnd

@@ -7,7 +7,6 @@ set(WAVELENGTH_GFX_SRCS
     gemerasefx.cpp
     gfxarena.cpp
     gfxconfig.cpp
-    gfxdevice.cpp
     gfxmanager.cpp
     gfxutil.cpp
     gsdoublebuffer.cpp
@@ -36,8 +35,7 @@ set(WAVELENGTH_GFX_SRCS
     tnlstreakgemfx.cpp
     tnltrackfx.cpp
     tnltrackrange.cpp
-    tnlwave.cpp
-    vram.cpp)
+    tnlwave.cpp)
 
 # The VU microprograms and the DMA chains that upload them. The DVP assembler builds them. It ships
 # with the SDK beside the Emotion Engine compiler.
