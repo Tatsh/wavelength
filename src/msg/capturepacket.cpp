@@ -10,7 +10,7 @@ constexpr int kBarBits = 8;
 } // namespace
 
 void CapturePacket::saveGuts(BinStream &stream) const {
-    unsigned short nPacked = 0;
+    unsigned short nPacked;
     BitStream bits(&nPacked, sizeof(nPacked));
     bits.Pack(mTrack, kTrackBits);
     bits.Pack(mBar, kBarBits);
