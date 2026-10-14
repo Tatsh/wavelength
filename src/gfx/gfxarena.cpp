@@ -102,6 +102,9 @@ GfxArena::GfxArena(const char *pszName) : mName(pszName) {
     mResultShown = 0;
     mWon = 0;
     mBeatTick = kUnset;
+    // Yes, the timer is never read.
+    Timer timer;
+    timer.Start();
 
     DataArray *pGfx = SystemConfig()->FindArray("gfx", true);
     mConfig = pGfx->FindArray("arena_paths", true)->FindArray(pszName, true);
@@ -118,23 +121,24 @@ GfxArena::GfxArena(const char *pszName) : mName(pszName) {
         mLoaded = 1;
     }
 
-    DataArray *pConstraints = mConfig->FindArray("freestyle_constraints", false);
-    if (pConstraints == nullptr) {
-        return;
+    DataArray *pConstraints = mConfig->FindArray("freestyle_constraints", true);
+    // Yes, the binary tests the result of a required lookup.
+    if (pConstraints != nullptr) {
+        mFreestyle = 0.0f;
+        for (int i = 1; i < pConstraints->Size(); ++i) {
+            DataArray *pConstraint = pConstraints->Array(i);
+            const float fStart = pConstraint->Float(0);
+            const float fEnd = pConstraint->Float(1);
+            AddKey(mFreestyleKeys, 0.0f, fStart);
+            AddKey(mFreestyleKeys, 1.0f, fStart + kFreestyleRamp);
+            AddKey(mFreestyleKeys, 1.0f, fEnd - kFreestyleRamp);
+            AddKey(mFreestyleKeys, 0.0f, fEnd);
+        }
+        if (mFreestyleKeys.empty()) {
+            AddKey(mFreestyleKeys, 0.0f, 0.0f);
+        }
     }
-    mFreestyle = 0.0f;
-    for (int i = 1; i < pConstraints->Size(); ++i) {
-        DataArray *pConstraint = pConstraints->Array(i);
-        const float fStart = pConstraint->Float(0);
-        const float fEnd = pConstraint->Float(1);
-        AddKey(mFreestyleKeys, 0.0f, fStart);
-        AddKey(mFreestyleKeys, 1.0f, fStart + kFreestyleRamp);
-        AddKey(mFreestyleKeys, 1.0f, fEnd - kFreestyleRamp);
-        AddKey(mFreestyleKeys, 0.0f, fEnd);
-    }
-    if (mFreestyleKeys.empty()) {
-        AddKey(mFreestyleKeys, 0.0f, 0.0f);
-    }
+    timer.Stop();
 }
 
 GfxArena *GfxArena::Create(const char *pszName) {
