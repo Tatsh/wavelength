@@ -40,7 +40,7 @@ constexpr int kInvalidChars = 1;
 constexpr int kNoPassword = 0;
 constexpr int kOneLine = 0;
 
-const char *DiscardScreenName(const char *pszScreen) {
+inline const char *DiscardScreenName(const char *pszScreen) {
     return FormatString(kDiscardFormat, pszScreen);
 }
 
