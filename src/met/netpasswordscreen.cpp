@@ -23,8 +23,11 @@ NetPasswordScreen::NetPasswordScreen(DataArray *pData) : FreqScreen(pData), mSav
 }
 
 inline void NetPasswordScreen::LabelSaveChoice(UIComponent *pComponent) {
-    pComponent->SetText(
-        TheLocale.Localize(mSavePassword != 0 ? kSavePasswordToken : kDontSavePasswordToken, true));
+    if (mSavePassword != 0) {
+        pComponent->SetText(TheLocale.Localize(kSavePasswordToken, true));
+    } else {
+        pComponent->SetText(TheLocale.Localize(kDontSavePasswordToken, true));
+    }
 }
 
 void NetPasswordScreen::Enter(UIScreen *pPrevScreen, float fTime) {
