@@ -155,7 +155,7 @@ typedef struct {
 // NTSC-U/C: 0x003119d0, PAL: 0x0037df80
 // Clears a byte range one byte at a time.
 static void memclr(unsigned char *pBytes, int nCount) {
-    while (nCount-- > 0) {
+    while (nCount-- != 0) {
         *pBytes++ = 0U;
     }
 }
@@ -171,7 +171,7 @@ int sceDmaReset(int nMode) {
     unsigned int oldCtrl;
     unsigned int stat;
     int index;
-    unsigned char clearEnv[20];
+    sceDmaEnv clearEnv;
 
     oldCtrl = DMAC_CTRL;
     for (index = 0; index < kChannelCount; index++) {
@@ -190,8 +190,8 @@ int sceDmaReset(int nMode) {
     DMAC_STAT = 0xFF1FU;
     stat = DMAC_STAT;
     DMAC_STAT = stat & 0xFF1F0000U;
-    memclr(clearEnv, sizeof(clearEnv));
-    sceDmaPutEnv((sceDmaEnv *)clearEnv);
+    memclr((unsigned char *)&clearEnv, sizeof(clearEnv));
+    sceDmaPutEnv(&clearEnv);
     if (nMode == 1) {
         unsigned int ctrl;
 
