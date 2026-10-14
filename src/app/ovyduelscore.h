@@ -55,10 +55,12 @@ public:
     /**
      * Advance the slide and the flash of newly lit letters.
      *
+     * @param fSongDelta The song time since the last poll. The routine does not read it.
+     * @param fRealDelta The real time since the last poll. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001be140
      * @ghidraAddress PAL: 0x001c6ee0
      */
-    void Poll();
+    void Poll(float fSongDelta, float fRealDelta);
 
     /**
      * Darken every letter and show the score.

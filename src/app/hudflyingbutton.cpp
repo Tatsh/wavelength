@@ -91,7 +91,7 @@ void HudFlyingButton::SetPulse(bool bPulse) {
     mPulse = bPulse;
 }
 
-void HudFlyingButton::Poll() {
+void HudFlyingButton::Poll([[maybe_unused]] float fRealDelta) {
     if (mText->mShowing == 0 || mStartTime == kNoFlight) {
         return;
     }

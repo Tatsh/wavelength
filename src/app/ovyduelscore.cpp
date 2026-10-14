@@ -41,7 +41,7 @@ void OvyDuelScore::SetLitCount(int nCount) {
     mLitCount = nCount;
 }
 
-void OvyDuelScore::Poll() {
+void OvyDuelScore::Poll([[maybe_unused]] float fSongDelta, [[maybe_unused]] float fRealDelta) {
     HideablePanel::Poll();
     if (mFlashTime == kNoFlash) {
         return;

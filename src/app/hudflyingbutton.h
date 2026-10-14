@@ -73,10 +73,11 @@ public:
     /**
      * Advance the flight, and start the pulse once the icon arrives.
      *
+     * @param fRealDelta The real time since the last poll. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x001bfea0
      * @ghidraAddress PAL: 0x001c8c40
      */
-    void Poll();
+    void Poll(float fRealDelta);
 
     /**
      * Pulse the icon and draw its blur while it shows.

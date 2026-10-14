@@ -99,7 +99,7 @@ void HudCommon::Poll(float fSongDelta, float fRealDelta, float fTickDelta) {
     mTextMessage.Poll();
     mLetterbox.Poll(fSongDelta, fTickDelta);
     for (HudFlyingButton *pButton : mButtons) {
-        pButton->Poll();
+        pButton->Poll(fRealDelta);
     }
     if (mLeaderAvatar != nullptr) {
         mLeaderAvatar->Poll(fRealDelta);

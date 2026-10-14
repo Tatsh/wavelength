@@ -31,7 +31,7 @@ void OvyAllPlayer::Poll(float fSongDelta, float fRealDelta, float fTickDelta) {
         mScore->Poll(fSongDelta, fRealDelta, fTickDelta);
     }
     if (mDuelScore != nullptr) {
-        mDuelScore->Poll();
+        mDuelScore->Poll(fSongDelta, fRealDelta);
     }
     if (mAvatar != nullptr) {
         mAvatar->Poll(fRealDelta);
