@@ -14,7 +14,7 @@ namespace {
 constexpr float kNoFlight = -1e9f;
 
 // The glyphs of the button font, one per lane.
-const char *const kLaneGlyphs[] = {"a", "b", "c", "e", "g", "h"};
+constexpr char kLaneGlyphs[][2] = {"a", "b", "c", "e", "g", "h"};
 
 // The lane whose icon reads the shared flight curve.
 constexpr int kCurveLane = 0;
@@ -37,7 +37,7 @@ void Place(RndText *pText, float fX, float fZ) {
 float HudFlyingButton::sFlightTime = 0.0f;
 Interpolator *HudFlyingButton::sFlight = nullptr;
 
-HudFlyingButton::HudFlyingButton(int nLane) {
+HudFlyingButton::HudFlyingButton(int nLane, [[maybe_unused]] RndView *pHudView) {
     mText =
         dynamic_cast<RndText *>(TheManager.Find(FormatString("HUD flying button %d.txt", nLane)));
     mText->SetText(kLaneGlyphs[nLane]);

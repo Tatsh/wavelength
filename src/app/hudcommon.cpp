@@ -38,7 +38,7 @@ HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults
         mSongPos = new OvySongPos(pHudView);
     }
     for (int i = 0; i < kNumLanes; ++i) {
-        mButtons[i] = new HudFlyingButton(i);
+        mButtons[i] = new HudFlyingButton(i, pHudView);
     }
     if (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
         TheGameDb->mRuleSet != GameDb::kRuleSetRemix &&

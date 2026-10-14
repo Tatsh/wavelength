@@ -4,6 +4,7 @@
 #include "math/vector2.h"
 #include "rnd/rndblur.h"
 #include "rnd/rndtext.h"
+#include "rnd/rndview.h"
 
 /**
  * Button icon of a lane that flies to a place on the screen and pulses there.
@@ -20,10 +21,11 @@ public:
      * configuration, which every icon shares.
      *
      * @param nLane The lane.
+     * @param pHudView The layout view of the head-up display, which is not used.
      * @ghidraAddress NTSC-U/C: 0x001bfa88
      * @ghidraAddress PAL: 0x001c8828
      */
-    explicit HudFlyingButton(int nLane);
+    HudFlyingButton(int nLane, RndView *pHudView);
 
     /**
      * Destroy the icon and the shared flight curve.
