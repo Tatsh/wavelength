@@ -69,6 +69,9 @@ constexpr int kInterfaceStarting = 2;
 constexpr int kInterfaceUp = 3;
 constexpr int kInterfaceFailed = 5;
 
+// The size of an EE data cache line.
+constexpr int kCacheLineSize = 64;
+
 // The link status values of ezNetCtlStatus_t.
 constexpr int kLinkInvalid = 0;
 constexpr int kLinkValid = 1;
@@ -115,16 +118,18 @@ NetInet *TheNetInet;
 static char *sLaunchArgs[kLaunchArgCount];
 
 // NTSC-U/C: 0x0043cac0
-// The combinations of the configuration file.
-static ezNetCnfCombinationList_t sConfigList;
+// The combinations of the configuration file. The IOP writes the three buffers below by SIF DMA,
+// and each starts a data cache line, as in the retail image. The cache maintenance of the RPC calls
+// then does not cover unrelated data.
+alignas(kCacheLineSize) static ezNetCnfCombinationList_t sConfigList;
 
 // NTSC-U/C: 0x0043cf00
 // The configuration ConnectTask() loads.
-static ezNetCnfData_t sConfigData;
+alignas(kCacheLineSize) static ezNetCnfData_t sConfigData;
 
 // NTSC-U/C: 0x0043e240
 // The state of the interface.
-static ezNetCtlStatus_t sStatus;
+alignas(kCacheLineSize) static ezNetCtlStatus_t sStatus;
 
 // The two vectors below are constructed and destroyed by one routine at 0x00254b48. The image's
 // static construction and destruction entries at 0x00254c50 and 0x00254c70 call it.
