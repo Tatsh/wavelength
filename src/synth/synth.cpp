@@ -26,7 +26,9 @@ void Synth::Destroy() {
 }
 
 int Synth::Unsupported() {
+#ifndef VIDEO_STANDARD_PAL
     DebugWarn("talk to denny");
+#endif
     return 0;
 }
 

@@ -92,10 +92,12 @@ public:
     /**
      * Vtable slot 7. Report an unsupported request.
      *
-     * The base body passes "talk to denny" to the empty diagnostic routine at `0x00333d50`.
+     * The base body passes "talk to denny" to the empty diagnostic routine at `0x00333d50`. The
+     * PAL body only returns.
      *
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x0024bd28
+     * @ghidraAddress PAL: 0x00404608
      */
     virtual int Unsupported();
 
