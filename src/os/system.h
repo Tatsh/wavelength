@@ -58,7 +58,6 @@ DataArray *SystemConfig();
  *
  * @return Whether files come from the disc.
  * @ghidraAddress NTSC-U/C: 0x0028c5a8
- * @ghidraAddress PAL: 0x00295f18
  */
 bool UsingCD();
 
