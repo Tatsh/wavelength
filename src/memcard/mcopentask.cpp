@@ -1,6 +1,7 @@
 #include "memcard/mcopentask.h"
 
 #include "memcard/memcard.h"
+#include "memcard/memcardconfig.h"
 
 void MCOpenTask::Set(int nPort, const char *pszName, int nMode) {
     SetPort(nPort);
@@ -15,5 +16,8 @@ void MCOpenTask::OnOpen(int nResult) {
 }
 
 void MCOpenTask::OnStart() {
+#ifdef VIDEO_STANDARD_PAL
+    g_MemcardOpenPath = mName;
+#endif
     MemcardOpen(this, mPort, mName.c_str(), mMode);
 }

@@ -47,10 +47,17 @@ const char *g_pszFreqExt;
 const char *g_pszMemcardBaseDir;
 // The unit's static initialiser at NTSC-U/C: 0x001626d8, PAL: 0x001653f8, its global constructor at
 // NTSC-U/C: 0x001627c8, PAL: 0x00165540, and its global destructor at
-// NTSC-U/C: 0x001627e8, PAL: 0x00165560, construct and destroy the three.
+// NTSC-U/C: 0x001627e8, PAL: 0x00165560, construct and destroy the strings and the names.
 String g_RemixPath;
+#ifdef VIDEO_STANDARD_PAL
+String g_MemcardOpenPath;
+#endif
 String g_MemcardPath;
+#ifdef VIDEO_STANDARD_PAL
+std::vector<String> g_RemixNames;
+#else
 std::list<String> g_RemixNames;
+#endif
 sceMcIconSys g_MemcardIconSys;
 
 const char *GetRemixDirName(int nIndex) {

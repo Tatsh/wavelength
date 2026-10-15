@@ -39,7 +39,8 @@ public:
 
 protected:
     /**
-     * Size the profiles to the files, sort the files, and start loading the newest.
+     * Size the profiles to the files, sort the files, and start loading the newest. The PAL build
+     * empties the profiles and only reserves room for them.
      *
      * @ghidraAddress NTSC-U/C: 0x00160510
      * @ghidraAddress PAL: 0x00162d70
@@ -47,7 +48,8 @@ protected:
     void OnStart() override;
 
     /**
-     * Decode a loaded file into its profile and start loading the next.
+     * Decode a loaded file into its profile and start loading the next. The PAL build appends each
+     * profile, and deletes a file whose size is not `max_freq_size` instead.
      *
      * @ghidraAddress NTSC-U/C: 0x001606f0
      * @ghidraAddress PAL: 0x00162ef8

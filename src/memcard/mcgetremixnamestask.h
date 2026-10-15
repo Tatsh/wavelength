@@ -44,6 +44,7 @@ protected:
      * Add the files of a listed directory to g_RemixNames and list the next directory.
      *
      * @ghidraAddress NTSC-U/C: 0x00160f38
+     * @ghidraAddress PAL: 0x00163920
      */
     void OnPoll() override;
 

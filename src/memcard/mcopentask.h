@@ -47,7 +47,7 @@ public:
 
 protected:
     /**
-     * Issue the command.
+     * Issue the command. The PAL build first records the file in g_MemcardOpenPath.
      *
      * @ghidraAddress NTSC-U/C: 0x0015da60
      * @ghidraAddress PAL: 0x0015f278

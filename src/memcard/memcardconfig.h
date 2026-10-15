@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <vector>
 
 #include <libmc.h>
 
@@ -139,13 +140,26 @@ extern const char *g_pszMemcardBaseDir;
  * The remix file the last search found, as a path below the card root.
  *
  * @ghidraAddress NTSC-U/C: 0x00436340
+ * @ghidraAddress PAL: 0x004d30d8
  */
 extern String g_RemixPath;
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * The file MCOpenTask opened last, as a path below the card root.
+ *
+ * The name is inferred. A load that finds the file corrupt deletes it by this path.
+ *
+ * @ghidraAddress PAL: 0x004d30f0
+ */
+extern String g_MemcardOpenPath;
+#endif
 
 /**
  * The save directory the current work addresses.
  *
  * @ghidraAddress NTSC-U/C: 0x00436358
+ * @ghidraAddress PAL: 0x004d3108
  */
 extern String g_MemcardPath;
 
@@ -153,8 +167,13 @@ extern String g_MemcardPath;
  * The remix files the last listing found, as paths below the card root.
  *
  * @ghidraAddress NTSC-U/C: 0x00436370
+ * @ghidraAddress PAL: 0x004d3120
  */
+#ifdef VIDEO_STANDARD_PAL
+extern std::vector<String> g_RemixNames;
+#else
 extern std::list<String> g_RemixNames;
+#endif
 
 /**
  * The `icon.sys` every save directory receives. LoadMemcardConfig() fills every field but the
