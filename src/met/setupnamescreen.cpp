@@ -18,6 +18,10 @@ constexpr char kNoText[] = "";
 
 // The keyboard request of the entry.
 constexpr int kKeyboardPad = 0;
+#ifdef VIDEO_STANDARD_PAL
+// The most characters of a request that sets no limit.
+constexpr int kNoCharLimit = -1;
+#endif
 constexpr int kNoFunctionKeys = 0;
 constexpr int kNoInvalidChars = 0;
 constexpr int kShowText = 0;
@@ -69,8 +73,12 @@ bool SetupNameScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         UIScreen *pScreen = TheUI.mCurrentScreen;
         const int nMaxWidth = static_cast<int>(mEntry->mMaxEntryWidth);
         const char *pszText = mEntry->Text();
+#ifdef VIDEO_STANDARD_PAL
+        const int nMaxChars = kNoCharLimit;
+#else
         // Yes, the binary limits the number of characters by the width as well.
         const int nMaxChars = static_cast<int>(mEntry->mMaxEntryWidth);
+#endif
         const KeyboardRequest request(this,
                                       pScreen,
                                       pszText,
