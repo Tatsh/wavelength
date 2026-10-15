@@ -196,6 +196,13 @@ constexpr int kCenturyYears = 100;
 // The format of the file of an upload of a remix: year, month, day, song, name, and attempt.
 const char *const kRemixFileFormat = "r_%02d%02d%02d_%s_%s.%d";
 
+#ifdef VIDEO_STANDARD_PAL
+// DecodePlayer() rejects a text with a minus sign in its first characters, and marks the player
+// with the channel kSignedChannel.
+constexpr int kSignScanLength = 43;
+constexpr int kSignedChannel = -666;
+#endif
+
 } // namespace
 
 // NTSC-U/C: 0x003b0aec, PAL: 0x0042f9b8
@@ -267,7 +274,11 @@ void LobbyRT::EncodeGameName(String *pName,
     EncodeSong(&nLevel, pParams->mSong.c_str());
     char szName[kGameNameBufferSize];
     sprintf(szName,
+#ifdef VIDEO_STANDARD_PAL
+            "%u%u%u%u%u%u%u%u%u%02u%010u%s",
+#else
             "%d%d%d%d%d%d%d%d%d%02d%010d%s",
+#endif
             kGameNameVersion,
             pParams->mLoadRemix,
             pParams->mRemixReadOnly,
@@ -355,7 +366,11 @@ void LobbyRT::EncodePlayer(String *pText, const LobbyPlayer *pPlayer) {
     const unsigned int nSeconds = pPlayer->mLastOnline.ToSeconds();
     char szText[kPlayerBufferSize];
     sprintf(szText,
+#ifdef VIDEO_STANDARD_PAL
+            "%u%010u%u%07u%010u%03u%03u%08u%03u",
+#else
             "%d%010d%d%07d%010d%03d%03d%08d%03d",
+#endif
             kPlayerVersion,
             pPlayer->mRating,
             pPlayer->mRankIcon + 1,
@@ -395,6 +410,15 @@ void LobbyRT::DecodePlayer(LobbyPlayer *pPlayer, const char *pszText) {
 
     const char *pszCursor = pszText;
     int nRemaining = static_cast<int>(strlen(pszText));
+#ifdef VIDEO_STANDARD_PAL
+    // Yes, the binary scans the characters whatever the length of the text.
+    for (int i = 0; i < kSignScanLength; ++i) {
+        if (pszText[i] == '-') {
+            pPlayer->mChannelId = kSignedChannel;
+            return;
+        }
+    }
+#endif
     int nVersion = 0;
     if (!ReadNumber(&nVersion, &pszCursor, &nRemaining, kFlagDigits) ||
         nVersion != kPlayerVersion) {
@@ -1045,6 +1069,9 @@ void LobbyRT::RequestFiles(MsgSink *pSink, int nRemixes) {
 }
 
 void LobbyRT::OnFileListDone(NetMultiTask *pTask) {
+#ifdef VIDEO_STANDARD_PAL
+    mFiles.sort();
+#endif
     mTransferMode = kTransferNone;
     std::list<String> files;
     files.swap(mFiles);
@@ -1065,6 +1092,23 @@ void LobbyRT::OnDeleteFileDone(NetMultiTask *pTask) {
 
 void LobbyRT::ReportProgress(float fProgress) {
     RepoRemixStatusMsg msg(RepoRemixStatusMsg::kStatusProgress, fProgress);
+#ifdef VIDEO_STANDARD_PAL
+    switch (mTransferMode) {
+    case kTransferDirectory:
+    case kTransferRemix:
+        mDownloadTask.Notify(&msg);
+        break;
+    case kTransferUploadRemix:
+    case kTransferUploadDirectory:
+        mUploadTask.Notify(&msg);
+        break;
+    case kTransferList:
+        mFileListTask.Notify(&msg);
+        break;
+    default:
+        break;
+    }
+#else
     if (mTransferMode <= kTransferNone) {
         return;
     }
@@ -1073,6 +1117,7 @@ void LobbyRT::ReportProgress(float fProgress) {
     } else if (mTransferMode < kTransferList) {
         mUploadTask.Notify(&msg);
     }
+#endif
 }
 
 void LobbyRT::Poll() {
@@ -1122,8 +1167,18 @@ void LobbyRT::Poll() {
     nState = mJoinChatroomTask.Poll();
     if (nState == Task::kStateFailed) {
         mJoinChatroomTask.Stop();
+#ifdef VIDEO_STANDARD_PAL
+        // A failed reconnection to the lobby server of the room loses the lobby.
+        if (mJoinChatroomTask.mResult == LobbyConnectResultMsg::kResultConnectFailed) {
+            Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
+        } else {
+            JoinChatroomResultMsg msg(mJoinChatroomTask.mResult);
+            mJoinChatroomTask.Notify(&msg);
+        }
+#else
         JoinChatroomResultMsg msg(mJoinChatroomTask.mResult);
         mJoinChatroomTask.Notify(&msg);
+#endif
     } else if (nState == Task::kStateDone) {
         mJoinChatroomTask.Stop();
         JoinChatroomResultMsg msg(JoinChatroomResultMsg::kResultSuccess, mChatroom);
@@ -1133,8 +1188,17 @@ void LobbyRT::Poll() {
     nState = mCreateChatroomTask.Poll();
     if (nState == Task::kStateFailed) {
         mCreateChatroomTask.Stop();
+#ifdef VIDEO_STANDARD_PAL
+        if (mCreateChatroomTask.mResult == LobbyConnectResultMsg::kResultConnectFailed) {
+            Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
+        } else {
+            JoinChatroomResultMsg msg(mCreateChatroomTask.mResult);
+            mCreateChatroomTask.Notify(&msg);
+        }
+#else
         JoinChatroomResultMsg msg(mCreateChatroomTask.mResult);
         mCreateChatroomTask.Notify(&msg);
+#endif
     } else if (nState == Task::kStateDone) {
         mCreateChatroomTask.Stop();
         JoinChatroomResultMsg msg(JoinChatroomResultMsg::kResultSuccess, mChatroom);

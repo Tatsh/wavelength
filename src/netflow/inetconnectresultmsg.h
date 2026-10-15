@@ -24,6 +24,9 @@ public:
         kResultHardwareError = -95,      /*!< The network adaptor failed. */
         kResultTimeout = -94,            /*!< The connection timed out. */
         kResultFailed = -93,             /*!< The interface reported a failure. */
+#ifdef VIDEO_STANDARD_PAL
+        kResultAuthFailed = -92, /*!< The provider refused the login. */
+#endif
     };
 
     /**
