@@ -14,8 +14,14 @@ set(WAVELENGTH_IMAGE_OUTPUT
     "${CMAKE_BINARY_DIR}/wavelength.iso"
     CACHE FILEPATH "ISO image the image target writes.")
 # The console loads only the program segment, so the debug information is dead weight on the disc.
-# The stripped executable fits the original's extent and is written in place.
-option(WAVELENGTH_IMAGE_STRIP "Put an executable without debug information on the image." ON)
+# A Debug build puts it on the disc anyway, for a debugger reading the executable from the image.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(_wavelength_image_strip_default OFF)
+else()
+  set(_wavelength_image_strip_default ON)
+endif()
+option(WAVELENGTH_IMAGE_STRIP "Put an executable without debug information on the image."
+       ${_wavelength_image_strip_default})
 
 if(NOT WAVELENGTH_DISC_IMAGE)
   message(STATUS "Set WAVELENGTH_DISC_IMAGE to an original disc image to enable the image target.")
