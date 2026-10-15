@@ -27,8 +27,13 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001aafb8
      * @ghidraAddress PAL: 0x001b2f90
      */
+#ifdef VIDEO_STANDARD_PAL
+    explicit LoadFreqScreen(DataArray *pData) : ErrorScreen(pData), mReload(0) {
+    }
+#else
     explicit LoadFreqScreen(DataArray *pData) : ErrorScreen(pData) {
     }
+#endif
 
     /**
      * Destroy the screen.
@@ -50,6 +55,16 @@ public:
     static UIScreen *New(DataArray *pData) {
         return new LoadFreqScreen(pData);
     }
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Load the Freqs again after the card changed during the last load.
+     *
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress PAL: 0x001b3270
+     */
+    void Poll(float fTime) override;
+#endif
 
     /**
      * Report the empty title of the screen.
@@ -92,4 +107,8 @@ private:
      * @ghidraAddress PAL: 0x001b3320
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+#ifdef VIDEO_STANDARD_PAL
+    int mReload; // Whether the next poll loads the Freqs again.
+#endif
 };

@@ -27,13 +27,24 @@ public:
     /**
      * Construct the screen from its script description, replacing saved settings.
      *
+     * The PAL build also reads `isCancel`, on by default, which offers to continue without the
+     * save when the memory card fails.
+     *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x001ae320
      * @ghidraAddress PAL: 0x001b6e80
      */
+#ifdef VIDEO_STANDARD_PAL
+    explicit SaveSettingsScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
+        mOverwriteStatus = 1;
+        mIsCancel = 1;
+        pData->FindBool("isCancel", &mIsCancel, false);
+    }
+#else
     explicit SaveSettingsScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
         mOverwriteStatus = 1;
     }
+#endif
 
     /**
      * Create a screen from its script description.
@@ -88,4 +99,8 @@ private:
      * @ghidraAddress PAL: 0x001b7110
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+#ifdef VIDEO_STANDARD_PAL
+    int mIsCancel; // Non-zero when a failure also offers to continue, `isCancel`.
+#endif
 };

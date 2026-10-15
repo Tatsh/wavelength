@@ -73,6 +73,7 @@ set(WAVELENGTH_MET_SRCS
     multifreqselectscreen.cpp
     multigamestatspanel.cpp
     multiloadfreqscreen.cpp
+    multinocardscreen.cpp
     multisetupremixsavescreen.cpp
     nameerrorscreen.cpp
     needsdialogscreen.cpp

@@ -61,8 +61,15 @@ public:
      * Show the text of the panel's name, formatted with the name of the memory card slot of the
      * current screen.
      *
+     * In the PAL build a panel with `error_msg` set, the default, formats the text with the
+     * name of the failed operation before the slot when the screen reports one.
+     *
      * @ghidraAddress NTSC-U/C: 0x001a9df0
      * @ghidraAddress PAL: 0x001b1b50
      */
     virtual void ShowSlotText();
+
+#ifdef VIDEO_STANDARD_PAL
+    int mErrorMsg; /*!< Non-zero to name the failed operation, `error_msg`. */
+#endif
 };

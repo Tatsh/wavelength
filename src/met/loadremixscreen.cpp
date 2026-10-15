@@ -16,9 +16,11 @@ constexpr char kFailedScreen[] = "load_failed_error";
 constexpr char kRetryComponent[] = "retry";
 constexpr char kCancelComponent[] = "cancel";
 
+#ifndef VIDEO_STANDARD_PAL
 // The operation of ErrorScreen::ShowCardErrorTwoOption() for a failure outside a save, a copy, and
 // a deletion.
 constexpr int kNoOperation = 0;
+#endif
 
 // Go to an error screen whose `retry` returns to the loading screen and whose `cancel` returns to
 // the start screen.
@@ -37,6 +39,18 @@ void LoadRemixScreen::OnRemixLoaded(int nStatus) {
     case MemcardTask::kStatusOk:
         TheUI.GotoScreen(mDoneScreen.c_str());
         break;
+#ifdef VIDEO_STANDARD_PAL
+    case MemcardTask::kStatusNoCard:
+        ShowCardErrorTwoOption(nStatus, kOperationLoad);
+        break;
+    case MemcardTask::kStatusChangedCard:
+        mReload = 1;
+        break;
+    case MemcardTask::kStatusUnformatted:
+    case MemcardTask::kStatusNotFound:
+        ShowLoadError(kNotFoundScreen, mName, mStartScreen.c_str());
+        break;
+#else
     case MemcardTask::kStatusNoCard:
     case MemcardTask::kStatusUnformatted:
     case MemcardTask::kStatusChangedCard:
@@ -45,6 +59,7 @@ void LoadRemixScreen::OnRemixLoaded(int nStatus) {
     case MemcardTask::kStatusNotFound:
         ShowLoadError(kNotFoundScreen, mName, mStartScreen.c_str());
         break;
+#endif
     default:
         ShowLoadError(kFailedScreen, mName, mStartScreen.c_str());
         break;
@@ -67,3 +82,16 @@ bool LoadRemixScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     }
     return false;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void LoadRemixScreen::Poll(float fTime) {
+    UIScreen::Poll(fTime);
+    if (mReload != 0) {
+        mReload = 0;
+        RemixInfo info = *TheGameDb->GetRemixInfo();
+        TheGameDb->SetRemixBuffer(info.mDataSize);
+        TheMCManager.LoadRemix(
+            this, mSlot, info.mName, TheGameDb->GetRemixBuffer(), info.mDataSize);
+    }
+}
+#endif

@@ -2,6 +2,7 @@
 
 #include "game/campaign.h"
 #include "game/gamedb.h"
+#include "met/multiloadfreqscreen.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
@@ -81,5 +82,10 @@ bool NumPlayersScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         other.mName = TheLocale.Localize("player_4", true);
         TheGameDb->AddPlayer(&other);
     }
+#ifdef VIDEO_STANDARD_PAL
+    auto *pLoad = dynamic_cast<MultiLoadFreqScreen *>(TheUI.FindScreen("multi_load_freq", false));
+    pLoad->Reset();
+    TheUI.GotoScreen(pLoad);
+#endif
     return UIScreen::HandleSelect(pMsg);
 }

@@ -41,7 +41,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00354fa8
-     * @ghidraAddress PAL: 0x003c2258
+     * @ghidraAddress PAL: 0x003d0f08
      */
     static UIScreen *New(DataArray *pData) {
         return new ErrorScreen(pData);
@@ -80,6 +80,40 @@ public:
         mStartScreen = pszScreen;
     }
 
+#ifdef VIDEO_STANDARD_PAL
+    /** The memory card operations a dialog names, as GetOperationText() reports them. */
+    enum Operation {
+        kOperationNone = 0,   /*!< No operation, and no text. */
+        kOperationLoad = 1,   /*!< A load, `load_err_string`. */
+        kOperationSave = 2,   /*!< A save, `save_err_string`. */
+        kOperationCopy = 3,   /*!< A copy, `copy_err_string`. */
+        kOperationDelete = 4, /*!< A deletion, `delete_err_string`. */
+        kOperationFormat = 5, /*!< A format, `format_err_string`. */
+        kOperationCheck = 6,  /*!< A check of the card, `check_err_string`. */
+    };
+
+    /**
+     * Choose the memory card slot the dialog is about, and the operation that failed.
+     *
+     * @param nSlot The memory card slot.
+     * @param nOperation The operation, one of Operation.
+     * @ghidraAddress PAL: 0x001b1e98
+     */
+    virtual void SetSlot(int nSlot, int nOperation = kOperationNone) {
+        mOperation = nOperation;
+        mSlot = nSlot;
+    }
+
+    /**
+     * Report the localised name of the operation the dialog is about.
+     *
+     * The name is inferred.
+     *
+     * @return The name, or an empty string for kOperationNone or an unknown operation.
+     * @ghidraAddress PAL: 0x001b1dd0
+     */
+    const char *GetOperationText();
+#else
     /**
      * Choose the memory card slot the dialog is about.
      *
@@ -90,6 +124,7 @@ public:
     virtual void SetSlot(int nSlot) {
         mSlot = nSlot;
     }
+#endif
 
     /**
      * Report the localised name of the memory card slot the dialog is about.
@@ -100,26 +135,51 @@ public:
      */
     const char *GetSlotName();
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Show the dialog of a memory card failure with save, continue, and cancel buttons.
+     *
+     * Save tries again, and continue goes on without the save.
+     *
+     * @param nStatus The failure.
+     * @param pszContinueScreen The screen continue leads to.
+     * @param nOperation The operation that failed, one of Operation.
+     * @ghidraAddress PAL: 0x001b1ea8
+     */
+    void ShowCardError(int nStatus, const char *pszContinueScreen, int nOperation);
+#else
     /**
      * Show the dialog of a memory card failure with retry, continue, and cancel buttons.
      *
      * @param nStatus The failure.
      * @ghidraAddress NTSC-U/C: 0x001a9fb0
-     * @ghidraAddress PAL: 0x001b1ea8
      */
     void ShowCardError(int nStatus);
+#endif
 
     /**
      * Show the dialog of a memory card failure with retry and cancel buttons.
      *
      * @param nStatus The failure.
-     * @param nOperation The operation that failed: 1 for a save, 2 for a copy, and 3 for a
-     *                   deletion.
+     * @param nOperation The operation that failed. In the North American build it is 1 for a
+     *                   save, 2 for a copy, and 3 for a deletion, and in the PAL build it is one
+     *                   of Operation.
      * @ghidraAddress NTSC-U/C: 0x001aa490
      * @ghidraAddress PAL: 0x001b2418
      */
     void ShowCardErrorTwoOption(int nStatus, int nOperation);
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Show the `no_space_error` dialog of a memory card without enough space.
+     *
+     * @param nSpace The space the save needs.
+     * @param pszContinueScreen The screen continue leads to.
+     * @param pszSaveName The text the dialog names the save with.
+     * @ghidraAddress PAL: 0x001b2990
+     */
+    void ShowNoSpaceError(int nSpace, const char *pszContinueScreen, const char *pszSaveName);
+#else
     /**
      * Show the `no_space_error` dialog of a memory card without enough space.
      *
@@ -128,8 +188,12 @@ public:
      * @ghidraAddress PAL: 0x001b2990
      */
     void ShowNoSpaceError(int nSpace);
+#endif
 
     String mDoneScreen;  /*!< The screen the dialog leads to, `done_screen`. +0x70 */
     String mStartScreen; /*!< The screen that opened the dialog, `start_screen`. +0x84 */
     int mSlot;           /*!< The memory card slot the dialog is about. +0x98 */
+#ifdef VIDEO_STANDARD_PAL
+    int mOperation; /*!< The operation that failed, one of Operation. +0x9c */
+#endif
 };

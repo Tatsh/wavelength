@@ -21,9 +21,11 @@ constexpr char kFailedScreen[] = "load_failed_error";
 constexpr char kRetryComponent[] = "retry";
 constexpr char kCancelComponent[] = "cancel";
 
+#ifndef VIDEO_STANDARD_PAL
 // The operation of ErrorScreen::ShowCardErrorTwoOption() for a failure outside a save, a copy, and
 // a deletion.
 constexpr int kNoOperation = 0;
+#endif
 
 // Go to an error dialog whose `retry` returns to the listing screen and whose `cancel` returns to
 // the start screen.
@@ -57,6 +59,17 @@ void ListRemixesScreen::OnRemixesListed(int nStatus, std::vector<RemixInfo> *pIn
             return;
         }
         break;
+#ifdef VIDEO_STANDARD_PAL
+    case MemcardTask::kStatusNoCard:
+        ShowCardErrorTwoOption(nStatus, kOperationLoad);
+        return;
+    case MemcardTask::kStatusUnformatted:
+    case MemcardTask::kStatusNotFound:
+        break;
+    case MemcardTask::kStatusChangedCard:
+        mRelist = 1;
+        return;
+#else
     case MemcardTask::kStatusNoCard:
     case MemcardTask::kStatusUnformatted:
     case MemcardTask::kStatusChangedCard:
@@ -64,15 +77,30 @@ void ListRemixesScreen::OnRemixesListed(int nStatus, std::vector<RemixInfo> *pIn
         return;
     case MemcardTask::kStatusNotFound:
         break;
+#endif
     default:
         ShowListError(TheUI.FindScreen(kFailedScreen, false), mName, mStartScreen.c_str());
         return;
     }
 
     auto *pError = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kNoRemixesScreen, false));
+#ifdef VIDEO_STANDARD_PAL
+    pError->SetSlot(mSlot, kOperationSave); // Yes, the binary names a save here.
+#else
     pError->SetSlot(mSlot);
+#endif
     ShowListError(pError, mName, mStartScreen.c_str());
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void ListRemixesScreen::Poll(float fTime) {
+    UIScreen::Poll(fTime);
+    if (mRelist != 0) {
+        mRelist = 0;
+        TheMCManager.ListRemixes(this, mSlot);
+    }
+}
+#endif
 
 bool ListRemixesScreen::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nUITransitionCompleteMsgType) {

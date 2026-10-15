@@ -15,7 +15,11 @@ constexpr char kRetryComponent[] = "retry";
 constexpr char kCancelComponent[] = "cancel";
 
 // The operation ErrorScreen::ShowCardErrorTwoOption() reports a failure of.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kOperationFormat = ErrorScreen::kOperationFormat;
+#else
 constexpr int kOperationFormat = 4;
+#endif
 
 } // namespace
 
@@ -37,7 +41,13 @@ void FormatScreen::OnCardFormatted(int nStatus) {
         break;
     }
     auto *pError = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(pszError, false));
+#ifdef VIDEO_STANDARD_PAL
+    // Only the dialog of a card formatted already names the format.
+    pError->SetSlot(mSlot,
+                    nStatus == MemcardTask::kStatusFormatted ? kOperationFormat : kOperationNone);
+#else
     pError->SetSlot(mSlot);
+#endif
     pError->ClearTransitions();
     pError->AddTransition(kRetryComponent, kPadNone, mName);
     pError->AddTransition(kCancelComponent, kPadNone, mDoneScreen.c_str());

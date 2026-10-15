@@ -23,6 +23,9 @@ constexpr char kPrefabsEntry[] = "prefabs";
 constexpr char kSelectPanelFormat[] = "m_g_s_f_%dpl_0%d";
 constexpr char kDuelSelectScreen[] = "f_m_sel_2_duel";
 constexpr char kSelectScreenFormat[] = "f_m_sel_%d";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kNoCardScreen[] = "multi_load_no_card";
+#endif
 
 // The value of mSelected and of mFirstProfile for none.
 constexpr int kNone = -1;
@@ -49,7 +52,11 @@ void MultiLoadFreqScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void MultiLoadFreqScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
+#ifdef VIDEO_STANDARD_PAL
+    if (mLoaded != 0 && mPrevScreen == nullptr && mNextScreen == nullptr) {
+#else
     if (mLoaded != 0) {
+#endif
         mLoaded = 0;
         LoadNextSlot();
     }
@@ -110,6 +117,14 @@ void MultiLoadFreqScreen::LoadNextSlot() {
 }
 
 void MultiLoadFreqScreen::OnFreqsLoaded(int nStatus, std::vector<Campaign> *pProfiles) {
+#ifdef VIDEO_STANDARD_PAL
+    if (nStatus == MemcardTask::kStatusNoCard) {
+        auto *pError = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kNoCardScreen, false));
+        pError->SetSlot(mSlot, kOperationLoad);
+        TheUI.GotoScreen(pError);
+        return;
+    }
+#endif
     if (nStatus == MemcardTask::kStatusChangedCard) {
         mLoaded = 1;
         --mSlot; // The next poll reads the slot again.
@@ -132,6 +147,23 @@ bool MultiLoadFreqScreen::DispatchPriv(Message *pMsg) {
     return FreqScreen::DispatchPriv(pMsg);
 }
 
+#ifdef VIDEO_STANDARD_PAL
+bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
+    if (std::strcmp(pMsg->mScreen->mName, mName) == 0 && mLoaded == 0) {
+        TheMCManager.LoadFreqs(this, mSlot);
+    }
+    return false;
+}
+
+void MultiLoadFreqScreen::Reset() {
+    mProfiles.clear();
+    for (int i = 0; i < kMaxPlayers; ++i) {
+        mFirstProfile[i] = kNone;
+        mSelected[i] = kNone;
+    }
+    mSlot = kFirstSlot;
+}
+#else
 bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
         mProfiles.clear();
@@ -144,3 +176,4 @@ bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg
     }
     return false;
 }
+#endif

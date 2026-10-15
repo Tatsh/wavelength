@@ -7,6 +7,7 @@
 #include "os/cheatsmanager.h"
 #include "os/debug.h"
 #include "os/joypad.h"
+#include "os/locale.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -20,8 +21,10 @@ constexpr int kSaveDifferentCard = 4;
 constexpr int kSaveFreqExists = 5;
 constexpr int kSaveFreqLimit = 6;
 
+#ifndef VIDEO_STANDARD_PAL
 // The operation ErrorScreen::ShowCardErrorTwoOption() reports a failure of.
 constexpr int kOperationSave = 1;
+#endif
 
 ErrorScreen *FindErrorScreen(const char *pszName) {
     return dynamic_cast<ErrorScreen *>(TheUI.FindScreen(pszName, false));
@@ -29,12 +32,26 @@ ErrorScreen *FindErrorScreen(const char *pszName) {
 
 } // namespace
 
+#ifdef VIDEO_STANDARD_PAL
+SaveFreqScreen::SaveFreqScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
+    mIsCancel = 1;
+    mOverwriteStatus = 0;
+    pData->FindBool("overwrite_status", &mOverwriteStatus, false);
+    pData->FindBool("isCancel", &mIsCancel, false);
+    // Yes, the binary passes overwrite_status as the failure flag.
+    pData->FindString("overwrite_save_screen", &mOverwriteSaveScreen, mOverwriteStatus != 0);
+    if (mOverwriteSaveScreen.mLength == 0) {
+        mOverwriteSaveScreen = mName;
+    }
+}
+#else
 SaveFreqScreen::SaveFreqScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
     mIsCancel = 1;
     mOverwriteStatus = 0;
     pData->FindBool("overwrite_status", &mOverwriteStatus, false);
     pData->FindBool("isCancel", &mIsCancel, false);
 }
+#endif
 
 SaveFreqScreen::~SaveFreqScreen() {
 }
@@ -50,6 +67,69 @@ void SaveFreqScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     TheUI.GotoScreen(pScreen);
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void SaveFreqScreen::OnFreqSaved(int nStatus, int nSpace) {
+    ErrorScreen *pScreen;
+    switch (nStatus) {
+    case kSaveDone:
+        TheUI.GotoScreen(mDoneScreen.c_str());
+        TheGameDb->GetProfile(0)->SetModified(0);
+        return;
+    case kSaveDifferentCard:
+        if (mOverwriteStatus != 0) {
+            auto *pOverwrite = dynamic_cast<OverwriteSaveScreen *>(
+                TheUI.FindScreen(mOverwriteSaveScreen.c_str(), false));
+            pOverwrite->mOverwriteStatus = 0;
+            pOverwrite->SetDoneScreen(mDoneScreen.c_str());
+            pOverwrite->SetStartScreen(mStartScreen.c_str());
+            pScreen =
+                FindErrorScreen(mIsCancel != 0 ? "3opt_diff_card_error" : "2opt_diff_card_error");
+            pScreen->ClearTransitions();
+            pScreen->SetSlot(mSlot, kOperationSave);
+            if (mIsCancel != 0) {
+                pScreen->AddTransition("save", kPadNone, mOverwriteSaveScreen.c_str());
+                pScreen->AddTransition("cancel", kPadNone, mStartScreen.c_str());
+                pScreen->AddTransition("continue", kPadNone, mDoneScreen.c_str());
+            } else {
+                pScreen->AddTransition("retry", kPadNone, mOverwriteSaveScreen.c_str());
+                pScreen->AddTransition("cancel", kPadNone, mDoneScreen.c_str());
+            }
+            break;
+        }
+        [[fallthrough]];
+    case kSaveNoCard:
+    case kSaveUnformatted:
+        if (mIsCancel != 0) {
+            ShowCardError(nStatus, mDoneScreen.c_str(), kOperationSave);
+        } else {
+            ShowCardErrorTwoOption(nStatus, kOperationSave);
+        }
+        return;
+    case kSaveNoSpace:
+        ShowNoSpaceError(nSpace, mDoneScreen.c_str(), TheLocale.Localize("no_space_freq", true));
+        return;
+    case kSaveFreqLimit:
+        pScreen = FindErrorScreen("freq_limit_error");
+        pScreen->SetSlot(mSlot, kOperationSave);
+        pScreen->ClearTransitions();
+        pScreen->AddTransition("retry", kPadNone, mName);
+        pScreen->AddTransition("continue", kPadNone, mDoneScreen.c_str());
+        break;
+    case kSaveFreqExists:
+        pScreen = FindErrorScreen("freq_exists_error");
+        pScreen->SetSlot(mSlot, kOperationSave);
+        pScreen->ClearTransitions();
+        pScreen->AddTransition("retry", kPadNone, mName);
+        pScreen->AddTransition("continue", kPadNone, mDoneScreen.c_str());
+        pScreen->SetStartScreen(mName);
+        break;
+    default:
+        DebugWarn("not handled save freq! GET CHRISTINE\n");
+        return;
+    }
+    TheUI.GotoScreen(pScreen);
+}
+#else
 void SaveFreqScreen::OnFreqSaved(int nStatus, int nSpace) {
     ErrorScreen *pScreen;
     switch (nStatus) {
@@ -90,6 +170,7 @@ void SaveFreqScreen::OnFreqSaved(int nStatus, int nSpace) {
     }
     TheUI.GotoScreen(pScreen);
 }
+#endif
 
 bool SaveFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (strcmp(pMsg->mScreen->mName, mName) == 0) {

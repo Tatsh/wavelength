@@ -73,10 +73,14 @@ public:
      * @param nStatus How the save ended, one of MemcardTask::Status.
      * @param nNeeded The space the save needs, when the memory card is too full.
      * @ghidraAddress NTSC-U/C: 0x001ad7e0
+     * @ghidraAddress PAL: 0x001b5f28
      */
     void OnRemixSaved(int nStatus, int nNeeded) override;
 
     String mRemixName; /*!< The name the remix is saved under. */
+#ifdef VIDEO_STANDARD_PAL
+    String mContinueScreen; /*!< The screen continue leads to, or empty for the done screen. */
+#endif
 
 private:
     /**

@@ -5,6 +5,7 @@
 #include "game/gamedb.h"
 #include "met/metagame.h"
 #include "met/metagameutil.h"
+#include "met/remixdiscardscreen.h"
 #include "met/saveremixscreen.h"
 #include "met/transitionerrorscreen.h"
 #include "netflow/netlaunchpad.h"
@@ -25,6 +26,20 @@ constexpr int kFirstPlayer = 1;
 
 // IsGuest() reports this value for the host.
 constexpr int kHostIndex = 0;
+
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kThirdPlayer = 3;
+constexpr int kFourthPlayer = 4;
+
+constexpr char kMemcardDiscardScreen[] = "mc_remix_discard";
+
+// Have continuing without the save ask the player whether to discard the remix.
+inline void UseDiscardScreen(SaveRemixScreen *pSave, int nPlayer) {
+    pSave->mContinueScreen = kMemcardDiscardScreen;
+    dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(kMemcardDiscardScreen, false))->mPlayer =
+        nPlayer;
+}
+#endif
 
 } // namespace
 
@@ -71,8 +86,14 @@ void MultiSetupRemixSaveScreen::Proceed() {
             pSave->SetDoneScreen("m_r_mode");
         }
         pSave->SetSlot(mPlayer - 1);
+#ifdef VIDEO_STANDARD_PAL
+        UseDiscardScreen(pSave, mPlayer);
+#endif
     } else {
         pSave->SetStartScreen("net_end_remix");
+#ifdef VIDEO_STANDARD_PAL
+        UseDiscardScreen(pSave, mPlayer);
+#endif
         if (TheNetLaunchpad == nullptr) {
             if (TheMetagame.mNetScreenPending != 0) {
                 pSave->SetDoneScreen(TheMetagame.mNetScreen.c_str());
@@ -106,6 +127,18 @@ bool MultiSetupRemixSaveScreen::DispatchPriv(Message *pMsg) {
 bool MultiSetupRemixSaveScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (strcmp(pMsg->mPrevScreen->mName, "net_share_remix") == 0) {
         mFromShare = 1;
+#ifdef VIDEO_STANDARD_PAL
+    } else if ((mPlayer == kThirdPlayer || mPlayer == kFourthPlayer) &&
+               !JoypadMultitapConnected()) {
+        // The third and fourth players save to the multitap's slots.
+        auto *pError =
+            dynamic_cast<ErrorScreen *>(TheUI.FindScreen("remix_save_no_mtap_34_error", false));
+        pError->SetSlot(mPlayer - 1);
+        pError->ClearTransitions();
+        pError->AddTransition("no", kPadNone, mName);
+        pError->AddTransition("yes", kPadNone, "m_r_mode");
+        TheUI.GotoScreen(pError);
+#endif
     }
     return SetupRemixSaveScreen::HandleTransitionComplete(pMsg);
 }

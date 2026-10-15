@@ -81,6 +81,7 @@
 #include "met/multifreqselectscreen.h"
 #include "met/multigamestatspanel.h"
 #include "met/multiloadfreqscreen.h"
+#include "met/multinocardscreen.h"
 #include "met/multisetupremixsavescreen.h"
 #include "met/nameerrorscreen.h"
 #include "met/netbuttonpanel.h"
@@ -650,6 +651,9 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(ControllerConfigScreen::New, "control_config_screen");
     TheUI.RegisterScreenType(SaveSettingsScreen::New, "save_settings_screen");
     TheUI.RegisterScreenType(KeyboardScreen::New, "keyboard_screen");
+#ifdef VIDEO_STANDARD_PAL
+    TheUI.RegisterScreenType(MultiNoCardScreen::New, "multi_no_card_screen");
+#endif
     TheUI.RegisterPanelType(KeyboardPanel::New, "kb_panel");
     TheUI.RegisterPanelType(ControllerPanel::New, "controller_map_panel");
 #ifdef VIDEO_STANDARD_PAL

@@ -8,6 +8,7 @@
 #include "memcard/memcardtask.h"
 #include "os/debug.h"
 #include "os/joypad.h"
+#include "os/locale.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -18,12 +19,86 @@ constexpr char kRetryComponent[] = "retry";
 constexpr char kCancelComponent[] = "cancel";
 constexpr char kContinueComponent[] = "continue";
 
+#ifdef VIDEO_STANDARD_PAL
+// A save to a slot of the multitap in port 1 without the multitap.
+constexpr char kNoMultitapScreen[] = "remix_save_no_mtap_error";
+constexpr char kSaveComponent[] = "save";
+constexpr int kFirstMultitapSlot = 2;
+constexpr int kLastMultitapSlot = 3;
+#endif
+
 } // namespace
 
 SaveRemixScreen::SaveRemixScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
     mOverwriteStatus = 0; // The binary also clears it before it constructs mRemixName.
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void SaveRemixScreen::OnRemixSaved(int nStatus, int nNeeded) {
+    switch (nStatus) {
+    case MemcardTask::kStatusOk:
+        TheUI.GotoScreen(mDoneScreen.c_str());
+        break;
+    case MemcardTask::kStatusNoCard:
+        if (mSlot >= kFirstMultitapSlot && mSlot <= kLastMultitapSlot &&
+            !JoypadMultitapConnected()) {
+            auto *pError = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kNoMultitapScreen, false));
+            pError->SetSlot(mSlot);
+            pError->ClearTransitions();
+            pError->AddTransition(kSaveComponent, kPadNone, mName);
+            if (mContinueScreen != "") {
+                pError->AddTransition(kContinueComponent, kPadNone, mContinueScreen.c_str());
+            } else {
+                pError->AddTransition(kContinueComponent, kPadNone, mDoneScreen.c_str());
+            }
+            pError->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
+            pError->SetStartScreen(mName);
+            TheUI.GotoScreen(pError);
+            break;
+        }
+        [[fallthrough]];
+    case MemcardTask::kStatusUnformatted:
+    case MemcardTask::kStatusChangedCard:
+        if (mContinueScreen != "") {
+            ShowCardError(nStatus, mContinueScreen.c_str(), kOperationSave);
+        } else {
+            ShowCardErrorTwoOption(nStatus, kOperationSave);
+        }
+        break;
+    case MemcardTask::kStatusFull: {
+        const char *pszContinue =
+            mContinueScreen != "" ? mContinueScreen.c_str() : mDoneScreen.c_str();
+        ShowNoSpaceError(nNeeded, pszContinue, TheLocale.Localize("no_space_remix", true));
+        break;
+    }
+    case MemcardTask::kStatusExists: {
+        auto *pError = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kExistsScreen, false));
+        pError->SetSlot(mSlot, kOperationSave);
+        pError->ClearTransitions();
+        pError->AddTransition(kRetryComponent, kPadNone, mName);
+        pError->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
+        pError->SetStartScreen(mName);
+        TheUI.GotoScreen(pError);
+        break;
+    }
+    case MemcardTask::kStatusLimit: {
+        UIScreen *pError = TheUI.FindScreen(kLimitScreen, false);
+        pError->ClearTransitions();
+        pError->AddTransition(kRetryComponent, kPadNone, mName);
+        if (mContinueScreen != "") {
+            pError->AddTransition(kContinueComponent, kPadNone, mContinueScreen.c_str());
+        } else {
+            pError->AddTransition(kContinueComponent, kPadNone, mDoneScreen.c_str());
+        }
+        TheUI.GotoScreen(pError);
+        break;
+    }
+    default:
+        DebugWarn("not handled save remix! GET CHRISTINE\n");
+        break;
+    }
+}
+#else
 void SaveRemixScreen::OnRemixSaved(int nStatus, int nNeeded) {
     switch (nStatus) {
     case MemcardTask::kStatusOk:
@@ -59,6 +134,7 @@ void SaveRemixScreen::OnRemixSaved(int nStatus, int nNeeded) {
         break;
     }
 }
+#endif
 
 bool SaveRemixScreen::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nUITransitionCompleteMsgType) {

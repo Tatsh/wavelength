@@ -9,7 +9,11 @@
 namespace {
 
 // The operation ErrorScreen::ShowCardErrorTwoOption() reports a failure of.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kOperationCopy = ErrorScreen::kOperationCopy;
+#else
 constexpr int kOperationCopy = 2;
+#endif
 
 } // namespace
 

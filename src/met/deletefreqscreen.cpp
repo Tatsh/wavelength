@@ -9,6 +9,7 @@
 #include "met/gizmo.h"
 #include "met/metagame.h"
 #include "os/debug.h"
+#include "os/joypad.h"
 #include "os/locale.h"
 #include "ui/uimanager.h"
 
@@ -16,8 +17,15 @@ namespace {
 
 constexpr char kDefaultNameToken[] = "player_1";
 
+#ifdef VIDEO_STANDARD_PAL
+// The dialog of a card without the Freq.
+constexpr char kNoFreqsScreen[] = "no_freqs_loaded_error";
+constexpr char kRetryComponent[] = "retry";
+constexpr char kCancelComponent[] = "cancel";
+#else
 // The operation ErrorScreen::ShowCardErrorTwoOption() reports a failure of.
 constexpr int kOperationDelete = 3;
+#endif
 
 // The slot whose deletion may remove the first player's Freq.
 constexpr int kFirstSlot = 0;
@@ -27,6 +35,33 @@ constexpr int kFirstPlayer = 0;
 
 } // namespace
 
+#ifdef VIDEO_STANDARD_PAL
+void DeleteFreqScreen::OnFreqDeleted(int nStatus) {
+    switch (nStatus) {
+    case MemcardTask::kStatusOk:
+        TheUI.GotoScreen(mDoneScreen.c_str());
+        return;
+    case MemcardTask::kStatusNoCard:
+    case MemcardTask::kStatusFull:
+    case MemcardTask::kStatusChangedCard:
+        ShowCardErrorTwoOption(nStatus, kOperationDelete);
+        return;
+    case MemcardTask::kStatusUnformatted:
+    case MemcardTask::kStatusNotFound: {
+        auto *pError = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kNoFreqsScreen, false));
+        pError->SetSlot(mSlot, kOperationLoad);
+        pError->ClearTransitions();
+        pError->AddTransition(kRetryComponent, kPadNone, mName);
+        pError->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
+        TheUI.GotoScreen(pError);
+        return;
+    }
+    default:
+        DebugWarn("not handled delete freq! GET CHRISTINE\n");
+        return;
+    }
+}
+#else
 void DeleteFreqScreen::OnFreqDeleted(int nStatus) {
     if (nStatus == MemcardTask::kStatusOk) {
         TheUI.GotoScreen(mDoneScreen.c_str());
@@ -36,6 +71,7 @@ void DeleteFreqScreen::OnFreqDeleted(int nStatus) {
         DebugWarn("not handled delete freq! GET CHRISTINE\n");
     }
 }
+#endif
 
 bool DeleteFreqScreen::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nUITransitionCompleteMsgType) {

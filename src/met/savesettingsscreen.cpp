@@ -7,6 +7,7 @@
 #include "memcard/memcardtask.h"
 #include "os/debug.h"
 #include "os/joypad.h"
+#include "os/locale.h"
 #include "ui/uimanager.h"
 
 namespace {
@@ -23,6 +24,21 @@ void SaveSettingsScreen::OnSettingsSaved(int nStatus, int nNeeded) {
         TheGameDb->GetOptions()->mModified = 0;
         TheUI.GotoScreen(mDoneScreen.c_str());
         break;
+#ifdef VIDEO_STANDARD_PAL
+    case MemcardTask::kStatusNoCard:
+    case MemcardTask::kStatusUnformatted:
+    case MemcardTask::kStatusChangedCard:
+        if (mIsCancel != 0) {
+            ShowCardError(nStatus, mDoneScreen.c_str(), kOperationSave);
+        } else {
+            ShowCardErrorTwoOption(nStatus, kOperationSave);
+        }
+        break;
+    case MemcardTask::kStatusFull:
+        ShowNoSpaceError(
+            nNeeded, mDoneScreen.c_str(), TheLocale.Localize("no_space_settings", true));
+        break;
+#else
     case MemcardTask::kStatusNoCard:
     case MemcardTask::kStatusUnformatted:
     case MemcardTask::kStatusChangedCard:
@@ -31,6 +47,7 @@ void SaveSettingsScreen::OnSettingsSaved(int nStatus, int nNeeded) {
     case MemcardTask::kStatusFull:
         ShowNoSpaceError(nNeeded);
         break;
+#endif
     case MemcardTask::kStatusExists: {
         UIScreen *pScreen = TheUI.FindScreen(kExistsScreen, false);
         pScreen->ClearTransitions();

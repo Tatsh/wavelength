@@ -30,8 +30,12 @@ constexpr char kGenericError[] = "net_connect_internet_error";
 constexpr int kConfigSlot = 0;
 
 // The operation of ErrorScreen::ShowCardErrorTwoOption() for a failure outside a save, a copy, and
-// a deletion.
+// a deletion. The PAL build reports a load.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kNoOperation = ErrorScreen::kOperationLoad;
+#else
 constexpr int kNoOperation = 0;
+#endif
 
 const char *ErrorToken(int nResult) {
     switch (nResult) {

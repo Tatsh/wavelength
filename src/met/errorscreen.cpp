@@ -30,11 +30,29 @@ constexpr char kNoFormatDeleteToken[] = "no_format_del_warning_cancel_dlg";
 constexpr char kNoFormatLoadToken[] = "no_format_load_warning_cancel_dlg";
 
 // The operations ShowCardErrorTwoOption() takes.
+#ifdef VIDEO_STANDARD_PAL
+enum Operation {
+    kOperationSave = ErrorScreen::kOperationSave,
+    kOperationCopy = ErrorScreen::kOperationCopy,
+    kOperationDelete = ErrorScreen::kOperationDelete,
+};
+
+constexpr char kSaveComponent[] = "save";
+
+// The operation texts of GetOperationText().
+constexpr char kLoadErrorToken[] = "load_err_string";
+constexpr char kSaveErrorToken[] = "save_err_string";
+constexpr char kCopyErrorToken[] = "copy_err_string";
+constexpr char kDeleteErrorToken[] = "delete_err_string";
+constexpr char kFormatErrorToken[] = "format_err_string";
+constexpr char kCheckErrorToken[] = "check_err_string";
+#else
 enum Operation {
     kOperationSave = 1,
     kOperationCopy = 2,
     kOperationDelete = 3,
 };
+#endif
 
 // The slot whose unformatted memory card may be skipped.
 constexpr int kFirstSlot = 0;
@@ -59,10 +77,17 @@ inline const char *NoFormatToken(int nOperation) {
 
 } // namespace
 
+#ifdef VIDEO_STANDARD_PAL
+ErrorScreen::ErrorScreen(DataArray *pData) : FreqScreen(pData), mSlot(0), mOperation(0) {
+    pData->FindString("start_screen", &mStartScreen, false);
+    pData->FindString("done_screen", &mDoneScreen, false);
+}
+#else
 ErrorScreen::ErrorScreen(DataArray *pData) : FreqScreen(pData), mSlot(0) {
     pData->FindString("start_screen", &mStartScreen, false);
     pData->FindString("done_screen", &mDoneScreen, false);
 }
+#endif
 
 ErrorScreen::~ErrorScreen() {
 }
@@ -71,6 +96,82 @@ const char *ErrorScreen::GetSlotName() {
     return TheMCManager.GetSlotName(mSlot);
 }
 
+#ifdef VIDEO_STANDARD_PAL
+const char *ErrorScreen::GetOperationText() {
+    switch (mOperation) {
+    case kOperationLoad:
+        return TheLocale.Localize(kLoadErrorToken, true);
+    case kOperationSave:
+        return TheLocale.Localize(kSaveErrorToken, true);
+    case kOperationCopy:
+        return TheLocale.Localize(kCopyErrorToken, true);
+    case kOperationDelete:
+        return TheLocale.Localize(kDeleteErrorToken, true);
+    case kOperationFormat:
+        return TheLocale.Localize(kFormatErrorToken, true);
+    case kOperationCheck:
+        return TheLocale.Localize(kCheckErrorToken, true);
+    default:
+        return "";
+    }
+}
+
+void ErrorScreen::ShowCardError(int nStatus, const char *pszContinueScreen, int nOperation) {
+    ErrorScreen *pError;
+    switch (nStatus) {
+    case MemcardTask::kStatusNoCard:
+        pError = FindErrorScreen(kThreeOptionNoCardScreen);
+        TheUI.GotoScreen(pError);
+        pError->SetSlot(mSlot, nOperation);
+        pError->ClearTransitions();
+        break;
+    case MemcardTask::kStatusChangedCard:
+        pError = FindErrorScreen(kThreeOptionDiffCardScreen);
+        pError->ClearTransitions();
+        pError->SetSlot(mSlot, nOperation);
+        break;
+    case MemcardTask::kStatusUnformatted: {
+        ErrorScreen *pFormat = FindErrorScreen(kFormatScreen);
+        pFormat->SetSlot(mSlot, nOperation);
+        pFormat->SetDoneScreen(mName);
+        pFormat->SetStartScreen(mName);
+        pFormat->SetSlot(mSlot, nOperation);
+        pError = FindErrorScreen(kUnformattedScreen);
+        pError->ClearTransitions();
+        pError->SetSlot(mSlot, nOperation);
+        pError->AddTransition(kYesComponent, kPadNone, kFormatScreen);
+        if (mSlot == kFirstSlot) {
+            pError->AddTransition(kNoComponent, kPadNone, kNoFormatContinueScreen);
+            ErrorScreen *pWarning = FindErrorScreen(kNoFormatContinueScreen);
+            auto *pMessage =
+                pWarning != nullptr ? dynamic_cast<MsgErrorScreen *>(pWarning) : nullptr;
+            pMessage->mMessage = TheLocale.Localize(kNoFormatSaveToken, true);
+            pWarning->ClearTransitions();
+            pWarning->AddTransition(kRetryComponent, kPadNone, mName);
+            pWarning->AddTransition(kContinueComponent, kPadNone, pszContinueScreen);
+        } else {
+            pError->AddTransition(kNoComponent, kPadNone, mDoneScreen.c_str());
+        }
+        TheUI.GotoScreen(kUnformattedScreen);
+        return;
+    }
+    case MemcardTask::kStatusFull:
+        pError = FindErrorScreen(kNoSpaceScreen);
+        pError->SetSlot(mSlot, nOperation);
+        pError->ClearTransitions();
+        pError->AddTransition(kRetryComponent, kPadNone, mName);
+        pError->AddTransition(kCancelComponent, kPadNone, mDoneScreen.c_str());
+        TheUI.GotoScreen(pError);
+        return;
+    default:
+        return;
+    }
+    pError->AddTransition(kSaveComponent, kPadNone, mName);
+    pError->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
+    pError->AddTransition(kContinueComponent, kPadNone, pszContinueScreen);
+    TheUI.GotoScreen(pError);
+}
+#else
 void ErrorScreen::ShowCardError(int nStatus) {
     ErrorScreen *pError;
     switch (nStatus) {
@@ -123,7 +224,73 @@ void ErrorScreen::ShowCardError(int nStatus) {
     pError->AddTransition(kContinueComponent, kPadNone, mDoneScreen.c_str());
     TheUI.GotoScreen(pError);
 }
+#endif
 
+#ifdef VIDEO_STANDARD_PAL
+void ErrorScreen::ShowCardErrorTwoOption(int nStatus, int nOperation) {
+    ErrorScreen *pError;
+    switch (nStatus) {
+    case MemcardTask::kStatusNoCard:
+        pError = FindErrorScreen(kTwoOptionNoCardScreen);
+        TheUI.GotoScreen(pError);
+        pError->SetSlot(mSlot, nOperation);
+        pError->ClearTransitions();
+        break;
+    case MemcardTask::kStatusChangedCard:
+        pError = FindErrorScreen(kTwoOptionDiffCardScreen);
+        pError->ClearTransitions();
+        pError->SetSlot(mSlot, nOperation);
+        break;
+    case MemcardTask::kStatusUnformatted: {
+        ErrorScreen *pFormat = FindErrorScreen(kFormatScreen);
+        pFormat->SetSlot(mSlot, nOperation);
+        pFormat->SetDoneScreen(mName);
+        pFormat->SetStartScreen(mName);
+        pFormat->SetSlot(mSlot, nOperation);
+        pError = FindErrorScreen(kUnformattedScreen);
+        pError->ClearTransitions();
+        pError->SetSlot(mSlot, nOperation);
+        pError->AddTransition(kYesComponent, kPadNone, kFormatScreen);
+        pError->AddTransition(kNoComponent, kPadNone, kNoFormatCancelScreen);
+        auto *pWarning =
+            dynamic_cast<MsgErrorScreen *>(TheUI.FindScreen(kNoFormatCancelScreen, false));
+        pWarning->SetSlot(mSlot, kOperationNone);
+        pWarning->mMessage = TheLocale.Localize(NoFormatToken(nOperation), true);
+        pWarning->ClearTransitions();
+        pWarning->AddTransition(kRetryComponent, kPadNone, mName);
+        pWarning->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
+        TheUI.GotoScreen(kUnformattedScreen);
+        return;
+    }
+    case MemcardTask::kStatusFull:
+        pError = FindErrorScreen(kNoSpaceScreen);
+        pError->SetSlot(mSlot, nOperation);
+        pError->ClearTransitions();
+        pError->AddTransition(kRetryComponent, kPadNone, mName);
+        pError->AddTransition(kCancelComponent, kPadNone, mDoneScreen.c_str());
+        TheUI.GotoScreen(pError);
+        return;
+    default:
+        return;
+    }
+    pError->AddTransition(kRetryComponent, kPadNone, mName);
+    pError->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
+    TheUI.GotoScreen(pError);
+}
+
+void ErrorScreen::ShowNoSpaceError(int nSpace,
+                                   const char *pszContinueScreen,
+                                   const char *pszSaveName) {
+    auto *pError = dynamic_cast<SpaceErrorScreen *>(TheUI.FindScreen(kNoSpaceScreen, false));
+    pError->SetSlot(mSlot, kOperationSave);
+    pError->mSpace = nSpace;
+    pError->mSaveName = pszSaveName;
+    pError->ClearTransitions();
+    pError->AddTransition(kRetryComponent, kPadNone, mName);
+    pError->AddTransition(kContinueComponent, kPadNone, pszContinueScreen);
+    TheUI.GotoScreen(pError);
+}
+#else
 void ErrorScreen::ShowCardErrorTwoOption(int nStatus, int nOperation) {
     ErrorScreen *pError;
     switch (nStatus) {
@@ -184,3 +351,4 @@ void ErrorScreen::ShowNoSpaceError(int nSpace) {
     pError->AddTransition(kContinueComponent, kPadNone, mDoneScreen.c_str());
     TheUI.GotoScreen(pError);
 }
+#endif

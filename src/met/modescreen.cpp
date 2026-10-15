@@ -7,6 +7,7 @@
 #include "game/songentry.h"
 #include "met/jukeboxscreen.h"
 #include "met/metagame.h"
+#include "met/multiloadfreqscreen.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
@@ -78,6 +79,9 @@ bool ModeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         Campaign second;
         second.mName = TheLocale.Localize("player_2", true);
         TheGameDb->AddPlayer(&second);
+#ifdef VIDEO_STANDARD_PAL
+        dynamic_cast<MultiLoadFreqScreen *>(TheUI.FindScreen("multi_load_freq", false))->Reset();
+#endif
     } else {
         TheGameDb->SetLoadRemix(false);
         TheGameDb->SetTutorial(0);

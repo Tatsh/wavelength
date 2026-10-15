@@ -24,8 +24,13 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ae048
      * @ghidraAddress PAL: 0x001b6ab8
      */
+#ifdef VIDEO_STANDARD_PAL
+    explicit LoadRemixScreen(DataArray *pData) : ErrorScreen(pData), mReload(0) {
+    }
+#else
     explicit LoadRemixScreen(DataArray *pData) : ErrorScreen(pData) {
     }
+#endif
 
     /**
      * Destroy the screen.
@@ -47,6 +52,16 @@ public:
     static UIScreen *New(DataArray *pData) {
         return new LoadRemixScreen(pData);
     }
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Load the remix again after the card changed during the last load.
+     *
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress PAL: 0x001b6b00
+     */
+    void Poll(float fTime) override;
+#endif
 
     /**
      * Report the empty title of the screen.
@@ -88,4 +103,8 @@ private:
      * @ghidraAddress PAL: 0x001b6da0
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+#ifdef VIDEO_STANDARD_PAL
+    int mReload; // Whether the next poll loads the remix again.
+#endif
 };

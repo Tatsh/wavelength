@@ -86,7 +86,8 @@ public:
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
     /**
-     * Move on to the next slot once a load has ended.
+     * Move on to the next slot once a load has ended. The PAL build waits until no entry or exit
+     * is under way.
      *
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x001ab9c0
@@ -95,7 +96,8 @@ public:
     void Poll(float fTime) override;
 
     /**
-     * Add the Freqs of a slot, or read the slot again after a card change.
+     * Add the Freqs of a slot, or read the slot again after a card change. In the PAL build a slot
+     * without a memory card opens `multi_load_no_card`.
      *
      * @param nStatus How the load ended, one of MemcardTask::Status.
      * @param pProfiles The Freqs loaded.
@@ -104,7 +106,23 @@ public:
      */
     void OnFreqsLoaded(int nStatus, std::vector<Campaign> *pProfiles) override;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Forget the Freqs, and start again from the first slot the next time the screen enters.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress PAL: 0x001b3e20
+     */
+    void Reset();
+#endif
+
 private:
+#ifdef VIDEO_STANDARD_PAL
+    // Continuing past a slot without a memory card moves on to the next slot.
+    friend class MultiNoCardScreen;
+#endif
+
     /**
      * Load the next slot, or after the last slot hand the Freqs to the selection panels and go
      * to the selection screen.
@@ -118,6 +136,9 @@ private:
 
     /**
      * Forget the Freqs and start the load of the first slot once this screen has entered.
+     *
+     * In the PAL build Reset() forgets the Freqs instead, and the entry loads the current slot
+     * unless the next poll moves on.
      *
      * @param pMsg The message.
      * @return False.

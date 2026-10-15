@@ -26,8 +26,13 @@ public:
      * @ghidraAddress NTSC-U/C: 0x001ae5c0
      * @ghidraAddress PAL: 0x001b7190
      */
+#ifdef VIDEO_STANDARD_PAL
+    explicit LoadNetConfigsScreen(DataArray *pData) : ErrorScreen(pData), mRelist(0) {
+    }
+#else
     explicit LoadNetConfigsScreen(DataArray *pData) : ErrorScreen(pData) {
     }
+#endif
 
     /**
      * Destroy the screen.
@@ -49,6 +54,16 @@ public:
     static UIScreen *New(DataArray *pData) {
         return new LoadNetConfigsScreen(pData);
     }
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * List the configurations again after the card changed during the last listing.
+     *
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress PAL: 0x001b73c8
+     */
+    void Poll(float fTime) override;
+#endif
 
     /**
      * Report the empty title of the screen.
@@ -91,4 +106,8 @@ private:
      * @ghidraAddress PAL: 0x001b7530
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+#ifdef VIDEO_STANDARD_PAL
+    int mRelist; // Whether the next poll lists the configurations again.
+#endif
 };

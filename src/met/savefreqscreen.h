@@ -2,6 +2,7 @@
 
 #include "memcard/memcarduser.h"
 #include "met/overwritesavescreen.h"
+#include "os/string.h"
 #include "script/dataarray.h"
 #include "ui/uitransitioncompletemsg.h"
 
@@ -107,4 +108,11 @@ public:
 
     int mReservedB4[3]; // +0xb4, not yet recovered.
     int mIsCancel;      /*!< Non-zero when a failure also offers to continue, `isCancel`. +0xc0 */
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * The screen that saves over the Freq when the memory card changed, `overwrite_save_screen`,
+     * or this screen. +0xc4
+     */
+    String mOverwriteSaveScreen;
+#endif
 };

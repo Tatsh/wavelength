@@ -57,6 +57,18 @@ public:
      */
     bool DispatchPriv(Message *pMsg) override;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Offer the save, cancel, and continue dialog once when the memory card changed during a save
+     * that replaces the Freq, and handle every other outcome as SaveFreqScreen does.
+     *
+     * @param nStatus How the save ended, as SaveFreqScreen::OnFreqSaved() receives it.
+     * @param nSpace The space the save needs, when the memory card is too full.
+     * @ghidraAddress PAL: 0x001b48b8
+     */
+    void OnFreqSaved(int nStatus, int nSpace) override;
+#endif
+
     /**
      * Start the save under mFreqName once this screen has entered.
      *

@@ -20,9 +20,11 @@ constexpr char kWrongConsoleToken[] = "wrong_console_err_msg";
 constexpr char kConfigErrorToken[] = "random_config_err_msg";
 constexpr char kNoToken[] = "";
 
+#ifndef VIDEO_STANDARD_PAL
 // The operation of ErrorScreen::ShowCardErrorTwoOption() for a failure outside a save, a copy, and
 // a deletion.
 constexpr int kNoOperation = 0;
+#endif
 
 // The slot whose name the error message shows.
 constexpr int kFirstSlot = 0;
@@ -40,6 +42,9 @@ void LoadNetConfigsScreen::OnNetConfigsListed(int nStatus, std::list<InetConfig>
         FindConfigScreen()->SetConfigs(*pConfigs);
         TheUI.GotoScreen(kConfigTransition);
         break;
+#ifdef VIDEO_STANDARD_PAL
+    case MemcardTask::kStatusUnformatted:
+#endif
     case MemcardTask::kStatusNotFound:
         pszToken = kNotFoundToken;
         break;
@@ -49,9 +54,18 @@ void LoadNetConfigsScreen::OnNetConfigsListed(int nStatus, std::list<InetConfig>
     case MemcardTask::kStatusConfigsError:
         pszToken = kConfigErrorToken;
         break;
+#ifdef VIDEO_STANDARD_PAL
+    case MemcardTask::kStatusChangedCard:
+        mRelist = 1;
+        break;
+    default:
+        ShowCardErrorTwoOption(nStatus, kOperationLoad);
+        break;
+#else
     default:
         ShowCardErrorTwoOption(nStatus, kNoOperation);
         break;
+#endif
     }
     if (std::strcmp(pszToken, kNoToken) == 0) {
         return;
@@ -79,3 +93,15 @@ bool LoadNetConfigsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
     }
     return false;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void LoadNetConfigsScreen::Poll(float fTime) {
+    UIScreen::Poll(fTime);
+    if (mRelist != 0) {
+        mRelist = 0;
+        const std::list<InetConfig> noConfigs;
+        FindConfigScreen()->SetConfigs(noConfigs);
+        TheMCManager.ListNetConfigs(this, mSlot);
+    }
+}
+#endif

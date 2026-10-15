@@ -39,6 +39,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00354f68
+     * @ghidraAddress PAL: 0x003c2258
      */
     static UIScreen *New(DataArray *pData) {
         return new TransitionScreen(pData);

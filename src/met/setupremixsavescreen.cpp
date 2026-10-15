@@ -26,6 +26,9 @@ constexpr char kDiscardFormat[] = "%s_discard";
 constexpr char kLocalDiscardFormat[] = "m_r_end_remix_%d_discard";
 constexpr char kKeyboardScreen[] = "kb_screen";
 constexpr char kSaveScreen[] = "save_remix";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kMemcardDiscardScreen[] = "mc_remix_discard";
+#endif
 
 // The name entry and the keyboard accept this many characters, no wider than this.
 constexpr int kMaxTitleChars = 29;
@@ -147,7 +150,15 @@ void SetupRemixSaveScreen::Proceed() {
     pSave->SetSlot(0);
     pSave->SetStartScreen("s_r_end_remix");
     pSave->SetDoneScreen("s_r_mode");
+#ifdef VIDEO_STANDARD_PAL
+    // Continuing without the save asks whether to discard the remix.
+    pSave->mContinueScreen = kMemcardDiscardScreen;
     pSave->mOverwriteStatus = 0;
+    dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(kMemcardDiscardScreen, false))->mPlayer =
+        mPlayer;
+#else
+    pSave->mOverwriteStatus = 0;
+#endif
     pSave->mRemixName = title.c_str();
     TheUI.GotoScreen(pSave);
 }
