@@ -590,10 +590,9 @@ LobbyRT::LobbyRT()
     ScriptFunction::Register(AllowUnlimitedUpload, "unlimited_upload", nullptr);
 
 #ifdef VIDEO_STANDARD_PAL
-    // The European release also authenticates through DNAS (a DNASTask) between InitRTTask and
-    // InitMGCLTask. The DNAS step is not reconstructed, and the chain goes on without it.
     mConnectTask.Add(new CheckInetTask);
     mConnectTask.Add(new InitRTTask);
+    mConnectTask.Add(new DNASTask);
     mConnectTask.Add(new InitMGCLTask);
     mConnectTask.Add(new DoDNSTask);
     mConnectTask.Add(new MediusConnectTask(MediusConnectTask::kServerLobby));
@@ -602,9 +601,6 @@ LobbyRT::LobbyRT()
 #else
     mConnectTask.Add(new CheckInetTask);
     mConnectTask.Add(new DoDNSTask);
-#ifdef VIDEO_STANDARD_PAL
-    mConnectTask.Add(new DNASTask);
-#endif
     mConnectTask.Add(new InitRTTask);
     mConnectTask.Add(new InitMGCLTask);
     mConnectTask.Add(new MediusConnectTask(MediusConnectTask::kServerLobby));
