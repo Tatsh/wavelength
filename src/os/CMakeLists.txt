@@ -18,6 +18,7 @@ set(WAVELENGTH_OS_SRCS
     bufstream.cpp
     cheatsmanager.cpp
     chunkstream.cpp
+    codecheck.cpp
     command.cpp
     commandid.cpp
     cycles.cpp

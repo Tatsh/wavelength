@@ -88,6 +88,12 @@ String gFileOrder;
 // NTSC-U/C: 0x003b2230, PAL: 0x00431100
 int gUsingCD;
 
+#ifdef VIDEO_STANDARD_PAL
+// The `ignore_cd` option, which has UsingCD() report the host even when booted from the disc.
+// PAL: 0x00431104
+int gIgnoreCD;
+#endif
+
 // NTSC-U/C: 0x003b2130, PAL: 0x00431000
 char gConfigPath[kConfigPathSize];
 
@@ -96,6 +102,12 @@ DataArray *gConfig;
 
 // NTSC-U/C: 0x003b2238, PAL: 0x00431110
 const char *gLanguage = "english";
+
+#ifdef VIDEO_STANDARD_PAL
+// Whether PrepareIop() reboots the IOP with the image that includes DNAS.
+// PAL: 0x00431114
+int gDnasImage;
+#endif
 
 // NTSC-U/C: 0x003b223c, PAL: 0x00431118
 char *gDebugBuffer; // Yes, the binary never sets it.
@@ -147,6 +159,9 @@ void MultitapPoll() {
 void ParseCommandLine(int argc, char **argv) {
     gOptions.AddBool("host_config", &g_bHostConfig, 1);
     gOptions.AddString("file_order", &gFileOrder);
+#ifdef VIDEO_STANDARD_PAL
+    gOptions.AddBool("ignore_cd", &gIgnoreCD, 1);
+#endif
     gOptions.Process(argc, argv);
 }
 
@@ -204,7 +219,15 @@ void PrepareIop() {
     }
     if (kImageFirstWord == 0) {
         String image;
+#ifdef VIDEO_STANDARD_PAL
+        if (gDnasImage != 0) {
+            MakeDevicePath(image, "iop/dnas271.img");
+        } else {
+            MakeDevicePath(image, "iop/ioprp271.img");
+        }
+#else
         MakeDevicePath(image, "iop/ioprp260.img");
+#endif
         while (sceSifRebootIop(image.c_str()) == 0) {
         }
         while (sceSifSyncIop() == 0) {
@@ -289,7 +312,11 @@ void SystemPoll() {
 }
 
 bool UsingCD() {
+#ifdef VIDEO_STANDARD_PAL
+    return gUsingCD != 0 && gIgnoreCD == 0;
+#else
     return gUsingCD != 0;
+#endif
 }
 
 void SetUsingCD(bool bUsingCD) {
@@ -354,3 +381,10 @@ void SystemTerminate() {
     DataTerminate();
     FreeDebugBuffer();
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void SystemInitDnas(int argc, char **argv, const char *pszConfigFile) {
+    gDnasImage = 1;
+    SystemInit(argc, argv, pszConfigFile);
+}
+#endif

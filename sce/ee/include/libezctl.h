@@ -2,6 +2,7 @@
 #define LIBEZCTL_H
 
 #include <libeznetcnf.h>
+#include <sifrpc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,6 +39,24 @@ typedef struct {
  * @ghidraAddress PAL: 0x00276488
  */
 int ezNetCtlInit(void);
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * The server function that marks the network as checked. The interface reports a disconnected
+ * state from then on.
+ */
+#define EZ_NETCTL_FUNCTION_SET_NET_CHECKED 9
+
+/**
+ * Report the client record ezNetCtlInit() binds, for a call the library does not wrap.
+ *
+ * The name is inferred.
+ *
+ * @return The client record.
+ * @ghidraAddress PAL: 0x00276560
+ */
+sceSifClientData *ezNetCtlGetClient(void);
+#endif
 
 /**
  * Send settings to the server and bring the interface up with them.

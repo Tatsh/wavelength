@@ -3,6 +3,7 @@
 #include "game/worldmgr.h"
 #include "met/metagame.h"
 #include "netflow/net.h"
+#include "os/codecheck.h"
 #include "os/debug.h"
 #include "os/joypad.h"
 #include "os/locale.h"
@@ -16,7 +17,11 @@
 
 namespace {
 
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kConfigFile[] = "cfg_freq2euro.txt";
+#else
 constexpr char kConfigFile[] = "freq2_config.txt";
+#endif
 constexpr char kExitAppCommand[] = "exit_app";
 constexpr char kRndHeapName[] = "rnd";
 
@@ -236,17 +241,33 @@ void UpdateAppFrame() {
 
 // NTSC-U/C: 0x001009e0, PAL: 0x001009e0
 void InitializeAppSubsystems(int argc, char **argv) {
+#ifdef VIDEO_STANDARD_PAL
+    SystemInitDnas(argc, argv, kConfigFile);
+#else
     SystemInit(argc, argv, kConfigFile);
+#endif
     TheManager.Init();
     TheRnd->Init();
     TheMetagame.ShowLoadingScreen();
     Synth::Create();
     TheGameDb->Init();
     InitializeNetSubsystem();
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Poll();
+    TheLocale.Init(GetSystemLanguage());
+    CodeCheck::Poll();
+    TheTriggerMgr.Init();
+    CodeCheck::Poll();
+    TheWorldMgr->Init();
+    CodeCheck::Poll();
+    TheMetagame.Init();
+    CodeCheck::Poll();
+#else
     TheLocale.Init(GetSystemLanguage());
     TheTriggerMgr.Init();
     TheWorldMgr->Init();
     TheMetagame.Init();
+#endif
     ScriptFunction::Register(QuitApp, kExitAppCommand, nullptr);
 }
 
@@ -269,12 +290,22 @@ void TerminateAppSubsystems() {
 
 // NTSC-U/C: 0x00100b50, PAL: 0x00101b68
 int main(int argc, char **argv) {
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Create();
+#endif
     InitializeAppSubsystems(argc, argv);
     JoypadSetStickMessages(true);
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Poll();
+#endif
 
     while (!g_bQuitRequested) {
         UpdateAppFrame();
     }
+
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Destroy();
+#endif
 
     TerminateAppSubsystems();
     SystemTerminate();

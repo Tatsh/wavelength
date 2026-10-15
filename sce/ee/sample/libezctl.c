@@ -82,6 +82,12 @@ int ezNetCtlInit(void) {
     return 1;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+sceSifClientData *ezNetCtlGetClient(void) {
+    return &g_eznetctlClient;
+}
+#endif
+
 int ezNetCtlSetProperties(const ezNetCnfData_t *data) {
     if (g_nEznetctlBound == 0) {
         scePrintf("**** eznetctl RPC server not currently running\n");

@@ -17,6 +17,21 @@
  */
 void SystemInit(int argc, char **argv, const char *pszConfigFile);
 
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Bring up the operating layer as SystemInit() does, with the IOP rebooted into the image that
+ * includes DNAS.
+ *
+ * The name is inferred.
+ *
+ * @param argc The argument count main() received.
+ * @param argv The argument vector main() received.
+ * @param pszConfigFile The configuration file to read, relative to the disc root.
+ * @ghidraAddress PAL: 0x00296710
+ */
+void SystemInitDnas(int argc, char **argv, const char *pszConfigFile);
+#endif
+
 /**
  * Shut down what SystemInit() started, in reverse order, and release the configuration.
  *
@@ -56,8 +71,11 @@ DataArray *SystemConfig();
 /**
  * Report whether files are read from the disc rather than from the host.
  *
+ * In the PAL build the `ignore_cd` command line option has the host reported.
+ *
  * @return Whether files come from the disc.
  * @ghidraAddress NTSC-U/C: 0x0028c5a8
+ * @ghidraAddress PAL: 0x00295f18
  */
 bool UsingCD();
 

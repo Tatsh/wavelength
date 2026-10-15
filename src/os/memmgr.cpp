@@ -5,6 +5,7 @@
 
 #include <eekernel.h>
 
+#include "os/cycles.h"
 #include "os/debug.h"
 #include "os/fixedsizealloc.h"
 #include "os/freestore.h"
@@ -23,6 +24,13 @@ constexpr size_t kProbeBytes = 0x1000000;
 constexpr uintptr_t kMemoryEnd = 0x1f70000;
 
 constexpr int kWordShift = 2;
+
+#ifdef VIDEO_STANDARD_PAL
+// The bits of the cycle counter that pick the first word of the main heap, and the bytes the block
+// is enlarged by for it.
+constexpr unsigned int kStartJitterMask = 0x3f0;
+constexpr int kStartJitterSpareBytes = 1024;
+#endif
 
 // The alignment of PoolMemAlloc() as a power of two of words, 16 bytes, and the smallest block.
 constexpr int kDefaultAlignShift = 2;
@@ -82,14 +90,24 @@ void MemHeapInfo(int nHeap, int *pnBlocks, int *pnFreeBytes, int *pnBiggest) {
     g_aHeaps[nHeap].GetInfo(pnBlocks, pnFreeBytes, pnBiggest);
 }
 
-// Take the memory from the end of the C library's heap to kMemoryEnd.
+// Take the memory from the end of the C library's heap to kMemoryEnd. The PAL build starts the
+// heap a random number of words into the block.
 // NTSC-U/C: 0x00299e38, PAL: 0x002a3a38
 static void AllocMainHeap(int **ppStart, int **ppEnd) {
+#ifdef VIDEO_STANDARD_PAL
+    const int nStartWords = static_cast<int>(ReadCycleCount() & kStartJitterMask);
+#endif
     void *pProbe = malloc(kProbeBytes);
     const uintptr_t nProbe = reinterpret_cast<uintptr_t>(pProbe);
     free(pProbe);
     const int nBytes = static_cast<int>(kMemoryEnd - nProbe);
+#ifdef VIDEO_STANDARD_PAL
+    // Yes, the start moves up to 1008 words into a block only 1024 bytes larger.
+    int *pBlock = static_cast<int *>(malloc(nBytes + kStartJitterSpareBytes));
+    *ppStart = &pBlock[nStartWords];
+#else
     *ppStart = static_cast<int *>(malloc(nBytes));
+#endif
     *ppEnd = &(*ppStart)[nBytes >> kWordShift];
 }
 
