@@ -1,6 +1,6 @@
 # Game code, PAL `0x00280000` to `0x00290000`
 
-285 of 288 routines done.
+287 of 288 routines done.
 
 Sorted by status (remaining first), then length, then reference count, then
 name. Names and signatures are the current Ghidra prototypes of the PAL
@@ -10,8 +10,6 @@ the PAL executable has.
 | Name                                          |       Status       | # xref | Length | PAL          | NTSC-U/C     | Signature                                       |
 | --------------------------------------------- | :----------------: | -----: | -----: | ------------ | ------------ | ----------------------------------------------- |
 | `NetGameParams__operatorLeftShiftBinStream`   |        :x:         |      1 |    312 | `0x002860b8` | `0x0027c688` | `undefined FUN_002860b8()`                      |
-| `size_outdest`                                |        :x:         |      1 |     24 | `0x0028d0a0` | `0x002837f0` | `undefined GzipInflatedSize()`                  |
-| `init_outdest`                                |        :x:         |      1 |     20 | `0x0028d088` | `0x002837d8` | `undefined GzipSetMemoryOutput()`               |
 | `Campaign__GetClearedSongs`                   | :white_check_mark: |      2 |   3632 | `0x00283748` | `0x00279cb8` | `undefined BuildAvatarSongClearedBitset()`      |
 | `SynthEffects__Load`                          | :white_check_mark: |      3 |   2888 | `0x002851d8` | `0x0027b7a8` | `undefined LoadAvatarBusConfigFromData()`       |
 | `SFXBuilder__OnText`                          | :white_check_mark: |      0 |   2828 | `0x00288650` | `0x0027ed68` | `undefined ResolveSoundEffectMidiChecker()`     |
@@ -271,10 +269,12 @@ the PAL executable has.
 | `GzipInit`                                    | :white_check_mark: |      1 |     28 | `0x0028cd68` | `0x002834b8` | `undefined InitInflateTables()`                 |
 | `Scheduler__ResetForRecording`                | :white_check_mark: |      1 |     28 | `0x0028bc18` | `0x00282360` | `undefined BeginRampSchedulerRecording()`       |
 | `Campaign__SetFlagBit`                        | :white_check_mark: |      2 |     24 | `0x00284810` | `0x0027ad80` | `undefined SetAvatarFlagBit()`                  |
+| `size_outdest`                                | :white_check_mark: |      1 |     24 | `0x0028d0a0` | `0x002837f0` | `undefined GzipInflatedSize()`                  |
 | `InputMap__GetButtonAction`                   | :white_check_mark: |      6 |     20 | `0x002873e8` | `0x0027dad0` | `undefined GetVectorAElement()`                 |
 | `InputMap__SetButtonAction`                   | :white_check_mark: |      2 |     20 | `0x002873d0` | `0x0027dab8` | `undefined SetVectorAElement()`                 |
 | `InputMap__GetStickAction`                    | :white_check_mark: |      1 |     20 | `0x00287418` | `0x0027db00` | `undefined GetVectorBElement()`                 |
 | `InputMap__SetStickAction`                    | :white_check_mark: |      1 |     20 | `0x00287400` | `0x0027dae8` | `undefined SetVectorBElement()`                 |
+| `init_outdest`                                | :white_check_mark: |      1 |     20 | `0x0028d088` | `0x002837d8` | `undefined GzipSetMemoryOutput()`               |
 | `CommandId__CommandIdCopy`                    | :white_check_mark: |      5 |     16 | `0x0028b080` | `0x00281780` | `undefined CopyWordToPtr()`                     |
 | `Campaign__GetFlagBit`                        | :white_check_mark: |      2 |     16 | `0x00284800` | `0x0027ad70` | `undefined GetAvatarFlagBit()`                  |
 | `CommandId__operatorAssign`                   | :white_check_mark: |      2 |     16 | `0x0028b090` | `0x00281790` | `undefined CopyWordToPtr2()`                    |

@@ -1,4 +1,4 @@
-# DNAS2 and RCOM, PAL `0x00370000` to `0x00380000`
+# RCOM crypto library, PAL `0x00370000` to `0x00380000`
 
 0 of 74 routines done.
 
