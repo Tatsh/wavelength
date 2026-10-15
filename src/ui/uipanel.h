@@ -337,6 +337,7 @@ private:
      * The default frame the entry starts at.
      *
      * @ghidraAddress NTSC-U/C: 0x003afccc
+     * @ghidraAddress PAL: 0x0042eb64
      */
     static float sEnterStartFrame;
 
@@ -344,6 +345,7 @@ private:
      * The default frame the entry stops at.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcd0
+     * @ghidraAddress PAL: 0x0042eb68
      */
     static float sEnterStopFrame;
 
@@ -351,6 +353,7 @@ private:
      * The default frame the exit starts at.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcd4
+     * @ghidraAddress PAL: 0x0042eb6c
      */
     static float sExitStartFrame;
 
@@ -358,6 +361,7 @@ private:
      * The default frame the exit stops at.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcd8
+     * @ghidraAddress PAL: 0x0042eb70
      */
     static float sExitStopFrame;
 };

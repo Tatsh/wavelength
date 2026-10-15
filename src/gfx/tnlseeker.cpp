@@ -56,17 +56,17 @@ constexpr float kTexNearEnd = 0.7f;
 
 const char *const kFrameSectionName = "seeker_frame";
 
-// NTSC-U/C: 0x003afc30
+// NTSC-U/C: 0x003afc30, PAL: 0x0042eac8
 float sProngWidth = 0.2f;
-// NTSC-U/C: 0x003afc34
+// NTSC-U/C: 0x003afc34, PAL: 0x0042eacc
 float sFrameWidth = 0.1f;
-// NTSC-U/C: 0x003afc38
+// NTSC-U/C: 0x003afc38, PAL: 0x0042ead0
 float sFrameHeight = 0.1f;
-// NTSC-U/C: 0x003afc3c
+// NTSC-U/C: 0x003afc3c, PAL: 0x0042ead4
 float sMultiFrameHeight = 0.3f;
-// NTSC-U/C: 0x003afc40
+// NTSC-U/C: 0x003afc40, PAL: 0x0042ead8
 float sProngThickness = 60.0f;
-// NTSC-U/C: 0x003afc44
+// NTSC-U/C: 0x003afc44, PAL: 0x0042eadc
 int sDivisions = 1;
 // NTSC-U/C: 0x0043b6f0
 float sInnerProngWidth = sProngWidth - sFrameWidth;

@@ -34,7 +34,7 @@ const char kInstrumentNameChunkTag[] = {'I', 'N', 'N', 'M'};
 const char kSampleDescriptionNameChunkTag[] = {'S', 'D', 'N', 'M'};
 // NTSC-U/C: 0x00412700
 const char kSampleNameChunkTag[] = {'S', 'A', 'N', 'M'};
-// NTSC-U/C: 0x00412708
+// NTSC-U/C: 0x00412708, PAL: 0x004a9e98
 const char kNullChunkTag[] = {'X', 'X', 'X', 'X'};
 
 } // namespace

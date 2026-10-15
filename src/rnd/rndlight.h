@@ -220,6 +220,7 @@ public:
      * The light CreateDefault() made.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09c8
+     * @ghidraAddress PAL: 0x0042f860
      */
     static RndLight *sDefault;
 
@@ -227,6 +228,7 @@ public:
      * The class name a `.rnd` file writes, `Light`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09cc
+     * @ghidraAddress PAL: 0x0042f864
      */
     static const char *sClassName;
 
@@ -234,6 +236,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09d0
+     * @ghidraAddress PAL: 0x0042f868
      */
     static int sRev;
 

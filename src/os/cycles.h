@@ -22,6 +22,7 @@ unsigned ReadCycleCount();
  * Milliseconds per EE cycle.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2258
+ * @ghidraAddress PAL: 0x00431138
  */
 extern float gSystemCycles2Ms;
 

@@ -31,7 +31,7 @@ typedef struct {
 
 static const char kEzNetCnfModuleName[] = "eznetcnf";
 
-// NTSC-U/C: 0x003b14c0
+// NTSC-U/C: 0x003b14c0, PAL: 0x00430390
 static int g_nEznetcnfBound = 0;
 // NTSC-U/C: 0x00440780
 static sceSifClientData g_eznetcnfClient __attribute__((aligned(64)));

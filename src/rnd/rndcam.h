@@ -262,6 +262,7 @@ public:
      * The camera drawing is set up for.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0988
+     * @ghidraAddress PAL: 0x0042f820
      */
     static RndCam *sCurrent;
 
@@ -269,6 +270,7 @@ public:
      * The internal camera CreateDefault() made.
      *
      * @ghidraAddress NTSC-U/C: 0x003b098c
+     * @ghidraAddress PAL: 0x0042f824
      */
     static RndCam *sDefault;
 
@@ -276,6 +278,7 @@ public:
      * The class name a `.rnd` file writes, `Cam`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0990
+     * @ghidraAddress PAL: 0x0042f828
      */
     static const char *sClassName;
 
@@ -283,6 +286,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0994
+     * @ghidraAddress PAL: 0x0042f82c
      */
     static int sRev;
 

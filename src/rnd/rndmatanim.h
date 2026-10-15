@@ -236,6 +236,7 @@ public:
      * The class name a `.rnd` file writes, `MatAnim`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09e4
+     * @ghidraAddress PAL: 0x0042f87c
      */
     static const char *sClassName;
 
@@ -243,6 +244,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09e8
+     * @ghidraAddress PAL: 0x0042f880
      */
     static int sRev;
 

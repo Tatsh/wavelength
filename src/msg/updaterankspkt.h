@@ -11,6 +11,7 @@
  * Identity that UpdateRanksPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bcc
+ * @ghidraAddress PAL: 0x0042fa9c
  */
 extern int g_nUpdateRanksPktType;
 

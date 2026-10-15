@@ -65,7 +65,7 @@ constexpr float kNoProgress = 0.0f;
 constexpr float kStartTime = 0.0f;
 
 // The time SystemMs() reported when the last world started loading. The value is not read.
-// NTSC-U/C: 0x003af83c
+// NTSC-U/C: 0x003af83c, PAL: 0x0042e6d4
 float gWorldLoadStartMs;
 
 // The identifier a recording saves the input command of each event under.

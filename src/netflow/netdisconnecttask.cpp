@@ -16,7 +16,7 @@ constexpr int kUserActionLeftGame = 2;
 
 } // namespace
 
-// NTSC-U/C: 0x003b0ae8
+// NTSC-U/C: 0x003b0ae8, PAL: 0x0042f9b4
 NetDisconnectTask *NetDisconnectTask::sTask;
 
 void NetDisconnectTask::OnStart() {

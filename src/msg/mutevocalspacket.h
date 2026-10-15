@@ -7,6 +7,7 @@
  * Identity that MuteVocalsPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af750
+ * @ghidraAddress PAL: 0x0042e5e8
  */
 extern int g_nMuteVocalsPacketType;
 

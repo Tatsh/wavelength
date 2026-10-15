@@ -12,6 +12,7 @@
  * The `freq_winner.mat` material FindWinnerMaterial() keeps for the result screens.
  *
  * @ghidraAddress NTSC-U/C: 0x003af8b4
+ * @ghidraAddress PAL: 0x0042e748
  */
 extern RndMat *g_pWinnerMat;
 

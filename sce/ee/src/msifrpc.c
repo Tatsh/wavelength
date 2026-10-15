@@ -95,7 +95,7 @@ typedef struct {
 
 static const char kModeError[] = "mode must be 0 in this version.\n";
 
-// NTSC-U/C: 0x003c47a0
+// NTSC-U/C: 0x003c47a0, PAL: 0x0045abe8
 static int g_nMRpcInitialized = 0;
 
 // NTSC-U/C: 0x00532380

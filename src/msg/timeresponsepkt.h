@@ -7,6 +7,7 @@
  * Identity that TimeResponsePkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ba4
+ * @ghidraAddress PAL: 0x0042fa74
  */
 extern int g_nTimeResponsePktType;
 

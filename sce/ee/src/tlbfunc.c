@@ -54,7 +54,7 @@ typedef struct {
     const TlbEntry *pExtended;
 } TlbLayout;
 
-// NTSC-U/C: 0x003c5b80
+// NTSC-U/C: 0x003c5b80, PAL: 0x0045bfc8
 char **g_ppExecArgs;
 
 // NTSC-U/C: 0x0031ce00, PAL: 0x00389718
@@ -84,7 +84,7 @@ static __attribute__((noinline)) void setup(int nSyscall, void *pHandler) {
     LibkernelSyscall(kSyscallSetSyscall, nSyscall, (int)pHandler, 0);
 }
 
-// NTSC-U/C: 0x003c5b88
+// NTSC-U/C: 0x003c5b88, PAL: 0x0045bfd0
 static SyscallEntry g_tlbSyscalls[kTlbSyscallCount] = {
     {kSyscallKernelCopy, kCopy},
     {kSyscallGetEntryAddress, kTlbPatchBase},
@@ -173,7 +173,7 @@ static const TlbEntry g_aTlbExtendedEntries[kTlbExtendedEntryCount] = {
     {0x007fe000, 0x31800000, 0x0006003f, 0x0007003f},
 };
 
-// NTSC-U/C: 0x003c5e38
+// NTSC-U/C: 0x003c5e38, PAL: 0x0045c280
 static TlbLayout g_tlbLayout = {
     kTlbKernelEntryCount,
     kTlbDefaultEntryCount,

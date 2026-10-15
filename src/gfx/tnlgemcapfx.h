@@ -86,6 +86,7 @@ public:
      * The frames of the animation of the view over a burst.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb08
+     * @ghidraAddress PAL: 0x0042e9a0
      */
     static float sAnimFrames;
 
@@ -93,6 +94,7 @@ public:
      * The length of a capture burst, then of an erase burst, in milliseconds.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb10
+     * @ghidraAddress PAL: 0x0042e9a8
      */
     static float sLengths[2];
 
@@ -100,6 +102,7 @@ public:
      * The ticks a capture burst moves forward, then those of an erase burst.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb18
+     * @ghidraAddress PAL: 0x0042e9b0
      */
     static float sTravels[2];
 

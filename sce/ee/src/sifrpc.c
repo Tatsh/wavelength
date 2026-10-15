@@ -112,7 +112,7 @@ typedef struct {
     sceSifQueueData *pQueues;
 } RpcState;
 
-// NTSC-U/C: 0x003c47cc
+// NTSC-U/C: 0x003c47cc, PAL: 0x0045ac14
 static int g_nRpcInitialized = 0;
 
 // NTSC-U/C: 0x00533a80, the packets of requests this side makes.

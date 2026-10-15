@@ -60,16 +60,16 @@ char g_sendBuffer[RT_DME_MESSAGE_DATA_SIZE];
 
 } // namespace
 
-// NTSC-U/C: 0x003b0abc
+// NTSC-U/C: 0x003b0abc, PAL: 0x0042f988
 int LaunchpadRT::sMessageType;
 
-// NTSC-U/C: 0x003b0ac0
+// NTSC-U/C: 0x003b0ac0, PAL: 0x0042f98c
 int LaunchpadRT::sMgclReady;
 
-// NTSC-U/C: 0x003b0ad4
+// NTSC-U/C: 0x003b0ad4, PAL: 0x0042f9a0
 int LaunchpadRT::sPlayersVersion = 1;
 
-// NTSC-U/C: 0x003b0ae0
+// NTSC-U/C: 0x003b0ae0, PAL: 0x0042f9ac
 NetTask *LaunchpadRT::sNetTask;
 
 LaunchpadRT *TheLaunchpadRT;

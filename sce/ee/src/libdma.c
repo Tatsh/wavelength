@@ -50,10 +50,10 @@
 // NTSC-U/C: 0x00431dd0
 static const unsigned char STALL_SOURCE_TABLE[] = {0, 0, 0, 3, 0, 1, 0, 0, 2, 0};
 // Maps a stall drain channel number to its D_CTRL STD field value.
-// NTSC-U/C: 0x00431de0
+// NTSC-U/C: 0x00431de0, PAL: 0x004cea90
 static const unsigned char STALL_DRAIN_TABLE[] = {0, 1, 2, 0, 0, 0, 3, 0, 0, 0};
 // Maps an MFIFO drain channel number to its D_CTRL MFD field value.
-// NTSC-U/C: 0x00431df0
+// NTSC-U/C: 0x00431df0, PAL: 0x004ceaa0
 static const unsigned char MFIFO_DRAIN_TABLE[] = {0, 2, 3, 0, 0, 0, 0, 0, 0, 0};
 
 // Spin budgets bound the busy waits.
@@ -84,7 +84,7 @@ typedef struct {
 } DmaChannelRegs;
 
 // The register block of each channel, VIF0 through the scratchpad input.
-// NTSC-U/C: 0x003c2ac0
+// NTSC-U/C: 0x003c2ac0, PAL: 0x00458f00
 static DmaChannelRegs *dch[kChannelCount] = {(DmaChannelRegs *)(uintptr_t)0x10008000U,
                                              (DmaChannelRegs *)(uintptr_t)0x10009000U,
                                              (DmaChannelRegs *)(uintptr_t)0x1000A000U,
@@ -98,7 +98,7 @@ static DmaChannelRegs *dch[kChannelCount] = {(DmaChannelRegs *)(uintptr_t)0x1000
 
 // Whether the reset clears each channel. The three SIF channels are excluded, as the IOP link
 // runs over them.
-// NTSC-U/C: 0x00431da8
+// NTSC-U/C: 0x00431da8, PAL: 0x004cea58
 static int g_anDmacChannelEnabled[kChannelCount] = {1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
 
 // The environment sceDmaPutEnv() last applied, which sceDmaGetEnv() copies out.

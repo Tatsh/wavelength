@@ -357,6 +357,7 @@ public:
      * The count of selections, the stamp Select() records on each range.
      *
      * @ghidraAddress NTSC-U/C: 0x003b07d8
+     * @ghidraAddress PAL: 0x0042f670
      */
     static int sStamp;
 
@@ -364,6 +365,7 @@ public:
      * The value of sStamp at the last BeginFrame(). A range stamped before it is evicted.
      *
      * @ghidraAddress NTSC-U/C: 0x003b07dc
+     * @ghidraAddress PAL: 0x0042f674
      */
     static int sEvictStamp;
 

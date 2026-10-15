@@ -120,6 +120,7 @@ public:
      * TnlCursor loads it. A glide over the longest distance lasts 2 over this speed.
      *
      * @ghidraAddress NTSC-U/C: 0x003afc10
+     * @ghidraAddress PAL: 0x0042eaa8
      */
     static float sFadeSpeed;
 

@@ -120,6 +120,7 @@ public:
      * The ticks the score takes to move in, `score_checkpoint_move_in_ticks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af928
+     * @ghidraAddress PAL: 0x0042e7bc
      */
     static float sMoveInTicks;
 
@@ -127,6 +128,7 @@ public:
      * The ticks the bar takes to grow, `score_checkpoint_bar_grow_ticks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af92c
+     * @ghidraAddress PAL: 0x0042e7c0
      */
     static float sBarGrowTicks;
 
@@ -134,6 +136,7 @@ public:
      * The ticks the bar rests, `score_checkpoint_stable_ticks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af930
+     * @ghidraAddress PAL: 0x0042e7c4
      */
     static float sStableTicks;
 
@@ -141,6 +144,7 @@ public:
      * The ticks the bar takes to fade, `score_checkpoint_fade_ticks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af934
+     * @ghidraAddress PAL: 0x0042e7c8
      */
     static float sFadeTicks;
 
@@ -148,6 +152,7 @@ public:
      * The ticks the score takes to move back, `score_checkpoint_move_out_ticks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af938
+     * @ghidraAddress PAL: 0x0042e7cc
      */
     static float sMoveOutTicks;
 

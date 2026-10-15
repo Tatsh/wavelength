@@ -139,6 +139,7 @@ public:
      * The class name a `.rnd` file writes, `Button`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a74
+     * @ghidraAddress PAL: 0x0042f90c
      */
     static const char *sClassName;
 
@@ -146,6 +147,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a78
+     * @ghidraAddress PAL: 0x0042f910
      */
     static int sRev;
 

@@ -97,7 +97,7 @@ private:
     int mTrack;            // The index of the track the reader is in.
 };
 
-// NTSC-U/C: 0x003af8b0
+// NTSC-U/C: 0x003af8b0, PAL: 0x0042e744
 LagRamp *sLagRamp;
 
 // The unit's static initialiser constructs and destroys sTracks, and the global constructor and

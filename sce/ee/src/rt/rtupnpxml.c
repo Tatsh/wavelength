@@ -63,20 +63,20 @@ enum {
     kReplyNamespace = 2,
 };
 
-// NTSC-U/C: 0x003b6d38
+// NTSC-U/C: 0x003b6d38, PAL: 0x00435bf8
 static const char *g_pszDeviceNamespace = "urn:schemas-upnp-org:device-1-0";
-// NTSC-U/C: 0x003b6d3c
+// NTSC-U/C: 0x003b6d3c, PAL: 0x00435bfc
 static const char *g_pszGatewayDeviceType = "urn:schemas-upnp-org:device:InternetGatewayDevice:1";
 // NTSC-U/C: 0x003b6d40
 static const char *g_pszWanDeviceType = "urn:schemas-upnp-org:device:WANDevice:1";
-// NTSC-U/C: 0x003b6d44
+// NTSC-U/C: 0x003b6d44, PAL: 0x00435c04
 static const char *g_pszWanConnectionDeviceType =
     "urn:schemas-upnp-org:device:WANConnectionDevice:1";
 // NTSC-U/C: 0x003b6d48
 static const char *g_pszLanDeviceType = "urn:schemas-upnp-org:device:LANDevice:1";
-// NTSC-U/C: 0x003b6d4c
+// NTSC-U/C: 0x003b6d4c, PAL: 0x00435c0c
 static const char *g_pszServiceNamespace = "urn:schemas-upnp-org:service-1-0";
-// NTSC-U/C: 0x003b6d50
+// NTSC-U/C: 0x003b6d50, PAL: 0x00435c10
 static const char *g_pszLayer3ForwardingType = "urn:schemas-upnp-org:service:Layer3Forwarding:1";
 // NTSC-U/C: 0x003b6d54
 static const char *g_pszWanCommonConfigType =
@@ -90,20 +90,20 @@ static const char *g_pszWanCableConfigType = "urn:schemas-upnp-org:service:WANCa
 // NTSC-U/C: 0x003b6d64
 static const char *g_pszWanEthernetConfigType =
     "urn:schemas-upnp-org:service:WANEthernetLinkConfig:1";
-// NTSC-U/C: 0x003b6d68
+// NTSC-U/C: 0x003b6d68, PAL: 0x00435c28
 static const char *g_pszWanPppConnectionType = "urn:schemas-upnp-org:service:WANPPPConnection:1";
-// NTSC-U/C: 0x003b6d6c
+// NTSC-U/C: 0x003b6d6c, PAL: 0x00435c2c
 static const char *g_pszWanIpConnectionType = "urn:schemas-upnp-org:service:WANIPConnection:1";
 // NTSC-U/C: 0x003b6d70
 static const char *g_pszLanHostConfigType =
     "urn:schemas-upnp-org:service:LANHostConfigManagement:1";
-// NTSC-U/C: 0x003b6d74
+// NTSC-U/C: 0x003b6d74, PAL: 0x00435c34
 static const char *g_pszSoapEnvelopeNamespace = "http://schemas.xmlsoap.org/soap/envelope/";
-// NTSC-U/C: 0x003b6d78
+// NTSC-U/C: 0x003b6d78, PAL: 0x00435c38
 static const char *g_pszSoapEncodingNamespace = "http://schemas.xmlsoap.org/soap/encoding/";
-// NTSC-U/C: 0x003b6d7c
+// NTSC-U/C: 0x003b6d7c, PAL: 0x00435c3c
 static const char *g_pszServiceTypePrefix = "urn:schemas-upnp-org:service:";
-// NTSC-U/C: 0x003b6d80
+// NTSC-U/C: 0x003b6d80, PAL: 0x00435c40
 static const char *g_pszControlNamespace = "urn:schemas-upnp-org:control-1-0";
 
 // The elements of a device description the parser reads, in the order of the enumeration.

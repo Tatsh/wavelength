@@ -165,10 +165,10 @@ unsigned char *g_pRingDmaEnd;
 // NTSC-U/C: 0x0043ae40
 StrFile g_inFile;
 
-// NTSC-U/C: 0x003af8ec
+// NTSC-U/C: 0x003af8ec, PAL: 0x0042e780
 int g_bCdInitialized = 0;
 
-// NTSC-U/C: 0x003af8f0
+// NTSC-U/C: 0x003af8f0, PAL: 0x0042e784
 int g_bReadPending = 0;
 
 template <typename T>

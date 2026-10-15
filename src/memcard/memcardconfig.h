@@ -14,6 +14,7 @@ constexpr int kMemcardDirFileSize = 2;
  * The `mc` section of the `metagame` system configuration.
  *
  * @ghidraAddress NTSC-U/C: 0x003af870
+ * @ghidraAddress PAL: 0x0042e70c
  */
 extern DataArray *g_pMemcardConfig;
 
@@ -21,6 +22,7 @@ extern DataArray *g_pMemcardConfig;
  * The buffer a save is serialised into and a load is read into, of `buff_size` bytes.
  *
  * @ghidraAddress NTSC-U/C: 0x003af858
+ * @ghidraAddress PAL: 0x0042e6f0
  */
 extern char *g_pMemcardBuffer;
 
@@ -28,6 +30,7 @@ extern char *g_pMemcardBuffer;
  * The size of g_pMemcardBuffer, the `buff_size` of the configuration.
  *
  * @ghidraAddress NTSC-U/C: 0x003af85c
+ * @ghidraAddress PAL: 0x0042e6f4
  */
 extern int g_nMemcardBufferSize;
 
@@ -36,6 +39,7 @@ extern int g_nMemcardBufferSize;
  * directory.
  *
  * @ghidraAddress NTSC-U/C: 0x003af860
+ * @ghidraAddress PAL: 0x0042e6fc
  */
 extern char *g_pMemcardIcon;
 
@@ -43,6 +47,7 @@ extern char *g_pMemcardIcon;
  * The size of g_pMemcardIcon.
  *
  * @ghidraAddress NTSC-U/C: 0x003af864
+ * @ghidraAddress PAL: 0x0042e700
  */
 extern int g_nMemcardIconSize;
 
@@ -50,6 +55,7 @@ extern int g_nMemcardIconSize;
  * Non-zero when the directory the next save goes into exists already.
  *
  * @ghidraAddress NTSC-U/C: 0x003af868
+ * @ghidraAddress PAL: 0x0042e704
  */
 extern int g_bMemcardDirExists;
 
@@ -57,6 +63,7 @@ extern int g_bMemcardDirExists;
  * The kilobytes a new save directory needs besides the save itself.
  *
  * @ghidraAddress NTSC-U/C: 0x003af86c
+ * @ghidraAddress PAL: 0x0042e708
  */
 extern int g_nMemcardDirKilobytes;
 
@@ -64,6 +71,7 @@ extern int g_nMemcardDirKilobytes;
  * The remixes one remix directory may include, `max_remixes_perdir`.
  *
  * @ghidraAddress NTSC-U/C: 0x003af874
+ * @ghidraAddress PAL: 0x0042e710
  */
 extern int g_nMaxRemixesPerDir;
 
@@ -71,6 +79,7 @@ extern int g_nMaxRemixesPerDir;
  * The remix directories a card may include, `max_remix_dirs`.
  *
  * @ghidraAddress NTSC-U/C: 0x003af878
+ * @ghidraAddress PAL: 0x0042e714
  */
 extern int g_nMaxRemixDirs;
 
@@ -78,6 +87,7 @@ extern int g_nMaxRemixDirs;
  * The remixes a card may include, `max_remixes`.
  *
  * @ghidraAddress NTSC-U/C: 0x003af87c
+ * @ghidraAddress PAL: 0x0042e718
  */
 extern int g_nMaxRemixes;
 
@@ -85,6 +95,7 @@ extern int g_nMaxRemixes;
  * The extension of a remix file, `remix_ext`.
  *
  * @ghidraAddress NTSC-U/C: 0x003af880
+ * @ghidraAddress PAL: 0x0042e71c
  */
 extern const char *g_pszRemixExt;
 
@@ -92,6 +103,7 @@ extern const char *g_pszRemixExt;
  * The extension of a Freq file, `freq_ext`.
  *
  * @ghidraAddress NTSC-U/C: 0x003af884
+ * @ghidraAddress PAL: 0x0042e720
  */
 extern const char *g_pszFreqExt;
 
@@ -99,6 +111,7 @@ extern const char *g_pszFreqExt;
  * The prefix of every save directory, `base_dir`.
  *
  * @ghidraAddress NTSC-U/C: 0x003af888
+ * @ghidraAddress PAL: 0x0042e724
  */
 extern const char *g_pszMemcardBaseDir;
 

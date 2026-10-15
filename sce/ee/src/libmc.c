@@ -84,7 +84,7 @@ typedef struct {
     char szName[kMcNameSize];
 } McNamePacket;
 
-// NTSC-U/C: 0x003c2b40
+// NTSC-U/C: 0x003c2b40, PAL: 0x00458f80
 static int g_nMcCommand = 0;
 // NTSC-U/C: 0x003c2b44, PAL: 0x00458f84
 static int g_nMcSemaId = -1;

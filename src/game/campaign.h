@@ -553,6 +553,7 @@ BinStream &operator>>(BinStream &stream, Campaign &profile);
  * Non-zero when every song counts as unlocked and finished.
  *
  * @ghidraAddress NTSC-U/C: 0x003b1504
+ * @ghidraAddress PAL: 0x004303d4
  */
 extern unsigned int g_dwUnlockAllSongs;
 
@@ -560,5 +561,6 @@ extern unsigned int g_dwUnlockAllSongs;
  * Non-zero when every avatar part and emblem counts as unlocked.
  *
  * @ghidraAddress NTSC-U/C: 0x003b1508
+ * @ghidraAddress PAL: 0x004303d8
  */
 extern unsigned int g_dwUnlockAllParts;

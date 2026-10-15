@@ -18,7 +18,7 @@ enum {
     kEulerBase = 3,
 };
 
-// NTSC-U/C: 0x003b7778, the product of the primes from 11 to 743.
+// NTSC-U/C: 0x003b7778, PAL: 0x00436638, the product of the primes from 11 to 743.
 static const RtLargeInt g_abLintPrimesProductLow = {{
     0x88c3bed7, 0xe47d1b3c, 0x353dcb35, 0x9b1b9861, 0x5ebd0df7, 0x6f9b0a82, 0xed2c998e, 0x79c9e735,
     0x315fe9ff, 0x70097045, 0x27a3f685, 0xb5e99d33, 0xfdfe0e98, 0x809a8e9e, 0xff0158da, 0xd614c822,
@@ -26,7 +26,7 @@ static const RtLargeInt g_abLintPrimesProductLow = {{
     0x9b05f7b7, 0x04828ae7, 0x629cd15b, 0x23c1757d, 0x91db7bf6, 0xbd53fab4, 0xee78059f, 0x13b0e67e,
 }};
 
-// NTSC-U/C: 0x003b77f8, the product of the primes from 751 to 1471.
+// NTSC-U/C: 0x003b77f8, PAL: 0x004366b8, the product of the primes from 751 to 1471.
 static const RtLargeInt g_abLintPrimesProductHigh = {{
     0xec3646b1, 0x7d5c4d5e, 0x225f89e7, 0x350321f1, 0x89e51646, 0x61d00e08, 0x8eec49f0, 0xa207a034,
     0x6a49487a, 0x0b95af06, 0x694e190e, 0x5a59a74f, 0xb8abd6f4, 0x774152da, 0x8e97d45e, 0x4fbbd502,
@@ -34,14 +34,14 @@ static const RtLargeInt g_abLintPrimesProductHigh = {{
     0xdcc52a5a, 0xf673b4bc, 0xd046689e, 0x954508a4, 0xc180653e, 0x9b663907, 0x5b0c5669, 0x0481b0a8,
 }};
 
-// NTSC-U/C: 0x003b7878, the steps between the residues modulo kWheelModulus that are coprime to
-// it. An odd entry also restarts the walk at the first entry.
+// NTSC-U/C: 0x003b7878, PAL: 0x00436738, the steps between the residues modulo kWheelModulus that
+// are coprime to it. An odd entry also restarts the walk at the first entry.
 static const unsigned int g_dwLintWheelSteps[] = {
     1, 10, 2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4,  2, 4,
     2, 4,  8, 6, 4, 6, 2, 4, 6, 2, 6, 6, 4, 2, 4, 6, 2, 6, 4, 2, 4, 2, 10, 1,
 };
 
-// NTSC-U/C: 0x003b79c0
+// NTSC-U/C: 0x003b79c0, PAL: 0x00436880
 static char g_bLintRandomSeeded;
 
 void RtLargeIntSet(RtLargeInt *value, unsigned int word) {

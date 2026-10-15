@@ -10,6 +10,7 @@
  * Identity that GameOverPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bc8
+ * @ghidraAddress PAL: 0x0042fa98
  */
 extern int g_nGameOverPktType;
 

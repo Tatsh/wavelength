@@ -18,10 +18,10 @@ enum {
 // NTSC-U/C: 0x00479748
 static struct huft huftTable[kHuftPoolSize];
 
-// NTSC-U/C: 0x003b1d88
+// NTSC-U/C: 0x003b1d88, PAL: 0x00430c58
 static struct huft *pHuftNext = huftTable;
 
-// NTSC-U/C: 0x003b1d8c
+// NTSC-U/C: 0x003b1d8c, PAL: 0x00430c5c
 // The most pool entries one block has used. Only HuftReset() reads the count.
 static int highWater = 0;
 

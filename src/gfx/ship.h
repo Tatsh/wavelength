@@ -285,67 +285,74 @@ public:
     static std::vector<FloatKey> sFireTrodeSizeMult;
     /** `view_distance`, scaled. @ghidraAddress NTSC-U/C: 0x0043b2b0 */
     static float sViewDistance;
-    /** `ship_fire_offset`. @ghidraAddress NTSC-U/C: 0x003af960 */
+    /** `ship_fire_offset`. @ghidraAddress NTSC-U/C: 0x003af960, PAL: 0x0042e7f8 */
     static float sFireOffset;
-    /** `ship_fire_scale`. @ghidraAddress NTSC-U/C: 0x003af964 */
+    /** `ship_fire_scale`. @ghidraAddress NTSC-U/C: 0x003af964, PAL: 0x0042e7fc */
     static float sFireScale;
-    /** The frame of the last key of sFireTrodeSizeMult. @ghidraAddress NTSC-U/C: 0x003af968 */
+    /** The frame of the last key of sFireTrodeSizeMult. @ghidraAddress NTSC-U/C: 0x003af968, PAL:
+     * 0x0042e800 */
     static float sFireTrodeEnd;
-    /** `ship_tilt`. @ghidraAddress NTSC-U/C: 0x003af96c */
+    /** `ship_tilt`. @ghidraAddress NTSC-U/C: 0x003af96c, PAL: 0x0042e804 */
     static float sTilt;
-    /** `ship_scale`, scaled by the tunnel. @ghidraAddress NTSC-U/C: 0x003af970 */
+    /** `ship_scale`, scaled by the tunnel. @ghidraAddress NTSC-U/C: 0x003af970, PAL: 0x0042e808 */
     static float sScale;
-    /** `ship_bank_spring`. @ghidraAddress NTSC-U/C: 0x003af974 */
+    /** `ship_bank_spring`. @ghidraAddress NTSC-U/C: 0x003af974, PAL: 0x0042e80c */
     static float sBankSpring;
-    /** `ship_bank_damper`. @ghidraAddress NTSC-U/C: 0x003af978 */
+    /** `ship_bank_damper`. @ghidraAddress NTSC-U/C: 0x003af978, PAL: 0x0042e810 */
     static float sBankDamper;
-    /** `ship_bank_magnitude`. @ghidraAddress NTSC-U/C: 0x003af97c */
+    /** `ship_bank_magnitude`. @ghidraAddress NTSC-U/C: 0x003af97c, PAL: 0x0042e814 */
     static float sBankMagnitude;
-    /** `ship_bank_force`, scaled. @ghidraAddress NTSC-U/C: 0x003af980 */
+    /** `ship_bank_force`, scaled. @ghidraAddress NTSC-U/C: 0x003af980, PAL: 0x0042e818 */
     static float sBankForce;
-    /** `ship_move_miss_beams`, for each end. @ghidraAddress NTSC-U/C: 0x003af988 */
+    /** `ship_move_miss_beams`, for each end. @ghidraAddress NTSC-U/C: 0x003af988, PAL: 0x0042e820
+     */
     static int sMoveMissBeams[kNumBeamEnds];
-    /** `ship_move_hit_beams`, for each end. @ghidraAddress NTSC-U/C: 0x003af990 */
+    /** `ship_move_hit_beams`, for each end. @ghidraAddress NTSC-U/C: 0x003af990, PAL: 0x0042e828 */
     static int sMoveHitBeams[kNumBeamEnds];
-    /** `ship_move_hit2_beams`, for each end. @ghidraAddress NTSC-U/C: 0x003af998 */
+    /** `ship_move_hit2_beams`, for each end. @ghidraAddress NTSC-U/C: 0x003af998, PAL: 0x0042e830
+     */
     static int sMoveHit2Beams[kNumBeamEnds];
-    /** `ship_sputter_force`, scaled. @ghidraAddress NTSC-U/C: 0x003af9a0 */
+    /** `ship_sputter_force`, scaled. @ghidraAddress NTSC-U/C: 0x003af9a0, PAL: 0x0042e838 */
     static float sSputterForce;
-    /** `ship_bump_height_accel`. @ghidraAddress NTSC-U/C: 0x003af9a4 */
+    /** `ship_bump_height_accel`. @ghidraAddress NTSC-U/C: 0x003af9a4, PAL: 0x0042e83c */
     static float sBumpHeightAccel;
-    /** `ship_bump_attack_time`. @ghidraAddress NTSC-U/C: 0x003af9a8 */
+    /** `ship_bump_attack_time`. @ghidraAddress NTSC-U/C: 0x003af9a8, PAL: 0x0042e840 */
     static float sBumpAttackTime;
-    /** `ship_bump_ship_move_slowdown`. @ghidraAddress NTSC-U/C: 0x003af9ac */
+    /** `ship_bump_ship_move_slowdown`. @ghidraAddress NTSC-U/C: 0x003af9ac, PAL: 0x0042e844 */
     static float sBumpShipMoveSlowdown;
-    /** `ship_crippled_cam_jiggle_probability`. @ghidraAddress NTSC-U/C: 0x003af9b0 */
+    /** `ship_crippled_cam_jiggle_probability`. @ghidraAddress NTSC-U/C: 0x003af9b0, PAL: 0x0042e848
+     */
     static float sCrippledCamJiggleProbability;
-    /** `ship_crippled_cam_jiggle`. @ghidraAddress NTSC-U/C: 0x003af9b4 */
+    /** `ship_crippled_cam_jiggle`. @ghidraAddress NTSC-U/C: 0x003af9b4, PAL: 0x0042e84c */
     static float sCrippledCamJiggle;
-    /** `ship_intro_end_tick`. @ghidraAddress NTSC-U/C: 0x003af9b8 */
+    /** `ship_intro_end_tick`. @ghidraAddress NTSC-U/C: 0x003af9b8, PAL: 0x0042e850 */
     static float sIntroEndTick;
-    /** `ship_intro_blend_end_tick`. @ghidraAddress NTSC-U/C: 0x003af9bc */
+    /** `ship_intro_blend_end_tick`. @ghidraAddress NTSC-U/C: 0x003af9bc, PAL: 0x0042e854 */
     static float sIntroBlendEndTick;
-    /** The frame of the last key of sIntroTrodeSizeMult. @ghidraAddress NTSC-U/C: 0x003af9c0 */
+    /** The frame of the last key of sIntroTrodeSizeMult. @ghidraAddress NTSC-U/C: 0x003af9c0, PAL:
+     * 0x0042e858 */
     static float sIntroTrodeEnd;
-    /** The beams of the missed gems. @ghidraAddress NTSC-U/C: 0x003af9c4 */
+    /** The beams of the missed gems. @ghidraAddress NTSC-U/C: 0x003af9c4, PAL: 0x0042e85c */
     static BeamPool<false> *sMissBeams;
-    /** The beams of the hit gems. @ghidraAddress NTSC-U/C: 0x003af9c8 */
+    /** The beams of the hit gems. @ghidraAddress NTSC-U/C: 0x003af9c8, PAL: 0x0042e860 */
     static BeamPool<false> *sHitBeams;
-    /** The second beams of the hit gems. @ghidraAddress NTSC-U/C: 0x003af9cc */
+    /** The second beams of the hit gems. @ghidraAddress NTSC-U/C: 0x003af9cc, PAL: 0x0042e864 */
     static BeamPool<false> *sHit2Beams;
-    /** `ship beam draw.view`, which the beams draw under. @ghidraAddress NTSC-U/C: 0x003af9d0 */
+    /** `ship beam draw.view`, which the beams draw under. @ghidraAddress NTSC-U/C: 0x003af9d0, PAL:
+     * 0x0042e868 */
     static RndView *sBeamView;
-    /** `ship.env`. @ghidraAddress NTSC-U/C: 0x003af9d8 */
+    /** `ship.env`. @ghidraAddress NTSC-U/C: 0x003af9d8, PAL: 0x0042e870 */
     static RndEnviron *sEnviron;
-    /** `ship loading.view`. @ghidraAddress NTSC-U/C: 0x003af9dc */
+    /** `ship loading.view`. @ghidraAddress NTSC-U/C: 0x003af9dc, PAL: 0x0042e874 */
     static RndView *sLoadingView;
-    /** `ship win fly-off.tnm`. @ghidraAddress NTSC-U/C: 0x003af9e0 */
+    /** `ship win fly-off.tnm`. @ghidraAddress NTSC-U/C: 0x003af9e0, PAL: 0x0042e878 */
     static RndTransAnim *sWinFlyOff;
-    /** `ship all.anim`. @ghidraAddress NTSC-U/C: 0x003af9e4 */
+    /** `ship all.anim`. @ghidraAddress NTSC-U/C: 0x003af9e4, PAL: 0x0042e87c */
     static RndAnimatable *sAllAnim;
-    /** `ship intro.anim`. @ghidraAddress NTSC-U/C: 0x003af9e8 */
+    /** `ship intro.anim`. @ghidraAddress NTSC-U/C: 0x003af9e8, PAL: 0x0042e880 */
     static RndAnimatable *sIntroAnim;
-    /** `ship arrow.mesh`, in a game of several players. @ghidraAddress NTSC-U/C: 0x003af9ec */
+    /** `ship arrow.mesh`, in a game of several players. @ghidraAddress NTSC-U/C: 0x003af9ec, PAL:
+     * 0x0042e884 */
     static RndMesh *sArrowMesh;
 
 private:

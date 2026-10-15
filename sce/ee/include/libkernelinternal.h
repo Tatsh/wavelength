@@ -32,6 +32,7 @@ typedef struct {
  * The alarm system calls, built to run at kernel address 0x80076000.
  *
  * @ghidraAddress NTSC-U/C: 0x003c5060
+ * @ghidraAddress PAL: 0x0045b4a8
  */
 extern const unsigned char g_alarmPatch[kAlarmPatchSize];
 
@@ -39,6 +40,7 @@ extern const unsigned char g_alarmPatch[kAlarmPatchSize];
  * The user-mode trampoline an alarm handler runs through, built to run at 0x00082000.
  *
  * @ghidraAddress NTSC-U/C: 0x003c57a0
+ * @ghidraAddress PAL: 0x0045bbe8
  */
 extern const unsigned char g_alarmTrampoline[kAlarmTrampolineSize];
 
@@ -46,6 +48,7 @@ extern const unsigned char g_alarmTrampoline[kAlarmTrampolineSize];
  * The LoadExecPS2() correction, built to run at kernel address 0x80074000.
  *
  * @ghidraAddress NTSC-U/C: 0x003c4898
+ * @ghidraAddress PAL: 0x0045ace0
  */
 extern const unsigned char g_execPatch[kExecPatchSize];
 
@@ -53,6 +56,7 @@ extern const unsigned char g_execPatch[kExecPatchSize];
  * The TLB system calls, built to run at kernel address 0x80075000.
  *
  * @ghidraAddress NTSC-U/C: 0x003c5808
+ * @ghidraAddress PAL: 0x0045bc50
  */
 extern const unsigned char g_tlbPatch[kTlbPatchSize];
 
@@ -61,6 +65,7 @@ extern const unsigned char g_tlbPatch[kTlbPatchSize];
  * in. InitTLBFunctions() records it.
  *
  * @ghidraAddress NTSC-U/C: 0x003c5b80
+ * @ghidraAddress PAL: 0x0045bfc8
  */
 extern char **g_ppExecArgs;
 

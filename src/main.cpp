@@ -28,13 +28,13 @@ constexpr float kLoaderBudgetMs = 10.0f;
 constexpr int kDefaultRndHeapCompactBytes = 100000;
 constexpr int kLoadedRndHeapCompactBytes = 40000;
 
-// NTSC-U/C: 0x003ae480
+// NTSC-U/C: 0x003ae480, PAL: 0x0041d184
 int g_bQuitRequested = 0;
 
-// NTSC-U/C: 0x003ae484
+// NTSC-U/C: 0x003ae484, PAL: 0x0041d188
 int g_nRndHeapCompactBytes = kDefaultRndHeapCompactBytes;
 
-// NTSC-U/C: 0x003ae488
+// NTSC-U/C: 0x003ae488, PAL: 0x0041d18c
 int g_bRndHeapCompactStrict = 0;
 
 // NTSC-U/C: 0x00100200, PAL: 0x00100200

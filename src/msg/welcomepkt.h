@@ -8,6 +8,7 @@
  * Identity that WelcomePkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b8c
+ * @ghidraAddress PAL: 0x0042fa5c
  */
 extern int g_nWelcomePktType;
 

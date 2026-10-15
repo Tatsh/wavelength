@@ -357,6 +357,7 @@ public:
      * The loader of the `base_rnd` of the `avatar` entry.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14c8
+     * @ghidraAddress PAL: 0x00430398
      */
     static RndLoader *sLoader;
 
@@ -364,6 +365,7 @@ public:
      * The target texture of sCam as Init() found it.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14cc
+     * @ghidraAddress PAL: 0x0043039c
      */
     static RndTex *sTargetTex;
 
@@ -371,6 +373,7 @@ public:
      * The `base_freq.view` view the avatars turn with.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14d0
+     * @ghidraAddress PAL: 0x004303a0
      */
     static RndView *sView;
 
@@ -378,6 +381,7 @@ public:
      * The symbol `fm_none`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14d4
+     * @ghidraAddress PAL: 0x004303a4
      */
     static const char *sNone;
 
@@ -385,6 +389,7 @@ public:
      * The symbol `idle`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14d8
+     * @ghidraAddress PAL: 0x004303a8
      */
     static const char *sIdle;
 
@@ -392,6 +397,7 @@ public:
      * The `cams` of the `avatar` entry.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14dc
+     * @ghidraAddress PAL: 0x004303ac
      */
     static DataArray *sCams;
 
@@ -399,6 +405,7 @@ public:
      * The `base_freq.cam` camera the avatars share.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14e0
+     * @ghidraAddress PAL: 0x004303b0
      */
     static RndCam *sCam;
 
@@ -406,6 +413,7 @@ public:
      * The camera sCam blends to.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14e4
+     * @ghidraAddress PAL: 0x004303b4
      */
     static const char *sCurrentCam;
 
@@ -413,6 +421,7 @@ public:
      * The camera sCam blends from.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14e8
+     * @ghidraAddress PAL: 0x004303b8
      */
     static const char *sPreviousCam;
 
@@ -420,6 +429,7 @@ public:
      * When the camera blend started, or kNever.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14ec
+     * @ghidraAddress PAL: 0x004303bc
      */
     static float sCamBlendStart;
 
@@ -427,6 +437,7 @@ public:
      * The value of SetFreqSize().
      *
      * @ghidraAddress NTSC-U/C: 0x003b14f0
+     * @ghidraAddress PAL: 0x004303c0
      */
     static int sFreqSize;
 
@@ -434,6 +445,7 @@ public:
      * The time of the last Poll(), in milliseconds.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14f4
+     * @ghidraAddress PAL: 0x004303c4
      */
     static float sTime;
 
@@ -441,6 +453,7 @@ public:
      * The `anims` of the `avatar` entry.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14f8
+     * @ghidraAddress PAL: 0x004303c8
      */
     static DataArray *sAnims;
 

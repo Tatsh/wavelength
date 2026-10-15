@@ -369,6 +369,7 @@ extern Ps ThePs;
  * The vertical blanks counted since start-up.
  *
  * @ghidraAddress NTSC-U/C: 0x003afd08
+ * @ghidraAddress PAL: 0x0042eba0
  */
 extern volatile int gVCount;
 

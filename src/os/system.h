@@ -76,6 +76,7 @@ void SetUsingCD(bool bUsingCD);
  * host.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2234
+ * @ghidraAddress PAL: 0x00431108
  */
 extern int g_bHostConfig;
 
@@ -99,6 +100,7 @@ extern Timer gSystemTimer;
  * Cycles accumulated across every SystemMs() call since the clock was last reset.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2260
+ * @ghidraAddress PAL: 0x00431140
  */
 extern unsigned long long gSystemCycles;
 

@@ -168,6 +168,7 @@ public:
      * The material Select() last selected, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0768
+     * @ghidraAddress PAL: 0x0042f600
      */
     static PsMat *sCurrent;
 };
@@ -176,6 +177,7 @@ public:
  * Texture coordinate generation mode of the stage PsMat::SetupUvXfm() last processed.
  *
  * @ghidraAddress NTSC-U/C: 0x003b076c
+ * @ghidraAddress PAL: 0x0042f604
  */
 extern int g_nSelectedGenMode;
 
@@ -183,6 +185,7 @@ extern int g_nSelectedGenMode;
  * Flat shading flag of the selected material.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0770
+ * @ghidraAddress PAL: 0x0042f608
  */
 extern int g_nSelectedFlat;
 
@@ -190,6 +193,7 @@ extern int g_nSelectedFlat;
  * Non-zero while a stage texture is bound.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0774
+ * @ghidraAddress PAL: 0x0042f60c
  */
 extern int g_nTextured;
 
@@ -197,6 +201,7 @@ extern int g_nTextured;
  * Non-zero once ALPHA_1 is a blending equation rather than an opaque copy.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0778
+ * @ghidraAddress PAL: 0x0042f610
  */
 extern int g_nAlphaBlendEnabled;
 
@@ -204,6 +209,7 @@ extern int g_nAlphaBlendEnabled;
  * Lighting flag of the selected material, cleared when the stage texture is applied as a decal.
  *
  * @ghidraAddress NTSC-U/C: 0x003b077c
+ * @ghidraAddress PAL: 0x0042f614
  */
 extern int g_nLightingEnabled;
 
@@ -212,6 +218,7 @@ extern int g_nLightingEnabled;
  * material selects its blend again.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0780
+ * @ghidraAddress PAL: 0x0042f618
  */
 extern int g_nReselectBlend;
 

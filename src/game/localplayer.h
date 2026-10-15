@@ -123,6 +123,7 @@ public:
      * Sequence number of the last PlayerUpdatePacket sent.
      *
      * @ghidraAddress NTSC-U/C: 0x003af764
+     * @ghidraAddress PAL: 0x0042e5fc
      */
     static int sPlayerUpdateVersion;
 
@@ -130,6 +131,7 @@ public:
      * Sequence number of the last RemixerUpdatePacket sent.
      *
      * @ghidraAddress NTSC-U/C: 0x003af768
+     * @ghidraAddress PAL: 0x0042e600
      */
     static int sRemixerUpdateVersion;
 

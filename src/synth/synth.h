@@ -437,5 +437,6 @@ public:
  * The sound output Synth::Create() built, or null.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0a84
+ * @ghidraAddress PAL: 0x0042f91c
  */
 extern Synth *TheSynth;

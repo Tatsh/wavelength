@@ -89,5 +89,6 @@ public:
  * The main archive, or null when the game does not run from the disc.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2274
+ * @ghidraAddress PAL: 0x00431154
  */
 extern Archive *TheArchive;

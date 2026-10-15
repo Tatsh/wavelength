@@ -47,6 +47,7 @@ extern int g_nDataLexLength;
  * The file the scanner reads when it starts, standard input.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2390
+ * @ghidraAddress PAL: 0x00431250
  */
 extern FILE *g_pDataLexIn;
 
@@ -54,5 +55,6 @@ extern FILE *g_pDataLexIn;
  * The file the scanner would echo to, standard output.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2394
+ * @ghidraAddress PAL: 0x00431254
  */
 extern FILE *g_pDataLexOut;

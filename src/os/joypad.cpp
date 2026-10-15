@@ -46,19 +46,19 @@ constexpr int kUninitializedWaitMs = 5000;
 
 // Report pressure byte that feeds each button's pressure, in JoypadButton order. Buttons without a
 // pressure sensor read the four bytes past the report's twelve, or byte 0.
-// NTSC-U/C: 0x0041bc70
+// NTSC-U/C: 0x0041bc70, PAL: 0x004b3940
 const int kPressureOrder[kJoypadNumButtons] = {10, 11, 8, 9, 4, 5, 6, 7, 12, 13, 14, 15,
                                                2,  0,  3, 1, 0, 0, 0, 0, 0,  0,  0,  0};
 
 // Set once JoypadInit() has read the threshold.
-// NTSC-U/C: 0x003b20e0
+// NTSC-U/C: 0x003b20e0, PAL: 0x00430fb0
 int gThresholdLoaded;
 
-// NTSC-U/C: 0x003b20e4
+// NTSC-U/C: 0x003b20e4, PAL: 0x00430fb4
 int gStickMessages;
 
 // Whether the menus receive each pad's input.
-// NTSC-U/C: 0x003b20e8
+// NTSC-U/C: 0x003b20e8, PAL: 0x00430fb8
 int gMenuControl[kJoypadNumPads];
 
 // NTSC-U/C: 0x0028adb0, PAL: 0x002945a8 (static initialiser)

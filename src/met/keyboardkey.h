@@ -82,6 +82,7 @@ public:
      * Number of flashes of a chosen key.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8e0
+     * @ghidraAddress PAL: 0x0042e774
      */
     static int sNumFlashes;
 
@@ -89,6 +90,7 @@ public:
      * Milliseconds of each flash a chosen key spends in the selected state.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8e4
+     * @ghidraAddress PAL: 0x0042e778
      */
     static float sSelectedMs;
 
@@ -96,6 +98,7 @@ public:
      * Milliseconds of each flash a chosen key spends in the normal state.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8e8
+     * @ghidraAddress PAL: 0x0042e77c
      */
     static float sNormalMs;
 };

@@ -56,7 +56,7 @@ constexpr int kFirstMip = 1;
 constexpr int kResourcePathSize = 256;
 
 // The files beside a bitmap that make its cached copy stale when newer.
-// NTSC-U/C: 0x003b0a08
+// NTSC-U/C: 0x003b0a08, PAL: 0x0042f8a0
 const char *sBitmapParts[] = {"a", "m1", "m2", "m3", "m4", "m5", nullptr};
 
 // The name ResourcePath() reports.

@@ -129,6 +129,7 @@ public:
      * The number of checkpoint labels created, which numbers their names.
      *
      * @ghidraAddress NTSC-U/C: 0x003af948
+     * @ghidraAddress PAL: 0x0042e7dc
      */
     static int sNumLabels;
 

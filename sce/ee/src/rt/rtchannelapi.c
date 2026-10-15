@@ -85,11 +85,11 @@ typedef union {
     unsigned int uWord;
 } RtChannelAddress;
 
-// NTSC-U/C: 0x003b6cc6
+// NTSC-U/C: 0x003b6cc6, PAL: 0x00435b86
 static short g_nChannelApiRefCount;
-// NTSC-U/C: 0x003b6cd8
+// NTSC-U/C: 0x003b6cd8, PAL: 0x00435b98
 static unsigned char g_bChannelApiStarted;
-// NTSC-U/C: 0x003b6cdc
+// NTSC-U/C: 0x003b6cdc, PAL: 0x00435b9c
 static int g_nChannelSecurityState;
 // NTSC-U/C: 0x005205d0
 static RtChannelService g_channelService;

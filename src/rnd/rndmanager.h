@@ -362,6 +362,7 @@ public:
      * The format version Write() writes and the newest a loader accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a00
+     * @ghidraAddress PAL: 0x0042f898
      */
     static int sRev;
 

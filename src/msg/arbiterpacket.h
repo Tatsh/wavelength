@@ -9,6 +9,7 @@
  * Identity that ArbiterPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af720
+ * @ghidraAddress PAL: 0x0042e5b8
  */
 extern int g_nArbiterPacketType;
 

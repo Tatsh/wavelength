@@ -8,6 +8,7 @@
  * Identity that SectionChangePacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af748
+ * @ghidraAddress PAL: 0x0042e5e0
  */
 extern int g_nSectionChangePacketType;
 

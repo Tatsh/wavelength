@@ -173,6 +173,7 @@ public:
      * The creators of derived arenas, up to a null entry.
      *
      * @ghidraAddress NTSC-U/C: 0x003afac8
+     * @ghidraAddress PAL: 0x0042e960
      */
     static Creator sCreators[];
 
@@ -181,6 +182,7 @@ public:
      * `juice_blink_range`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afad0
+     * @ghidraAddress PAL: 0x0042e968
      */
     static float sLowEnergy;
 

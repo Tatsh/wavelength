@@ -6,6 +6,7 @@
  * Shared terminated buffer every empty String points at.
  *
  * @ghidraAddress NTSC-U/C: 0x003b24d0
+ * @ghidraAddress PAL: 0x00431390
  */
 extern char *g_szStringEmptyBuffer;
 

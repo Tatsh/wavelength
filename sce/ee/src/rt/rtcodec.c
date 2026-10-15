@@ -99,13 +99,13 @@ typedef struct {
     int pitchCounter;
 } rtSpeechSynthState;
 
-// NTSC-U/C: 0x003b6f68
+// NTSC-U/C: 0x003b6f68, PAL: 0x00435e28
 static int g_nAudioRingReadIdx;
 
-// NTSC-U/C: 0x003b6f6c
+// NTSC-U/C: 0x003b6f6c, PAL: 0x00435e2c
 static int g_nAudioRingWriteIdx = kLpcRingClearSize;
 
-// NTSC-U/C: 0x003b6f70
+// NTSC-U/C: 0x003b6f70, PAL: 0x00435e30
 static unsigned int g_dwAudioRingInit = 1;
 
 // NTSC-U/C: 0x003b6f78, the correction word of each voicing history.
@@ -115,7 +115,8 @@ static int g_anLpcVoicingTable[kLpcVoicingTableSize] = {
     25915, 25913, 1560,  1560,  7800,  3640,  1561,  1561,  3643,  3641,
 };
 
-// NTSC-U/C: 0x003b6ff8, the smoothing thresholds by error rate and then by parameter.
+// NTSC-U/C: 0x003b6ff8, PAL: 0x00435eb8, the smoothing thresholds by error rate and then by
+// parameter.
 static float g_aafLpcSmoothThreshold[kLpcThresholdRows][kLpcThresholdColumns] = {
     {32767.0f, 32767.0f, 32.0f, 32.0f, 32.0f, 32.0f, 16.0f, 16.0f},
     {10.0f, 8.0f, 6.3999996f, 6.3999996f, 11.2f, 11.2f, 5.6f, 5.6f},
@@ -134,13 +135,13 @@ static int g_anLpcPitchDecodeTable[kLpcPitchDecodeSize] = {
     128, 3,  3,   3,   3,   1,   3,   3,  3,  1,   3,   1,   1,  1,
 };
 
-// NTSC-U/C: 0x003b7278, the magnitude of each log area ratio code.
+// NTSC-U/C: 0x003b7278, PAL: 0x00436138, the magnitude of each log area ratio code.
 static int g_anLpcRcDecodeTable[kLpcRcDecodeSize] = {
     4,   11,  18,  25,  32,  39,  46,  53,  60,  66,  72,  77,  82,  87,  92,  96,
     101, 104, 108, 111, 114, 115, 117, 119, 121, 122, 123, 124, 125, 126, 127, 127,
 };
 
-// NTSC-U/C: 0x003b72f8
+// NTSC-U/C: 0x003b72f8, PAL: 0x004361b8
 static float g_afLpcRcDecodeScale[kLpcLinearRcCount] = {
     0.6953f,
     0.625f,
@@ -152,7 +153,7 @@ static float g_afLpcRcDecodeScale[kLpcLinearRcCount] = {
     0.38279998f,
 };
 
-// NTSC-U/C: 0x003b7318
+// NTSC-U/C: 0x003b7318, PAL: 0x004361d8
 static int g_anLpcRcDecodeBias[kLpcLinearRcCount] = {
     1152,
     -2816,
@@ -164,7 +165,7 @@ static int g_anLpcRcDecodeBias[kLpcLinearRcCount] = {
     -1920,
 };
 
-// NTSC-U/C: 0x003b7338
+// NTSC-U/C: 0x003b7338, PAL: 0x004361f8
 static int g_anLpcRcDecodeRound[kLpcLinearRcCount] = {
     511,
     511,
@@ -176,28 +177,28 @@ static int g_anLpcRcDecodeRound[kLpcLinearRcCount] = {
     4095,
 };
 
-// NTSC-U/C: 0x003b7358, the width of each reflection code.
+// NTSC-U/C: 0x003b7358, PAL: 0x00436218, the width of each reflection code.
 static int g_anLpcRcBits[RT_LPC_ORDER] = {8, 8, 5, 5, 4, 4, 4, 4, 3, 2};
 
-// NTSC-U/C: 0x003b7380, the reflection codes an unvoiced frame decodes with.
+// NTSC-U/C: 0x003b7380, PAL: 0x00436240, the reflection codes an unvoiced frame decodes with.
 static int g_anLpcRcUnvoiced[RT_LPC_ORDER] = {0, 0, 0, 0, 0, 3, 0, 2, 0, 0};
 
 // NTSC-U/C: 0x003b73a8
 static int g_anLpcCorrectionBits[kLpcCorrectionBitCount] = {2, 4, 8, 16, 32};
 
-// NTSC-U/C: 0x003b73bc
+// NTSC-U/C: 0x003b73bc, PAL: 0x0043627c
 static int g_nLpcPreviousHalfVoicing;
 
-// NTSC-U/C: 0x003b73c0
+// NTSC-U/C: 0x003b73c0, PAL: 0x00436280
 static int g_nLpcErrorRate;
 
-// NTSC-U/C: 0x003b73c4
+// NTSC-U/C: 0x003b73c4, PAL: 0x00436284
 static int g_nLpcPreviousVoicing;
 
-// NTSC-U/C: 0x003b73c8
+// NTSC-U/C: 0x003b73c8, PAL: 0x00436288
 static short g_wLpcFirstFrame = 1;
 
-// NTSC-U/C: 0x003b73d0, the parity word of each protected nibble.
+// NTSC-U/C: 0x003b73d0, PAL: 0x00436290, the parity word of each protected nibble.
 static int g_anLpcParityTable[kLpcParityTableSize] = {
     0,
     7,
@@ -224,7 +225,7 @@ static int g_anLpcPitchEncodeTable[kLpcPitchEncodeSize] = {
     77, 73, 75, 74, 78, 70, 71, 67, 99, 97, 113, 112, 114, 98, 106, 104, 108, 100, 101, 76,
 };
 
-// NTSC-U/C: 0x003b7500
+// NTSC-U/C: 0x003b7500, PAL: 0x004363c0
 static int g_anLpcRcEncodeBias[kLpcLinearRcCount] = {
     1920,
     -768,
@@ -236,7 +237,7 @@ static int g_anLpcRcEncodeBias[kLpcLinearRcCount] = {
     -1152,
 };
 
-// NTSC-U/C: 0x003b7520
+// NTSC-U/C: 0x003b7520, PAL: 0x004363e0
 static float g_afLpcRcEncodeScale[kLpcLinearRcCount] = {
     0.020399999f,
     0.0167f,
@@ -248,17 +249,17 @@ static float g_afLpcRcEncodeScale[kLpcLinearRcCount] = {
     0.0112f,
 };
 
-// NTSC-U/C: 0x003b7540
+// NTSC-U/C: 0x003b7540, PAL: 0x00436400
 static int g_anLpcRcEncodeBits[kLpcLinearRcCount] = {6, 5, 4, 4, 4, 4, 3, 3};
 
-// NTSC-U/C: 0x003b7560, the log area ratio code of each reflection magnitude.
+// NTSC-U/C: 0x003b7560, PAL: 0x00436420, the log area ratio code of each reflection magnitude.
 static int g_anLpcLogAreaTable[kLpcLogAreaTableSize] = {
     0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,  2,  2,  2,  2,  2,  2,  2,  3, 3,
     3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5,  5,  5,  5,  5,  6,  6,  6,  6, 6,
     7, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 13, 14, 15,
 };
 
-// NTSC-U/C: 0x003b7660, the loudness of each loudness code, twice over.
+// NTSC-U/C: 0x003b7660, PAL: 0x00436520, the loudness of each loudness code, twice over.
 static int g_anLpcRmsTable[kLpcRmsTableSize] = {
     1024, 936, 856, 784, 718, 656, 600, 550, 502, 460, 420, 384, 352, 328, 294, 270,
     246,  226, 206, 188, 172, 158, 144, 132, 120, 110, 102, 92,  84,  78,  70,  64,
@@ -266,7 +267,7 @@ static int g_anLpcRmsTable[kLpcRmsTableSize] = {
     15,   14,  13,  12,  11,  10,  9,   8,   7,   6,   5,   4,   3,   2,   1,   0,
 };
 
-// NTSC-U/C: 0x003b7760, the voicing of the last two frames of the speech coder.
+// NTSC-U/C: 0x003b7760, PAL: 0x00436620, the voicing of the last two frames of the speech coder.
 static int g_nVoicingState;
 
 // NTSC-U/C: 0x00522d18

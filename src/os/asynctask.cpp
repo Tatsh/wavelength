@@ -27,22 +27,22 @@ AsyncTask sTasks[kTaskCount];
 // NTSC-U/C: 0x004819c0
 alignas(16) unsigned char sStack[kStackSize];
 
-// NTSC-U/C: 0x003b2240
+// NTSC-U/C: 0x003b2240, PAL: 0x0043111c
 int sSema;
 
-// NTSC-U/C: 0x003b2244
+// NTSC-U/C: 0x003b2244, PAL: 0x00431120
 int sThread;
 
-// NTSC-U/C: 0x003b2248
+// NTSC-U/C: 0x003b2248, PAL: 0x00431124
 volatile int sTaskDone;
 
-// NTSC-U/C: 0x003b224c
+// NTSC-U/C: 0x003b224c, PAL: 0x00431128
 int sTaskPending;
 
-// NTSC-U/C: 0x003b2250
+// NTSC-U/C: 0x003b2250, PAL: 0x0043112c
 int sReadIndex;
 
-// NTSC-U/C: 0x003b2254
+// NTSC-U/C: 0x003b2254, PAL: 0x00431130
 int sWriteIndex;
 
 // NTSC-U/C: 0x0028ce98, PAL: 0x00296878

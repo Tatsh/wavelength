@@ -48,13 +48,14 @@ enum {
     kRomVersionReadSize = 14,
 };
 
-// NTSC-U/C: 0x003c4740, the settings a tool console reports, which sceScfSetT10kConfig() replaces.
+// NTSC-U/C: 0x003c4740, PAL: 0x0045ab88, the settings a tool console reports, which
+// sceScfSetT10kConfig() replaces.
 static sceScfT10kConfig g_scfT10kConfig = {540, {0, 0}, SCE_JAPANESE_LANGUAGE, 0, 0, 0};
 
-// NTSC-U/C: 0x003c4748, the contents of rom0:ROMVER, empty until the first read.
+// NTSC-U/C: 0x003c4748, PAL: 0x0045ab90, the contents of rom0:ROMVER, empty until the first read.
 static char g_szScfRomVersion[16];
 
-// NTSC-U/C: 0x00432458, month lengths for the day arithmetic below.
+// NTSC-U/C: 0x00432458, PAL: 0x004cf120, month lengths for the day arithmetic below.
 static const signed char kMonthLengths[kMonthsPerYear] = {
     31,
     28,

@@ -7,6 +7,7 @@
  * Identity that EditGemPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af754
+ * @ghidraAddress PAL: 0x0042e5ec
  */
 extern int g_nEditGemPacketType;
 

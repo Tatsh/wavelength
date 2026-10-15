@@ -617,6 +617,7 @@ public:
      * Non-zero once the `unlimited_upload` script command ran.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0af4
+     * @ghidraAddress PAL: 0x0042f9c0
      */
     static int sUnlimitedUpload;
 
@@ -773,6 +774,7 @@ private:
  * The lobby service.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0af0
+ * @ghidraAddress PAL: 0x0042f9bc
  */
 extern LobbyRT *TheLobbyRT;
 

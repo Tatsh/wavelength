@@ -10,6 +10,7 @@
  * Identity that JoypadConnectionMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2110
+ * @ghidraAddress PAL: 0x00430fe0
  */
 extern int g_nJoypadConnectionMsgType;
 

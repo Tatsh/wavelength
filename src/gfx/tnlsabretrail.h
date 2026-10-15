@@ -167,6 +167,7 @@ public:
      * The angle per tick of the envelope of a sample, `sample_envelope_frequency`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afabc
+     * @ghidraAddress PAL: 0x0042e954
      */
     static float sSampleFrequency;
 
@@ -174,6 +175,7 @@ public:
      * The ticks of a sample, `sample_duration`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afac0
+     * @ghidraAddress PAL: 0x0042e958
      */
     static float sSampleDuration;
 

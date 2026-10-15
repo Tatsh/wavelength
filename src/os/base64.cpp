@@ -5,11 +5,11 @@ namespace {
 constexpr int kGroupBytes = 3;
 constexpr int kGroupChars = 4;
 
-// NTSC-U/C: 0x0041fef8
+// NTSC-U/C: 0x0041fef8, PAL: 0x004b7c00
 constexpr char kAlphabet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz. ";
 
 // The value of each character of kAlphabet, indexed by the character.
-// NTSC-U/C: 0x0041ff40
+// NTSC-U/C: 0x0041ff40, PAL: 0x004b7c48
 constexpr unsigned char kDecode[] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  63, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,

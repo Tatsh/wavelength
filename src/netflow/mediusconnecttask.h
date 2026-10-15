@@ -50,6 +50,7 @@ public:
      * The step that waits for OnConnect(), or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0afc
+     * @ghidraAddress PAL: 0x0042f9c8
      */
     static MediusConnectTask *sTask;
 
@@ -57,6 +58,7 @@ public:
      * Non-zero while a connection is being made.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0b00
+     * @ghidraAddress PAL: 0x0042f9cc
      */
     static int sConnecting;
 

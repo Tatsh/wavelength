@@ -132,5 +132,6 @@ public:
  * The transport.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ca8
+ * @ghidraAddress PAL: 0x0042fb78
  */
 extern TransportRT *TheTransportRT;

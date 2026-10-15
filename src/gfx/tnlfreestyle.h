@@ -222,6 +222,7 @@ public:
      * The delay of the assembly in ticks, `enter_delay`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afaa0
+     * @ghidraAddress PAL: 0x0042e938
      */
     static float sEnterDelay;
 
@@ -229,6 +230,7 @@ public:
      * The delay of the disassembly in ticks, `exit_delay`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afaa4
+     * @ghidraAddress PAL: 0x0042e93c
      */
     static float sExitDelay;
 
@@ -236,6 +238,7 @@ public:
      * The greatest speed of the position, `max_change_per_ms`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afaa8
+     * @ghidraAddress PAL: 0x0042e940
      */
     static float sMaxChangePerMs;
 
@@ -243,6 +246,7 @@ public:
      * The greatest speed of the camera, `cam_max_change_per_ms`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afaac
+     * @ghidraAddress PAL: 0x0042e944
      */
     static float sCamMaxChangePerMs;
 
@@ -251,6 +255,7 @@ public:
      * otherwise.
      *
      * @ghidraAddress NTSC-U/C: 0x003afab4
+     * @ghidraAddress PAL: 0x0042e94c
      */
     static float sLaneScale;
 
@@ -258,6 +263,7 @@ public:
      * The reciprocal of sLaneScale.
      *
      * @ghidraAddress NTSC-U/C: 0x003afab8
+     * @ghidraAddress PAL: 0x0042e950
      */
     static float sInvLaneScale;
 
@@ -265,6 +271,7 @@ public:
      * The freestylus the freestyles share, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003afac4
+     * @ghidraAddress PAL: 0x0042e95c
      */
     static Freestylus *sFreestylus;
 

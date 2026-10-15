@@ -96,9 +96,9 @@ typedef struct {
     unsigned char abReserved134[32];
 } RtDmeVoice;
 
-// NTSC-U/C: 0x003b6be0
+// NTSC-U/C: 0x003b6be0, PAL: 0x00435aa0
 static unsigned char g_bDmeVoiceStarted;
-// NTSC-U/C: 0x003b6be2
+// NTSC-U/C: 0x003b6be2, PAL: 0x00435aa2
 static short g_nDmeVoiceStarts;
 // NTSC-U/C: 0x00519f10
 static RtDmeVoice *g_apDmeVoices[RT_DME_CONNECTION_COUNT];

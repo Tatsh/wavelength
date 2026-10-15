@@ -9,6 +9,7 @@
  * Identity that HostLaunchpadSuccessMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b60
+ * @ghidraAddress PAL: 0x0042fa30
  */
 extern int g_nHostLaunchpadSuccessMsgType;
 

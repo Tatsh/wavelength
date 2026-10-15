@@ -53,10 +53,10 @@ static const char g_abLoadFileLibraryVersion[kVersionSize] = {'2', '7', '1', '0'
 static const char g_abLoadFileLibraryVersion[kVersionSize] = {'2', '6', '0', '0'};
 #endif
 
-// NTSC-U/C: 0x003c4870, negative until the client is bound.
+// NTSC-U/C: 0x003c4870, PAL: 0x0045acb8, negative until the client is bound.
 static int _bind_check = -1;
 
-// NTSC-U/C: 0x003c4874, a second server version the library accepts.
+// NTSC-U/C: 0x003c4874, PAL: 0x0045acbc, a second server version the library accepts.
 static const char *g_pszLoadFileAltVersion = "....";
 
 // NTSC-U/C: 0x00536c80. SIF DMA needs the 64-byte alignment retail gives it.

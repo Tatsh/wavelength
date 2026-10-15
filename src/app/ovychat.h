@@ -86,6 +86,7 @@ public:
          * The length of a slide, the end of the input range of the first slide built, or -1e9.
          *
          * @ghidraAddress NTSC-U/C: 0x003af95c
+         * @ghidraAddress PAL: 0x0042e7f0
          */
         static float sSlideTime;
 

@@ -22,6 +22,7 @@ struct ShiftJisRange {
  * The ASCII punctuation from space to tilde in ASCII order, followed by one zero entry.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2430
+ * @ghidraAddress PAL: 0x004312f0
  */
 extern const ShiftJisSymbol g_aShiftJisSymbols[kShiftJisSymbolCount + 1];
 
@@ -29,6 +30,7 @@ extern const ShiftJisSymbol g_aShiftJisSymbols[kShiftJisSymbolCount + 1];
  * The digit, capital, and small-letter runs, based at `0x824f`, `0x8260`, and `0x8281`.
  *
  * @ghidraAddress NTSC-U/C: 0x003b24b8
+ * @ghidraAddress PAL: 0x00431378
  */
 extern const ShiftJisRange g_aShiftJisRanges[kShiftJisRangeCount];
 

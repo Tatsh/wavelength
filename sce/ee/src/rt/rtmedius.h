@@ -14,13 +14,13 @@ extern "C" {
  * message without a known entry point is named by its place in the registration order.
  */
 
-/** 1 once rtMediusInitialize() has run. NTSC-U/C: 0x003c25c8. */
+/** 1 once rtMediusInitialize() has run. NTSC-U/C: 0x003c25c8, PAL: 0x00441488. */
 extern short g_nMediusInitialized;
 
-/** The connection to the lobby server, or negative. NTSC-U/C: 0x003c25cc. */
+/** The connection to the lobby server, or negative. NTSC-U/C: 0x003c25cc, PAL: 0x0044148c. */
 extern int g_nMediusConnection;
 
-/** The key of the lobby session, or empty. NTSC-U/C: 0x003c25d8. */
+/** The key of the lobby session, or empty. NTSC-U/C: 0x003c25d8, PAL: 0x00441498. */
 extern char g_szMediusSessionKey[RT_MEDIUS_SESSION_KEY_SIZE];
 
 /** The file rtMediusFileUpload() sends. NTSC-U/C: 0x004357fc. */
@@ -35,121 +35,121 @@ extern int g_nMediusFileUploadPartType;
 /** The receiver of the parts of an upload, or null. NTSC-U/C: 0x004357f8. */
 extern rtMediusFileTransferCallback g_pfnMediusFileUploadServerReqCallback;
 
-/** The receiver of message 74, or null. NTSC-U/C: 0x003c25f0. */
+/** The receiver of message 74, or null. NTSC-U/C: 0x003c25f0, PAL: 0x004414b0. */
 extern rtMediusCallback g_pfnMediusErrorMessageCallback;
 
-/** The receiver of message 4, or null. NTSC-U/C: 0x003c25f4. */
+/** The receiver of message 4, or null. NTSC-U/C: 0x003c25f4, PAL: 0x004414b4. */
 extern rtMediusSessionBeginCallback g_pfnMediusSessionBeginCallback;
 
-/** The receiver of message 6, or null. NTSC-U/C: 0x003c25f8. */
+/** The receiver of message 6, or null. NTSC-U/C: 0x003c25f8, PAL: 0x004414b8. */
 extern rtMediusCallback g_pfnMediusSessionEndCallback;
 
-/** The receiver of message 8, or null. NTSC-U/C: 0x003c2600. */
+/** The receiver of message 8, or null. NTSC-U/C: 0x003c2600, PAL: 0x004414c0. */
 extern rtMediusLoginCallback g_pfnMediusAccountLoginCallback;
 
-/** The receiver of message 22, or null. NTSC-U/C: 0x003c2604. */
+/** The receiver of message 22, or null. NTSC-U/C: 0x003c2604, PAL: 0x004414c4. */
 extern rtMediusCallback g_pfnMediusAccountLogoutCallback;
 
-/** The receiver of message 10, or null. NTSC-U/C: 0x003c2608. */
+/** The receiver of message 10, or null. NTSC-U/C: 0x003c2608, PAL: 0x004414c8. */
 extern rtMediusCallback g_pfnMediusAccountRegistrationCallback;
 
-/** The receiver of message 12, or null. NTSC-U/C: 0x003c2618. */
+/** The receiver of message 12, or null. NTSC-U/C: 0x003c2618, PAL: 0x004414d8. */
 extern rtMediusCallback g_pfnMediusAccountGetProfileCallback;
 
-/** The receiver of message 14, or null. NTSC-U/C: 0x003c260c. */
+/** The receiver of message 14, or null. NTSC-U/C: 0x003c260c, PAL: 0x004414cc. */
 extern rtMediusCallback g_pfnMediusAccountUpdateProfileCallback;
 
-/** The receiver of message 16, or null. NTSC-U/C: 0x003c2610. */
+/** The receiver of message 16, or null. NTSC-U/C: 0x003c2610, PAL: 0x004414d0. */
 extern rtMediusCallback g_pfnMediusChangePasswordCallback;
 
-/** The receiver of message 18, or null. NTSC-U/C: 0x003c2614. */
+/** The receiver of message 18, or null. NTSC-U/C: 0x003c2614, PAL: 0x004414d4. */
 extern rtMediusCallback g_pfnMediusAccountUpdateStatsCallback;
 
-/** The receiver of message 26, or null. NTSC-U/C: 0x003c2620. */
+/** The receiver of message 26, or null. NTSC-U/C: 0x003c2620, PAL: 0x004414e0. */
 extern rtMediusLoginCallback g_pfnMediusAnonymousLoginCallback;
 
-/** The receiver of message 30, or null. NTSC-U/C: 0x003c262c. */
+/** The receiver of message 30, or null. NTSC-U/C: 0x003c262c, PAL: 0x004414ec. */
 extern rtMediusCallback g_pfnMediusCreateGameCallback;
 
-/** The receiver of message 32, or null. NTSC-U/C: 0x003c2630. */
+/** The receiver of message 32, or null. NTSC-U/C: 0x003c2630, PAL: 0x004414f0. */
 extern rtMediusCallback g_pfnMediusCreateGameOnSelfCallback;
 
-/** The receiver of message 34, or null. NTSC-U/C: 0x003c2634. */
+/** The receiver of message 34, or null. NTSC-U/C: 0x003c2634, PAL: 0x004414f4. */
 extern rtMediusCreateChannelCallback g_pfnMediusCreateChannelCallback;
 
-/** The receiver of message 36, or null. NTSC-U/C: 0x003c2638. */
+/** The receiver of message 36, or null. NTSC-U/C: 0x003c2638, PAL: 0x004414f8. */
 extern rtMediusJoinGameCallback g_pfnMediusJoinGameCallback;
 
-/** The receiver of message 38, or null. NTSC-U/C: 0x003c263c. */
+/** The receiver of message 38, or null. NTSC-U/C: 0x003c263c, PAL: 0x004414fc. */
 extern rtMediusJoinChannelCallback g_pfnMediusJoinChannelCallback;
 
-/** The receiver of message 42, or null. NTSC-U/C: 0x003c2640. */
+/** The receiver of message 42, or null. NTSC-U/C: 0x003c2640, PAL: 0x00441500. */
 extern rtMediusGameListCallback g_pfnMediusGameListCallback;
 
-/** The receiver of message 44, or null. NTSC-U/C: 0x003c2644. */
+/** The receiver of message 44, or null. NTSC-U/C: 0x003c2644, PAL: 0x00441504. */
 extern rtMediusChannelListCallback g_pfnMediusChannelListCallback;
 
-/** The receiver of message 46, or null. NTSC-U/C: 0x003c2624. */
+/** The receiver of message 46, or null. NTSC-U/C: 0x003c2624, PAL: 0x004414e4. */
 extern rtMediusChannelPlayersCallback g_pfnMediusLobbyWorldPlayerListCallback;
 
-/** The receiver of message 48, or null. NTSC-U/C: 0x003c2628. */
+/** The receiver of message 48, or null. NTSC-U/C: 0x003c2628, PAL: 0x004414e8. */
 extern rtMediusGamePlayersCallback g_pfnMediusGameWorldPlayerListCallback;
 
-/** The receiver of message 50, or null. NTSC-U/C: 0x003c2648. */
+/** The receiver of message 50, or null. NTSC-U/C: 0x003c2648, PAL: 0x00441508. */
 extern rtMediusPlayerInfoCallback g_pfnMediusPlayerInfoCallback;
 
-/** The receiver of message 52, or null. NTSC-U/C: 0x003c264c. */
+/** The receiver of message 52, or null. NTSC-U/C: 0x003c264c, PAL: 0x0044150c. */
 extern rtMediusCallback g_pfnMediusGameInfoResponse0Callback;
 
-/** The receiver of message 54, or null. NTSC-U/C: 0x003c2650. */
+/** The receiver of message 54, or null. NTSC-U/C: 0x003c2650, PAL: 0x00441510. */
 extern rtMediusChannelInfoCallback g_pfnMediusChannelInfoCallback;
 
-/** The receiver of message 56, or null. NTSC-U/C: 0x003c2654. */
+/** The receiver of message 56, or null. NTSC-U/C: 0x003c2654, PAL: 0x00441514. */
 extern rtMediusCallback g_pfnMediusFindWorldByNameCallback;
 
-/** The receiver of message 58, or null. NTSC-U/C: 0x003c2658. */
+/** The receiver of message 58, or null. NTSC-U/C: 0x003c2658, PAL: 0x00441518. */
 extern rtMediusFindPlayerCallback g_pfnMediusFindPlayerCallback;
 
-/** The receiver of message 60, or null. NTSC-U/C: 0x003c265c. */
+/** The receiver of message 60, or null. NTSC-U/C: 0x003c265c, PAL: 0x0044151c. */
 extern rtMediusChatHandler g_pfnMediusChatFwdMessageCallback;
 
-/** The receiver of message 62, or null. NTSC-U/C: 0x003c2660. */
+/** The receiver of message 62, or null. NTSC-U/C: 0x003c2660, PAL: 0x00441520. */
 extern rtMediusCallback g_pfnMediusGetBuddyListCallback;
 
-/** The receiver of message 64, or null. NTSC-U/C: 0x003c2664. */
+/** The receiver of message 64, or null. NTSC-U/C: 0x003c2664, PAL: 0x00441524. */
 extern rtMediusCallback g_pfnMediusAddToBuddyListCallback;
 
-/** The receiver of message 66, or null. NTSC-U/C: 0x003c2668. */
+/** The receiver of message 66, or null. NTSC-U/C: 0x003c2668, PAL: 0x00441528. */
 extern rtMediusCallback g_pfnMediusRemoveFromBuddyListCallback;
 
-/** The receiver of message 68, or null. NTSC-U/C: 0x003c2670. */
+/** The receiver of message 68, or null. NTSC-U/C: 0x003c2670, PAL: 0x00441530. */
 extern rtMediusCallback g_pfnMediusAddToBuddyListConfirmationCallback;
 
-/** The receiver of message 69, or null. NTSC-U/C: 0x003c266c. */
+/** The receiver of message 69, or null. NTSC-U/C: 0x003c266c, PAL: 0x0044152c. */
 extern rtMediusCallback g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback;
 
-/** The receiver of message 193, or null. NTSC-U/C: 0x003c2674. */
+/** The receiver of message 193, or null. NTSC-U/C: 0x003c2674, PAL: 0x00441534. */
 extern rtMediusCallback g_pfnMediusGetIgnoreListCallback;
 
-/** The receiver of message 195, or null. NTSC-U/C: 0x003c2678. */
+/** The receiver of message 195, or null. NTSC-U/C: 0x003c2678, PAL: 0x00441538. */
 extern rtMediusCallback g_pfnMediusAddToIgnoreListCallback;
 
-/** The receiver of message 197, or null. NTSC-U/C: 0x003c267c. */
+/** The receiver of message 197, or null. NTSC-U/C: 0x003c267c, PAL: 0x0044153c. */
 extern rtMediusCallback g_pfnMediusRemoveFromIgnoreListCallback;
 
-/** The receiver of message 72, or null. NTSC-U/C: 0x003c2680. */
+/** The receiver of message 72, or null. NTSC-U/C: 0x003c2680, PAL: 0x00441540. */
 extern rtMediusPolicyCallback g_pfnMediusPolicyCallback;
 
-/** The receiver of message 77, or null. NTSC-U/C: 0x003c2684. */
+/** The receiver of message 77, or null. NTSC-U/C: 0x003c2684, PAL: 0x00441544. */
 extern rtMediusAnnouncementCallback g_pfnMediusGetAnnouncementsCallback;
 
-/** The receiver of message 79, or null. NTSC-U/C: 0x003c2688. */
+/** The receiver of message 79, or null. NTSC-U/C: 0x003c2688, PAL: 0x00441548. */
 extern rtMediusCallback g_pfnMediusSetGameListFilterResponse0Callback;
 
-/** The receiver of message 81, or null. NTSC-U/C: 0x003c268c. */
+/** The receiver of message 81, or null. NTSC-U/C: 0x003c268c, PAL: 0x0044154c. */
 extern rtMediusCallback g_pfnMediusClearGameListFilterCallback;
 
-/** The receiver of message 83, or null. NTSC-U/C: 0x003c2690. */
+/** The receiver of message 83, or null. NTSC-U/C: 0x003c2690, PAL: 0x00441550. */
 extern rtMediusCallback g_pfnMediusGetGameListFilterResponse0Callback;
 
 /** The receiver of message 85, or null. NTSC-U/C: 0x00435b68. */
@@ -227,67 +227,67 @@ extern rtMediusCallback g_pfnMediusGetClanTeamChallengeHistoryCallback;
 /** The receiver of message 133, or null. NTSC-U/C: 0x00435bc8. */
 extern rtMediusCallback g_pfnMediusUpdateClanStatsCallback;
 
-/** The receiver of message 28, or null. NTSC-U/C: 0x003c2698. */
+/** The receiver of message 28, or null. NTSC-U/C: 0x003c2698, PAL: 0x00441558. */
 extern rtMediusCallback g_pfnMediusGetMyIPCallback;
 
-/** The receiver of message 135, or null. NTSC-U/C: 0x003c2694. */
+/** The receiver of message 135, or null. NTSC-U/C: 0x003c2694, PAL: 0x00441554. */
 extern rtMediusVersionCallback g_pfnMediusVersionServerCallback;
 
-/** The receiver of message 137, or null. NTSC-U/C: 0x003c269c. */
+/** The receiver of message 137, or null. NTSC-U/C: 0x003c269c, PAL: 0x0044155c. */
 extern rtMediusCallback g_pfnMediusGetWorldSecurityLevelCallback;
 
-/** The receiver of message 139, or null. NTSC-U/C: 0x003c26a0. */
+/** The receiver of message 139, or null. NTSC-U/C: 0x003c26a0, PAL: 0x00441560. */
 extern rtMediusCallback g_pfnMediusBanPlayerCallback;
 
-/** The receiver of message 20, or null. NTSC-U/C: 0x003c261c. */
+/** The receiver of message 20, or null. NTSC-U/C: 0x003c261c, PAL: 0x004414dc. */
 extern rtMediusCallback g_pfnMediusAccountDeleteCallback;
 
-/** The receiver of message 24, or null. NTSC-U/C: 0x003c25fc. */
+/** The receiver of message 24, or null. NTSC-U/C: 0x003c25fc, PAL: 0x004414bc. */
 extern rtMediusAccountGetIdCallback g_pfnMediusAccountGetIdCallback;
 
-/** The receiver of message 141, or null. NTSC-U/C: 0x003c26a4. */
+/** The receiver of message 141, or null. NTSC-U/C: 0x003c26a4, PAL: 0x00441564. */
 extern rtMediusCallback g_pfnMediusGetLocationsCallback;
 
-/** The receiver of message 143, or null. NTSC-U/C: 0x003c26a8. */
+/** The receiver of message 143, or null. NTSC-U/C: 0x003c26a8, PAL: 0x00441568. */
 extern rtMediusCallback g_pfnMediusPickLocationCallback;
 
 /** The receiver of message 145, or null. NTSC-U/C: 0x00435bcc. */
 extern rtMediusCallback g_pfnMediusGetClanMemberListCallback;
 
-/** The receiver of message 147, or null. NTSC-U/C: 0x003c26ac. */
+/** The receiver of message 147, or null. NTSC-U/C: 0x003c26ac, PAL: 0x0044156c. */
 extern rtMediusLadderPositionCallback g_pfnMediusLadderPositionCallback;
 
-/** The receiver of message 205, or null. NTSC-U/C: 0x003c26b0. */
+/** The receiver of message 205, or null. NTSC-U/C: 0x003c26b0, PAL: 0x00441570. */
 extern rtMediusLadderPositionCallback g_pfnMediusLadderPositionFastCallback;
 
-/** The receiver of message 149, or null. NTSC-U/C: 0x003c26b4. */
+/** The receiver of message 149, or null. NTSC-U/C: 0x003c26b4, PAL: 0x00441594. */
 extern rtMediusLadderListCallback g_pfnMediusLadderListCallback;
 
-/** The receiver of message 151, or null. NTSC-U/C: 0x003c26b8. */
+/** The receiver of message 151, or null. NTSC-U/C: 0x003c26b8, PAL: 0x00441578. */
 extern rtMediusCallback g_pfnMediusChatToggleCallback;
 
-/** The receiver of message 153, or null. NTSC-U/C: 0x003c26bc. */
+/** The receiver of message 153, or null. NTSC-U/C: 0x003c26bc, PAL: 0x0044157c. */
 extern rtMediusTextFilterCallback g_pfnMediusTextFilterCallback;
 
-/** The receiver of message 154, or null. NTSC-U/C: 0x003c26c0. */
+/** The receiver of message 154, or null. NTSC-U/C: 0x003c26c0, PAL: 0x00441580. */
 extern rtMediusCallback g_pfnMediusServerReassignGameMediusWorldIDCallback;
 
-/** The receiver of message 156, or null. NTSC-U/C: 0x003c26c4. */
+/** The receiver of message 156, or null. NTSC-U/C: 0x003c26c4, PAL: 0x00441584. */
 extern rtMediusCallback g_pfnMediusGetTotalGamesCallback;
 
-/** The receiver of message 158, or null. NTSC-U/C: 0x003c26c8. */
+/** The receiver of message 158, or null. NTSC-U/C: 0x003c26c8, PAL: 0x00441588. */
 extern rtMediusCallback g_pfnMediusGetTotalChannelsCallback;
 
-/** The receiver of message 160, or null. NTSC-U/C: 0x003c26cc. */
+/** The receiver of message 160, or null. NTSC-U/C: 0x003c26cc, PAL: 0x0044158c. */
 extern rtMediusCallback g_pfnMediusGetLobbyPlayerNamesCallback;
 
-/** The receiver of message 162, or null. NTSC-U/C: 0x003c26d0. */
+/** The receiver of message 162, or null. NTSC-U/C: 0x003c26d0, PAL: 0x00441590. */
 extern rtMediusCallback g_pfnMediusGetTotalUsersCallback;
 
-/** The receiver of message 164, or null. NTSC-U/C: 0x003c26d4. */
+/** The receiver of message 164, or null. NTSC-U/C: 0x003c26d4, PAL: 0x00441594. */
 extern rtMediusCallback g_pfnMediusSetLocalizationParamsCallback;
 
-/** The receiver of message 199, or null. NTSC-U/C: 0x003c26d8. */
+/** The receiver of message 199, or null. NTSC-U/C: 0x003c26d8, PAL: 0x00441598. */
 extern rtMediusCallback g_pfnMediusSetMessageAsReadCallback;
 
 /** The receiver of message 166, or null. NTSC-U/C: 0x004357f4. */
@@ -326,13 +326,13 @@ extern rtMediusCallback g_pfnMediusFileSearchByMetaDataCallback;
 /** The receiver of message 191, or null. NTSC-U/C: 0x0043582c. */
 extern rtMediusCallback g_pfnMediusFileCancelOperationCallback;
 
-/** The receiver of message 200, or null. NTSC-U/C: 0x003c26dc. */
+/** The receiver of message 200, or null. NTSC-U/C: 0x003c26dc, PAL: 0x0044159c. */
 extern rtMediusCallback g_pfnMediusGetUniverseInformationCallback;
 
-/** The receiver of message 201, or null. NTSC-U/C: 0x003c26e0. */
+/** The receiver of message 201, or null. NTSC-U/C: 0x003c26e0, PAL: 0x004415a0. */
 extern rtMediusCallback g_pfnMediusUniverseNewsCallback;
 
-/** The receiver of message 202, or null. NTSC-U/C: 0x003c26e4. */
+/** The receiver of message 202, or null. NTSC-U/C: 0x003c26e4, PAL: 0x004415a4. */
 extern rtMediusCallback g_pfnMediusUniverseStatusListCallback;
 
 /** The registered type of message 0. NTSC-U/C: 0x00435900. */

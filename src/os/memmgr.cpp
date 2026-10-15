@@ -44,34 +44,34 @@ static Heap g_aHeaps[kMaxHeaps];
 // NTSC-U/C: 0x005154c0
 static int g_anHeapStack[kMaxHeapStackDepth];
 
-// NTSC-U/C: 0x003b2398
+// NTSC-U/C: 0x003b2398, PAL: 0x00431258
 static int *g_pMainHeapStart = nullptr;
 
-// NTSC-U/C: 0x003b239c
+// NTSC-U/C: 0x003b239c, PAL: 0x0043125c
 static int *g_pMainHeapEnd = nullptr;
 
-// NTSC-U/C: 0x003b23a0
+// NTSC-U/C: 0x003b23a0, PAL: 0x00431260
 static int g_nNumHeaps = 0;
 
-// NTSC-U/C: 0x003b23a4
+// NTSC-U/C: 0x003b23a4, PAL: 0x00431264
 static int g_nHeapStackDepth = 0;
 
-// NTSC-U/C: 0x003b23a8
+// NTSC-U/C: 0x003b23a8, PAL: 0x00431268
 static int g_nMemRecursion = 0;
 
-// NTSC-U/C: 0x003b23ac
+// NTSC-U/C: 0x003b23ac, PAL: 0x0043126c
 static int g_nInMemAlloc = 0;
 
-// NTSC-U/C: 0x003b23b0
+// NTSC-U/C: 0x003b23b0, PAL: 0x00431270
 static int g_nMemThread = -1;
 
 int g_nMemTrackingEnabled = 0;
 int g_nTrackStl = 0;
 
-// NTSC-U/C: 0x003b23c0
+// NTSC-U/C: 0x003b23c0, PAL: 0x00431280
 static int g_nHeapsConfigured = 0;
 
-// NTSC-U/C: 0x003b242c
+// NTSC-U/C: 0x003b242c, PAL: 0x004312ec
 static FixedSizeAlloc *g_pSmallBlockPool = nullptr;
 
 int MemGetHeap() {

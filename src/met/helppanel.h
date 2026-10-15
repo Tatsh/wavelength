@@ -192,6 +192,7 @@ public:
      * The loader every help panel shares, or null before the first Load().
      *
      * @ghidraAddress NTSC-U/C: 0x003af8dc
+     * @ghidraAddress PAL: 0x0042e770
      */
     static RndLoader *sLoader;
 

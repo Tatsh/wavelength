@@ -18,7 +18,7 @@ constexpr float kMaxPressGapMs = 750.0F;
 enum EntryNode { kEntryButtons = 0, kEntryAction = 1, kEntryMarksEntered = 2 };
 constexpr int kControllerValue = 1;
 
-// NTSC-U/C: 0x003b235c
+// NTSC-U/C: 0x003b235c, PAL: 0x0043121c
 CheatsManager *gCheatsManager;
 
 } // namespace

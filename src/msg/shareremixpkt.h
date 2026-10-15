@@ -8,6 +8,7 @@
  * Identity that ShareRemixPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bb0
+ * @ghidraAddress PAL: 0x0042fa80
  */
 extern int g_nShareRemixPktType;
 

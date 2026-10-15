@@ -261,5 +261,6 @@ public:
  * The lobby service.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0aec
+ * @ghidraAddress PAL: 0x0042f9b8
  */
 extern NetLobby *TheNetLobby;

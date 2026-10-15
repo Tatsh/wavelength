@@ -74,13 +74,13 @@ constexpr unsigned char kBigMotorByte = 1;
 enum ActuatorIndex { kSmallMotor = 0, kBigMotor = 1 };
 
 // Set once the first record has started libpad.
-// NTSC-U/C: 0x003b2270
+// NTSC-U/C: 0x003b2270, PAL: 0x00431150
 int gPadDriverStarted;
 
 // The linear map ApplyDeadzone() applies, set by the latest Init().
-// NTSC-U/C: 0x003b2268
+// NTSC-U/C: 0x003b2268, PAL: 0x00431148
 float gDeadzoneScale;
-// NTSC-U/C: 0x003b226c
+// NTSC-U/C: 0x003b226c, PAL: 0x0043114c
 float gDeadzoneBias;
 
 // Replace a failed request's phase with the request that failed, and report completion.

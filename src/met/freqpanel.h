@@ -198,6 +198,7 @@ private:
      * The transform animation each panel copies, the `panel_anim_name` setting.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8c8
+     * @ghidraAddress PAL: 0x0042e75c
      */
     static const char *sPanelAnimName;
 
@@ -205,6 +206,7 @@ private:
      * The frame the material entry starts at, the `panel_mat_anim_enter_start` setting.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8b8
+     * @ghidraAddress PAL: 0x0042e74c
      */
     static float sMatEnterStart;
 
@@ -212,6 +214,7 @@ private:
      * The frame the material entry stops at, the `panel_mat_anim_enter_stop` setting.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8bc
+     * @ghidraAddress PAL: 0x0042e750
      */
     static float sMatEnterStop;
 
@@ -219,6 +222,7 @@ private:
      * The frame the material exit starts at, the `panel_mat_anim_exit_start` setting.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8c0
+     * @ghidraAddress PAL: 0x0042e754
      */
     static float sMatExitStart;
 
@@ -226,6 +230,7 @@ private:
      * The frame the material exit stops at, the `panel_mat_anim_exit_stop` setting.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8c4
+     * @ghidraAddress PAL: 0x0042e758
      */
     static float sMatExitStop;
 };

@@ -10,6 +10,7 @@
  * Identity that ChatMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b88
+ * @ghidraAddress PAL: 0x0042fa58
  */
 extern int g_nChatMsgType;
 

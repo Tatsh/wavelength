@@ -160,6 +160,7 @@ public:
      * The class name a `.rnd` file writes, `Movie`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a28
+     * @ghidraAddress PAL: 0x0042f8c0
      */
     static const char *sClassName;
 
@@ -167,6 +168,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a2c
+     * @ghidraAddress PAL: 0x0042f8c4
      */
     static int sRev;
 

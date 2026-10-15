@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// NTSC-U/C: 0x003b61a4
+// NTSC-U/C: 0x003b61a4, PAL: 0x00435064
 static rtAllocFunc g_pfnAllocHook;
-// NTSC-U/C: 0x003b61a8
+// NTSC-U/C: 0x003b61a8, PAL: 0x00435068
 static rtFreeFunc g_pfnFreeHook;
 
 int RtAllocBlock(void **ppBlock, int nSize) {

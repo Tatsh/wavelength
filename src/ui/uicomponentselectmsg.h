@@ -14,6 +14,7 @@ class UIScreen;
  * Identity that UIComponentSelectMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003afcec
+ * @ghidraAddress PAL: 0x0042eb84
  */
 extern int g_nUIComponentSelectMsgType;
 

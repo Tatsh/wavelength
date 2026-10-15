@@ -20,7 +20,7 @@ struct InfoLess {
 
 } // namespace
 
-// NTSC-U/C: 0x003b2410
+// NTSC-U/C: 0x003b2410, PAL: 0x004312d0
 static int g_nTrackerReportHeap = -1;
 
 void *HeapTracker::operator new(size_t nSize) {

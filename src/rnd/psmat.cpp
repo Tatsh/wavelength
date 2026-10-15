@@ -68,7 +68,7 @@ constexpr int kStageCountShared = 2;
 constexpr float kSphereMapScale = 0.5f;
 constexpr float kTexelCentreOffset = 0.5f;
 
-// NTSC-U/C: 0x003b0788
+// NTSC-U/C: 0x003b0788, PAL: 0x0042f620
 const int kTexFunctions[] = {
     kTexFunctionModulate,
     kTexFunctionDecal,

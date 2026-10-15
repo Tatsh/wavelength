@@ -140,5 +140,6 @@ private:
  * Non-zero while StreamBuffer::Add() runs.
  *
  * @ghidraAddress NTSC-U/C: 0x003b24d4
+ * @ghidraAddress PAL: 0x00431394
  */
 extern int g_nAddWasEntered;

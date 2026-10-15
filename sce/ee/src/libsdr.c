@@ -60,32 +60,32 @@ static SdrPacket g_sdrPacket __attribute__((aligned(64)));
 static sceSifClientData g_sdrClient __attribute__((aligned(64)));
 
 // The completion callback of a call made with a zero control word. The image never writes it.
-// NTSC-U/C: 0x003c4768
+// NTSC-U/C: 0x003c4768, PAL: 0x0045abb0
 static sceSifEndFunc g_pfnSdrEndFunction;
 
 // The transfer handler of DMA channel 0. The interrupt-handler commands record it and the five
 // words below.
-// NTSC-U/C: 0x003c4778
+// NTSC-U/C: 0x003c4778, PAL: 0x0045abc0
 static int _sce_sdr_transIntr0Hdr;
 
 // The transfer handler of DMA channel 1.
-// NTSC-U/C: 0x003c477c
+// NTSC-U/C: 0x003c477c, PAL: 0x0045abc4
 static int _sce_sdr_transIntr1Hdr;
 
 // The SPU2 interrupt handler.
-// NTSC-U/C: 0x003c4780
+// NTSC-U/C: 0x003c4780, PAL: 0x0045abc8
 static int _sce_sdr_spu2IntrHdr;
 
 // The argument of the channel 0 transfer handler.
-// NTSC-U/C: 0x003c4784
+// NTSC-U/C: 0x003c4784, PAL: 0x0045abcc
 static int _sce_sdr_transIntr0Arg;
 
 // The argument of the channel 1 transfer handler.
-// NTSC-U/C: 0x003c4788
+// NTSC-U/C: 0x003c4788, PAL: 0x0045abd0
 static int _sce_sdr_transIntr1Arg;
 
 // The argument of the SPU2 interrupt handler.
-// NTSC-U/C: 0x003c478c
+// NTSC-U/C: 0x003c478c, PAL: 0x0045abd4
 static int _sce_sdr_spu2IntrArg;
 
 int sceSdRemoteInit(void) {

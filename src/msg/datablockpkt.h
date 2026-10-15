@@ -7,6 +7,7 @@
  * Identity that DataBlockPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bb8
+ * @ghidraAddress PAL: 0x0042fa88
  */
 extern int g_nDataBlockPktType;
 

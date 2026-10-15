@@ -86,6 +86,7 @@ public:
      * Sequence number of the last ArbiterPacket sent.
      *
      * @ghidraAddress NTSC-U/C: 0x003af840
+     * @ghidraAddress PAL: 0x0042e6d8
      */
     static int sVersion;
 

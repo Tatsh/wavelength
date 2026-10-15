@@ -303,7 +303,7 @@ void PsMesh::Copy(const RndObject *pSource, int nFlags) {
         mFacesVuEnd = pMesh->mFacesVuEnd;
         mFacesQwords = pMesh->mFacesQwords;
         const int nBytes = mFacesQwords * kQwordBytes;
-        // NTSC-U/C: 0x003b07c0
+        // NTSC-U/C: 0x003b07c0, PAL: 0x0042f658
         static int sHeap = kNoHeap;
         MemPushHeap(RndHeap(sHeap));
         mFacesPacket = MemHandle::Alloc(nBytes, "mFacesPacket");
@@ -316,7 +316,7 @@ void PsMesh::Copy(const RndObject *pSource, int nFlags) {
 
     if (mEdgesPacket == nullptr && pMesh->mEdgesPacket != nullptr) {
         mEdgesQwords = pMesh->mEdgesQwords;
-        // NTSC-U/C: 0x003b07c4
+        // NTSC-U/C: 0x003b07c4, PAL: 0x0042f65c
         static int sHeap = kNoHeap;
         MemPushHeap(RndHeap(sHeap));
         mEdgesPacket = MemHandle::Alloc(mEdgesQwords * kQwordBytes, "mEdgesPacket");
@@ -335,7 +335,7 @@ void PsMesh::BuildFacesPacket() {
         return;
     }
 
-    // NTSC-U/C: 0x003b07c8
+    // NTSC-U/C: 0x003b07c8, PAL: 0x0042f660
     static int sHeap = kNoHeap;
     MemPushHeap(RndHeap(sHeap));
     mFacesPacket = MemHandle::Alloc(kPacketBytes, "mFacesPacket");
@@ -483,7 +483,7 @@ void PsMesh::BuildEdgesPacket() {
         return;
     }
 
-    // NTSC-U/C: 0x003b07cc
+    // NTSC-U/C: 0x003b07cc, PAL: 0x0042f664
     static int sHeap = kNoHeap;
     MemPushHeap(RndHeap(sHeap));
     mEdgesPacket = MemHandle::Alloc(kPacketBytes, "mEdgesPacket");

@@ -14,10 +14,11 @@ enum {
 #define kKernelSearchStart ((unsigned int *)0x80000000)
 #define kKernelSearchEnd ((unsigned int *)0x80080000)
 
-// NTSC-U/C: 0x003c4878, the kernel system call table. The library records it and never reads it.
+// NTSC-U/C: 0x003c4878, PAL: 0x0045acc0, the kernel system call table. The library records it and
+// never reads it.
 static void **g_ppSyscallTable;
 
-// NTSC-U/C: 0x003c4890
+// NTSC-U/C: 0x003c4890, PAL: 0x0045acd8
 static int g_anLibcSemaphores[2];
 
 // NTSC-U/C: 0x0031c5d8, PAL: 0x00388ef0
@@ -74,7 +75,7 @@ static __attribute__((noinline)) void setup(int nSyscall, void *pHandler) {
     LibkernelSyscall(kSyscallSetSyscall, nSyscall, (int)pHandler, 0);
 }
 
-// NTSC-U/C: 0x003c4880
+// NTSC-U/C: 0x003c4880, PAL: 0x0045acc8
 static SyscallEntry g_initSysSyscalls[kInitSysSyscallCount] = {
     {kSyscallFindAddress, kFindAddress},
     {kSyscallKernelCopy, kCopy},

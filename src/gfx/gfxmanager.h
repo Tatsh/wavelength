@@ -1414,6 +1414,7 @@ public:
      * The textures that may be skipped by a load without a report, `merges_always_allowed`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8f4
+     * @ghidraAddress PAL: 0x0042e788
      */
     static DataArray *sMergesAlwaysAllowed;
 
@@ -1421,6 +1422,7 @@ public:
      * The energy at which the top zone of the meter starts.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8f8
+     * @ghidraAddress PAL: 0x0042e78c
      */
     static float sEnergyHighZone;
 
@@ -1428,6 +1430,7 @@ public:
      * The energy at which the middle zone of the meter starts.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8fc
+     * @ghidraAddress PAL: 0x0042e790
      */
     static float sEnergyLowZone;
 
@@ -1435,6 +1438,7 @@ public:
      * Whether Init() ran.
      *
      * @ghidraAddress NTSC-U/C: 0x003af900
+     * @ghidraAddress PAL: 0x0042e794
      */
     static int sInitialized;
 
@@ -1442,6 +1446,7 @@ public:
      * Whether Terminate() ran.
      *
      * @ghidraAddress NTSC-U/C: 0x003af904
+     * @ghidraAddress PAL: 0x0042e798
      */
     static int sTerminated;
 

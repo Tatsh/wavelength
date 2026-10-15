@@ -15,10 +15,10 @@ constexpr int kLobbyServerWorld = 1;
 
 } // namespace
 
-// NTSC-U/C: 0x003b0ad8
+// NTSC-U/C: 0x003b0ad8, PAL: 0x0042f9a4
 MGCLConnectTask *MGCLConnectTask::sTask;
 
-// NTSC-U/C: 0x003b0adc
+// NTSC-U/C: 0x003b0adc, PAL: 0x0042f9a8
 int MGCLConnectTask::sConnecting;
 
 void MGCLConnectTask::OnStart() {

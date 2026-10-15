@@ -31,21 +31,21 @@ constexpr int kSymbolSize = 256;
 
 } // namespace
 
-// NTSC-U/C: 0x003b2368
+// NTSC-U/C: 0x003b2368, PAL: 0x00431228
 static DataArray *g_pDataParseArray = nullptr;
 
-// NTSC-U/C: 0x003b236c
+// NTSC-U/C: 0x003b236c, PAL: 0x0043122c
 static int g_nDataParseNode = 0;
 
 int g_nDataParseLineNumber = 0;
 
-// NTSC-U/C: 0x003b2374
+// NTSC-U/C: 0x003b2374, PAL: 0x00431234
 static const char *g_pszDataParseFile = nullptr;
 
-// NTSC-U/C: 0x003b2378
+// NTSC-U/C: 0x003b2378, PAL: 0x00431238
 static BinStream *g_pDataParseStream = nullptr;
 
-// NTSC-U/C: 0x003b237c
+// NTSC-U/C: 0x003b237c, PAL: 0x0043123c
 static int g_nDataReadCompiled = 0;
 
 static DataArray *ParseBlock();

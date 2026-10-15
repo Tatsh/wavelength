@@ -153,7 +153,7 @@ TlbDispatchTemplate:
     .data
     .align 3
 
-# NTSC-U/C: 0x003c5808
+# NTSC-U/C: 0x003c5808, PAL: 0x0045bc50
     .globl g_tlbPatch
 g_tlbPatch:
 TlbPatchStart:

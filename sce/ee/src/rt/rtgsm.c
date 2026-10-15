@@ -211,7 +211,7 @@ static const int g_anLarDecode6[] = {-6554, -4588, -2622, -656, 1310, 3276, 5242
 static const int g_anLarDecode7[] = {-3278, -1422, 436, 2292, 4148, 6006, 7862, 9718};
 
 // The decision levels of the long-term gain in units of 2^-15.
-// NTSC-U/C: 0x003bfe18
+// NTSC-U/C: 0x003bfe18, PAL: 0x0043ecd8
 static const int g_anPitchGainThresholds[] = {6554, 16384, 26214, 32767};
 
 // The quantised gains of the long-term predictor in units of 2^-15.

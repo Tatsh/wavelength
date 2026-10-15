@@ -7,6 +7,7 @@
  * Identity that PlayerAbortedMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b84
+ * @ghidraAddress PAL: 0x0042fa54
  */
 extern int g_nPlayerAbortedMsgType;
 

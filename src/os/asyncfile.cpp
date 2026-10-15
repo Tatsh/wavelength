@@ -29,14 +29,14 @@ constexpr int kGzipSizeBytes = 4;
 // Seek origins.
 enum SeekOrigin { kSeekBegin = 0, kSeekCurrent = 1, kSeekEnd = 2 };
 
-// NTSC-U/C: 0x003b2278
+// NTSC-U/C: 0x003b2278, PAL: 0x00431158
 int gBufferSize = 8192;
 
 // The file of each open descriptor.
-// NTSC-U/C: 0x003b2280
+// NTSC-U/C: 0x003b2280, PAL: 0x00431160
 AsyncFile *gDescriptorFiles[kMaxDescriptors];
 
-// NTSC-U/C: 0x003b22c0
+// NTSC-U/C: 0x003b22c0, PAL: 0x004311a0
 int gOpenDescriptors;
 
 // Wait for the request of a descriptor to finish.

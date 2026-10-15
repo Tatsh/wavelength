@@ -449,5 +449,6 @@ public:
  * The hosted session, or null.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ac8
+ * @ghidraAddress PAL: 0x0042f994
  */
 extern HostpadRT *TheHostpadRT;

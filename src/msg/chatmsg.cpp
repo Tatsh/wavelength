@@ -58,11 +58,11 @@ struct PartialMsg {
 
 } // namespace
 
-// NTSC-U/C: 0x003b0aac
+// NTSC-U/C: 0x003b0aac, PAL: 0x0042f944
 // How many lines were sent recently, draining with time.
 static float sFloodLevel = 0.0f;
 
-// NTSC-U/C: 0x003b0ab0
+// NTSC-U/C: 0x003b0ab0, PAL: 0x0042f948
 // The seconds of the system clock at the last line sent.
 static float sLastLineSeconds = 0.0f;
 

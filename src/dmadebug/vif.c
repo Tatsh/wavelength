@@ -166,38 +166,38 @@ struct vif_code {
     int length;               // Words of the code and its data not yet consumed.
 };
 
-// NTSC-U/C: 0x003b6098
+// NTSC-U/C: 0x003b6098, PAL: 0x00434f58
 // Non-zero when every code line is printed, not only lines with errors.
 static int g_nVifShowCodes = 1;
 
-// NTSC-U/C: 0x003b609c
+// NTSC-U/C: 0x003b609c, PAL: 0x00434f5c
 // Non-zero when code lines give word counts and VU addresses.
 static int g_nVifVerbose = 1;
 
-// NTSC-U/C: 0x003b60a0
+// NTSC-U/C: 0x003b60a0, PAL: 0x00434f60
 // Non-zero when the end of a transfer reports the VIF registers.
 static int g_nVifShowRegisters = 1;
 
-// NTSC-U/C: 0x003b60a4
+// NTSC-U/C: 0x003b60a4, PAL: 0x00434f64
 // Non-zero when the end of a transfer reports the code counts.
 static int g_nVifShowStatistics = 1;
 
-// NTSC-U/C: 0x003b60a8
+// NTSC-U/C: 0x003b60a8, PAL: 0x00434f68
 // Non-zero when the GIF packets of DIRECT and DIRECTHL are decoded.
 static int g_nVifDisassembleDirect = 1;
 
-// NTSC-U/C: 0x003b60ac
+// NTSC-U/C: 0x003b60ac, PAL: 0x00434f6c
 // Non-zero when the VU memory writes of UNPACK are simulated.
 static int g_nVifDisassembleUnpack = 1;
 
-// NTSC-U/C: 0x003b60b0
+// NTSC-U/C: 0x003b60b0, PAL: 0x00434f70
 // Names of the VIF commands.
 static const char *g_apszVifCommandNames[VIF_COMMAND_COUNT] = {
     "NOP",    "STCYCL", "OFFSET", "BASE",   "ITOP",   "STMOD",    "MSKPATH3",
     "MARK",   "FLUSHE", "FLUSH",  "FLUSHA", "MSCAL",  "MSCNT",    "MSCALF",
     "STMASK", "STROW",  "STCOL",  "MPG",    "DIRECT", "DIRECTHL", "UNPACK"};
 
-// NTSC-U/C: 0x003b6108
+// NTSC-U/C: 0x003b6108, PAL: 0x00434fc8
 // Names of the UNPACK formats.
 static const char *g_apszVifUnpackNames[VIF_UNPACK_FORMAT_COUNT] = {"S_32",
                                                                     "S_16",
@@ -213,12 +213,12 @@ static const char *g_apszVifUnpackNames[VIF_UNPACK_FORMAT_COUNT] = {"S_32",
                                                                     "V4_8",
                                                                     "V4_5"};
 
-// NTSC-U/C: 0x003b6140
+// NTSC-U/C: 0x003b6140, PAL: 0x00435000
 // The format bits of each UNPACK format.
 static const signed char g_abVifUnpackFormatTable[VIF_UNPACK_FORMAT_COUNT] = {
     0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0a, 0x0c, 0x0d, 0x0e, 0x0f};
 
-// NTSC-U/C: 0x003b6150
+// NTSC-U/C: 0x003b6150, PAL: 0x00435010
 // The command byte of each VIF command, with every UNPACK as 0x60.
 static const signed char g_abVifCommandCodeTable[VIF_COMMAND_COUNT] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x10, 0x11, 0x13,

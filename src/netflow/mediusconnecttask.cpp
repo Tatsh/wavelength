@@ -21,10 +21,10 @@ constexpr int kNoConnection = -1;
 
 } // namespace
 
-// NTSC-U/C: 0x003b0afc
+// NTSC-U/C: 0x003b0afc, PAL: 0x0042f9c8
 MediusConnectTask *MediusConnectTask::sTask;
 
-// NTSC-U/C: 0x003b0b00
+// NTSC-U/C: 0x003b0b00, PAL: 0x0042f9cc
 int MediusConnectTask::sConnecting;
 
 void MediusConnectTask::OnStart() {

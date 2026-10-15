@@ -28,7 +28,7 @@ static const char kEzNetCtlModuleName[] = "eznetctl";
 // The source file name the diagnostics print.
 static const char kEzNetCtlFileName[] = "libezctl.c";
 
-// NTSC-U/C: 0x003b14c4
+// NTSC-U/C: 0x003b14c4, PAL: 0x00430394
 static int g_nEznetctlBound = 0;
 // NTSC-U/C: 0x00440900
 static sceSifClientData g_eznetctlClient __attribute__((aligned(64)));

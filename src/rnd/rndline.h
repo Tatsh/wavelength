@@ -327,6 +327,7 @@ public:
      * The class name a `.rnd` file writes, `Line`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09d4
+     * @ghidraAddress PAL: 0x0042f86c
      */
     static const char *sClassName;
 

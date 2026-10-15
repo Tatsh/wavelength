@@ -34,9 +34,9 @@ constexpr int kFocusPlayer = 0;
 constexpr char kFirstCompositeLetter = 'a';
 constexpr int kLoopRotation = 1;
 
-// NTSC-U/C: 0x003afbb8
+// NTSC-U/C: 0x003afbb8, PAL: 0x0042ea50
 float sMeshScale = 1.0f;
-// NTSC-U/C: 0x003afbbc
+// NTSC-U/C: 0x003afbbc, PAL: 0x0042ea54
 float sSpriteScale = 1.0f;
 
 // The static initialiser of the unit, and the routines that run it to construct and to destroy the

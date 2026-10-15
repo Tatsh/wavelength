@@ -215,6 +215,7 @@ public:
      * The interrupt handler, or -1 while it is removed.
      *
      * @ghidraAddress NTSC-U/C: 0x003b07d0
+     * @ghidraAddress PAL: 0x0042f668
      */
     static int sHandlerId;
 
@@ -222,6 +223,7 @@ public:
      * The movie decoding, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b07d4
+     * @ghidraAddress PAL: 0x0042f66c
      */
     static PsMovie *sActive;
 

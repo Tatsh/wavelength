@@ -242,5 +242,6 @@ public:
  * The joined session, or null.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0acc
+ * @ghidraAddress PAL: 0x0042f998
  */
 extern JoinpadRT *TheJoinpadRT;

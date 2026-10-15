@@ -7,6 +7,7 @@
  * Identity that SlowdownPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af730
+ * @ghidraAddress PAL: 0x0042e5c8
  */
 extern int g_nSlowdownPacketType;
 

@@ -7,6 +7,7 @@
  * Identity that FinalScorePacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af740
+ * @ghidraAddress PAL: 0x0042e5d8
  */
 extern int g_nFinalScorePacketType;
 

@@ -150,6 +150,7 @@ public:
      * The class name a `.rnd` file writes, `LightAnim`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a7c
+     * @ghidraAddress PAL: 0x0042f914
      */
     static const char *sClassName;
 
@@ -157,6 +158,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a80
+     * @ghidraAddress PAL: 0x0042f918
      */
     static int sRev;
 

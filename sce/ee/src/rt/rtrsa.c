@@ -9,7 +9,7 @@ enum {
     kRsaPublicExponent = 17,
 };
 
-// NTSC-U/C: 0x003b6c80
+// NTSC-U/C: 0x003b6c80, PAL: 0x00435b40
 static RtKey g_rsaPublicExponent = {.words = {kRsaPublicExponent}};
 
 void RtRsaGenerateKeyPair(RtKey *pModulus, RtKey *pPrivateExponent) {

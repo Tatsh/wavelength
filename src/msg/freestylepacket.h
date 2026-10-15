@@ -7,6 +7,7 @@
  * Identity that FreestylePacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af738
+ * @ghidraAddress PAL: 0x0042e5d0
  */
 extern int g_nFreestylePacketType;
 

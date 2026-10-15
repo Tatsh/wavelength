@@ -34,45 +34,45 @@ constexpr float kMinJiggle = 1e-5f;
 constexpr float kRestingJiggleSpeed = 0.001f;
 constexpr float kRandomCenter = 0.5f;
 
-// NTSC-U/C: 0x003afbc0
+// NTSC-U/C: 0x003afbc0, PAL: 0x0042ea58
 float sPullBackTime = 500.0f;
-// NTSC-U/C: 0x003afbc4
+// NTSC-U/C: 0x003afbc4, PAL: 0x0042ea5c
 float sPullBackSeverity = 5.0f;
 // The near and far pull backs.
-// NTSC-U/C: 0x003afbc8
+// NTSC-U/C: 0x003afbc8, PAL: 0x0042ea60
 Vector2 sPullBackLevels = {0.0f, 1.0f};
-// NTSC-U/C: 0x003afbd0
+// NTSC-U/C: 0x003afbd0, PAL: 0x0042ea68
 float sTutorialPullBackLevel = 2.0f;
 // The intro plays over these ticks before the song starts.
-// NTSC-U/C: 0x003afbd4
+// NTSC-U/C: 0x003afbd4, PAL: 0x0042ea6c
 float sIntroStartTick = -7680.0f;
-// NTSC-U/C: 0x003afbd8
+// NTSC-U/C: 0x003afbd8, PAL: 0x0042ea70
 float sIntroEndTick = -3840.0f;
-// NTSC-U/C: 0x003afbdc
+// NTSC-U/C: 0x003afbdc, PAL: 0x0042ea74
 float sIntroTilt = 90.0f;
-// NTSC-U/C: 0x003afbe0
+// NTSC-U/C: 0x003afbe0, PAL: 0x0042ea78
 float sBossIntroTilt = 90.0f;
 // Loaded, but read nowhere.
-// NTSC-U/C: 0x003afbe4
+// NTSC-U/C: 0x003afbe4, PAL: 0x0042ea7c
 float sChangeTicks = 480.0f;
 // Loaded, but read nowhere.
-// NTSC-U/C: 0x003afbe8
+// NTSC-U/C: 0x003afbe8, PAL: 0x0042ea80
 float sChangeSeverity = 5.0f;
-// NTSC-U/C: 0x003afbec
+// NTSC-U/C: 0x003afbec, PAL: 0x0042ea84
 float sJiggleSpring = 0.5f;
-// NTSC-U/C: 0x003afbf0
+// NTSC-U/C: 0x003afbf0, PAL: 0x0042ea88
 float sJiggleDamper = 0.5f;
-// NTSC-U/C: 0x003afbf4
+// NTSC-U/C: 0x003afbf4, PAL: 0x0042ea8c
 float sJiggleScale = 1.0f;
-// NTSC-U/C: 0x003afbf8
+// NTSC-U/C: 0x003afbf8, PAL: 0x0042ea90
 float sScreenJiggleScale = 1.0f;
-// NTSC-U/C: 0x003afbfc
+// NTSC-U/C: 0x003afbfc, PAL: 0x0042ea94
 const char *sAlgorithmName = "trailing";
-// NTSC-U/C: 0x003afc00
+// NTSC-U/C: 0x003afc00, PAL: 0x0042ea98
 float sViewDistance = 2.0f;
-// NTSC-U/C: 0x003afc04
+// NTSC-U/C: 0x003afc04, PAL: 0x0042ea9c
 float sTrailingFrames = 1000.0f;
-// NTSC-U/C: 0x003afc08
+// NTSC-U/C: 0x003afc08, PAL: 0x0042eaa0
 int sSkewCorrection = 1;
 
 // The static initialiser of the unit, and the routines that run it to construct and to destroy the

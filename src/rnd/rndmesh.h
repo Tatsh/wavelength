@@ -433,6 +433,7 @@ public:
      * The class name a `.rnd` file writes, `Mesh`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09ec
+     * @ghidraAddress PAL: 0x0042f884
      */
     static const char *sClassName;
 

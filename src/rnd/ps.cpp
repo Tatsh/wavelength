@@ -206,7 +206,7 @@ constexpr int kNextPointX = 2;
 constexpr int kNextPointY = 3;
 
 // The cell is the unit square, and the six points of each glyph follow one another.
-// NTSC-U/C: 0x003afd10
+// NTSC-U/C: 0x003afd10, PAL: 0x0042eba8
 constexpr float kLineFont[][kGlyphFloats] = {
     {0.0f, 1.0f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.5f},
     {0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f, 1.0f, 0.0f, 1.0f},
@@ -271,7 +271,7 @@ constexpr int kModalStateWaiting = 2;
 constexpr int kModalCancelButton = 0x800;
 
 // The heap index the `toggle_heapnum` command cycles through.
-// NTSC-U/C: 0x003afd0c
+// NTSC-U/C: 0x003afd0c, PAL: 0x0042eba4
 int sHeapIndex;
 
 // The image ScreenDump() reads the frame buffer through.

@@ -99,7 +99,7 @@ typedef void (*MgclStatusValueCallback)(int connection,
                                         int size,
                                         const MgclStatusValueRecord *response);
 
-// NTSC-U/C: 0x003c26f8
+// NTSC-U/C: 0x003c26f8, PAL: 0x004415b8
 static unsigned char g_abServerKey[RT_NET_SERVER_KEY_SIZE] = {
     0x55, 0x01, 0x86, 0x14, 0x98, 0xe0, 0x6d, 0xbd, 0x11, 0x0b, 0xb3, 0x24, 0xd1, 0xd1, 0x34, 0x54,
     0x73, 0x6e, 0x57, 0xae, 0x7f, 0xb8, 0xab, 0x3e, 0x7e, 0x9e, 0x45, 0xef, 0xa0, 0x54, 0x80, 0x00,
@@ -133,7 +133,7 @@ static int g_nMessage19Type;
 static int g_nMessage20Type;
 static int g_nMessage21Type;
 
-// NTSC-U/C: 0x003c2790
+// NTSC-U/C: 0x003c2790, PAL: 0x00441650
 static int g_nConnection;
 
 // The receivers, from NTSC-U/C 0x003c2794 on.
@@ -145,19 +145,19 @@ static rtMgclCreateGameCallback g_pfnCreateGameCallback;
 static rtMgclSessionEndCallback g_pfnMessage18Callback;
 static MgclStatusValueCallback g_pfnMessage21Callback;
 
-// NTSC-U/C: 0x003c27bc
+// NTSC-U/C: 0x003c27bc, PAL: 0x0044167c
 static int g_nMaxClients = 0x100;
-// NTSC-U/C: 0x003c27c0
+// NTSC-U/C: 0x003c27c0, PAL: 0x00441680
 static int g_nPendingRequestStored = 0xffffff;
-// NTSC-U/C: 0x003c27c4
+// NTSC-U/C: 0x003c27c4, PAL: 0x00441684
 static int g_nServerType = 0xffffff;
-// NTSC-U/C: 0x003c27c8
+// NTSC-U/C: 0x003c27c8, PAL: 0x00441688
 static int g_nPort;
-// NTSC-U/C: 0x003c27cc
+// NTSC-U/C: 0x003c27cc, PAL: 0x0044168c
 static short g_nInitialized;
-// NTSC-U/C: 0x003c27d0
+// NTSC-U/C: 0x003c27d0, PAL: 0x00441690
 static int g_nNetMode = 1;
-// NTSC-U/C: 0x003c27d4
+// NTSC-U/C: 0x003c27d4, PAL: 0x00441694
 static rtMgclConnectCallback g_pfnConnectCallback;
 
 // NTSC-U/C: 0x0052d2f8

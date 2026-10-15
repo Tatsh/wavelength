@@ -48,7 +48,7 @@ static __attribute__((noinline)) void *GetEntryAddress(int nSyscall) {
     return (void *)LibkernelSyscall(kSyscallGetEntryAddress, nSyscall, 0, 0);
 }
 
-// NTSC-U/C: 0x003c5040
+// NTSC-U/C: 0x003c5040, PAL: 0x0045b488
 static SyscallEntry g_execSyscalls[kExecSyscallCount] = {
     {kSyscallKernelCopy, kCopy},
     {kSyscallGetEntryAddress, kExecPatchBase},

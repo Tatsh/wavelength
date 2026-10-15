@@ -7,6 +7,7 @@
  * Identity that RemixerUpdatePacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af744
+ * @ghidraAddress PAL: 0x0042e5dc
  */
 extern int g_nRemixerUpdatePacketType;
 

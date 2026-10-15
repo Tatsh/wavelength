@@ -7,6 +7,7 @@
  * Identity that ClientStatusPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b98
+ * @ghidraAddress PAL: 0x0042fa68
  */
 extern int g_nClientStatusPktType;
 

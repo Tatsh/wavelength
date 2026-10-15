@@ -218,6 +218,7 @@ void MemPrintHeap(int nHeap, PrnStream &stream);
  * Non-zero while the memory tracker records allocations.
  *
  * @ghidraAddress NTSC-U/C: 0x003b23b4
+ * @ghidraAddress PAL: 0x00431274
  */
 extern int g_nMemTrackingEnabled;
 
@@ -225,6 +226,7 @@ extern int g_nMemTrackingEnabled;
  * Non-zero when the memory tracker bills STL allocations to their container, from `track_stl`.
  *
  * @ghidraAddress NTSC-U/C: 0x003b23b8
+ * @ghidraAddress PAL: 0x00431278
  */
 extern int g_nTrackStl;
 

@@ -11,6 +11,7 @@
  * Identity that UITextEntryInvalidMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003afd04
+ * @ghidraAddress PAL: 0x0042eb9c
  */
 extern int g_nUITextEntryInvalidMsgType;
 

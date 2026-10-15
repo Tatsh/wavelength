@@ -26,10 +26,10 @@ char g_szStreamCharScratch[kScratchSize];
 
 char *g_szStringEmptyBuffer = g_szStringEmptyText;
 
-// NTSC-U/C: 0x003b24c8
+// NTSC-U/C: 0x003b24c8, PAL: 0x00431388
 static int g_nStringReadsText = 0;
 
-// NTSC-U/C: 0x003b24cc
+// NTSC-U/C: 0x003b24cc, PAL: 0x0043138c
 static const char *g_pszStringTag = "StringBuf";
 
 const char *FormatString(const char *pszFormat, ...) {

@@ -234,6 +234,7 @@ public:
      * The class name a `.rnd` file writes, `Arena`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a6c
+     * @ghidraAddress PAL: 0x0042f904
      */
     static const char *sClassName;
 

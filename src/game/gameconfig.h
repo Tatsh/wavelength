@@ -250,6 +250,7 @@ extern GameConfig *TheGameConfig;
  * Whether the `duel_authoring` command turned the duel authoring mode on.
  *
  * @ghidraAddress NTSC-U/C: 0x003af70c
+ * @ghidraAddress PAL: 0x0042e5a4
  */
 extern int g_bDuelAuthoring;
 
@@ -257,6 +258,7 @@ extern int g_bDuelAuthoring;
  * Whether the cheat that lets the `powerup` script command give any power-up is on.
  *
  * @ghidraAddress NTSC-U/C: 0x003af710
+ * @ghidraAddress PAL: 0x0042e5a8
  */
 extern int g_bPowerupCheat;
 
@@ -264,6 +266,7 @@ extern int g_bPowerupCheat;
  * Whether the scrambled gem mode the `scramble_gems` command toggles is on.
  *
  * @ghidraAddress NTSC-U/C: 0x003af714
+ * @ghidraAddress PAL: 0x0042e5ac
  */
 extern int g_bScrambleGems;
 
@@ -271,5 +274,6 @@ extern int g_bScrambleGems;
  * Whether the cheat that places a random power-up in every bar is on.
  *
  * @ghidraAddress NTSC-U/C: 0x003af718
+ * @ghidraAddress PAL: 0x0042e5b0
  */
 extern int g_bPowerupsAPlenty;

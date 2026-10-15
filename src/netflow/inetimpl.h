@@ -280,6 +280,7 @@ private:
      * The instance the asynchronous tasks and the callbacks use.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ab8
+     * @ghidraAddress PAL: 0x0042f984
      */
     static InetImpl *sInstance;
 };

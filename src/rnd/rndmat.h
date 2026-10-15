@@ -328,6 +328,7 @@ public:
      * The class name a `.rnd` file writes, `Mat`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09dc
+     * @ghidraAddress PAL: 0x0042f874
      */
     static const char *sClassName;
 

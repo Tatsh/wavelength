@@ -7,6 +7,7 @@
  * Identity that MultiplierPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af734
+ * @ghidraAddress PAL: 0x0042e5cc
  */
 extern int g_nMultiplierPacketType;
 

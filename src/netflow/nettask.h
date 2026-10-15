@@ -76,6 +76,7 @@ public:
      * The number the next tag takes.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0bd4
+     * @ghidraAddress PAL: 0x0042faa4
      */
     static int sNextTag;
 

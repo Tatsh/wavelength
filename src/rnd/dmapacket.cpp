@@ -11,7 +11,7 @@ constexpr int kChannelFromSpr = 8;
 constexpr int kChannelToSpr = 9;
 
 // The registers of each channel, indexed by channel.
-// NTSC-U/C: 0x003b06a0
+// NTSC-U/C: 0x003b06a0, PAL: 0x0042f538
 volatile unsigned int *const kChcr[kDmaChannelCount] = {
     reinterpret_cast<volatile unsigned int *>(0x10008000),
     reinterpret_cast<volatile unsigned int *>(0x10009000),
@@ -25,7 +25,7 @@ volatile unsigned int *const kChcr[kDmaChannelCount] = {
     reinterpret_cast<volatile unsigned int *>(0x1000d400),
 };
 
-// NTSC-U/C: 0x003b06c8
+// NTSC-U/C: 0x003b06c8, PAL: 0x0042f560
 volatile unsigned int *const kMadr[kDmaChannelCount] = {
     reinterpret_cast<volatile unsigned int *>(0x10008010),
     reinterpret_cast<volatile unsigned int *>(0x10009010),
@@ -39,7 +39,7 @@ volatile unsigned int *const kMadr[kDmaChannelCount] = {
     reinterpret_cast<volatile unsigned int *>(0x1000d410),
 };
 
-// NTSC-U/C: 0x003b06f0
+// NTSC-U/C: 0x003b06f0, PAL: 0x0042f588
 volatile unsigned int *const kQwc[kDmaChannelCount] = {
     reinterpret_cast<volatile unsigned int *>(0x10008020),
     reinterpret_cast<volatile unsigned int *>(0x10009020),
@@ -54,7 +54,7 @@ volatile unsigned int *const kQwc[kDmaChannelCount] = {
 };
 
 // Channels without a TADR have a null entry.
-// NTSC-U/C: 0x003b0718
+// NTSC-U/C: 0x003b0718, PAL: 0x0042f5b0
 volatile unsigned int *const kTadr[kDmaChannelCount] = {
     reinterpret_cast<volatile unsigned int *>(0x10008030),
     reinterpret_cast<volatile unsigned int *>(0x10009030),
@@ -69,7 +69,7 @@ volatile unsigned int *const kTadr[kDmaChannelCount] = {
 };
 
 // Only the scratchpad channels have an SADR.
-// NTSC-U/C: 0x003b0740
+// NTSC-U/C: 0x003b0740, PAL: 0x0042f5d8
 volatile unsigned int *const kSadr[kDmaChannelCount] = {
     nullptr,
     nullptr,

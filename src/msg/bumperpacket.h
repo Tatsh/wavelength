@@ -9,6 +9,7 @@
  * Identity that BumperPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af728
+ * @ghidraAddress PAL: 0x0042e5c0
  */
 extern int g_nBumperPacketType;
 

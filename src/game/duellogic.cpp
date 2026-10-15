@@ -110,10 +110,10 @@ constexpr char kHostAborted2Key[] = "HOST_ABORTED_2";
 constexpr char kConnectionLost1Key[] = "CONNECTION_LOST_1";
 constexpr char kConnectionLost2Key[] = "CONNECTION_LOST_2";
 
-// NTSC-U/C: 0x003af6f0
+// NTSC-U/C: 0x003af6f0, PAL: 0x0042e588
 void (*const kMissSounds[])() = {&FxMidi::PlayDuelAlmost, &FxMidi::PlayDuelAww};
 
-// NTSC-U/C: 0x003af6f8
+// NTSC-U/C: 0x003af6f8, PAL: 0x0042e590
 void (*const kCatchSounds[])() = {
     &FxMidi::PlayDuelNice, &FxMidi::PlayDuelYouGotIt, &FxMidi::PlayDuelPerfect};
 

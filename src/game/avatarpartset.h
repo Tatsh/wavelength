@@ -373,6 +373,7 @@ public:
      * The `parts` array of the `avatar` entry of the "db" section, as Init() finds it.
      *
      * @ghidraAddress NTSC-U/C: 0x003b14fc
+     * @ghidraAddress PAL: 0x004303cc
      */
     static DataArray *sParts;
 
@@ -405,6 +406,7 @@ private:
      * The time Poll() last advanced the avatars to, -99999 before the first.
      *
      * @ghidraAddress NTSC-U/C: 0x003b1500
+     * @ghidraAddress PAL: 0x004303d0
      */
     static float sLastTime;
 };

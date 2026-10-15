@@ -190,6 +190,7 @@ protected:
      * Number of times a chosen button flashes before it reports the choice.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcb8
+     * @ghidraAddress PAL: 0x0042eb50
      */
     static int sNumFlashes;
 
@@ -197,6 +198,7 @@ protected:
      * Milliseconds of each flash a chosen button spends in the selected state.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcc0
+     * @ghidraAddress PAL: 0x0042eb58
      */
     static float sSelectedMs;
 
@@ -204,6 +206,7 @@ protected:
      * Milliseconds of each flash a chosen button spends in the normal state.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcc4
+     * @ghidraAddress PAL: 0x0042eb5c
      */
     static float sNormalMs;
 };

@@ -11,6 +11,7 @@
  * Identity that UIScreenChangeMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003afcf8
+ * @ghidraAddress PAL: 0x0042eb90
  */
 extern int g_nUIScreenChangeMsgType;
 

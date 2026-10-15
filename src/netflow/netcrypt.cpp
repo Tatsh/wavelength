@@ -26,7 +26,7 @@ static unsigned char g_abNetCryptKey[kBlockSize];
 static unsigned char g_abNetCryptIv[kBlockSize];
 // NTSC-U/C: 0x0043e628
 static symmetric_CBC g_netCryptCbc;
-// NTSC-U/C: 0x003b0cb0
+// NTSC-U/C: 0x003b0cb0, PAL: 0x0042fb80
 static symmetric_CBC *g_pNetCryptCbc;
 
 void NetCryptInit() {

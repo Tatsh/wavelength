@@ -12,6 +12,7 @@ constexpr int kMemTrackMaxHeaps = 16;
  * The tracker of each heap, or null.
  *
  * @ghidraAddress NTSC-U/C: 0x003b23c8
+ * @ghidraAddress PAL: 0x00431288
  */
 extern HeapTracker *g_apMemTrackHeaps[kMemTrackMaxHeaps];
 

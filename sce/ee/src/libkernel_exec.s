@@ -49,7 +49,7 @@
     .data
     .align 3
 
-# NTSC-U/C: 0x003c4898
+# NTSC-U/C: 0x003c4898, PAL: 0x0045ace0
     .globl g_execPatch
 g_execPatch:
 ExecPatchStart:

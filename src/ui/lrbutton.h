@@ -160,6 +160,7 @@ private:
      * Number of times a pressed arrow flashes.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcbc
+     * @ghidraAddress PAL: 0x0042eb54
      */
     static int sArrowFlashes;
 

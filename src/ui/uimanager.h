@@ -522,6 +522,7 @@ private:
      * The delay before the first repeat, the `max_delay_frames` setting of `nav_repeat`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afce4
+     * @ghidraAddress PAL: 0x0042eb7c
      */
     static float sFirstRepeatDelay;
 
@@ -529,6 +530,7 @@ private:
      * The delay between later repeats, the `min_delay_frames` setting of `nav_repeat`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afce8
+     * @ghidraAddress PAL: 0x0042eb80
      */
     static float sRepeatDelay;
 };

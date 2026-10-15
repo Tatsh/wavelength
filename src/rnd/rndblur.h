@@ -197,6 +197,7 @@ public:
      * The class name a `.rnd` file writes, `Blur`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0980
+     * @ghidraAddress PAL: 0x0042f818
      */
     static const char *sClassName;
 
@@ -204,6 +205,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0984
+     * @ghidraAddress PAL: 0x0042f81c
      */
     static int sRev;
 

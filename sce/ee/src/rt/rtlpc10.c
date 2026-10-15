@@ -111,79 +111,80 @@ enum {
     kLpcBoundBoth = 3,
 };
 
-// NTSC-U/C: 0x003b6e78, the lags of the pitch search.
+// NTSC-U/C: 0x003b6e78, PAL: 0x00435d38, the lags of the pitch search.
 static const int g_anLpcTau[kLpcLags] = {
     20, 21, 22, 23, 24, 25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,
     40, 42, 44, 46, 48, 50,  52,  54,  56,  58,  60,  62,  64,  66,  68,  70,  72,  74,  76,  78,
     80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156,
 };
 
-// NTSC-U/C: 0x003c1f60
+// NTSC-U/C: 0x003c1f60, PAL: 0x00440e20
 static float g_afLpcPreemphasisState[2];
 
-// NTSC-U/C: 0x003c1f68, the bias removed from the input samples.
+// NTSC-U/C: 0x003c1f68, PAL: 0x00440e28, the bias removed from the input samples.
 static float g_fLpcBias;
 
-// NTSC-U/C: 0x003c1f6c, one more than the count of buffered onsets.
+// NTSC-U/C: 0x003c1f6c, PAL: 0x00440e2c, one more than the count of buffered onsets.
 static int g_nLpcOnsetCount = 1;
 
-// NTSC-U/C: 0x003c1f70
+// NTSC-U/C: 0x003c1f70, PAL: 0x00440e30
 static int g_nLpcAnalysisFirst = 1;
 
-// NTSC-U/C: 0x003c1f78, the glottal pulse of voiced excitation.
+// NTSC-U/C: 0x003c1f78, PAL: 0x00440e38, the glottal pulse of voiced excitation.
 static const float g_afLpcPulse[kLpcPulseLength] = {
     8.0f,    -16.0f, 26.0f,  -48.0f,  86.0f,   -162.0f, 294.0f, -502.0f, 718.0f,
     -728.0f, 184.0f, 672.0f, -610.0f, -672.0f, 184.0f,  728.0f, 718.0f,  502.0f,
     294.0f,  162.0f, 86.0f,  48.0f,   26.0f,   16.0f,   8.0f,
 };
 
-// NTSC-U/C: 0x003c1fdc, the length of the previous epoch.
+// NTSC-U/C: 0x003c1fdc, PAL: 0x00440e9c, the length of the previous epoch.
 static int g_nLpcPreviousEpochLength;
 
-// NTSC-U/C: 0x003c1fe0
+// NTSC-U/C: 0x003c1fe0, PAL: 0x00440ea0
 static float g_fLpcPreviousEpochRms;
 
-// NTSC-U/C: 0x003c1fe4, the history of the low-pass filter of the voiced excitation.
+// NTSC-U/C: 0x003c1fe4, PAL: 0x00440ea4, the history of the low-pass filter of the voiced
+// excitation.
 static float g_fLpcPulseHistory1;
 
-// NTSC-U/C: 0x003c1fe8
+// NTSC-U/C: 0x003c1fe8, PAL: 0x00440ea8
 static float g_fLpcPulseHistory2;
 
-// NTSC-U/C: 0x003c1fec, the history of the high-pass filter of the voiced noise.
+// NTSC-U/C: 0x003c1fec, PAL: 0x00440eac, the history of the high-pass filter of the voiced noise.
 static float g_fLpcNoiseHistory1;
 
-// NTSC-U/C: 0x003c1ff0
+// NTSC-U/C: 0x003c1ff0, PAL: 0x00440eb0
 static float g_fLpcNoiseHistory2;
 
-// NTSC-U/C: 0x003c1ff8, the sign bit of each reflection code.
+// NTSC-U/C: 0x003c1ff8, PAL: 0x00440eb8, the sign bit of each reflection code.
 static const int g_anLpcCodeSignBit[RT_LPC_ORDER] = {2, 4, 8, 8, 8, 8, 16, 16, 16, 16};
 
-// NTSC-U/C: 0x003c2020, the field each bit of a frame comes from, from one.
+// NTSC-U/C: 0x003c2020, PAL: 0x00440ee0, the field each bit of a frame comes from, from one.
 static const int g_anLpcBitOrder[kLpcChanwrBits] = {
     13, 12, 11, 1,  2,  13, 12, 11, 1, 2,  13, 10, 11, 2,  1, 10, 13, 12,
     11, 10, 2,  13, 12, 11, 10, 2,  1, 12, 7,  6,  1,  10, 9, 8,  7,  4,
     6,  9,  8,  7,  5,  1,  9,  8,  4, 6,  1,  5,  9,  8,  7, 5,  6,
 };
 
-// NTSC-U/C: 0x003c20f4, the input history of the de-emphasis filter.
+// NTSC-U/C: 0x003c20f4, PAL: 0x00440fb4, the input history of the de-emphasis filter.
 static float g_fLpcDeemphasisInput1;
 
-// NTSC-U/C: 0x003c20f8
+// NTSC-U/C: 0x003c20f8, PAL: 0x00440fb8
 static float g_fLpcDeemphasisInput2;
 
-// NTSC-U/C: 0x003c20fc, the output history of the de-emphasis filter.
+// NTSC-U/C: 0x003c20fc, PAL: 0x00440fbc, the output history of the de-emphasis filter.
 static float g_fLpcDeemphasisOutput1;
 
-// NTSC-U/C: 0x003c2100
+// NTSC-U/C: 0x003c2100, PAL: 0x00440fc0
 static float g_fLpcDeemphasisOutput2;
 
-// NTSC-U/C: 0x003c2104
+// NTSC-U/C: 0x003c2104, PAL: 0x00440fc4
 static float g_fLpcDeemphasisOutput3;
 
-// NTSC-U/C: 0x003c2108
+// NTSC-U/C: 0x003c2108, PAL: 0x00440fc8
 static float g_fLpcDeemphasisOutput4;
 
-// NTSC-U/C: 0x003c210c, the column of the pitch tracker for the current frame.
+// NTSC-U/C: 0x003c210c, PAL: 0x00440fcc, the column of the pitch tracker for the current frame.
 static float g_fLpcTrackColumn;
 
 // NTSC-U/C: 0x003c2110, the decoded value of each Hamming symbol, with bit 4 set when valid.
@@ -196,22 +197,23 @@ static const int g_anLpcHammingTable[kLpcHammingIndexMask + 1] = {
     6,  15, 1,  17, 2,  1,  4,  1,  6,  15, 8,  1,  10, 15, 12, 15, 15, 31,
 };
 
-// NTSC-U/C: 0x003c2310, the history of the first section of the high-pass filter.
+// NTSC-U/C: 0x003c2310, PAL: 0x004411d0, the history of the first section of the high-pass filter.
 static float g_fLpcHighPass1Z1;
 
-// NTSC-U/C: 0x003c2314
+// NTSC-U/C: 0x003c2314, PAL: 0x004411d4
 static float g_fLpcHighPass1Z2;
 
-// NTSC-U/C: 0x003c2318, the history of the second section of the high-pass filter.
+// NTSC-U/C: 0x003c2318, PAL: 0x004411d8, the history of the second section of the high-pass filter.
 static float g_fLpcHighPass2Z1;
 
-// NTSC-U/C: 0x003c231c
+// NTSC-U/C: 0x003c231c, PAL: 0x004411dc
 static float g_fLpcHighPass2Z2;
 
-// NTSC-U/C: 0x003c2320, the pivot below which the covariance solver gives up.
+// NTSC-U/C: 0x003c2320, PAL: 0x004411e0, the pivot below which the covariance solver gives up.
 static float g_fLpcPivotThreshold = -9.0f;
 
-// NTSC-U/C: 0x003c2324, the taps of the 31-tap low-pass filter, the centre tap last.
+// NTSC-U/C: 0x003c2324, PAL: 0x004411e4, the taps of the 31-tap low-pass filter, the centre tap
+// last.
 static const float g_afLpcLowPassTaps[kLpfiltTaps] = {
     -0.009720198f,
     -0.010517999f,
@@ -231,53 +233,53 @@ static const float g_afLpcLowPassTaps[kLpfiltTaps] = {
     0.25053596f,
 };
 
-// NTSC-U/C: 0x003c2364, the smoothed correlation of the onset detector.
+// NTSC-U/C: 0x003c2364, PAL: 0x00441224, the smoothed correlation of the onset detector.
 static float g_fLpcOnsetNumerator;
 
-// NTSC-U/C: 0x003c2368, the smoothed energy of the onset detector.
+// NTSC-U/C: 0x003c2368, PAL: 0x00441228, the smoothed energy of the onset detector.
 static float g_fLpcOnsetDenominator = 1.0f;
 
-// NTSC-U/C: 0x003c236c
+// NTSC-U/C: 0x003c236c, PAL: 0x0044122c
 static float g_fLpcOnsetSum;
 
-// NTSC-U/C: 0x003c2370
+// NTSC-U/C: 0x003c2370, PAL: 0x00441230
 static float g_fLpcOnsetPreviousSum;
 
-// NTSC-U/C: 0x003c2374, the oldest entry of the onset history, from one.
+// NTSC-U/C: 0x003c2374, PAL: 0x00441234, the oldest entry of the onset history, from one.
 static int g_nLpcOnsetOldest = 1;
 
-// NTSC-U/C: 0x003c2378, the middle entry of the onset history, from one.
+// NTSC-U/C: 0x003c2378, PAL: 0x00441238, the middle entry of the onset history, from one.
 static int g_nLpcOnsetMiddle = 9;
 
-// NTSC-U/C: 0x003c237c
+// NTSC-U/C: 0x003c237c, PAL: 0x0044123c
 static short g_wLpcOnsetHysteresis;
 
-// NTSC-U/C: 0x003c2380
+// NTSC-U/C: 0x003c2380, PAL: 0x00441240
 static int g_nLpcSynthPreviousVoicing;
 
-// NTSC-U/C: 0x003c2384
+// NTSC-U/C: 0x003c2384, PAL: 0x00441244
 static int g_nLpcSynthPreviousPitch;
 
-// NTSC-U/C: 0x003c2388
+// NTSC-U/C: 0x003c2388, PAL: 0x00441248
 static float g_fLpcSynthPreviousRms;
 
-// NTSC-U/C: 0x003c238c
+// NTSC-U/C: 0x003c238c, PAL: 0x0044124c
 static short g_wLpcSynthFirst = 1;
 
-// NTSC-U/C: 0x003c2390, the lagged Fibonacci noise generator.
+// NTSC-U/C: 0x003c2390, PAL: 0x00441250, the lagged Fibonacci noise generator.
 static short g_awLpcNoise[kLpcNoiseLags] = {-21161, -8478, 30892, -10216, 16950};
 
-// NTSC-U/C: 0x003c239c
+// NTSC-U/C: 0x003c239c, PAL: 0x0044125c
 static int g_nLpcNoiseLagB = 1;
 
-// NTSC-U/C: 0x003c23a0
+// NTSC-U/C: 0x003c23a0, PAL: 0x00441260
 static int g_nLpcNoiseLagA = 4;
 
-// NTSC-U/C: 0x003c23a8
+// NTSC-U/C: 0x003c23a8, PAL: 0x00441268
 static int g_nLpcSnrClassCount = kLpcSnrThresholds;
 
-// NTSC-U/C: 0x003c23b0, the voicing discriminant by parameter and then by noise class, the bias
-// last.
+// NTSC-U/C: 0x003c23b0, PAL: 0x00441270, the voicing discriminant by parameter and then by noise
+// class, the bias last.
 static const float g_aafLpcVoicingCoefficients[kLpcVoicingCoefficients][kLpcSnrClasses] = {
     {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
     {1714.0f, 874.0f, 510.0f, 500.0f, 500.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -291,16 +293,16 @@ static const float g_aafLpcVoicingCoefficients[kLpcVoicingCoefficients][kLpcSnrC
     {1181.0f, -500.0f, -1500.0f, -2000.0f, -2500.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
 };
 
-// NTSC-U/C: 0x003c2540, the voicing of the last four half frames.
+// NTSC-U/C: 0x003c2540, PAL: 0x00441400, the voicing of the last four half frames.
 static int g_nLpcVoicingHistory;
 
-// NTSC-U/C: 0x003c2544, the threshold of the zero-crossing count.
+// NTSC-U/C: 0x003c2544, PAL: 0x00441404, the threshold of the zero-crossing count.
 static float g_fLpcDither = 20.0f;
 
-// NTSC-U/C: 0x003c2548, the smoothed low-band unvoiced energy, scaled by eight.
+// NTSC-U/C: 0x003c2548, PAL: 0x00441408, the smoothed low-band unvoiced energy, scaled by eight.
 static int g_nLpcSmoothLowUnvoiced;
 
-// NTSC-U/C: 0x003c254c
+// NTSC-U/C: 0x003c254c, PAL: 0x0044140c
 static short g_wLpcVoicinFirst = 1;
 
 // NTSC-U/C: 0x004357e4, the input buffer, indexed after subtracting kLpcSbufLow.

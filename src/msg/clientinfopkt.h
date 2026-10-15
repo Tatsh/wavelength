@@ -8,6 +8,7 @@
  * Identity that ClientInfoPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b94
+ * @ghidraAddress PAL: 0x0042fa64
  */
 extern int g_nClientInfoPktType;
 

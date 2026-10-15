@@ -4,7 +4,7 @@
 #include "rt/rtdme.h"
 
 // The field list the next registration takes.
-// NTSC-U/C: 0x003b6190
+// NTSC-U/C: 0x003b6190, PAL: 0x00435050
 static int g_nDmeFieldCount;
 // NTSC-U/C: 0x00519be0
 static RtDmeField g_aDmeFields[RT_DME_FIELD_COUNT];

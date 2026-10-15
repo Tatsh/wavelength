@@ -89,11 +89,11 @@ constexpr int kFlexNulClass = 1;
 
 constexpr int kFlexExitFailure = 2;
 
-// NTSC-U/C: 0x0041e010
+// NTSC-U/C: 0x0041e010, PAL: 0x004b5cd0
 constexpr short kFlexAccept[] = {0, 0, 0, 15, 6, 14, 1, 6, 8, 9, 6, 3,  2, 6, 14, 10, 11, 6,  6,
                                  0, 5, 3, 2,  3, 6,  6, 0, 7, 0, 0, 13, 5, 6, 4,  0,  13, 12, 0};
 
-// NTSC-U/C: 0x0041e060
+// NTSC-U/C: 0x0041e060, PAL: 0x004b5d20
 constexpr int kFlexClass[] = {
     0,  1,  1,  1,  1,  1,  1, 1,  1,  2, 3,  1, 1, 2, 1, 1, 1, 1,  1, 1,  1, 1,  1,  1,  1,  1,
     1,  1,  1,  1,  1,  1,  2, 1,  4,  1, 1,  1, 1, 1, 5, 6, 1, 7,  1, 8,  9, 1,  10, 10, 10, 10,
@@ -106,20 +106,20 @@ constexpr int kFlexClass[] = {
     1,  1,  1,  1,  1,  1,  1, 1,  1,  1, 1,  1, 1, 1, 1, 1, 1, 1,  1, 1,  1, 1,  1,  1,  1,  1,
     1,  1,  1,  1,  1,  1,  1, 1,  1,  1, 1,  1, 1, 1, 1, 1, 1, 1,  1, 1,  1, 1};
 
-// NTSC-U/C: 0x0041e460
+// NTSC-U/C: 0x0041e460, PAL: 0x004b6120
 constexpr int kFlexMeta[] = {0, 1, 2, 2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 2};
 
-// NTSC-U/C: 0x0041e4a8
+// NTSC-U/C: 0x0041e4a8, PAL: 0x004b6168
 constexpr short kFlexBase[] = {0,  0,  0,  79, 0,  80, 80, 17, 80, 80, 26, 27, 0,  42, 26,
                                80, 80, 0,  0,  74, 0,  0,  0,  0,  53, 0,  74, 80, 63, 62,
                                80, 80, 64, 63, 59, 49, 80, 80, 39, 63, 65, 67, 69};
 
-// NTSC-U/C: 0x0041e500
+// NTSC-U/C: 0x0041e500, PAL: 0x004b61c0
 constexpr short kFlexDefault[] = {0,  37, 1,  37, 38, 37, 37, 37, 37, 37, 38, 38, 10, 37, 39,
                                   37, 37, 38, 7,  40, 38, 11, 10, 11, 38, 13, 41, 37, 39, 42,
                                   37, 37, 38, 38, 42, 37, 37, 0,  37, 37, 37, 37, 37};
 
-// NTSC-U/C: 0x0041e558
+// NTSC-U/C: 0x0041e558, PAL: 0x004b6218
 constexpr short kFlexNext[] = {0,  4,  5,  6,  7,  8,  9,  10, 10, 11, 12, 13, 14, 5,  4,  4,  15,
                                16, 18, 19, 19, 20, 19, 19, 18, 18, 18, 18, 18, 19, 19, 18, 18, 19,
                                19, 21, 22, 23, 29, 30, 17, 24, 24, 25, 26, 27, 25, 26, 26, 25, 25,
@@ -127,7 +127,7 @@ constexpr short kFlexNext[] = {0,  4,  5,  6,  7,  8,  9,  10, 10, 11, 12, 13, 1
                                26, 26, 34, 34, 35, 33, 33, 35, 30, 27, 31, 37, 3,  37, 37, 37, 37,
                                37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37};
 
-// NTSC-U/C: 0x0041e620
+// NTSC-U/C: 0x0041e620, PAL: 0x004b62e0
 constexpr short kFlexCheck[] = {0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
                                 1,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,
                                 7,  10, 10, 11, 14, 14, 38, 11, 11, 13, 13, 13, 13, 13, 13, 13, 13,
@@ -142,16 +142,16 @@ int g_nDataLexLength = 0;
 FILE *g_pDataLexIn = nullptr;
 FILE *g_pDataLexOut = nullptr;
 
-// NTSC-U/C: 0x003b2380
+// NTSC-U/C: 0x003b2380, PAL: 0x00431240
 static FlexBuffer *g_pFlexBuffer = nullptr;
 
-// NTSC-U/C: 0x003b2384
+// NTSC-U/C: 0x003b2384, PAL: 0x00431244
 static char *g_pFlexCursor = nullptr;
 
-// NTSC-U/C: 0x003b2388
+// NTSC-U/C: 0x003b2388, PAL: 0x00431248
 static int g_nFlexNeedsInit = 1;
 
-// NTSC-U/C: 0x003b238c
+// NTSC-U/C: 0x003b238c, PAL: 0x0043124c
 static int g_nFlexStartState = 0;
 
 // NTSC-U/C: 0x005152fc

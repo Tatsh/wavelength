@@ -230,52 +230,52 @@ enum {
     kMatchOther = 2,   // Another address, which the search records and goes on past.
 };
 
-// NTSC-U/C: 0x003b6bec
+// NTSC-U/C: 0x003b6bec, PAL: 0x00435aac
 int g_nDmeActiveConnection = RT_DME_CONNECTION_COUNT; // No connection is active.
-// NTSC-U/C: 0x003b6bf0
+// NTSC-U/C: 0x003b6bf0, PAL: 0x00435ab0
 unsigned char g_bDmeObjectsShared;
-// NTSC-U/C: 0x003b6bf4
+// NTSC-U/C: 0x003b6bf4, PAL: 0x00435ab4
 int g_nDmeRunning;
 // The session time the clients were last probed for their latency.
-// NTSC-U/C: 0x003b6bf8
+// NTSC-U/C: 0x003b6bf8, PAL: 0x00435ab8
 static unsigned int g_uDmeLastLatencyProbe;
-// NTSC-U/C: 0x003b6bfc
+// NTSC-U/C: 0x003b6bfc, PAL: 0x00435abc
 int g_nDmeObjectCount;
-// NTSC-U/C: 0x003b6c00
+// NTSC-U/C: 0x003b6c00, PAL: 0x00435ac0
 RtDmeConnectFunc g_pfnDmeConnect;
-// NTSC-U/C: 0x003b6c04
+// NTSC-U/C: 0x003b6c04, PAL: 0x00435ac4
 RtDmeConnectFunc g_pfnDmeStatus;
-// NTSC-U/C: 0x003b6c08
+// NTSC-U/C: 0x003b6c08, PAL: 0x00435ac8
 int g_nDmeSessionReadyArgument;
-// NTSC-U/C: 0x003b6c10
+// NTSC-U/C: 0x003b6c10, PAL: 0x00435ad0
 rtDmeHostChangeCallback g_pfnDmeHostChange;
-// NTSC-U/C: 0x003b6c14
+// NTSC-U/C: 0x003b6c14, PAL: 0x00435ad4
 int g_nDmeHostChangeArgument;
-// NTSC-U/C: 0x003b6c0c
+// NTSC-U/C: 0x003b6c0c, PAL: 0x00435acc
 int g_nDmeObjectRangeArgument;
-// NTSC-U/C: 0x003b6c18
+// NTSC-U/C: 0x003b6c18, PAL: 0x00435ad8
 rtDmeHostChangeCallback g_pfnDmeObjectHost;
-// NTSC-U/C: 0x003b6c1c
+// NTSC-U/C: 0x003b6c1c, PAL: 0x00435adc
 int g_nDmeObjectHostArgument;
-// NTSC-U/C: 0x003b6c20
+// NTSC-U/C: 0x003b6c20, PAL: 0x00435ae0
 unsigned char g_bDmeServiceStarted;
 // The time of this console at the last update of the engine.
-// NTSC-U/C: 0x003b6c24
+// NTSC-U/C: 0x003b6c24, PAL: 0x00435ae4
 static unsigned int g_uDmeLastUpdateTime;
-// NTSC-U/C: 0x003b6c28
+// NTSC-U/C: 0x003b6c28, PAL: 0x00435ae8
 unsigned char g_bDmeReceiveError;
-// NTSC-U/C: 0x003b6c29
+// NTSC-U/C: 0x003b6c29, PAL: 0x00435ae9
 unsigned char g_bDmeConnectWaiting;
-// NTSC-U/C: 0x003b6c2a
+// NTSC-U/C: 0x003b6c2a, PAL: 0x00435aea
 unsigned char g_bDmeConnectReported;
 // The sizes of the queues of the datagram service. Yes, the binary only reads them.
-// NTSC-U/C: 0x003b6c2c
+// NTSC-U/C: 0x003b6c2c, PAL: 0x00435aec
 static unsigned int g_uDmeServiceSendSize = kServiceQueueSize;
-// NTSC-U/C: 0x003b6c30
+// NTSC-U/C: 0x003b6c30, PAL: 0x00435af0
 static unsigned int g_uDmeServiceReceiveSize = kServiceQueueSize;
-// NTSC-U/C: 0x003b6c34
+// NTSC-U/C: 0x003b6c34, PAL: 0x00435af4
 unsigned char g_bDmeListening;
-// NTSC-U/C: 0x003b6c38
+// NTSC-U/C: 0x003b6c38, PAL: 0x00435af8
 RtDmeStream *g_pDmeStreams;
 // Written at start-up and never read.
 // NTSC-U/C: 0x00435720

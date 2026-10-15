@@ -14,10 +14,10 @@ std::vector<Timer> Timer::sTimers;
 // NTSC-U/C: 0x00491a10
 Timer gSystemTimer;
 
-// NTSC-U/C: 0x003b2260
+// NTSC-U/C: 0x003b2260, PAL: 0x00431140
 unsigned long long gSystemCycles;
 
-// NTSC-U/C: 0x003b2258
+// NTSC-U/C: 0x003b2258, PAL: 0x00431138
 float gSystemCycles2Ms;
 
 void TimerSleep(int nMs) {

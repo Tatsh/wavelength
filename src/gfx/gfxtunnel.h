@@ -1163,6 +1163,7 @@ public:
      * The tunnel of the song, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003af9d4
+     * @ghidraAddress PAL: 0x0042e86c
      */
     static GfxTunnel *sCurrent;
 
@@ -1170,6 +1171,7 @@ public:
      * Whether each pad gets its own cameras, `splitscreen`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af9f4
+     * @ghidraAddress PAL: 0x0042e88c
      */
     static int sSplitScreen;
 
@@ -1177,6 +1179,7 @@ public:
      * Whether the panels of the tracks show, `show_panels`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af9f8
+     * @ghidraAddress PAL: 0x0042e890
      */
     static int sShowPanels;
 
@@ -1184,6 +1187,7 @@ public:
      * Whether the boundaries between the sections show, `show_dividers`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af9fc
+     * @ghidraAddress PAL: 0x0042e894
      */
     static int sShowDividers;
 
@@ -1191,6 +1195,7 @@ public:
      * Whether the `tunnel` entry has the `invert` flag.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa00
+     * @ghidraAddress PAL: 0x0042e898
      */
     static int sInvertTunnel;
 
@@ -1199,6 +1204,7 @@ public:
      * is selected.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa04
+     * @ghidraAddress PAL: 0x0042e89c
      */
     static int sFlipTunnel;
 
@@ -1206,6 +1212,7 @@ public:
      * Whether the `tunnel` entry has the `center` flag.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa08
+     * @ghidraAddress PAL: 0x0042e8a0
      */
     static int sCenterTunnel;
 
@@ -1213,6 +1220,7 @@ public:
      * `opaque_panels`, which is never read.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa0c
+     * @ghidraAddress PAL: 0x0042e8a4
      */
     static int sOpaquePanels;
 
@@ -1220,6 +1228,7 @@ public:
      * `show_disabled_panels`, which is never read.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa10
+     * @ghidraAddress PAL: 0x0042e8a8
      */
     static int sShowDisabledPanels;
 
@@ -1227,6 +1236,7 @@ public:
      * Whether the seekers show, `show_seeker`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa14
+     * @ghidraAddress PAL: 0x0042e8ac
      */
     static int sShowSeeker;
 
@@ -1234,6 +1244,7 @@ public:
      * `seeker_endcaps_always`, which is never read.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa18
+     * @ghidraAddress PAL: 0x0042e8b0
      */
     static int sSeekerEndcapsAlways;
 
@@ -1241,6 +1252,7 @@ public:
      * `seeker_opacity`, which is never read.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa1c
+     * @ghidraAddress PAL: 0x0042e8b4
      */
     static float sSeekerOpacity;
 
@@ -1248,6 +1260,7 @@ public:
      * Whether the targets of the activators show, `show_activator`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa20
+     * @ghidraAddress PAL: 0x0042e8b8
      */
     static int sShowActivator;
 
@@ -1255,6 +1268,7 @@ public:
      * Whether missed gems show, `show_miss_gems`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa24
+     * @ghidraAddress PAL: 0x0042e8bc
      */
     static int sShowMissGems;
 
@@ -1262,6 +1276,7 @@ public:
      * `tunnel_bars`, which BuildPanels() reads.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa28
+     * @ghidraAddress PAL: 0x0042e8c0
      */
     static int sTunnelBars;
 
@@ -1269,6 +1284,7 @@ public:
      * `tunnel_low_res_bars`, which BuildPanels() reads.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa2c
+     * @ghidraAddress PAL: 0x0042e8c4
      */
     static int sTunnelLowResBars;
 
@@ -1276,6 +1292,7 @@ public:
      * `use_slab`, which is never read.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa30
+     * @ghidraAddress PAL: 0x0042e8c8
      */
     static int sUseSlab;
 
@@ -1283,6 +1300,7 @@ public:
      * `slab_depth` times the scroll speed of the tunnel, which BuildPanels() reads.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa34
+     * @ghidraAddress PAL: 0x0042e8cc
      */
     static float sSlabDepth;
 
@@ -1290,6 +1308,7 @@ public:
      * `slab_angle` in radians, which BuildPanels() reads.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa38
+     * @ghidraAddress PAL: 0x0042e8d0
      */
     static float sSlabAngle;
 
@@ -1300,6 +1319,7 @@ public:
      * degrees.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa3c
+     * @ghidraAddress PAL: 0x0042e8d4
      */
     static float sCameraFov;
 
@@ -1308,6 +1328,7 @@ public:
      * radians.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa40
+     * @ghidraAddress PAL: 0x0042e8d8
      */
     static float sLetterboxFov;
 
@@ -1315,6 +1336,7 @@ public:
      * The milliseconds of one turn of a gem, `gem_rotate_period`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa44
+     * @ghidraAddress PAL: 0x0042e8dc
      */
     static float sGemRotatePeriod;
 
@@ -1323,6 +1345,7 @@ public:
      * tunnel.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa48
+     * @ghidraAddress PAL: 0x0042e8e0
      */
     static float sGemHitFlashSize;
 
@@ -1331,6 +1354,7 @@ public:
      * `gem_hit_flash_time`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa4c
+     * @ghidraAddress PAL: 0x0042e8e4
      */
     static float sGemHitFlashGrowth;
 
@@ -1338,6 +1362,7 @@ public:
      * `gem_pitch_flash_size` times the scroll speed of the tunnel.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa50
+     * @ghidraAddress PAL: 0x0042e8e8
      */
     static float sGemPitchFlashSize;
 
@@ -1345,6 +1370,7 @@ public:
      * The scroll speed of the tunnel divided by `gem_pitch_flash_time`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa54
+     * @ghidraAddress PAL: 0x0042e8ec
      */
     static float sGemPitchFlashGrowth;
 
@@ -1352,6 +1378,7 @@ public:
      * `win_sequence_duration`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa60
+     * @ghidraAddress PAL: 0x0042e8f8
      */
     static float sWinSequenceDuration;
 
@@ -1359,6 +1386,7 @@ public:
      * `fade_to_black_duration`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa64
+     * @ghidraAddress PAL: 0x0042e8fc
      */
     static float sFadeToBlackDuration;
 
@@ -1366,6 +1394,7 @@ public:
      * `preview_cam_change_time`, the milliseconds BlendToArenaPath() blends the path over.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa68
+     * @ghidraAddress PAL: 0x0042e900
      */
     static float sPreviewCamChangeTime;
 
@@ -1373,6 +1402,7 @@ public:
      * `duel_fail_darkening`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa6c
+     * @ghidraAddress PAL: 0x0042e904
      */
     static float sDuelFailDarkening;
 
@@ -1380,6 +1410,7 @@ public:
      * `mesh_gem_scale`, which BuildPanels() reads.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa70
+     * @ghidraAddress PAL: 0x0042e908
      */
     static float sMeshGemScale;
 
@@ -1387,6 +1418,7 @@ public:
      * The width of a panel, which BuildPanels() measures.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa78
+     * @ghidraAddress PAL: 0x0042e910
      */
     static float sPanelWidth;
 

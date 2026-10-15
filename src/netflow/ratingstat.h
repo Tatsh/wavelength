@@ -106,6 +106,7 @@ public:
      * The differences of ratings that make a player expect scores of 0.5, 0.51, and so on to 1.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0bd8
+     * @ghidraAddress PAL: 0x0042faa8
      */
     static int sDifferences[kDifferenceCount];
 };

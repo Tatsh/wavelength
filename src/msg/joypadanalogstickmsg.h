@@ -10,6 +10,7 @@
  * Identity that JoypadAnalogStickMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2114
+ * @ghidraAddress PAL: 0x00430fe4
  */
 extern int g_nJoypadAnalogStickMsgType;
 

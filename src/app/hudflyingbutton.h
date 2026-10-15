@@ -91,6 +91,7 @@ public:
      * The end of the shared flight curve, the time a flight takes.
      *
      * @ghidraAddress NTSC-U/C: 0x003af954
+     * @ghidraAddress PAL: 0x0042e7e8
      */
     static float sFlightTime;
 
@@ -98,6 +99,7 @@ public:
      * The shared flight curve, `button_icon_interp`, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003af958
+     * @ghidraAddress PAL: 0x0042e7ec
      */
     static Interpolator *sFlight;
 

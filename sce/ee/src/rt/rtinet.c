@@ -54,16 +54,16 @@ enum {
     kStreamFlagClosed = 4,
 };
 
-// NTSC-U/C: 0x003c2550
+// NTSC-U/C: 0x003c2550, PAL: 0x00441410
 static bool g_bNetworkManagerInit;
 
-// NTSC-U/C: 0x003c2558
+// NTSC-U/C: 0x003c2558, PAL: 0x00441418
 static char g_szNetworkLocalAddress[20];
 
-// NTSC-U/C: 0x003c2570
+// NTSC-U/C: 0x003c2570, PAL: 0x00441430
 static char g_szNetworkBroadcastAddress[20];
 
-// NTSC-U/C: 0x003c2584
+// NTSC-U/C: 0x003c2584, PAL: 0x00441444
 static int g_nNetworkInterfaceId = -1;
 
 // NTSC-U/C: 0x00529080

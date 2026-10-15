@@ -168,6 +168,7 @@ public:
      * The scale of a target, `target_size`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa8c
+     * @ghidraAddress PAL: 0x0042e924
      */
     static float sTargetSize;
 
@@ -175,6 +176,7 @@ public:
      * The height of a target above the track, `target_offset`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa90
+     * @ghidraAddress PAL: 0x0042e928
      */
     static float sTargetOffset;
 
@@ -182,6 +184,7 @@ public:
      * Whether the targets draw without a depth test, `targets_always_on_top`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa94
+     * @ghidraAddress PAL: 0x0042e92c
      */
     static int sTargetsOnTop;
 
@@ -189,6 +192,7 @@ public:
      * The time after the start of a bump at which the catcher shows again.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa98
+     * @ghidraAddress PAL: 0x0042e930
      */
     static float sBumpShowTime;
 
@@ -196,6 +200,7 @@ public:
      * The time after the start of a bump at which the flare ends, the last frame of its alpha.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa9c
+     * @ghidraAddress PAL: 0x0042e934
      */
     static float sBumpEndTime;
 

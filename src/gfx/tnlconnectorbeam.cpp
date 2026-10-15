@@ -50,19 +50,19 @@ constexpr float kArchCycle = 0.5f;
 
 const char *const kSectionName = "connector_beam";
 
-// NTSC-U/C: 0x003afc14
+// NTSC-U/C: 0x003afc14, PAL: 0x0042eaac
 int sNumPoints = 146;
-// NTSC-U/C: 0x003afc18
+// NTSC-U/C: 0x003afc18, PAL: 0x0042eab0
 float sGlowBoostDecay = 0.0012f;
-// NTSC-U/C: 0x003afc1c
+// NTSC-U/C: 0x003afc1c, PAL: 0x0042eab4
 float sAmplitude = 0.3f;
-// NTSC-U/C: 0x003afc20
+// NTSC-U/C: 0x003afc20, PAL: 0x0042eab8
 Interpolator *sEnergyModel = nullptr;
-// NTSC-U/C: 0x003afc24
+// NTSC-U/C: 0x003afc24, PAL: 0x0042eabc
 float sHeight = 0.04f;
-// NTSC-U/C: 0x003afc28
+// NTSC-U/C: 0x003afc28, PAL: 0x0042eac0
 float sParticleBaseSize = 0.4f;
-// NTSC-U/C: 0x003afc2c
+// NTSC-U/C: 0x003afc2c, PAL: 0x0042eac4
 float sParticleMultiplierBaseSize = 0.7f;
 
 // The static initialiser of the unit, and the routines that run it to construct and to destroy the
@@ -74,7 +74,7 @@ float sParticleMultiplierBaseSize = 0.7f;
 // NTSC-U/C: 0x0043b6e0
 Polynomial sLineEnergyFalloff;
 // Alternate spans round the number of points to the nearest and down, which spreads the rounding.
-// NTSC-U/C: 0x00400f10
+// NTSC-U/C: 0x00400f10, PAL: 0x004986b0
 const float kPointBias[] = {0.0f, 0.4999f};
 
 } // namespace

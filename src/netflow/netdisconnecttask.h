@@ -43,6 +43,7 @@ public:
      * The step that waits for OnDisconnected(), or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ae8
+     * @ghidraAddress PAL: 0x0042f9b4
      */
     static NetDisconnectTask *sTask;
 

@@ -39,7 +39,7 @@ struct GapDifficultyEntry {
     float mDifficulty[2];
 };
 
-// NTSC-U/C: 0x003af778
+// NTSC-U/C: 0x003af778, PAL: 0x0042e610
 const GapDifficultyEntry kGapDifficulties[] = {
     {0, {40.0f, 100.0f}},
     {80, {40.0f, 120.0f}},

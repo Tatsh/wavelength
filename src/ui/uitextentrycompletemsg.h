@@ -12,6 +12,7 @@
  * Identity that UITextEntryCompleteMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003afd00
+ * @ghidraAddress PAL: 0x0042eb98
  */
 extern int g_nUITextEntryCompleteMsgType;
 

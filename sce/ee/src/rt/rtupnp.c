@@ -102,21 +102,21 @@ enum {
 
 #define SSDP_ADDRESS "239.255.255.250"
 
-// NTSC-U/C: 0x003b6d24
+// NTSC-U/C: 0x003b6d24, PAL: 0x00435be4
 static unsigned char g_bDiscoveryDone;
-// NTSC-U/C: 0x003b6d25
+// NTSC-U/C: 0x003b6d25, PAL: 0x00435be5
 static unsigned char g_bDescriptionDone;
-// NTSC-U/C: 0x003b6d26
+// NTSC-U/C: 0x003b6d26, PAL: 0x00435be6
 static unsigned char g_bIpScpdDone;
-// NTSC-U/C: 0x003b6d27
+// NTSC-U/C: 0x003b6d27, PAL: 0x00435be7
 static unsigned char g_bPppScpdDone;
-// NTSC-U/C: 0x003b6d28
+// NTSC-U/C: 0x003b6d28, PAL: 0x00435be8
 static int g_nDiscoveryResult;
-// NTSC-U/C: 0x003b6d2c
+// NTSC-U/C: 0x003b6d2c, PAL: 0x00435bec
 static int g_nDescriptionResult;
-// NTSC-U/C: 0x003b6d30
+// NTSC-U/C: 0x003b6d30, PAL: 0x00435bf0
 static int g_nIpScpdResult;
-// NTSC-U/C: 0x003b6d34
+// NTSC-U/C: 0x003b6d34, PAL: 0x00435bf4
 static int g_nPppScpdResult;
 // NTSC-U/C: 0x00521a00
 static RtUpnpDeviceInfo g_deviceInfo;

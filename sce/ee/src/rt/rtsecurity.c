@@ -18,9 +18,9 @@ enum {
     kPeerMask = 0x1fffffff,
 };
 
-// NTSC-U/C: 0x003b619c
+// NTSC-U/C: 0x003b619c, PAL: 0x0043505c
 static RtConnectionKeys *g_pConnectionKeys;
-// NTSC-U/C: 0x003b61a0
+// NTSC-U/C: 0x003b61a0, PAL: 0x00435060
 static unsigned char g_bKeysSeeded;
 // The key pair of the listening connections.
 // NTSC-U/C: 0x00519de0

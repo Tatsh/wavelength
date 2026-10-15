@@ -209,6 +209,7 @@ public:
      * The class name a `.rnd` file writes, `Font`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09b8
+     * @ghidraAddress PAL: 0x0042f850
      */
     static const char *sClassName;
 
@@ -216,6 +217,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09bc
+     * @ghidraAddress PAL: 0x0042f854
      */
     static int sRev;
 

@@ -45,7 +45,7 @@ typedef struct {
     RtNetRateCounter bytesReceived;
 } RtNetStats;
 
-// NTSC-U/C: 0x003bfa50
+// NTSC-U/C: 0x003bfa50, PAL: 0x0043e910
 static int g_nNetSocketUsers = 0;
 
 // NTSC-U/C: 0x00528e18

@@ -26,27 +26,27 @@ enum {
     kStreamDatagramBufferSize = 536,
 };
 
-// NTSC-U/C: 0x003b6ce0
+// NTSC-U/C: 0x003b6ce0, PAL: 0x00435ba0
 static unsigned int g_uStreamQueryInterval = 500;
-// NTSC-U/C: 0x003b6ce4
+// NTSC-U/C: 0x003b6ce4, PAL: 0x00435ba4
 static unsigned int g_uStreamPeerTimeout = kStreamDefaultPeerTimeout;
-// NTSC-U/C: 0x003b6ce8
+// NTSC-U/C: 0x003b6ce8, PAL: 0x00435ba8
 static RtStreamLatest *g_apStreamLatest[kStreamDirections];
-// NTSC-U/C: 0x003b6cf0
+// NTSC-U/C: 0x003b6cf0, PAL: 0x00435bb0
 static int g_anStreamLatestCount[kStreamDirections];
-// NTSC-U/C: 0x003b6cf8
+// NTSC-U/C: 0x003b6cf8, PAL: 0x00435bb8
 static RtStreamSlot *g_apStreamSlots[kStreamDirections];
-// NTSC-U/C: 0x003b6d00
+// NTSC-U/C: 0x003b6d00, PAL: 0x00435bc0
 static int g_anStreamSlotCount[kStreamDirections];
-// NTSC-U/C: 0x003b6d08
+// NTSC-U/C: 0x003b6d08, PAL: 0x00435bc8
 int g_nStreamMergeSize;
-// NTSC-U/C: 0x003b6d0c
+// NTSC-U/C: 0x003b6d0c, PAL: 0x00435bcc
 RtUpnpContext *g_pStreamUpnp;
-// NTSC-U/C: 0x003b6d14
+// NTSC-U/C: 0x003b6d14, PAL: 0x00435bd4
 RtStreamMappingFunc g_pfnStreamMapping;
-// NTSC-U/C: 0x003b6d18
+// NTSC-U/C: 0x003b6d18, PAL: 0x00435bd8
 static unsigned char g_bStreamOpen;
-// NTSC-U/C: 0x003b6d1a
+// NTSC-U/C: 0x003b6d1a, PAL: 0x00435bda
 unsigned short g_uStreamGatewayPort;
 // The sequences an acknowledgement listed.
 // NTSC-U/C: 0x00520620

@@ -32,7 +32,7 @@ static __attribute__((noinline)) void setup(int nSyscall, void *pHandler) {
     LibkernelSyscall(kSyscallSetSyscall, nSyscall, (int)pHandler, 0);
 }
 
-// NTSC-U/C: 0x003c5058
+// NTSC-U/C: 0x003c5058, PAL: 0x0045b4a0
 static SyscallEntry g_exitCopySyscall = {kSyscallKernelCopy, kCopy};
 
 // NTSC-U/C: 0x0031c9d0, PAL: 0x003892e8

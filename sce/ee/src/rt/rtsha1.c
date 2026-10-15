@@ -29,7 +29,7 @@ enum {
 #define SHA1_ROUND(a, b, c, d, e, f, k, data)                                                      \
     ((e) += SHA1_ROTL(5, (a)) + f((b), (c), (d)) + (k) + (data), (b) = SHA1_ROTL(30, (b)))
 
-// NTSC-U/C: 0x003b6b80
+// NTSC-U/C: 0x003b6b80, PAL: 0x00435a40
 static RtSha1Context g_sha1Initial = {
     .auDigest = {0x67452301U, 0xefcdab89U, 0x98badcfeU, 0x10325476U, 0xc3d2e1f0U},
 };

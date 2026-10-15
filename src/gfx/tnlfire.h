@@ -312,6 +312,7 @@ public:
      * The ticks the head moves for each tick of a capture, `track_capture_speed`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa58
+     * @ghidraAddress PAL: 0x0042e8f0
      */
     static float sCaptureSpeed;
 
@@ -319,6 +320,7 @@ public:
      * The ticks the head moves for each tick of an automatic capture, `track_autocapture_speed`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa5c
+     * @ghidraAddress PAL: 0x0042e8f4
      */
     static float sAutoCaptureSpeed;
 
@@ -326,6 +328,7 @@ public:
      * The size of a panel, the scale of the flames. The tunnel sets it when it builds its panels.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa74
+     * @ghidraAddress PAL: 0x0042e90c
      */
     static float sPanelSize;
 
@@ -333,6 +336,7 @@ public:
      * The chunks of a fire, `capture_max_chunks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa7c
+     * @ghidraAddress PAL: 0x0042e914
      */
     static int sMaxChunks;
 
@@ -340,6 +344,7 @@ public:
      * The height above the cell a chunk starts at, `capture_chunk_y_displace`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa80
+     * @ghidraAddress PAL: 0x0042e918
      */
     static float sChunkYDisplace;
 
@@ -348,6 +353,7 @@ public:
      * flag is never read.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa84
+     * @ghidraAddress PAL: 0x0042e91c
      */
     static int sChunksLit;
 

@@ -8,6 +8,7 @@
  * Identity that ClientRatingPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b9c
+ * @ghidraAddress PAL: 0x0042fa6c
  */
 extern int g_nClientRatingPktType;
 

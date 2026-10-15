@@ -11,6 +11,7 @@
  * Identity that UITransitionCompleteMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003afcfc
+ * @ghidraAddress PAL: 0x0042eb94
  */
 extern int g_nUITransitionCompleteMsgType;
 

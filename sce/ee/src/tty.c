@@ -74,10 +74,10 @@ static TtyPacket g_ttySendPacket __attribute__((aligned(64)));
 // NTSC-U/C: 0x00533640
 static TtyPacket g_ttyReceivePacket __attribute__((aligned(64)));
 
-// NTSC-U/C: 0x003c47b4
+// NTSC-U/C: 0x003c47b4, PAL: 0x0045abfc
 static int ttyinit;
 
-// NTSC-U/C: 0x003c47b8, the end of the heap sbrk() has handed out.
+// NTSC-U/C: 0x003c47b8, PAL: 0x0045ac00, the end of the heap sbrk() has handed out.
 static char *g_pHeapBreak = _end;
 
 // NTSC-U/C: 0x00317d10, PAL: 0x00384628

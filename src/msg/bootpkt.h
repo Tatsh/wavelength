@@ -7,6 +7,7 @@
  * Identity that BootPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bac
+ * @ghidraAddress PAL: 0x0042fa7c
  */
 extern int g_nBootPktType;
 

@@ -345,7 +345,7 @@ typedef struct {
     unsigned long long mUnused;
 } MpegDmaTag;
 
-// NTSC-U/C: 0x003c27e0
+// NTSC-U/C: 0x003c27e0, PAL: 0x00458b70
 static const unsigned long long g_aMpegStreamIdTable[kStreamTypeCount][2] = {
     {0xe000000000ULL, 0xff00000000ULL},
     {0xbdffc00000ULL, 0xffffffffffULL},
@@ -373,7 +373,8 @@ static const unsigned char g_abDefaultNonIntraQuantMatrix[64] __attribute__((ali
     16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
 };
 
-// NTSC-U/C: 0x003c2900, indexed by averaging, horizontal half pel, and vertical half pel.
+// NTSC-U/C: 0x003c2900, PAL: 0x00458cc0, indexed by averaging, horizontal half pel, and vertical
+// half pel.
 static const MpegMcKernel g_apfnMpegLumaKernels[kMcKernelVariants] = {
     sceMpegMcLumaCopy,
     sceMpegMcLumaHalfV,
@@ -385,7 +386,7 @@ static const MpegMcKernel g_apfnMpegLumaKernels[kMcKernelVariants] = {
     sceMpegMcLumaAverageHalfHV,
 };
 
-// NTSC-U/C: 0x003c2920
+// NTSC-U/C: 0x003c2920, PAL: 0x00458ce0
 static const MpegMcKernel g_apfnMpegChromaKernels[kMcKernelVariants] = {
     sceMpegMcChromaCopy,
     sceMpegMcChromaHalfV,
@@ -397,7 +398,7 @@ static const MpegMcKernel g_apfnMpegChromaKernels[kMcKernelVariants] = {
     sceMpegMcChromaAverageHalfHV,
 };
 
-// NTSC-U/C: 0x003c2940, nonzero for the IPU commands that leave IPU_TOP stale.
+// NTSC-U/C: 0x003c2940, PAL: 0x00458d00, nonzero for the IPU commands that leave IPU_TOP stale.
 static const int g_anIpuCmdTypeTable[] = {1, 1, 0, 0, 0, 1, 1, 1, 1, 1};
 
 // NTSC-U/C: 0x003c2968, the fields a picture shows by its repeat_first_field, top_field_first,

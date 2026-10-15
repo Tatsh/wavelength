@@ -7,6 +7,7 @@
  * Identity that DataAckPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bb4
+ * @ghidraAddress PAL: 0x0042fa84
  */
 extern int g_nDataAckPktType;
 

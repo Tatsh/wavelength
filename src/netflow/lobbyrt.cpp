@@ -195,13 +195,13 @@ const char *const kRemixFileFormat = "r_%02d%02d%02d_%s_%s.%d";
 
 } // namespace
 
-// NTSC-U/C: 0x003b0aec
+// NTSC-U/C: 0x003b0aec, PAL: 0x0042f9b8
 NetLobby *TheNetLobby;
 
-// NTSC-U/C: 0x003b0af0
+// NTSC-U/C: 0x003b0af0, PAL: 0x0042f9bc
 LobbyRT *TheLobbyRT;
 
-// NTSC-U/C: 0x003b0af4
+// NTSC-U/C: 0x003b0af4, PAL: 0x0042f9c0
 int LobbyRT::sUnlimitedUpload;
 
 void LobbyRT::AllowUnlimitedUpload(DataArray *pCommand, void *pUserData) {

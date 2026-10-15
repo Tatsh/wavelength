@@ -40,6 +40,7 @@ public:
      * The step that waits for OnResponse(), or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ae4
+     * @ghidraAddress PAL: 0x0042f9b0
      */
     static MGCLCreateGameTask *sTask;
 

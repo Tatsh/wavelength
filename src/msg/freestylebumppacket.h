@@ -7,6 +7,7 @@
  * Identity that FreestyleBumpPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af73c
+ * @ghidraAddress PAL: 0x0042e5d4
  */
 extern int g_nFreestyleBumpPacketType;
 

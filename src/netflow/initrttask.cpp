@@ -27,7 +27,7 @@ constexpr int kVersionBufferSize = 128;
 
 } // namespace
 
-// NTSC-U/C: 0x003b0af8
+// NTSC-U/C: 0x003b0af8, PAL: 0x0042f9c4
 InitRTTask *InitRTTask::sTask;
 
 void InitRTTask::OnStart() {

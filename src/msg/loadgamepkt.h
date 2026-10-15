@@ -7,6 +7,7 @@
  * Identity that LoadGamePkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bbc
+ * @ghidraAddress PAL: 0x0042fa8c
  */
 extern int g_nLoadGamePktType;
 

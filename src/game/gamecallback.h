@@ -172,5 +172,6 @@ public:
  * The listener the gameplay code reports to, or null.
  *
  * @ghidraAddress NTSC-U/C: 0x003af708
+ * @ghidraAddress PAL: 0x0042e5a0
  */
 extern GameCallback *TheGameCallback;

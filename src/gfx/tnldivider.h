@@ -129,6 +129,7 @@ public:
      * The milliseconds of the flash.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb24
+     * @ghidraAddress PAL: 0x0042e9bc
      */
     static float sFlashTime;
 

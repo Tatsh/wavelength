@@ -116,11 +116,11 @@ private:
 };
 
 // The handler of the command in flight.
-// NTSC-U/C: 0x003b2104
+// NTSC-U/C: 0x003b2104, PAL: 0x00430fd4
 MemcardCBHandler *gHandler;
 
 // Set while a command is in flight.
-// NTSC-U/C: 0x003b2108
+// NTSC-U/C: 0x003b2108, PAL: 0x00430fd8
 int gBusy;
 
 // NTSC-U/C: 0x00481940

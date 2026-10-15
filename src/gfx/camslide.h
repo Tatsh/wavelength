@@ -30,6 +30,7 @@ public:
      * The transform of the slide, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003afa88
+     * @ghidraAddress PAL: 0x0042e920
      */
     static RndTransformable *sSlide;
 };

@@ -233,30 +233,32 @@ static const char g_abFsLibraryVersion[4] = {'2', '6', '0', '0'};
 // NTSC-U/C: 0x004327c8, a second server version the check accepts.
 static const char g_abFsAltVersion[4] = {'.', '.', '.', '.'};
 
-// NTSC-U/C: 0x003c4868
+// NTSC-U/C: 0x003c4868, PAL: 0x0045acb0
 static const char *g_pFsAltVersion = g_abFsAltVersion;
 
-// NTSC-U/C: 0x003c47d0, the semaphores of calls made without waiting, or -1 for a free slot.
+// NTSC-U/C: 0x003c47d0, PAL: 0x0045ac18, the semaphores of calls made without waiting, or -1 for a
+// free slot.
 static int g_anFsPending[kFsPendingCount] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                              -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                              -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-// NTSC-U/C: 0x003c4850, the result area the last completion used.
+// NTSC-U/C: 0x003c4850, PAL: 0x0045ac98, the result area the last completion used.
 static int g_nFsLastResultArea;
 
-// NTSC-U/C: 0x003c4854
+// NTSC-U/C: 0x003c4854, PAL: 0x0045ac9c
 static int g_bFsBound;
 
-// NTSC-U/C: 0x003c4858, set when the server writes each completion to the area it selects.
+// NTSC-U/C: 0x003c4858, PAL: 0x0045aca0, set when the server writes each completion to the area it
+// selects.
 static int g_bFsMultipleResultAreas;
 
-// NTSC-U/C: 0x003c485c, serialises calls.
+// NTSC-U/C: 0x003c485c, PAL: 0x0045aca4, serialises calls.
 static int g_nFsCallSema = -1;
 
-// NTSC-U/C: 0x003c4860, guards the handle records.
+// NTSC-U/C: 0x003c4860, PAL: 0x0045aca8, guards the handle records.
 static int g_nFsHandleSema = -1;
 
-// NTSC-U/C: 0x003c4864, guards the pending slots.
+// NTSC-U/C: 0x003c4864, PAL: 0x0045acac, guards the pending slots.
 static int g_nFsPendingSema = -1;
 
 // NTSC-U/C: 0x005352c0, the result areas sceFsInit() reports to the server.

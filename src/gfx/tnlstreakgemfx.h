@@ -93,6 +93,7 @@ public:
      * The blink per millisecond, the reciprocal of `streak_arrow_fade_ms` clamped to 0 to 1.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb20
+     * @ghidraAddress PAL: 0x0042e9b8
      */
     static float sBlinkRate;
 
@@ -100,6 +101,7 @@ public:
      * The text that waits for no arrow to be shown, or empty.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb78
+     * @ghidraAddress PAL: 0x0042ea10
      */
     static char sPendingText[16];
 
@@ -107,6 +109,7 @@ public:
      * The bit of each shown arrow.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb88
+     * @ghidraAddress PAL: 0x0042ea20
      */
     static unsigned char sShownMask;
 

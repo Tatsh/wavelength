@@ -9,6 +9,7 @@
  * Identity that JoinLaunchpadSuccessMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b64
+ * @ghidraAddress PAL: 0x0042fa34
  */
 extern int g_nJoinLaunchpadSuccessMsgType;
 

@@ -17,7 +17,7 @@ enum {
     kBindRetryDelay = 0x100000,
 };
 
-// NTSC-U/C: 0x003c486c, negative until the client is bound.
+// NTSC-U/C: 0x003c486c, PAL: 0x0045acb4, negative until the client is bound.
 static int _bind = -1;
 
 // NTSC-U/C: 0x00536ac0

@@ -66,6 +66,7 @@ public:
      * The file descriptor the last open reported.
      *
      * @ghidraAddress NTSC-U/C: 0x003af844
+     * @ghidraAddress PAL: 0x0042e6dc
      */
     static int sFd;
 
@@ -73,6 +74,7 @@ public:
      * The library result SetStatus() last translated.
      *
      * @ghidraAddress NTSC-U/C: 0x003af848
+     * @ghidraAddress PAL: 0x0042e6e0
      */
     static int sResult;
 
@@ -80,6 +82,7 @@ public:
      * The outcome of the last command, one of Status.
      *
      * @ghidraAddress NTSC-U/C: 0x003af84c
+     * @ghidraAddress PAL: 0x0042e6e4
      */
     static int sStatus;
 
@@ -87,6 +90,7 @@ public:
      * The entries the last directory listing reported.
      *
      * @ghidraAddress NTSC-U/C: 0x003af850
+     * @ghidraAddress PAL: 0x0042e6e8
      */
     static MemcardDirEntry *sDirEntries;
 
@@ -94,6 +98,7 @@ public:
      * The number of entries the last directory listing reported.
      *
      * @ghidraAddress NTSC-U/C: 0x003af854
+     * @ghidraAddress PAL: 0x0042e6ec
      */
     static int sDirCount;
 

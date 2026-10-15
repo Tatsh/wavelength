@@ -28,7 +28,7 @@ constexpr unsigned char kReadTryCount = 3;
 alignas(64) char gBlockBuffers[kBlockCount][kBlockBytes];
 
 // The buffer each new block takes in turn.
-// NTSC-U/C: 0x003b2300
+// NTSC-U/C: 0x003b2300, PAL: 0x004311c0
 char *gBlockBufferTable[kBlockCount] = {gBlockBuffers[0],
                                         gBlockBuffers[1],
                                         gBlockBuffers[2],
@@ -38,13 +38,13 @@ char *gBlockBufferTable[kBlockCount] = {gBlockBuffers[0],
                                         gBlockBuffers[6],
                                         gBlockBuffers[7]};
 
-// NTSC-U/C: 0x003b2320
+// NTSC-U/C: 0x003b2320, PAL: 0x004311e0
 int gBlockSize = kBlockBytes;
 
-// NTSC-U/C: 0x003b2324
+// NTSC-U/C: 0x003b2324, PAL: 0x004311e4
 int gNextBuffer;
 
-// NTSC-U/C: 0x003b2328
+// NTSC-U/C: 0x003b2328, PAL: 0x004311e8
 int gBlockTime;
 
 } // namespace

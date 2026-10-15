@@ -7,6 +7,7 @@
  * Identity that CapturePacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af724
+ * @ghidraAddress PAL: 0x0042e5bc
  */
 extern int g_nCapturePacketType;
 

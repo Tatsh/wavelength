@@ -64,7 +64,7 @@ constexpr unsigned char kToolSummerTime = 1;
 const char *const kLanguageKeys[] = {
     "japanese", "english", "french", "spanish", "german", "italian"};
 
-// NTSC-U/C: 0x003b2120
+// NTSC-U/C: 0x003b2120, PAL: 0x00430ff0
 int gPadCheck = 1;
 
 // Whether a multitap was connected to each port at the last check.
@@ -72,7 +72,7 @@ int gPadCheck = 1;
 int gMultitaps[kMultitapPortCount];
 
 // The system time in seconds of the next multitap check.
-// NTSC-U/C: 0x003b211c
+// NTSC-U/C: 0x003b211c, PAL: 0x00430fec
 float gNextMultitapCheck;
 
 // NTSC-U/C: 0x0028c6b0, PAL: 0x00296038 (static initialiser)
@@ -85,19 +85,19 @@ OptionProcessor gOptions;
 // NTSC-U/C: 0x004819a0
 String gFileOrder;
 
-// NTSC-U/C: 0x003b2230
+// NTSC-U/C: 0x003b2230, PAL: 0x00431100
 int gUsingCD;
 
-// NTSC-U/C: 0x003b2130
+// NTSC-U/C: 0x003b2130, PAL: 0x00431000
 char gConfigPath[kConfigPathSize];
 
-// NTSC-U/C: 0x003b2128
+// NTSC-U/C: 0x003b2128, PAL: 0x00430ff8
 DataArray *gConfig;
 
-// NTSC-U/C: 0x003b2238
+// NTSC-U/C: 0x003b2238, PAL: 0x00431110
 const char *gLanguage = "english";
 
-// NTSC-U/C: 0x003b223c
+// NTSC-U/C: 0x003b223c, PAL: 0x00431118
 char *gDebugBuffer; // Yes, the binary never sets it.
 
 // Open the multitap ports and check for multitaps from now on.
@@ -268,7 +268,7 @@ void FreeDebugBuffer() {
 
 } // namespace
 
-// NTSC-U/C: 0x003b2234
+// NTSC-U/C: 0x003b2234, PAL: 0x00431108
 int g_bHostConfig;
 
 void SystemSetPadCheck(bool bEnabled) {

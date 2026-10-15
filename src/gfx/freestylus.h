@@ -123,6 +123,7 @@ public:
      * The angle of the tumble per unit of its rate, `tumble_angle_per_ms`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afab0
+     * @ghidraAddress PAL: 0x0042e948
      */
     static float sTumbleAnglePerMs;
 

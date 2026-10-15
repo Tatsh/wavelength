@@ -26,7 +26,7 @@ enum {
 
 // The default matrices of SETIQ: the MPEG intra matrix in zigzag order and one quadword of the flat
 // non-intra matrix, sent four times.
-// NTSC-U/C: 0x003c29e0
+// NTSC-U/C: 0x003c29e0, PAL: 0x00458e20
 static const union {
     unsigned char abMatrices[kInitFifoQuadwords][kQuadwordSize];
     u_long128 aQuads[kInitFifoQuadwords];
@@ -39,7 +39,7 @@ static const union {
 }};
 
 // The colour table of SETVQ, sixteen RGB555 entries.
-// NTSC-U/C: 0x003c2a30
+// NTSC-U/C: 0x003c2a30, PAL: 0x00458e70
 static const union {
     unsigned short anColors[kVqClutSize];
     u_long128 aQuads[kVqClutQuadwords];

@@ -349,6 +349,7 @@ public:
      * The class name a `.rnd` file writes, `ParticleSys`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a38
+     * @ghidraAddress PAL: 0x0042f8d0
      */
     static const char *sClassName;
 

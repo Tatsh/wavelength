@@ -40,13 +40,13 @@ HeapTracker *g_apMemTrackHeaps[kMemTrackMaxHeaps];
 
 BlockPool g_AllocInfoPool;
 
-// NTSC-U/C: 0x003b2408
+// NTSC-U/C: 0x003b2408, PAL: 0x004312c8
 static void *g_pMemTrackInfoMemory = nullptr;
 
-// NTSC-U/C: 0x003b240c
+// NTSC-U/C: 0x003b240c, PAL: 0x004312cc
 static int g_nMemTrackDebugHeap = -1;
 
-// NTSC-U/C: 0x003b2414
+// NTSC-U/C: 0x003b2414, PAL: 0x004312d4
 static uintptr_t g_nMemTrackBump = kDevMemoryStart;
 
 bool MemTrackInit() {

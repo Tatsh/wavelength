@@ -45,13 +45,13 @@ constexpr char kRetailSourceLetter = 's';
 // NTSC-U/C: 0x0047fdd8
 String gBootPath;
 
-// NTSC-U/C: 0x003b20d0
+// NTSC-U/C: 0x003b20d0, PAL: 0x00430fa0
 File *gBootFile;
 
-// NTSC-U/C: 0x003b20d4
+// NTSC-U/C: 0x003b20d4, PAL: 0x00430fa4
 File *gTraceLog;
 
-// NTSC-U/C: 0x003b20d8
+// NTSC-U/C: 0x003b20d8, PAL: 0x00430fa8
 int gTraceEnabled;
 
 } // namespace

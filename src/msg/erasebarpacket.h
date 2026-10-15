@@ -7,6 +7,7 @@
  * Identity that EraseBarPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af758
+ * @ghidraAddress PAL: 0x0042e5f0
  */
 extern int g_nEraseBarPacketType;
 

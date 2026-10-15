@@ -61,6 +61,7 @@ public:
      * A step that is never set. OnStop() clears it.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0af8
+     * @ghidraAddress PAL: 0x0042f9c4
      */
     static InitRTTask *sTask;
 

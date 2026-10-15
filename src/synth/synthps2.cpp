@@ -157,19 +157,19 @@ IopNotify g_abSynthStreamStatus;
 // NTSC-U/C: 0x0043c980
 alignas(kCacheLineSize) sceSifClientData g_aSynthClients[kNumModules];
 
-// NTSC-U/C: 0x003b0a88
+// NTSC-U/C: 0x003b0a88, PAL: 0x0042f920
 IopNotify *g_pSynthTransferPending = &g_abSynthTransferPending;
 
-// NTSC-U/C: 0x003b0a8c
+// NTSC-U/C: 0x003b0a8c, PAL: 0x0042f924
 IopNotify *g_pSynthCoreFxPending = &g_abSynthCoreFxPending;
 
-// NTSC-U/C: 0x003b0a90
+// NTSC-U/C: 0x003b0a90, PAL: 0x0042f928
 IopNotify *g_pSynthStreamStatus = &g_abSynthStreamStatus;
 
-// NTSC-U/C: 0x003b0a98
+// NTSC-U/C: 0x003b0a98, PAL: 0x0042f930
 unsigned int g_anSynthServerIds[kNumModules] = {0x75433178, 0x75433776};
 
-// NTSC-U/C: 0x003b0aa0
+// NTSC-U/C: 0x003b0aa0, PAL: 0x0042f938
 int g_nSynthLoadStatePolls;
 
 inline void WriteNotify(IopNotify *pNotify, int nValue) {

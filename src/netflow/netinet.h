@@ -98,5 +98,6 @@ public:
  * The network connection.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ab4
+ * @ghidraAddress PAL: 0x0042f980
  */
 extern NetInet *TheNetInet;

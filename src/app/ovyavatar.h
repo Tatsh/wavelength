@@ -127,6 +127,7 @@ public:
      * The time the swing to a new leader takes, `avatar_fx_leader_time`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af924
+     * @ghidraAddress PAL: 0x0042e7b8
      */
     static float sLeaderSwingTime;
 

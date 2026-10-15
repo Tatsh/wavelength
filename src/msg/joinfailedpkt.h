@@ -7,6 +7,7 @@
  * Identity that JoinFailedPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b90
+ * @ghidraAddress PAL: 0x0042fa60
  */
 extern int g_nJoinFailedPktType;
 

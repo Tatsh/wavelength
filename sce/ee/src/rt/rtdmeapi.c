@@ -16,11 +16,11 @@ enum {
 
 // NTSC-U/C: 0x003b6170
 static const char g_szDmeVersion[] = "dme version: 1.25.0003";
-// NTSC-U/C: 0x003b6187
+// NTSC-U/C: 0x003b6187, PAL: 0x00435047
 static unsigned char g_bNetStarted;
-// NTSC-U/C: 0x003b6188
+// NTSC-U/C: 0x003b6188, PAL: 0x00435048
 static int g_nNetStartCount;
-// NTSC-U/C: 0x003b618c
+// NTSC-U/C: 0x003b618c, PAL: 0x0043504c
 static unsigned char g_bNetLockCreated;
 // NTSC-U/C: 0x00519bc8
 static RtMutex g_netLock;

@@ -11,18 +11,18 @@ constexpr int kDefaultHunkSize = 358400;
 
 } // namespace
 
-// NTSC-U/C: 0x003b2418
+// NTSC-U/C: 0x003b2418, PAL: 0x004312d8
 static int g_nBigHunkSize = kDefaultHunkSize;
 
-// NTSC-U/C: 0x003b241c
+// NTSC-U/C: 0x003b241c, PAL: 0x004312dc
 static int g_nSmallHunkSize = kDefaultHunkSize;
 
 int FreeStore::sHunkBytes;
 
-// NTSC-U/C: 0x003b2424
+// NTSC-U/C: 0x003b2424, PAL: 0x004312e4
 static char *g_pHunkEnd;
 
-// NTSC-U/C: 0x003b2428
+// NTSC-U/C: 0x003b2428, PAL: 0x004312e8
 static char *g_pHunkCursor;
 
 void FreeStore::Configure(DataArray *pConfig) {

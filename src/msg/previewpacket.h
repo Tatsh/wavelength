@@ -7,6 +7,7 @@
  * Identity that PreviewPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af760
+ * @ghidraAddress PAL: 0x0042e5f8
  */
 extern int g_nPreviewPacketType;
 

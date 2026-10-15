@@ -7,6 +7,7 @@
  * Identity that StartGamePkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bc0
+ * @ghidraAddress PAL: 0x0042fa90
  */
 extern int g_nStartGamePktType;
 

@@ -42,9 +42,9 @@ typedef struct {
     unsigned int uBaseSeconds;
 } RtWallClock;
 
-// NTSC-U/C: 0x003b6b78
+// NTSC-U/C: 0x003b6b78, PAL: 0x00435a38
 static unsigned char g_bUptimeStarted;
-// NTSC-U/C: 0x003b6b79
+// NTSC-U/C: 0x003b6b79, PAL: 0x00435a39
 static unsigned char g_bWallClockRead;
 // NTSC-U/C: 0x00519ee0
 static RtUptime g_uptime;

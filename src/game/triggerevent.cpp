@@ -6,7 +6,7 @@
 
 namespace {
 
-// NTSC-U/C: 0x003afc48
+// NTSC-U/C: 0x003afc48, PAL: 0x0042eae0
 const char *const kTypeNames[TriggerEvent::kNumTypes] = {
     "beat",
     "time",

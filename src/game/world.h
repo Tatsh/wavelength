@@ -657,5 +657,6 @@ private:
  * The logic of the running world, which World::SetLogic() installs, or null.
  *
  * @ghidraAddress NTSC-U/C: 0x003af838
+ * @ghidraAddress PAL: 0x0042e6d0
  */
 extern WorldLogic *TheWorldLogic;

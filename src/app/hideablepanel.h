@@ -120,6 +120,7 @@ public:
      * Whether Show() moves a panel at once rather than sliding it.
      *
      * @ghidraAddress NTSC-U/C: 0x003af908
+     * @ghidraAddress PAL: 0x0042e79c
      */
     static int sSnap;
 
@@ -127,6 +128,7 @@ public:
      * The time Poll() advances every panel by.
      *
      * @ghidraAddress NTSC-U/C: 0x003af90c
+     * @ghidraAddress PAL: 0x0042e7a0
      */
     static float sDeltaTime;
 
@@ -134,6 +136,7 @@ public:
      * The animation of the two-dimensional materials, `mat_2d_EE.anim`, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003af910
+     * @ghidraAddress PAL: 0x0042e7a4
      */
     static RndAnimatable *sMaterialAnim;
 
@@ -141,6 +144,7 @@ public:
      * The frame PoseMaterials() poses sMaterialAnim at.
      *
      * @ghidraAddress NTSC-U/C: 0x003af914
+     * @ghidraAddress PAL: 0x0042e7a8
      */
     static float sMaterialFrame;
 

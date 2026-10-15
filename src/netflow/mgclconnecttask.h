@@ -52,6 +52,7 @@ public:
      * The step that waits for OnConnect(), or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ad8
+     * @ghidraAddress PAL: 0x0042f9a4
      */
     static MGCLConnectTask *sTask;
 
@@ -59,6 +60,7 @@ public:
      * Non-zero while a connection is under way.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0adc
+     * @ghidraAddress PAL: 0x0042f9a8
      */
     static int sConnecting;
 

@@ -65,14 +65,14 @@ static rtVlcState g_rtVlcEncoder;
 static rtVlcState g_rtVlcDecoder;
 
 // The block index of each coefficient in zigzag order.
-// NTSC-U/C: 0x0042db00
+// NTSC-U/C: 0x0042db00, PAL: 0x004c5800
 static const int g_anZigzag[kBlockSamples] = {
     0,  8,  1,  2,  9,  16, 24, 17, 10, 3,  4,  11, 18, 25, 32, 40, 33, 26, 19, 12, 5,  6,
     13, 20, 27, 34, 41, 48, 56, 49, 42, 35, 28, 21, 14, 7,  15, 22, 29, 36, 43, 50, 57, 58,
     51, 44, 37, 30, 23, 31, 38, 45, 52, 59, 60, 53, 46, 39, 47, 54, 61, 62, 55, 63,
 };
 
-// NTSC-U/C: 0x0042ea30
+// NTSC-U/C: 0x0042ea30, PAL: 0x004c6730
 static const rtVlcCode g_aDcCodesLuma[kDcCodeCount] = {
     {2, 0x0},
     {3, 0x2},
@@ -92,7 +92,7 @@ static const rtVlcCode g_aDcCodesLuma[kDcCodeCount] = {
     {13, 0x1ffe},
 };
 
-// NTSC-U/C: 0x0042eab0
+// NTSC-U/C: 0x0042eab0, PAL: 0x004c67b0
 static const rtVlcCode g_aDcCodesChroma[kDcCodeCount] = {
     {2, 0x0},
     {2, 0x1},
@@ -112,7 +112,7 @@ static const rtVlcCode g_aDcCodesChroma[kDcCodeCount] = {
     {15, 0x7ffe},
 };
 
-// NTSC-U/C: 0x0042eb30
+// NTSC-U/C: 0x0042eb30, PAL: 0x004c6830
 static const rtVlcCode g_aAcCodesLuma[kAcCodeCount] = {
     {4, 0xa},     {2, 0x0},     {2, 0x1},     {3, 0x4},     {4, 0xb},     {5, 0x1a},
     {7, 0x78},    {8, 0xf8},    {10, 0x3f6},  {16, 0xff82}, {16, 0xff83}, {0, 0x0},
@@ -159,7 +159,7 @@ static const rtVlcCode g_aAcCodesLuma[kAcCodeCount] = {
     {0, 0x0},     {0, 0x0},     {0, 0x0},     {0, 0x0},
 };
 
-// NTSC-U/C: 0x0042f330
+// NTSC-U/C: 0x0042f330, PAL: 0x004c7030
 static const rtVlcCode g_aAcCodesChroma[kAcCodeCount] = {
     {2, 0x0},     {2, 0x1},     {3, 0x4},     {4, 0xa},     {5, 0x18},    {5, 0x19},
     {6, 0x38},    {7, 0x78},    {9, 0x1f4},   {10, 0x3f6},  {12, 0xff4},  {0, 0x0},
@@ -212,7 +212,7 @@ static const rtVlcCode g_aAcCodesChroma[kAcCodeCount] = {
 #define LEAF(value) {{&TREE[kNodeFirstChild], &TREE[kNodeSecondChild]}, value}
 
 #define TREE g_aDcTreeLuma
-// NTSC-U/C: 0x003bfe80
+// NTSC-U/C: 0x003bfe80, PAL: 0x0043ed40
 static const rtVlcHuffNode g_aDcTreeLuma[kDcTreeNodes] = {
     BRANCH(1, 2),   BRANCH(3, 4),   BRANCH(5, 6),   LEAF(0),        BRANCH(7, 8),
     BRANCH(9, 10),  BRANCH(11, 12), LEAF(1),        LEAF(2),        LEAF(3),
@@ -223,7 +223,7 @@ static const rtVlcHuffNode g_aDcTreeLuma[kDcTreeNodes] = {
 #undef TREE
 
 #define TREE g_aDcTreeChroma
-// NTSC-U/C: 0x003bffb0
+// NTSC-U/C: 0x003bffb0, PAL: 0x0043ee70
 static const rtVlcHuffNode g_aDcTreeChroma[kDcTreeNodes] = {
     BRANCH(1, 2),   BRANCH(3, 4),   BRANCH(5, 6),   LEAF(0),        LEAF(1),
     LEAF(2),        BRANCH(7, 8),   LEAF(3),        BRANCH(9, 10),  LEAF(4),
@@ -234,7 +234,7 @@ static const rtVlcHuffNode g_aDcTreeChroma[kDcTreeNodes] = {
 #undef TREE
 
 #define TREE g_aAcTreeLuma
-// NTSC-U/C: 0x003c00e0
+// NTSC-U/C: 0x003c00e0, PAL: 0x0043efa0
 static const rtVlcHuffNode g_aAcTreeLuma[kAcTreeNodes] = {
     BRANCH(1, 2),     BRANCH(3, 4),     BRANCH(5, 6),     LEAF(0x01),       LEAF(0x02),
     BRANCH(7, 8),     BRANCH(9, 10),    LEAF(0x03),       BRANCH(11, 12),   BRANCH(13, 14),
@@ -305,7 +305,7 @@ static const rtVlcHuffNode g_aAcTreeLuma[kAcTreeNodes] = {
 #undef TREE
 
 #define TREE g_aAcTreeChroma
-// NTSC-U/C: 0x003c1020
+// NTSC-U/C: 0x003c1020, PAL: 0x0043fee0
 static const rtVlcHuffNode g_aAcTreeChroma[kAcTreeNodes] = {
     BRANCH(1, 2),     BRANCH(3, 4),     BRANCH(5, 6),     LEAF(0x00),       LEAF(0x01),
     BRANCH(7, 8),     BRANCH(9, 10),    LEAF(0x02),       BRANCH(11, 12),   BRANCH(13, 14),

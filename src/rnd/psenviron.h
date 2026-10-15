@@ -104,6 +104,7 @@ public:
  * Scale from a depth to the GS fog range, 255 over the fog distance, or 0 without fog.
  *
  * @ghidraAddress NTSC-U/C: 0x003b07e0
+ * @ghidraAddress PAL: 0x0042f678
  */
 extern float g_fogScale;
 
@@ -111,6 +112,7 @@ extern float g_fogScale;
  * Offset of the GS fog range, minus the fog end times g_fogScale, or 255 without fog.
  *
  * @ghidraAddress NTSC-U/C: 0x003b07e4
+ * @ghidraAddress PAL: 0x0042f67c
  */
 extern float g_fogOffset;
 
@@ -118,6 +120,7 @@ extern float g_fogOffset;
  * Non-zero while the current environment has fog.
  *
  * @ghidraAddress NTSC-U/C: 0x003b07e8
+ * @ghidraAddress PAL: 0x0042f680
  */
 extern int g_nFogEnabled;
 
@@ -125,6 +128,7 @@ extern int g_nFogEnabled;
  * The lighting microprogram of the current environment.
  *
  * @ghidraAddress NTSC-U/C: 0x003b07ec
+ * @ghidraAddress PAL: 0x0042f684
  */
 extern PsEnviron::LightProgram g_lightProgram;
 

@@ -301,6 +301,7 @@ public:
      * The class name a `.rnd` file writes, `Generator`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09c0
+     * @ghidraAddress PAL: 0x0042f858
      */
     static const char *sClassName;
 

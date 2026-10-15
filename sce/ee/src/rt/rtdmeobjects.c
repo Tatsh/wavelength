@@ -24,7 +24,7 @@ enum {
     kNoConnection = 4,
 };
 
-// NTSC-U/C: 0x003b6be8
+// NTSC-U/C: 0x003b6be8, PAL: 0x00435aa8
 unsigned char g_bDmeObjectRangesSent;
 // NTSC-U/C: 0x00519f20
 static RtDmeObjectRange **g_ppDmeObjectRanges;

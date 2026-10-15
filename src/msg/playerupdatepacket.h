@@ -7,6 +7,7 @@
  * Identity that PlayerUpdatePacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af71c
+ * @ghidraAddress PAL: 0x0042e5b4
  */
 extern int g_nPlayerUpdatePacketType;
 

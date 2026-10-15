@@ -69,6 +69,7 @@ public:
          * Whether a holder retains its mesh on destruction. The image never writes it.
          *
          * @ghidraAddress NTSC-U/C: 0x003af9f0
+         * @ghidraAddress PAL: 0x0042e888
          */
         static bool sKeepMeshes;
 

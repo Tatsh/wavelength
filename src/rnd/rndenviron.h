@@ -184,6 +184,7 @@ public:
      * The class name a `.rnd` file writes, `Environ`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09a8
+     * @ghidraAddress PAL: 0x0042f840
      */
     static const char *sClassName;
 
@@ -191,6 +192,7 @@ public:
      * The environment drawn last.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09ac
+     * @ghidraAddress PAL: 0x0042f844
      */
     static RndEnviron *sCurrent;
 
@@ -198,6 +200,7 @@ public:
      * The environment CreateDefault() made.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09b0
+     * @ghidraAddress PAL: 0x0042f848
      */
     static RndEnviron *sDefault;
 
@@ -205,6 +208,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09b4
+     * @ghidraAddress PAL: 0x0042f84c
      */
     static int sRev;
 

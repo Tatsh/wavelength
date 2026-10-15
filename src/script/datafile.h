@@ -4,6 +4,7 @@
  * The line of the data file being parsed.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2370
+ * @ghidraAddress PAL: 0x00431230
  */
 extern int g_nDataParseLineNumber;
 

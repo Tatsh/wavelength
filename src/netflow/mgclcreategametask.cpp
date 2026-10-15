@@ -18,7 +18,7 @@ constexpr int kWorldStatusOpen = 1;
 
 } // namespace
 
-// NTSC-U/C: 0x003b0ae4
+// NTSC-U/C: 0x003b0ae4, PAL: 0x0042f9b0
 MGCLCreateGameTask *MGCLCreateGameTask::sTask;
 
 void MGCLCreateGameTask::OnStart() {

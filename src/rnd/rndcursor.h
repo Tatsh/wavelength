@@ -234,6 +234,7 @@ public:
      * The class name a `.rnd` file writes, `Cursor`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b099c
+     * @ghidraAddress PAL: 0x0042f834
      */
     static const char *sClassName;
 
@@ -241,6 +242,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09a0
+     * @ghidraAddress PAL: 0x0042f838
      */
     static int sRev;
 

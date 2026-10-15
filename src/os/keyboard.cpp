@@ -56,7 +56,7 @@ enum Usage {
 // Function keys F1 to F12.
 constexpr unsigned int kFunctionKeyCount = 12;
 
-// NTSC-U/C: 0x003b2100
+// NTSC-U/C: 0x003b2100, PAL: 0x00430fd0
 int gActive;
 
 // NTSC-U/C: 0x0028b4b0, PAL: 0x00294ca8 (static initialiser)

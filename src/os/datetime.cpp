@@ -30,10 +30,10 @@ constexpr unsigned int kSecondsPerYear = 384 * kSecondsPerDay;
 constexpr int kYearShift = 16;
 constexpr int kMonthShift = 8;
 
-// NTSC-U/C: 0x003b20cc
+// NTSC-U/C: 0x003b20cc, PAL: 0x00430f9c
 int sClockStarted;
 
-// NTSC-U/C: 0x003b20c8
+// NTSC-U/C: 0x003b20c8, PAL: 0x00430f98
 float sNextClockRead = kNoClockRead;
 
 // NTSC-U/C: 0x0047fa68

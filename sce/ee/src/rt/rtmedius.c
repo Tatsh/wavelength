@@ -508,135 +508,135 @@ typedef struct {
     char signature[kMachineSignatureSize];
 } MediusMachineSignatureRequest;
 
-// NTSC-U/C: 0x003c25c8
+// NTSC-U/C: 0x003c25c8, PAL: 0x00441488
 short g_nMediusInitialized;
-// NTSC-U/C: 0x003c25cc
+// NTSC-U/C: 0x003c25cc, PAL: 0x0044148c
 int g_nMediusConnection = -1;
-// NTSC-U/C: 0x003c25d8
+// NTSC-U/C: 0x003c25d8, PAL: 0x00441498
 char g_szMediusSessionKey[RT_MEDIUS_SESSION_KEY_SIZE];
-// NTSC-U/C: 0x003c25f0
+// NTSC-U/C: 0x003c25f0, PAL: 0x004414b0
 rtMediusCallback g_pfnMediusErrorMessageCallback;
-// NTSC-U/C: 0x003c25f4
+// NTSC-U/C: 0x003c25f4, PAL: 0x004414b4
 rtMediusSessionBeginCallback g_pfnMediusSessionBeginCallback;
-// NTSC-U/C: 0x003c25f8
+// NTSC-U/C: 0x003c25f8, PAL: 0x004414b8
 rtMediusCallback g_pfnMediusSessionEndCallback;
-// NTSC-U/C: 0x003c25fc
+// NTSC-U/C: 0x003c25fc, PAL: 0x004414bc
 rtMediusAccountGetIdCallback g_pfnMediusAccountGetIdCallback;
-// NTSC-U/C: 0x003c2600
+// NTSC-U/C: 0x003c2600, PAL: 0x004414c0
 rtMediusLoginCallback g_pfnMediusAccountLoginCallback;
-// NTSC-U/C: 0x003c2604
+// NTSC-U/C: 0x003c2604, PAL: 0x004414c4
 rtMediusCallback g_pfnMediusAccountLogoutCallback;
-// NTSC-U/C: 0x003c2608
+// NTSC-U/C: 0x003c2608, PAL: 0x004414c8
 rtMediusCallback g_pfnMediusAccountRegistrationCallback;
-// NTSC-U/C: 0x003c260c
+// NTSC-U/C: 0x003c260c, PAL: 0x004414cc
 rtMediusCallback g_pfnMediusAccountUpdateProfileCallback;
-// NTSC-U/C: 0x003c2610
+// NTSC-U/C: 0x003c2610, PAL: 0x004414d0
 rtMediusCallback g_pfnMediusChangePasswordCallback;
-// NTSC-U/C: 0x003c2614
+// NTSC-U/C: 0x003c2614, PAL: 0x004414d4
 rtMediusCallback g_pfnMediusAccountUpdateStatsCallback;
-// NTSC-U/C: 0x003c2618
+// NTSC-U/C: 0x003c2618, PAL: 0x004414d8
 rtMediusCallback g_pfnMediusAccountGetProfileCallback;
-// NTSC-U/C: 0x003c261c
+// NTSC-U/C: 0x003c261c, PAL: 0x004414dc
 rtMediusCallback g_pfnMediusAccountDeleteCallback;
-// NTSC-U/C: 0x003c2620
+// NTSC-U/C: 0x003c2620, PAL: 0x004414e0
 rtMediusLoginCallback g_pfnMediusAnonymousLoginCallback;
-// NTSC-U/C: 0x003c2624
+// NTSC-U/C: 0x003c2624, PAL: 0x004414e4
 rtMediusChannelPlayersCallback g_pfnMediusLobbyWorldPlayerListCallback;
-// NTSC-U/C: 0x003c2628
+// NTSC-U/C: 0x003c2628, PAL: 0x004414e8
 rtMediusGamePlayersCallback g_pfnMediusGameWorldPlayerListCallback;
-// NTSC-U/C: 0x003c262c
+// NTSC-U/C: 0x003c262c, PAL: 0x004414ec
 rtMediusCallback g_pfnMediusCreateGameCallback;
-// NTSC-U/C: 0x003c2630
+// NTSC-U/C: 0x003c2630, PAL: 0x004414f0
 rtMediusCallback g_pfnMediusCreateGameOnSelfCallback;
-// NTSC-U/C: 0x003c2634
+// NTSC-U/C: 0x003c2634, PAL: 0x004414f4
 rtMediusCreateChannelCallback g_pfnMediusCreateChannelCallback;
-// NTSC-U/C: 0x003c2638
+// NTSC-U/C: 0x003c2638, PAL: 0x004414f8
 rtMediusJoinGameCallback g_pfnMediusJoinGameCallback;
-// NTSC-U/C: 0x003c263c
+// NTSC-U/C: 0x003c263c, PAL: 0x004414fc
 rtMediusJoinChannelCallback g_pfnMediusJoinChannelCallback;
-// NTSC-U/C: 0x003c2640
+// NTSC-U/C: 0x003c2640, PAL: 0x00441500
 rtMediusGameListCallback g_pfnMediusGameListCallback;
-// NTSC-U/C: 0x003c2644
+// NTSC-U/C: 0x003c2644, PAL: 0x00441504
 rtMediusChannelListCallback g_pfnMediusChannelListCallback;
-// NTSC-U/C: 0x003c2648
+// NTSC-U/C: 0x003c2648, PAL: 0x00441508
 rtMediusPlayerInfoCallback g_pfnMediusPlayerInfoCallback;
-// NTSC-U/C: 0x003c264c
+// NTSC-U/C: 0x003c264c, PAL: 0x0044150c
 rtMediusCallback g_pfnMediusGameInfoResponse0Callback;
-// NTSC-U/C: 0x003c2650
+// NTSC-U/C: 0x003c2650, PAL: 0x00441510
 rtMediusChannelInfoCallback g_pfnMediusChannelInfoCallback;
-// NTSC-U/C: 0x003c2654
+// NTSC-U/C: 0x003c2654, PAL: 0x00441514
 rtMediusCallback g_pfnMediusFindWorldByNameCallback;
-// NTSC-U/C: 0x003c2658
+// NTSC-U/C: 0x003c2658, PAL: 0x00441518
 rtMediusFindPlayerCallback g_pfnMediusFindPlayerCallback;
-// NTSC-U/C: 0x003c265c
+// NTSC-U/C: 0x003c265c, PAL: 0x0044151c
 rtMediusChatHandler g_pfnMediusChatFwdMessageCallback;
-// NTSC-U/C: 0x003c2660
+// NTSC-U/C: 0x003c2660, PAL: 0x00441520
 rtMediusCallback g_pfnMediusGetBuddyListCallback;
-// NTSC-U/C: 0x003c2664
+// NTSC-U/C: 0x003c2664, PAL: 0x00441524
 rtMediusCallback g_pfnMediusAddToBuddyListCallback;
-// NTSC-U/C: 0x003c2668
+// NTSC-U/C: 0x003c2668, PAL: 0x00441528
 rtMediusCallback g_pfnMediusRemoveFromBuddyListCallback;
-// NTSC-U/C: 0x003c266c
+// NTSC-U/C: 0x003c266c, PAL: 0x0044152c
 rtMediusCallback g_pfnMediusAddToBuddyListFwdConfirmationRequest0Callback;
-// NTSC-U/C: 0x003c2670
+// NTSC-U/C: 0x003c2670, PAL: 0x00441530
 rtMediusCallback g_pfnMediusAddToBuddyListConfirmationCallback;
-// NTSC-U/C: 0x003c2674
+// NTSC-U/C: 0x003c2674, PAL: 0x00441534
 rtMediusCallback g_pfnMediusGetIgnoreListCallback;
-// NTSC-U/C: 0x003c2678
+// NTSC-U/C: 0x003c2678, PAL: 0x00441538
 rtMediusCallback g_pfnMediusAddToIgnoreListCallback;
-// NTSC-U/C: 0x003c267c
+// NTSC-U/C: 0x003c267c, PAL: 0x0044153c
 rtMediusCallback g_pfnMediusRemoveFromIgnoreListCallback;
-// NTSC-U/C: 0x003c2680
+// NTSC-U/C: 0x003c2680, PAL: 0x00441540
 rtMediusPolicyCallback g_pfnMediusPolicyCallback;
-// NTSC-U/C: 0x003c2684
+// NTSC-U/C: 0x003c2684, PAL: 0x00441544
 rtMediusAnnouncementCallback g_pfnMediusGetAnnouncementsCallback;
-// NTSC-U/C: 0x003c2688
+// NTSC-U/C: 0x003c2688, PAL: 0x00441548
 rtMediusCallback g_pfnMediusSetGameListFilterResponse0Callback;
-// NTSC-U/C: 0x003c268c
+// NTSC-U/C: 0x003c268c, PAL: 0x0044154c
 rtMediusCallback g_pfnMediusClearGameListFilterCallback;
-// NTSC-U/C: 0x003c2690
+// NTSC-U/C: 0x003c2690, PAL: 0x00441550
 rtMediusCallback g_pfnMediusGetGameListFilterResponse0Callback;
-// NTSC-U/C: 0x003c2694
+// NTSC-U/C: 0x003c2694, PAL: 0x00441554
 rtMediusVersionCallback g_pfnMediusVersionServerCallback;
-// NTSC-U/C: 0x003c2698
+// NTSC-U/C: 0x003c2698, PAL: 0x00441558
 rtMediusCallback g_pfnMediusGetMyIPCallback;
-// NTSC-U/C: 0x003c269c
+// NTSC-U/C: 0x003c269c, PAL: 0x0044155c
 rtMediusCallback g_pfnMediusGetWorldSecurityLevelCallback;
-// NTSC-U/C: 0x003c26a0
+// NTSC-U/C: 0x003c26a0, PAL: 0x00441560
 rtMediusCallback g_pfnMediusBanPlayerCallback;
-// NTSC-U/C: 0x003c26a4
+// NTSC-U/C: 0x003c26a4, PAL: 0x00441564
 rtMediusCallback g_pfnMediusGetLocationsCallback;
-// NTSC-U/C: 0x003c26a8
+// NTSC-U/C: 0x003c26a8, PAL: 0x00441568
 rtMediusCallback g_pfnMediusPickLocationCallback;
-// NTSC-U/C: 0x003c26ac
+// NTSC-U/C: 0x003c26ac, PAL: 0x0044156c
 rtMediusLadderPositionCallback g_pfnMediusLadderPositionCallback;
-// NTSC-U/C: 0x003c26b0
+// NTSC-U/C: 0x003c26b0, PAL: 0x00441570
 rtMediusLadderPositionCallback g_pfnMediusLadderPositionFastCallback;
-// NTSC-U/C: 0x003c26b4
+// NTSC-U/C: 0x003c26b4, PAL: 0x00441594
 rtMediusLadderListCallback g_pfnMediusLadderListCallback;
-// NTSC-U/C: 0x003c26b8
+// NTSC-U/C: 0x003c26b8, PAL: 0x00441578
 rtMediusCallback g_pfnMediusChatToggleCallback;
-// NTSC-U/C: 0x003c26bc
+// NTSC-U/C: 0x003c26bc, PAL: 0x0044157c
 rtMediusTextFilterCallback g_pfnMediusTextFilterCallback;
-// NTSC-U/C: 0x003c26c0
+// NTSC-U/C: 0x003c26c0, PAL: 0x00441580
 rtMediusCallback g_pfnMediusServerReassignGameMediusWorldIDCallback;
-// NTSC-U/C: 0x003c26c4
+// NTSC-U/C: 0x003c26c4, PAL: 0x00441584
 rtMediusCallback g_pfnMediusGetTotalGamesCallback;
-// NTSC-U/C: 0x003c26c8
+// NTSC-U/C: 0x003c26c8, PAL: 0x00441588
 rtMediusCallback g_pfnMediusGetTotalChannelsCallback;
-// NTSC-U/C: 0x003c26cc
+// NTSC-U/C: 0x003c26cc, PAL: 0x0044158c
 rtMediusCallback g_pfnMediusGetLobbyPlayerNamesCallback;
-// NTSC-U/C: 0x003c26d0
+// NTSC-U/C: 0x003c26d0, PAL: 0x00441590
 rtMediusCallback g_pfnMediusGetTotalUsersCallback;
-// NTSC-U/C: 0x003c26d4
+// NTSC-U/C: 0x003c26d4, PAL: 0x00441594
 rtMediusCallback g_pfnMediusSetLocalizationParamsCallback;
-// NTSC-U/C: 0x003c26d8
+// NTSC-U/C: 0x003c26d8, PAL: 0x00441598
 rtMediusCallback g_pfnMediusSetMessageAsReadCallback;
-// NTSC-U/C: 0x003c26dc
+// NTSC-U/C: 0x003c26dc, PAL: 0x0044159c
 rtMediusCallback g_pfnMediusGetUniverseInformationCallback;
-// NTSC-U/C: 0x003c26e0
+// NTSC-U/C: 0x003c26e0, PAL: 0x004415a0
 rtMediusCallback g_pfnMediusUniverseNewsCallback;
-// NTSC-U/C: 0x003c26e4
+// NTSC-U/C: 0x003c26e4, PAL: 0x004415a4
 rtMediusCallback g_pfnMediusUniverseStatusListCallback;
 // NTSC-U/C: 0x004357f4
 rtMediusFileCallback g_pfnMediusFileCreateCallback;
@@ -1133,17 +1133,17 @@ rtMediusCallback g_pfnMediusUpdateClanStatsCallback;
 // NTSC-U/C: 0x00435bcc
 rtMediusCallback g_pfnMediusGetClanMemberListCallback;
 
-// NTSC-U/C: 0x003c25d0
+// NTSC-U/C: 0x003c25d0, PAL: 0x00441490
 static unsigned int g_uMediusKeepAliveMs;
-// NTSC-U/C: 0x003c25d4
+// NTSC-U/C: 0x003c25d4, PAL: 0x00441494
 static unsigned int g_uMediusLastKeepAlive;
-// NTSC-U/C: 0x003c25ec
+// NTSC-U/C: 0x003c25ec, PAL: 0x004414ac
 static int g_nMediusLastError;
-// NTSC-U/C: 0x003c26e8
+// NTSC-U/C: 0x003c26e8, PAL: 0x004415a8
 static int g_nMediusQueryState;
-// NTSC-U/C: 0x003c26ec
+// NTSC-U/C: 0x003c26ec, PAL: 0x004415ac
 static int g_nMediusPendingKind = kPendingNone;
-// NTSC-U/C: 0x003c26f0
+// NTSC-U/C: 0x003c26f0, PAL: 0x004415b0
 static rtMediusConnectCallback g_pfnMediusConnectCallback;
 // NTSC-U/C: 0x0052d140
 static rtNetAddress g_mediusServerAddress;

@@ -99,9 +99,9 @@ typedef struct {
     };
 } __attribute__((aligned(64))) PadRpcBuffer;
 
-// NTSC-U/C: 0x003c2af8
+// NTSC-U/C: 0x003c2af8, PAL: 0x00458f38
 static int isInit = 0;
-// NTSC-U/C: 0x003c2afc
+// NTSC-U/C: 0x003c2afc, PAL: 0x00458f3c
 static int isWarning = 1;
 
 // NTSC-U/C: 0x0052f380

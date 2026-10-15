@@ -7,6 +7,7 @@
  * The mark EndChunk() sends and ChunkStream::Mark() recognises, `chunk`.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2360
+ * @ghidraAddress PAL: 0x00431220
  */
 extern const char *g_szChunkMark;
 

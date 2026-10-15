@@ -56,7 +56,7 @@
     .data
     .align 3
 
-# NTSC-U/C: 0x003c5060
+# NTSC-U/C: 0x003c5060, PAL: 0x0045b4a8
     .globl g_alarmPatch
 g_alarmPatch:
 AlarmPatchStart:
@@ -593,7 +593,7 @@ AlarmReturnFromHandler:
     .word kSyscallAlarmReturn, kAlarmPatchBase + kAlarmReturnFromHandlerOffset
     .org AlarmPatchStart + kAlarmPatchSize
 
-# NTSC-U/C: 0x003c57a0
+# NTSC-U/C: 0x003c57a0, PAL: 0x0045bbe8
 # Calls an alarm handler in user mode on its own stack and returns to the kernel afterwards.
     .globl g_alarmTrampoline
 g_alarmTrampoline:

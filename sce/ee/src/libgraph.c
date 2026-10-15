@@ -65,7 +65,7 @@ typedef union {
     u_long128 mQuads[2];
 } Vif1InitPacket;
 
-// NTSC-U/C: 0x003c29b0
+// NTSC-U/C: 0x003c29b0, PAL: 0x00458df0
 static const Vif1InitPacket g_dwVif1InitPacket = {{0x01000404U,
                                                    0x20000000U,
                                                    0U,
@@ -75,7 +75,7 @@ static const Vif1InitPacket g_dwVif1InitPacket = {{0x01000404U,
                                                    0x02000000U,
                                                    0x04000000U}};
 
-// NTSC-U/C: 0x003c2a60
+// NTSC-U/C: 0x003c2a60, PAL: 0x00458ea0
 static GsState g_GsStateBlock = {1, 2, 1, 3, NULL, 0};
 
 // Mode words of the state block, and the vertical blank start bit of the interrupt controller.
@@ -663,7 +663,7 @@ static inline int StoreImageWaitFifo(int *pSpins) {
 int sceGsExecStoreImage(sceGsStoreImage *pStoreImage, void *pDest) {
     // The MSKPATH3 code restored to the VIF1 FIFO after image store work, padded with three NOP
     // codes.
-    // NTSC-U/C: 0x003c2a70
+    // NTSC-U/C: 0x003c2a70, PAL: 0x00458eb0
     static const u_long128 init_mp3 = 0x06000000U;
 
     volatile unsigned long long *words = (volatile unsigned long long *)pStoreImage;

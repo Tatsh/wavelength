@@ -143,7 +143,7 @@ typedef struct {
     unsigned short nKeyCode;
 } UsbKbKeypadEntry;
 
-// NTSC-U/C: 0x003c2aa8
+// NTSC-U/C: 0x003c2aa8, PAL: 0x00458ee8
 static int g_nUsbKbSemaId = -1;
 
 // NTSC-U/C: 0x0052d5c0
@@ -181,7 +181,8 @@ static UsbKbReply g_UsbKbRpcRecvBuffer __attribute__((aligned(64)));
 // NTSC-U/C: 0x0052d790
 static UsbKbStatus g_aUsbKbState[USBKB_MAX_STATUS];
 
-// NTSC-U/C: 0x004310e8, the characters of each USB usage by layout and shift state.
+// NTSC-U/C: 0x004310e8, PAL: 0x004cdd98, the characters of each USB usage by layout and shift
+// state.
 static const unsigned short g_awUsbKbAsciiTable[kArrangementCount][kShiftStateCount]
                                                [kKeyCodeCount] = {
                                                    {
@@ -600,7 +601,7 @@ static const unsigned short g_awUsbKbAsciiTable[kArrangementCount][kShiftStateCo
                                                    },
 };
 
-// NTSC-U/C: 0x00431ce8, the keypad keys with Num Lock off and on.
+// NTSC-U/C: 0x00431ce8, PAL: 0x004ce998, the keypad keys with Num Lock off and on.
 static const UsbKbKeypadEntry g_aUsbKbKeypadTable[kNumLockStateCount][kKeypadEntryCount] = {
     {
         {0x53, USBKB_RAWDAT | 0x53},
@@ -980,7 +981,7 @@ static int SetResult_SetLEDMode(void) {
     return 0;
 }
 
-// NTSC-U/C: 0x003c2a90, the result handlers by request.
+// NTSC-U/C: 0x003c2a90, PAL: 0x00458ed0, the result handlers by request.
 static int (*g_apfnUsbKbResultHandlers[])(void) = {
     [kRpcGetInfo] = SetResult_GetInfo,
     [kRpcRead] = SetResult_Read,

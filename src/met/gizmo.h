@@ -157,6 +157,7 @@ private:
      * The elapsed time at which a move starts to show, `panel_gizmo_begin_frame`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8cc
+     * @ghidraAddress PAL: 0x0042e760
      */
     static float sBeginFrame;
 
@@ -164,6 +165,7 @@ private:
      * The first frame of the move's curve, `panel_gizmo_anim_start`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8d0
+     * @ghidraAddress PAL: 0x0042e764
      */
     static float sAnimStart;
 
@@ -171,6 +173,7 @@ private:
      * The last frame of the move's curve, `panel_gizmo_anim_end`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8d4
+     * @ghidraAddress PAL: 0x0042e768
      */
     static float sAnimEnd;
 
@@ -178,6 +181,7 @@ private:
      * How sharply the move eases, `panel_gizmo_interp_severity`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8d8
+     * @ghidraAddress PAL: 0x0042e76c
      */
     static float sSeverity;
 };

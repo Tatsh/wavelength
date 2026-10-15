@@ -75,7 +75,7 @@ void MetaStartScreen::Exit(UIScreen *pNextScreen, float fTime) {
 }
 
 void MetaStartScreen::LaunchAttract() {
-    // NTSC-U/C: 0x003af88c
+    // NTSC-U/C: 0x003af88c, PAL: 0x0042e728
     static int sAttractSong = kNoAttractSong;
 
     int nEnabled = 0;

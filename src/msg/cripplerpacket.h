@@ -7,6 +7,7 @@
  * Identity that CripplerPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af72c
+ * @ghidraAddress PAL: 0x0042e5c4
  */
 extern int g_nCripplerPacketType;
 

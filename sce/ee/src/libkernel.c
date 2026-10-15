@@ -76,7 +76,7 @@ typedef void (*PutCharFunction)(int c);
 // The fraction printfloat() prints has six digits.
 static const double kFractionScale = 1000000.0;
 
-// NTSC-U/C: 0x003c47bc
+// NTSC-U/C: 0x003c47bc, PAL: 0x0045ac04
 static int topId;
 
 // NTSC-U/C: 0x00532ba0
@@ -407,7 +407,7 @@ int kputs(char *s) {
 // NTSC-U/C: 0x00533780
 static char linebuf[kConsoleLineSize];
 
-// NTSC-U/C: 0x003c47c0
+// NTSC-U/C: 0x003c47c0, PAL: 0x0045ac08
 static int count;
 
 int kputchar(int c) {
@@ -449,7 +449,7 @@ static void serialPutchar(int c) {
     kputchar(c);
 }
 
-// NTSC-U/C: 0x003c47c4
+// NTSC-U/C: 0x003c47c4, PAL: 0x0045ac0c
 static PutCharFunction _putchar = serialPutchar;
 
 // NTSC-U/C: 0x00318350, PAL: 0x00384c68

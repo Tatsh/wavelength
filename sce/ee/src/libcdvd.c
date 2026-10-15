@@ -160,47 +160,47 @@ typedef union {
     CdStreamPacket mStream;
 } CdNCmdPacket;
 
-// NTSC-U/C: 0x003c2b90
+// NTSC-U/C: 0x003c2b90, PAL: 0x00458fd0
 static int g_nCdDebug;
-// NTSC-U/C: 0x003c2b94
+// NTSC-U/C: 0x003c2b94, PAL: 0x00458fd4
 static int g_nCdCallbackThreadId;
-// NTSC-U/C: 0x003c2b98
+// NTSC-U/C: 0x003c2b98, PAL: 0x00458fd8
 static int g_nCdSCmdCurrent;
-// NTSC-U/C: 0x003c2b9c
+// NTSC-U/C: 0x003c2b9c, PAL: 0x00458fdc
 static int g_nCdNCmdCurrent;
-// NTSC-U/C: 0x003c2ba0
+// NTSC-U/C: 0x003c2ba0, PAL: 0x00458fe0
 static int g_nCdCallbackSemaId = kNoSemaphore;
-// NTSC-U/C: 0x003c2ba4. Nonzero while sceCdInit() or the handler installation runs. The power-off
-// notice is ignored then.
+// NTSC-U/C: 0x003c2ba4, PAL: 0x00458fe4. Nonzero while sceCdInit() or the handler installation
+// runs. The power-off notice is ignored then.
 static volatile int g_bCdPOffBlocked;
-// NTSC-U/C: 0x003c2ba8
+// NTSC-U/C: 0x003c2ba8, PAL: 0x00458fe8
 static int g_nCdNCmdSemaId = kNoSemaphore;
-// NTSC-U/C: 0x003c2bac
+// NTSC-U/C: 0x003c2bac, PAL: 0x00458fec
 static int g_nCdSCmdSemaId = kNoSemaphore;
-// NTSC-U/C: 0x003c2bb0
+// NTSC-U/C: 0x003c2bb0, PAL: 0x00458ff0
 static int g_nCdDiskReadySemaId = kNoSemaphore;
-// NTSC-U/C: 0x003c2bb4. Nonzero from the start of an asynchronous N-command until its callback
-// has run.
+// NTSC-U/C: 0x003c2bb4, PAL: 0x00458ff4. Nonzero from the start of an asynchronous N-command until
+// its callback has run.
 static volatile int g_bCdCallbackPending;
-// NTSC-U/C: 0x003c2bb8. Only sceCdInit() writes the read mode, and it writes zero.
+// NTSC-U/C: 0x003c2bb8, PAL: 0x00458ff8. Only sceCdInit() writes the read mode, and it writes zero.
 static int g_nCdEeReadMode;
-// NTSC-U/C: 0x003c2bbc
+// NTSC-U/C: 0x003c2bbc, PAL: 0x00458ffc
 static int g_nCdNCmdBound = kUnbound;
-// NTSC-U/C: 0x003c2bc0
+// NTSC-U/C: 0x003c2bc0, PAL: 0x00459000
 static int g_nCdPOffInstalled = kUnbound;
-// NTSC-U/C: 0x003c2bc4
+// NTSC-U/C: 0x003c2bc4, PAL: 0x00459004
 static int g_nCdSearchFileBound = kUnbound;
-// NTSC-U/C: 0x003c2bc8
+// NTSC-U/C: 0x003c2bc8, PAL: 0x00459008
 static int g_nCdDiskReadyBound = kUnbound;
-// NTSC-U/C: 0x003c2bcc
+// NTSC-U/C: 0x003c2bcc, PAL: 0x0045900c
 static int g_nCdSCmdBound = kUnbound;
-// NTSC-U/C: 0x003c2bd0
+// NTSC-U/C: 0x003c2bd0, PAL: 0x00459010
 static int g_nCdInitBound = kUnbound;
-// NTSC-U/C: 0x003c2bd4
+// NTSC-U/C: 0x003c2bd4, PAL: 0x00459014
 static int g_nCdInitCount;
-// NTSC-U/C: 0x003c2bd8
+// NTSC-U/C: 0x003c2bd8, PAL: 0x0045ab68
 static CdSCmdCall g_cdMmodeCall = {kSCmdFuncMmode, sizeof(unsigned int), sizeof(unsigned int)};
-// NTSC-U/C: 0x003c2be4
+// NTSC-U/C: 0x003c2be4, PAL: 0x00459018
 static volatile int g_nCdCallbackFunction;
 // NTSC-U/C: 0x003c2be8
 static volatile int g_nCdCallbackReport;
@@ -214,15 +214,15 @@ static CdNCmdPacket g_cdNCmdSend __attribute__((aligned(kCacheLine)));
 static CdReadEdges g_cdReadEdges __attribute__((aligned(kCacheLine)));
 static volatile unsigned int g_nCdReadProgress __attribute__((aligned(kCacheLine)));
 static sceSifClientData g_cdNCmdClient __attribute__((aligned(kCacheLine)));
-// NTSC-U/C: 0x003c3d80
+// NTSC-U/C: 0x003c3d80, PAL: 0x0045a1c0
 static unsigned int g_anCdSCmdReceive[kCacheLine / sizeof(unsigned int)]
     __attribute__((aligned(kCacheLine)));
-// NTSC-U/C: 0x003c41c0
+// NTSC-U/C: 0x003c41c0, PAL: 0x0045a600
 static unsigned int g_nCdSCmdSend __attribute__((aligned(kCacheLine)));
 // NTSC-U/C: 0x003c4600
 static unsigned int g_anCdDiskReadyReceive[kCacheLine / sizeof(unsigned int)]
     __attribute__((aligned(kCacheLine)));
-// NTSC-U/C: 0x003c4700
+// NTSC-U/C: 0x003c4700, PAL: 0x0045ab40
 static sceSifClientData g_cdSCmdClient __attribute__((aligned(kCacheLine)));
 
 // NTSC-U/C: 0x00530dc0

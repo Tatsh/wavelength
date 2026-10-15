@@ -10,6 +10,7 @@
  * Identity that KeyboardKeyMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b2118
+ * @ghidraAddress PAL: 0x00430fe8
  */
 extern int g_nKeyboardKeyMsgType;
 

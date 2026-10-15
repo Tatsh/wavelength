@@ -51,7 +51,7 @@ typedef struct {
     int *pSoftwareRegisters;
 } SifCmdState;
 
-// NTSC-U/C: 0x003c47c8
+// NTSC-U/C: 0x003c47c8, PAL: 0x0045ac10
 static int g_nCmdInitialized = 0;
 
 // NTSC-U/C: 0x00533800, where the SIF0 channel delivers each packet from the IOP.

@@ -64,5 +64,6 @@ public:
  * The network transport.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0cac
+ * @ghidraAddress PAL: 0x0042fb7c
  */
 extern NetTransport *TheNetTransport;

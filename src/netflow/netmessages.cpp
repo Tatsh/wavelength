@@ -181,107 +181,107 @@ int ReadByte(BinStream &stream) {
 
 } // namespace
 
-// NTSC-U/C: 0x003b0b04
+// NTSC-U/C: 0x003b0b04, PAL: 0x0042f9d0
 int g_nInetConfigsResultMsgType = 301;
-// NTSC-U/C: 0x003b0b08
+// NTSC-U/C: 0x003b0b08, PAL: 0x0042f9d4
 int g_nInetConnectStatusMsgType = 302;
-// NTSC-U/C: 0x003b0b0c
+// NTSC-U/C: 0x003b0b0c, PAL: 0x0042f9d8
 int g_nInetConnectResultMsgType = 303;
-// NTSC-U/C: 0x003b0b10
+// NTSC-U/C: 0x003b0b10, PAL: 0x0042f9dc
 int g_nInetDisconnectResultMsgType = 304;
-// NTSC-U/C: 0x003b0b14
+// NTSC-U/C: 0x003b0b14, PAL: 0x0042f9e0
 int g_nInetDNSLookupResultMsgType = 305;
-// NTSC-U/C: 0x003b0b18
+// NTSC-U/C: 0x003b0b18, PAL: 0x0042f9e4
 int g_nInetCheckConnectionResultMsgType = 306;
-// NTSC-U/C: 0x003b0b1c
+// NTSC-U/C: 0x003b0b1c, PAL: 0x0042f9e8
 int g_nLobbyConnectionLostMsgType = 307;
 // NTSC-U/C: 0x003b0b20
 int g_nLobbyConnectResultMsgType = 308;
-// NTSC-U/C: 0x003b0b24
+// NTSC-U/C: 0x003b0b24, PAL: 0x0042f9f4
 int g_nCreateAccountResultMsgType = 309;
 // NTSC-U/C: 0x003b0b28
 int g_nDeleteAccountResultMsgType = 310;
-// NTSC-U/C: 0x003b0b2c
+// NTSC-U/C: 0x003b0b2c, PAL: 0x0042f9fc
 int g_nChangePasswordResultMsgType = 311;
-// NTSC-U/C: 0x003b0b30
+// NTSC-U/C: 0x003b0b30, PAL: 0x0042fa00
 int g_nLoginResultMsgType = 312;
-// NTSC-U/C: 0x003b0b34
+// NTSC-U/C: 0x003b0b34, PAL: 0x0042fa04
 int g_nLobbyDisconnectResultMsgType = 313;
-// NTSC-U/C: 0x003b0b38
+// NTSC-U/C: 0x003b0b38, PAL: 0x0042fa08
 int g_nLobbyPlayersMsgType = 314;
-// NTSC-U/C: 0x003b0b3c
+// NTSC-U/C: 0x003b0b3c, PAL: 0x0042fa0c
 int g_nPlayerRankMsgType = 315;
-// NTSC-U/C: 0x003b0b40
+// NTSC-U/C: 0x003b0b40, PAL: 0x0042fa10
 int g_nFindPlayerMsgType = 316;
-// NTSC-U/C: 0x003b0b44
+// NTSC-U/C: 0x003b0b44, PAL: 0x0042fa14
 int g_nLobbyChatroomsMsgType = 317;
-// NTSC-U/C: 0x003b0b48
+// NTSC-U/C: 0x003b0b48, PAL: 0x0042fa18
 int g_nLobbyLaunchpadsMsgType = 318;
-// NTSC-U/C: 0x003b0b4c
+// NTSC-U/C: 0x003b0b4c, PAL: 0x0042fa1c
 int g_nJoinChatroomResultMsgType = 319;
-// NTSC-U/C: 0x003b0b50
+// NTSC-U/C: 0x003b0b50, PAL: 0x0042fa20
 int g_nRepoRemixStatusMsgType = 320;
-// NTSC-U/C: 0x003b0b54
+// NTSC-U/C: 0x003b0b54, PAL: 0x0042fa24
 int g_nRepoRemixesMsgType = 321;
-// NTSC-U/C: 0x003b0b58
+// NTSC-U/C: 0x003b0b58, PAL: 0x0042fa28
 int g_nFileListMsgType = 322;
-// NTSC-U/C: 0x003b0b5c
+// NTSC-U/C: 0x003b0b5c, PAL: 0x0042fa2c
 int g_nRemixDownloadMsgType = 323;
-// NTSC-U/C: 0x003b0b60
+// NTSC-U/C: 0x003b0b60, PAL: 0x0042fa30
 int g_nHostLaunchpadSuccessMsgType = 324;
-// NTSC-U/C: 0x003b0b64
+// NTSC-U/C: 0x003b0b64, PAL: 0x0042fa34
 int g_nJoinLaunchpadSuccessMsgType = 325;
-// NTSC-U/C: 0x003b0b68
+// NTSC-U/C: 0x003b0b68, PAL: 0x0042fa38
 int g_nLaunchpadAbortedMsgType = 326;
-// NTSC-U/C: 0x003b0b6c
+// NTSC-U/C: 0x003b0b6c, PAL: 0x0042fa3c
 int g_nGameParamsUpdateMsgType = 327;
-// NTSC-U/C: 0x003b0b70
+// NTSC-U/C: 0x003b0b70, PAL: 0x0042fa40
 int g_nShareRemixBeginMsgType = 328;
-// NTSC-U/C: 0x003b0b74
+// NTSC-U/C: 0x003b0b74, PAL: 0x0042fa44
 int g_nShareRemixProgressMsgType = 329;
-// NTSC-U/C: 0x003b0b78
+// NTSC-U/C: 0x003b0b78, PAL: 0x0042fa48
 int g_nLoadGameMsgType = 330;
-// NTSC-U/C: 0x003b0b7c
+// NTSC-U/C: 0x003b0b7c, PAL: 0x0042fa4c
 int g_nStartGameMsgType = 331;
-// NTSC-U/C: 0x003b0b80
+// NTSC-U/C: 0x003b0b80, PAL: 0x0042fa50
 int g_nGameEndedMsgType = 332;
-// NTSC-U/C: 0x003b0b84
+// NTSC-U/C: 0x003b0b84, PAL: 0x0042fa54
 int g_nPlayerAbortedMsgType = 333;
-// NTSC-U/C: 0x003b0b88
+// NTSC-U/C: 0x003b0b88, PAL: 0x0042fa58
 int g_nChatMsgType = 334;
-// NTSC-U/C: 0x003b0b8c
+// NTSC-U/C: 0x003b0b8c, PAL: 0x0042fa5c
 int g_nWelcomePktType = kWelcomePktType;
-// NTSC-U/C: 0x003b0b90
+// NTSC-U/C: 0x003b0b90, PAL: 0x0042fa60
 int g_nJoinFailedPktType = kJoinFailedPktType;
-// NTSC-U/C: 0x003b0b94
+// NTSC-U/C: 0x003b0b94, PAL: 0x0042fa64
 int g_nClientInfoPktType = kClientInfoPktType;
-// NTSC-U/C: 0x003b0b98
+// NTSC-U/C: 0x003b0b98, PAL: 0x0042fa68
 int g_nClientStatusPktType = kClientStatusPktType;
-// NTSC-U/C: 0x003b0b9c
+// NTSC-U/C: 0x003b0b9c, PAL: 0x0042fa6c
 int g_nClientRatingPktType = kClientRatingPktType;
-// NTSC-U/C: 0x003b0ba0
+// NTSC-U/C: 0x003b0ba0, PAL: 0x0042fa70
 int g_nTimeRequestPktType = kTimeRequestPktType;
-// NTSC-U/C: 0x003b0ba4
+// NTSC-U/C: 0x003b0ba4, PAL: 0x0042fa74
 int g_nTimeResponsePktType = kTimeResponsePktType;
-// NTSC-U/C: 0x003b0ba8
+// NTSC-U/C: 0x003b0ba8, PAL: 0x0042fa78
 int g_nGameParamsPktType = kGameParamsPktType;
-// NTSC-U/C: 0x003b0bac
+// NTSC-U/C: 0x003b0bac, PAL: 0x0042fa7c
 int g_nBootPktType = kBootPktType;
-// NTSC-U/C: 0x003b0bb0
+// NTSC-U/C: 0x003b0bb0, PAL: 0x0042fa80
 int g_nShareRemixPktType = kShareRemixPktType;
-// NTSC-U/C: 0x003b0bb4
+// NTSC-U/C: 0x003b0bb4, PAL: 0x0042fa84
 int g_nDataAckPktType = kDataAckPktType;
-// NTSC-U/C: 0x003b0bb8
+// NTSC-U/C: 0x003b0bb8, PAL: 0x0042fa88
 int g_nDataBlockPktType = kDataBlockPktType;
-// NTSC-U/C: 0x003b0bbc
+// NTSC-U/C: 0x003b0bbc, PAL: 0x0042fa8c
 int g_nLoadGamePktType = kLoadGamePktType;
-// NTSC-U/C: 0x003b0bc0
+// NTSC-U/C: 0x003b0bc0, PAL: 0x0042fa90
 int g_nStartGamePktType = kStartGamePktType;
-// NTSC-U/C: 0x003b0bc4
+// NTSC-U/C: 0x003b0bc4, PAL: 0x0042fa94
 int g_nClientAbortedPktType = kClientAbortedPktType;
-// NTSC-U/C: 0x003b0bc8
+// NTSC-U/C: 0x003b0bc8, PAL: 0x0042fa98
 int g_nGameOverPktType = kGameOverPktType;
-// NTSC-U/C: 0x003b0bcc
+// NTSC-U/C: 0x003b0bcc, PAL: 0x0042fa9c
 int g_nUpdateRanksPktType = kUpdateRanksPktType;
 
 Message *WelcomePkt::New() {

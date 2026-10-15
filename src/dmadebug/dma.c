@@ -93,25 +93,25 @@ enum { MAX_RANGES = 4 };
 // Capacity of the report line of a tag.
 enum { TAG_LINE_SIZE = 1024 };
 
-// NTSC-U/C: 0x003b24e8
+// NTSC-U/C: 0x003b24e8, PAL: 0x004313a8
 // Names of the tag identifiers.
 static const char *g_apszDmaTagNames[] = {
     "REFE", "CNT", "NEXT", "REF", "REFS", "CALL", "RET", "END"};
 
-// NTSC-U/C: 0x003b2508
+// NTSC-U/C: 0x003b2508, PAL: 0x004313c8
 // Names of the channels.
 static const char *g_apszDmaChannelNames[] = {
     "VIF0", "VIF1", "GIF", "fromIPU", "toIPU", "SIF0", "SIF1", "SIF2", "fromSPR", "toSPR"};
 
-// NTSC-U/C: 0x003b2530
+// NTSC-U/C: 0x003b2530, PAL: 0x004313f0
 // Names of the PCE values of a tag.
 static const char *g_apszDmaPriorityNames[] = {"No priority", "*RESERVED*", "Disabled", "Enabled"};
 
-// NTSC-U/C: 0x003b2540
+// NTSC-U/C: 0x003b2540, PAL: 0x00431400
 // The last valid address of main memory.
 static unsigned int g_dwMainRamTop = 0x7ffffff;
 
-// NTSC-U/C: 0x003b2544
+// NTSC-U/C: 0x003b2544, PAL: 0x00431404
 // Non-zero when the mirrors of VU0 data memory are valid addresses.
 static int g_nDmaUseMirrors = 0;
 
@@ -119,7 +119,7 @@ static int g_nDmaUseMirrors = 0;
 // Non-zero when each tag is reported.
 static int g_nDmaDebugPrintEnabled = 1;
 
-// NTSC-U/C: 0x003b254c
+// NTSC-U/C: 0x003b254c, PAL: 0x0043140c
 // Non-zero when the end of a chain reports the tag statistics.
 static int g_nDmaStatsEnabled = 1;
 

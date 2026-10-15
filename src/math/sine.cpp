@@ -24,14 +24,14 @@ enum Quadrant { kQuadrantRising = 0, kQuadrantFalling = 1, kQuadrantNegative = 2
 constexpr int kQuadrantMask = 3;
 
 // The quarter-wave entries.
-// NTSC-U/C: 0x003b2350
+// NTSC-U/C: 0x003b2350, PAL: 0x00431210
 int gSinTableSize = 32;
 
-// NTSC-U/C: 0x003b2354
+// NTSC-U/C: 0x003b2354, PAL: 0x00431214
 float *gSinTable;
 
 // Each quarter-wave entry less the one before it.
-// NTSC-U/C: 0x003b2358
+// NTSC-U/C: 0x003b2358, PAL: 0x00431218
 float *gSinSlopes;
 
 // The quarter-wave entries per radian.

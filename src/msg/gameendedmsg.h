@@ -10,6 +10,7 @@
  * Identity that GameEndedMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b80
+ * @ghidraAddress PAL: 0x0042fa50
  */
 extern int g_nGameEndedMsgType;
 

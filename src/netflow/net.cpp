@@ -12,7 +12,7 @@
 
 namespace {
 
-// NTSC-U/C: 0x003b0bd0
+// NTSC-U/C: 0x003b0bd0, PAL: 0x0042faa0
 // The network connection InitializeNetSubsystem() builds.
 InetImpl *gInetImpl;
 

@@ -90,6 +90,7 @@ public:
      * The records Store() kept, created on first use.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcdc
+     * @ghidraAddress PAL: 0x0042eb74
      */
     static std::list<LocalizeErrors> *sRecords;
 
@@ -97,6 +98,7 @@ public:
      * The number of uses of each token, created on first use.
      *
      * @ghidraAddress NTSC-U/C: 0x003afce0
+     * @ghidraAddress PAL: 0x0042eb78
      */
     static std::map<String, int> *sTokenCounts;
 };

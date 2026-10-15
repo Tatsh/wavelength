@@ -21,7 +21,7 @@ enum {
 #define RANDOM_TEMPER_MASK_C 0xefc60000U
 
 // The state has one word more than the generator uses. RtSeedRandomFromArray() writes it.
-// NTSC-U/C: 0x003b61b0
+// NTSC-U/C: 0x003b61b0, PAL: 0x00435070
 static unsigned int g_auRandomState[kRandomStateSize + 1];
 // An index past the state makes the first draw seed the generator.
 // NTSC-U/C: 0x003b6b74

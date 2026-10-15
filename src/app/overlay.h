@@ -723,6 +723,7 @@ public:
      * The time the head-up display takes to assemble, `assembly_time`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af918
+     * @ghidraAddress PAL: 0x0042e7ac
      */
     static float sAssemblyTime;
 
@@ -737,6 +738,7 @@ public:
      * The scale of the points that fly off a score, `hud_points_scale`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af93c
+     * @ghidraAddress PAL: 0x0042e7d0
      */
     static float sPointsScale;
 
@@ -744,6 +746,7 @@ public:
      * The ticks the points of a duel take to move, `duel_points_move_ticks`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af940
+     * @ghidraAddress PAL: 0x0042e7d4
      */
     static float sDuelPointsMoveTicks;
 
@@ -751,6 +754,7 @@ public:
      * One over sDuelPointsMoveTicks.
      *
      * @ghidraAddress NTSC-U/C: 0x003af944
+     * @ghidraAddress PAL: 0x0042e7d8
      */
     static float sDuelPointsMoveRate;
 

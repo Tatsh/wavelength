@@ -37,7 +37,7 @@ inline int StorageBytes(int nSize) {
 
 } // namespace
 
-// NTSC-U/C: 0x003b2364
+// NTSC-U/C: 0x003b2364, PAL: 0x00431224
 static int g_nDataArrayIndentLevel = 0;
 
 // NTSC-U/C: 0x005132b0

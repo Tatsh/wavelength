@@ -210,6 +210,7 @@ public:
      * The class name a `.rnd` file writes, `TransAnim`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a5c
+     * @ghidraAddress PAL: 0x0042f8f4
      */
     static const char *sClassName;
 

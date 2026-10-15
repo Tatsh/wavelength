@@ -81,15 +81,15 @@ enum {
 // The methods of the encryption header that pad the data to whole RSA blocks.
 #define RECORD_METHOD_PUBLIC 0xe0000000U
 
-// NTSC-U/C: 0x003b6cc4
+// NTSC-U/C: 0x003b6cc4, PAL: 0x00435b84
 unsigned char g_bChannelsStarted;
-// NTSC-U/C: 0x003b6cc8
+// NTSC-U/C: 0x003b6cc8, PAL: 0x00435b88
 unsigned short g_uChannelCount;
-// NTSC-U/C: 0x003b6ccc
+// NTSC-U/C: 0x003b6ccc, PAL: 0x00435b8c
 RtChannel **g_ppChannels;
-// NTSC-U/C: 0x003b6cd0
+// NTSC-U/C: 0x003b6cd0, PAL: 0x00435b90
 unsigned char *g_pbChannelScratch;
-// NTSC-U/C: 0x003b6cd4
+// NTSC-U/C: 0x003b6cd4, PAL: 0x00435b94
 unsigned int g_uChannelScratchSize;
 // The connection request RtChannelSendConnect() builds.
 // NTSC-U/C: 0x005205b0

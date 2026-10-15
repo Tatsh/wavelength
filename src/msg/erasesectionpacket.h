@@ -7,6 +7,7 @@
  * Identity that EraseSectionPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af75c
+ * @ghidraAddress PAL: 0x0042e5f4
  */
 extern int g_nEraseSectionPacketType;
 

@@ -80,6 +80,7 @@ public:
      * The time the ghost of a dropped level takes to fade, `juice_ghost_fade_time`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af91c
+     * @ghidraAddress PAL: 0x0042e7b0
      */
     static float sGhostFadeTime;
 
@@ -87,6 +88,7 @@ public:
      * The half period of the warning's blink, `juice_dying_blink_time`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af920
+     * @ghidraAddress PAL: 0x0042e7b4
      */
     static float sWarningBlinkTime;
 
@@ -102,6 +104,7 @@ public:
      * The part of the current blink of a low bar still to run.
      *
      * @ghidraAddress NTSC-U/C: 0x003af94c
+     * @ghidraAddress PAL: 0x0042e7e0
      */
     static float sBlinkLeft;
 

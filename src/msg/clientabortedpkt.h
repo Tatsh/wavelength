@@ -7,6 +7,7 @@
  * Identity that ClientAbortedPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0bc4
+ * @ghidraAddress PAL: 0x0042fa94
  */
 extern int g_nClientAbortedPktType;
 

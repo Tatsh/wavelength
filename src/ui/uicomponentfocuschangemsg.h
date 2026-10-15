@@ -13,6 +13,7 @@
  * Identity that UIComponentFocusChangeMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003afcf4
+ * @ghidraAddress PAL: 0x0042eb8c
  */
 extern int g_nUIComponentFocusChangeMsgType;
 

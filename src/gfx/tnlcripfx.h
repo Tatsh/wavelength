@@ -107,38 +107,49 @@ public:
      */
     void GetWaveTracks(char *pnTrack, char *pnPrevTrack) const;
 
-    /** The milliseconds of the flight, `crippler_fly_time`. @ghidraAddress NTSC-U/C: 0x003afb28 */
+    /** The milliseconds of the flight, `crippler_fly_time`. @ghidraAddress NTSC-U/C: 0x003afb28,
+     * PAL: 0x0042e9c0 */
     static float sFlyTime;
-    /** The milliseconds the view shows after landing. @ghidraAddress NTSC-U/C: 0x003afb2c */
+    /** The milliseconds the view shows after landing. @ghidraAddress NTSC-U/C: 0x003afb2c, PAL:
+     * 0x0042e9c4 */
     static float sFadeTime;
-    /** The milliseconds of the wave, `crippler_wave_time`. @ghidraAddress NTSC-U/C: 0x003afb30 */
+    /** The milliseconds of the wave, `crippler_wave_time`. @ghidraAddress NTSC-U/C: 0x003afb30,
+     * PAL: 0x0042e9c8 */
     static float sWaveTime;
-    /** The radians per tick of the two waves. @ghidraAddress NTSC-U/C: 0x003afb34 */
+    /** The radians per tick of the two waves. @ghidraAddress NTSC-U/C: 0x003afb34, PAL: 0x0042e9cc
+     */
     static float sSpatialFreqs[2];
-    /** The radians per millisecond of the two waves. @ghidraAddress NTSC-U/C: 0x003afb3c */
+    /** The radians per millisecond of the two waves. @ghidraAddress NTSC-U/C: 0x003afb3c, PAL:
+     * 0x0042e9d4 */
     static float sTimeFreqs[2];
-    /** `crippler_wave_death_length`. The image never reads it. @ghidraAddress NTSC-U/C: 0x003afb44
+    /** `crippler_wave_death_length`. The image never reads it. @ghidraAddress NTSC-U/C: 0x003afb44,
+     * PAL: 0x0042e9dc
      */
     static float sWaveDeathLength;
-    /** The heights of the two waves. @ghidraAddress NTSC-U/C: 0x003afb48 */
+    /** The heights of the two waves. @ghidraAddress NTSC-U/C: 0x003afb48, PAL: 0x0042e9e0 */
     static float sWaveMagnitudes[2];
-    /** The ticks per millisecond of the flight. @ghidraAddress NTSC-U/C: 0x003afb50 */
+    /** The ticks per millisecond of the flight. @ghidraAddress NTSC-U/C: 0x003afb50, PAL:
+     * 0x0042e9e8 */
     static float sTickVelocity;
-    /** The height the flight starts at. @ghidraAddress NTSC-U/C: 0x003afb54 */
+    /** The height the flight starts at. @ghidraAddress NTSC-U/C: 0x003afb54, PAL: 0x0042e9ec */
     static float sStartHeight;
-    /** The rise per millisecond the flight starts with. @ghidraAddress NTSC-U/C: 0x003afb58 */
+    /** The rise per millisecond the flight starts with. @ghidraAddress NTSC-U/C: 0x003afb58, PAL:
+     * 0x0042e9f0 */
     static float sStartHeightVelocity;
-    /** The change of the rise per millisecond. @ghidraAddress NTSC-U/C: 0x003afb5c */
+    /** The change of the rise per millisecond. @ghidraAddress NTSC-U/C: 0x003afb5c, PAL: 0x0042e9f4
+     */
     static float sHeightAcceleration;
-    /** The kick a landing gives the camera. @ghidraAddress NTSC-U/C: 0x003afb60 */
+    /** The kick a landing gives the camera. @ghidraAddress NTSC-U/C: 0x003afb60, PAL: 0x0042e9f8 */
     static float sImpactCamJiggle;
-    /** The largest twist of the wave in radians. @ghidraAddress NTSC-U/C: 0x003afb64 */
+    /** The largest twist of the wave in radians. @ghidraAddress NTSC-U/C: 0x003afb64, PAL:
+     * 0x0042e9fc */
     static float sMaxTwist;
-    /** The radians per tick of the twist. @ghidraAddress NTSC-U/C: 0x003afb68 */
+    /** The radians per tick of the twist. @ghidraAddress NTSC-U/C: 0x003afb68, PAL: 0x0042ea00 */
     static float sTwistFreq;
-    /** The particles of the cripplers, `crippler.part`. @ghidraAddress NTSC-U/C: 0x003afb8c */
+    /** The particles of the cripplers, `crippler.part`. @ghidraAddress NTSC-U/C: 0x003afb8c, PAL:
+     * 0x0042ea24 */
     static RndParticleSys *sParticles;
-    /** The frame of sParticles. @ghidraAddress NTSC-U/C: 0x003afb90 */
+    /** The frame of sParticles. @ghidraAddress NTSC-U/C: 0x003afb90, PAL: 0x0042ea28 */
     static float sParticleFrame;
 
     char mState;        /*!< The phase, one of State. */

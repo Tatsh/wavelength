@@ -112,6 +112,7 @@ public:
      * The bytes AllocHunk() has handed out.
      *
      * @ghidraAddress NTSC-U/C: 0x003b2420
+     * @ghidraAddress PAL: 0x004312e0
      */
     static int sHunkBytes;
 

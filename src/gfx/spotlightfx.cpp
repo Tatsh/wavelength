@@ -21,9 +21,9 @@ constexpr int kInitialTransforms = 96;
 // A light this many ticks behind the song is dropped.
 constexpr float kTrailTicks = 960.0f;
 
-// NTSC-U/C: 0x003afb98
+// NTSC-U/C: 0x003afb98, PAL: 0x0042ea30
 float sFadeEndTicks = 960.0f;
-// NTSC-U/C: 0x003afb9c
+// NTSC-U/C: 0x003afb9c, PAL: 0x0042ea34
 float sFadeStartTicks = 480.0f;
 
 // The static initialiser of the unit, and the routine that runs it to construct the scales of the

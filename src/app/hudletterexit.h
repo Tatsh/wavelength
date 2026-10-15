@@ -107,6 +107,7 @@ public:
      * The letters of `AMPLITUDE`.
      *
      * @ghidraAddress NTSC-U/C: 0x003af950
+     * @ghidraAddress PAL: 0x0042e7e4
      */
     static const char *sLetters;
 

@@ -103,7 +103,7 @@ enum {
     kHalvesPerFrame = 2,
 };
 
-// NTSC-U/C: 0x003b6e5c
+// NTSC-U/C: 0x003b6e5c, PAL: 0x00435d1c
 static unsigned int g_nProfileTimerBase;
 
 // NTSC-U/C: 0x004357d8
@@ -115,13 +115,13 @@ static unsigned int g_dwDeviceBytesSent;
 // NTSC-U/C: 0x004357e0
 static unsigned int g_dwDeviceBytesRecv;
 
-// NTSC-U/C: 0x003b6e60
+// NTSC-U/C: 0x003b6e60, PAL: 0x00435d20
 static unsigned int g_dwRandSeed;
 
-// NTSC-U/C: 0x003b6e64
+// NTSC-U/C: 0x003b6e64, PAL: 0x00435d24
 static unsigned int g_nMonotonicTickCount = 1;
 
-// NTSC-U/C: 0x003b6e68
+// NTSC-U/C: 0x003b6e68, PAL: 0x00435d28
 static unsigned int g_nTickClockBase;
 
 // A wire record as a connection sends it.

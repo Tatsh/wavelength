@@ -255,7 +255,7 @@ static struct gif_tag g_gifTag;
 // The description FormatPrimitive() builds.
 static char g_szGifPrimDescription[PRIMITIVE_DESCRIPTION_SIZE];
 
-// NTSC-U/C: 0x003b2580
+// NTSC-U/C: 0x003b2580, PAL: 0x00431440
 // The GS registers the decoder knows.
 static const struct gs_register g_aGsRegisters[] = {
     {0x42,
@@ -779,21 +779,21 @@ static const struct gs_register g_aGsRegisters[] = {
 // Entries of g_aGsRegisters.
 enum { GS_REGISTER_COUNT = sizeof(g_aGsRegisters) / sizeof(g_aGsRegisters[0]) };
 
-// NTSC-U/C: 0x003b6000
+// NTSC-U/C: 0x003b6000, PAL: 0x00434ec0
 // The Q value of the last ST written in PACKED mode, as float bits.
 static unsigned int g_dwGifQ = 0;
 
-// NTSC-U/C: 0x003b6004
+// NTSC-U/C: 0x003b6004, PAL: 0x00434ec4
 // Non-zero when reports give field descriptions and raw words.
 static int g_nGifVerboseAttrs = 1;
 
-// NTSC-U/C: 0x003b6008
+// NTSC-U/C: 0x003b6008, PAL: 0x00434ec8
 // Names of the attribute bits of PRIM. The ninth entry repeats what the binary reads past the
 // eight names, the first entry of g_apszGifPrimAttrValues.
 static const char *g_apszGifPrimAttrNames[PRIMITIVE_ATTRIBUTES + 1] = {
     "IIP", "TME", "FGE", "ABE", "AA1", "FST", "CTXT", "FIX", "Gouraud"};
 
-// NTSC-U/C: 0x003b6028
+// NTSC-U/C: 0x003b6028, PAL: 0x00434ee8
 // Meanings of the attribute bits of PRIM. The ninth entry repeats what the binary reads past the
 // eight meanings, the first entry of g_apszGifRegNames.
 static const char *g_apszGifPrimAttrValues[PRIMITIVE_ATTRIBUTES + 1] = {"Gouraud",
@@ -806,7 +806,7 @@ static const char *g_apszGifPrimAttrValues[PRIMITIVE_ATTRIBUTES + 1] = {"Gouraud
                                                                         "Fragment control fixed",
                                                                         "PRIM"};
 
-// NTSC-U/C: 0x003b6048
+// NTSC-U/C: 0x003b6048, PAL: 0x00434f08
 // Names of the REGS values of a GIF tag.
 static const char *g_apszGifRegNames[GIF_REG_COUNT] = {"PRIM",
                                                        "RGBAQ",
@@ -826,7 +826,7 @@ static const char *g_apszGifRegNames[GIF_REG_COUNT] = {"PRIM",
                                                        "A+D",
                                                        "NOP"};
 
-// NTSC-U/C: 0x003b6088
+// NTSC-U/C: 0x003b6088, PAL: 0x00434f48
 // Names of the FLG values of a GIF tag.
 static const char *g_apszGifFlagNames[] = {"PACKED", "REGLIST", "IMAGE  ", "Disable"};
 

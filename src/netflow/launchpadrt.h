@@ -630,6 +630,7 @@ public:
      * The registered type of the packets of the session.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0abc
+     * @ghidraAddress PAL: 0x0042f988
      */
     static int sMessageType;
 
@@ -637,6 +638,7 @@ public:
      * Non-zero once the game server library is ready.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ac0
+     * @ghidraAddress PAL: 0x0042f98c
      */
     static int sMgclReady;
 
@@ -644,6 +646,7 @@ public:
      * A count that changes whenever the players of the session change.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ad4
+     * @ghidraAddress PAL: 0x0042f9a0
      */
     static int sPlayersVersion;
 
@@ -651,6 +654,7 @@ public:
      * The NetHostTask or NetConnectTask that waits for OnNetConnect(), or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0ae0
+     * @ghidraAddress PAL: 0x0042f9ac
      */
     static NetTask *sNetTask;
 };
@@ -659,5 +663,6 @@ public:
  * The online session, or null outside one.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ac4
+ * @ghidraAddress PAL: 0x0042f990
  */
 extern LaunchpadRT *TheLaunchpadRT;

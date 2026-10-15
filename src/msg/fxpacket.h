@@ -7,6 +7,7 @@
  * Identity that FXPacket::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003af74c
+ * @ghidraAddress PAL: 0x0042e5e4
  */
 extern int g_nFXPacketType;
 

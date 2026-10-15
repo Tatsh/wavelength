@@ -10,6 +10,7 @@
  * Identity that LobbyPlayersMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b38
+ * @ghidraAddress PAL: 0x0042fa08
  */
 extern int g_nLobbyPlayersMsgType;
 

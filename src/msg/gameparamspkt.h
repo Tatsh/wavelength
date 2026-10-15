@@ -8,6 +8,7 @@
  * Identity that GameParamsPkt::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ba8
+ * @ghidraAddress PAL: 0x0042fa78
  */
 extern int g_nGameParamsPktType;
 

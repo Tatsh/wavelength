@@ -159,6 +159,7 @@ public:
      * The class name a `.rnd` file writes, `MeshAnim`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09f4
+     * @ghidraAddress PAL: 0x0042f88c
      */
     static const char *sClassName;
 
@@ -166,6 +167,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b09f8
+     * @ghidraAddress PAL: 0x0042f890
      */
     static int sRev;
 

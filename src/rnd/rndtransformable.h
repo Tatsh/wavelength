@@ -211,6 +211,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a58
+     * @ghidraAddress PAL: 0x0042f8f0
      */
     static int sRev;
 

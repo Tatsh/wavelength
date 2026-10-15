@@ -211,6 +211,7 @@ public:
      * The class name a `.rnd` file writes, `View`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a64
+     * @ghidraAddress PAL: 0x0042f8fc
      */
     static const char *sClassName;
 
@@ -218,6 +219,7 @@ public:
      * The format version Save() writes and Load() accepts.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a68
+     * @ghidraAddress PAL: 0x0042f900
      */
     static int sRev;
 

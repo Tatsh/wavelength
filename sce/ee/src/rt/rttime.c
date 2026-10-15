@@ -13,7 +13,7 @@ enum {
     kMaxMillisecondSeconds = 4294967,
 };
 
-// NTSC-U/C: 0x003b6d1c
+// NTSC-U/C: 0x003b6d1c, PAL: 0x00435bdc
 static unsigned char g_bBaseTimeRead;
 // NTSC-U/C: 0x005219f8
 static RtTime g_baseTime;

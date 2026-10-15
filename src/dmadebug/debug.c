@@ -32,19 +32,19 @@ enum { MESSAGE_LINE_SIZE = 10240 };
 // Capacity of a formatted field or message.
 enum { FIELD_SIZE = 1024 };
 
-// NTSC-U/C: 0x003b24d8
+// NTSC-U/C: 0x003b24d8, PAL: 0x00431398
 // Non-zero once DEBUG_init() has run.
 static int g_nDebugModuleInited = 0;
 
-// NTSC-U/C: 0x003b24dc
+// NTSC-U/C: 0x003b24dc, PAL: 0x0043139c
 // Entries of g_anDebugWarnMasks in use, or -1 when every warning is masked.
 static int g_nDebugWarnMaskCount = 0;
 
-// NTSC-U/C: 0x003b24e0
+// NTSC-U/C: 0x003b24e0, PAL: 0x004313a0
 // The output buffer, g_nDebugBufferSizeKb kilobytes.
 static char *g_pDebugOutputBuffer = NULL;
 
-// NTSC-U/C: 0x003b24e4
+// NTSC-U/C: 0x003b24e4, PAL: 0x004313a4
 // Non-zero when a full output buffer discards its oldest lines.
 static int g_nDebugScrollEnabled = 1;
 

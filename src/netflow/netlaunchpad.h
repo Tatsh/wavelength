@@ -129,5 +129,6 @@ public:
  * The online session, or null outside one.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0ad0
+ * @ghidraAddress PAL: 0x0042f99c
  */
 extern NetLaunchpad *TheNetLaunchpad;

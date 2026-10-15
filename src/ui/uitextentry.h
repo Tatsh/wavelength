@@ -235,6 +235,7 @@ private:
      * Milliseconds between changes of the blinking caret.
      *
      * @ghidraAddress NTSC-U/C: 0x003afcc8
+     * @ghidraAddress PAL: 0x0042eb60
      */
     static float sBlinkMs;
 };

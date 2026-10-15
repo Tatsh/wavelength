@@ -93,6 +93,7 @@ public:
      * The height of the glow particle above a mesh gem, `gem_particle_height`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afba0
+     * @ghidraAddress PAL: 0x0042ea38
      */
     static float sParticleHeight;
 
@@ -100,6 +101,7 @@ public:
      * The height of a sprite gem as a raise of PlaceCell(), one less `sprite_gem_height`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afba4
+     * @ghidraAddress PAL: 0x0042ea3c
      */
     static float sSpriteHeight;
 
@@ -107,6 +109,7 @@ public:
      * The size of the flash of a sprite gem as a multiple of its particle size.
      *
      * @ghidraAddress NTSC-U/C: 0x003afba8
+     * @ghidraAddress PAL: 0x0042ea40
      */
     static float sFlareFlashSize;
 
@@ -114,6 +117,7 @@ public:
      * One over `gem_flare_flash_time`, a multiple of the particle size of a sprite gem.
      *
      * @ghidraAddress NTSC-U/C: 0x003afbac
+     * @ghidraAddress PAL: 0x0042ea44
      */
     static float sFlareFlashRate;
 
@@ -121,6 +125,7 @@ public:
      * The size of the flash of a mesh gem, `gem_mesh_flash_size`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afbb0
+     * @ghidraAddress PAL: 0x0042ea48
      */
     static float sMeshFlashSize;
 
@@ -128,6 +133,7 @@ public:
      * The world length of a tick divided by `gem_mesh_flash_time`, the growth of a mesh flash.
      *
      * @ghidraAddress NTSC-U/C: 0x003afbb4
+     * @ghidraAddress PAL: 0x0042ea4c
      */
     static float sMeshFlashRate;
 

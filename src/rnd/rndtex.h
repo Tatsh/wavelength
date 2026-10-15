@@ -210,6 +210,7 @@ public:
      * The class name a `.rnd` file writes, `Tex`.
      *
      * @ghidraAddress NTSC-U/C: 0x003b0a48
+     * @ghidraAddress PAL: 0x0042f8e0
      */
     static const char *sClassName;
 

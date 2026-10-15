@@ -111,6 +111,7 @@ public:
      * The milliseconds the enable effect rises, holds lit, and fades, `track_activate_lengths`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afad8
+     * @ghidraAddress PAL: 0x0042e970
      */
     static float sEnableTimes[3];
 
@@ -119,6 +120,7 @@ public:
      * `autocapture_anim_times`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afae8
+     * @ghidraAddress PAL: 0x0042e980
      */
     static float sCaptureTimes[3];
 
@@ -126,6 +128,7 @@ public:
      * The height a capture raises the track, `autocapture_offset_height` times the scroll speed.
      *
      * @ghidraAddress NTSC-U/C: 0x003afaf4
+     * @ghidraAddress PAL: 0x0042e98c
      */
     static float sCaptureHeight;
 
@@ -134,6 +137,7 @@ public:
      * scroll speed.
      *
      * @ghidraAddress NTSC-U/C: 0x003afaf8
+     * @ghidraAddress PAL: 0x0042e990
      */
     static float sEnableHeight;
 
@@ -141,6 +145,7 @@ public:
      * The ticks ahead of the song a capture spews from, `autocapture_burst_tick`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afafc
+     * @ghidraAddress PAL: 0x0042e994
      */
     static float sCaptureSpewTicks;
 
@@ -148,6 +153,7 @@ public:
      * The kick a capture gives the camera, `autocapture_cam_jiggle`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb00
+     * @ghidraAddress PAL: 0x0042e998
      */
     static float sCaptureCamJiggle;
 
@@ -155,6 +161,7 @@ public:
      * The alpha of the overlay of a capture, `autocapture_track_brightness`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb04
+     * @ghidraAddress PAL: 0x0042e99c
      */
     static float sCaptureBrightness;
 
@@ -170,6 +177,7 @@ public:
      * The particle system a capture spews from, `autocapture spew.part`.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb6c
+     * @ghidraAddress PAL: 0x0042ea04
      */
     static RndParticleSys *sSpew;
 
@@ -177,6 +185,7 @@ public:
      * The frame of sSpew, which each capture advances.
      *
      * @ghidraAddress NTSC-U/C: 0x003afb70
+     * @ghidraAddress PAL: 0x0042ea08
      */
     static float sSpewFrame;
 

@@ -138,6 +138,7 @@ private:
      * The state, one of State.
      *
      * @ghidraAddress NTSC-U/C: 0x003af890
+     * @ghidraAddress PAL: 0x0042e72c
      */
     static int sState;
 
@@ -145,6 +146,7 @@ private:
      * The stream of the clip that plays, or null.
      *
      * @ghidraAddress NTSC-U/C: 0x003af894
+     * @ghidraAddress PAL: 0x0042e730
      */
     static StreamPlayer *sPlayer;
 
@@ -152,6 +154,7 @@ private:
      * The output level of the clip.
      *
      * @ghidraAddress NTSC-U/C: 0x003af898
+     * @ghidraAddress PAL: 0x0042e734
      */
     static float sVolume;
 
@@ -159,6 +162,7 @@ private:
      * The volume the clip gains on each Poll(), negative while it fades out.
      *
      * @ghidraAddress NTSC-U/C: 0x003af89c
+     * @ghidraAddress PAL: 0x0042e738
      */
     static float sFadeRate;
 
@@ -166,6 +170,7 @@ private:
      * The size of a fade step, the value Stop() was given.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8a0
+     * @ghidraAddress PAL: 0x0042e73c
      */
     static float sFadeStep;
 
@@ -173,6 +178,7 @@ private:
      * Whether the effects of the menu music return once the clip has stopped.
      *
      * @ghidraAddress NTSC-U/C: 0x003af8a4
+     * @ghidraAddress PAL: 0x0042e740
      */
     static int sRestoreMusic;
 
