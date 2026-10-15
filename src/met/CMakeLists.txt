@@ -91,6 +91,7 @@ set(WAVELENGTH_MET_SRCS
     neteulascreen.cpp
     netflashupdate.cpp
     netfoundplayerpanel.cpp
+    netgetalluploadsscreen.cpp
     netgetdownloadsscreen.cpp
     nethostattemptscreen.cpp
     nethostingscreen.cpp
@@ -121,6 +122,8 @@ set(WAVELENGTH_MET_SRCS
     netrankedplayerspanel.cpp
     netrankingscreen.cpp
     netreadonlywarnscreen.cpp
+    netrepostoolscreen.cpp
+    netsavereposlistscreen.cpp
     netsearchscreen.cpp
     netserverlogin.cpp
     netserverselscreen.cpp
@@ -130,6 +133,7 @@ set(WAVELENGTH_MET_SRCS
     netsortedlaunchpadspanel.cpp
     netsortedscreen.cpp
     netswitchlobbyscreen.cpp
+    netuploadtoolscreen.cpp
     netwelcomescreen.cpp
     nocontrollerscreen.cpp
     numplayersscreen.cpp
@@ -156,6 +160,7 @@ set(WAVELENGTH_MET_SRCS
     remixselectscreen.cpp
     remixsongscreen.cpp
     remixtypescreen.cpp
+    repostoollist.cpp
     saveeditedfreqscreen.cpp
     saveerrorscreen.cpp
     savefreqscreen.cpp
@@ -185,6 +190,7 @@ set(WAVELENGTH_MET_SRCS
     unlockavatarpanel.cpp
     unlockscreen.cpp
     uploadnotescreen.cpp
+    uploadtoollist.cpp
     viewanimplayer.cpp
     xproceedscreen.cpp)
 

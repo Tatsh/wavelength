@@ -29,7 +29,7 @@ public:
      * Release the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x003597e0
-     * @ghidraAddress PAL: 0x003c9d08
+     * @ghidraAddress PAL: 0x003c6b48
      */
     ~NetServerSelScreen() override {
     }
@@ -40,7 +40,7 @@ public:
      * @param pData The description of the screen.
      * @return The screen.
      * @ghidraAddress NTSC-U/C: 0x003598a0
-     * @ghidraAddress PAL: 0x003c9dc8
+     * @ghidraAddress PAL: 0x003c6c08
      */
     static UIScreen *New(DataArray *pData) {
         return new NetServerSelScreen(pData);

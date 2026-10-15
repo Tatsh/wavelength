@@ -187,6 +187,14 @@
 #include "met/unlockscreen.h"
 #include "met/uploadnotescreen.h"
 #include "met/xproceedscreen.h"
+#ifdef VIDEO_STANDARD_PAL
+#include "met/netgetalluploadsscreen.h"
+#include "met/netrepostoolscreen.h"
+#include "met/netsavereposlistscreen.h"
+#include "met/netuploadtoolscreen.h"
+#include "met/repostoollist.h"
+#include "met/uploadtoollist.h"
+#endif
 #include "netflow/lobbymsgtypes.h"
 #include "netflow/netlaunchpad.h"
 #include "netflow/netlaunchpadplayer.h"
@@ -703,6 +711,12 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(ReadOnlyCheckScreen::New, "read_only_check_screen");
     TheUI.RegisterScreenType(ReadOnlySaveScreen::New, "read_only_save_screen");
     TheUI.RegisterScreenType(NetReadOnlyWarnScreen::New, "net_ro_warn_screen");
+#ifdef VIDEO_STANDARD_PAL
+    TheUI.RegisterScreenType(NetGetAllUploadsScreen::New, "get_all_uploads_screen");
+    TheUI.RegisterScreenType(NetUploadToolScreen::New, "upload_tool_screen");
+    TheUI.RegisterScreenType(NetReposToolScreen::New, "repos_tool_screen");
+    TheUI.RegisterScreenType(NetSaveReposListScreen::New, "save_repos_tool_screen");
+#endif
     TheUI.RegisterScreenType(TransitionErrorScreen::New, "trans_error_screen");
     TheUI.RegisterScreenType(LoadFreqScreen::New, "load_freq_screen");
     TheUI.RegisterScreenType(MultiLoadFreqScreen::New, "multi_load_freq_screen");
@@ -743,6 +757,10 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterComponentType(SongSelList::New, "song_list_comp");
     TheUI.RegisterComponentType(PlayList::New, "play_list_comp");
     TheUI.RegisterComponentType(ChatTextEntry::New, "chat_entry_comp");
+#ifdef VIDEO_STANDARD_PAL
+    TheUI.RegisterComponentType(UploadToolList::New, "upload_tool_list_comp");
+    TheUI.RegisterComponentType(ReposToolList::New, "repos_tool_list_comp");
+#endif
     TheUI.RegisterComponentType(NetMainLobbiesList::New, "lobbies_list_comp");
     TheUI.RegisterComponentType(NetMainPlayersList::New, "players_list_comp");
     TheUI.RegisterComponentType(NetRankedPlayersList::New, "ranked_list_comp");

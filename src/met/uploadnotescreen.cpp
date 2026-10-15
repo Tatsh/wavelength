@@ -5,6 +5,9 @@
 #include "met/keyboardpanel.h"
 #include "met/keyboardrequest.h"
 #include "met/netdouploadscreen.h"
+#ifdef VIDEO_STANDARD_PAL
+#include "met/netrepostoolscreen.h"
+#endif
 #include "os/joypad.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -20,10 +23,17 @@ constexpr char kKeyboardPanel[] = "keyboard";
 constexpr char kKeyboardScreen[] = "kb_screen";
 constexpr char kUploadScreen[] = "fn_do_upload";
 constexpr char kNoText[] = "";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kReposToolScreen[] = "fn_repos_tool";
+#endif
 
 // The keyboard request of the note.
 constexpr int kKeyboardPad = 0;
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kNoCharLimit = -1;
+#else
 constexpr int kNoCharLimit = 0;
+#endif
 constexpr int kNoFunctionKeys = 0;
 constexpr int kNoInvalidChars = 0;
 constexpr int kShowText = 0;
@@ -31,6 +41,9 @@ constexpr int kShowText = 0;
 } // namespace
 
 UploadNoteScreen::UploadNoteScreen(DataArray *pData) : FreqScreen(pData) {
+#ifdef VIDEO_STANDARD_PAL
+    pData->FindBool("is_tool", &mIsTool, false);
+#endif
 }
 
 void UploadNoteScreen::Enter(UIScreen *pPrevScreen, float fTime) {
@@ -103,6 +116,15 @@ bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 bool UploadNoteScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (pMsg->mButton == kPadCross && std::strcmp(pMsg->mComponent->mName, kUploadButton) == 0) {
         UIComponent *pNote = TheUI.FindComponent(kNotePanel, kNoteEntry, false);
+#ifdef VIDEO_STANDARD_PAL
+        if (mIsTool != 0) {
+            auto *pRepos =
+                dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false));
+            pRepos->mNote = pNote->Text();
+            TheUI.GotoScreen(pRepos);
+            return UIScreen::HandleSelect(pMsg);
+        }
+#endif
         NetDoUploadScreen *pUpload =
             dynamic_cast<NetDoUploadScreen *>(TheUI.FindScreen(kUploadScreen, false));
         pUpload->mNote = pNote->Text();

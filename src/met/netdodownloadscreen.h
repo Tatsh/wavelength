@@ -2,6 +2,9 @@
 
 #include "met/freqscreen.h"
 #include "msg/reporemixstatusmsg.h"
+#ifdef VIDEO_STANDARD_PAL
+#include "msg/remixdownloadmsg.h"
+#endif
 #include "os/string.h"
 #include "script/dataarray.h"
 #include "ui/uiscreen.h"
@@ -27,7 +30,7 @@ public:
      * Release the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x0035b2b0
-     * @ghidraAddress PAL: 0x003c8dc0
+     * @ghidraAddress PAL: 0x003c8e08
      */
     ~NetDoDownloadScreen() override {
     }
@@ -103,4 +106,27 @@ private:
      * @ghidraAddress PAL: 0x00183e20
      */
     bool HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg);
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Act on a downloaded file of the upload tool. A failed download removes the file from the
+     * upload tool. Otherwise the screen `fn_do_download_tool` adds the remix to the repository
+     * tool, and the screens `fn_do_download_preview_game` and `fn_do_download_preview_remix`
+     * start the remix as a practice game or in the remix editor.
+     *
+     * The name is inferred.
+     *
+     * @param pMsg The message.
+     * @return False.
+     * @ghidraAddress PAL: 0x001839d8
+     */
+    bool HandleRemixDownload(RemixDownloadMsg *pMsg);
+
+public:
+    /** The value of mUploadIndex when the file is not one of the upload tool's. */
+    static constexpr int kNoUploadIndex = -1;
+
+    /** The file of the upload tool being downloaded, or kNoUploadIndex. */
+    int mUploadIndex = kNoUploadIndex;
+#endif
 };

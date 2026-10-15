@@ -94,7 +94,8 @@ private:
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
     /**
-     * Pass the note to NetDoUploadScreen when `upload` is chosen.
+     * Pass the note to NetDoUploadScreen, or in the PAL build to the repository tool when mIsTool
+     * is set, when `upload` is chosen.
      *
      * The name is inferred.
      *
@@ -129,5 +130,13 @@ private:
      */
     bool HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg);
 
+public:
     String mKeyboardText; /*!< The text the keyboard typed, or empty. */
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * `is_tool`, non-zero when the `upload` button passes the note to the repository tool
+     * `fn_repos_tool` instead of NetDoUploadScreen.
+     */
+    int mIsTool = 0;
+#endif
 };

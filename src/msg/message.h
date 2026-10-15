@@ -116,6 +116,18 @@ public:
      */
     virtual void restoreGuts(BinStream &stream);
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Write the class name and the payload of this message to a diagnostic stream in braces.
+     *
+     * The name is inferred.
+     *
+     * @param stream The stream to write to.
+     * @ghidraAddress PAL: 0x002a6830
+     */
+    void Print(PrnStream &stream) const;
+#endif
+
     /**
      * Produce a message of the identified class through the factory list.
      *

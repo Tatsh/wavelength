@@ -918,6 +918,7 @@ netflashupdate
 netflow
 netfoundplayerpanel
 netgameparams
+netgetalluploadsscreen
 netgetdownloadsscreen
 netgui
 nethostattemptscreen
@@ -955,6 +956,8 @@ netrankedplayerslist
 netrankedplayerspanel
 netrankingscreen
 netreadonlywarnscreen
+netrepostoolscreen
+netsavereposlistscreen
 netsearchscreen
 netserverlogin
 netserverselscreen
@@ -966,6 +969,7 @@ netsortedscreen
 netswitchlobbyscreen
 nettask
 nettmp
+netuploadtoolscreen
 netwelcome
 netwelcomescreen
 neuro
@@ -1189,6 +1193,7 @@ remixtutorial
 remixtypescreen
 remoteplayer
 repbuf
+repostoollist
 reserv
 rgbaq
 rgbaqaddr
@@ -1596,6 +1601,7 @@ unpickable
 unrecovered
 updateclientstatetask
 uploadnotescreen
+uploadtoollist
 usbd
 usbkb
 usbkbd
