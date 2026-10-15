@@ -100,7 +100,7 @@ public:
      * @param pMsg The message.
      * @return Whether the message was handled.
      * @ghidraAddress NTSC-U/C: 0x00209460
-     * @ghidraAddress PAL: 0x00212198
+     * @ghidraAddress PAL: 0x00212260
      */
     bool Dispatch(Message *pMsg) override;
 
@@ -158,6 +158,7 @@ public:
      * @param bForce Hide the panel at once instead of animating.
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00209398
+     * @ghidraAddress PAL: 0x00212198
      */
     virtual void Exit(bool bForce, float fTime);
 

@@ -31,7 +31,7 @@ public:
      * Destroy the panel.
      *
      * @ghidraAddress NTSC-U/C: 0x00366d00
-     * @ghidraAddress PAL: 0x003d53e8
+     * @ghidraAddress PAL: 0x003d5430
      */
     virtual ~HideablePanel() = default;
 
