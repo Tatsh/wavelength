@@ -55,7 +55,7 @@ enum {
 #ifdef VIDEO_STANDARD_PAL
     kFsOpenFlagMask = 0x7fffffff,
 #else
-    kFsOpenFlagMask = 0x0fffffff,
+    kFsOpenFlagMask = 0x6fffffff,
 #endif
 
     // The requests sceIoctl() resolves locally.
