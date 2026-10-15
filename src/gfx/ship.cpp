@@ -160,7 +160,11 @@ void SetXfmRows(Transform &xfm, const float (*pXfm)[kTransformRowFloatCount]) {
         rows[i]->x = pXfm[i][0];
         rows[i]->y = pXfm[i][1];
         rows[i]->z = pXfm[i][2];
+        // The binary copies whole quadwords, so the unset basis words of BuildIdentity() pass on.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
         rows[i]->w = pXfm[i][kVec3PaddingFloat];
+#pragma GCC diagnostic pop
     }
 }
 
