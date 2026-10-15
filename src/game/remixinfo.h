@@ -69,7 +69,7 @@ public:
      * @ghidraAddress PAL: 0x001a1c18
      */
 #ifdef VIDEO_STANDARD_PAL
-    void ShowDetails(const char *pszPanel, bool bShowPicture) const;
+    void ShowDetails(const char *pszPanel, bool bShowPicture = true) const;
 #else
     void ShowDetails(const char *pszPanel) const;
 #endif

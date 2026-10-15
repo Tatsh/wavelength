@@ -37,9 +37,11 @@ constexpr int kFirstPlayer = 0;
 // The milliseconds between the load of the Freq and the move to the done screen.
 constexpr float kAdvanceDelayMs = 1000.0f;
 
+#ifndef VIDEO_STANDARD_PAL
 ErrorScreen *FindErrorScreen(const char *pszName) {
     return dynamic_cast<ErrorScreen *>(TheUI.FindScreen(pszName, false));
 }
+#endif
 
 } // namespace
 

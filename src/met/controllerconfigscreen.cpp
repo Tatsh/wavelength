@@ -12,6 +12,7 @@
 #include "os/locale.h"
 #include "os/string.h"
 #include "os/system.h"
+#include "synth/fxmidi.h"
 #include "ui/uibutton.h"
 #include "ui/uicomponent.h"
 #include "ui/uimanager.h"
@@ -96,7 +97,12 @@ void ControllerConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mStickEvents = pConfig->FindArray(kStickEventsTag, true);
     mButtonChoices.resize(mButtonEvents->Size() - 1, 0);
     mStickChoices.resize(mStickEvents->Size() - 1, 0);
+#ifdef VIDEO_STANDARD_PAL
+    UIPanel *pPanel = TheUI.FindPanel(kPanel, false);
+    mFocusName = pPanel->FindComponent(kFirstComponent, false)->mName;
+#else
     mFocusName = TheUI.FindPanel(kPanel, false)->FindComponent(kFirstComponent, false)->mName;
+#endif
     LoadBindings(TheGameDb->GetProfile(0)->GetInputMap());
     mActive = 1;
 
@@ -104,6 +110,9 @@ void ControllerConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     if (strcmp(pszFocus, kSaveComponent) != 0 && strcmp(pszFocus, kDefaultComponent) != 0) {
         ShowOnMap(pszFocus);
     }
+#ifdef VIDEO_STANDARD_PAL
+    pPanel->SetFocus(pPanel->FindComponent(kSaveComponent, false), kPadNone);
+#endif
 }
 
 void ControllerConfigScreen::LoadBindings(InputMap *pMap) {
@@ -359,7 +368,11 @@ bool ControllerConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) 
             if (TheMetagame.GetState() == Metagame::kStateFrontEnd) {
                 SaveFreqScreen *pSave =
                     dynamic_cast<SaveFreqScreen *>(TheUI.FindScreen(kSaveScreen, false));
+#ifdef VIDEO_STANDARD_PAL
+                pSave->SetDoneScreen("s_mode");
+#else
                 pSave->SetDoneScreen(mReturnScreen->mName);
+#endif
                 pSave->mOverwriteStatus = 1;
                 TheUI.GotoScreen(pSave);
             } else if (mReturnScreen != nullptr) {
@@ -383,6 +396,14 @@ bool ControllerConfigScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
+#ifdef VIDEO_STANDARD_PAL
+        // Saving bindings that do not validate only sounds the error.
+        const char *pszFocus = mFocusPanel->mFocus->mName;
+        if (pMsg->mButton == kPadCross && strcmp(pszFocus, kSaveComponent) == 0 && !Validate()) {
+            FxMidi::PlayWrong();
+            return true;
+        }
+#endif
         if (pMsg->mButton == kPadDUp || pMsg->mButton == kPadDDown) {
             Validate();
         } else if (pMsg->mButton == kPadTriangle && mReturnScreen != nullptr) {

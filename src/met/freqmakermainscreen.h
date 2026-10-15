@@ -88,6 +88,17 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Write the name of the Freq on `f_maker_p_01.txt`.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress PAL: 0x001a76d8
+     */
+    void ShowFreqName();
+#endif
+
     /**
      * Start the exit, and turn the camera to the bust of the Freq unless the custom screen
      * follows.

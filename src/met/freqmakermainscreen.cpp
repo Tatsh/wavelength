@@ -134,7 +134,11 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         } else if (mNameTyped != 0) {
             FocusComponent(pPanel, "save");
         }
+#ifdef VIDEO_STANDARD_PAL
+        ShowFreqName();
+#else
         ShowName(mFreqName.c_str());
+#endif
         mSaveOnName = 0;
         return;
     }
@@ -162,9 +166,19 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     if (strcmp(mFreqName.c_str(), "") == 0) {
         mFreqName = TheGameDb->GetPlayerName(0);
     }
+#ifdef VIDEO_STANDARD_PAL
+    ShowFreqName();
+#else
     ShowName(mFreqName.c_str());
+#endif
     mSaveOnName = 0;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void FreqMakerMainScreen::ShowFreqName() {
+    ShowName(mFreqName.c_str());
+}
+#endif
 
 void FreqMakerMainScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);

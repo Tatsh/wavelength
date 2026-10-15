@@ -4,6 +4,7 @@
 #include "msg/joypadinputmsg.h"
 #include "os/string.h"
 #include "script/dataarray.h"
+#include "ui/uicomponentselectmsg.h"
 
 /**
  * The dialog that prompts the player to plug a controller back in. The cross button of that
@@ -67,6 +68,19 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Resume when the cross button chooses `resume`, and end the song when it chooses any other
+     * button.
+     *
+     * A dialog outside a song returns to mReturnScreen instead of resuming. The name is inferred.
+     *
+     * @param pMsg The message of the choice.
+     * @return The result of UIScreen::HandleSelect().
+     * @ghidraAddress PAL: 0x00193718
+     */
+    bool HandleSelect(UIComponentSelectMsg *pMsg);
+#else
     /**
      * Close the dialog when the cross button of mPad goes down.
      *
@@ -77,6 +91,7 @@ public:
      * @ghidraAddress PAL: 0x00193718
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
+#endif
 
     int mPad;             /*!< The controller to plug back in. */
     int mInGame;          /*!< Whether the dialog interrupts a song. */

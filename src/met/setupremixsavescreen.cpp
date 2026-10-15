@@ -128,9 +128,14 @@ void SetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     pPlayer->SetText(player.c_str());
 
     UIComponent *pMemcard = TheUI.FindComponent(mFocusPanel->mName, "memcard", false);
+#ifdef VIDEO_STANDARD_PAL
+    // The European text does not name the slot.
+    pMemcard->SetText(TheLocale.Localize("save_remix_memcard", true));
+#else
     String slot(TheMCManager.GetSlotName(mPlayer - 1));
     String memcard(FormatString(TheLocale.Localize("save_remix_memcard", true), slot.c_str()));
     pMemcard->SetText(memcard.c_str());
+#endif
 }
 
 void SetupRemixSaveScreen::Proceed() {

@@ -8,6 +8,7 @@
 #include "ui/uicomponent.h"
 #include "ui/uicomponentfocuschangemsg.h"
 #include "ui/uicomponentselectmsg.h"
+#include "ui/uimanager.h"
 #include "ui/uipanel.h"
 #include "ui/uitransitioncompletemsg.h"
 
@@ -84,6 +85,17 @@ public:
      */
     void Poll(float fTime) override;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * End the song preview and go to a screen once the preview went idle.
+     *
+     * The menu music returns unless a song was chosen to play. The name is inferred.
+     *
+     * @param pszScreen The screen to go to.
+     * @ghidraAddress PAL: 0x0019be88
+     */
+    void GotoScreenAfterPreview(const char *pszScreen);
+#else
     /**
      * End the song preview and defer the exit until the preview went idle.
      *
@@ -94,6 +106,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00194508
      */
     void Exit(UIScreen *pNextScreen, float fTime) override;
+#endif
 
     /**
      * Fill the song buttons of the chosen arena, focus a song, and show the arena scores.
@@ -222,9 +235,25 @@ public:
     String mPreviewSong;   /*!< The song whose clip starts next, or an empty string. */
     float mPreviewMixTime; /*!< The system time the preview mix starts at, or -1. */
     UIPanel *mBandPanel;   /*!< The `s_g_sel_song_band` panel. */
+private:
+    // Go to a screen, once the preview ends in the PAL build.
+    void GotoNextScreen(const char *pszScreen) {
+#ifdef VIDEO_STANDARD_PAL
+        GotoScreenAfterPreview(pszScreen);
+#else
+        TheUI.GotoScreen(pszScreen);
+#endif
+    }
+
+public:
+#ifndef VIDEO_STANDARD_PAL
     UIScreen *mExitScreen; /*!< The screen of the deferred exit. */
     float mExitTime;       /*!< The front-end time of the deferred exit. */
-    int mExitPending;      /*!< Non-zero while the exit waits for the preview to end. */
-    float mExitStart;      /*!< The system time the deferred exit starts at, or 0. */
-    int mSongChosen;       /*!< Non-zero when the cross button chose a song to play. */
+#endif
+    int mExitPending; /*!< Non-zero while the exit waits for the preview to end. */
+    float mExitStart; /*!< The system time the deferred exit starts at, or 0. */
+    int mSongChosen;  /*!< Non-zero when the cross button chose a song to play. */
+#ifdef VIDEO_STANDARD_PAL
+    String mExitScreenName; /*!< The screen GotoScreenAfterPreview() goes to. */
+#endif
 };

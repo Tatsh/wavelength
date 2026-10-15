@@ -34,7 +34,11 @@ public:
     };
 
     /** The number of text objects for the help and for the buttons. */
+#ifdef VIDEO_STANDARD_PAL
+    static constexpr int kNumTexts = 8;
+#else
     static constexpr int kNumTexts = 7;
+#endif
 
     /**
      * Construct a hidden panel from its script description.

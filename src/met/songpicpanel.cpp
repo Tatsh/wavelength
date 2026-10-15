@@ -1,7 +1,10 @@
 #include "met/songpicpanel.h"
 
+#include <cstring>
+
 #include "os/fileutil.h"
 #include "os/string.h"
+#include "os/system.h"
 #include "rnd/rndmanager.h"
 #include "rnd/rndmat.h"
 #include "rnd/rndmesh.h"
@@ -36,6 +39,12 @@ void SongPicPanel::SetBandPicture(const char *pszSong,
         mPicturePath.Set(FormatString("Songs\\%s\\%s_encrypt.bmp", pszSong, pszSong));
     } else if (bSmall) {
         mPicturePath.Set(FormatString("Songs\\%s\\%s_band_sm.bmp", pszSong, pszSong));
+#ifdef VIDEO_STANDARD_PAL
+    } else if (strstr(pszSong, "TUT") != nullptr && !SystemLanguageIsEnglish()) {
+        // A tutorial shows the picture of the console's language.
+        mPicturePath.Set(
+            FormatString("Songs\\%s\\%s_band_%s.bmp", pszSong, pszSong, GetSystemLanguage()));
+#endif
     } else {
         mPicturePath.Set(FormatString("Songs\\%s\\%s_band.bmp", pszSong, pszSong));
     }
@@ -50,7 +59,16 @@ void SongPicPanel::SetArenaPicture(const char *pszArena) {
         TheManager.ReleaseTexture(mPicturePath);
     }
     FilePath::SetRoot(FileRoot());
+#ifdef VIDEO_STANDARD_PAL
+    if (SystemLanguageIsEnglish()) {
+        mPicturePath.Set(FormatString("Metagame\\image\\%s_band.bmp", pszArena));
+    } else {
+        mPicturePath.Set(
+            FormatString("Metagame\\image\\%s_band_%s.bmp", pszArena, GetSystemLanguage()));
+    }
+#else
     mPicturePath.Set(FormatString("Metagame\\image\\%s_band.bmp", pszArena));
+#endif
     TheManager.AcquireTexture(mPicturePath);
     mPictureReady = 0;
 }

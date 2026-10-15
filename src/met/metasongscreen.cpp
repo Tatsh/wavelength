@@ -26,6 +26,13 @@
 
 namespace {
 
+#ifdef VIDEO_STANDARD_PAL
+// Spanish calls the tutorial songs training songs.
+inline bool IsSpanish() {
+    return strcmp(GetSystemLanguage(), "spanish") == 0;
+}
+#endif
+
 // The song types of the "songs" section.
 constexpr int kSongTypeBoss = 1;
 constexpr int kSongTypeBonus = 2;
@@ -56,6 +63,17 @@ constexpr int kPracticeRuleSet = GameDb::kRuleSetGame;
 
 } // namespace
 
+#ifdef VIDEO_STANDARD_PAL
+MetaSongScreen::MetaSongScreen(DataArray *pData)
+    : FreqScreen(pData), mSong(static_cast<const char *>(nullptr)),
+      mExitScreenName(static_cast<const char *>(nullptr)) {
+    mPreviewMixTime = kNoMixTime;
+    mBandPanel = nullptr;
+    mExitPending = 0;
+    mSongChosen = 0;
+    mExitStart = 0.0f;
+}
+#else
 MetaSongScreen::MetaSongScreen(DataArray *pData)
     : FreqScreen(pData), mSong(static_cast<const char *>(nullptr)) {
     mPreviewMixTime = kNoMixTime;
@@ -66,6 +84,7 @@ MetaSongScreen::MetaSongScreen(DataArray *pData)
     mExitPending = 0;
     mExitStart = 0.0f;
 }
+#endif
 
 bool MetaSongScreen::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();
@@ -93,9 +112,16 @@ void MetaSongScreen::Poll(float fTime) {
         }
         if (mExitStart < SystemMs() && 0.0f < mExitStart) {
             (void)SongPreview::IsIdle(); // Yes, the binary discards this call's result.
+#ifdef VIDEO_STANDARD_PAL
+            TheUI.GotoScreen(mExitScreenName.c_str());
+            mExitStart = 0.0f;
+            mExitPending = 0;
+            mExitScreenName = "";
+#else
             FreqScreen::Exit(mExitScreen, mExitTime);
             mExitStart = 0.0f;
             mExitPending = 0;
+#endif
         }
         return;
     }
@@ -123,12 +149,20 @@ void MetaSongScreen::Poll(float fTime) {
     }
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void MetaSongScreen::GotoScreenAfterPreview(const char *pszScreen) {
+    mExitScreenName = pszScreen;
+    SongPreview::End(mSongChosen == 0);
+    mExitPending = 1;
+}
+#else
 void MetaSongScreen::Exit(UIScreen *pNextScreen, float fTime) {
     SongPreview::End(mSongChosen == 0);
     mExitTime = fTime;
     mExitPending = 1;
     mExitScreen = pNextScreen;
 }
+#endif
 
 const char *MetaSongScreen::Title() {
     if (TheGameDb->mTutorial != 0) {
@@ -176,10 +210,21 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
         } else if (song.GetType() == kSongTypeBoss) {
             pBio->SetText(TheLocale.Localize("locked_boss_bio", true));
         } else if (song.GetType() == kSongTypeTutorial) {
+#ifdef VIDEO_STANDARD_PAL
+            pBio->SetText(
+                TheLocale.Localize(IsSpanish() ? "locked_label_train" : "locked_label", true));
+#else
             pBio->SetText(TheLocale.Localize("locked_label", true));
+#endif
         }
         pGenre->SetShowing(false);
+#ifdef VIDEO_STANDARD_PAL
+        // Yes, Spanish labels every locked song as a training song.
+        pStatus->SetText(
+            TheLocale.Localize(IsSpanish() ? "locked_label_train" : "locked_label", true));
+#else
         pStatus->SetText(TheLocale.Localize("locked_label", true));
+#endif
     } else {
         pBio->SetText(song.GetBio());
         pGenre->SetShowing(true);
@@ -187,6 +232,10 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
         if (TheGameDb->mCommunity == GameDb::kCommunitySolo &&
             TheGameDb->GetProfile(0)->IsSongFinished(song.GetName(), TheGameDb->mSkillLevel)) {
             pStatus->SetText(TheLocale.Localize("beat_label", true));
+#ifdef VIDEO_STANDARD_PAL
+        } else if (IsSpanish() && song.GetType() == kSongTypeTutorial) {
+            pStatus->SetText(TheLocale.Localize("unlocked_label_train", true));
+#endif
         } else {
             pStatus->SetText(TheLocale.Localize("unlocked_label", true));
         }
@@ -442,16 +491,16 @@ bool MetaSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     mSong = song.GetName();
 
     if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
-        TheUI.GotoScreen("pre_multi2launchseq");
+        GotoNextScreen("pre_multi2launchseq");
     } else if (TheGameDb->mTutorial == 1) {
-        TheUI.GotoScreen("pre_solotut2launchseq");
+        GotoNextScreen("pre_solotut2launchseq");
     } else {
         const char *pszPowerup =
             TheGameDb->GetProfile(0)->TakePendingPowerup(TheGameDb->mSkillLevel);
         if (pszPowerup != nullptr) {
-            TheUI.GotoScreen(FormatString("%s_tip", pszPowerup));
+            GotoNextScreen(FormatString("%s_tip", pszPowerup));
         } else {
-            TheUI.GotoScreen("pre_launchpad2launchseq");
+            GotoNextScreen("pre_launchpad2launchseq");
         }
     }
     return UIScreen::HandleSelect(pMsg);
@@ -489,7 +538,7 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             TheGameDb->SetLoadRemix(false);
             TheGameDb->SetSong(song.GetName());
             mSong = song.GetName();
-            TheUI.GotoScreen("pre_launchpad2launchseq");
+            GotoNextScreen("pre_launchpad2launchseq");
         }
     } else if (pMsg->mButton == kPadCircle) {
         (void)TheUI.FindPanel("s_g_sel_song_band", false); // Yes, the binary discards these.
@@ -499,11 +548,11 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         ShowPicture(pBio->mShowing != 0);
     } else if (pMsg->mButton == kPadTriangle) {
         if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
-            TheUI.GotoScreen("multisong2multiarena");
+            GotoNextScreen("multisong2multiarena");
         } else if (strcmp(TheMetagame.SelectedArenaName(), "Tutorial") == 0) {
-            TheUI.GotoScreen("solotut2soloarena");
+            GotoNextScreen("solotut2soloarena");
         } else {
-            TheUI.GotoScreen("solosong2soloarena");
+            GotoNextScreen("solosong2soloarena");
         }
     }
     return FreqScreen::HandleJoypad(pMsg);
