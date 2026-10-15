@@ -13,9 +13,13 @@ enum {
     // The functions of the module.
     kFunctionCreate = 1,
     kFunctionOpen = 2,
+    kFunctionClose = 3,
+    kFunctionRecv = 4,
+    kFunctionSend = 5,
     kFunctionName2Address = 6,
     kFunctionGetInterfaceList = 8,
     kFunctionInterfaceControl = 9,
+    kFunctionAbort = 15,
     kFunctionControl = 19,
     kFunctionRegisterHandler = 30,
     kFunctionUnregisterHandler = 31,
@@ -112,7 +116,11 @@ static const char kTextAddressFormat[] = "%u.%u.%u.%u";
 
 // NTSC-U/C: 0x003c27d8
 // The version of the IOP module this client was built against. The library never reads it.
+#ifdef VIDEO_STANDARD_PAL
+const char *g_pszLibnetbVersion = "libnetb version: 1.09.0005";
+#else
 const char *g_pszLibnetbVersion = "libnetb version: 1.09.0003";
+#endif
 
 // The octets of an IPv4 address in sceInetAddress::data, first octet last.
 enum {
@@ -295,6 +303,78 @@ int sceInetOpen(sceSifMClientData *cd, int *buffer, int cid, int timeout) {
     }
     return buffer[0];
 }
+
+#ifdef VIDEO_STANDARD_PAL
+int sceInetClose(sceSifMClientData *cd, int *buffer, int cid, int timeout) {
+    buffer[0] = cid;
+    buffer[1] = timeout;
+    if (CallRpc(cd, kFunctionClose, buffer, 2 * sizeof(int), sizeof(int)) < 0) {
+        return LIBNET_ERROR_CALL;
+    }
+    return buffer[0];
+}
+
+int sceInetRecv(
+    sceSifMClientData *cd, int *buffer, int cid, void *data, int size, int *flags, int timeout) {
+    enum { kId = 0, kFlags = 1, kSize = 2, kTimeout = 3, kData = 2, kHeaderSize = 4 * sizeof(int) };
+    int nResult;
+
+    buffer[kId] = cid;
+    buffer[kFlags] = flags != NULL ? *flags : 0;
+    buffer[kTimeout] = timeout;
+    buffer[kSize] = size;
+    if (CallRpc(cd, kFunctionRecv, buffer, kHeaderSize, size + 2 * (int)sizeof(int)) < 0) {
+        return LIBNET_ERROR_CALL;
+    }
+    if (buffer[kId] < 0) {
+        return buffer[kId];
+    }
+    if (flags != NULL) {
+        *flags = buffer[kFlags];
+    }
+    nResult = GetData(cd, data, buffer, kData, buffer[kId]);
+    if (nResult < 0) {
+        return nResult;
+    }
+    return buffer[kId];
+}
+
+int sceInetSend(sceSifMClientData *cd,
+                int *buffer,
+                int cid,
+                const void *data,
+                int size,
+                int *flags,
+                int timeout) {
+    enum { kId = 0, kFlags = 1, kSize = 2, kTimeout = 3, kData = 4, kHeaderSize = 4 * sizeof(int) };
+    int nResult;
+
+    buffer[kId] = cid;
+    buffer[kFlags] = flags != NULL ? *flags : 0;
+    buffer[kTimeout] = timeout;
+    buffer[kSize] = size;
+    nResult = PutData(cd, buffer, kData, data, size);
+    if (nResult < 0) {
+        return nResult;
+    }
+    if (CallRpc(cd, kFunctionSend, buffer, size + kHeaderSize, 2 * sizeof(int)) < 0) {
+        return LIBNET_ERROR_CALL;
+    }
+    if (flags != NULL) {
+        *flags = buffer[kFlags];
+    }
+    return buffer[kId];
+}
+
+int sceInetAbort(sceSifMClientData *cd, int *buffer, int cid, int flags) {
+    buffer[0] = cid;
+    buffer[1] = flags;
+    if (CallRpc(cd, kFunctionAbort, buffer, 2 * sizeof(int), sizeof(int)) < 0) {
+        return LIBNET_ERROR_CALL;
+    }
+    return buffer[0];
+}
+#endif
 
 // The body of sceInetControl() and sceInetInterfaceControl().
 static inline int ControlCall(sceSifMClientData *cd,
@@ -1086,6 +1166,13 @@ int LibnetAsyncReadStream(sceSifMClientData *cd,
     }
     pInfo = &handle->pReceive->info;
     FlushCache(0);
+#ifdef VIDEO_STANDARD_PAL
+    // The library of the European release reports the flags of every read.
+    *flags = pInfo->nLastReturnedFlag;
+    if (pInfo->nDataWaitingSize <= 0) {
+        return pInfo->nDataWaitingSize;
+    }
+#else
     if (pInfo->nDataWaitingSize == 0) {
         *flags = pInfo->nLastReturnedFlag;
         return 0;
@@ -1093,6 +1180,7 @@ int LibnetAsyncReadStream(sceSifMClientData *cd,
     if (pInfo->nDataWaitingSize < 0) {
         return pInfo->nDataWaitingSize;
     }
+#endif
     nTaken = (pInfo->nDataWaitingSize < size) ? pInfo->nDataWaitingSize : size;
     memcpy(data, &pInfo->pbBuffer[pInfo->uReadOffset], nTaken);
     pInfo->nDataWaitingSize -= nTaken;

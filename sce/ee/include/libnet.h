@@ -112,6 +112,69 @@ int sceInetCreate(sceSifMClientData *cd, int *buffer, sceInetParam *param);
  */
 int sceInetOpen(sceSifMClientData *cd, int *buffer, int cid, int timeout);
 
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Close a connection. The European release links it for the DNAS library.
+ *
+ * @param cd The client.
+ * @param buffer The argument buffer.
+ * @param cid The connection identifier.
+ * @param timeout The timeout.
+ * @return The result of the module, or LIBNET_ERROR_CALL.
+ * @ghidraAddress PAL: 0x0030f838
+ */
+int sceInetClose(sceSifMClientData *cd, int *buffer, int cid, int timeout);
+
+/**
+ * Receive bytes from a connection. The European release links it for the DNAS library.
+ *
+ * @param cd The client.
+ * @param buffer The argument buffer.
+ * @param cid The connection identifier.
+ * @param data Receives the bytes.
+ * @param size The largest number of bytes.
+ * @param flags The flags, which receive the flags of the module, or null.
+ * @param timeout The timeout.
+ * @return The number of bytes, a negative result of the module, or a negative error.
+ * @ghidraAddress PAL: 0x0030f880
+ */
+int sceInetRecv(
+    sceSifMClientData *cd, int *buffer, int cid, void *data, int size, int *flags, int timeout);
+
+/**
+ * Send bytes on a connection. The European release links it for the DNAS library.
+ *
+ * @param cd The client.
+ * @param buffer The argument buffer.
+ * @param cid The connection identifier.
+ * @param data The bytes.
+ * @param size The number of bytes.
+ * @param flags The flags, which receive the flags of the module, or null.
+ * @param timeout The timeout.
+ * @return The number of bytes sent, or a negative result or error.
+ * @ghidraAddress PAL: 0x0030f948
+ */
+int sceInetSend(sceSifMClientData *cd,
+                int *buffer,
+                int cid,
+                const void *data,
+                int size,
+                int *flags,
+                int timeout);
+
+/**
+ * Abort a connection. The European release links it for the DNAS library.
+ *
+ * @param cd The client.
+ * @param buffer The argument buffer.
+ * @param cid The connection identifier.
+ * @param flags The flags of the abort.
+ * @return The result of the module, or LIBNET_ERROR_CALL.
+ * @ghidraAddress PAL: 0x0030f9f8
+ */
+int sceInetAbort(sceSifMClientData *cd, int *buffer, int cid, int flags);
+#endif
+
 /**
  * Resolve a name to an address.
  *
