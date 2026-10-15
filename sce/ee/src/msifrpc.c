@@ -97,9 +97,9 @@ static const char kModeError[] = "mode must be 0 in this version.\n";
 
 // NTSC-U/C: 0x003c4790, PAL: 0x0045abd8, the identification tag of the library.
 #ifdef VIDEO_STANDARD_PAL
-static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibmrpc 2700";
+static char g_acLibraryId[16] __attribute__((used, nonstring)) = "PsIIlibmrpc 2700";
 #else
-static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibmrpc 2600";
+static char g_acLibraryId[16] __attribute__((used, nonstring)) = "PsIIlibmrpc 2600";
 #endif
 
 // NTSC-U/C: 0x003c47a0, PAL: 0x0045abe8

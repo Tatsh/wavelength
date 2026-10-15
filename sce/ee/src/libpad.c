@@ -101,9 +101,9 @@ typedef struct {
 
 // NTSC-U/C: 0x003c2ae8, PAL: 0x00458f28, the identification tag of the library.
 #ifdef VIDEO_STANDARD_PAL
-static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibpad  2710";
+static char g_acLibraryId[16] __attribute__((used, nonstring)) = "PsIIlibpad  2710";
 #else
-static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibpad  2600";
+static char g_acLibraryId[16] __attribute__((used, nonstring)) = "PsIIlibpad  2600";
 #endif
 
 // NTSC-U/C: 0x003c2af8, PAL: 0x00458f38

@@ -368,7 +368,11 @@ static int RtUpnpGetScpdUrl(const RtUpnpDeviceInfo *pInfo, int nService, char *p
         return 0;
     }
     strncpy(pszUrl, pInfo->szUrlBase, kHttpUrlSize);
+    // The original bounds the append by the whole buffer, not by the space left in it.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
     strncat(pszUrl, pszScpdUrl, kHttpUrlSize);
+#pragma GCC diagnostic pop
     return 0;
 }
 

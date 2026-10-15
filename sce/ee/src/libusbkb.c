@@ -983,9 +983,9 @@ static int SetResult_SetLEDMode(void) {
 
 // NTSC-U/C: 0x003c2a80, PAL: 0x00458ec0, the identification tag of the library.
 #ifdef VIDEO_STANDARD_PAL
-static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibusbkb2700";
+static char g_acLibraryId[16] __attribute__((used, nonstring)) = "PsIIlibusbkb2700";
 #else
-static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibusbkb2600";
+static char g_acLibraryId[16] __attribute__((used, nonstring)) = "PsIIlibusbkb2600";
 #endif
 
 // NTSC-U/C: 0x003c2a90, PAL: 0x00458ed0, the result handlers by request.
