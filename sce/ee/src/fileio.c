@@ -52,7 +52,11 @@ enum {
     kFsHandleInUse = 0x10000000,
     kFsHandleNoWait = 0x8000,
     kFsHandleNoWriteBack = 0x20000000,
+#ifdef VIDEO_STANDARD_PAL
+    kFsOpenFlagMask = 0x7fffffff,
+#else
     kFsOpenFlagMask = 0x0fffffff,
+#endif
 
     // The requests sceIoctl() resolves locally.
     kFsIoctlPending = 1,
@@ -325,7 +329,7 @@ static int FsLock(int nFunction) {
     return 0;
 }
 
-// NTSC-U/C: 0x0031a248
+// NTSC-U/C: 0x0031a248, PAL: 0x00386b60
 static int FsUnlock(void) {
     return SignalSema(g_nFsCallSema);
 }
@@ -442,7 +446,7 @@ static void _sceFs_Rcv_Intr(void *pData, void *pArg) {
     }
 }
 
-// NTSC-U/C: 0x0031a258, PAL: 0x00386b60
+// NTSC-U/C: 0x0031a258, PAL: 0x00386b70
 static void FsInvokeDeferredCallback(void *pData, void *pArg) {
     FsDeferredCallback *pDeferred = (FsDeferredCallback *)pArg;
 

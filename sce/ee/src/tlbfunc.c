@@ -57,12 +57,12 @@ typedef struct {
 // NTSC-U/C: 0x003c5b80
 char **g_ppExecArgs;
 
-// NTSC-U/C: 0x0031ce00
+// NTSC-U/C: 0x0031ce00, PAL: 0x00389718
 static __attribute__((noinline)) int Copy(void *pDest, const void *pSource, int nSize) {
     return LibkernelSyscall(kSyscallKernelCopy, (int)pDest, (int)pSource, nSize);
 }
 
-// NTSC-U/C: 0x0031ce10, PAL: 0x00389718
+// NTSC-U/C: 0x0031ce10, PAL: 0x00389728
 // The handler of system call 90 while the patch is copied. Copies whole words.
 static int kCopy(unsigned int *pDest, const unsigned int *pSource, unsigned int nSize) {
     unsigned int nWords = nSize >> 2;

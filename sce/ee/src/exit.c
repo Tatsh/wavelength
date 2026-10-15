@@ -11,12 +11,12 @@ enum {
     kExecStringOffset = 64,
 };
 
-// NTSC-U/C: 0x0031c980
+// NTSC-U/C: 0x0031c980, PAL: 0x00389298
 static __attribute__((noinline)) int Copy(void *pDest, const void *pSource, int nSize) {
     return LibkernelSyscall(kSyscallKernelCopy, (int)pDest, (int)pSource, nSize);
 }
 
-// NTSC-U/C: 0x0031c990, PAL: 0x00389298
+// NTSC-U/C: 0x0031c990, PAL: 0x003892a8
 // The handler of system call 90 while the arguments are copied. Copies bytes.
 static int kCopy(unsigned char *pDest, const unsigned char *pSource, unsigned int nSize) {
     unsigned int i;

@@ -29,12 +29,12 @@ static __attribute__((noinline)) void setup(int nSyscall, void *pHandler) {
     LibkernelSyscall(kSyscallSetSyscall, nSyscall, (int)pHandler, 0);
 }
 
-// NTSC-U/C: 0x0031cb78
+// NTSC-U/C: 0x0031cb78, PAL: 0x00389490
 static __attribute__((noinline)) int Copy(void *pDest, const void *pSource, int nSize) {
     return LibkernelSyscall(kSyscallKernelCopy, (int)pDest, (int)pSource, nSize);
 }
 
-// NTSC-U/C: 0x0031cb88, PAL: 0x00389490
+// NTSC-U/C: 0x0031cb88, PAL: 0x003894a0
 // The handler of system call 90 while the patch is copied. Copies whole words.
 static int kCopy(unsigned int *pDest, const unsigned int *pSource, unsigned int nSize) {
     unsigned int nWords = nSize >> 2;

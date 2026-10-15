@@ -86,8 +86,12 @@ typedef struct {
 
 // NTSC-U/C: 0x003c2b40
 static int g_nMcCommand = 0;
-// NTSC-U/C: 0x003c2b44
+// NTSC-U/C: 0x003c2b44, PAL: 0x00458f84
 static int g_nMcSemaId = -1;
+#ifdef VIDEO_STANDARD_PAL
+// PAL: 0x00458f88. McDelayThread() waits on the semaphore until its alarm signals it.
+static int g_nMcDelaySemaId = -1;
+#endif
 
 // NTSC-U/C: 0x0052f7c0
 static sceSifClientData g_mcClient __attribute__((aligned(64)));
@@ -118,6 +122,12 @@ int sceMcInitLibrary(void) {
         param.initCount = 1;
         param.option = 0;
         g_nMcSemaId = CreateSema(&param);
+#ifdef VIDEO_STANDARD_PAL
+        param.maxCount = 1;
+        param.initCount = 0;
+        param.option = 0;
+        g_nMcDelaySemaId = CreateSema(&param);
+#endif
     }
     sceMcSync(sceMcWait, NULL, NULL);
     WaitSema(g_nMcSemaId);
@@ -223,6 +233,9 @@ int sceMcEnd(void) {
     if (g_nMcSemaId >= 0) {
         DeleteSema(g_nMcSemaId);
         g_nMcSemaId = -1;
+#ifdef VIDEO_STANDARD_PAL
+        DeleteSema(g_nMcDelaySemaId); // Yes, the binary does not reset the identifier.
+#endif
     }
     return 1;
 }
@@ -334,6 +347,20 @@ int sceMcWrite(int nFd, const void *pBuffer, int nSize) {
     return McEndCommand(McCallDesc(kMcFunctionWrite, NULL, NULL), sceMcFuncNoWrite);
 }
 
+#ifdef VIDEO_STANDARD_PAL
+// PAL: 0x0037fe30
+static void McAlarmHandler(int nId, unsigned short nTime, void *pSema) {
+    (void)nId;
+    (void)nTime;
+    iSignalSema((int)(intptr_t)pSema);
+}
+
+// PAL: 0x0037fe38
+static void McDelayThread(unsigned short nTicks) {
+    SetAlarm(nTicks, McAlarmHandler, (void *)(intptr_t)g_nMcDelaySemaId);
+    WaitSema(g_nMcDelaySemaId);
+}
+#else
 // NTSC-U/C: 0x00313770
 static void McAlarmHandler(int nId, unsigned short nTime, void *pThread) {
     (void)nId;
@@ -347,6 +374,7 @@ static void McDelayThread(unsigned short nTicks) {
     SetAlarm(nTicks, McAlarmHandler, (void *)(intptr_t)GetThreadId());
     SleepThread();
 }
+#endif
 
 int sceMcSync(int nMode, int *pnCommand, int *pnResult) {
     int nBusy;

@@ -117,7 +117,8 @@ typedef struct {
 /**
  * Bind the memory card server and check the module versions.
  *
- * Waits for a command in flight to finish first.
+ * Waits for a command in flight to finish first. The PAL build also creates the semaphore that the
+ * library's polling delay waits on.
  *
  * @return The server's result, the RPC error less 100, -120 when mcserv is too old, or -121 when
  * mcman is too old.
@@ -127,7 +128,7 @@ typedef struct {
 int sceMcInitLibrary(void);
 
 /**
- * Delete the semaphore sceMcInitLibrary() created.
+ * Delete the semaphores sceMcInitLibrary() created.
  *
  * @return 1.
  * @ghidraAddress NTSC-U/C: 0x00313118
