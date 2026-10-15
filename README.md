@@ -52,7 +52,9 @@ follows the console's language setting), saves to a memory card, and plays songs
 
 For online play, the European release adds DNAS2 authentication, made of Sony's `libdnas2` and its
 RCOM cryptography library (about 1,490 routines). `libdnas2` decrypts parts of its own code at run time.
-This project does not recover `libdnas2` or RCOM, and the European build does not call them.
+This project does not recover `libdnas2` or RCOM. The four `libdnas2` routines the game calls are
+stubs that print a `fixme:dnas2:` line and fail, so the European build shows the DNAS error when
+going online. The game's DNAS credentials are not included.
 
 ### Online play
 
