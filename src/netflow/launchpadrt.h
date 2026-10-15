@@ -623,8 +623,17 @@ public:
     int mShareOnly;                         /*!< The share-only flag of the remix of the game. */
     int mStarting;                          /*!< Non-zero while the song is about to start. */
     int mInGame;                            /*!< Non-zero during the game. */
-    std::vector<int> mClients;              /*!< The consoles AddClient() noted. */
-    std::vector<RatingStat> mRatings;       /*!< The rating of the game, while it runs. */
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * A session clock limit for the launch, or zero for none.
+     *
+     * HostpadRT::Launch() sets it to 1e30 and the host's start poll compares the clock with it.
+     * Those uses belong to the European network changes, which are not reconstructed.
+     */
+    float mLaunchDeadline = 0.0f;
+#endif
+    std::vector<int> mClients;        /*!< The consoles AddClient() noted. */
+    std::vector<RatingStat> mRatings; /*!< The rating of the game, while it runs. */
 
     /**
      * The registered type of the packets of the session.
