@@ -1156,6 +1156,7 @@ rawip
 rbor
 rbsr
 rcchk
+rcom
 rdparty
 rdtsc
 readonlycheckscreen

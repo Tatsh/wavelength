@@ -85,7 +85,8 @@
   },
   package_json+: {
     cspell+: {
-      ignorePaths+: ['3rdparty/**', 'tools/synthedit/synthcontrol/*.{bas,cls}'],
+      // The generated progress parts list routine names, not prose.
+      ignorePaths+: ['3rdparty/**', 'progress/**', 'tools/synthedit/synthcontrol/*.{bas,cls}'],
     },
     'markdownlint-cli2'+: {
       ignores: ['3rdparty/**'],
