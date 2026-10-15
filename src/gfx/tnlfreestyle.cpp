@@ -476,9 +476,9 @@ void TnlFreestyle::ComputeXfms(bool bCam,
 
     Transform path;
     mTunnel->mGeom->PathXfm(&path, TheGameDb->mSongTick);
-    sceVu0MulAffineMatrixXyz(&pShipXfm[0][0], &pShipXfm[0][0], &path.mBasisX.x);
+    sceVu0MulAffineMatrixXyz(&pShipXfm[0][0], &path.mBasisX.x, &pShipXfm[0][0]);
     if (bCam) {
-        sceVu0MulAffineMatrixXyz(&pCamXfm->mBasisX.x, &pCamXfm->mBasisX.x, &path.mBasisX.x);
+        sceVu0MulAffineMatrixXyz(&pCamXfm->mBasisX.x, &path.mBasisX.x, &pCamXfm->mBasisX.x);
     }
     if (mType == Freestylus::kTypeScratch) {
         mPathAxis = path.mBasisX;
