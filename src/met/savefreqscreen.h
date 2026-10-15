@@ -32,7 +32,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x003634d0
-     * @ghidraAddress PAL: 0x003d1ac8
+     * @ghidraAddress PAL: 0x003d1c08
      */
     ~SaveFreqScreen() override;
 
