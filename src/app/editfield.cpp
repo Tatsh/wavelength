@@ -96,7 +96,11 @@ const char *EditField::GetText() {
 }
 
 void EditField::Clear() {
+    // A spurious overflow is reported on the growth path, which copies only the elements present.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
     mText.resize(kTailLength, '\0');
+#pragma GCC diagnostic pop
     mText[0] = ' ';
     mText[1] = '\0';
     mCursor = 0;
