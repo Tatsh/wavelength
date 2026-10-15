@@ -160,6 +160,13 @@ typedef union {
     CdStreamPacket mStream;
 } CdNCmdPacket;
 
+// NTSC-U/C: 0x003c2b80, PAL: 0x00458fc0, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibcdvd 2710";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibcdvd 2600";
+#endif
+
 // NTSC-U/C: 0x003c2b90, PAL: 0x00458fd0
 static int g_nCdDebug;
 // NTSC-U/C: 0x003c2b94, PAL: 0x00458fd4

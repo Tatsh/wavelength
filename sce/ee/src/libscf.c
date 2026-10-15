@@ -48,6 +48,13 @@ enum {
     kRomVersionReadSize = 14,
 };
 
+// NTSC-U/C: 0x003c4730, PAL: 0x0045ab78, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibscf  2700";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibscf  2600";
+#endif
+
 // NTSC-U/C: 0x003c4740, PAL: 0x0045ab88, the settings a tool console reports, which
 // sceScfSetT10kConfig() replaces.
 static sceScfT10kConfig g_scfT10kConfig = {540, {0, 0}, SCE_JAPANESE_LANGUAGE, 0, 0, 0};

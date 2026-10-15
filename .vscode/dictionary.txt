@@ -531,6 +531,15 @@ iconexclamation
 idcancel
 idispids
 idok
+ilibcdvd
+ilibdma
+ilibgraph
+ilibipu
+ilibmc
+ilibmrpc
+ilibscf
+ilibsdr
+ilibusbkb
 imagebuilder
 inbuf
 incompleteeffect

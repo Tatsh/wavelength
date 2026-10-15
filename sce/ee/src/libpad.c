@@ -99,6 +99,13 @@ typedef struct {
     };
 } __attribute__((aligned(64))) PadRpcBuffer;
 
+// NTSC-U/C: 0x003c2ae8, PAL: 0x00458f28, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibpad  2710";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibpad  2600";
+#endif
+
 // NTSC-U/C: 0x003c2af8, PAL: 0x00458f38
 static int isInit = 0;
 // NTSC-U/C: 0x003c2afc, PAL: 0x00458f3c

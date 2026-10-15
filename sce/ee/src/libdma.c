@@ -83,6 +83,13 @@ typedef struct {
     volatile unsigned int mSadr;   // The scratchpad address word resides at offset 0x80.
 } DmaChannelRegs;
 
+// NTSC-U/C: 0x003c2ab0, PAL: 0x00458ef0, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibdma  2700";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibdma  2600";
+#endif
+
 // The register block of each channel, VIF0 through the scratchpad input.
 // NTSC-U/C: 0x003c2ac0, PAL: 0x00458f00
 static DmaChannelRegs *dch[kChannelCount] = {(DmaChannelRegs *)(uintptr_t)0x10008000U,

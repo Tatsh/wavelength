@@ -84,6 +84,13 @@ typedef struct {
     char szName[kMcNameSize];
 } McNamePacket;
 
+// NTSC-U/C: 0x003c2b30, PAL: 0x00458f70, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibmc   2710";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibmc   2600";
+#endif
+
 // NTSC-U/C: 0x003c2b40, PAL: 0x00458f80
 static int g_nMcCommand = 0;
 // NTSC-U/C: 0x003c2b44, PAL: 0x00458f84

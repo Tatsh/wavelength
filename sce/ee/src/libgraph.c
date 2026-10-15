@@ -75,6 +75,13 @@ static const Vif1InitPacket g_dwVif1InitPacket = {{0x01000404U,
                                                    0x02000000U,
                                                    0x04000000U}};
 
+// NTSC-U/C: 0x003c2a50, PAL: 0x00458e90, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibgraph2700";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibgraph2600";
+#endif
+
 // NTSC-U/C: 0x003c2a60, PAL: 0x00458ea0
 static GsState g_GsStateBlock = {1, 2, 1, 3, NULL, 0};
 

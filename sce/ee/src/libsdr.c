@@ -59,6 +59,13 @@ static SdrPacket g_sdrPacket __attribute__((aligned(64)));
 // NTSC-U/C: 0x00531200
 static sceSifClientData g_sdrClient __attribute__((aligned(64)));
 
+// NTSC-U/C: 0x003c4758, PAL: 0x0045aba0, the identification tag of the library.
+#ifdef VIDEO_STANDARD_PAL
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibsdr  2700";
+#else
+static char g_acLibraryId[16] __attribute__((used)) = "PsIIlibsdr  2600";
+#endif
+
 // The completion callback of a call made with a zero control word. The image never writes it.
 // NTSC-U/C: 0x003c4768, PAL: 0x0045abb0
 static sceSifEndFunc g_pfnSdrEndFunction;
