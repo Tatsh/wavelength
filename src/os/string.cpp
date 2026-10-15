@@ -67,7 +67,11 @@ String::String(const String &other) : PrnStream() {
 
 String::~String() {
     if (mBuffer != g_szStringEmptyBuffer) {
+        // An empty string has no capacity, but it never arrives here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         MemOrPoolFree(mCapacity, mBuffer);
+#pragma GCC diagnostic pop
     }
 }
 
@@ -103,7 +107,11 @@ String &String::operator+=(const String &other) {
     char *pBuffer = static_cast<char *>(MemOrPoolAlloc(mCapacity, g_pszStringTag));
     if (mBuffer != g_szStringEmptyBuffer) {
         strcpy(pBuffer, mBuffer);
+        // An empty string has no capacity, but it never arrives here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         MemOrPoolFree(nOldCapacity, mBuffer);
+#pragma GCC diagnostic pop
     }
     strcpy(&pBuffer[mLength], other.mBuffer);
     mBuffer = pBuffer;
@@ -121,7 +129,11 @@ String &String::operator+=(const char *pszText) {
     char *pBuffer = static_cast<char *>(MemOrPoolAlloc(mCapacity, g_pszStringTag));
     if (mBuffer != g_szStringEmptyBuffer) {
         strcpy(pBuffer, mBuffer);
+        // An empty string has no capacity, but it never arrives here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         MemOrPoolFree(nOldCapacity, mBuffer);
+#pragma GCC diagnostic pop
     }
     strcpy(&pBuffer[mLength], pszText);
     mBuffer = pBuffer;
@@ -137,7 +149,11 @@ String &String::operator+=(char ch) {
     char *pBuffer = static_cast<char *>(MemOrPoolAlloc(mCapacity, g_pszStringTag));
     if (mBuffer != g_szStringEmptyBuffer) {
         strcpy(pBuffer, mBuffer);
+        // An empty string has no capacity, but it never arrives here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         MemOrPoolFree(nOldCapacity, mBuffer);
+#pragma GCC diagnostic pop
     }
     pBuffer[mLength - 1] = ch;
     pBuffer[mLength] = '\0';

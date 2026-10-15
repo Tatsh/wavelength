@@ -93,7 +93,10 @@ void MemHeapInfo(int nHeap, int *pnBlocks, int *pnFreeBytes, int *pnBiggest) {
 // Take the memory from the end of the C library's heap to kMemoryEnd. The PAL build starts the
 // heap a random number of words into the block.
 // NTSC-U/C: 0x00299e38, PAL: 0x002a3a38
-static void AllocMainHeap(int **ppStart, int **ppEnd) {
+// Out of line, as in the binary, which reads only the address of the freed probe.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+__attribute__((noinline)) static void AllocMainHeap(int **ppStart, int **ppEnd) {
 #ifdef VIDEO_STANDARD_PAL
     const int nStartWords = static_cast<int>(ReadCycleCount() & kStartJitterMask);
 #endif
@@ -110,6 +113,7 @@ static void AllocMainHeap(int **ppStart, int **ppEnd) {
 #endif
     *ppEnd = &(*ppStart)[nBytes >> kWordShift];
 }
+#pragma GCC diagnostic pop
 
 int MemRegisterHeap(const char *pszName, int *pStart, int nSizeWords, int bHandles) {
     g_aHeaps[g_nNumHeaps].Init(pszName, g_nNumHeaps, pStart, nSizeWords, bHandles);

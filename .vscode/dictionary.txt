@@ -1699,6 +1699,7 @@ worldtrack
 writx
 wstringop
 wuninitialized
+wuse
 xdir
 xfer
 xfms
