@@ -17,13 +17,21 @@ FileStream::~FileStream() {
     delete mFile;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void FileStream::ReadImpl(void *pData, int nBytes) {
+#else
 void FileStream::Read(void *pData, int nBytes) {
+#endif
     if (mFile->Read(pData, nBytes) != nBytes) {
         mFail = 1;
     }
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void FileStream::WriteImpl(const void *pData, int nBytes) {
+#else
 void FileStream::Write(const void *pData, int nBytes) {
+#endif
     if (mFile->Write(pData, nBytes) != nBytes) {
         mFail = 1;
     }
@@ -33,7 +41,11 @@ void FileStream::Flush() {
     mFile->Flush();
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void FileStream::SeekImpl(int nOffset, SeekType eFrom) {
+#else
 void FileStream::Seek(int nOffset, SeekType eFrom) {
+#endif
     // The File::Seek() origin of each SeekType.
     const int anOrigins[] = {0, 1, 2};
     if (mFile->Seek(nOffset, anOrigins[eFrom]) < 0) {

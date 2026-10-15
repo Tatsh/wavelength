@@ -81,12 +81,20 @@ ChunkStream::~ChunkStream() {
     PoolMemFree(mBuffers[1]);
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void ChunkStream::ReadImpl(void *pData, int nBytes) {
+#else
 void ChunkStream::Read(void *pData, int nBytes) {
+#endif
     memcpy(pData, mData + mPosition, nBytes);
     mPosition += nBytes;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void ChunkStream::WriteImpl(const void *pData, int nBytes) {
+#else
 void ChunkStream::Write(const void *pData, int nBytes) {
+#endif
     if (mPosition + nBytes >= mBufferSize) {
         mBufferSize = mPosition + nBytes + kWriteGrowth;
         char *pWork = static_cast<char *>(PoolMemAlloc(mBufferSize, "ChunkStream", 0));
@@ -98,7 +106,11 @@ void ChunkStream::Write(const void *pData, int nBytes) {
     mPosition += nBytes;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void ChunkStream::SeekImpl(int /* nOffset */, SeekType /* eFrom */) {
+#else
 void ChunkStream::Seek(int /* nOffset */, SeekType /* eFrom */) {
+#endif
     DebugWarn("Can't seek on chunkstream");
 }
 

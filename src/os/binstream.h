@@ -3,6 +3,7 @@
 #include <list>
 #include <vector>
 
+#include "math/rand.h"
 #include "os/string.h"
 
 /**
@@ -10,9 +11,21 @@
  *
  * The RTTI includes the class name. One data word precedes the vptr at `+0x04`. Read() and Write()
  * are pure in this class. Only the members its callers here use are declared.
+ *
+ * In the European release the decryption generator follows that word and the vptr is at `+0x08`.
+ * Read(), Write(), and Seek() there are plain members that call the virtual ReadImpl(),
+ * WriteImpl(), and SeekImpl(), which take the vtable slots of the originals with SeekImpl() before
+ * Flush().
  */
 class BinStream {
 public:
+    /** Origins of Seek(). */
+    enum SeekType {
+        kSeekBegin = 0,   /*!< From the start of the stream. */
+        kSeekCurrent = 1, /*!< From the current position. */
+        kSeekEnd = 2,     /*!< From the end of the stream. */
+    };
+
     /**
      * Construct a stream.
      *
@@ -23,11 +36,90 @@ public:
     explicit BinStream(bool bLittleEndian) : mLittleEndian(bLittleEndian) {
     }
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Release the stream and its decryption generator.
+     *
+     * @ghidraAddress PAL: 0x0029d8e8
+     */
+    virtual ~BinStream();
+
+    /**
+     * Read bytes, decrypting them while decryption is on.
+     *
+     * Each byte is combined by exclusive or with the low byte of the next draw of the generator.
+     *
+     * @param pData The destination.
+     * @param nBytes The number of bytes.
+     * @ghidraAddress PAL: 0x0029d9c0
+     */
+    void Read(void *pData, int nBytes);
+
+    /**
+     * Write bytes, encrypting them while encryption is on.
+     *
+     * Encrypted bytes are passed to WriteImpl() in pieces of at most 256 bytes.
+     *
+     * @param pData The source.
+     * @param nBytes The number of bytes.
+     * @ghidraAddress PAL: 0x0029da50
+     */
+    void Write(const void *pData, int nBytes);
+
+    /**
+     * Move the position.
+     *
+     * @param nOffset The offset in bytes.
+     * @param eFrom The origin of the offset.
+     * @ghidraAddress PAL: 0x0029db68
+     */
+    void Seek(int nOffset, SeekType eFrom);
+
+    /**
+     * Read a seed from the stream and decrypt the bytes after it.
+     *
+     * @ghidraAddress PAL: 0x0029d940
+     */
+    void EnableReadEncryption();
+
+    /**
+     * Stop decrypting or encrypting.
+     *
+     * @ghidraAddress PAL: 0x0029d990
+     */
+    void DisableEncryption();
+
+protected:
+    /**
+     * Read bytes as they are stored.
+     *
+     * @param pData The destination.
+     * @param nBytes The number of bytes.
+     */
+    virtual void ReadImpl(void *pData, int nBytes) = 0;
+
+    /**
+     * Write bytes as they are given.
+     *
+     * @param pData The source.
+     * @param nBytes The number of bytes.
+     */
+    virtual void WriteImpl(const void *pData, int nBytes) = 0;
+
+    /**
+     * Move the position.
+     *
+     * @param nOffset The offset in bytes.
+     * @param eFrom The origin of the offset.
+     */
+    virtual void SeekImpl(int nOffset, SeekType eFrom) = 0;
+
+public:
+#else
     /**
      * Release the stream.
      *
      * @ghidraAddress NTSC-U/C: 0x00339f10
-     * @ghidraAddress PAL: 0x0041a390
      */
     virtual ~BinStream() {
     }
@@ -47,17 +139,12 @@ public:
      * @param nBytes The number of bytes.
      */
     virtual void Write(const void *pData, int nBytes) = 0;
-
-    /** Origins of Seek(). */
-    enum SeekType {
-        kSeekBegin = 0,   /*!< From the start of the stream. */
-        kSeekCurrent = 1, /*!< From the current position. */
-        kSeekEnd = 2,     /*!< From the end of the stream. */
-    };
+#endif
 
     /** Write out buffered data. */
     virtual void Flush() = 0;
 
+#ifndef VIDEO_STANDARD_PAL
     /**
      * Move the position.
      *
@@ -65,6 +152,7 @@ public:
      * @param eFrom The origin of the offset.
      */
     virtual void Seek(int nOffset, SeekType eFrom) = 0;
+#endif
 
     /**
      * Report the position.
@@ -154,6 +242,10 @@ public:
 
 private:
     int mLittleEndian; /*!< Whether values are stored in the console's byte order. */
+#ifdef VIDEO_STANDARD_PAL
+    Rand *mCrypto =
+        nullptr; /*!< The generator of the encryption, or null while encryption is off. */
+#endif
 };
 
 /**

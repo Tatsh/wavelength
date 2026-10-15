@@ -15,7 +15,11 @@ MemStream::MemStream(bool bLittleEndian) : BinStream(bLittleEndian) {
     mTell = 0;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void MemStream::ReadImpl(void *pData, int nBytes) {
+#else
 void MemStream::Read(void *pData, int nBytes) {
+#endif
     const unsigned int nSize = mBuffer.size();
     if (nSize < static_cast<unsigned int>(mTell + nBytes)) {
         nBytes = nSize - mTell;
@@ -25,7 +29,11 @@ void MemStream::Read(void *pData, int nBytes) {
     mTell += nBytes;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void MemStream::WriteImpl(const void *pData, int nBytes) {
+#else
 void MemStream::Write(const void *pData, int nBytes) {
+#endif
     const unsigned int nCapacity = mBuffer.capacity();
     if (nCapacity < static_cast<unsigned int>(mTell + nBytes)) {
         mBuffer.reserve(nCapacity + kMemStreamGrowth);
@@ -40,7 +48,11 @@ void MemStream::Write(const void *pData, int nBytes) {
 void MemStream::Flush() {
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void MemStream::SeekImpl(int nOffset, SeekType eFrom) {
+#else
 void MemStream::Seek(int nOffset, SeekType eFrom) {
+#endif
     switch (eFrom) {
     case kSeekBegin:
         break;

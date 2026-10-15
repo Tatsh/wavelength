@@ -15,7 +15,61 @@ enum EndianSize {
 // Halves of a 128-bit value.
 enum Half { kHalfLow = 0, kHalfHigh = 1, kHalfCount = 2 };
 
+#ifdef VIDEO_STANDARD_PAL
+// Bytes Write() encrypts into its buffer for each WriteImpl() call.
+constexpr int kCryptChunkSize = 256;
+#endif
+
 } // namespace
+
+#ifdef VIDEO_STANDARD_PAL
+BinStream::~BinStream() {
+    delete mCrypto;
+}
+
+void BinStream::EnableReadEncryption() {
+    int nSeed;
+    ReadEndian(&nSeed, sizeof(nSeed));
+    mCrypto = new Rand(nSeed);
+}
+
+void BinStream::DisableEncryption() {
+    delete mCrypto;
+    mCrypto = nullptr;
+}
+
+void BinStream::Read(void *pData, int nBytes) {
+    ReadImpl(pData, nBytes);
+    if (mCrypto == nullptr) {
+        return;
+    }
+    auto *pByte = static_cast<unsigned char *>(pData);
+    for (unsigned char *pEnd = pByte + nBytes; pByte < pEnd; ++pByte) {
+        *pByte ^= static_cast<unsigned char>(mCrypto->Int());
+    }
+}
+
+void BinStream::Write(const void *pData, int nBytes) {
+    if (mCrypto == nullptr) {
+        WriteImpl(pData, nBytes);
+        return;
+    }
+    const auto *pSource = static_cast<const unsigned char *>(pData);
+    unsigned char abChunk[kCryptChunkSize];
+    for (; nBytes > 0; nBytes -= kCryptChunkSize) {
+        const int nChunk = nBytes < kCryptChunkSize ? nBytes : kCryptChunkSize;
+        for (int i = 0; i < nChunk; ++i) {
+            abChunk[i] = pSource[i] ^ static_cast<unsigned char>(mCrypto->Int());
+        }
+        WriteImpl(abChunk, nChunk);
+        pSource += kCryptChunkSize;
+    }
+}
+
+void BinStream::Seek(int nOffset, SeekType eFrom) {
+    SeekImpl(nOffset, eFrom);
+}
+#endif
 
 void BinStream::ReadEndian(void *pData, int nBytes) {
     Read(pData, nBytes);

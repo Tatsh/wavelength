@@ -51,7 +51,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00293cc8
      * @ghidraAddress PAL: 0x0029d680
      */
+#ifdef VIDEO_STANDARD_PAL
+    void ReadImpl(void *pData, int nBytes) override;
+#else
     void Read(void *pData, int nBytes) override;
+#endif
 
     /**
      * Write bytes.
@@ -61,7 +65,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00293d70
      * @ghidraAddress PAL: 0x0029d728
      */
+#ifdef VIDEO_STANDARD_PAL
+    void WriteImpl(const void *pData, int nBytes) override;
+#else
     void Write(const void *pData, int nBytes) override;
+#endif
 
     /**
      * Do nothing.
@@ -80,7 +88,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00293e18
      * @ghidraAddress PAL: 0x0029d7d0
      */
+#ifdef VIDEO_STANDARD_PAL
+    void SeekImpl(int nOffset, SeekType eFrom) override;
+#else
     void Seek(int nOffset, SeekType eFrom) override;
+#endif
 
     /**
      * Report the position.

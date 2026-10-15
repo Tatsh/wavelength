@@ -86,7 +86,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002954e8
      * @ghidraAddress PAL: 0x0029f100
      */
+#ifdef VIDEO_STANDARD_PAL
+    void ReadImpl(void *pData, int nBytes) override;
+#else
     void Read(void *pData, int nBytes) override;
+#endif
 
     /**
      * Append bytes to the block being gathered.
@@ -96,7 +100,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00295538
      * @ghidraAddress PAL: 0x0029f150
      */
+#ifdef VIDEO_STANDARD_PAL
+    void WriteImpl(const void *pData, int nBytes) override;
+#else
     void Write(const void *pData, int nBytes) override;
+#endif
 
     /**
      * Do nothing.
@@ -115,7 +123,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002955f8
      * @ghidraAddress PAL: 0x0029f210
      */
+#ifdef VIDEO_STANDARD_PAL
+    void SeekImpl(int nOffset, SeekType eFrom) override;
+#else
     void Seek(int nOffset, SeekType eFrom) override;
+#endif
 
     /**
      * Report that the stream cannot report a position.

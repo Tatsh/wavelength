@@ -52,7 +52,11 @@ bool AsyncStream::Ready(int nBytes) {
     return nRead >= nBytes;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void AsyncStream::ReadImpl(void *pData, int nBytes) {
+#else
 void AsyncStream::Read(void *pData, int nBytes) {
+#endif
     if (mPosition + nBytes > mSize) {
         nBytes = mSize - mPosition;
         mFail = 1;
@@ -64,7 +68,11 @@ void AsyncStream::Read(void *pData, int nBytes) {
     mPosition = nEnd;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void AsyncStream::WriteImpl(const void *pData, int nBytes) {
+#else
 void AsyncStream::Write(const void *pData, int nBytes) {
+#endif
     if (mPosition + nBytes > mSize) {
         nBytes = mSize - mPosition;
         mFail = 1;
@@ -76,7 +84,11 @@ void AsyncStream::Write(const void *pData, int nBytes) {
     mPosition = nEnd;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void AsyncStream::SeekImpl(int nOffset, SeekType eFrom) {
+#else
 void AsyncStream::Seek(int nOffset, SeekType eFrom) {
+#endif
     int nPosition;
     switch (eFrom) {
     case kSeekBegin:
