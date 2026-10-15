@@ -3,6 +3,7 @@
 #include "game/campaign.h"
 #include "game/gamedb.h"
 #include "met/metagame.h"
+#include "os/codecheck.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
@@ -24,6 +25,9 @@ MetaMainScreen::MetaMainScreen(DataArray *pData) : FreqScreen(pData) {
 }
 
 void MetaMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Poll();
+#endif
     FreqScreen::Enter(pPrevScreen, fTime);
     if (TheGameDb->GetNumPads() >= kMultiplePads) {
         Campaign profile(*TheGameDb->GetProfile(0));

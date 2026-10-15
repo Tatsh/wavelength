@@ -1,5 +1,6 @@
 #include "met/introscreen.h"
 
+#include "os/codecheck.h"
 #include "os/system.h"
 #include "ui/uimanager.h"
 
@@ -31,6 +32,9 @@ void IntroScreen::Poll(float fTime) {
 }
 
 bool IntroScreen::HandleTransitionComplete([[maybe_unused]] UITransitionCompleteMsg *pMsg) {
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Poll();
+#endif
     mEndTime = SystemMs() + mHoldMs;
     return false;
 }

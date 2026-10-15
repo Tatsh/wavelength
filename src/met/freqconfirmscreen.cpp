@@ -8,6 +8,7 @@
 #include "met/metagame.h"
 #include "met/selloadedfreqscreen.h"
 #include "os/cheatsmanager.h"
+#include "os/codecheck.h"
 #include "os/joypad.h"
 #include "os/locale.h"
 #include "os/string.h"
@@ -27,6 +28,9 @@ bool FreqConfirmScreen::DispatchPriv(Message *pMsg) {
 
 void FreqConfirmScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Poll();
+#endif
     UIComponent *pConfirm = TheUI.FindComponent("f_confirm", "confirm", false);
     UIComponent *pEdit = TheUI.FindComponent("f_confirm", "edit", false);
     String name("");

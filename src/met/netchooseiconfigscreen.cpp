@@ -4,6 +4,7 @@
 #include <iterator>
 
 #include "met/netinetconnect.h"
+#include "os/codecheck.h"
 #include "os/joypad.h"
 #include "os/listat.h"
 #include "os/string.h"
@@ -25,6 +26,10 @@ constexpr char kCreateButton[] = "create";
 constexpr char kDescriptionText[] = "fn_config_data_02.txt";
 constexpr char kCreateConfigScreen[] = "create_config_check";
 constexpr char kConnectScreen[] = "net_connect_internet";
+#ifdef VIDEO_STANDARD_PAL
+// A configuration's button shows its identifier before its name.
+constexpr char kNumberedConfigFormat[] = "%d. %s";
+#endif
 
 // The screen has buttons for this many configurations.
 constexpr int kConfigButtons = 7;
@@ -41,12 +46,21 @@ void NetChooseIConfigScreen::SetConfigs(const std::list<InetConfig> &configs) {
 
 void NetChooseIConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
+#ifdef VIDEO_STANDARD_PAL
+    CodeCheck::Poll();
+#endif
     const int nCount = static_cast<int>(mConfigs.size());
     for (int i = 0; i < kConfigButtons; ++i) {
         auto *pButton = dynamic_cast<UIButton *>(
             TheUI.FindComponent(kConfigPanel, FormatString(kConfigButtonFormat, i + 1), false));
         if (i < nCount) {
+#ifdef VIDEO_STANDARD_PAL
+            const auto config = ListAt(mConfigs, i);
+            pButton->SetText(
+                FormatString(kNumberedConfigFormat, config->mId, config->mName.c_str()));
+#else
             pButton->SetText(ListAt(mConfigs, i)->mName.c_str());
+#endif
             pButton->SetShowing(true);
         } else {
             pButton->SetState(UIComponent::kStateDisabled, false);
