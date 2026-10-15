@@ -21,7 +21,7 @@ void InitMGCLTask::OnStart() {
     params.handlers[2] = OnServerRequest2;
     params.handlers[3] = OnServerRequest3;
     params.maxClients = LaunchpadRT::kMaxClients;
-    params.applicationId = LobbyRT::kApplicationId;
+    params.applicationId = LobbyRT::ApplicationId();
     params.keyPair = nullptr;
     params.connectMode = 0;
     int nStatus;

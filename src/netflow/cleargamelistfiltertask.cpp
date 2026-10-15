@@ -26,7 +26,11 @@ void ClearGameListFilterTask::OnStart() {
         MakeTag(this, request.header.messageId);
         request.id = filter.mField;
         const int nError = rtMediusClearGameListFilter(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+        LobbyRT::ReportMediusError(2097, nError);
+#else
         LobbyRT::ReportMediusError(1898, nError);
+#endif
         if (nError != 0) {
             Finish(false, JoinChatroomResultMsg::kResultFailed);
             return;

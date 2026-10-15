@@ -37,7 +37,7 @@ void MGCLCreateGameTask::OnStart() {
     memset(&request, 0, sizeof(request));
     MakeTag(this, request.messageId);
     strncpy(request.gameName, name.c_str(), RT_MGCL_GAME_NAME_SIZE);
-    request.applicationId = LobbyRT::kApplicationId;
+    request.applicationId = LobbyRT::ApplicationId();
     request.gameLevel = nLevel;
     request.rulesSet = nRules;
     request.maxClients = LaunchpadRT::kMaxClients;

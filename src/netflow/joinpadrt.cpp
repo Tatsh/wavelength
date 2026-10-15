@@ -37,6 +37,11 @@ namespace {
 // The text that asks the host for the key of the session.
 constexpr char kKeyRequest[] = "req";
 
+#ifdef VIDEO_STANDARD_PAL
+// The milliseconds the host may take to start the game once this console loads.
+constexpr float kStartWaitMs = 20000.0f;
+#endif
+
 } // namespace
 
 JoinpadRT *TheJoinpadRT;
@@ -68,7 +73,27 @@ JoinpadRT::~JoinpadRT() {
 
 void JoinpadRT::PollPriv() {
     (void)mClockSync->Poll();
+#ifdef VIDEO_STANDARD_PAL
+    PollStart();
+#endif
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void JoinpadRT::NotifyLoaded() {
+    LaunchpadRT::NotifyLoaded();
+    mSyncDeadline = SystemMs() + kStartWaitMs;
+}
+
+void JoinpadRT::PollStart() {
+    if (mSyncDeadline == 0.0f) {
+        return;
+    }
+    if (mSyncDeadline < SystemMs()) {
+        Exit(mGameSink, LaunchpadAbortedMsg::kReasonHost);
+        mSyncDeadline = 0.0f;
+    }
+}
+#endif
 
 void JoinpadRT::RemovePlayer(int nId) {
     LaunchpadRT::RemovePlayer(nId);

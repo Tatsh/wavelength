@@ -433,10 +433,12 @@ public:
     PeriodicTask mWorldReport;       /*!< The report of the world to the lobby server. */
     NetMultiTask mShareTask;         /*!< The share of the remix before the song loads. */
     std::vector<ClientClr> mColors;  /*!< The colours of the slots and their players. */
-    float mSyncDeadline;             /*!< When the slow consoles are removed, or 0. */
-    unsigned char mKey[kKeySize];    /*!< The key of the session. */
-    std::vector<int> mRecipients;    /*!< The guests the remix is shared with. */
-    std::vector<int> mAwaiting;      /*!< The guests that have not acknowledged the block. */
+#ifndef VIDEO_STANDARD_PAL
+    float mSyncDeadline; /*!< When the slow consoles are removed, or 0. */
+#endif
+    unsigned char mKey[kKeySize];        /*!< The key of the session. */
+    std::vector<int> mRecipients;        /*!< The guests the remix is shared with. */
+    std::vector<int> mAwaiting;          /*!< The guests that have not acknowledged the block. */
     std::vector<ClientData> mClientData; /*!< The ranks and ratings of the players. */
     int mSharing;                        /*!< Non-zero while the remix is shared. */
     int mBlock;                          /*!< The block of the remix sent next. */

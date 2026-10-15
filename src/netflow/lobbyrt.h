@@ -30,8 +30,28 @@ class DataArray;
  */
 class LobbyRT : public NetLobby {
 public:
+#ifdef VIDEO_STANDARD_PAL
+    /** The identifier of the game on the lobby server, a variable in the European release. */
+    static int sApplicationId;
+#else
     /** The identifier of the game on the lobby server. */
     static constexpr int kApplicationId = 10164;
+#endif
+
+    /**
+     * Report the identifier of the game on the lobby server.
+     *
+     * Inline at each use.
+     *
+     * @return The identifier.
+     */
+    static int ApplicationId() {
+#ifdef VIDEO_STANDARD_PAL
+        return sApplicationId;
+#else
+        return kApplicationId;
+#endif
+    }
 
     /** Values of mDisconnectReason, the result Poll() reports once mDisconnectTask finishes. */
     enum DisconnectReason {

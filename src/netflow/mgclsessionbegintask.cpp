@@ -17,7 +17,7 @@ void MGCLSessionBeginTask::OnStart() {
     rtMgclSessionBeginRequest request;
     memset(&request, 0, sizeof(request));
     MakeTag(this, request.messageId);
-    request.applicationId = LobbyRT::kApplicationId;
+    request.applicationId = LobbyRT::ApplicationId();
     request.locationId = TheLobbyRT->mLocationId;
     request.serverType = kServerType;
     if (rtMgclSessionBegin(&request, OnResponse) != 0) {

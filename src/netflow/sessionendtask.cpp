@@ -22,7 +22,11 @@ void SessionEndTask::OnStart() {
     memset(&request, 0, sizeof(request));
     MakeTag(this, request.messageId); // Yes, the binary sends the request without the key.
     const int nError = rtMediusSessionEnd(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(463, nError);
+#else
     LobbyRT::ReportMediusError(447, nError);
+#endif
     if (nError != 0 || TheLobbyRT->mDisconnected != 0) {
         TheLobbyRT->mSessionKey = "";
         Finish(true, 0);

@@ -86,12 +86,31 @@ public:
     void OnConnected() override;
 
     /**
-     * Poll mClockSync.
+     * Poll mClockSync. The European release then calls PollStart().
      *
      * @ghidraAddress NTSC-U/C: 0x0025a150
      * @ghidraAddress PAL: 0x00263050
      */
     void PollPriv() override;
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Report this console loaded, and give the host 20 seconds to start the game.
+     *
+     * @ghidraAddress PAL: 0x002633e0
+     */
+    void NotifyLoaded() override;
+
+    /**
+     * Exit the session with LaunchpadAbortedMsg::kReasonHost once mSyncDeadline passes without a
+     * StartGamePkt.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress PAL: 0x00263468
+     */
+    void PollStart();
+#endif
 
     /**
      * Act on a packet of the session, before LaunchpadRT does.

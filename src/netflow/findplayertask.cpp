@@ -32,7 +32,11 @@ void FindPlayerTask::OnStart() {
     request.searchType = kSearchByAccount;
     request.accountId = mPlayer->mId;
     const int nError = rtMediusFindPlayer(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1923, nError);
+#else
     LobbyRT::ReportMediusError(1730, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }

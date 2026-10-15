@@ -4,6 +4,7 @@
 
 #include "netflow/lobbyrt.h"
 #include "netflow/netchatroominfo.h"
+#include "os/utf8.h"
 
 namespace {
 
@@ -22,7 +23,11 @@ void GetChannelsTask::OnStart() {
     request.pageId = kFirstPage;
     request.pageSize = kPageSize;
     const int nError = rtMediusChannelList(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1356, nError);
+#else
     LobbyRT::ReportMediusError(1189, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }
@@ -43,7 +48,12 @@ void GetChannelsTask::OnResponse(int nConnection,
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
         NetChatroomInfo room;
         room.mId = pResponse->worldId;
+#ifdef VIDEO_STANDARD_PAL
+        const String name = Utf8DecodedString(pResponse->name);
+        room.mName = name.c_str();
+#else
         room.mName = pResponse->name;
+#endif
         room.mPlayerCount = pResponse->playerCount;
         // Yes, the binary gives every room the capacity of the room of the local player.
         room.mMaxPlayers = TheLobbyRT->mChatroom.mMaxPlayers;

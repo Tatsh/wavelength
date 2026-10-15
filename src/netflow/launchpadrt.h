@@ -625,12 +625,10 @@ public:
     int mInGame;                            /*!< Non-zero during the game. */
 #ifdef VIDEO_STANDARD_PAL
     /**
-     * A session clock limit for the launch, or zero for none.
-     *
-     * HostpadRT::Launch() sets it to 1e30 and the host's start poll compares the clock with it.
-     * Those uses belong to the European network changes, which are not reconstructed.
+     * When HostpadRT removes the slow consoles, or 0. The European release moves the member here
+     * from HostpadRT, and OnMsg(StartGamePkt *) clears it.
      */
-    float mLaunchDeadline = 0.0f;
+    float mSyncDeadline = 0.0f;
 #endif
     std::vector<int> mClients;        /*!< The consoles AddClient() noted. */
     std::vector<RatingStat> mRatings; /*!< The rating of the game, while it runs. */

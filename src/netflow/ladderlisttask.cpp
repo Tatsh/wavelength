@@ -5,6 +5,7 @@
 #include "netflow/lobbyrt.h"
 #include "netflow/playerinfotask.h"
 #include "os/system.h"
+#include "os/utf8.h"
 #include "script/dataarray.h"
 
 namespace {
@@ -37,7 +38,11 @@ void LadderListTask::OnStart() {
     request.startPosition = TheLobbyRT->mRanksPageSize * TheLobbyRT->mRanksPage + 1;
     request.pageSize = TheLobbyRT->mRanksPageSize;
     const int nError = rtMediusLadderList(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1644, nError);
+#else
     LobbyRT::ReportMediusError(1456, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }
@@ -89,7 +94,12 @@ void LadderListTask::OnResponse(int nConnection,
     if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS) {
         LobbyPlayer player;
         player.mId = pResponse->accountId;
+#ifdef VIDEO_STANDARD_PAL
+        const String name = Utf8DecodedString(pResponse->accountName);
+        player.mName = name.c_str();
+#else
         player.mName = pResponse->accountName;
+#endif
         player.mRank = pResponse->rank;
         player.mRating = kRankedRating;
         TheLobbyRT->mRankedPlayers.push_back(player);

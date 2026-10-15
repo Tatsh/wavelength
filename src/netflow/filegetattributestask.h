@@ -30,8 +30,23 @@ public:
      * @param pName The file.
      * @param pnSize Receives the size of the file in bytes.
      */
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Construct a step.
+     *
+     * Inline.
+     *
+     * @param pName The file.
+     * @param pnSize Receives the size of the file in bytes.
+     * @param pnPermissions Receives the access of the owner of the file.
+     */
+    FileGetAttributesTask(String *pName, int *pnSize, int *pnPermissions)
+        : mName(pName), mSize(pnSize), mPermissions(pnPermissions) {
+    }
+#else
     FileGetAttributesTask(String *pName, int *pnSize) : mName(pName), mSize(pnSize) {
     }
+#endif
 
     /**
      * Take the size and finish the step the response is tagged with.
@@ -52,6 +67,9 @@ public:
 
     String *mName; /*!< The file. */
     int *mSize;    /*!< Receives the size of the file in bytes. */
+#ifdef VIDEO_STANDARD_PAL
+    int *mPermissions; /*!< Receives the access of the owner of the file. */
+#endif
 
 protected:
     /**

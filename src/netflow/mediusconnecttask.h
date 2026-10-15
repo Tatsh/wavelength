@@ -63,6 +63,9 @@ public:
     static int sConnecting;
 
     int mServer; /*!< One of Server. */
+#ifdef VIDEO_STANDARD_PAL
+    float mDeadline; /*!< When the step fails without a connection, from SystemMs(). */
+#endif
 
 protected:
     /**
@@ -80,4 +83,14 @@ protected:
      * @ghidraAddress PAL: 0x0026c400
      */
     void OnStop() override;
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Fail with LobbyConnectResultMsg::kResultConnectFailed once mDeadline passes, and clear
+     * sConnecting.
+     *
+     * @ghidraAddress PAL: 0x0026c410
+     */
+    void OnPoll() override;
+#endif
 };

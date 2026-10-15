@@ -26,7 +26,11 @@ void FileUploadTask::OnStart() {
     request.buffer = *mBuffer;
     request.bufferSize = *mSize;
     const int nError = rtMediusFileUpload(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(2399, nError);
+#else
     LobbyRT::ReportMediusError(2198, nError);
+#endif
     if (nError != 0) {
         Finish(false, RepoRemixStatusMsg::kStatusFailed);
     }

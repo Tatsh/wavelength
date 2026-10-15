@@ -4,6 +4,7 @@
 
 #include "msg/loginresultmsg.h"
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 namespace {
 
@@ -19,10 +20,19 @@ void AccountLoginTask::OnStart() {
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.header.messageId);
+#ifdef VIDEO_STANDARD_PAL
+    strncpy(
+        request.accountName, Utf8String(TheLobbyRT->GetName()).c_str(), RT_MEDIUS_PLAYER_NAME_SIZE);
+    strncpy(
+        request.password, Utf8String(TheLobbyRT->GetPassword()).c_str(), RT_MEDIUS_PASSWORD_SIZE);
+    const int nError = rtMediusAccountLogin(&request, OnResponse);
+    LobbyRT::ReportMediusError(830, nError);
+#else
     strncpy(request.accountName, TheLobbyRT->GetName(), RT_MEDIUS_PLAYER_NAME_SIZE);
     strncpy(request.password, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusAccountLogin(&request, OnResponse);
     LobbyRT::ReportMediusError(764, nError);
+#endif
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

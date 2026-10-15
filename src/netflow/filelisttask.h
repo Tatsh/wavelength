@@ -12,7 +12,8 @@
  *
  * The RTTI includes the name and records NetTask as the base. The vtable is at `0x003d5068` and the
  * object is 0x14 bytes. The server sends one file per response. The step fails with
- * RepoRemixStatusMsg::kStatusFailed when the request cannot be sent.
+ * RepoRemixStatusMsg::kStatusFailed when the request cannot be sent. The European release requests
+ * the files by pages of 50, and its object is 0x20 bytes.
  */
 class FileListTask : public NetTask {
 public:
@@ -53,6 +54,11 @@ public:
 
     String *mPrefix;           /*!< The prefix. */
     std::list<String> *mFiles; /*!< Receives the names of the files. */
+#ifdef VIDEO_STANDARD_PAL
+    int mPage;     /*!< The page RequestPage() requests, from 0. */
+    int mReceived; /*!< The files of the page received so far. */
+    int mPageDone; /*!< Non-zero once the last file of the page arrives. */
+#endif
 
 protected:
     /**
@@ -62,4 +68,24 @@ protected:
      * @ghidraAddress PAL: 0x00270b40
      */
     void OnStart() override;
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Once a page is done, request the next page when the page was full, and otherwise finish.
+     *
+     * @ghidraAddress PAL: 0x00270c48
+     */
+    void OnPoll() override;
+
+private:
+    /**
+     * Send the request of page mPage. The step fails with RepoRemixStatusMsg::kStatusFailed when
+     * the request cannot be sent.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress PAL: 0x00270b80
+     */
+    void RequestPage();
+#endif
 };

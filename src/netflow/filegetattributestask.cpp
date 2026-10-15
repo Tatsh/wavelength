@@ -12,7 +12,11 @@ void FileGetAttributesTask::OnStart() {
     MakeTag(this, request.messageId);
     strncpy(request.file.fileName, mName->c_str(), RT_MEDIUS_FILE_NAME_SIZE);
     const int nError = rtMediusFileGetAttributes(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(2216, nError);
+#else
     LobbyRT::ReportMediusError(2016, nError);
+#endif
     if (nError != 0) {
         Finish(false, RepoRemixStatusMsg::kStatusFailed);
     }
@@ -33,6 +37,9 @@ void FileGetAttributesTask::OnResponse(int nConnection,
     }
     if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS) {
         *pTask->mSize = pResponse->file.fileSize;
+#ifdef VIDEO_STANDARD_PAL
+        *pTask->mPermissions = static_cast<unsigned short>(pResponse->file.ownerPermissions);
+#endif
     }
     pTask->Finish(pResponse->status == RT_MEDIUS_STATUS_SUCCESS, RepoRemixStatusMsg::kStatusFailed);
 }

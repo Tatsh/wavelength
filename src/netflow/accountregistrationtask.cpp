@@ -6,6 +6,9 @@
 #include "msg/createaccountresultmsg.h"
 #include "msg/loginresultmsg.h"
 #include "netflow/lobbyrt.h"
+#include "os/system.h"
+#include "os/utf8.h"
+#include "script/dataarray.h"
 
 namespace {
 
@@ -23,7 +26,14 @@ constexpr int kStatusVulgarName = -967;
 } // namespace
 
 void AccountRegistrationTask::OnStart() {
+#ifdef VIDEO_STANDARD_PAL
+    int nAllowReserved = 0;
+    SystemConfig()->FindArray("net", false)->FindBool("allow_hmx", &nAllowReserved, false);
+    if (nAllowReserved == 0 &&
+        strncasecmp(TheLobbyRT->GetName(), kReservedPrefix, kReservedPrefixLength) == 0) {
+#else
     if (strncasecmp(TheLobbyRT->GetName(), kReservedPrefix, kReservedPrefixLength) == 0) {
+#endif
         Finish(false, CreateAccountResultMsg::kResultAlreadyExists);
         return;
     }
@@ -32,10 +42,19 @@ void AccountRegistrationTask::OnStart() {
     strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.header.messageId);
     request.accountType = kAccountTypeMaster;
+#ifdef VIDEO_STANDARD_PAL
+    strncpy(
+        request.accountName, Utf8String(TheLobbyRT->GetName()).c_str(), RT_MEDIUS_PLAYER_NAME_SIZE);
+    strncpy(
+        request.password, Utf8String(TheLobbyRT->GetPassword()).c_str(), RT_MEDIUS_PASSWORD_SIZE);
+    const int nError = rtMediusAccountRegistration(&request, OnResponse);
+    LobbyRT::ReportMediusError(708, nError);
+#else
     strncpy(request.accountName, TheLobbyRT->GetName(), RT_MEDIUS_PLAYER_NAME_SIZE);
     strncpy(request.password, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusAccountRegistration(&request, OnResponse);
     LobbyRT::ReportMediusError(666, nError);
+#endif
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

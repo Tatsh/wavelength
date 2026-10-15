@@ -27,7 +27,11 @@ void FileDownloadTask::OnStart() {
     MakeTag(this, request.messageId);
     strncpy(request.file.fileName, mName->c_str(), RT_MEDIUS_FILE_NAME_SIZE);
     const int nError = rtMediusFileDownload(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(2269, nError);
+#else
     LobbyRT::ReportMediusError(2068, nError);
+#endif
     if (nError != 0) {
         Finish(false, RepoRemixStatusMsg::kStatusFailed);
     }

@@ -4,6 +4,7 @@
 
 #include "msg/joinchatroomresultmsg.h"
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 namespace {
 
@@ -18,12 +19,20 @@ void CreateChannelTask::OnStart() {
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.header.messageId);
-    request.applicationId = LobbyRT::kApplicationId;
+    request.applicationId = LobbyRT::ApplicationId();
     request.maxPlayers = TheLobbyRT->mChatroom.mMaxPlayers;
     request.password[0] = '\0';
+#ifdef VIDEO_STANDARD_PAL
+    strncpy(request.name,
+            Utf8String(TheLobbyRT->mNewChatroomName.c_str()).c_str(),
+            RT_MEDIUS_GAME_NAME_SIZE);
+    const int nError = rtMediusCreateChannel(&request, OnResponse);
+    LobbyRT::ReportMediusError(2030, nError);
+#else
     strncpy(request.name, TheLobbyRT->mNewChatroomName.c_str(), RT_MEDIUS_GAME_NAME_SIZE);
     const int nError = rtMediusCreateChannel(&request, OnResponse);
     LobbyRT::ReportMediusError(1831, nError);
+#endif
     if (nError != 0) {
         Finish(false, JoinChatroomResultMsg::kResultFailed);
     }

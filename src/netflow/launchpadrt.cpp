@@ -516,6 +516,9 @@ bool LaunchpadRT::OnMsg(LoadGamePkt *pPkt) {
 }
 
 bool LaunchpadRT::OnMsg(StartGamePkt *pPkt) {
+#ifdef VIDEO_STANDARD_PAL
+    mSyncDeadline = 0.0f;
+#endif
     const float fNow = GetTime();
     if (pPkt->mTime < fNow) {
         DebugPrint("Net Problem: Starting late by %d milliseconds!\n",

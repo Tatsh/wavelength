@@ -99,8 +99,11 @@ void HostpadRT::Create(MsgSink *pScreen, MsgSink *pGame) {
 
 HostpadRT::HostpadRT(MsgSink *pScreen, MsgSink *pGame)
     : LaunchpadRT(pGame), mMgclConnected(0), mLost(0), mServerReport(kReportPeriodMs),
-      mWorldReport(kReportPeriodMs), mSyncDeadline(0.0f), mSharing(0), mBlockCount(0),
-      mRemixShared(0), mBlockDeadline(0.0f) {
+      mWorldReport(kReportPeriodMs),
+#ifndef VIDEO_STANDARD_PAL
+      mSyncDeadline(0.0f),
+#endif
+      mSharing(0), mBlockCount(0), mRemixShared(0), mBlockDeadline(0.0f) {
     NetCryptMakeKey(mKey);
     NetCryptSetKey(mKey);
     TheHostpadRT = this;
@@ -302,7 +305,9 @@ void HostpadRT::PollStart() {
         }
     }
 
+#ifndef VIDEO_STANDARD_PAL
     mSyncDeadline = 0.0f;
+#endif
     const float fStart = GetTime() + kStartDelayMs;
     StartGamePkt pkt;
     pkt.mTime = fStart;

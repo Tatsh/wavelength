@@ -11,7 +11,11 @@ void VersionServerTask::OnStart() {
     strcpy(request.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.messageId);
     const int nError = rtMediusVersionServer(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(510, nError);
+#else
     LobbyRT::ReportMediusError(494, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }

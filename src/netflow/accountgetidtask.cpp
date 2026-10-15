@@ -5,15 +5,24 @@
 #include "msg/loginresultmsg.h"
 #include "netflow/lobbyplayer.h"
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 void AccountGetIDTask::OnStart() {
     rtMediusAccountGetIdRequest request;
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.header.messageId);
+#ifdef VIDEO_STANDARD_PAL
+    strncpy(request.accountName,
+            Utf8String(mPlayer->mName.c_str()).c_str(),
+            RT_MEDIUS_PLAYER_NAME_SIZE);
+    const int nError = rtMediusAccountGetId(&request, OnResponse);
+    LobbyRT::ReportMediusError(1047, nError);
+#else
     strncpy(request.accountName, mPlayer->mName.c_str(), RT_MEDIUS_PLAYER_NAME_SIZE);
     const int nError = rtMediusAccountGetId(&request, OnResponse);
     LobbyRT::ReportMediusError(900, nError);
+#endif
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultAccountNotFound);
     }

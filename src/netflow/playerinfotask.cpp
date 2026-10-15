@@ -5,6 +5,7 @@
 #include "msg/loginresultmsg.h"
 #include "netflow/lobbyplayer.h"
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 void PlayerInfoTask::OnStart() {
     rtMediusIdRequest request;
@@ -13,7 +14,11 @@ void PlayerInfoTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = mPlayer->mId;
     const int nError = rtMediusPlayerInfo(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1079, nError);
+#else
     LobbyRT::ReportMediusError(932, nError);
+#endif
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultAccountNotFound);
     }
@@ -32,7 +37,12 @@ void PlayerInfoTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
+#ifdef VIDEO_STANDARD_PAL
+        const String name = Utf8DecodedString(pResponse->accountName);
+        pTask->mPlayer->mName = name.c_str();
+#else
         pTask->mPlayer->mName = pResponse->accountName;
+#endif
         pTask->mPlayer->mConnectionType = LobbyRT::ConnectionTypeOf(pResponse->connectionClass);
         LobbyRT::DecodePlayer(pTask->mPlayer, pResponse->stats);
     }

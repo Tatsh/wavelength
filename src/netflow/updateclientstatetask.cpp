@@ -18,6 +18,10 @@ void UpdateClientStateTask::OnStart() {
     memset(&state, 0, sizeof(state));
     strcpy(state.sessionKey, TheLobbyRT->mSessionKey.c_str());
     state.userAction = kUserActionInLobby;
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1181, rtMediusUpdateUserState(&state));
+#else
     LobbyRT::ReportMediusError(1024, rtMediusUpdateUserState(&state));
+#endif
     Finish(true, 0);
 }

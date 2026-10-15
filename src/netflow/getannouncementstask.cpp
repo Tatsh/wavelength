@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 namespace {
 
@@ -18,9 +19,13 @@ void GetAnnouncementsTask::OnStart() {
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.header.messageId);
-    request.id = LobbyRT::kApplicationId;
+    request.id = LobbyRT::ApplicationId();
     const int nError = rtMediusGetAnnouncements(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1205, nError);
+#else
     LobbyRT::ReportMediusError(1048, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }
@@ -39,7 +44,11 @@ void GetAnnouncementsTask::OnResponse(int nConnection,
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
         ReplaceBreaks(pResponse->announcement);
+#ifdef VIDEO_STANDARD_PAL
+        TheLobbyRT->mAnnouncement = Utf8DecodedString(pResponse->announcement);
+#else
         TheLobbyRT->mAnnouncement = pResponse->announcement;
+#endif
     }
     pTask->Finish(true, 0);
 }

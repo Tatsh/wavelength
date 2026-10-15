@@ -47,6 +47,7 @@
 #include "netflow/filedownloadtask.h"
 #include "netflow/filegetattributestask.h"
 #include "netflow/filelisttask.h"
+#include "netflow/fileupdateattributestask.h"
 #include "netflow/fileuploadtask.h"
 #include "netflow/findplayertask.h"
 #include "netflow/getannouncementstask.h"
@@ -70,6 +71,7 @@
 #include "netflow/sessionbegintask.h"
 #include "netflow/sessionendtask.h"
 #include "netflow/setgamelistfiltertask.h"
+#include "netflow/setlocparamstask.h"
 #include "netflow/setuplocalplayertask.h"
 #include "netflow/updateclientstatetask.h"
 #include "netflow/versionservertask.h"
@@ -204,6 +206,15 @@ LobbyRT *TheLobbyRT;
 
 // NTSC-U/C: 0x003b0af4, PAL: 0x0042f9c0
 int LobbyRT::sUnlimitedUpload;
+
+#ifdef VIDEO_STANDARD_PAL
+// PAL: 0x0041d180
+int LobbyRT::sApplicationId = 10314;
+
+// PAL: 0x004db300. FileGetAttributesTask writes the access of the owner of the downloaded file
+// here, and no other instruction of the binary forms the address.
+static int sDownloadPermissions;
+#endif
 
 void LobbyRT::AllowUnlimitedUpload(DataArray *pCommand, void *pUserData) {
     (void)pCommand;
@@ -554,6 +565,17 @@ LobbyRT::LobbyRT()
     SystemConfig()->FindArray("net", false)->FindBool("print_version", &nPrintVersion, false);
     ScriptFunction::Register(AllowUnlimitedUpload, "unlimited_upload", nullptr);
 
+#ifdef VIDEO_STANDARD_PAL
+    // The European release also authenticates through DNAS (a DNASTask) between InitRTTask and
+    // InitMGCLTask. The DNAS step is not reconstructed, and the chain goes on without it.
+    mConnectTask.Add(new CheckInetTask);
+    mConnectTask.Add(new InitRTTask);
+    mConnectTask.Add(new InitMGCLTask);
+    mConnectTask.Add(new DoDNSTask);
+    mConnectTask.Add(new MediusConnectTask(MediusConnectTask::kServerLobby));
+    mConnectTask.Add(new SessionBeginTask);
+    mConnectTask.Add(new SetLocParamsTask);
+#else
     mConnectTask.Add(new CheckInetTask);
     mConnectTask.Add(new DoDNSTask);
 #ifdef VIDEO_STANDARD_PAL
@@ -563,6 +585,7 @@ LobbyRT::LobbyRT()
     mConnectTask.Add(new InitMGCLTask);
     mConnectTask.Add(new MediusConnectTask(MediusConnectTask::kServerLobby));
     mConnectTask.Add(new SessionBeginTask);
+#endif
     if (nPrintVersion != 0) {
         mConnectTask.Add(new VersionServerTask);
     }
@@ -627,7 +650,12 @@ LobbyRT::LobbyRT()
     mCreateChatroomTask.Add(new AccountUpdateStatsTask);
     mCreateChatroomTask.Add(new ChannelInfoTask(&mChatroom));
 
+#ifdef VIDEO_STANDARD_PAL
+    mDownloadTask.Add(
+        new FileGetAttributesTask(&mTransferName, &mTransferSize, &sDownloadPermissions));
+#else
     mDownloadTask.Add(new FileGetAttributesTask(&mTransferName, &mTransferSize));
+#endif
     mDownloadTask.Add(new AllocateBufferTask(&mTransferBuffer, &mTransferSize));
     mDownloadTask.Add(new FileDownloadTask(&mTransferName, &mTransferBuffer, &mTransferSize));
 
@@ -638,9 +666,13 @@ LobbyRT::LobbyRT()
 
     mFileListTask.Add(new FileListTask(&mTransferName, &mFiles));
 
+#ifdef VIDEO_STANDARD_PAL
+    mDeleteFileTask.Add(new FileUpdateAttributesTask(&mTransferName));
+#else
     // Yes, the binary gives the step the address of a local of the constructor.
     int nDelete = 1;
     mDeleteFileTask.Add(new FileDeleteTask(&mTransferName, &nDelete));
+#endif
 
     mCheckInet.SetTask(new CheckInetTask);
 }

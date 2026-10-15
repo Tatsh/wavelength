@@ -79,6 +79,10 @@ set(WAVELENGTH_NETFLOW_SRCS
     waitforkeytask.cpp
     waitforsharedonetask.cpp
     waitforwelcometask.cpp)
+# The steps only the European release has.
+if(VIDEO_STANDARD STREQUAL "PAL")
+  list(APPEND WAVELENGTH_NETFLOW_SRCS fileupdateattributestask.cpp setlocparamstask.cpp)
+endif()
 
 add_library(wavelength_netflow STATIC ${WAVELENGTH_NETFLOW_SRCS})
 target_link_libraries(wavelength_netflow PRIVATE wavelength_common)

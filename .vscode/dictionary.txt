@@ -396,6 +396,7 @@ filegetattributestask
 filelisttask
 fileos
 filesubtype
+fileupdateattributestask
 fileuploadtask
 fileversion
 finalscorepacket
@@ -1348,6 +1349,7 @@ setgeneratoraction
 setiq
 setiv
 setjmp
+setlocparamstask
 setmataction
 setmeshaction
 setparticlesaction

@@ -24,7 +24,11 @@ void LadderPosition2Task::OnStart() {
     request.statId = kLadderStat;
     request.reserved34 = 0;
     const int nError = rtMediusLadderPosition(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1818, nError);
+#else
     LobbyRT::ReportMediusError(1625, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
         if (mSink != nullptr) {

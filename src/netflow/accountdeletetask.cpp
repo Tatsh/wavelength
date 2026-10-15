@@ -5,15 +5,23 @@
 #include "msg/deleteaccountresultmsg.h"
 #include "msg/loginresultmsg.h"
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 void AccountDeleteTask::OnStart() {
     rtMediusAccountDeleteRequest request;
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
     MakeTag(this, request.header.messageId);
+#ifdef VIDEO_STANDARD_PAL
+    strncpy(
+        request.password, Utf8String(TheLobbyRT->GetPassword()).c_str(), RT_MEDIUS_PASSWORD_SIZE);
+    const int nError = rtMediusAccountDelete(&request, OnResponse);
+    LobbyRT::ReportMediusError(758, nError);
+#else
     strncpy(request.password, TheLobbyRT->GetPassword(), RT_MEDIUS_PASSWORD_SIZE);
     const int nError = rtMediusAccountDelete(&request, OnResponse);
     LobbyRT::ReportMediusError(710, nError);
+#endif
     if (nError != 0) {
         Finish(false, LoginResultMsg::kResultServerError);
     }

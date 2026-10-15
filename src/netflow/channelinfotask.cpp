@@ -5,6 +5,7 @@
 #include "msg/joinchatroomresultmsg.h"
 #include "netflow/lobbyrt.h"
 #include "netflow/netchatroominfo.h"
+#include "os/utf8.h"
 
 namespace {
 
@@ -27,7 +28,11 @@ void ChannelInfoTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = mChatroom->mId;
     const int nError = rtMediusChannelInfo(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1136, nError);
+#else
     LobbyRT::ReportMediusError(984, nError);
+#endif
     if (nError != 0) {
         Finish(false, JoinChatroomResultMsg::kResultFailed);
     }
@@ -46,7 +51,11 @@ void ChannelInfoTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
+#ifdef VIDEO_STANDARD_PAL
+        pTask->mChatroom->mName = Utf8DecodedString(pResponse->name);
+#else
         pTask->mChatroom->mName = pResponse->name;
+#endif
         pTask->mChatroom->mPlayerCount = pResponse->playerCount;
         pTask->mChatroom->mMaxPlayers = pResponse->maxPlayers;
     }

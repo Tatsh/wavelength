@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "netflow/lobbyrt.h"
+#include "os/utf8.h"
 
 namespace {
 
@@ -19,7 +20,11 @@ void GetPolicyTask::OnStart() {
     MakeTag(this, request.header.messageId);
     request.id = kUsagePolicy;
     const int nError = rtMediusGetPolicy(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1295, nError);
+#else
     LobbyRT::ReportMediusError(1133, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }
@@ -37,7 +42,12 @@ void GetPolicyTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
+#ifdef VIDEO_STANDARD_PAL
+        const String policy = Utf8DecodedString(pResponse->policy);
+        TheLobbyRT->mPolicy << policy.c_str();
+#else
         TheLobbyRT->mPolicy << pResponse->policy;
+#endif
         // Yes, the binary tests the status again.
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfText == 0 &&
             pResponse->policy[0] != '\0') {

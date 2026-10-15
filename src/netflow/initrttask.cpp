@@ -32,22 +32,35 @@ InitRTTask *InitRTTask::sTask;
 
 void InitRTTask::OnStart() {
     int nError = rtNetSetMemoryFunctions(AllocBlock, FreeBlock);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportNetError(171, nError);
+#else
     LobbyRT::ReportNetError(167, nError);
+#endif
     if (nError == 0) {
         rtNetSettings settings;
         memset(&settings, 0, sizeof(settings));
         (void)rtNetDefaultSettings(&settings);
-        settings.applicationId = LobbyRT::kApplicationId;
+        settings.applicationId = LobbyRT::ApplicationId();
         if (TheLobbyRT->mSecure != 0) {
             settings.keyPair = &TheLobbyRT->mKeyPair;
         }
         rtNetInitStatus status;
         memset(&status, 0, sizeof(status));
         nError = rtNetInitialize(&settings, &status);
+#ifdef VIDEO_STANDARD_PAL
+        LobbyRT::ReportNetError(191, nError);
+#else
         LobbyRT::ReportNetError(187, nError);
+#endif
         if (nError == 0) {
             nError = rtNetSetBufferSizes(kSendBufferSize, kReceiveBufferSize);
-            LobbyRT::ReportNetError(209, nError); // Yes, the binary goes on after an error.
+            // Yes, the binary goes on after an error.
+#ifdef VIDEO_STANDARD_PAL
+            LobbyRT::ReportNetError(213, nError);
+#else
+            LobbyRT::ReportNetError(209, nError);
+#endif
             if (LaunchpadRT::RegisterMessages() == 0) {
                 rtMediusInitParams params;
                 memset(&params, 0, sizeof(params));
@@ -58,7 +71,11 @@ void InitRTTask::OnStart() {
                 int nStatus;
                 memset(&nStatus, 0, sizeof(nStatus));
                 nError = rtMediusInitialize(&params, &nStatus);
+#ifdef VIDEO_STANDARD_PAL
+                LobbyRT::ReportMediusError(234, nError);
+#else
                 LobbyRT::ReportMediusError(230, nError);
+#endif
                 if (nError == 0) {
                     char szVersion[kVersionBufferSize];
                     szVersion[0] = '\0';

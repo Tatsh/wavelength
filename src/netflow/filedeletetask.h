@@ -16,6 +16,14 @@ class String;
 class FileDeleteTask : public NetTask {
 public:
     /**
+     * Destroy the object.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0039ca58
+     * @ghidraAddress PAL: 0x0040b780
+     */
+    ~FileDeleteTask() override = default;
+
+    /**
      * Construct a step.
      *
      * Inline.

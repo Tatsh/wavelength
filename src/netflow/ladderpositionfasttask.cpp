@@ -13,7 +13,11 @@ void LadderPositionFastTask::OnStart() {
     request.accountId = mPlayer->mId;
     request.statValue = mPlayer->mRating;
     const int nError = rtMediusLadderPositionFast(&request, OnResponse);
+#ifdef VIDEO_STANDARD_PAL
+    LobbyRT::ReportMediusError(1868, nError);
+#else
     LobbyRT::ReportMediusError(1675, nError);
+#endif
     if (nError != 0) {
         Finish(true, 0);
     }
