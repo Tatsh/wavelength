@@ -1,5 +1,8 @@
 #pragma once
 
+#ifdef VIDEO_STANDARD_PAL
+#include "memcard/mccheckdirexiststask.h"
+#endif
 #include "memcard/mcgetdirtask.h"
 #include "memcard/mcgetinfotask.h"
 #include "memcard/memcardserialtask.h"
@@ -13,7 +16,8 @@ constexpr int kSaveSpaceListingCount = 2;
  * Work that measures the space a save to the Freq directory needs, and checks it against the free
  * space of the card.
  *
- * The RTTI records the class as deriving from MemcardSerialTask. The object is 0x58 bytes. When the
+ * The RTTI records the class as deriving from MemcardSerialTask. The object is 0x58 bytes, and 0x5c
+ * in the PAL build. The PAL build first checks the directory with an MCCheckDirExistsTask. When the
  * work ends, OnStop() reports the outcome to mUser. The outcome is MemcardTask::kStatusLimit when
  * the directory includes mMaxFiles files of the kind already, MemcardTask::kStatusExists when the
  * file exists and may not be replaced, and MemcardTask::kStatusFull when the card lacks the space.
@@ -65,6 +69,9 @@ public:
      */
     void OnDirListed() override;
 
+#ifdef VIDEO_STANDARD_PAL
+    MCCheckDirExistsTask *mCheckDir; /*!< The step that deletes a damaged directory. */
+#endif
     MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
     MCGetDirTask *mGetDirs[kSaveSpaceListingCount]; /*!< The directory, then its files. */
     SaveSpaceUser *mUser;                           /*!< The receiver of the outcome. */

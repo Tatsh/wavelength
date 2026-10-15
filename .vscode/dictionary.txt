@@ -715,6 +715,7 @@ mbai
 mbcount
 mbcs
 mccardstatustask
+mccheckdirexiststask
 mccheckremixspaceneededtask
 mcchecksavespaceneededtask
 mccheckscreen

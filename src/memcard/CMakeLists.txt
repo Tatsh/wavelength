@@ -1,5 +1,6 @@
 set(WAVELENGTH_MEMCARD_SRCS
     mccardstatustask.cpp
+    mccheckdirexiststask.cpp
     mccheckremixspaceneededtask.cpp
     mcchecksavespaceneededtask.cpp
     mcclosetask.cpp

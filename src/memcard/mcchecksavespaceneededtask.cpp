@@ -2,6 +2,9 @@
 
 #include <string.h>
 
+#ifdef VIDEO_STANDARD_PAL
+#include "memcard/mccheckdirexiststask.h"
+#endif
 #include "memcard/memcardconfig.h"
 #include "memcard/memcardtask.h"
 
@@ -17,6 +20,10 @@ constexpr int kListingFiles = 1;
 } // namespace
 
 MCCheckSaveSpaceNeededTask::MCCheckSaveSpaceNeededTask() {
+#ifdef VIDEO_STANDARD_PAL
+    mCheckDir = new MCCheckDirExistsTask;
+    Add(mCheckDir);
+#endif
     mGetInfo = new MCGetInfoTask;
     Add(mGetInfo);
     for (int i = 0; i < kSaveSpaceListingCount; ++i) {
@@ -40,6 +47,10 @@ void MCCheckSaveSpaceNeededTask::Set(SaveSpaceUser *pUser,
     mOverwrite = nOverwrite;
     mMaxFiles = nMaxFiles;
     mListing = kListingDirectory;
+#ifdef VIDEO_STANDARD_PAL
+    // Yes, the check copies g_MemcardPath before the assignment below.
+    mCheckDir->Set(nPort, nullptr, nullptr);
+#endif
     mGetInfo->Set(this, nPort, 0);
     const char *pszDirExt;
     g_pMemcardConfig->FindSymbol("freq_dir_ext", &pszDirExt, true);
@@ -76,9 +87,15 @@ void MCCheckSaveSpaceNeededTask::OnDirListed() {
         ++mNeeded;
     }
     MemcardTask::sStatus = MemcardTask::kStatusOk;
+#ifdef VIDEO_STANDARD_PAL
+    mNeeded += BytesToKilobytes(mFileSize) - BytesToKilobytes(nOldSize);
+    if (!bFound) {
+        if (nFileCount >= mMaxFiles) {
+#else
     mNeeded += BytesToKilobytes(mFileSize - nOldSize);
     if (!bFound) {
         if (nFileCount == mMaxFiles) {
+#endif
             MemcardTask::sStatus = MemcardTask::kStatusLimit;
         } else if (g_bMemcardDirExists == 0) {
             mNeeded += g_nMemcardDirKilobytes;

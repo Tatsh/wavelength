@@ -2,6 +2,9 @@
 
 #include <vector>
 
+#ifdef VIDEO_STANDARD_PAL
+#include "memcard/mccheckdirexiststask.h"
+#endif
 #include "memcard/mcgetdirtask.h"
 #include "memcard/mcgetinfotask.h"
 #include "memcard/memcardserialtask.h"
@@ -12,7 +15,8 @@
  * Work that chooses the remix directory a remix is saved to, measures the space the save needs,
  * and checks it against the free space of the card.
  *
- * The RTTI records the class as deriving from MemcardSerialTask. The object is 0x64 bytes. The
+ * The RTTI records the class as deriving from MemcardSerialTask. The object is 0x64 bytes, and 0x84
+ * in the PAL build. The PAL build first checks every directory with an MCCheckDirExistsTask. The
  * directories are listed in order. A directory that includes the file is chosen; otherwise the
  * first directory with room is, and g_MemcardPath records it. When the work ends, OnStop() reports
  * the outcome to mUser. The outcome is MemcardTask::kStatusLimit when the card includes
@@ -59,17 +63,37 @@ public:
      */
     void OnDirListed() override;
 
-    MCGetInfoTask *mGetInfo;              /*!< The step that reads the card information. */
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Learn whether the next checked remix directory is whole, and mark it as existing when it is.
+     *
+     * @param bWhole Non-zero when the directory has every file a save directory needs.
+     * @ghidraAddress PAL: 0x00160da8
+     */
+    void OnDirChecked(int bWhole) override;
+#endif
+
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
+#ifdef VIDEO_STANDARD_PAL
+    /** One step for each remix directory that deletes the directory when damaged. */
+    std::vector<MCCheckDirExistsTask *> mCheckDirs;
+#endif
     std::vector<MCGetDirTask *> mGetDirs; /*!< One listing step for each remix directory. */
-    SaveSpaceUser *mUser;                 /*!< The receiver of the outcome. */
-    String mFileName;                     /*!< The remix file, with its extension. */
-    int mFileSize;                        /*!< The size of the file in bytes. */
-    int mNeeded;                          /*!< The kilobytes the save needs. */
-    unsigned char mRemixCount;            /*!< The remix files in the listed directories. */
-    unsigned char mDirIndex;              /*!< The directory whose listing ends next. */
-    int mFound;                           /*!< Non-zero once a directory includes the file. */
-    int mFoundSize;                       /*!< The size of the file found, in bytes. */
-    int mOverwrite;                       /*!< Non-zero when an existing file may be replaced. */
+#ifdef VIDEO_STANDARD_PAL
+    /** The remix files of each remix directory, or -1 for a directory that does not exist. */
+    std::vector<int> mDirRemixCounts;
+#endif
+    SaveSpaceUser *mUser; /*!< The receiver of the outcome. */
+    String mFileName;     /*!< The remix file, with its extension. */
+    int mFileSize;        /*!< The size of the file in bytes. */
+    int mNeeded;          /*!< The kilobytes the save needs. */
+#ifndef VIDEO_STANDARD_PAL
+    unsigned char mRemixCount; /*!< The remix files in the listed directories. */
+#endif
+    unsigned char mDirIndex; /*!< The directory whose check or listing ends next. */
+    int mFound;              /*!< Non-zero once a directory includes the file. */
+    int mFoundSize;          /*!< The size of the file found, in bytes. */
+    int mOverwrite;          /*!< Non-zero when an existing file may be replaced. */
 
 protected:
     /**
@@ -79,4 +103,17 @@ protected:
      * @ghidraAddress PAL: 0x00161138
      */
     void OnStop() override;
+
+#ifdef VIDEO_STANDARD_PAL
+private:
+    /**
+     * Choose the directory, measure the space the save needs, and record the outcome.
+     *
+     * The name is inferred. The first existing directory with room is chosen, else the first
+     * directory that does not exist.
+     *
+     * @ghidraAddress PAL: 0x00160f40
+     */
+    void Evaluate();
+#endif
 };
