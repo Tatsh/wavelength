@@ -29,7 +29,8 @@ for its assets. Building this source alone will not result in a playable game.
 
 ## Status
 
-The source was ported from the reconstruction of _FreQuency_, the predecessor of _Amplitude_.
+Much like the real source, this source is a fork of
+[_FreQuency_](https://github.com/Tatsh/resonance), the predecessor of _Amplitude_.
 
 ### North American release
 
@@ -51,10 +52,10 @@ follows the console's language setting), saves to a memory card, and plays songs
 [PROGRESS.md](PROGRESS.md) measures how many European routines have source.
 
 For online play, the European release adds DNAS2 authentication, made of Sony's `libdnas2` and its
-RCOM cryptography library (about 1,490 routines). `libdnas2` decrypts parts of its own code at run time.
-This project does not recover `libdnas2` or RCOM. The four `libdnas2` routines the game calls are
-stubs that print a `fixme:dnas2:` line and fail, so the European build shows the DNAS error when
-going online. The game's DNAS credentials are not included.
+RCOM cryptography library (about 1,490 routines). `libdnas2` decrypts parts of its own code at
+runtime. This project does not recover `libdnas2` or RCOM. The four `libdnas2` routines the game
+calls are stubs that print a `fixme:dnas2:` line and fail, so the European build shows the DNAS
+error when going online.
 
 ### Online play
 
