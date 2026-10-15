@@ -80,24 +80,32 @@ constexpr unsigned int kVeteranRatingBonus = 1000000;
 constexpr double kHalfGamesPerWin = 2.0001;
 constexpr float kWinsPerHalfGame = 0.5f;
 
+// The European release inserts the identity of DNASStatusMsg after LobbyConnectResultMsg, and
+// every later identity is one higher.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kDNASTypeShift = 1;
+#else
+constexpr int kDNASTypeShift = 0;
+#endif
+
 // The identities the registrars below pass, the same values the Type() words hold.
-constexpr int kWelcomePktType = 335;
-constexpr int kJoinFailedPktType = 336;
-constexpr int kClientInfoPktType = 337;
-constexpr int kClientStatusPktType = 338;
-constexpr int kClientRatingPktType = 339;
-constexpr int kTimeRequestPktType = 340;
-constexpr int kTimeResponsePktType = 341;
-constexpr int kGameParamsPktType = 342;
-constexpr int kBootPktType = 343;
-constexpr int kShareRemixPktType = 344;
-constexpr int kDataAckPktType = 345;
-constexpr int kDataBlockPktType = 346;
-constexpr int kLoadGamePktType = 347;
-constexpr int kStartGamePktType = 348;
-constexpr int kClientAbortedPktType = 349;
-constexpr int kGameOverPktType = 350;
-constexpr int kUpdateRanksPktType = 351;
+constexpr int kWelcomePktType = 335 + kDNASTypeShift;
+constexpr int kJoinFailedPktType = 336 + kDNASTypeShift;
+constexpr int kClientInfoPktType = 337 + kDNASTypeShift;
+constexpr int kClientStatusPktType = 338 + kDNASTypeShift;
+constexpr int kClientRatingPktType = 339 + kDNASTypeShift;
+constexpr int kTimeRequestPktType = 340 + kDNASTypeShift;
+constexpr int kTimeResponsePktType = 341 + kDNASTypeShift;
+constexpr int kGameParamsPktType = 342 + kDNASTypeShift;
+constexpr int kBootPktType = 343 + kDNASTypeShift;
+constexpr int kShareRemixPktType = 344 + kDNASTypeShift;
+constexpr int kDataAckPktType = 345 + kDNASTypeShift;
+constexpr int kDataBlockPktType = 346 + kDNASTypeShift;
+constexpr int kLoadGamePktType = 347 + kDNASTypeShift;
+constexpr int kStartGamePktType = 348 + kDNASTypeShift;
+constexpr int kClientAbortedPktType = 349 + kDNASTypeShift;
+constexpr int kGameOverPktType = 350 + kDNASTypeShift;
+constexpr int kUpdateRanksPktType = 351 + kDNASTypeShift;
 
 // NTSC-U/C: 0x00267ab8, PAL: 0x00271790
 // Write the colour of a slot.
@@ -195,60 +203,64 @@ int g_nInetDNSLookupResultMsgType = 305;
 int g_nInetCheckConnectionResultMsgType = 306;
 // NTSC-U/C: 0x003b0b1c, PAL: 0x0042f9e8
 int g_nLobbyConnectionLostMsgType = 307;
-// NTSC-U/C: 0x003b0b20
+// NTSC-U/C: 0x003b0b20, PAL: 0x0042f9ec
 int g_nLobbyConnectResultMsgType = 308;
+#ifdef VIDEO_STANDARD_PAL
+// PAL: 0x0042f9f0
+int g_nDNASStatusMsgType = 309;
+#endif
 // NTSC-U/C: 0x003b0b24, PAL: 0x0042f9f4
-int g_nCreateAccountResultMsgType = 309;
+int g_nCreateAccountResultMsgType = 309 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b28
-int g_nDeleteAccountResultMsgType = 310;
+int g_nDeleteAccountResultMsgType = 310 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b2c, PAL: 0x0042f9fc
-int g_nChangePasswordResultMsgType = 311;
+int g_nChangePasswordResultMsgType = 311 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b30, PAL: 0x0042fa00
-int g_nLoginResultMsgType = 312;
+int g_nLoginResultMsgType = 312 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b34, PAL: 0x0042fa04
-int g_nLobbyDisconnectResultMsgType = 313;
+int g_nLobbyDisconnectResultMsgType = 313 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b38, PAL: 0x0042fa08
-int g_nLobbyPlayersMsgType = 314;
+int g_nLobbyPlayersMsgType = 314 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b3c, PAL: 0x0042fa0c
-int g_nPlayerRankMsgType = 315;
+int g_nPlayerRankMsgType = 315 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b40, PAL: 0x0042fa10
-int g_nFindPlayerMsgType = 316;
+int g_nFindPlayerMsgType = 316 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b44, PAL: 0x0042fa14
-int g_nLobbyChatroomsMsgType = 317;
+int g_nLobbyChatroomsMsgType = 317 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b48, PAL: 0x0042fa18
-int g_nLobbyLaunchpadsMsgType = 318;
+int g_nLobbyLaunchpadsMsgType = 318 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b4c, PAL: 0x0042fa1c
-int g_nJoinChatroomResultMsgType = 319;
+int g_nJoinChatroomResultMsgType = 319 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b50, PAL: 0x0042fa20
-int g_nRepoRemixStatusMsgType = 320;
+int g_nRepoRemixStatusMsgType = 320 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b54, PAL: 0x0042fa24
-int g_nRepoRemixesMsgType = 321;
+int g_nRepoRemixesMsgType = 321 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b58, PAL: 0x0042fa28
-int g_nFileListMsgType = 322;
+int g_nFileListMsgType = 322 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b5c, PAL: 0x0042fa2c
-int g_nRemixDownloadMsgType = 323;
+int g_nRemixDownloadMsgType = 323 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b60, PAL: 0x0042fa30
-int g_nHostLaunchpadSuccessMsgType = 324;
+int g_nHostLaunchpadSuccessMsgType = 324 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b64, PAL: 0x0042fa34
-int g_nJoinLaunchpadSuccessMsgType = 325;
+int g_nJoinLaunchpadSuccessMsgType = 325 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b68, PAL: 0x0042fa38
-int g_nLaunchpadAbortedMsgType = 326;
+int g_nLaunchpadAbortedMsgType = 326 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b6c, PAL: 0x0042fa3c
-int g_nGameParamsUpdateMsgType = 327;
+int g_nGameParamsUpdateMsgType = 327 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b70, PAL: 0x0042fa40
-int g_nShareRemixBeginMsgType = 328;
+int g_nShareRemixBeginMsgType = 328 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b74, PAL: 0x0042fa44
-int g_nShareRemixProgressMsgType = 329;
+int g_nShareRemixProgressMsgType = 329 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b78, PAL: 0x0042fa48
-int g_nLoadGameMsgType = 330;
+int g_nLoadGameMsgType = 330 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b7c, PAL: 0x0042fa4c
-int g_nStartGameMsgType = 331;
+int g_nStartGameMsgType = 331 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b80, PAL: 0x0042fa50
-int g_nGameEndedMsgType = 332;
+int g_nGameEndedMsgType = 332 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b84, PAL: 0x0042fa54
-int g_nPlayerAbortedMsgType = 333;
+int g_nPlayerAbortedMsgType = 333 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b88, PAL: 0x0042fa58
-int g_nChatMsgType = 334;
+int g_nChatMsgType = 334 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b8c, PAL: 0x0042fa5c
 int g_nWelcomePktType = kWelcomePktType;
 // NTSC-U/C: 0x003b0b90, PAL: 0x0042fa60

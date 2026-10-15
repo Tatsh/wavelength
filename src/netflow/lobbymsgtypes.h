@@ -52,8 +52,18 @@ extern int g_nLobbyConnectionLostMsgType;
  * Identity that LobbyConnectResultMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b20
+ * @ghidraAddress PAL: 0x0042f9ec
  */
 extern int g_nLobbyConnectResultMsgType;
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Identity that DNASStatusMsg::Type() reports.
+ *
+ * @ghidraAddress PAL: 0x0042f9f0
+ */
+extern int g_nDNASStatusMsgType;
+#endif
 
 /**
  * Identity that CreateAccountResultMsg::Type() reports.

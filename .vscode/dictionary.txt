@@ -288,6 +288,7 @@ dmaend
 dmapacket
 dmvector
 dnas
+dnasstatusmsg
 docstrings
 dodnstask
 dopenssl

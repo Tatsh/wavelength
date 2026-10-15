@@ -133,6 +133,9 @@ static std::vector<Mod> sWantedModules;
 InetImpl::InetImpl()
     : mState(kStateIdle), mStartTime(0.0f), mTimeout(kDefaultTimeout),
       mConnectionType(kConnectionOffline), mPowerOffRequested(0), mLookupPending(0),
+#ifdef VIDEO_STANDARD_PAL
+      mDNASPending(1),
+#endif
       mConnectSink(nullptr), mLookupSink(nullptr), mCheckSink(nullptr), mConfigsSink(nullptr),
       mDisconnectSink(nullptr) {
     TheNetInet = this;
@@ -223,6 +226,9 @@ void InetImpl::Connect(MsgSink *pSink, int nConfig) {
     DownInterface();
     mConnectSink = pSink;
     mConfigId = nConfig;
+#ifdef VIDEO_STANDARD_PAL
+    mDNASPending = 1;
+#endif
     mState = kStateStarting;
     EnqueueAsyncTask(ConnectTask, OnConnectTaskDone);
 }
@@ -339,6 +345,16 @@ void InetImpl::OnStatusTaskDone(int) {
     sInstance->mCheckSink->Dispatch(&msg);
     sInstance->mCheckSink = nullptr;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+int InetImpl::IsDNASPending() {
+    return mDNASPending;
+}
+
+void InetImpl::ClearDNASPending() {
+    mDNASPending = 0;
+}
+#endif
 
 void InetImpl::RequestPowerOff() {
     mPowerOffRequested = 1;

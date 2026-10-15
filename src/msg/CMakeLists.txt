@@ -5,6 +5,7 @@ set(WAVELENGTH_MSG_SRCS
     capturepacket.cpp
     chatmsg.cpp
     cripplerpacket.cpp
+    dnasstatusmsg.cpp
     editgempacket.cpp
     erasebarpacket.cpp
     erasesectionpacket.cpp

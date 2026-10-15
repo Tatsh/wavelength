@@ -8,6 +8,12 @@
 #include "os/locale.h"
 #include "ui/uimanager.h"
 
+#ifdef VIDEO_STANDARD_PAL
+#include "rnd/rndmanager.h"
+#include "rnd/rndmesh.h"
+#include "rnd/rndtext.h"
+#endif
+
 namespace {
 
 constexpr char kLoginScreen[] = "net_login";
@@ -15,6 +21,15 @@ constexpr char kInetErrorScreen[] = "inet_error";
 constexpr char kLostInternetToken[] = "lost_internet_error_msg";
 constexpr char kConnectErrorScreen[] = "net_connect_lobby_error";
 constexpr char kDisconnectLobbyScreen[] = "net_disconnect_lobby";
+
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kDNASMesh[] = "dnas.mesh";
+constexpr char kDialogText[] = "dnas_net_connect_lobby.txt";
+constexpr char kDNASToken[] = "dnas_net_connect_lobby";
+constexpr char kDialogToken[] = "net_connect_lobby_dlg";
+constexpr char kDNSErrorScreen[] = "net_dns_error";
+constexpr char kDNSErrorToken[] = "net_dns_error_msg";
+#endif
 
 } // namespace
 
@@ -29,11 +44,48 @@ bool NetLobbyConnect::DispatchPriv(Message *pMsg) {
     if (nType == g_nUITransitionCompleteMsgType) {
         return HandleTransitionComplete(static_cast<UITransitionCompleteMsg *>(pMsg));
     }
+#ifdef VIDEO_STANDARD_PAL
+    if (nType == g_nDNASStatusMsgType) {
+        return HandleDNASStatus(static_cast<DNASStatusMsg *>(pMsg));
+    }
+#endif
     if (nType == g_nJoypadInputMsgType) {
         return HandleJoypad(static_cast<JoypadInputMsg *>(pMsg));
     }
     return FreqScreen::DispatchPriv(pMsg);
 }
+
+#ifdef VIDEO_STANDARD_PAL
+void NetLobbyConnect::Enter(UIScreen *pPrevScreen, float fTime) {
+    FreqScreen::Enter(pPrevScreen, fTime);
+    ShowDNAS(0, 0);
+}
+
+void NetLobbyConnect::Exit(UIScreen *pNextScreen, float fTime) {
+    FreqScreen::Exit(pNextScreen, fTime);
+}
+
+bool NetLobbyConnect::HandleDNASStatus(DNASStatusMsg *pMsg) {
+    ShowDNAS(pMsg->mRunning, 1);
+    return false;
+}
+
+void NetLobbyConnect::ShowDNAS(int nRunning, int nShow) {
+    RndMesh *pMesh = dynamic_cast<RndMesh *>(TheManager.Find(kDNASMesh));
+    RndText *pText = dynamic_cast<RndText *>(TheManager.Find(kDialogText));
+    if (pMesh != nullptr) {
+        pMesh->SetShowing(nRunning != 0 && nShow != 0);
+    }
+    if (pText != nullptr) {
+        pText->SetShowing(nShow);
+        if (nRunning != 0) {
+            pText->SetText(TheLocale.Localize(kDNASToken, true));
+        } else {
+            pText->SetText(TheLocale.Localize(kDialogToken, true));
+        }
+    }
+}
+#endif
 
 bool NetLobbyConnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
@@ -50,6 +102,13 @@ bool NetLobbyConnect::HandleConnectResult(LobbyConnectResultMsg *pMsg) {
             dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kInetErrorScreen, false));
         pError->mMessage = TheLocale.Localize(kLostInternetToken, true);
         TheUI.GotoScreen(pError);
+#ifdef VIDEO_STANDARD_PAL
+    } else if (pMsg->mResult == LobbyConnectResultMsg::kResultLookupFailed) {
+        TransitionErrorScreen *pError =
+            dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kDNSErrorScreen, false));
+        pError->mMessage = TheLocale.Localize(kDNSErrorToken, true);
+        TheUI.GotoScreen(pError);
+#endif
     } else {
         TheUI.GotoScreen(kConnectErrorScreen);
     }

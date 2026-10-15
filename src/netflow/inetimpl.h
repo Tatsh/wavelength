@@ -113,11 +113,28 @@ public:
         return mConnectionType;
     }
 
+#ifdef VIDEO_STANDARD_PAL
     /**
      * Vtable slot 10.
      *
-     * @ghidraAddress NTSC-U/C: 0x00253f90
+     * @return mDNASPending.
      * @ghidraAddress PAL: 0x0025cd98
+     */
+    int IsDNASPending() override;
+
+    /**
+     * Vtable slot 11. Clear mDNASPending.
+     *
+     * @ghidraAddress PAL: 0x0025cda0
+     */
+    void ClearDNASPending() override;
+#endif
+
+    /**
+     * Vtable slot 10, and slot 12 in the European release.
+     *
+     * @ghidraAddress NTSC-U/C: 0x00253f90
+     * @ghidraAddress PAL: 0x0025cee0
      */
     void RequestPowerOff() override;
 
@@ -260,16 +277,19 @@ private:
      */
     static void OnPowerOff(void *pArg);
 
-    int mState;               /*!< One of State. */
-    float mStartTime;         /*!< SystemMs() when the interface last progressed. */
-    int mLinkStatus;          /*!< The link status reported last, 999 before the first report. */
-    String mStatusText;       /*!< The status text reported last. */
-    float mTimeout;           /*!< The milliseconds a connection may take, by connection type. */
-    int mConnectionType;      /*!< One of NetInet::ConnectionType. */
-    int mConfigId;            /*!< The configuration of Connect(). */
-    int mPowerOffRequested;   /*!< Non-zero when Poll() should turn the console off. */
-    String mHost;             /*!< The host of LookupHost(). */
-    int mLookupPending;       /*!< Non-zero while LookupTask() runs. */
+    int mState;             /*!< One of State. */
+    float mStartTime;       /*!< SystemMs() when the interface last progressed. */
+    int mLinkStatus;        /*!< The link status reported last, 999 before the first report. */
+    String mStatusText;     /*!< The status text reported last. */
+    float mTimeout;         /*!< The milliseconds a connection may take, by connection type. */
+    int mConnectionType;    /*!< One of NetInet::ConnectionType. */
+    int mConfigId;          /*!< The configuration of Connect(). */
+    int mPowerOffRequested; /*!< Non-zero when Poll() should turn the console off. */
+    String mHost;           /*!< The host of LookupHost(). */
+    int mLookupPending;     /*!< Non-zero while LookupTask() runs. */
+#ifdef VIDEO_STANDARD_PAL
+    int mDNASPending; /*!< Non-zero from Connect() until the DNAS authentication passes. */
+#endif
     MsgSink *mConnectSink;    /*!< The receiver of Connect(), or null. */
     MsgSink *mLookupSink;     /*!< The receiver of LookupHost(), or null. */
     MsgSink *mCheckSink;      /*!< The receiver of CheckConnection(), or null. */

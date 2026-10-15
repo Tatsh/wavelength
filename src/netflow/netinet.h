@@ -82,8 +82,20 @@ public:
      */
     virtual int GetConnectionType() = 0;
 
+#ifdef VIDEO_STANDARD_PAL
     /**
-     * Vtable slot 10. Turn the console off at the next poll.
+     * Vtable slot 10. Report whether the connection still needs the DNAS authentication.
+     *
+     * @return Non-zero until ClearDNASPending() after a connection.
+     */
+    virtual int IsDNASPending() = 0;
+
+    /** Vtable slot 11. Record that the connection passed the DNAS authentication. */
+    virtual void ClearDNASPending() = 0;
+#endif
+
+    /**
+     * Vtable slot 10, and slot 12 in the European release. Turn the console off at the next poll.
      *
      * The default does nothing.
      *

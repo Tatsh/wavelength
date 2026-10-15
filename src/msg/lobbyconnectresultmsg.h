@@ -22,6 +22,7 @@ public:
         kResultLookupFailed = -90,  /*!< The name of the server did not resolve. */
         kResultSessionFailed = -89, /*!< The lobby session did not begin. */
         kResultConnectFailed = -88, /*!< The lobby server did not connect. */
+        kResultDNASFailed = -60,    /*!< The DNAS authentication failed, in the European release. */
         kResultSuccess = 0,         /*!< The lobby server is connected. */
     };
 

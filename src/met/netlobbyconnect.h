@@ -1,6 +1,7 @@
 #pragma once
 
 #include "met/freqscreen.h"
+#include "msg/dnasstatusmsg.h"
 #include "msg/joypadinputmsg.h"
 #include "msg/lobbyconnectresultmsg.h"
 #include "script/dataarray.h"
@@ -65,7 +66,50 @@ public:
         return "";
     }
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Start the entry and hide the DNAS notice.
+     *
+     * @param pPrevScreen The screen this one replaces, or null.
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress PAL: 0x0017b3f8
+     */
+    void Enter(UIScreen *pPrevScreen, float fTime) override;
+
+    /**
+     * Start the exit.
+     *
+     * @param pNextScreen The screen to change to.
+     * @param fTime The front-end time in milliseconds.
+     * @ghidraAddress PAL: 0x0017b430
+     */
+    void Exit(UIScreen *pNextScreen, float fTime) override;
+#endif
+
 private:
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Show the DNAS notice while the authentication runs.
+     *
+     * @param pMsg The message.
+     * @return False.
+     * @ghidraAddress PAL: 0x0017b580
+     */
+    bool HandleDNASStatus(DNASStatusMsg *pMsg);
+
+    /**
+     * Show or hide the DNAS mesh and the text of the screen.
+     *
+     * The mesh shows only while the authentication runs and nShow is non-zero. The text shows
+     * with nShow and reads the DNAS notice while the authentication runs.
+     *
+     * @param nRunning Non-zero while the authentication runs.
+     * @param nShow Non-zero to show the text.
+     * @ghidraAddress PAL: 0x0017b5a8
+     */
+    void ShowDNAS(int nRunning, int nShow);
+#endif
+
     /**
      * Start the connection once the screen has entered.
      *
@@ -86,6 +130,7 @@ private:
      * @param pMsg The message.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x00177d20
+     * @ghidraAddress PAL: 0x0017b750
      */
     bool HandleConnectResult(LobbyConnectResultMsg *pMsg);
 
