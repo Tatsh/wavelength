@@ -8,6 +8,8 @@
 #include "game/stickevent.h"
 #include "msg/joypadconnectionmsg.h"
 #include "msg/message.h"
+#include "os/command.h"
+#include "os/ptr.h"
 
 /**
  * Rules of one World, the base of the game, remix, and duel logic.
@@ -244,4 +246,10 @@ public:
      * @ghidraAddress PAL: 0x001486b0
      */
     int OnJoypadConnection(JoypadConnectionMsg *pMsg);
+
+#ifdef VIDEO_STANDARD_PAL
+private:
+    /** A command reference that is constructed empty, released at destruction, and never set. */
+    Ptr<Command> mCommand{nullptr};
+#endif
 };
