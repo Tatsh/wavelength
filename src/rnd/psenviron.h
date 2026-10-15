@@ -93,7 +93,7 @@ public:
      * @param pszName The registry key.
      * @return The environment.
      * @ghidraAddress NTSC-U/C: 0x0037d680
-     * @ghidraAddress PAL: 0x003ebd38
+     * @ghidraAddress PAL: 0x003ebdb0
      */
     static RndObject *New(const char *pszName) {
         return new PsEnviron(pszName);

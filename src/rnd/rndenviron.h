@@ -44,7 +44,7 @@ public:
      * Drop the references on the lights.
      *
      * @ghidraAddress NTSC-U/C: 0x003812c8
-     * @ghidraAddress PAL: 0x003ef928
+     * @ghidraAddress PAL: 0x003ef9e0
      */
     ~RndEnviron() override;
 

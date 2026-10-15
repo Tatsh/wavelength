@@ -43,7 +43,7 @@ public:
      * Drop the references on the target and the frames owner.
      *
      * @ghidraAddress NTSC-U/C: 0x00392a18
-     * @ghidraAddress PAL: 0x00401090
+     * @ghidraAddress PAL: 0x00401120
      */
     ~RndTransAnim() override;
 

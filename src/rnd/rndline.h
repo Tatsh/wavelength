@@ -73,7 +73,7 @@ public:
      * Delete the mesh.
      *
      * @ghidraAddress NTSC-U/C: 0x00383c50
-     * @ghidraAddress PAL: 0x003f22d8
+     * @ghidraAddress PAL: 0x003f2358
      */
     ~RndLine() override;
 

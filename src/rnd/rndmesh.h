@@ -151,7 +151,7 @@ public:
      * Drop the references the mesh has.
      *
      * @ghidraAddress NTSC-U/C: 0x0038b0b0
-     * @ghidraAddress PAL: 0x003f9718
+     * @ghidraAddress PAL: 0x003f97b8
      */
     ~RndMesh() override;
 
@@ -182,7 +182,7 @@ public:
      *
      * @param objects The list to add to.
      * @ghidraAddress NTSC-U/C: 0x00234ee8
-     * @ghidraAddress PAL: 0x0023d978
+     * @ghidraAddress PAL: 0x0023da68
      */
     void ListDrawObjects(std::list<RndObject *> &objects) override;
 

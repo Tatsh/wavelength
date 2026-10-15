@@ -75,6 +75,7 @@ public:
      * Pass the drawing statistics and the free GS memory to DebugPrint().
      *
      * @ghidraAddress NTSC-U/C: 0x002115b8
+     * @ghidraAddress PAL: 0x0021a3d0
      */
     void DumpStats() override;
 
@@ -95,7 +96,7 @@ public:
      * @param rect The rectangle in pixels.
      * @param color The colour.
      * @ghidraAddress NTSC-U/C: 0x00211748
-     * @ghidraAddress PAL: 0x0021a3d0
+     * @ghidraAddress PAL: 0x0021a560
      */
     void DrawRect(const Rect &rect, const Color &color) override;
 

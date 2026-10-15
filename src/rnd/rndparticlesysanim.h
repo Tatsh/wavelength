@@ -37,6 +37,7 @@ public:
      * Drop the references on the particle system and the frames owner.
      *
      * @ghidraAddress NTSC-U/C: 0x003909b0
+     * @ghidraAddress PAL: 0x003ff0b8
      */
     ~RndParticleSysAnim() override;
 
@@ -96,6 +97,7 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
      * @ghidraAddress NTSC-U/C: 0x0023fc68
+     * @ghidraAddress PAL: 0x00248798
      */
     void Replace(RndObject *pFrom, RndObject *pTo) override;
 

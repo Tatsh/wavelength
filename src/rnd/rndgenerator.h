@@ -52,7 +52,7 @@ public:
      * Drop the references and the instances.
      *
      * @ghidraAddress NTSC-U/C: 0x00382708
-     * @ghidraAddress PAL: 0x003f0d48
+     * @ghidraAddress PAL: 0x003f0e10
      */
     ~RndGenerator() override;
 

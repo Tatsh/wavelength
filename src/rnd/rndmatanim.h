@@ -98,7 +98,7 @@ public:
      * Drop the references on the material, the keys owner, and the textures.
      *
      * @ghidraAddress NTSC-U/C: 0x003886b0
-     * @ghidraAddress PAL: 0x003f6d48
+     * @ghidraAddress PAL: 0x003f6db8
      */
     ~RndMatAnim() override;
 
@@ -107,7 +107,7 @@ public:
      *
      * @return The frame.
      * @ghidraAddress NTSC-U/C: 0x00230a68
-     * @ghidraAddress PAL: 0x00239580
+     * @ghidraAddress PAL: 0x00239630
      */
     float EndFrame() override;
 
@@ -116,6 +116,7 @@ public:
      *
      * @param objects The list to add to.
      * @ghidraAddress NTSC-U/C: 0x002309b8
+     * @ghidraAddress PAL: 0x00239580
      */
     void ListAnimObjects(std::list<RndObject *> &objects) override;
 
@@ -159,7 +160,7 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
      * @ghidraAddress NTSC-U/C: 0x0022f668
-     * @ghidraAddress PAL: 0x002381d8
+     * @ghidraAddress PAL: 0x00238230
      */
     void Replace(RndObject *pFrom, RndObject *pTo) override;
 
@@ -203,6 +204,7 @@ public:
      *
      * @param pMat The material, or null.
      * @ghidraAddress NTSC-U/C: 0x0022f610
+     * @ghidraAddress PAL: 0x002381d8
      */
     void SetMat(RndMat *pMat);
 
@@ -224,6 +226,7 @@ public:
      * @param pszName The registry key.
      * @return The animation.
      * @ghidraAddress NTSC-U/C: 0x00388b00
+     * @ghidraAddress PAL: 0x003f7208
      */
     static RndObject *New(const char *pszName) {
         return new RndMatAnim(pszName);

@@ -46,7 +46,7 @@ public:
      * Drop the references on the children.
      *
      * @ghidraAddress NTSC-U/C: 0x00391e90
-     * @ghidraAddress PAL: 0x00400518
+     * @ghidraAddress PAL: 0x00400598
      */
     ~RndTransformable() override;
 

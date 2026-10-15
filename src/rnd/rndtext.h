@@ -48,7 +48,7 @@ public:
      * Drop the reference on the font and delete the mesh.
      *
      * @ghidraAddress NTSC-U/C: 0x00391268
-     * @ghidraAddress PAL: 0x003ff8d0
+     * @ghidraAddress PAL: 0x003ff970
      */
     ~RndText() override;
 

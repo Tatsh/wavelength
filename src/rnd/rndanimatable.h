@@ -471,6 +471,7 @@ public:
          *
          * @param stream The stream to read from.
          * @ghidraAddress NTSC-U/C: 0x0037ec40
+         * @ghidraAddress PAL: 0x003ed358
          */
         void Load(BinStream &stream) override {
             stream.ReadEndian(&mLevel, sizeof(mLevel));
@@ -516,7 +517,7 @@ public:
      * Drop the references on the children and delete the filters.
      *
      * @ghidraAddress NTSC-U/C: 0x0037ed08
-     * @ghidraAddress PAL: 0x003ed358
+     * @ghidraAddress PAL: 0x003ed420
      */
     ~RndAnimatable() override;
 

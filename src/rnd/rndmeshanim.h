@@ -35,6 +35,7 @@ public:
      * Drop the references on the mesh and the keys owner.
      *
      * @ghidraAddress NTSC-U/C: 0x0038e548
+     * @ghidraAddress PAL: 0x003fcc50
      */
     ~RndMeshAnim() override;
 
@@ -96,7 +97,7 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
      * @ghidraAddress NTSC-U/C: 0x00235470
-     * @ghidraAddress PAL: 0x0023df90
+     * @ghidraAddress PAL: 0x0023dff0
      */
     void Replace(RndObject *pFrom, RndObject *pTo) override;
 
@@ -138,6 +139,7 @@ public:
      *
      * @param pMesh The mesh, or null.
      * @ghidraAddress NTSC-U/C: 0x00235410
+     * @ghidraAddress PAL: 0x0023df90
      */
     void SetMesh(RndMesh *pMesh);
 
@@ -147,6 +149,7 @@ public:
      * @param pszName The registry key.
      * @return The animation.
      * @ghidraAddress NTSC-U/C: 0x0038e7d0
+     * @ghidraAddress PAL: 0x003fced8
      */
     static RndObject *New(const char *pszName) {
         return new RndMeshAnim(pszName);

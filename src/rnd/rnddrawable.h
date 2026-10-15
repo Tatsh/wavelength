@@ -27,7 +27,7 @@ public:
      * Drop the references on the children.
      *
      * @ghidraAddress NTSC-U/C: 0x003809b8
-     * @ghidraAddress PAL: 0x003ef060
+     * @ghidraAddress PAL: 0x003ef0d0
      */
     ~RndDrawable() override;
 

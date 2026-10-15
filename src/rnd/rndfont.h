@@ -44,7 +44,7 @@ public:
      * Drop the reference on the material.
      *
      * @ghidraAddress NTSC-U/C: 0x003822f0
-     * @ghidraAddress PAL: 0x003f0970
+     * @ghidraAddress PAL: 0x003f09f8
      */
     ~RndFont() override;
 

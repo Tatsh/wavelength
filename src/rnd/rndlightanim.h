@@ -34,6 +34,7 @@ public:
      * Drop the references on the light and the keys owner.
      *
      * @ghidraAddress NTSC-U/C: 0x00395a78
+     * @ghidraAddress PAL: 0x00404168
      */
     ~RndLightAnim() override;
 
@@ -93,6 +94,7 @@ public:
      * @param pFrom The object being replaced.
      * @param pTo The replacement, or null.
      * @ghidraAddress NTSC-U/C: 0x0024b138
+     * @ghidraAddress PAL: 0x00253ba0
      */
     void Replace(RndObject *pFrom, RndObject *pTo) override;
 
@@ -137,6 +139,7 @@ public:
      * @param pszName The registry key.
      * @return The animation.
      * @ghidraAddress NTSC-U/C: 0x00395d30
+     * @ghidraAddress PAL: 0x00404420
      */
     static RndObject *New(const char *pszName) {
         return new RndLightAnim(pszName);

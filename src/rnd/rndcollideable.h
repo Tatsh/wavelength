@@ -38,7 +38,7 @@ public:
      * Drop the references on the children.
      *
      * @ghidraAddress NTSC-U/C: 0x0037fb80
-     * @ghidraAddress PAL: 0x003ee238
+     * @ghidraAddress PAL: 0x003ee298
      */
     ~RndCollideable() override;
 

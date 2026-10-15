@@ -42,7 +42,7 @@ public:
      * Drop the reference on the children owner.
      *
      * @ghidraAddress NTSC-U/C: 0x00393420
-     * @ghidraAddress PAL: 0x00401a90
+     * @ghidraAddress PAL: 0x00401b28
      */
     ~RndView() override;
 
