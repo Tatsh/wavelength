@@ -7,7 +7,6 @@
 
 #include "msg/dnasstatusmsg.h"
 #include "msg/lobbyconnectresultmsg.h"
-#include "netflow/dnasauthdata.h"
 #include "netflow/lobbyrt.h"
 #include "netflow/netinet.h"
 #include "os/system.h"
@@ -81,10 +80,12 @@ void DNASTask::OnStart() {
 
     sceDNAS2TitleAuthData_t authData;
     authData.lineType = kLineType;
-    authData.passPhrase.data = g_DNASPassPhrase;
-    authData.passPhrase.size = sizeof(g_DNASPassPhrase);
-    authData.authData.data = g_DNASAuthData;
-    authData.authData.size = g_nDNASAuthDataSize;
+    // The original passes the title's DNAS credentials (an 8-byte pass phrase at 0x0042f950 and
+    // 65536 bytes of authentication data at 0x0041d198), which are not included.
+    authData.passPhrase.data = nullptr;
+    authData.passPhrase.size = 0;
+    authData.authData.data = nullptr;
+    authData.authData.size = 0;
     sStatusCode = 0;
     sSubCode = 0;
 

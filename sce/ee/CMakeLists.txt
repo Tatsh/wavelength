@@ -110,6 +110,14 @@ target_include_directories(wavelength_sonylibs PRIVATE "${CMAKE_SOURCE_DIR}/sce/
                                                       "${CMAKE_SOURCE_DIR}/sce/ee/src"
                                                       "${CMAKE_SOURCE_DIR}/3rdparty/expat/xmlparse")
 
+# The DNAS 2 authentication library of the European release.
+if(VIDEO_STANDARD STREQUAL "PAL")
+  add_library(wavelength_dnas STATIC src/dnas/libdnas2.c)
+  target_link_libraries(wavelength_dnas PRIVATE wavelength_common)
+  target_include_directories(wavelength_dnas PRIVATE "${CMAKE_SOURCE_DIR}/sce/ee/include"
+                                                     "${CMAKE_SOURCE_DIR}/sce/ee/src")
+endif()
+
 # The vendored Expat 1.2 the online library parses UPnP replies with. The game builds it with
 # namespaces and DTD support, and Expat allocates through the online library's allocator.
 add_library(

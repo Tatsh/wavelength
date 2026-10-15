@@ -77,6 +77,7 @@ extern int g_nCreateAccountResultMsgType;
  * Identity that DeleteAccountResultMsg::Type() reports.
  *
  * @ghidraAddress NTSC-U/C: 0x003b0b28
+ * @ghidraAddress PAL: 0x0042f9f8
  */
 extern int g_nDeleteAccountResultMsgType;
 

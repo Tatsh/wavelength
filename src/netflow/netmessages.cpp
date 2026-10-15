@@ -211,7 +211,7 @@ int g_nDNASStatusMsgType = 309;
 #endif
 // NTSC-U/C: 0x003b0b24, PAL: 0x0042f9f4
 int g_nCreateAccountResultMsgType = 309 + kDNASTypeShift;
-// NTSC-U/C: 0x003b0b28
+// NTSC-U/C: 0x003b0b28, PAL: 0x0042f9f8
 int g_nDeleteAccountResultMsgType = 310 + kDNASTypeShift;
 // NTSC-U/C: 0x003b0b2c, PAL: 0x0042f9fc
 int g_nChangePasswordResultMsgType = 311 + kDNASTypeShift;

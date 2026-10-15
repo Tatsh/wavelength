@@ -62,6 +62,9 @@ list(APPEND WAVELENGTH_LIBRARIES wavelength_ezmpeg wavelength_eznet)
 
 # The Sony library reconstructions live under sce/ee with the sample.
 list(APPEND WAVELENGTH_LIBRARIES wavelength_sonylibs)
+if(VIDEO_STANDARD STREQUAL "PAL")
+  list(APPEND WAVELENGTH_LIBRARIES wavelength_dnas)
+endif()
 
 # The vendored third-party libraries the game links.
 list(APPEND WAVELENGTH_LIBRARIES wavelength_expat wavelength_tomcrypt)

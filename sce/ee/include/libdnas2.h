@@ -10,6 +10,9 @@ extern "C" {
  * hard disk. The library authenticates the disc and the title with the DNAS server over SSL in its
  * threads, and the caller polls the progress with sceDNAS2GetStatus(). The names of the status
  * codes, the fields, and the parameters are inferred.
+ *
+ * The library keeps parts of its code encrypted and is not recovered. The routines here are stubs
+ * that report the library as not initialised, and the authentication always fails.
  */
 
 /** The library is not initialised. */
@@ -59,6 +62,7 @@ typedef struct {
  * @param pTimeout The time limits, or null.
  * @return Zero, or a negative error.
  * @ghidraAddress PAL: 0x00311e80
+ * @stub
  */
 int sceDNAS2InitNoHDD(sceDNAS2TitleAuthData_t *pAuthData,
                       int priority,
@@ -71,6 +75,7 @@ int sceDNAS2InitNoHDD(sceDNAS2TitleAuthData_t *pAuthData,
  *
  * @return Zero, or a negative error.
  * @ghidraAddress PAL: 0x00312038
+ * @stub
  */
 int sceDNAS2AuthNetStart(void);
 
@@ -79,6 +84,7 @@ int sceDNAS2AuthNetStart(void);
  *
  * @return Zero, or a negative error.
  * @ghidraAddress PAL: 0x00311eb8
+ * @stub
  */
 int sceDNAS2Abort(void);
 
@@ -88,6 +94,7 @@ int sceDNAS2Abort(void);
  * @param pStatus Receives the progress.
  * @return Zero, or sceDNAS2_ERR_NOT_INITIALIZED.
  * @ghidraAddress PAL: 0x00311fd0
+ * @stub
  */
 int sceDNAS2GetStatus(sceDNAS2Status_t *pStatus);
 
