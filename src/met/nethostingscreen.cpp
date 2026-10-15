@@ -24,9 +24,15 @@ constexpr char kGameToken[] = "mode_game";
 constexpr char kDuelToken[] = "mode_duel";
 constexpr char kRemixToken[] = "mode_remix";
 constexpr char kSkillFormatToken[] = "NET_HOST_SKILL";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kDuelEasyToken[] = "duel_easy_abbrev";
+constexpr char kDuelMediumToken[] = "duel_medium_abbrev";
+constexpr char kDuelHardToken[] = "duel_hard_abbrev";
+#else
 constexpr char kDuelEasyToken[] = "duel_easy";
 constexpr char kDuelMediumToken[] = "duel_medium";
 constexpr char kDuelHardToken[] = "duel_hard";
+#endif
 constexpr char kSkillEasyToken[] = "skill_easy";
 constexpr char kSkillNormalToken[] = "skill_norm";
 constexpr char kSkillExpertToken[] = "skill_exp";

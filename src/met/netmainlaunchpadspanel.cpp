@@ -30,7 +30,12 @@ constexpr char kHostText[] = "fn_main_join_21.txt";
 constexpr char kRankMeshFormat[] = "fn_main_join_rank0%d.mesh";
 constexpr char kNameTextFormat[] = "fn_main_join_%d.txt";
 constexpr char kCustomNameToken[] = "net_custom_name";
+#ifdef VIDEO_STANDARD_PAL
+// The token of the text of a launchpad whose song this console lacks.
+constexpr char kUnavailable[] = "unavailable";
+#else
 constexpr char kUnavailable[] = "Unavailable";
+#endif
 constexpr char kAnyArena[] = "";
 
 // The rows of players the panel shows.
@@ -106,7 +111,11 @@ void NetMainLaunchpadsPanel::ShowLaunchpad(NetLaunchpadInfo *pLaunchpad) {
     pHost->SetShowing(true);
     const NetGameParams &params = pLaunchpad->mParams;
     if (pLaunchpad->mOpen == 0) {
+#ifdef VIDEO_STANDARD_PAL
+        pHost->SetText(TheLocale.Localize(kUnavailable, true));
+#else
         pHost->SetText(kUnavailable);
+#endif
     } else if (params.mLoadRemix != 0) {
         const String format(TheLocale.Localize(kCustomNameToken, true));
         pHost->SetText(FormatString(format.c_str(), params.mRemixName.c_str()));

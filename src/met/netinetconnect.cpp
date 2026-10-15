@@ -24,6 +24,9 @@ constexpr char kConfigWrongConsoleError[] = "inet_error_cfg_wrong_console";
 constexpr char kConfigError[] = "inet_error_cfg_error";
 constexpr char kHardwareError[] = "inet_error_hardware_error";
 constexpr char kTimeoutError[] = "inet_error_timeout";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kAuthError[] = "net_connect_auth_error";
+#endif
 constexpr char kGenericError[] = "net_connect_internet_error";
 
 // The memory card slot of the configuration.
@@ -49,6 +52,10 @@ const char *ErrorToken(int nResult) {
         return kHardwareError;
     case InetConnectResultMsg::kResultTimeout:
         return kTimeoutError;
+#ifdef VIDEO_STANDARD_PAL
+    case InetConnectResultMsg::kResultAuthFailed:
+        return kAuthError;
+#endif
     default:
         return kGenericError;
     }
