@@ -23,7 +23,12 @@ constexpr int kSearchSpan = 2;
 // A colour of more than four nodes after the tag has an alpha.
 constexpr int kColorAlphaSize = 5;
 
+// The bytes of the longest symbol a binary array reads.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kSymbolBufferSize = 10024;
+#else
 constexpr int kSymbolBufferSize = 8192;
+#endif
 
 // The words of node kinds that follow nSize values.
 inline int TypeWords(int nSize) {
@@ -40,7 +45,7 @@ inline int StorageBytes(int nSize) {
 // NTSC-U/C: 0x003b2364, PAL: 0x00431224
 static int g_nDataArrayIndentLevel = 0;
 
-// NTSC-U/C: 0x005132b0
+// NTSC-U/C: 0x005132b0, PAL: 0x005b0030
 static char g_szDataArrayReadBuf[kSymbolBufferSize];
 
 void DataArray::PrintNode(PrnStream &stream, int nIndex) const {
