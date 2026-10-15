@@ -274,6 +274,7 @@ private:
      *
      * @param pArg Unused.
      * @ghidraAddress NTSC-U/C: 0x00254b30
+     * @ghidraAddress PAL: 0x0025da48
      */
     static void OnPowerOff(void *pArg);
 
