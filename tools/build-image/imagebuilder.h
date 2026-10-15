@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "isodate.h"
 #include "volume.h"
 
 namespace Tools::BuildImage {
@@ -21,10 +22,12 @@ struct Replacement {
 /**
  * Writer of an ISO image of a volume with replaced files.
  *
- * A payload fitting its original extent overwrites the extent with zero padding, and the metadata
- * is unchanged. A larger payload moves to sectors appended after the volume, and the ISO9660
- * directory record and volume size move with the payload. The UDF structures of a DVD image are
- * copied unchanged, so a relocated file keeps its old extent in the UDF tree.
+ * A payload fitting its original extent overwrites the extent with zero padding. A larger payload
+ * moves to sectors appended after the volume, and the volume size grows with it. Either way the
+ * ISO9660 directory record of the file gets the payload's extent, its size, and the build time,
+ * and the primary volume descriptor gets the build time as its modification date. The UDF
+ * structures of a DVD image are copied unchanged, so the UDF tree keeps each file's original
+ * extent, size, and date.
  */
 class ImageBuilder {
 public:
@@ -52,15 +55,21 @@ private:
     ImageBuilder(Volume &source, std::vector<Replacement> replacements);
 
     std::expected<void, Error> placePayloads();
-    static bool patchRecord(Volume::Sector &sector,
-                            std::uint32_t oldLba,
-                            const std::string &name,
-                            std::uint32_t newLba,
-                            std::uint32_t newSize);
+    std::expected<void, Error> patchParent(const LocatedFile &found,
+                                           const std::string &name,
+                                           std::uint32_t newLba,
+                                           std::uint32_t newSize);
+    bool patchRecord(Volume::Sector &sector,
+                     std::uint32_t oldLba,
+                     const std::string &name,
+                     std::uint32_t newLba,
+                     std::uint32_t newSize) const;
+    std::expected<void, Error> patchDescriptor(std::uint32_t volumeSectors);
     [[nodiscard]] std::expected<void, Error> verify(const std::filesystem::path &image) const;
 
     Volume *source_;
     std::vector<Replacement> replacements_;
+    Seconds buildTime_;
     std::map<std::uint32_t, Volume::Sector> overlays_;
     std::uint32_t volumeSectors_ = 0;
     std::vector<std::pair<std::string, std::uint32_t>> written_;

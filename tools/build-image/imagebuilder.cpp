@@ -21,17 +21,20 @@ constexpr std::string_view kElfMagic = "\x7f"
                                        "ELF";
 constexpr std::size_t kVerifyLength = 4;
 constexpr std::size_t kPvdVolumeSectors = 80;
+constexpr std::size_t kPvdModificationDate = 830;
 
 // The offsets below are within a directory record.
 constexpr std::size_t kRecordLba = 2;
 constexpr std::size_t kRecordSize = 10;
+constexpr std::size_t kRecordDate = 18;
 constexpr std::size_t kRecordNameLength = 32;
 constexpr std::size_t kRecordName = 33;
 
 } // namespace
 
 ImageBuilder::ImageBuilder(Volume &source, std::vector<Replacement> replacements)
-    : source_(&source), replacements_(std::move(replacements)) {
+    : source_(&source), replacements_(std::move(replacements)),
+      buildTime_(std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now())) {
 }
 
 std::expected<ImageBuilder, Error> ImageBuilder::plan(Volume &source,
@@ -71,6 +74,11 @@ std::expected<void, Error> ImageBuilder::placePayloads() {
                 }
                 overlays_[found->lba + index] = chunk;
             }
+            if (auto patched = patchParent(
+                    *found, target, found->lba, static_cast<std::uint32_t>(payload.size()));
+                !patched) {
+                return patched;
+            }
             written_.emplace_back(target, found->lba);
             spdlog::info("Replaced {} in place ({} bytes).", target, payload.size());
             continue;
@@ -82,43 +90,54 @@ std::expected<void, Error> ImageBuilder::placePayloads() {
             std::ranges::copy(slice.first(std::min(slice.size(), kSectorData)), chunk.begin());
             overlays_[appendLba + index] = chunk;
         }
-        auto patched = false;
-        for (std::uint32_t index = 0; !patched && index < Volume::sectorsFor(found->parentSize);
-             ++index) {
-            const auto parentLba = found->parentLba + index;
-            Volume::Sector parent;
-            if (const auto overlay = overlays_.find(parentLba); overlay != overlays_.end()) {
-                parent = overlay->second;
-            } else if (auto read = source_->readSector(parentLba, parent); !read) {
-                return read;
-            }
-            if (patchRecord(parent,
-                            found->lba,
-                            target,
-                            appendLba,
-                            static_cast<std::uint32_t>(payload.size()))) {
-                overlays_[parentLba] = parent;
-                patched = true;
-            }
-        }
-        if (!patched) {
-            return discImageError(
-                std::format("The directory record of {} is missing from its directory.", target));
+        if (auto patched =
+                patchParent(*found, target, appendLba, static_cast<std::uint32_t>(payload.size()));
+            !patched) {
+            return patched;
         }
         written_.emplace_back(target, appendLba);
         spdlog::info("Relocated {} to sector {} ({} bytes).", target, appendLba, payload.size());
         appendLba += sectors;
     }
-    if (appendLba != sourceSectors) {
-        Volume::Sector descriptor;
-        if (auto read = source_->readSector(Volume::kPvdSector, descriptor); !read) {
-            return read;
-        }
-        writeLittle(descriptor, kPvdVolumeSectors, appendLba);
-        writeBig(descriptor, kPvdVolumeSectors + 4, appendLba);
-        overlays_[Volume::kPvdSector] = descriptor;
+    if (auto patched = patchDescriptor(appendLba); !patched) {
+        return patched;
     }
     volumeSectors_ = appendLba;
+    return {};
+}
+
+std::expected<void, Error> ImageBuilder::patchParent(const LocatedFile &found,
+                                                     const std::string &name,
+                                                     std::uint32_t newLba,
+                                                     std::uint32_t newSize) {
+    for (std::uint32_t index = 0; index < Volume::sectorsFor(found.parentSize); ++index) {
+        const auto parentLba = found.parentLba + index;
+        Volume::Sector parent;
+        if (const auto overlay = overlays_.find(parentLba); overlay != overlays_.end()) {
+            parent = overlay->second;
+        } else if (auto read = source_->readSector(parentLba, parent); !read) {
+            return read;
+        }
+        if (patchRecord(parent, found.lba, name, newLba, newSize)) {
+            overlays_[parentLba] = parent;
+            return {};
+        }
+    }
+    return discImageError(
+        std::format("The directory record of {} is missing from its directory.", name));
+}
+
+std::expected<void, Error> ImageBuilder::patchDescriptor(std::uint32_t volumeSectors) {
+    Volume::Sector descriptor;
+    if (auto read = source_->readSector(Volume::kPvdSector, descriptor); !read) {
+        return read;
+    }
+    writeLittle(descriptor, kPvdVolumeSectors, volumeSectors);
+    writeBig(descriptor, kPvdVolumeSectors + 4, volumeSectors);
+    const auto date = volumeDate(buildTime_);
+    std::ranges::copy(date, descriptor.begin() + kPvdModificationDate);
+    descriptor[kPvdModificationDate + date.size()] = 0;
+    overlays_[Volume::kPvdSector] = descriptor;
     return {};
 }
 
@@ -170,7 +189,7 @@ bool ImageBuilder::patchRecord(Volume::Sector &sector,
                                std::uint32_t oldLba,
                                const std::string &name,
                                std::uint32_t newLba,
-                               std::uint32_t newSize) {
+                               std::uint32_t newSize) const {
     std::size_t offset = 0;
     while (offset + kRecordName <= sector.size()) {
         const auto length = sector[offset];
@@ -186,6 +205,7 @@ bool ImageBuilder::patchRecord(Volume::Sector &sector,
             Volume::upperAscii(entryName.substr(0, entryName.find(';'))) == name) {
             writeBoth(sector, offset + kRecordLba, newLba);
             writeBoth(sector, offset + kRecordSize, newSize);
+            writeRecordDate(sector, offset + kRecordDate, buildTime_);
             return true;
         }
         offset += length;

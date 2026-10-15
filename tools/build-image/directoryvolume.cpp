@@ -26,7 +26,6 @@ constexpr std::size_t kIsoNameMax = 30;
 constexpr std::string_view kSystemIdentifier = "PLAYSTATION";
 constexpr std::uint8_t kFlagDirectory = 0x02;
 constexpr std::uint8_t kTerminatorType = 0xFF;
-constexpr int kYearBase = 1900;
 
 // The constants below describe the directory record and path table entry layouts.
 constexpr std::size_t kRecordFixedLength = 33;
@@ -314,8 +313,7 @@ std::expected<std::string, Error> DirectoryVolume::isoName(const std::filesystem
     return std::filesystem::is_directory(entry, error) ? name : name + ";1";
 }
 
-std::expected<DirectoryVolume::Seconds, Error>
-DirectoryVolume::modificationTime(const std::filesystem::path &path) {
+std::expected<Seconds, Error> DirectoryVolume::modificationTime(const std::filesystem::path &path) {
     std::error_code error;
     const auto written = std::filesystem::last_write_time(path, error);
     if (error) {
@@ -349,15 +347,7 @@ DirectoryVolume::record(std::string_view identifier, const Entry &entry, bool is
     bytes[0] = static_cast<std::uint8_t>(bytes.size());
     writeBoth(bytes, kRecordLba, entry.lba);
     writeBoth(bytes, kRecordSize, entry.size);
-    const std::chrono::year_month_day day{std::chrono::floor<std::chrono::days>(entry.mtime)};
-    const std::chrono::hh_mm_ss time{entry.mtime -
-                                     std::chrono::floor<std::chrono::days>(entry.mtime)};
-    bytes[kRecordDate] = static_cast<std::uint8_t>(static_cast<int>(day.year()) - kYearBase);
-    bytes[kRecordDate + 1] = static_cast<std::uint8_t>(static_cast<unsigned>(day.month()));
-    bytes[kRecordDate + 2] = static_cast<std::uint8_t>(static_cast<unsigned>(day.day()));
-    bytes[kRecordDate + 3] = static_cast<std::uint8_t>(time.hours().count());
-    bytes[kRecordDate + 4] = static_cast<std::uint8_t>(time.minutes().count());
-    bytes[kRecordDate + 5] = static_cast<std::uint8_t>(time.seconds().count());
+    writeRecordDate(bytes, kRecordDate, entry.mtime);
     bytes[kRecordFlags] = isDirectory ? kFlagDirectory : 0;
     writeBoth(bytes, kRecordVolumeSequence, 1, 2);
     bytes[kRecordNameLength] = static_cast<std::uint8_t>(identifier.size());
@@ -392,7 +382,7 @@ void DirectoryVolume::writeDescriptors(std::uint32_t pathTable,
     fill(descriptor, kPvdApplicationIdentifier, kPvdApplicationIdentifierLength, ' ');
     put(descriptor, kPvdApplicationIdentifier, kSystemIdentifier);
     fill(descriptor, kPvdFileIdentifiers, kPvdCreationDate - kPvdFileIdentifiers, ' ');
-    put(descriptor, kPvdCreationDate, std::format("{:%Y%m%d%H%M%S}00", newest));
+    put(descriptor, kPvdCreationDate, volumeDate(newest));
     descriptor[kPvdCreationDate + kPvdDateLength - 1] = 0;
     for (std::size_t date = 0; date < kPvdDateCount; ++date) {
         const auto start = kPvdModificationDate + date * kPvdDateLength;

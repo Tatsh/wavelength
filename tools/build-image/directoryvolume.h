@@ -13,6 +13,7 @@
 #include <string_view>
 #include <vector>
 
+#include "isodate.h"
 #include "volume.h"
 
 namespace Tools::BuildImage {
@@ -57,8 +58,6 @@ public:
     [[nodiscard]] std::uint32_t volumeSectors() const override;
 
 private:
-    using Seconds = std::chrono::sys_seconds;
-
     struct Entry {
         std::string isoName;
         std::uint32_t lba = 0;
