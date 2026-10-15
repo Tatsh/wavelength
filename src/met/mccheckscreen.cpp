@@ -5,6 +5,7 @@
 #include "game/gamedb.h"
 #include "memcard/mcmanager.h"
 #include "memcard/memcardtask.h"
+#include "met/dialogpanel.h"
 #include "met/metagame.h"
 #include "met/transitionerrorscreen.h"
 #include "os/joypad.h"
@@ -25,6 +26,10 @@ constexpr char kRetryComponent[] = "retry";
 constexpr char kContinueComponent[] = "continue";
 constexpr char kYesComponent[] = "yes";
 constexpr char kNoComponent[] = "no";
+#ifdef VIDEO_STANDARD_PAL
+// The text the dialogue shows while the settings load, with the slot name.
+constexpr char kInitialAccessCheckToken[] = "initial_access_check";
+#endif
 
 // The first player.
 constexpr int kFirstPlayer = 0;
@@ -48,6 +53,30 @@ void MCCheckScreen::Exit(UIScreen *pNextScreen, float fTime) {
     TheGameDb->AddPlayer(&profile);
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void MCCheckScreen::Poll(float fTime) {
+    UIScreen::Poll(fTime);
+    DialogPanel *pDialog =
+        mFocusPanel != nullptr ? dynamic_cast<DialogPanel *>(mFocusPanel) : nullptr;
+    if (mLoadSettings != 0 && mAdvanceTime == 0.0f) {
+        mLoadSettings = 0;
+        const String slot(GetSlotName());
+        const String text(
+            FormatString(TheLocale.Localize(kInitialAccessCheckToken, false), slot.c_str()));
+        pDialog->SetText(text.c_str());
+        TheMCManager.LoadSettings(this, mSlot);
+    } else if (mLoadFreqs != 0 && mAdvanceTime == 0.0f) {
+        mLoadFreqs = 0;
+        TheMCManager.LoadFreqs(this, mSlot);
+    }
+    if (mAdvanceTime != 0.0f && mAdvanceTime < fTime) {
+        mAdvanceTime = 0.0f;
+        if (mLoadFreqs == 0 && mLoadSettings == 0) {
+            TheUI.GotoScreen(mDoneScreen.c_str());
+        }
+    }
+}
+#else
 void MCCheckScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
     if (mLoadSettings != 0) {
@@ -62,6 +91,7 @@ void MCCheckScreen::Poll(float fTime) {
         TheUI.GotoScreen(mDoneScreen.c_str());
     }
 }
+#endif
 
 bool MCCheckScreen::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nUITransitionCompleteMsgType) {
@@ -111,6 +141,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
         pDialog->mMessage = text.c_str();
         break;
     }
+#ifndef VIDEO_STANDARD_PAL
     case MemcardTask::kStatusUnformatted: {
         ErrorScreen *pFormat = FindErrorScreen(kFormatScreen);
         pFormat->SetDoneScreen(mName);
@@ -123,6 +154,8 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
         TheUI.GotoScreen(pUnformatted);
         return;
     }
+#endif
+    // The PAL build continues without the Freqs from an unformatted card too.
     default:
         TheMetagame.mFreqsOnCard = 0;
         TheUI.GotoScreen(mDoneScreen.c_str());

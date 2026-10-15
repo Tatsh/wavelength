@@ -77,9 +77,12 @@ public:
     /**
      * Start a pending load, and go to the done screen once the time to advance has passed.
      *
+     * The PAL build starts a load only when no advance is pending, shows `initial_access_check`
+     * with the slot name while the settings load, and does not advance while a load is pending.
+     *
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x001acc20
-     * @ghidraAddress PAL: 0x001b73c8
+     * @ghidraAddress PAL: 0x001b5378
      */
     void Poll(float fTime) override;
 
@@ -98,7 +101,8 @@ public:
      * failure.
      *
      * Outside edit mode, the settings load. In edit mode the screen goes to the done screen at
-     * once.
+     * once. The PAL build goes to the done screen for an unformatted card instead of offering to
+     * format it.
      *
      * @param nStatus The outcome, one of MemcardTask::Status.
      * @param nFormat Non-zero for a formatted card.
