@@ -334,8 +334,8 @@ bool PsTex::UsedRange::AllocUsed() {
         if (pRange->mPinned) {
             continue;
         }
-        const int nFrame = pRange->mFrame;
-        if (nFrame == sStamp) {
+        // Yes, the binary tests the stamp of this range, not of the candidate.
+        if (mFrame == sStamp) {
             continue;
         }
         const int nWaste = pRange->mCount - mCount;
@@ -343,10 +343,10 @@ bool PsTex::UsedRange::AllocUsed() {
             best = it;
             nBestWaste = nWaste;
             nBestPad = nPad;
-            nBestFrame = nFrame;
-        } else if (nWaste == nBestWaste && nBestFrame < nFrame) {
+            nBestFrame = mFrame;
+        } else if (nWaste == nBestWaste && nBestFrame < mFrame) {
             best = it;
-            nBestFrame = nFrame;
+            nBestFrame = mFrame;
             nBestPad = nPad;
         }
     }

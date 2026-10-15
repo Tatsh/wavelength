@@ -54,9 +54,10 @@ public:
         /**
          * Take the blocks of the range of another texture that wastes the fewest of them.
          *
-         * Pinned ranges and ranges selected since the last stamp are passed over. Of two ranges
-         * that waste as many blocks, the one selected more recently wins. The other texture's
-         * range is evicted, and the blocks this range does not need are freed.
+         * Pinned ranges are passed over, and every range is passed over while this range is
+         * marked with sStamp. Of ranges that waste as many blocks, the earliest in sUsedRanges
+         * wins. The other texture's range is evicted, and the blocks this range does not need are
+         * freed.
          *
          * @return Whether the range received blocks.
          * @ghidraAddress NTSC-U/C: 0x00217150
