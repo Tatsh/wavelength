@@ -389,8 +389,11 @@ BinStream &operator<<(BinStream &stream, const std::vector<RndMatAnim::Stage> &s
 BinStream &operator>>(BinStream &stream, std::vector<RndMatAnim::Stage> &stages) {
     int nSize;
     stream.ReadEndian(&nSize, sizeof(nSize));
-    const RndMatAnim::Stage stage;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    const RndMatAnim::Stage stage; // Yes, the binary copies the unset mMatAnim of the fill stage.
     stages.resize(nSize, stage);
+#pragma GCC diagnostic pop
     for (RndMatAnim::Stage &element : stages) {
         element.Load(stream);
     }
