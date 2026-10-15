@@ -9,7 +9,8 @@ Doxygen block, or `(stub)` at the end of its address comment) is not counted as 
 neither is a routine tagged in a header with no body in the tree yet. The DNAS2 library and its
 RCOM crypto library (PAL `0x003115a0` to `0x003737a8`) are not recovered, and their
 routines are counted as excluded. The library libdnas2 is encrypted, and RCOM is reachable
-only through it.
+only through it. The four libdnas2 entry points the game calls are stubs and are counted
+as stubbed.
 
 Regenerate after every merged change, from a PAL build of the tree:
 
@@ -23,29 +24,30 @@ WAVELENGTH_BUILD="$PWD/build-pal" python3 .wiswa-ci/port/pal/progress.py "$PWD" 
 
 | Measure                                                             |  Count |
 | ------------------------------------------------------------------- | -----: |
-| NTSC-U/C routines to port with a PAL counterpart                    |  8,582 |
-| NTSC-U/C routines to port with no PAL counterpart found             |     11 |
-| Routines only the PAL executable has                                |    112 |
+| NTSC-U/C routines to port with a PAL counterpart                    |  8,583 |
+| NTSC-U/C routines to port with no PAL counterpart found             |     10 |
+| Routines only the PAL executable has                                |    114 |
 | Excluded: Compiler-emitted instance                                 |  2,111 |
-| Excluded: DNAS2 and RCOM (not recovered)                            |  1,490 |
+| Excluded: DNAS2 and RCOM (not recovered)                            |  1,486 |
 | Excluded: Compiler RTTI                                             |  1,357 |
 | Excluded: STL instance (GCC library)                                |    526 |
 | Excluded: C and compiler runtime                                    |    342 |
 | Excluded: Vendored under 3rdparty                                   |    296 |
 | Excluded: PAL only: Compiler-emitted instances                      |     55 |
 | Excluded: PD audit: compiler or library generated, or not a routine |     49 |
-| PAL routines to provide                                             |  8,694 |
-| Done                                                                |  8,659 |
-| Stubbed (not counted as done)                                       |      0 |
+| PAL routines to provide                                             |  8,697 |
+| Done                                                                |  8,669 |
+| Stubbed (not counted as done)                                       |      4 |
 | Declared only (not counted as done)                                 |      0 |
-| Share done                                                          | 99.60% |
+| Share done                                                          | 99.68% |
 
 ## By component
 
 | Component                    | Routines |  Done | Stubbed | Share |
 | ---------------------------- | -------: | ----: | ------: | ----: |
-| Game code                    |    6,902 | 6,876 |       0 | 99.6% |
+| Game code                    |    6,901 | 6,886 |       0 | 99.8% |
 | Sony online library (SCE-RT) |    1,242 | 1,235 |       0 | 99.4% |
+| DNAS2 API called by the game |        4 |     0 |       4 |  0.0% |
 | Sony EE libraries            |      550 |   548 |       0 | 99.6% |
 
 ## IOP modules
