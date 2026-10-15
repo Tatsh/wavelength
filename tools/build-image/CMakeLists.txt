@@ -5,6 +5,7 @@ add_executable(
   imagebuilder.cpp
   main.cpp
   sourceimage.cpp
+  udftree.cpp
   volume.cpp
   ziparchive.cpp)
 target_link_libraries(

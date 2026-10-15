@@ -21,6 +21,7 @@ constexpr std::size_t kPvdRootSize = 166;
 // The constants below describe a directory record.
 constexpr std::size_t kRecordLba = 2;
 constexpr std::size_t kRecordSize = 10;
+constexpr std::size_t kRecordDate = 18;
 constexpr std::size_t kRecordFlags = 25;
 constexpr std::size_t kRecordNameLength = 32;
 constexpr std::size_t kRecordName = 33;
@@ -61,19 +62,18 @@ std::expected<LocatedFile, Error> SourceImage::find(const std::string &name) {
         return std::unexpected(std::move(read.error()));
     }
     struct Directory {
-        std::uint32_t lba;
-        std::uint32_t size;
+        std::vector<DirectoryExtent> chain;
         std::filesystem::path path;
     };
     const auto folded = upperAscii(name);
     std::vector<Directory> stack{
-        {readLittle32(descriptor, kPvdRootLba), readLittle32(descriptor, kPvdRootSize), "/"}};
+        {{{readLittle32(descriptor, kPvdRootLba), readLittle32(descriptor, kPvdRootSize)}}, "/"}};
     std::vector<std::filesystem::path> paths;
     std::vector<LocatedFile> matches;
     while (!stack.empty()) {
         const auto directory = stack.back();
         stack.pop_back();
-        const auto listing = records(directory.lba, directory.size);
+        const auto listing = records(directory.chain.front().lba, directory.chain.front().size);
         if (!listing) {
             return std::unexpected(listing.error());
         }
@@ -84,13 +84,15 @@ std::expected<LocatedFile, Error> SourceImage::find(const std::string &name) {
             }
             const auto bare = record.name.substr(0, record.name.find(';'));
             if (record.isDirectory) {
-                stack.push_back({record.lba, record.size, directory.path / bare});
+                std::vector<DirectoryExtent> chain{{record.lba, record.size}};
+                chain.insert(chain.end(), directory.chain.begin(), directory.chain.end());
+                stack.push_back({std::move(chain), directory.path / bare});
             } else if (upperAscii(bare) == folded) {
                 if (record.multiExtent) {
                     return discImageError(std::format("{} spans several extents.", name));
                 }
                 paths.push_back(directory.path / bare);
-                matches.push_back({record.lba, directory.lba, directory.size, record.size});
+                matches.push_back({record.lba, directory.chain, record.modified, record.size});
             }
         }
     }
@@ -153,6 +155,7 @@ std::expected<std::vector<SourceImage::Record>, Error> SourceImage::records(std:
         const auto name = record.subspan(kRecordName, record[kRecordNameLength]);
         found.push_back({(flags & kFlagDirectory) != 0,
                          readLittle32(record, kRecordLba),
+                         readRecordDate(record, kRecordDate),
                          (flags & kFlagMultiExtent) != 0,
                          std::string(name.begin(), name.end()),
                          readLittle32(record, kRecordSize)});

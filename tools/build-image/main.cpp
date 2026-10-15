@@ -60,9 +60,10 @@ struct Options {
     std::optional<fs::path> wavelengthBin;
 };
 
-// The executable and the IOP modules that replace their originals.
+// The executable and the IOP modules that replace their originals. The executable's target is set
+// once the original is identified.
 struct Payloads {
-    Payload executable;
+    Replacement executable;
     std::vector<Replacement> modules;
 };
 
@@ -113,10 +114,31 @@ std::expected<std::string, Error> identify(const fs::path &inputImage) {
     });
 }
 
+std::expected<Replacement, Error>
+memberReplacement(const ZipArchive &archive, const std::string &name, std::string target) {
+    auto data = archive.extract(name);
+    if (!data) {
+        return std::unexpected(std::move(data.error()));
+    }
+    return archive.modified(name).transform([&](Seconds modified) {
+        return Replacement{std::move(target), std::move(*data), modified};
+    });
+}
+
+std::expected<Replacement, Error> fileReplacement(const fs::path &path, std::string target) {
+    auto data = readFile(path);
+    if (!data) {
+        return std::unexpected(std::move(data.error()));
+    }
+    return fileModificationTime(path).transform([&](Seconds modified) {
+        return Replacement{std::move(target), std::move(*data), modified};
+    });
+}
+
 // The executable is the one member whose name matches wavelength-<VERSION>-<STD><LABEL>.elf.
-std::expected<Payload, Error> extractExecutable(const ZipArchive &archive,
-                                                const std::string &artifact,
-                                                const std::string &standardLabel) {
+std::expected<Replacement, Error> extractExecutable(const ZipArchive &archive,
+                                                    const std::string &artifact,
+                                                    const std::string &standardLabel) {
     const auto suffix = std::format("-{}{}", standardLabel, kExecutableSuffix);
     std::vector<std::string> matches;
     for (const auto &name : archive.names()) {
@@ -133,7 +155,7 @@ std::expected<Payload, Error> extractExecutable(const ZipArchive &archive,
                                          kExecutablePrefix,
                                          suffix));
     }
-    return archive.extract(matches.front());
+    return memberReplacement(archive, matches.front(), "");
 }
 
 // Each member named <MODULE>-<STD>.irx replaces the disc's <MODULE>.irx.
@@ -146,13 +168,14 @@ std::expected<std::vector<Replacement>, Error> extractModules(const ZipArchive &
         if (base.size() <= suffix.size() || !base.ends_with(suffix)) {
             continue;
         }
-        auto data = archive.extract(name);
-        if (!data) {
-            return std::unexpected(std::move(data.error()));
+        auto module = memberReplacement(archive,
+                                        name,
+                                        base.substr(0, base.size() - suffix.size()) +
+                                            Volume::upperAscii(kModuleSuffix));
+        if (!module) {
+            return std::unexpected(std::move(module.error()));
         }
-        modules.push_back(
-            {base.substr(0, base.size() - suffix.size()) + Volume::upperAscii(kModuleSuffix),
-             std::move(*data)});
+        modules.push_back(std::move(*module));
     }
     return modules;
 }
@@ -160,11 +183,11 @@ std::expected<std::vector<Replacement>, Error> extractModules(const ZipArchive &
 std::expected<std::vector<Replacement>, Error> readModules(const std::vector<fs::path> &paths) {
     std::vector<Replacement> modules;
     for (const auto &path : paths) {
-        auto data = readFile(path);
-        if (!data) {
-            return std::unexpected(std::move(data.error()));
+        auto module = fileReplacement(path, Volume::upperAscii(path.filename().string()));
+        if (!module) {
+            return std::unexpected(std::move(module.error()));
         }
-        modules.push_back({Volume::upperAscii(path.filename().string()), std::move(*data)});
+        modules.push_back(std::move(*module));
     }
     return modules;
 }
@@ -173,7 +196,7 @@ std::expected<std::vector<Replacement>, Error> readModules(const std::vector<fs:
 // provides the IOP modules whatever the build type.
 std::expected<Payloads, Error> resolvePayloads(const Options &options) {
     if (options.wavelengthBin) {
-        auto executable = readFile(*options.wavelengthBin);
+        auto executable = fileReplacement(*options.wavelengthBin, "");
         if (!executable) {
             return std::unexpected(std::move(executable.error()));
         }
@@ -282,7 +305,8 @@ std::expected<std::uint32_t, Error> run(const Options &options) {
     }
     spdlog::info("Original is the {} release ({}).", isPal ? "PAL" : "NTSC-U/C", *target);
     std::vector<Replacement> replacements;
-    replacements.push_back({*target, std::move(payloads->executable)});
+    payloads->executable.target = *target;
+    replacements.push_back(std::move(payloads->executable));
     std::ranges::move(payloads->modules, std::back_inserter(replacements));
     return ImageBuilder::plan(**source, std::move(replacements))
         .and_then([&options](ImageBuilder builder) { return builder.write(options.outputImage); });

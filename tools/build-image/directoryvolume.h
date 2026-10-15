@@ -24,7 +24,8 @@ namespace Tools::BuildImage {
  * The primary volume descriptor, the terminator, and the path tables take the sectors the original
  * disc gives them. The directories follow in path table order, and then the files in the same
  * order. Metadata sectors are built in memory, and file sectors are read from the source files on
- * demand.
+ * demand. Each record has the modification time of its file, and a directory has the newest time
+ * of itself and every entry beneath it. The volume has no UDF file system.
  */
 class DirectoryVolume final : public Volume {
 public:
@@ -77,7 +78,6 @@ private:
 
     std::expected<void, Error> build(const std::filesystem::path &root);
     static std::expected<std::string, Error> isoName(const std::filesystem::path &entry);
-    static std::expected<Seconds, Error> modificationTime(const std::filesystem::path &path);
     static std::uint32_t extentSize(const std::vector<ListingEntry> &listing);
     static std::vector<std::uint8_t>
     record(std::string_view identifier, const Entry &entry, bool isDirectory);

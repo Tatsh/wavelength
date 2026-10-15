@@ -182,7 +182,7 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
     const auto tableSectors = sectorsFor(pathTable);
     auto nextLba = kPathTableLba + kPathTableCopies * tableSectors;
     for (std::size_t i = 0; i < directories.size(); ++i) {
-        const auto mtime = modificationTime(directories[i]);
+        const auto mtime = fileModificationTime(directories[i]);
         if (!mtime) {
             return std::unexpected(mtime.error());
         }
@@ -197,7 +197,7 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
             }
             std::error_code error;
             const auto size = std::filesystem::file_size(entry.path, error);
-            const auto mtime = modificationTime(entry.path);
+            const auto mtime = fileModificationTime(entry.path);
             if (error) {
                 return ioError(
                     std::format("Cannot examine {} ({}).", entry.path.string(), error.message()));
@@ -215,14 +215,15 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
     }
     volumeSectors_ = nextLba;
 
-    auto newest = directories_.front().mtime;
-    for (const auto &entry : directories_) {
-        newest = std::max(newest, entry.mtime);
+    // A directory is as new as the newest entry beneath it. Children follow their parents in
+    // breadth-first order, so a reverse pass sees each child before its parent.
+    for (std::size_t i = directories_.size(); i-- > 0;) {
+        for (const auto &entry : listings_[i]) {
+            const auto &child = entry.isDirectory ? directories_[entry.index] : files_[entry.index];
+            directories_[i].mtime = std::max(directories_[i].mtime, child.mtime);
+        }
     }
-    for (const auto &entry : files_) {
-        newest = std::max(newest, entry.mtime);
-    }
-    writeDescriptors(pathTable, tableSectors, newest);
+    writeDescriptors(pathTable, tableSectors, directories_.front().mtime);
     writePathTables(tableSectors);
     for (std::size_t i = 0; i < directories_.size(); ++i) {
         writeDirectory(i);
@@ -258,8 +259,16 @@ std::expected<LocatedFile, Error> DirectoryVolume::find(const std::string &name)
         }
         return discImageError(ambiguousName(name, paths));
     }
-    const auto &parent = directories_[parentOf_.at(stripVersion(matches.front()->isoName))];
-    return LocatedFile{matches.front()->lba, parent.lba, parent.size, matches.front()->size};
+    std::vector<DirectoryExtent> chain;
+    for (auto directory = parentOf_.at(stripVersion(matches.front()->isoName));;
+         directory = parents_[directory] - 1) {
+        chain.push_back({directories_[directory].lba, directories_[directory].size});
+        if (directory == 0) {
+            break;
+        }
+    }
+    return LocatedFile{
+        matches.front()->lba, std::move(chain), matches.front()->mtime, matches.front()->size};
 }
 
 std::expected<void, Error>
@@ -311,16 +320,6 @@ std::expected<std::string, Error> DirectoryVolume::isoName(const std::filesystem
     }
     std::error_code error;
     return std::filesystem::is_directory(entry, error) ? name : name + ";1";
-}
-
-std::expected<Seconds, Error> DirectoryVolume::modificationTime(const std::filesystem::path &path) {
-    std::error_code error;
-    const auto written = std::filesystem::last_write_time(path, error);
-    if (error) {
-        return ioError(std::format("Cannot examine {} ({}).", path.string(), error.message()));
-    }
-    return std::chrono::floor<std::chrono::seconds>(
-        std::chrono::clock_cast<std::chrono::system_clock>(written));
 }
 
 std::uint32_t DirectoryVolume::extentSize(const std::vector<ListingEntry> &listing) {
