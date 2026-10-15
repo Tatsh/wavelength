@@ -23,6 +23,12 @@ void MCLoadSettingsTask::Set(int nPort, GameOptions *pSettings) {
 }
 
 void MCLoadSettingsTask::OnFileLoaded() {
+#ifdef VIDEO_STANDARD_PAL
+    // A file of another size than whole settings is not read.
+    if (!MemcardReadSizeIs(GameOptions::SavedSize())) {
+        return;
+    }
+#endif
     BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
     stream >> *mSettings;
 }

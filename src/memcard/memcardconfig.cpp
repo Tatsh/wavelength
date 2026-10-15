@@ -32,6 +32,9 @@ constexpr char kIconSysMagic[] = "PS2D";
 DataArray *g_pMemcardConfig;
 char *g_pMemcardBuffer;
 int g_nMemcardBufferSize;
+#ifdef VIDEO_STANDARD_PAL
+int g_nMemcardReadResult;
+#endif
 char *g_pMemcardIcon;
 int g_nMemcardIconSize;
 int g_bMemcardDirExists;
@@ -59,6 +62,12 @@ const char *GetRemixDirName(int nIndex) {
 int BytesToKilobytes(int nBytes) {
     return (nBytes + kKilobyteRounding) >> kKilobyteShift;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+bool MemcardReadSizeIs(int nBytes) {
+    return nBytes == g_nMemcardReadResult;
+}
+#endif
 
 void LoadMemcardConfig() {
     g_pMemcardConfig = SystemConfig()->FindArray("metagame", true)->FindArray("mc", true);

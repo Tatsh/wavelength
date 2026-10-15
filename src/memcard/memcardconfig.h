@@ -34,6 +34,26 @@ extern char *g_pMemcardBuffer;
  */
 extern int g_nMemcardBufferSize;
 
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * The result of the last memory card read, the bytes it read or an error code.
+ *
+ * @ghidraAddress PAL: 0x0042e6f8
+ */
+extern int g_nMemcardReadResult;
+
+/**
+ * Report whether the last memory card read read the given number of bytes.
+ *
+ * The name is inferred.
+ *
+ * @param nBytes The number of bytes a whole file has.
+ * @return Whether g_nMemcardReadResult is nBytes.
+ * @ghidraAddress PAL: 0x0015eab8
+ */
+bool MemcardReadSizeIs(int nBytes);
+#endif
+
 /**
  * The icon file every save directory receives, read from the `icon_file` of the disc's `mc`
  * directory.

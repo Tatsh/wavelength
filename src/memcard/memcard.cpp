@@ -6,6 +6,7 @@
 
 #include "os/debug.h"
 #include "os/memcardsync.h"
+#include "os/string.h"
 
 namespace {
 
@@ -182,7 +183,11 @@ void MemcardTerminate() {
 }
 
 bool operator<(const MemcardDirEntry &a, const MemcardDirEntry &b) {
+#ifdef VIDEO_STANDARD_PAL
+    return !(a.mModified < b.mModified);
+#else
     return a.mModified < b.mModified;
+#endif
 }
 
 void MemcardPoll() {
@@ -349,6 +354,31 @@ int MemcardGetDirAndWait(
     *ppEntries = handler.mEntries;
     return nResult;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+int MemcardDeleteAndWait(int nDevice, const char *pszPath) {
+    SyncHandler handler;
+    MemcardDelete(&handler, nDevice, pszPath);
+    return handler.Wait();
+}
+
+int MemcardDeleteDirAndWait(int nDevice, const char *pszDir) {
+    String path(pszDir);
+    path += "/*";
+    MemcardDirEntry *pEntries;
+    // The listing reports no count, so only the directory itself is deleted.
+    for (int nLeft = MemcardGetDirAndWait(nDevice, path.c_str(), kMaxDirEntries, 0, &pEntries);
+         nLeft > 0;
+         --nLeft, ++pEntries) {
+        if (pEntries->mName[0] != '.') {
+            path.Clear();
+            path.Printf("%s/%s", pszDir, pEntries->mName);
+            MemcardDeleteAndWait(nDevice, path.c_str());
+        }
+    }
+    return MemcardDeleteAndWait(nDevice, pszDir);
+}
+#endif
 
 #pragma GCC diagnostic pop
 

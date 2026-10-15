@@ -14,6 +14,12 @@ constexpr unsigned char kVersion = 3;
 constexpr unsigned char kVersionOutputModeWord = 3;
 constexpr unsigned char kVersionDate = 2;
 
+#ifdef VIDEO_STANDARD_PAL
+// The bytes Save() writes, the version byte, the output mode, the two flags, the track size, and
+// the six bytes of the date.
+constexpr int kSavedSize = 17;
+#endif
+
 } // namespace
 
 GameOptions::GameOptions() {
@@ -88,6 +94,12 @@ void GameOptions::Save(BinStream &stream) const {
     stream.WriteEndian(&mFreqSize, sizeof(mFreqSize));
     stream << mDate;
 }
+
+#ifdef VIDEO_STANDARD_PAL
+int GameOptions::SavedSize() {
+    return kSavedSize;
+}
+#endif
 
 void GameOptions::Load(BinStream &stream) {
     unsigned char nVersion;

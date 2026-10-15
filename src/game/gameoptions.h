@@ -110,6 +110,18 @@ public:
      */
     void Save(BinStream &stream) const;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Report the bytes the saved settings take, with the version byte.
+     *
+     * The name is inferred.
+     *
+     * @return The size in bytes.
+     * @ghidraAddress PAL: 0x00286600
+     */
+    static int SavedSize();
+#endif
+
     /**
      * Read the settings Save() wrote, or an older version of them.
      *

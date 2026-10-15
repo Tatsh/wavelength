@@ -81,3 +81,31 @@ int MemcardWriteAndWait(int nFile, const void *pData, int nBytes);
  */
 int MemcardGetDirAndWait(
     int nDevice, const char *pszName, int nMaxEntries, int nMode, MemcardDirEntry **ppEntries);
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Delete a file or an empty directory of the memory card of a device, waiting for the result.
+ *
+ * The name is inferred.
+ *
+ * @param nDevice The device.
+ * @param pszPath The path.
+ * @return The result of the request.
+ * @ghidraAddress PAL: 0x00295720
+ */
+int MemcardDeleteAndWait(int nDevice, const char *pszPath);
+
+/**
+ * Delete the files of a directory of the memory card of a device, then the directory, waiting for
+ * each result.
+ *
+ * The name is inferred. As MemcardGetDirAndWait() reports no count, only the directory itself is
+ * deleted, which fails while it has files.
+ *
+ * @param nDevice The device.
+ * @param pszDir The path of the directory.
+ * @return The result of the deletion of the directory.
+ * @ghidraAddress PAL: 0x00295780
+ */
+int MemcardDeleteDirAndWait(int nDevice, const char *pszDir);
+#endif

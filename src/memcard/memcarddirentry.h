@@ -19,11 +19,12 @@ struct MemcardDirEntry {
 };
 
 /**
- * Order two entries by the time they were last changed, the older first.
+ * Order two entries by the time they were last changed, the older first, or in the PAL build the
+ * newer first.
  *
  * @param a The first entry.
  * @param b The second entry.
- * @return Whether a was changed before b.
+ * @return Whether a was changed before b, or in the PAL build whether a was not changed before b.
  * @ghidraAddress NTSC-U/C: 0x0028b558
  * @ghidraAddress PAL: 0x00294d50
  */
