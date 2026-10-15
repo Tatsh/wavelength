@@ -160,11 +160,15 @@ void SetXfmRows(Transform &xfm, const float (*pXfm)[kTransformRowFloatCount]) {
         rows[i]->x = pXfm[i][0];
         rows[i]->y = pXfm[i][1];
         rows[i]->z = pXfm[i][2];
+#ifdef ENABLE_PATCHES
+        rows[i]->w = pXfm[i][kVec3PaddingFloat];
+#else
         // The binary copies whole quadwords, so the unset basis words of BuildIdentity() pass on.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
         rows[i]->w = pXfm[i][kVec3PaddingFloat];
 #pragma GCC diagnostic pop
+#endif
     }
 }
 
@@ -191,6 +195,11 @@ void BuildIdentity(float (*pXfm)[kTransformRowFloatCount]) {
         for (int j = 0; j < kNumComponents; ++j) {
             pXfm[i][j] = i == j ? 1.0f : 0.0f;
         }
+#ifdef ENABLE_PATCHES
+        // The original copies stack garbage in the fourth word into a matrix VU0 may multiply. The
+        // patch zeroes it, making the matrix a proper affine identity.
+        pXfm[i][kVec3PaddingFloat] = 0.0f;
+#endif
     }
     float *pTranslation = pXfm[kTransformRowCount - 1];
     for (int j = 0; j < kNumComponents; ++j) {
