@@ -85,6 +85,7 @@ const char *GetPlayerColorName(int nPlayer);
  */
 const char *GetConnectionTypeName(int nType);
 
+#ifndef VIDEO_STANDARD_PAL
 /**
  * Report the localised abbreviation of a kind of network connection.
  *
@@ -93,6 +94,7 @@ const char *GetConnectionTypeName(int nType);
  * @ghidraAddress NTSC-U/C: 0x001997e8
  */
 const char *GetConnectionTypeAbbrev(int nType);
+#endif
 
 /**
  * Report the localised abbreviation of a duel difficulty.

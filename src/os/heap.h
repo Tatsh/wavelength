@@ -152,6 +152,7 @@ public:
      *
      * @return mName.
      * @ghidraAddress NTSC-U/C: 0x0029ae28
+     * @ghidraAddress PAL: 0x002a4a48
      */
     const char *Name() const;
 

@@ -151,6 +151,7 @@ private:
      *
      * @param nArg The argument of the job. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x00196550
+     * @ghidraAddress PAL: 0x0019d920
      */
     static void OnMenuRestored(int nArg);
 
@@ -159,6 +160,7 @@ private:
      *
      * @param nArg The argument of the job. The routine does not read it.
      * @ghidraAddress NTSC-U/C: 0x00196560
+     * @ghidraAddress PAL: 0x0019d930
      */
     static void OnClipReady(int nArg);
 

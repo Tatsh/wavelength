@@ -127,6 +127,7 @@ const char *GetConnectionTypeName(int nType) {
     return TheLocale.Localize(pszToken, true);
 }
 
+#ifndef VIDEO_STANDARD_PAL
 const char *GetConnectionTypeAbbrev(int nType) {
     const char *pszToken;
     switch (nType) {
@@ -145,6 +146,7 @@ const char *GetConnectionTypeAbbrev(int nType) {
     }
     return TheLocale.Localize(pszToken, true);
 }
+#endif
 
 const char *GetDuelDifficultyAbbrev(int nDifficulty) {
     const char *pszToken;

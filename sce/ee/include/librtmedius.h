@@ -1158,6 +1158,7 @@ int rtMediusBanPlayer(rtMediusBanPlayerRequest *request, rtMediusCallback callba
  * @param error The error code.
  * @return The name, or "UNKNOWN MEDIUSERRORCODE".
  * @ghidraAddress NTSC-U/C: 0x002fbb98
+ * @ghidraAddress PAL: 0x00305b98
  */
 const char *rtMediusGetErrorString(int error);
 
