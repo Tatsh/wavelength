@@ -1121,6 +1121,7 @@ public:
      *
      * @param bArena Blend towards the arena path.
      * @ghidraAddress NTSC-U/C: 0x001e1008
+     * @ghidraAddress PAL: 0x001e9da8
      */
     void BlendToArenaPath(bool bArena);
 

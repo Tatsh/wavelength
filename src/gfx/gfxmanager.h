@@ -121,6 +121,7 @@ public:
          * Destroy the loader.
          *
          * @ghidraAddress NTSC-U/C: 0x001b1360
+         * @ghidraAddress PAL: 0x001ba100
          */
         ~GfxLoader() override;
 
@@ -132,7 +133,7 @@ public:
          * @param pszClass The class of the object.
          * @return 1 to load the object, or 0 to keep the one that exists.
          * @ghidraAddress NTSC-U/C: 0x001b13c0
-         * @ghidraAddress PAL: 0x001ba100
+         * @ghidraAddress PAL: 0x001ba160
          */
         int ShouldLoad(RndObject *pExisting, const char *pszName, const char *pszClass) override;
 
@@ -1254,6 +1255,7 @@ public:
      *
      * @param bArena Blend towards the arena path.
      * @ghidraAddress NTSC-U/C: 0x001b60c8
+     * @ghidraAddress PAL: 0x001bee68
      */
     void BlendToArenaPath(bool bArena);
 
