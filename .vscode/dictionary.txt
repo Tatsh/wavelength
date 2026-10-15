@@ -626,6 +626,7 @@ libcconsole
 libcdvd
 libdev
 libdma
+libdnas
 libera
 libezctl
 libeznetcnf

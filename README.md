@@ -24,8 +24,49 @@
 Reconstructed source code for _Amplitude_, the 2003 PlayStation 2 rhythm game developed by Harmonix
 Music Systems and published by Sony Computer Entertainment.
 
-The source is being ported from the reconstruction of _FreQuency_, the predecessor of _Amplitude_.
-The game does not build yet.
+No copyrighted material is in this repository. You must provide your own disc image of the game
+for its assets. Building this source alone will not result in a playable game.
+
+## Status
+
+The source was ported from the reconstruction of _FreQuency_, the predecessor of _Amplitude_.
+
+### North American release
+
+Every routine of the North American release (`SCUS_972.58`) has source here, and none is a stub.
+The rebuilt disc image boots and plays. These parts were tested in an emulator:
+
+- the boot path with no controller input;
+- the basic, advanced, and remix tutorials, played to completion;
+- solo game and remix modes;
+- multiplayer and duel modes for 2 to 4 players with a multitap;
+- FreqMaker, the options, the credits, the jukebox, the attract demo, and the cheats;
+- saving to and loading from a memory card.
+
+### European release
+
+The European release (`SCES_517.06`) is built from the same tree with `VIDEO_STANDARD` set to
+`PAL`. The rebuilt disc image boots in English, French, German, Italian, and Spanish (the language
+follows the console's language setting), saves to a memory card, and plays songs.
+[PROGRESS.md](PROGRESS.md) measures how many European routines have source.
+
+For online play, the European release adds DNAS2 authentication, made of Sony's `libdnas2` and its
+RCOM cryptography library (about 1,490 routines). `libdnas2` decrypts parts of its own code at run time.
+This project does not recover `libdnas2` or RCOM, and the European build does not call them.
+
+### Online play
+
+The online services of both releases were shut down long ago. The online code is reconstructed for
+preservation and is not expected to work.
+
+### Patches
+
+The `ENABLE_PATCHES` option (on by default) includes code that is not in the original game:
+
+- the title screen shows the repository URL, the Git revision, and the build time;
+- console text is written to the serial port when no DECI2 host is present.
+
+Set `ENABLE_PATCHES` to `OFF` to build the game without deviations in behaviour.
 
 ## Building
 
@@ -42,7 +83,8 @@ cmake --build build --target image
 The `image` target writes `build/wavelength.iso`, an ISO image of the DVD, with the built
 executable and IOP modules in place of the originals. The original is an ISO image of the North
 American release (`SCUS_972.58`) or the European release (`SCES_517.06`). Without
-`WAVELENGTH_DISC_IMAGE`, the build produces the executable and the IOP modules only. File names on
+`WAVELENGTH_DISC_IMAGE`, the build produces the executable and the IOP modules only. Add
+`-DVIDEO_STANDARD=PAL` to build the European release, with the European disc image. File names on
 the disc are matched without regard to case, and each name must be unique once case is ignored.
 
 `WAVELENGTH_DISC_IMAGE` may also be the disc root, the directory with `SYSTEM.CNF`. A copy of the
@@ -75,5 +117,5 @@ and no assets copied from the game. _Amplitude_ and its assets remain the proper
 respective rights holders, and this project is not affiliated with or endorsed by Harmonix or
 Sony Interactive Entertainment.
 
-Third-party code (the gzip decompressor) remains under its licence and is identified as such under
-`3rdparty/`.
+Third-party code (Expat, gzip, and LibTomCrypt) remains under its licence and is identified as such
+under `3rdparty/`.
