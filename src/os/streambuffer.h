@@ -51,6 +51,7 @@ public:
      * Move both heads back to the start of the buffer.
      *
      * @ghidraAddress NTSC-U/C: 0x002a0120
+     * @ghidraAddress PAL: 0x002a9dd8
      */
     virtual void Rewind();
 

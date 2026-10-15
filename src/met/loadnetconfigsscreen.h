@@ -33,6 +33,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x003645b0
+     * @ghidraAddress PAL: 0x003d2d28
      */
     ~LoadNetConfigsScreen() override {
     }
@@ -43,6 +44,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x003646c8
+     * @ghidraAddress PAL: 0x003d2e40
      */
     static UIScreen *New(DataArray *pData) {
         return new LoadNetConfigsScreen(pData);
@@ -53,6 +55,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00364708
+     * @ghidraAddress PAL: 0x003d2e80
      */
     const char *Title() override {
         return "";

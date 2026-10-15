@@ -30,6 +30,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x003639f0
+     * @ghidraAddress PAL: 0x003d2150
      */
     ~FormatScreen() override {
     }
@@ -40,6 +41,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00363b08
+     * @ghidraAddress PAL: 0x003d2268
      */
     static UIScreen *New(DataArray *pData) {
         return new FormatScreen(pData);
@@ -50,6 +52,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00363b48
+     * @ghidraAddress PAL: 0x003d22a8
      */
     const char *Title() override {
         return "";

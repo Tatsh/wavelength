@@ -18,6 +18,7 @@ public:
      *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x00362cf0
+     * @ghidraAddress PAL: 0x003d12a0
      */
     explicit NameErrorScreen(DataArray *pData) : ErrorScreen(pData) {
     }
@@ -26,6 +27,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00362c68
+     * @ghidraAddress PAL: 0x003d1218
      */
     ~NameErrorScreen() override {
     }
@@ -36,6 +38,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00362c28
+     * @ghidraAddress PAL: 0x003d11d8
      */
     static UIScreen *New(DataArray *pData) {
         return new NameErrorScreen(pData);

@@ -162,6 +162,7 @@ public:
      *
      * @return The tick at which the last muse ends.
      * @ghidraAddress NTSC-U/C: 0x0015a3f8
+     * @ghidraAddress PAL: 0x0015bbe8
      */
     int GetLength() override;
 

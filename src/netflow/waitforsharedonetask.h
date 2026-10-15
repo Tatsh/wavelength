@@ -13,6 +13,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039a600
+     * @ghidraAddress PAL: 0x00408e88
      */
     ~WaitForShareDoneTask() override = default;
 

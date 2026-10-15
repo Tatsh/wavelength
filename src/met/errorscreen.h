@@ -52,6 +52,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x003629d8
+     * @ghidraAddress PAL: 0x003d0f48
      */
     const char *Title() override {
         return "";
@@ -84,6 +85,7 @@ public:
      *
      * @param nSlot The memory card slot.
      * @ghidraAddress NTSC-U/C: 0x00358b00
+     * @ghidraAddress PAL: 0x001b1e98
      */
     virtual void SetSlot(int nSlot) {
         mSlot = nSlot;
@@ -123,6 +125,7 @@ public:
      *
      * @param nSpace The space the save needs.
      * @ghidraAddress NTSC-U/C: 0x001aa9e8
+     * @ghidraAddress PAL: 0x001b2990
      */
     void ShowNoSpaceError(int nSpace);
 

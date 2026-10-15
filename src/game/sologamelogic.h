@@ -144,6 +144,7 @@ public:
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x00139cb8
+     * @ghidraAddress PAL: 0x0013b580
      */
     void HandleInput(const StickEvent<2> &event) override;
 
@@ -152,6 +153,7 @@ public:
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x00139ce0
+     * @ghidraAddress PAL: 0x0013b5a8
      */
     void HandleInput(const StickEvent<6> &event) override;
 
@@ -230,6 +232,7 @@ public:
      *
      * @param pTrack The track of the phrase.
      * @ghidraAddress NTSC-U/C: 0x00139e98
+     * @ghidraAddress PAL: 0x0013b760
      */
     void OnPhraseEnded(Track *pTrack) override;
 

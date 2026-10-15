@@ -78,6 +78,7 @@ public:
      * @param nOrigin The origin of the offset. Another value leaves the position unchanged.
      * @return The new position.
      * @ghidraAddress NTSC-U/C: 0x0028e9f0
+     * @ghidraAddress PAL: 0x002983b8
      */
     int Seek(int nOffset, int nOrigin) override;
 
@@ -86,6 +87,7 @@ public:
      *
      * @return The position.
      * @ghidraAddress NTSC-U/C: 0x0028ea40
+     * @ghidraAddress PAL: 0x00298408
      */
     int Tell() override {
         return mTell;
@@ -95,6 +97,7 @@ public:
      * Do nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x003a7f00
+     * @ghidraAddress PAL: 0x00416be0
      */
     void Flush() override {
     }
@@ -104,6 +107,7 @@ public:
      *
      * @return Whether the position equals the size.
      * @ghidraAddress NTSC-U/C: 0x0028ea48
+     * @ghidraAddress PAL: 0x00298410
      */
     bool Eof() override {
         return mTell == mSize;
@@ -114,6 +118,7 @@ public:
      *
      * @return Whether the file failed.
      * @ghidraAddress NTSC-U/C: 0x0028ea60
+     * @ghidraAddress PAL: 0x00298428
      */
     bool Fail() override {
         return mFail != 0;
@@ -124,6 +129,7 @@ public:
      *
      * @return The size in bytes.
      * @ghidraAddress NTSC-U/C: 0x0028ea70
+     * @ghidraAddress PAL: 0x00298438
      */
     int Size() override {
         return mSize;
@@ -134,6 +140,7 @@ public:
      *
      * @return The size in bytes.
      * @ghidraAddress NTSC-U/C: 0x0028ea78
+     * @ghidraAddress PAL: 0x00298440
      */
     int UncompressedSize() override {
         return mUncompressedSize;

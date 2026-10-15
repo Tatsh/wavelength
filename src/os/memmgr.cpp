@@ -83,7 +83,7 @@ void MemHeapInfo(int nHeap, int *pnBlocks, int *pnFreeBytes, int *pnBiggest) {
 }
 
 // Take the memory from the end of the C library's heap to kMemoryEnd.
-// NTSC-U/C: 0x00299e38
+// NTSC-U/C: 0x00299e38, PAL: 0x002a3a38
 static void AllocMainHeap(int **ppStart, int **ppEnd) {
     void *pProbe = malloc(kProbeBytes);
     const uintptr_t nProbe = reinterpret_cast<uintptr_t>(pProbe);

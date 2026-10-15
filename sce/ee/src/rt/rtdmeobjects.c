@@ -74,7 +74,7 @@ RtDmeObjectRange *RtDmeCreateObjectRange(unsigned int nConnection, unsigned int 
     return pRange;
 }
 
-// NTSC-U/C: 0x002afd88
+// NTSC-U/C: 0x002afd88, PAL: 0x002b9cf8
 static void RtDmeFreeObjectRange(unsigned int nConnection, unsigned int nClient) {
     if (RtDmeIsClientIndex(nClient) == 1 && nConnection < RT_DME_CONNECTION_COUNT &&
         nClient < RT_DME_CLIENT_COUNT) {
@@ -113,7 +113,7 @@ void RtDmeFreeObjectRangeTable(void) {
     }
 }
 
-// NTSC-U/C: 0x002afed8
+// NTSC-U/C: 0x002afed8, PAL: 0x002b9e48
 static void RtDmeClaimObjectRange(const RtDmeObjectRange *pRange) {
     RtDmeStream *pStream;
     int i;
@@ -240,7 +240,7 @@ void RtDmeJoinObjects(unsigned int nConnection, int nClient) {
     RtDmeSendObjectRange(nConnection, nClient);
 }
 
-// NTSC-U/C: 0x002b05a0
+// NTSC-U/C: 0x002b05a0, PAL: 0x002ba510
 static int RtDmeElectObjectHost(unsigned int nConnection, int nDeparted, int *pnHost) {
     RtDmeClient *pClient;
     rtDmeHostChange change;
@@ -372,7 +372,7 @@ void RtDmeReleaseClientObjects(unsigned int nConnection, int nClient) {
     RtDmeFreeObjectRange(nConnection, nClient);
 }
 
-// NTSC-U/C: 0x002b0888
+// NTSC-U/C: 0x002b0888, PAL: 0x002ba7f8
 static int RtDmeCountPersistentObjects(unsigned short *puCount) {
     RtDmeConnection *pConnection;
     RtDmeObject *pObject;

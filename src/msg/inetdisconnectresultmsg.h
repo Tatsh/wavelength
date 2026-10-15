@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x00397588
+     * @ghidraAddress PAL: 0x00405e10
      */
     ~InetDisconnectResultMsg() override = default;
 

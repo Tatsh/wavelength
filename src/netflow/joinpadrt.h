@@ -89,6 +89,7 @@ public:
      * Poll mClockSync.
      *
      * @ghidraAddress NTSC-U/C: 0x0025a150
+     * @ghidraAddress PAL: 0x00263050
      */
     void PollPriv() override;
 

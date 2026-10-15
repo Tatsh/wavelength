@@ -71,6 +71,7 @@ public:
      *
      * @param pSink The receiver of the result.
      * @ghidraAddress NTSC-U/C: 0x00253c58
+     * @ghidraAddress PAL: 0x0025cb98
      */
     void Disconnect(MsgSink *pSink) override;
 
@@ -88,6 +89,7 @@ public:
      * Vtable slot 7. Forget the receiver of the pending lookup.
      *
      * @ghidraAddress NTSC-U/C: 0x00253c60
+     * @ghidraAddress PAL: 0x0025cba0
      */
     void ClearPending() override;
 
@@ -105,6 +107,7 @@ public:
      *
      * @return mConnectionType.
      * @ghidraAddress NTSC-U/C: 0x00397580
+     * @ghidraAddress PAL: 0x00405e08
      */
     int GetConnectionType() override {
         return mConnectionType;
@@ -114,6 +117,7 @@ public:
      * Vtable slot 10.
      *
      * @ghidraAddress NTSC-U/C: 0x00253f90
+     * @ghidraAddress PAL: 0x0025cd98
      */
     void RequestPowerOff() override;
 
@@ -122,6 +126,7 @@ public:
      * connection, and turn the console off when requested.
      *
      * @ghidraAddress NTSC-U/C: 0x00253fa0
+     * @ghidraAddress PAL: 0x0025cef0
      */
     void Poll();
 
@@ -177,6 +182,7 @@ private:
      *
      * @param nResult The result of the task.
      * @ghidraAddress NTSC-U/C: 0x00253b10
+     * @ghidraAddress PAL: 0x0025ca90
      */
     static void OnConnectTaskDone(int nResult);
 

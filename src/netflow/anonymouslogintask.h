@@ -15,6 +15,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039bdf8
+     * @ghidraAddress PAL: 0x0040aa40
      */
     ~AnonymousLoginTask() override = default;
 
@@ -23,6 +24,7 @@ protected:
      * Send the request with the name and the statistics of the local player.
      *
      * @ghidraAddress NTSC-U/C: 0x00263bb0
+     * @ghidraAddress PAL: 0x0026cfe8
      */
     void OnStart() override;
 };

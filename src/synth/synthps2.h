@@ -153,6 +153,7 @@ public:
      *
      * @return The stream, or null.
      * @ghidraAddress NTSC-U/C: 0x00396a18
+     * @ghidraAddress PAL: 0x00405100
      */
     StreamPlayer *GetStream() override {
         return mStream;
@@ -285,6 +286,7 @@ public:
      *
      * @param fLag The lag in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x0024d2d0
+     * @ghidraAddress PAL: 0x00255d00
      */
     void SetLag(float fLag) override;
 
@@ -293,6 +295,7 @@ public:
      *
      * @return The lag in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x0024d2d8
+     * @ghidraAddress PAL: 0x00255d08
      */
     float GetLag() override;
 

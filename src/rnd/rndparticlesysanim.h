@@ -46,6 +46,7 @@ public:
      *
      * @return The frame, or 0 without keys.
      * @ghidraAddress NTSC-U/C: 0x00240498
+     * @ghidraAddress PAL: 0x00248fc8
      */
     float EndFrame() override;
 

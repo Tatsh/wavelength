@@ -90,6 +90,7 @@ public:
      * at the tempo of that file. Init() calls it.
      *
      * @ghidraAddress NTSC-U/C: 0x0027f8e0
+     * @ghidraAddress PAL: 0x002891c8
      */
     void InitSfx();
 

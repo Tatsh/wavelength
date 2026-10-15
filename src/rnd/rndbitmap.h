@@ -461,6 +461,7 @@ public:
      *
      * @param stream The stream to write to.
      * @ghidraAddress NTSC-U/C: 0x0021ed20
+     * @ghidraAddress PAL: 0x00227b38
      */
     void Save(BinStream &stream) const;
 

@@ -281,6 +281,7 @@ public:
      * @param fAge The age of the instance.
      * @param xfm The transform.
      * @ghidraAddress NTSC-U/C: 0x002290d0
+     * @ghidraAddress PAL: 0x00231e40
      */
     void SetParticlePos(float fAge, const Transform &xfm);
 

@@ -167,6 +167,7 @@ public:
      *
      * @return Whether mState is kStateFinished.
      * @ghidraAddress NTSC-U/C: 0x00112968
+     * @ghidraAddress PAL: 0x00114100
      */
     bool IsFinished() const override;
 
@@ -336,6 +337,7 @@ public:
      *
      * @return Whether mState is kStatePlaying.
      * @ghidraAddress NTSC-U/C: 0x00337cc8
+     * @ghidraAddress PAL: 0x003a5278
      */
     bool IsPlaying() const override {
         return mState == kStatePlaying;

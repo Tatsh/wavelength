@@ -68,6 +68,7 @@ protected:
      * Advance the step running now.
      *
      * @ghidraAddress NTSC-U/C: 0x0015fe00
+     * @ghidraAddress PAL: 0x00162680
      */
     void OnPoll() override;
 

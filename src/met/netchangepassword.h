@@ -38,6 +38,7 @@ public:
      * @param pData The description of the screen.
      * @return The screen.
      * @ghidraAddress NTSC-U/C: 0x00359780
+     * @ghidraAddress PAL: 0x003c6ae8
      */
     static UIScreen *New(DataArray *pData) {
         return new NetChangePassword(pData);

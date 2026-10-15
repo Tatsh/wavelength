@@ -101,6 +101,7 @@ public:
      *
      * @return The literal `EraseSectionPacket`.
      * @ghidraAddress NTSC-U/C: 0x0034b3c8
+     * @ghidraAddress PAL: 0x003b87f8
      */
     const char *GetName() const override {
         return "EraseSectionPacket";

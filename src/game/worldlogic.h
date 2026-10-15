@@ -41,6 +41,7 @@ public:
      * @param pMsg The message.
      * @return The result of the handler of a joypad connection message, otherwise false.
      * @ghidraAddress NTSC-U/C: 0x00146db0
+     * @ghidraAddress PAL: 0x00148768
      */
     bool DispatchPriv(Message *pMsg) override;
 

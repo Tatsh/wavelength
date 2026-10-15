@@ -80,6 +80,7 @@ public:
  * @param argument2 The second argument.
  * @return The command, with no reference taken.
  * @ghidraAddress NTSC-U/C: 0x0034c150
+ * @ghidraAddress PAL: 0x003b9580
  * @ghidraAddress NTSC-U/C: 0x0033eb00
  * @ghidraAddress PAL: 0x003ac038
  * @ghidraAddress NTSC-U/C: 0x0033ede0

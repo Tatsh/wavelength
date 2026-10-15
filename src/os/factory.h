@@ -94,15 +94,23 @@ public:
          * @ghidraAddress NTSC-U/C: 0x003476c0
          * @ghidraAddress PAL: 0x003b4a88
          * @ghidraAddress NTSC-U/C: 0x00347658
+         * @ghidraAddress PAL: 0x003b4a30
          * @ghidraAddress NTSC-U/C: 0x003475d0
+         * @ghidraAddress PAL: 0x003b49b8
          * @ghidraAddress NTSC-U/C: 0x00347548
+         * @ghidraAddress PAL: 0x003b4940
          * @ghidraAddress NTSC-U/C: 0x003474e0
+         * @ghidraAddress PAL: 0x003b48e8
          * @ghidraAddress NTSC-U/C: 0x00347478
+         * @ghidraAddress PAL: 0x003b4890
          * @ghidraAddress NTSC-U/C: 0x00347410
+         * @ghidraAddress PAL: 0x003b4838
          * @ghidraAddress NTSC-U/C: 0x003473b8
          * @ghidraAddress PAL: 0x003b47e0
          * @ghidraAddress NTSC-U/C: 0x00347350
+         * @ghidraAddress PAL: 0x003b4788
          * @ghidraAddress NTSC-U/C: 0x003472e8
+         * @ghidraAddress PAL: 0x003b4730
          */
         Base *Create(BinStream &stream) override {
             return new T(stream);

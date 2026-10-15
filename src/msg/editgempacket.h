@@ -83,6 +83,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x003358a8
+     * @ghidraAddress PAL: 0x003a2e58
      */
     Message *Clone() override {
         return new EditGemPacket(*this);
@@ -93,6 +94,7 @@ public:
      *
      * @return g_nEditGemPacketType.
      * @ghidraAddress NTSC-U/C: 0x00335930
+     * @ghidraAddress PAL: 0x003a2ee0
      */
     int Type() override {
         return g_nEditGemPacketType;
@@ -103,6 +105,7 @@ public:
      *
      * @return The literal `EditGemPacket`.
      * @ghidraAddress NTSC-U/C: 0x00335940
+     * @ghidraAddress PAL: 0x003a2ef0
      */
     const char *GetName() const override {
         return "EditGemPacket";

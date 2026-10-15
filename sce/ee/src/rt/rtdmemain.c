@@ -757,7 +757,7 @@ static int RtDmeAnnounceDeparture(unsigned int nConnection, int nDeparted) {
 }
 
 // The receiver of the peers of the channel of a connection.
-// NTSC-U/C: 0x002b3448
+// NTSC-U/C: 0x002b3448, PAL: 0x002bd3b8
 static void RtDmeOnChannelPeer(unsigned short uChannel,
                                unsigned short uPeer,
                                const RtChannelPeerInfo *pInfo,
@@ -802,7 +802,7 @@ static void RtDmeOnPeerTimeout(const char *pszAddress, unsigned short uPort) {
 }
 
 // The receiver of the messages of the channel of a connection.
-// NTSC-U/C: 0x002b3a18
+// NTSC-U/C: 0x002b3a18, PAL: 0x002bd988
 static void RtDmeOnChannelData(unsigned short uChannel,
                                unsigned short uPeer,
                                const void *pData,
@@ -1966,7 +1966,7 @@ void RtDmeSetConnectResult(int nConnection, int nClient, unsigned char bConnecte
     }
 }
 
-// NTSC-U/C: 0x002b8430
+// NTSC-U/C: 0x002b8430, PAL: 0x002c23a0
 static int RtDmeCreateConnection(unsigned int nConnection, RtDmeConnection **ppConnection) {
     if (ppConnection == NULL) {
         return RT_DME_RESULT_INVALID;
@@ -1985,7 +1985,7 @@ static int RtDmeCreateConnection(unsigned int nConnection, RtDmeConnection **ppC
     return 0;
 }
 
-// NTSC-U/C: 0x002b84c0
+// NTSC-U/C: 0x002b84c0, PAL: 0x002c2430
 static int RtDmeFreeConnection(unsigned int nConnection) {
     if (nConnection >= RT_DME_CONNECTION_COUNT) {
         return RT_DME_RESULT_INVALID;
@@ -1997,7 +1997,7 @@ static int RtDmeFreeConnection(unsigned int nConnection) {
     return 0;
 }
 
-// NTSC-U/C: 0x002b8658
+// NTSC-U/C: 0x002b8658, PAL: 0x002c25c8
 static int RtDmeFreeClient(unsigned int nConnection, unsigned int nClient) {
     RtDmeConnection *pConnection;
     int nResult;
@@ -2019,7 +2019,7 @@ static int RtDmeFreeClient(unsigned int nConnection, unsigned int nClient) {
     return 0;
 }
 
-// NTSC-U/C: 0x002b8398
+// NTSC-U/C: 0x002b8398, PAL: 0x002c2308
 static int RtDmeFreeAllClientStats(void) {
     unsigned int i;
 
@@ -2032,7 +2032,7 @@ static int RtDmeFreeAllClientStats(void) {
     return 0;
 }
 
-// NTSC-U/C: 0x002b8720
+// NTSC-U/C: 0x002b8720, PAL: 0x002c2690
 static int RtDmeSetServerName(unsigned int nConnection, const char *pszName) {
     RtDmeConnection *pConnection;
     int nResult;
@@ -2055,7 +2055,7 @@ static int RtDmeSetServerName(unsigned int nConnection, const char *pszName) {
     return 0;
 }
 
-// NTSC-U/C: 0x002b5720
+// NTSC-U/C: 0x002b5720, PAL: 0x002bf690
 static int RtDmeFindFreePing(void) {
     int i;
 
@@ -2067,7 +2067,7 @@ static int RtDmeFindFreePing(void) {
     return RT_DME_PING_COUNT;
 }
 
-// NTSC-U/C: 0x002b9a10
+// NTSC-U/C: 0x002b9a10, PAL: 0x002c3980
 static int RtDmeFreeStreams(void) {
     RtDmeStream *pStream;
     RtRingBuffer *pQueue;
@@ -2090,7 +2090,7 @@ static int RtDmeFreeStreams(void) {
     return 0;
 }
 
-// NTSC-U/C: 0x002b9ab8
+// NTSC-U/C: 0x002b9ab8, PAL: 0x002c3a28
 static int RtDmeCloseFailedConnections(void) {
     RtDmeConnection *pConnection;
     unsigned int i;
@@ -2107,7 +2107,7 @@ static int RtDmeCloseFailedConnections(void) {
     return 0;
 }
 
-// NTSC-U/C: 0x002b4dc0
+// NTSC-U/C: 0x002b4dc0, PAL: 0x002bed30
 static int RtDmeSetGatewayAddress(const rtNetAddress *pAddress) {
     if (pAddress == NULL) {
         return RT_DME_RESULT_INVALID;
@@ -2117,7 +2117,7 @@ static int RtDmeSetGatewayAddress(const rtNetAddress *pAddress) {
 }
 
 // The receiver of the probes of the unresponsive clients, which only spoils the address text.
-// NTSC-U/C: 0x002b8ce0
+// NTSC-U/C: 0x002b8ce0, PAL: 0x002c2c50
 static void RtDmeIgnorePing(int nResult, char *pszAddress, int nLatency, unsigned int uRemoteTime) {
     (void)nResult;
     (void)nLatency;
@@ -2472,7 +2472,7 @@ int RtDmeIsLocalHost(unsigned char *pbHost) {
 }
 
 // The receiver of the result of the channel of a connection.
-// NTSC-U/C: 0x002b3d50
+// NTSC-U/C: 0x002b3d50, PAL: 0x002bdcc0
 static void RtDmeOnChannelConnect(unsigned short uChannel,
                                   int nConnected,
                                   unsigned short uClient,
@@ -2564,7 +2564,7 @@ static void RtDmeOnChannelConnect(unsigned short uChannel,
 }
 
 // The receiver of the statuses the server of a connection sends.
-// NTSC-U/C: 0x002b4038
+// NTSC-U/C: 0x002b4038, PAL: 0x002bdfa8
 static void RtDmeOnChannelStatus(unsigned short uChannel, int nStatus) {
     RtDmeConnection *pConnection;
     int nConnection;
@@ -2616,7 +2616,7 @@ static inline void RtDmeAbandonChannel(unsigned short uChannel) {
 }
 
 // Connect to a session over a channel.
-// NTSC-U/C: 0x002b4220
+// NTSC-U/C: 0x002b4220, PAL: 0x002be190
 static int RtDmeConnectChannel(const rtDmeConnectParams *pParams,
                                const rtNetConnectionInfo *pInfo,
                                rtDmeConnectStatus *pStatus) {
@@ -2770,7 +2770,7 @@ static inline int RtDmeStartPeers(RtDmeConnection *pConnection,
 }
 
 // Join a session of peers on connection 0 through the addresses of its host.
-// NTSC-U/C: 0x002b4688
+// NTSC-U/C: 0x002b4688, PAL: 0x002be5f8
 static int RtDmeConnectPeers(const rtDmeConnectParams *pParams,
                              const rtNetConnectionInfo *pInfo,
                              rtDmeConnectStatus *pStatus) {
@@ -3313,7 +3313,7 @@ int RtDmeLeaveSession(int nConnection) {
 }
 
 // The receiver of the latency probes of the clients.
-// NTSC-U/C: 0x002b5768
+// NTSC-U/C: 0x002b5768, PAL: 0x002bf6d8
 static void RtDmeOnLatency(int nResult,
                            char *pszAddress,
                            int nLatency,
@@ -3407,7 +3407,7 @@ void RtDmeProbeClient(unsigned int nClient) {
 }
 
 // Probe the latency of a client or of the server for the game.
-// NTSC-U/C: 0x002b5a60
+// NTSC-U/C: 0x002b5a60, PAL: 0x002bf9d0
 static int RtDmeProbe(unsigned int nConnection, unsigned int nClient, RtDmePingFunc pfnDone) {
     RtDmePingMessage message;
     RtDmePing *pPing;
@@ -3469,7 +3469,7 @@ static int RtDmeProbe(unsigned int nConnection, unsigned int nClient, RtDmePingF
 }
 
 // Add the clients that see an object to a set.
-// NTSC-U/C: 0x002b5c78
+// NTSC-U/C: 0x002b5c78, PAL: 0x002bfbe8
 static void RtDmeBuildObjectClientSet(RtDmeClientSet *pSet, unsigned int nObject) {
     RtDmeConnection *pConnection;
     RtDmeObject *pObject;
@@ -3512,7 +3512,7 @@ static void RtDmeBuildObjectClientSet(RtDmeClientSet *pSet, unsigned int nObject
 }
 
 // Report whether two values of a field differ enough to send the field.
-// NTSC-U/C: 0x002b64a8
+// NTSC-U/C: 0x002b64a8, PAL: 0x002c0418
 static int RtDmeFieldChanged(const RtDmeObjectField *pField,
                              const unsigned char *pbNew,
                              const unsigned char *pbOld) {
@@ -3615,7 +3615,7 @@ static int RtDmeFieldChanged(const RtDmeObjectField *pField,
 }
 
 // Report whether a field of an object changed enough to send it.
-// NTSC-U/C: 0x002b69a0
+// NTSC-U/C: 0x002b69a0, PAL: 0x002c0910
 static unsigned char
 RtDmeFieldNeedsSend(const RtDmeObject *pObject, int nObject, unsigned char uField) {
     const RtDmeObjectType *pType;
@@ -3664,7 +3664,7 @@ RtDmeFieldNeedsSend(const RtDmeObject *pObject, int nObject, unsigned char uFiel
 }
 
 // Write the fields of an object that are due and changed, each an index byte before its data.
-// NTSC-U/C: 0x002b5dd8
+// NTSC-U/C: 0x002b5dd8, PAL: 0x002bfd48
 static unsigned char RtDmeGatherChangedFields(RtDmeObject *pObject,
                                               int nObject,
                                               signed char *pnSendFlags,
@@ -3715,7 +3715,7 @@ static unsigned char RtDmeGatherChangedFields(RtDmeObject *pObject,
 }
 
 // Send the changed fields of an object to the clients that see it.
-// NTSC-U/C: 0x002b5ff0
+// NTSC-U/C: 0x002b5ff0, PAL: 0x002bff60
 static int RtDmeSendObjectUpdate(unsigned int nObject) {
     RtDmeObject *pObject;
     RtDmeClientSet set;
@@ -3764,7 +3764,7 @@ static int RtDmeSendObjectUpdate(unsigned int nObject) {
 }
 
 // Send an object whole to a client, or to every client that sees it.
-// NTSC-U/C: 0x002b6118
+// NTSC-U/C: 0x002b6118, PAL: 0x002c0088
 static int RtDmeSendObject(int nClient, unsigned int nObject) {
     RtDmeConnection *pConnection;
     RtDmeObject *pObject;
@@ -3854,7 +3854,7 @@ static int RtDmeSendObject(int nClient, unsigned int nObject) {
 }
 
 // Write the next part of a stream after its header, and report the size of the message.
-// NTSC-U/C: 0x002b6ae0
+// NTSC-U/C: 0x002b6ae0, PAL: 0x002c0a50
 static int RtDmePackStreamPart(RtDmeStreamMessage *pMessage, unsigned int nStream, int nSize) {
     RtDmeStream *pStream;
     unsigned char *pbRead;
@@ -3894,7 +3894,7 @@ static int RtDmePackStreamPart(RtDmeStreamMessage *pMessage, unsigned int nStrea
 }
 
 // Announce a stream that closed to its receiver.
-// NTSC-U/C: 0x002b6c38
+// NTSC-U/C: 0x002b6c38, PAL: 0x002c0ba8
 static void RtDmeSendStreamClosed(int nClient, unsigned int nStream) {
     RtDmeConnection *pConnection;
     RtDmeStream *pStream;
@@ -3935,7 +3935,7 @@ static void RtDmeSendStreamClosed(int nClient, unsigned int nStream) {
 }
 
 // Send the next parts of the streams of the local client, within their rates.
-// NTSC-U/C: 0x002b6d50
+// NTSC-U/C: 0x002b6d50, PAL: 0x002c0cc0
 static void RtDmeFlushStreams(void) {
     RtDmeConnection *pConnection;
     RtDmeObjectRange *pRange;
@@ -4033,7 +4033,7 @@ static void RtDmeFlushStreams(void) {
 }
 
 // Send the objects of the local client of the active connection that are due.
-// NTSC-U/C: 0x002b7088
+// NTSC-U/C: 0x002b7088, PAL: 0x002c0ff8
 static void RtDmeSendObjects(void) {
     RtDmeConnection *pConnection;
     RtDmeObject *pObject;
@@ -4094,7 +4094,7 @@ static void RtDmeSendObjects(void) {
 
 // Probe the addresses of the clients of connection 0 that are not resolved, and give up on a
 // client whose probes go unanswered.
-// NTSC-U/C: 0x002b72c0
+// NTSC-U/C: 0x002b72c0, PAL: 0x002c1230
 static int RtDmeProbeAddresses(void) {
     RtDmeConnection *pConnection;
     RtDmeClient *pClient;
@@ -4180,7 +4180,7 @@ static int RtDmeProbeAddresses(void) {
 }
 
 // Pump the channels of the connections, their voice, and the datagram service.
-// NTSC-U/C: 0x002b7550
+// NTSC-U/C: 0x002b7550, PAL: 0x002c14c0
 static int RtDmePumpChannels(unsigned char bProcess) {
     RtDmeConnection *pConnection;
     int nLastResult;
@@ -4234,7 +4234,7 @@ static int RtDmePumpChannels(unsigned char bProcess) {
 }
 
 // Expire the latency probes left unanswered.
-// NTSC-U/C: 0x002b8bb0
+// NTSC-U/C: 0x002b8bb0, PAL: 0x002c2b20
 static int RtDmeExpirePings(void) {
     char szAddress[RT_DME_ADDRESS_SIZE];
     RtDmePing *pPing;
@@ -4262,7 +4262,7 @@ static int RtDmeExpirePings(void) {
 }
 
 // Find the joined client of connection 0 that this console watches, the one before it.
-// NTSC-U/C: 0x002b89b0
+// NTSC-U/C: 0x002b89b0, PAL: 0x002c2920
 static int RtDmeFindWatchedClient(int *pnClient) {
     RtDmeConnection *pConnection;
     RtDmeClient *pClient;
@@ -4314,7 +4314,7 @@ static int RtDmeFindWatchedClient(int *pnClient) {
 }
 
 // Drop the client this console watches when it went silent.
-// NTSC-U/C: 0x002b8910
+// NTSC-U/C: 0x002b8910, PAL: 0x002c2880
 static int RtDmeExpireWatchedClient(void) {
     RtDmeConnection *pConnection;
     int nClient;
@@ -4344,7 +4344,7 @@ static int RtDmeExpireWatchedClient(void) {
 }
 
 // Probe the clients of connection 0 that do not take datagrams, every few seconds.
-// NTSC-U/C: 0x002b8cf0
+// NTSC-U/C: 0x002b8cf0, PAL: 0x002c2c60
 static int RtDmeProbeSilentClients(void) {
     RtDmeConnection *pConnection;
     RtDmeClient *pClient;
@@ -4407,7 +4407,7 @@ static int RtDmeProbeSilentClients(void) {
 }
 
 // Run the polls of the listener for peers, reporting their results when bNotify is 1.
-// NTSC-U/C: 0x002b8f78
+// NTSC-U/C: 0x002b8f78, PAL: 0x002c2ee8
 static int RtDmePumpPolls(unsigned char bNotify) {
     RtDmePoll *pPoll;
     unsigned int uElapsed;
@@ -4482,7 +4482,7 @@ static int RtDmePumpPolls(unsigned char bNotify) {
 }
 
 // Fail the pending polls of the listener and close it.
-// NTSC-U/C: 0x002b91c0
+// NTSC-U/C: 0x002b91c0, PAL: 0x002c3130
 static int RtDmeStopPolls(void) {
     RtDmePoll *pPoll;
     int nResult;
@@ -4515,7 +4515,7 @@ static int RtDmeStopPolls(void) {
 
 // Report connection 0 connected once every client has a working address, or failed when a
 // client has none.
-// NTSC-U/C: 0x002b92d8
+// NTSC-U/C: 0x002b92d8, PAL: 0x002c3248
 static int RtDmeCheckPeersResolved(void) {
     RtDmeConnection *pConnection;
     RtDmeClient *pClient;
@@ -4568,7 +4568,7 @@ static int RtDmeCheckPeersResolved(void) {
 }
 
 // Register the clients of connection 0 whose addresses resolved, after a connection result.
-// NTSC-U/C: 0x002b9450
+// NTSC-U/C: 0x002b9450, PAL: 0x002c33c0
 static int RtDmeJoinResolvedPeers(void) {
     RtDmeConnection *pConnection;
     RtDmeClient *pClient;
@@ -4619,7 +4619,7 @@ static int RtDmeJoinResolvedPeers(void) {
 }
 
 // Report the session of the active connection ready once every joined client joined its objects.
-// NTSC-U/C: 0x002b98a0
+// NTSC-U/C: 0x002b98a0, PAL: 0x002c3810
 static int RtDmeCheckSessionReady(void) {
     RtDmeConnection *pConnection;
     RtDmeClient *pClient;
@@ -5191,7 +5191,7 @@ RtDmeStreamDataFunc g_apfnDmeStreamData[RT_DME_STREAM_KIND_COUNT];
 RtDmeStreamClosedFunc g_apfnDmeStreamClosed[RT_DME_STREAM_KIND_COUNT];
 
 // Reserve a run of free objects.
-// NTSC-U/C: 0x002b9b68
+// NTSC-U/C: 0x002b9b68, PAL: 0x002c3ad8
 static int RtDmeReserveObjects(int nCount) {
     unsigned char bFree;
     int nLast;
@@ -5228,7 +5228,7 @@ static int RtDmeReserveObjects(int nCount) {
 }
 
 // Find a run of free stream slots.
-// NTSC-U/C: 0x002b9c60
+// NTSC-U/C: 0x002b9c60, PAL: 0x002c3bd0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 static int RtDmeFindFreeStreams(unsigned int nCount) {
@@ -5269,7 +5269,7 @@ static int RtDmeFindFreeStreams(unsigned int nCount) {
 #pragma GCC diagnostic pop
 
 // Pick the next rank of a candidate host, one past the highest a client of a connection has.
-// NTSC-U/C: 0x002bd9d0
+// NTSC-U/C: 0x002bd9d0, PAL: 0x002c7940
 static int RtDmeGetNextHostRank(unsigned int nConnection, int *pnRank) {
     RtDmeClient *pClient;
     int nResult;
@@ -5300,7 +5300,7 @@ static int RtDmeGetNextHostRank(unsigned int nConnection, int *pnRank) {
 }
 
 // Record which address of a client of connection 0 the last datagram came from.
-// NTSC-U/C: 0x002bda98
+// NTSC-U/C: 0x002bda98, PAL: 0x002c7a08
 static void RtDmeResolveSenderAddress(unsigned int nConnection, int nClient) {
     if (nConnection >= RT_DME_CONNECTION_COUNT || RtDmeIsClientIndex(nClient) != 1 ||
         nConnection != 0) {
@@ -5320,7 +5320,7 @@ static void RtDmeResolveSenderAddress(unsigned int nConnection, int nClient) {
 }
 
 // Grant a client that joined its objects and stream slots, when this console is the host.
-// NTSC-U/C: 0x002bd7e0
+// NTSC-U/C: 0x002bd7e0, PAL: 0x002c7750
 static void RtDmeAdmitClient(unsigned int nConnection,
                              int nClient,
                              unsigned int nObjectCount,
@@ -5387,7 +5387,7 @@ static void RtDmeAdmitClient(unsigned int nConnection,
 }
 
 // Take a peer that probed this host into connection 0, or refuse it when the session is full.
-// NTSC-U/C: 0x002bdbe0
+// NTSC-U/C: 0x002bdbe0, PAL: 0x002c7b50
 static void RtDmeAcceptPeer(unsigned int uPrivateAddress,
                             unsigned int uPublicAddress,
                             unsigned short uPrivatePort,
@@ -5438,7 +5438,7 @@ static void RtDmeAcceptPeer(unsigned int uPrivateAddress,
 }
 
 // Describe a client of a connection, for the introductions of the host.
-// NTSC-U/C: 0x002bdd08
+// NTSC-U/C: 0x002bdd08, PAL: 0x002c7c78
 static int RtDmeBuildClientInfo(RtDmeClientInfo *pInfo, unsigned int nConnection, int nClient) {
     RtDmeConnection *pConnection;
     int nResult;
@@ -5471,7 +5471,7 @@ static int RtDmeBuildClientInfo(RtDmeClientInfo *pInfo, unsigned int nConnection
 }
 
 // Find the reassembly of a long message, or start one. Stale entries met on the way are freed.
-// NTSC-U/C: 0x002bde30
+// NTSC-U/C: 0x002bde30, PAL: 0x002c7da0
 static int RtDmeGetReassembly(int nConnection,
                               int nSender,
                               const RtDmeFragmentHeader *pHeader,
@@ -5561,7 +5561,7 @@ static int RtDmeGetReassembly(int nConnection,
 }
 
 // The flags a client announces.
-// NTSC-U/C: 0x002b9d50
+// NTSC-U/C: 0x002b9d50, PAL: 0x002c3cc0
 static int RtDmeOnClientFlags(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const signed char *pnFlags;
 
@@ -5588,7 +5588,7 @@ static int RtDmeOnClientFlags(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // The announcement of a client to its peers, with its public key.
-// NTSC-U/C: 0x002b9e10
+// NTSC-U/C: 0x002b9e10, PAL: 0x002c3d80
 static int RtDmeOnClientJoin(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeJoinAnnouncement *pJoin;
     RtDmeConnection *pConnection;
@@ -5635,7 +5635,7 @@ static int RtDmeOnClientJoin(int nConnection, int nWorldId, int nSender, rtDmeMe
 }
 
 // A console that disconnects.
-// NTSC-U/C: 0x002b9f50
+// NTSC-U/C: 0x002b9f50, PAL: 0x002c3ec0
 static int RtDmeOnDisconnect(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const unsigned char *pbFarewell;
     RtDmeConnection *pConnection;
@@ -5678,7 +5678,7 @@ static int RtDmeOnDisconnect(int nConnection, int nWorldId, int nSender, rtDmeMe
 }
 
 // The name the server gave the session.
-// NTSC-U/C: 0x002ba068
+// NTSC-U/C: 0x002ba068, PAL: 0x002c3fd8
 static int RtDmeOnSessionName(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     RtDmeConnection *pConnection;
     int nResult;
@@ -5704,7 +5704,7 @@ static int RtDmeOnSessionName(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // A client that left, whose objects are released.
-// NTSC-U/C: 0x002ba0d8
+// NTSC-U/C: 0x002ba0d8, PAL: 0x002c4048
 static int RtDmeOnClientLeft(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     (void)nWorldId;
     if (pMessage == NULL) {
@@ -5718,7 +5718,7 @@ static int RtDmeOnClientLeft(int nConnection, int nWorldId, int nSender, rtDmeMe
 }
 
 // The object ranges a client announces.
-// NTSC-U/C: 0x002ba120
+// NTSC-U/C: 0x002ba120, PAL: 0x002c4090
 static int RtDmeOnObjectRange(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeObjectRangeMessage *pRangeMessage;
     RtDmeConnection *pConnection;
@@ -5771,7 +5771,7 @@ static int RtDmeOnObjectRange(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // The clock of the host.
-// NTSC-U/C: 0x002ba270
+// NTSC-U/C: 0x002ba270, PAL: 0x002c41e0
 static int RtDmeOnClock(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const unsigned int *puTime;
 
@@ -5792,7 +5792,7 @@ static int RtDmeOnClock(int nConnection, int nWorldId, int nSender, rtDmeMessage
 }
 
 // A console that asks whether this console hosts a session.
-// NTSC-U/C: 0x002ba2d8
+// NTSC-U/C: 0x002ba2d8, PAL: 0x002c4248
 static int RtDmeOnHostQuery(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const int *pnApplicationId;
     RtDmeClient *pClient;
@@ -5844,7 +5844,7 @@ static int RtDmeOnHostQuery(int nConnection, int nWorldId, int nSender, rtDmeMes
 }
 
 // The answer of a host to the query of this console.
-// NTSC-U/C: 0x002ba470
+// NTSC-U/C: 0x002ba470, PAL: 0x002c43e0
 static int RtDmeOnHostReply(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeHostReply *pReply;
     char szAddress[RT_DME_ADDRESS_SIZE];
@@ -5864,7 +5864,7 @@ static int RtDmeOnHostReply(int nConnection, int nWorldId, int nSender, rtDmeMes
 }
 
 // A system message the engine ignores.
-// NTSC-U/C: 0x002ba4d8
+// NTSC-U/C: 0x002ba4d8, PAL: 0x002c4448
 static int RtDmeOnIgnored(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     (void)nConnection;
     (void)nWorldId;
@@ -5874,7 +5874,7 @@ static int RtDmeOnIgnored(int nConnection, int nWorldId, int nSender, rtDmeMessa
 }
 
 // The request of a client for its objects and its stream slots.
-// NTSC-U/C: 0x002ba4e0
+// NTSC-U/C: 0x002ba4e0, PAL: 0x002c4450
 static int
 RtDmeOnObjectRequest(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeObjectRequest *pRequest;
@@ -5891,7 +5891,7 @@ RtDmeOnObjectRequest(int nConnection, int nWorldId, int nSender, rtDmeMessage *p
 }
 
 // The grant of the host of the objects and the stream slots of this console.
-// NTSC-U/C: 0x002ba518
+// NTSC-U/C: 0x002ba518, PAL: 0x002c4488
 static int RtDmeOnObjectGrant(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeObjectGrant *pGrant;
     RtDmeConnection *pConnection;
@@ -5965,7 +5965,7 @@ static int RtDmeOnObjectGrant(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // A latency probe of a peer, or the answer to one of this console.
-// NTSC-U/C: 0x002ba6f0
+// NTSC-U/C: 0x002ba6f0, PAL: 0x002c4660
 static int RtDmeOnPing(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmePingMessage *pPing;
     RtDmePingMessage reply;
@@ -6026,7 +6026,7 @@ static int RtDmeOnPing(int nConnection, int nWorldId, int nSender, rtDmeMessage 
 }
 
 // A part of a long message. The whole message goes to its receiver once every part arrived.
-// NTSC-U/C: 0x002ba908
+// NTSC-U/C: 0x002ba908, PAL: 0x002c4878
 static int RtDmeOnFragment(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeOutgoing *pFragment;
     RtDmeReassembly *pReassembly;
@@ -6077,7 +6077,7 @@ static int RtDmeOnFragment(int nConnection, int nWorldId, int nSender, rtDmeMess
 }
 
 // An object to destroy.
-// NTSC-U/C: 0x002baa98
+// NTSC-U/C: 0x002baa98, PAL: 0x002c4a08
 static int
 RtDmeOnObjectDestroy(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     (void)nConnection;
@@ -6091,7 +6091,7 @@ RtDmeOnObjectDestroy(int nConnection, int nWorldId, int nSender, rtDmeMessage *p
 }
 
 // A client that asks to hold an object of this console.
-// NTSC-U/C: 0x002baac0
+// NTSC-U/C: 0x002baac0, PAL: 0x002c4a30
 static int RtDmeOnObjectLock(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     RtDmeConnection *pConnection;
     RtDmeObject *pObject;
@@ -6135,7 +6135,7 @@ static int RtDmeOnObjectLock(int nConnection, int nWorldId, int nSender, rtDmeMe
 }
 
 // The client that holds an object.
-// NTSC-U/C: 0x002babe0
+// NTSC-U/C: 0x002babe0, PAL: 0x002c4b50
 static int RtDmeOnObjectLocked(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeObjectLock *pLock;
     RtDmeObject *pObject;
@@ -6159,7 +6159,7 @@ static int RtDmeOnObjectLocked(int nConnection, int nWorldId, int nSender, rtDme
 }
 
 // An object nobody holds.
-// NTSC-U/C: 0x002bac48
+// NTSC-U/C: 0x002bac48, PAL: 0x002c4bb8
 static int RtDmeOnObjectUnlock(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const unsigned short *puObject;
     RtDmeObject *pObject;
@@ -6195,7 +6195,7 @@ static inline int RtDmeObjectFieldsSize(const RtDmeObjectType *pType) {
 }
 
 // A whole object, new or changed.
-// NTSC-U/C: 0x002baca8
+// NTSC-U/C: 0x002baca8, PAL: 0x002c4c18
 static int RtDmeOnWholeObject(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeObjectMessage *pObjectMessage;
     const RtDmeObjectType *pType;
@@ -6327,7 +6327,7 @@ update:
 }
 
 // The changed fields of an object.
-// NTSC-U/C: 0x002bb0d0
+// NTSC-U/C: 0x002bb0d0, PAL: 0x002c5040
 static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeObjectUpdateMessage *pUpdate;
     const RtDmeObjectType *pType;
@@ -6409,7 +6409,7 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
 }
 
 // A part of a stream.
-// NTSC-U/C: 0x002bb338
+// NTSC-U/C: 0x002bb338, PAL: 0x002c52a8
 static int RtDmeOnStreamData(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeStreamMessage *pStreamMessage;
     const unsigned char *pbData;
@@ -6505,7 +6505,7 @@ static int RtDmeOnStreamData(int nConnection, int nWorldId, int nSender, rtDmeMe
 }
 
 // A stream that closed.
-// NTSC-U/C: 0x002bb640
+// NTSC-U/C: 0x002bb640, PAL: 0x002c55b0
 static int RtDmeOnStreamClosed(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const unsigned char *puStream;
     RtDmeStream *pStream;
@@ -6562,7 +6562,7 @@ static inline void RtDmeFormatClientAddresses(rtNetAddress *pAddresses,
 }
 
 // The introduction of a client by the host.
-// NTSC-U/C: 0x002bb798
+// NTSC-U/C: 0x002bb798, PAL: 0x002c5708
 static int RtDmeOnClientInfo(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeClientInfo *pInfo;
     RtDmeConnection *pConnection;
@@ -6707,7 +6707,7 @@ RtDmeSendClientInfo(unsigned int nConnection, int nClient, const RtDmeClientInfo
 }
 
 // A probe of the addresses of this console by a peer. The host introduces a new peer to the others.
-// NTSC-U/C: 0x002bbd80
+// NTSC-U/C: 0x002bbd80, PAL: 0x002c5cf0
 static int RtDmeOnAddressProbe(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeAddressProbe *pProbe;
     RtDmeConnection *pConnection;
@@ -6829,7 +6829,7 @@ static int RtDmeOnAddressProbe(int nConnection, int nWorldId, int nSender, rtDme
 }
 
 // A host that refused this console a place in the session.
-// NTSC-U/C: 0x002bc220
+// NTSC-U/C: 0x002bc220, PAL: 0x002c6190
 static int RtDmeOnSessionFull(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const int *pnReason;
     RtDmeConnection *pConnection;
@@ -6871,7 +6871,7 @@ static int RtDmeOnSessionFull(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // The addresses of a client that left, from another client.
-// NTSC-U/C: 0x002bc398
+// NTSC-U/C: 0x002bc398, PAL: 0x002c6308
 static int
 RtDmeOnClientAddresses(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeClientAddresses *pAddresses;
@@ -6934,7 +6934,7 @@ RtDmeOnClientAddresses(int nConnection, int nWorldId, int nSender, rtDmeMessage 
 }
 
 // A client that reports itself ready to the host.
-// NTSC-U/C: 0x002bc520
+// NTSC-U/C: 0x002bc520, PAL: 0x002c6490
 static int RtDmeOnClientReady(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeClientReady *pReady;
     RtDmeConnection *pConnection;
@@ -6974,7 +6974,7 @@ static int RtDmeOnClientReady(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // The state a client announces.
-// NTSC-U/C: 0x002bc628
+// NTSC-U/C: 0x002bc628, PAL: 0x002c6598
 static int RtDmeOnClientState(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const RtDmeClientStateMessage *pState;
     RtDmeConnection *pConnection;
@@ -7032,7 +7032,7 @@ static int RtDmeOnClientState(int nConnection, int nWorldId, int nSender, rtDmeM
 }
 
 // The rank the host gave this console as a candidate host.
-// NTSC-U/C: 0x002bc7b8
+// NTSC-U/C: 0x002bc7b8, PAL: 0x002c6728
 static int RtDmeOnHostRank(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     const int *pnRank;
     RtDmeConnection *pConnection;
@@ -7068,7 +7068,7 @@ static int RtDmeOnHostRank(int nConnection, int nWorldId, int nSender, rtDmeMess
 }
 
 // The voice address a client announces.
-// NTSC-U/C: 0x002bc8a8
+// NTSC-U/C: 0x002bc8a8, PAL: 0x002c6818
 static int RtDmeOnVoicePeer(int nConnection, int nWorldId, int nSender, rtDmeMessage *pMessage) {
     int bValid;
 

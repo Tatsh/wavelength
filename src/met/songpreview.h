@@ -65,6 +65,7 @@ public:
      * @param pszSong The song, or sLevelEncrypt or sBonusEncrypt.
      * @param bMetaClip Whether the song's own clip plays.
      * @ghidraAddress NTSC-U/C: 0x001966b8
+     * @ghidraAddress PAL: 0x0019db48
      */
     static void Load(const char *pszSong, bool bMetaClip);
 

@@ -92,6 +92,7 @@ public:
  * @param argument4 The fourth argument.
  * @return The command, with no reference taken.
  * @ghidraAddress NTSC-U/C: 0x0034c1d8
+ * @ghidraAddress PAL: 0x003b9608
  * @ghidraAddress NTSC-U/C: 0x0033ed38
  * @ghidraAddress PAL: 0x003ac270
  * @ghidraAddress NTSC-U/C: 0x0033eef0

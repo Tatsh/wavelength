@@ -31,6 +31,7 @@ public:
      * Report a gem the player hit.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f40
+     * @ghidraAddress PAL: 0x003b1478
      */
     virtual void OnGemHit() {
     }
@@ -40,6 +41,7 @@ public:
      *
      * @param nLane The lane of the gem.
      * @ghidraAddress NTSC-U/C: 0x00343f48
+     * @ghidraAddress PAL: 0x003b1480
      */
     virtual void OnGemMiss([[maybe_unused]] int nLane) {
     }
@@ -48,6 +50,7 @@ public:
      * Report a gem the player let pass.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f50
+     * @ghidraAddress PAL: 0x003b1488
      */
     virtual void OnGemPass() {
     }
@@ -57,6 +60,7 @@ public:
      *
      * @param nTrack The track.
      * @ghidraAddress NTSC-U/C: 0x00343f58
+     * @ghidraAddress PAL: 0x003b1490
      */
     virtual void OnCapture([[maybe_unused]] int nTrack) {
     }
@@ -65,6 +69,7 @@ public:
      * Report an automatic capture.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f60
+     * @ghidraAddress PAL: 0x003b1498
      */
     virtual void OnAutocapture() {
     }
@@ -74,6 +79,7 @@ public:
      *
      * @param nStreak The length of the streak that broke.
      * @ghidraAddress NTSC-U/C: 0x00343f68
+     * @ghidraAddress PAL: 0x003b14a0
      */
     virtual void OnStreakBroken([[maybe_unused]] int nStreak) {
     }
@@ -82,6 +88,7 @@ public:
      * Report a powerup the player deployed.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f70
+     * @ghidraAddress PAL: 0x003b14a8
      */
     virtual void OnPowerup() {
     }
@@ -90,6 +97,7 @@ public:
      * Report a pitch change.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f78
+     * @ghidraAddress PAL: 0x003b14b0
      */
     virtual void OnPitch() {
     }
@@ -98,6 +106,7 @@ public:
      * Report that looping was switched on.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f80
+     * @ghidraAddress PAL: 0x003b14b8
      */
     virtual void OnLoop() {
     }
@@ -107,6 +116,7 @@ public:
      *
      * @param nSection The section.
      * @ghidraAddress NTSC-U/C: 0x00343f88
+     * @ghidraAddress PAL: 0x003b14c0
      */
     virtual void OnSectionChange([[maybe_unused]] int nSection) {
     }
@@ -115,6 +125,7 @@ public:
      * Report a burned pattern.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f90
+     * @ghidraAddress PAL: 0x003b14c8
      */
     virtual void OnBurnPattern() {
     }
@@ -123,6 +134,7 @@ public:
      * Report an erased pattern.
      *
      * @ghidraAddress NTSC-U/C: 0x00343f98
+     * @ghidraAddress PAL: 0x003b14d0
      */
     virtual void OnErase() {
     }
@@ -131,6 +143,7 @@ public:
      * Report an erased section.
      *
      * @ghidraAddress NTSC-U/C: 0x00343fa0
+     * @ghidraAddress PAL: 0x003b14d8
      */
     virtual void OnEraseSection() {
     }
@@ -140,6 +153,7 @@ public:
      *
      * @param bRight The rotation was to the right.
      * @ghidraAddress NTSC-U/C: 0x00343fa8
+     * @ghidraAddress PAL: 0x003b14e0
      */
     virtual void OnRotate([[maybe_unused]] bool bRight) {
     }
@@ -148,6 +162,7 @@ public:
      * Report that the pattern menu was opened.
      *
      * @ghidraAddress NTSC-U/C: 0x00343fb0
+     * @ghidraAddress PAL: 0x003b14e8
      */
     virtual void OnPatternMenuOpen() {
     }

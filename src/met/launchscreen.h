@@ -56,6 +56,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x0035e1d0
+     * @ghidraAddress PAL: 0x003cc2b0
      */
     const char *Title() override {
         return "";

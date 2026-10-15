@@ -189,6 +189,7 @@ public:
      *
      * @param pszFile The file.
      * @ghidraAddress NTSC-U/C: 0x00238fe8
+     * @ghidraAddress PAL: 0x00241b68
      */
     void SaveFile(const char *pszFile);
 

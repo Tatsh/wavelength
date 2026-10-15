@@ -65,6 +65,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0037bf70
+     * @ghidraAddress PAL: 0x003ea6a0
      */
     Message *Clone() override {
         return new UIComponentSelectStartMsg(*this);
@@ -75,6 +76,7 @@ public:
      *
      * @return g_nUIComponentSelectStartMsgType.
      * @ghidraAddress NTSC-U/C: 0x0037bfe0
+     * @ghidraAddress PAL: 0x003ea710
      */
     int Type() override {
         return g_nUIComponentSelectStartMsgType;
@@ -85,6 +87,7 @@ public:
      *
      * @return The literal `UIComponentSelectStartMsg`.
      * @ghidraAddress NTSC-U/C: 0x0037bff0
+     * @ghidraAddress PAL: 0x003ea720
      */
     const char *GetName() const override {
         return "UIComponentSelectStartMsg";

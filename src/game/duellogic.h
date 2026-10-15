@@ -97,6 +97,7 @@ public:
      * End the duel.
      *
      * @ghidraAddress NTSC-U/C: 0x00107e28
+     * @ghidraAddress PAL: 0x00109560
      */
     void Stop() override;
 
@@ -105,6 +106,7 @@ public:
      *
      * @return Whether the duel ended.
      * @ghidraAddress NTSC-U/C: 0x001081d8
+     * @ghidraAddress PAL: 0x00109910
      */
     bool IsFinished() const override;
 
@@ -113,6 +115,7 @@ public:
      *
      * @return Non-zero when the duel was abandoned.
      * @ghidraAddress NTSC-U/C: 0x001082e8
+     * @ghidraAddress PAL: 0x00109a20
      */
     int HasQuit() const override;
 
@@ -121,6 +124,7 @@ public:
      *
      * @return Zero.
      * @ghidraAddress NTSC-U/C: 0x003347a0
+     * @ghidraAddress PAL: 0x003a1d50
      */
     int IsRestartRequested() const override {
         return 0;
@@ -132,6 +136,7 @@ public:
      * @param nPlayer The player.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x003347a8
+     * @ghidraAddress PAL: 0x003a1d58
      */
     bool IsFreestyling([[maybe_unused]] int nPlayer) override {
         return false;
@@ -177,6 +182,7 @@ public:
      *
      * @param event The rotation.
      * @ghidraAddress NTSC-U/C: 0x00108cc8
+     * @ghidraAddress PAL: 0x0010a400
      */
     void HandleInput(const RotateEvent &event) override;
 
@@ -203,6 +209,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x00108d90
+     * @ghidraAddress PAL: 0x0010a4c8
      */
     void HandleInput(const BtnEvent<4> &event) override;
 
@@ -211,6 +218,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x00108d98
+     * @ghidraAddress PAL: 0x0010a4d0
      */
     void HandleInput(const BtnEvent<5> &event) override;
 
@@ -219,6 +227,7 @@ public:
      *
      * @param event The section change.
      * @ghidraAddress NTSC-U/C: 0x003347b0
+     * @ghidraAddress PAL: 0x003a1d60
      */
     void HandleInput([[maybe_unused]] const ChangeSectionEvent &event) override {
     }
@@ -228,6 +237,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x003347b8
+     * @ghidraAddress PAL: 0x003a1d68
      */
     void HandleInput([[maybe_unused]] const BtnEvent<9> &event) override {
     }
@@ -237,6 +247,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x003347c8
+     * @ghidraAddress PAL: 0x003a1d78
      */
     void HandleInput([[maybe_unused]] const BtnEvent<10> &event) override {
     }
@@ -246,6 +257,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x003347c0
+     * @ghidraAddress PAL: 0x003a1d70
      */
     void HandleInput([[maybe_unused]] const BtnEvent<8> &event) override {
     }
@@ -255,6 +267,7 @@ public:
      *
      * @param event The stick position.
      * @ghidraAddress NTSC-U/C: 0x00108da0
+     * @ghidraAddress PAL: 0x0010a4d8
      */
     void HandleInput(const StickEvent<2> &event) override;
 
@@ -263,6 +276,7 @@ public:
      *
      * @param event The stick position.
      * @ghidraAddress NTSC-U/C: 0x00108da8
+     * @ghidraAddress PAL: 0x0010a4e0
      */
     void HandleInput(const StickEvent<6> &event) override;
 
@@ -284,6 +298,7 @@ public:
      *
      * @return Whether mState is kStatePlaying.
      * @ghidraAddress NTSC-U/C: 0x003347d0
+     * @ghidraAddress PAL: 0x003a1d80
      */
     bool IsPlaying() const override {
         return mState == kStatePlaying;

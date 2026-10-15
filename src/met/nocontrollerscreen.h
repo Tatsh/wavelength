@@ -74,6 +74,7 @@ public:
      * @return True while the screen moves in or out, otherwise the result of
      * FreqScreen::HandleJoypad().
      * @ghidraAddress NTSC-U/C: 0x0018cbc0
+     * @ghidraAddress PAL: 0x00193718
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 

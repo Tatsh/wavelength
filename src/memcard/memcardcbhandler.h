@@ -26,6 +26,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x00351350
+     * @ghidraAddress PAL: 0x003be5c8
      */
     virtual void OnGetInfo([[maybe_unused]] int nResult) {
     }
@@ -35,6 +36,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x00351358
+     * @ghidraAddress PAL: 0x003be5d0
      */
     virtual void OnGetEntSpace([[maybe_unused]] int nResult) {
     }
@@ -44,6 +46,7 @@ public:
      *
      * @param nResult The file descriptor, or a negative library error.
      * @ghidraAddress NTSC-U/C: 0x00351360
+     * @ghidraAddress PAL: 0x003be5d8
      */
     virtual void OnOpen([[maybe_unused]] int nResult) {
     }
@@ -53,6 +56,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x00351368
+     * @ghidraAddress PAL: 0x003be5e0
      */
     virtual void OnClose([[maybe_unused]] int nResult) {
     }
@@ -62,6 +66,7 @@ public:
      *
      * @param nResult The number of bytes read, or a negative library error.
      * @ghidraAddress NTSC-U/C: 0x00351370
+     * @ghidraAddress PAL: 0x003be5e8
      */
     virtual void OnRead([[maybe_unused]] int nResult) {
     }
@@ -71,6 +76,7 @@ public:
      *
      * @param nResult The number of bytes written, or a negative library error.
      * @ghidraAddress NTSC-U/C: 0x00351378
+     * @ghidraAddress PAL: 0x003be5f0
      */
     virtual void OnWrite([[maybe_unused]] int nResult) {
     }
@@ -80,6 +86,7 @@ public:
      *
      * @param nResult The new position, or a negative library error.
      * @ghidraAddress NTSC-U/C: 0x00351380
+     * @ghidraAddress PAL: 0x003be5f8
      */
     virtual void OnSeek([[maybe_unused]] int nResult) {
     }
@@ -89,6 +96,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x00351388
+     * @ghidraAddress PAL: 0x003be600
      */
     virtual void OnMkdir([[maybe_unused]] int nResult) {
     }
@@ -98,6 +106,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x00351390
+     * @ghidraAddress PAL: 0x003be608
      */
     virtual void OnRename([[maybe_unused]] int nResult) {
     }
@@ -107,6 +116,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x00351398
+     * @ghidraAddress PAL: 0x003be610
      */
     virtual void OnDelete([[maybe_unused]] int nResult) {
     }
@@ -116,6 +126,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x003513a0
+     * @ghidraAddress PAL: 0x003be618
      */
     virtual void OnFormat([[maybe_unused]] int nResult) {
     }
@@ -125,6 +136,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x003513a8
+     * @ghidraAddress PAL: 0x003be620
      */
     virtual void OnUnformat([[maybe_unused]] int nResult) {
     }
@@ -135,6 +147,7 @@ public:
      * @param nResult The number of entries, or a negative library error.
      * @param pEntries The entries. The memory card layer retains them.
      * @ghidraAddress NTSC-U/C: 0x003513b0
+     * @ghidraAddress PAL: 0x003be628
      */
     virtual void OnGetDir([[maybe_unused]] int nResult,
                           [[maybe_unused]] MemcardDirEntry *pEntries) {

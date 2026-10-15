@@ -14,6 +14,7 @@ extern "C" {
  *
  * @return The identifier.
  * @ghidraAddress NTSC-U/C: 0x00323b20
+ * @ghidraAddress PAL: 0x0037af1c
  */
 unsigned int RtTitleGetApplicationId(void);
 
@@ -23,6 +24,7 @@ unsigned int RtTitleGetApplicationId(void);
  * @param pModulus Receives the modulus.
  * @param pExponent Receives the exponent.
  * @ghidraAddress NTSC-U/C: 0x00323b2c
+ * @ghidraAddress PAL: 0x0037af28
  */
 void RtTitleGetSigningKey(RtKey *pModulus, RtKey *pExponent);
 

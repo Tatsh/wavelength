@@ -67,6 +67,7 @@ public:
      * Do nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x003a8a70
+     * @ghidraAddress PAL: 0x00417728
      */
     void Flush() override {
     }
@@ -77,6 +78,7 @@ public:
      * @param nOffset The offset in bytes.
      * @param eFrom The origin of the offset.
      * @ghidraAddress NTSC-U/C: 0x00293e18
+     * @ghidraAddress PAL: 0x0029d7d0
      */
     void Seek(int nOffset, SeekType eFrom) override;
 
@@ -85,6 +87,7 @@ public:
      *
      * @return The position in bytes.
      * @ghidraAddress NTSC-U/C: 0x003a8a78
+     * @ghidraAddress PAL: 0x00417730
      */
     int Tell() override {
         return mPosition;
@@ -106,6 +109,7 @@ public:
      *
      * @return Whether no byte is left.
      * @ghidraAddress NTSC-U/C: 0x003a8a80
+     * @ghidraAddress PAL: 0x00417738
      */
     bool Eof() override {
         return mPosition == mSize;
@@ -116,6 +120,7 @@ public:
      *
      * @return Whether a transfer failed.
      * @ghidraAddress NTSC-U/C: 0x003a8a98
+     * @ghidraAddress PAL: 0x00417750
      */
     bool Fail() override {
         return mFail != 0;

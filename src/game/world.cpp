@@ -129,30 +129,30 @@ public:
 
     // NTSC-U/C: 0x003465d8, PAL: 0x003b3a20
     // NTSC-U/C: 0x00346550, PAL: 0x003b3998
-    // NTSC-U/C: 0x00346490
+    // NTSC-U/C: 0x00346490, PAL: 0x003b38f8
     // NTSC-U/C: 0x00346358, PAL: 0x003b37d8
     // NTSC-U/C: 0x00346220, PAL: 0x003b36b8
-    // NTSC-U/C: 0x00346160
-    // NTSC-U/C: 0x003460a0
-    // NTSC-U/C: 0x00345fe0
+    // NTSC-U/C: 0x00346160, PAL: 0x003b3618
+    // NTSC-U/C: 0x003460a0, PAL: 0x003b3578
+    // NTSC-U/C: 0x00345fe0, PAL: 0x003b34d8
     // NTSC-U/C: 0x00345f58, PAL: 0x003b3450
-    // NTSC-U/C: 0x00345e98
-    // NTSC-U/C: 0x00345dd8
+    // NTSC-U/C: 0x00345e98, PAL: 0x003b33b0
+    // NTSC-U/C: 0x00345dd8, PAL: 0x003b3310
     void Save(BinStream &stream) const override {
         mEvent.Save(stream);
     }
 
     // NTSC-U/C: 0x003465f8, PAL: 0x003b3a40
     // NTSC-U/C: 0x00346570, PAL: 0x003b39b8
-    // NTSC-U/C: 0x003464d0
+    // NTSC-U/C: 0x003464d0, PAL: 0x003b3928
     // NTSC-U/C: 0x003463e0, PAL: 0x003b3850
     // NTSC-U/C: 0x003462a8, PAL: 0x003b3730
-    // NTSC-U/C: 0x003461a0
-    // NTSC-U/C: 0x003460e0
-    // NTSC-U/C: 0x00346020
+    // NTSC-U/C: 0x003461a0, PAL: 0x003b3648
+    // NTSC-U/C: 0x003460e0, PAL: 0x003b35a8
+    // NTSC-U/C: 0x00346020, PAL: 0x003b3508
     // NTSC-U/C: 0x00345f78, PAL: 0x003b3470
-    // NTSC-U/C: 0x00345ed8
-    // NTSC-U/C: 0x00345e18
+    // NTSC-U/C: 0x00345ed8, PAL: 0x003b33e0
+    // NTSC-U/C: 0x00345e18, PAL: 0x003b3340
     void Load(BinStream &stream) override {
         mEvent.Load(stream);
     }

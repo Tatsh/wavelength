@@ -123,6 +123,7 @@ public:
      *
      * @param stream The stream to read from.
      * @ghidraAddress NTSC-U/C: 0x00269780
+     * @ghidraAddress PAL: 0x00273338
      */
     void restoreGuts(BinStream &stream) override;
 

@@ -54,6 +54,7 @@ public:
      * Release the message and its configurations.
      *
      * @ghidraAddress NTSC-U/C: 0x0039dc98
+     * @ghidraAddress PAL: 0x0040c9c0
      */
     ~InetConfigsResultMsg() override = default;
 
@@ -62,6 +63,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0039dd70
+     * @ghidraAddress PAL: 0x0040ca98
      */
     Message *Clone() override {
         return new InetConfigsResultMsg(*this);
@@ -72,6 +74,7 @@ public:
      *
      * @return g_nInetConfigsResultMsgType.
      * @ghidraAddress NTSC-U/C: 0x0039ddb0
+     * @ghidraAddress PAL: 0x0040cad8
      */
     int Type() override {
         return g_nInetConfigsResultMsgType;
@@ -82,6 +85,7 @@ public:
      *
      * @return The literal `InetConfigsResultMsg`.
      * @ghidraAddress NTSC-U/C: 0x0039ddc0
+     * @ghidraAddress PAL: 0x0040cae8
      */
     const char *GetName() const override {
         return "InetConfigsResultMsg";

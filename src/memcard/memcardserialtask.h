@@ -33,6 +33,7 @@ public:
      * Learn that a directory listing step ended.
      *
      * @ghidraAddress NTSC-U/C: 0x00351530
+     * @ghidraAddress PAL: 0x003be7a8
      */
     virtual void OnDirListed() {
     }
@@ -41,6 +42,7 @@ public:
      * Learn that a card information step ended.
      *
      * @ghidraAddress NTSC-U/C: 0x00351538
+     * @ghidraAddress PAL: 0x003be7b0
      */
     virtual void OnCardInfo() {
     }
@@ -49,6 +51,7 @@ public:
      * Learn that a file load step ended.
      *
      * @ghidraAddress NTSC-U/C: 0x00351540
+     * @ghidraAddress PAL: 0x003be7b8
      */
     virtual void OnFileLoaded() {
     }

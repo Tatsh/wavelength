@@ -52,6 +52,7 @@ public:
      * @param pSong The song.
      * @param pSongConfig The entry of the song in the "songs" section.
      * @ghidraAddress NTSC-U/C: 0x0013f7e8
+     * @ghidraAddress PAL: 0x00141140
      */
     TutorialGameLogic(Song *pSong, DataArray *pSongConfig);
 
@@ -136,6 +137,7 @@ public:
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x00140128
+     * @ghidraAddress PAL: 0x00141ae8
      */
     void HandleInput(const BtnEvent<4> &event) override;
 
@@ -172,6 +174,7 @@ public:
      *
      * @param bWon Whether the song was won.
      * @ghidraAddress NTSC-U/C: 0x00343af8
+     * @ghidraAddress PAL: 0x003b1030
      */
     void OnFinish([[maybe_unused]] bool bWon) override {
     }
@@ -181,6 +184,7 @@ public:
      *
      * @param nBar The bar.
      * @ghidraAddress NTSC-U/C: 0x00140328
+     * @ghidraAddress PAL: 0x00141ce8
      */
     void OnBar(int nBar) override;
 
@@ -188,6 +192,7 @@ public:
      * Ignore the start of a section.
      *
      * @ghidraAddress NTSC-U/C: 0x00343ae8
+     * @ghidraAddress PAL: 0x003b1020
      */
     void OnSection() override {
     }
@@ -209,6 +214,7 @@ public:
      *
      * @param pTrack The track.
      * @ghidraAddress NTSC-U/C: 0x001403d8
+     * @ghidraAddress PAL: 0x00141d98
      */
     void OnPhraseEnded(Track *pTrack) override;
 
@@ -217,6 +223,7 @@ public:
      *
      * @param pTrack The track the phrase was missed on.
      * @ghidraAddress NTSC-U/C: 0x00343af0
+     * @ghidraAddress PAL: 0x003b1028
      */
     void OnPhraseMissed([[maybe_unused]] Track *pTrack) override {
     }
@@ -364,6 +371,7 @@ public:
      *
      * @param bAutopilot Play the gems automatically.
      * @ghidraAddress NTSC-U/C: 0x00140cf8
+     * @ghidraAddress PAL: 0x001426b8
      */
     void SetAutopilot(bool bAutopilot);
 
@@ -372,6 +380,7 @@ public:
      *
      * @param bNoSeeker Hide the seeker.
      * @ghidraAddress NTSC-U/C: 0x00140d50
+     * @ghidraAddress PAL: 0x00142710
      */
     void SetNoSeeker(bool bNoSeeker);
 

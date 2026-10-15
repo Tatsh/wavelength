@@ -446,6 +446,7 @@ public:
      *
      * @param fProgress The part transferred, from 0 to 1.
      * @ghidraAddress NTSC-U/C: 0x00260eb8
+     * @ghidraAddress PAL: 0x00269fa8
      */
     void ReportProgress(float fProgress);
 
@@ -535,6 +536,7 @@ public:
      * @param pText Receives the text.
      * @param pPlayer The player.
      * @ghidraAddress NTSC-U/C: 0x0025d100
+     * @ghidraAddress PAL: 0x00266160
      */
     static void EncodePlayer(String *pText, const LobbyPlayer *pPlayer);
 

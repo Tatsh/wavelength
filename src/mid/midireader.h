@@ -36,6 +36,7 @@ public:
          * @param stream The stream to read from.
          * @return The stream.
          * @ghidraAddress NTSC-U/C: 0x0034e140
+         * @ghidraAddress PAL: 0x003bb570
          */
         BinStream &Read(BinStream &stream);
 
@@ -200,6 +201,7 @@ private:
      * @param nData1 The first data byte.
      * @param stream The stream.
      * @ghidraAddress NTSC-U/C: 0x001596b8
+     * @ghidraAddress PAL: 0x0015af28
      */
     void
     ReadChannelEvent(int nTick, unsigned char nStatus, unsigned char nData1, BinStream &stream);

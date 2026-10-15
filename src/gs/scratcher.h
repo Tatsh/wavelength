@@ -105,6 +105,7 @@ public:
      *
      * @return Non-zero while scratching.
      * @ghidraAddress NTSC-U/C: 0x001544b0
+     * @ghidraAddress PAL: 0x00155d18
      */
     virtual int IsScratching();
 

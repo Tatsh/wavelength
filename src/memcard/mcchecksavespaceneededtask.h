@@ -32,6 +32,7 @@ public:
      * Construct the steps.
      *
      * @ghidraAddress NTSC-U/C: 0x0015ea48
+     * @ghidraAddress PAL: 0x00160288
      */
     MCCheckSaveSpaceNeededTask();
 
@@ -79,6 +80,7 @@ protected:
      * End with the outcome, and report it to mUser.
      *
      * @ghidraAddress NTSC-U/C: 0x0015ee98
+     * @ghidraAddress PAL: 0x001607b0
      */
     void OnStop() override;
 };

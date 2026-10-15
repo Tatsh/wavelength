@@ -59,6 +59,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x003634c0
+     * @ghidraAddress PAL: 0x003d1ab8
      */
     const char *Title() override {
         return "";
@@ -121,6 +122,7 @@ private:
      * @param pMsg The message.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x001abdc0
+     * @ghidraAddress PAL: 0x001b3f48
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 

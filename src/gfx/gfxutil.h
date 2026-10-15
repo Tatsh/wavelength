@@ -108,6 +108,7 @@ void ScaleTransKeys(const char *pszName, float fScale);
  * @param keys The keys.
  * @param fScale The scale.
  * @ghidraAddress NTSC-U/C: 0x00370bb8
+ * @ghidraAddress PAL: 0x003df2e8
  */
 void ScaleKeys(std::vector<Key<Vector3>> &keys, float fScale);
 

@@ -403,7 +403,7 @@ static inline void rtImageInverseDctColumn(short *sample) {
 }
 
 // Transforms a block of samples into its transposed coefficients.
-// NTSC-U/C: 0x0042e190
+// NTSC-U/C: 0x0042e190, PAL: 0x004c5e90
 static void rtImageForwardDct(short *block) {
     int column;
 
@@ -418,7 +418,7 @@ static void rtImageForwardDct(short *block) {
 
 // Transforms the transposed coefficients of a block into samples, centred on kSampleBias and
 // limited to kSampleMax from above only.
-// NTSC-U/C: 0x0042e490
+// NTSC-U/C: 0x0042e490, PAL: 0x004c6190
 static void rtImageInverseDct(short *block) {
     int column;
     int i;
@@ -439,7 +439,7 @@ static void rtImageInverseDct(short *block) {
 }
 
 // Quantises the coefficients of a block with rounding.
-// NTSC-U/C: 0x0042df00
+// NTSC-U/C: 0x0042df00, PAL: 0x004c5c00
 static void rtImageQuantize(int table, short *block) {
     const short *factors = g_anQuantizeChroma;
     int i;
@@ -453,7 +453,7 @@ static void rtImageQuantize(int table, short *block) {
 }
 
 // Scales quantised coefficients back to coefficients.
-// NTSC-U/C: 0x0042e090
+// NTSC-U/C: 0x0042e090, PAL: 0x004c5d90
 static void rtImageDequantize(int table, short *block) {
     const short *factors = g_anDequantizeChroma;
     int i;

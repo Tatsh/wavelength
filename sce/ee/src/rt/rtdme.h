@@ -937,6 +937,7 @@ int RtDmeVoiceShutdown(void);
  * @param pSettings The settings.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002ae120
+ * @ghidraAddress PAL: 0x002b8090
  */
 int RtDmeVoiceInitSettings(rtDmeVoiceSettings *pSettings);
 
@@ -947,6 +948,7 @@ int RtDmeVoiceInitSettings(rtDmeVoiceSettings *pSettings);
  * @param bStarted The started flag the voice has while its device runs.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002ae1c0
+ * @ghidraAddress PAL: 0x002b8130
  */
 int RtDmeVoiceUpdate(int nConnection, unsigned char bStarted);
 
@@ -958,6 +960,7 @@ int RtDmeVoiceUpdate(int nConnection, unsigned char bStarted);
  * @param pSettings The settings.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002ae248
+ * @ghidraAddress PAL: 0x002b81b8
  */
 int RtDmeVoiceOpen(int nConnection, int nMaxClients, const rtDmeVoiceSettings *pSettings);
 
@@ -1020,6 +1023,7 @@ int RtDmeVoiceRemoveClient(int nConnection, int nClient);
  * @param pMessage The announcement.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002af220
+ * @ghidraAddress PAL: 0x002b9190
  */
 int RtDmeVoiceAddPeer(const RtDmeVoicePeerMessage *pMessage);
 
@@ -1050,6 +1054,7 @@ int RtDmeGetObjectRange(RtDmeObjectRange **ppRange, int nConnection, int nClient
  * @param nClient The client.
  * @return The range, or null for a bad index.
  * @ghidraAddress NTSC-U/C: 0x002afcd8
+ * @ghidraAddress PAL: 0x002b9c48
  */
 RtDmeObjectRange *RtDmeCreateObjectRange(unsigned int nConnection, unsigned int nClient);
 
@@ -1058,6 +1063,7 @@ RtDmeObjectRange *RtDmeCreateObjectRange(unsigned int nConnection, unsigned int 
  *
  * @param nConnection The connection.
  * @ghidraAddress NTSC-U/C: 0x002afdf0
+ * @ghidraAddress PAL: 0x002b9d60
  */
 void RtDmeFreeConnectionObjectRanges(unsigned int nConnection);
 
@@ -1065,6 +1071,7 @@ void RtDmeFreeConnectionObjectRanges(unsigned int nConnection);
  * Release the object ranges of every connection.
  *
  * @ghidraAddress NTSC-U/C: 0x002afe58
+ * @ghidraAddress PAL: 0x002b9dc8
  */
 void RtDmeFreeAllObjectRanges(void);
 
@@ -1072,6 +1079,7 @@ void RtDmeFreeAllObjectRanges(void);
  * Release the table of the object ranges.
  *
  * @ghidraAddress NTSC-U/C: 0x002afea8
+ * @ghidraAddress PAL: 0x002b9e18
  */
 void RtDmeFreeObjectRangeTable(void);
 
@@ -1082,6 +1090,7 @@ void RtDmeFreeObjectRangeTable(void);
  * @param nClient The client, or RT_DME_ALL_CLIENTS.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002affb8
+ * @ghidraAddress PAL: 0x002b9f28
  */
 int RtDmeSendObjectRange(unsigned int nConnection, int nClient);
 
@@ -1091,6 +1100,7 @@ int RtDmeSendObjectRange(unsigned int nConnection, int nClient);
  * @param nConnection The connection.
  * @param nClient The client.
  * @ghidraAddress NTSC-U/C: 0x002b00f0
+ * @ghidraAddress PAL: 0x002ba060
  */
 void RtDmeOpenObjectRange(unsigned int nConnection, int nClient);
 
@@ -1100,6 +1110,7 @@ void RtDmeOpenObjectRange(unsigned int nConnection, int nClient);
  * @param nConnection The connection.
  * @param nClient The client.
  * @ghidraAddress NTSC-U/C: 0x002b0188
+ * @ghidraAddress PAL: 0x002ba0f8
  */
 void RtDmeJoinObjects(unsigned int nConnection, int nClient);
 
@@ -1131,6 +1142,7 @@ int RtDmeSendClientState(int nConnection, int nClient);
  * @param uPort The public port.
  * @param nResult The result of the mapping.
  * @ghidraAddress NTSC-U/C: 0x002b0980
+ * @ghidraAddress PAL: 0x002ba8f0
  */
 void RtDmeOnPortMapped(const char *pszAddress, unsigned short uPort, int nResult);
 
@@ -1657,6 +1669,7 @@ void RtDmeSetConnectResult(int nConnection, int nClient, unsigned char bConnecte
  * @param pParams The parameters.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b40b0
+ * @ghidraAddress PAL: 0x002be020
  */
 int RtDmeInitConnectParams(rtDmeConnectParams *pParams);
 
@@ -1667,6 +1680,7 @@ int RtDmeInitConnectParams(rtDmeConnectParams *pParams);
  * @param pStatus Receives the status.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b4130
+ * @ghidraAddress PAL: 0x002be0a0
  */
 int RtDmeConnect(const rtDmeConnectParams *pParams, rtDmeConnectStatus *pStatus);
 
@@ -1676,6 +1690,7 @@ int RtDmeConnect(const rtDmeConnectParams *pParams, rtDmeConnectStatus *pStatus)
  * @param pParams The parameters.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b4a70
+ * @ghidraAddress PAL: 0x002be9e0
  */
 int RtDmeInitHostParams(rtDmeHostParams *pParams);
 
@@ -1686,6 +1701,7 @@ int RtDmeInitHostParams(rtDmeHostParams *pParams);
  * @param pStatus Receives the status.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b4ad0
+ * @ghidraAddress PAL: 0x002bea40
  */
 int RtDmeHost(const rtDmeHostParams *pParams, rtDmeConnectStatus *pStatus);
 
@@ -1695,6 +1711,7 @@ int RtDmeHost(const rtDmeHostParams *pParams, rtDmeConnectStatus *pStatus);
  * @param pQuery The query.
  * @return 0, or RT_DME_RESULT_INVALID.
  * @ghidraAddress NTSC-U/C: 0x002b4e10
+ * @ghidraAddress PAL: 0x002bed80
  */
 int RtDmeInitAddressQuery(rtDmeAddressQuery *pQuery);
 
@@ -1705,6 +1722,7 @@ int RtDmeInitAddressQuery(rtDmeAddressQuery *pQuery);
  * @param pStatus Receives the status.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b4e50
+ * @ghidraAddress PAL: 0x002bedc0
  */
 int RtDmeQueryAddresses(const rtDmeAddressQuery *pQuery, rtDmeConnectStatus *pStatus);
 
@@ -1714,6 +1732,7 @@ int RtDmeQueryAddresses(const rtDmeAddressQuery *pQuery, rtDmeConnectStatus *pSt
  * @param pReport The report.
  * @return 0, or RT_DME_RESULT_INVALID.
  * @ghidraAddress NTSC-U/C: 0x002b4fc0
+ * @ghidraAddress PAL: 0x002bef30
  */
 int RtDmeInitAddressReport(rtDmeAddressReport *pReport);
 
@@ -1724,6 +1743,7 @@ int RtDmeInitAddressReport(rtDmeAddressReport *pReport);
  * @param pStatus Receives the status.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b5000
+ * @ghidraAddress PAL: 0x002bef70
  */
 int RtDmeReportAddresses(const rtDmeAddressReport *pReport, rtDmeConnectStatus *pStatus);
 
@@ -1734,6 +1754,7 @@ int RtDmeReportAddresses(const rtDmeAddressReport *pReport, rtDmeConnectStatus *
  * @param pStatus Receives the status.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b50f0
+ * @ghidraAddress PAL: 0x002bf060
  */
 int RtDmeAddReportedPeer(const rtDmeAddressReport *pReport, rtDmeConnectStatus *pStatus);
 
@@ -1744,6 +1765,7 @@ int RtDmeAddReportedPeer(const rtDmeAddressReport *pReport, rtDmeConnectStatus *
  * @param bEnable Non-zero to enable the messages.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b5468
+ * @ghidraAddress PAL: 0x002bf3d8
  */
 int RtDmeEnableConnection(int nConnection, int bEnable);
 
@@ -1753,6 +1775,7 @@ int RtDmeEnableConnection(int nConnection, int bEnable);
  * @param nConnection The connection.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b55a8
+ * @ghidraAddress PAL: 0x002bf518
  */
 int RtDmeLeaveSession(int nConnection);
 
@@ -1761,6 +1784,7 @@ int RtDmeLeaveSession(int nConnection);
  *
  * @param nClient The client.
  * @ghidraAddress NTSC-U/C: 0x002b58f8
+ * @ghidraAddress PAL: 0x002bf868
  */
 void RtDmeProbeClient(unsigned int nClient);
 
@@ -1769,6 +1793,7 @@ void RtDmeProbeClient(unsigned int nClient);
  *
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b7728
+ * @ghidraAddress PAL: 0x002c1698
  */
 int RtDmeUpdate(void);
 
@@ -1778,6 +1803,7 @@ int RtDmeUpdate(void);
  * @param nConnection The connection.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b7980
+ * @ghidraAddress PAL: 0x002c18f0
  */
 int RtDmeDisconnect(int nConnection);
 
@@ -1786,6 +1812,7 @@ int RtDmeDisconnect(int nConnection);
  *
  * @return 0, or RT_DME_RESULT_NOT_STARTED.
  * @ghidraAddress NTSC-U/C: 0x002b7bb0
+ * @ghidraAddress PAL: 0x002c1b20
  */
 int RtDmeShutdown(void);
 
@@ -1797,6 +1824,7 @@ int RtDmeShutdown(void);
  * @param nFlags The flags.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b8828
+ * @ghidraAddress PAL: 0x002c2798
  */
 int RtDmeSetClientFlags(unsigned int nConnection, int nClient, signed char nFlags);
 
@@ -1806,6 +1834,7 @@ int RtDmeSetClientFlags(unsigned int nConnection, int nClient, signed char nFlag
  * @param pbHost Receives 1 when it is the host.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002b8ee8
+ * @ghidraAddress PAL: 0x002c2e58
  */
 int RtDmeIsLocalHost(unsigned char *pbHost);
 
@@ -2059,6 +2088,7 @@ unsigned char RtDmeClientToByte(int nClient);
  * @param nConnection The connection.
  * @return 1 when the index is below RT_DME_CONNECTION_COUNT.
  * @ghidraAddress NTSC-U/C: 0x002b9b40
+ * @ghidraAddress PAL: 0x002c3ab0
  */
 int RtDmeIsConnectionIndex(unsigned int nConnection);
 
@@ -2068,6 +2098,7 @@ int RtDmeIsConnectionIndex(unsigned int nConnection);
  * @param ppAddress Receives the address.
  * @return 0, or RT_DME_RESULT_INVALID.
  * @ghidraAddress NTSC-U/C: 0x002b9b48
+ * @ghidraAddress PAL: 0x002c3ab8
  */
 int RtDmeGetGatewayAddress(rtNetAddress **ppAddress);
 
@@ -2098,6 +2129,7 @@ int RtDmeRegisterSystemMessages(void);
  *
  * @return 0, or RT_DME_RESULT_NOT_STARTED.
  * @ghidraAddress NTSC-U/C: 0x002a8d38
+ * @ghidraAddress PAL: 0x002b2ca8
  */
 int RtDmeBeginFields(void);
 
@@ -2111,6 +2143,7 @@ int RtDmeBeginFields(void);
  * @param nCount A positive number stored with the field, the count of elements by convention.
  * @return 0, RT_DME_RESULT_NOT_STARTED, or RT_DME_RESULT_INVALID.
  * @ghidraAddress NTSC-U/C: 0x002a8d60
+ * @ghidraAddress PAL: 0x002b2cd0
  */
 int RtDmeAddField(const void *pRecord, const void *pField, int nSize, int nCount);
 
@@ -2122,6 +2155,7 @@ int RtDmeAddField(const void *pRecord, const void *pField, int nSize, int nCount
  * @param pfnHandler The receiver.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002a8df8
+ * @ghidraAddress PAL: 0x002b2d68
  */
 int RtDmeRegisterMessageType(int *pnType, unsigned int nClass, rtDmeMessageHandler pfnHandler);
 
@@ -2132,6 +2166,7 @@ int RtDmeRegisterMessageType(int *pnType, unsigned int nClass, rtDmeMessageHandl
  * @param pfnHandler The receiver.
  * @return 0, or an error.
  * @ghidraAddress NTSC-U/C: 0x002a8ed8
+ * @ghidraAddress PAL: 0x002b2e48
  */
 int RtDmeRegisterApplicationMessage(int *pnType, rtDmeMessageHandler pfnHandler);
 
@@ -2140,6 +2175,7 @@ int RtDmeRegisterApplicationMessage(int *pnType, rtDmeMessageHandler pfnHandler)
  *
  * @return 0.
  * @ghidraAddress NTSC-U/C: 0x002be128
+ * @ghidraAddress PAL: 0x002c8098
  */
 int RtDmeExpireReassembly(void);
 

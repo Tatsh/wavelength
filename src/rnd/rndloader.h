@@ -78,6 +78,7 @@ public:
          * @param stream The stream to read from.
          * @param nVersion The version of the file.
          * @ghidraAddress NTSC-U/C: 0x0022c3e0
+         * @ghidraAddress PAL: 0x00235120
          */
         void Load(BinStream &stream, int nVersion);
 

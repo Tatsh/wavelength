@@ -164,6 +164,7 @@ public:
      * the slot as "game_fx_bank_slot". The slot is emptied first.
      *
      * @ghidraAddress NTSC-U/C: 0x00105120
+     * @ghidraAddress PAL: 0x00106808
      */
     void BeginAssetLoad() override;
 

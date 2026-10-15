@@ -80,6 +80,7 @@ private:
      * @param pMsg The message.
      * @return The result of UIScreen::HandleSelect().
      * @ghidraAddress NTSC-U/C: 0x0017f7f0
+     * @ghidraAddress PAL: 0x00183568
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 

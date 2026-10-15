@@ -28,6 +28,7 @@ public:
      * Release the stream. The buffer is not released.
      *
      * @ghidraAddress NTSC-U/C: 0x003a8ae0
+     * @ghidraAddress PAL: 0x004178b0
      */
     ~BufStream() override = default;
 
@@ -47,6 +48,7 @@ public:
      * @param pData The source.
      * @param nBytes The number of bytes.
      * @ghidraAddress NTSC-U/C: 0x002945a0
+     * @ghidraAddress PAL: 0x0029e1c8
      */
     void Write(const void *pData, int nBytes) override;
 
@@ -54,6 +56,7 @@ public:
      * Do nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x003a8b60
+     * @ghidraAddress PAL: 0x00417920
      */
     void Flush() override {
     }
@@ -64,6 +67,7 @@ public:
      * @param nOffset The offset in bytes.
      * @param eFrom The origin of the offset.
      * @ghidraAddress NTSC-U/C: 0x00294610
+     * @ghidraAddress PAL: 0x0029e238
      */
     void Seek(int nOffset, SeekType eFrom) override;
 
@@ -72,6 +76,7 @@ public:
      *
      * @return The position in bytes.
      * @ghidraAddress NTSC-U/C: 0x003a8b68
+     * @ghidraAddress PAL: 0x00417928
      */
     int Tell() override {
         return mPosition;
@@ -82,6 +87,7 @@ public:
      *
      * @return Whether no byte is left.
      * @ghidraAddress NTSC-U/C: 0x003a8b70
+     * @ghidraAddress PAL: 0x00417930
      */
     bool Eof() override {
         return mPosition == mSize;
@@ -92,6 +98,7 @@ public:
      *
      * @return Whether a transfer failed.
      * @ghidraAddress NTSC-U/C: 0x003a8b88
+     * @ghidraAddress PAL: 0x00417948
      */
     bool Fail() override {
         return mFail != 0;

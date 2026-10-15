@@ -238,6 +238,7 @@ public:
      *
      * @param stream The stream.
      * @ghidraAddress NTSC-U/C: 0x00272808
+     * @ghidraAddress PAL: 0x0027c3b8
      */
     void Save(BinStream &stream) const;
 
@@ -248,6 +249,7 @@ public:
      *
      * @param stream The stream.
      * @ghidraAddress NTSC-U/C: 0x00272938
+     * @ghidraAddress PAL: 0x0027c4a0
      */
     void Load(BinStream &stream);
 

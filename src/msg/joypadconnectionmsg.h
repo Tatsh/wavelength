@@ -56,6 +56,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x003a7370
+     * @ghidraAddress PAL: 0x00416050
      */
     Message *Clone() override {
         return new JoypadConnectionMsg(*this);
@@ -66,6 +67,7 @@ public:
      *
      * @return g_nJoypadConnectionMsgType.
      * @ghidraAddress NTSC-U/C: 0x003a73c8
+     * @ghidraAddress PAL: 0x004160a8
      */
     int Type() override {
         return g_nJoypadConnectionMsgType;
@@ -76,6 +78,7 @@ public:
      *
      * @return The literal `JoypadConnectionMsg`.
      * @ghidraAddress NTSC-U/C: 0x003a73d8
+     * @ghidraAddress PAL: 0x004160b8
      */
     const char *GetName() const override {
         return "JoypadConnectionMsg";

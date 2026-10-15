@@ -19,6 +19,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c5c8
+     * @ghidraAddress PAL: 0x0040b280
      */
     ~FindPlayerTask() override = default;
 

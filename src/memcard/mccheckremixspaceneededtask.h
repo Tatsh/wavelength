@@ -33,6 +33,7 @@ public:
      * Construct the steps, one listing for each remix directory.
      *
      * @ghidraAddress NTSC-U/C: 0x0015ef00
+     * @ghidraAddress PAL: 0x00160818
      */
     MCCheckRemixSpaceNeededTask();
 
@@ -45,6 +46,7 @@ public:
      * @param nFileSize The size of the file in bytes.
      * @param nOverwrite Non-zero when an existing file may be replaced.
      * @ghidraAddress NTSC-U/C: 0x0015f0e0
+     * @ghidraAddress PAL: 0x00160ba0
      */
     void Set(SaveSpaceUser *pUser, int nPort, const char *pszName, int nFileSize, int nOverwrite);
 
@@ -53,6 +55,7 @@ public:
      * listed.
      *
      * @ghidraAddress NTSC-U/C: 0x0015f278
+     * @ghidraAddress PAL: 0x00160df8
      */
     void OnDirListed() override;
 
@@ -73,6 +76,7 @@ protected:
      * End with the outcome, and report it to mUser.
      *
      * @ghidraAddress NTSC-U/C: 0x0015f4a8
+     * @ghidraAddress PAL: 0x00161138
      */
     void OnStop() override;
 };

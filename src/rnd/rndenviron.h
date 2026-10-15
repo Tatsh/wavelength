@@ -83,6 +83,7 @@ public:
      *
      * @return 1, to draw the children.
      * @ghidraAddress NTSC-U/C: 0x003812a0
+     * @ghidraAddress PAL: 0x003ef9b8
      */
     int DrawShowing() override {
         sCurrent = this;

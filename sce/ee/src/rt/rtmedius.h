@@ -483,6 +483,7 @@ void rtMediusSetServerAddress(const rtNetAddress *address);
  * Receive message 74 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301938
+ * @ghidraAddress PAL: 0x0030b9d0
  */
 int rtMediusOnErrorMessage(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -490,6 +491,7 @@ int rtMediusOnErrorMessage(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 0 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301968
+ * @ghidraAddress PAL: 0x0030ba00
  */
 int rtMediusOnWorldReport0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -497,6 +499,7 @@ int rtMediusOnWorldReport0(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 1 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301970
+ * @ghidraAddress PAL: 0x0030ba08
  */
 int rtMediusOnPlayerReport(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -504,6 +507,7 @@ int rtMediusOnPlayerReport(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 2 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301978
+ * @ghidraAddress PAL: 0x0030ba10
  */
 int rtMediusOnEndGameReport(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -511,6 +515,7 @@ int rtMediusOnEndGameReport(int connection, int type, int sender, rtDmeMessage *
  * Receive message 3 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301980
+ * @ghidraAddress PAL: 0x0030ba18
  */
 int rtMediusOnSessionBegin(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -518,6 +523,7 @@ int rtMediusOnSessionBegin(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 4 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301988
+ * @ghidraAddress PAL: 0x0030ba20
  */
 int rtMediusOnSessionBeginResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -525,6 +531,7 @@ int rtMediusOnSessionBeginResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 5 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301a10
+ * @ghidraAddress PAL: 0x0030baa8
  */
 int rtMediusOnSessionEnd(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -532,6 +539,7 @@ int rtMediusOnSessionEnd(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 6 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301a18
+ * @ghidraAddress PAL: 0x0030bab0
  */
 int rtMediusOnSessionEndResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -539,6 +547,7 @@ int rtMediusOnSessionEndResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 203 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301a60
+ * @ghidraAddress PAL: 0x0030baf8
  */
 int rtMediusOnMachineSignaturePost(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -546,6 +555,7 @@ int rtMediusOnMachineSignaturePost(int connection, int type, int sender, rtDmeMe
  * Receive message 7 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301a68
+ * @ghidraAddress PAL: 0x0030bb00
  */
 int rtMediusOnAccountLogin(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -553,6 +563,7 @@ int rtMediusOnAccountLogin(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 8 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301a70
+ * @ghidraAddress PAL: 0x0030bb08
  */
 int rtMediusOnAccountLoginResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -560,6 +571,7 @@ int rtMediusOnAccountLoginResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 21 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301af0
+ * @ghidraAddress PAL: 0x0030bb88
  */
 int rtMediusOnAccountLogout(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -567,6 +579,7 @@ int rtMediusOnAccountLogout(int connection, int type, int sender, rtDmeMessage *
  * Receive message 22 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301af8
+ * @ghidraAddress PAL: 0x0030bb90
  */
 int rtMediusOnAccountLogoutResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -574,6 +587,7 @@ int rtMediusOnAccountLogoutResponse(int connection, int type, int sender, rtDmeM
  * Receive message 9 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301b28
+ * @ghidraAddress PAL: 0x0030bbc0
  */
 int rtMediusOnAccountRegistration(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -581,6 +595,7 @@ int rtMediusOnAccountRegistration(int connection, int type, int sender, rtDmeMes
  * Receive message 10 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301b30
+ * @ghidraAddress PAL: 0x0030bbc8
  */
 int rtMediusOnAccountRegistrationResponse(int connection,
                                           int type,
@@ -591,6 +606,7 @@ int rtMediusOnAccountRegistrationResponse(int connection,
  * Receive message 11 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301b60
+ * @ghidraAddress PAL: 0x0030bbf8
  */
 int rtMediusOnAccountGetProfile(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -598,6 +614,7 @@ int rtMediusOnAccountGetProfile(int connection, int type, int sender, rtDmeMessa
  * Receive message 12 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301b68
+ * @ghidraAddress PAL: 0x0030bc00
  */
 int rtMediusOnAccountGetProfileResponse(int connection,
                                         int type,
@@ -608,6 +625,7 @@ int rtMediusOnAccountGetProfileResponse(int connection,
  * Receive message 13 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301b98
+ * @ghidraAddress PAL: 0x0030bc30
  */
 int rtMediusOnAccountUpdateProfile(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -615,6 +633,7 @@ int rtMediusOnAccountUpdateProfile(int connection, int type, int sender, rtDmeMe
  * Receive message 14 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301ba0
+ * @ghidraAddress PAL: 0x0030bc38
  */
 int rtMediusOnAccountUpdateProfileResponse(int connection,
                                            int type,
@@ -625,6 +644,7 @@ int rtMediusOnAccountUpdateProfileResponse(int connection,
  * Receive message 15 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301bd0
+ * @ghidraAddress PAL: 0x0030bc68
  */
 int rtMediusOnAccountUpdatePassword(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -632,6 +652,7 @@ int rtMediusOnAccountUpdatePassword(int connection, int type, int sender, rtDmeM
  * Receive message 16 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301bd8
+ * @ghidraAddress PAL: 0x0030bc70
  */
 int rtMediusOnChangePasswordResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -639,6 +660,7 @@ int rtMediusOnChangePasswordResponse(int connection, int type, int sender, rtDme
  * Receive message 17 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301c08
+ * @ghidraAddress PAL: 0x0030bca0
  */
 int rtMediusOnAccountUpdateStats(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -646,6 +668,7 @@ int rtMediusOnAccountUpdateStats(int connection, int type, int sender, rtDmeMess
  * Receive message 18 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301c10
+ * @ghidraAddress PAL: 0x0030bca8
  */
 int rtMediusOnAccountUpdateStatsResponse(int connection,
                                          int type,
@@ -656,6 +679,7 @@ int rtMediusOnAccountUpdateStatsResponse(int connection,
  * Receive message 25 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301c40
+ * @ghidraAddress PAL: 0x0030bcd8
  */
 int rtMediusOnAnonymousLogin(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -663,6 +687,7 @@ int rtMediusOnAnonymousLogin(int connection, int type, int sender, rtDmeMessage 
  * Receive message 26 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301c48
+ * @ghidraAddress PAL: 0x0030bce0
  */
 int rtMediusOnAnonymousLoginResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -670,6 +695,7 @@ int rtMediusOnAnonymousLoginResponse(int connection, int type, int sender, rtDme
  * Receive message 29 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301c78
+ * @ghidraAddress PAL: 0x0030bd10
  */
 int rtMediusOnCreateGameRequest0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -677,6 +703,7 @@ int rtMediusOnCreateGameRequest0(int connection, int type, int sender, rtDmeMess
  * Receive message 30 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301c80
+ * @ghidraAddress PAL: 0x0030bd18
  */
 int rtMediusOnCreateGameResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -684,6 +711,7 @@ int rtMediusOnCreateGameResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 31 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301cb0
+ * @ghidraAddress PAL: 0x0030bd48
  */
 int rtMediusOnCreateGameOnSelf(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -691,6 +719,7 @@ int rtMediusOnCreateGameOnSelf(int connection, int type, int sender, rtDmeMessag
  * Receive message 32 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301cb8
+ * @ghidraAddress PAL: 0x0030bd50
  */
 int rtMediusOnCreateGameOnSelfResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -698,6 +727,7 @@ int rtMediusOnCreateGameOnSelfResponse(int connection, int type, int sender, rtD
  * Receive message 33 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301ce8
+ * @ghidraAddress PAL: 0x0030bd80
  */
 int rtMediusOnCreateChannelRequest0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -705,6 +735,7 @@ int rtMediusOnCreateChannelRequest0(int connection, int type, int sender, rtDmeM
  * Receive message 34 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301cf0
+ * @ghidraAddress PAL: 0x0030bd88
  */
 int rtMediusOnCreateChannelResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -712,6 +743,7 @@ int rtMediusOnCreateChannelResponse(int connection, int type, int sender, rtDmeM
  * Receive message 35 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301d20
+ * @ghidraAddress PAL: 0x0030bdb8
  */
 int rtMediusOnJoinGameRequest0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -719,6 +751,7 @@ int rtMediusOnJoinGameRequest0(int connection, int type, int sender, rtDmeMessag
  * Receive message 36 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301d28
+ * @ghidraAddress PAL: 0x0030bdc0
  */
 int rtMediusOnJoinGameResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -726,6 +759,7 @@ int rtMediusOnJoinGameResponse(int connection, int type, int sender, rtDmeMessag
  * Receive message 37 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301d58
+ * @ghidraAddress PAL: 0x0030bdf0
  */
 int rtMediusOnJoinChannel(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -733,6 +767,7 @@ int rtMediusOnJoinChannel(int connection, int type, int sender, rtDmeMessage *me
  * Receive message 38 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301d60
+ * @ghidraAddress PAL: 0x0030bdf8
  */
 int rtMediusOnJoinChannelResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -740,6 +775,7 @@ int rtMediusOnJoinChannelResponse(int connection, int type, int sender, rtDmeMes
  * Receive message 39 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301d90
+ * @ghidraAddress PAL: 0x0030be28
  */
 int rtMediusOnJoinChannelFwd(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -747,6 +783,7 @@ int rtMediusOnJoinChannelFwd(int connection, int type, int sender, rtDmeMessage 
  * Receive message 40 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301d98
+ * @ghidraAddress PAL: 0x0030be30
  */
 int rtMediusOnJoinChannelFwdResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -754,6 +791,7 @@ int rtMediusOnJoinChannelFwdResponse(int connection, int type, int sender, rtDme
  * Receive message 41 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301da0
+ * @ghidraAddress PAL: 0x0030be38
  */
 int rtMediusOnGameList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -761,6 +799,7 @@ int rtMediusOnGameList(int connection, int type, int sender, rtDmeMessage *messa
  * Receive message 42 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301da8
+ * @ghidraAddress PAL: 0x0030be40
  */
 int rtMediusOnGameListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -768,6 +807,7 @@ int rtMediusOnGameListResponse(int connection, int type, int sender, rtDmeMessag
  * Receive message 43 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301dd8
+ * @ghidraAddress PAL: 0x0030be70
  */
 int rtMediusOnChannelList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -775,6 +815,7 @@ int rtMediusOnChannelList(int connection, int type, int sender, rtDmeMessage *me
  * Receive message 44 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301de0
+ * @ghidraAddress PAL: 0x0030be78
  */
 int rtMediusOnChannelListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -782,6 +823,7 @@ int rtMediusOnChannelListResponse(int connection, int type, int sender, rtDmeMes
  * Receive message 45 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301e10
+ * @ghidraAddress PAL: 0x0030bea8
  */
 int rtMediusOnLobbyWorldPlayerList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -789,6 +831,7 @@ int rtMediusOnLobbyWorldPlayerList(int connection, int type, int sender, rtDmeMe
  * Receive message 46 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301e18
+ * @ghidraAddress PAL: 0x0030beb0
  */
 int rtMediusOnLobbyWorldPlayerListResponse(int connection,
                                            int type,
@@ -799,6 +842,7 @@ int rtMediusOnLobbyWorldPlayerListResponse(int connection,
  * Receive message 47 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301e48
+ * @ghidraAddress PAL: 0x0030bee0
  */
 int rtMediusOnGameWorldPlayerList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -806,6 +850,7 @@ int rtMediusOnGameWorldPlayerList(int connection, int type, int sender, rtDmeMes
  * Receive message 48 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301e50
+ * @ghidraAddress PAL: 0x0030bee8
  */
 int rtMediusOnGameWorldPlayerListResponse(int connection,
                                           int type,
@@ -816,6 +861,7 @@ int rtMediusOnGameWorldPlayerListResponse(int connection,
  * Receive message 49 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301e80
+ * @ghidraAddress PAL: 0x0030bf18
  */
 int rtMediusOnPlayerInfo(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -823,6 +869,7 @@ int rtMediusOnPlayerInfo(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 50 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301e88
+ * @ghidraAddress PAL: 0x0030bf20
  */
 int rtMediusOnPlayerInfoResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -830,6 +877,7 @@ int rtMediusOnPlayerInfoResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 51 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301eb8
+ * @ghidraAddress PAL: 0x0030bf50
  */
 int rtMediusOnGameInfo0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -837,6 +885,7 @@ int rtMediusOnGameInfo0(int connection, int type, int sender, rtDmeMessage *mess
  * Receive message 52 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301ec0
+ * @ghidraAddress PAL: 0x0030bf58
  */
 int rtMediusOnGameInfoResponse0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -844,6 +893,7 @@ int rtMediusOnGameInfoResponse0(int connection, int type, int sender, rtDmeMessa
  * Receive message 53 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301ef0
+ * @ghidraAddress PAL: 0x0030bf88
  */
 int rtMediusOnChannelInfo(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -851,6 +901,7 @@ int rtMediusOnChannelInfo(int connection, int type, int sender, rtDmeMessage *me
  * Receive message 54 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301ef8
+ * @ghidraAddress PAL: 0x0030bf90
  */
 int rtMediusOnChannelInfoResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -858,6 +909,7 @@ int rtMediusOnChannelInfoResponse(int connection, int type, int sender, rtDmeMes
  * Receive message 55 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301f28
+ * @ghidraAddress PAL: 0x0030bfc0
  */
 int rtMediusOnFindWorldByName(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -865,6 +917,7 @@ int rtMediusOnFindWorldByName(int connection, int type, int sender, rtDmeMessage
  * Receive message 56 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301f30
+ * @ghidraAddress PAL: 0x0030bfc8
  */
 int rtMediusOnFindWorldByNameResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -872,6 +925,7 @@ int rtMediusOnFindWorldByNameResponse(int connection, int type, int sender, rtDm
  * Receive message 57 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301f60
+ * @ghidraAddress PAL: 0x0030bff8
  */
 int rtMediusOnFindPlayer(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -879,6 +933,7 @@ int rtMediusOnFindPlayer(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 58 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301f68
+ * @ghidraAddress PAL: 0x0030c000
  */
 int rtMediusOnFindPlayerResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -886,6 +941,7 @@ int rtMediusOnFindPlayerResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 59 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301f98
+ * @ghidraAddress PAL: 0x0030c030
  */
 int rtMediusOnChatMessage(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -893,6 +949,7 @@ int rtMediusOnChatMessage(int connection, int type, int sender, rtDmeMessage *me
  * Receive message 60 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301fa0
+ * @ghidraAddress PAL: 0x0030c038
  */
 int rtMediusOnChatFwdMessage(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -900,6 +957,7 @@ int rtMediusOnChatFwdMessage(int connection, int type, int sender, rtDmeMessage 
  * Receive message 61 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301fd0
+ * @ghidraAddress PAL: 0x0030c068
  */
 int rtMediusOnGetBuddyList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -907,6 +965,7 @@ int rtMediusOnGetBuddyList(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 62 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00301fd8
+ * @ghidraAddress PAL: 0x0030c070
  */
 int rtMediusOnGetBuddyListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -914,6 +973,7 @@ int rtMediusOnGetBuddyListResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 63 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302008
+ * @ghidraAddress PAL: 0x0030c0a0
  */
 int rtMediusOnAddToBuddyList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -921,6 +981,7 @@ int rtMediusOnAddToBuddyList(int connection, int type, int sender, rtDmeMessage 
  * Receive message 64 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302010
+ * @ghidraAddress PAL: 0x0030c0a8
  */
 int rtMediusOnAddToBuddyListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -928,6 +989,7 @@ int rtMediusOnAddToBuddyListResponse(int connection, int type, int sender, rtDme
  * Receive message 65 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302040
+ * @ghidraAddress PAL: 0x0030c0d8
  */
 int rtMediusOnRemoveFromBuddyList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -935,6 +997,7 @@ int rtMediusOnRemoveFromBuddyList(int connection, int type, int sender, rtDmeMes
  * Receive message 66 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302048
+ * @ghidraAddress PAL: 0x0030c0e0
  */
 int rtMediusOnRemoveFromBuddyListResponse(int connection,
                                           int type,
@@ -945,6 +1008,7 @@ int rtMediusOnRemoveFromBuddyListResponse(int connection,
  * Receive message 67 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302078
+ * @ghidraAddress PAL: 0x0030c110
  */
 int rtMediusOnAddToBuddyListConfirmationRequest0(int connection,
                                                  int type,
@@ -955,6 +1019,7 @@ int rtMediusOnAddToBuddyListConfirmationRequest0(int connection,
  * Receive message 68 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302080
+ * @ghidraAddress PAL: 0x0030c118
  */
 int rtMediusOnAddToBuddyListConfirmationResponse(int connection,
                                                  int type,
@@ -965,6 +1030,7 @@ int rtMediusOnAddToBuddyListConfirmationResponse(int connection,
  * Receive message 69 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003020b0
+ * @ghidraAddress PAL: 0x0030c148
  */
 int rtMediusOnAddToBuddyListFwdConfirmationRequest0(int connection,
                                                     int type,
@@ -975,6 +1041,7 @@ int rtMediusOnAddToBuddyListFwdConfirmationRequest0(int connection,
  * Receive message 70 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003020e0
+ * @ghidraAddress PAL: 0x0030c178
  */
 int rtMediusOnAddToBuddyListFwdConfirmationResponse0(int connection,
                                                      int type,
@@ -985,6 +1052,7 @@ int rtMediusOnAddToBuddyListFwdConfirmationResponse0(int connection,
  * Receive message 192 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003020e8
+ * @ghidraAddress PAL: 0x0030c180
  */
 int rtMediusOnGetIgnoreList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -992,6 +1060,7 @@ int rtMediusOnGetIgnoreList(int connection, int type, int sender, rtDmeMessage *
  * Receive message 193 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003020f0
+ * @ghidraAddress PAL: 0x0030c188
  */
 int rtMediusOnGetIgnoreListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -999,6 +1068,7 @@ int rtMediusOnGetIgnoreListResponse(int connection, int type, int sender, rtDmeM
  * Receive message 194 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302120
+ * @ghidraAddress PAL: 0x0030c1b8
  */
 int rtMediusOnAddToIgnoreList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1006,6 +1076,7 @@ int rtMediusOnAddToIgnoreList(int connection, int type, int sender, rtDmeMessage
  * Receive message 195 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302128
+ * @ghidraAddress PAL: 0x0030c1c0
  */
 int rtMediusOnAddToIgnoreListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1013,6 +1084,7 @@ int rtMediusOnAddToIgnoreListResponse(int connection, int type, int sender, rtDm
  * Receive message 196 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302158
+ * @ghidraAddress PAL: 0x0030c1f0
  */
 int rtMediusOnRemoveFromIgnoreList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1020,6 +1092,7 @@ int rtMediusOnRemoveFromIgnoreList(int connection, int type, int sender, rtDmeMe
  * Receive message 197 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302160
+ * @ghidraAddress PAL: 0x0030c1f8
  */
 int rtMediusOnRemoveFromIgnoreListResponse(int connection,
                                            int type,
@@ -1030,6 +1103,7 @@ int rtMediusOnRemoveFromIgnoreListResponse(int connection,
  * Receive message 71 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302190
+ * @ghidraAddress PAL: 0x0030c228
  */
 int rtMediusOnPolicy(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1037,6 +1111,7 @@ int rtMediusOnPolicy(int connection, int type, int sender, rtDmeMessage *message
  * Receive message 72 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302198
+ * @ghidraAddress PAL: 0x0030c230
  */
 int rtMediusOnPolicyResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1044,6 +1119,7 @@ int rtMediusOnPolicyResponse(int connection, int type, int sender, rtDmeMessage 
  * Receive message 73 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003021c8
+ * @ghidraAddress PAL: 0x0030c260
  */
 int rtMediusOnUpdateUserState(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1051,6 +1127,7 @@ int rtMediusOnUpdateUserState(int connection, int type, int sender, rtDmeMessage
  * Receive message 75 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003021d0
+ * @ghidraAddress PAL: 0x0030c268
  */
 int rtMediusOnGetAnnouncements(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1058,6 +1135,7 @@ int rtMediusOnGetAnnouncements(int connection, int type, int sender, rtDmeMessag
  * Receive message 76 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003021d8
+ * @ghidraAddress PAL: 0x0030c270
  */
 int rtMediusOnGetAllAnnouncements(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1065,6 +1143,7 @@ int rtMediusOnGetAllAnnouncements(int connection, int type, int sender, rtDmeMes
  * Receive message 77 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003021e0
+ * @ghidraAddress PAL: 0x0030c278
  */
 int rtMediusOnGetAnnouncementsResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1072,6 +1151,7 @@ int rtMediusOnGetAnnouncementsResponse(int connection, int type, int sender, rtD
  * Receive message 78 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302210
+ * @ghidraAddress PAL: 0x0030c2a8
  */
 int rtMediusOnSetGameListFilter0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1079,6 +1159,7 @@ int rtMediusOnSetGameListFilter0(int connection, int type, int sender, rtDmeMess
  * Receive message 79 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302218
+ * @ghidraAddress PAL: 0x0030c2b0
  */
 int rtMediusOnSetGameListFilterResponse0(int connection,
                                          int type,
@@ -1089,6 +1170,7 @@ int rtMediusOnSetGameListFilterResponse0(int connection,
  * Receive message 80 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302248
+ * @ghidraAddress PAL: 0x0030c2e0
  */
 int rtMediusOnClearGameListFilter0(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1096,6 +1178,7 @@ int rtMediusOnClearGameListFilter0(int connection, int type, int sender, rtDmeMe
  * Receive message 81 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302250
+ * @ghidraAddress PAL: 0x0030c2e8
  */
 int rtMediusOnClearGameListFilterResponse(int connection,
                                           int type,
@@ -1106,6 +1189,7 @@ int rtMediusOnClearGameListFilterResponse(int connection,
  * Receive message 82 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302280
+ * @ghidraAddress PAL: 0x0030c318
  */
 int rtMediusOnGetGameListFilter(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1113,6 +1197,7 @@ int rtMediusOnGetGameListFilter(int connection, int type, int sender, rtDmeMessa
  * Receive message 83 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302288
+ * @ghidraAddress PAL: 0x0030c320
  */
 int rtMediusOnGetGameListFilterResponse0(int connection,
                                          int type,
@@ -1123,6 +1208,7 @@ int rtMediusOnGetGameListFilterResponse0(int connection,
  * Receive message 84 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003022b8
+ * @ghidraAddress PAL: 0x0030c350
  */
 int rtMediusOnCreateClan(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1130,6 +1216,7 @@ int rtMediusOnCreateClan(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 85 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003022c0
+ * @ghidraAddress PAL: 0x0030c358
  */
 int rtMediusOnCreateClanResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1137,6 +1224,7 @@ int rtMediusOnCreateClanResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 86 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003022f0
+ * @ghidraAddress PAL: 0x0030c388
  */
 int rtMediusOnDisbandClan(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1144,6 +1232,7 @@ int rtMediusOnDisbandClan(int connection, int type, int sender, rtDmeMessage *me
  * Receive message 87 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003022f8
+ * @ghidraAddress PAL: 0x0030c390
  */
 int rtMediusOnDisbandClanResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1151,6 +1240,7 @@ int rtMediusOnDisbandClanResponse(int connection, int type, int sender, rtDmeMes
  * Receive message 88 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302328
+ * @ghidraAddress PAL: 0x0030c3c0
  */
 int rtMediusOnGetClanByID(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1158,6 +1248,7 @@ int rtMediusOnGetClanByID(int connection, int type, int sender, rtDmeMessage *me
  * Receive message 89 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302330
+ * @ghidraAddress PAL: 0x0030c3c8
  */
 int rtMediusOnGetClanByIDResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1165,6 +1256,7 @@ int rtMediusOnGetClanByIDResponse(int connection, int type, int sender, rtDmeMes
  * Receive message 90 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302360
+ * @ghidraAddress PAL: 0x0030c3f8
  */
 int rtMediusOnGetClanByName(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1172,6 +1264,7 @@ int rtMediusOnGetClanByName(int connection, int type, int sender, rtDmeMessage *
  * Receive message 91 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302368
+ * @ghidraAddress PAL: 0x0030c400
  */
 int rtMediusOnGetClanByNameResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1179,6 +1272,7 @@ int rtMediusOnGetClanByNameResponse(int connection, int type, int sender, rtDmeM
  * Receive message 92 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302398
+ * @ghidraAddress PAL: 0x0030c430
  */
 int rtMediusOnTransferClanLeadership(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1186,6 +1280,7 @@ int rtMediusOnTransferClanLeadership(int connection, int type, int sender, rtDme
  * Receive message 93 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003023a0
+ * @ghidraAddress PAL: 0x0030c438
  */
 int rtMediusOnTransferClanLeadershipResponse(int connection,
                                              int type,
@@ -1196,6 +1291,7 @@ int rtMediusOnTransferClanLeadershipResponse(int connection,
  * Receive message 94 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003023d0
+ * @ghidraAddress PAL: 0x0030c468
  */
 int rtMediusOnAddPlayerToClan(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1203,6 +1299,7 @@ int rtMediusOnAddPlayerToClan(int connection, int type, int sender, rtDmeMessage
  * Receive message 95 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003023d8
+ * @ghidraAddress PAL: 0x0030c470
  */
 int rtMediusOnAddPlayerToClanResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1210,6 +1307,7 @@ int rtMediusOnAddPlayerToClanResponse(int connection, int type, int sender, rtDm
  * Receive message 96 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302408
+ * @ghidraAddress PAL: 0x0030c4a0
  */
 int rtMediusOnRemovePlayerFromClan(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1217,6 +1315,7 @@ int rtMediusOnRemovePlayerFromClan(int connection, int type, int sender, rtDmeMe
  * Receive message 97 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302410
+ * @ghidraAddress PAL: 0x0030c4a8
  */
 int rtMediusOnRemovePlayerFromClanResponse(int connection,
                                            int type,
@@ -1227,6 +1326,7 @@ int rtMediusOnRemovePlayerFromClanResponse(int connection,
  * Receive message 98 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302440
+ * @ghidraAddress PAL: 0x0030c4d8
  */
 int rtMediusOnInvitePlayerToClan(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1234,6 +1334,7 @@ int rtMediusOnInvitePlayerToClan(int connection, int type, int sender, rtDmeMess
  * Receive message 99 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302448
+ * @ghidraAddress PAL: 0x0030c4e0
  */
 int rtMediusOnInvitePlayerToClanResponse(int connection,
                                          int type,
@@ -1244,6 +1345,7 @@ int rtMediusOnInvitePlayerToClanResponse(int connection,
  * Receive message 100 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302478
+ * @ghidraAddress PAL: 0x0030c510
  */
 int rtMediusOnCheckMyClanInvitations(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1251,6 +1353,7 @@ int rtMediusOnCheckMyClanInvitations(int connection, int type, int sender, rtDme
  * Receive message 101 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302480
+ * @ghidraAddress PAL: 0x0030c518
  */
 int rtMediusOnCheckMyClanInvitationsResponse(int connection,
                                              int type,
@@ -1261,6 +1364,7 @@ int rtMediusOnCheckMyClanInvitationsResponse(int connection,
  * Receive message 122 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003024b0
+ * @ghidraAddress PAL: 0x0030c548
  */
 int rtMediusOnGetClanInvitationsSent(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1268,6 +1372,7 @@ int rtMediusOnGetClanInvitationsSent(int connection, int type, int sender, rtDme
  * Receive message 123 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003024b8
+ * @ghidraAddress PAL: 0x0030c550
  */
 int rtMediusOnGetClanInvitationsSentResponse(int connection,
                                              int type,
@@ -1278,6 +1383,7 @@ int rtMediusOnGetClanInvitationsSentResponse(int connection,
  * Receive message 102 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003024e8
+ * @ghidraAddress PAL: 0x0030c580
  */
 int rtMediusOnRespondToClanInvitation(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1285,6 +1391,7 @@ int rtMediusOnRespondToClanInvitation(int connection, int type, int sender, rtDm
  * Receive message 103 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003024f0
+ * @ghidraAddress PAL: 0x0030c588
  */
 int rtMediusOnRespondToClanInvitationResponse(int connection,
                                               int type,
@@ -1295,6 +1402,7 @@ int rtMediusOnRespondToClanInvitationResponse(int connection,
  * Receive message 104 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302520
+ * @ghidraAddress PAL: 0x0030c5b8
  */
 int rtMediusOnRevokeClanInvitation(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1302,6 +1410,7 @@ int rtMediusOnRevokeClanInvitation(int connection, int type, int sender, rtDmeMe
  * Receive message 105 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302528
+ * @ghidraAddress PAL: 0x0030c5c0
  */
 int rtMediusOnRevokeClanInvitationResponse(int connection,
                                            int type,
@@ -1312,6 +1421,7 @@ int rtMediusOnRevokeClanInvitationResponse(int connection,
  * Receive message 106 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302558
+ * @ghidraAddress PAL: 0x0030c5f0
  */
 int rtMediusOnRequestClanTeamChallenge(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1319,6 +1429,7 @@ int rtMediusOnRequestClanTeamChallenge(int connection, int type, int sender, rtD
  * Receive message 107 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302560
+ * @ghidraAddress PAL: 0x0030c5f8
  */
 int rtMediusOnRequestClanTeamChallengeResponse(int connection,
                                                int type,
@@ -1329,6 +1440,7 @@ int rtMediusOnRequestClanTeamChallengeResponse(int connection,
  * Receive message 108 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302590
+ * @ghidraAddress PAL: 0x0030c628
  */
 int rtMediusOnGetMyClanMessages(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1336,6 +1448,7 @@ int rtMediusOnGetMyClanMessages(int connection, int type, int sender, rtDmeMessa
  * Receive message 109 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302598
+ * @ghidraAddress PAL: 0x0030c630
  */
 int rtMediusOnGetMyClanMessagesResponse(int connection,
                                         int type,
@@ -1346,6 +1459,7 @@ int rtMediusOnGetMyClanMessagesResponse(int connection,
  * Receive message 110 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003025c8
+ * @ghidraAddress PAL: 0x0030c660
  */
 int rtMediusOnSendClanMessage(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1353,6 +1467,7 @@ int rtMediusOnSendClanMessage(int connection, int type, int sender, rtDmeMessage
  * Receive message 111 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003025d0
+ * @ghidraAddress PAL: 0x0030c668
  */
 int rtMediusOnSendClanMessageResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1360,6 +1475,7 @@ int rtMediusOnSendClanMessageResponse(int connection, int type, int sender, rtDm
  * Receive message 112 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302600
+ * @ghidraAddress PAL: 0x0030c698
  */
 int rtMediusOnModifyClanMessage(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1367,6 +1483,7 @@ int rtMediusOnModifyClanMessage(int connection, int type, int sender, rtDmeMessa
  * Receive message 113 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302608
+ * @ghidraAddress PAL: 0x0030c6a0
  */
 int rtMediusOnModifyClanMessageResponse(int connection,
                                         int type,
@@ -1377,6 +1494,7 @@ int rtMediusOnModifyClanMessageResponse(int connection,
  * Receive message 114 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302638
+ * @ghidraAddress PAL: 0x0030c6d0
  */
 int rtMediusOnDeleteClanMessage(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1384,6 +1502,7 @@ int rtMediusOnDeleteClanMessage(int connection, int type, int sender, rtDmeMessa
  * Receive message 115 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302640
+ * @ghidraAddress PAL: 0x0030c6d8
  */
 int rtMediusOnDeleteClanMessageResponse(int connection,
                                         int type,
@@ -1394,6 +1513,7 @@ int rtMediusOnDeleteClanMessageResponse(int connection,
  * Receive message 116 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302670
+ * @ghidraAddress PAL: 0x0030c708
  */
 int rtMediusOnRespondToClanTeamChallenge(int connection,
                                          int type,
@@ -1404,6 +1524,7 @@ int rtMediusOnRespondToClanTeamChallenge(int connection,
  * Receive message 117 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302678
+ * @ghidraAddress PAL: 0x0030c710
  */
 int rtMediusOnRespondToClanTeamChallengeResponse(int connection,
                                                  int type,
@@ -1414,6 +1535,7 @@ int rtMediusOnRespondToClanTeamChallengeResponse(int connection,
  * Receive message 118 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003026a8
+ * @ghidraAddress PAL: 0x0030c740
  */
 int rtMediusOnRevokeClanTeamChallenge(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1421,6 +1543,7 @@ int rtMediusOnRevokeClanTeamChallenge(int connection, int type, int sender, rtDm
  * Receive message 119 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003026b0
+ * @ghidraAddress PAL: 0x0030c748
  */
 int rtMediusOnRevokeClanTeamChallengeResponse(int connection,
                                               int type,
@@ -1431,6 +1554,7 @@ int rtMediusOnRevokeClanTeamChallengeResponse(int connection,
  * Receive message 124 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003026e0
+ * @ghidraAddress PAL: 0x0030c778
  */
 int rtMediusOnGetMyClans(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1438,6 +1562,7 @@ int rtMediusOnGetMyClans(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 125 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003026e8
+ * @ghidraAddress PAL: 0x0030c780
  */
 int rtMediusOnGetMyClansResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1445,6 +1570,7 @@ int rtMediusOnGetMyClansResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 130 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302718
+ * @ghidraAddress PAL: 0x0030c7b0
  */
 int rtMediusOnGetClanTeamChallenges(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1452,6 +1578,7 @@ int rtMediusOnGetClanTeamChallenges(int connection, int type, int sender, rtDmeM
  * Receive message 131 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302720
+ * @ghidraAddress PAL: 0x0030c7b8
  */
 int rtMediusOnGetClanTeamChallengesResponse(int connection,
                                             int type,
@@ -1462,6 +1589,7 @@ int rtMediusOnGetClanTeamChallengesResponse(int connection,
  * Receive message 128 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302750
+ * @ghidraAddress PAL: 0x0030c7e8
  */
 int rtMediusOnConfirmClanTeamChallenge(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1469,6 +1597,7 @@ int rtMediusOnConfirmClanTeamChallenge(int connection, int type, int sender, rtD
  * Receive message 129 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302758
+ * @ghidraAddress PAL: 0x0030c7f0
  */
 int rtMediusOnConfirmClanTeamChallengeResponse(int connection,
                                                int type,
@@ -1479,6 +1608,7 @@ int rtMediusOnConfirmClanTeamChallengeResponse(int connection,
  * Receive message 126 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302788
+ * @ghidraAddress PAL: 0x0030c820
  */
 int rtMediusOnGetAllClanMessages(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1486,6 +1616,7 @@ int rtMediusOnGetAllClanMessages(int connection, int type, int sender, rtDmeMess
  * Receive message 127 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302790
+ * @ghidraAddress PAL: 0x0030c828
  */
 int rtMediusOnGetAllClanMessagesResponse(int connection,
                                          int type,
@@ -1496,6 +1627,7 @@ int rtMediusOnGetAllClanMessagesResponse(int connection,
  * Receive message 120 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003027c0
+ * @ghidraAddress PAL: 0x0030c858
  */
 int rtMediusOnGetClanTeamChallengeHistory(int connection,
                                           int type,
@@ -1506,6 +1638,7 @@ int rtMediusOnGetClanTeamChallengeHistory(int connection,
  * Receive message 121 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003027c8
+ * @ghidraAddress PAL: 0x0030c860
  */
 int rtMediusOnGetClanTeamChallengeHistoryResponse(int connection,
                                                   int type,
@@ -1516,6 +1649,7 @@ int rtMediusOnGetClanTeamChallengeHistoryResponse(int connection,
  * Receive message 132 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003027f8
+ * @ghidraAddress PAL: 0x0030c890
  */
 int rtMediusOnUpdateClanStats(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1523,6 +1657,7 @@ int rtMediusOnUpdateClanStats(int connection, int type, int sender, rtDmeMessage
  * Receive message 133 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302800
+ * @ghidraAddress PAL: 0x0030c898
  */
 int rtMediusOnUpdateClanStatsResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1530,6 +1665,7 @@ int rtMediusOnUpdateClanStatsResponse(int connection, int type, int sender, rtDm
  * Receive message 27 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302830
+ * @ghidraAddress PAL: 0x0030c8c8
  */
 int rtMediusOnGetMyIP(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1537,6 +1673,7 @@ int rtMediusOnGetMyIP(int connection, int type, int sender, rtDmeMessage *messag
  * Receive message 28 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302838
+ * @ghidraAddress PAL: 0x0030c8d0
  */
 int rtMediusOnGetMyIPResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1544,6 +1681,7 @@ int rtMediusOnGetMyIPResponse(int connection, int type, int sender, rtDmeMessage
  * Receive message 134 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302868
+ * @ghidraAddress PAL: 0x0030c900
  */
 int rtMediusOnVersionServer(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1551,6 +1689,7 @@ int rtMediusOnVersionServer(int connection, int type, int sender, rtDmeMessage *
  * Receive message 135 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302870
+ * @ghidraAddress PAL: 0x0030c908
  */
 int rtMediusOnVersionServerResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1558,6 +1697,7 @@ int rtMediusOnVersionServerResponse(int connection, int type, int sender, rtDmeM
  * Receive message 136 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003028a0
+ * @ghidraAddress PAL: 0x0030c938
  */
 int rtMediusOnGetWorldSecurityLevel(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1565,6 +1705,7 @@ int rtMediusOnGetWorldSecurityLevel(int connection, int type, int sender, rtDmeM
  * Receive message 137 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003028a8
+ * @ghidraAddress PAL: 0x0030c940
  */
 int rtMediusOnGetWorldSecurityLevelResponse(int connection,
                                             int type,
@@ -1575,6 +1716,7 @@ int rtMediusOnGetWorldSecurityLevelResponse(int connection,
  * Receive message 138 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003028d8
+ * @ghidraAddress PAL: 0x0030c970
  */
 int rtMediusOnBanPlayer(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1582,6 +1724,7 @@ int rtMediusOnBanPlayer(int connection, int type, int sender, rtDmeMessage *mess
  * Receive message 139 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003028e0
+ * @ghidraAddress PAL: 0x0030c978
  */
 int rtMediusOnBanPlayerResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1589,6 +1732,7 @@ int rtMediusOnBanPlayerResponse(int connection, int type, int sender, rtDmeMessa
  * Receive message 19 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302910
+ * @ghidraAddress PAL: 0x0030c9a8
  */
 int rtMediusOnAccountDelete(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1596,6 +1740,7 @@ int rtMediusOnAccountDelete(int connection, int type, int sender, rtDmeMessage *
  * Receive message 20 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302918
+ * @ghidraAddress PAL: 0x0030c9b0
  */
 int rtMediusOnAccountDeleteResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1603,6 +1748,7 @@ int rtMediusOnAccountDeleteResponse(int connection, int type, int sender, rtDmeM
  * Receive message 23 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302948
+ * @ghidraAddress PAL: 0x0030c9e0
  */
 int rtMediusOnAccountGetId(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1610,6 +1756,7 @@ int rtMediusOnAccountGetId(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 24 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302950
+ * @ghidraAddress PAL: 0x0030c9e8
  */
 int rtMediusOnAccountGetIdResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1617,6 +1764,7 @@ int rtMediusOnAccountGetIdResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 140 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302980
+ * @ghidraAddress PAL: 0x0030ca18
  */
 int rtMediusOnGetLocations(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1624,6 +1772,7 @@ int rtMediusOnGetLocations(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 141 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302988
+ * @ghidraAddress PAL: 0x0030ca20
  */
 int rtMediusOnGetLocationsResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1631,6 +1780,7 @@ int rtMediusOnGetLocationsResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 142 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003029b8
+ * @ghidraAddress PAL: 0x0030ca50
  */
 int rtMediusOnPickLocation(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1638,6 +1788,7 @@ int rtMediusOnPickLocation(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 143 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003029c0
+ * @ghidraAddress PAL: 0x0030ca58
  */
 int rtMediusOnPickLocationResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1645,6 +1796,7 @@ int rtMediusOnPickLocationResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 144 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003029f0
+ * @ghidraAddress PAL: 0x0030ca88
  */
 int rtMediusOnGetClanMemberList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1652,6 +1804,7 @@ int rtMediusOnGetClanMemberList(int connection, int type, int sender, rtDmeMessa
  * Receive message 145 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003029f8
+ * @ghidraAddress PAL: 0x0030ca90
  */
 int rtMediusOnGetClanMemberListResponse(int connection,
                                         int type,
@@ -1662,6 +1815,7 @@ int rtMediusOnGetClanMemberListResponse(int connection,
  * Receive message 146 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302a28
+ * @ghidraAddress PAL: 0x0030cac0
  */
 int rtMediusOnLadderPosition(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1669,6 +1823,7 @@ int rtMediusOnLadderPosition(int connection, int type, int sender, rtDmeMessage 
  * Receive message 147 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302a30
+ * @ghidraAddress PAL: 0x0030cac8
  */
 int rtMediusOnLadderPositionResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1676,6 +1831,7 @@ int rtMediusOnLadderPositionResponse(int connection, int type, int sender, rtDme
  * Receive message 204 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302a60
+ * @ghidraAddress PAL: 0x0030caf8
  */
 int rtMediusOnLadderPositionFast(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1683,6 +1839,7 @@ int rtMediusOnLadderPositionFast(int connection, int type, int sender, rtDmeMess
  * Receive message 205 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302a68
+ * @ghidraAddress PAL: 0x0030cb00
  */
 int rtMediusOnLadderPositionFastResponse(int connection,
                                          int type,
@@ -1693,6 +1850,7 @@ int rtMediusOnLadderPositionFastResponse(int connection,
  * Receive message 148 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302a98
+ * @ghidraAddress PAL: 0x0030cb30
  */
 int rtMediusOnLadderList(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1700,6 +1858,7 @@ int rtMediusOnLadderList(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 149 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302aa0
+ * @ghidraAddress PAL: 0x0030cb38
  */
 int rtMediusOnLadderListResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1707,6 +1866,7 @@ int rtMediusOnLadderListResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 150 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302ad0
+ * @ghidraAddress PAL: 0x0030cb68
  */
 int rtMediusOnChatToggle(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1714,6 +1874,7 @@ int rtMediusOnChatToggle(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 151 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302ad8
+ * @ghidraAddress PAL: 0x0030cb70
  */
 int rtMediusOnChatToggleResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1721,6 +1882,7 @@ int rtMediusOnChatToggleResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 152 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302b08
+ * @ghidraAddress PAL: 0x0030cba0
  */
 int rtMediusOnTextFilter(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1728,6 +1890,7 @@ int rtMediusOnTextFilter(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 153 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302b10
+ * @ghidraAddress PAL: 0x0030cba8
  */
 int rtMediusOnTextFilterResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1735,6 +1898,7 @@ int rtMediusOnTextFilterResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 154 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302b40
+ * @ghidraAddress PAL: 0x0030cbd8
  */
 int rtMediusOnServerReassignGameMediusWorldID(int connection,
                                               int type,
@@ -1745,6 +1909,7 @@ int rtMediusOnServerReassignGameMediusWorldID(int connection,
  * Receive message 155 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302b70
+ * @ghidraAddress PAL: 0x0030cc08
  */
 int rtMediusOnGetTotalGames(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1752,6 +1917,7 @@ int rtMediusOnGetTotalGames(int connection, int type, int sender, rtDmeMessage *
  * Receive message 156 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302b78
+ * @ghidraAddress PAL: 0x0030cc10
  */
 int rtMediusOnGetTotalGamesResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1759,6 +1925,7 @@ int rtMediusOnGetTotalGamesResponse(int connection, int type, int sender, rtDmeM
  * Receive message 157 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302ba8
+ * @ghidraAddress PAL: 0x0030cc40
  */
 int rtMediusOnGetTotalChannels(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1766,6 +1933,7 @@ int rtMediusOnGetTotalChannels(int connection, int type, int sender, rtDmeMessag
  * Receive message 158 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302bb0
+ * @ghidraAddress PAL: 0x0030cc48
  */
 int rtMediusOnGetTotalChannelsResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1773,6 +1941,7 @@ int rtMediusOnGetTotalChannelsResponse(int connection, int type, int sender, rtD
  * Receive message 159 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302be0
+ * @ghidraAddress PAL: 0x0030cc78
  */
 int rtMediusOnGetLobbyPlayerNames(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1780,6 +1949,7 @@ int rtMediusOnGetLobbyPlayerNames(int connection, int type, int sender, rtDmeMes
  * Receive message 160 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302be8
+ * @ghidraAddress PAL: 0x0030cc80
  */
 int rtMediusOnGetLobbyPlayerNamesResponse(int connection,
                                           int type,
@@ -1790,6 +1960,7 @@ int rtMediusOnGetLobbyPlayerNamesResponse(int connection,
  * Receive message 161 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302c18
+ * @ghidraAddress PAL: 0x0030ccb0
  */
 int rtMediusOnGetTotalUsers(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1797,6 +1968,7 @@ int rtMediusOnGetTotalUsers(int connection, int type, int sender, rtDmeMessage *
  * Receive message 162 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302c20
+ * @ghidraAddress PAL: 0x0030ccb8
  */
 int rtMediusOnGetTotalUsersResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1804,6 +1976,7 @@ int rtMediusOnGetTotalUsersResponse(int connection, int type, int sender, rtDmeM
  * Receive message 163 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302c50
+ * @ghidraAddress PAL: 0x0030cce8
  */
 int rtMediusOnSetLocalizationParams(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1811,6 +1984,7 @@ int rtMediusOnSetLocalizationParams(int connection, int type, int sender, rtDmeM
  * Receive message 164 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302c58
+ * @ghidraAddress PAL: 0x0030ccf0
  */
 int rtMediusOnSetLocalizationParamsResponse(int connection,
                                             int type,
@@ -1821,6 +1995,7 @@ int rtMediusOnSetLocalizationParamsResponse(int connection,
  * Receive message 198 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302c88
+ * @ghidraAddress PAL: 0x0030cd20
  */
 int rtMediusOnSetMessageAsRead(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1828,6 +2003,7 @@ int rtMediusOnSetMessageAsRead(int connection, int type, int sender, rtDmeMessag
  * Receive message 199 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302c90
+ * @ghidraAddress PAL: 0x0030cd28
  */
 int rtMediusOnSetMessageAsReadResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1835,6 +2011,7 @@ int rtMediusOnSetMessageAsReadResponse(int connection, int type, int sender, rtD
  * Receive message 165 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302cc0
+ * @ghidraAddress PAL: 0x0030cd58
  */
 int rtMediusOnFileCreate(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1842,6 +2019,7 @@ int rtMediusOnFileCreate(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 166 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302cc8
+ * @ghidraAddress PAL: 0x0030cd60
  */
 int rtMediusOnFileCreateResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1849,6 +2027,7 @@ int rtMediusOnFileCreateResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 167 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302cf8
+ * @ghidraAddress PAL: 0x0030cd90
  */
 int rtMediusOnFileUpload(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1856,6 +2035,7 @@ int rtMediusOnFileUpload(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 168 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302d00
+ * @ghidraAddress PAL: 0x0030cd98
  */
 int rtMediusOnFileUploadResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1863,6 +2043,7 @@ int rtMediusOnFileUploadResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 170 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302e58
+ * @ghidraAddress PAL: 0x0030cef0
  */
 int rtMediusOnFileClose(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1870,6 +2051,7 @@ int rtMediusOnFileClose(int connection, int type, int sender, rtDmeMessage *mess
  * Receive message 171 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302e60
+ * @ghidraAddress PAL: 0x0030cef8
  */
 int rtMediusOnFileCloseResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1877,6 +2059,7 @@ int rtMediusOnFileCloseResponse(int connection, int type, int sender, rtDmeMessa
  * Receive message 172 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302e90
+ * @ghidraAddress PAL: 0x0030cf28
  */
 int rtMediusOnFileDownload(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1884,6 +2067,7 @@ int rtMediusOnFileDownload(int connection, int type, int sender, rtDmeMessage *m
  * Receive message 173 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302e98
+ * @ghidraAddress PAL: 0x0030cf30
  */
 int rtMediusOnFileDownloadResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1891,6 +2075,7 @@ int rtMediusOnFileDownloadResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 174 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302ec8
+ * @ghidraAddress PAL: 0x0030cf60
  */
 int rtMediusOnFileDownloadStream(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1898,6 +2083,7 @@ int rtMediusOnFileDownloadStream(int connection, int type, int sender, rtDmeMess
  * Receive message 175 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302ed0
+ * @ghidraAddress PAL: 0x0030cf68
  */
 int rtMediusOnFileDownloadStreamResponse(int connection,
                                          int type,
@@ -1908,6 +2094,7 @@ int rtMediusOnFileDownloadStreamResponse(int connection,
  * Receive message 176 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302f00
+ * @ghidraAddress PAL: 0x0030cf98
  */
 int rtMediusOnFileDelete(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1915,6 +2102,7 @@ int rtMediusOnFileDelete(int connection, int type, int sender, rtDmeMessage *mes
  * Receive message 177 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302f08
+ * @ghidraAddress PAL: 0x0030cfa0
  */
 int rtMediusOnFileDeleteResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1922,6 +2110,7 @@ int rtMediusOnFileDeleteResponse(int connection, int type, int sender, rtDmeMess
  * Receive message 178 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302f38
+ * @ghidraAddress PAL: 0x0030cfd0
  */
 int rtMediusOnFileListFiles(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1929,6 +2118,7 @@ int rtMediusOnFileListFiles(int connection, int type, int sender, rtDmeMessage *
  * Receive message 179 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302f40
+ * @ghidraAddress PAL: 0x0030cfd8
  */
 int rtMediusOnFileListFilesResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1936,6 +2126,7 @@ int rtMediusOnFileListFilesResponse(int connection, int type, int sender, rtDmeM
  * Receive message 180 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302f70
+ * @ghidraAddress PAL: 0x0030d008
  */
 int rtMediusOnFileUpdateAttributes(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1943,6 +2134,7 @@ int rtMediusOnFileUpdateAttributes(int connection, int type, int sender, rtDmeMe
  * Receive message 181 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302f78
+ * @ghidraAddress PAL: 0x0030d010
  */
 int rtMediusOnFileUpdateAttributesResponse(int connection,
                                            int type,
@@ -1953,6 +2145,7 @@ int rtMediusOnFileUpdateAttributesResponse(int connection,
  * Receive message 182 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302fa8
+ * @ghidraAddress PAL: 0x0030d040
  */
 int rtMediusOnFileGetAttributes(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1960,6 +2153,7 @@ int rtMediusOnFileGetAttributes(int connection, int type, int sender, rtDmeMessa
  * Receive message 183 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302fb0
+ * @ghidraAddress PAL: 0x0030d048
  */
 int rtMediusOnFileGetAttributesResponse(int connection,
                                         int type,
@@ -1970,6 +2164,7 @@ int rtMediusOnFileGetAttributesResponse(int connection,
  * Receive message 184 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302fe0
+ * @ghidraAddress PAL: 0x0030d078
  */
 int rtMediusOnFileUpdateMetaData(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1977,6 +2172,7 @@ int rtMediusOnFileUpdateMetaData(int connection, int type, int sender, rtDmeMess
  * Receive message 185 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00302fe8
+ * @ghidraAddress PAL: 0x0030d080
  */
 int rtMediusOnFileUpdateMetaDataResponse(int connection,
                                          int type,
@@ -1987,6 +2183,7 @@ int rtMediusOnFileUpdateMetaDataResponse(int connection,
  * Receive message 186 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303018
+ * @ghidraAddress PAL: 0x0030d0b0
  */
 int rtMediusOnFileGetMetaData(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -1994,6 +2191,7 @@ int rtMediusOnFileGetMetaData(int connection, int type, int sender, rtDmeMessage
  * Receive message 187 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303020
+ * @ghidraAddress PAL: 0x0030d0b8
  */
 int rtMediusOnFileGetMetaDataResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -2001,6 +2199,7 @@ int rtMediusOnFileGetMetaDataResponse(int connection, int type, int sender, rtDm
  * Receive message 188 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303050
+ * @ghidraAddress PAL: 0x0030d0e8
  */
 int rtMediusOnFileSearchByMetaData(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -2008,6 +2207,7 @@ int rtMediusOnFileSearchByMetaData(int connection, int type, int sender, rtDmeMe
  * Receive message 189 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303058
+ * @ghidraAddress PAL: 0x0030d0f0
  */
 int rtMediusOnFileSearchByMetaDataResponse(int connection,
                                            int type,
@@ -2018,6 +2218,7 @@ int rtMediusOnFileSearchByMetaDataResponse(int connection,
  * Receive message 190 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303088
+ * @ghidraAddress PAL: 0x0030d120
  */
 int rtMediusOnFileCancelOperation(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -2025,6 +2226,7 @@ int rtMediusOnFileCancelOperation(int connection, int type, int sender, rtDmeMes
  * Receive message 191 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303090
+ * @ghidraAddress PAL: 0x0030d128
  */
 int rtMediusOnFileCancelOperationResponse(int connection,
                                           int type,
@@ -2035,6 +2237,7 @@ int rtMediusOnFileCancelOperationResponse(int connection,
  * Receive message 200 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003030c0
+ * @ghidraAddress PAL: 0x0030d158
  */
 int rtMediusOnGetUniverseInformation(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -2042,6 +2245,7 @@ int rtMediusOnGetUniverseInformation(int connection, int type, int sender, rtDme
  * Receive message 201 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x003030f0
+ * @ghidraAddress PAL: 0x0030d188
  */
 int rtMediusOnUniverseNewsResponse(int connection, int type, int sender, rtDmeMessage *message);
 
@@ -2049,6 +2253,7 @@ int rtMediusOnUniverseNewsResponse(int connection, int type, int sender, rtDmeMe
  * Receive message 202 of the lobby server and report the size of its record.
  *
  * @ghidraAddress NTSC-U/C: 0x00303120
+ * @ghidraAddress PAL: 0x0030d1b8
  */
 int rtMediusOnUniverseStatusListResponse(int connection,
                                          int type,
@@ -2060,6 +2265,7 @@ int rtMediusOnUniverseStatusListResponse(int connection,
  * the request.
  *
  * @ghidraAddress NTSC-U/C: 0x00302d08
+ * @ghidraAddress PAL: 0x0030cda0
  */
 int rtMediusOnFileUploadServerReq(int connection, int type, int sender, rtDmeMessage *message);
 

@@ -153,6 +153,7 @@ PrnStream &operator<<(PrnStream &stream, const DateTime &date);
  * @param date The date.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x00288c68
+ * @ghidraAddress PAL: 0x00292518
  */
 BinStream &operator<<(BinStream &stream, const DateTime &date);
 

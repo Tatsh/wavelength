@@ -29,6 +29,7 @@ public:
      *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x001ae320
+     * @ghidraAddress PAL: 0x001b6e80
      */
     explicit SaveSettingsScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
         mOverwriteStatus = 1;
@@ -40,6 +41,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00364560
+     * @ghidraAddress PAL: 0x003d2cd8
      */
     static UIScreen *New(DataArray *pData) {
         return new SaveSettingsScreen(pData);
@@ -50,6 +52,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x003645a0
+     * @ghidraAddress PAL: 0x003d2d18
      */
     const char *Title() override {
         return "";

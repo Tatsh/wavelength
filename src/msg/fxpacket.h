@@ -67,6 +67,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0034bf90
+     * @ghidraAddress PAL: 0x003b93c0
      */
     Message *Clone() override {
         return new FXPacket(*this);
@@ -77,6 +78,7 @@ public:
      *
      * @return g_nFXPacketType.
      * @ghidraAddress NTSC-U/C: 0x0034c018
+     * @ghidraAddress PAL: 0x003b9448
      */
     int Type() override {
         return g_nFXPacketType;
@@ -87,6 +89,7 @@ public:
      *
      * @return The literal `FXPacket`.
      * @ghidraAddress NTSC-U/C: 0x0034c028
+     * @ghidraAddress PAL: 0x003b9458
      */
     const char *GetName() const override {
         return "FXPacket";

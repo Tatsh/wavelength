@@ -39,6 +39,7 @@ public:
      *
      * @param nTrack The track index.
      * @ghidraAddress NTSC-U/C: 0x003a5a58
+     * @ghidraAddress PAL: 0x00414738
      */
     void OnNewTrack([[maybe_unused]] unsigned char nTrack) override {
     }
@@ -55,6 +56,7 @@ public:
      * Ignore the end of the file.
      *
      * @ghidraAddress NTSC-U/C: 0x003a5a60
+     * @ghidraAddress PAL: 0x00414740
      */
     void OnAllDone() override {
     }
@@ -78,6 +80,7 @@ public:
      * @param nTick The tick.
      * @param nMicrosecondsPerBeat The new tempo.
      * @ghidraAddress NTSC-U/C: 0x003a5a68
+     * @ghidraAddress PAL: 0x00414748
      */
     void OnTempo([[maybe_unused]] int nTick, [[maybe_unused]] int nMicrosecondsPerBeat) override {
     }
@@ -89,6 +92,7 @@ public:
      * @param pszText The text.
      * @param nType The meta event type.
      * @ghidraAddress NTSC-U/C: 0x003a5a70
+     * @ghidraAddress PAL: 0x00414750
      */
     void OnText([[maybe_unused]] int nTick,
                 [[maybe_unused]] const char *pszText,
@@ -102,6 +106,7 @@ public:
      * @param nNumerator The beats per bar.
      * @param nDenominator The beat unit.
      * @ghidraAddress NTSC-U/C: 0x003a5a78
+     * @ghidraAddress PAL: 0x00414758
      */
     void OnTimeSignature([[maybe_unused]] int nTick,
                          [[maybe_unused]] int nNumerator,

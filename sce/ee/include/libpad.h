@@ -121,6 +121,7 @@ scePadDmaFrame *scePadGetDmaStr(int nPort, int nSlot);
  * @param pData Receives the report, 32 bytes at most.
  * @return The report size, or zero when the port is closed.
  * @ghidraAddress NTSC-U/C: 0x00312230
+ * @ghidraAddress PAL: 0x0037e7e0
  */
 int scePadRead(int nPort, int nSlot, unsigned char *pData);
 

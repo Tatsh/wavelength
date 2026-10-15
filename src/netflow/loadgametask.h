@@ -13,6 +13,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039a590
+     * @ghidraAddress PAL: 0x00408e18
      */
     ~LoadGameTask() override = default;
 

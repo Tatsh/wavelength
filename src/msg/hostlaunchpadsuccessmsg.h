@@ -81,6 +81,7 @@ public:
      *
      * @param stream The stream to write to.
      * @ghidraAddress NTSC-U/C: 0x00268f98
+     * @ghidraAddress PAL: 0x00272ba0
      */
     void PrintExtra(PrnStream &stream) const override;
 

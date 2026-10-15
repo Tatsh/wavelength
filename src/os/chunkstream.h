@@ -101,6 +101,7 @@ public:
      * Do nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x002955f0
+     * @ghidraAddress PAL: 0x0029f208
      */
     void Flush() override {
     }
@@ -138,6 +139,7 @@ public:
      *
      * @return mFail.
      * @ghidraAddress NTSC-U/C: 0x00295960
+     * @ghidraAddress PAL: 0x0029f578
      */
     bool Fail() override;
 
@@ -174,6 +176,7 @@ private:
      * Point mData at the block just read, inflating it first when the stream is compressed.
      *
      * @ghidraAddress NTSC-U/C: 0x00295b00
+     * @ghidraAddress PAL: 0x0029f718
      */
     void DecodeBlock();
 

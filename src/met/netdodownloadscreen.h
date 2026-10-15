@@ -100,6 +100,7 @@ private:
      * @param pMsg The message.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x0017fc20
+     * @ghidraAddress PAL: 0x00183e20
      */
     bool HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg);
 };

@@ -170,6 +170,7 @@ public:
      *
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x0034f078
+     * @ghidraAddress PAL: 0x003bc4a0
      */
     int GetLength() override {
         return 0;

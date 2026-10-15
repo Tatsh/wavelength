@@ -97,6 +97,7 @@ public:
      *
      * @return The position.
      * @ghidraAddress NTSC-U/C: 0x0028f270
+     * @ghidraAddress PAL: 0x00298c38
      */
     int Tell() override {
         return mTell;
@@ -116,6 +117,7 @@ public:
      *
      * @return Whether the position equals the size.
      * @ghidraAddress NTSC-U/C: 0x0028f340
+     * @ghidraAddress PAL: 0x00298d08
      */
     bool Eof() override {
         return mTell == mSize;
@@ -126,6 +128,7 @@ public:
      *
      * @return Whether an operation failed.
      * @ghidraAddress NTSC-U/C: 0x0028f358
+     * @ghidraAddress PAL: 0x00298d20
      */
     bool Fail() override {
         return mFail != 0;
@@ -136,6 +139,7 @@ public:
      *
      * @return The size in bytes.
      * @ghidraAddress NTSC-U/C: 0x0028f360
+     * @ghidraAddress PAL: 0x00298d28
      */
     int Size() override {
         return mSize;
@@ -146,6 +150,7 @@ public:
      *
      * @return The size in bytes, or 0 for a file that is not a `.gz` file opened to read.
      * @ghidraAddress NTSC-U/C: 0x0028f368
+     * @ghidraAddress PAL: 0x00298d30
      */
     int UncompressedSize() override {
         return mUncompressedSize;

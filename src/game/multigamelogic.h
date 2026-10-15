@@ -208,6 +208,7 @@ public:
      *
      * @param pTrack The track.
      * @ghidraAddress NTSC-U/C: 0x001255c8
+     * @ghidraAddress PAL: 0x00126d48
      */
     void OnPhraseEnded(Track *pTrack) override;
 
@@ -216,6 +217,7 @@ public:
      *
      * @param pTrack The track.
      * @ghidraAddress NTSC-U/C: 0x0033c0d0
+     * @ghidraAddress PAL: 0x003a9608
      */
     void OnPhraseMissed([[maybe_unused]] Track *pTrack) override {
     }

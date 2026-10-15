@@ -77,6 +77,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x00335a48
+     * @ghidraAddress PAL: 0x003a2ff8
      */
     Message *Clone() override {
         return new FinalScorePacket(*this);
@@ -87,6 +88,7 @@ public:
      *
      * @return g_nFinalScorePacketType.
      * @ghidraAddress NTSC-U/C: 0x00335ab8
+     * @ghidraAddress PAL: 0x003a3068
      */
     int Type() override {
         return g_nFinalScorePacketType;
@@ -97,6 +99,7 @@ public:
      *
      * @return The literal `FinalScorePacket`.
      * @ghidraAddress NTSC-U/C: 0x00335ac8
+     * @ghidraAddress PAL: 0x003a3078
      */
     const char *GetName() const override {
         return "FinalScorePacket";
@@ -116,6 +119,7 @@ public:
      *
      * @param stream The stream to read from.
      * @ghidraAddress NTSC-U/C: 0x0010c490
+     * @ghidraAddress PAL: 0x0010dbc8
      */
     void restoreGuts(BinStream &stream) override;
 

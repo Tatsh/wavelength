@@ -25,6 +25,7 @@ public:
      * Inline.
      *
      * @ghidraAddress NTSC-U/C: 0x003974d0
+     * @ghidraAddress PAL: 0x00405d48
      */
     virtual ~NetInet() {
     }
@@ -87,6 +88,7 @@ public:
      * The default does nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x00397500
+     * @ghidraAddress PAL: 0x00405d88
      */
     virtual void RequestPowerOff() {
     }

@@ -59,6 +59,7 @@ protected:
      * Clear the names and send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00267018
+     * @ghidraAddress PAL: 0x00270b40
      */
     void OnStart() override;
 };

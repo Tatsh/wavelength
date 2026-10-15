@@ -310,6 +310,7 @@ int StartThread(int thid, void *arg);
  * Ends and deletes the calling thread. Does not return.
  *
  * @ghidraAddress NTSC-U/C: 0x00316d60
+ * @ghidraAddress PAL: 0x00383620
  */
 void ExitDeleteThread(void);
 
@@ -319,6 +320,7 @@ void ExitDeleteThread(void);
  * @param thid Thread identifier.
  * @return Non-negative on success, negative on failure.
  * @ghidraAddress NTSC-U/C: 0x00316d70
+ * @ghidraAddress PAL: 0x00383630
  */
 int TerminateThread(int thid);
 

@@ -56,6 +56,7 @@ public:
      * The base body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x00395f58
+     * @ghidraAddress PAL: 0x00404600
      */
     virtual void ResetSpu();
 
@@ -63,6 +64,7 @@ public:
      * Vtable slot 4. Release the sound output.
      *
      * @ghidraAddress NTSC-U/C: 0x00395f60
+     * @ghidraAddress PAL: 0x004047f0
      */
     virtual ~Synth();
 
@@ -124,6 +126,7 @@ public:
      *
      * @return The stream, or null.
      * @ghidraAddress NTSC-U/C: 0x00395f90
+     * @ghidraAddress PAL: 0x00404610
      */
     virtual StreamPlayer *GetStream();
 
@@ -134,6 +137,7 @@ public:
      *
      * @param pStream The stream, or null.
      * @ghidraAddress NTSC-U/C: 0x00395f98
+     * @ghidraAddress PAL: 0x00404618
      */
     virtual void SetStream(StreamPlayer *pStream);
 
@@ -145,6 +149,7 @@ public:
      * @param pData The data.
      * @param nSize The size of the data in bytes.
      * @ghidraAddress NTSC-U/C: 0x00395fa0
+     * @ghidraAddress PAL: 0x00404620
      */
     virtual void SendStreamData(const void *pData, int nSize);
 
@@ -155,6 +160,7 @@ public:
      *
      * @return The room in bytes.
      * @ghidraAddress NTSC-U/C: 0x00395fa8
+     * @ghidraAddress PAL: 0x00404628
      */
     virtual int GetStreamStatus();
 
@@ -209,6 +215,7 @@ public:
      * @param nSlot The bank slot.
      * @return 1 when the slot has a bank or a pending load, otherwise 0.
      * @ghidraAddress NTSC-U/C: 0x00395fb0
+     * @ghidraAddress PAL: 0x00404630
      */
     virtual int IsBankPresent(unsigned short nSlot);
 
@@ -241,6 +248,7 @@ public:
      *
      * @param bSurround Whether the inversion is allowed.
      * @ghidraAddress NTSC-U/C: 0x00395fb8
+     * @ghidraAddress PAL: 0x00404638
      */
     virtual void SetSurround(bool bSurround);
 
@@ -251,6 +259,7 @@ public:
      *
      * @param bMono Whether the output is mono.
      * @ghidraAddress NTSC-U/C: 0x00395fc0
+     * @ghidraAddress PAL: 0x00404640
      */
     virtual void SetMono(bool bMono);
 
@@ -262,6 +271,7 @@ public:
      *
      * @param fLag The lag in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00395fc8
+     * @ghidraAddress PAL: 0x00404648
      */
     virtual void SetLag(float fLag);
 
@@ -272,6 +282,7 @@ public:
      *
      * @return The lag in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x00395fd0
+     * @ghidraAddress PAL: 0x00404650
      */
     virtual float GetLag();
 
@@ -283,6 +294,7 @@ public:
      *
      * @param fPosition The position, 1 for the top of the sweep.
      * @ghidraAddress NTSC-U/C: 0x00395fe0
+     * @ghidraAddress PAL: 0x00404660
      */
     virtual void SetSoftFxSweep(float fPosition);
 
@@ -294,6 +306,7 @@ public:
      *
      * @param fValue The value, from -1 to 1.
      * @ghidraAddress NTSC-U/C: 0x00395fe8
+     * @ghidraAddress PAL: 0x00404668
      */
     virtual void SetSoftFxModulation(float fValue);
 
@@ -304,6 +317,7 @@ public:
      *
      * @param filter The settings.
      * @ghidraAddress NTSC-U/C: 0x00395ff0
+     * @ghidraAddress PAL: 0x00404670
      */
     virtual void SetSoftFxFilter(const SoftFxFilter &filter);
 
@@ -333,6 +347,7 @@ public:
      *
      * @param fLevel The level, 1 for full.
      * @ghidraAddress NTSC-U/C: 0x00395ff8
+     * @ghidraAddress PAL: 0x00404678
      */
     virtual void SetOutputLevel(float fLevel);
 
@@ -343,6 +358,7 @@ public:
      *
      * @return The level, 1 for full.
      * @ghidraAddress NTSC-U/C: 0x00396000
+     * @ghidraAddress PAL: 0x00404680
      */
     virtual float GetOutputLevel();
 
@@ -355,6 +371,7 @@ public:
      *
      * @param nInput The input pair, 0 to 2.
      * @ghidraAddress NTSC-U/C: 0x00396010
+     * @ghidraAddress PAL: 0x00404690
      */
     virtual void SetSoftFxInput(int nInput);
 
@@ -365,6 +382,7 @@ public:
      *
      * @param nOn Whether the buses feed the hardware effects.
      * @ghidraAddress NTSC-U/C: 0x00396018
+     * @ghidraAddress PAL: 0x00404698
      */
     virtual void SetBusToCoreFx(int nOn);
 
@@ -376,6 +394,7 @@ public:
      *
      * @param nOn Whether the buses feed the software effect.
      * @ghidraAddress NTSC-U/C: 0x00396020
+     * @ghidraAddress PAL: 0x004046a0
      */
     virtual void SetBusToSoftFx(int nOn);
 
@@ -383,6 +402,7 @@ public:
      * Vtable slot 35. The base body is empty, and the purpose is not yet recovered.
      *
      * @ghidraAddress NTSC-U/C: 0x00396028
+     * @ghidraAddress PAL: 0x004046a8
      */
     virtual void VirtualSlot35();
 
@@ -393,6 +413,7 @@ public:
      *
      * @param messages The messages, each packed as SendPackedMessage() takes it.
      * @ghidraAddress NTSC-U/C: 0x00396030
+     * @ghidraAddress PAL: 0x004046b0
      */
     virtual void SendMessages(const std::vector<unsigned int> &messages);
 
@@ -407,6 +428,7 @@ public:
      * @param pfnCallback The routine.
      * @param nArg The argument passed to the routine.
      * @ghidraAddress NTSC-U/C: 0x00396038
+     * @ghidraAddress PAL: 0x004046b8
      */
     virtual void QueueCallback(Callback pfnCallback, int nArg);
 };

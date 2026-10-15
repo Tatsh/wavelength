@@ -16,6 +16,7 @@
  * @ghidraAddress NTSC-U/C: 0x00358a20
  * @ghidraAddress PAL: 0x003c5dd0
  * @ghidraAddress NTSC-U/C: 0x0035f3a0
+ * @ghidraAddress PAL: 0x003c7a08
  * @ghidraAddress NTSC-U/C: 0x0035f3e0
  * @ghidraAddress PAL: 0x003cd668
  * @ghidraAddress NTSC-U/C: 0x0035f810

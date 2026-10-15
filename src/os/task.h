@@ -85,6 +85,7 @@ protected:
      * Begin the work. Start() calls this member.
      *
      * @ghidraAddress NTSC-U/C: 0x003ab810
+     * @ghidraAddress PAL: 0x0041a570
      */
     virtual void OnStart() {
     }
@@ -93,6 +94,7 @@ protected:
      * Abandon the work. Stop() calls this member for a running task.
      *
      * @ghidraAddress NTSC-U/C: 0x003ab818
+     * @ghidraAddress PAL: 0x0041a578
      */
     virtual void OnStop() {
     }
@@ -101,6 +103,7 @@ protected:
      * Advance the work, and set mState to kStateDone when it finishes.
      *
      * @ghidraAddress NTSC-U/C: 0x003ab820
+     * @ghidraAddress PAL: 0x0041a580
      */
     virtual void OnPoll() {
     }

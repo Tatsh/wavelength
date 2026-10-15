@@ -61,6 +61,7 @@ public:
      * The name follows the base.
      *
      * @ghidraAddress NTSC-U/C: 0x002747d8
+     * @ghidraAddress PAL: 0x0027e2f8
      */
     void ReleaseType() override;
 

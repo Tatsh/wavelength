@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c2d8
+     * @ghidraAddress PAL: 0x0040af90
      */
     ~GetChannelsTask() override = default;
 
@@ -29,6 +30,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response.
      * @ghidraAddress NTSC-U/C: 0x00264890
+     * @ghidraAddress PAL: 0x0026e1a0
      */
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusChannelListResponse *pResponse);

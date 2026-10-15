@@ -75,6 +75,7 @@ protected:
      * Clear sTask.
      *
      * @ghidraAddress NTSC-U/C: 0x00263240
+     * @ghidraAddress PAL: 0x0026c400
      */
     void OnStop() override;
 };

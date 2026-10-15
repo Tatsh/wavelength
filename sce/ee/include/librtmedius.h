@@ -725,6 +725,7 @@ typedef struct {
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fa010
+ * @ghidraAddress PAL: 0x00304010
  */
 int rtMediusInitialize(const rtMediusInitParams *params, int *status);
 
@@ -734,6 +735,7 @@ int rtMediusInitialize(const rtMediusInitParams *params, int *status);
  * @param version Receives the text.
  * @return 0.
  * @ghidraAddress NTSC-U/C: 0x002fa0f0
+ * @ghidraAddress PAL: 0x003040f0
  */
 int rtMediusGetVersion(char *version);
 
@@ -742,6 +744,7 @@ int rtMediusGetVersion(char *version);
  *
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fa198
+ * @ghidraAddress PAL: 0x00304198
  */
 int rtMediusClose(void);
 
@@ -750,6 +753,7 @@ int rtMediusClose(void);
  *
  * @return 0, or an error code once the connection failed.
  * @ghidraAddress NTSC-U/C: 0x002fa4f8
+ * @ghidraAddress PAL: 0x003044f8
  */
 int rtMediusUpdate(void);
 
@@ -777,6 +781,7 @@ void rtMediusSetConnectParams(rtMediusConnectParams *params,
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fa1c0
+ * @ghidraAddress PAL: 0x003041c0
  */
 int rtMediusConnect(const rtMediusConnectParams *params, rtMediusConnectStatus *status);
 
@@ -785,116 +790,216 @@ int rtMediusConnect(const rtMediusConnectParams *params, rtMediusConnectStatus *
  *
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fa490
+ * @ghidraAddress PAL: 0x00304490
  */
 int rtMediusDisconnect(void);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa620 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa620
+ * @ghidraAddress PAL: 0x00304620
+ */
 int rtMediusSessionBegin(rtMediusSessionBeginRequest *request,
                          rtMediusSessionBeginCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa6c0 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa6c0
+ * @ghidraAddress PAL: 0x003046c0
+ */
 int rtMediusSessionEnd(rtMediusRequest *request, rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa118 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa118
+ * @ghidraAddress PAL: 0x00304118
+ */
 int rtMediusVersionServer(rtMediusRequest *request, rtMediusVersionCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fab98 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fab98
+ * @ghidraAddress PAL: 0x00304b98
+ */
 int rtMediusTextFilter(rtMediusTextFilterRequest *request, rtMediusTextFilterCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa840 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa840
+ * @ghidraAddress PAL: 0x00304840
+ */
 int rtMediusAccountRegistration(rtMediusAccountRegistrationRequest *request,
                                 rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002faa60 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002faa60
+ * @ghidraAddress PAL: 0x00304a60
+ */
 int rtMediusAccountDelete(rtMediusAccountDeleteRequest *request, rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002faad8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002faad8
+ * @ghidraAddress PAL: 0x00304ad8
+ */
 int rtMediusAnonymousLogin(rtMediusAnonymousLoginRequest *request, rtMediusLoginCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa778 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa778
+ * @ghidraAddress PAL: 0x00304778
+ */
 int rtMediusAccountLogin(rtMediusAccountLoginRequest *request, rtMediusLoginCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa9b0 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa9b0
+ * @ghidraAddress PAL: 0x003049b0
+ */
 int rtMediusUpdateStats(rtMediusUpdateStatsRequest *request, rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fa8f8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fa8f8
+ * @ghidraAddress PAL: 0x003048f8
+ */
 int rtMediusChangePassword(rtMediusChangePasswordRequest *request, rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb8f0 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb8f0
+ * @ghidraAddress PAL: 0x003058f0
+ */
 int rtMediusAccountGetId(rtMediusAccountGetIdRequest *request,
                          rtMediusAccountGetIdCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb138 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb138
+ * @ghidraAddress PAL: 0x00305138
+ */
 int rtMediusPlayerInfo(rtMediusIdRequest *request, rtMediusPlayerInfoCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb1e0 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb1e0
+ * @ghidraAddress PAL: 0x003051e0
+ */
 int rtMediusChannelInfo(rtMediusIdRequest *request, rtMediusChannelInfoCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb650 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb650
+ * @ghidraAddress PAL: 0x00305650
+ */
 int rtMediusGetAnnouncements(rtMediusIdRequest *request, rtMediusAnnouncementCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb3f8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb3f8
+ * @ghidraAddress PAL: 0x003053f8
+ */
 int rtMediusGetPolicy(rtMediusIdRequest *request, rtMediusPolicyCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002faf58 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002faf58
+ * @ghidraAddress PAL: 0x00304f58
+ */
 int rtMediusChannelList(rtMediusChannelListRequest *request, rtMediusChannelListCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002faeb8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002faeb8
+ * @ghidraAddress PAL: 0x00304eb8
+ */
 int rtMediusGameList(rtMediusGameListRequest *request, rtMediusGameListCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002faff8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002faff8
+ * @ghidraAddress PAL: 0x00304ff8
+ */
 int rtMediusChannelPlayers(rtMediusIdRequest *request, rtMediusChannelPlayersCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb098 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb098
+ * @ghidraAddress PAL: 0x00305098
+ */
 int rtMediusGamePlayers(rtMediusIdRequest *request, rtMediusGamePlayersCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fbae8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fbae8
+ * @ghidraAddress PAL: 0x00305ee0
+ */
 int rtMediusLadderList(rtMediusLadderListRequest *request, rtMediusLadderListCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb9a8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb9a8
+ * @ghidraAddress PAL: 0x003059a8
+ */
 int rtMediusLadderPosition(rtMediusLadderPositionRequest *request,
                            rtMediusLadderPositionCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fba48 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fba48
+ * @ghidraAddress PAL: 0x00305a48
+ */
 int rtMediusLadderPositionFast(rtMediusLadderPositionFastRequest *request,
                                rtMediusLadderPositionCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb280 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb280
+ * @ghidraAddress PAL: 0x00305280
+ */
 int rtMediusFindPlayer(rtMediusFindPlayerRequest *request, rtMediusFindPlayerCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fae10 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fae10
+ * @ghidraAddress PAL: 0x00304e10
+ */
 int rtMediusJoinChannel(rtMediusJoinChannelRequest *request, rtMediusJoinChannelCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fac48 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fac48
+ * @ghidraAddress PAL: 0x00304c48
+ */
 int rtMediusCreateChannel(rtMediusCreateChannelRequest *request,
                           rtMediusCreateChannelCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb798 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb798
+ * @ghidraAddress PAL: 0x00305798
+ */
 int rtMediusClearGameListFilter(rtMediusIdRequest *request, rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002fb6f8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002fb6f8
+ * @ghidraAddress PAL: 0x003056f8
+ */
 int rtMediusSetGameListFilter(rtMediusGameListFilterRequest *request, rtMediusCallback callback);
 
 /** @ghidraAddress NTSC-U/C: 0x002f97b8 */
 int rtMediusFileGetAttributes(rtMediusFileRequest *request,
                               rtMediusFileAttributesCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f95d0 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f95d0
+ * @ghidraAddress PAL: 0x00303540
+ */
 int rtMediusFileDownload(rtMediusFileRequest *request, rtMediusFileTransferCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f93f0 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f93f0
+ * @ghidraAddress PAL: 0x00303360
+ */
 int rtMediusFileCreate(rtMediusFileCreateRequest *request, rtMediusFileCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f9488 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f9488
+ * @ghidraAddress PAL: 0x003033f8
+ */
 int rtMediusFileUpload(rtMediusFileUploadRequest *request, rtMediusFileTransferCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f9538 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f9538
+ * @ghidraAddress PAL: 0x003034a8
+ */
 int rtMediusFileClose(rtMediusFileRequest *request, rtMediusFileCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f9710 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f9710
+ * @ghidraAddress PAL: 0x003037b8
+ */
 int rtMediusFileList(rtMediusFileListRequest *request, rtMediusFileCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f9670 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f9670
+ * @ghidraAddress PAL: 0x003035e0
+ */
 int rtMediusFileDelete(rtMediusFileRequest *request, rtMediusFileDeleteCallback callback);
 
 /**
@@ -904,6 +1009,7 @@ int rtMediusFileDelete(rtMediusFileRequest *request, rtMediusFileDeleteCallback 
  * @param callback Receives an rtMediusJoinGameResponse.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fad00
+ * @ghidraAddress PAL: 0x00304d00
  */
 int rtMediusJoinGame(rtMediusJoinGameRequest *request, rtMediusJoinGameCallback callback);
 
@@ -913,6 +1019,7 @@ int rtMediusJoinGame(rtMediusJoinGameRequest *request, rtMediusJoinGameCallback 
  * @param state The report.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fa598
+ * @ghidraAddress PAL: 0x00304598
  */
 int rtMediusUpdateUserState(rtMediusUserState *state);
 
@@ -922,6 +1029,7 @@ int rtMediusUpdateUserState(rtMediusUserState *state);
  * @param report The report.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fb520
+ * @ghidraAddress PAL: 0x00305520
  */
 int rtMediusWorldReport(rtMediusWorldReportData *report);
 
@@ -931,6 +1039,7 @@ int rtMediusWorldReport(rtMediusWorldReportData *report);
  * @param report The report.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fb498
+ * @ghidraAddress PAL: 0x00305498
  */
 int rtMediusPlayerReport(rtMediusPlayerReportData *report);
 
@@ -940,6 +1049,7 @@ int rtMediusPlayerReport(rtMediusPlayerReportData *report);
  * @param report The report.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fb5b8
+ * @ghidraAddress PAL: 0x003055b8
  */
 int rtMediusEndGameReport(rtMediusEndGameReportData *report);
 
@@ -960,6 +1070,7 @@ int rtMediusSendChatMessage(rtMediusChatRequest *request);
  * @param callback Receives the response.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002fb850
+ * @ghidraAddress PAL: 0x00305850
  */
 int rtMediusBanPlayer(rtMediusBanPlayerRequest *request, rtMediusCallback callback);
 

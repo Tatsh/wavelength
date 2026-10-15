@@ -121,6 +121,7 @@ public:
      * @param nFlags The access the caller needs.
      * @return The bitmap.
      * @ghidraAddress NTSC-U/C: 0x00391088
+     * @ghidraAddress PAL: 0x003ff790
      */
     virtual RndBitmap *LockBitmap([[maybe_unused]] int nFlags) {
         return &mBitmap;
@@ -132,6 +133,7 @@ public:
      * The base body does nothing. The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x00391090
+     * @ghidraAddress PAL: 0x003ff798
      */
     virtual void UnlockBitmap() {
     }

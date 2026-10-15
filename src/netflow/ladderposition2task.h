@@ -19,6 +19,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039bc30
+     * @ghidraAddress PAL: 0x0040a878
      */
     ~LadderPosition2Task() override = default;
 

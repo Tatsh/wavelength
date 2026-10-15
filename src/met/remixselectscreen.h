@@ -44,6 +44,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x0035c518
+     * @ghidraAddress PAL: 0x003ca5f0
      */
     static UIScreen *New(DataArray *pData) {
         return new RemixSelectScreen(pData);

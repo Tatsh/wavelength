@@ -107,12 +107,12 @@ static inline int RtDmeVoiceIsStarted(void) {
     return g_nDmeVoiceStarts > 0 && g_bDmeVoiceStarted == 1;
 }
 
-// NTSC-U/C: 0x002af950
+// NTSC-U/C: 0x002af950, PAL: 0x002b98c0
 static int RtDmeVoiceResult(int nResult, int nError) {
     return nResult != 0 ? nError : 0;
 }
 
-// NTSC-U/C: 0x002afa90
+// NTSC-U/C: 0x002afa90, PAL: 0x002b9a00
 static int RtDmeVoiceCreateDevice(RtDmeDevice **ppDevice, const RtDmeDeviceSettings *pSettings) {
     RtDmeDevice *pDevice;
     int nResult;
@@ -123,7 +123,7 @@ static int RtDmeVoiceCreateDevice(RtDmeDevice **ppDevice, const RtDmeDeviceSetti
     return nResult;
 }
 
-// NTSC-U/C: 0x002afadc
+// NTSC-U/C: 0x002afadc, PAL: 0x002b9a4c
 static int RtDmeVoiceConnectDevice(RtDmeDevice *pDevice,
                                    const char *pszAddress,
                                    int nPort,
@@ -131,53 +131,53 @@ static int RtDmeVoiceConnectDevice(RtDmeDevice *pDevice,
     return rtDmeDeviceMapPort(pDevice, pszAddress, nPort, pfnStream);
 }
 
-// NTSC-U/C: 0x002afaf8
+// NTSC-U/C: 0x002afaf8, PAL: 0x002b9a68
 static int
 RtDmeVoiceOpenChannel(RtDmeDevice *pDevice, int nMode, int *pnChannel, const char *pszName) {
     return rtDmeDeviceOpenConnection(pDevice, nMode, pnChannel, pszName);
 }
 
-// NTSC-U/C: 0x002afb14
+// NTSC-U/C: 0x002afb14, PAL: 0x002b9a84
 static void RtDmeVoiceStopDevice(RtDmeDevice *pDevice) {
     rtDmeDeviceStop(pDevice);
 }
 
-// NTSC-U/C: 0x002afb30
+// NTSC-U/C: 0x002afb30, PAL: 0x002b9aa0
 static int RtDmeVoiceSetDeviceClient(RtDmeDevice *pDevice, int nClient) {
     return rtDmeDeviceSetLocalId(pDevice, nClient);
 }
 
-// NTSC-U/C: 0x002afb4c
+// NTSC-U/C: 0x002afb4c, PAL: 0x002b9abc
 static int RtDmeVoiceGetDevicePeer(RtDmeDevice *pDevice, RtDmeDevicePeer *pPeer) {
     return rtDmeDeviceGetLocalInfo(pDevice, pPeer);
 }
 
-// NTSC-U/C: 0x002afb68
+// NTSC-U/C: 0x002afb68, PAL: 0x002b9ad8
 static int RtDmeVoiceAddDevicePeer(RtDmeDevice *pDevice, const RtDmeDevicePeer *pPeer) {
     return rtDmeDeviceAddPeer(pDevice, pPeer) != 0 ? 0 : -1;
 }
 
-// NTSC-U/C: 0x002afb90
+// NTSC-U/C: 0x002afb90, PAL: 0x002b9b00
 static int RtDmeVoiceRemoveDevicePeer(RtDmeDevice *pDevice, int nClient) {
     return rtDmeDeviceRemovePeer(pDevice, nClient);
 }
 
-// NTSC-U/C: 0x002afbac
+// NTSC-U/C: 0x002afbac, PAL: 0x002b9b1c
 static int RtDmeVoiceSelectChannel(RtDmeDevice *pDevice, int nChannel) {
     return rtDmeDeviceDeselectConnection(pDevice, nChannel);
 }
 
-// NTSC-U/C: 0x002afbc8
+// NTSC-U/C: 0x002afbc8, PAL: 0x002b9b38
 static int RtDmeVoiceGetDeviceStatus(RtDmeDevice *pDevice, RtDmeDeviceStatus *pStatus) {
     return rtDmeDeviceGetStatus(pDevice, pStatus);
 }
 
-// NTSC-U/C: 0x002afbe4
+// NTSC-U/C: 0x002afbe4, PAL: 0x002b9b54
 static int RtDmeVoiceUpdateDevice(RtDmeDevice *pDevice) {
     return rtDmeDeviceUpdate(pDevice);
 }
 
-// NTSC-U/C: 0x002afc00
+// NTSC-U/C: 0x002afc00, PAL: 0x002b9b70
 static void RtDmeVoiceDestroyDevice(RtDmeDevice *pDevice) {
     if (pDevice != NULL) {
         rtDmeDeviceDestroy(pDevice);
@@ -235,7 +235,7 @@ void rtNetFormatAddress(unsigned int value, char *address) {
     *address = '\0';
 }
 
-// NTSC-U/C: 0x002aeb98
+// NTSC-U/C: 0x002aeb98, PAL: 0x002b8b08
 static int RtDmeVoiceGet(int nConnection, RtDmeVoice **ppVoice) {
     if (!RtDmeVoiceIsStarted()) {
         return RT_DME_RESULT_NOT_STARTED;
@@ -247,7 +247,7 @@ static int RtDmeVoiceGet(int nConnection, RtDmeVoice **ppVoice) {
     return 0;
 }
 
-// NTSC-U/C: 0x002aec20
+// NTSC-U/C: 0x002aec20, PAL: 0x002b8b90
 static int RtDmeVoiceIsReady(const RtDmeVoice *pVoice) {
     if (pVoice == NULL || pVoice->bOpen != 1) {
         return 0;
@@ -255,7 +255,7 @@ static int RtDmeVoiceIsReady(const RtDmeVoice *pVoice) {
     return RtDmeIsConnectionIndex(pVoice->nConnection) == 1;
 }
 
-// NTSC-U/C: 0x002aec68
+// NTSC-U/C: 0x002aec68, PAL: 0x002b8bd8
 static int RtDmeVoiceGetReady(int nConnection, RtDmeVoice **ppVoice) {
     int nResult;
 
@@ -272,7 +272,7 @@ static int RtDmeVoiceGetReady(int nConnection, RtDmeVoice **ppVoice) {
     return RtDmeVoiceIsReady(*ppVoice) == 1 ? 0 : kVoiceNotReady;
 }
 
-// NTSC-U/C: 0x002aed10
+// NTSC-U/C: 0x002aed10, PAL: 0x002b8c80
 static int RtDmeVoiceFindByDevice(const RtDmeDevice *pDevice, RtDmeVoice **ppVoice) {
     RtDmeVoice *pVoice;
     int nResult;
@@ -298,7 +298,7 @@ static int RtDmeVoiceFindByDevice(const RtDmeDevice *pDevice, RtDmeVoice **ppVoi
     return RtDmeVoiceIsReady(*ppVoice) == 1 ? 0 : kVoiceNotReady;
 }
 
-// NTSC-U/C: 0x002aedd0
+// NTSC-U/C: 0x002aedd0, PAL: 0x002b8d40
 static int RtDmeVoiceGetSlot(RtDmeVoice *pVoice, int nClient, RtDmeVoiceSlot **ppSlot) {
     RtDmeVoiceSlot *pSlot;
 
@@ -311,7 +311,7 @@ static int RtDmeVoiceGetSlot(RtDmeVoice *pVoice, int nClient, RtDmeVoiceSlot **p
     return pSlot != NULL ? 0 : kVoiceNotReady;
 }
 
-// NTSC-U/C: 0x002aeef0
+// NTSC-U/C: 0x002aeef0, PAL: 0x002b8e60
 static int RtDmeVoiceIsPortUsed(int nPort, unsigned char *pbUsed) {
     RtDmeVoice *pVoice;
     int nResult;
@@ -338,7 +338,7 @@ static int RtDmeVoiceIsPortUsed(int nPort, unsigned char *pbUsed) {
     return 0;
 }
 
-// NTSC-U/C: 0x002aee58
+// NTSC-U/C: 0x002aee58, PAL: 0x002b8dc8
 static int RtDmeVoiceAllocPort(int *pnPort) {
     unsigned char bUsed;
     int nResult;
@@ -365,7 +365,7 @@ static int RtDmeVoiceAllocPort(int *pnPort) {
     return kVoiceNotReady;
 }
 
-// NTSC-U/C: 0x002aefb8
+// NTSC-U/C: 0x002aefb8, PAL: 0x002b8f28
 static int RtDmeVoiceMakeEndpoint(const RtDmeDevicePeer *pPeer, RtDmeVoiceEndpoint *pEndpoint) {
     if (pPeer == NULL || pEndpoint == NULL) {
         return RT_DME_RESULT_INVALID;
@@ -380,7 +380,7 @@ static int RtDmeVoiceMakeEndpoint(const RtDmeDevicePeer *pPeer, RtDmeVoiceEndpoi
     return 0;
 }
 
-// NTSC-U/C: 0x002af338
+// NTSC-U/C: 0x002af338, PAL: 0x002b92a8
 static int RtDmeVoiceEventToCode(int nEvent, int *pnCode) {
     if (pnCode == NULL) {
         return RT_DME_RESULT_INVALID;
@@ -407,7 +407,7 @@ static int RtDmeVoiceEventToCode(int nEvent, int *pnCode) {
     return 0;
 }
 
-// NTSC-U/C: 0x002af3d0
+// NTSC-U/C: 0x002af3d0, PAL: 0x002b9340
 static int RtDmeVoiceCodeToEvent(int nCode, int *pnEvent) {
     if (pnEvent == NULL) {
         return RT_DME_RESULT_INVALID;
@@ -434,7 +434,7 @@ static int RtDmeVoiceCodeToEvent(int nCode, int *pnEvent) {
     return 0;
 }
 
-// NTSC-U/C: 0x002af460
+// NTSC-U/C: 0x002af460, PAL: 0x002b93d0
 static int RtDmeVoiceMapMode(int nMode, int *pnMode) {
     if (pnMode == NULL) {
         return RT_DME_RESULT_INVALID;
@@ -449,7 +449,7 @@ static int RtDmeVoiceMapMode(int nMode, int *pnMode) {
     return 0;
 }
 
-// NTSC-U/C: 0x002af4a0
+// NTSC-U/C: 0x002af4a0, PAL: 0x002b9410
 static int RtDmeVoiceAnnounce(RtDmeVoice *pVoice, RtDmeVoiceSlot *pSlot) {
     RtDmeVoicePeerMessage message;
     int nResult;
@@ -476,7 +476,7 @@ static int RtDmeVoiceAnnounce(RtDmeVoice *pVoice, RtDmeVoiceSlot *pSlot) {
     return nResult;
 }
 
-// NTSC-U/C: 0x002af570
+// NTSC-U/C: 0x002af570, PAL: 0x002b94e0
 static int RtDmeVoiceOnEvent(RtDmeDevice *pDevice, int *pnEvent, int nValue1, int nValue2) {
     RtDmeVoice *pVoice;
     rtDmeVoiceEvent event;
@@ -502,7 +502,7 @@ static int RtDmeVoiceOnEvent(RtDmeDevice *pDevice, int *pnEvent, int nValue1, in
     return event.result;
 }
 
-// NTSC-U/C: 0x002af630
+// NTSC-U/C: 0x002af630, PAL: 0x002b95a0
 static int RtDmeVoiceOnState(RtDmeDevice *pDevice, int nState, int nValue1, int nValue2) {
     RtDmeVoice *pVoice;
     rtDmeVoiceState state;
@@ -532,7 +532,7 @@ static int RtDmeVoiceOnState(RtDmeDevice *pDevice, int nState, int nValue1, int 
     return state.result;
 }
 
-// NTSC-U/C: 0x002af700
+// NTSC-U/C: 0x002af700, PAL: 0x002b9670
 static int RtDmeVoiceOnData(RtDmeDevice *pDevice, int nValue1, int nValue2, int nValue3) {
     RtDmeVoice *pVoice;
     rtDmeVoiceData data;
@@ -555,7 +555,7 @@ static int RtDmeVoiceOnData(RtDmeDevice *pDevice, int nValue1, int nValue2, int 
     return data.result;
 }
 
-// NTSC-U/C: 0x002af7b0
+// NTSC-U/C: 0x002af7b0, PAL: 0x002b9720
 static int RtDmeVoiceOnEnd(RtDmeDevice *pDevice, int nValue1, int nValue2) {
     RtDmeVoice *pVoice;
     rtDmeVoiceEnd end;
@@ -577,7 +577,7 @@ static int RtDmeVoiceOnEnd(RtDmeDevice *pDevice, int nValue1, int nValue2) {
     return end.result;
 }
 
-// NTSC-U/C: 0x002af848
+// NTSC-U/C: 0x002af848, PAL: 0x002b97b8
 static int RtDmeVoiceOnStream(RtDmeDevice *pDevice, unsigned int uAddress, int nPort) {
     RtDmeVoice *pVoice;
     RtDmeVoiceSlot *pSlot;
@@ -611,7 +611,7 @@ static int RtDmeVoiceOnStream(RtDmeDevice *pDevice, unsigned int uAddress, int n
     return 0;
 }
 
-// NTSC-U/C: 0x002ae990
+// NTSC-U/C: 0x002ae990, PAL: 0x002b8900
 static int RtDmeVoiceAlloc(int nConnection, unsigned int nClientCount) {
     RtDmeVoice **ppVoice;
     RtDmeVoice *pVoice;
@@ -650,7 +650,7 @@ static int RtDmeVoiceAlloc(int nConnection, unsigned int nClientCount) {
     return 0;
 }
 
-// NTSC-U/C: 0x002aeae8
+// NTSC-U/C: 0x002aeae8, PAL: 0x002b8a58
 static int RtDmeVoiceFree(int nConnection) {
     RtDmeVoice **ppVoice;
 

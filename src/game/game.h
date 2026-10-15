@@ -40,6 +40,7 @@ public:
      *
      * @return GameDb::kRuleSetGame.
      * @ghidraAddress NTSC-U/C: 0x00336208
+     * @ghidraAddress PAL: 0x003a37b8
      */
     int GetRuleSet() const override {
         return GameDb::kRuleSetGame;
@@ -77,6 +78,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x00336210
+     * @ghidraAddress PAL: 0x003a37c0
      */
     void Handle([[maybe_unused]] const BtnEvent<8> &event) override {
     }
@@ -131,6 +133,7 @@ public:
      *
      * @param event The section change.
      * @ghidraAddress NTSC-U/C: 0x00336218
+     * @ghidraAddress PAL: 0x003a37c8
      */
     void Handle([[maybe_unused]] const ChangeSectionEvent &event) override {
     }
@@ -140,6 +143,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x00336220
+     * @ghidraAddress PAL: 0x003a37d0
      */
     void Handle([[maybe_unused]] const BtnEvent<9> &event) override {
     }
@@ -170,6 +174,7 @@ public:
      * Advance the bank loads. The body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x00336230
+     * @ghidraAddress PAL: 0x003a37e0
      */
     void PollAssetLoad() override {
     }
@@ -195,6 +200,7 @@ public:
      * Advance the song load. The body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x00336228
+     * @ghidraAddress PAL: 0x003a37d8
      */
     void PollSongLoad() override {
     }
@@ -220,6 +226,7 @@ public:
      * Advance the sequence that follows the end of the game. The body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x0010dbe0
+     * @ghidraAddress PAL: 0x0010f378
      */
     void PollEnding() override;
 

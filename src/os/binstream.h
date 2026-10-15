@@ -18,6 +18,7 @@ public:
      *
      * @param bLittleEndian Whether values are stored in the console's byte order.
      * @ghidraAddress NTSC-U/C: 0x00293f10
+     * @ghidraAddress PAL: 0x0029d8c8
      */
     explicit BinStream(bool bLittleEndian) : mLittleEndian(bLittleEndian) {
     }
@@ -26,6 +27,7 @@ public:
      * Release the stream.
      *
      * @ghidraAddress NTSC-U/C: 0x00339f10
+     * @ghidraAddress PAL: 0x0041a390
      */
     virtual ~BinStream() {
     }
@@ -92,6 +94,7 @@ public:
      *
      * @param pszMark The mark.
      * @ghidraAddress NTSC-U/C: 0x00339f40
+     * @ghidraAddress PAL: 0x004177d8
      */
     virtual void Mark(const char *pszMark) {
         (void)pszMark;
@@ -105,6 +108,7 @@ public:
      * @param pszBuffer Receives the text. The caller provides room for it.
      * @param nSize The size of the buffer.
      * @ghidraAddress NTSC-U/C: 0x00294468
+     * @ghidraAddress PAL: 0x0029e098
      */
     void ReadString(char *pszBuffer, int nSize);
 
@@ -113,6 +117,7 @@ public:
      *
      * @param text Receives the text.
      * @ghidraAddress NTSC-U/C: 0x00294408
+     * @ghidraAddress PAL: 0x0029e040
      */
     void ReadString(String &text);
 
@@ -161,6 +166,7 @@ private:
  * @param text Receives the text.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x0029f868
+ * @ghidraAddress PAL: 0x002a9528
  */
 BinStream &operator>>(BinStream &stream, String &text);
 

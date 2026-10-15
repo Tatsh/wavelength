@@ -82,6 +82,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0033dd70
+     * @ghidraAddress PAL: 0x003ab2a8
      */
     Message *Clone() override {
         return new PlayerUpdatePacket(*this);
@@ -92,6 +93,7 @@ public:
      *
      * @return g_nPlayerUpdatePacketType.
      * @ghidraAddress NTSC-U/C: 0x0033ddf8
+     * @ghidraAddress PAL: 0x003ab330
      */
     int Type() override {
         return g_nPlayerUpdatePacketType;
@@ -102,6 +104,7 @@ public:
      *
      * @return The literal `PlayerUpdatePacket`.
      * @ghidraAddress NTSC-U/C: 0x0033de08
+     * @ghidraAddress PAL: 0x003ab340
      */
     const char *GetName() const override {
         return "PlayerUpdatePacket";

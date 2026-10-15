@@ -102,6 +102,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x003444b0
+     * @ghidraAddress PAL: 0x003b19e8
      */
     void HandleInput([[maybe_unused]] Player *pPlayer,
                      [[maybe_unused]] const StickEvent<2> &event) override {
@@ -113,6 +114,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x003444b8
+     * @ghidraAddress PAL: 0x003b19f0
      */
     void HandleInput([[maybe_unused]] Player *pPlayer,
                      [[maybe_unused]] const StickEvent<6> &event) override {
@@ -124,6 +126,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x003444c0
+     * @ghidraAddress PAL: 0x003b19f8
      */
     void HandleInput([[maybe_unused]] Player *pPlayer,
                      [[maybe_unused]] const BtnEvent<10> &event) override {
@@ -143,6 +146,7 @@ public:
      *
      * @return mMuteRemote.
      * @ghidraAddress NTSC-U/C: 0x00142c30
+     * @ghidraAddress PAL: 0x001445d0
      */
     bool GetMuteRemote() const override;
 
@@ -178,6 +182,7 @@ public:
      *
      * @return mActive.
      * @ghidraAddress NTSC-U/C: 0x00142c78
+     * @ghidraAddress PAL: 0x00144618
      */
     bool IsActive() const override;
 

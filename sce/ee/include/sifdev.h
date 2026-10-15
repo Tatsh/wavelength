@@ -122,6 +122,7 @@ int sceSifDmaStat(unsigned int id);
  * @param id Transfer identifier from isceSifSetDma().
  * @return Negative once the transfer has finished.
  * @ghidraAddress NTSC-U/C: 0x003172d0
+ * @ghidraAddress PAL: 0x00383b90
  */
 int isceSifDmaStat(unsigned int id);
 

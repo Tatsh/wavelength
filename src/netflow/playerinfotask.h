@@ -18,6 +18,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c0a0
+     * @ghidraAddress PAL: 0x0040ace8
      */
     ~PlayerInfoTask() override = default;
 
@@ -43,6 +44,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response.
      * @ghidraAddress NTSC-U/C: 0x00264270
+     * @ghidraAddress PAL: 0x0026d9f0
      */
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusPlayerInfoResponse *pResponse);

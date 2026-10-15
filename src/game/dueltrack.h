@@ -121,6 +121,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x003352e8
+     * @ghidraAddress PAL: 0x003a2898
      */
     void HandleInput([[maybe_unused]] Player *pPlayer,
                      [[maybe_unused]] const BtnEvent<8> &event) override {
@@ -132,6 +133,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x0010b500
+     * @ghidraAddress PAL: 0x0010cc38
      */
     void HandleInput(Player *pPlayer, const StickEvent<2> &event) override;
 
@@ -141,6 +143,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x0010b508
+     * @ghidraAddress PAL: 0x0010cc40
      */
     void HandleInput(Player *pPlayer, const StickEvent<6> &event) override;
 
@@ -150,6 +153,7 @@ public:
      * @param pPlayer The player.
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x003352f0
+     * @ghidraAddress PAL: 0x003a28a0
      */
     void HandleInput([[maybe_unused]] Player *pPlayer,
                      [[maybe_unused]] const BtnEvent<10> &event) override {

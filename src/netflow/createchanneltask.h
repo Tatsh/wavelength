@@ -17,6 +17,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c428
+     * @ghidraAddress PAL: 0x0040b0e0
      */
     ~CreateChannelTask() override = default;
 
@@ -42,6 +43,7 @@ protected:
      * Send the request, with the capacity of the room of the local player.
      *
      * @ghidraAddress NTSC-U/C: 0x002661e8
+     * @ghidraAddress PAL: 0x0026fca8
      */
     void OnStart() override;
 };

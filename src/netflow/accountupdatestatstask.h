@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039bf50
+     * @ghidraAddress PAL: 0x0040ab98
      */
     ~AccountUpdateStatsTask() override = default;
 

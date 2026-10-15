@@ -56,6 +56,7 @@ public:
      * Pass the name to NetNewChatroomScreen and change to it.
      *
      * @ghidraAddress NTSC-U/C: 0x0017d558
+     * @ghidraAddress PAL: 0x001811a8
      */
     void Submit() override;
 };

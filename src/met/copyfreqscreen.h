@@ -28,6 +28,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00363790
+     * @ghidraAddress PAL: 0x003d1ee0
      */
     ~CopyFreqScreen() override {
     }

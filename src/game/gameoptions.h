@@ -106,6 +106,7 @@ public:
      *
      * @param stream The stream.
      * @ghidraAddress NTSC-U/C: 0x0027cbe0
+     * @ghidraAddress PAL: 0x00286550
      */
     void Save(BinStream &stream) const;
 

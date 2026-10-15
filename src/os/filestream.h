@@ -92,6 +92,7 @@ public:
      *
      * @return Whether an operation failed.
      * @ghidraAddress NTSC-U/C: 0x00299830
+     * @ghidraAddress PAL: 0x002a3430
      */
     bool Fail() override;
 

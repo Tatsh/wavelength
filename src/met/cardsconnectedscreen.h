@@ -42,6 +42,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00363df8
+     * @ghidraAddress PAL: 0x003d2558
      */
     static UIScreen *New(DataArray *pData) {
         return new CardsConnectedScreen(pData);
@@ -52,6 +53,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00363e38
+     * @ghidraAddress PAL: 0x003d2598
      */
     const char *Title() override {
         return "";

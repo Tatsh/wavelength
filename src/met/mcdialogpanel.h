@@ -19,6 +19,7 @@ public:
      * @param pData The script description.
      * @param pszDir The directory of the description file.
      * @ghidraAddress NTSC-U/C: 0x00362938
+     * @ghidraAddress PAL: 0x001b1ab8
      */
     MCDialogPanel(DataArray *pData, const char *pszDir);
 
@@ -61,6 +62,7 @@ public:
      * current screen.
      *
      * @ghidraAddress NTSC-U/C: 0x001a9df0
+     * @ghidraAddress PAL: 0x001b1b50
      */
     virtual void ShowSlotText();
 };

@@ -59,6 +59,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x003a7498
+     * @ghidraAddress PAL: 0x00416178
      */
     Message *Clone() override {
         return new JoypadAnalogStickMsg(*this);
@@ -69,6 +70,7 @@ public:
      *
      * @return g_nJoypadAnalogStickMsgType.
      * @ghidraAddress NTSC-U/C: 0x003a7500
+     * @ghidraAddress PAL: 0x004161e0
      */
     int Type() override {
         return g_nJoypadAnalogStickMsgType;
@@ -79,6 +81,7 @@ public:
      *
      * @return The literal `JoypadAnalogStickMsg`.
      * @ghidraAddress NTSC-U/C: 0x003a7510
+     * @ghidraAddress PAL: 0x004161f0
      */
     const char *GetName() const override {
         return "JoypadAnalogStickMsg";

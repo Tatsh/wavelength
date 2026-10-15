@@ -36,6 +36,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00363b58
+     * @ghidraAddress PAL: 0x003d22b8
      */
     ~MCCheckScreen() override {
     }
@@ -46,6 +47,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00363c70
+     * @ghidraAddress PAL: 0x003d23d0
      */
     static UIScreen *New(DataArray *pData) {
         return new MCCheckScreen(pData);
@@ -56,6 +58,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00363cb0
+     * @ghidraAddress PAL: 0x003d2410
      */
     const char *Title() override {
         return "";
@@ -76,6 +79,7 @@ public:
      *
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x001acc20
+     * @ghidraAddress PAL: 0x001b73c8
      */
     void Poll(float fTime) override;
 
@@ -101,6 +105,7 @@ public:
      * @param nFree The free space of the card in kilobytes.
      * @param nNeeded The kilobytes one more Freq needs.
      * @ghidraAddress NTSC-U/C: 0x001acda0
+     * @ghidraAddress PAL: 0x001b5600
      */
     void OnInitialCheck(int nStatus, int nFormat, int nFree, int nNeeded) override;
 

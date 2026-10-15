@@ -40,6 +40,7 @@ public:
      *
      * @param pSink The sink, or null.
      * @ghidraAddress NTSC-U/C: 0x0026b3f8
+     * @ghidraAddress PAL: 0x00274f88
      */
     void SetSink(MsgSink *pSink) override;
 
@@ -48,6 +49,7 @@ public:
      *
      * @param packet The packet.
      * @ghidraAddress NTSC-U/C: 0x0026b400
+     * @ghidraAddress PAL: 0x00274f90
      */
     void Send(ExternalPacket &packet) override;
 
@@ -56,6 +58,7 @@ public:
      *
      * @return Whether a session exists and this console has the identifier of the host.
      * @ghidraAddress NTSC-U/C: 0x0026b438
+     * @ghidraAddress PAL: 0x00274fc8
      */
     bool IsHost() override;
 

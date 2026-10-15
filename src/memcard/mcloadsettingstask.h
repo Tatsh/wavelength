@@ -43,6 +43,7 @@ public:
      * Decode the loaded file into mSettings.
      *
      * @ghidraAddress NTSC-U/C: 0x00162398
+     * @ghidraAddress PAL: 0x001650a8
      */
     void OnFileLoaded() override;
 

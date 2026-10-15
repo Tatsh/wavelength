@@ -42,6 +42,7 @@ public:
      *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x00192690
+     * @ghidraAddress PAL: 0x001999a8
      */
     explicit MetaSongScreen(DataArray *pData);
 

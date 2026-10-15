@@ -192,6 +192,7 @@ public:
      *
      * @param nStatus The outcome.
      * @ghidraAddress NTSC-U/C: 0x00358ab8
+     * @ghidraAddress PAL: 0x003c5e68
      */
     virtual void OnFileSaved([[maybe_unused]] int nStatus) {
     }

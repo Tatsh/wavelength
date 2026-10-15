@@ -13,6 +13,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039a670
+     * @ghidraAddress PAL: 0x00408ef8
      */
     ~FinishUpdateGameParamsTask() override = default;
 

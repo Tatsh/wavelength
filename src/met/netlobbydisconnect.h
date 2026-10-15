@@ -85,6 +85,7 @@ private:
      * @param pMsg The message.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x00177fd0
+     * @ghidraAddress PAL: 0x0017bba8
      */
     bool HandleDisconnectResult(LobbyDisconnectResultMsg *pMsg);
 

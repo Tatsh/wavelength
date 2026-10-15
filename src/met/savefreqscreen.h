@@ -23,6 +23,7 @@ public:
      *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x001abec0
+     * @ghidraAddress PAL: 0x001b4158
      */
     explicit SaveFreqScreen(DataArray *pData);
 
@@ -42,6 +43,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00363608
+     * @ghidraAddress PAL: 0x003d1d48
      */
     static UIScreen *New(DataArray *pData) {
         return new SaveFreqScreen(pData);
@@ -73,6 +75,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00363648
+     * @ghidraAddress PAL: 0x003d1d88
      */
     const char *Title() override {
         return "";
@@ -98,6 +101,7 @@ public:
      *                room for another Freq.
      * @param nSpace The space the save needs, when the memory card is too full.
      * @ghidraAddress NTSC-U/C: 0x001ac010
+     * @ghidraAddress PAL: 0x001b4310
      */
     void OnFreqSaved(int nStatus, int nSpace) override;
 

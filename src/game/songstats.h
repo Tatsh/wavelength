@@ -57,6 +57,7 @@ public:
  * @param record The record.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x00276ac8
+ * @ghidraAddress PAL: 0x002805e8
  */
 BinStream &operator<<(BinStream &stream, const SongStats &record);
 

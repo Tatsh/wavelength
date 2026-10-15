@@ -120,6 +120,7 @@ typedef struct {
  * @param release The release.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a82a0
+ * @ghidraAddress PAL: 0x002b2210
  */
 int rtNetSetMemoryFunctions(rtAllocFunc alloc, rtFreeFunc release);
 
@@ -129,6 +130,7 @@ int rtNetSetMemoryFunctions(rtAllocFunc alloc, rtFreeFunc release);
  * @param params The parameters.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a7c28
+ * @ghidraAddress PAL: 0x002b1b98
  */
 int rtNetDefaultSettings(rtNetSettings *params);
 
@@ -139,6 +141,7 @@ int rtNetDefaultSettings(rtNetSettings *params);
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a7c70
+ * @ghidraAddress PAL: 0x002b1be0
  */
 int rtNetInitialize(const rtNetSettings *params, rtNetInitStatus *status);
 
@@ -147,6 +150,7 @@ int rtNetInitialize(const rtNetSettings *params, rtNetInitStatus *status);
  *
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a7dd8
+ * @ghidraAddress PAL: 0x002b1d48
  */
 int rtNetClose(void);
 
@@ -157,6 +161,7 @@ int rtNetClose(void);
  * @param receiveSize The size of the receive queue in bytes.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8868
+ * @ghidraAddress PAL: 0x002b27d8
  */
 int rtNetSetBufferSizes(int sendSize, int receiveSize);
 
@@ -166,6 +171,7 @@ int rtNetSetBufferSizes(int sendSize, int receiveSize);
  * @param publicKey Receives the public key.
  * @param privateKey Receives the private key.
  * @ghidraAddress NTSC-U/C: 0x002a9f74
+ * @ghidraAddress PAL: 0x002b3ee4
  */
 void rtNetGenerateKeyPair(rtNetKey *publicKey, rtNetKey *privateKey);
 
@@ -304,6 +310,7 @@ typedef struct {
  * @param params The parameters.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8400
+ * @ghidraAddress PAL: 0x002b2370
  */
 int rtDmeInitHostParams(rtDmeHostParams *params);
 
@@ -314,6 +321,7 @@ int rtDmeInitHostParams(rtDmeHostParams *params);
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8498
+ * @ghidraAddress PAL: 0x002b2408
  */
 int rtDmeHost(const rtDmeHostParams *params, rtDmeConnectStatus *status);
 
@@ -323,6 +331,7 @@ int rtDmeHost(const rtDmeHostParams *params, rtDmeConnectStatus *status);
  * @param params The parameters.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a82c0
+ * @ghidraAddress PAL: 0x002b2230
  */
 int rtDmeInitConnectParams(rtDmeConnectParams *params);
 
@@ -333,6 +342,7 @@ int rtDmeInitConnectParams(rtDmeConnectParams *params);
  * @param status Receives a further status.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8358
+ * @ghidraAddress PAL: 0x002b22c8
  */
 int rtDmeConnect(const rtDmeConnectParams *params, rtDmeConnectStatus *status);
 
@@ -343,6 +353,7 @@ int rtDmeConnect(const rtDmeConnectParams *params, rtDmeConnectStatus *status);
  * @param connection The connection.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8a80
+ * @ghidraAddress PAL: 0x002b29f0
  */
 int rtDmeGetLocalClient(int *client, int connection);
 
@@ -353,6 +364,7 @@ int rtDmeGetLocalClient(int *client, int connection);
  * @param enable Non-zero to enable the messages.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a87c0
+ * @ghidraAddress PAL: 0x002b2730
  */
 int rtDmeEnableConnection(int connection, int enable);
 
@@ -362,6 +374,7 @@ int rtDmeEnableConnection(int connection, int enable);
  * @param connection The connection.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8c80
+ * @ghidraAddress PAL: 0x002b2bf0
  */
 int rtDmeDisconnect(int connection);
 
@@ -370,6 +383,7 @@ int rtDmeDisconnect(int connection);
  *
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a7ed8
+ * @ghidraAddress PAL: 0x002b1e48
  */
 int rtDmeBeginFields(void);
 
@@ -384,6 +398,7 @@ int rtDmeBeginFields(void);
  * @param count A positive number, by convention the number of elements.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a7f60
+ * @ghidraAddress PAL: 0x002b1ed0
  */
 int rtDmeAddField(const void *record, const void *field, int size, int count);
 
@@ -394,6 +409,7 @@ int rtDmeAddField(const void *record, const void *field, int size, int count);
  * @param handler The receiver.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a80f0
+ * @ghidraAddress PAL: 0x002b2060
  */
 int rtDmeRegisterMessage(int *type, rtDmeMessageHandler handler);
 
@@ -408,6 +424,7 @@ int rtDmeRegisterMessage(int *type, rtDmeMessageHandler handler);
  * @param message The message.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a81a0
+ * @ghidraAddress PAL: 0x002b2110
  */
 int rtDmeSend(signed char flags,
               int connection,
@@ -541,6 +558,7 @@ int rtDmeGetLocalAddress(char address[RT_NET_ADDRESS_SIZE]);
  * @param address Receives the 4 bytes of the address.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a89e8
+ * @ghidraAddress PAL: 0x002b2958
  */
 int rtDmeGetSenderAddress(unsigned char address[4]);
 
@@ -550,6 +568,7 @@ int rtDmeGetSenderAddress(unsigned char address[4]);
  * @param time Receives the time.
  * @return 0, or an error code.
  * @ghidraAddress NTSC-U/C: 0x002a8b30
+ * @ghidraAddress PAL: 0x002b2aa0
  */
 int rtDmeGetLocalTime(unsigned int *time);
 

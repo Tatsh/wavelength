@@ -115,6 +115,7 @@ PrnStream &operator<<(PrnStream &stream, const RemixInfo &info);
  * @param info The description.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x0027eaa0
+ * @ghidraAddress PAL: 0x002883b8
  */
 BinStream &operator<<(BinStream &stream, const RemixInfo &info);
 
@@ -125,5 +126,6 @@ BinStream &operator<<(BinStream &stream, const RemixInfo &info);
  * @param info Receives the description.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x0027eb10
+ * @ghidraAddress PAL: 0x00288410
  */
 BinStream &operator>>(BinStream &stream, RemixInfo &info);

@@ -175,6 +175,7 @@ public:
      * The base routine does nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x00378658
+     * @ghidraAddress PAL: 0x003e6d88
      */
     virtual void Unfocus() {
     }
@@ -186,6 +187,7 @@ public:
      * draws nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x00378660
+     * @ghidraAddress PAL: 0x003e6d90
      */
     virtual void DrawGizmo() {
     }

@@ -371,6 +371,7 @@ public:
      * @param fX The input.
      * @return The entry, the first or the last outside the range.
      * @ghidraAddress NTSC-U/C: 0x00291db0
+     * @ghidraAddress PAL: 0x0029b778
      */
     float Interp(float fX) override;
 
@@ -464,6 +465,7 @@ public:
      * @param fX The input.
      * @return The blend, the first or the last entry outside the range.
      * @ghidraAddress NTSC-U/C: 0x002921a8
+     * @ghidraAddress PAL: 0x0029bb70
      */
     float Interp(float fX) override;
 

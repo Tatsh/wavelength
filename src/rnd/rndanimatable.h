@@ -92,6 +92,7 @@ public:
          * @param fValue The frame.
          * @return The frame times mScale plus mOffset.
          * @ghidraAddress NTSC-U/C: 0x0037e770
+         * @ghidraAddress PAL: 0x003ecea0
          */
         float Apply(float fValue) override {
             return (fValue * mScale) + mOffset;
@@ -103,6 +104,7 @@ public:
          * @param fValue The filtered frame.
          * @return The frame.
          * @ghidraAddress NTSC-U/C: 0x0037e788
+         * @ghidraAddress PAL: 0x003eceb8
          */
         float Unapply(float fValue) override {
             return (fValue - mOffset) / mScale;
@@ -122,6 +124,7 @@ public:
          *
          * @param stream The stream to write to.
          * @ghidraAddress NTSC-U/C: 0x0037e7a0
+         * @ghidraAddress PAL: 0x003eced0
          */
         void Save(BinStream &stream) override {
             stream.WriteEndian(&mScale, sizeof(mScale));
@@ -133,6 +136,7 @@ public:
          *
          * @param stream The stream to read from.
          * @ghidraAddress NTSC-U/C: 0x0037e800
+         * @ghidraAddress PAL: 0x003ecf30
          */
         void Load(BinStream &stream) override {
             stream.ReadEndian(&mScale, sizeof(mScale));
@@ -144,6 +148,7 @@ public:
          *
          * @return kFilterScaleOffset.
          * @ghidraAddress NTSC-U/C: 0x0037e850
+         * @ghidraAddress PAL: 0x003ecf80
          */
         int Type() override {
             return kFilterScaleOffset;
@@ -154,6 +159,7 @@ public:
          *
          * @param pSource The stage to copy from.
          * @ghidraAddress NTSC-U/C: 0x0037e858
+         * @ghidraAddress PAL: 0x003ecf88
          */
         void Copy(const Filter *pSource) override {
             *this = *static_cast<const ScaleOffset *>(pSource);
@@ -200,6 +206,7 @@ public:
          *
          * @param stream The stream to write to.
          * @ghidraAddress NTSC-U/C: 0x0037e880
+         * @ghidraAddress PAL: 0x003ecfb0
          */
         void Save(BinStream &stream) override {
             stream.WriteEndian(&mMin, sizeof(mMin));
@@ -213,6 +220,7 @@ public:
          *
          * @param stream The stream to read from.
          * @ghidraAddress NTSC-U/C: 0x0037e900
+         * @ghidraAddress PAL: 0x003ed028
          */
         void Load(BinStream &stream) override {
             stream.ReadEndian(&mMin, sizeof(mMin));
@@ -227,6 +235,7 @@ public:
          *
          * @return kFilterMinMaxLoop.
          * @ghidraAddress NTSC-U/C: 0x0037e978
+         * @ghidraAddress PAL: 0x003ed090
          */
         int Type() override {
             return kFilterMinMaxLoop;
@@ -285,6 +294,7 @@ public:
          *
          * @param stream The stream to write to.
          * @ghidraAddress NTSC-U/C: 0x0037e9b8
+         * @ghidraAddress PAL: 0x003ed0d0
          */
         void Save(BinStream &stream) override {
             stream.WriteEndian(&mLevel, sizeof(mLevel));
@@ -296,6 +306,7 @@ public:
          *
          * @param stream The stream to read from.
          * @ghidraAddress NTSC-U/C: 0x0037ea18
+         * @ghidraAddress PAL: 0x003ed130
          */
         void Load(BinStream &stream) override {
             stream.ReadEndian(&mLevel, sizeof(mLevel));
@@ -307,6 +318,7 @@ public:
          *
          * @return kFilterZeroOrder.
          * @ghidraAddress NTSC-U/C: 0x0037ea68
+         * @ghidraAddress PAL: 0x003ed180
          */
         int Type() override {
             return kFilterZeroOrder;
@@ -369,6 +381,7 @@ public:
          *
          * @param stream The stream to write to.
          * @ghidraAddress NTSC-U/C: 0x0037eae8
+         * @ghidraAddress PAL: 0x003ed200
          */
         void Save(BinStream &stream) override {
             stream.WriteEndian(&mLevel, sizeof(mLevel));
@@ -380,6 +393,7 @@ public:
          *
          * @param stream The stream to read from.
          * @ghidraAddress NTSC-U/C: 0x0037eb48
+         * @ghidraAddress PAL: 0x003ed260
          */
         void Load(BinStream &stream) override {
             stream.ReadEndian(&mLevel, sizeof(mLevel));
@@ -391,6 +405,7 @@ public:
          *
          * @return kFilterFirstOrder.
          * @ghidraAddress NTSC-U/C: 0x0037eb98
+         * @ghidraAddress PAL: 0x003ed2b0
          */
         int Type() override {
             return kFilterFirstOrder;
@@ -484,6 +499,7 @@ public:
          *
          * @return kFilterSecondOrder.
          * @ghidraAddress NTSC-U/C: 0x0037eca0
+         * @ghidraAddress PAL: 0x003ed3b8
          */
         int Type() override {
             return kFilterSecondOrder;
@@ -494,6 +510,7 @@ public:
          *
          * @param pSource The stage to copy from.
          * @ghidraAddress NTSC-U/C: 0x0037eca8
+         * @ghidraAddress PAL: 0x003ed3c0
          */
         void Copy(const Filter *pSource) override {
             *this = *static_cast<const SecondOrder *>(pSource);
@@ -551,6 +568,7 @@ public:
      * @param fFrame The filtered frame.
      * @return Non-zero when the children are to receive the frame as well.
      * @ghidraAddress NTSC-U/C: 0x0037e758
+     * @ghidraAddress PAL: 0x003ece88
      */
     virtual int SetFrameSelf([[maybe_unused]] float fFrame) {
         return 1;

@@ -36,6 +36,7 @@ protected:
      * Clear g_RemixNames and start listing the first directory.
      *
      * @ghidraAddress NTSC-U/C: 0x00160e28
+     * @ghidraAddress PAL: 0x001637b8
      */
     void OnStart() override;
 

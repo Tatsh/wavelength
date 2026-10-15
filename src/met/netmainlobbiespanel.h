@@ -47,6 +47,7 @@ public:
      * Destroy the panel.
      *
      * @ghidraAddress NTSC-U/C: 0x003580b0
+     * @ghidraAddress PAL: 0x003c5460
      */
     ~NetMainLobbiesPanel() override {
     }

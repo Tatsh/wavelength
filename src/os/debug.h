@@ -33,6 +33,7 @@ public:
      *
      * @param pszText The text.
      * @ghidraAddress NTSC-U/C: 0x00288e60
+     * @ghidraAddress PAL: 0x00292678
      */
     void Print(const char *pszText) override;
 
@@ -44,6 +45,7 @@ public:
      *
      * @param pszFile The file.
      * @ghidraAddress NTSC-U/C: 0x00288f38
+     * @ghidraAddress PAL: 0x00292750
      */
     void OpenLog(const char *pszFile);
 

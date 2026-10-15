@@ -18,6 +18,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c720
+     * @ghidraAddress PAL: 0x0040b3d8
      */
     ~FileGetAttributesTask() override = default;
 
@@ -57,6 +58,7 @@ protected:
      * Send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00266780
+     * @ghidraAddress PAL: 0x00270298
      */
     void OnStart() override;
 };

@@ -107,6 +107,7 @@ public:
      *
      * @param stream The stream to write to.
      * @ghidraAddress NTSC-U/C: 0x00269498
+     * @ghidraAddress PAL: 0x00273070
      */
     void saveGuts(BinStream &stream) const override;
 
@@ -115,6 +116,7 @@ public:
      *
      * @param stream The stream to read from.
      * @ghidraAddress NTSC-U/C: 0x002694c0
+     * @ghidraAddress PAL: 0x00273098
      */
     void restoreGuts(BinStream &stream) override;
 

@@ -30,6 +30,7 @@ public:
      *
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x003960c8
+     * @ghidraAddress PAL: 0x00404718
      */
     int Terminate() override {
         return 0;
@@ -48,6 +49,7 @@ public:
      * @param nPacked The message.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396100
+     * @ghidraAddress PAL: 0x00404750
      */
     int SendPackedMessage([[maybe_unused]] unsigned int nPacked) override {
         return 0;
@@ -62,6 +64,7 @@ public:
      * @param nByte3 The delay of the message.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396108
+     * @ghidraAddress PAL: 0x00404758
      */
     int SendMessage([[maybe_unused]] unsigned char nByte0,
                     [[maybe_unused]] unsigned char nByte1,
@@ -74,6 +77,7 @@ public:
      * Do nothing.
      *
      * @ghidraAddress NTSC-U/C: 0x00396110
+     * @ghidraAddress PAL: 0x00404760
      */
     void UpdateTime() override {
     }
@@ -83,6 +87,7 @@ public:
      *
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396118
+     * @ghidraAddress PAL: 0x00404768
      */
     int Poll() override {
         return 0;
@@ -95,6 +100,7 @@ public:
      * @param pnBlock Unchanged.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396120
+     * @ghidraAddress PAL: 0x00404770
      */
     int GetStreamFormat([[maybe_unused]] int *pnRate, [[maybe_unused]] int *pnBlock) override {
         return 0;
@@ -106,6 +112,7 @@ public:
      * @param blocks Unused.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396128
+     * @ghidraAddress PAL: 0x00404778
      */
     int Partition([[maybe_unused]] const std::vector<int> &blocks) override {
         return 0;
@@ -117,6 +124,7 @@ public:
      * @param file Unused.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396130
+     * @ghidraAddress PAL: 0x00404780
      */
     int GetBankBlockCount([[maybe_unused]] const String &file) override {
         return 0;
@@ -128,6 +136,7 @@ public:
      * @param nSlot Unused.
      * @return True.
      * @ghidraAddress NTSC-U/C: 0x00396138
+     * @ghidraAddress PAL: 0x00404788
      */
     bool IsBankLoaded([[maybe_unused]] unsigned short nSlot) override {
         return true;
@@ -141,6 +150,7 @@ public:
      * @param bSkipPending Unused.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396140
+     * @ghidraAddress PAL: 0x00404790
      */
     int LoadBank([[maybe_unused]] unsigned short nSlot,
                  [[maybe_unused]] const String &file,
@@ -154,6 +164,7 @@ public:
      * @param nSlot Unused.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396148
+     * @ghidraAddress PAL: 0x00404798
      */
     int UnloadBank([[maybe_unused]] unsigned short nSlot) override {
         return 0;
@@ -164,6 +175,7 @@ public:
      *
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396150
+     * @ghidraAddress PAL: 0x004047a0
      */
     int EnableSoftFx() override {
         return 0;
@@ -174,6 +186,7 @@ public:
      *
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00396158
+     * @ghidraAddress PAL: 0x004047a8
      */
     int DisableSoftFx() override {
         return 0;

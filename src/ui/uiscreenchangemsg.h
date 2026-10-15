@@ -58,6 +58,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0037c1d8
+     * @ghidraAddress PAL: 0x003ea908
      */
     Message *Clone() override {
         return new UIScreenChangeMsg(*this);
@@ -68,6 +69,7 @@ public:
      *
      * @return g_nUIScreenChangeMsgType.
      * @ghidraAddress NTSC-U/C: 0x0037c230
+     * @ghidraAddress PAL: 0x003ea960
      */
     int Type() override {
         return g_nUIScreenChangeMsgType;
@@ -78,6 +80,7 @@ public:
      *
      * @return The literal `UIScreenChangeMsg`.
      * @ghidraAddress NTSC-U/C: 0x0037c240
+     * @ghidraAddress PAL: 0x003ea970
      */
     const char *GetName() const override {
         return "UIScreenChangeMsg";

@@ -57,6 +57,7 @@ public:
      * @param gem The gem.
      * @param gems The gems, in order.
      * @ghidraAddress NTSC-U/C: 0x0034a320
+     * @ghidraAddress PAL: 0x003b7750
      */
     static void InsertSorted(const Gem &gem, std::vector<Gem> &gems, int);
 

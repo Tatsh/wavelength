@@ -599,6 +599,7 @@ private:
      * @param pMsg The message.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x001672f0
+     * @ghidraAddress PAL: 0x0016a2e8
      */
     bool OnTransitionComplete(UITransitionCompleteMsg *pMsg);
 
@@ -719,6 +720,7 @@ private:
      * into the slot of the game effects.
      *
      * @ghidraAddress NTSC-U/C: 0x00168210
+     * @ghidraAddress PAL: 0x0016b2a0
      */
     void LoadFxBanks();
 

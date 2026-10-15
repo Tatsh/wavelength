@@ -22,6 +22,7 @@ public:
      *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x001ad768
+     * @ghidraAddress PAL: 0x001b5e98
      */
     explicit SaveRemixScreen(DataArray *pData);
 
@@ -29,6 +30,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00363e48
+     * @ghidraAddress PAL: 0x003d25a8
      */
     ~SaveRemixScreen() override {
     }
@@ -49,6 +51,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00363fc8
+     * @ghidraAddress PAL: 0x003d2738
      */
     const char *Title() override {
         return "";

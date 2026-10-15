@@ -31,6 +31,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x003642c0
+     * @ghidraAddress PAL: 0x003d2a38
      */
     ~LoadRemixScreen() override {
     }
@@ -41,6 +42,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x003643d8
+     * @ghidraAddress PAL: 0x003d2b50
      */
     static UIScreen *New(DataArray *pData) {
         return new LoadRemixScreen(pData);
@@ -51,6 +53,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x00364418
+     * @ghidraAddress PAL: 0x003d2b90
      */
     const char *Title() override {
         return "";

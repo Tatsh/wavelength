@@ -41,6 +41,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00363998
+     * @ghidraAddress PAL: 0x003d20f8
      */
     static UIScreen *New(DataArray *pData) {
         return new DeleteFreqScreen(pData);
@@ -51,6 +52,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x003639d8
+     * @ghidraAddress PAL: 0x003d2138
      */
     const char *Title() override {
         return "";
@@ -72,6 +74,7 @@ public:
      *
      * @param nStatus How the deletion ended, one of MemcardTask::Status.
      * @ghidraAddress NTSC-U/C: 0x001ac690
+     * @ghidraAddress PAL: 0x001b4cf0
      */
     void OnFreqDeleted(int nStatus) override;
 

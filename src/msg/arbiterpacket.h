@@ -105,6 +105,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x00347b00
+     * @ghidraAddress PAL: 0x003b4f30
      */
     Message *Clone() override {
         return new ArbiterPacket(*this);
@@ -115,6 +116,7 @@ public:
      *
      * @return g_nArbiterPacketType.
      * @ghidraAddress NTSC-U/C: 0x00347b40
+     * @ghidraAddress PAL: 0x003b4f70
      */
     int Type() override {
         return g_nArbiterPacketType;

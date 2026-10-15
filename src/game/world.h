@@ -256,6 +256,7 @@ public:
      * The base body is empty. The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x003455c0
+     * @ghidraAddress PAL: 0x003b2af8
      */
     virtual void BeginEnding() {
     }
@@ -266,6 +267,7 @@ public:
      * The base body is empty. The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x003455c8
+     * @ghidraAddress PAL: 0x003b2b00
      */
     virtual void PollEnding() {
     }
@@ -277,6 +279,7 @@ public:
      *
      * @return True in this class.
      * @ghidraAddress NTSC-U/C: 0x003455d0
+     * @ghidraAddress PAL: 0x003b2b08
      */
     virtual bool IsEndingDone() {
         return true;
@@ -394,6 +397,7 @@ public:
      * The base body is empty. The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x003455d8
+     * @ghidraAddress PAL: 0x003b2b10
      */
     virtual void OnStart() {
     }

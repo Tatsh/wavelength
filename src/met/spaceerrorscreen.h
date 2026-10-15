@@ -17,6 +17,7 @@ public:
      *
      * @param pData The script description.
      * @ghidraAddress NTSC-U/C: 0x00362e90
+     * @ghidraAddress PAL: 0x001b3fa8
      */
     explicit SpaceErrorScreen(DataArray *pData) : ErrorScreen(pData) {
     }
@@ -25,6 +26,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00362e20
+     * @ghidraAddress PAL: 0x003d13d0
      */
     ~SpaceErrorScreen() override {
     }
@@ -35,6 +37,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x00362de0
+     * @ghidraAddress PAL: 0x003d1390
      */
     static UIScreen *New(DataArray *pData) {
         return new SpaceErrorScreen(pData);

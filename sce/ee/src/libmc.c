@@ -369,7 +369,7 @@ static void McAlarmHandler(int nId, unsigned short nTime, void *pThread) {
     ExitHandler();
 }
 
-// NTSC-U/C: 0x00313798
+// NTSC-U/C: 0x00313798, PAL: 0x0037fe38
 static void McDelayThread(unsigned short nTicks) {
     SetAlarm(nTicks, McAlarmHandler, (void *)(intptr_t)GetThreadId());
     SleepThread();

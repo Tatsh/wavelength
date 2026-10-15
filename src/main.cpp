@@ -234,7 +234,7 @@ void UpdateAppFrame() {
     DispatchStateEvents(nMetagameEvent, nWorldEvent);
 }
 
-// NTSC-U/C: 0x001009e0
+// NTSC-U/C: 0x001009e0, PAL: 0x001009e0
 void InitializeAppSubsystems(int argc, char **argv) {
     SystemInit(argc, argv, kConfigFile);
     TheManager.Init();

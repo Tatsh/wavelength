@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c498
+     * @ghidraAddress PAL: 0x0040b150
      */
     ~GetLobbyPlayersTask() override = default;
 
@@ -30,6 +31,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response.
      * @ghidraAddress NTSC-U/C: 0x00264ea0
+     * @ghidraAddress PAL: 0x0026e858
      */
     static void OnResponse(int nConnection,
                            int nType,
@@ -41,6 +43,7 @@ protected:
      * Clear the players and send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00264de8
+     * @ghidraAddress PAL: 0x0026e7a0
      */
     void OnStart() override;
 };

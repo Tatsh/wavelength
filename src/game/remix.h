@@ -39,6 +39,7 @@ public:
      *
      * @return GameDb::kRuleSetRemix.
      * @ghidraAddress NTSC-U/C: 0x0033e0a0
+     * @ghidraAddress PAL: 0x003ab5d8
      */
     int GetRuleSet() const override {
         return GameDb::kRuleSetRemix;
@@ -94,6 +95,7 @@ public:
      *
      * @param event The stick position.
      * @ghidraAddress NTSC-U/C: 0x0012f200
+     * @ghidraAddress PAL: 0x001309d8
      */
     void Handle(const StickEvent<6> &event) override;
 
@@ -111,6 +113,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x0033e0a8
+     * @ghidraAddress PAL: 0x003ab5e0
      */
     void Handle([[maybe_unused]] const BtnEvent<4> &event) override {
     }
@@ -120,6 +123,7 @@ public:
      *
      * @param event The button.
      * @ghidraAddress NTSC-U/C: 0x0033e0b0
+     * @ghidraAddress PAL: 0x003ab5e8
      */
     void Handle([[maybe_unused]] const BtnEvent<5> &event) override {
     }
@@ -158,6 +162,7 @@ public:
      * the slot as "game_fx_bank_slot". The slot is emptied first.
      *
      * @ghidraAddress NTSC-U/C: 0x0012f2f8
+     * @ghidraAddress PAL: 0x00130ad0
      */
     void BeginAssetLoad() override;
 
@@ -165,6 +170,7 @@ public:
      * Advance the effect bank load. The body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x0033e0c0
+     * @ghidraAddress PAL: 0x003ab5f8
      */
     void PollAssetLoad() override {
     }
@@ -190,6 +196,7 @@ public:
      * Advance the song load. The body is empty.
      *
      * @ghidraAddress NTSC-U/C: 0x0033e0b8
+     * @ghidraAddress PAL: 0x003ab5f0
      */
     void PollSongLoad() override {
     }

@@ -28,6 +28,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00362fc8
+     * @ghidraAddress PAL: 0x003d15c0
      */
     ~SaveErrorScreen() override {
     }
@@ -49,6 +50,7 @@ public:
      *
      * @return An empty string.
      * @ghidraAddress NTSC-U/C: 0x003630f8
+     * @ghidraAddress PAL: 0x003d16f0
      */
     const char *Title() override {
         return "";

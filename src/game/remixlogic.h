@@ -119,6 +119,7 @@ public:
      *
      * @return Whether mState is kStateFinished.
      * @ghidraAddress NTSC-U/C: 0x00131f88
+     * @ghidraAddress PAL: 0x00133798
      */
     bool IsFinished() const override;
 
@@ -127,6 +128,7 @@ public:
      *
      * @return mQuit.
      * @ghidraAddress NTSC-U/C: 0x00131f98
+     * @ghidraAddress PAL: 0x001337a8
      */
     int HasQuit() const override;
 
@@ -186,6 +188,7 @@ public:
      * @return During a preview, the song position past mLoopBar as a fraction of the song length,
      *         otherwise 50.
      * @ghidraAddress NTSC-U/C: 0x00132020
+     * @ghidraAddress PAL: 0x00133830
      */
     float GetProgress() override;
 
@@ -286,6 +289,7 @@ public:
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x00133330
+     * @ghidraAddress PAL: 0x00134b40
      */
     void HandleInput(const StickEvent<2> &event) override;
 
@@ -294,6 +298,7 @@ public:
      *
      * @param event The event.
      * @ghidraAddress NTSC-U/C: 0x00133380
+     * @ghidraAddress PAL: 0x00134b90
      */
     void HandleInput(const StickEvent<6> &event) override;
 
@@ -315,6 +320,7 @@ public:
      *
      * @return Whether mState is kStatePlaying.
      * @ghidraAddress NTSC-U/C: 0x0033f088
+     * @ghidraAddress PAL: 0x003ac5c0
      */
     bool IsPlaying() const override {
         return mState == kStatePlaying;
@@ -443,6 +449,7 @@ private:
      * @param nTrack The track's index in the song.
      * @return The track, or null.
      * @ghidraAddress NTSC-U/C: 0x00133450
+     * @ghidraAddress PAL: 0x00134c60
      */
     PitchTrack *FindPitchTrack(int nTrack) const;
 
@@ -452,6 +459,7 @@ private:
      * @param nTrack The track's index in the song.
      * @return The track, or null.
      * @ghidraAddress NTSC-U/C: 0x001334a0
+     * @ghidraAddress PAL: 0x00134cb0
      */
     VoxTrack *FindVoxTrack(int nTrack) const;
 
@@ -665,6 +673,7 @@ private:
      * @param nTrack The track's index in the song.
      * @param bOn Switch the filter on.
      * @ghidraAddress NTSC-U/C: 0x00134e70
+     * @ghidraAddress PAL: 0x00136680
      */
     void SetFilter(int nTrack, bool bOn);
 
@@ -674,6 +683,7 @@ private:
      * @param nTrack The track's index in the song.
      * @param bOn Switch the stutter on.
      * @ghidraAddress NTSC-U/C: 0x00134ed8
+     * @ghidraAddress PAL: 0x001366e8
      */
     void SetStutter(int nTrack, bool bOn);
 
@@ -683,6 +693,7 @@ private:
      * @param nTrack The track's index in the song.
      * @param bOn Switch the chorus on.
      * @ghidraAddress NTSC-U/C: 0x00134f40
+     * @ghidraAddress PAL: 0x00136750
      */
     void SetChorus(int nTrack, bool bOn);
 
@@ -698,6 +709,7 @@ private:
      * Store the remix in the game database, with its rating, packed.
      *
      * @ghidraAddress NTSC-U/C: 0x00135090
+     * @ghidraAddress PAL: 0x001368a0
      */
     void SaveRemix();
 
@@ -866,6 +878,7 @@ private:
      * @param pMsg The message.
      * @return 0.
      * @ghidraAddress NTSC-U/C: 0x00136388
+     * @ghidraAddress PAL: 0x00137b88
      */
     int OnKeyboardKey(KeyboardKeyMsg *pMsg);
 

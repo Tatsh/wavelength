@@ -88,6 +88,7 @@ public:
      * @param bUnlocked Whether the song is unlocked.
      * @param bEncrypted Whether the song is locked and hidden.
      * @ghidraAddress NTSC-U/C: 0x0016f458
+     * @ghidraAddress PAL: 0x001726a8
      */
     void SetBandPicture(const char *pszSong, bool bSmall, bool bUnlocked, bool bEncrypted);
 
@@ -96,6 +97,7 @@ public:
      *
      * @param pszArena The arena.
      * @ghidraAddress NTSC-U/C: 0x0016f550
+     * @ghidraAddress PAL: 0x00172808
      */
     void SetArenaPicture(const char *pszArena);
 

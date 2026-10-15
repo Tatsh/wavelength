@@ -81,6 +81,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0034b970
+     * @ghidraAddress PAL: 0x003b8da0
      */
     Message *Clone() override {
         return new FreestylePacket(*this);
@@ -91,6 +92,7 @@ public:
      *
      * @return g_nFreestylePacketType.
      * @ghidraAddress NTSC-U/C: 0x0034b9f8
+     * @ghidraAddress PAL: 0x003b8e28
      */
     int Type() override {
         return g_nFreestylePacketType;
@@ -101,6 +103,7 @@ public:
      *
      * @return The literal `FreestylePacket`.
      * @ghidraAddress NTSC-U/C: 0x0034ba08
+     * @ghidraAddress PAL: 0x003b8e38
      */
     const char *GetName() const override {
         return "FreestylePacket";

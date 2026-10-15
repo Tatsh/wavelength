@@ -108,6 +108,7 @@ int sceInetCreate(sceSifMClientData *cd, int *buffer, sceInetParam *param);
  * @param timeout The timeout.
  * @return The result of the module, or LIBNET_ERROR_CALL.
  * @ghidraAddress NTSC-U/C: 0x00305758
+ * @ghidraAddress PAL: 0x0030f7f0
  */
 int sceInetOpen(sceSifMClientData *cd, int *buffer, int cid, int timeout);
 

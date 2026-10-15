@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039be68
+     * @ghidraAddress PAL: 0x0040aab0
      */
     ~AccountLoginTask() override = default;
 
@@ -40,6 +41,7 @@ protected:
      * Send the request with the name and the password.
      *
      * @ghidraAddress NTSC-U/C: 0x00263c88
+     * @ghidraAddress PAL: 0x0026d118
      */
     void OnStart() override;
 };

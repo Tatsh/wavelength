@@ -34,6 +34,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response.
      * @ghidraAddress NTSC-U/C: 0x00264420
+     * @ghidraAddress PAL: 0x0026dc00
      */
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusChannelInfoResponse *pResponse);

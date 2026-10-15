@@ -23,6 +23,7 @@ public:
      *
      * @param pData The description of the screen.
      * @ghidraAddress NTSC-U/C: 0x0017eae8
+     * @ghidraAddress PAL: 0x001827a8
      */
     explicit UploadNoteScreen(DataArray *pData);
 
@@ -99,6 +100,7 @@ private:
      * @param pMsg The message.
      * @return The result of UIScreen::HandleSelect().
      * @ghidraAddress NTSC-U/C: 0x0017ef08
+     * @ghidraAddress PAL: 0x00182bf0
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 

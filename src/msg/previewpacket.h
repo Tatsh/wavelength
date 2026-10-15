@@ -67,6 +67,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0033dfb0
+     * @ghidraAddress PAL: 0x003ab4e8
      */
     Message *Clone() override {
         return new PreviewPacket(*this);
@@ -77,6 +78,7 @@ public:
      *
      * @return g_nPreviewPacketType.
      * @ghidraAddress NTSC-U/C: 0x0033e028
+     * @ghidraAddress PAL: 0x003ab560
      */
     int Type() override {
         return g_nPreviewPacketType;
@@ -87,6 +89,7 @@ public:
      *
      * @return The literal `PreviewPacket`.
      * @ghidraAddress NTSC-U/C: 0x0033e038
+     * @ghidraAddress PAL: 0x003ab570
      */
     const char *GetName() const override {
         return "PreviewPacket";

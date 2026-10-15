@@ -19,6 +19,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039bb50
+     * @ghidraAddress PAL: 0x0040a798
      */
     ~TextFilterTask() override = default;
 
@@ -45,6 +46,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response.
      * @ghidraAddress NTSC-U/C: 0x00263828
+     * @ghidraAddress PAL: 0x0026cad8
      */
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusTextFilterResponse *pResponse);
@@ -58,6 +60,7 @@ protected:
      * Send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00263770
+     * @ghidraAddress PAL: 0x0026c9c8
      */
     void OnStart() override;
 };

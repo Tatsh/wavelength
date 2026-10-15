@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c1f8
+     * @ghidraAddress PAL: 0x0040aeb0
      */
     ~GetAnnouncementsTask() override = default;
 
@@ -29,6 +30,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response, whose text is edited in place.
      * @ghidraAddress NTSC-U/C: 0x00264618
+     * @ghidraAddress PAL: 0x0026de68
      */
     static void
     OnResponse(int nConnection, int nType, int nSize, rtMediusAnnouncementResponse *pResponse);
@@ -49,6 +51,7 @@ protected:
      * Clear the news and send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00264560
+     * @ghidraAddress PAL: 0x0026dda8
      */
     void OnStart() override;
 };

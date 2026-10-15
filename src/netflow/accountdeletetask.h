@@ -17,6 +17,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039bd88
+     * @ghidraAddress PAL: 0x0040a9d0
      */
     ~AccountDeleteTask() override = default;
 
@@ -40,6 +41,7 @@ protected:
      * Send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00263ab8
+     * @ghidraAddress PAL: 0x0026ce98
      */
     void OnStart() override;
 };

@@ -59,6 +59,7 @@ public:
      * Send the assignment to every console and schedule the next send.
      *
      * @ghidraAddress NTSC-U/C: 0x00127f30
+     * @ghidraAddress PAL: 0x00129728
      */
     void Broadcast();
 
@@ -77,6 +78,7 @@ public:
      * @param nPlayer The player.
      * @return The track, or -1 for none.
      * @ghidraAddress NTSC-U/C: 0x00128330
+     * @ghidraAddress PAL: 0x00129b28
      */
     int GetTrack(int nPlayer);
 

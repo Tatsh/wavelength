@@ -70,5 +70,6 @@ BinStream &operator<<(BinStream &stream, const NetGameParams &params);
  * @param params Receives the settings.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x0027c820
+ * @ghidraAddress PAL: 0x002861f0
  */
 BinStream &operator>>(BinStream &stream, NetGameParams &params);

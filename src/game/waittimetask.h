@@ -34,6 +34,7 @@ protected:
      * Set the end time from the song clock.
      *
      * @ghidraAddress NTSC-U/C: 0x001419a0
+     * @ghidraAddress PAL: 0x00143340
      */
     void OnStart() override;
 

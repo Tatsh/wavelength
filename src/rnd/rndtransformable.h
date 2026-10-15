@@ -120,6 +120,7 @@ public:
      *
      * @param stream The stream to read from.
      * @ghidraAddress NTSC-U/C: 0x00244e18
+     * @ghidraAddress PAL: 0x0024d8f0
      */
     void Load(BinStream &stream) override;
 

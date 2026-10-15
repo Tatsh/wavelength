@@ -16,6 +16,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039bed8
+     * @ghidraAddress PAL: 0x0040ab20
      */
     ~SetupLocalPlayerTask() override = default;
 

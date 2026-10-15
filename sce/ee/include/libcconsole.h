@@ -91,6 +91,7 @@ int LibcConsoleIsatty(int nFile);
  * @param pStat Receives the description.
  * @return Always 0.
  * @ghidraAddress NTSC-U/C: 0x003176a8
+ * @ghidraAddress PAL: 0x00383f90
  */
 int LibcConsoleFstat(int nFile, struct stat *pStat);
 

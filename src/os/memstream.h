@@ -35,6 +35,7 @@ public:
      * @param pData The destination.
      * @param nBytes The number of bytes.
      * @ghidraAddress NTSC-U/C: 0x0029ca38
+     * @ghidraAddress PAL: 0x002a6660
      */
     void Read(void *pData, int nBytes) override;
 
@@ -44,6 +45,7 @@ public:
      * @param pData The source.
      * @param nBytes The number of bytes.
      * @ghidraAddress NTSC-U/C: 0x0029cab0
+     * @ghidraAddress PAL: 0x002a66d8
      */
     void Write(const void *pData, int nBytes) override;
 
@@ -51,6 +53,7 @@ public:
      * Do nothing, since the bytes stay in memory.
      *
      * @ghidraAddress NTSC-U/C: 0x003ab218
+     * @ghidraAddress PAL: 0x00419f78
      */
     void Flush() override;
 
@@ -60,6 +63,7 @@ public:
      * @param nOffset The offset in bytes.
      * @param eFrom The origin of the offset.
      * @ghidraAddress NTSC-U/C: 0x0029cb90
+     * @ghidraAddress PAL: 0x002a67b8
      */
     void Seek(int nOffset, SeekType eFrom) override;
 
@@ -68,6 +72,7 @@ public:
      *
      * @return The position in bytes.
      * @ghidraAddress NTSC-U/C: 0x003ab220
+     * @ghidraAddress PAL: 0x00419f80
      */
     int Tell() override;
 
@@ -76,6 +81,7 @@ public:
      *
      * @return Whether no byte is left.
      * @ghidraAddress NTSC-U/C: 0x003ab228
+     * @ghidraAddress PAL: 0x00419f88
      */
     bool Eof() override;
 
@@ -84,6 +90,7 @@ public:
      *
      * @return Whether a transfer failed.
      * @ghidraAddress NTSC-U/C: 0x003ab248
+     * @ghidraAddress PAL: 0x00419fa8
      */
     bool Fail() override;
 

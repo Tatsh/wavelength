@@ -87,6 +87,7 @@ public:
      * @param pMsg The message.
      * @return The result of SetupRemixSaveScreen::HandleTransitionComplete().
      * @ghidraAddress NTSC-U/C: 0x0018b398
+     * @ghidraAddress PAL: 0x00191a50
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 

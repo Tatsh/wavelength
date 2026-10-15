@@ -40,6 +40,7 @@ protected:
      * Send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x0025b470
+     * @ghidraAddress PAL: 0x002644c0
      */
     void OnStart() override;
 };

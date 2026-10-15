@@ -17,6 +17,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039c508
+     * @ghidraAddress PAL: 0x0040b1c0
      */
     ~GetGamePlayersTask() override = default;
 
@@ -31,6 +32,7 @@ public:
      * @param nSize The size of the response.
      * @param pResponse The response.
      * @ghidraAddress NTSC-U/C: 0x002651e0
+     * @ghidraAddress PAL: 0x0026ebf0
      */
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusGamePlayersResponse *pResponse);
@@ -40,6 +42,7 @@ protected:
      * Clear the players and send the request.
      *
      * @ghidraAddress NTSC-U/C: 0x00265128
+     * @ghidraAddress PAL: 0x0026eb38
      */
     void OnStart() override;
 };

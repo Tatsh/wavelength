@@ -328,6 +328,7 @@ public:
      *
      * @param xfm The transform.
      * @ghidraAddress NTSC-U/C: 0x00234df8
+     * @ghidraAddress PAL: 0x0023d978
      */
     void TransformVerts(const Transform &xfm);
 
@@ -342,6 +343,7 @@ public:
      * @param nV2 The corner of the second row beside nV0.
      * @param nV3 The corner of the second row beside nV1.
      * @ghidraAddress NTSC-U/C: 0x001cb608
+     * @ghidraAddress PAL: 0x001d43a8
      */
     void AddQuad(unsigned short nV0, unsigned short nV1, unsigned short nV2, unsigned short nV3);
 
@@ -357,6 +359,7 @@ public:
      * @param nStride The distance between two neighbouring vertices of a row.
      * @param nStep The vertices a quad spans.
      * @ghidraAddress NTSC-U/C: 0x001cba30
+     * @ghidraAddress PAL: 0x001d47d0
      */
     void AddQuadStrip(int nRowA, int nRowB, int nCount, int nStride, int nStep);
 
@@ -389,6 +392,7 @@ public:
      * @param normA The normal of the first edge.
      * @param normB The normal of the second edge.
      * @ghidraAddress NTSC-U/C: 0x001cbac8
+     * @ghidraAddress PAL: 0x001d4868
      */
     void FillEdges(int nEdgeA,
                    int nEdgeB,

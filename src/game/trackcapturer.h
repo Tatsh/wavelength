@@ -326,6 +326,7 @@ public:
      *
      * @return The ticks.
      * @ghidraAddress NTSC-U/C: 0x0034cf40
+     * @ghidraAddress PAL: 0x003ba370
      */
     int GetTicksPerBar() const override {
         return mTicksPerBar;
@@ -336,6 +337,7 @@ public:
      *
      * @return The player, or null.
      * @ghidraAddress NTSC-U/C: 0x0034cf48
+     * @ghidraAddress PAL: 0x003ba378
      */
     Player *GetPlayer() const override {
         return mPlayer;

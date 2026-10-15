@@ -76,6 +76,7 @@ protected:
      * @param pMsg The message that reported the end of the move.
      * @return False.
      * @ghidraAddress NTSC-U/C: 0x0018c2a0
+     * @ghidraAddress PAL: 0x00192a58
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 

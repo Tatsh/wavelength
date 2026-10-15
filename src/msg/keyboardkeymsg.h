@@ -55,6 +55,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x003a75d0
+     * @ghidraAddress PAL: 0x004162b0
      */
     Message *Clone() override {
         return new KeyboardKeyMsg(*this);
@@ -65,6 +66,7 @@ public:
      *
      * @return g_nKeyboardKeyMsgType.
      * @ghidraAddress NTSC-U/C: 0x003a7620
+     * @ghidraAddress PAL: 0x00416300
      */
     int Type() override {
         return g_nKeyboardKeyMsgType;
@@ -75,6 +77,7 @@ public:
      *
      * @return The literal `KeyboardKeyMsg`.
      * @ghidraAddress NTSC-U/C: 0x003a7630
+     * @ghidraAddress PAL: 0x00416310
      */
     const char *GetName() const override {
         return "KeyboardKeyMsg";

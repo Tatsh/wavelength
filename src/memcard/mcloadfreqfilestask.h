@@ -42,6 +42,7 @@ protected:
      * Size the profiles to the files, sort the files, and start loading the newest.
      *
      * @ghidraAddress NTSC-U/C: 0x00160510
+     * @ghidraAddress PAL: 0x00162d70
      */
     void OnStart() override;
 
@@ -49,6 +50,7 @@ protected:
      * Decode a loaded file into its profile and start loading the next.
      *
      * @ghidraAddress NTSC-U/C: 0x001606f0
+     * @ghidraAddress PAL: 0x00162ef8
      */
     void OnPoll() override;
 

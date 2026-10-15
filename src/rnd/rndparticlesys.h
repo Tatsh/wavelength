@@ -339,6 +339,7 @@ public:
      * @param pszName The registry key.
      * @return The system.
      * @ghidraAddress NTSC-U/C: 0x00390790
+     * @ghidraAddress PAL: 0x003fee98
      */
     static RndObject *New(const char *pszName) {
         return new RndParticleSys(pszName);

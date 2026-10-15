@@ -82,6 +82,7 @@ public:
      *
      * @return The copy.
      * @ghidraAddress NTSC-U/C: 0x0033e168
+     * @ghidraAddress PAL: 0x003ab6a0
      */
     Message *Clone() override {
         return new RemixerUpdatePacket(*this);
@@ -92,6 +93,7 @@ public:
      *
      * @return g_nRemixerUpdatePacketType.
      * @ghidraAddress NTSC-U/C: 0x0033e1e8
+     * @ghidraAddress PAL: 0x003ab720
      */
     int Type() override {
         return g_nRemixerUpdatePacketType;
@@ -102,6 +104,7 @@ public:
      *
      * @return The literal `RemixerUpdatePacket`.
      * @ghidraAddress NTSC-U/C: 0x0033e1f8
+     * @ghidraAddress PAL: 0x003ab730
      */
     const char *GetName() const override {
         return "RemixerUpdatePacket";

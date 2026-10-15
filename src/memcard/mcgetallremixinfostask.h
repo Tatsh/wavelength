@@ -29,6 +29,7 @@ public:
      * @param nPort The memory card slot.
      * @param pInfos Receives one description for each file.
      * @ghidraAddress NTSC-U/C: 0x00161528
+     * @ghidraAddress PAL: 0x00164068
      */
     void Set(int nPort, std::vector<RemixInfo> *pInfos);
 
@@ -42,6 +43,7 @@ protected:
      * Size the descriptions to the files and start reading the first.
      *
      * @ghidraAddress NTSC-U/C: 0x00161578
+     * @ghidraAddress PAL: 0x001640a0
      */
     void OnStart() override;
 
@@ -49,6 +51,7 @@ protected:
      * Decode a read description and start reading the next.
      *
      * @ghidraAddress NTSC-U/C: 0x00161720
+     * @ghidraAddress PAL: 0x001641c0
      */
     void OnPoll() override;
 
@@ -57,6 +60,7 @@ private:
      * Start reading the file at mIter, or finish once every file was read.
      *
      * @ghidraAddress NTSC-U/C: 0x001616a0
+     * @ghidraAddress PAL: 0x00164138
      */
     void ReadNext();
 };

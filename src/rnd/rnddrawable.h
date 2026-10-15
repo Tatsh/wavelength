@@ -38,6 +38,7 @@ public:
      *
      * @param objects The list to add to.
      * @ghidraAddress NTSC-U/C: 0x003809a0
+     * @ghidraAddress PAL: 0x003ef0b8
      */
     virtual void ListDrawObjects(std::list<RndObject *> &objects);
 
@@ -57,6 +58,7 @@ public:
      *
      * @param nShowing Non-zero to draw.
      * @ghidraAddress NTSC-U/C: 0x00380b00
+     * @ghidraAddress PAL: 0x003ef218
      */
     virtual void SetShowing(int nShowing) {
         mShowing = nShowing;
@@ -78,6 +80,7 @@ public:
      *
      * @return Non-zero when the children are to be drawn as well.
      * @ghidraAddress NTSC-U/C: 0x00380b08
+     * @ghidraAddress PAL: 0x003ef220
      */
     virtual int DrawShowing() {
         return 1;
@@ -130,6 +133,7 @@ public:
      *
      * @param stream The stream to read from.
      * @ghidraAddress NTSC-U/C: 0x00224750
+     * @ghidraAddress PAL: 0x0022d518
      */
     void Load(BinStream &stream) override;
 
@@ -223,6 +227,7 @@ protected:
      * The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x00224640
+     * @ghidraAddress PAL: 0x0022d408
      */
     void ReleaseDrawRefs();
 
@@ -232,6 +237,7 @@ protected:
      * The name is inferred.
      *
      * @ghidraAddress NTSC-U/C: 0x002246c8
+     * @ghidraAddress PAL: 0x0022d490
      */
     void AcquireDrawRefs();
 };

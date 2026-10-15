@@ -67,6 +67,7 @@ public:
      * @param pPrevScreen The screen this one replaces, or null.
      * @param fTime The front-end time in milliseconds.
      * @ghidraAddress NTSC-U/C: 0x0018e3a0
+     * @ghidraAddress PAL: 0x00195360
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 

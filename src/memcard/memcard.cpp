@@ -98,7 +98,7 @@ public:
         Finish(nResult);
     }
 
-    // NTSC-U/C: 0x003a7188
+    // NTSC-U/C: 0x003a7188, PAL: 0x00415e68
     void OnGetDir(int /*nResult*/, MemcardDirEntry *pEntries) override {
         mEntries = pEntries; // Yes, the binary drops the count and retains kNoResult.
         mDone = 1;

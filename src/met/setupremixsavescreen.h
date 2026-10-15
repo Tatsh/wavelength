@@ -80,6 +80,7 @@ public:
      * remix under the name with `save_remix`.
      *
      * @ghidraAddress NTSC-U/C: 0x0018a7a8
+     * @ghidraAddress PAL: 0x00190cf0
      */
     void Proceed() override;
 

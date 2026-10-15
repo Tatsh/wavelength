@@ -34,6 +34,7 @@ public:
      *
      * @param pnIndex Not used.
      * @ghidraAddress NTSC-U/C: 0x0029da40
+     * @ghidraAddress PAL: 0x002a7708
      */
     void Parse(int *pnIndex) override;
 

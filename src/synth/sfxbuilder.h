@@ -43,6 +43,7 @@ public:
      *
      * @param nTrack The track index.
      * @ghidraAddress NTSC-U/C: 0x003a63c8
+     * @ghidraAddress PAL: 0x004150a8
      */
     void OnNewTrack([[maybe_unused]] unsigned char nTrack) override {
     }
@@ -59,6 +60,7 @@ public:
      * Ignore the end of the file.
      *
      * @ghidraAddress NTSC-U/C: 0x003a63d0
+     * @ghidraAddress PAL: 0x004150b0
      */
     void OnAllDone() override {
     }
@@ -107,6 +109,7 @@ public:
      * @param nNumerator The beats per bar.
      * @param nDenominator The beat unit.
      * @ghidraAddress NTSC-U/C: 0x003a63d8
+     * @ghidraAddress PAL: 0x004150b8
      */
     void OnTimeSignature([[maybe_unused]] int nTick,
                          [[maybe_unused]] int nNumerator,

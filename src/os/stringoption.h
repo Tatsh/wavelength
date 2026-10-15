@@ -26,6 +26,7 @@ public:
      *
      * @param pnIndex The index of the argument, advanced past it.
      * @ghidraAddress NTSC-U/C: 0x0029da60
+     * @ghidraAddress PAL: 0x002a7728
      */
     void Parse(int *pnIndex) override;
 
