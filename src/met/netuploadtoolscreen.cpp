@@ -104,6 +104,9 @@ void NetUploadToolScreen::ParseNames(
     char szTitleB[kUploadPartSize] = "";
     SplitUploadName(pszA, szDateA, szSongA, szTitleA);
     SplitUploadName(pszB, szDateB, szSongB, szTitleB);
+    // The binary copies each part without its terminator into the zeroed buffer of the caller.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
     if (nPart == kNamePartDate) {
         std::strncpy(pszPartB, szDateB, std::strlen(szDateB));
         std::strncpy(pszPartA, szDateA, std::strlen(szDateA));
@@ -114,6 +117,7 @@ void NetUploadToolScreen::ParseNames(
         std::strncpy(pszPartB, szTitleB, std::strlen(szTitleB));
         std::strncpy(pszPartA, szTitleA, std::strlen(szTitleA));
     }
+#pragma GCC diagnostic pop
 }
 
 bool NetUploadToolScreen::LessBySong(const UploadInfo &a, const UploadInfo &b) {
