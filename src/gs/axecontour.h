@@ -47,7 +47,7 @@ public:
          * @param nNote The MIDI note number.
          * @param nDuration The length of the note. The body does not read it.
          * @ghidraAddress NTSC-U/C: 0x0034d3c0
-         * @ghidraAddress PAL: 0x003ba770
+         * @ghidraAddress PAL: 0x003ba7f0
          */
         void OnNote(unsigned char nNote, [[maybe_unused]] int nDuration) override {
             mContour->mCurrentNote = nNote;

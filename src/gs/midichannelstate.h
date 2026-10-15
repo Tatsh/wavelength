@@ -70,6 +70,7 @@ public:
      *
      * @param nChannel The MIDI channel.
      * @ghidraAddress NTSC-U/C: 0x00158e08
+     * @ghidraAddress PAL: 0x0015a690
      */
     void SetChannel(unsigned char nChannel);
 

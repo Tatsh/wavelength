@@ -128,7 +128,7 @@ public:
      *
      * @return The literal `ArbiterPacket`.
      * @ghidraAddress NTSC-U/C: 0x00347b50
-     * @ghidraAddress PAL: 0x003b4ec0
+     * @ghidraAddress PAL: 0x003b4f80
      */
     const char *GetName() const override {
         return "ArbiterPacket";

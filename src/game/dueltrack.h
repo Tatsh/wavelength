@@ -164,6 +164,7 @@ public:
      *
      * @return The ticks.
      * @ghidraAddress NTSC-U/C: 0x003352f8
+     * @ghidraAddress PAL: 0x003a28a8
      */
     int GetTicksPerBar() const override {
         return mTicksPerBar;
@@ -174,6 +175,7 @@ public:
      *
      * @return The player.
      * @ghidraAddress NTSC-U/C: 0x00335300
+     * @ghidraAddress PAL: 0x003a28b0
      */
     Player *GetPlayer() const override {
         return mSidePlayer;
@@ -185,6 +187,7 @@ public:
      * @param nBar The bar.
      * @return True.
      * @ghidraAddress NTSC-U/C: 0x0010bdc0
+     * @ghidraAddress PAL: 0x0010d4f8
      */
     bool IsBarActive(int nBar) override;
 
