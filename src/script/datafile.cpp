@@ -281,6 +281,9 @@ DataArray *DataArray::Read(const char *pszPath, BinStream *pStream) {
             return nullptr;
         }
     }
+#ifdef VIDEO_STANDARD_PAL
+    g_pDataParseStream->EnableReadEncryption();
+#endif
     g_pszDataParseFile = LookupSymbol(pszPath);
     if (g_pszDataParseFile == nullptr) {
         g_pszDataParseFile = AddSymbol(pszPath);
@@ -293,6 +296,9 @@ DataArray *DataArray::Read(const char *pszPath, BinStream *pStream) {
     std::vector<const char *> files;
     ReadSymbols(*g_pDataParseStream, files);
     DataArray *pArray = new DataArray(*g_pDataParseStream, files);
+#ifdef VIDEO_STANDARD_PAL
+    g_pDataParseStream->DisableEncryption();
+#endif
     if (pStream == nullptr) {
         delete g_pDataParseStream;
         g_pDataParseStream = nullptr;
