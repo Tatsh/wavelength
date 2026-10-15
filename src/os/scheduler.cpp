@@ -264,11 +264,19 @@ void Scheduler::Poll() {
         if (mRecorder != nullptr && it->mRecordable) {
             mRecorder->Record(*it);
         }
-        Ptr<Command> command(it->mCommand);
-        mTime = it->mTime;
-        mTick = it->mTick;
-        mCommands->erase(it);
-        command->Execute();
+        {
+            Ptr<Command> command(it->mCommand);
+            mTime = it->mTime;
+            mTick = it->mTick;
+            mCommands->erase(it);
+            command->Execute();
+        }
+#ifdef VIDEO_STANDARD_PAL
+        // A command that stopped the clock ends the frame's commands.
+        if (!IsRunning()) {
+            break;
+        }
+#endif
     }
     mTime = mFrameTime;
     mTick = mFrameTick;

@@ -67,6 +67,8 @@ typedef struct {
 #define SCE_WRONLY 0x0002
 /** Open for reading and writing. */
 #define SCE_RDWR 0x0003
+/** Write each request at the end of the file. */
+#define SCE_APPEND 0x0100
 /** Create the file when it does not exist. */
 #define SCE_CREAT 0x0200
 /** Truncate the file on opening. */

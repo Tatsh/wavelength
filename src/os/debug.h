@@ -3,6 +3,10 @@
 #include "os/binstream.h"
 #include "os/prnstream.h"
 
+#ifdef VIDEO_STANDARD_PAL
+#include "os/file.h"
+#endif
+
 /**
  * Stream for diagnostic text, written to standard output or to a log file.
  *
@@ -37,6 +41,19 @@ public:
      */
     void Print(const char *pszText) override;
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Write the text to a log file from now on, replacing any log file. A file that cannot be
+     * opened reports a notice and leaves no log file.
+     *
+     * The name is inferred.
+     *
+     * @param pszFile The file.
+     * @param bAppend Add to the end of the file instead of emptying it.
+     * @ghidraAddress PAL: 0x00292750
+     */
+    void OpenLog(const char *pszFile, bool bAppend);
+#else
     /**
      * Write the text to a log file from now on, replacing any log file. A file that cannot be
      * opened reports a notice and leaves no log file.
@@ -45,9 +62,9 @@ public:
      *
      * @param pszFile The file.
      * @ghidraAddress NTSC-U/C: 0x00288f38
-     * @ghidraAddress PAL: 0x00292750
      */
     void OpenLog(const char *pszFile);
+#endif
 
     /**
      * Close the log file, if any.
@@ -74,7 +91,11 @@ private:
     int mReserved08; // +0x08, cleared by the constructor and not yet identified.
     int mReserved0C; // +0x0c, cleared by the constructor and not yet identified.
     int mEnabled;    // Non-zero while the stream writes.
+#ifdef VIDEO_STANDARD_PAL
+    File *mLog; // The log file, or null for standard output.
+#else
     BinStream *mLog; // The log file, or null for standard output.
+#endif
 
 public:
     /** The routine the renderer installs to show a message, or null. The name is inferred. */

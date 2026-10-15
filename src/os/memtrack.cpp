@@ -77,7 +77,11 @@ static void HeapReport(DataArray *pCommand, void * /* pUserData */) {
     strcpy(szFile, FormatString("mem_%s.txt", pszKind));
     const bool bUsingCD = UsingCD();
     SetUsingCD(false);
+#ifdef VIDEO_STANDARD_PAL
+    TheDebug.OpenLog(szFile, false);
+#else
     TheDebug.OpenLog(szFile);
+#endif
     for (int i = kCommandFirstHeap; i < pCommand->Size(); ++i) {
         const int nHeap = pCommand->Int(i);
         if (strcmp(pszKind, "report") == 0) {

@@ -2,11 +2,21 @@
 
 #include <stdio.h>
 
+#ifdef VIDEO_STANDARD_PAL
+#include <sifdev.h>
+#else
 #include "os/filestream.h"
+#endif
 
 namespace {
 
 constexpr char kNewline = '\n';
+
+#ifdef VIDEO_STANDARD_PAL
+// The File::New() modes of a log file that is added to and of one that is emptied first.
+constexpr int kAppendLogMode = SCE_WRONLY | SCE_CREAT | SCE_APPEND;
+constexpr int kNewLogMode = SCE_WRONLY | SCE_CREAT | SCE_TRUNC;
+#endif
 
 } // namespace
 
@@ -40,6 +50,15 @@ void Debug::Print(const char *pszText) {
     }
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void Debug::OpenLog(const char *pszFile, bool bAppend) {
+    CloseLog();
+    mLog = File::New(pszFile, bAppend ? kAppendLogMode : kNewLogMode, 0);
+    if (mLog == nullptr) {
+        DebugNotify("Couldn't open log %s", pszFile);
+    }
+}
+#else
 void Debug::OpenLog(const char *pszFile) {
     CloseLog();
     mLog = new FileStream(pszFile, true, true, 0);
@@ -49,6 +68,7 @@ void Debug::OpenLog(const char *pszFile) {
         mLog = nullptr;
     }
 }
+#endif
 
 void Debug::CloseLog() {
     delete mLog;

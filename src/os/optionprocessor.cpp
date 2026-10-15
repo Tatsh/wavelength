@@ -41,7 +41,11 @@ void OptionProcessor::Process(int argc, char **argv) {
                 }
             }
             if (it == mOptions.end()) {
+#ifdef VIDEO_STANDARD_PAL
+                DebugPrint("OptionProcessor: Didn't recognize option %s\n", argv[mIndex]);
+#else
                 DebugError("OptionProcessor: Didn't recognize option %s\n", argv[mIndex]);
+#endif
                 ++mIndex;
             }
         } while (mIndex < mArgc && argv[mIndex][0] == '-');
