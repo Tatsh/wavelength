@@ -145,7 +145,11 @@ static int _send_to_iop(int nPort, int nSlot) {
 
     if (pState->nDmaId == 0 || sceSifDmaStat(pState->nDmaId) < 0) {
         ++pDirect->nCount;
+#ifdef VIDEO_STANDARD_PAL
+        SyncDCache(pDirect, (unsigned char *)(pDirect + 1) - 1);
+#else
         SyncDCache(pDirect, pDirect + 1);
+#endif
         dma.data = (uintptr_t)pDirect;
         dma.addr = pState->nIopAddress + (pDirect->nCount & 1) * sizeof(PadDirectPacket);
         dma.size = sizeof(PadDirectPacket);
@@ -261,11 +265,31 @@ int scePadPortOpen(int nPort, int nSlot, scePadDmaFrame *pFrames) {
 scePadDmaFrame *scePadGetDmaStr(int nPort, int nSlot) {
     scePadDmaFrame *pFrames = g_aaPadPorts[nPort][nSlot].pFrames;
 
+#ifdef VIDEO_STANDARD_PAL
+    SyncDCache(pFrames, (unsigned char *)&pFrames[kPadFrameCount] - 1);
+#else
     SyncDCache(pFrames, &pFrames[kPadFrameCount]);
+#endif
     return &pFrames[pFrames[0].nFrame < pFrames[1].nFrame];
 }
 
 int scePadRead(int nPort, int nSlot, unsigned char *pData) {
+#ifdef VIDEO_STANDARD_PAL
+    scePadDmaFrame frame;
+    int bInterrupts;
+
+    if (g_aaPadPorts[nPort][nSlot].nOpen == 0) {
+        return 0;
+    }
+    // The IOP can replace the frame during the copy, so the copy runs with interrupts disabled.
+    bInterrupts = DIntr();
+    frame = *scePadGetDmaStr(nPort, nSlot);
+    memcpy(pData, frame.abData, frame.nLength);
+    if (bInterrupts == 1) {
+        EIntr();
+    }
+    return frame.nLength;
+#else
     const scePadDmaFrame *pFrame;
 
     if (g_aaPadPorts[nPort][nSlot].nOpen == 0) {
@@ -274,6 +298,7 @@ int scePadRead(int nPort, int nSlot, unsigned char *pData) {
     pFrame = scePadGetDmaStr(nPort, nSlot);
     memcpy(pData, pFrame->abData, pFrame->nLength);
     return pFrame->nLength;
+#endif
 }
 
 int scePadGetState(int nPort, int nSlot) {

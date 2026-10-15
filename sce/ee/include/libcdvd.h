@@ -161,9 +161,10 @@ int sceCdSyncS(int mode);
  *
  * @param mode #SCECdBlock to wait for the drive, #SCECdNonblock to report at once.
  * @return #SCECdComplete or #SCECdNotReady. A busy library or a failed call reports
- * #SCECdNotReady, or -1 for mode 8.
+ * #SCECdNotReady, or -1 for mode 8. In the PAL build the query falls back to the older disk-ready
+ * server when the newer one gives 18 empty bind replies.
  * @ghidraAddress NTSC-U/C: 0x00314dd0
- * @ghidraAddress PAL: 0x00381470
+ * @ghidraAddress PAL: 0x00381668
  */
 int sceCdDiskReady(int mode);
 
@@ -259,6 +260,7 @@ int sceCdLayerSearchFile(sceCdlFILE *fp, const char *name, int layer);
  * @param addr Argument the callback receives.
  * @return The previous callback.
  * @ghidraAddress NTSC-U/C: 0x00314200
+ * @ghidraAddress PAL: 0x00380880
  */
 sceCdPOffFunc sceCdPOffCallback(sceCdPOffFunc func, void *addr);
 

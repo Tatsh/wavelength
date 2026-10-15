@@ -11,6 +11,12 @@ enum {
     kCdServerNCmd = 0x80000595,
     kCdServerSearchFile = 0x80000597,
     kCdServerDiskReady = 0x8000059c,
+#ifdef VIDEO_STANDARD_PAL
+    // The server the fallback disk-ready query binds when the newer one does not respond.
+    kCdServerOldDiskReady = 0x8000059a,
+    // The number of empty bind replies sceCdDiskReady() retries before it falls back.
+    kDiskReadyBindRetries = 17,
+#endif
     // The SIF command the IOP raises before the console powers off.
     kCdPOffCommand = 0x80000012,
 
@@ -223,6 +229,10 @@ static sceSifClientData g_cdSCmdClient __attribute__((aligned(kCacheLine)));
 static sceCdCBFunc g_pfnCdCallback;
 // NTSC-U/C: 0x00530dc4
 static sceCdPOffFunc g_pfnCdPOffCallback;
+#ifdef VIDEO_STANDARD_PAL
+// The global pointer of the code that installed g_pfnCdPOffCallback.
+static void *g_pCdPOffGlobalPointer;
+#endif
 // NTSC-U/C: 0x00530dc8
 static void *g_pCdPOffArgument;
 // NTSC-U/C: 0x00530dd0
@@ -295,7 +305,7 @@ static void sceCdDelayThread(unsigned short nTicks) {
     DeleteSema(nSemaId);
 }
 
-// NTSC-U/C: 0x00313f40
+// NTSC-U/C: 0x00313f40, PAL: 0x003805c8
 // Runs in interrupt context when an asynchronous N-command ends.
 static void sceCdRpcEnd(void *pFunction) {
     g_nCdCallbackFunction = *(volatile int *)pFunction;
@@ -323,7 +333,7 @@ CdCopyEdge(unsigned char *pDest, const volatile unsigned char *pSource, int nInd
     pDest[nIndex] = nValue;
 }
 
-// NTSC-U/C: 0x00313ff0, PAL: 0x003805c8
+// NTSC-U/C: 0x00313ff0, PAL: 0x00380670
 // Runs in interrupt context when sceCdRead() ends.
 static void cd_read_intr(void *pEdges) {
     volatile CdReadEdges *pUncached = UNCACHED_SEG(pEdges);
@@ -383,12 +393,24 @@ static void sceCdSemaExit(void) {
     }
 }
 
-// NTSC-U/C: 0x00314278
+// NTSC-U/C: 0x00314278, PAL: 0x00380900
 static void sceCdPOffHandler(void *pPacket, void *pData) {
+#ifdef VIDEO_STANDARD_PAL
+    void *pGlobalPointer;
+#endif
+
     (void)pPacket;
     (void)pData;
     if (g_pfnCdPOffCallback != NULL && g_bCdPOffBlocked == 0) {
+#ifdef VIDEO_STANDARD_PAL
+        // The callback runs with the global pointer of the code that installed it.
+        __asm__ volatile("move %0, $gp" : "=r"(pGlobalPointer));
+        __asm__ volatile("move $gp, %0" : : "r"(g_pCdPOffGlobalPointer));
         g_pfnCdPOffCallback(g_pCdPOffArgument);
+        __asm__ volatile("move $gp, %0" : : "r"(pGlobalPointer));
+#else
+        g_pfnCdPOffCallback(g_pCdPOffArgument);
+#endif
     }
 }
 
@@ -418,6 +440,9 @@ sceCdPOffFunc sceCdPOffCallback(sceCdPOffFunc func, void *addr) {
     pfnPrevious = g_pfnCdPOffCallback;
     g_pCdPOffArgument = addr;
     g_pfnCdPOffCallback = func;
+#ifdef VIDEO_STANDARD_PAL
+    __asm__ volatile("sw $gp, %0" : "=m"(g_pCdPOffGlobalPointer));
+#endif
     if (bInterrupts) {
         EIntr();
     }
@@ -666,8 +691,57 @@ int sceCdInit(int init_mode) {
     return nResult;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+// PAL: 0x00381470. The disk-ready query of the earlier library, which runs under the S-command
+// semaphore and receives into the S-command buffer. The name is inferred.
+static int sceCdOldDiskReady(int mode) {
+    int nResult;
+
+    if (g_nCdDebug > 0) {
+        scePrintf("OLD DiskReady Call\n");
+    }
+    cmd_sem_init();
+    if (PollSema(g_nCdSCmdSemaId) != g_nCdSCmdSemaId) {
+        return SCECdNotReady; // Unlike the other busy paths, mode 8 does not report -1 here.
+    }
+    if (sceCdSyncS(SCECdNonblock) != 0) {
+        SignalSema(g_nCdSCmdSemaId);
+        return (mode == kDiskReadyModeReportBusy) ? kDiskReadyBusy : SCECdNotReady;
+    }
+    sceSifInitRpc(0);
+    if (g_nCdDiskReadyBound < 0) {
+        sceCdBindServer(
+            &g_cdDiskReadyClient, kCdServerOldDiskReady, "Libcdvd bind err CdDiskReady\n");
+        g_nCdDiskReadyBound = kBound;
+    }
+    g_nCdDiskReadySend = (unsigned int)mode;
+    sceSifWriteBackDCache(&g_nCdDiskReadySend, sizeof(g_nCdDiskReadySend));
+    if (sceSifCallRpc(&g_cdDiskReadyClient,
+                      0,
+                      0,
+                      &g_nCdDiskReadySend,
+                      sizeof(g_nCdDiskReadySend),
+                      g_anCdSCmdReceive,
+                      sizeof(g_anCdSCmdReceive[0]),
+                      NULL,
+                      NULL) < 0) {
+        SignalSema(g_nCdSCmdSemaId);
+        return (mode == kDiskReadyModeReportBusy) ? kDiskReadyBusy : SCECdNotReady;
+    }
+    if (g_nCdDebug > 0) {
+        scePrintf("DiskReady ended\n");
+    }
+    nResult = sceCdReceivedWord(g_anCdSCmdReceive);
+    SignalSema(g_nCdSCmdSemaId);
+    return nResult;
+}
+#endif
+
 int sceCdDiskReady(int mode) {
     int nResult;
+#ifdef VIDEO_STANDARD_PAL
+    int nEmptyReplies;
+#endif
 
     if (g_nCdDebug > 0) {
         scePrintf("NEW DiskReady Call\n");
@@ -678,7 +752,26 @@ int sceCdDiskReady(int mode) {
     }
     sceSifInitRpc(0);
     if (g_nCdDiskReadyBound < 0) {
+#ifdef VIDEO_STANDARD_PAL
+        nEmptyReplies = 0;
+        for (;;) {
+            if (sceSifBindRpc(&g_cdDiskReadyClient, kCdServerDiskReady, 0) < 0) {
+                if (g_nCdDebug > 0) {
+                    scePrintf("Libcdvd bind err CdDiskReady\n");
+                }
+            } else if (g_cdDiskReadyClient.serve != NULL) {
+                break;
+            } else if (nEmptyReplies >= kDiskReadyBindRetries) {
+                SignalSema(g_nCdDiskReadySemaId);
+                return sceCdOldDiskReady(mode);
+            } else {
+                ++nEmptyReplies;
+            }
+            sceCdBindDelay();
+        }
+#else
         sceCdBindServer(&g_cdDiskReadyClient, kCdServerDiskReady, "Libcdvd bind err CdDiskReady\n");
+#endif
         g_nCdDiskReadyBound = kBound;
     }
     g_nCdDiskReadySend = (unsigned int)mode;

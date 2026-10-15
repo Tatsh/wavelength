@@ -255,7 +255,7 @@ int DisableDmac(int channel);
  * @param arg Argument for the handler.
  * @return Alarm identifier, or a negative value when every alarm is in use.
  * @ghidraAddress NTSC-U/C: 0x00316ca0
- * @ghidraAddress PAL: 0x00383570
+ * @ghidraAddress PAL: 0x00383560
  */
 int SetAlarm(unsigned short time,
              void (*handler)(int id, unsigned short time, void *arg),
@@ -302,7 +302,7 @@ int DeleteThread(int thid);
  * @param arg Argument for the entry point.
  * @return Non-negative on success, negative on failure.
  * @ghidraAddress NTSC-U/C: 0x00316d40
- * @ghidraAddress PAL: 0x00383630
+ * @ghidraAddress PAL: 0x00383600
  */
 int StartThread(int thid, void *arg);
 

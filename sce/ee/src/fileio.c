@@ -218,8 +218,13 @@ typedef struct {
     void *pArg;
 } FsDeferredCallback;
 
-// NTSC-U/C: 0x003c47b0, the version the library reports, the last four bytes of its build tag.
+// NTSC-U/C: 0x003c47b0, PAL: 0x0045abf8, the version the library reports, the last four bytes of
+// its build tag.
+#ifdef VIDEO_STANDARD_PAL
+static const char g_abFsLibraryVersion[4] = {'2', '7', '1', '0'};
+#else
 static const char g_abFsLibraryVersion[4] = {'2', '6', '0', '0'};
+#endif
 
 // NTSC-U/C: 0x004327c8, a second server version the check accepts.
 static const char g_abFsAltVersion[4] = {'.', '.', '.', '.'};
