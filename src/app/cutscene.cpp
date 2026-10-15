@@ -22,9 +22,15 @@
 namespace {
 
 // The buffers PlayMovieFile() hands the player.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kMpegWorkSize = 0x16976c;
+constexpr int kRgb32Size = 0x140000;
+constexpr int kPath3TagsSize = 0x3c200;
+#else
 constexpr int kMpegWorkSize = 0x13c76c;
 constexpr int kRgb32Size = 0x118000;
 constexpr int kPath3TagsSize = 0x34a00;
+#endif
 constexpr int kDemuxSize = 0x30000;
 constexpr int kAudioSize = 0xc000;
 constexpr int kIopAudioSize = 0x6000;
@@ -36,7 +42,22 @@ constexpr int kQwordAlign = 16;
 
 // The display. The second frame buffer, and the DMA chain that loads it, follow the first.
 constexpr int kDisplayWidth = 640;
+#ifdef VIDEO_STANDARD_PAL
+// The frame buffers are 512 lines. NTSC output shows 448 of them, centred to a multiple of 32
+// lines by the DBY field of the display frame buffer register.
+constexpr int kDisplayHeight = 512;
+constexpr int kNtscDisplayHeight = 448;
+constexpr int kGsPal = 3;
+constexpr int kSecondChain = 0x1e10;
+constexpr unsigned long long kSecondFrameFbp = 0xa0;
+constexpr int kDispfbDbyShift = 43;
+constexpr unsigned long long kDispfbDbyMask = 0x7ffULL << kDispfbDbyShift;
+constexpr int kDispfbDbyAlignMask = 0x7e0;
+#else
 constexpr int kDisplayHeight = 448;
+constexpr int kSecondChain = 0x1a50;
+constexpr unsigned long long kSecondFrameFbp = 0x8c;
+#endif
 constexpr int kClearHeight = kDisplayHeight * 2;
 constexpr int kPsmCt32 = 0;
 constexpr int kGsInit = 0;
@@ -44,15 +65,15 @@ constexpr int kGsInterlace = 1;
 constexpr int kGsNtsc = 2;
 constexpr int kGsField = 0;
 constexpr int kDmaResetEnable = 1;
-constexpr int kSecondChain = 0x1a50;
 constexpr unsigned long long kDispfbFbwMask = 0x7e00;
 constexpr unsigned long long kDispfbFbw = 10 << 9;
 constexpr unsigned long long kDispfbFbpMask = 0x1ff;
-constexpr unsigned long long kSecondFrameFbp = 0x8c;
 constexpr int kVsyncOddField = 1;
 
-// The picture buffer holds 0x460 macroblocks, a 640 by 448 picture.
-constexpr int kPictureMacroblocks = 0x460;
+// The picture buffer holds a 640 by kDisplayHeight picture of 16 by 16 pixel macroblocks.
+constexpr int kMacroblockSize = 16;
+constexpr int kPictureMacroblocks =
+    (kDisplayWidth / kMacroblockSize) * (kDisplayHeight / kMacroblockSize);
 
 // Timer 0 counts horizontal blanks while a frame is serviced. Reading carries on until the frame
 // has taken 500 of them, and the idle callback reads for as long as a picture of the decoded size
@@ -218,7 +239,7 @@ int fillBuff(sceMpeg *mp, int block) {
     return nConsumed;
 }
 
-// NTSC-U/C: 0x001af118
+// NTSC-U/C: 0x001af118, PAL: 0x001b7eb8
 // Copy a video packet into the IPU input ring, or refuse it while the ring is too full.
 int videoCallback([[maybe_unused]] sceMpeg *mp, void *cbdata, [[maybe_unused]] void *data) {
     sceMpegCbDataStr *pStr = static_cast<sceMpegCbDataStr *>(cbdata);
@@ -471,19 +492,38 @@ int strFileRead(unsigned char *pBuffer, int nSize) {
 
 // NTSC-U/C: 0x001aec48, PAL: 0x001b7948
 // Play the movie, showing each decoded picture centred in alternate frame buffers.
+#ifdef VIDEO_STANDARD_PAL
+void playPss(int (*pfnFetch)(unsigned char *pBuffer, int nSize),
+             const PlayPssParam *pParam,
+             int bNtsc,
+             int bInitSound) {
+#else
 void playPss(int (*pfnFetch)(unsigned char *pBuffer, int nSize), const PlayPssParam *pParam) {
+#endif
     alignas(kQwordAlign) sceMpeg mp;
     alignas(kQwordAlign) sceGsDispEnv disp;
     alignas(kQwordAlign) unsigned char pad[kPadReportSize];
 
+#ifdef VIDEO_STANDARD_PAL
+    const int nOutputHeight = bNtsc != 0 ? kNtscDisplayHeight : kDisplayHeight;
+#endif
     sceGsResetPath();
     sceDmaReset(kDmaResetEnable);
     sceGsSyncPath(0, 0);
     sceGsSyncV(0);
+#ifdef VIDEO_STANDARD_PAL
+    sceGsResetGraph(kGsInit, kGsInterlace, bNtsc != 0 ? kGsNtsc : kGsPal, kGsField);
+#else
     sceGsResetGraph(kGsInit, kGsInterlace, kGsNtsc, kGsField);
+#endif
     g_pPath3Tags = pParam->path3Tags;
     sceMpegInit();
     sceSdRemoteInit();
+#ifdef VIDEO_STANDARD_PAL
+    if (bInitSound != 0) {
+        sceSdRemote(1, rSdInit, 0);
+    }
+#endif
     audioDecCreate(&g_audioDec,
                    pParam->audio,
                    pParam->audioSize,
@@ -513,7 +553,16 @@ void playPss(int (*pfnFetch)(unsigned char *pBuffer, int nSize), const PlayPssPa
     while (fillBuff(&mp, 1) != 0) {
     }
 
+#ifdef VIDEO_STANDARD_PAL
+    sceGsSetDefDispEnv(&disp, kPsmCt32, kDisplayWidth, nOutputHeight, 0, 0);
+    if (nOutputHeight < kDisplayHeight) {
+        const unsigned long long nTop =
+            ((kDisplayHeight - nOutputHeight) / 2) & kDispfbDbyAlignMask;
+        disp.dispfb = (disp.dispfb & ~kDispfbDbyMask) | (nTop << kDispfbDbyShift);
+    }
+#else
     sceGsSetDefDispEnv(&disp, kPsmCt32, kDisplayWidth, kDisplayHeight, 0, 0);
+#endif
     disp.dispfb = (disp.dispfb & ~kDispfbFbwMask) | kDispfbFbw;
     sceGsPutDispEnv(&disp);
     while (sceGsSyncV(0) == kVsyncOddField) {
@@ -581,7 +630,11 @@ void playPss(int (*pfnFetch)(unsigned char *pBuffer, int nSize), const PlayPssPa
 
 } // namespace
 
+#ifdef VIDEO_STANDARD_PAL
+bool PlayMovieFile(const char *pszPath, int bNtsc, int bInitSound) {
+#else
 bool PlayMovieFile(const char *pszPath) {
+#endif
     if (strFileOpen(pszPath) == 0) {
         printf("Can't open file %s\n", pszPath);
         return false;
@@ -603,7 +656,11 @@ bool PlayMovieFile(const char *pszPath) {
     param.zero = static_cast<unsigned char *>(memalign64(kZeroSize, "zero buffer"));
     param.iopZero = iopalloc(kZeroSize, "zero buffer");
 
+#ifdef VIDEO_STANDARD_PAL
+    playPss(strFileRead, &param, bNtsc, bInitSound);
+#else
     playPss(strFileRead, &param);
+#endif
     strFileClose();
 
     PoolMemFree(param.mpegWork);

@@ -12,9 +12,18 @@
  *
  * The name is inferred. Metagame plays the intro movie through it.
  *
+ * The PAL build shows the movie on a 512-line PAL display, or on a 448-line NTSC display when
+ * bNtsc is set, and can initialise the IOP sound library before the audio starts.
+ *
  * @param pszPath The movie, with its device prefix.
+ * @param bNtsc Nonzero for NTSC output, in the PAL build only.
+ * @param bInitSound Nonzero to initialise the IOP sound library first, in the PAL build only.
  * @return Whether the movie file opened.
  * @ghidraAddress NTSC-U/C: 0x001aead0
  * @ghidraAddress PAL: 0x001b77b0
  */
+#ifdef VIDEO_STANDARD_PAL
+bool PlayMovieFile(const char *pszPath, int bNtsc, int bInitSound);
+#else
 bool PlayMovieFile(const char *pszPath);
+#endif

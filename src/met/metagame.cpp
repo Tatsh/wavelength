@@ -1067,7 +1067,11 @@ void Metagame::PollLoad() {
                 TheSynth->SendMessage(kMidiControlChange | i, kMidiControlVolume, 0, 0);
             }
             TheSynth->Poll();
+#ifdef VIDEO_STANDARD_PAL
+            if (PlayMovieFile(path.c_str(), ThePs.mNtsc, 0)) {
+#else
             if (PlayMovieFile(path.c_str())) {
+#endif
                 (void)TheSynth->EnableSoftFx();
                 (void)TheSynth->DisableSoftFx();
             }
