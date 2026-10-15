@@ -33,7 +33,7 @@ constexpr int kFirstPad = 0;
 #ifdef ENABLE_PATCHES
 // A patched build shows its identification in place of the blank version text.
 const char *const kBuildTag =
-    "https://github.com/Tatsh/wavelength " WAVELENGTH_GIT_REVISION " " WAVELENGTH_BUILD_TIME;
+    "github.com/Tatsh/wavelength " WAVELENGTH_GIT_REVISION " " WAVELENGTH_BUILD_TIME;
 #endif
 
 } // namespace
