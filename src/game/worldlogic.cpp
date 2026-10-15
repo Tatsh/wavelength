@@ -86,9 +86,26 @@ int WorldLogic::OnJoypadConnection(JoypadConnectionMsg *pMsg) {
     return 0;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+int WorldLogic::OnKeyboardKey([[maybe_unused]] KeyboardKeyMsg *pMsg) {
+    return 0;
+}
+
+bool WorldLogic::DispatchPriv(Message *pMsg) {
+    const int nType = pMsg->Type();
+    if (nType == g_nJoypadConnectionMsgType) {
+        return OnJoypadConnection(static_cast<JoypadConnectionMsg *>(pMsg)) != 0;
+    }
+    if (nType == g_nKeyboardKeyMsgType) {
+        return OnKeyboardKey(static_cast<KeyboardKeyMsg *>(pMsg)) != 0;
+    }
+    return false;
+}
+#else
 bool WorldLogic::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nJoypadConnectionMsgType) {
         return OnJoypadConnection(static_cast<JoypadConnectionMsg *>(pMsg)) != 0;
     }
     return false;
 }
+#endif

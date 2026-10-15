@@ -315,7 +315,9 @@ RemixLogic::RemixLogic(Song *pSong)
         }
     }
     TheGfxManager.AddCheckpoint(nullptr, 0.0f, kCheckpointOffset, kCheckpointScale);
+#ifndef VIDEO_STANDARD_PAL
     KeyboardAddSink(this);
+#endif
     for (VoxTrack *pTrack : mVoxTracks) {
         pTrack->SetSection(kFirstSection);
     }
@@ -338,7 +340,9 @@ RemixLogic::~RemixLogic() {
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline && TheNetTransport->IsHost()) {
         TheNetTransport->ReportScores(std::vector<NetGameScore>());
     }
+#ifndef VIDEO_STANDARD_PAL
     KeyboardRemoveSink(this);
+#endif
     delete mTutorial;
     mTutorial = nullptr;
     delete mTrackSelector;
@@ -1668,9 +1672,16 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
     }
 }
 
+#ifdef VIDEO_STANDARD_PAL
+int RemixLogic::OnKeyboardKey(KeyboardKeyMsg *pMsg) {
+    (void)WorldLogic::OnKeyboardKey(pMsg); // Yes, the binary discards this call's result.
+    return 1;
+}
+#else
 int RemixLogic::OnKeyboardKey([[maybe_unused]] KeyboardKeyMsg *pMsg) {
     return 0;
 }
+#endif
 
 bool RemixLogic::DispatchPriv(Message *pMsg) {
     const int nType = pMsg->Type();

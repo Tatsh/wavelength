@@ -286,7 +286,7 @@ public:
      *
      * @param bDisabled Disable the input.
      * @ghidraAddress NTSC-U/C: 0x001408d0
-     * @ghidraAddress PAL: 0x00142298
+     * @ghidraAddress PAL: 0x00142290
      */
     void SetInputDisabled(bool bDisabled);
 
@@ -295,6 +295,7 @@ public:
      *
      * @param nMode One of RotateMode.
      * @ghidraAddress NTSC-U/C: 0x001408d8
+     * @ghidraAddress PAL: 0x00142298
      */
     void SetRotateMode(int nMode);
 
@@ -303,6 +304,7 @@ public:
      *
      * @param bDisabled Disable the power-ups.
      * @ghidraAddress NTSC-U/C: 0x001408e0
+     * @ghidraAddress PAL: 0x001422a0
      */
     void SetPowerupsDisabled(bool bDisabled);
 
@@ -389,7 +391,7 @@ public:
      *
      * @param bManual Leave the enabling to the script.
      * @ghidraAddress NTSC-U/C: 0x00140da8
-     * @ghidraAddress PAL: 0x001422a0
+     * @ghidraAddress PAL: 0x00142768
      */
     void SetManualEnableNext(bool bManual);
 

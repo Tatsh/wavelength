@@ -875,8 +875,10 @@ private:
     /**
      * Ignore a key of the keyboard. The body returns zero.
      *
+     * The PAL body passes the message to WorldLogic::OnKeyboardKey() and returns 1.
+     *
      * @param pMsg The message.
-     * @return 0.
+     * @return 0, or 1 in the PAL build.
      * @ghidraAddress NTSC-U/C: 0x00136388
      * @ghidraAddress PAL: 0x00137b88
      */

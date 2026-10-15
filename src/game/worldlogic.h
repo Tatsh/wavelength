@@ -11,6 +11,12 @@
 #include "os/command.h"
 #include "os/ptr.h"
 
+#ifdef VIDEO_STANDARD_PAL
+// Only the PAL build includes the header. In the NTSC build it changes the code GCC emits for the
+// virtual call in DispatchPriv().
+#include "msg/keyboardkeymsg.h"
+#endif
+
 /**
  * Rules of one World, the base of the game, remix, and duel logic.
  *
@@ -40,8 +46,10 @@ public:
     /**
      * Pass a JoypadConnectionMsg to OnJoypadConnection() and ignore any other message.
      *
+     * The PAL build also passes a KeyboardKeyMsg to OnKeyboardKey().
+     *
      * @param pMsg The message.
-     * @return The result of the handler of a joypad connection message, otherwise false.
+     * @return The result of the handler of the message, otherwise false.
      * @ghidraAddress NTSC-U/C: 0x00146db0
      * @ghidraAddress PAL: 0x00148768
      */
@@ -248,6 +256,15 @@ public:
     int OnJoypadConnection(JoypadConnectionMsg *pMsg);
 
 #ifdef VIDEO_STANDARD_PAL
+    /**
+     * Ignore a key of the keyboard.
+     *
+     * @param pMsg The message.
+     * @return 0.
+     * @ghidraAddress PAL: 0x00148760
+     */
+    int OnKeyboardKey(KeyboardKeyMsg *pMsg);
+
 private:
     /** A command reference that is constructed empty, released at destruction, and never set. */
     Ptr<Command> mCommand{nullptr};
