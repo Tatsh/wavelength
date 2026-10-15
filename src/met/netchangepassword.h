@@ -27,7 +27,7 @@ public:
      * Release the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x003596c8
-     * @ghidraAddress PAL: 0x003c69d8
+     * @ghidraAddress PAL: 0x003c6a30
      */
     ~NetChangePassword() override {
     }

@@ -18,7 +18,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0039a4b0
-     * @ghidraAddress PAL: 0x00408ce0
+     * @ghidraAddress PAL: 0x00408d38
      */
     ~ClockSyncTask() override = default;
 

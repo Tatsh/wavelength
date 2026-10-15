@@ -27,7 +27,7 @@ public:
      * Release the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x0035b0a8
-     * @ghidraAddress PAL: 0x003c8bb8
+     * @ghidraAddress PAL: 0x003c8c00
      */
     ~NetDoUploadScreen() override {
     }
