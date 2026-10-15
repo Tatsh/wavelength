@@ -214,8 +214,12 @@ jobs:
           assets=$(gh release view "$TAG" --repo "$REPO" --json assets \
             --jq '[.assets[].name] | join(" ")')
           echo "Assets on ${TAG}: ${assets:-<none>}"
+          # The modem driver and the profiler server ship only on the NTSC-U/C disc.
           for asset in "wavelength-${version}-NTSC.elf" "wavelength-${version}-NTSC-Debug.elf" \
-            "wavelength-${version}-PAL.elf" "wavelength-${version}-PAL-Debug.elf"; do
+            "wavelength-${version}-PAL.elf" "wavelength-${version}-PAL-Debug.elf" \
+            cxtmdm-NTSC.irx SNProfil-NTSC.irx \
+            ezncnf_s-NTSC.irx eznctl_s-NTSC.irx libnetb-NTSC.irx softfx_s-NTSC.irx synth_s-NTSC.irx \
+            ezncnf_s-PAL.irx eznctl_s-PAL.irx libnetb-PAL.irx softfx_s-PAL.irx synth_s-PAL.irx; do
             if [[ " ${assets} " != *" ${asset} "* ]]; then
               echo "::error::${asset} is not attached to ${TAG}; refusing to publish it."
               exit 1

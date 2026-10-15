@@ -47,9 +47,7 @@ jobs:
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cmake --build build --target archives -- -k 0
-      # Remove continue-on-error once every module the image replaces is reconstructed.
       - name: 'Link IOP modules'
-        continue-on-error: true
         run: |
           echo "::add-matcher::.github/problem-matchers/gcc.json"
           cmake --build build --target iop_modules -- -k 0
