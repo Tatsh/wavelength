@@ -78,6 +78,7 @@ public:
      *
      * @param profiles The Freqs.
      * @ghidraAddress NTSC-U/C: 0x0035d730
+     * @ghidraAddress PAL: 0x003cb808
      */
     virtual void SetProfiles(const std::vector<Campaign> &profiles) {
         mProfiles = profiles;

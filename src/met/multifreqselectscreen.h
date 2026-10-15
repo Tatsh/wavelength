@@ -21,7 +21,7 @@ public:
      * Destroy the object.
      *
      * @ghidraAddress NTSC-U/C: 0x0035d758
-     * @ghidraAddress PAL: 0x003cb808
+     * @ghidraAddress PAL: 0x003cb830
      */
     ~MultiFreqSelectScreen() override = default;
 

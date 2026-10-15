@@ -43,7 +43,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x0035b268
-     * @ghidraAddress PAL: 0x003c9fe0
+     * @ghidraAddress PAL: 0x003c8dc0
      */
     static UIScreen *New(DataArray *pData) {
         return new SelRemixDownloadScreen(pData);

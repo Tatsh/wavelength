@@ -41,7 +41,7 @@ public:
      * @param pData The script description.
      * @return The new screen.
      * @ghidraAddress NTSC-U/C: 0x003636f8
-     * @ghidraAddress PAL: 0x003d26f8
+     * @ghidraAddress PAL: 0x003d1e48
      */
     static UIScreen *New(DataArray *pData) {
         return new SaveEditedFreqScreen(pData);

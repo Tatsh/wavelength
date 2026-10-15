@@ -30,7 +30,7 @@ public:
      * Destroy the screen.
      *
      * @ghidraAddress NTSC-U/C: 0x00363878
-     * @ghidraAddress PAL: 0x003d1c08
+     * @ghidraAddress PAL: 0x003d1fd8
      */
     ~DeleteFreqScreen() override {
     }
