@@ -60,6 +60,7 @@ PrnStream &operator<<(PrnStream &stream, const NetGameParams &params);
  * @param params The settings.
  * @return The stream.
  * @ghidraAddress NTSC-U/C: 0x0027c688
+ * @ghidraAddress PAL: 0x002860b8
  */
 BinStream &operator<<(BinStream &stream, const NetGameParams &params);
 
