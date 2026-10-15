@@ -49,6 +49,8 @@ set(WAVELENGTH_MET_SRCS
     loadfreqscreen.cpp
     loadnetconfigsscreen.cpp
     loadremixscreen.cpp
+    localizedfreqpanel.cpp
+    localizedpanel.cpp
     mainoptionsscreen.cpp
     marketingscreen.cpp
     mccheckscreen.cpp

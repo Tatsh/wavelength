@@ -87,9 +87,11 @@ public:
 
     /**
      * Build TheFxMidi from the `fx_midi_file` entry of the "db" section, and start mSfxScheduler
-     * at the tempo of that file. Init() calls it.
+     * at the tempo of that file. Init() calls it. The PAL build reads the
+     * `<language>_fx_midi_file` entry of the console's language instead.
      *
      * @ghidraAddress NTSC-U/C: 0x0027f8e0
+     * @ghidraAddress PAL: 0x002891c8
      */
     void InitSfx();
 

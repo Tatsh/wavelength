@@ -3,8 +3,25 @@
 #include <vector>
 
 #include "os/string.h"
+#include "os/system.h"
 #include "synth/softfxfilter.h"
 #include "synth/streamplayer.h"
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Report the path of a sound bank of the console's language, in SoundFX for English and in the
+ * language's directory of SoundFX otherwise. Every caller inlines the path.
+ *
+ * @param pszFile The bank file, relative to its directory.
+ * @return The path, in the buffer of FormatString().
+ */
+inline const char *LanguageSoundFxPath(const char *pszFile) {
+    if (SystemLanguageIsEnglish()) {
+        return FormatString("SoundFX/%s", pszFile);
+    }
+    return FormatString("SoundFX/%s/%s", GetSystemLanguage(), pszFile);
+}
+#endif
 
 /**
  * Abstract base of the game's sound output.

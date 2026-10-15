@@ -83,7 +83,7 @@ public:
      * @param pszDir The directory of the description file.
      * @return The new panel.
      * @ghidraAddress NTSC-U/C: 0x00378608
-     * @ghidraAddress PAL: 0x003c20c8
+     * @ghidraAddress PAL: 0x003e6d38
      */
     static UIPanel *New(DataArray *pData, const char *pszDir) {
         return new UIPanel(pData, pszDir);

@@ -58,6 +58,9 @@ void Duel::BeginAssetLoad() {
     DataArray *pGame = SystemConfig()->FindArray(kGameSection, false);
     const char *pszBankFile = nullptr;
     (void)pGame->FindSymbol(kFxBankFileKey, &pszBankFile, true); // Yes, the result is discarded.
+#ifdef VIDEO_STANDARD_PAL
+    pszBankFile = LanguageSoundFxPath(pszBankFile);
+#endif
     (void)pGame->FindInt(kFxBankSlotKey, &mFxBankSlot, true);
     pSynth->UnloadBank(static_cast<unsigned short>(mFxBankSlot));
     pSynth->LoadBank(static_cast<unsigned short>(mFxBankSlot), String(pszBankFile), true);

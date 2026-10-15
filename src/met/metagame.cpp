@@ -63,6 +63,8 @@
 #include "met/loadfreqscreen.h"
 #include "met/loadnetconfigsscreen.h"
 #include "met/loadremixscreen.h"
+#include "met/localizedfreqpanel.h"
+#include "met/localizedpanel.h"
 #include "met/mainoptionsscreen.h"
 #include "met/marketingscreen.h"
 #include "met/mccheckscreen.h"
@@ -387,6 +389,12 @@ constexpr char kUnknownModeMessage[] = "unknown mode";
 
 constexpr int kLoadingScreenCount = 4;
 
+#ifdef VIDEO_STANDARD_PAL
+// The loading screens of a language other than English.
+constexpr char kLanguageLoadingScreenFormat[] = "metagame\\loading%d_%s.rnd";
+constexpr int kLanguageLoadingScreenCount = 2;
+#endif
+
 // The loading screen darkens by this much each frame while the screen groups load.
 constexpr float kLoadingFadeStep = 0.032f;
 
@@ -628,6 +636,10 @@ void Metagame::RegisterScreenClasses() {
     TheUI.RegisterScreenType(KeyboardScreen::New, "keyboard_screen");
     TheUI.RegisterPanelType(KeyboardPanel::New, "kb_panel");
     TheUI.RegisterPanelType(ControllerPanel::New, "controller_map_panel");
+#ifdef VIDEO_STANDARD_PAL
+    TheUI.RegisterPanelType(LocalizedPanel::New, "localized_panel");
+    TheUI.RegisterPanelType(LocalizedFreqPanel::New, "localized_freq_panel");
+#endif
     TheUI.RegisterScreenType(LoadNetConfigsScreen::New, "load_net_config_screen");
     TheUI.RegisterScreenType(NetChooseIConfigScreen::New, "net_config_screen");
     TheUI.RegisterScreenType(NetCreateConfigScreen::New, "create_config_screen");
@@ -729,9 +741,21 @@ void Metagame::CreateGizmo() {
 }
 
 void Metagame::ShowLoadingScreen() {
+#ifdef VIDEO_STANDARD_PAL
+    const char *pszScreen;
+    if (SystemLanguageIsEnglish()) {
+        pszScreen = FormatString(kLoadingScreenFormat, RandomInt(0, kLoadingScreenCount) + 1);
+    } else {
+        const int nScreen = RandomInt(0, kLanguageLoadingScreenCount) + 1;
+        pszScreen = FormatString(kLanguageLoadingScreenFormat, nScreen, GetSystemLanguage());
+    }
+    mLoadingScreenLoader =
+        TheManager.AddLoader(pszScreen, RndLoader::kDeleteObjects, nullptr, nullptr);
+#else
     const int nScreen = RandomInt(0, kLoadingScreenCount) + 1;
     mLoadingScreenLoader = TheManager.AddLoader(
         FormatString(kLoadingScreenFormat, nScreen), RndLoader::kDeleteObjects, nullptr, nullptr);
+#endif
     RndView *pView = dynamic_cast<RndView *>(TheManager.Find(kLoadingViewName));
 
     // The screen is drawn into both frame buffers.

@@ -218,9 +218,17 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
     if (!bLocked) {
         mPreviewSong = song.GetName();
     } else if (song.GetType() == kSongTypeBonus) {
+#ifdef VIDEO_STANDARD_PAL
+        mPreviewSong = SongPreview::BonusEncrypt();
+#else
         mPreviewSong = SongPreview::sBonusEncrypt;
+#endif
     } else if (song.GetType() == kSongTypeBoss || song.GetType() == kSongTypeTutorial) {
+#ifdef VIDEO_STANDARD_PAL
+        mPreviewSong = SongPreview::LevelEncrypt();
+#else
         mPreviewSong = SongPreview::sLevelEncrypt;
+#endif
     } else {
         DebugWarn("I don't think we should get here.\n");
     }

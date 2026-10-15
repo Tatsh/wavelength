@@ -60,11 +60,14 @@ public:
      *
      * The two encrypted songs name their stream file directly. Any other song plays
      * `Songs/<song>/<song>_metaclip.str` when bMetaClip is set, and `audio/<song>.str`, with the
-     * song name cut to eight characters, otherwise.
+     * song name cut to eight characters, otherwise. In the PAL build a tutorial song (one whose
+     * name includes "TUT") plays `Songs/<song>/<language>/<song>_metaclip.str` in a language other
+     * than English.
      *
-     * @param pszSong The song, or sLevelEncrypt or sBonusEncrypt.
+     * @param pszSong The song, or one of the encrypted streams.
      * @param bMetaClip Whether the song's own clip plays.
      * @ghidraAddress NTSC-U/C: 0x001966b8
+     * @ghidraAddress PAL: 0x0019db48
      */
     static void Load(const char *pszSong, bool bMetaClip);
 
@@ -102,6 +105,31 @@ public:
      */
     static void Poll();
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Report the stream that stands in for the clip of a locked bonus song, in the directory of
+     * the console's language.
+     *
+     * For English the level stream is reported instead, as the retail build does. The name is
+     * inferred.
+     *
+     * @return The stream.
+     * @ghidraAddress PAL: 0x0019d940
+     */
+    static const char *BonusEncrypt();
+
+    /**
+     * Report the stream that stands in for the clip of a locked song, in the directory of the
+     * console's language.
+     *
+     * For English the bonus stream is reported instead, as the retail build does. The name is
+     * inferred.
+     *
+     * @return The stream.
+     * @ghidraAddress PAL: 0x0019d9a0
+     */
+    static const char *LevelEncrypt();
+#else
     /**
      * The stream that stands in for the clip of a locked song.
      *
@@ -115,6 +143,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003af8ac
      */
     static const char *sBonusEncrypt;
+#endif
 
 private:
     /**

@@ -16,6 +16,12 @@ constexpr char kAudioDir[] = "audio";
 constexpr char kMetaClipFormat[] = "Songs/%s/%s_metaclip.str";
 constexpr char kAudioClipFormat[] = "audio/%s.str";
 
+#ifdef VIDEO_STANDARD_PAL
+// A tutorial song plays the clip of the console's language.
+constexpr char kTutorialTag[] = "TUT";
+constexpr char kLanguageMetaClipFormat[] = "Songs/%s/%s/%s_metaclip.str";
+#endif
+
 // The characters of a song name an `audio` stream file retains.
 constexpr int kAudioNameLength = 8;
 
@@ -28,8 +34,10 @@ constexpr unsigned char kMidiControlExpression = 0x11;
 
 } // namespace
 
+#ifndef VIDEO_STANDARD_PAL
 const char *SongPreview::sLevelEncrypt = "SoundFX/level_encrypt.str";
 const char *SongPreview::sBonusEncrypt = "SoundFX/bonus_encrypt.str";
+#endif
 int SongPreview::sState = SongPreview::kStateMenu;
 StreamPlayer *SongPreview::sPlayer = nullptr;
 float SongPreview::sVolume = 0.0f;
@@ -75,13 +83,45 @@ bool SongPreview::IsWaiting() {
     return sState == kStateReady;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+const char *SongPreview::BonusEncrypt() {
+    if (SystemLanguageIsEnglish()) {
+        return "SoundFX/level_encrypt.str"; // Yes, the retail build swaps the English streams.
+    }
+    return FormatString("SoundFX/%s/bonus_encrypt.str", GetSystemLanguage());
+}
+
+const char *SongPreview::LevelEncrypt() {
+    if (SystemLanguageIsEnglish()) {
+        return "SoundFX/bonus_encrypt.str"; // Yes, the retail build swaps the English streams.
+    }
+    return FormatString("SoundFX/%s/level_encrypt.str", GetSystemLanguage());
+}
+#endif
+
 void SongPreview::Load(const char *pszSong, bool bMetaClip) {
     FadeOut();
+#ifdef VIDEO_STANDARD_PAL
+    if (strcmp(pszSong, LevelEncrypt()) == 0 || strcmp(pszSong, BonusEncrypt()) == 0) {
+        sClip = pszSong;
+    } else if (bMetaClip) {
+        sClip = FormatString(kMetaClipFormat, pszSong, pszSong);
+        if (strstr(pszSong, kTutorialTag) != nullptr) {
+            if (SystemLanguageIsEnglish()) {
+                sClip = FormatString(kMetaClipFormat, pszSong, pszSong);
+            } else {
+                sClip =
+                    FormatString(kLanguageMetaClipFormat, pszSong, GetSystemLanguage(), pszSong);
+            }
+        }
+    } else {
+#else
     if (strcmp(pszSong, sLevelEncrypt) == 0 || strcmp(pszSong, sBonusEncrypt) == 0) {
         sClip = pszSong;
     } else if (bMetaClip) {
         sClip = FormatString(kMetaClipFormat, pszSong, pszSong);
     } else {
+#endif
         char szName[kAudioNameLength + 1];
         strncpy(szName, pszSong, kAudioNameLength);
         szName[kAudioNameLength] = '\0';

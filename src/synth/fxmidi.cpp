@@ -1,6 +1,7 @@
 #include "synth/fxmidi.h"
 
 #include "game/gamedb.h"
+#include "os/string.h"
 #include "os/system.h"
 #include "script/dataarray.h"
 #include "synth/sfxbuilder.h"
@@ -8,7 +9,12 @@
 namespace {
 
 constexpr char kDbSection[] = "db";
+#ifdef VIDEO_STANDARD_PAL
+// The tag of the console language's interface sounds.
+constexpr char kLanguageFxMidiFileTag[] = "%s_fx_midi_file";
+#else
 constexpr char kFxMidiFileTag[] = "fx_midi_file";
+#endif
 
 // The tick the interface scheduler starts at.
 constexpr int kStartTick = 0;
@@ -31,7 +37,12 @@ FxMidi *TheFxMidi;
 void GameDb::InitSfx() {
     DataArray *pDb = SystemConfig()->FindArray(kDbSection, true);
     TheFxMidi = new FxMidi;
+#ifdef VIDEO_STANDARD_PAL
+    SFXBuilder builder(
+        FindRequiredSymbol(pDb, FormatString(kLanguageFxMidiFileTag, GetSystemLanguage())));
+#else
     SFXBuilder builder(FindRequiredSymbol(pDb, kFxMidiFileTag));
+#endif
     builder.Read();
     mSfxScheduler.Reset(TheSfxTickDuration, kStartTick);
     mSfxScheduler.Resume();

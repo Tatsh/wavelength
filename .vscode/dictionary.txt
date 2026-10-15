@@ -667,6 +667,8 @@ loadnetconfigsscreen
 loadremixscreen
 lobbyconnectionlostmsg
 lobbyrt
+localizedfreqpanel
+localizedpanel
 localizeerrors
 localplayer
 lpad

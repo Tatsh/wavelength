@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 #include "os/timer.h"
 #include "script/dataarray.h"
 
@@ -105,6 +107,18 @@ extern int g_bHostConfig;
  * @ghidraAddress PAL: 0x002964a8
  */
 const char *GetSystemLanguage();
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Report whether the console is set to English, the language whose assets have no language
+ * suffix or directory. Every caller inlines the comparison.
+ *
+ * @return Whether GetSystemLanguage() reports "english".
+ */
+inline bool SystemLanguageIsEnglish() {
+    return strcmp("english", GetSystemLanguage()) == 0;
+}
+#endif
 
 /**
  * The clock SystemMs() reads.

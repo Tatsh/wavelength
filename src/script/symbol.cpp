@@ -9,11 +9,15 @@
 
 namespace {
 
-// The bytes of symbol text the pool takes.
+// The bytes of symbol text the pool takes, and the slots of the symbol table, a prime. The PAL
+// build reserves more for the text of its languages.
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kStringPoolSize = 0x96000;
+constexpr int kSymbolTableSize = 32003;
+#else
 constexpr int kStringPoolSize = 0x28000;
-
-// The slots of the symbol table, a prime.
 constexpr int kSymbolTableSize = 16411;
+#endif
 
 } // namespace
 
