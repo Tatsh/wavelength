@@ -410,6 +410,33 @@ typedef struct {
     int pageSize;           /*!< The positions of a page. */
 } rtMediusLadderListRequest;
 
+/** Values of rtMediusSetLocalizationParamsRequest::characterEncoding. */
+enum {
+    RT_MEDIUS_CHARACTER_ENCODING_NO_UPDATE = 0, /*!< Leave the character set as it is. */
+    RT_MEDIUS_CHARACTER_ENCODING_ISO8859_1 = 1, /*!< ISO 8859-1. */
+    RT_MEDIUS_CHARACTER_ENCODING_UTF8 = 2,      /*!< UTF-8. */
+};
+
+/** Values of rtMediusSetLocalizationParamsRequest::language. */
+enum {
+    RT_MEDIUS_LANGUAGE_NONE = 0,       /*!< No language. */
+    RT_MEDIUS_LANGUAGE_US_ENGLISH = 1, /*!< English of the United States. */
+    RT_MEDIUS_LANGUAGE_UK_ENGLISH = 2, /*!< English of the United Kingdom. */
+    RT_MEDIUS_LANGUAGE_JAPANESE = 3,   /*!< Japanese. */
+    RT_MEDIUS_LANGUAGE_KOREAN = 4,     /*!< Korean. */
+    RT_MEDIUS_LANGUAGE_ITALIAN = 5,    /*!< Italian. */
+    RT_MEDIUS_LANGUAGE_SPANISH = 6,    /*!< Spanish. */
+    RT_MEDIUS_LANGUAGE_GERMAN = 7,     /*!< German. */
+    RT_MEDIUS_LANGUAGE_FRENCH = 8,     /*!< French. */
+};
+
+/** The request of rtMediusSetLocalizationParams(). 0x30 bytes. */
+typedef struct {
+    rtMediusRequest header; /*!< The identifier and the session. */
+    int characterEncoding;  /*!< One of the RT_MEDIUS_CHARACTER_ENCODING values. */
+    int language;           /*!< One of the RT_MEDIUS_LANGUAGE values. */
+} rtMediusSetLocalizationParamsRequest;
+
 /** The response of rtMediusLadderList(), one position. */
 typedef struct {
     char messageId[RT_MEDIUS_MESSAGE_ID_SIZE];    /*!< The identifier of the request. */
@@ -569,6 +596,9 @@ typedef struct {
     char attributes[0x114];                    /*!< The attributes, left empty. */
     char messageId[RT_MEDIUS_MESSAGE_ID_SIZE]; /*!< The identifier. */
 } rtMediusFileCreateRequest;
+
+/** The request of rtMediusFileUpdateAttributes(), laid out as rtMediusFileCreateRequest. */
+typedef rtMediusFileCreateRequest rtMediusFileUpdateAttributesRequest;
 
 /** The response of rtMediusFileGetAttributes(). */
 typedef struct {
@@ -913,9 +943,33 @@ int rtMediusGamePlayers(rtMediusIdRequest *request, rtMediusGamePlayersCallback 
 
 /**
  * @ghidraAddress NTSC-U/C: 0x002fbae8
- * @ghidraAddress PAL: 0x00305ee0
+ * @ghidraAddress PAL: 0x00305ae8
  */
 int rtMediusLadderList(rtMediusLadderListRequest *request, rtMediusLadderListCallback callback);
+
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Send the character set and the language of the client.
+ *
+ * @param request The request.
+ * @param callback Receives the response.
+ * @return Zero, or an error.
+ * @ghidraAddress PAL: 0x00305ee0
+ */
+int rtMediusSetLocalizationParams(rtMediusSetLocalizationParamsRequest *request,
+                                  rtMediusCallback callback);
+
+/**
+ * Replace the attributes of a file of the server.
+ *
+ * @param request The request.
+ * @param callback Receives the response.
+ * @return Zero, or an error.
+ * @ghidraAddress PAL: 0x00303720
+ */
+int rtMediusFileUpdateAttributes(rtMediusFileUpdateAttributesRequest *request,
+                                 rtMediusFileCallback callback);
+#endif
 
 /**
  * @ghidraAddress NTSC-U/C: 0x002fb9a8
@@ -962,7 +1016,10 @@ int rtMediusClearGameListFilter(rtMediusIdRequest *request, rtMediusCallback cal
  */
 int rtMediusSetGameListFilter(rtMediusGameListFilterRequest *request, rtMediusCallback callback);
 
-/** @ghidraAddress NTSC-U/C: 0x002f97b8 */
+/**
+ * @ghidraAddress NTSC-U/C: 0x002f97b8
+ * @ghidraAddress PAL: 0x003037b8
+ */
 int rtMediusFileGetAttributes(rtMediusFileRequest *request,
                               rtMediusFileAttributesCallback callback);
 
@@ -992,7 +1049,7 @@ int rtMediusFileClose(rtMediusFileRequest *request, rtMediusFileCallback callbac
 
 /**
  * @ghidraAddress NTSC-U/C: 0x002f9710
- * @ghidraAddress PAL: 0x003037b8
+ * @ghidraAddress PAL: 0x00303680
  */
 int rtMediusFileList(rtMediusFileListRequest *request, rtMediusFileCallback callback);
 

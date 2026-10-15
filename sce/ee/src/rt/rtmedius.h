@@ -309,7 +309,7 @@ extern rtMediusFileDeleteCallback g_pfnMediusFileDeleteCallback;
 extern rtMediusFileCallback g_pfnMediusFileListFilesCallback;
 
 /** The receiver of message 181, or null. NTSC-U/C: 0x00435818. */
-extern rtMediusCallback g_pfnMediusFileUpdateAttributesCallback;
+extern rtMediusFileCallback g_pfnMediusFileUpdateAttributesCallback;
 
 /** The receiver of message 183, or null. NTSC-U/C: 0x0043581c. */
 extern rtMediusFileAttributesCallback g_pfnMediusFileGetAttributesCallback;

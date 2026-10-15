@@ -1605,7 +1605,7 @@ int rtMediusOnFileUpdateAttributesResponse(int connection,
                                            int type,
                                            int sender,
                                            rtDmeMessage *message) {
-    const rtMediusResponse *response = (const rtMediusResponse *)message;
+    const rtMediusFileResponse *response = (const rtMediusFileResponse *)message;
 
     if (g_pfnMediusFileUpdateAttributesCallback != NULL) {
         g_pfnMediusFileUpdateAttributesCallback(connection, type, sender, response);

@@ -612,7 +612,7 @@ rtMediusCallback g_pfnMediusPickLocationCallback;
 rtMediusLadderPositionCallback g_pfnMediusLadderPositionCallback;
 // NTSC-U/C: 0x003c26b0, PAL: 0x00441570
 rtMediusLadderPositionCallback g_pfnMediusLadderPositionFastCallback;
-// NTSC-U/C: 0x003c26b4, PAL: 0x00441594
+// NTSC-U/C: 0x003c26b4, PAL: 0x00441574
 rtMediusLadderListCallback g_pfnMediusLadderListCallback;
 // NTSC-U/C: 0x003c26b8, PAL: 0x00441578
 rtMediusCallback g_pfnMediusChatToggleCallback;
@@ -656,8 +656,8 @@ rtMediusCallback g_pfnMediusFileDownloadStreamCallback;
 rtMediusFileDeleteCallback g_pfnMediusFileDeleteCallback;
 // NTSC-U/C: 0x00435814
 rtMediusFileCallback g_pfnMediusFileListFilesCallback;
-// NTSC-U/C: 0x00435818
-rtMediusCallback g_pfnMediusFileUpdateAttributesCallback;
+// NTSC-U/C: 0x00435818, PAL: 0x004d2598
+rtMediusFileCallback g_pfnMediusFileUpdateAttributesCallback;
 // NTSC-U/C: 0x0043581c
 rtMediusFileAttributesCallback g_pfnMediusFileGetAttributesCallback;
 // NTSC-U/C: 0x00435820
@@ -682,7 +682,7 @@ static int g_nMediusFileDownloadStreamType;
 int g_nMediusFileDeleteType;
 // NTSC-U/C: 0x00435848
 int g_nMediusFileListType;
-// NTSC-U/C: 0x0043584c
+// NTSC-U/C: 0x0043584c, PAL: 0x004d25cc
 static int g_nMediusFileUpdateAttributesType;
 // NTSC-U/C: 0x00435850
 int g_nMediusFileGetAttributesType;
@@ -814,7 +814,7 @@ static int g_nMediusGetTotalChannelsType;
 static int g_nMediusGetLobbyPlayerNamesType;
 // NTSC-U/C: 0x00435950
 static int g_nMediusGetTotalUsersType;
-// NTSC-U/C: 0x00435954
+// NTSC-U/C: 0x00435954, PAL: 0x004d26d4
 static int g_nMediusSetLocalizationParamsType;
 // NTSC-U/C: 0x00435958
 static int g_nMediusSetMessageAsReadType;
@@ -1272,6 +1272,21 @@ int rtMediusFileList(rtMediusFileListRequest *request, rtMediusFileCallback call
     g_pfnMediusFileListFilesCallback = callback;
     return rtMediusSendRecord(g_nMediusFileListType, sizeof(*request), request);
 }
+
+#ifdef VIDEO_STANDARD_PAL
+int rtMediusFileUpdateAttributes(rtMediusFileUpdateAttributesRequest *request,
+                                 rtMediusFileCallback callback) {
+    int nError;
+
+    rtMediusTruncateField(request->messageId, sizeof(request->messageId));
+    nError = rtMediusCheckConnection();
+    if (nError != 0) {
+        return nError;
+    }
+    g_pfnMediusFileUpdateAttributesCallback = callback;
+    return rtMediusSendRecord(g_nMediusFileUpdateAttributesType, sizeof(*request), request);
+}
+#endif
 
 int rtMediusFileGetAttributes(rtMediusFileRequest *request,
                               rtMediusFileAttributesCallback callback) {
@@ -1978,6 +1993,21 @@ int rtMediusLadderList(rtMediusLadderListRequest *request, rtMediusLadderListCal
     g_pfnMediusLadderListCallback = callback;
     return rtMediusSendRecord(g_nMediusLadderListType, sizeof(*request), request);
 }
+
+#ifdef VIDEO_STANDARD_PAL
+int rtMediusSetLocalizationParams(rtMediusSetLocalizationParamsRequest *request,
+                                  rtMediusCallback callback) {
+    int nError;
+
+    rtMediusTruncateRequest(&request->header);
+    nError = rtMediusCheckConnection();
+    if (nError != 0) {
+        return nError;
+    }
+    g_pfnMediusSetLocalizationParamsCallback = callback;
+    return rtMediusSendRecord(g_nMediusSetLocalizationParamsType, sizeof(*request), request);
+}
+#endif
 
 const char *rtMediusGetErrorString(int error) {
     switch (error) {
