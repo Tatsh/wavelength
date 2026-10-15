@@ -267,8 +267,11 @@ private:
     /**
      * Show a player the host can remove, or `(CANCEL)`.
      *
+     * The PAL build shows the localised text of `remix_boot_cancel` in place of `(CANCEL)`.
+     *
      * @param nIndex The index into mPeers, or -1 for `(CANCEL)`.
      * @ghidraAddress NTSC-U/C: 0x00152630
+     * @ghidraAddress PAL: 0x00153e78
      */
     void SetPeerIndex(int nIndex);
 

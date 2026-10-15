@@ -316,7 +316,11 @@ private:
     /**
      * Give the second player 400 points and win the song.
      *
+     * The PAL build also gives the first player 600 points, and the third and fourth players 300
+     * points when the song has three or four players.
+     *
      * @ghidraAddress NTSC-U/C: 0x00125650
+     * @ghidraAddress PAL: 0x00126dd0
      */
     void ApplyWinCheat();
 

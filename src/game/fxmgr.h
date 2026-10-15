@@ -218,6 +218,7 @@ public:
      *
      * @param stream The stream to read from.
      * @ghidraAddress NTSC-U/C: 0x00150540
+     * @ghidraAddress PAL: 0x00151ea0
      */
     void Load(BinStream &stream);
 
@@ -227,6 +228,7 @@ public:
      *
      * @param stream The stream to write to.
      * @ghidraAddress NTSC-U/C: 0x00150a80
+     * @ghidraAddress PAL: 0x00152398
      */
     void Save(BinStream &stream) const;
 

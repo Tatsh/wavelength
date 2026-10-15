@@ -52,7 +52,11 @@ void RemixDownloadList::UpdateCursor() {
     }
     const NetRepoRemix &remix = *ListAt(mRemixes, mSelected);
     mSong.mData = TheGameDb->FindSong(remix.mInfo.mSong);
+#ifdef VIDEO_STANDARD_PAL
+    remix.mInfo.ShowDetails(mPicPanel, true);
+#else
     remix.mInfo.ShowDetails(mPicPanel);
+#endif
     dynamic_cast<UILabel *>(TheUI.FindComponent(mPicPanel, kNoteLabel, false))
         ->SetText(remix.mNote.c_str());
     SetNoteShowing(mNoteShowing);

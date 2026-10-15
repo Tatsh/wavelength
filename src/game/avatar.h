@@ -212,10 +212,12 @@ public:
     /**
      * Blend the shared camera to one of the `cams`, unless it already heads there.
      *
-     * The name is inferred.
+     * The name is inferred. When the camera already heads there, the PAL build also makes it the
+     * camera the blend starts from.
      *
      * @param pszCam The camera, such as `f_maker` or `bust`.
      * @ghidraAddress NTSC-U/C: 0x00271440
+     * @ghidraAddress PAL: 0x0027afe0
      */
     static void SetCamera(const char *pszCam);
 

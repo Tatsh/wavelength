@@ -82,7 +82,7 @@ public:
      * @param right The second event.
      * @return Whether the first event sorts first.
      * @ghidraAddress NTSC-U/C: 0x00158e50
-     * @ghidraAddress PAL: 0x0015a690
+     * @ghidraAddress PAL: 0x0015a6d8
      */
     static bool CompareMidi(const Midi &left, const Midi &right);
 

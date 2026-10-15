@@ -196,6 +196,9 @@ public:
     /**
      * Drain the juice for the bar and end the song when the juice ran out.
      *
+     * In the PAL build a skill level without checkpoint bars can fail the song in any bar of a
+     * section.
+     *
      * @param nBar The bar.
      * @ghidraAddress NTSC-U/C: 0x0013a008
      * @ghidraAddress PAL: 0x0013b8d0

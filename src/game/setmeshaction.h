@@ -34,6 +34,7 @@ public:
      * Give the mesh the material, when the node named one.
      *
      * @ghidraAddress NTSC-U/C: 0x002026a8
+     * @ghidraAddress PAL: 0x0020b448
      */
     void Exec() override;
 

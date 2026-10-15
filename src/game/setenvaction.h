@@ -35,7 +35,7 @@ public:
      * Write the values the node set into the environment.
      *
      * @ghidraAddress NTSC-U/C: 0x002026d8
-     * @ghidraAddress PAL: 0x0020b448
+     * @ghidraAddress PAL: 0x0020b478
      */
     void Exec() override;
 

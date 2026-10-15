@@ -45,9 +45,11 @@ public:
     /**
      * Move the ranges for the time on the clock.
      *
+     * The PAL build first reports the move as over while the clock is before mStartTime.
+     *
      * @return Whether the move is over.
      * @ghidraAddress NTSC-U/C: 0x00202ed0
-     * @ghidraAddress PAL: 0x0020bc38
+     * @ghidraAddress PAL: 0x0020bc70
      */
     bool Poll() override;
 

@@ -19,7 +19,9 @@ void StreamTask::SetWaitingTask(Task *pTask) {
 }
 
 void StreamTask::OnStart() {
+#ifndef VIDEO_STANDARD_PAL
     (void)TheSynth->GetStream(); // Yes, the binary discards this call's result.
+#endif
     const char *pszPath = FormatString(kStreamPathFormat, mDirectory, mName);
     mPlayer = new StreamPlayer(0, pszPath, false);
     TheSynth->SetStream(mPlayer);

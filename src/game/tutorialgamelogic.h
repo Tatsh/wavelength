@@ -724,4 +724,18 @@ private:
      * @ghidraAddress PAL: 0x00141080
      */
     static void OnSchedStageCompleteCommand(DataArray *pCommand, void *pUserData);
+
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Run the `show_demo_msg` script command.
+     *
+     * Node 1 is the token of the text, node 2 picks the first lyric line when it is not zero, and
+     * a nonzero node 3 suppresses the text.
+     *
+     * @param pCommand The command.
+     * @param pUserData Not used.
+     * @ghidraAddress PAL: 0x001410b8
+     */
+    static void OnShowDemoMsgCommand(DataArray *pCommand, void *pUserData);
+#endif
 };

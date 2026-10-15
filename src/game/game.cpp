@@ -1,6 +1,7 @@
 #include "game/game.h"
 
 #include <algorithm>
+#include <cstring>
 #include <vector>
 
 #include "game/bankloader.h"
@@ -30,6 +31,11 @@ constexpr char kSoloFxBankFileKey[] = "solo_game_fx_bank_file";
 constexpr char kMultiFxBankFileKey[] = "multi_game_fx_bank_file";
 constexpr char kCheerFxBankFileKey[] = "cheer_fx_bank_file";
 constexpr char kFxBankSlotKey[] = "game_fx_bank_slot";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kEnglishLanguage[] = "english";
+constexpr char kEnglishFxBankPathFormat[] = "SoundFX/%s";
+constexpr char kFxBankPathFormat[] = "SoundFX/%s/%s";
+#endif
 
 constexpr char kOnText[] = "";
 constexpr char kNotText[] = "not ";
@@ -141,6 +147,14 @@ void Game::BeginAssetLoad() {
     const char *pszFxBankKey =
         TheGameDb->mCommunity == GameDb::kCommunitySolo ? kSoloFxBankFileKey : kMultiFxBankFileKey;
     (void)pGame->FindSymbol(pszFxBankKey, &pszFxBankFile, true); // Yes, the result is discarded.
+#ifdef VIDEO_STANDARD_PAL
+    const char *pszFxBankPath;
+    if (strcmp(kEnglishLanguage, GetSystemLanguage()) == 0) {
+        pszFxBankPath = FormatString(kEnglishFxBankPathFormat, pszFxBankFile);
+    } else {
+        pszFxBankPath = FormatString(kFxBankPathFormat, GetSystemLanguage(), pszFxBankFile);
+    }
+#endif
     (void)pGame->FindSymbol(kCheerFxBankFileKey, &pszCheerBankFile, true);
     (void)pGame->FindInt(kFxBankSlotKey, &mFxBankSlot, true);
     mCheerBankSlot = mSong->GetBankTrack()->GetEndBankSlot();
@@ -152,7 +166,11 @@ void Game::BeginAssetLoad() {
 
     pSynth->UnloadBank(static_cast<unsigned short>(mFxBankSlot));
     pSynth->UnloadBank(static_cast<unsigned short>(mCheerBankSlot));
+#ifdef VIDEO_STANDARD_PAL
+    pSynth->LoadBank(static_cast<unsigned short>(mFxBankSlot), String(pszFxBankPath), true);
+#else
     pSynth->LoadBank(static_cast<unsigned short>(mFxBankSlot), String(pszFxBankFile), true);
+#endif
     pSynth->LoadBank(static_cast<unsigned short>(mCheerBankSlot), String(pszCheerBankFile), true);
 }
 

@@ -264,6 +264,8 @@ public:
     /**
      * Give the track to a player, ending the run of the previous player when it was catching.
      *
+     * The PAL build also clears mGemsCaught.
+     *
      * @param pPlayer The player, or null.
      * @ghidraAddress NTSC-U/C: 0x00155be8
      * @ghidraAddress PAL: 0x00157450
@@ -300,7 +302,10 @@ public:
     /**
      * Look for the run again from the current bar.
      *
+     * The PAL build then clears mGemsCaught when the player is not catching.
+     *
      * @ghidraAddress NTSC-U/C: 0x00155ce8
+     * @ghidraAddress PAL: 0x00157550
      */
     void RefreshRun();
 

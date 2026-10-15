@@ -158,7 +158,8 @@ public:
      *
      * The "game" section of the configuration supplies the effect bank of the community, the cheer
      * bank, and the effect bank slot. The cheer bank takes the first slot after the song's banks,
-     * and the sound memory is divided again to fit it.
+     * and the sound memory is divided again to fit it. The PAL build loads the effect bank from
+     * SoundFX, or for a language other than English from that language's directory in SoundFX.
      *
      * @ghidraAddress NTSC-U/C: 0x0010d7a0
      * @ghidraAddress PAL: 0x0010eed8

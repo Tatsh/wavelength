@@ -60,6 +60,7 @@ public:
      * The clock of the action becomes the current clock of TheTriggerMgr first.
      *
      * @ghidraAddress NTSC-U/C: 0x00202328
+     * @ghidraAddress PAL: 0x0020b0c8
      */
     void Start();
 

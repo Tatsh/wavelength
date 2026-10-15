@@ -87,6 +87,12 @@ void SetParticlesAction::Exec() {
 }
 
 bool SetParticlesAction::Poll() {
+#ifdef VIDEO_STANDARD_PAL
+    // Yes, a start still ahead on the clock reports the action as finished.
+    if (TheTriggerMgr.mTime[TheTriggerMgr.mClock] < mStartTime) {
+        return true;
+    }
+#endif
     float flT = 1.0f;
     if (mDuration != 0.0f) {
         flT = (TheTriggerMgr.mTime[TheTriggerMgr.mClock] - mStartTime) / mDuration;

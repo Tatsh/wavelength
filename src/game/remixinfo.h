@@ -64,10 +64,15 @@ public:
      * and `read_only` of a panel, and the band picture of the song in the panel.
      *
      * @param pszPanel The panel, a SongPicPanel.
+     * @param bShowPicture In the PAL build, whether to show the band picture.
      * @ghidraAddress NTSC-U/C: 0x0019a6d8
      * @ghidraAddress PAL: 0x001a1c18
      */
+#ifdef VIDEO_STANDARD_PAL
+    void ShowDetails(const char *pszPanel, bool bShowPicture) const;
+#else
     void ShowDetails(const char *pszPanel) const;
+#endif
 
     /** Values of mSource. */
     enum Source {

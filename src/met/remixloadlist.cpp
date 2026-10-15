@@ -30,5 +30,9 @@ void RemixLoadList::UpdateRow(int nRow, int nItem) {
 
 void RemixLoadList::UpdateCursor() {
     UIList::UpdateCursor();
+#ifdef VIDEO_STANDARD_PAL
+    mRemixes[mSelected].ShowDetails(mPicPanel, true);
+#else
     mRemixes[mSelected].ShowDetails(mPicPanel);
+#endif
 }

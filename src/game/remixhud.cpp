@@ -27,7 +27,11 @@ constexpr float kRepeatMs = 100.0f;
 constexpr int kPostStaggerTicks = 10;
 
 const char *const kBlankLabel = "";
+#ifdef VIDEO_STANDARD_PAL
+const char *const kCancelToken = "remix_boot_cancel";
+#else
 const char *const kCancelLabel = "(CANCEL)";
+#endif
 
 } // namespace
 
@@ -223,7 +227,11 @@ bool RemixHUD::ConfirmEntry() {
 
 void RemixHUD::SetPeerIndex(int nIndex) {
     mPeerIndex = nIndex;
+#ifdef VIDEO_STANDARD_PAL
+    const char *pszText = TheLocale.Localize(kCancelToken, true);
+#else
     const char *pszText = kCancelLabel;
+#endif
     if (nIndex != kNoIndex) {
         pszText = TheGameDb->GetPlayerName(mPeers[nIndex]);
     }

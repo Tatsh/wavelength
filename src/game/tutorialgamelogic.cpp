@@ -17,8 +17,10 @@
 #include "gfx/gfxmanager.h"
 #include "math/rand.h"
 #include "os/debug.h"
+#include "os/locale.h"
 #include "os/scheduler.h"
 #include "os/string.h"
+#include "os/system.h"
 #include "script/scriptfunction.h"
 #include "synth/songspeed.h"
 
@@ -49,9 +51,16 @@ constexpr char kSetAutopilotCommand[] = "set_autopilot";
 constexpr char kSetManualEnableNextCommand[] = "set_manual_enable_next";
 constexpr char kEnableNextCommand[] = "enable_next";
 constexpr char kSchedStageCompleteCommand[] = "sched_stage_complete";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kShowDemoMsgCommand[] = "show_demo_msg";
+#endif
 
 constexpr char kNoQueueOption[] = "no_queue";
 constexpr char kStreamDirectoryFormat[] = "Songs/%s/";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kEnglishLanguage[] = "english";
+constexpr char kLanguageStreamDirectoryFormat[] = "Songs/%s/%s/";
+#endif
 constexpr char kScriptEntry[] = "script";
 constexpr char kBadRotateStateFormat[] = "Bad rotate state. state = %i.\n";
 constexpr char kIllegalDialogResponse[] = "illegal dialog response";
@@ -303,6 +312,17 @@ void TutorialGameLogic::OnSchedStageCompleteCommand(DataArray *pCommand, void *p
         pCommand->Int(kCommandNodeFirst));
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void TutorialGameLogic::OnShowDemoMsgCommand(DataArray *pCommand, void *pUserData) {
+    (void)pUserData;
+    const char *pszText = TheLocale.Localize(pCommand->Sym(kCommandNodeFirst), true);
+    const bool bFirstLine = pCommand->Int(kCommandNodeSecond) != 0;
+    if (pCommand->Int(kCommandNodeThird) == 0) {
+        TheGfxManager.SetLyricText(pszText, bFirstLine);
+    }
+}
+#endif
+
 TutorialGameLogic::TutorialGameLogic(Song *pSong, DataArray *pSongConfig)
     : GameLogic(pSong, pSongConfig, RandomInt(0, kMaxSeed)) {
     mBar = 0;
@@ -338,8 +358,20 @@ TutorialGameLogic::TutorialGameLogic(Song *pSong, DataArray *pSongConfig)
     ScriptFunction::Register(OnSetManualEnableNextCommand, kSetManualEnableNextCommand, this);
     ScriptFunction::Register(OnEnableNextCommand, kEnableNextCommand, this);
     ScriptFunction::Register(OnSchedStageCompleteCommand, kSchedStageCompleteCommand, this);
+#ifdef VIDEO_STANDARD_PAL
+    ScriptFunction::Register(OnShowDemoMsgCommand, kShowDemoMsgCommand, this);
+#endif
 
+#ifdef VIDEO_STANDARD_PAL
+    if (strcmp(GetSystemLanguage(), kEnglishLanguage) == 0) {
+        mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+    } else {
+        mStreams.mDirectory = FormatString(
+            kLanguageStreamDirectoryFormat, TheGameDb->mSong.c_str(), GetSystemLanguage());
+    }
+#else
     mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+#endif
 
     DataArray *pScript = pSongConfig->FindArray(kScriptEntry, false);
     const int nSize = pScript->mSize;
@@ -390,6 +422,9 @@ TutorialGameLogic::~TutorialGameLogic() {
     ScriptFunction::Unregister(OnSetManualEnableNextCommand);
     ScriptFunction::Unregister(OnEnableNextCommand);
     ScriptFunction::Unregister(OnSchedStageCompleteCommand);
+#ifdef VIDEO_STANDARD_PAL
+    ScriptFunction::Unregister(OnShowDemoMsgCommand);
+#endif
 
     mScript.Stop();
     mStreams.Stop();

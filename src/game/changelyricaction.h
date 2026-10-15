@@ -33,6 +33,7 @@ public:
      * Give the text object TriggerMgr::mLyric.
      *
      * @ghidraAddress NTSC-U/C: 0x00202e98
+     * @ghidraAddress PAL: 0x0020bc38
      */
     void Exec() override;
 

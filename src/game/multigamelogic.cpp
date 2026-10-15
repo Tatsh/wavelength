@@ -28,6 +28,15 @@ constexpr int kNoPlayer = -1;
 constexpr int kNoPad = -1;
 constexpr int kWinCheatPlayer = 1;
 constexpr int kWinCheatScore = 400;
+#ifdef VIDEO_STANDARD_PAL
+constexpr int kWinCheatFirstPlayer = 0;
+constexpr int kWinCheatFirstScore = 600;
+constexpr int kWinCheatThirdPlayer = 2;
+constexpr int kWinCheatFourthPlayer = 3;
+constexpr int kWinCheatOtherScore = 300;
+constexpr int kThreePlayers = 3;
+constexpr int kFourPlayers = 4;
+#endif
 
 constexpr float kLeaderSoundRetryMs = 1500.0f;
 constexpr float kEndGameDialogDelayMs = 3200.0f;
@@ -284,8 +293,20 @@ void MultiGameLogic::WinCheat([[maybe_unused]] DataArray *pCommand, void *pUserD
 }
 
 void MultiGameLogic::ApplyWinCheat() {
+#ifdef VIDEO_STANDARD_PAL
+    mPlayers[kWinCheatFirstPlayer]->SetScore(kWinCheatFirstScore);
+    mPlayers[kWinCheatPlayer]->SetScore(kWinCheatScore);
+    // Yes, a four-player song does not score the third player.
+    if (TheGameDb->GetNumPlayers() == kThreePlayers) {
+        mPlayers[kWinCheatThirdPlayer]->SetScore(kWinCheatOtherScore);
+    }
+    if (TheGameDb->GetNumPlayers() == kFourPlayers) {
+        mPlayers[kWinCheatFourthPlayer]->SetScore(kWinCheatOtherScore);
+    }
+#else
     mPlayers[kWinCheatPlayer]->SetScore(
         kWinCheatScore); // Yes, the binary scores the second player.
+#endif
     Finish(true);
     TheGameDb->SetProgress(kWonSongProgress);
 }

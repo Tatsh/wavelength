@@ -148,6 +148,9 @@ void TrackCapturer::SetPlayer(Player *pPlayer) {
     }
     Player *pPrevious = mPlayer;
     mPlayer = pPlayer;
+#ifdef VIDEO_STANDARD_PAL
+    mGemsCaught = 0;
+#endif
     if (pPrevious != nullptr) {
         const int nTick = TheSongScheduler.mTick;
         if (pPrevious->GetCatching()) {
@@ -178,6 +181,11 @@ void TrackCapturer::SetRunHidden(int nHidden) {
 
 void TrackCapturer::RefreshRun() {
     UpdateRun(TheSongScheduler.mTick / mTicksPerBar);
+#ifdef VIDEO_STANDARD_PAL
+    if (mPlayer != nullptr && !mPlayer->GetCatching()) {
+        mGemsCaught = 0;
+    }
+#endif
 }
 
 bool TrackCapturer::GetRunStart(int nBar, int *pTick, int *pLane) {

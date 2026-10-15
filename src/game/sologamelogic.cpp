@@ -1,6 +1,7 @@
 #include "game/sologamelogic.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include "game/campaign.h"
 #include "game/controllerdisplay.h"
@@ -31,6 +32,11 @@ constexpr char kGameSection[] = "game";
 constexpr char kBankSlotEntry[] = "game_fx_bank_slot";
 constexpr char kWinBankFileEntry[] = "win_fx_bank_file";
 constexpr char kSoloBankFileEntry[] = "solo_game_fx_bank_file";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kEnglishLanguage[] = "english";
+constexpr char kEnglishBankPathFormat[] = "SoundFX/%s";
+constexpr char kBankPathFormat[] = "SoundFX/%s/%s";
+#endif
 constexpr char kJuiceCommand[] = "juice";
 constexpr char kWinCheatCommand[] = "win_cheat";
 constexpr char kWinSequenceCommand[] = "win_sequence";
@@ -168,7 +174,15 @@ SoloGameLogic::SoloGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
     pGame->FindSymbol(kWinBankFileEntry, &pszFile, true);
     mWinBankFile = pszFile;
     pGame->FindSymbol(kSoloBankFileEntry, &pszFile, true);
+#ifdef VIDEO_STANDARD_PAL
+    if (strcmp(kEnglishLanguage, GetSystemLanguage()) == 0) {
+        mSoloBankFile = FormatString(kEnglishBankPathFormat, pszFile);
+    } else {
+        mSoloBankFile = FormatString(kBankPathFormat, GetSystemLanguage(), pszFile);
+    }
+#else
     mSoloBankFile = pszFile;
+#endif
 
     const SectionBoundaries *pSections = mSong->GetSections();
     for (int i = 0; i < pSections->NumSections(); ++i) {
@@ -447,9 +461,16 @@ void SoloGameLogic::OnBar(int nBar) {
         CommitPendingJuice();
     }
     DrainPendingJuice();
+#ifdef VIDEO_STANDARD_PAL
+    if (mJuice.Get() <= kNoJuice && !TheGameDb->mPracticeMode && nBar != mNextSectionBar &&
+        (mSectionStartBar == 0 || nCheckpointBars == 0 ||
+         mSectionStartBar + nCheckpointBars < nBar) &&
+        mFailingTrack == kNoTrack) {
+#else
     if (mJuice.Get() <= kNoJuice && !TheGameDb->mPracticeMode && nBar != mNextSectionBar &&
         (mSectionStartBar == 0 || mSectionStartBar + nCheckpointBars < nBar) &&
         mFailingTrack == kNoTrack) {
+#endif
         unsigned int nTrack = mPlayer->GetTrack()->mIndex;
         int nStartTick;
         int nEndTick;

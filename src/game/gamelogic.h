@@ -175,7 +175,7 @@ public:
      *
      * @return mQuit.
      * @ghidraAddress NTSC-U/C: 0x00112978
-     * @ghidraAddress PAL: 0x00114198
+     * @ghidraAddress PAL: 0x00114110
      */
     int HasQuit() const override;
 
@@ -184,6 +184,7 @@ public:
      *
      * @return mReserved60.
      * @ghidraAddress NTSC-U/C: 0x00112980
+     * @ghidraAddress PAL: 0x00114118
      */
     int IsRestartRequested() const override;
 
@@ -452,6 +453,7 @@ public:
      *
      * @return mPhraseThisBar.
      * @ghidraAddress NTSC-U/C: 0x00112a00
+     * @ghidraAddress PAL: 0x00114198
      */
     bool HasPhraseThisBar() const;
 

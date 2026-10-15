@@ -38,7 +38,7 @@ public:
      * A new scale without a new offset moves the offset to keep the output at the current frame.
      *
      * @ghidraAddress NTSC-U/C: 0x00202390
-     * @ghidraAddress PAL: 0x0020b0c8
+     * @ghidraAddress PAL: 0x0020b130
      */
     void Exec() override;
 

@@ -38,6 +38,10 @@ constexpr char kAllowRotationLeftCommand[] = "allow_rotation_left";
 
 constexpr char kNoQueueOption[] = "no_queue";
 constexpr char kStreamDirectoryFormat[] = "Songs/%s/";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kEnglishLanguage[] = "english";
+constexpr char kLanguageStreamDirectoryFormat[] = "Songs/%s/%s/";
+#endif
 constexpr char kDbSection[] = "db";
 constexpr char kSongsEntry[] = "songs";
 constexpr char kTutorialEntry[] = "Tutorial";
@@ -209,7 +213,16 @@ RemixTutorial::RemixTutorial(RemixLogic *pLogic) {
     ScriptFunction::Register(OnAllowPatternCancel, kAllowPatternCancelCommand, this);
     ScriptFunction::Register(OnAllowRotationLeft, kAllowRotationLeftCommand, this);
 
+#ifdef VIDEO_STANDARD_PAL
+    if (strcmp(GetSystemLanguage(), kEnglishLanguage) == 0) {
+        mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+    } else {
+        mStreams.mDirectory = FormatString(
+            kLanguageStreamDirectoryFormat, TheGameDb->mSong.c_str(), GetSystemLanguage());
+    }
+#else
     mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+#endif
 
     DataArray *pScript = SystemConfig()
                              ->FindArray(kDbSection, false)

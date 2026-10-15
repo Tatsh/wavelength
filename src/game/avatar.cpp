@@ -601,6 +601,10 @@ void Avatar::SetCamera(const char *pszCam) {
         sPreviousCam = sCurrentCam;
         sCurrentCam = pszSymbol;
         sCamBlendStart = sTime;
+#ifdef VIDEO_STANDARD_PAL
+    } else {
+        sPreviousCam = pszSymbol;
+#endif
     }
 }
 

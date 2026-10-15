@@ -36,7 +36,11 @@ void FreqList::ScrollDown() {
     }
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void RemixInfo::ShowDetails(const char *pszPanel, bool bShowPicture) const {
+#else
 void RemixInfo::ShowDetails(const char *pszPanel) const {
+#endif
     SongPicPanel *pPicPanel = static_cast<SongPicPanel *>(TheUI.FindPanel(pszPanel, false));
 
     UILabel *pLabel = dynamic_cast<UILabel *>(TheUI.FindComponent(pszPanel, "genre", false));
@@ -57,7 +61,13 @@ void RemixInfo::ShowDetails(const char *pszPanel) const {
         pLabel->SetText(FormatString(rating.c_str(), TheLocale.Localize("skill_unplayable", true)));
     }
 
+#ifdef VIDEO_STANDARD_PAL
+    if (bShowPicture) {
+        pPicPanel->SetBandPicture(entry.GetName(), true, false, false);
+    }
+#else
     pPicPanel->SetBandPicture(entry.GetName(), true, false, false);
+#endif
 
     for (int i = 0; i < kRemixInfoCreatorCount; ++i) {
         pLabel = dynamic_cast<UILabel *>(

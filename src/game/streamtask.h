@@ -59,6 +59,7 @@ protected:
      * Open the stream file and give it to the sound output to play.
      *
      * @ghidraAddress NTSC-U/C: 0x001416d0
+     * @ghidraAddress PAL: 0x00143090
      */
     void OnStart() override;
 
