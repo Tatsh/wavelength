@@ -255,6 +255,17 @@ constexpr char kSoloSongScreenCommand[] = "solo_song_screen";
 // Screen groups, panels, and screens.
 constexpr char kAlwaysGroup[] = "always";
 constexpr char kIntroGroup[] = "intro";
+#ifdef VIDEO_STANDARD_PAL
+// The intro screens of the console's language.
+constexpr char kLanguageIntroGroupFormat[] = "intro_%s";
+// The publisher screen of English, and of another language.
+constexpr char kPreSceePresentsScreen[] = "pre_scee_pres";
+constexpr char kSceePresentsScreen[] = "scee_pres";
+constexpr char kLanguageSceePresentsScreenFormat[] = "scee_pres_%s";
+// The effect banks of English, and of another language.
+constexpr char kSoundFxFormat[] = "SoundFX/%s";
+constexpr char kLanguageSoundFxFormat[] = "SoundFX/%s/%s";
+#endif
 constexpr char kFrontEndGroup[] = "front_end";
 constexpr char kHelpPanelName[] = "help";
 constexpr char kTitlePanelName[] = "title";
@@ -363,6 +374,11 @@ constexpr char kSoloPauseScreen[] = "s_pause";
 constexpr char kSoloRemixPauseScreen[] = "s_r_pause";
 constexpr char kMultiRemixPauseScreen[] = "m_r_pause";
 constexpr char kNoControllerScreen[] = "no_controller";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kNoMultitapScreen[] = "no_multitap";
+// The players of a game that needs a multitap.
+constexpr int kMultitapPlayers = 3;
+#endif
 constexpr char kPracticeEndScreen[] = "s_g_end_practice";
 constexpr char kSoloWinScreen[] = "s_g_end_win";
 constexpr char kSoloLoseScreen[] = "s_g_end_lose";
@@ -998,12 +1014,22 @@ void Metagame::PollLoad() {
                 mLoadStage = kLoadStageIntro;
                 TheUI.LoadGroup(kIntroGroup);
             }
+#ifdef VIDEO_STANDARD_PAL
+            TheUI.LoadGroup(FormatString(kLanguageIntroGroupFormat, GetSystemLanguage()));
+#endif
         }
         break;
     case kLoadStageIntro:
+#ifdef VIDEO_STANDARD_PAL
+        if (TheUI.IsGroupLoaded(kIntroGroup) &&
+            TheUI.IsGroupLoaded(FormatString(kLanguageIntroGroupFormat, GetSystemLanguage()))) {
+            mLoadStage = kLoadStageStartFxBanks;
+        }
+#else
         if (TheUI.IsGroupLoaded(kIntroGroup)) {
             mLoadStage = kLoadStageStartFxBanks;
         }
+#endif
         break;
     case kLoadStageIntroAndFrontEnd:
         if (TheUI.IsGroupLoaded(kFrontEndGroup) && TheUI.IsGroupLoaded(kIntroGroup)) {
@@ -1398,7 +1424,14 @@ void Metagame::ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUs
         }
         dynamic_cast<PauseScreen *>(TheUI.FindScreen(pszScreen, false))->mPad = nPad;
     } else if (type == kDialogNoController) {
+#ifdef VIDEO_STANDARD_PAL
+        // A game of three or four players without a multitap asks for the multitap.
+        pszScreen = TheGameDb->GetNumPlayers() >= kMultitapPlayers && !JoypadMultitapConnected() ?
+                        kNoMultitapScreen :
+                        kNoControllerScreen;
+#else
         pszScreen = kNoControllerScreen;
+#endif
         dynamic_cast<NoControllerScreen *>(TheUI.FindScreen(pszScreen, false))->mPad = nPad;
     } else if (TheGameDb->mPracticeMode) {
         pszScreen = kPracticeEndScreen;
@@ -1512,6 +1545,15 @@ bool Metagame::IsStopSpeedUp(const char *pszFrom, const char *pszTo) {
 }
 
 bool Metagame::OnJoypadInput(JoypadInputMsg *pMsg) {
+#ifdef VIDEO_STANDARD_PAL
+    // The PAL build also stops the menu's button repeat whenever it ignores the input.
+    if (mState == kStateLoading || mState == kStateLeaving ||
+        (mLoadStage != kLoadStageDone && mState != kStateFrontEnd) ||
+        (mState == kStatePlaying && mDialogShowing == 0)) {
+        TheUI.StopRepeat();
+        return false;
+    }
+#else
     if (mState == kStateLoading || mState == kStateLeaving) {
         return false;
     }
@@ -1521,6 +1563,7 @@ bool Metagame::OnJoypadInput(JoypadInputMsg *pMsg) {
     if (mState == kStatePlaying && mDialogShowing == 0) {
         return false;
     }
+#endif
 
     if (pMsg->mPressed != 0 && mState == kStateFrontEnd) {
         const int nPad = pMsg->mPad;
@@ -1548,6 +1591,14 @@ bool Metagame::OnTransitionComplete(UITransitionCompleteMsg *pMsg) {
         }
     } else if (strcmp(pMsg->mScreen->mName, kBackToShellScreen) == 0) {
         mEvent = kEventQuit;
+#ifdef VIDEO_STANDARD_PAL
+    } else if (strcmp(pMsg->mScreen->mName, kPreSceePresentsScreen) == 0) {
+        if (SystemLanguageIsEnglish()) {
+            TheUI.GotoScreen(kSceePresentsScreen);
+        } else {
+            TheUI.GotoScreen(FormatString(kLanguageSceePresentsScreenFormat, GetSystemLanguage()));
+        }
+#endif
     } else if (strcmp(pMsg->mScreen->mName, kJustMtvLeaveGizmoScreen) == 0) {
         mGizmo->SetShowAvatar(false);
         TheUI.GotoScreen(kJustMtvScreen);
@@ -1891,6 +1942,29 @@ void Metagame::LoadFxBanks() {
     pGame->FindSymbol(kMultiGameFxBankFileKey, &pszMulti, true);
     pGame->FindSymbol(kRemixFxBankFileKey, &pszRemix, true);
 
+#ifdef VIDEO_STANDARD_PAL
+    // The game effect banks of the console's language are measured, and the transition bank,
+    // which has no language, is loaded.
+    int nSolo;
+    int nMulti;
+    int nRemix;
+    const char *pszLanguage = GetSystemLanguage();
+    if (strcmp("english", pszLanguage) == 0) {
+        nSolo = pSynth->GetBankBlockCount(String(FormatString(kSoundFxFormat, pszSolo)));
+        nMulti = pSynth->GetBankBlockCount(String(FormatString(kSoundFxFormat, pszMulti)));
+        nRemix = pSynth->GetBankBlockCount(String(FormatString(kSoundFxFormat, pszRemix)));
+    } else {
+        nSolo = pSynth->GetBankBlockCount(
+            String(FormatString(kLanguageSoundFxFormat, pszLanguage, pszSolo)));
+        nMulti = pSynth->GetBankBlockCount(
+            String(FormatString(kLanguageSoundFxFormat, pszLanguage, pszMulti)));
+        nRemix = pSynth->GetBankBlockCount(
+            String(FormatString(kLanguageSoundFxFormat, pszLanguage, pszRemix)));
+    }
+    const int nTransition = pSynth->GetBankBlockCount(String(pszTransition));
+    std::vector<int> blocks(kBankSlotCount, 0);
+    blocks[mGameFxBankSlot] = std::max(std::max(nSolo, nMulti), std::max(nTransition, nRemix));
+#else
     // The slot of the game effects is sized for the largest of the four effect banks.
     std::vector<int> blocks(kBankSlotCount, 0);
     {
@@ -1904,6 +1978,7 @@ void Metagame::LoadFxBanks() {
         const int nRemix = pSynth->GetBankBlockCount(remix);
         blocks[mGameFxBankSlot] = std::max(std::max(nSolo, nMulti), std::max(nTransition, nRemix));
     }
+#endif
     (void)pSynth->Partition(blocks);
     pSynth->UnloadBank(mGameFxBankSlot);
     pSynth->LoadBank(mGameFxBankSlot, String(pszTransition), true);

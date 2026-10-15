@@ -161,6 +161,14 @@ bool UIManager::IsNavigationMsg(Message *pMsg) {
     return pMsg->Type() == g_nJoypadInputMsgType || pMsg->Type() == g_nKeyboardKeyMsgType;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void UIManager::StopRepeat() {
+    mRepeatTime = 0.0f;
+    mRepeatPad = kNoRepeatPad;
+    mRepeatCount = 0;
+}
+#endif
+
 bool UIManager::DispatchPriv(Message *pMsg) {
     if (pMsg->Type() == g_nJoypadInputMsgType) {
         return HandleJoypad(static_cast<JoypadInputMsg *>(pMsg));

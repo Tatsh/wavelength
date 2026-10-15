@@ -193,6 +193,17 @@ public:
      */
     bool IsNavigationMsg(Message *pMsg);
 
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Stop the repeat of a held directional button.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress PAL: 0x00215f10
+     */
+    void StopRepeat();
+#endif
+
     /**
      * Track the directional buttons for the repeat.
      *
