@@ -51,15 +51,24 @@ void NetChangePasswordScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UITextEntry *pOld = dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kOldEntry, false));
     RestoreEntry(pOld, mOld);
     pOld->mMaxNumChars = kMaxPasswordChars;
+#ifdef VIDEO_STANDARD_PAL
+    pOld->mUtf8MaxLen = kMaxPasswordChars;
+#endif
 
     UITextEntry *pNew = dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kNewEntry, false));
     RestoreEntry(pNew, mNew);
     pNew->mMaxNumChars = kMaxPasswordChars;
+#ifdef VIDEO_STANDARD_PAL
+    pNew->mUtf8MaxLen = kMaxPasswordChars;
+#endif
 
     UITextEntry *pConfirm =
         dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kConfirmEntry, false));
     RestoreEntry(pConfirm, mConfirm);
     pConfirm->mMaxNumChars = kMaxPasswordChars;
+#ifdef VIDEO_STANDARD_PAL
+    pConfirm->mUtf8MaxLen = kMaxPasswordChars;
+#endif
 
     if (std::strcmp(mKeyboardText.c_str(), kNoText) != 0) {
         (void)std::strcmp(mKeyboardEntry.c_str(), kNoText); // Yes, the binary discards this.

@@ -51,6 +51,9 @@ void NetLoginScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UITextEntry *pPassword =
         static_cast<UITextEntry *>(pPanel->FindComponent(kPasswordEntry, false));
     pPassword->mMaxNumChars = kMaxPasswordChars;
+#ifdef VIDEO_STANDARD_PAL
+    pPassword->mUtf8MaxLen = kMaxPasswordChars;
+#endif
     if (std::strcmp(mTypedPassword.c_str(), kNoPassword) != 0) {
         pPassword->SetText(mTypedPassword.c_str());
         mTypedPassword = kNoPassword;

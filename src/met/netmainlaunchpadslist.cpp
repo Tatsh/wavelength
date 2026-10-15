@@ -29,14 +29,19 @@ constexpr char kFont[] = "lucida_1_white.font";
 constexpr char kPlayersScreen[] = "fn_main_join";
 constexpr char kJoinScreen[] = "net_join_lpad";
 
-// The cells of a row.
+// The cells of a row. The European list has no connection column.
 enum Column {
     kColumnStatus = 0,
     kColumnMode = 1,
     kColumnDifficulty = 2,
+#ifdef VIDEO_STANDARD_PAL
+    kColumnPowerups = 3,
+    kColumnArtist = 4,
+#else
     kColumnConnection = 3,
     kColumnPowerups = 4,
     kColumnArtist = 5,
+#endif
 };
 
 // The selection SetLaunchpads() passes on to keep the current one.
@@ -75,11 +80,17 @@ void NetMainLaunchpadsList::UpdateRow(int nRow, int nItem) {
     if (params.mRuleSet == GameDb::kRuleSetDuel) {
         SetCellText(nRow, kColumnDifficulty, GetDuelDifficultyAbbrev(params.mSkillLevel));
     } else {
+#ifdef VIDEO_STANDARD_PAL
+        SetCellText(nRow, kColumnDifficulty, GetSkillAbbrev(params.mSkillLevel));
+#else
         SetCellText(nRow,
                     kColumnDifficulty,
                     TheGameDb->GetDifficultyName(params.mSkillLevel, params.mRuleSet));
+#endif
     }
+#ifndef VIDEO_STANDARD_PAL
     SetCellText(nRow, kColumnConnection, GetConnectionTypeAbbrev(launchpad.mConnectionType));
+#endif
     if (params.mRuleSet == GameDb::kRuleSetGame) {
         SetCellText(nRow, kColumnPowerups, TheGameDb->GetPowerupName(params.mPowerupLevel));
     } else {

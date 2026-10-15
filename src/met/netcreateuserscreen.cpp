@@ -79,17 +79,26 @@ void NetCreateUserScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         pName->SetText(mUserName.c_str());
     }
     pName->mMaxNumChars = kMaxNameChars;
+#ifdef VIDEO_STANDARD_PAL
+    pName->mUtf8MaxLen = kMaxNameChars;
+#endif
     pName->mMaxEntryWidth = kNameMaxWidth;
 
     UITextEntry *pPassword =
         dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kPasswordEntry, false));
     RestoreEntry(pPassword, mPassword);
     pPassword->mMaxNumChars = kMaxPasswordChars;
+#ifdef VIDEO_STANDARD_PAL
+    pPassword->mUtf8MaxLen = kMaxPasswordChars;
+#endif
 
     UITextEntry *pConfirm =
         dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kConfirmEntry, false));
     RestoreEntry(pConfirm, mConfirm);
     pConfirm->mMaxNumChars = kMaxPasswordChars;
+#ifdef VIDEO_STANDARD_PAL
+    pConfirm->mUtf8MaxLen = kMaxPasswordChars;
+#endif
 
     if (std::strcmp(mKeyboardText.c_str(), kNoText) != 0) {
         (void)std::strcmp(mKeyboardEntry.c_str(), kNoText); // Yes, the binary discards this.
@@ -143,6 +152,9 @@ void NetCreateUserScreen::Submit() {
     NetCreateAccount *pCreate =
         static_cast<NetCreateAccount *>(TheUI.FindScreen(kCreateAccountScreen, false));
     pCreate->mPassword = password.c_str();
+#ifdef VIDEO_STANDARD_PAL
+    pCreate->mSavePassword = mSavePassword;
+#endif
     TheUI.GotoScreen(pCreate);
 }
 

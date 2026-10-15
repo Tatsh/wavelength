@@ -70,7 +70,8 @@ public:
     /**
      * Whether the login saves the password.
      *
-     * The constructor does not set it, and the screen only reads it.
+     * The constructor does not set it, and the screen only reads it. The European
+     * NetCreateUserScreen::Submit() sets it.
      */
     int mSavePassword;
 

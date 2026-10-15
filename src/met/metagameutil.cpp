@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "game/avatar.h"
+#include "game/gamedb.h"
 #include "math/transform.h"
 #include "os/locale.h"
 #include "rnd/rndcam.h"
@@ -162,6 +163,29 @@ const char *GetDuelDifficultyAbbrev(int nDifficulty) {
     }
     return TheLocale.Localize(pszToken, false);
 }
+
+#ifdef VIDEO_STANDARD_PAL
+const char *GetSkillAbbrev(int nSkill) {
+    const char *pszToken;
+    switch (nSkill) {
+    case GameDb::kSkillNovice:
+        pszToken = "skill_easy_abbrev";
+        break;
+    case GameDb::kSkillIntermediate:
+        pszToken = "skill_norm_abbrev";
+        break;
+    case GameDb::kSkillAdvanced:
+        pszToken = "skill_exp_abbrev";
+        break;
+    case GameDb::kSkillInsane:
+        pszToken = "skill_insane_abbrev";
+        break;
+    default:
+        return "";
+    }
+    return TheLocale.Localize(pszToken, false);
+}
+#endif
 
 RndMat *FindRankMaterial(int nRank) {
     switch (nRank) {

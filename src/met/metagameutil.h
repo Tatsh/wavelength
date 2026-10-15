@@ -104,6 +104,19 @@ const char *GetConnectionTypeAbbrev(int nType);
  */
 const char *GetDuelDifficultyAbbrev(int nDifficulty);
 
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Report the localised abbreviation of a skill level.
+ *
+ * The name is inferred.
+ *
+ * @param nSkill One of GameDb::SkillLevel.
+ * @return The abbreviation, or an empty string for another level.
+ * @ghidraAddress PAL: 0x001a0da0
+ */
+const char *GetSkillAbbrev(int nSkill);
+#endif
+
 /**
  * Find the material of a rank, from `rank_01.mat` for rank -1 to `rank_05.mat` for rank 3.
  *
