@@ -63,7 +63,8 @@ public:
     unsigned int ToSeconds() const;
 
     /**
-     * Write the date and time as "MM/DD/YYYY  HH:MM:SS". The name is inferred.
+     * Write the date and time as "MM/DD/YYYY  HH:MM:SS", or "DD.MM.YYYY  HH:MM:SS" in the PAL
+     * build. The name is inferred.
      *
      * @param text Receives the date and time.
      * @ghidraAddress NTSC-U/C: 0x00288a08
@@ -72,7 +73,7 @@ public:
     void FormatDateTime(String &text) const;
 
     /**
-     * Write the date as "MM/DD/YYYY". The name is inferred.
+     * Write the date as "MM/DD/YYYY", or "DD.MM.YYYY" in the PAL build. The name is inferred.
      *
      * @param text Receives the date.
      * @ghidraAddress NTSC-U/C: 0x00288a68
@@ -81,7 +82,7 @@ public:
     void FormatDate(String &text) const;
 
     /**
-     * Write the month and the day as "MM/DD". The name is inferred.
+     * Write the month and the day as "MM/DD", or "DD.MM" in the PAL build. The name is inferred.
      *
      * @param text Receives the month and the day.
      * @ghidraAddress NTSC-U/C: 0x00288ab8
@@ -90,7 +91,8 @@ public:
     void FormatMonthDay(String &text) const;
 
     /**
-     * Write the date as "MM/DD/YY", the year counted from 2000. The name is inferred.
+     * Write the date as "MM/DD/YY", or "DD.MM.YY" in the PAL build, the year counted from 2000.
+     * The name is inferred.
      *
      * @param text Receives the date.
      * @ghidraAddress NTSC-U/C: 0x00288b00

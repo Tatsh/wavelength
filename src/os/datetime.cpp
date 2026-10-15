@@ -106,6 +106,29 @@ unsigned int DateTime::ToSeconds() const {
            mMonth * kSecondsPerMonth + (mYear - kClockYearOffset) * kSecondsPerYear;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+void DateTime::FormatDateTime(String &text) const {
+    text = FormatString("%02d.%02d.%04d  %02d:%02d:%02d",
+                        mDay,
+                        mMonth + kMonthOffset,
+                        mYear + kYearBase,
+                        mHour,
+                        mMinute,
+                        mSecond);
+}
+
+void DateTime::FormatDate(String &text) const {
+    text = FormatString("%02d.%02d.%04d", mDay, mMonth + kMonthOffset, mYear + kYearBase);
+}
+
+void DateTime::FormatMonthDay(String &text) const {
+    text = FormatString("%02d.%02d", mDay, mMonth + kMonthOffset);
+}
+
+void DateTime::FormatShortDate(String &text) const {
+    text = FormatString("%02d.%02d.%02d", mDay, mMonth + kMonthOffset, mYear - kClockYearOffset);
+}
+#else
 void DateTime::FormatDateTime(String &text) const {
     text = FormatString("%02d/%02d/%04d  %02d:%02d:%02d",
                         mMonth + kMonthOffset,
@@ -127,6 +150,7 @@ void DateTime::FormatMonthDay(String &text) const {
 void DateTime::FormatShortDate(String &text) const {
     text = FormatString("%02d/%02d/%02d", mMonth + kMonthOffset, mDay, mYear - kClockYearOffset);
 }
+#endif
 
 bool DateTime::operator<(const DateTime &other) const {
     const unsigned int nDate = (mYear << kYearShift) + (mMonth << kMonthShift) + mDay;
