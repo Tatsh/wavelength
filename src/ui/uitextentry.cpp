@@ -1,5 +1,6 @@
 #include "ui/uitextentry.h"
 
+#include "os/utf8.h"
 #include "rnd/rndfont.h"
 #include "rnd/rndmanager.h"
 #include "ui/uimanager.h"
@@ -51,12 +52,18 @@ UITextEntry::UITextEntry(DataArray *pData, const char *pszPanel)
     mMaxEntryWidth = kNoWidthLimit;
     mNumLines = 1;
     mMaxNumChars = kNoCharLimit;
+#ifdef VIDEO_STANDARD_PAL
+    mUtf8MaxLen = kNoCharLimit;
+#endif
     pData->FindBool("scroll", &mScroll, false);
     pData->FindInt("num_lines", &mNumLines, false);
     pData->FindInt("word_wrap_lines", &mWordWrapLines, false);
     pData->FindFloat("max_entry_width", &mMaxEntryWidth, false);
     pData->FindInt("max_num_chars", &mMaxNumChars, false);
     pData->FindBool("password", &mPassword, false);
+#ifdef VIDEO_STANDARD_PAL
+    pData->FindInt("utf8_max_len", &mUtf8MaxLen, false);
+#endif
     mInvalidChars = pData->FindArray("invalid_chars", false);
 
     mMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_%s.mesh", pszPanel, mName)));
@@ -332,6 +339,11 @@ bool UITextEntry::ProcessKey(int nKey) {
             bFits =
                 static_cast<unsigned int>(mText.mLength) < static_cast<unsigned int>(mMaxNumChars);
         }
+#ifdef VIDEO_STANDARD_PAL
+        if (bFits && mUtf8MaxLen != kNoCharLimit) {
+            bFits = Utf8Size(mText.c_str()) < mUtf8MaxLen;
+        }
+#endif
     }
 
     if (!bFits) {

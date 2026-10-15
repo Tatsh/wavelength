@@ -70,10 +70,18 @@ UIButton *FindKey(const char *pszKey) {
 
 } // namespace
 
+#ifdef VIDEO_STANDARD_PAL
+KeyboardPanel::KeyboardPanel(DataArray *pData, const char *pszDir)
+    : FreqPanel(pData, pszDir), mShiftMode(kShiftUnset), mReplaceText(0), mEntry(nullptr),
+      mCapsButton(nullptr), mLeftShiftButton(nullptr), mRightShiftButton(nullptr),
+      mSelectAnim(nullptr) {
+}
+#else
 KeyboardPanel::KeyboardPanel(DataArray *pData, const char *pszDir)
     : FreqPanel(pData, pszDir), mCapsButton(nullptr), mLeftShiftButton(nullptr),
       mRightShiftButton(nullptr), mSelectAnim(nullptr) {
 }
+#endif
 
 KeyboardPanel::~KeyboardPanel() {
 }

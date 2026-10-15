@@ -28,11 +28,20 @@
 class KeyboardPanel : public FreqPanel {
 public:
     /** The shift states of the keys, the values of mShiftMode. */
+#ifdef VIDEO_STANDARD_PAL
+    enum ShiftMode {
+        kShiftUnset = 0, /*!< No mode has been chosen since the panel was constructed. */
+        kShiftNone = 1,  /*!< The keys type their plain characters. */
+        kShiftOnce = 2,  /*!< The next key types its shifted character. */
+        kShiftCaps = 3,  /*!< The keys type their capital characters until caps is chosen again. */
+    };
+#else
     enum ShiftMode {
         kShiftNone = 0, /*!< The keys type their plain characters. */
         kShiftOnce = 1, /*!< The next key types its shifted character. */
         kShiftCaps = 2, /*!< The keys type their capital characters until caps is chosen again. */
     };
+#endif
 
     /**
      * Construct the panel from its script description.

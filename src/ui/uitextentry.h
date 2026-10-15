@@ -224,6 +224,9 @@ public:
     float mMaxEntryWidth;                 /*!< The `max_entry_width` setting, or -1 for no limit. */
     int mNumLines;                        /*!< The `num_lines` setting. */
     int mMaxNumChars;                     /*!< The `max_num_chars` setting, or -1 for no limit. */
+#ifdef VIDEO_STANDARD_PAL
+    int mUtf8MaxLen; /*!< The `utf8_max_len` setting, the most UTF-8 bytes, or -1 for no limit. */
+#endif
     int mWordWrapLines;       /*!< The `word_wrap_lines` setting, or 0 for no wrapping. */
     int mPassword;            /*!< The `password` setting, which masks the text. */
     int mEditing;             /*!< Whether the caret blinks. */

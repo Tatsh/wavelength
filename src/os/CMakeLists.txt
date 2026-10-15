@@ -55,7 +55,8 @@ set(WAVELENGTH_OS_SRCS
     string.cpp
     system.cpp
     task.cpp
-    timer.cpp)
+    timer.cpp
+    utf8.cpp)
 
 # The modules of the vendored gzip 1.2.4 the game links beside inflate.c, edited to match the game.
 set(WAVELENGTH_GZIP_SRCS
