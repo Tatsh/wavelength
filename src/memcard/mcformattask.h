@@ -40,6 +40,7 @@ protected:
      * Issue the command.
      *
      * @ghidraAddress NTSC-U/C: 0x0015e088
+     * @ghidraAddress PAL: 0x0015f8c8
      */
     void OnStart() override;
 };

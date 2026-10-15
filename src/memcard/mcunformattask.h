@@ -22,7 +22,7 @@ public:
      *
      * @param nResult The library's result.
      * @ghidraAddress NTSC-U/C: 0x0015e0b0
-     * @ghidraAddress PAL: 0x0015f8c8
+     * @ghidraAddress PAL: 0x0015f310
      */
     void OnUnformat(int nResult) override;
 
