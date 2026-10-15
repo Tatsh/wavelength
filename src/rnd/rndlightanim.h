@@ -104,6 +104,7 @@ public:
      *
      * @return sClassName.
      * @ghidraAddress NTSC-U/C: 0x00395d18
+     * @ghidraAddress PAL: 0x00404408
      */
     const char *ClassName() const override {
         return sClassName;
