@@ -86,12 +86,24 @@ public:
     /**
      * Vtable slot 10. Report whether the connection still needs the DNAS authentication.
      *
+     * The default reports 1.
+     *
      * @return Non-zero until ClearDNASPending() after a connection.
+     * @ghidraAddress PAL: 0x00405d78
      */
-    virtual int IsDNASPending() = 0;
+    virtual int IsDNASPending() {
+        return 1;
+    }
 
-    /** Vtable slot 11. Record that the connection passed the DNAS authentication. */
-    virtual void ClearDNASPending() = 0;
+    /**
+     * Vtable slot 11. Record that the connection passed the DNAS authentication.
+     *
+     * The default does nothing.
+     *
+     * @ghidraAddress PAL: 0x00405d80
+     */
+    virtual void ClearDNASPending() {
+    }
 #endif
 
     /**

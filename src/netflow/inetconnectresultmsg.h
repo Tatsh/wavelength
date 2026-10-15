@@ -94,6 +94,8 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
-    int mResult;   /*!< The outcome, one of Result or another failure. */
+    int mResult; /*!< The outcome, one of Result or another failure. */
+#ifndef VIDEO_STANDARD_PAL
     String mError; /*!< The text of the error, or empty. */
+#endif
 };

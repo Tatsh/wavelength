@@ -24,6 +24,7 @@
 #include "os/debug.h"
 #include "os/file.h"
 #include "os/irx.h"
+#include "os/locale.h"
 #include "os/system.h"
 #include "script/dataarray.h"
 
@@ -71,6 +72,15 @@ constexpr int kInterfaceFailed = 5;
 // The link status values of ezNetCtlStatus_t.
 constexpr int kLinkInvalid = 0;
 constexpr int kLinkValid = 1;
+
+#ifdef VIDEO_STANDARD_PAL
+// The start of the message of a failed interface whose provider refused the login.
+const char kAuthFailureText[] = "Authentication fail";
+
+// The tokens of the texts InetConnectStatusMsg reports while the interface comes up.
+const char kConnectingToken[] = "eznetctl_Connecting";
+const char kInvalidEthernetToken[] = "eznetctl_invalid_ethernet";
+#endif
 
 // Results that CheckConnection() and LookupHost() report.
 constexpr int kCheckFailed = -91;
@@ -159,6 +169,10 @@ int InetImpl::DownInterface() {
 }
 
 void InetImpl::LaunchConfigTool() {
+#ifdef VIDEO_STANDARD_PAL
+    // The European disc has one configuration tool, whatever the kind of disc.
+    const char *pszPath = "cdrom0:\\NETGUI\\NTGUCDVD.ELF;1";
+#else
     const char *pszPath;
     const int nType = sceCdGetDiskType();
     if (nType == SCECdPS2CD) {
@@ -168,6 +182,7 @@ void InetImpl::LaunchConfigTool() {
     } else {
         pszPath = "cdrom0:\\NETGUI\\NTGUIDVD.ELF;1";
     }
+#endif
     String bootPath;
     MakeDevicePath(bootPath, FileBootExecutable());
     sLaunchArgs[0] = const_cast<char *>(bootPath.c_str());
@@ -391,8 +406,20 @@ void InetImpl::Poll() {
         } else if (sStatus.state == kInterfaceFailed) {
             mState = kStateIdle;
             nResult = InetConnectResultMsg::kResultFailed;
+#ifdef VIDEO_STANDARD_PAL
+            if (strncmp(sStatus.message, kAuthFailureText, strlen(kAuthFailureText)) == 0) {
+                nResult = InetConnectResultMsg::kResultAuthFailed;
+            }
+#endif
         }
         if (mLinkStatus != sStatus.linkStatus || mStatusText != sStatus.message) {
+#ifdef VIDEO_STANDARD_PAL
+            DebugPrint("eznet link:%d msg:%s\n", sStatus.linkStatus, sStatus.message);
+            String text(TheLocale.Localize(kConnectingToken, true));
+            if (sStatus.linkStatus == kLinkInvalid) {
+                text += TheLocale.Localize(kInvalidEthernetToken, true);
+            }
+#else
             String text;
             if (sStatus.linkStatus == kLinkInvalid) {
                 text += "Invalid Ethernet link\n";
@@ -400,6 +427,7 @@ void InetImpl::Poll() {
                 text += "Valid Ethernet link\n";
             }
             text += sStatus.message;
+#endif
             InetConnectStatusMsg msg(text);
             mConnectSink->Dispatch(&msg);
             mLinkStatus = sStatus.linkStatus;
@@ -481,14 +509,22 @@ int InetImpl::SelectModules(const ezNetCnfData_t *pData) {
         nType = kConnectionSlow;
         fTimeout = kModemTimeout;
     } else {
+        // The European disc has no AN986 driver, and its Ethernet connection waits as long as a
+        // modem.
         if (strncmp(pData->vendor, kSonyVendor, kVendorLength) == 0) {
             AddModule("dev9.irx");
             AddModule("smap.irx");
+#ifndef VIDEO_STANDARD_PAL
         } else {
             AddModule("an986.irx");
+#endif
         }
         nType = kConnectionFast;
+#ifdef VIDEO_STANDARD_PAL
+        fTimeout = kModemTimeout;
+#else
         fTimeout = kEthernetTimeout;
+#endif
     }
     sInstance->mConnectionType = nType;
     sInstance->mTimeout = fTimeout;

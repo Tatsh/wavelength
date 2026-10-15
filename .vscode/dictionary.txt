@@ -1014,6 +1014,7 @@ notexclusiveacquired
 nounistd
 nowbdc
 noyywrap
+ntgucdvd
 ntguicd
 ntguidvd
 ntguihost

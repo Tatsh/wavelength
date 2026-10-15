@@ -115,7 +115,7 @@ public:
 
 #ifdef VIDEO_STANDARD_PAL
     /**
-     * Vtable slot 10.
+     * Vtable slot 10. Report mDNASPending.
      *
      * @return mDNASPending.
      * @ghidraAddress PAL: 0x0025cd98

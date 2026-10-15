@@ -584,9 +584,11 @@ void InetConnectStatusMsg::PrintExtra(PrnStream &stream) const {
 
 void InetConnectResultMsg::PrintExtra(PrnStream &stream) const {
     stream << "Result:" << mResult;
+#ifndef VIDEO_STANDARD_PAL
     if (mError != "") {
         (stream << " Err:").Print(mError.c_str());
     }
+#endif
 }
 
 void InetDNSLookupResultMsg::PrintExtra(PrnStream &stream) const {
