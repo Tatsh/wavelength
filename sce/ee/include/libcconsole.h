@@ -95,6 +95,30 @@ int LibcConsoleIsatty(int nFile);
  */
 int LibcConsoleFstat(int nFile, struct stat *pStat);
 
+#ifdef VIDEO_STANDARD_PAL
+/**
+ * Report the process identifier, which the console has only one of.
+ *
+ * libdnas2 calls the routine when no identifier hook is installed.
+ *
+ * @return Always 1.
+ * @ghidraAddress PAL: 0x00383fa8
+ */
+int LibcConsoleGetpid(void);
+
+/**
+ * Describe a file by path, which the console does not support.
+ *
+ * The X509 certificate directory lookup of libdnas2 calls the routine.
+ *
+ * @param pszPath The path.
+ * @param pStat Not written.
+ * @return Always -1, with errno set to EIO.
+ * @ghidraAddress PAL: 0x00383fb0
+ */
+int LibcConsoleStat(const char *pszPath, struct stat *pStat);
+#endif
+
 /**
  * Mark the console closed. The next read or write opens the DECI2 TTY again.
  *

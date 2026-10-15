@@ -340,6 +340,19 @@ int LibcConsoleFstat(int nFile, struct stat *pStat) {
     return 0;
 }
 
+#ifdef VIDEO_STANDARD_PAL
+int LibcConsoleGetpid(void) {
+    return 1;
+}
+
+int LibcConsoleStat(const char *pszPath, struct stat *pStat) {
+    (void)pszPath;
+    (void)pStat;
+    errno = EIO;
+    return -1;
+}
+#endif
+
 void LibcConsoleReset(void) {
     ttyinit = 0;
 }
