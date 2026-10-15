@@ -260,6 +260,9 @@ constexpr char kEnterTubeCommand[] = "enter_tube";
 constexpr char kExitTubeCommand[] = "exit_tube";
 constexpr char kUnlockAllCommand[] = "unlock_all";
 constexpr char kSoloSongScreenCommand[] = "solo_song_screen";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kNetUploadToolCommand[] = "net_upload_tool";
+#endif
 
 // Screen groups, panels, and screens.
 constexpr char kAlwaysGroup[] = "always";
@@ -310,6 +313,10 @@ constexpr char kLobbyErrorScreen[] = "lobby_error";
 constexpr char kLaunchpadErrorScreen[] = "lpad_error";
 constexpr char kUnlockArenaAnimScreen[] = "unlockarena_anim";
 constexpr char kSelectArenaScreen[] = "s_g_sel_arena";
+#ifdef VIDEO_STANDARD_PAL
+constexpr char kWelcomeScreen[] = "fn_welcome";
+constexpr char kGetUploadToolListScreen[] = "net_get_upload_tool_list";
+#endif
 constexpr char kJukeboxScreen[] = "jbox_redbook";
 
 // The arguments of the unlock_all command.
@@ -478,6 +485,16 @@ void SoloSongScreen([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void 
     TheGameDb->UnlockAllSongs();
     TheUI.GotoScreen(kSelectArenaScreen);
 }
+
+#ifdef VIDEO_STANDARD_PAL
+// PAL: 0x001687d8, opens the upload tool list from the online welcome screen.
+void NetUploadTool([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
+    if (TheMetagame.mState == Metagame::kStateFrontEnd &&
+        strcmp(TheUI.mCurrentScreen->mName, kWelcomeScreen) == 0) {
+        TheUI.GotoScreen(kGetUploadToolListScreen);
+    }
+}
+#endif
 
 // NTSC-U/C: 0x00168bb0, PAL: 0x0016bd38
 void MetaChangeMix(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
@@ -853,6 +870,9 @@ void Metagame::Init() {
     ScriptFunction::Register(ExitTube, kExitTubeCommand, nullptr);
     ScriptFunction::Register(UnlockAll, kUnlockAllCommand, nullptr);
     ScriptFunction::Register(SoloSongScreen, kSoloSongScreenCommand, nullptr);
+#ifdef VIDEO_STANDARD_PAL
+    ScriptFunction::Register(NetUploadTool, kNetUploadToolCommand, nullptr);
+#endif
     mNextScreen = kPreLogoScreen;
     TheMCManager.Init();
 }
@@ -866,6 +886,9 @@ void Metagame::Terminate() {
     ScriptFunction::Unregister(ExitTube);
     ScriptFunction::Unregister(UnlockAll);
     ScriptFunction::Unregister(SoloSongScreen);
+#ifdef VIDEO_STANDARD_PAL
+    ScriptFunction::Unregister(NetUploadTool);
+#endif
     TheMCManager.Terminate();
     delete mArena;
     delete mGizmo;
