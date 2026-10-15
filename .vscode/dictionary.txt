@@ -177,6 +177,7 @@ choosememcardscreen
 chpt
 chunkstream
 ckpt
+cleancd
 cleargamelistfiltertask
 clipw
 clocksynctask
@@ -289,6 +290,7 @@ dmapacket
 dmvector
 dnas
 dnasstatusmsg
+dnastask
 docstrings
 dodnstask
 dopenssl

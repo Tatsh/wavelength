@@ -9,6 +9,8 @@
 #include "ui/uimanager.h"
 
 #ifdef VIDEO_STANDARD_PAL
+#include "netflow/dnastask.h"
+#include "os/string.h"
 #include "rnd/rndmanager.h"
 #include "rnd/rndmesh.h"
 #include "rnd/rndtext.h"
@@ -29,6 +31,8 @@ constexpr char kDNASToken[] = "dnas_net_connect_lobby";
 constexpr char kDialogToken[] = "net_connect_lobby_dlg";
 constexpr char kDNSErrorScreen[] = "net_dns_error";
 constexpr char kDNSErrorToken[] = "net_dns_error_msg";
+constexpr char kDNASErrorScreen[] = "net_dnas_error";
+constexpr char kDNASErrorToken[] = "net_dnas_error_msg";
 #endif
 
 } // namespace
@@ -107,6 +111,18 @@ bool NetLobbyConnect::HandleConnectResult(LobbyConnectResultMsg *pMsg) {
         TransitionErrorScreen *pError =
             dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kDNSErrorScreen, false));
         pError->mMessage = TheLocale.Localize(kDNSErrorToken, true);
+        TheUI.GotoScreen(pError);
+    } else if (pMsg->mResult == LobbyConnectResultMsg::kResultDNASFailed) {
+        TransitionErrorScreen *pError =
+            dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kDNASErrorScreen, false));
+        int nSubCode;
+        const char *pszError;
+        const char *pszHint;
+        DNASTask::GetError(&nSubCode, &pszError, &pszHint);
+        const String error(TheLocale.Localize(pszError, true));
+        const String hint(TheLocale.Localize(pszHint, true));
+        pError->mMessage = FormatString(
+            TheLocale.Localize(kDNASErrorToken, true), nSubCode, error.c_str(), hint.c_str());
         TheUI.GotoScreen(pError);
 #endif
     } else {

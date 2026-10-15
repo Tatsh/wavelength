@@ -39,6 +39,7 @@
 #include "netflow/closemgcltask.h"
 #include "netflow/closerttask.h"
 #include "netflow/createchanneltask.h"
+#include "netflow/dnastask.h"
 #include "netflow/dodnstask.h"
 #include "netflow/fileclosetask.h"
 #include "netflow/filecreatetask.h"
@@ -555,6 +556,9 @@ LobbyRT::LobbyRT()
 
     mConnectTask.Add(new CheckInetTask);
     mConnectTask.Add(new DoDNSTask);
+#ifdef VIDEO_STANDARD_PAL
+    mConnectTask.Add(new DNASTask);
+#endif
     mConnectTask.Add(new InitRTTask);
     mConnectTask.Add(new InitMGCLTask);
     mConnectTask.Add(new MediusConnectTask(MediusConnectTask::kServerLobby));

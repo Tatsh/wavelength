@@ -15,6 +15,7 @@ set(WAVELENGTH_NETFLOW_SRCS
     closemgcltask.cpp
     closerttask.cpp
     createchanneltask.cpp
+    dnastask.cpp
     dodnstask.cpp
     fileclosetask.cpp
     filecreatetask.cpp
