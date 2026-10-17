@@ -177,7 +177,7 @@ bool UIManager::DispatchPriv(Message *pMsg) {
 }
 
 // Out of line, as in the binary, where DispatchPriv() calls it only for a joypad message.
-__attribute__((noinline)) bool UIManager::HandleJoypad(JoypadInputMsg *pMsg) {
+bool UIManager::HandleJoypad(JoypadInputMsg *pMsg) {
     const int nButton = pMsg->mButton;
     if (nButton != kPadDUp && nButton != kPadDRight && nButton != kPadDDown &&
         nButton != kPadDLeft) {

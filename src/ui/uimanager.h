@@ -225,7 +225,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0020d180
      * @ghidraAddress PAL: 0x00215f98
      */
-    bool HandleJoypad(JoypadInputMsg *pMsg);
+    __attribute__((noinline)) bool HandleJoypad(JoypadInputMsg *pMsg);
 
     /**
      * Offer a message to the sinks, then to the manager, then to the current screen.
