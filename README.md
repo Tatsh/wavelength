@@ -5,7 +5,7 @@
 [![C++](https://img.shields.io/badge/C++-00599C?logo=c%2B%2B)](https://isocpp.org)
 [![GitHub tag (with filter)](https://img.shields.io/github/v/tag/Tatsh/wavelength)](https://github.com/Tatsh/wavelength/tags)
 [![License](https://img.shields.io/github/license/Tatsh/wavelength)](https://github.com/Tatsh/wavelength/blob/master/LICENSE.txt)
-[![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/Tatsh/wavelength/v0.0.0/master)](https://github.com/Tatsh/wavelength/compare/v0.0.0...master)
+[![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/Tatsh/wavelength/v1.0.0/master)](https://github.com/Tatsh/wavelength/compare/v1.0.0...master)
 [![Dependabot](https://img.shields.io/badge/Dependabot-enabled-blue?logo=dependabot)](https://github.com/dependabot)
 [![pages-build-deployment](https://github.com/Tatsh/wavelength/actions/workflows/pages/pages-build-deployment/badge.svg)](https://tatsh.github.io/wavelength/)
 [![Stargazers](https://img.shields.io/github/stars/Tatsh/wavelength?logo=github&style=flat)](https://github.com/Tatsh/wavelength/stargazers)

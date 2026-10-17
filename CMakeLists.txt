@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(wavelength VERSION 0.0.0 LANGUAGES C CXX ASM)
+project(wavelength VERSION 1.0.0 LANGUAGES C CXX ASM)
 
 option(BUILD_DOCS "Build documentation alongside the sources." OFF)
 option(BUILD_DOCS_ONLY "Build documentation and nothing else." OFF)

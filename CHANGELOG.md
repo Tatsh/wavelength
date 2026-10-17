@@ -9,4 +9,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
 
-[unreleased]: https://github.com/Tatsh/wavelength/commits/master
+## [1.0.0] - 2026-10-17
+
+First release.
+
+[unreleased]: https://github.com/Tatsh/wavelength/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Tatsh/wavelength/releases/tag/v1.0.0
