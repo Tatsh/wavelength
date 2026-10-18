@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <utility>
+
 #include "app/hudflyingbutton.h"
 #include "app/hudhilitebox.h"
 #include "app/hudletterbox.h"
@@ -102,22 +105,119 @@ public:
      */
     void Reset();
 
+    /** @return The energy bar. */
+    OvyJuice &GetJuice() {
+        return mJuice;
+    }
+
+    /** @return `HUD genmsg.txt`. */
+    HudTextNode &GetMessage() {
+        return mMessage;
+    }
+
+    /** @return `HUD genmsg2.txt`. */
+    HudTextNode &GetMessage2() {
+        return mMessage2;
+    }
+
+    /** @return The message that flies across. */
+    HudTextMessage &GetTextMessage() {
+        return mTextMessage;
+    }
+
+    /** @return The highlight and the arrow of the tutorial. */
+    HudHiliteBox &GetHilite() {
+        return mHilite;
+    }
+
+    /** @return The letterbox bars. */
+    HudLetterbox &GetLetterbox() {
+        return mLetterbox;
+    }
+
+    /** @return The song position bar, or null. */
+    OvySongPos *GetSongPos() const {
+        return mSongPos.get();
+    }
+
+    /**
+     * @param nLane The lane, below kNumLanes.
+     * @return The button icon of the lane.
+     */
+    HudFlyingButton &GetButton(int nLane) const {
+        return *mButtons[nLane];
+    }
+
+    /** @return The picture of the controller, or null. */
+    OvyController *GetController() const {
+        return mController.get();
+    }
+
+    /**
+     * Replace the picture of the controller.
+     *
+     * @param pController The new picture, which the head-up display then owns.
+     */
+    void SetController(std::unique_ptr<OvyController> pController) {
+        mController = std::move(pController);
+    }
+
+    /** @return The panel of text, or null. */
+    OvyDialog *GetDialog() const {
+        return mDialog.get();
+    }
+
+    /**
+     * Replace the panel of text.
+     *
+     * @param pDialog The new panel, which the head-up display then owns.
+     */
+    void SetDialog(std::unique_ptr<OvyDialog> pDialog) {
+        mDialog = std::move(pDialog);
+    }
+
+    /** @return The avatar of the leader, or null. */
+    OvyAvatar *GetLeaderAvatar() const {
+        return mLeaderAvatar.get();
+    }
+
+    /** @return The sections of a remix, or null. */
+    OvySectionPanel *GetSections() const {
+        return mSections.get();
+    }
+
+    /** @return The stick marker of a remix, or null. */
+    HudStick *GetStick() const {
+        return mStick.get();
+    }
+
+    /** @return The letter banner of a duel, or null. */
+    HudLetterExit *GetLetterExit() const {
+        return mLetterExit.get();
+    }
+
+    /** @return The track label, or null. */
+    OvyTrackLabel *GetTrackLabel() const {
+        return mTrackLabel.get();
+    }
+
+private:
     OvyJuice mJuice;                      /*!< The energy bar. */
     HudTextNode mMessage;                 /*!< `HUD genmsg.txt`. */
     HudTextNode mMessage2;                /*!< `HUD genmsg2.txt`. */
     HudTextMessage mTextMessage;          /*!< The message that flies across. */
     HudHiliteBox mHilite;                 /*!< The highlight and the arrow of the tutorial. */
-    OvySongPos *mSongPos;                 /*!< The song position bar, or null. */
+    std::unique_ptr<OvySongPos> mSongPos; /*!< The song position bar, or null. */
     HudLetterbox mLetterbox;              /*!< The letterbox bars. */
-    HudFlyingButton *mButtons[kNumLanes]; /*!< The button icons of the lanes. */
-    OvyController *mController;           /*!< The picture of the controller, or null. */
-    OvyDialog *mDialog;                   /*!< The panel of text, or null. */
-    OvyAvatar *mLeaderAvatar;             /*!< The avatar of the leader, or null. */
-    OvySectionPanel *mSections;           /*!< The sections of a remix, or null. */
-    HudStick *mStick;                     /*!< The stick marker of a remix, or null. */
-    OvyChat *mChat;                       /*!< The chat of an online remix, or null. */
-    HudLetterExit *mLetterExit;           /*!< The letter banner of a duel, or null. */
-    OvyTrackLabel *mTrackLabel;           /*!< The track label, or null. */
-    RndAnimatable *mMaterialAnim;         /*!< `mat_2d_always.anim`, posed on the song time. */
-    unsigned char mPlaying;               /*!< A bit per player who plays. */
+    std::unique_ptr<HudFlyingButton> mButtons[kNumLanes]; /*!< The button icons of the lanes. */
+    std::unique_ptr<OvyController> mController; /*!< The picture of the controller, or null. */
+    std::unique_ptr<OvyDialog> mDialog;         /*!< The panel of text, or null. */
+    std::unique_ptr<OvyAvatar> mLeaderAvatar;   /*!< The avatar of the leader, or null. */
+    std::unique_ptr<OvySectionPanel> mSections; /*!< The sections of a remix, or null. */
+    std::unique_ptr<HudStick> mStick;           /*!< The stick marker of a remix, or null. */
+    std::unique_ptr<OvyChat> mChat;             /*!< The chat of an online remix, or null. */
+    std::unique_ptr<HudLetterExit> mLetterExit; /*!< The letter banner of a duel, or null. */
+    std::unique_ptr<OvyTrackLabel> mTrackLabel; /*!< The track label, or null. */
+    RndAnimatable *mMaterialAnim; /*!< `mat_2d_always.anim`, posed on the song time. */
+    unsigned char mPlaying;       /*!< A bit per player who plays. */
 };

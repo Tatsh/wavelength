@@ -1,5 +1,7 @@
 #include "app/hudflyingbutton.h"
 
+#include <memory>
+
 #include "game/gamedb.h"
 #include "math/sine.h"
 #include "os/string.h"
@@ -35,7 +37,7 @@ void Place(RndText *pText, float fX, float fZ) {
 } // namespace
 
 float HudFlyingButton::sFlightTime = 0.0f;
-Interpolator *HudFlyingButton::sFlight = nullptr;
+std::unique_ptr<Interpolator> HudFlyingButton::sFlight;
 
 HudFlyingButton::HudFlyingButton(int nLane, [[maybe_unused]] RndView *pHudView) {
     mText =
@@ -46,15 +48,15 @@ HudFlyingButton::HudFlyingButton(int nLane, [[maybe_unused]] RndView *pHudView) 
     if (nLane == kCurveLane) {
         DataArray *pCurve =
             SystemConfig()->FindArray("gfx", true)->FindArray("button_icon_interp", true);
-        sFlight = ObjectToInterpolator(pCurve->Array(1));
+        sFlight.reset(ObjectToInterpolator(pCurve->Array(1)));
         sFlightTime = sFlight->mX1;
     }
     Reset();
 }
 
 HudFlyingButton::~HudFlyingButton() {
-    delete sFlight;
-    sFlight = nullptr;
+    // Every icon shares the curve, and the first one destroyed frees it.
+    sFlight.reset();
 }
 
 void HudFlyingButton::Reset() {

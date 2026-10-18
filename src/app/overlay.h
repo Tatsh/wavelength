@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "app/hudcommon.h"
@@ -758,12 +759,14 @@ public:
      */
     static float sDuelPointsMoveRate;
 
-    HudCommon *mCommon;                    /*!< The parts of the whole game. */
-    RndView *mHudView;                     /*!< `hud.view`. */
-    RndCam *mCam;                          /*!< `hud.cam`. */
-    Vector3 mCamPos;                       /*!< The place of mCam in the layout. */
-    float mLastTime;                       /*!< The system time of the last poll. */
-    int mStarted;                          /*!< Whether the parts show since the song started. */
-    std::vector<OvyLocalPlayer *> mLocals; /*!< The parts of the players on this console. */
-    std::vector<OvyAllPlayer *> mAlls;     /*!< The parts of every player. */
+private:
+    std::unique_ptr<HudCommon> mCommon; /*!< The parts of the whole game. */
+    RndView *mHudView;                  /*!< `hud.view`. */
+    RndCam *mCam;                       /*!< `hud.cam`. */
+    Vector3 mCamPos;                    /*!< The place of mCam in the layout. */
+    float mLastTime;                    /*!< The system time of the last poll. */
+    int mStarted;                       /*!< Whether the parts show since the song started. */
+    std::vector<std::unique_ptr<OvyLocalPlayer>>
+        mLocals; /*!< The parts of the players on this console. */
+    std::vector<std::unique_ptr<OvyAllPlayer>> mAlls; /*!< The parts of every player. */
 };

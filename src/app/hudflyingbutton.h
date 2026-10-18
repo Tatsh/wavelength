@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "math/interpolator.h"
 #include "math/vector2.h"
 #include "rnd/rndblur.h"
@@ -87,6 +89,12 @@ public:
      */
     void Draw();
 
+    /** @return `HUD flying button <n>.txt`, the glyph of the button. */
+    RndText *GetText() const {
+        return mText;
+    }
+
+private:
     /**
      * The end of the shared flight curve, the time a flight takes.
      *
@@ -101,7 +109,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003af958
      * @ghidraAddress PAL: 0x0042e7ec
      */
-    static Interpolator *sFlight;
+    static std::unique_ptr<Interpolator> sFlight;
 
     RndText *mText;   /*!< `HUD flying button <n>.txt`, the glyph of the button. */
     RndBlur *mBlur;   /*!< `HUD flying button <n>.blur`. */

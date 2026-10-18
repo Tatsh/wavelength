@@ -1,5 +1,7 @@
 #include "app/hudcommon.h"
 
+#include <memory>
+
 #include "app/overlay.h"
 #include "game/gamedb.h"
 #include "os/string.h"
@@ -23,27 +25,19 @@ constexpr int kNoLeader = -1;
 
 HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults)
     : mMessage("HUD genmsg.txt", pHudView), mMessage2("HUD genmsg2.txt", pHudView),
-      mTextMessage(pHudView), mSongPos(nullptr), mLetterbox(pHudView) {
+      mTextMessage(pHudView), mLetterbox(pHudView) {
     mPlaying = 0;
-    mController = nullptr;
-    mDialog = nullptr;
-    mLeaderAvatar = nullptr;
-    mSections = nullptr;
-    mStick = nullptr;
-    mChat = nullptr;
-    mLetterExit = nullptr;
-    mTrackLabel = nullptr;
     if (TheGameDb->mRuleSet == GameDb::kRuleSetGame ||
         TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
-        mSongPos = new OvySongPos(pHudView);
+        mSongPos = std::make_unique<OvySongPos>(pHudView);
     }
     for (int i = 0; i < kNumLanes; ++i) {
-        mButtons[i] = new HudFlyingButton(i, pHudView);
+        mButtons[i] = std::make_unique<HudFlyingButton>(i, pHudView);
     }
     if (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
         TheGameDb->mRuleSet != GameDb::kRuleSetRemix &&
         TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
-        mLeaderAvatar = new OvyAvatar(kLeaderPlayer, kLeaderIndex, pHudView);
+        mLeaderAvatar = std::make_unique<OvyAvatar>(kLeaderPlayer, kLeaderIndex, pHudView);
     }
     if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
         char chHud = kHudSolo;
@@ -54,36 +48,24 @@ HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults
             TheManager.Find(FormatString("HUD%cr selected font.mnm", chHud))));
         auto *pLetterbox = dynamic_cast<RndView *>(
             TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
-        mSections = new OvySectionPanel(chHud, String(FormatString("HUD%cr", chHud)), pLetterbox);
-        mStick = new HudStick(chHud, pHudView, pLetterbox);
+        mSections = std::make_unique<OvySectionPanel>(
+            chHud, String(FormatString("HUD%cr", chHud)), pLetterbox);
+        mStick = std::make_unique<HudStick>(chHud, pHudView, pLetterbox);
         if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
-            mChat = new OvyChat(pConfig, pDefaults, pHudView);
+            mChat = std::make_unique<OvyChat>(pConfig, pDefaults, pHudView);
         }
     }
     if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
-        mLetterExit = new HudLetterExit();
+        mLetterExit = std::make_unique<HudLetterExit>();
     }
     if (TheGameDb->mCommunity != GameDb::kCommunityLocal &&
         TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
-        mTrackLabel = new OvyTrackLabel();
+        mTrackLabel = std::make_unique<OvyTrackLabel>();
     }
     mMaterialAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("mat_2d_always.anim"));
 }
 
-HudCommon::~HudCommon() {
-    delete mTrackLabel;
-    delete mLetterExit;
-    delete mChat;
-    delete mStick;
-    delete mSections;
-    delete mSongPos;
-    delete mLeaderAvatar;
-    delete mDialog;
-    delete mController;
-    for (int i = kNumLanes - 1; i >= 0; --i) {
-        delete mButtons[i];
-    }
-}
+HudCommon::~HudCommon() = default;
 
 void HudCommon::Poll(float fSongDelta, float fRealDelta, float fTickDelta) {
     const float fSongTime = TheGameDb->mSongTime;
@@ -98,7 +80,7 @@ void HudCommon::Poll(float fSongDelta, float fRealDelta, float fTickDelta) {
     }
     mTextMessage.Poll();
     mLetterbox.Poll(fSongDelta, fTickDelta);
-    for (HudFlyingButton *pButton : mButtons) {
+    for (const auto &pButton : mButtons) {
         pButton->Poll(fRealDelta);
     }
     if (mLeaderAvatar != nullptr) {
@@ -128,7 +110,7 @@ void HudCommon::Draw() {
     if (mSongPos != nullptr) {
         mSongPos->Draw();
     }
-    for (HudFlyingButton *pButton : mButtons) {
+    for (const auto &pButton : mButtons) {
         pButton->Draw();
     }
     if (mSections != nullptr) {
@@ -193,7 +175,7 @@ void HudCommon::Reset() {
         mSongPos->Reset();
     }
     mLetterbox.SetClosed(0.0f);
-    for (HudFlyingButton *pButton : mButtons) {
+    for (const auto &pButton : mButtons) {
         pButton->Reset();
     }
     if (mLeaderAvatar != nullptr) {
