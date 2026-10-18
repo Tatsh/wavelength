@@ -2,6 +2,8 @@
 
 #ifdef VIDEO_STANDARD_PAL
 
+#include <memory>
+
 #include <libezctl.h>
 #include <sifrpc.h>
 
@@ -30,23 +32,21 @@ public:
      * The cells are separate allocations rather than static storage.
      */
     static void Create() {
-        sStart = new const unsigned char *;
-        sEnd = new const unsigned char *;
-        sExpected = new int;
-        sCursor = new const unsigned char *;
-        sCrc = new unsigned int;
+        sStart = std::make_unique<const unsigned char *>();
+        sEnd = std::make_unique<const unsigned char *>();
+        sExpected = std::make_unique<int>();
+        sCursor = std::make_unique<const unsigned char *>();
+        sCrc = std::make_unique<unsigned int>();
     }
 
     /** Release the cells and the CRC table. */
     static void Destroy() {
-        delete sStart;
-        delete sEnd;
-        delete sExpected;
-        delete sCursor;
-        delete sCrc;
-        if (sTable != nullptr) {
-            delete[] sTable;
-        }
+        sStart.reset();
+        sEnd.reset();
+        sExpected.reset();
+        sCursor.reset();
+        sCrc.reset();
+        sTable.reset();
     }
 
     /**
@@ -99,28 +99,28 @@ public:
         *sCrc = kCrcInitial;
     }
 
+private:
     /** The first byte of the checked code. @ghidraAddress PAL: 0x004d2b2c */
-    static const unsigned char **sStart;
+    static std::unique_ptr<const unsigned char *> sStart;
 
     /** The byte after the checked code. @ghidraAddress PAL: 0x004d2b30 */
-    static const unsigned char **sEnd;
+    static std::unique_ptr<const unsigned char *> sEnd;
 
     /** The next byte Poll() hashes. @ghidraAddress PAL: 0x004d2b34 */
-    static const unsigned char **sCursor;
+    static std::unique_ptr<const unsigned char *> sCursor;
 
     /** The CRC of the bytes hashed so far, not yet inverted. @ghidraAddress PAL: 0x004d2b38 */
-    static unsigned int *sCrc;
+    static std::unique_ptr<unsigned int> sCrc;
 
     /** The CRC the configuration expects. @ghidraAddress PAL: 0x004d2b3c */
-    static int *sExpected;
+    static std::unique_ptr<int> sExpected;
 
     /** The CRC of each byte value. @ghidraAddress PAL: 0x004d2b40 */
-    static unsigned int *sTable;
+    static std::unique_ptr<unsigned int[]> sTable;
 
     /** Nonzero once Poll() has built the table. @ghidraAddress PAL: 0x0042e580 */
     static int sTableBuilt;
 
-private:
     static constexpr int kTableSize = 256;
     static constexpr unsigned int kPolynomial = 0x04c11db7;
     static constexpr unsigned int kTopBit = 0x80000000;
@@ -144,7 +144,7 @@ private:
 
     // Build the table of the reflected CRC-32 one bit at a time.
     static void BuildTable() {
-        sTable = new unsigned int[kTableSize];
+        sTable = std::make_unique<unsigned int[]>(kTableSize);
         for (int i = 0; i < kTableSize; ++i) {
             sTable[i] = Reflect(i, kBitsPerByte) << (kBitsPerWord - kBitsPerByte);
             for (int bit = 0; bit < kBitsPerByte; ++bit) {

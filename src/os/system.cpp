@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 #include <eekernel.h>
 #include <libcdvd.h>
@@ -110,7 +111,7 @@ int gDnasImage;
 #endif
 
 // NTSC-U/C: 0x003b223c, PAL: 0x00431118
-char *gDebugBuffer; // Yes, the binary never sets it.
+std::unique_ptr<char[]> gDebugBuffer; // Yes, the binary never sets it.
 
 // Open the multitap ports and check for multitaps from now on.
 // NTSC-U/C: 0x0028c2a8, PAL: 0x00295bf8
@@ -284,9 +285,7 @@ void RunStartupHook() {
 
 // NTSC-U/C: 0x0028cb10, PAL: 0x002964c0
 void FreeDebugBuffer() {
-    if (gDebugBuffer != nullptr) {
-        delete[] gDebugBuffer;
-    }
+    gDebugBuffer.reset();
 }
 
 } // namespace
