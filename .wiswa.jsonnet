@@ -128,19 +128,18 @@
   },
   vscode+: {
     settings+: { 'cmake.useCMakePresets': 'always' },
+    // IntelliSense parses for the Emotion Engine: 32-bit pointers, so size_t is unsigned int.
     c_cpp+: {
       configurations: [
         {
           cStandard: 'gnu23',
-          compilerPath: '/usr/bin/gcc',
+          compilerPath: 'mips64r5900el-ps2-elf-g++',
+          configurationProvider: 'ms-vscode.cmake-tools',
           cppStandard: 'gnu++23',
-          defines: ['VERSION="unknown"'],
-          includePath: [
-            '${workspaceFolder}/sce/**/include/**',
-            '${workspaceFolder}/src/**',
-            '${workspaceFolder}/.wiswa-ci/**/include/**',
-          ],
-          name: 'Linux',
+          defines: ['_EE', 'ENABLE_PATCHES'],
+          includePath: ['${workspaceFolder}/sce/**/include/**', '${workspaceFolder}/src'],
+          intelliSenseMode: 'linux-gcc-x86',
+          name: 'PS2 EE',
         },
       ],
     },
