@@ -23,9 +23,78 @@ endif()
 option(WAVELENGTH_IMAGE_STRIP "Put an executable without debug information on the image."
        ${_wavelength_image_strip_default})
 
+option(ADD_USA_DEMO_SONG "Add \"Space\" by P.O.D., the exclusive song of the P.O.D. demo disc, to \
+the image the way Amplitude-Space-Edition does. Requires USA_DEMO_IMAGE, and \
+USA_DEMO_SPACE_EDITION or USA_DEMO_SPACE_EDITION_DOWNLOAD." OFF)
+set(USA_DEMO_IMAGE
+    ""
+    CACHE PATH "The ISO image of the P.O.D. demo, Amplitude (USA) (Demo) from the album Payable \
+on Death, or its disc root, for ADD_USA_DEMO_SONG.")
+set(USA_DEMO_SPACE_EDITION
+    ""
+    CACHE PATH "Checkout of https://github.com/Squididly/Amplitude-Space-Edition, the recorded \
+streams and the song entry, for ADD_USA_DEMO_SONG.")
+option(USA_DEMO_SPACE_EDITION_DOWNLOAD "Clone Amplitude-Space-Edition with Git into the build \
+directory when USA_DEMO_SPACE_EDITION is unset, for ADD_USA_DEMO_SONG." ON)
+
+if(ADD_USA_DEMO_SONG
+   AND NOT USA_DEMO_SPACE_EDITION
+   AND USA_DEMO_SPACE_EDITION_DOWNLOAD)
+  include(FetchContent)
+  FetchContent_Declare(
+    amplitude_space_edition
+    GIT_REPOSITORY https://github.com/Squididly/Amplitude-Space-Edition.git
+    GIT_TAG f395bcb2bc307cb7bc5ddb0c4e74f9481b313a41
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/amplitude-space-edition")
+  # The repository has no CMakeLists.txt, so the checkout is not added to the build.
+  FetchContent_MakeAvailable(amplitude_space_edition)
+  set(USA_DEMO_SPACE_EDITION "${amplitude_space_edition_SOURCE_DIR}")
+endif()
+
 if(NOT WAVELENGTH_DISC_IMAGE)
   message(STATUS "Set WAVELENGTH_DISC_IMAGE to an original disc image to enable the image target.")
   return()
+endif()
+
+# With the song, the image is built from a disc root that demo-song-stage.cmake writes.
+set(_wavelength_image_input "${WAVELENGTH_DISC_IMAGE}")
+if(ADD_USA_DEMO_SONG)
+  foreach(_variable USA_DEMO_IMAGE USA_DEMO_SPACE_EDITION)
+    if(NOT EXISTS "${${_variable}}")
+      message(FATAL_ERROR "ADD_USA_DEMO_SONG requires ${_variable}.")
+    endif()
+  endforeach()
+  file(GLOB_RECURSE _wavelength_demo_inputs CONFIGURE_DEPENDS LIST_DIRECTORIES false
+       "${USA_DEMO_SPACE_EDITION}/ark/*" "${USA_DEMO_SPACE_EDITION}/disc/*")
+  foreach(_image IN ITEMS "${WAVELENGTH_DISC_IMAGE}" "${USA_DEMO_IMAGE}")
+    if(IS_DIRECTORY "${_image}")
+      file(GLOB_RECURSE _image_files CONFIGURE_DEPENDS LIST_DIRECTORIES false "${_image}/*")
+      list(APPEND _wavelength_demo_inputs ${_image_files})
+    else()
+      list(APPEND _wavelength_demo_inputs "${_image}")
+    endif()
+  endforeach()
+  set(_wavelength_demo_staging "${CMAKE_BINARY_DIR}/demo-song")
+  set(_wavelength_demo_stamp "${_wavelength_demo_staging}/disc.stamp")
+  if(VIDEO_STANDARD STREQUAL "PAL")
+    set(_wavelength_demo_pal ON)
+  else()
+    set(_wavelength_demo_pal OFF)
+  endif()
+  add_custom_command(
+    OUTPUT "${_wavelength_demo_stamp}"
+    COMMAND
+      "${CMAKE_COMMAND}" "-DDISC_IMAGE=${WAVELENGTH_DISC_IMAGE}" "-DDEMO_IMAGE=${USA_DEMO_IMAGE}"
+      "-DSPACE_EDITION=${USA_DEMO_SPACE_EDITION}" "-DSTAGING_DIR=${_wavelength_demo_staging}"
+      "-DPAL=${_wavelength_demo_pal}" "-DEXTRACT_IMAGE=${WAVELENGTH_TOOL_EXTRACT_IMAGE}"
+      "-DARK=${WAVELENGTH_TOOL_ARK}" "-DDEMO_SONG=${WAVELENGTH_TOOL_DEMO_SONG}"
+      "-DSTAMP=${_wavelength_demo_stamp}" -P "${CMAKE_SOURCE_DIR}/cmake/demo-song-stage.cmake"
+    DEPENDS "${CMAKE_SOURCE_DIR}/cmake/demo-song-stage.cmake" ${_wavelength_demo_inputs}
+            wavelength_tools "${WAVELENGTH_TOOL_ARK}" "${WAVELENGTH_TOOL_DEMO_SONG}"
+            "${WAVELENGTH_TOOL_EXTRACT_IMAGE}"
+    COMMENT "Adding the P.O.D. demo song to a copy of the original disc"
+    VERBATIM)
+  set(_wavelength_image_input "${_wavelength_demo_staging}/disc")
 endif()
 
 # A disc root is rebuilt whenever one of its files changes.
@@ -34,6 +103,9 @@ if(IS_DIRECTORY "${WAVELENGTH_DISC_IMAGE}")
        "${WAVELENGTH_DISC_IMAGE}/*")
 else()
   set(_wavelength_disc_inputs "${WAVELENGTH_DISC_IMAGE}")
+endif()
+if(ADD_USA_DEMO_SONG)
+  list(APPEND _wavelength_disc_inputs "${_wavelength_demo_stamp}")
 endif()
 set(_wavelength_system_area_args)
 if(VIDEO_STANDARD STREQUAL "PAL")
@@ -65,7 +137,7 @@ endforeach()
 add_custom_command(
   OUTPUT "${WAVELENGTH_IMAGE_OUTPUT}"
   COMMAND
-    "${WAVELENGTH_TOOL_BUILD_IMAGE}" "${WAVELENGTH_DISC_IMAGE}" "${WAVELENGTH_IMAGE_OUTPUT}"
+    "${WAVELENGTH_TOOL_BUILD_IMAGE}" "${_wavelength_image_input}" "${WAVELENGTH_IMAGE_OUTPUT}"
     --overwrite --wavelength-bin "${_wavelength_executable}" ${_wavelength_irx_args}
     ${_wavelength_system_area_args}
   DEPENDS ${CMAKE_PROJECT_NAME} "${_wavelength_executable}" ${_wavelength_irx_targets}

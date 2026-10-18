@@ -9,6 +9,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
 
+### Added
+
+- `ADD_USA_DEMO_SONG` CMake option (off by default) adds "Space" by P.O.D., the exclusive song of
+  the _Amplitude (USA) (Demo)_ disc, to the built disc image in the manner of
+  [Amplitude-Space-Edition](https://github.com/Squididly/Amplitude-Space-Edition).
+  - `USA_DEMO_IMAGE` is the demo ISO image or disc root.
+  - `USA_DEMO_SPACE_EDITION` is a checkout of Amplitude-Space-Edition. When it is unset and
+    `USA_DEMO_SPACE_EDITION_DOWNLOAD` is `ON` (the default), CMake clones the repository at a
+    pinned commit with Git.
+  - With the song, the image is rebuilt from a disc root instead of patched in place.
+
+### Changed
+
+- Builds default to the `Debug` build type when `CMAKE_BUILD_TYPE` is not set.
+
 ## [1.0.0] - 2026-10-17
 
 First release.
