@@ -224,20 +224,20 @@ RndObject *RndManager::Find(const char *pszName) {
     return it != mObjects.end() ? it->second : nullptr;
 }
 
-RndLoader *RndManager::AddLoader(const char *pszFile,
-                                 int nFlags,
-                                 RndLoader::Callback *pCallback,
-                                 BinStream *pStream) {
+std::unique_ptr<RndLoader> RndManager::AddLoader(const char *pszFile,
+                                                 int nFlags,
+                                                 RndLoader::Callback *pCallback,
+                                                 BinStream *pStream) {
     if ((nFlags & RndLoader::kAsync) == 0) {
         TheManager.PollLoaders(kFinishQueuedLoadsMs);
     }
-    RndLoader *pLoader = new RndLoader(pszFile, nFlags, pCallback, pStream);
-    mLoaders.push_back(pLoader);
+    auto pLoader = std::make_unique<RndLoader>(pszFile, nFlags, pCallback, pStream);
+    mLoaders.push_back(pLoader.get());
     return pLoader;
 }
 
 void RndManager::LoadFile(const char *pszFile) {
-    delete AddLoader(pszFile, 0, nullptr, nullptr);
+    (void)AddLoader(pszFile, 0, nullptr, nullptr); // The loader is destroyed once it finishes.
 }
 
 void RndManager::SaveFile(const char *pszFile) {

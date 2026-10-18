@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "met/freqpanel.h"
 #include "rnd/rndloader.h"
 #include "script/dataarray.h"
@@ -61,6 +63,6 @@ public:
      */
     void Unload() override;
 
-    const char *mSong;       /*!< The song whose picture shows, a symbol. +0xe0 */
-    RndLoader *mBonusLoader; /*!< The loader of the bonus picture, or null. */
+    const char *mSong;                       /*!< The song whose picture shows, a symbol. +0xe0 */
+    std::unique_ptr<RndLoader> mBonusLoader; /*!< The loader of the bonus picture, or null. */
 };

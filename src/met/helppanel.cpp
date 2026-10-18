@@ -1,6 +1,7 @@
 #include "met/helppanel.h"
 
 #include <cstring>
+#include <memory>
 
 #include "math/vector3.h"
 #include "os/locale.h"
@@ -50,7 +51,7 @@ inline void PlaceRun(RndText *pText, const HelpPanel::HelpText &run, const float
 
 } // namespace
 
-RndLoader *HelpPanel::sLoader = nullptr;
+std::unique_ptr<RndLoader> HelpPanel::sLoader;
 
 HelpPanel::HelpPanel(DataArray *pData, const char *pszDir) : FreqPanel(pData, pszDir) {
     mActionText = kEmptyText;
@@ -66,7 +67,7 @@ void HelpPanel::Load() {
         sLoader = TheManager.AddLoader(
             mFile.c_str(), RndLoader::kAsync | RndLoader::kDeleteObjects, nullptr, nullptr);
     }
-    mLoader = sLoader;
+    mLoader = sLoader.get();
     UIPanel::Load();
 }
 

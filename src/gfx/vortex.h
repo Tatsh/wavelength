@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "math/interpolator.h"
 #include "math/vector2.h"
 #include "rnd/rndloader.h"
@@ -110,9 +112,9 @@ public:
      */
     void Unload();
 
-    DataArray *mConfig;         /*!< The entry of `gfx vortices`. */
-    RndLoader *mLoader;         /*!< The loader of the file of the configuration, or null. */
-    RndView *mTopView;          /*!< The view Draw() draws, `top_view`. */
+    DataArray *mConfig;                 /*!< The entry of `gfx vortices`. */
+    std::unique_ptr<RndLoader> mLoader; /*!< The loader of the file of the configuration. */
+    RndView *mTopView;                  /*!< The view Draw() draws, `top_view`. */
     RndView *mTransitionView;   /*!< The view the frame of the run drives, `transition_view`. */
     RndView *mAmbientView;      /*!< The view the time of the run drives, `ambient_view`. */
     RndView *mWiggle;           /*!< The view the left stick tilts, `wiggle`. */

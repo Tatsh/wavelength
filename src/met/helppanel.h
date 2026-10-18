@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "math/vector3.h"
@@ -198,7 +199,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003af8dc
      * @ghidraAddress PAL: 0x0042e770
      */
-    static RndLoader *sLoader;
+    static std::unique_ptr<RndLoader> sLoader;
 
     RndView *mView;                                                 /*!< `help.view`. */
     DataArray *mFonts;                                              /*!< The `help_fonts` entry. */

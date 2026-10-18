@@ -1,6 +1,7 @@
 #include "ui/uipanel.h"
 
 #include <cstring>
+#include <memory>
 
 #include "os/joypad.h"
 #include "os/locale.h"
@@ -96,7 +97,8 @@ void UIPanel::Load() {
     mFocus = nullptr;
     mNavigator = nullptr;
     if (mLoader == nullptr) {
-        mLoader = TheManager.AddLoader(mFile.c_str(), kPanelLoadFlags, nullptr, nullptr);
+        mOwnedLoader = TheManager.AddLoader(mFile.c_str(), kPanelLoadFlags, nullptr, nullptr);
+        mLoader = mOwnedLoader.get();
     }
 }
 
@@ -119,9 +121,7 @@ void UIPanel::Unload() {
     mComponents.clear();
     mFocus = nullptr;
     mTexts.clear();
-    if (mLoader != nullptr) {
-        delete mLoader;
-    }
+    mOwnedLoader.reset();
     mLoaded = 0;
     mLoader = nullptr;
 }

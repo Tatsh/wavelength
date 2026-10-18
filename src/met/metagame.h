@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "app/msgsink.h"
@@ -375,37 +376,37 @@ public:
      */
     bool DispatchPriv(Message *pMsg) override;
 
-    int mState;                      /*!< One of State. */
-    int mLoadStage;                  /*!< One of LoadStage. */
-    RndLoader *mLoadingScreenLoader; /*!< The load of the loading screen, until the intro. */
-    int mReloadFrontEnd;             /*!< Set when the front end loads again after a song. */
-    int mEvent;                      /*!< The Event Update() reports next. */
-    MetagameArena *mArena;           /*!< The arena scene. */
-    HelpPanel *mHelpPanel;           /*!< The `help` panel. */
-    int mLastSelectButton;           /*!< The JoypadButton that last chose a component. */
-    float mTime;                     /*!< The front end clock, sped up while mSpeed is above 1. */
-    float mTick;                     /*!< The tick of the front end scheduler. */
-    float mLastSchedulerTime;        /*!< The scheduler time of the last Update(). */
-    const char *mNextScreen;         /*!< The screen the front end moves to once it loads. */
-    float mLeaveTime;                /*!< The system time a song's loading screen ends, or 0. */
-    int mLeaveScreenShown;           /*!< Whether the screen after a song has been shown. */
-    int mFirstBoot;                  /*!< Set until the first song, while the intro is due. */
-    int mDialogShowing;              /*!< Whether a dialog shows over the song. */
-    DialogCallback mDialogCallback;  /*!< The routine the dialog reports to, or null. */
-    void *mDialogUserData;           /*!< The value passed back to mDialogCallback. */
-    DialogAction mDialogAction;      /*!< The choice made in the dialog. */
-    Mix *mMusic;                     /*!< The menu music, while the front end shows. */
-    MetaMusicSong *mMusicSong;       /*!< The menu song of mMusic. */
-    SynthEffects mEffects;           /*!< The `effects` entry of the metagame configuration. */
-    float *mTickMs;                  /*!< The milliseconds of one tick of the front end clock. */
-    int mSharedMusicFadedIn;         /*!< Whether the shared music has faded in. */
-    int mGameFxBankSlot;             /*!< `game_fx_bank_slot` of the game configuration. */
-    int mMetaFxBankSlot;             /*!< `meta_fx_bank_slot` of the metagame configuration. */
-    int mMusicSharedBankSlot;        /*!< `music_shared_bank_slot` of the metagame configuration. */
-    int mMusicSwapBankSlot;          /*!< `music_swap_bank_slot` of the metagame configuration. */
-    NetChatroomInfo mChatroom;       /*!< The chat room this console joined last. +0xdc */
-    String mSelectedArena;           /*!< The arena chosen last. */
-    int mFreqsOnCard;                /*!< Non-zero when the memory card check found saved Freqs. */
+    int mState;                                      /*!< One of State. */
+    int mLoadStage;                                  /*!< One of LoadStage. */
+    std::unique_ptr<RndLoader> mLoadingScreenLoader; /*!< The load of the loading screen. */
+    int mReloadFrontEnd;            /*!< Set when the front end loads again after a song. */
+    int mEvent;                     /*!< The Event Update() reports next. */
+    MetagameArena *mArena;          /*!< The arena scene. */
+    HelpPanel *mHelpPanel;          /*!< The `help` panel. */
+    int mLastSelectButton;          /*!< The JoypadButton that last chose a component. */
+    float mTime;                    /*!< The front end clock, sped up while mSpeed is above 1. */
+    float mTick;                    /*!< The tick of the front end scheduler. */
+    float mLastSchedulerTime;       /*!< The scheduler time of the last Update(). */
+    const char *mNextScreen;        /*!< The screen the front end moves to once it loads. */
+    float mLeaveTime;               /*!< The system time a song's loading screen ends, or 0. */
+    int mLeaveScreenShown;          /*!< Whether the screen after a song has been shown. */
+    int mFirstBoot;                 /*!< Set until the first song, while the intro is due. */
+    int mDialogShowing;             /*!< Whether a dialog shows over the song. */
+    DialogCallback mDialogCallback; /*!< The routine the dialog reports to, or null. */
+    void *mDialogUserData;          /*!< The value passed back to mDialogCallback. */
+    DialogAction mDialogAction;     /*!< The choice made in the dialog. */
+    Mix *mMusic;                    /*!< The menu music, while the front end shows. */
+    MetaMusicSong *mMusicSong;      /*!< The menu song of mMusic. */
+    SynthEffects mEffects;          /*!< The `effects` entry of the metagame configuration. */
+    float *mTickMs;                 /*!< The milliseconds of one tick of the front end clock. */
+    int mSharedMusicFadedIn;        /*!< Whether the shared music has faded in. */
+    int mGameFxBankSlot;            /*!< `game_fx_bank_slot` of the game configuration. */
+    int mMetaFxBankSlot;            /*!< `meta_fx_bank_slot` of the metagame configuration. */
+    int mMusicSharedBankSlot;       /*!< `music_shared_bank_slot` of the metagame configuration. */
+    int mMusicSwapBankSlot;         /*!< `music_swap_bank_slot` of the metagame configuration. */
+    NetChatroomInfo mChatroom;      /*!< The chat room this console joined last. +0xdc */
+    String mSelectedArena;          /*!< The arena chosen last. */
+    int mFreqsOnCard;               /*!< Non-zero when the memory card check found saved Freqs. */
     std::list<UnlockEvent> mUnlockScreens; /*!< The queued screens that follow the song. */
     std::vector<UnlockableItem> mUnlocks;  /*!< The items the last song unlocked. */
     Gizmo *mGizmo;                         /*!< The projector of the menu screens. +0x12c */

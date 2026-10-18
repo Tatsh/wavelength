@@ -11,7 +11,7 @@ constexpr int kBonusLoadFlags = 5;
 } // namespace
 
 BonusPicPanel::BonusPicPanel(DataArray *pData, const char *pszDir)
-    : FreqPanel(pData, pszDir), mSong(nullptr), mBonusLoader(nullptr) {
+    : FreqPanel(pData, pszDir), mSong(nullptr) {
 }
 
 void BonusPicPanel::Load() {
@@ -25,7 +25,6 @@ void BonusPicPanel::Load() {
 void BonusPicPanel::Unload() {
     FreqPanel::Unload();
     if (mLoadRefs == 0) {
-        delete mBonusLoader;
-        mBonusLoader = nullptr;
+        mBonusLoader.reset();
     }
 }

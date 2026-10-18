@@ -1,6 +1,7 @@
 #include "game/avatarpart.h"
 
 #include <cstring>
+#include <utility>
 
 #include "game/avatar.h"
 #include "game/avatarpartset.h"
@@ -37,7 +38,7 @@ constexpr int kStopLoad = -1;
 AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
     : mCallback(this), mType(nullptr), mPendingType(nullptr), mColor{1.0f, 1.0f, 1.0f, 1.0f},
       mMesh(nullptr), mTransRoot(nullptr), mJoint(nullptr), mMat(nullptr), mParent(nullptr),
-      mAvatar(pAvatar), mLoader(nullptr), mPendingLoader(nullptr), mPendingExtraLoader(nullptr) {
+      mAvatar(pAvatar) {
     mData = SystemConfig()
                 ->FindArray("db", true)
                 ->FindArray("avatar", true)
@@ -75,12 +76,6 @@ AvatarPart::~AvatarPart() {
             delete mAnims[i];
         }
     }
-    delete mPendingLoader;
-    mPendingLoader = nullptr;
-    delete mPendingExtraLoader;
-    mPendingExtraLoader = nullptr;
-    delete mLoader;
-    mLoader = nullptr;
 }
 
 void AvatarPart::SetType(const char *pszType) {
@@ -91,10 +86,8 @@ void AvatarPart::SetType(const char *pszType) {
     const char *pszDir;
     mData->FindSymbol("rnd_dir", &pszDir, true);
     DataArray *pType = mData->FindArray("types", true)->FindArray(pszType, true);
-    delete mPendingLoader;
-    mPendingLoader = nullptr;
-    delete mPendingExtraLoader;
-    mPendingExtraLoader = nullptr;
+    mPendingLoader.reset();
+    mPendingExtraLoader.reset();
     mPendingLoader = TheManager.AddLoader(FormatString("%s/%s.rnd", pszDir, pType->Sym(kFirstFile)),
                                           kLoaderFlags,
                                           &mCallback,
@@ -109,10 +102,8 @@ void AvatarPart::SetType(const char *pszType) {
 }
 
 void AvatarPart::ReleaseType() {
-    delete mPendingLoader;
-    mPendingLoader = nullptr;
-    delete mPendingExtraLoader;
-    mPendingExtraLoader = nullptr;
+    mPendingLoader.reset();
+    mPendingExtraLoader.reset();
     mPendingType = mType;
 }
 
@@ -174,13 +165,10 @@ bool AvatarPart::Rebuild() {
         if (mPendingExtraLoader != nullptr && !mPendingExtraLoader->IsLoaded()) {
             return false;
         }
-        delete mLoader;
-        mLoader = mPendingLoader;
-        mPendingLoader = nullptr;
+        mLoader = std::move(mPendingLoader);
         if (mPendingExtraLoader != nullptr) {
             mLoader->mObjects.splice(mLoader->mObjects.end(), mPendingExtraLoader->mObjects);
-            delete mPendingExtraLoader;
-            mPendingExtraLoader = nullptr;
+            mPendingExtraLoader.reset();
         }
         for (RndObject *pObject : mLoader->mObjects) {
             pObject->SetName(FormatString("avatar%d_%s", mAvatar->mIndex, pObject->mName.c_str()));

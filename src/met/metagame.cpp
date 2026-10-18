@@ -1042,8 +1042,7 @@ void Metagame::StartIntro() {
     mTickMs = pTickMs;
     TheMetaScheduler.Reset(mTickMs, 0);
     TheMetaScheduler.Resume();
-    delete mLoadingScreenLoader;
-    mLoadingScreenLoader = nullptr;
+    mLoadingScreenLoader.reset();
 }
 
 void Metagame::PollLoad() {

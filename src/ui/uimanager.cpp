@@ -1,6 +1,7 @@
 #include "ui/uimanager.h"
 
 #include <cstring>
+#include <memory>
 
 #include "msg/keyboardkeymsg.h"
 #include "os/debug.h"
@@ -97,18 +98,16 @@ void UIManager::Init() {
 
     DataArray *pShared = pConfig->FindArray("shared_rnd_files", false);
     if (pShared != nullptr) {
-        mCallback = new Callback(pConfig);
+        mCallback = std::make_unique<Callback>(pConfig);
         for (int i = 1; i < pShared->Size(); ++i) {
-            RndLoader *pLoader =
-                TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback, nullptr);
+            const auto pLoader =
+                TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback.get(), nullptr);
             for (RndObject *pObject : pLoader->mObjects) {
                 mSharedObjects.push_back(pObject);
             }
-            delete pLoader;
         }
         mCallback->Report();
-        delete mCallback;
-        mCallback = nullptr;
+        mCallback.reset();
     }
 
     UIPanel::Init(pConfig);

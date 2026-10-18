@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "app/overlay.h"
@@ -155,11 +156,11 @@ public:
          */
         void Finish();
 
-        String mSkipped;        /*!< The lines of the report of the skipped objects. */
-        RndLoader *mLoader;     /*!< The loader of the file, or null. */
-        DataArray *mForceMerge; /*!< The objects that are loaded again, or null. */
-        int mDone;              /*!< Whether Finish() ran. */
-        int mMergeAll;          /*!< Whether every object that already exists loads again. */
+        String mSkipped;                    /*!< The lines of the report of the skipped objects. */
+        std::unique_ptr<RndLoader> mLoader; /*!< The loader of the file, or null. */
+        DataArray *mForceMerge;             /*!< The objects that are loaded again, or null. */
+        int mDone;                          /*!< Whether Finish() ran. */
+        int mMergeAll; /*!< Whether every object that already exists loads again. */
     };
 
     /**

@@ -21,14 +21,10 @@ TorsoPart::TorsoPart(int nParent, Avatar *pAvatar)
     : AvatarPart(AvatarPartSet::kPartTorso, nParent, pAvatar) {
     mPendingEmblem = Avatar::sNone;
     mEmblemTex = nullptr;
-    mEmblemLoader = nullptr;
     mEmblem = Avatar::sNone;
 }
 
-TorsoPart::~TorsoPart() {
-    delete mEmblemLoader;
-    mEmblemLoader = nullptr;
-}
+TorsoPart::~TorsoPart() = default;
 
 void TorsoPart::SetEmblem(const char *pszEmblem) {
     if (mEmblem == pszEmblem) {
@@ -40,8 +36,7 @@ void TorsoPart::SetEmblem(const char *pszEmblem) {
     pEmblems->FindSymbol("rnd_dir", &pszDir, true);
     DataArray *pType = pEmblems->FindArray("types", true)->FindArray(pszEmblem, true);
     const char *pszFile = FormatString("%s/%s.rnd", pszDir, pType->Sym(kEmblemFile));
-    delete mEmblemLoader;
-    mEmblemLoader = nullptr;
+    mEmblemLoader.reset();
     mEmblemLoader = TheManager.AddLoader(pszFile, kLoaderFlags, &mCallback, nullptr);
 }
 
@@ -58,8 +53,7 @@ bool TorsoPart::Rebuild() {
 
 void TorsoPart::ReleaseType() {
     AvatarPart::ReleaseType();
-    delete mEmblemLoader;
-    mEmblemLoader = nullptr;
+    mEmblemLoader.reset();
     mPendingEmblem = mEmblem;
 }
 
@@ -81,8 +75,7 @@ bool TorsoPart::RebuildEmblem() {
             break;
         }
     }
-    delete mEmblemLoader;
-    mEmblemLoader = nullptr;
+    mEmblemLoader.reset();
     // The binary does not check for a file without a texture.
     mEmblemTex->SetName(FormatString("avatar%d_%s", mAvatar->mIndex, mEmblemTex->mName.c_str()));
     mEmblem = mPendingEmblem;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "math/color.h"
@@ -198,13 +199,15 @@ public:
     /** The animations of the bones the `anims` array lists, in its order. */
     std::vector<RndTransAnim *> mAnims;
 
-    AvatarPart *mParent;       /*!< The part the model hangs from, or null. */
-    Avatar *mAvatar;           /*!< The avatar the part belongs to. */
-    RndLoader *mLoader;        /*!< The load of the files the meshes come from, or null. */
-    RndLoader *mPendingLoader; /*!< The load of the first file of mPendingType, or null. */
+    AvatarPart *mParent;                /*!< The part the model hangs from, or null. */
+    Avatar *mAvatar;                    /*!< The avatar the part belongs to. */
+    std::unique_ptr<RndLoader> mLoader; /*!< The load of the files the meshes come from, or null. */
+
+    /** The load of the first file of mPendingType, or null. */
+    std::unique_ptr<RndLoader> mPendingLoader;
 
     /** The load of the second file of mPendingType, or null. */
-    RndLoader *mPendingExtraLoader;
+    std::unique_ptr<RndLoader> mPendingExtraLoader;
 
 protected:
     /**

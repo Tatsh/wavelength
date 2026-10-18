@@ -42,8 +42,8 @@ RndView *FindView(DataArray *pConfig, const char *pszEntry) {
 // NTSC-U/C: 0x001e55e8, PAL: 0x001ee388
 
 Vortex::Vortex(const char *pszName)
-    : mLoader(nullptr), mTopView(nullptr), mTransitionView(nullptr), mAmbientView(nullptr),
-      mMode(kModeIdle), mPrevMode(kModeIdle), mInterp(0.0f, 0.0f, 0.0f, 1.0f) {
+    : mTopView(nullptr), mTransitionView(nullptr), mAmbientView(nullptr), mMode(kModeIdle),
+      mPrevMode(kModeIdle), mInterp(0.0f, 0.0f, 0.0f, 1.0f) {
     mAmbientFrame = kNoFrame;
     mStartMs = kNotStarted;
     mFrame = kNoFrame;
@@ -89,8 +89,7 @@ void Vortex::Unload() {
     mTransitionView = nullptr;
     mTopView = nullptr;
     mWiggle = nullptr;
-    delete mLoader;
-    mLoader = nullptr;
+    mLoader.reset();
 }
 
 float Vortex::GetOutroLength() const {

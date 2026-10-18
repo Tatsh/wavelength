@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "app/msgsink.h"
 #include "app/msgsource.h"
@@ -499,8 +500,8 @@ public:
      */
     void ReportLocalizeErrors();
 
-    Callback *mCallback;         /*!< The callback of the shared loads, while Init() runs them. */
-    DataArray *mAllowableGroups; /*!< The `allowable_groups` array of the configuration. */
+    std::unique_ptr<Callback> mCallback; /*!< The callback of the shared loads during Init(). */
+    DataArray *mAllowableGroups;         /*!< The `allowable_groups` array of the configuration. */
     std::map<const char *, UIScreen *, StrLess> mScreens; /*!< The screens by name. */
     std::map<const char *, UIPanel *, StrLess> mPanels;   /*!< The panels by name. */
     std::map<const char *, UIStyle *, StrLess> mStyles;   /*!< The styles by name. */

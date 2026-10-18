@@ -75,7 +75,7 @@ float Avatar::sAnimBlend;
 float Avatar::sTimeToIdle;
 float Avatar::sFov;
 float Avatar::sCamBlend;
-RndLoader *Avatar::sLoader = nullptr;
+std::unique_ptr<RndLoader> Avatar::sLoader;
 RndTex *Avatar::sTargetTex = nullptr;
 RndView *Avatar::sView = nullptr;
 const char *Avatar::sNone = nullptr;
@@ -131,9 +131,7 @@ void Avatar::Terminate() {
             delete sAvatars[i];
         }
     }
-    if (sLoader != nullptr) {
-        delete sLoader;
-    }
+    sLoader.reset();
 }
 
 int Avatar::NumAvatars() {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/avatarpart.h"
 #include "rnd/rndloader.h"
 #include "rnd/rndtex.h"
@@ -77,10 +79,10 @@ public:
      */
     bool RebuildEmblem();
 
-    const char *mEmblem;        /*!< The emblem shown, Avatar::sNone for none. */
-    const char *mPendingEmblem; /*!< The emblem SetEmblem() last requested. */
-    RndTex *mEmblemTex;         /*!< The texture of the emblem, or null. */
-    RndLoader *mEmblemLoader;   /*!< The load of the file of mPendingEmblem, or null. */
+    const char *mEmblem;                      /*!< The emblem shown, Avatar::sNone for none. */
+    const char *mPendingEmblem;               /*!< The emblem SetEmblem() last requested. */
+    RndTex *mEmblemTex;                       /*!< The texture of the emblem, or null. */
+    std::unique_ptr<RndLoader> mEmblemLoader; /*!< The load of the file of mPendingEmblem. */
 
 private:
     /**

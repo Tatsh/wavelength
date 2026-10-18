@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/asyncstream.h"
 #include "os/string.h"
 #include "rnd/rndloader.h"
@@ -124,9 +126,9 @@ private:
      */
     void PollLoad(float flTime);
 
-    RndLoader *mLoader;             /*!< The load of the scene, or null. */
-    RndView *mView;                 /*!< The view of the arena. */
-    RndView *mTransitionView;       /*!< The transition that drives the arena's sub-views. */
+    std::unique_ptr<RndLoader> mLoader; /*!< The load of the scene, or null. */
+    RndView *mView;                     /*!< The view of the arena. */
+    RndView *mTransitionView;           /*!< The transition that drives the arena's sub-views. */
     String mPrefix;                 /*!< The `arena_prefix` entry of the metagame configuration. */
     int mRevealArena;               /*!< The unlock animation to reveal, 0 for the fifth, or -1. */
     float mRevealStart;             /*!< The clock the reveal started at, or 0. */

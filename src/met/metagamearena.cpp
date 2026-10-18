@@ -45,14 +45,12 @@ constexpr int kMaxPathLength = 0x80;
 } // namespace
 
 MetagameArena::MetagameArena()
-    : mLoader(nullptr), mView(nullptr), mTransitionView(nullptr), mPrefix(), mRevealArena(kNoArena),
+    : mView(nullptr), mTransitionView(nullptr), mPrefix(), mRevealArena(kNoArena),
       mRevealStart(0.0f), mParticlesStart(0.0f), mRevealView(nullptr), mRevealLength(0.0f),
       mTriggerStream(nullptr), mLoadState(kLoadStateIdle) {
 }
 
-MetagameArena::~MetagameArena() {
-    delete mLoader;
-}
+MetagameArena::~MetagameArena() = default;
 
 void MetagameArena::StartLoad() {
     DataArray *pMetagame = SystemConfig()->FindArray(kMetagameTag, false);
@@ -138,9 +136,8 @@ void MetagameArena::ShowUnlocks() {
 void MetagameArena::Unload() {
     TheTriggerMgr.Terminate();
     mView = nullptr;
-    delete mLoader;
+    mLoader.reset();
     mLoadState = kLoadStateIdle;
-    mLoader = nullptr;
 }
 
 void MetagameArena::Poll(int nState, int nLoadStage, float flTime, float flTick) {

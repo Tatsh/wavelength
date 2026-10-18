@@ -170,11 +170,11 @@ public:
      * @param nFlags The RndLoader::Flags of the load.
      * @param pCallback The callback the loader consults for each object, or null.
      * @param pStream The stream to read instead of the file, or null.
-     * @return The loader.
+     * @return The loader, which the caller owns. It leaves the queue when destroyed.
      * @ghidraAddress NTSC-U/C: 0x00238e98
      * @ghidraAddress PAL: 0x00241a18
      */
-    RndLoader *
+    std::unique_ptr<RndLoader>
     AddLoader(const char *pszFile, int nFlags, RndLoader::Callback *pCallback, BinStream *pStream);
 
     /**

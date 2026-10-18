@@ -214,7 +214,6 @@ GfxManager::GfxLoader::GfxLoader(bool bDone, bool bMergeAll, DataArray *pForceMe
     mForceMerge = pForceMerge;
     mDone = bDone;
     mMergeAll = bMergeAll;
-    mLoader = nullptr;
 }
 
 GfxManager::GfxLoader::~GfxLoader() = default;
@@ -587,7 +586,7 @@ void GfxManager::Load(float fTime) {
             ++i;
             if (strcmp(pszName, "hud") == 0) {
                 // Yes, the binary takes the loader of the entry before the `hud` entry.
-                mHudLoader = mLoaders.back().mLoader;
+                mHudLoader = mLoaders.back().mLoader.get();
                 continue;
             }
             DataArray *pRuleSets = pEntry->FindArray("rule_set", false);
@@ -650,10 +649,10 @@ void GfxManager::Load(float fTime) {
             if (pszFile == nullptr) {
                 continue;
             }
-            mLoaders.push_back(GfxLoader(false, bMergeAll, pForceMerge));
+            mLoaders.emplace_back(false, bMergeAll, pForceMerge);
             mLoaders.back().Start(pszFile, kLoaderFlags);
             if (bArena) {
-                mArena->mLoader = mLoaders.back().mLoader;
+                mArena->mLoader = mLoaders.back().mLoader.get();
             }
         }
     }
@@ -789,8 +788,8 @@ void GfxManager::Teardown() {
         mShips[i] = nullptr;
     }
     mDebugMsgs.clear();
+    // The loaders go in the order they started.
     while (!mLoaders.empty()) {
-        delete mLoaders.front().mLoader;
         mLoaders.pop_front();
     }
     TheGameDb->GetProfile(0)->mAvatar.SetPose(kTeardownPose);

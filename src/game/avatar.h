@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/avatarpart.h"
@@ -359,7 +360,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003b14c8
      * @ghidraAddress PAL: 0x00430398
      */
-    static RndLoader *sLoader;
+    static std::unique_ptr<RndLoader> sLoader;
 
     /**
      * The target texture of sCam as Init() found it.

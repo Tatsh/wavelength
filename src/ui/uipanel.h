@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "app/msgsink.h"
 #include "os/string.h"
@@ -331,7 +332,10 @@ public:
     std::map<const char *, UIComponent *, StrLess> mComponents; /*!< The components by name. */
     UINavigator *mNavigator; /*!< The navigator that moves the focus, or null. */
     UIComponent *mFocus;     /*!< The component with the focus, or null. */
-    RndLoader *mLoader;      /*!< The loader of the file, or null. */
+    RndLoader *mLoader;      /*!< The loader of the file in use, or null. */
+
+    /** The loader the panel created, or null when it has none or uses a shared one. */
+    std::unique_ptr<RndLoader> mOwnedLoader;
 
 private:
     /**
