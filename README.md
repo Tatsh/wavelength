@@ -79,9 +79,13 @@ the game calls is reconstructed under `sce/`, and `sce/ee/runtime` connects the 
 to the reconstructed kernel.
 
 ```shell
-cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/ps2-ee-toolchain.cmake -DWAVELENGTH_DISC_IMAGE=/path/to/Amplitude.iso
+cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/ps2-ee-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DWAVELENGTH_DISC_IMAGE=/path/to/Amplitude.iso
 cmake --build build --target image
 ```
+
+Set `CMAKE_BUILD_TYPE` to `Release` unless you want debug symbols. For a debugger, use `Debug` or
+`RelWithDebInfo`, and a `Debug` build also puts the executable with its debug information on the
+image.
 
 The `image` target writes `build/wavelength.iso`, an ISO image of the DVD, with the built
 executable and IOP modules in place of the originals. The original is an ISO image of the North

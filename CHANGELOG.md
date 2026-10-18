@@ -20,10 +20,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     pinned commit with Git.
   - With the song, the image is rebuilt from a disc root instead of patched in place.
 
-### Changed
-
-- Builds default to the `Debug` build type when `CMAKE_BUILD_TYPE` is not set.
-
 ## [1.0.0] - 2026-10-17
 
 First release.
