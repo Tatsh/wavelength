@@ -13,6 +13,11 @@
 
 namespace Tools::NameIrx {
 
+using Common::Error;
+using Common::readFile;
+using Common::setupLogging;
+using Common::writeFile;
+
 namespace {
 
 constexpr int kUsageErrorStatus = 2;
@@ -22,7 +27,7 @@ constexpr int kUsageErrorStatus = 2;
 } // namespace Tools::NameIrx
 
 int main(int argc, char *argv[]) {
-    using namespace Tools;
+    using namespace Tools::Common;
     using namespace Tools::NameIrx;
     argparse::ArgumentParser parser("name-irx", "", argparse::default_arguments::help);
     parser.add_description("Write an IRX module's name into its .iopmod header, in place.");

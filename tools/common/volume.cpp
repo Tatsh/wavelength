@@ -7,7 +7,7 @@
 
 #include "imageerror.h"
 
-namespace Tools::BuildImage {
+namespace Tools::Common {
 
 std::expected<std::size_t, Error> Volume::readSectors(std::uint32_t lba,
                                                       std::span<std::uint8_t> sectors) {
@@ -91,4 +91,4 @@ std::unexpected<Error> Volume::pastEnd(std::uint32_t lba) {
     return discImageError(std::format("Sector {} lies past the end of the medium.", lba));
 }
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common

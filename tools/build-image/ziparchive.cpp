@@ -10,6 +10,12 @@
 
 namespace Tools::BuildImage {
 
+using Common::artifactError;
+using Common::Error;
+using Common::readLittle16;
+using Common::readLittle32;
+using Common::Seconds;
+
 namespace {
 
 constexpr std::uint32_t kEndSignature = 0x06054B50;

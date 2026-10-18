@@ -14,7 +14,7 @@
 
 #include "imageerror.h"
 
-namespace Tools::BuildImage {
+namespace Tools::Common {
 
 /** A UTC time with a resolution of one second. */
 using Seconds = std::chrono::sys_seconds;
@@ -119,4 +119,4 @@ inline std::expected<Seconds, Error> fileModificationTime(const std::filesystem:
         std::chrono::clock_cast<std::chrono::system_clock>(written));
 }
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common

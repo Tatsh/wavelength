@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Tools {
+namespace Tools::Common {
 
 /**
  * Send log messages to standard error as `LEVEL: message`, the format of Python's
@@ -10,4 +10,4 @@ namespace Tools {
  */
 void setupLogging(bool debug);
 
-} // namespace Tools
+} // namespace Tools::Common

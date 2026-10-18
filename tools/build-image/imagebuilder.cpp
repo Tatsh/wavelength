@@ -16,6 +16,23 @@
 
 namespace Tools::BuildImage {
 
+using Common::DirectoryExtent;
+using Common::discImageError;
+using Common::Error;
+using Common::ioError;
+using Common::LocatedFile;
+using Common::readLittle32;
+using Common::readRecordDate;
+using Common::readVolumeDate;
+using Common::Seconds;
+using Common::SourceImage;
+using Common::Volume;
+using Common::volumeDate;
+using Common::writeBig;
+using Common::writeBoth;
+using Common::writeLittle;
+using Common::writeRecordDate;
+
 namespace {
 
 constexpr std::size_t kBatchSectors = 1024;

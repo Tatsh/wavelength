@@ -10,7 +10,7 @@
 
 #include "volume.h"
 
-namespace Tools::BuildImage {
+namespace Tools::Common {
 
 /** Random access to the sectors of an ISO disc image. */
 class SourceImage final : public Volume {
@@ -27,6 +27,17 @@ public:
 
     /** @copydoc Volume::find */
     std::expected<LocatedFile, Error> find(const std::string &name) override;
+    /**
+     * Copy every file of the ISO9660 tree into a directory.
+     *
+     * Each file keeps its path and its name without the version suffix, and its modification time
+     * becomes the date of its directory record.
+     *
+     * @param root Destination directory. It is created when missing.
+     * @return Number of files written, or an error when a record cannot be read, a file spans
+     * several extents, or a file cannot be written.
+     */
+    std::expected<std::size_t, Error> extract(const std::filesystem::path &root);
     /** @copydoc Volume::readSector */
     std::expected<void, Error> readSector(std::uint32_t lba,
                                           std::span<std::uint8_t, kSectorData> sector) override;
@@ -54,4 +65,4 @@ private:
     std::uint32_t volumeSectors_ = 0;
 };
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common

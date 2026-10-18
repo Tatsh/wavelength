@@ -15,6 +15,9 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# The tools compile a few self-contained sources of the game itself.
+set(WAVELENGTH_GAME_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+
 include(FetchContent)
 
 # The options below apply to the pinned releases only when a release is downloaded.
@@ -97,5 +100,7 @@ else()
 endif()
 
 add_subdirectory(common)
+add_subdirectory(ark)
 add_subdirectory(build-image)
+add_subdirectory(extract-image)
 add_subdirectory(name-irx)

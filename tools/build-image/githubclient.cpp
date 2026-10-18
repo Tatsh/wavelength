@@ -10,6 +10,9 @@
 
 namespace Tools::BuildImage {
 
+using Common::artifactError;
+using Common::Error;
+
 namespace {
 
 constexpr std::string_view kGitHubApi = "https://api.github.com";

@@ -11,8 +11,24 @@
 #include "byteorder.h"
 #include "fileio.h"
 #include "imageerror.h"
+#include "udfwriter.h"
 
 namespace Tools::BuildImage {
+
+using Common::DirectoryExtent;
+using Common::discImageError;
+using Common::Error;
+using Common::fileModificationTime;
+using Common::ioError;
+using Common::LocatedFile;
+using Common::readFile;
+using Common::Seconds;
+using Common::Volume;
+using Common::volumeDate;
+using Common::writeBig;
+using Common::writeBoth;
+using Common::writeLittle;
+using Common::writeRecordDate;
 
 namespace {
 
@@ -20,7 +36,8 @@ namespace {
 // PlayStation 2 disc it stores the encrypted boot logo the console checks.
 constexpr std::uint32_t kSystemAreaSectors = Volume::kPvdSector;
 constexpr std::size_t kSystemAreaSize = kSystemAreaSectors * Volume::kSectorData;
-constexpr std::uint32_t kPathTableLba = 18;
+// The path tables follow the UDF anchor, as on the discs Sony mastered.
+constexpr std::uint32_t kPathTableLba = UdfWriter::kFirstFreeSector;
 constexpr std::uint32_t kPathTableCopies = 4;
 constexpr std::size_t kIsoNameMax = 30;
 constexpr std::string_view kSystemIdentifier = "PLAYSTATION";
@@ -207,13 +224,10 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
             }
             entry.index = files_.size();
             files_.push_back(
-                {entry.isoName, nextLba, *mtime, entry.path, static_cast<std::uint32_t>(size)});
+                {entry.isoName, 0, *mtime, entry.path, static_cast<std::uint32_t>(size)});
             parentOf_.try_emplace(stripVersion(entry.isoName), i);
-            fileStarts_.push_back(nextLba);
-            nextLba += sectorsFor(size);
         }
     }
-    volumeSectors_ = nextLba;
 
     // A directory is as new as the newest entry beneath it. Children follow their parents in
     // breadth-first order, so a reverse pass sees each child before its parent.
@@ -223,11 +237,54 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
             directories_[i].mtime = std::max(directories_[i].mtime, child.mtime);
         }
     }
+
+    // The UDF partition follows the ISO9660 directories. It opens with the file set descriptor,
+    // then the directory records, then a file entry per node, then the file data. The UDF nodes
+    // are the directories in path table order, then the files.
+    const auto partitionStart = nextLba;
+    std::vector<UdfNode> nodes;
+    for (std::size_t i = 0; i < directories_.size(); ++i) {
+        UdfNode node;
+        node.name = i == 0 ? std::string() : directories_[i].path.filename().string();
+        node.directory = true;
+        node.parent = i == 0 ? 0 : parents_[i] - 1;
+        node.modified = directories_[i].mtime;
+        nodes.push_back(std::move(node));
+    }
+    for (const auto &file : files_) {
+        nodes.push_back({file.path.filename().string(), false, 0, {}, 0, 0, file.size, file.mtime});
+    }
+    for (std::size_t i = 0; i < directories_.size(); ++i) {
+        for (const auto &entry : listings_[i]) {
+            const auto child = entry.isDirectory ? entry.index : directories_.size() + entry.index;
+            nodes[child].parent = i;
+            nodes[i].children.push_back(child);
+        }
+    }
+    nextLba = partitionStart + UdfWriter::kPartitionHeaderSectors;
+    for (std::size_t i = 0; i < directories_.size(); ++i) {
+        nodes[i].lba = nextLba;
+        nodes[i].size = UdfWriter::directorySize(nodes, i);
+        nextLba += sectorsFor(nodes[i].size);
+    }
+    for (auto &node : nodes) {
+        node.entryLba = nextLba++;
+    }
+    for (std::size_t i = 0; i < files_.size(); ++i) {
+        files_[i].lba = nextLba;
+        nodes[directories_.size() + i].lba = nextLba;
+        fileStarts_.push_back(nextLba);
+        nextLba += sectorsFor(files_[i].size);
+    }
+    // The last sector is the copy of the UDF anchor.
+    ++nextLba;
+    volumeSectors_ = nextLba;
     writeDescriptors(pathTable, tableSectors, directories_.front().mtime);
     writePathTables(tableSectors);
     for (std::size_t i = 0; i < directories_.size(); ++i) {
         writeDirectory(i);
     }
+    UdfWriter::write(nodes, partitionStart, volumeSectors_, directories_.front().mtime, metadata_);
     return {};
 }
 
@@ -337,7 +394,8 @@ std::uint32_t DirectoryVolume::extentSize(const std::vector<ListingEntry> &listi
     for (const auto &entry : listing) {
         place(entry.isoName.size());
     }
-    return sectorsFor(used) * static_cast<std::uint32_t>(kSectorData);
+    // The discs Sony mastered record the bytes in use, not whole sectors.
+    return static_cast<std::uint32_t>(used);
 }
 
 std::vector<std::uint8_t>
@@ -443,7 +501,7 @@ void DirectoryVolume::writeDirectory(std::size_t directory) {
             records.push_back(record(placed.isoName, placed, false));
         }
     }
-    std::vector<std::uint8_t> extent(own.size);
+    std::vector<std::uint8_t> extent(std::size_t{sectorsFor(own.size)} * kSectorData);
     std::size_t used = 0;
     for (const auto &bytes : records) {
         if (used % kSectorData + bytes.size() > kSectorData) {

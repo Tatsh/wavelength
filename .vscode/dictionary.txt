@@ -56,6 +56,8 @@ argparse
 argtype
 arkfile
 arkhash
+arkreader
+arkwriter
 armpart
 asyncblock
 asyncfile
@@ -216,8 +218,6 @@ cplext
 cpphttplib
 cpsm
 createchanneltask
-creditsavatar
-creditsheader
 creditsscreen
 crip
 cripplerpacket
@@ -235,11 +235,14 @@ dashcam
 dataarray
 datafuncaction
 datalex
+datanode
 datarootdir
 dbits
 dbuild
 dcbias
 dcmake
+ddemo
+ddisc
 deactivator
 deactivators
 deci
@@ -251,10 +254,13 @@ deletefreqscreen
 deleteremixscreen
 demangled
 demangles
+demosong
 depfile
 dequantisation
 dequantize
 dequantized
+derver
+dextract
 dialing
 dialog
 dialogpanel
@@ -300,6 +306,7 @@ dpadd
 dpadl
 dpadr
 dpadu
+dpal
 dpms
 dpsm
 drawdummy
@@ -309,9 +316,12 @@ dsll
 dsllv
 dsmcc
 dsource
+dspace
 dsra
 dsrl
 dsrlv
+dstaging
+dstamp
 dthe
 duellogic
 duelpattern
@@ -713,7 +723,6 @@ maddw
 maddz
 madr
 magh
-magick
 magv
 mainoptionsscreen
 mainpage
@@ -1037,6 +1046,7 @@ oleverb
 oneline
 optionprocessor
 orthonormalised
+osta
 otherapphasprio
 outcnt
 ovyallplayer
@@ -1552,6 +1562,7 @@ tnlwave
 tnlwinshell
 tnlz
 tobcd
+tolower
 tomcrypt
 torsopart
 tostring
@@ -1585,6 +1596,7 @@ txls
 typelib
 uchar
 udftree
+udfwriter
 udnl
 udvare
 uibutton

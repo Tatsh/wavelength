@@ -2,8 +2,8 @@
 
 #include <string>
 
-/** Host tools that the build runs. */
-namespace Tools {
+/** Code that the host tools share. */
+namespace Tools::Common {
 
 /** Kind of failure a tool reports. */
 enum class ErrorCode {
@@ -19,4 +19,4 @@ struct Error {
     std::string message; /*!< Sentence describing the failure, for the log. */
 };
 
-} // namespace Tools
+} // namespace Tools::Common

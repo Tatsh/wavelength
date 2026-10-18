@@ -10,6 +10,8 @@
 /** Writer of the module name into the `.iopmod` header of an IRX. */
 namespace Tools::NameIrx {
 
+using Common::Error;
+
 /**
  * Return the IRX with the module name written into its `.iopmod` header.
  *

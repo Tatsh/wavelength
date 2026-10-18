@@ -3,8 +3,10 @@
 #include <format>
 #include <fstream>
 #include <iterator>
+#include <string>
+#include <utility>
 
-namespace Tools {
+namespace Tools::Common {
 
 namespace {
 
@@ -38,6 +40,36 @@ std::expected<std::vector<std::uint8_t>, Error> readFile(const std::filesystem::
     return data;
 }
 
+std::expected<std::vector<std::string>, Error> readLines(const std::filesystem::path &path) {
+    std::ifstream file(path);
+    if (!file) {
+        return ioError("read", path);
+    }
+    std::vector<std::string> lines;
+    for (std::string line; std::getline(file, line);) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+        if (!line.empty()) {
+            lines.push_back(std::move(line));
+        }
+    }
+    if (file.bad()) {
+        return ioError("read", path);
+    }
+    return lines;
+}
+
+std::expected<void, Error> writeLines(const std::filesystem::path &path,
+                                      const std::vector<std::string> &lines) {
+    std::string text;
+    for (const auto &line : lines) {
+        text += line;
+        text += '\n';
+    }
+    return writeFile(path, text);
+}
+
 std::expected<void, Error> writeFile(const std::filesystem::path &path,
                                      std::span<const std::uint8_t> data) {
     // The streams write char.
@@ -48,4 +80,4 @@ std::expected<void, Error> writeFile(const std::filesystem::path &path, std::str
     return writeChars(path, text.data(), text.size());
 }
 
-} // namespace Tools
+} // namespace Tools::Common

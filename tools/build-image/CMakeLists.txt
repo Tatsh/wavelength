@@ -4,9 +4,8 @@ add_executable(
   githubclient.cpp
   imagebuilder.cpp
   main.cpp
-  sourceimage.cpp
   udftree.cpp
-  volume.cpp
+  udfwriter.cpp
   ziparchive.cpp)
 target_link_libraries(
   build-image PRIVATE argparse::argparse nlohmann_json::nlohmann_json wavelength_tools_common

@@ -13,8 +13,7 @@
 #include "error.h"
 #include "isodate.h"
 
-/** Writer of an Amplitude disc image with the built executable and IOP modules in place. */
-namespace Tools::BuildImage {
+namespace Tools::Common {
 
 /** The extent of a directory in the ISO9660 tree. */
 struct DirectoryExtent {
@@ -149,4 +148,4 @@ public:
     static std::unexpected<Error> pastEnd(std::uint32_t lba);
 };
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common

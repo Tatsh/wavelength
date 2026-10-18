@@ -11,6 +11,9 @@
 
 namespace Tools::BuildImage {
 
+using Common::Error;
+using Common::Seconds;
+
 /** Reader of the stored and deflated members of a zip archive in memory. */
 class ZipArchive {
 public:

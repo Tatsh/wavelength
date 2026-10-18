@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <span>
 
-namespace Tools::BuildImage {
+namespace Tools::Common {
 
 /**
  * Read a little-endian 16-bit value.
@@ -81,4 +81,4 @@ inline void writeBoth(std::span<std::uint8_t> bytes,
     writeBig(bytes, offset + width, value, width);
 }
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common

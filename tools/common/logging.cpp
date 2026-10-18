@@ -7,7 +7,7 @@
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/spdlog.h>
 
-namespace Tools {
+namespace Tools::Common {
 
 namespace {
 
@@ -58,4 +58,4 @@ void setupLogging(bool debug) {
     spdlog::set_default_logger(std::move(logger));
 }
 
-} // namespace Tools
+} // namespace Tools::Common

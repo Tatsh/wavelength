@@ -11,6 +11,8 @@
 
 namespace Tools::BuildImage {
 
+using Common::Error;
+
 /** Client of the GitHub Actions API for the build artifacts of one repository. */
 class GitHubClient {
 public:

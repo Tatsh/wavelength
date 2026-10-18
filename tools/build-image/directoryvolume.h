@@ -18,14 +18,25 @@
 
 namespace Tools::BuildImage {
 
+using Common::Error;
+using Common::LocatedFile;
+using Common::Seconds;
+using Common::Volume;
+
 /**
- * An ISO9660 volume built from the files of a disc root directory.
+ * A UDF bridge volume, ISO9660 and UDF 1.02, built from the files of a disc root directory.
  *
- * The primary volume descriptor, the terminator, and the path tables take the sectors the original
- * disc gives them. The directories follow in path table order, and then the files in the same
- * order. Metadata sectors are built in memory, and file sectors are read from the source files on
- * demand. Each record has the modification time of its file, and a directory has the newest time
- * of itself and every entry beneath it. The volume has no UDF file system.
+ * The layout is the layout of the discs Sony's DVD-ROM generator mastered. The ISO9660 descriptors
+ * and the UDF volume structures take their usual sectors, the path tables follow the UDF anchor,
+ * and the ISO9660 directories follow in path table order. The UDF partition comes next, with the
+ * UDF directories, a file entry for each directory and file, and then the file data in the same
+ * order, which both file systems record. ISO9660 names are upper case, and UDF names keep the case
+ * of the source files. Metadata sectors are built in memory, and file sectors are read from the
+ * source files on demand. Each record has the modification time of its file, and a directory has
+ * the newest time of itself and every entry beneath it. ISO9660 names are upper case, and UDF names
+ * keep the case of the source files. Metadata sectors are built in memory, and file sectors are
+ * read from the source files on demand. Each record has the modification time of its file, and a
+ * directory has the newest time of itself and every entry beneath it.
  */
 class DirectoryVolume final : public Volume {
 public:

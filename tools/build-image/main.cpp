@@ -29,6 +29,16 @@
 
 namespace Tools::BuildImage {
 
+using Common::artifactError;
+using Common::discImageError;
+using Common::Error;
+using Common::fileModificationTime;
+using Common::readFile;
+using Common::Seconds;
+using Common::setupLogging;
+using Common::SourceImage;
+using Common::Volume;
+
 namespace {
 
 namespace fs = std::filesystem;
@@ -322,7 +332,7 @@ int usageError(const argparse::ArgumentParser &parser, const std::string &messag
 } // namespace Tools::BuildImage
 
 int main(int argc, char *argv[]) {
-    using namespace Tools;
+    using namespace Tools::Common;
     using namespace Tools::BuildImage;
     argparse::ArgumentParser parser(std::string(kProgram), "", argparse::default_arguments::help);
     parser.add_description("Rebuild an Amplitude DVD image with a replacement executable and "

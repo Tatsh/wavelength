@@ -6,7 +6,17 @@
 
 #include "error.h"
 
-namespace Tools::BuildImage {
+namespace Tools::Common {
+
+/**
+ * Report that an input file does not have the expected format.
+ *
+ * @param message Sentence describing the failure.
+ * @return An `ErrorCode::InvalidInput` error.
+ */
+inline std::unexpected<Error> invalidInput(std::string message) {
+    return std::unexpected(Error{ErrorCode::InvalidInput, std::move(message)});
+}
 
 /**
  * Report that the disc image cannot be read or rewritten.
@@ -15,7 +25,7 @@ namespace Tools::BuildImage {
  * @return An `ErrorCode::InvalidInput` error.
  */
 inline std::unexpected<Error> discImageError(std::string message) {
-    return std::unexpected(Error{ErrorCode::InvalidInput, std::move(message)});
+    return invalidInput(std::move(message));
 }
 
 /**
@@ -38,4 +48,4 @@ inline std::unexpected<Error> ioError(std::string message) {
     return std::unexpected(Error{ErrorCode::Io, std::move(message)});
 }
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common

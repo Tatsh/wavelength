@@ -14,7 +14,14 @@
 #include "udftree.h"
 #include "volume.h"
 
+/** Writer of an Amplitude disc image with the built executable and IOP modules in place. */
 namespace Tools::BuildImage {
+
+using Common::DirectoryExtent;
+using Common::Error;
+using Common::LocatedFile;
+using Common::Seconds;
+using Common::Volume;
 
 /** A file of the original disc and the payload that replaces it. */
 struct Replacement {

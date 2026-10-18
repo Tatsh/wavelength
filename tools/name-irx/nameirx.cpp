@@ -11,7 +11,12 @@
 #include <elfio/elfio.hpp>
 #include <spdlog/spdlog.h>
 
+#include "imageerror.h"
+
 namespace Tools::NameIrx {
+
+using Common::Error;
+using Common::invalidInput;
 
 namespace {
 
@@ -32,10 +37,6 @@ using ProgramHeader = std::array<std::uint32_t, 8>;
 enum SectionField : std::size_t { kSectionOffset = 4, kSectionSize = 5 };
 enum ProgramField : std::size_t { kProgramType = 0, kProgramOffset = 1, kProgramFileSize = 4 };
 
-std::unexpected<Error> invalid(std::string message) {
-    return std::unexpected(Error{ErrorCode::InvalidInput, std::move(message)});
-}
-
 bool inRange(std::span<const std::uint8_t> data, std::size_t offset, std::size_t size) {
     return offset <= data.size() && size <= data.size() - offset;
 }
@@ -53,7 +54,7 @@ std::expected<void, Error> writeWords(std::span<std::uint8_t> data,
                                       std::size_t offset,
                                       const std::array<std::uint32_t, N> &words) {
     if (!inRange(data, offset, N * sizeof(std::uint32_t))) {
-        return invalid(std::format("Offset {:#x} is past the end of the file.", offset));
+        return invalidInput(std::format("Offset {:#x} is past the end of the file.", offset));
     }
     for (const auto word : words) {
         for (std::size_t i = 0; i < sizeof(std::uint32_t); ++i) {
@@ -71,7 +72,7 @@ std::expected<std::size_t, Error> fileOffset(const ELFIO::elfio &elf, std::uint3
             return section->get_offset() + address - section->get_address();
         }
     }
-    return invalid(std::format("No section covers module address {:#x}.", address));
+    return invalidInput(std::format("No section covers module address {:#x}.", address));
 }
 
 // Returns the bytes up to the first NUL, or every byte when there is no NUL.
@@ -108,26 +109,26 @@ ProgramHeader programHeader(const ELFIO::segment &segment) {
 std::expected<std::vector<std::uint8_t>, Error> nameIrx(std::span<const std::uint8_t> data) {
     if (data.size() < kElfMagic.size() ||
         !std::ranges::equal(data.first(kElfMagic.size()), kElfMagic)) {
-        return invalid("Not an ELF file.");
+        return invalidInput("Not an ELF file.");
     }
     // ELFIO reads from a stream of char.
     std::ispanstream stream(std::span(reinterpret_cast<const char *>(data.data()), data.size()));
     ELFIO::elfio elf;
     if (!elf.load(stream) || elf.get_class() != ELFIO::ELFCLASS32 ||
         elf.get_encoding() != ELFIO::ELFDATA2LSB) {
-        return invalid("Not a little-endian 32-bit ELF file.");
+        return invalidInput("Not a little-endian 32-bit ELF file.");
     }
     const auto iopModule = std::ranges::find_if(elf.sections, [](const auto &section) {
         return section->get_type() == kSectionTypeIopModule;
     });
     if (iopModule == elf.sections.end()) {
-        return invalid("No .iopmod section.");
+        return invalidInput("No .iopmod section.");
     }
     const auto iopModuleIndex = (*iopModule)->get_index();
     const std::size_t recordOffset = (*iopModule)->get_offset();
     const std::size_t recordSize = (*iopModule)->get_size();
     if (!inRange(data, recordOffset, recordSize)) {
-        return invalid("The .iopmod record is past the end of the file.");
+        return invalidInput("The .iopmod record is past the end of the file.");
     }
     const auto record = data.subspan(recordOffset, recordSize);
     if (record.size() > kIopModuleFixedSize &&
@@ -135,14 +136,14 @@ std::expected<std::vector<std::uint8_t>, Error> nameIrx(std::span<const std::uin
         return std::vector<std::uint8_t>(data.begin(), data.end());
     }
     if (record.size() < sizeof(std::uint32_t)) {
-        return invalid("The .iopmod record is truncated.");
+        return invalidInput("The .iopmod record is truncated.");
     }
     const auto moduleInfo = fileOffset(elf, readWord(record, 0));
     if (!moduleInfo) {
         return std::unexpected(moduleInfo.error());
     }
     if (!inRange(data, *moduleInfo, sizeof(std::uint32_t))) {
-        return invalid("The ModuleInfo record is past the end of the file.");
+        return invalidInput("The ModuleInfo record is past the end of the file.");
     }
     const auto nameOffset = fileOffset(elf, readWord(data, *moduleInfo));
     if (!nameOffset) {
@@ -155,15 +156,15 @@ std::expected<std::vector<std::uint8_t>, Error> nameIrx(std::span<const std::uin
     const auto load = std::ranges::find_if(
         elf.segments, [](const auto &segment) { return segment->get_type() == ELFIO::PT_LOAD; });
     if (load == elf.segments.end()) {
-        return invalid("No loadable segment.");
+        return invalidInput("No loadable segment.");
     }
     const std::size_t alignment = std::max<ELFIO::Elf_Xword>((*load)->get_align(), 1);
     const std::size_t oldRest = (*load)->get_offset();
     if (oldRest < recordOffset + recordSize) {
-        return invalid("The loadable segment overlaps the .iopmod record.");
+        return invalidInput("The loadable segment overlaps the .iopmod record.");
     }
     if (oldRest > data.size()) {
-        return invalid("The loadable segment is past the end of the file.");
+        return invalidInput("The loadable segment is past the end of the file.");
     }
     const auto fixedSize = std::min(record.size(), kIopModuleFixedSize);
     const auto newRecordSize = static_cast<std::uint32_t>(fixedSize + name.size() + 1);

@@ -11,6 +11,10 @@
 
 namespace Tools::BuildImage {
 
+using Common::Error;
+using Common::Seconds;
+using Common::Volume;
+
 /**
  * The UDF bridge file system of a DVD image, beside its ISO9660 tree.
  *

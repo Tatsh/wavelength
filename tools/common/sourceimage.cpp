@@ -1,13 +1,17 @@
 #include "sourceimage.h"
 
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
 #include <format>
 #include <string_view>
+#include <system_error>
+#include <vector>
 
 #include "byteorder.h"
 #include "imageerror.h"
 
-namespace Tools::BuildImage {
+namespace Tools::Common {
 
 namespace {
 
@@ -27,6 +31,9 @@ constexpr std::size_t kRecordNameLength = 32;
 constexpr std::size_t kRecordName = 33;
 constexpr std::uint8_t kFlagDirectory = 0x02;
 constexpr std::uint8_t kFlagMultiExtent = 0x80;
+
+// Sectors extract() copies at a time.
+constexpr std::size_t kExtractBatchSectors = 512;
 
 } // namespace
 
@@ -105,6 +112,72 @@ std::expected<LocatedFile, Error> SourceImage::find(const std::string &name) {
     return matches.front();
 }
 
+std::expected<std::size_t, Error> SourceImage::extract(const std::filesystem::path &root) {
+    Sector descriptor;
+    if (auto read = readSector(kPvdSector, descriptor); !read) {
+        return std::unexpected(std::move(read.error()));
+    }
+    struct Directory {
+        DirectoryExtent extent;
+        std::filesystem::path path;
+    };
+    std::vector<Directory> stack{
+        {{readLittle32(descriptor, kPvdRootLba), readLittle32(descriptor, kPvdRootSize)}, root}};
+    std::vector<std::uint8_t> buffer(kExtractBatchSectors * kSectorData);
+    std::size_t written = 0;
+    while (!stack.empty()) {
+        const auto directory = stack.back();
+        stack.pop_back();
+        std::error_code error;
+        std::filesystem::create_directories(directory.path, error);
+        if (error) {
+            return ioError(std::format("Cannot create {}.", directory.path.string()));
+        }
+        const auto listing = records(directory.extent.lba, directory.extent.size);
+        if (!listing) {
+            return std::unexpected(listing.error());
+        }
+        for (const auto &record : *listing) {
+            if (record.name == std::string_view("\0", 1) ||
+                record.name == std::string_view("\1", 1)) {
+                continue;
+            }
+            const auto path = directory.path / record.name.substr(0, record.name.find(';'));
+            if (record.isDirectory) {
+                stack.push_back({{record.lba, record.size}, path});
+                continue;
+            }
+            if (record.multiExtent) {
+                return discImageError(std::format("{} spans several extents.", path.string()));
+            }
+            std::ofstream file(path, std::ios::binary | std::ios::trunc);
+            for (std::uint32_t done = 0; file && done < record.size;) {
+                const auto chunk = std::min<std::size_t>(buffer.size(), record.size - done);
+                const auto sectors = sectorsFor(chunk);
+                const auto read = readSectors(record.lba + (done / kSectorData),
+                                              std::span(buffer).first(sectors * kSectorData));
+                if (!read || *read != sectors) {
+                    return pastEnd(record.lba + (done / kSectorData));
+                }
+                // The streams write char.
+                file.write(reinterpret_cast<const char *>(buffer.data()),
+                           static_cast<std::streamsize>(chunk));
+                done += static_cast<std::uint32_t>(chunk);
+            }
+            file.close();
+            if (!file) {
+                return ioError(std::format("Cannot write {}.", path.string()));
+            }
+            std::filesystem::last_write_time(
+                path,
+                std::chrono::clock_cast<std::filesystem::file_time_type::clock>(record.modified),
+                error);
+            ++written;
+        }
+    }
+    return written;
+}
+
 std::expected<void, Error> SourceImage::readSector(std::uint32_t lba,
                                                    std::span<std::uint8_t, kSectorData> sector) {
     if (readSectors(lba, sector).value_or(0) != 1) {
@@ -164,4 +237,4 @@ std::expected<std::vector<SourceImage::Record>, Error> SourceImage::records(std:
     return found;
 }
 
-} // namespace Tools::BuildImage
+} // namespace Tools::Common
