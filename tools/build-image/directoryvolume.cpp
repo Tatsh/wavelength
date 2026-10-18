@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <format>
 #include <iterator>
+#include <limits>
 #include <regex>
 #include <system_error>
 
@@ -36,6 +37,8 @@ namespace {
 // PlayStation 2 disc it stores the encrypted boot logo the console checks.
 constexpr std::uint32_t kSystemAreaSectors = Volume::kPvdSector;
 constexpr std::size_t kSystemAreaSize = kSystemAreaSectors * Volume::kSectorData;
+// A directory record stores a file's size in 32 bits.
+constexpr std::size_t kMaxFileSize = std::numeric_limits<std::uint32_t>::max();
 // The path tables follow the UDF anchor, as on the discs Sony mastered.
 constexpr std::uint32_t kPathTableLba = UdfWriter::kFirstFreeSector;
 constexpr std::uint32_t kPathTableCopies = 4;
@@ -136,7 +139,8 @@ void put(std::span<std::uint8_t> bytes, std::size_t offset, std::string_view tex
 
 std::expected<std::unique_ptr<DirectoryVolume>, Error>
 DirectoryVolume::create(const std::filesystem::path &root,
-                        std::optional<std::vector<std::uint8_t>> systemArea) {
+                        std::optional<std::vector<std::uint8_t>> systemArea,
+                        std::vector<Replacement> replacements) {
     const auto entries = listDirectory(root);
     if (!entries) {
         return std::unexpected(entries.error());
@@ -156,6 +160,7 @@ DirectoryVolume::create(const std::filesystem::path &root,
     std::unique_ptr<DirectoryVolume> volume(new DirectoryVolume());
     volume->systemArea_ =
         std::move(systemArea).value_or(std::vector<std::uint8_t>(kSystemAreaSize));
+    volume->replacements_ = std::move(replacements);
     if (auto built = volume->build(root); !built) {
         return std::unexpected(std::move(built.error()));
     }
@@ -230,6 +235,9 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
             parentOf_.try_emplace(stripVersion(entry.isoName), i);
         }
     }
+    if (auto applied = applyReplacements(); !applied) {
+        return applied;
+    }
 
     // A directory is as new as the newest entry beneath it. Children follow their parents in
     // breadth-first order, so a reverse pass sees each child before its parent.
@@ -287,6 +295,35 @@ std::expected<void, Error> DirectoryVolume::build(const std::filesystem::path &r
         writeDirectory(i);
     }
     UdfWriter::write(nodes, partitionStart, volumeSectors_, directories_.front().mtime, metadata_);
+    return {};
+}
+
+std::expected<void, Error> DirectoryVolume::applyReplacements() {
+    for (const auto &replacement : replacements_) {
+        const auto folded = upperAscii(replacement.target);
+        Entry *match = nullptr;
+        for (auto &entry : files_) {
+            if (upperAscii(stripVersion(entry.isoName)) != folded) {
+                continue;
+            }
+            if (match != nullptr) {
+                return discImageError(
+                    std::format("The disc has more than one {}.", replacement.target));
+            }
+            match = &entry;
+        }
+        if (match == nullptr) {
+            return discImageError(std::format("The disc has no {}.", replacement.target));
+        }
+        if (replacement.payload.size() > kMaxFileSize) {
+            return discImageError(
+                std::format("{} is too large for one extent.", replacement.target));
+        }
+        match->size = static_cast<std::uint32_t>(replacement.payload.size());
+        match->mtime = replacement.modified;
+        match->payload = &replacement.payload;
+        spdlog::info("Placed {} in the layout ({} bytes).", replacement.target, match->size);
+    }
     return {};
 }
 
@@ -350,6 +387,12 @@ DirectoryVolume::readSector(std::uint32_t lba, std::span<std::uint8_t, kSectorDa
     const auto &entry = files_[static_cast<std::size_t>(position - 1)];
     const auto offset = static_cast<std::uint64_t>(lba - entry.lba) * kSectorData;
     if (offset >= entry.size) {
+        return {};
+    }
+    if (entry.payload != nullptr) {
+        const auto count = std::min<std::uint64_t>(kSectorData, entry.size - offset);
+        std::copy_n(
+            entry.payload->begin() + static_cast<std::ptrdiff_t>(offset), count, sector.begin());
         return {};
     }
     auto [handle, opened] = handles_.try_emplace(entry.path, entry.path, std::ios::binary);

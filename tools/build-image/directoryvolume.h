@@ -13,6 +13,7 @@
 #include <string_view>
 #include <vector>
 
+#include "imagebuilder.h"
 #include "isodate.h"
 #include "volume.h"
 
@@ -32,11 +33,8 @@ using Common::Volume;
  * UDF directories, a file entry for each directory and file, and then the file data in the same
  * order, which both file systems record. ISO9660 names are upper case, and UDF names keep the case
  * of the source files. Metadata sectors are built in memory, and file sectors are read from the
- * source files on demand. Each record has the modification time of its file, and a directory has
- * the newest time of itself and every entry beneath it. ISO9660 names are upper case, and UDF names
- * keep the case of the source files. Metadata sectors are built in memory, and file sectors are
- * read from the source files on demand. Each record has the modification time of its file, and a
- * directory has the newest time of itself and every entry beneath it.
+ * source files or the replacement payloads on demand. Each record has the modification time of its
+ * file, and a directory has the newest time of itself and every entry beneath it.
  */
 class DirectoryVolume final : public Volume {
 public:
@@ -46,11 +44,16 @@ public:
      * @param root Disc root directory with `SYSTEM.CNF`.
      * @param systemArea The 16 system area sectors (32768 bytes) with the boot logo. The sectors
      * are zero when omitted.
+     * @param replacements Files laid out with a payload's contents, size, and modification time
+     * in place of the disc root's file of the same name.
      * @return The volume, or an error when the directory is not a disc root, a name is not valid,
-     * a file cannot be examined, or the system area has the wrong size.
+     * a file cannot be examined, the system area has the wrong size, or a replacement does not
+     * match exactly one file.
      */
     static std::expected<std::unique_ptr<DirectoryVolume>, Error>
-    create(const std::filesystem::path &root, std::optional<std::vector<std::uint8_t>> systemArea);
+    create(const std::filesystem::path &root,
+           std::optional<std::vector<std::uint8_t>> systemArea,
+           std::vector<Replacement> replacements);
 
     /**
      * Read the name of the executable a disc root boots, without building the volume.
@@ -76,6 +79,7 @@ private:
         Seconds mtime;
         std::filesystem::path path;
         std::uint32_t size = 0;
+        const std::vector<std::uint8_t> *payload = nullptr;
     };
 
     struct ListingEntry {
@@ -88,6 +92,7 @@ private:
     DirectoryVolume() = default;
 
     std::expected<void, Error> build(const std::filesystem::path &root);
+    std::expected<void, Error> applyReplacements();
     static std::expected<std::string, Error> isoName(const std::filesystem::path &entry);
     static std::uint32_t extentSize(const std::vector<ListingEntry> &listing);
     static std::vector<std::uint8_t>
@@ -97,6 +102,7 @@ private:
     void writeDirectory(std::size_t directory);
 
     std::vector<std::uint8_t> systemArea_;
+    std::vector<Replacement> replacements_;
     std::vector<Entry> directories_;
     std::vector<std::size_t> parents_;
     std::vector<std::vector<ListingEntry>> listings_;

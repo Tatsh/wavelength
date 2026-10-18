@@ -261,12 +261,9 @@ std::expected<Payloads, Error> resolvePayloads(const Options &options) {
     return Payloads{std::move(*executable), std::move(*modules)};
 }
 
-std::expected<std::unique_ptr<Volume>, Error> openVolume(const Options &options) {
-    if (!pathIsDirectory(options.inputImage)) {
-        return SourceImage::open(options.inputImage).transform([](auto image) {
-            return std::unique_ptr<Volume>(std::move(image));
-        });
-    }
+// A disc root is laid out with the replacements in place of its files.
+std::expected<std::unique_ptr<Volume>, Error> openDirectory(const Options &options,
+                                                            std::vector<Replacement> replacements) {
     std::optional<Payload> systemArea;
     if (options.systemArea) {
         auto data = readFile(*options.systemArea);
@@ -275,7 +272,8 @@ std::expected<std::unique_ptr<Volume>, Error> openVolume(const Options &options)
         }
         systemArea = std::move(*data);
     }
-    return DirectoryVolume::create(options.inputImage, std::move(systemArea))
+    return DirectoryVolume::create(
+               options.inputImage, std::move(systemArea), std::move(replacements))
         .transform([](auto volume) { return std::unique_ptr<Volume>(std::move(volume)); });
 }
 
@@ -298,11 +296,19 @@ std::expected<std::uint32_t, Error> run(const Options &options) {
     if (!payloads) {
         return std::unexpected(std::move(payloads.error()));
     }
-    const auto source = openVolume(options);
-    if (!source) {
-        return std::unexpected(source.error());
+    const bool bDirectory = pathIsDirectory(options.inputImage);
+    std::unique_ptr<Volume> source;
+    std::expected<std::string, Error> target;
+    if (bDirectory) {
+        target = DirectoryVolume::identify(options.inputImage);
+    } else {
+        auto image = SourceImage::open(options.inputImage);
+        if (!image) {
+            return std::unexpected(std::move(image.error()));
+        }
+        source = std::move(*image);
+        target = source->bootExecutable();
     }
-    const auto target = (*source)->bootExecutable();
     if (!target) {
         return std::unexpected(target.error());
     }
@@ -318,7 +324,15 @@ std::expected<std::uint32_t, Error> run(const Options &options) {
     payloads->executable.target = *target;
     replacements.push_back(std::move(payloads->executable));
     std::ranges::move(payloads->modules, std::back_inserter(replacements));
-    return ImageBuilder::plan(**source, std::move(replacements))
+    if (bDirectory) {
+        auto volume = openDirectory(options, std::move(replacements));
+        if (!volume) {
+            return std::unexpected(std::move(volume.error()));
+        }
+        source = std::move(*volume);
+        replacements = {}; // The layout already has them.
+    }
+    return ImageBuilder::plan(*source, std::move(replacements))
         .and_then([&options](ImageBuilder builder) { return builder.write(options.outputImage); });
 }
 
