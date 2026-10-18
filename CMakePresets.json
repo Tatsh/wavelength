@@ -1,4 +1,11 @@
 {
+  "buildPresets": [
+    {
+      "configurePreset": "ps2",
+      "name": "image",
+      "targets": ["image"]
+    }
+  ],
   "configurePresets": [
     {
       "binaryDir": "${sourceDir}/build",
@@ -6,7 +13,16 @@
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       },
       "generator": "Ninja",
+      "hidden": true,
       "name": "vcpkg"
+    },
+    {
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/ps2-ee-toolchain.cmake"
+      },
+      "generator": "Ninja",
+      "name": "ps2"
     }
   ],
   "version": 2

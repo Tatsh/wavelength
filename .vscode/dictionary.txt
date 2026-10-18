@@ -1083,6 +1083,7 @@ pcgth
 pcmct
 pcpyld
 pcrtc
+pcsx
 pdbtype
 pebuf
 pels

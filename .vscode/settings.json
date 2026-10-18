@@ -19,6 +19,7 @@
     "editor.tabSize": 4
   },
   "cSpell.enabled": true,
+  "cmake.useCMakePresets": "always",
   "editor.codeActionsOnSave": {
     "source.fixAll": "always"
   },

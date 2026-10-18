@@ -96,6 +96,19 @@
     // The VBA modules are the add-in's source byte for byte.
     exclude: '^(3rdparty/|tools/synthedit/synthcontrol/.*\\.(bas|cls)$)',
   },
+  // The whole project only builds with the EE toolchain. The vcpkg preset is kept for inheritance
+  // and hidden. A user preset that inherits ps2 adds PS2DEV and the original disc image.
+  cmake_presets+: {
+    buildPresets: [{ configurePreset: 'ps2', name: 'image', targets: ['image'] }],
+    configurePresets: [super.configurePresets[0] { hidden: true }] + [
+      {
+        binaryDir: '${sourceDir}/build/${presetName}',
+        cacheVariables: { CMAKE_TOOLCHAIN_FILE: '${sourceDir}/cmake/ps2-ee-toolchain.cmake' },
+        generator: 'Ninja',
+        name: 'ps2',
+      },
+    ],
+  },
   gitattributes+: ['/3rdparty/** -text linguist-vendored'],
   // Vendored upstream sources are not reformatted.
   prettierignore+: ['/3rdparty/'],
@@ -114,6 +127,7 @@
     ],
   },
   vscode+: {
+    settings+: { 'cmake.useCMakePresets': 'always' },
     c_cpp+: {
       configurations: [
         {

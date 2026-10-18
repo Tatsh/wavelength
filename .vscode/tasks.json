@@ -1,0 +1,29 @@
+{
+  "tasks": [
+    {
+      "command": "build",
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      },
+      "label": "Build the image",
+      "preset": "${command:cmake.activeBuildPresetName}",
+      "problemMatcher": ["$gcc"],
+      "targets": ["image"],
+      "type": "cmake"
+    },
+    {
+      "args": ["${command:cmake.buildDirectory}/wavelength.iso"],
+      "command": "pcsx2-qt",
+      "dependsOn": "Build the image",
+      "group": {
+        "isDefault": true,
+        "kind": "test"
+      },
+      "label": "Test the image in PCSX2",
+      "problemMatcher": [],
+      "type": "process"
+    }
+  ],
+  "version": "2.0.0"
+}
