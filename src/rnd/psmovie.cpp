@@ -75,7 +75,7 @@ int PsMovie::DmacHandler([[maybe_unused]] int nChannel) {
 }
 
 void PsMovie::Init() {
-    TheManager.mClasses[RndMovie::sClassName] = PsMovie::New;
+    TheManager.SetClassFactory(RndMovie::sClassName, PsMovie::New);
     sceIpuInit();
     sHandlerId = AddDmacHandler(DMAC_FROM_IPU, DmacHandler, 0);
 }
@@ -83,7 +83,7 @@ void PsMovie::Init() {
 void PsMovie::Terminate() {
     DisableDmac(DMAC_FROM_IPU);
     RemoveDmacHandler(DMAC_FROM_IPU, sHandlerId);
-    TheManager.mClasses[RndMovie::sClassName] = RndMovie::New;
+    TheManager.SetClassFactory(RndMovie::sClassName, RndMovie::New);
 }
 
 void PsMovie::RemoveHandler() {

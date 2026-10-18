@@ -668,7 +668,7 @@ void PsTex::BindAsRenderTarget() {
 }
 
 void PsTex::Init() {
-    TheManager.mClasses[RndTex::sClassName] = PsTex::New;
+    TheManager.SetClassFactory(RndTex::sClassName, PsTex::New);
     sEvictStamp = 0;
     sStamp = 0;
 }

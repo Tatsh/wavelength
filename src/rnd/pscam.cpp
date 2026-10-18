@@ -287,7 +287,7 @@ int PsCam::DrawShowing() {
 }
 
 void PsCam::Init() {
-    TheManager.mClasses[RndCam::sClassName] = PsCam::New;
+    TheManager.SetClassFactory(RndCam::sClassName, PsCam::New);
     RndCam::CreateDefault();
 }
 

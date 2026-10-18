@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "os/binstream.h"
@@ -48,12 +49,12 @@ public:
          *
          * The loader has one reference.
          *
-         * @param pFile The open file. The loader deletes it once the read completes.
+         * @param pFile The open file. The loader closes it once the read completes.
          * @param pszTag The tag the buffer is billed to.
          * @ghidraAddress NTSC-U/C: 0x0023a140
          * @ghidraAddress PAL: 0x00242cc0
          */
-        ResourceLoader(File *pFile, const char *pszTag);
+        ResourceLoader(std::unique_ptr<File> pFile, const char *pszTag);
 
         /**
          * Release the buffer and the file.
@@ -87,12 +88,18 @@ public:
          */
         int GetData(void **ppData, int *pnSize);
 
-        File *mFile;       /*!< The file being read, or null once the read completed. */
-        const char *mTag;  /*!< The tag mBuffer is billed to. */
-        char *mCompressed; /*!< Where a compressed file is read in mBuffer, or null. */
-        char *mBuffer;     /*!< The data. */
-        int mRefs;         /*!< References GetData() has not yet consumed. */
-        int mSize;         /*!< The size of mBuffer in bytes. */
+        /** Take one more reference, for one more GetData(). */
+        void AddRef() {
+            ++mRefs;
+        }
+
+    private:
+        std::unique_ptr<File> mFile; /*!< The file being read, or null once the read completed. */
+        const char *mTag;            /*!< The tag mBuffer is billed to. */
+        char *mCompressed;           /*!< Where a compressed file is read in mBuffer, or null. */
+        char *mBuffer;               /*!< The data. */
+        int mRefs;                   /*!< References GetData() has not yet consumed. */
+        int mSize;                   /*!< The size of mBuffer in bytes. */
     };
 
     /**
@@ -358,6 +365,40 @@ public:
      */
     void ClearResources();
 
+    /** @return The live objects by name. */
+    const std::map<const char *, RndObject *, StrLess> &GetObjects() const {
+        return mObjects;
+    }
+
+    /**
+     * Register an object under a name, replacing any object registered under it.
+     *
+     * @param pszName The name, which must outlive the registration.
+     * @param pObject The object.
+     */
+    void SetObject(const char *pszName, RndObject *pObject) {
+        mObjects[pszName] = pObject;
+    }
+
+    /**
+     * Remove the registration of a name.
+     *
+     * @param pszName The name.
+     */
+    void RemoveObject(const char *pszName) {
+        mObjects.erase(pszName);
+    }
+
+    /**
+     * Register the factory that Create() calls for a class.
+     *
+     * @param pszClass The class name a `.rnd` file writes.
+     * @param factory The factory.
+     */
+    void SetClassFactory(const char *pszClass, ClassFactory factory) {
+        mClasses[pszClass] = factory;
+    }
+
     /**
      * The format version Write() writes and the newest a loader accepts.
      *
@@ -366,10 +407,11 @@ public:
      */
     static int sRev;
 
-    std::map<const char *, RndObject *, StrLess> mObjects;  /*!< Live objects by name. */
-    std::map<const char *, ClassFactory, StrLess> mClasses; /*!< Factories by class name. */
-    std::map<FilePath, ResourceLoader *> mResources;        /*!< Resource reads by file. */
-    std::list<RndLoader *> mLoaders;                        /*!< Queued loaders, oldest first. */
+private:
+    std::map<const char *, RndObject *, StrLess> mObjects;          /*!< Live objects by name. */
+    std::map<const char *, ClassFactory, StrLess> mClasses;         /*!< Factories by class name. */
+    std::map<FilePath, std::unique_ptr<ResourceLoader>> mResources; /*!< Resource reads by file. */
+    std::list<RndLoader *> mLoaders; /*!< Queued loaders, oldest first. The callers own them. */
 };
 
 /**

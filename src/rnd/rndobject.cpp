@@ -3,7 +3,7 @@
 #include "rnd/rndmanager.h"
 
 RndObject::RndObject(const char *pszName) : mName(pszName), mInternal(0), mDeleting(0) {
-    TheManager.mObjects[mName.c_str()] = this;
+    TheManager.SetObject(mName.c_str(), this);
 }
 
 RndObject::~RndObject() {
@@ -14,7 +14,7 @@ RndObject::~RndObject() {
         ++it;
         pReferrer->Replace(this, nullptr);
     }
-    TheManager.mObjects.erase(mName.c_str());
+    TheManager.RemoveObject(mName.c_str());
 }
 
 void RndObject::DumpText(PrnStream &stream) {
@@ -31,9 +31,9 @@ void RndObject::SetName(const char *pszName) {
     if (mName == pszName) {
         return;
     }
-    TheManager.mObjects.erase(mName.c_str());
+    TheManager.RemoveObject(mName.c_str());
     mName = pszName;
-    TheManager.mObjects[mName.c_str()] = this;
+    TheManager.SetObject(mName.c_str(), this);
 }
 
 void RndObject::AddRef(RndObject *pReferrer) {

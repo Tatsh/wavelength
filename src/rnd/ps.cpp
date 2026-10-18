@@ -502,22 +502,22 @@ void Ps::Init() {
     PsTex::Init();
     PsMovie::Init();
     PsEnviron::Init();
-    TheManager.mClasses[RndParticleSys::sClassName] = PsParticleSys::New;
-    TheManager.mClasses[RndMultiMesh::sClassName] = PsMultiMesh::New;
+    TheManager.SetClassFactory(RndParticleSys::sClassName, PsParticleSys::New);
+    TheManager.SetClassFactory(RndMultiMesh::sClassName, PsMultiMesh::New);
     TheDebug.mModalCallback = ModalCallback;
     RestoreAfterMovie();
 }
 
 void Ps::Terminate() {
-    TheManager.mClasses[RndMesh::sClassName] = RndMesh::New;
+    TheManager.SetClassFactory(RndMesh::sClassName, RndMesh::New);
     RndCam::sCurrent = nullptr;
-    TheManager.mClasses[RndCam::sClassName] = RndCam::New;
-    TheManager.mClasses[RndMat::sClassName] = RndMat::New;
-    TheManager.mClasses[RndTex::sClassName] = RndTex::New;
+    TheManager.SetClassFactory(RndCam::sClassName, RndCam::New);
+    TheManager.SetClassFactory(RndMat::sClassName, RndMat::New);
+    TheManager.SetClassFactory(RndTex::sClassName, RndTex::New);
     PsMovie::Terminate();
     PsEnviron::Terminate();
-    TheManager.mClasses[RndParticleSys::sClassName] = RndParticleSys::New;
-    TheManager.mClasses[RndMultiMesh::sClassName] = RndMultiMesh::New;
+    TheManager.SetClassFactory(RndParticleSys::sClassName, RndParticleSys::New);
+    TheManager.SetClassFactory(RndMultiMesh::sClassName, RndMultiMesh::New);
     sceGsSyncVCallback(nullptr);
     TheDebug.mModalCallback = nullptr;
     sceGsSyncPath(0, 0);

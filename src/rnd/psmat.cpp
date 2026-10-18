@@ -317,7 +317,7 @@ void PsMat::SetupUvXfm(int nPass) {
 }
 
 void PsMat::Init() {
-    TheManager.mClasses[RndMat::sClassName] = PsMat::New;
+    TheManager.SetClassFactory(RndMat::sClassName, PsMat::New);
 }
 
 // The unit's static initialiser at NTSC-U/C: 0x00213f40, PAL: 0x0021cd58, and its global

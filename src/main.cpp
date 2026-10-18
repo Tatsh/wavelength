@@ -44,11 +44,11 @@ int g_bRndHeapCompactStrict = 0;
 
 // NTSC-U/C: 0x00100200, PAL: 0x00100200
 void CheckLeftoverObjects() {
-    if (TheManager.mObjects.empty()) {
+    if (TheManager.GetObjects().empty()) {
         return;
     }
     bool bLeftover = false;
-    for (const auto &entry : TheManager.mObjects) {
+    for (const auto &entry : TheManager.GetObjects()) {
         if (entry.second->mInternal == 0) {
             bLeftover = true;
             break;
@@ -58,11 +58,11 @@ void CheckLeftoverObjects() {
         return;
     }
 
-    TheDebug << "Freq2 main: Flushing " << static_cast<unsigned int>(TheManager.mObjects.size())
+    TheDebug << "Freq2 main: Flushing " << static_cast<unsigned int>(TheManager.GetObjects().size())
              << " objects.\n";
     TheDebug << "THIS IS BAD.  THERE SHOULD BE NONE,\n"
              << "aside from internal default objects,\n"
-             << "such as \"[default cam\"].\nLeftovers:\n    " << TheManager.mObjects << "\n";
+             << "such as \"[default cam\"].\nLeftovers:\n    " << TheManager.GetObjects() << "\n";
     TheManager.DeleteLoadedObjects();
 }
 

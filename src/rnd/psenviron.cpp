@@ -254,11 +254,11 @@ void PsEnviron::SelectLights(const Transform *pXfm, const Sphere *pSphere) {
 }
 
 void PsEnviron::Init() {
-    TheManager.mClasses[RndEnviron::sClassName] = PsEnviron::New;
+    TheManager.SetClassFactory(RndEnviron::sClassName, PsEnviron::New);
     RndEnviron::CreateDefault();
     RndLight::CreateDefault();
 }
 
 void PsEnviron::Terminate() {
-    TheManager.mClasses[RndEnviron::sClassName] = RndEnviron::New;
+    TheManager.SetClassFactory(RndEnviron::sClassName, RndEnviron::New);
 }

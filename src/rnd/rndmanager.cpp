@@ -1,7 +1,9 @@
 #include "rnd/rndmanager.h"
 
 #include <cstring>
+#include <memory>
 #include <strings.h>
+#include <utility>
 
 #include "os/chunkstream.h"
 #include "os/debug.h"
@@ -112,10 +114,10 @@ int RndManager::sRev = 10;
 // PAL: 0x00243288, construct and destroy it.
 RndManager TheManager;
 
-RndManager::ResourceLoader::ResourceLoader(File *pFile, const char *pszTag) {
+RndManager::ResourceLoader::ResourceLoader(std::unique_ptr<File> pFile, const char *pszTag) {
     mTag = pszTag;
-    mFile = pFile;
-    int nUncompressed = pFile->UncompressedSize();
+    mFile = std::move(pFile);
+    int nUncompressed = mFile->UncompressedSize();
     int nStored = mFile->Size();
     mSize = nStored < nUncompressed ? nUncompressed : nStored;
     mBuffer = static_cast<char *>(PoolMemAlloc(mSize, mTag, kDefaultAlignment));
@@ -130,8 +132,6 @@ RndManager::ResourceLoader::~ResourceLoader() {
         PoolMemFree(mBuffer);
         mBuffer = nullptr;
     }
-    delete mFile;
-    mFile = nullptr;
 }
 
 bool RndManager::ResourceLoader::Poll() {
@@ -145,8 +145,7 @@ bool RndManager::ResourceLoader::Poll() {
     if (mCompressed != nullptr) {
         GzipDecompressRamToRam(mCompressed, mFile->Tell(), mBuffer);
     }
-    delete mFile;
-    mFile = nullptr;
+    mFile.reset();
     return true;
 }
 
@@ -481,15 +480,16 @@ bool RndManager::AcquireTexture(const FilePath &path) {
     }
     const auto it = mResources.find(path);
     if (it != mResources.end()) {
-        ++it->second->mRefs;
+        it->second->AddRef();
         return true;
     }
-    File *pFile = File::New(ResourcePath(path.c_str()), kFileModeRead, kFileFlagsNone);
+    std::unique_ptr<File> pFile(
+        File::New(ResourcePath(path.c_str()), kFileModeRead, kFileFlagsNone));
     if (pFile == nullptr) {
         return false;
     }
-    ResourceLoader *&pLoader = mResources[path];
-    pLoader = new ResourceLoader(pFile, ResourceTag(path.c_str()));
+    mResources[path] =
+        std::make_unique<ResourceLoader>(std::move(pFile), ResourceTag(path.c_str()));
     return true;
 }
 
@@ -504,7 +504,6 @@ void RndManager::GetResource(const FilePath &path, void **ppData, int *pnSize) {
         it = mResources.find(path);
     }
     if (it != mResources.end() && it->second->GetData(ppData, pnSize) == 0) {
-        delete it->second;
         mResources.erase(it);
     }
 }
@@ -533,16 +532,9 @@ void RndManager::DeleteLoadedObjects() {
 }
 
 void RndManager::ReleaseTexture(const FilePath &path) {
-    const auto it = mResources.find(path);
-    if (it != mResources.end()) {
-        delete it->second;
-        mResources.erase(it);
-    }
+    mResources.erase(path);
 }
 
 void RndManager::ClearResources() {
-    for (const auto &entry : mResources) {
-        delete entry.second;
-    }
     mResources.clear();
 }

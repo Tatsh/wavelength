@@ -913,7 +913,7 @@ void PsMesh::FacesPacket(MemHandle *&pPacket, int &nSetupQwords, int &nVuEnd) co
 }
 
 void PsMesh::Init() {
-    TheManager.mClasses[RndMesh::sClassName] = PsMesh::New;
+    TheManager.SetClassFactory(RndMesh::sClassName, PsMesh::New);
     g_identityXfm.mBasisX.x = 1.0f;
     g_identityXfm.mBasisX.y = 0.0f;
     g_identityXfm.mBasisX.z = 0.0f;
