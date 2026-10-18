@@ -87,8 +87,12 @@ struct SemaParam {
     unsigned int option; /*!< Caller-defined option word. */
 };
 
-/** Exits an interrupt handler. Synchronises memory and enables interrupts again. */
-#define ExitHandler() __asm__ volatile("sync.l\n\tei")
+/**
+ * Exits an interrupt handler. Synchronises memory and enables interrupts again.
+ *
+ * The assembler does not move the instructions into a branch delay slot.
+ */
+#define ExitHandler() __asm__ volatile(".set push\n\t.set noreorder\n\tsync.l\n\tei\n\t.set pop")
 
 /** The global pointer the linker assigns. */
 extern char _gp[];
