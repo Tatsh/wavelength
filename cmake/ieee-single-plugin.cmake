@@ -18,8 +18,8 @@ if(NOT HOST_CXX OR NOT EXISTS "${_plugin_dir}/include/gcc-plugin.h")
 endif()
 if(NOT EXISTS "${_plugin}" OR "${_source}" IS_NEWER_THAN "${_plugin}")
   execute_process(
-    COMMAND "${HOST_CXX}" -shared -fPIC -fno-rtti -O2 "-I${_plugin_dir}/include" "${_source}" -o
-            "${_plugin}"
+    COMMAND "${HOST_CXX}" -shared -fPIC -fno-rtti -O2 -isystem "${_plugin_dir}/include" "${_source}"
+            -o "${_plugin}"
     RESULT_VARIABLE _result)
   if(NOT _result EQUAL 0)
     message(FATAL_ERROR "Building the IEEE single-precision plugin failed.")
