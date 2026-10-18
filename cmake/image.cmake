@@ -81,6 +81,11 @@ if(ADD_USA_DEMO_SONG)
   else()
     set(_wavelength_demo_pal OFF)
   endif()
+  # A disc root loses the boot logo of an original ISO image, so the stage copies it out.
+  set(_wavelength_demo_system_area "")
+  if(NOT WAVELENGTH_DISC_SYSTEM_AREA AND NOT IS_DIRECTORY "${WAVELENGTH_DISC_IMAGE}")
+    set(_wavelength_demo_system_area "${_wavelength_demo_staging}/system-area.bin")
+  endif()
   add_custom_command(
     OUTPUT "${_wavelength_demo_stamp}"
     COMMAND
@@ -88,7 +93,8 @@ if(ADD_USA_DEMO_SONG)
       "-DSPACE_EDITION=${USA_DEMO_SPACE_EDITION}" "-DSTAGING_DIR=${_wavelength_demo_staging}"
       "-DPAL=${_wavelength_demo_pal}" "-DEXTRACT_IMAGE=${WAVELENGTH_TOOL_EXTRACT_IMAGE}"
       "-DARK=${WAVELENGTH_TOOL_ARK}" "-DDEMO_SONG=${WAVELENGTH_TOOL_DEMO_SONG}"
-      "-DSTAMP=${_wavelength_demo_stamp}" -P "${CMAKE_SOURCE_DIR}/cmake/demo-song-stage.cmake"
+      "-DSTAMP=${_wavelength_demo_stamp}" "-DSYSTEM_AREA=${_wavelength_demo_system_area}" -P
+      "${CMAKE_SOURCE_DIR}/cmake/demo-song-stage.cmake"
     DEPENDS "${CMAKE_SOURCE_DIR}/cmake/demo-song-stage.cmake" ${_wavelength_demo_inputs}
             wavelength_tools "${WAVELENGTH_TOOL_ARK}" "${WAVELENGTH_TOOL_DEMO_SONG}"
             "${WAVELENGTH_TOOL_EXTRACT_IMAGE}"
@@ -114,6 +120,8 @@ endif()
 if(WAVELENGTH_DISC_SYSTEM_AREA)
   list(APPEND _wavelength_system_area_args --system-area "${WAVELENGTH_DISC_SYSTEM_AREA}")
   list(APPEND _wavelength_disc_inputs "${WAVELENGTH_DISC_SYSTEM_AREA}")
+elseif(_wavelength_demo_system_area)
+  list(APPEND _wavelength_system_area_args --system-area "${_wavelength_demo_system_area}")
 endif()
 
 set(_wavelength_executable "$<TARGET_FILE:${CMAKE_PROJECT_NAME}>")

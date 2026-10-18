@@ -150,6 +150,8 @@ DirectoryVolume::create(const std::filesystem::path &root,
     if (!systemArea) {
         spdlog::warn("No system area was given. The boot logo sectors are zero, and a console may "
                      "refuse the disc.");
+    } else if (std::ranges::all_of(*systemArea, [](std::uint8_t byte) { return byte == 0; })) {
+        spdlog::warn("The system area has no boot logo, and a console may refuse the disc.");
     }
     std::unique_ptr<DirectoryVolume> volume(new DirectoryVolume());
     volume->systemArea_ =

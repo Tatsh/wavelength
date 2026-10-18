@@ -8,6 +8,7 @@
 #   PAL             ON for the European release.
 #   EXTRACT_IMAGE, ARK, DEMO_SONG   The host tools.
 #   STAMP           The file touched once the disc root is complete.
+#   SYSTEM_AREA     Optional. The file to receive the system area of DISC_IMAGE, an ISO image.
 
 function(_wavelength_run)
   execute_process(COMMAND ${ARGN} COMMAND_ECHO STDOUT RESULT_VARIABLE _result)
@@ -23,6 +24,8 @@ file(REMOVE_RECURSE "${_disc}" "${_ark}" "${STAMP}")
 
 if(IS_DIRECTORY "${DISC_IMAGE}")
   file(COPY "${DISC_IMAGE}/" DESTINATION "${_disc}")
+elseif(SYSTEM_AREA)
+  _wavelength_run("${EXTRACT_IMAGE}" "${DISC_IMAGE}" "${_disc}" --system-area "${SYSTEM_AREA}")
 else()
   _wavelength_run("${EXTRACT_IMAGE}" "${DISC_IMAGE}" "${_disc}")
 endif()

@@ -259,7 +259,6 @@ depfile
 dequantisation
 dequantize
 dequantized
-derver
 dextract
 dialing
 dialog
@@ -322,6 +321,7 @@ dsrl
 dsrlv
 dstaging
 dstamp
+dsystem
 dthe
 duellogic
 duelpattern
