@@ -180,7 +180,7 @@ const char *MetaSongScreen::Title() {
 SongEntry MetaSongScreen::FindSong(UIComponent *pButton) {
     std::vector<SongEntry> songs;
     TheGameDb->GetArenaSongs(
-        &songs, TheMetagame.mSelectedArena.c_str(), TheGameDb->mSkillLevel, kArenaSongFilter);
+        &songs, TheMetagame.GetSelectedArena(), TheGameDb->mSkillLevel, kArenaSongFilter);
     for (unsigned int i = 0; i < songs.size(); ++i) {
         if (strcmp(pButton->mName, FormatString("0%d", i + 1)) == 0) {
             return songs[i];
@@ -311,7 +311,7 @@ void MetaSongScreen::ShowPicture(bool bShowPicture) {
     RndView *pImage = dynamic_cast<RndView *>(TheManager.Find("s_g_sel_song_pic_image.view"));
     const char *pszFirst;
     const char *pszSecond;
-    if (strcmp(TheMetagame.mSelectedArena.c_str(), "Tutorial") == 0) {
+    if (strcmp(TheMetagame.GetSelectedArena(), "Tutorial") == 0) {
         pszFirst = TheLocale.Localize("info_label", true);
         pszSecond = TheLocale.Localize("program_label", true);
     } else {
@@ -403,7 +403,7 @@ void MetaSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     (void)SongPreview::IsPlaying(); // Yes, the binary discards this call's result.
     SongPreview::Stop(kEnterFadeSeconds);
     mBandPanel = TheUI.FindPanel("s_g_sel_song_band", false);
-    const char *pszArena = TheMetagame.mSelectedArena.c_str();
+    const char *pszArena = TheMetagame.GetSelectedArena();
     const int nSkillLevel = TheGameDb->mSkillLevel;
     std::vector<SongEntry> songs;
     TheGameDb->GetArenaSongs(&songs, pszArena, nSkillLevel, kArenaSongFilter);
@@ -482,7 +482,7 @@ bool MetaSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     TheGameDb->SetPracticeMode(false);
     TheGameDb->SetLoadRemix(false);
     if (song.GetType() == kSongTypeTutorial) {
-        TheMetagame.mSelectedArena = "No arena";
+        TheMetagame.SetSelectedArena("No arena");
         TheGameDb->SetTutorial(1);
     } else {
         TheGameDb->SetTutorial(0);

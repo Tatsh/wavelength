@@ -376,14 +376,114 @@ public:
      */
     bool DispatchPriv(Message *pMsg) override;
 
+    /**
+     * Set the Event that Update() reports next.
+     *
+     * @param nEvent One of Event.
+     */
+    void SetEvent(int nEvent) {
+        mEvent = nEvent;
+    }
+
+    /** @return The menu music, or null while the front end does not show. */
+    Mix *GetMusic() const {
+        return mMusic.get();
+    }
+
+    /** @return The milliseconds of one tick of the front end clock. */
+    float GetTickMs() const {
+        return *mTickMs;
+    }
+
+    /** @return The rate of the front end clock against the scheduler. */
+    float GetSpeed() const {
+        return mSpeed;
+    }
+
+    /** @return The projector of the menu screens. */
+    Gizmo *GetGizmo() const {
+        return mGizmo.get();
+    }
+
+    /** @return The identifier of the arena chosen last. SelectedArenaName() localises it. */
+    const char *GetSelectedArena() const {
+        return mSelectedArena.c_str();
+    }
+
+    /**
+     * Choose an arena.
+     *
+     * @param pszArena The identifier of the arena.
+     */
+    void SetSelectedArena(const char *pszArena) {
+        mSelectedArena = pszArena;
+    }
+
+    /** @return The chat room this console joined last. */
+    const NetChatroomInfo &GetChatroom() const {
+        return mChatroom;
+    }
+
+    /**
+     * Record the chat room this console joined.
+     *
+     * @param chatroom The chat room.
+     */
+    void SetChatroom(const NetChatroomInfo &chatroom) {
+        mChatroom = chatroom;
+    }
+
+    /** @return Non-zero when the memory card check found saved Freqs. */
+    int GetFreqsOnCard() const {
+        return mFreqsOnCard;
+    }
+
+    /**
+     * Record whether the memory card check found saved Freqs.
+     *
+     * @param bFreqsOnCard Non-zero when it found some.
+     */
+    void SetFreqsOnCard(int bFreqsOnCard) {
+        mFreqsOnCard = bFreqsOnCard;
+    }
+
+    /** @return Whether the network screen waits to be shown. */
+    int GetNetScreenPending() const {
+        return mNetScreenPending;
+    }
+
+    /** @return The network screen to show once a launchpad screen shows. */
+    const char *GetNetScreen() const {
+        return mNetScreen.c_str();
+    }
+
+    /**
+     * Record the choice made in the dialog.
+     *
+     * @param action The choice.
+     */
+    void SetDialogAction(DialogAction action) {
+        mDialogAction = action;
+    }
+
+    /**
+     * Set the field at +0x144, which is not yet identified.
+     *
+     * @param nValue The value.
+     */
+    void SetReserved144(int nValue) {
+        mReserved144 = nValue;
+    }
+
+private:
     int mState;                                      /*!< One of State. */
     int mLoadStage;                                  /*!< One of LoadStage. */
     std::unique_ptr<RndLoader> mLoadingScreenLoader; /*!< The load of the loading screen. */
-    int mReloadFrontEnd;            /*!< Set when the front end loads again after a song. */
-    int mEvent;                     /*!< The Event Update() reports next. */
-    MetagameArena *mArena;          /*!< The arena scene. */
-    HelpPanel *mHelpPanel;          /*!< The `help` panel. */
-    int mLastSelectButton;          /*!< The JoypadButton that last chose a component. */
+    int mReloadFrontEnd;                   /*!< Set when the front end loads again after a song. */
+    int mEvent;                            /*!< The Event Update() reports next. */
+    std::unique_ptr<MetagameArena> mArena; /*!< The arena scene. */
+    HelpPanel *mHelpPanel;                 /*!< The `help` panel. */
+    int mLastSelectButton;                 /*!< The JoypadButton that last chose a component. */
     float mTime;                    /*!< The front end clock, sped up while mSpeed is above 1. */
     float mTick;                    /*!< The tick of the front end scheduler. */
     float mLastSchedulerTime;       /*!< The scheduler time of the last Update(). */
@@ -395,10 +495,10 @@ public:
     DialogCallback mDialogCallback; /*!< The routine the dialog reports to, or null. */
     void *mDialogUserData;          /*!< The value passed back to mDialogCallback. */
     DialogAction mDialogAction;     /*!< The choice made in the dialog. */
-    Mix *mMusic;                    /*!< The menu music, while the front end shows. */
-    MetaMusicSong *mMusicSong;      /*!< The menu song of mMusic. */
+    std::unique_ptr<Mix> mMusic;    /*!< The menu music, while the front end shows. */
+    std::unique_ptr<MetaMusicSong> mMusicSong; /*!< The menu song of mMusic. */
     SynthEffects mEffects;          /*!< The `effects` entry of the metagame configuration. */
-    float *mTickMs;                 /*!< The milliseconds of one tick of the front end clock. */
+    std::unique_ptr<float> mTickMs; /*!< The milliseconds of one tick of the front end clock. */
     int mSharedMusicFadedIn;        /*!< Whether the shared music has faded in. */
     int mGameFxBankSlot;            /*!< `game_fx_bank_slot` of the game configuration. */
     int mMetaFxBankSlot;            /*!< `meta_fx_bank_slot` of the metagame configuration. */
@@ -409,7 +509,7 @@ public:
     int mFreqsOnCard;               /*!< Non-zero when the memory card check found saved Freqs. */
     std::list<UnlockEvent> mUnlockScreens; /*!< The queued screens that follow the song. */
     std::vector<UnlockableItem> mUnlocks;  /*!< The items the last song unlocked. */
-    Gizmo *mGizmo;                         /*!< The projector of the menu screens. +0x12c */
+    std::unique_ptr<Gizmo> mGizmo;         /*!< The projector of the menu screens. +0x12c */
     RndCam *mUiCamera;                     /*!< The camera of the front end. */
     RndEnviron *mUiEnviron;                /*!< The lights of the front end. */
     int mSpeedingUp;                       /*!< Set while a `speed_up` transition runs. */
@@ -418,7 +518,6 @@ public:
     int mReserved144;  // +0x144, set to 1 by the constructor and not yet identified.
     String mNetScreen; /*!< The network screen to show once a launchpad screen shows. */
 
-private:
     /**
      * Register every screen, panel, and component class of the front end with TheUI, build the
      * gizmo, and load the shared music.

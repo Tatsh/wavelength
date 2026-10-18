@@ -46,7 +46,7 @@ void FreqConfirmScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         pConfirm->SetState(UIComponent::kStateDisabled, false);
         pEdit->SetState(UIComponent::kStateDisabled, false);
         UIComponent *pFocus = TheUI.FindComponent(
-            "f_confirm", TheMetagame.mFreqsOnCard != 0 ? "load" : "create", false);
+            "f_confirm", TheMetagame.GetFreqsOnCard() != 0 ? "load" : "create", false);
         mFocusPanel->SetFocus(pFocus, kPadNone);
         pFocus->SetState(UIComponent::kStateSelected, true);
     }

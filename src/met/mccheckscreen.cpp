@@ -120,7 +120,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
             pError = TheUI.FindScreen(kUnformattedScreen, false);
             break;
         }
-        TheMetagame.mFreqsOnCard = 1;
+        TheMetagame.SetFreqsOnCard(1);
         if (TheUI.mEditMode == 0) {
             mLoadSettings = 1;
         } else {
@@ -159,7 +159,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
 #endif
     // The PAL build continues without the Freqs from an unformatted card too.
     default:
-        TheMetagame.mFreqsOnCard = 0;
+        TheMetagame.SetFreqsOnCard(0);
         TheUI.GotoScreen(mDoneScreen.c_str());
         return;
     }
@@ -167,7 +167,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
     if (pError == nullptr) {
         return;
     }
-    TheMetagame.mFreqsOnCard = 0;
+    TheMetagame.SetFreqsOnCard(0);
     pError->ClearTransitions();
     pError->AddTransition(kRetryComponent, kPadNone, mName);
     pError->AddTransition(kContinueComponent, kPadNone, mDoneScreen.c_str());
@@ -183,7 +183,7 @@ void MCCheckScreen::OnSettingsLoaded(int nStatus, GameOptions settings) {
 
 void MCCheckScreen::OnFreqsLoaded(int nStatus, std::vector<Campaign> *pProfiles) {
     if (nStatus != MemcardTask::kStatusOk) {
-        TheMetagame.mFreqsOnCard = 0;
+        TheMetagame.SetFreqsOnCard(0);
         TheUI.GotoScreen(mDoneScreen.c_str());
         return;
     }
@@ -191,7 +191,7 @@ void MCCheckScreen::OnFreqsLoaded(int nStatus, std::vector<Campaign> *pProfiles)
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&pProfiles->front());
     } else {
-        TheMetagame.mFreqsOnCard = 0;
+        TheMetagame.SetFreqsOnCard(0);
     }
     mAdvanceTime = TheUI.mTime + kAdvanceDelayMs;
 }

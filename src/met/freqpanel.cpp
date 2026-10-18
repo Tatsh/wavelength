@@ -173,7 +173,7 @@ void FreqPanel::DrawGizmo() {
         return;
     }
 
-    const Transform gizmoXfm = TheMetagame.mGizmo->WorldXfm();
+    const Transform gizmoXfm = TheMetagame.GetGizmo()->WorldXfm();
     const Vector3 tip = XfmPoint(gizmoXfm, sGizmoOffsets[mGizmoOffsetIndex]);
     SetRow(mGizmoMesh->mLocalXfm.mTranslation, tip.x, tip.y, tip.z, tip.w);
     mGizmoMesh->mDirty = 1;

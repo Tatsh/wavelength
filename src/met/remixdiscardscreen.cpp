@@ -49,8 +49,8 @@ bool RemixDiscardScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     } else if (!(button == kYesButton)) {
         next = "net_end_remix";
     } else if (TheNetLaunchpad == nullptr) {
-        if (TheMetagame.mNetScreenPending != 0) {
-            next = TheMetagame.mNetScreen.c_str();
+        if (TheMetagame.GetNetScreenPending() != 0) {
+            next = TheMetagame.GetNetScreen();
         } else {
             NetJoinLPadScreen::ShowLaunchpadLost();
         }

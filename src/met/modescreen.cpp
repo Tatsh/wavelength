@@ -29,7 +29,7 @@ void ModeScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     if (TheGameDb->mCommunity == GameDb::kCommunityLocal &&
         TheGameDb->GetProfile(0)->mCustom != 0) {
-        TheMetagame.mGizmo->SetShowAvatar(false);
+        TheMetagame.GetGizmo()->SetShowAvatar(false);
     }
     if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
         return;

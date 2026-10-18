@@ -34,7 +34,7 @@ bool NetSwitchLobbyScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
 bool NetSwitchLobbyScreen::HandleJoinResult(JoinChatroomResultMsg *pMsg) {
     if (pMsg->mResult == 0) {
         dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_main_c", false))->mMessages.clear();
-        TheMetagame.mChatroom = pMsg->mChatroom;
+        TheMetagame.SetChatroom(pMsg->mChatroom);
         TheUI.GotoScreen("net_switch_lobby_success");
     } else {
         TheUI.GotoScreen("net_switch_lobby_error");

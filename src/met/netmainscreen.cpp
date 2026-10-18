@@ -71,7 +71,8 @@ void NetMainScreen::Exit(UIScreen *pNextScreen, float fTime) {
 }
 
 const char *NetMainScreen::Title() {
-    return FormatString(TheLocale.Localize(kTitleToken, true), TheMetagame.mChatroom.mName.c_str());
+    return FormatString(TheLocale.Localize(kTitleToken, true),
+                        TheMetagame.GetChatroom().mName.c_str());
 }
 
 bool NetMainScreen::DispatchPriv(Message *pMsg) {

@@ -90,7 +90,7 @@ bool DeleteFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
         Campaign profile;
         profile.mName = TheLocale.Localize(kDefaultNameToken, true);
         TheGameDb->AddPlayer(&profile);
-        TheMetagame.mGizmo->SetShowAvatar(false);
+        TheMetagame.GetGizmo()->SetShowAvatar(false);
     }
     TheMCManager.DeleteFreq(this, mSlot, mFreqName.c_str());
     return false;

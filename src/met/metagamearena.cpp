@@ -129,8 +129,7 @@ void MetagameArena::ShowUnlocks() {
         }
     }
 
-    TheTriggerMgr.ComponentFocusEvent(
-        TheMetagame.mSelectedArena.c_str(), kArenaScreen, kArenaScreen);
+    TheTriggerMgr.ComponentFocusEvent(TheMetagame.GetSelectedArena(), kArenaScreen, kArenaScreen);
 }
 
 void MetagameArena::Unload() {

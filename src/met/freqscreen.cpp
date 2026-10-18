@@ -49,9 +49,9 @@ void FreqScreen::Exit(UIScreen *pNextScreen, float fTime) {
             bJump = true;
         }
         if (!bJump) {
-            TheMetagame.mGizmo->MoveTo(pNext->mGizmoOrig, pNext->mGizmoRot, fTime);
+            TheMetagame.GetGizmo()->MoveTo(pNext->mGizmoOrig, pNext->mGizmoRot, fTime);
         } else {
-            TheMetagame.mGizmo->SetTo(pNext->mGizmoOrig, pNext->mGizmoRot);
+            TheMetagame.GetGizmo()->SetTo(pNext->mGizmoOrig, pNext->mGizmoRot);
         }
     }
     UIScreen::Exit(pNextScreen, fTime);
@@ -70,14 +70,14 @@ void FreqScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         FxMidi::PlayProjector();
     }
 
-    if (!TheMetagame.mGizmo->IsShowing()) {
-        TheMetagame.mGizmo->SetTo(mGizmoOrig, mGizmoRot);
+    if (!TheMetagame.GetGizmo()->IsShowing()) {
+        TheMetagame.GetGizmo()->SetTo(mGizmoOrig, mGizmoRot);
     }
     bool bHide = mNoGizmo;
     if (TheMetagame.GetState() != Metagame::kStateFrontEnd) {
         bHide = true;
     }
-    TheMetagame.mGizmo->SetShowing(!bHide);
+    TheMetagame.GetGizmo()->SetShowing(!bHide);
 
     for (const auto &entry : mPanels) {
         UIPanel *pPanel = entry.second;

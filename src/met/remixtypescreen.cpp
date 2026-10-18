@@ -61,7 +61,7 @@ bool RemixTypeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         TheGameDb->SetPracticeMode(true);
         TheGameDb->SetTutorial(1);
         TheGameDb->SetRemixActive(1);
-        TheMetagame.mSelectedArena = "No arena";
+        TheMetagame.SetSelectedArena("No arena");
         TheGameDb->SetSong("TUT2");
         TheUI.GotoScreen("pre_solo_r_tut2launchseq");
     }

@@ -42,7 +42,7 @@ void PlayerSearchResultsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     UIButton *pBack =
         dynamic_cast<UIButton *>(TheUI.FindComponent(mFocusPanel->mName, kBackButton, false));
-    pBack->SetText(TheMetagame.mChatroom.mName.c_str());
+    pBack->SetText(TheMetagame.GetChatroom().mName.c_str());
     if (mInChatroom != 0) {
         dynamic_cast<UIButton *>(TheUI.FindComponent(mFocusPanel->mName, kChatroomButton, false))
             ->SetText(mChatroomName.c_str());

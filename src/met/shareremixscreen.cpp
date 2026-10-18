@@ -50,11 +50,11 @@ bool ShareRemixScreen::HandleProgress(ShareRemixProgressMsg *pMsg) {
     String next;
     if (TheNetLaunchpad == nullptr) {
         DebugPrint("ShareRemixProgressMsg::launchpad died\n");
-        if (TheMetagame.mNetScreenPending == 0) {
+        if (TheMetagame.GetNetScreenPending() == 0) {
             NetJoinLPadScreen::ShowLaunchpadLost();
             return false;
         }
-        next = TheMetagame.mNetScreen.c_str();
+        next = TheMetagame.GetNetScreen();
     } else if (pMsg->mReceived != 0 && TheNetLaunchpad->IsGuest() != kHostIndex) {
         auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix", false));
         TheDebug << "just received this remix " << *TheGameDb->GetRemixInfo() << "\n";

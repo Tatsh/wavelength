@@ -42,8 +42,8 @@ bool ReadOnlySaveScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         pSave->SetDoneScreen(kGuestLaunchpad);
         pSave->mOverwriteStatus = 0;
         if (TheNetLaunchpad == nullptr) {
-            if (TheMetagame.mNetScreenPending != 0) {
-                pSave->SetDoneScreen(TheMetagame.mNetScreen.c_str());
+            if (TheMetagame.GetNetScreenPending() != 0) {
+                pSave->SetDoneScreen(TheMetagame.GetNetScreen());
             } else {
                 String text(TheLocale.Localize("net_lpad_lost_error_msg", true));
                 auto *pError =

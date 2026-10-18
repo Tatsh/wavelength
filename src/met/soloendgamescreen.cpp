@@ -115,7 +115,7 @@ bool SoloEndGameScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         } else {
             action = static_cast<Metagame::DialogAction>(0);
         }
-        TheMetagame.mDialogAction = action;
+        TheMetagame.SetDialogAction(action);
         TheMetagame.QueueUnlocks();
         TheMetagame.AdvanceUnlocks();
     }

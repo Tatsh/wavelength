@@ -50,7 +50,7 @@ bool NetNewChatroomScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
 
 bool NetNewChatroomScreen::HandleJoinChatroomResult(JoinChatroomResultMsg *pMsg) {
     if (pMsg->mResult == JoinChatroomResultMsg::kResultSuccess) {
-        TheMetagame.mChatroom = pMsg->mChatroom;
+        TheMetagame.SetChatroom(pMsg->mChatroom);
         TheUI.GotoScreen(kSuccessScreen);
         return false;
     }

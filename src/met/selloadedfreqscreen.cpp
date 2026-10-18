@@ -47,7 +47,7 @@ bool SelLoadedFreqScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         Campaign profile(mProfiles[pList->mSelected]);
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&profile);
-        TheMetagame.mGizmo->SetShowAvatar(true);
+        TheMetagame.GetGizmo()->SetShowAvatar(true);
         if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
             TheUI.GotoScreen("solofreq2soloskill");
         } else {

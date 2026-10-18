@@ -32,14 +32,14 @@ void MainOptionsScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
     if (strcmp(pNextScreen->mName, kCreditsInScreen) == 0) {
         const Vector3 position{kCreditsGizmoX, 0.0f, 0.0f};
-        TheMetagame.mGizmo->MoveTo(position, mGizmoRot, fTime);
+        TheMetagame.GetGizmo()->MoveTo(position, mGizmoRot, fTime);
     }
 }
 
 void MainOptionsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     if (strcmp(pPrevScreen->mName, kCreditsOutScreen) == 0) {
-        TheMetagame.mGizmo->MoveTo(mGizmoOrig, mGizmoRot, fTime);
+        TheMetagame.GetGizmo()->MoveTo(mGizmoOrig, mGizmoRot, fTime);
     }
 }
 

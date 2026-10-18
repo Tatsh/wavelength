@@ -245,7 +245,7 @@ void FreqMakerMainScreen::GotoSave() {
     const char *pszScreen = TheGameDb->mCommunity == GameDb::kCommunitySolo ?
                                 "fmaker_save_freq" :
                                 "fmaker_save_freq_net";
-    TheMetagame.mGizmo->SetShowAvatar(true);
+    TheMetagame.GetGizmo()->SetShowAvatar(true);
     SaveEditedFreqScreen *pSave =
         dynamic_cast<SaveEditedFreqScreen *>(TheUI.FindScreen(pszScreen, false));
     pSave->mOverwriteStatus = mEditing;

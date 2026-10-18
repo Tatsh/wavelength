@@ -65,7 +65,7 @@ bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         TheGameDb->SetCommunity(GameDb::kCommunitySolo);
     } else if (button == "multi_but") {
         TheGameDb->SetCommunity(GameDb::kCommunityLocal);
-        TheMetagame.mGizmo->SetShowAvatar(false);
+        TheMetagame.GetGizmo()->SetShowAvatar(false);
         if (TheGameDb->GetProfile(0)->IsModified() != 0) {
             UIScreen *pScreen = TheUI.FindScreen("cur_freq_not_saved", false);
             pScreen->ClearTransitions();
@@ -88,13 +88,13 @@ bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
             Campaign profile(*TheGameDb->GetProfile(0));
             TheGameDb->ClearPlayers();
             TheGameDb->AddPlayer(&profile);
-            TheMetagame.mGizmo->SetShowAvatar(true);
+            TheMetagame.GetGizmo()->SetShowAvatar(true);
         } else {
             TheGameDb->ClearPlayers();
             Campaign profile;
             profile.mName = TheLocale.Localize("player_1", true);
             TheGameDb->AddPlayer(&profile);
-            TheMetagame.mGizmo->SetShowAvatar(false);
+            TheMetagame.GetGizmo()->SetShowAvatar(false);
         }
     }
     return UIScreen::HandleSelect(pMsg);

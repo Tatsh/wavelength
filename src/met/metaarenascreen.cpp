@@ -84,7 +84,7 @@ void MetaArenaScreen::Enter(UIScreen *pPrevScreen, float fTime) {
                 TheUI.FindStyle("button_style_grey", false));
         }
         if (strcmp(pPrevScreen->mName, "solosong2soloarena") == 0) {
-            if (strcmp(pszArena, TheMetagame.mSelectedArena.c_str()) == 0) {
+            if (strcmp(pszArena, TheMetagame.GetSelectedArena()) == 0) {
                 pFocus = pButton;
             }
         } else if (!arenas.empty() && pszArena == arenas.back()) {
@@ -191,7 +191,7 @@ bool MetaArenaScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     }
 
     TheSynth->SetOutputLevel(0.0f);
-    TheMetagame.mSelectedArena = pMsg->mComponent->mName;
+    TheMetagame.SetSelectedArena(pMsg->mComponent->mName);
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
         if (strcmp(pMsg->mComponent->mName, "Tutorial") == 0) {
             TheGameDb->SetTutorial(1);
@@ -236,7 +236,7 @@ bool MetaArenaScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return false;
     }
 
-    TheMetagame.mSelectedArena = "";
+    TheMetagame.SetSelectedArena("");
     const char *pszScreen;
     if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
         pszScreen = "soloarena2soloskill";

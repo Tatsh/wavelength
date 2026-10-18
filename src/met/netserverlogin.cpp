@@ -77,7 +77,7 @@ bool NetServerLogin::HandleLoginResult(LoginResultMsg *pMsg) {
     }
 
     dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->mMessages.clear();
-    TheMetagame.mChatroom = pMsg->mChatroom;
+    TheMetagame.SetChatroom(pMsg->mChatroom);
     dynamic_cast<NetWelcomeScreen *>(TheUI.FindScreen(kWelcomeScreen, false))->mNews = pMsg->mNews;
     dynamic_cast<NetEULAScreen *>(TheUI.FindScreen(kEulaScreen, false))->SetText(pMsg->mEula);
 

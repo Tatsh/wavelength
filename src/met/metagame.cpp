@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstring>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "app/cutscene.h"
@@ -462,14 +463,14 @@ constexpr int kClipMixTick = 500;
 
 // NTSC-U/C: 0x001657c0, PAL: 0x001686d0
 void MetaStartGame([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    if (TheMetagame.mState == Metagame::kStateFrontEnd) {
-        TheMetagame.mEvent = Metagame::kEventStartGame;
+    if (TheMetagame.GetState() == Metagame::kStateFrontEnd) {
+        TheMetagame.SetEvent(Metagame::kEventStartGame);
     }
 }
 
 // NTSC-U/C: 0x001657e0, PAL: 0x001686f0
 void MetaChangeScreen(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    if (TheMetagame.mState == Metagame::kStateFrontEnd) {
+    if (TheMetagame.GetState() == Metagame::kStateFrontEnd) {
         TheUI.GotoScreen(pCommand->Sym(1));
     }
 }
@@ -489,7 +490,7 @@ void SoloSongScreen([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void 
 #ifdef VIDEO_STANDARD_PAL
 // PAL: 0x001687d8, opens the upload tool list from the online welcome screen.
 void NetUploadTool([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    if (TheMetagame.mState == Metagame::kStateFrontEnd &&
+    if (TheMetagame.GetState() == Metagame::kStateFrontEnd &&
         strcmp(TheUI.mCurrentScreen->mName, kWelcomeScreen) == 0) {
         TheUI.GotoScreen(kGetUploadToolListScreen);
     }
@@ -502,27 +503,27 @@ void MetaChangeMix(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
     const int nMix = pCommand->Int(1);
     FadeOutSharedMusic();
     if (pCommand->mSize < kTimedCommandSize) {
-        TheMetagame.mMusic->ChangeMix(nMix);
+        TheMetagame.GetMusic()->ChangeMix(nMix);
     } else {
-        TheMetagame.mMusic->SwitchMix(nMix,
-                                      static_cast<int>(pCommand->Float(2) / *TheMetagame.mTickMs));
+        TheMetagame.GetMusic()->SwitchMix(
+            nMix, static_cast<int>(pCommand->Float(2) / TheMetagame.GetTickMs()));
     }
 }
 
 // NTSC-U/C: 0x00168c40, PAL: 0x0016bdc8
 void MetaStopMix([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    TheMetagame.mMusic->Stop();
+    TheMetagame.GetMusic()->Stop();
     FadeInSharedMusic();
 }
 
 // NTSC-U/C: 0x00168c70, PAL: 0x0016bdf8
 void EnterTube([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    TheMetagame.mMusic->EnterTube();
+    TheMetagame.GetMusic()->EnterTube();
 }
 
 // NTSC-U/C: 0x00168c98, PAL: 0x0016be20
 void ExitTube([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    TheMetagame.mMusic->ExitTube(1.0f < TheMetagame.mSpeed);
+    TheMetagame.GetMusic()->ExitTube(1.0f < TheMetagame.GetSpeed());
 }
 
 // NTSC-U/C: 0x00168ce0, PAL: 0x0016be68
@@ -792,7 +793,7 @@ void Metagame::RegisterScreenClasses() {
 }
 
 void Metagame::CreateGizmo() {
-    mGizmo = new Gizmo(0);
+    mGizmo = std::make_unique<Gizmo>(0);
 }
 
 void Metagame::ShowLoadingScreen() {
@@ -861,7 +862,7 @@ void Metagame::Init() {
         JoypadSetMenuControl(i, true);
     }
 
-    mArena = new MetagameArena;
+    mArena = std::make_unique<MetagameArena>();
     ScriptFunction::Register(MetaStartGame, kMetaStartGameCommand, nullptr);
     ScriptFunction::Register(MetaChangeScreen, kMetaChangeScreenCommand, nullptr);
     ScriptFunction::Register(MetaChangeMix, kMetaChangeMixCommand, nullptr);
@@ -890,11 +891,11 @@ void Metagame::Terminate() {
     ScriptFunction::Unregister(NetUploadTool);
 #endif
     TheMCManager.Terminate();
-    delete mArena;
-    delete mGizmo;
-    delete mMusicSong;
-    delete mTickMs;
-    delete mMusic;
+    mArena.reset();
+    mGizmo.reset();
+    mMusicSong.reset();
+    mTickMs.reset();
+    mMusic.reset();
     UnloadSharedMusic();
     KeyboardRemoveSink(&TheUI);
     JoypadRemoveSink(this);
@@ -1037,10 +1038,8 @@ void Metagame::SetActionText(const char *pszText) {
 
 void Metagame::StartIntro() {
     TheUI.GotoScreen(kInitialMcCheckScreen);
-    float *pTickMs = new float;
-    *pTickMs = kTickMs;
-    mTickMs = pTickMs;
-    TheMetaScheduler.Reset(mTickMs, 0);
+    mTickMs = std::make_unique<float>(kTickMs);
+    TheMetaScheduler.Reset(mTickMs.get(), 0);
     TheMetaScheduler.Resume();
     mLoadingScreenLoader.reset();
 }
@@ -1156,8 +1155,7 @@ void Metagame::PollLoad() {
         }
         FadeOutSharedMusic();
         mMusic->Start(0);
-        delete mMusicSong;
-        mMusicSong = nullptr;
+        mMusicSong.reset();
         break;
     }
     default:
@@ -1211,8 +1209,7 @@ void Metagame::ExitFrontEnd() {
     Timer timer{};
     timer.Start();
     mArena->Unload();
-    delete mMusic;
-    mMusic = nullptr;
+    mMusic.reset();
     UnloadBanks();
     mFirstBoot = 0;
     timer.Stop();
@@ -2070,13 +2067,13 @@ void Metagame::UnloadBanks() {
 }
 
 void Metagame::CreateMusic() {
-    mMusic = new Mix;
+    mMusic = std::make_unique<Mix>();
     DataArray *pSongs = SystemConfig()->FindArray(kMetagameKey, true)->FindArray(kSongsKey, true);
     int nSong = 0;
     if (mFirstBoot == 0) {
         nSong = RandomInt(0, pSongs->mSize - 1);
     }
-    mMusicSong = new MetaMusicSong(mMusic, pSongs->Array(nSong + 1));
+    mMusicSong = std::make_unique<MetaMusicSong>(mMusic.get(), pSongs->Array(nSong + 1));
 }
 
 void Metagame::SetSongScreenMix(bool bIdle) {

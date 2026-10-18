@@ -58,7 +58,7 @@ void MultiSetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UIComponent *pNumber = TheUI.FindComponent(kPanel, "player_num", false);
     pNumber->SetText(FormatString(TheLocale.Localize("m_r_end_03", true), mPlayer));
     if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
-        TheMetagame.mReserved144 = 0;
+        TheMetagame.SetReserved144(0);
     }
 }
 
@@ -95,8 +95,8 @@ void MultiSetupRemixSaveScreen::Proceed() {
         UseDiscardScreen(pSave, mPlayer);
 #endif
         if (TheNetLaunchpad == nullptr) {
-            if (TheMetagame.mNetScreenPending != 0) {
-                pSave->SetDoneScreen(TheMetagame.mNetScreen.c_str());
+            if (TheMetagame.GetNetScreenPending() != 0) {
+                pSave->SetDoneScreen(TheMetagame.GetNetScreen());
             } else {
                 String text(TheLocale.Localize("net_lpad_lost_error_msg", true));
                 auto *pError =
