@@ -40,7 +40,7 @@ bool NetNewChatroomScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetNewChatroomScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->ClearMessages();
         TheUI.FindPanel(kMainPanel, false)->SetFocus(nullptr, kPadNone);
         TheNetLobby->CreateChatroom(this, mChatroomName);
@@ -49,8 +49,8 @@ bool NetNewChatroomScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
 }
 
 bool NetNewChatroomScreen::HandleJoinChatroomResult(JoinChatroomResultMsg *pMsg) {
-    if (pMsg->mResult == JoinChatroomResultMsg::kResultSuccess) {
-        TheMetagame.SetChatroom(pMsg->mChatroom);
+    if (pMsg->GetResult() == JoinChatroomResultMsg::kResultSuccess) {
+        TheMetagame.SetChatroom(pMsg->GetChatroom());
         TheUI.GotoScreen(kSuccessScreen);
         return false;
     }
@@ -58,16 +58,16 @@ bool NetNewChatroomScreen::HandleJoinChatroomResult(JoinChatroomResultMsg *pMsg)
     dynamic_cast<SetupNameScreen *>(TheUI.FindScreen(kSetupScreen, false))
         ->SetText(mChatroomName.c_str());
     const char *pszToken;
-    if (pMsg->mResult == JoinChatroomResultMsg::kResultNameExists) {
+    if (pMsg->GetResult() == JoinChatroomResultMsg::kResultNameExists) {
         pszToken = kNameExistsToken;
-    } else if (pMsg->mResult == JoinChatroomResultMsg::kResultVulgarName) {
+    } else if (pMsg->GetResult() == JoinChatroomResultMsg::kResultVulgarName) {
         pszToken = kVulgarNameToken;
     } else {
         pszToken = kCreateErrorToken;
     }
     TransitionErrorScreen *pError =
         dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-    pError->mMessage = TheLocale.Localize(pszToken, true);
+    pError->SetMessage(TheLocale.Localize(pszToken, true));
     TheUI.GotoScreen(pError);
     return false;
 }

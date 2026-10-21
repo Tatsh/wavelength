@@ -88,6 +88,12 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The settings of the game the host published. */
+    const NetGameParams &GetParams() const {
+        return mParams;
+    }
+
+private:
     NetGameParams mParams;      /*!< The settings of the game the host published. */
     NetLaunchpadPlayer mPlayer; /*!< The player of this console in the session. */
 };

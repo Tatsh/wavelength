@@ -44,22 +44,22 @@ void ParticleArm::SetScale(float fScale) {
 }
 
 void ParticleArm::Scale(RndParticleSys *pSys, float fScale) {
-    pSys->mSize.x *= fScale;
-    pSys->mSize.y *= fScale;
-    pSys->mSpeed.x *= fScale;
-    pSys->mSpeed.y *= fScale;
-    pSys->mPosLow.x *= fScale;
-    pSys->mPosLow.y *= fScale;
-    pSys->mPosLow.z *= fScale;
-    pSys->mPosHigh.x *= fScale;
-    pSys->mPosHigh.y *= fScale;
-    pSys->mPosHigh.z *= fScale;
-    pSys->mBubbleSize.x *= fScale;
-    pSys->mBubbleSize.y *= fScale;
-    pSys->mLocalXfm.mTranslation.x *= fScale;
-    pSys->mLocalXfm.mTranslation.y *= fScale;
-    pSys->mLocalXfm.mTranslation.z *= fScale;
-    pSys->mDirty = 1;
+    pSys->GetSize().x *= fScale;
+    pSys->GetSize().y *= fScale;
+    pSys->GetSpeed().x *= fScale;
+    pSys->GetSpeed().y *= fScale;
+    pSys->GetPosLow().x *= fScale;
+    pSys->GetPosLow().y *= fScale;
+    pSys->GetPosLow().z *= fScale;
+    pSys->GetPosHigh().x *= fScale;
+    pSys->GetPosHigh().y *= fScale;
+    pSys->GetPosHigh().z *= fScale;
+    pSys->GetBubbleSize().x *= fScale;
+    pSys->GetBubbleSize().y *= fScale;
+    pSys->GetLocalXfm().mTranslation.x *= fScale;
+    pSys->GetLocalXfm().mTranslation.y *= fScale;
+    pSys->GetLocalXfm().mTranslation.z *= fScale;
+    pSys->SetDirty(1);
 }
 
 void ParticleArm::Draw() {
@@ -67,23 +67,23 @@ void ParticleArm::Draw() {
     if (pCam == nullptr) {
         return;
     }
-    Transform arm = mTrans->mWorldXfm;
+    Transform arm = mTrans->GetWorldXfm();
     Vector3 *basis[] = {&arm.mBasisX, &arm.mBasisY, &arm.mBasisZ};
     for (Vector3 *pRow : basis) {
         pRow->x *= mInvScale;
         pRow->y *= mInvScale;
         pRow->z *= mInvScale;
     }
-    const Transform saved = pCam->mLocalXfm;
+    const Transform saved = pCam->GetLocalXfm();
     Transform armToCam;
-    Multiply(armToCam, InvertScaled(pCam->mWorldXfm), arm);
-    pCam->mLocalXfm = InvertScaled(armToCam);
-    pCam->mDirty = 1;
+    Multiply(armToCam, InvertScaled(pCam->GetWorldXfm()), arm);
+    pCam->GetLocalXfm() = InvertScaled(armToCam);
+    pCam->SetDirty(1);
     pCam->UpdateWorldXfm(nullptr, 0);
     pCam->Draw();
     static_cast<RndDrawable *>(mSys)->Draw();
-    pCam->mLocalXfm = saved;
-    pCam->mDirty = 1;
+    pCam->GetLocalXfm() = saved;
+    pCam->SetDirty(1);
     CamSlide::sSlide->UpdateWorldXfm(nullptr, 0);
     pCam->Draw();
 }

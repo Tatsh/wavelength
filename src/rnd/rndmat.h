@@ -106,6 +106,67 @@ public:
          */
         void Load(BinStream &stream);
 
+        /** @return The Blend of the stage. */
+        int GetBlend() const {
+            return mBlend;
+        }
+
+        /** @param nBlend The Blend of the stage. */
+        void SetBlend(int nBlend) {
+            mBlend = nBlend;
+        }
+
+        /** @return The TexGen of the stage. */
+        int GetGenMode() const {
+            return mGenMode;
+        }
+
+        /** @return The material that has the stage. */
+        RndMat *GetMat() const {
+            return mMat;
+        }
+
+        /** @param pMat The material that has the stage. */
+        void SetMat(RndMat *pMat) {
+            mMat = pMat;
+        }
+
+        /** @return The texture, or null. */
+        RndTex *GetTex() const {
+            return mTex;
+        }
+
+        /** @return Non-zero to apply mXfm. */
+        int GetUseXfm() const {
+            return mUseXfm;
+        }
+
+        /** @param nUseXfm Non-zero to apply mXfm. */
+        void SetUseXfm(int nUseXfm) {
+            mUseXfm = nUseXfm;
+        }
+
+        /** @return The TexWrap of the stage. */
+        int GetWrap() const {
+            return mWrap;
+        }
+
+        /** @param nWrap The TexWrap of the stage. */
+        void SetWrap(int nWrap) {
+            mWrap = nWrap;
+        }
+
+        /** @return The texture coordinate transform. */
+        const Transform &GetXfm() const {
+            return mXfm;
+        }
+
+        /** @return The texture coordinate transform, for writing. */
+        Transform &GetXfm() {
+            return mXfm;
+        }
+
+    private:
         int mBlend;      /*!< The Blend of the stage. */
         int mCoordIndex; /*!< Which vertex texture coordinates the stage reads. */
         int mGenMode;    /*!< The TexGen of the stage. */
@@ -346,20 +407,65 @@ public:
      */
     static int sLoadRev;
 
-    std::vector<Stage> mStages; /*!< The texture stages. */
-    int mBlend;                 /*!< The Blend of the surface. */
-    Color mBaseColor;           /*!< The base colour. */
-    Color mLightColor;          /*!< The light colour. */
-    Color mEdgeColor;           /*!< The edge colour. */
-    int mEnable;                /*!< Non-zero to light the surface. */
-    int mVertBase;              /*!< Non-zero to take the base colour from the vertices. */
-    int mVertLight;             /*!< Non-zero to take the light colour from the vertices. */
-    int mVertEdge;              /*!< Non-zero to take the edge colour from the vertices. */
-    int mNormalize;             /*!< Non-zero to normalise the normals. */
-    int mBaseAmbient;           /*!< Non-zero to light the base colour ambiently. */
-    int mCull;                  /*!< The CullMode of the surface. */
-    int mFlat;                  /*!< Non-zero for flat shading. */
-    int mMultiPass;             /*!< The number of extra passes. */
+    /** @return Non-zero to light the base colour ambiently. */
+    int GetBaseAmbient() const {
+        return mBaseAmbient;
+    }
+
+    /** @return The base colour. */
+    const Color &GetBaseColor() const {
+        return mBaseColor;
+    }
+
+    /** @return The Blend of the surface. */
+    int GetBlend() const {
+        return mBlend;
+    }
+
+    /** @param nBlend The Blend of the surface. */
+    void SetBlend(int nBlend) {
+        mBlend = nBlend;
+    }
+
+    /** @return The CullMode of the surface. */
+    int GetCull() const {
+        return mCull;
+    }
+
+    /** @param nCull The CullMode of the surface. */
+    void SetCull(int nCull) {
+        mCull = nCull;
+    }
+
+    /** @return The edge colour. */
+    const Color &GetEdgeColor() const {
+        return mEdgeColor;
+    }
+
+    /** @return The light colour. */
+    const Color &GetLightColor() const {
+        return mLightColor;
+    }
+
+    /** @return The texture stages. */
+    const std::vector<Stage> &GetStages() const {
+        return mStages;
+    }
+
+    /** @return The texture stages, for writing. */
+    std::vector<Stage> &GetStages() {
+        return mStages;
+    }
+
+    /** @return Non-zero to take the base colour from the vertices. */
+    int GetVertBase() const {
+        return mVertBase;
+    }
+
+    /** @return Non-zero to take the light colour from the vertices. */
+    int GetVertLight() const {
+        return mVertLight;
+    }
 
 protected:
     /**
@@ -371,6 +477,23 @@ protected:
      * @ghidraAddress PAL: 0x00236f20
      */
     void ReleaseStageTex();
+
+    int mBlend;                 /*!< The Blend of the surface. */
+    int mEnable;                /*!< Non-zero to light the surface. */
+    int mFlat;                  /*!< Non-zero for flat shading. */
+    int mMultiPass;             /*!< The number of extra passes. */
+    std::vector<Stage> mStages; /*!< The texture stages. */
+
+private:
+    Color mBaseColor;  /*!< The base colour. */
+    Color mLightColor; /*!< The light colour. */
+    Color mEdgeColor;  /*!< The edge colour. */
+    int mVertBase;     /*!< Non-zero to take the base colour from the vertices. */
+    int mVertLight;    /*!< Non-zero to take the light colour from the vertices. */
+    int mVertEdge;     /*!< Non-zero to take the edge colour from the vertices. */
+    int mNormalize;    /*!< Non-zero to normalise the normals. */
+    int mBaseAmbient;  /*!< Non-zero to light the base colour ambiently. */
+    int mCull;         /*!< The CullMode of the surface. */
 };
 
 /**

@@ -61,13 +61,13 @@ AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
         mAnims[i].reset(dynamic_cast<RndTransAnim *>(
             TheManager.Create(RndTransAnim::sClassName,
                               FormatString("avatar%d_%s.tnm", mAvatar->GetIndex(), pszName))));
-        mAnims[i]->mTransInterp = RndTransAnim::kInterpLinear;
+        mAnims[i]->SetTransInterp(RndTransAnim::kInterpLinear);
         mAnims[i]->SetFramesOwner(pBase);
         // The keys belong to the shared `fbase_` animation, and every avatar clears them again.
-        mAnims[i]->mFramesOwner->mScaleKeys.clear();
+        mAnims[i]->GetFramesOwner()->GetScaleKeys().clear();
         if (std::strcmp(pszName, kPelvisBone) != 0 &&
             std::strncmp(pszName + kSideLetterLength, kArmBonePrefix, kArmBonePrefixLength) != 0) {
-            mAnims[i]->mFramesOwner->mTransKeys.clear();
+            mAnims[i]->GetFramesOwner()->GetTransKeys().clear();
         }
     }
 }
@@ -110,7 +110,7 @@ void AvatarPart::ReleaseType() {
 
 void AvatarPart::SetMatTree(RndMesh *pMesh) {
     pMesh->SetMat(mMat);
-    for (RndDrawable *pChild : pMesh->mDraws) {
+    for (RndDrawable *pChild : pMesh->GetDraws()) {
         // A child that is not a mesh is passed on as null, as in the binary.
         SetMatTree(dynamic_cast<RndMesh *>(pChild));
     }
@@ -138,20 +138,20 @@ void AvatarPart::SetFrame(float fFrame) {
 void AvatarPart::SetFrames(float fFrom, float fTo, float fBlend) {
     for (size_t i = 0; i < mAnims.size(); ++i) {
         RndTransAnim *pAnim = mAnims[i].get();
-        if (!pAnim->mFramesOwner->mTransKeys.empty()) {
+        if (!pAnim->GetFramesOwner()->GetTransKeys().empty()) {
             Vector3 translation;
             BlendTranslation(pAnim, fFrom, fTo, fBlend, translation);
-            pAnim->mTrans->mDirty = 1;
-            pAnim->mTrans->mLocalXfm.mTranslation = translation;
+            pAnim->GetTrans()->SetDirty(1);
+            pAnim->GetTrans()->GetLocalXfm().mTranslation = translation;
         }
         Quat rotation;
         BlendRotation(pAnim, fFrom, fTo, fBlend, rotation);
         Transform basis;
         Rnd::MakeRotMatrix(rotation, &basis.mBasisX.x);
-        pAnim->mTrans->mLocalXfm.mBasisX = basis.mBasisX;
-        pAnim->mTrans->mLocalXfm.mBasisY = basis.mBasisY;
-        pAnim->mTrans->mLocalXfm.mBasisZ = basis.mBasisZ;
-        pAnim->mTrans->mDirty = 1;
+        pAnim->GetTrans()->GetLocalXfm().mBasisX = basis.mBasisX;
+        pAnim->GetTrans()->GetLocalXfm().mBasisY = basis.mBasisY;
+        pAnim->GetTrans()->GetLocalXfm().mBasisZ = basis.mBasisZ;
+        pAnim->GetTrans()->SetDirty(1);
     }
 }
 
@@ -168,12 +168,12 @@ bool AvatarPart::Rebuild() {
         }
         mLoader = std::move(mPendingLoader);
         if (mPendingExtraLoader != nullptr) {
-            mLoader->mObjects.splice(mLoader->mObjects.end(), mPendingExtraLoader->mObjects);
+            mLoader->GetObjects().splice(mLoader->GetObjects().end(),
+                                         mPendingExtraLoader->GetObjects());
             mPendingExtraLoader.reset();
         }
-        for (RndObject *pObject : mLoader->mObjects) {
-            pObject->SetName(
-                FormatString("avatar%d_%s", mAvatar->GetIndex(), pObject->mName.c_str()));
+        for (RndObject *pObject : mLoader->GetObjects()) {
+            pObject->SetName(FormatString("avatar%d_%s", mAvatar->GetIndex(), pObject->GetName()));
         }
     }
 
@@ -186,7 +186,7 @@ bool AvatarPart::Rebuild() {
 
     if (mLoader != nullptr) {
         mMat = nullptr;
-        for (RndObject *pLoaded : mLoader->mObjects) {
+        for (RndObject *pLoaded : mLoader->GetObjects()) {
             mMat = dynamic_cast<RndMat *>(pLoaded);
             if (mMat != nullptr) {
                 break;
@@ -242,7 +242,7 @@ int AvatarPart::Callback::ShouldLoad(RndObject *pExisting,
     if (pExisting == nullptr) {
         return kCreateObject;
     }
-    DebugPrint("Resetting avatar because found %s\n", pExisting->mName.c_str());
+    DebugPrint("Resetting avatar because found %s\n", pExisting->GetName());
     mOwner->SetType(mOwner->GetPendingType());
     return kStopLoad;
 }

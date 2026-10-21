@@ -165,6 +165,27 @@ public:
             *this = *static_cast<const ScaleOffset *>(pSource);
         }
 
+        /** @param fOffset The addend. */
+        void SetOffset(float fOffset) {
+            mOffset = fOffset;
+        }
+
+        /** @return The addend. */
+        float GetOffset() const {
+            return mOffset;
+        }
+
+        /** @return The multiplier. */
+        float GetScale() const {
+            return mScale;
+        }
+
+        /** @param fScale The multiplier. */
+        void SetScale(float fScale) {
+            mScale = fScale;
+        }
+
+    private:
         float mScale;  /*!< The multiplier. */
         float mOffset; /*!< The addend. */
     };
@@ -252,6 +273,22 @@ public:
             *this = *static_cast<const MinMaxLoop *>(pSource);
         }
 
+        /** @param fMin The lower end of the range. */
+        void SetMin(float fMin) {
+            mMin = fMin;
+        }
+
+        /** @param fMax The upper end of the range. */
+        void SetMax(float fMax) {
+            mMax = fMax;
+        }
+
+        /** @param nLoop Non-zero to wrap around the range rather than clamp. */
+        void SetLoop(int nLoop) {
+            mLoop = nLoop;
+        }
+
+    private:
         float mMin; /*!< The lower end of the range. */
         float mMax; /*!< The upper end of the range. */
         int mLoop;  /*!< Non-zero to wrap around the range rather than clamp. */
@@ -335,6 +372,7 @@ public:
             *this = *static_cast<const ZeroOrder *>(pSource);
         }
 
+    private:
         float mLevel;    /*!< The current level. */
         float mMaxDelta; /*!< The largest step a call. */
     };
@@ -422,6 +460,7 @@ public:
             *this = *static_cast<const FirstOrder *>(pSource);
         }
 
+    private:
         float mLevel; /*!< The current level. */
         float mRatio; /*!< The share of the gap closed a call. */
     };
@@ -516,6 +555,37 @@ public:
             *this = *static_cast<const SecondOrder *>(pSource);
         }
 
+        /** @return The current level. */
+        float GetLevel() const {
+            return mLevel;
+        }
+
+        /** @param fLevel The current level. */
+        void SetLevel(float fLevel) {
+            mLevel = fLevel;
+        }
+
+        /** @return The current velocity. */
+        float GetVel() const {
+            return mVel;
+        }
+
+        /** @param fVel The current velocity. */
+        void SetVel(float fVel) {
+            mVel = fVel;
+        }
+
+        /** @param fSpring The pull toward the frame. */
+        void SetSpring(float fSpring) {
+            mSpring = fSpring;
+        }
+
+        /** @param fDamper The drag on the velocity. */
+        void SetDamper(float fDamper) {
+            mDamper = fDamper;
+        }
+
+    private:
         float mLevel;  /*!< The current level. */
         float mSpring; /*!< The pull toward the frame. */
         float mDamper; /*!< The drag on the velocity. */
@@ -753,11 +823,25 @@ public:
         return mFilters;
     }
 
-    std::list<RndAnimatable *> mAnims; /*!< The children, which receive the filtered frame. */
-    std::list<Filter *> mFilters;      /*!< The filter chain, applied first to last. */
+    /** @return The frame SetFrame() last received. */
+    float GetFrame() const {
+        return mFrame;
+    }
 
-    float mFrame;         /*!< The frame SetFrame() last received. */
-    float mFilteredFrame; /*!< The frame after the filters. */
+    /** @return The frame after the filters. */
+    float GetFilteredFrame() const {
+        return mFilteredFrame;
+    }
+
+    /** @return The children. Each receives the filtered frame. */
+    const std::list<RndAnimatable *> &GetAnims() const {
+        return mAnims;
+    }
+
+    /** @return The filter chain, applied first to last, for writing. */
+    std::list<Filter *> &GetFilters() {
+        return mFilters;
+    }
 
 protected:
     /**
@@ -779,6 +863,13 @@ protected:
      * @ghidraAddress PAL: 0x00224a08
      */
     void AcquireAnimRefs();
+
+    float mFrame;         /*!< The frame SetFrame() last received. */
+    float mFilteredFrame; /*!< The frame after the filters. */
+
+private:
+    std::list<RndAnimatable *> mAnims; /*!< The children. Each receives the filtered frame. */
+    std::list<Filter *> mFilters;      /*!< The filter chain, applied first to last. */
 };
 
 /**

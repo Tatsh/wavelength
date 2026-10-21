@@ -78,5 +78,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The text of the step under way. */
+    const String &GetStatus() const {
+        return mStatus;
+    }
+
+private:
     String mStatus; /*!< The text of the step under way. */
 };

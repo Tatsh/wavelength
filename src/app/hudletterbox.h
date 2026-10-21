@@ -38,6 +38,17 @@ public:
      */
     void SetClosed(float fClosed);
 
+    /** @return `HUD letterbox.view`. */
+    RndView *GetView() const {
+        return mView;
+    }
+
+    /** @return The bars, from 0 (open) to 100 (closed). */
+    const RampAnimator &GetSlide() const {
+        return mSlide;
+    }
+
+private:
     RndView *mView;      /*!< `HUD letterbox.view`. */
     RampAnimator mSlide; /*!< The bars, from 0 (open) to 100 (closed). */
 };

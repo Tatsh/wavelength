@@ -40,7 +40,7 @@ bool NetSortedScreen::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
     if (TheUI.GetCurrentScreen() != nullptr &&
         strcmp(TheUI.GetCurrentScreen()->GetName(), kListPanel) == 0) {
         static_cast<NetSortedDataPanel *>(TheUI.FindPanel(kDataPanel, false))
-            ->SetPlayers(pMsg->mPlayers, pMsg->mLaunchpad);
+            ->SetPlayers(pMsg->GetPlayers(), pMsg->GetLaunchpad());
     }
     return false;
 }

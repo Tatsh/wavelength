@@ -21,12 +21,13 @@ void SetEnvAction::Exec() {
     if (mFlags == 0) {
         return;
     }
-    const float flStart = (mFlags & kFlagFogStart) != 0 ? mFogStart : mEnviron->mFogStart;
-    const float flEnd = (mFlags & kFlagFogEnd) != 0 ? mFogEnd : mEnviron->mFogEnd;
-    const float flDensity = (mFlags & kFlagFogDensity) != 0 ? mFogDensity : mEnviron->mFogDensity;
-    const Color &color = (mFlags & kFlagFogColor) != 0 ? mFogColor : mEnviron->mFogColor;
-    mEnviron->mFogStart = flStart;
-    mEnviron->mFogEnd = flEnd;
-    mEnviron->mFogDensity = flDensity;
-    mEnviron->mFogColor = color;
+    const float flStart = (mFlags & kFlagFogStart) != 0 ? mFogStart : mEnviron->GetFogStart();
+    const float flEnd = (mFlags & kFlagFogEnd) != 0 ? mFogEnd : mEnviron->GetFogEnd();
+    const float flDensity =
+        (mFlags & kFlagFogDensity) != 0 ? mFogDensity : mEnviron->GetFogDensity();
+    const Color &color = (mFlags & kFlagFogColor) != 0 ? mFogColor : mEnviron->GetFogColor();
+    mEnviron->SetFogStart(flStart);
+    mEnviron->SetFogEnd(flEnd);
+    mEnviron->SetFogDensity(flDensity);
+    mEnviron->GetFogColor() = color;
 }

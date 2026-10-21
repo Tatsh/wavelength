@@ -70,7 +70,7 @@ void NetLobbyConnect::Exit(UIScreen *pNextScreen, float fTime) {
 }
 
 bool NetLobbyConnect::HandleDNASStatus(DNASStatusMsg *pMsg) {
-    ShowDNAS(pMsg->mRunning, 1);
+    ShowDNAS(pMsg->GetRunning(), 1);
     return false;
 }
 
@@ -92,27 +92,27 @@ void NetLobbyConnect::ShowDNAS(int nRunning, int nShow) {
 #endif
 
 bool NetLobbyConnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->Connect(this);
     }
     return false;
 }
 
 bool NetLobbyConnect::HandleConnectResult(LobbyConnectResultMsg *pMsg) {
-    if (pMsg->mResult == LobbyConnectResultMsg::kResultSuccess) {
+    if (pMsg->GetResult() == LobbyConnectResultMsg::kResultSuccess) {
         TheUI.GotoScreen(kLoginScreen);
-    } else if (pMsg->mResult == LobbyConnectResultMsg::kResultLostInternet) {
+    } else if (pMsg->GetResult() == LobbyConnectResultMsg::kResultLostInternet) {
         TransitionErrorScreen *pError =
             dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kInetErrorScreen, false));
-        pError->mMessage = TheLocale.Localize(kLostInternetToken, true);
+        pError->SetMessage(TheLocale.Localize(kLostInternetToken, true));
         TheUI.GotoScreen(pError);
 #ifdef VIDEO_STANDARD_PAL
-    } else if (pMsg->mResult == LobbyConnectResultMsg::kResultLookupFailed) {
+    } else if (pMsg->GetResult() == LobbyConnectResultMsg::kResultLookupFailed) {
         TransitionErrorScreen *pError =
             dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kDNSErrorScreen, false));
-        pError->mMessage = TheLocale.Localize(kDNSErrorToken, true);
+        pError->SetMessage(TheLocale.Localize(kDNSErrorToken, true));
         TheUI.GotoScreen(pError);
-    } else if (pMsg->mResult == LobbyConnectResultMsg::kResultDNASFailed) {
+    } else if (pMsg->GetResult() == LobbyConnectResultMsg::kResultDNASFailed) {
         TransitionErrorScreen *pError =
             dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kDNASErrorScreen, false));
         int nSubCode;
@@ -121,8 +121,8 @@ bool NetLobbyConnect::HandleConnectResult(LobbyConnectResultMsg *pMsg) {
         DNASTask::GetError(&nSubCode, &pszError, &pszHint);
         const String error(TheLocale.Localize(pszError, true));
         const String hint(TheLocale.Localize(pszHint, true));
-        pError->mMessage = FormatString(
-            TheLocale.Localize(kDNASErrorToken, true), nSubCode, error.c_str(), hint.c_str());
+        pError->SetMessage(FormatString(
+            TheLocale.Localize(kDNASErrorToken, true), nSubCode, error.c_str(), hint.c_str()));
         TheUI.GotoScreen(pError);
 #endif
     } else {
@@ -132,13 +132,13 @@ bool NetLobbyConnect::HandleConnectResult(LobbyConnectResultMsg *pMsg) {
 }
 
 bool NetLobbyConnect::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle) {
+    if (pMsg->GetButton() == kPadTriangle) {
         TheUI.GotoScreen(kDisconnectLobbyScreen);
     }
     return false;

@@ -373,7 +373,7 @@ bool ControllerConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) 
 #else
                 pSave->SetDoneScreen(mReturnScreen->GetName());
 #endif
-                pSave->mOverwriteStatus = 1;
+                pSave->SetOverwriteStatus(1);
                 TheUI.GotoScreen(pSave);
             } else if (mReturnScreen != nullptr) {
                 TheUI.GotoScreen(mReturnScreen);
@@ -392,21 +392,22 @@ bool ControllerConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) 
 }
 
 bool ControllerConfigScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed) {
+    if (pMsg->GetPressed()) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
 #ifdef VIDEO_STANDARD_PAL
         // Saving bindings that do not validate only sounds the error.
         const char *pszFocus = mFocusPanel->GetFocus()->GetName();
-        if (pMsg->mButton == kPadCross && strcmp(pszFocus, kSaveComponent) == 0 && !Validate()) {
+        if (pMsg->GetButton() == kPadCross && strcmp(pszFocus, kSaveComponent) == 0 &&
+            !Validate()) {
             FxMidi::PlayWrong();
             return true;
         }
 #endif
-        if (pMsg->mButton == kPadDUp || pMsg->mButton == kPadDDown) {
+        if (pMsg->GetButton() == kPadDUp || pMsg->GetButton() == kPadDDown) {
             Validate();
-        } else if (pMsg->mButton == kPadTriangle && mReturnScreen != nullptr) {
+        } else if (pMsg->GetButton() == kPadTriangle && mReturnScreen != nullptr) {
             TheUI.GotoScreen(mReturnScreen);
         }
     }

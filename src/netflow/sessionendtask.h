@@ -35,8 +35,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusResponse *pResponse);
 
-    float mDeadline; /*!< The SystemMs() reading the step finishes at. */
-
 protected:
     /**
      * Send the request, or finish when there is no session or the connection failed.
@@ -53,4 +51,7 @@ protected:
      * @ghidraAddress PAL: 0x0026c7e8
      */
     void OnPoll() override;
+
+private:
+    float mDeadline; /*!< The SystemMs() reading the step finishes at. */
 };

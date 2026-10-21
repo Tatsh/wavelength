@@ -151,7 +151,7 @@ bool FreqScreen::HandleTransitionComplete([[maybe_unused]] UITransitionCompleteM
 }
 
 bool FreqScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPad < TheGameDb->GetNumPads()) {
+    if (pMsg->GetPad() < TheGameDb->GetNumPads()) {
         return UIScreen::HandleJoypad(pMsg);
     }
     return true;

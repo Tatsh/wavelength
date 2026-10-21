@@ -144,13 +144,6 @@ public:
     alignas(16) Quat mRot;        /*!< The orientation the gizmo has or turns to. */
     alignas(16) Vector3 mFromPos; /*!< The position the move started from. */
     alignas(16) Quat mFromRot;    /*!< The orientation the move started from. */
-    int mUnused;                  // +0x40, the constructor's argument, which no routine reads.
-    float mMoveStart;             /*!< The time the move started, or 0 when no move is under way. */
-    RndView *mView;               /*!< The view `gizmo.view`. */
-    RndMat *mMat;                 /*!< The material `freqscreen.mat` of the gizmo's screen. */
-    RndMesh *mMesh;               /*!< The mesh `gizmo.mesh`, which Poll() places. */
-    RndMovie *mMovie;             /*!< The movie `gizmo movie.mov`. */
-    ATanInterpolator mInterp;     /*!< Maps a frame of the move to the fraction moved. */
 
 private:
     /**
@@ -184,4 +177,12 @@ private:
      * @ghidraAddress PAL: 0x0042e76c
      */
     static float sSeverity;
+
+    int mUnused;              // +0x40, the constructor's argument. No routine reads it.
+    float mMoveStart;         /*!< The time the move started, or 0 when no move is under way. */
+    RndView *mView;           /*!< The view `gizmo.view`. */
+    RndMat *mMat;             /*!< The material `freqscreen.mat` of the gizmo's screen. */
+    RndMesh *mMesh;           /*!< The mesh `gizmo.mesh`, placed by Poll(). */
+    RndMovie *mMovie;         /*!< The movie `gizmo movie.mov`. */
+    ATanInterpolator mInterp; /*!< Maps a frame of the move to the fraction moved. */
 };

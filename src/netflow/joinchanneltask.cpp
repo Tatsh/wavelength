@@ -35,8 +35,9 @@ void JoinChannelTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
-        TheLobbyRT->SetAccount(
-            TheLobbyRT->GetLocalPlayer().mId, TheLobbyRT->GetJoinChatroomId(), &pResponse->info);
+        TheLobbyRT->SetAccount(TheLobbyRT->GetLocalPlayer().GetId(),
+                               TheLobbyRT->GetJoinChatroomId(),
+                               &pResponse->info);
     }
     pTask->Finish(pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS,
                   JoinChatroomResultMsg::kResultFailed);

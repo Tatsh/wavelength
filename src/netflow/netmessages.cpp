@@ -389,20 +389,20 @@ PrnStream &operator<<(PrnStream &stream, const NetChatroomInfo &room) {
 
 PrnStream &operator<<(PrnStream &stream, const LobbyPlayer &player) {
     stream.Printf("%d.%s %d/%d sk:%d gp:%d (g:%d %.2f,%d/%d)",
-                  player.mId,
-                  player.mName.c_str(),
-                  player.mRating,
-                  player.mRank,
-                  player.mRankIcon,
-                  player.mGames,
-                  player.mRecord.mGames,
-                  static_cast<double>(player.mRecord.mWins),
-                  player.mRecord.mPoints,
-                  player.mRecord.mOpponents);
-    if (player.mMuted != 0) {
+                  player.GetId(),
+                  player.GetName().c_str(),
+                  player.GetRating(),
+                  player.GetRank(),
+                  player.GetRankIcon(),
+                  player.GetGames(),
+                  player.GetRecord().mGames,
+                  static_cast<double>(player.GetRecord().mWins),
+                  player.GetRecord().mPoints,
+                  player.GetRecord().mOpponents);
+    if (player.GetMuted() != 0) {
         stream << " mute";
     }
-    PrintConnection(stream, player.mConnectionType);
+    PrintConnection(stream, player.GetConnectionType());
     return stream;
 }
 
@@ -459,17 +459,17 @@ PrnStream &operator<<(PrnStream &stream, const NetLaunchpadPlayer &player) {
     const LobbyPlayer &lobby = player.mPlayer;
     stream.Printf("%d %d.%s %d/%d sk:%d gp:%d (g:%d %.2f,%d/%d)",
                   player.mId,
-                  lobby.mId,
-                  lobby.mName.c_str(),
-                  lobby.mRating,
-                  lobby.mRank,
-                  lobby.mRankIcon,
-                  lobby.mGames,
-                  lobby.mRecord.mGames,
-                  static_cast<double>(lobby.mRecord.mWins),
-                  lobby.mRecord.mPoints,
-                  lobby.mRecord.mOpponents);
-    if (lobby.mMuted != 0) {
+                  lobby.GetId(),
+                  lobby.GetName().c_str(),
+                  lobby.GetRating(),
+                  lobby.GetRank(),
+                  lobby.GetRankIcon(),
+                  lobby.GetGames(),
+                  lobby.GetRecord().mGames,
+                  static_cast<double>(lobby.GetRecord().mWins),
+                  lobby.GetRecord().mPoints,
+                  lobby.GetRecord().mOpponents);
+    if (lobby.GetMuted() != 0) {
         stream << " mute";
     }
     PrintColor(stream, player.mColor);
@@ -479,21 +479,21 @@ PrnStream &operator<<(PrnStream &stream, const NetLaunchpadPlayer &player) {
 
 BinStream &operator<<(BinStream &stream, const NetLaunchpadPlayer &player) {
     const LobbyPlayer &lobby = player.mPlayer;
-    const int nAccount = lobby.mId;
+    const int nAccount = lobby.GetId();
     stream.WriteEndian(&nAccount, sizeof(nAccount));
-    BinStream &body = stream.WriteString(lobby.mName.c_str());
-    WriteByte(body, lobby.mConnectionType);
-    const int nRank = lobby.mRank;
+    BinStream &body = stream.WriteString(lobby.GetName().c_str());
+    WriteByte(body, lobby.GetConnectionType());
+    const int nRank = lobby.GetRank();
     body.WriteEndian(&nRank, sizeof(nRank));
-    WriteByte(body, lobby.mMuted);
-    const int nRating = lobby.mRating;
+    WriteByte(body, lobby.GetMuted());
+    const int nRating = lobby.GetRating();
     body.WriteEndian(&nRating, sizeof(nRating));
-    WriteByte(body, lobby.mRankIcon);
-    const int nGames = lobby.mGames;
+    WriteByte(body, lobby.GetRankIcon());
+    const int nGames = lobby.GetGames();
     body.WriteEndian(&nGames, sizeof(nGames));
-    body << lobby.mLastOnline;
-    lobby.mAvatar.Save(body);
-    body << lobby.mRecord;
+    body << lobby.GetLastOnline();
+    lobby.GetAvatar().Save(body);
+    body << lobby.GetRecord();
     WriteByte(body, player.mColor);
     WriteByte(body, player.mReady);
     const int nId = player.mId;
@@ -503,24 +503,32 @@ BinStream &operator<<(BinStream &stream, const NetLaunchpadPlayer &player) {
 
 BinStream &operator>>(BinStream &stream, NetLaunchpadPlayer &player) {
     LobbyPlayer &lobby = player.mPlayer;
-    stream.ReadEndian(&lobby.mId, sizeof(lobby.mId));
-    BinStream &body = stream >> lobby.mName;
+    int nId;
+    stream.ReadEndian(&nId, sizeof(nId));
+    lobby.SetId(nId);
+    BinStream &body = stream >> lobby.GetName();
     const int nConnection = ReadByte(body);
-    body.ReadEndian(&lobby.mRank, sizeof(lobby.mRank));
-    lobby.mMuted = static_cast<unsigned char>(ReadByte(body)) != 0;
-    body.ReadEndian(&lobby.mRating, sizeof(lobby.mRating));
+    int nRank;
+    body.ReadEndian(&nRank, sizeof(nRank));
+    lobby.SetRank(nRank);
+    lobby.SetMuted(static_cast<unsigned char>(ReadByte(body)) != 0);
+    int nRating;
+    body.ReadEndian(&nRating, sizeof(nRating));
+    lobby.SetRating(nRating);
     const int nRankIcon = ReadByte(body);
-    body.ReadEndian(&lobby.mGames, sizeof(lobby.mGames));
-    body >> lobby.mLastOnline;
-    lobby.mAvatar.Load(body);
-    body >> lobby.mRecord;
+    int nGames;
+    body.ReadEndian(&nGames, sizeof(nGames));
+    lobby.SetGames(nGames);
+    body >> lobby.GetLastOnline();
+    lobby.GetAvatar().Load(body);
+    body >> lobby.GetRecord();
     const int nColor = ReadByte(body);
     const int nReady = ReadByte(body);
     body.ReadEndian(&player.mId, sizeof(player.mId));
-    lobby.mRankIcon = nRankIcon;
+    lobby.SetRankIcon(nRankIcon);
     player.mColor = nColor;
     player.mReady = nReady;
-    lobby.mConnectionType = nConnection;
+    lobby.SetConnectionType(nConnection);
     return stream;
 }
 

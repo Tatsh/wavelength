@@ -51,18 +51,18 @@ bool NetServerLogin::DispatchPriv(Message *pMsg) {
 }
 
 bool NetServerLogin::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->Login(this, mLocation, mPassword.c_str());
     }
     return false;
 }
 
 bool NetServerLogin::HandleLoginResult(LoginResultMsg *pMsg) {
-    switch (pMsg->mResult) {
+    switch (pMsg->GetResult()) {
     case LoginResultMsg::kResultSuccess:
         break;
     case LoginResultMsg::kResultAccountNotFound:
-        TheGameDb->GetProfile(kLocalPlayer)->mNameLocked = kNameUnlocked;
+        TheGameDb->GetProfile(kLocalPlayer)->SetNameLocked(kNameUnlocked);
         TheUI.GotoScreen(kAccountNotFoundScreen);
         return false;
     case LoginResultMsg::kResultInvalidPassword:
@@ -77,35 +77,36 @@ bool NetServerLogin::HandleLoginResult(LoginResultMsg *pMsg) {
     }
 
     dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->ClearMessages();
-    TheMetagame.SetChatroom(pMsg->mChatroom);
-    dynamic_cast<NetWelcomeScreen *>(TheUI.FindScreen(kWelcomeScreen, false))->mNews = pMsg->mNews;
-    dynamic_cast<NetEULAScreen *>(TheUI.FindScreen(kEulaScreen, false))->SetText(pMsg->mEula);
+    TheMetagame.SetChatroom(pMsg->GetChatroom());
+    dynamic_cast<NetWelcomeScreen *>(TheUI.FindScreen(kWelcomeScreen, false))
+        ->SetNews(pMsg->GetNews());
+    dynamic_cast<NetEULAScreen *>(TheUI.FindScreen(kEulaScreen, false))->SetText(pMsg->GetEula());
 
-    if (mSaveChanged == 0 && TheGameDb->GetProfile(kLocalPlayer)->mNameLocked == kNameLocked) {
+    if (mSaveChanged == 0 && TheGameDb->GetProfile(kLocalPlayer)->GetNameLocked() == kNameLocked) {
         TheUI.GotoScreen(kEulaScreen);
         return false;
     }
     if (mSavePassword != 0) {
-        TheGameDb->GetProfile(kLocalPlayer)->mPassword = mPassword.c_str();
+        TheGameDb->GetProfile(kLocalPlayer)->SetPassword(mPassword.c_str());
     } else {
-        TheGameDb->GetProfile(kLocalPlayer)->mPassword = kNoPassword;
+        TheGameDb->GetProfile(kLocalPlayer)->SetPassword(kNoPassword);
     }
-    TheGameDb->GetProfile(kLocalPlayer)->mNameLocked = kNameLocked;
+    TheGameDb->GetProfile(kLocalPlayer)->SetNameLocked(kNameLocked);
     SaveFreqScreen *pSave =
         dynamic_cast<SaveFreqScreen *>(TheUI.FindScreen(kSaveFreqScreen, false));
-    pSave->mOverwriteStatus = kOverwrite;
+    pSave->SetOverwriteStatus(kOverwrite);
     TheUI.GotoScreen(pSave);
     return false;
 }
 
 bool NetServerLogin::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle) {
+    if (pMsg->GetButton() == kPadTriangle) {
         TheUI.GotoScreen(kDisconnectLobbyScreen);
     }
     return false;

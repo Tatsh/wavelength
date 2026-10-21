@@ -44,7 +44,7 @@ void RndMovie::Close() {
 void RndMovie::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndMovie]\n";
@@ -56,7 +56,7 @@ void RndMovie::Save(BinStream &stream) {
     stream.WriteEndian(&sRev, sizeof(sRev));
     RndAnimatable::Save(stream);
     stream.WriteString(mFile.RelativePath());
-    stream.WriteString(mTex != nullptr ? mTex->mName.c_str() : "");
+    stream.WriteString(mTex != nullptr ? mTex->GetName() : "");
 }
 
 void RndMovie::Replace(RndObject *pFrom, RndObject *pTo) {
@@ -95,7 +95,7 @@ void RndMovie::Load(BinStream &stream) {
     if (nRev >= kRevTex) {
         String texName;
         stream >> texName;
-        if (texName.mLength == 0) {
+        if (texName.GetLength() == 0) {
             mTex = nullptr;
         } else {
             RndObject *pObject = TheManager.Find(texName.c_str());

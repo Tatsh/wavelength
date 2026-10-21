@@ -45,17 +45,18 @@ UIList::UIList(DataArray *pData, const char *pszPanel)
     RndView *pTemplate = pObject != nullptr ? dynamic_cast<RndView *>(pObject) : nullptr;
     mRowCount = pData->Int(kRowCountIndex);
     mColumnCount = pData->Int(kColumnCountIndex);
-    (void)pTemplate->mDraws.size(); // Yes, the binary counts the template's draws and discards
-                                    // the count.
+    (void)pTemplate->GetDraws().size(); // Yes, the binary counts the template's draws and discards
+                                        // the count.
     mRowPitch = pData->Int(kRowPitchIndex);
 
     pObject = TheManager.Find(FormatString("%s_%s_cursor.mesh", mPanelName, pData->Sym(1)));
     mCursor = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
     // Yes, the binary copies the cursor's transform without testing the cursor.
-    mCursorXfm = mCursor->mLocalXfm;
+    mCursorXfm = mCursor->GetLocalXfm();
 
-    std::list<RndDrawable *> &templateDraws = pTemplate->mDraws;
-    for (std::list<RndDrawable *>::iterator it = templateDraws.begin(); it != templateDraws.end();
+    const std::list<RndDrawable *> &templateDraws = pTemplate->GetDraws();
+    for (std::list<RndDrawable *>::const_iterator it = templateDraws.begin();
+         it != templateDraws.end();
          ++it) {
         (*it)->SetShowing(1);
     }
@@ -63,10 +64,10 @@ UIList::UIList(DataArray *pData, const char *pszPanel)
     mRows.resize(mRowCount, nullptr);
     for (int i = 0; i < mRowCount; ++i) {
         RndView *pRow = CloneRow(i, pTemplate);
-        Vector3 translation = pTemplate->mLocalXfm.mTranslation;
+        Vector3 translation = pTemplate->GetLocalXfm().mTranslation;
         translation.y -= mRowPitch * i;
-        pRow->mDirty = 1;
-        pRow->mLocalXfm.mTranslation = translation;
+        pRow->SetDirty(1);
+        pRow->GetLocalXfm().mTranslation = translation;
         BuildRowCells(pRow);
         mRows[i] = pRow;
     }
@@ -115,8 +116,8 @@ RndView *UIList::CloneRow(int nRow, RndView *pTemplate) {
 
 void UIList::BuildRowCells(RndView *pRow) {
     std::vector<Cell> cells;
-    std::list<RndDrawable *> &draws = pRow->mDraws;
-    for (std::list<RndDrawable *>::iterator it = draws.begin(); it != draws.end(); ++it) {
+    const std::list<RndDrawable *> &draws = pRow->GetDraws();
+    for (std::list<RndDrawable *>::const_iterator it = draws.begin(); it != draws.end(); ++it) {
         RndText *pText = *it != nullptr ? dynamic_cast<RndText *>(*it) : nullptr;
         RndMesh *pMesh = *it != nullptr ? dynamic_cast<RndMesh *>(*it) : nullptr;
         if (pText != nullptr) {
@@ -251,8 +252,8 @@ void UIList::UpdateCursor() {
     }
     Vector3 translation = mCursorXfm.mTranslation;
     translation.y -= mCursorRow * mRowPitch;
-    mCursor->mDirty = 1;
-    mCursor->mLocalXfm.mTranslation = translation;
+    mCursor->SetDirty(1);
+    mCursor->GetLocalXfm().mTranslation = translation;
     mCursor->SetMat(mStyle->GetMat(kStateSelected));
     SetCursorSelected(true);
 }
@@ -269,15 +270,16 @@ bool UIList::DispatchPriv(Message *pMsg) {
 }
 
 bool UIList::HandleJoypad(JoypadInputMsg *pMsg) {
-    if ((pMsg->mButton == kPadDUp || pMsg->mButton == kPadDDown) && pMsg->mPressed != 0) {
-        if (pMsg->mButton == kPadDUp) {
+    if ((pMsg->GetButton() == kPadDUp || pMsg->GetButton() == kPadDDown) &&
+        pMsg->GetPressed() != 0) {
+        if (pMsg->GetButton() == kPadDUp) {
             ScrollUp();
         } else {
             ScrollDown();
         }
         return false;
     }
-    if (pMsg->mButton != kPadCross || pMsg->mPressed == 0) {
+    if (pMsg->GetButton() != kPadCross || pMsg->GetPressed() == 0) {
         return false;
     }
     UIComponent *pCursor = TheUI.FindPanel(mPanelName, false)->FindComponent("cursor", false);

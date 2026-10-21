@@ -77,5 +77,6 @@ public:
      */
     void SetProfiles(const std::vector<Campaign> &profiles);
 
+private:
     std::vector<Campaign> mProfiles; /*!< The listed Freqs. +0xc0 */
 };

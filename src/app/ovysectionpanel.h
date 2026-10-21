@@ -92,6 +92,7 @@ public:
      */
     void HighlightSection(int nIndex);
 
+private:
     std::vector<String> mUnused;    /*!< Constructed and destroyed only. */
     std::vector<Section> mSections; /*!< The entries, one per section. */
     RndMat *mCursorOffMat;          /*!< The material of an entry that is not lit. */

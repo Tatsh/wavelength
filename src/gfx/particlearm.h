@@ -57,6 +57,12 @@ public:
      */
     void Draw();
 
+    /** @return The particle system. */
+    RndParticleSys *GetSys() const {
+        return mSys;
+    }
+
+private:
     RndParticleSys *mSys;     /*!< The particle system. */
     RndTransformable *mTrans; /*!< The transform the system hangs from. */
     float mInvScale;          /*!< The reciprocal of the scale. */

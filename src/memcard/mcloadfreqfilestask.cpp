@@ -62,7 +62,7 @@ void MCLoadFreqFilesTask::OnPoll() {
             BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
             mProfiles->push_back(Campaign());
             stream >> mProfiles->back();
-            mProfiles->back().mCustom = 1;
+            mProfiles->back().SetCustom(1);
         } else {
             MemcardDeleteAndWait(mCardPort, g_MemcardOpenPath.c_str());
         }
@@ -70,7 +70,7 @@ void MCLoadFreqFilesTask::OnPoll() {
 #else
         BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
         stream >> mProfiles->at(sDirCount - (mIndex + 1));
-        mProfiles->at(sDirCount - (mIndex + 1)).mCustom = 1;
+        mProfiles->at(sDirCount - (mIndex + 1)).SetCustom(1);
         --mIndex;
 #endif
         LoadNext();

@@ -80,5 +80,11 @@ public:
      */
     const char *GetName() const override;
 
+    /** @return The error code of the network library. */
+    int GetError() const {
+        return mError;
+    }
+
+private:
     int mError; /*!< The error code of the network library. */
 };

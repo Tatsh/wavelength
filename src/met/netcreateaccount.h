@@ -65,15 +65,15 @@ public:
         return "";
     }
 
-    String mPassword; /*!< The password of the new account. */
+    /** @param pszPassword The password of the new account. */
+    void SetPassword(const char *pszPassword) {
+        mPassword = pszPassword;
+    }
 
-    /**
-     * Whether the login saves the password.
-     *
-     * The constructor does not set it, and the screen only reads it. The European
-     * NetCreateUserScreen::Submit() sets it.
-     */
-    int mSavePassword;
+    /** @param nSavePassword The save password. */
+    void SetSavePassword(int nSavePassword) {
+        mSavePassword = nSavePassword;
+    }
 
 private:
     /**
@@ -111,4 +111,14 @@ private:
      * @ghidraAddress PAL: 0x0017f288
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
+
+    String mPassword; /*!< The password of the new account. */
+
+    /**
+     * Whether the login saves the password.
+     *
+     * The constructor does not set it, and the screen only reads it. The European
+     * NetCreateUserScreen::Submit() sets it.
+     */
+    int mSavePassword;
 };

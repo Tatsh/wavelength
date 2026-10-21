@@ -55,16 +55,16 @@ constexpr int kHighDword = 1;
 
 inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mDword[kLowDword] = qwLow;
-    packet.mCursor->mDword[kHighDword] = qwHigh;
-    ++packet.mCursor;
+    packet.GetCursor()->mDword[kLowDword] = qwLow;
+    packet.GetCursor()->mDword[kHighDword] = qwHigh;
+    ++packet.GetCursor();
 }
 
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
     DmaPacket &packet = DmaPacket::shared();
     const float afValues[] = {fX, fY, fZ, fW};
-    std::memcpy(packet.mCursor, afValues, sizeof(afValues));
-    ++packet.mCursor;
+    std::memcpy(packet.GetCursor(), afValues, sizeof(afValues));
+    ++packet.GetCursor();
 }
 
 inline void PushVector(const Vector3 &vector) {
@@ -74,19 +74,19 @@ inline void PushVector(const Vector3 &vector) {
 // A quadword of three VIF NOPs and one VIF code.
 inline void PushVifCode(unsigned int nCode) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mWord[0] = 0;
-    packet.mCursor->mWord[1] = 0;
-    packet.mCursor->mWord[2] = 0;
-    packet.mCursor->mWord[kVifCodeWord] = nCode;
-    ++packet.mCursor;
+    packet.GetCursor()->mWord[0] = 0;
+    packet.GetCursor()->mWord[1] = 0;
+    packet.GetCursor()->mWord[2] = 0;
+    packet.GetCursor()->mWord[kVifCodeWord] = nCode;
+    ++packet.GetCursor();
 }
 
 inline DmaQuadword *PushClearedQuadword() {
     DmaPacket &packet = DmaPacket::shared();
-    DmaQuadword *pQuadword = packet.mCursor;
+    DmaQuadword *pQuadword = packet.GetCursor();
     pQuadword->mDword[kLowDword] = 0;
     pQuadword->mDword[kHighDword] = 0;
-    ++packet.mCursor;
+    ++packet.GetCursor();
     return pQuadword;
 }
 
@@ -113,12 +113,12 @@ int PsMultiMesh::DrawShowing() {
     if (pMesh == nullptr) {
         return 1;
     }
-    if (static_cast<PsMesh *>(pMesh->mGeomOwner)->mNumFaces == 0) {
+    if (static_cast<PsMesh *>(pMesh->GetGeomOwner())->GetNumFaces() == 0) {
         return 1;
     }
 
     int nPass = 0;
-    RndMat *pMat = pMesh->mMat;
+    RndMat *pMat = pMesh->GetMat();
     // The binary ends the range 15 bytes after the end node of the list. The end node has no
     // address in portable C++. The range ends after the last transform instead.
     SyncDCache(&mTransforms.front(), &mTransforms.back() + 1);
@@ -164,7 +164,7 @@ void PsMultiMesh::DrawInstances() {
     int nVuEnd;
     static_cast<PsMesh *>(mMesh)->FacesPacket(pPacket, nSetupQwords, nVuEnd);
     auto *pData = static_cast<DmaQuadword *>(pPacket->Lock());
-    if (mMesh->mGeomOwner->mMutable == 0) {
+    if (mMesh->GetGeomOwner()->GetMutable() == 0) {
         frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
         frame.OpenDmaTag();
         frame.CloseDmaTag(kDmaTagIdRef, DmaAddressOf(pData), nSetupQwords);
@@ -172,13 +172,13 @@ void PsMultiMesh::DrawInstances() {
     } else {
         (void)ThePs.PacketQwordsFree(); // Yes, the binary discards this call's result.
         frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
-        DmaQuadword *pDest = frame.mCursor;
+        DmaQuadword *pDest = frame.GetCursor();
         DmaPacket packet;
-        packet.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+        packet.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
         packet.Init(pData, kDmaChannelToSpr, 1);
-        packet.mCursor = pData + nSetupQwords;
+        packet.GetCursor() = pData + nSetupQwords;
         packet.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
-        frame.mCursor = pDest + nSetupQwords;
+        frame.GetCursor() = pDest + nSetupQwords;
         frame.OpenDmaTag();
     }
     pPacket->Unlock();

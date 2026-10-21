@@ -37,14 +37,14 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
 }
 
 void WriteName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 void ReadFloat(BinStream &stream, float &fValue) {
@@ -172,8 +172,8 @@ void RndMesh::ListDrawObjects(std::list<RndObject *> &objects) {
     objects.push_back(mGeomOwner);
     objects.push_back(mTransOwner);
     if (mMat != nullptr) {
-        for (int i = static_cast<int>(mMat->mStages.size()) - 1; i >= 0; --i) {
-            objects.push_back(mMat->mStages[i].mTex);
+        for (int i = static_cast<int>(mMat->GetStages().size()) - 1; i >= 0; --i) {
+            objects.push_back(mMat->GetStages()[i].GetTex());
         }
     }
     if (mBones != nullptr) {
@@ -185,9 +185,9 @@ void RndMesh::ListDrawObjects(std::list<RndObject *> &objects) {
 void RndMesh::ListDrawables(std::list<RndDrawable *> &drawables) {
     if (mSphere.mRadius != 0.0f) {
         Sphere worldSphere;
-        MultiplyPoint(mTransOwner->mWorldXfm, mSphere.mCenter, worldSphere.mCenter);
+        MultiplyPoint(mTransOwner->GetWorldXfm(), mSphere.mCenter, worldSphere.mCenter);
         worldSphere.mRadius = mSphere.mRadius;
-        if (IsSphereOutsideFrustum(worldSphere, RndCam::sCurrent->mWorldFrustum) != 0) {
+        if (IsSphereOutsideFrustum(worldSphere, RndCam::sCurrent->GetWorldFrustum()) != 0) {
             return;
         }
     }
@@ -196,7 +196,7 @@ void RndMesh::ListDrawables(std::list<RndDrawable *> &drawables) {
 }
 
 void RndMesh::Collide(const Segment &segment, std::list<Collision> &collisions) {
-    const Transform &world = mTransOwner->mWorldXfm;
+    const Transform &world = mTransOwner->GetWorldXfm();
     Sphere worldSphere;
     MultiplyPoint(world, mSphere.mCenter, worldSphere.mCenter);
     worldSphere.mRadius = mSphere.mRadius;
@@ -214,7 +214,7 @@ void RndMesh::Collide(const Segment &segment, std::list<Collision> &collisions) 
     Segment local;
     MultiplyPoint(inverse, segment.mEnds[0], local.mEnds[0]);
     MultiplyPoint(inverse, segment.mEnds[1], local.mEnds[1]);
-    const int nCull = mMat != nullptr ? mMat->mCull : kCullClockwise;
+    const int nCull = mMat != nullptr ? mMat->GetCull() : kCullClockwise;
     for (const Face &face : mGeomOwner->mFaces) {
         const std::vector<Vert> &verts = mGeomOwner->mVerts;
         Triangle triangle;
@@ -235,7 +235,7 @@ void RndMesh::DumpText(PrnStream &stream) {
     RndTransformable::DumpText(stream);
     RndDrawable::DumpText(stream);
     RndCollideable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndMesh]\n";
@@ -498,20 +498,20 @@ bool RndMesh::CheckLod(Sphere &worldSphere) {
     if (mSphere.mRadius == 0.0f) {
         return true;
     }
-    MultiplyPoint(mTransOwner->mWorldXfm, mSphere.mCenter, worldSphere.mCenter);
+    MultiplyPoint(mTransOwner->GetWorldXfm(), mSphere.mCenter, worldSphere.mCenter);
     worldSphere.mRadius = mSphere.mRadius;
-    if (IsSphereOutsideFrustum(worldSphere, pCam->mWorldFrustum) != 0) {
+    if (IsSphereOutsideFrustum(worldSphere, pCam->GetWorldFrustum()) != 0) {
         return false;
     }
     if (mMinScreen == 0.0f) {
         return true;
     }
-    const Vector3 &forward = pCam->mOrthoWorldXfm.mBasisY;
+    const Vector3 &forward = pCam->GetOrthoWorldXfm().mBasisY;
     const Vector3 &center = worldSphere.mCenter;
     const float fDepth = center.x * forward.x + center.y * forward.y + center.z * forward.z +
-                         pCam->mInvWorldXfm.mTranslation.y;
-    const float fSize = worldSphere.mRadius * pCam->mLocalProject.mBasisX.x / std::fabs(fDepth) *
-                        pCam->mScreenRect.w;
+                         pCam->GetInvWorldXfm().mTranslation.y;
+    const float fSize = worldSphere.mRadius * pCam->GetLocalProject().mBasisX.x /
+                        std::fabs(fDepth) * pCam->GetScreenRect().w;
     if (mMinScreen <= fSize) {
         return true;
     }

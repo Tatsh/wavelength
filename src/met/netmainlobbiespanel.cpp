@@ -73,7 +73,7 @@ bool NetMainLobbiesPanel::DispatchPriv(Message *pMsg) {
 
 bool NetMainLobbiesPanel::HandleChatrooms(LobbyChatroomsMsg *pMsg) {
     if (mLoaded) {
-        FindList(this)->SetChatrooms(pMsg->mChatrooms);
+        FindList(this)->SetChatrooms(pMsg->GetChatrooms());
         HideFlash();
     }
     mRequestTime = SystemMs() + kRequestIntervalMs;
@@ -90,12 +90,12 @@ bool NetMainLobbiesPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetMainLobbiesPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         UIScreen *pScreen = TheUI.GetCurrentScreen();
         if (pScreen->GetNextScreen() != nullptr || pScreen->GetPrevScreen() != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadSquare) {
+        if (pMsg->GetButton() == kPadSquare) {
             FxMidi::PlaySquare();
             TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(kMainPanel, false));
             TheUI.GotoScreen(kNewChatroomScreen);

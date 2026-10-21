@@ -72,6 +72,7 @@ public:
      */
     void Clear();
 
+private:
     float mStartMs;       /*!< The time the animation started, or 0 while it does not play. */
     float mEndFrame;      /*!< The last frame of the animation. */
     int mCursorMoving;    /*!< Non-zero while the cursor sound loops. */

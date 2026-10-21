@@ -120,6 +120,7 @@ public:
                          [[maybe_unused]] int nDenominator) override {
     }
 
+private:
     int mIntroBars;           /*!< The bars before bar 0. */
     int mNumBars;             /*!< The length of the song in bars. */
     int mTicksPerBar;         /*!< The song ticks in one bar. */

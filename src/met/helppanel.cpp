@@ -39,8 +39,8 @@ inline void ReadHelpOffset(int &nOffset) {
 // Set the font and the text of a text object and place it at a position.
 inline void PlaceRun(RndText *pText, const HelpPanel::HelpText &run, const float *pPosition) {
     const char *pszText = run.mText.c_str();
-    pText->mDirty = 1;
-    Vector3 &translation = pText->mLocalXfm.mTranslation;
+    pText->SetDirty(1);
+    Vector3 &translation = pText->GetLocalXfm().mTranslation;
     translation.x = pPosition[kAxisX];
     translation.y = pPosition[kAxisY];
     translation.z = pPosition[kAxisZ];
@@ -93,8 +93,8 @@ void HelpPanel::FinishLoad() {
         mActionTexts.push_back(pText);
     }
     mView = dynamic_cast<RndView *>(TheManager.Find("help.view"));
-    std::memcpy(mHelpOrigin, &mHelpTexts[0]->mLocalXfm.mTranslation, sizeof(mHelpOrigin));
-    std::memcpy(mActionOrigin, &mActionTexts[0]->mLocalXfm.mTranslation, sizeof(mActionOrigin));
+    std::memcpy(mHelpOrigin, &mHelpTexts[0]->GetLocalXfm().mTranslation, sizeof(mHelpOrigin));
+    std::memcpy(mActionOrigin, &mActionTexts[0]->GetLocalXfm().mTranslation, sizeof(mActionOrigin));
 }
 
 const char *HelpPanel::FontOf(const char *pszName) {
@@ -107,7 +107,7 @@ void HelpPanel::ParseText(const String &text) {
     String font(kDefaultFont);
     String rest(text);
     mRuns.clear();
-    while (rest.mLength != 0) {
+    while (rest.GetLength() != 0) {
         const int nOpen = rest.Find(kFontMarkStart);
         if (nOpen == String::npos) {
             break;
@@ -125,7 +125,7 @@ void HelpPanel::ParseText(const String &text) {
         font = rest.Substring(nOpen + 1, nClose - 1 - nOpen);
         rest = rest.Substring(nClose + 1);
     }
-    if (rest.mLength != 0) {
+    if (rest.GetLength() != 0) {
         HelpText run;
         run.mFont = FontOf(font.c_str());
         run.mText = rest.c_str();
@@ -163,8 +163,8 @@ void HelpPanel::LayoutHelp() {
         const float fShift = (position[kAxisX] - mHelpOrigin[kAxisX]) * kHalf;
         for (int i = 0; i < nRuns; ++i) {
             RndText *pText = mHelpTexts[i];
-            pText->mLocalXfm.mTranslation.x -= fShift;
-            pText->mDirty = 1;
+            pText->GetLocalXfm().mTranslation.x -= fShift;
+            pText->SetDirty(1);
         }
     }
     (void)mView->UpdateWorldXfm(nullptr, 1); // Yes, the binary discards the result.

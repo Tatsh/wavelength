@@ -157,7 +157,7 @@ int RndTransformable::UpdateWorldXfm(RndTransformable *pParent, int bForce) {
 }
 
 void RndTransformable::DumpText(PrnStream &stream) {
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndTransformable]\n";
@@ -180,7 +180,7 @@ void RndTransformable::Replace(RndObject *pFrom, RndObject *pTo) {
     for (auto it = mTransList.begin(); it != mTransList.end();) {
         RndObject *pChild = *it;
         if (pChild == pTo) {
-            DebugNotify("%s already in %s", pTo->mName.c_str(), mName.c_str());
+            DebugNotify("%s already in %s", pTo->GetName(), mName.c_str());
         }
         if (pChild == pFrom) {
             if (pFrom != nullptr) {
@@ -262,7 +262,7 @@ RndTransformable *RndTransformable::Parent() {
 
 bool RndTransformable::AddTrans(RndTransformable *pTrans) {
     if (ListContains(mTransList, pTrans)) {
-        DebugNotify("%s already in %s", pTrans->mName.c_str(), mName.c_str());
+        DebugNotify("%s already in %s", pTrans->GetName(), mName.c_str());
         return false;
     }
     if (pTrans != nullptr) {

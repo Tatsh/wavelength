@@ -104,13 +104,13 @@ bool UIScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool UIScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    Transition *pTransition = FindTransition(pMsg->mButton, true);
+    Transition *pTransition = FindTransition(pMsg->GetButton(), true);
     if (pTransition != nullptr) {
         TheUI.GotoScreen(TheUI.FindScreen(pTransition->mScreen, false));
     }

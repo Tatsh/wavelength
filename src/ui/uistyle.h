@@ -101,6 +101,12 @@ public:
         return new UIStyle(pData);
     }
 
+    /** @return The name, a symbol. */
+    const char *GetName() const {
+        return mName;
+    }
+
+private:
     const char *mName;      /*!< The name, a symbol. */
     RndMat *mNormalMat;     /*!< The material of the normal state. */
     RndMat *mSelectedMat;   /*!< The material of the selected state. */

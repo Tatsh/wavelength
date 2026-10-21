@@ -224,9 +224,10 @@ public:
      */
     static int sRev;
 
-    RndView *mChildrenOwner; /*!< The view whose children this one shows. */
-    Vector2 mVisibleRange;   /*!< The frames the view shows in, empty for all. */
-    int mInRange;            /*!< Non-zero while the view is shown. */
+    /** @return The frames the view shows in, empty for all. */
+    const Vector2 &GetVisibleRange() const {
+        return mVisibleRange;
+    }
 
 protected:
     /**
@@ -257,4 +258,9 @@ protected:
      * inferred.
      */
     void SyncChildren();
+
+private:
+    RndView *mChildrenOwner; /*!< The view whose children this view shows. */
+    Vector2 mVisibleRange;   /*!< The frames the view shows in, empty for all. */
+    int mInRange;            /*!< Non-zero while the view is shown. */
 };

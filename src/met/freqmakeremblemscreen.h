@@ -110,6 +110,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     int mOriginalIndex;                 /*!< The entry of mEmblems the torso had on entry. +0x70 */
     int mIndex;                         /*!< The entry of mEmblems the torso has. */
     int mReserved78;                    // +0x78, set to 1 on entry. The purpose is not recovered.

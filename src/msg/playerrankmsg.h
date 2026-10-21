@@ -86,6 +86,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The account of the player. */
+    int GetAccount() const {
+        return mAccount;
+    }
+
+    /** @return The position of the player in the ranking. */
+    int GetRank() const {
+        return mRank;
+    }
+
+private:
     int mAccount; /*!< The account of the player. */
     int mRank;    /*!< The position of the player in the ranking. */
 };

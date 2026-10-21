@@ -85,6 +85,7 @@ public:
      */
     void SetRemixes(const std::list<NetRepoRemix> &remixes);
 
+private:
     std::list<NetRepoRemix> mRemixes; /*!< The listed remixes. +0xc0 */
     const char *mPicPanel;            /*!< `pic_panel`, the panel of the selection. +0xc8 */
     int mNoteShowing;                 /*!< Non-zero while the note shows. */

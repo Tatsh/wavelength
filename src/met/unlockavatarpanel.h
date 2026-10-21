@@ -65,5 +65,6 @@ public:
      */
     bool UpdateAvatar();
 
+private:
     AvatarPartSet mParts; /*!< The copy SetParts() shows. +0x100 */
 };

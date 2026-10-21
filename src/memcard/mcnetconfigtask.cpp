@@ -28,13 +28,13 @@ bool MCNetConfigTask::DispatchPriv(Message *pMsg) {
 }
 
 bool MCNetConfigTask::OnConfigsResult(InetConfigsResultMsg *pMsg) {
-    mConfigs = pMsg->mConfigs;
+    mConfigs = pMsg->GetConfigs();
     if (mConfigs.size() != 0) {
         sStatus = kStatusOk;
         Finish(true);
         return true;
     }
-    switch (pMsg->mResult) {
+    switch (pMsg->GetResult()) {
     case kConfigsMissing:
         sStatus = kStatusNotFound;
         break;

@@ -73,8 +73,8 @@ void FreestyleTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
         return;
     }
 
-    mButton = event.mButton;
-    SendUpdate(pPlayer, event.mX, event.mY);
+    mButton = event.GetButton();
+    SendUpdate(pPlayer, event.GetX(), event.GetY());
     if (IsActive()) {
         mNoteTimer.Resume();
         UpdatePoints();
@@ -89,8 +89,8 @@ void FreestyleTrack::HandleInput(Player *pPlayer, const StickEvent<2> &event) {
         return;
     }
 
-    const float fX = event.mX;
-    const float fY = event.mY;
+    const float fX = event.GetX();
+    const float fY = event.GetY();
     const Vector3 position{fX, 0.0f, fY};
     TheGfxManager.SetFreestylePosition(pPlayer->GetIndex(), position);
     SendUpdate(pPlayer, fX, fY);
@@ -101,7 +101,7 @@ void FreestyleTrack::HandleInput(Player *pPlayer, const StickEvent<6> &event) {
         return;
     }
 
-    const Vector3 position{event.mX, 0.0f, event.mY};
+    const Vector3 position{event.GetX(), 0.0f, event.GetY()};
     TheGfxManager.SetFreestyleSecondPosition(pPlayer->GetIndex(), position);
 }
 
@@ -119,11 +119,11 @@ void FreestyleTrack::UpdatePoints() {
 
     if (!TheGameDb->IsWinSequence()) {
         mNoteTimer.Pause();
-        const float fSoundedMs = static_cast<float>(mNoteTimer.mCycles) * gSystemCycles2Ms;
+        const float fSoundedMs = static_cast<float>(mNoteTimer.GetCycles()) * gSystemCycles2Ms;
         mNoteTimer.Resume();
         const float fBarMs = static_cast<float>(mTicksPerBar) * *mMsPerTick;
         const float fSounded = fSoundedMs / fBarMs;
-        const int nMaxPoints = TheGameConfig->mFreestylePoints[TheGameDb->GetSkillLevel()];
+        const int nMaxPoints = TheGameConfig->GetFreestylePoints()[TheGameDb->GetSkillLevel()];
         const int nPoints = static_cast<int>(fSounded * static_cast<float>(nMaxPoints) *
                                              kPointsNumerator / kPointsDenominator);
         pPlayer->SetPendingPoints(std::min(nPoints, nMaxPoints), false);
@@ -171,7 +171,7 @@ void FreestyleTrack::SendUpdate(Player *pPlayer, float fX, float fY) {
 }
 
 int FreestyleTrack::WrapTick(int nTick) {
-    if (mPlayMap->mLooping) {
+    if (mPlayMap->GetLooping()) {
         return mPlayMap->MapTick(nTick);
     }
     return nTick % (mNumBars * mTicksPerBar);
@@ -186,7 +186,7 @@ int FreestyleTrack::SpanEnd(int nTick, int nStart, int nEnd) {
         nSpanEnd = nTick + (nEnd - nStart);
     }
 
-    if (mPlayMap->mLooping) {
+    if (mPlayMap->GetLooping()) {
         int nChangeTick;
         int nEndTick;
         int nNextStart;

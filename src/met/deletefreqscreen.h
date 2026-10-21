@@ -78,7 +78,10 @@ public:
      */
     void OnFreqDeleted(int nStatus) override;
 
-    String mFreqName; /*!< The name of the Freq to delete. */
+    /** @param pszFreqName The name of the Freq to delete. */
+    void SetFreqName(const char *pszFreqName) {
+        mFreqName = pszFreqName;
+    }
 
 private:
     /**
@@ -90,4 +93,6 @@ private:
      * @ghidraAddress PAL: 0x001b4ea8
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+    String mFreqName; /*!< The name of the Freq to delete. */
 };

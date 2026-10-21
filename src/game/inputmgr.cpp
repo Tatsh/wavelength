@@ -36,8 +36,8 @@ inline float CyclesToMs(unsigned nCycles) {
 } // namespace
 
 InputMgr::InputMgr(World *pWorld)
-    : mWorld(pWorld), mRepeatInitialDelayMs(TheGameConfig->mRotationRepeatInitialDelayMs),
-      mRepeatDelayMs(TheGameConfig->mRotationRepeatDelayMs),
+    : mWorld(pWorld), mRepeatInitialDelayMs(TheGameConfig->GetRotationRepeatInitialDelayMs()),
+      mRepeatDelayMs(TheGameConfig->GetRotationRepeatDelayMs()),
       mDemo(TheGameDb->GetDemo() != nullptr) {
     JoypadAddSink(this);
     mControllers.reserve(TheGameDb->GetNumPads());
@@ -72,16 +72,16 @@ void InputMgr::Poll() {
         RepeatRotation(i);
         if (data.GetStick()->Poll()) {
             StickEvent<2> expression;
-            expression.mPlayer = nPlayer;
-            expression.mX = data.GetStick()->GetX();
-            expression.mY = data.GetStick()->GetY();
+            expression.SetPlayer(nPlayer);
+            expression.SetX(data.GetStick()->GetX());
+            expression.SetY(data.GetStick()->GetY());
             mWorld->Handle(expression);
         }
-        const JoypadStick &stick = JoypadGetState(i)->mSticks[data.GetPositionStick()];
+        const JoypadStick &stick = JoypadGetState(i)->GetSticks()[data.GetPositionStick()];
         StickEvent<6> position;
-        position.mPlayer = nPlayer;
-        position.mX = stick.mX;
-        position.mY = stick.mY;
+        position.SetPlayer(nPlayer);
+        position.SetX(stick.mX);
+        position.SetY(stick.mY);
         mWorld->Handle(position);
     }
 }
@@ -90,18 +90,18 @@ void InputMgr::RepeatRotation(int nPad) {
     ControllerData &data = mControllers[nPad];
     const unsigned char nPlayer = static_cast<unsigned char>(mLocalPlayers[nPad]);
     data.GetRepeatTimer().Stop();
-    const float fOverMs = CyclesToMs(data.GetRepeatTimer().mCycles) - mRepeatInitialDelayMs;
+    const float fOverMs = CyclesToMs(data.GetRepeatTimer().GetCycles()) - mRepeatInitialDelayMs;
     if (fOverMs > 0.0f) {
         const float fLastOverMs = data.GetRepeatMs() - mRepeatInitialDelayMs;
         if (static_cast<int>(fLastOverMs / mRepeatDelayMs) <
             static_cast<int>(fOverMs / mRepeatDelayMs)) {
             RotateEvent rotate;
-            rotate.mPlayer = nPlayer;
-            rotate.mDirection = data.GetDirection();
+            rotate.SetPlayer(nPlayer);
+            rotate.SetDirection(data.GetDirection());
             mWorld->Handle(rotate);
         }
     }
-    data.SetRepeatMs(CyclesToMs(data.GetRepeatTimer().mCycles));
+    data.SetRepeatMs(CyclesToMs(data.GetRepeatTimer().GetCycles()));
     data.GetRepeatTimer().Start();
 }
 
@@ -110,17 +110,17 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
         mWorld->Stop();
         return false;
     }
-    const int nPad = pMsg->mPad;
-    const int nPressed = pMsg->mPressed;
+    const int nPad = pMsg->GetPad();
+    const int nPressed = pMsg->GetPressed();
     if (nPad >= TheGameDb->GetNumPads()) {
         return false;
     }
     const unsigned char nPlayer = static_cast<unsigned char>(mLocalPlayers[nPad]);
-    const int nButton = pMsg->mButton;
+    const int nButton = pMsg->GetButton();
     if (nButton == kButtonStart) {
         if (nPressed != 0) {
             BtnEvent<3> pause;
-            pause.mPlayer = nPlayer;
+            pause.SetPlayer(nPlayer);
             mWorld->Handle(pause);
         }
         return false;
@@ -142,8 +142,8 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
             }
             data.GetStick()->Reset();
             RotateEvent rotate;
-            rotate.mPlayer = nPlayer;
-            rotate.mDirection = nDirection;
+            rotate.SetPlayer(nPlayer);
+            rotate.SetDirection(nDirection);
             mWorld->Handle(rotate);
             data.GetRepeatTimer().Start();
             data.SetDirection(nDirection);
@@ -152,10 +152,10 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
             if (mWorld->IsFreestyling(nPad)) {
                 break;
             }
-            const float fHeldMs = CyclesToMs(data.GetRepeatTimer().mCycles);
-            data.GetRepeatTimer().mRunning = 0;
-            data.GetRepeatTimer().mCycles = 0;
-            data.GetRepeatTimer().mLastMs = fHeldMs;
+            const float fHeldMs = CyclesToMs(data.GetRepeatTimer().GetCycles());
+            data.GetRepeatTimer().SetRunning(0);
+            data.GetRepeatTimer().SetCycles(0);
+            data.GetRepeatTimer().SetLastMs(fHeldMs);
         }
         break;
     }
@@ -175,11 +175,11 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
         if (nPressed != 0) {
             if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
                 BtnEvent<9> event;
-                event.mPlayer = nPlayer;
+                event.SetPlayer(nPlayer);
                 mWorld->Handle(event);
             } else {
                 BtnEvent<4> event;
-                event.mPlayer = nPlayer;
+                event.SetPlayer(nPlayer);
                 mWorld->Handle(event);
             }
         }
@@ -188,11 +188,11 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
         if (nPressed != 0) {
             if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
                 BtnEvent<8> event;
-                event.mPlayer = nPlayer;
+                event.SetPlayer(nPlayer);
                 mWorld->Handle(event);
             } else {
                 BtnEvent<5> event;
-                event.mPlayer = nPlayer;
+                event.SetPlayer(nPlayer);
                 mWorld->Handle(event);
             }
         }
@@ -201,15 +201,15 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
     case kActionSectionNext:
         if (nPressed != 0) {
             ChangeSectionEvent section;
-            section.mPlayer = nPlayer;
-            section.mDirection = nAction != kActionSectionPrevious ? 1 : 0;
+            section.SetPlayer(nPlayer);
+            section.SetDirection(nAction != kActionSectionPrevious ? 1 : 0);
             mWorld->Handle(section);
         }
         break;
     case kActionTrack:
         if (nPressed != 0) {
             BtnEvent<10> event;
-            event.mPlayer = nPlayer;
+            event.SetPlayer(nPlayer);
             mWorld->Handle(event);
         }
         break;

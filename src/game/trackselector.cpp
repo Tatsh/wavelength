@@ -70,7 +70,7 @@ void TrackSelector::AddPlayer(int nTrack) {
 
 void TrackSelector::AddPlayer(int nTrack, int nSlot) {
     mPlayerTracks.push_back(nTrack);
-    mTrackInfos[nTrack].mPlayers[nSlot] = static_cast<int>(mPlayerTracks.size()) - 1;
+    mTrackInfos[nTrack].GetPlayers()[nSlot] = static_cast<int>(mPlayerTracks.size()) - 1;
 }
 
 int TrackSelector::GetNumPlayers() const {
@@ -96,9 +96,9 @@ void TrackSelector::SwapPlayer(int nPlayer, int nTrack, int nSlot) {
     mNeedsCompact = 1;
     int nOldTrack = mPlayerTracks[nPlayer];
     int nOldSlot = mTrackInfos[nOldTrack].Find(nPlayer);
-    int nOther = mTrackInfos[nTrack].mPlayers[nSlot];
-    mTrackInfos[nOldTrack].mPlayers[nOldSlot] = nOther;
-    mTrackInfos[nTrack].mPlayers[nSlot] = nPlayer;
+    int nOther = mTrackInfos[nTrack].GetPlayers()[nSlot];
+    mTrackInfos[nOldTrack].GetPlayers()[nOldSlot] = nOther;
+    mTrackInfos[nTrack].GetPlayers()[nSlot] = nPlayer;
     mPlayerTracks[nPlayer] = nTrack;
     if (nOther != kNoPlayer) {
         mPlayerTracks[nOther] = nOldTrack;
@@ -124,7 +124,7 @@ int TrackSelector::GetPlayerSlot(int nPlayer) const {
 }
 
 int TrackSelector::GetFirstPlayer(int nTrack) const {
-    return mTrackInfos[nTrack].mPlayers.front();
+    return mTrackInfos[nTrack].GetPlayers().front();
 }
 
 int TrackSelector::GetNumPlayersOnTrack(int nTrack) const {
@@ -132,5 +132,5 @@ int TrackSelector::GetNumPlayersOnTrack(int nTrack) const {
 }
 
 const int *TrackSelector::GetPlayersOnTrack(int nTrack) const {
-    return mTrackInfos[nTrack].mPlayers.data();
+    return mTrackInfos[nTrack].GetPlayers().data();
 }

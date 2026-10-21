@@ -63,6 +63,12 @@ public:
      */
     void Unload() override;
 
+    /** @param pszSong The song whose picture shows, a symbol. */
+    void SetSong(const char *pszSong) {
+        mSong = pszSong;
+    }
+
+private:
     const char *mSong;                       /*!< The song whose picture shows, a symbol. +0xe0 */
     std::unique_ptr<RndLoader> mBonusLoader; /*!< The loader of the bonus picture, or null. */
 };

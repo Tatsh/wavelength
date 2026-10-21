@@ -93,6 +93,12 @@ public:
     bool HandleJoypad(JoypadInputMsg *pMsg);
 #endif
 
+    /** @param nPad The controller to plug back in. */
+    void SetPad(int nPad) {
+        mPad = nPad;
+    }
+
+private:
     int mPad;             /*!< The controller to plug back in. */
     int mInGame;          /*!< Whether the dialog interrupts a song. */
     String mReturnScreen; /*!< The front-end screen the dialog returns to. */

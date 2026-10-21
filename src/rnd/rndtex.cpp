@@ -57,14 +57,14 @@ RndTex::~RndTex() {
 
 void RndTex::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndTex]\n";
     stream << "width:" << mWidth << " height:" << mHeight << " bpp:" << mBpp
            << " mipMapK:" << mMipMapK << " file:" << mFile.RelativePath()
            << " rendered:" << (mRendered != 0) << "\n";
-    if (stream.mDumpLevel < 2) {
+    if (stream.GetDumpLevel() < 2) {
         return;
     }
     stream << "bitmap:";
@@ -121,7 +121,7 @@ void RndTex::Load(BinStream &stream) {
     if (nRev < kRevRendered) {
         int nFlags;
         stream.ReadEndian(&nFlags, sizeof(nFlags));
-        if (nFlags != 0 && mFile.mLength != 0) {
+        if (nFlags != 0 && mFile.GetLength() != 0) {
             if ((nFlags & kFlagTransparentWhite) != 0) {
                 DebugNotify("%s: kTransparentWhite no longer supported", mName.c_str());
             } else if ((nFlags & kFlagTransparentBlack) != 0) {

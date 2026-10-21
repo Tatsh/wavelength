@@ -61,11 +61,11 @@ bool NoControllerScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 #else
 bool NoControllerScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadCross && pMsg->mPad == mPad) {
+        if (pMsg->GetButton() == kPadCross && pMsg->GetPad() == mPad) {
             if (mInGame != 0) {
                 TheMetagame.ShowEndGameScreens(Metagame::kDialogActionResume);
             } else {

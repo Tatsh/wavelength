@@ -183,15 +183,7 @@ public:
      */
     alignas(16) static Vector3 sGizmoOffsets[kNumGizmoOffsets];
 
-    RndMesh *mGizmoMesh;        /*!< The panel's clone of `pyramid.mesh`, or null. */
-    RndMesh *mBgMesh;           /*!< The background mesh `<name>_bg.mesh`, or null. */
-    alignas(16) Box mBgBox;     /*!< The bounding box of mBgMesh in its own space. */
-    int mGizmoOffsetIndex;      /*!< The entry of sGizmoOffsets the pyramid reaches. */
-    RndView *mMatEnterExitAnim; /*!< The shared animation `mat_2d_EE.anim`. */
-    RndView *mMatAlwaysAnim;    /*!< The shared animation `mat_2d_always.anim`. */
-    RndView *mPanelAnim;        /*!< The panel animation `<name>_f2EE.anim`, or null. */
-    float mMatStart;            /*!< The time the material entry or exit started, or 0. */
-    int mMatEntering;           /*!< Whether the material animation enters rather than exits. */
+    alignas(16) Box mBgBox; /*!< The bounding box of mBgMesh in its local space. */
 
 private:
     /**
@@ -233,4 +225,13 @@ private:
      * @ghidraAddress PAL: 0x0042e758
      */
     static float sMatExitStop;
+
+    RndMesh *mGizmoMesh;        /*!< The panel's clone of `pyramid.mesh`, or null. */
+    RndMesh *mBgMesh;           /*!< The background mesh `<name>_bg.mesh`, or null. */
+    int mGizmoOffsetIndex;      /*!< The entry of sGizmoOffsets the pyramid arrives at. */
+    RndView *mMatEnterExitAnim; /*!< The shared animation `mat_2d_EE.anim`. */
+    RndView *mMatAlwaysAnim;    /*!< The shared animation `mat_2d_always.anim`. */
+    RndView *mPanelAnim;        /*!< The panel animation `<name>_f2EE.anim`, or null. */
+    float mMatStart;            /*!< The time the material entry or exit started, or 0. */
+    int mMatEntering;           /*!< Whether the material animation enters rather than exits. */
 };

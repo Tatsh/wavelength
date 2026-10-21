@@ -105,6 +105,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The room joined. */
+    const NetChatroomInfo &GetChatroom() const {
+        return mChatroom;
+    }
+
+    /** @return Zero on success, otherwise an error code. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;               /*!< Zero on success, otherwise an error code. */
     NetChatroomInfo mChatroom; /*!< The room joined. */
 };

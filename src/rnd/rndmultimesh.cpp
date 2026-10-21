@@ -7,8 +7,8 @@ namespace {
 
 // Move a mesh to a transform and recompute its world transform.
 inline void PlaceMesh(RndMesh *pMesh, const Transform &xfm) {
-    pMesh->mLocalXfm = xfm;
-    pMesh->mDirty = 1;
+    pMesh->GetLocalXfm() = xfm;
+    pMesh->SetDirty(1);
     pMesh->UpdateWorldXfm(nullptr, 0);
 }
 
@@ -16,8 +16,8 @@ inline void PlaceMesh(RndMesh *pMesh, const Transform &xfm) {
 // the local one, then the saved local transform is restored without recomputing.
 inline void RestoreMesh(RndMesh *pMesh, const Transform &localXfm, const Transform &worldXfm) {
     PlaceMesh(pMesh, worldXfm);
-    pMesh->mLocalXfm = localXfm;
-    pMesh->mDirty = 1;
+    pMesh->GetLocalXfm() = localXfm;
+    pMesh->SetDirty(1);
 }
 
 void WriteRow(BinStream &stream, const Vector3 &row) {
@@ -55,8 +55,8 @@ void RndMultiMesh::ListDrawObjects(std::list<RndObject *> &objects) {
 
 void RndMultiMesh::ListDrawables(std::list<RndDrawable *> &drawables) {
     if (mMesh != nullptr) {
-        const Transform localXfm = mMesh->mLocalXfm;
-        const Transform worldXfm = mMesh->mWorldXfm;
+        const Transform localXfm = mMesh->GetLocalXfm();
+        const Transform worldXfm = mMesh->GetWorldXfm();
         std::list<RndDrawable *> meshDrawables;
         for (const Transform &xfm : mTransforms) {
             PlaceMesh(mMesh, xfm);
@@ -75,8 +75,8 @@ int RndMultiMesh::DrawShowing() {
     if (mMesh == nullptr) {
         return 1;
     }
-    const Transform localXfm = mMesh->mLocalXfm;
-    const Transform worldXfm = mMesh->mWorldXfm;
+    const Transform localXfm = mMesh->GetLocalXfm();
+    const Transform worldXfm = mMesh->GetWorldXfm();
     for (const Transform &xfm : mTransforms) {
         PlaceMesh(mMesh, xfm);
         mMesh->DrawShowing(); // Yes, the binary discards the mesh's result.
@@ -88,7 +88,7 @@ int RndMultiMesh::DrawShowing() {
 void RndMultiMesh::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndDrawable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndMultiMesh]\n";
@@ -100,7 +100,7 @@ void RndMultiMesh::Save(BinStream &stream) {
     stream.WriteEndian(&sRev, sizeof(sRev));
     RndDrawable::Save(stream);
     const RndObject *pMesh = mMesh;
-    stream.WriteString(pMesh != nullptr ? pMesh->mName.c_str() : "");
+    stream.WriteString(pMesh != nullptr ? pMesh->GetName() : "");
     stream << mTransforms;
 }
 
@@ -140,7 +140,7 @@ void RndMultiMesh::Load(BinStream &stream) {
     ReleaseRefs();
     String meshName;
     stream >> meshName;
-    if (meshName.mLength == 0) {
+    if (meshName.GetLength() == 0) {
         mMesh = nullptr;
     } else {
         RndObject *pObject = TheManager.Find(meshName.c_str());

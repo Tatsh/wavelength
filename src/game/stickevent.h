@@ -61,6 +61,37 @@ public:
         stream.ReadEndian(&mY, sizeof(mY));
     }
 
+    /** @return The vertical position. */
+    float GetY() const {
+        return mY;
+    }
+
+    /** @param fY The vertical position. */
+    void SetY(float fY) {
+        mY = fY;
+    }
+
+    /** @return The horizontal position. */
+    float GetX() const {
+        return mX;
+    }
+
+    /** @param fX The horizontal position. */
+    void SetX(float fX) {
+        mX = fX;
+    }
+
+    /** @return The player index. */
+    unsigned char GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @param nPlayer The player index. */
+    void SetPlayer(unsigned char nPlayer) {
+        mPlayer = nPlayer;
+    }
+
+private:
     unsigned char mPlayer; /*!< The player index. */
     float mX;              /*!< The horizontal position. */
     float mY;              /*!< The vertical position. */

@@ -111,6 +111,7 @@ public:
      */
     int GetPosition() const;
 
+private:
     Ptr<Command> mRepeatCmd; /*!< The MuseLooper::RepeatCmd that restarts the piece. */
     Ptr<Muse> mMuse;         /*!< The piece. */
     int mLength;             /*!< The ticks of one loop. */

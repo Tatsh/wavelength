@@ -12,7 +12,7 @@ BackgroundAction::BackgroundAction(DataArray *pAction) {
 
 void BackgroundAction::Exec() {
     mStartTime = TheTriggerMgr.GetCurrentTime();
-    mStartColor = TheRnd->mClearColor;
+    mStartColor = TheRnd->GetClearColor();
     TheTriggerMgr.AddRunning(this);
 }
 

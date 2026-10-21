@@ -112,6 +112,22 @@ public:
      */
     void Unload();
 
+    /** @return The run in progress, one of Mode. */
+    int GetMode() const {
+        return mMode;
+    }
+
+    /** @return The frame of the run. */
+    float GetFrame() const {
+        return mFrame;
+    }
+
+    /** @return The frame of the run over the system clock. */
+    const LinearInterpolator &GetInterp() const {
+        return mInterp;
+    }
+
+private:
     DataArray *mConfig;                 /*!< The entry of `gfx vortices`. */
     std::unique_ptr<RndLoader> mLoader; /*!< The loader of the file of the configuration. */
     RndView *mTopView;                  /*!< The view Draw() draws, `top_view`. */

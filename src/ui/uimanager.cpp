@@ -63,7 +63,7 @@ int UIManager::Callback::ShouldLoad(RndObject *pExisting,
 }
 
 void UIManager::Callback::Report() {
-    if (mRejected.mLength != 0) {
+    if (mRejected.GetLength() != 0) {
         DebugNotify(
             "These objects won't be loaded because they\nalready exist, and are not\nin the "
             "allowed list:\n%s",
@@ -102,7 +102,7 @@ void UIManager::Init() {
         for (int i = 1; i < pShared->Size(); ++i) {
             const auto pLoader =
                 TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback.get(), nullptr);
-            for (RndObject *pObject : pLoader->mObjects) {
+            for (RndObject *pObject : pLoader->GetObjects()) {
                 mSharedObjects.emplace_back(pObject);
             }
         }
@@ -151,8 +151,8 @@ void UIManager::AddPanel(UIPanel *pPanel) {
 }
 
 void UIManager::AddStyle(UIStyle *pStyle) {
-    (void)FindStyle(pStyle->mName, true); // Yes, the binary discards this lookup.
-    mStyles[pStyle->mName].reset(pStyle);
+    (void)FindStyle(pStyle->GetName(), true); // Yes, the binary discards this lookup.
+    mStyles[pStyle->GetName()].reset(pStyle);
 }
 
 bool UIManager::IsNavigationMsg(Message *pMsg) {
@@ -176,21 +176,22 @@ bool UIManager::DispatchPriv(Message *pMsg) {
 
 // Out of line, as in the binary, where DispatchPriv() calls it only for a joypad message.
 bool UIManager::HandleJoypad(JoypadInputMsg *pMsg) {
-    const int nButton = pMsg->mButton;
+    const int nButton = pMsg->GetButton();
     if (nButton != kPadDUp && nButton != kPadDRight && nButton != kPadDDown &&
         nButton != kPadDLeft) {
         return false;
     }
-    if (pMsg->mPressed == 0) {
-        if (mRepeatTime != 0.0f && mRepeatButton == pMsg->mButton && mRepeatPad == pMsg->mPad) {
+    if (pMsg->GetPressed() == 0) {
+        if (mRepeatTime != 0.0f && mRepeatButton == pMsg->GetButton() &&
+            mRepeatPad == pMsg->GetPad()) {
             mRepeatTime = 0.0f;
             mRepeatPad = kNoRepeatPad;
             mRepeatCount = 0;
         }
-    } else if (pMsg->mPad == mRepeatPad || mRepeatPad == kNoRepeatPad) {
-        mRepeatButton = pMsg->mButton;
+    } else if (pMsg->GetPad() == mRepeatPad || mRepeatPad == kNoRepeatPad) {
+        mRepeatButton = pMsg->GetButton();
         mRepeatPending = 1;
-        mRepeatPad = pMsg->mPad;
+        mRepeatPad = pMsg->GetPad();
         mRepeatTime = RepeatDelay(mRepeatCount);
         ++mRepeatCount;
     }

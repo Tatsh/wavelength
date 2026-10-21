@@ -137,6 +137,12 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The rank of each player. */
+    const std::vector<Info> &GetRanks() const {
+        return mRanks;
+    }
+
+private:
     std::vector<Info> mRanks; /*!< The rank of each player. */
 };
 

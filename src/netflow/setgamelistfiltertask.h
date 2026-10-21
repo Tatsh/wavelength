@@ -28,8 +28,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusResponse *pResponse);
 
-    int mPending; /*!< The requests without a response, set by OnStart(). */
-
 protected:
     /**
      * Send a request for each filter to set, or finish when there is none.
@@ -38,4 +36,7 @@ protected:
      * @ghidraAddress PAL: 0x00270098
      */
     void OnStart() override;
+
+private:
+    int mPending; /*!< The requests without a response, set by OnStart(). */
 };

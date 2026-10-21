@@ -51,16 +51,16 @@ constexpr int kHighDword = 1;
 
 inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mDword[kLowDword] = qwLow;
-    packet.mCursor->mDword[kHighDword] = qwHigh;
-    ++packet.mCursor;
+    packet.GetCursor()->mDword[kLowDword] = qwLow;
+    packet.GetCursor()->mDword[kHighDword] = qwHigh;
+    ++packet.GetCursor();
 }
 
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
     DmaPacket &packet = DmaPacket::shared();
     const float afValues[] = {fX, fY, fZ, fW};
-    std::memcpy(packet.mCursor, afValues, sizeof(afValues));
-    ++packet.mCursor;
+    std::memcpy(packet.GetCursor(), afValues, sizeof(afValues));
+    ++packet.GetCursor();
 }
 
 inline void PushVector(const Vector3 &vector) {
@@ -74,11 +74,11 @@ inline void PushColor(const Color &color) {
 // A quadword of three VIF NOPs and one VIF code.
 inline void PushVifCode(unsigned int nCode) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mWord[0] = 0;
-    packet.mCursor->mWord[1] = 0;
-    packet.mCursor->mWord[2] = 0;
-    packet.mCursor->mWord[kVifCodeWord] = nCode;
-    ++packet.mCursor;
+    packet.GetCursor()->mWord[0] = 0;
+    packet.GetCursor()->mWord[1] = 0;
+    packet.GetCursor()->mWord[2] = 0;
+    packet.GetCursor()->mWord[kVifCodeWord] = nCode;
+    ++packet.GetCursor();
 }
 
 inline void ClearQuadword(DmaQuadword *pQuadword) {
@@ -139,12 +139,12 @@ void PsParticleSys::DrawParticles() {
     bool bFirst = true;
     Particle *pParticle = mLiveParticles;
     while (pParticle != nullptr) {
-        DmaQuadword *pUnpack = frame.mCursor;
+        DmaQuadword *pUnpack = frame.GetCursor();
         ClearQuadword(pUnpack);
-        ++frame.mCursor;
-        DmaQuadword *pCount = frame.mCursor;
+        ++frame.GetCursor();
+        DmaQuadword *pCount = frame.GetCursor();
         ClearQuadword(pCount);
-        ++frame.mCursor;
+        ++frame.GetCursor();
 
         int nAddress = kConstantQwords;
         int nQwords = 1;
@@ -154,9 +154,9 @@ void PsParticleSys::DrawParticles() {
                 pUnpack->mWord[kVifCodeWord] = UnpackCode(nAddress, nQwords);
                 nAddress += nQwords;
                 nQwords = 0;
-                pUnpack = frame.mCursor;
+                pUnpack = frame.GetCursor();
                 ClearQuadword(pUnpack);
-                ++frame.mCursor;
+                ++frame.GetCursor();
             }
             ++nCount;
             nQwords += kParticleQwords;

@@ -113,11 +113,11 @@ void OvyChat::Line::SetColor(int nPlayer) {
 bool OvyChat::Line::Update(float fTime, [[maybe_unused]] float fDelta) {
     const float fRow = mSlide->Eval(fTime);
     RndTransformable *pTrans = mText;
-    Vector3 &translation = pTrans->mLocalXfm.mTranslation;
+    Vector3 &translation = pTrans->GetLocalXfm().mTranslation;
     if (fRow == translation.z) {
         return false;
     }
-    pTrans->mDirty = 1;
+    pTrans->SetDirty(1);
     // The binary also copies an unset fourth word, which is left as it was here.
     translation.z = fRow;
     return true;
@@ -156,7 +156,7 @@ OvyChat::OvyChat(DataArray *pConfig, DataArray *pDefaults, RndView *pHudView)
     mRows.resize(mLines.size() + 1, 0.0f);
     std::vector<float>::iterator pRow = mRows.begin();
     for (const auto &pLine : mLines) {
-        *pRow++ = static_cast<RndTransformable *>(pLine->GetText())->mLocalXfm.mTranslation.z;
+        *pRow++ = static_cast<RndTransformable *>(pLine->GetText())->GetLocalXfm().mTranslation.z;
     }
     const int nLast = static_cast<int>(mRows.size()) - 1;
     mRows[nLast] = mRows[nLast - 1] + mRows[nLast - 1] - mRows[nLast - 2];
@@ -207,7 +207,7 @@ void OvyChat::Poll() {
     mLastTime = fNow;
     const bool bSliding = mSlide.Update(fDelta, false);
     mDrawable->SetShowing(mSlide.GetValue() != mHiddenPosition);
-    if (mDrawable->mShowing == 0) {
+    if (mDrawable->GetShowing() == 0) {
         return;
     }
     bool bMoved = false;
@@ -231,7 +231,7 @@ void OvyChat::Poll() {
 }
 
 bool OvyChat::AddLine(ChatMsg *pMsg) {
-    const int nSender = pMsg->mPlayer;
+    const int nSender = pMsg->GetPlayer();
     if (nSender == kNoSender) {
         return false;
     }
@@ -250,7 +250,7 @@ bool OvyChat::AddLine(ChatMsg *pMsg) {
         mPending.push_back(pending);
 #pragma GCC diagnostic pop
     }
-    mPending.back().mText = pMsg->mText;
+    mPending.back().mText = pMsg->GetText();
     mPending.back().mPlayer = nPlayer;
     mLastActivity = mLastTime;
     mSlide.SetTarget(mShownPosition);
@@ -308,10 +308,10 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
         if (nAction == EditField::kKeyChanged) {
             mEditLine->GetText()->SetText(mEdit.GetText());
         }
-        const Vector3 position = mEditLine->GetText()->CharPosition(mEdit.mCursor);
+        const Vector3 position = mEditLine->GetText()->CharPosition(mEdit.GetCursor());
         RndTransformable *pCursor = mCursor;
-        pCursor->mDirty = 1;
-        pCursor->mLocalXfm.mTranslation = position;
+        pCursor->SetDirty(1);
+        pCursor->GetLocalXfm().mTranslation = position;
     }
     return false;
 }

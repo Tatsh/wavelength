@@ -126,6 +126,17 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The bar erased. */
+    int GetBar() const {
+        return mBar;
+    }
+
+    /** @return The track. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+private:
     int mTrack; /*!< The track. */
     int mBar;   /*!< The bar erased. */
 };

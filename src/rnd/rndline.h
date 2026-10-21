@@ -43,6 +43,67 @@ public:
             mColor.b = 1.0f;
         }
 
+        /** @return The position in camera space. */
+        const Vector3 &GetCamPoint() const {
+            return mCamPoint;
+        }
+
+        /** @return The position in camera space, for writing. */
+        Vector3 &GetCamPoint() {
+            return mCamPoint;
+        }
+
+        /** @return The colour. */
+        const Color &GetColor() const {
+            return mColor;
+        }
+
+        /** @return The colour, for writing. */
+        Color &GetColor() {
+            return mColor;
+        }
+
+        /** @return The screen direction to the next point. */
+        const Vector2 &GetDir() const {
+            return mDir;
+        }
+
+        /** @return The screen direction to the next point, for writing. */
+        Vector2 &GetDir() {
+            return mDir;
+        }
+
+        /** @return The screen offset of the ribbon's edges from the point. */
+        const Vector2 &GetOffset() const {
+            return mOffset;
+        }
+
+        /** @return The screen offset of the ribbon's edges from the point, for writing. */
+        Vector2 &GetOffset() {
+            return mOffset;
+        }
+
+        /** @return The position. */
+        const Vector3 &GetPoint() const {
+            return mPoint;
+        }
+
+        /** @return The position, for writing. */
+        Vector3 &GetPoint() {
+            return mPoint;
+        }
+
+        /** @return The position projected onto the screen. */
+        const Vector2 &GetScreen() const {
+            return mScreen;
+        }
+
+        /** @return The position projected onto the screen, for writing. */
+        Vector2 &GetScreen() {
+            return mScreen;
+        }
+
+    private:
         Vector3 mPoint;    /*!< The position. */
         Color mColor;      /*!< The colour. */
         Vector3 mCamPoint; /*!< The position in camera space. */
@@ -340,6 +401,22 @@ public:
      */
     static int sRev;
 
+    /** @return The points. */
+    const std::vector<Point> &GetPoints() const {
+        return mPoints;
+    }
+
+    /** @return The width of the ribbon on the screen. */
+    float GetWidth() const {
+        return mWidth;
+    }
+
+    /** @param fWidth The width of the ribbon on the screen. */
+    void SetWidth(float fWidth) {
+        mWidth = fWidth;
+    }
+
+private:
     RndMat *mMat;                   /*!< The material BuildMesh() gives the mesh. */
     float mWidth;                   /*!< The width of the ribbon on the screen. */
     std::vector<Point> mPoints;     /*!< The points. */

@@ -31,16 +31,16 @@ void SetGeneratorAction::Exec() {
         mGenerator->SetPath(mPath, kWholePath, kWholePath);
     }
     if ((mFlags & kFlagRate) != 0) {
-        mGenerator->mRateGenLow = mRate.x;
-        mGenerator->mRateGenHigh = mRate.y;
+        mGenerator->SetRateGenLow(mRate.x);
+        mGenerator->SetRateGenHigh(mRate.y);
     }
     if ((mFlags & kFlagScale) != 0) {
-        mGenerator->mScaleGenLow = mScale.x;
-        mGenerator->mScaleGenHigh = mScale.y;
+        mGenerator->SetScaleGenLow(mScale.x);
+        mGenerator->SetScaleGenHigh(mScale.y);
     }
     if ((mFlags & kFlagPathVar) != 0) {
-        mGenerator->mPathVarMax[0] = mPathVar.x;
-        mGenerator->mPathVarMax[1] = mPathVar.y;
-        mGenerator->mPathVarMax[2] = mPathVar.z;
+        mGenerator->GetPathVarMax()[0] = mPathVar.x;
+        mGenerator->GetPathVarMax()[1] = mPathVar.y;
+        mGenerator->GetPathVarMax()[2] = mPathVar.z;
     }
 }

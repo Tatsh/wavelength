@@ -87,6 +87,7 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
+private:
     const char *mStats;           /*!< `m_stats` of the description. The screen does not read it. */
     String mLayout;               /*!< The layout part of the names of the row panels. +0x74 */
     std::vector<int> mPlayerRows; /*!< The row of each player. +0x88 */

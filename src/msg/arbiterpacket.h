@@ -161,6 +161,22 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The assignments. */
+    const std::vector<PlayerData> &GetPlayers() const {
+        return mPlayers;
+    }
+
+    /** @return The assignments, for filling. */
+    std::vector<PlayerData> &GetPlayers() {
+        return mPlayers;
+    }
+
+    /** @return The sequence number of the player's last update. */
+    int GetVersion() const {
+        return mVersion;
+    }
+
+private:
     std::vector<PlayerData> mPlayers; /*!< The assignments. */
     int mVersion;                     /*!< The assignment's sequence number. */
 };

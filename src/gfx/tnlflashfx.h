@@ -57,6 +57,7 @@ public:
      */
     void Poll(float flDelta);
 
+private:
     RndParticleSys *mSys; /*!< The particle system the flash draws with. */
     Particle *mParticle;  /*!< The particle of a running flash, or null. */
     float mShrink;        /*!< The size the flash loses per unit of time. */

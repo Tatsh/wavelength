@@ -183,6 +183,7 @@ public:
         (mObject->*mMember)();
     }
 
+private:
     Object *mObject;  /*!< The object. */
     Function mMember; /*!< The member function. */
 };
@@ -233,6 +234,7 @@ public:
         (mObject->*mMember)(kDefaultArgument);
     }
 
+private:
     Object *mObject;  /*!< The object. */
     Function mMember; /*!< The member function. */
 };

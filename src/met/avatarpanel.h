@@ -98,10 +98,13 @@ public:
      */
     void SetAvatar(AvatarPartSet *pAvatar);
 
-    int mSpinControl;       /*!< Non-zero when the stick turns the Freq, `spin_control`. */
+protected:
     AvatarPartSet *mAvatar; /*!< The Freq that shows, or null. */
-    RndMesh *mFreqMesh;     /*!< The mesh `<name>_freq.mesh` the Freq covers, or null. */
-    RndView *mPostView;     /*!< The view `<name>_post_avatar.view`, or null. */
-    float mSpinX;           /*!< The horizontal stick position, eased toward the stick. */
-    float mSpinY;           /*!< The vertical stick position, eased toward the stick. */
+
+private:
+    int mSpinControl;   /*!< Non-zero when the stick turns the Freq, `spin_control`. */
+    RndMesh *mFreqMesh; /*!< The mesh `<name>_freq.mesh` the Freq covers, or null. */
+    RndView *mPostView; /*!< The view `<name>_post_avatar.view`, or null. */
+    float mSpinX;       /*!< The horizontal stick position, eased toward the stick. */
+    float mSpinY;       /*!< The vertical stick position, eased toward the stick. */
 };

@@ -68,14 +68,14 @@ bool NetMainPanel::DispatchPriv(Message *pMsg) {
 }
 
 bool NetMainPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     UIScreen *pScreen = TheUI.GetCurrentScreen();
     if (pScreen->GetNextScreen() != nullptr || pScreen->GetPrevScreen() != nullptr) {
         return true;
     }
-    const int nButton = pMsg->mButton;
+    const int nButton = pMsg->GetButton();
     if (nButton == kPadTriangle || nButton == kPadDLeft) {
         pScreen->SetFocus(TheUI.FindPanel(kMainPanel, false));
     } else if (nButton == kPadL1) {

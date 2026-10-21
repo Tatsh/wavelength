@@ -77,9 +77,6 @@ public:
      */
     int GetState() const;
 
-    /** One of State. */
-    int mState;
-
 protected:
     /**
      * Begin the work. Start() calls this member.
@@ -107,4 +104,8 @@ protected:
      */
     virtual void OnPoll() {
     }
+
+private:
+    /** One of State. */
+    int mState;
 };

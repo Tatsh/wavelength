@@ -127,6 +127,17 @@ public:
      */
     static float sTumbleAnglePerMs;
 
+    /** @return `freestylus beamgrow.mnm`. */
+    RampAnimator &GetBeamGrow() {
+        return mBeamGrow;
+    }
+
+    /** @return `freestylus sample.tnm`. */
+    RampAnimator &GetSample() {
+        return mSample;
+    }
+
+private:
     RndView *mView;             /*!< `freestylus.view`. */
     RndView *mTempo;            /*!< `freestylus tempo.view`. */
     RndAnimatable *mPitch;      /*!< `freestylus pitch.view`. */

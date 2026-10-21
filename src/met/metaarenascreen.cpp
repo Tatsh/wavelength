@@ -186,7 +186,7 @@ bool MetaArenaScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (mChangePending != 0) {
         return true;
     }
-    if (pButton->mStyle == TheUI.FindStyle("button_style_grey", false) ||
+    if (pButton->GetStyle() == TheUI.FindStyle("button_style_grey", false) ||
         pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
@@ -227,13 +227,13 @@ const char *MetaArenaScreen::Title() {
 }
 
 bool MetaArenaScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
     if (mChangePending != 0) {
         return true;
     }
-    if (pMsg->mPressed == 0 || pMsg->mButton != kPadTriangle) {
+    if (pMsg->GetPressed() == 0 || pMsg->GetButton() != kPadTriangle) {
         return false;
     }
 

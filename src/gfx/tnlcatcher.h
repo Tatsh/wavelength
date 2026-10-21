@@ -204,6 +204,7 @@ public:
      */
     static float sBumpEndTime;
 
+private:
     Color mColor;                            /*!< The colour of the flare a bump shows. */
     RndView *mView;                          /*!< `catcher_<c>`. */
     int mShown;                              /*!< Whether the catcher is shown. */

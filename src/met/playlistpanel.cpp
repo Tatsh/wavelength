@@ -39,10 +39,10 @@ bool PlaylistPanel::DispatchPriv(Message *pMsg) {
 }
 
 bool PlaylistPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
-    switch (pMsg->mButton) {
+    switch (pMsg->GetButton()) {
     case kPadTriangle:
     case kPadDLeft:
         TheMetagame.SetHelpText(TheLocale.Localize(kHelpToken, true));

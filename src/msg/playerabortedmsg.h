@@ -84,5 +84,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The player's position in the order of the session. */
+    int GetNetOrder() const {
+        return mNetOrder;
+    }
+
+private:
     int mNetOrder; /*!< The player's position in the order of the session. */
 };

@@ -108,6 +108,32 @@ public:
      */
     void UpdateTrail(float flTicks, float flTime);
 
+    /** @return The player. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return The activator. */
+    TnlActivator &GetActivator() {
+        return mActivator;
+    }
+
+    /** @return The grid. */
+    TnlGrid &GetGrid() {
+        return mGrid;
+    }
+
+    /** @return The cursor. */
+    TnlCursor &GetCursor() {
+        return mCursor;
+    }
+
+    /** @return The freestyle. */
+    TnlFreestyle &GetFreestyle() {
+        return mFreestyle;
+    }
+
+private:
     int mCamNumber;                  /*!< The camera plus one, the number of its views. */
     RndCam *mCam;                    /*!< `tnl cam<n>`, or null. */
     RndTransAnim *mIntro;            /*!< `tnl cam intro<players>.tnm`, or null. */

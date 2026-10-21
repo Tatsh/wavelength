@@ -227,6 +227,7 @@ public:
      */
     static PsMovie *sActive;
 
+private:
     void *mData;                  /*!< The file, a Header and the stream, or null. */
     int mDataSize;                /*!< The size of the file in bytes. */
     int mWidth;                   /*!< The width in pixels. */

@@ -260,7 +260,7 @@ protected:
         const Key<Quat> *pPrev;
         const Key<Quat> *pNext;
         float fRatio;
-        AtFrame(pAnim->mFramesOwner->mRotKeys, fFrame, pPrev, pNext, fRatio);
+        AtFrame(pAnim->GetFramesOwner()->GetRotKeys(), fFrame, pPrev, pNext, fRatio);
         if (pPrev != nullptr) {
             QuatSlerp(pPrev->value, pNext->value, out, fRatio);
         }
@@ -301,8 +301,8 @@ protected:
         const RndTransAnim *pAnim, float fFrom, float fTo, float fBlend, Vector3 &out) {
         Vector3 from;
         Vector3 to;
-        InterpKeys(pAnim->mFramesOwner->mTransKeys, fFrom, from);
-        InterpKeys(pAnim->mFramesOwner->mTransKeys, fTo, to);
+        InterpKeys(pAnim->GetFramesOwner()->GetTransKeys(), fFrom, from);
+        InterpKeys(pAnim->GetFramesOwner()->GetTransKeys(), fTo, to);
         Interp(from, to, fBlend, out);
     }
 
@@ -331,8 +331,8 @@ protected:
         identity.mBasisY = {0.0f, 1.0f, 0.0f};
         identity.mBasisZ = {0.0f, 0.0f, 1.0f};
         identity.mTranslation = {0.0f, 0.0f, 0.0f, 1.0f};
-        pMesh->mLocalXfm = identity;
-        pMesh->mDirty = 1;
+        pMesh->GetLocalXfm() = identity;
+        pMesh->SetDirty(1);
     }
 
     Callback mCallback;       /*!< The callback of the loads of the part. */

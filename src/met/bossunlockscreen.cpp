@@ -33,16 +33,16 @@ void BossUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     UILabel *pLabel = dynamic_cast<UILabel *>(TheUI.FindComponent(kPanel, "01", false));
     pLabel->SetText(TheLocale.Localize("unlock_boss_1", true));
-    pLabel->mText->UpdateCursors();
+    pLabel->GetText()->UpdateCursors();
 
     pLabel = dynamic_cast<UILabel *>(TheUI.FindComponent(kPanel, "02", false));
     pLabel->SetText(TheLocale.Localize("unlock_boss_2", true));
-    pLabel->mText->UpdateCursors();
+    pLabel->GetText()->UpdateCursors();
 
     pLabel = dynamic_cast<UILabel *>(TheUI.FindComponent(kPanel, "03", false));
     SongEntry entry{TheGameDb->FindSong(mSong)};
     pLabel->SetText(FormatString(TheLocale.Localize("unlock_boss_3", true), entry.GetTitle()));
-    pLabel->mText->UpdateCursors();
+    pLabel->GetText()->UpdateCursors();
 
     mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find("d_launch.view")));
 }

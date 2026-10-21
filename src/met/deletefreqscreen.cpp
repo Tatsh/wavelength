@@ -81,14 +81,15 @@ bool DeleteFreqScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool DeleteFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) != 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) != 0) {
         return false;
     }
-    if (mSlot == kFirstSlot && TheGameDb->GetProfile(kFirstPlayer)->mCustom != 0 &&
-        std::strcmp(mFreqName.c_str(), TheGameDb->GetProfile(kFirstPlayer)->mName.c_str()) == 0) {
+    if (mSlot == kFirstSlot && TheGameDb->GetProfile(kFirstPlayer)->GetCustom() != 0 &&
+        std::strcmp(mFreqName.c_str(), TheGameDb->GetProfile(kFirstPlayer)->GetName().c_str()) ==
+            0) {
         TheGameDb->ClearPlayers();
         Campaign profile;
-        profile.mName = TheLocale.Localize(kDefaultNameToken, true);
+        profile.SetName(TheLocale.Localize(kDefaultNameToken, true));
         TheGameDb->AddPlayer(&profile);
         TheMetagame.GetGizmo()->SetShowAvatar(false);
     }

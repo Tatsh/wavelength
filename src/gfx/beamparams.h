@@ -70,6 +70,42 @@ public:
      */
     const Color *GetColor(int nEnd, const Color *pDefault) const;
 
+    /** @return The points of the line, or -1 before Load(). */
+    int GetPoints() const {
+        return mPoints;
+    }
+
+    /** @return The fewest waves along a beam, of the two waves. */
+    const Vector2 &GetMinFrequency() const {
+        return mMinFrequency;
+    }
+
+    /** @return The most waves along a beam, of the two waves. */
+    const Vector2 &GetMaxFrequency() const {
+        return mMaxFrequency;
+    }
+
+    /** @return The shortest period of the travel of the two waves. */
+    const Vector2 &GetMinTravelPeriod() const {
+        return mMinTravelPeriod;
+    }
+
+    /** @return The longest period of the travel of the two waves. */
+    const Vector2 &GetMaxTravelPeriod() const {
+        return mMaxTravelPeriod;
+    }
+
+    /**
+     * Report the amplitude of the waves at one end.
+     *
+     * @param nEnd The end, one of End.
+     * @return The amplitude.
+     */
+    float GetAmplitude(int nEnd) const {
+        return mAmplitudes[nEnd];
+    }
+
+private:
     String mName;             /*!< The name of the configuration entry. */
     int mPoints;              /*!< The points of the line, or -1 before Load(). */
     float mWidth;             /*!< The width of the line. */

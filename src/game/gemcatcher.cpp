@@ -143,8 +143,13 @@ GemCatcher::GemCatcher(Receiver *pReceiver,
                        int nTrack,
                        int nTicksPerBar) {
     for (int nLane = 0; nLane < kNumLanes; ++nLane) {
-        mChecks[nLane] = Ptr<CatchCheckCmd>(new CatchCheckCmd(
-            pReceiver, pState, pMsPerTick, nTrack, nLane, TheGameConfig->mSlopMs, nTicksPerBar));
+        mChecks[nLane] = Ptr<CatchCheckCmd>(new CatchCheckCmd(pReceiver,
+                                                              pState,
+                                                              pMsPerTick,
+                                                              nTrack,
+                                                              nLane,
+                                                              TheGameConfig->GetSlopMs(),
+                                                              nTicksPerBar));
     }
 }
 

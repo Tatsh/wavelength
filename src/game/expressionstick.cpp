@@ -34,7 +34,7 @@ ExpressionStick::~ExpressionStick() {
 }
 
 bool ExpressionStick::Poll() {
-    const JoypadStick stick = JoypadGetState(mPad)->mSticks[mStick];
+    const JoypadStick stick = JoypadGetState(mPad)->GetSticks()[mStick];
     const bool bMoved = !((mLastStick.mX == stick.mX) && (mLastStick.mY == stick.mY));
     const float fNowMs = SystemMs();
     if (bMoved) {
@@ -60,12 +60,12 @@ void ExpressionStick::Reset() {
 }
 
 bool ExpressionStick::HandleButton(JoypadInputMsg *pMsg) {
-    if (pMsg->mPad != mPad) {
+    if (pMsg->GetPad() != mPad) {
         return false;
     }
 
-    if (pMsg->mPressed != 0) {
-        switch (pMsg->mButton) {
+    if (pMsg->GetPressed() != 0) {
+        switch (pMsg->GetButton()) {
         case kPadDRight:
             mSpeedX = kButtonSpeed;
             break;
@@ -82,7 +82,7 @@ bool ExpressionStick::HandleButton(JoypadInputMsg *pMsg) {
             break;
         }
     } else {
-        switch (pMsg->mButton) {
+        switch (pMsg->GetButton()) {
         case kPadDRight:
         case kPadDLeft:
             mSpeedX = 0.0f;

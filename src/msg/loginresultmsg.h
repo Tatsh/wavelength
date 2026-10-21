@@ -112,6 +112,27 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The chatroom the login places the player in. */
+    const NetChatroomInfo &GetChatroom() const {
+        return mChatroom;
+    }
+
+    /** @return The licence agreement the EULA screen shows. */
+    const char *GetEula() const {
+        return mEula;
+    }
+
+    /** @return The news the welcome screen shows. */
+    const char *GetNews() const {
+        return mNews;
+    }
+
+    /** @return One of Result, or another negative error. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;               /*!< One of Result, or another negative error. */
     const char *mNews;         /*!< The news the welcome screen shows. */
     const char *mEula;         /*!< The licence agreement the EULA screen shows. */

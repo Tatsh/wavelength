@@ -56,7 +56,8 @@ void SFXBuilder::OnText([[maybe_unused]] int nTick, const char *pszText, unsigne
         return;
     }
     String name(pszText);
-    std::transform(name.mBuffer, name.mBuffer + name.mLength, name.mBuffer, toupper);
+    std::transform(
+        name.GetBuffer(), name.GetBuffer() + name.GetLength(), name.GetBuffer(), toupper);
 
     const struct {
         const char *pszName;

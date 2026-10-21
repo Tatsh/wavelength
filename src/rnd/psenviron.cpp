@@ -45,8 +45,8 @@ enum Component {
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
     DmaPacket &packet = DmaPacket::shared();
     const float afValues[] = {fX, fY, fZ, fW};
-    std::memcpy(packet.mCursor, afValues, sizeof(afValues));
-    ++packet.mCursor;
+    std::memcpy(packet.GetCursor(), afValues, sizeof(afValues));
+    ++packet.GetCursor();
 }
 
 inline void PushColor(const Color &color) {
@@ -75,8 +75,8 @@ inline float &ComponentOf(Vector3 &vector, int nComponent) {
 // The lighting block of an object without lights to send, the ambient program.
 inline void SendAmbient(DmaQuadword *pHeader, const PsMat *pMat) {
     pHeader->mWord[kHeaderProgram] = PsEnviron::kLightProgramAmbient;
-    pHeader->mWord[kHeaderVertBase] = pMat->mVertBase;
-    DmaPacket::shared().mCursor += kAmbientTailQwords;
+    pHeader->mWord[kHeaderVertBase] = pMat->GetVertBase();
+    DmaPacket::shared().GetCursor() += kAmbientTailQwords;
 }
 
 // Each light direction, a column of g_lightMatrix, moved into the space of a basis row.
@@ -127,33 +127,33 @@ int PsEnviron::DrawShowing() {
     g_lightProgram = kLightProgramAmbient;
 
     auto point = mLights.begin();
-    while (point != mLights.end() && (*point)->mType != RndLight::kTypePoint) {
+    while (point != mLights.end() && (*point)->GetType() != RndLight::kTypePoint) {
         ++point;
     }
     if (point != mLights.end()) {
         const RndLight *pLight = *point;
         g_lightProgram = kLightProgramPoint;
-        g_lightMatrix[0] = pLight->mWorldXfm.mTranslation;
-        g_lightMatrix[0].w = -1.0f / pLight->mRange;
-        g_lightMatrix[1].w = pLight->mRange * pLight->mRange;
-        g_lightMatrix[2].w = pLight->mRange;
-        g_lightColors[0] = pLight->mColor;
+        g_lightMatrix[0] = pLight->GetWorldXfm().mTranslation;
+        g_lightMatrix[0].w = -1.0f / pLight->GetRange();
+        g_lightMatrix[1].w = pLight->GetRange() * pLight->GetRange();
+        g_lightMatrix[2].w = pLight->GetRange();
+        g_lightColors[0] = pLight->GetColor();
         g_lightColors[0].a = 0.0f;
     } else {
         int nLights = 0;
         for (auto it = mLights.begin(); it != mLights.end() && nLights < kMaxDirectionalLights;
              ++it) {
             const RndLight *pLight = *it;
-            if (pLight->mType != RndLight::kTypeDirectional) {
+            if (pLight->GetType() != RndLight::kTypeDirectional) {
                 continue;
             }
             g_lightProgram = kLightProgramDirectional;
-            const Vector3 &dir = pLight->mWorldXfm.mBasisY;
+            const Vector3 &dir = pLight->GetWorldXfm().mBasisY;
             const float fScale = 1.0f / std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
             ComponentOf(g_lightMatrix[0], nLights) = -(dir.x * fScale);
             ComponentOf(g_lightMatrix[1], nLights) = -(dir.y * fScale);
             ComponentOf(g_lightMatrix[2], nLights) = -(dir.z * fScale);
-            g_lightColors[nLights] = pLight->mColor;
+            g_lightColors[nLights] = pLight->GetColor();
             g_lightColors[nLights].a = 0.0f;
             ++nLights;
         }
@@ -170,34 +170,34 @@ int PsEnviron::DrawShowing() {
 
 void PsEnviron::SelectLights(const Transform *pXfm, const Sphere *pSphere) {
     DmaPacket &frame = DmaPacket::shared();
-    DmaQuadword *pHeader = frame.mCursor;
+    DmaQuadword *pHeader = frame.GetCursor();
     if (g_nLightingEnabled == 0) {
         pHeader->mWord[kHeaderProgram] = kLightProgramUnlit;
         pHeader->mWord[kHeaderVertBase] = 0;
         pHeader->mWord[kHeaderVertLight] = 0;
         pHeader->mWord[kHeaderReserved] = 0;
-        frame.mCursor += kLightBlockQwords;
+        frame.GetCursor() += kLightBlockQwords;
         return;
     }
 
     const PsMat *pMat = PsMat::sCurrent;
     pHeader->mDword[kLowDword] = 0;
     pHeader->mDword[kHighDword] = 0;
-    ++frame.mCursor;
-    if (pMat->mVertBase != 0) {
-        if (pMat->mBaseAmbient != 0) {
+    ++frame.GetCursor();
+    if (pMat->GetVertBase() != 0) {
+        if (pMat->GetBaseAmbient() != 0) {
             PushColor(g_ambientColor);
         } else if (g_lightProgram == kLightProgramAmbient) {
             pHeader->mWord[kHeaderProgram] = kLightProgramUnlit;
-            frame.mCursor += kLightBlockQwords - 1;
+            frame.GetCursor() += kLightBlockQwords - 1;
             return;
         } else {
             PushFloats(1.0f, 1.0f, 1.0f, 1.0f);
         }
-    } else if (pMat->mBaseAmbient != 0) {
-        PushProduct(pMat->mBaseColor, g_ambientColor);
+    } else if (pMat->GetBaseAmbient() != 0) {
+        PushProduct(pMat->GetBaseColor(), g_ambientColor);
     } else {
-        PushColor(pMat->mBaseColor);
+        PushColor(pMat->GetBaseColor());
     }
 
     if (pXfm == nullptr || g_lightProgram == kLightProgramAmbient) {
@@ -207,8 +207,8 @@ void PsEnviron::SelectLights(const Transform *pXfm, const Sphere *pSphere) {
 
     if (g_lightProgram == kLightProgramDirectional) {
         pHeader->mWord[kHeaderProgram] = kLightProgramDirectional;
-        pHeader->mWord[kHeaderVertBase] = pMat->mVertBase;
-        pHeader->mWord[kHeaderVertLight] = pMat->mVertLight;
+        pHeader->mWord[kHeaderVertBase] = pMat->GetVertBase();
+        pHeader->mWord[kHeaderVertLight] = pMat->GetVertLight();
         const Vector3 rowX = LightsAlong(pXfm->mBasisX);
         const Vector3 rowY = LightsAlong(pXfm->mBasisY);
         const Vector3 rowZ = LightsAlong(pXfm->mBasisZ);
@@ -216,8 +216,8 @@ void PsEnviron::SelectLights(const Transform *pXfm, const Sphere *pSphere) {
         PushVector(rowY);
         PushVector(rowZ);
         for (const Color &color : g_lightColors) {
-            if (pMat->mVertLight == 0) {
-                PushProduct(pMat->mLightColor, color);
+            if (pMat->GetVertLight() == 0) {
+                PushProduct(pMat->GetLightColor(), color);
             } else {
                 PushColor(color);
             }
@@ -240,17 +240,17 @@ void PsEnviron::SelectLights(const Transform *pXfm, const Sphere *pSphere) {
         }
     }
     pHeader->mWord[kHeaderProgram] = kLightProgramPoint;
-    pHeader->mWord[kHeaderVertBase] = pMat->mVertBase;
-    pHeader->mWord[kHeaderVertLight] = pMat->mVertLight;
+    pHeader->mWord[kHeaderVertBase] = pMat->GetVertBase();
+    pHeader->mWord[kHeaderVertLight] = pMat->GetVertLight();
     PushFloats(position.x, 0.0f, 0.0f, g_lightMatrix[0].w);
     PushFloats(position.y, 0.0f, 0.0f, g_lightMatrix[1].w);
     PushFloats(position.z, 0.0f, 0.0f, 0.0f);
-    if (pMat->mVertLight == 0) {
-        PushProduct(pMat->mLightColor, g_lightColors[0]);
+    if (pMat->GetVertLight() == 0) {
+        PushProduct(pMat->GetLightColor(), g_lightColors[0]);
     } else {
         PushColor(g_lightColors[0]);
     }
-    frame.mCursor += kPointTailQwords;
+    frame.GetCursor() += kPointTailQwords;
 }
 
 void PsEnviron::Init() {

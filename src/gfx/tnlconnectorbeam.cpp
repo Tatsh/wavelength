@@ -140,7 +140,7 @@ void TnlConnectorBeam::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxT
     FindConfigFloat(pSection, pDefaultSection, "height", &sHeight, true);
     FindConfigFloat(pSection, pDefaultSection, "width", &flWidth, true);
     sHeight = 1.0f - (TheGfxManager.GetScrollSpeed() * sHeight);
-    mLine->mWidth = flWidth * pTunnel->PanelWidth();
+    mLine->SetWidth(flWidth * pTunnel->PanelWidth());
     sParticleBaseSize *= TheGfxManager.GetScrollSpeed();
     sParticleMultiplierBaseSize *= TheGfxManager.GetScrollSpeed();
 
@@ -151,12 +151,12 @@ void TnlConnectorBeam::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxT
     FindConfigFloat(pSection, pDefaultSection, "amplitude", &sAmplitude, true);
     sAmplitude *= TheGfxManager.GetScrollSpeed();
 
-    mSway.mAmplitude = 1.0f;
-    mBeat.mAmplitude = 1.0f;
-    mSway.mFrequency = 1.0f;
-    mBeat.mFrequency = 0.0f;
-    mSway.mPhase = 0.0f;
-    mBeat.mPhase = 0.0f;
+    mSway.SetAmplitude(1.0f);
+    mBeat.SetAmplitude(1.0f);
+    mSway.SetFrequency(1.0f);
+    mBeat.SetFrequency(0.0f);
+    mSway.SetPhase(0.0f);
+    mBeat.SetPhase(0.0f);
 }
 
 void TnlConnectorBeam::Reset() {
@@ -190,24 +190,25 @@ void TnlConnectorBeam::SetWindow(char nTrack, TnlGems *pGems, float flStartTick,
     int nLinked = 0;
     float flLastTick = kNoTick;
     for (auto it = pGems->LowerBound(flFirstTick); it != pGems->GetGemList().end(); ++it) {
-        const float flTick = it->mTick;
+        const float flTick = it->GetTick();
         if (mEndTick < flTick) {
             break;
         }
-        if (flTick < mPulseTick || it->mTrack != nTrack) {
+        if (flTick < mPulseTick || it->GetTrack() != nTrack) {
             continue;
         }
-        if (it->mType == mExcludedType || it->mType == mOtherExcludedType) {
+        if (it->GetType() == mExcludedType || it->GetType() == mOtherExcludedType) {
             continue;
         }
-        if (flTick == flLastTick || it->mRemoveTick != TnlGem::kNever) {
+        if (flTick == flLastTick || it->GetRemoveTick() != TnlGem::kNever) {
             continue;
         }
-        if (nLinked != 0 && (static_cast<unsigned char>(it->mType) & TnlGem::kTypeSprite) != 0) {
+        if (nLinked != 0 &&
+            (static_cast<unsigned char>(it->GetType()) & TnlGem::kTypeSprite) != 0) {
             continue;
         }
         ++nLinked;
-        AddGem(flTick, it->Lateral(), it->mParticle);
+        AddGem(flTick, it->Lateral(), it->GetParticle());
         flLastTick = flTick;
     }
     RebuildSpans();
@@ -336,20 +337,20 @@ void TnlConnectorBeam::OnTicksChanged(char nTrack,
 }
 
 void TnlConnectorBeam::OnGemRemoved(const TnlGem *pGem) {
-    if (pGem->mTrack != mTrack) {
+    if (pGem->GetTrack() != mTrack) {
         return;
     }
-    if (!(pGem->mTick < mEndTick) || !(mStartTick <= pGem->mTick)) {
+    if (!(pGem->GetTick() < mEndTick) || !(mStartTick <= pGem->GetTick())) {
         return;
     }
-    if (pGem->mType == mExcludedType || pGem->mType == mOtherExcludedType) {
+    if (pGem->GetType() == mExcludedType || pGem->GetType() == mOtherExcludedType) {
         return;
     }
-    if (pGem->mMeshGroup == nullptr || pGem->mParticle == nullptr) {
+    if (pGem->GetMeshGroup() == nullptr || pGem->GetParticle() == nullptr) {
         return;
     }
     for (auto &gem : mGems) {
-        if (gem.mParticle == pGem->mParticle) {
+        if (gem.mParticle == pGem->GetParticle()) {
             gem.mParticle = nullptr;
         }
     }
@@ -360,10 +361,10 @@ void TnlConnectorBeam::Pulse(float flTick) {
         return;
     }
     if (mEnergy == 0.0f) {
-        mSway.mFrequency = RandomFloat(mMinFrequency, mMaxFrequency);
+        mSway.SetFrequency(RandomFloat(mMinFrequency, mMaxFrequency));
         mBeat.Sync(flTick, kHalfPi);
-        mBeat.mFrequency = kBeatFrequency;
-        mBeat.mAmplitude = kBeatAmplitude;
+        mBeat.SetFrequency(kBeatFrequency);
+        mBeat.SetAmplitude(kBeatAmplitude);
     }
     mPulseTick = flTick;
     mEnergy = mEnergyLevel;
@@ -412,7 +413,7 @@ void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
                 for (auto &gem : mGems) {
                     if (gem.mParticle != nullptr) {
                         gem.mParticle->mSize = flSize;
-                        gem.mParticle->mCol = mMultiplierMat->mBaseColor;
+                        gem.mParticle->mCol = mMultiplierMat->GetBaseColor();
                     }
                 }
             }
@@ -444,7 +445,8 @@ void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
     if (flLength != 0.0f) {
         flInvLength = 1.0f / flLength;
     }
-    const float flSwing = (mBeat.Sine(flNow) + (1.0f - mBeat.mAmplitude)) * flEnergy * sAmplitude;
+    const float flSwing =
+        (mBeat.Sine(flNow) + (1.0f - mBeat.GetAmplitude())) * flEnergy * sAmplitude;
     int nBias = 1;
     if (nRemaining != 0) {
         for (auto it = mSpans.begin(); it != mSpans.end();) {
@@ -516,7 +518,7 @@ void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
         mLine->SetShowing(0);
         return;
     }
-    const Vector3 &lastPoint = mLine->mPoints[nPoint + 1].mPoint;
+    const Vector3 &lastPoint = mLine->GetPoints()[nPoint + 1].GetPoint();
     for (; nPoint >= 0; --nPoint) {
         mLine->SetPoint(nPoint, lastPoint);
     }

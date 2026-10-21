@@ -108,6 +108,12 @@ public:
      */
     static float sBlinkLeft;
 
+    /** @param nHideBar Whether the bar is hidden. Reset() clears it. */
+    void SetHideBar(int nHideBar) {
+        mHideBar = nHideBar;
+    }
+
+private:
     RndView *mView;                /*!< `HUD energy.view`, posed on the level. */
     RndAnimatable *mColorAnim;     /*!< `HUD energy.mnm`, posed on the colour. */
     RndDrawable *mBar;             /*!< `HUD energy bar draw.view`. */

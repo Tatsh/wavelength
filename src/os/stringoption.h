@@ -40,5 +40,6 @@ public:
         DebugPrint("\t-%s <string>\n", mName);
     }
 
+private:
     String *mTarget; /*!< Receives the argument. */
 };

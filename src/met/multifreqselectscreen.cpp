@@ -87,14 +87,14 @@ bool MultiFreqSelectScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool MultiFreqSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    const int nPad = pMsg->mPad;
+    const int nPad = pMsg->GetPad();
     if (nPad >= mNumPlayers) {
         return FreqScreen::HandleJoypad(pMsg);
     }
-    if (pMsg->mPressed != 0 && pMsg->mButton == kPadTriangle) {
+    if (pMsg->GetPressed() != 0 && pMsg->GetButton() == kPadTriangle) {
         if (mConfirmed[nPad]) {
             mConfirmed[nPad] = false;
             FindFreqSelPanel(nPad)->SetChosen(false);
@@ -126,9 +126,9 @@ void MultiFreqSelectScreen::CheckDone() {
         return;
     }
     for (int i = 0; i < mNumPlayers; ++i) {
-        if (std::strcmp(TheGameDb->GetProfile(i)->mName.c_str(), kNoName) == 0) {
-            TheGameDb->GetProfile(i)->mName =
-                TheLocale.Localize(FormatString(kDefaultNameFormat, i + 1), true);
+        if (std::strcmp(TheGameDb->GetProfile(i)->GetName().c_str(), kNoName) == 0) {
+            TheGameDb->GetProfile(i)->SetName(
+                TheLocale.Localize(FormatString(kDefaultNameFormat, i + 1), true));
         }
     }
     const char *pszScreen;

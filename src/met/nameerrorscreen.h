@@ -54,5 +54,11 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+    /** @param pszSaveName The name of the save the dialog is about. */
+    void SetSaveName(const char *pszSaveName) {
+        mSaveName = pszSaveName;
+    }
+
+private:
     String mSaveName; /*!< The name of the save the dialog is about. */
 };

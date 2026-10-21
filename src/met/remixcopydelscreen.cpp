@@ -39,7 +39,7 @@ bool RemixCopyDelScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool RemixCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return UIScreen::HandleJoypad(pMsg);
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
@@ -47,7 +47,7 @@ bool RemixCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     }
     UIList *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kListComponent, false));
     RemixInfo info = mRemixes[pList->GetSelected()];
-    if (pMsg->mButton == kPadCircle) {
+    if (pMsg->GetButton() == kPadCircle) {
         const int nOtherSlot = mSlot == 0;
         TheGameDb->SetRemix(&info);
         TheGameDb->SetSong(info.mSong);
@@ -58,18 +58,18 @@ bool RemixCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         SaveRemixScreen *pSave =
             dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix_copy", false));
         pSave->SetSlot(nOtherSlot);
-        pSave->mRemixName = info.mName;
-        pSave->mOverwriteStatus = 0;
+        pSave->SetRemixName(info.mName);
+        pSave->SetOverwriteStatus(0);
         if (info.mReadOnly == 0) {
             TheUI.GotoScreen("copy_read_only_check");
         } else {
             TheUI.GotoScreen(pLoad);
         }
-    } else if (pMsg->mButton == kPadSquare) {
+    } else if (pMsg->GetButton() == kPadSquare) {
         FxMidi::PlaySquare();
         DeleteRemixScreen *pDelete =
             dynamic_cast<DeleteRemixScreen *>(TheUI.FindScreen("del_remix", false));
-        pDelete->mRemixName = info.mName;
+        pDelete->SetRemixName(info.mName);
         pDelete->SetSlot(mSlot);
         pDelete->SetStartScreen("mem_remix");
         if (mRemixes.size() == 1) {
@@ -80,7 +80,7 @@ bool RemixCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         NameErrorScreen *pCheck =
             dynamic_cast<NameErrorScreen *>(TheUI.FindScreen("del_remix_check", false));
         pCheck->SetSlot(mSlot);
-        pCheck->mSaveName = info.mName;
+        pCheck->SetSaveName(info.mName);
         TheUI.GotoScreen(pCheck);
     }
     return UIScreen::HandleJoypad(pMsg);

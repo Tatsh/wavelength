@@ -28,7 +28,7 @@ TrackBuilder::FormatMessage(const String &prefix, int nTick, int nTrack, const S
 }
 
 TrackBuilder::TrackBuilder(int nTrack, bool bValidate, ErrorHandler pfnError)
-    : mTrack(nTrack), mValidate(bValidate), mErrorHandler(pfnError) {
+    : mValidate(bValidate), mTrack(nTrack), mErrorHandler(pfnError) {
 }
 
 TrackBuilder::~TrackBuilder() {

@@ -199,8 +199,8 @@ void TriggerMgr::ComponentFocusEvent(const char *pszComponent,
 }
 
 void TriggerMgr::ScreenChangeEvent(UIScreenChangeMsg *pMsg) {
-    mScreen = NameOrNull(pMsg->mScreen);
-    mOldScreen = NameOrNull(pMsg->mOldScreen);
+    mScreen = NameOrNull(pMsg->GetScreen());
+    mOldScreen = NameOrNull(pMsg->GetOldScreen());
     mEvents[TriggerEvent::kTypeScreenChange].Fire();
     if ((mDebug & DebugBit(TriggerEvent::kTypeScreenChange)) != 0) {
         DebugPrint("Screen change event (screen %s, old screen %s)\n",

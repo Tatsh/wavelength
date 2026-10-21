@@ -107,6 +107,14 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+    /** @param profile The profile the player had before loading. */
+    void SetProfile(Campaign profile) {
+        mProfile = profile;
+    }
+
+protected:
     std::vector<Campaign> mProfiles; /*!< The Freqs of the memory card. */
-    Campaign mProfile;               /*!< The profile the player had before loading. */
+
+private:
+    Campaign mProfile; /*!< The profile the player had before loading. */
 };

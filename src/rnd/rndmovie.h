@@ -172,6 +172,19 @@ public:
      */
     static int sRev;
 
+    /** @return The movie file. */
+    const FilePath &GetFile() const {
+        return mFile;
+    }
+
+    /** @return The texture the movie plays into. */
+    RndTex *GetTex() const {
+        return mTex;
+    }
+
+protected:
     FilePath mFile; /*!< The movie file. */
     RndTex *mTex;   /*!< The texture the movie plays into. */
+
+private:
 };

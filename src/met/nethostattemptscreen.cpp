@@ -41,7 +41,7 @@ bool NetHostAttemptScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetHostAttemptScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         mCancelling = 0;
         HostpadRT::Create(this, &TheMetagame);
     }
@@ -57,7 +57,7 @@ bool NetHostAttemptScreen::HandleSuccess([[maybe_unused]] HostLaunchpadSuccessMs
 }
 
 bool NetHostAttemptScreen::HandleAborted(LaunchpadAbortedMsg *pMsg) {
-    if (pMsg->mReason == 0) {
+    if (pMsg->GetReason() == 0) {
         TheUI.GotoScreen(kHostingScreen);
     } else {
         TheUI.GotoScreen("net_hosting_error");
@@ -66,13 +66,13 @@ bool NetHostAttemptScreen::HandleAborted(LaunchpadAbortedMsg *pMsg) {
 }
 
 bool NetHostAttemptScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton != kPadTriangle) {
+    if (pMsg->GetButton() != kPadTriangle) {
         return false;
     }
     if (TheNetLaunchpad != nullptr) {

@@ -78,6 +78,7 @@ public:
      */
     void SetRemixes(const std::vector<RemixInfo> &remixes, int nGreyReadOnly, int nGreyUnplayable);
 
+private:
     std::vector<RemixInfo> mRemixes; /*!< The listed remixes. +0xc0 */
     const char *mPicPanel;           /*!< `pic_panel`, the panel of the selection. +0xd0 */
     int mGreyReadOnly;               /*!< Non-zero to grey the remixes that may not be changed. */

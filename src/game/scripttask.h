@@ -28,8 +28,6 @@ public:
      */
     explicit ScriptTask(DataArray *pCommand);
 
-    DataArray *mCommand; /*!< The command. */
-
 protected:
     /**
      * Run the command and finish the task.
@@ -38,4 +36,7 @@ protected:
      * @ghidraAddress PAL: 0x001432d8
      */
     void OnStart() override;
+
+private:
+    DataArray *mCommand; /*!< The command. */
 };

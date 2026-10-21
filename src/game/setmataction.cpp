@@ -41,7 +41,7 @@ SetMatAction::SetMatAction(DataArray *pAction) {
 }
 
 inline void SetMatAction::CheckStage(DataArray *pAction, int nStage) {
-    if (static_cast<int>(mMat->mStages.size()) >= nStage) {
+    if (static_cast<int>(mMat->GetStages().size()) >= nStage) {
         return;
     }
     // Yes, the binary passes the stage before the name, the reverse of the format's order.
@@ -67,12 +67,12 @@ void SetMatAction::Exec() {
     }
     for (int i = 0; i < kNumStages; ++i) {
         if ((mFlags & (kFlagBlend1 << i)) != 0) {
-            mMat->mStages[i].mBlend = mBlend[i];
+            mMat->GetStages()[i].SetBlend(mBlend[i]);
         }
     }
     for (int i = 0; i < kNumStages; ++i) {
         if ((mFlags & (kFlagTex1 << i)) != 0) {
-            mMat->mStages[i].SetTex(mTex[i]);
+            mMat->GetStages()[i].SetTex(mTex[i]);
         }
     }
 }

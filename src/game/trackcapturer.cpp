@@ -79,11 +79,11 @@ TrackCapturer::TrackCapturer(Receiver *pReceiver,
     if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         mNetFaker = std::make_unique<NetFaker>(this, 1);
     }
-    if ((TheGameConfig->mFakeInput || TheGameDb->GetTutorial()) &&
+    if ((TheGameConfig->GetFakeInput() || TheGameDb->GetTutorial()) &&
         TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
         mFaker = std::make_unique<Faker>(this);
         mFaker->Start();
-        mFaker->SetEnabled(TheGameConfig->mFakeInput);
+        mFaker->SetEnabled(TheGameConfig->GetFakeInput());
     }
 }
 
@@ -312,7 +312,7 @@ bool TrackCapturer::FindRun(int nFrom, int nTo, int *pStart, int *pEnd) {
     if (!(nFrom < nLimit)) {
         return false;
     }
-    const int nMaxBars = TheGameConfig->mBarCaptureThreshold;
+    const int nMaxBars = TheGameConfig->GetBarCaptureThreshold();
     const int nStart = FindActiveBar(nFrom, nLimit);
     *pStart = nStart;
     if (nStart == kNoBar) {
@@ -376,7 +376,7 @@ void TrackCapturer::CompleteBar(const GemCursor &cursor, int nQuiet) {
     }
     const int nLastBar = mRunEnd - 1;
     if (nBar == nLastBar || mState->IsBarEmpty(nLastBar)) {
-        if (TheGameConfig->mNoCapture) {
+        if (TheGameConfig->GetNoCapture()) {
             EndRun(cursor.GetTick(), nQuiet);
         } else {
             Capture(cursor, nQuiet);

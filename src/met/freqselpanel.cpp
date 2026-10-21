@@ -61,7 +61,7 @@ void FreqSelPanel::SetProfiles(const std::vector<Campaign> &profiles, int nSelec
 void FreqSelPanel::Enter(bool bForce, float fTime) {
     mNumProfiles = static_cast<int>(mProfiles.size());
     if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal && TheUI.FocusPanel() == this) {
-        if (mAvatarIndex != kFirstPlayer || TheGameDb->GetProfile(kFirstPlayer)->mCustom == 0) {
+        if (mAvatarIndex != kFirstPlayer || TheGameDb->GetProfile(kFirstPlayer)->GetCustom() == 0) {
             *TheGameDb->GetProfile(mAvatarIndex) = mProfiles[mSelected];
         }
     }
@@ -133,15 +133,15 @@ bool FreqSelPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
 
 void FreqSelPanel::ShowSelected() {
     Campaign &profile = mProfiles[mSelected];
-    SetAvatar(&profile.mAvatar);
+    SetAvatar(&profile.GetAvatar());
     RndMesh *pRankMesh = FindObject<RndMesh>(kRankMeshFormat, mName);
     const String button(FormatString(kNameButtonFormat, mAvatarIndex + 1));
-    if (std::strcmp(profile.mName.c_str(), kNoName) == 0) {
+    if (std::strcmp(profile.GetName().c_str(), kNoName) == 0) {
         FindComponent(button.c_str(), false)
             ->SetText(TheLocale.Localize(FormatString(kDefaultNameFormat, mAvatarIndex + 1), true));
         pRankMesh->SetMat(FindRankMaterial(kNoRankIcon));
     } else {
-        FindComponent(button.c_str(), false)->SetText(profile.mName.c_str());
+        FindComponent(button.c_str(), false)->SetText(profile.GetName().c_str());
         pRankMesh->SetMat(FindRankMaterial(profile.GetHighestBeatenSkillLevel()));
     }
 }

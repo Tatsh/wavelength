@@ -26,12 +26,12 @@ void MGCLCreateGameTask::OnStart() {
     sTask = this;
     const NetGameParams *pParams = &TheHostpadRT->GetParams();
     LobbyRT::EncodeGameName(
-        &name, pParams, 1, TheNetInet->GetConnectionType(), TheLobbyRT->GetLocalPlayer().mId);
+        &name, pParams, 1, TheNetInet->GetConnectionType(), TheLobbyRT->GetLocalPlayer().GetId());
     int nRules;
     int nRulesVariant;
-    LobbyRT::EncodeRules(&nRules, &nRulesVariant, pParams->mRuleSet, pParams->mSkillLevel);
+    LobbyRT::EncodeRules(&nRules, &nRulesVariant, pParams->GetRuleSet(), pParams->GetSkillLevel());
     int nLevel;
-    LobbyRT::EncodeSong(&nLevel, pParams->mSong.c_str());
+    LobbyRT::EncodeSong(&nLevel, pParams->GetSong().c_str());
 
     rtMgclCreateGameRequest request;
     memset(&request, 0, sizeof(request));

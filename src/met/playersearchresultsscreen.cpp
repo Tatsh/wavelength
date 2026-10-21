@@ -34,7 +34,7 @@ void PlayerSearchResultsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     const String unused; // Yes, the binary builds and discards this string.
     dynamic_cast<UILabel *>(TheUI.FindComponent(mFocusPanel->GetName(), kNameLabel, false))
-        ->SetText(mPlayer.mName.c_str());
+        ->SetText(mPlayer.GetName().c_str());
     if (mInChatroom != 0) {
         dynamic_cast<UILabel *>(TheUI.FindComponent(mFocusPanel->GetName(), kChatroomLabel, false))
             ->SetText(mChatroomName.c_str());
@@ -66,7 +66,7 @@ bool PlayerSearchResultsScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         } else {
             NetSwitchLobbyScreen *pSwitch =
                 dynamic_cast<NetSwitchLobbyScreen *>(TheUI.FindScreen(kSwitchLobbyScreen, false));
-            pSwitch->mChatroomId = mChatroomId;
+            pSwitch->SetChatroomId(mChatroomId);
             TheUI.GotoScreen(pSwitch);
         }
     }

@@ -38,12 +38,12 @@ bool RemixOrFreqScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (pMsg->GetButton() == kPadCross) {
         ErrorScreen *pLoad = nullptr;
         if (strcmp(pMsg->GetComponent()->GetName(), kRemixComponent) == 0) {
-            dynamic_cast<RemixCopyDelScreen *>(TheUI.FindScreen(kRemixListScreen, false))->mSlot =
-                mSlot;
+            dynamic_cast<RemixCopyDelScreen *>(TheUI.FindScreen(kRemixListScreen, false))
+                ->SetSlot(mSlot);
             pLoad = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kRemixLoadScreen, false));
         } else if (strcmp(pMsg->GetComponent()->GetName(), kFreqComponent) == 0) {
-            dynamic_cast<FreqCopyDelScreen *>(TheUI.FindScreen(kFreqListScreen, false))->mSlot =
-                mSlot;
+            dynamic_cast<FreqCopyDelScreen *>(TheUI.FindScreen(kFreqListScreen, false))
+                ->SetSlot(mSlot);
             pLoad = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kFreqLoadScreen, false));
         }
         // Yes, the binary calls through a null screen when another component was chosen.

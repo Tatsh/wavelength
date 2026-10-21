@@ -26,7 +26,7 @@ public:
     /**
      * Construct an empty table.
      *
-     * @param bSeparateSizes Non-zero to give each request size of a tag its own row.
+     * @param bSeparateSizes Non-zero to give each request size of a tag a separate row.
      * @ghidraAddress NTSC-U/C: 0x0029c7b0
      * @ghidraAddress PAL: 0x002a63d8
      */
@@ -106,10 +106,10 @@ public:
      */
     static void PrintDelta(PrnStream &stream, BlockStatTable *pCurrent, BlockStatTable *pPrevious);
 
-    BlockStat mStats[kCapacity]; /*!< The rows. */
-    int mCapacity;               /*!< kCapacity. */
-    int mCount;                  /*!< The rows in use. */
-    int mSeparateSizes;          /*!< Non-zero when each request size of a tag has its own row. */
+    /** @return The rows in use. */
+    int GetCount() const {
+        return mCount;
+    }
 
 private:
     // Order rows by bytes handed out, largest first, with equal rows in either order.
@@ -119,4 +119,9 @@ private:
     // Order rows by tag.
     // NTSC-U/C: 0x0029c788, PAL: 0x002a63b0
     static bool NameLess(const BlockStat &first, const BlockStat &second);
+
+    BlockStat mStats[kCapacity]; /*!< The rows. */
+    int mCapacity;               /*!< kCapacity. */
+    int mCount;                  /*!< The rows in use. */
+    int mSeparateSizes; /*!< Non-zero when each request size of a tag has a separate row. */
 };

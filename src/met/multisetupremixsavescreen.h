@@ -91,5 +91,6 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+private:
     int mFromShare; /*!< Non-zero after a return from `net_share_remix`, until the next save. */
 };

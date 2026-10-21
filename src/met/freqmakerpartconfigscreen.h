@@ -173,9 +173,11 @@ public:
      */
     bool HandleFocusChange(UIComponentFocusChangeMsg *pMsg);
 
-    int mOriginalIndex;               /*!< The entry of mChoices the part had on entry. +0x70 */
-    int mReserved74[3];               // +0x74, not yet recovered.
     alignas(16) Color mOriginalColor; /*!< The colour the part had on entry. +0x80 */
+
+private:
+    int mOriginalIndex;     /*!< The entry of mChoices the part had on entry. +0x70 */
+    int mReserved74[3];     // +0x74, not yet recovered.
     const char *mPartLabel; /*!< The text of the `f_maker_c` button of the part, or null. +0x90 */
     int mPart;              /*!< One of AvatarPartSet::Part, or AvatarPartSet::kNumParts. */
     int mIndex;             /*!< The entry of mChoices the part has. */

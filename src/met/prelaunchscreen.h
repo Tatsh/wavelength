@@ -63,5 +63,6 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+private:
     const char *mLaunchName; /*!< `launch_name`, the screen to change to. */
 };

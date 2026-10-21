@@ -52,23 +52,23 @@ void Gizmo::SetShowing(bool bShowing) {
 }
 
 bool Gizmo::IsShowing() const {
-    return mView->mShowing != 0;
+    return mView->GetShowing() != 0;
 }
 
 void Gizmo::SetShowAvatar(bool bShowAvatar) {
     int nBlend;
     if (bShowAvatar) {
-        mMat->mStages.front().SetTex(Avatar::GetTargetTex());
+        mMat->GetStages().front().SetTex(Avatar::GetTargetTex());
         nBlend = RndMat::kBlendSrcAlpha;
     } else {
-        mMat->mStages.front().SetTex(mMovie->mTex);
+        mMat->GetStages().front().SetTex(mMovie->GetTex());
         nBlend = RndMat::kBlendAdd;
     }
-    mMat->mBlend = nBlend;
+    mMat->SetBlend(nBlend);
 }
 
 bool Gizmo::IsShowingAvatar() const {
-    return mMat->mBlend == RndMat::kBlendSrcAlpha;
+    return mMat->GetBlend() == RndMat::kBlendSrcAlpha;
 }
 
 void Gizmo::Draw() {
@@ -121,14 +121,14 @@ void Gizmo::Poll(float fTime) {
         mMovie->SetFrame(TheGameDb->GetSongTick());
     }
     mView->SetFrame(fTime);
-    sceVu0MulAffineMatrixXyz(&xfm.mBasisX.x, &xfm.mBasisX.x, &mMesh->mLocalXfm.mBasisX.x);
-    mMesh->mLocalXfm = xfm;
-    mMesh->mDirty = 1;
+    sceVu0MulAffineMatrixXyz(&xfm.mBasisX.x, &xfm.mBasisX.x, &mMesh->GetLocalXfm().mBasisX.x);
+    mMesh->GetLocalXfm() = xfm;
+    mMesh->SetDirty(1);
     mView->UpdateWorldXfm(nullptr, 0);
 }
 
 Transform Gizmo::WorldXfm() const {
-    return mMesh->mWorldXfm;
+    return mMesh->GetWorldXfm();
 }
 
 void Gizmo::MoveTo(const Vector3 &position, const Quat &orientation, float fTime) {

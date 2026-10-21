@@ -91,5 +91,6 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+private:
     int mResult; /*!< Zero on success, otherwise a negative error. */
 };

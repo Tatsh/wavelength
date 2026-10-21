@@ -24,7 +24,7 @@ bool NetSwitchLobbyScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetSwitchLobbyScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheUI.FindPanel("fn_main", false)->SetFocus(nullptr, kPadNone);
         TheNetLobby->JoinChatroom(this, mChatroomId);
     }
@@ -32,9 +32,9 @@ bool NetSwitchLobbyScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
 }
 
 bool NetSwitchLobbyScreen::HandleJoinResult(JoinChatroomResultMsg *pMsg) {
-    if (pMsg->mResult == 0) {
+    if (pMsg->GetResult() == 0) {
         dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_main_c", false))->ClearMessages();
-        TheMetagame.SetChatroom(pMsg->mChatroom);
+        TheMetagame.SetChatroom(pMsg->GetChatroom());
         TheUI.GotoScreen("net_switch_lobby_success");
     } else {
         TheUI.GotoScreen("net_switch_lobby_error");

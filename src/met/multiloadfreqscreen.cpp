@@ -76,14 +76,14 @@ void MultiLoadFreqScreen::LoadNextSlot() {
     const int nPrefabs = pPrefabs->Size();
     Campaign prefab;
     for (int i = kFirstPrefab; i < nPrefabs; ++i) {
-        prefab.mAvatar.Load(pPrefabs->Array(i));
-        prefab.mName = TheLocale.Localize(pPrefabs->Array(i)->Sym(0), true);
+        prefab.GetAvatar().Load(pPrefabs->Array(i));
+        prefab.SetName(TheLocale.Localize(pPrefabs->Array(i)->Sym(0), true));
         mProfiles.push_back(prefab);
     }
 
     for (int nPlayer = 0; nPlayer < TheGameDb->GetNumPlayers(); ++nPlayer) {
         if (nPlayer == kFirstPlayer && mSelected[kFirstPlayer] != kNone) {
-            if (TheGameDb->GetProfile(kFirstPlayer)->mCustom == 0) {
+            if (TheGameDb->GetProfile(kFirstPlayer)->GetCustom() == 0) {
                 continue;
             }
             mFirstProfile[kFirstPlayer] = 0;
@@ -91,7 +91,7 @@ void MultiLoadFreqScreen::LoadNextSlot() {
                                    mFirstProfile[kFirstPlayer + 1] :
                                    nLoaded;
             for (int i = 0; i < nCount; ++i) {
-                if (std::strcmp(mProfiles[i].mName.c_str(),
+                if (std::strcmp(mProfiles[i].GetName().c_str(),
                                 TheGameDb->GetPlayerName(kFirstPlayer)) == 0) {
                     mSelected[kFirstPlayer] = i;
                     break;
@@ -149,7 +149,7 @@ bool MultiLoadFreqScreen::DispatchPriv(Message *pMsg) {
 
 #ifdef VIDEO_STANDARD_PAL
 bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0 && mLoaded == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0 && mLoaded == 0) {
         TheMCManager.LoadFreqs(this, mSlot);
     }
     return false;
@@ -165,7 +165,7 @@ void MultiLoadFreqScreen::Reset() {
 }
 #else
 bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         mProfiles.clear();
         for (int i = 0; i < kMaxPlayers; ++i) {
             mFirstProfile[i] = kNone;

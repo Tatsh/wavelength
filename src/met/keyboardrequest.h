@@ -104,6 +104,62 @@ public:
                     int nNumLines);
 #endif
 
+    /** @return Non-zero when the entry hides the text. */
+    int GetPassword() const {
+        return mPassword;
+    }
+
+    /** @return Non-zero when the `invalid_chars` apply. */
+    int GetInvalidChars() const {
+        return mInvalidChars;
+    }
+
+    /** @return The widest the text may be. */
+    int GetMaxWidth() const {
+        return mMaxWidth;
+    }
+
+    /** @return The most characters the entry accepts. */
+    int GetMaxChars() const {
+        return mMaxChars;
+    }
+
+    /** @return The lines of a scrolling entry, or 0 for one line. */
+    int GetNumLines() const {
+        return mNumLines;
+    }
+
+    /** @return The text the entry starts with. */
+    const String &GetText() const {
+        return mText;
+    }
+
+    /** @return The text the entry starts with. */
+    String &GetText() {
+        return mText;
+    }
+
+    /** @return The controller that types. */
+    int GetPad() const {
+        return mPad;
+    }
+
+    /** @return The screen the keyboard returns to, or null. */
+    UIScreen *GetReturnScreen() const {
+        return mReturnScreen;
+    }
+
+    /** @return The user that receives the text, or null. */
+    KeyboardUser *GetUser() const {
+        return mUser;
+    }
+
+    /** @return Non-zero when the function keys type their texts. */
+    int GetFunctionKeys() const {
+        return mFunctionKeys;
+    }
+
+private:
     KeyboardUser *mUser;     /*!< The user that receives the text, or null. */
     UIScreen *mReturnScreen; /*!< The screen the keyboard returns to, or null. */
     String mText;            /*!< The text the entry starts with. */

@@ -106,15 +106,6 @@ public:
      */
     bool AddItem(const UnlockableItem &item);
 
-    std::vector<UnlockableItem> mItems; /*!< The queued items. */
-    int mIndex;                         /*!< The index in mItems of the first item not shown. */
-    ViewAnimPlayer mAnimPlayer;         /*!< The player of `s_unlock.view`. +0x84 */
-    AvatarPartSet mPrefab;              /*!< The prefabricated Freq of the page. */
-    UnlockAvatarPanel *mPanel;          /*!< The panel `s_unloc_p` that shows the Freq. +0xd0 */
-    float mNextMs;                      /*!< The system time the next page shows. */
-    float mDelayMs;                     /*!< `unlock_prefab_time`, the time between pages. */
-    int mHalo;                          /*!< Whether `fm_hg_halo` is among the items. */
-
 private:
     /**
      * Set the text of `s_unlock_<line>.txt`.
@@ -174,4 +165,13 @@ private:
      * @ghidraAddress PAL: 0x0019f710
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
+
+    std::vector<UnlockableItem> mItems; /*!< The queued items. */
+    int mIndex;                         /*!< The index in mItems of the first item not shown. */
+    ViewAnimPlayer mAnimPlayer;         /*!< The player of `s_unlock.view`. +0x84 */
+    AvatarPartSet mPrefab;              /*!< The prefabricated Freq of the page. */
+    UnlockAvatarPanel *mPanel;          /*!< The panel `s_unloc_p` that shows the Freq. +0xd0 */
+    float mNextMs;                      /*!< The system time the next page shows. */
+    float mDelayMs;                     /*!< `unlock_prefab_time`, the time between pages. */
+    int mHalo;                          /*!< Whether `fm_hg_halo` is among the items. */
 };

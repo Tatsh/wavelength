@@ -14,13 +14,13 @@ constexpr float kHoldEndMargin = 1.0f;
 } // namespace
 
 bool MarketingScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (UIScreen::mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton != kPadCross || mEndTime == kNoHold) {
+    if (pMsg->GetButton() != kPadCross || mEndTime == kNoHold) {
         return false;
     }
     mEndTime = SystemMs() - kHoldEndMargin;

@@ -141,6 +141,7 @@ public:
      */
     static int ButtonForNote(unsigned char nNote);
 
+private:
     ScratchTrackData *mData;                    /*!< The data to fill. */
     int mReserved14;                            // +0x14, recorded and not yet identified.
     int mIndex;                                 /*!< The position the track fills in each set. */

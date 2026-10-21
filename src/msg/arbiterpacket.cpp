@@ -32,7 +32,8 @@ void ArbiterPacket::saveGuts(BinStream &stream) const {
         bits.Pack(player.mSlot, kSlotBits);
     }
     stream.Write(buffer,
-                 static_cast<int>(static_cast<unsigned int>(bits.mBitPos - 1) / kBitsPerByte) + 1);
+                 static_cast<int>(static_cast<unsigned int>(bits.GetBitPos() - 1) / kBitsPerByte) +
+                     1);
 }
 
 void ArbiterPacket::restoreGuts(BinStream &stream) {

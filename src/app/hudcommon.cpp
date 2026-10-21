@@ -117,16 +117,16 @@ void HudCommon::Draw() {
         mSections->Draw();
     }
     if (mStick != nullptr) {
-        mStick->mMesh->Draw();
+        mStick->GetMesh()->Draw();
     }
 }
 
 void HudCommon::DrawText() {
     if (mChat != nullptr) {
-        mChat->mDrawable->Draw();
+        mChat->GetDrawable()->Draw();
     }
     mTextMessage.Draw();
-    static_cast<RndDrawable *>(mLetterbox.mView)->Draw();
+    static_cast<RndDrawable *>(mLetterbox.GetView())->Draw();
     mMessage.Draw();
     mMessage2.Draw();
 }

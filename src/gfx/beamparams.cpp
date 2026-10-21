@@ -71,7 +71,7 @@ void BeamParams::Apply(RndLine *pLine, RndMat *pMat) const {
     }
     pMat->Copy(mMat, 0);
     pLine->SetNumPoints(mPoints);
-    pLine->mWidth = mWidth;
+    pLine->SetWidth(mWidth);
     pLine->SetFoldAngle((mFoldAngle * kPi) / kDegreesPerHalfTurn);
 }
 

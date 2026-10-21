@@ -94,7 +94,7 @@ void NetLPadPlayerPanel::Update(std::list<NetLaunchpadPlayer> *pPlayers) {
         if (std::strcmp(pButton->Text(), focus.c_str()) == 0) {
             mSelected = nRow - 1;
             bFound = true;
-            SetAvatar(&player->mPlayer.mAvatar);
+            SetAvatar(&player->mPlayer.GetAvatar());
             ShowPlayer(&*player);
             SetFocus(pButton, kPadNone);
             if (TheUI.GetCurrentScreen()->GetFocusPanel() == this) {
@@ -111,7 +111,7 @@ void NetLPadPlayerPanel::Update(std::list<NetLaunchpadPlayer> *pPlayers) {
     if (!bFound && !pPlayers->empty()) {
         mSelected = 0;
         player = pPlayers->begin();
-        SetAvatar(&player->mPlayer.mAvatar);
+        SetAvatar(&player->mPlayer.GetAvatar());
         ShowPlayer(&*player);
         SetFocus(FindComponent(kFirstPlayerButton, false), kPadNone);
         if (TheUI.GetCurrentScreen()->GetFocusPanel() == this) {
@@ -124,9 +124,9 @@ void NetLPadPlayerPanel::Update(std::list<NetLaunchpadPlayer> *pPlayers) {
 
 void NetLPadPlayerPanel::ShowPlayer(NetLaunchpadPlayer *pPlayer) {
     FindComponent(kGamesComponent, false)
-        ->SetText(FormatString(TheLocale.Localize(kGamesToken, true), pPlayer->mPlayer.mGames));
+        ->SetText(FormatString(TheLocale.Localize(kGamesToken, true), pPlayer->mPlayer.GetGames()));
     UIComponent *pNet = FindComponent(kNetComponent, false);
-    const String connection(GetConnectionTypeName(pPlayer->mPlayer.mConnectionType));
+    const String connection(GetConnectionTypeName(pPlayer->mPlayer.GetConnectionType()));
     pNet->SetText(FormatString(TheLocale.Localize(kNetToken, true), connection.c_str()));
     const char *pszColor = GetPlayerColorName(pPlayer->mColor);
     RndMesh *pColor = FindObject<RndMesh>(kColorMesh);
@@ -157,7 +157,7 @@ void NetLPadPlayerPanel::Unfocus() {
 
 void NetLPadPlayerPanel::UpdateHelp() {
     NetLpadScreen *pScreen = dynamic_cast<NetLpadScreen *>(TheUI.GetCurrentScreen());
-    auto player = FindPlayer(pScreen->mPlayers, mSelected);
+    auto player = FindPlayer(pScreen->GetPlayers(), mSelected);
     if (TheNetLaunchpad != nullptr && TheNetLaunchpad->IsGuest() == kHostId &&
         player->mId != TheNetLaunchpad->IsGuest()) {
         TheMetagame.SetHelpText(TheLocale.Localize(kHostHelpToken, true));
@@ -186,7 +186,7 @@ bool NetLPadPlayerPanel::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool NetLPadPlayerPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     UIScreen *pCurrent = TheUI.GetCurrentScreen();
@@ -195,10 +195,10 @@ bool NetLPadPlayerPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     }
 
     NetLpadScreen *pScreen = dynamic_cast<NetLpadScreen *>(pCurrent);
-    std::list<NetLaunchpadPlayer> &players = pScreen->mPlayers;
-    const int nButton = pMsg->mButton;
+    std::list<NetLaunchpadPlayer> &players = pScreen->GetPlayers();
+    const int nButton = pMsg->GetButton();
     if (nButton == kPadTriangle || nButton == kPadDLeft) {
-        pScreen->SetFocus(TheUI.FindPanel(pScreen->mButtonPanel, false));
+        pScreen->SetFocus(TheUI.FindPanel(pScreen->GetButtonPanel(), false));
         return false;
     }
     if (nButton == kPadDUp || nButton == kPadDDown) {
@@ -209,7 +209,7 @@ bool NetLPadPlayerPanel::HandleJoypad(JoypadInputMsg *pMsg) {
             mSelected = mSelected + 1 < nCount ? mSelected + 1 : 0;
         }
         auto player = FindPlayer(players, mSelected);
-        SetAvatar(&player->mPlayer.mAvatar);
+        SetAvatar(&player->mPlayer.GetAvatar());
         ShowPlayer(&*player);
         return false;
     }
@@ -223,10 +223,10 @@ bool NetLPadPlayerPanel::HandleJoypad(JoypadInputMsg *pMsg) {
         }
         FxMidi::PlaySquare();
         NetLpadScreen *pLpad = dynamic_cast<NetLpadScreen *>(TheUI.GetCurrentScreen());
-        pLpad->SetFocus(TheUI.FindPanel(pLpad->mButtonPanel, false));
+        pLpad->SetFocus(TheUI.FindPanel(pLpad->GetButtonPanel(), false));
         BootScreen *pBoot = dynamic_cast<BootScreen *>(TheUI.FindScreen(kBootScreen, false));
-        pBoot->mPlayerName = player->mPlayer.mName.c_str();
-        pBoot->mPlayer = player->mId;
+        pBoot->SetPlayerName(player->mPlayer.GetName().c_str());
+        pBoot->SetPlayer(player->mId);
         TheUI.GotoScreen(pBoot);
         return false;
     }

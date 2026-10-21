@@ -124,6 +124,17 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The colour of the slot of the console, 0 to 3. */
+    int GetColor() const {
+        return mColor;
+    }
+
+    /** @return The settings of the game. */
+    const NetGameParams &GetParams() const {
+        return mParams;
+    }
+
+private:
     int mColor;            /*!< The colour of the slot of the console, 0 to 3. */
     NetGameParams mParams; /*!< The settings of the game. */
 };

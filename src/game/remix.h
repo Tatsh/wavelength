@@ -238,6 +238,7 @@ public:
      */
     void UnloadFxBank();
 
+private:
     int mReserved48;    // +0x48, set to 2 and not read by any routine here.
     RemixLogic *mLogic; /*!< The logic CreateLogic() installed, or null. */
     int mFxBankSlot;    /*!< The synthesiser slot of the effect bank, -1 until it is read. */

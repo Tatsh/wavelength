@@ -328,13 +328,62 @@ public:
      */
     void ReleaseAfterFrame(MemHandle *pHandle);
 
+    /** @return BlurActive. */
+    int GetBlurActive() const {
+        return mBlurActive;
+    }
+
+    /** @param nBlurActive BlurActive. */
+    void SetBlurActive(int nBlurActive) {
+        mBlurActive = nBlurActive;
+    }
+
+    /** @return The opacity of the frame DrawBlur() draws. */
+    float GetBlurAmount() const {
+        return mBlurAmount;
+    }
+
+    /** @param fBlurAmount The opacity of the frame DrawBlur() draws. */
+    void SetBlurAmount(float fBlurAmount) {
+        mBlurAmount = fBlurAmount;
+    }
+
+    /** @return The offset of the frame DrawBlur() draws, in 1/16 pixel. */
+    int GetBlurCount() const {
+        return mBlurCount;
+    }
+
+    /** @param nBlurCount The offset of the frame DrawBlur() draws, in 1/16 pixel. */
+    void SetBlurCount(int nBlurCount) {
+        mBlurCount = nBlurCount;
+    }
+
+    /** @return The part of the screen DrawBlur() covers, x, y, w, and h. */
+    const float *GetBlurRect() const {
+        return mBlurRect;
+    }
+
+    /** @return The part of the screen DrawBlur() covers, x, y, w, and h, for writing. */
+    float *GetBlurRect() {
+        return mBlurRect;
+    }
+
+    /** @return The bytes of a depth buffer pixel. */
+    int GetDepthBytes() const {
+        return mDepthBytes;
+    }
+
+    /** @return Non-zero for NTSC output, zero for PAL. */
+    int GetNtsc() const {
+        return mNtsc;
+    }
+
+private:
     void *mScratchpadCopy; /*!< The copy SaveScratchpad() made, or null. */
     int mNtsc;             /*!< Non-zero for NTSC output, zero for PAL. */
     int mDepthBytes;       /*!< The bytes of a depth buffer pixel. */
-
     /** The values last written to the GS registers. */
     unsigned long long mGsRegs[kGsRegCount];
-
     int mSwapVblank;                 /*!< The vertical blank count the next swap waits for. */
     int mDrawBuffer;                 /*!< The buffer being drawn, 0 or 1. */
     int mReserved458;                // +0x458 Cleared by the constructor and never read.
@@ -342,13 +391,11 @@ public:
     int mReserved460;                // +0x460 Set to 5 by the constructor and never read.
     int mReserved464;                // +0x464 Cleared by the constructor and never read.
     int mReserved468;                // +0x468 Cleared by the constructor and never read.
-
     /**
      * Whether the full-screen blur runs. The blur action and the enlarging blur set it, and the
      * head-up display clears it when it goes away.
      */
     int mBlurActive;
-
     float mBlurRect[4];   /*!< The part of the screen DrawBlur() covers, x, y, w, and h. */
     float mBlurAmount;    /*!< The opacity of the frame DrawBlur() draws. */
     int mBlurCount;       /*!< The offset of the frame DrawBlur() draws, in 1/16 pixel. */

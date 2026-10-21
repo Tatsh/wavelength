@@ -78,6 +78,12 @@ public:
      */
     void UpdateSlide();
 
+    /** @param nEnabled Whether the icon may slide into view. */
+    void SetEnabled(int nEnabled) {
+        mEnabled = nEnabled;
+    }
+
+private:
     RndView *mIcons[kNumIcons]; /*!< The icon of each power-up, indexed by Icon. */
     RndView *mView;             /*!< `<hud> pup<n>.view`, which draws the icon shown. */
     RndText *mName;             /*!< `<hud> pup<n> name.txt`. */

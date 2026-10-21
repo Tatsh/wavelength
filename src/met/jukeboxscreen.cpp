@@ -98,8 +98,8 @@ bool JukeboxScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         auto *pPlayback =
             dynamic_cast<RedbookPlaybackScreen *>(TheUI.FindScreen(kPlaybackScreen, false));
         pPlayback->ClearSongs();
-        pPlayback->mShuffle = std::strcmp(pszButton, kInOrderComponent) != 0;
-        mPlaylist = FindPlayList()->mSongs;
+        pPlayback->SetShuffle(std::strcmp(pszButton, kInOrderComponent) != 0);
+        mPlaylist = FindPlayList()->GetSongs();
         int nSongs = 0;
         for (unsigned int i = kGroupEntries; i < mPlaylist.size(); ++i) {
             if (mPlaylist[i].mSelected != 0) {
@@ -126,10 +126,10 @@ bool JukeboxScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool JukeboxScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadTriangle && pMsg->GetPressed() != 0) {
         if (std::strcmp(TheUI.FocusPanel()->GetName(), kButtonPanel) == 0) {
             mPlaylist.clear();
             TheUI.GotoScreen(kModeScreen);

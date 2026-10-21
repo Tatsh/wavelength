@@ -86,6 +86,37 @@ public:
      */
     float ValueAt(float fSeconds) const;
 
+    /** @return One of Waveform. */
+    int GetWaveform() const {
+        return mWaveform;
+    }
+
+    /** @param nWaveform One of Waveform. */
+    void SetWaveform(int nWaveform) {
+        mWaveform = nWaveform;
+    }
+
+    /** @return The offset of the start in whole cycles. */
+    float GetPhase() const {
+        return mPhase;
+    }
+
+    /** @param fPhase The offset of the start in whole cycles. */
+    void SetPhase(float fPhase) {
+        mPhase = fPhase;
+    }
+
+    /** @return The period in seconds. */
+    float GetPeriod() const {
+        return mPeriod;
+    }
+
+    /** @param fPeriod The period in seconds. */
+    void SetPeriod(float fPeriod) {
+        mPeriod = fPeriod;
+    }
+
+private:
     Timer mTimer;     /*!< The clock of the oscillator. */
     int mWaveform;    /*!< One of Waveform. */
     float mPeriod;    /*!< The period in seconds. */

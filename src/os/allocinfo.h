@@ -43,6 +43,57 @@ public:
      */
     static bool Less(const AllocInfo *pFirst, const AllocInfo *pSecond);
 
+    /** @return The bytes the caller requested, 0 for a pool block. */
+    int GetSizeRequested() const {
+        return mSizeRequested;
+    }
+
+    /** @param nSizeRequested The bytes the caller requested, 0 for a pool block. */
+    void SetSizeRequested(int nSizeRequested) {
+        mSizeRequested = nSizeRequested;
+    }
+
+    /** @return The bytes the heap handed out. */
+    int GetSizeActual() const {
+        return mSizeActual;
+    }
+
+    /** @param nSizeActual The bytes the heap handed out. */
+    void SetSizeActual(int nSizeActual) {
+        mSizeActual = nSizeActual;
+    }
+
+    /** @return The allocation tag, or null for a pool block. */
+    const char *GetTag() const {
+        return mTag;
+    }
+
+    /** @param pszTag The allocation tag, or null for a pool block. */
+    void SetTag(const char *pszTag) {
+        mTag = pszTag;
+    }
+
+    /** @return The tag of the pool block at the address, or null. */
+    const char *GetPoolTag() const {
+        return mPoolTag;
+    }
+
+    /** @param pszPoolTag The tag of the pool block at the address, or null. */
+    void SetPoolTag(const char *pszPoolTag) {
+        mPoolTag = pszPoolTag;
+    }
+
+    /** @return The size of the pool block at the address. */
+    int GetPoolSize() const {
+        return mPoolSize;
+    }
+
+    /** @param nPoolSize The size of the pool block at the address. */
+    void SetPoolSize(int nPoolSize) {
+        mPoolSize = nPoolSize;
+    }
+
+private:
     int mSizeRequested;              /*!< The bytes the caller requested, 0 for a pool block. */
     int mSizeActual;                 /*!< The bytes the heap handed out. */
     const char *mTag;                /*!< The allocation tag, or null for a pool block. */

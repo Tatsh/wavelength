@@ -53,20 +53,20 @@ bool RatingStat::IsProvisional() const {
 }
 
 void LobbyPlayer::SetRating(const RatingStat *pStat) {
-    mRating = pStat->mRating;
-    mRecord.mGames = pStat->mGames;
-    mRecord.mOpponents = pStat->mOpponents;
-    mRecord.mWins = pStat->mWins;
-    mRecord.mPoints = pStat->mPoints;
+    mRating = pStat->GetRating();
+    mRecord.mGames = pStat->GetGames();
+    mRecord.mOpponents = pStat->GetOpponents();
+    mRecord.mWins = pStat->GetWins();
+    mRecord.mPoints = pStat->GetPoints();
 }
 
 void RatingStat::Set(const NetLaunchpadPlayer *pPlayer) {
     mId = pPlayer->mId;
-    mRating = pPlayer->mPlayer.mRating;
-    mGames = pPlayer->mPlayer.mRecord.mGames;
-    mWins = pPlayer->mPlayer.mRecord.mWins;
-    mPoints = pPlayer->mPlayer.mRecord.mPoints;
-    mOpponents = pPlayer->mPlayer.mRecord.mOpponents;
+    mRating = pPlayer->mPlayer.GetRating();
+    mGames = pPlayer->mPlayer.GetRecord().mGames;
+    mWins = pPlayer->mPlayer.GetRecord().mWins;
+    mPoints = pPlayer->mPlayer.GetRecord().mPoints;
+    mOpponents = pPlayer->mPlayer.GetRecord().mOpponents;
 }
 
 float RatingStat::Outcome(int nScore, int nOpponentScore) {

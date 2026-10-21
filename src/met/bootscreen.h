@@ -75,6 +75,17 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
+    /** @param pszPlayerName The name of the guest, set by the screen that opens this one. */
+    void SetPlayerName(const char *pszPlayerName) {
+        mPlayerName = pszPlayerName;
+    }
+
+    /** @param nPlayer The guest, set by the screen that opens this one. */
+    void SetPlayer(int nPlayer) {
+        mPlayer = nPlayer;
+    }
+
+private:
     String mPlayerName; /*!< The name of the guest, set by the screen that opens this one. */
     int mPlayer;        /*!< The guest, set by the screen that opens this one. */
 };

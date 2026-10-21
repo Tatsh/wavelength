@@ -58,7 +58,7 @@ void TextFilterTask::OnResponse(int nConnection,
         *pTask->mFiltered = pResponse->text;
 #endif
         if (pTask->mReplaceStars != 0) {
-            for (char *pszText = pTask->mFiltered->mBuffer; *pszText != '\0'; ++pszText) {
+            for (char *pszText = pTask->mFiltered->GetBuffer(); *pszText != '\0'; ++pszText) {
                 if (*pszText == kFilteredCharacter) {
                     *pszText = kReplacementCharacter;
                 }

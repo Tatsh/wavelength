@@ -124,5 +124,16 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The player's score. */
+    int GetScore() const {
+        return mScore;
+    }
+
+    /** @param nScore The player's score. */
+    void SetScore(int nScore) {
+        mScore = nScore;
+    }
+
+private:
     int mScore; /*!< The player's score. */
 };

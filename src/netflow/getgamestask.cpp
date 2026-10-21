@@ -56,9 +56,9 @@ void GetGamesTask::OnResponse(int nConnection,
                                 &info.mLaunchpadWorld,
                                 pResponse->gameName);
 #endif
-        info.mOpen = TheGameDb->HasSong(info.mParams.mSong.c_str());
+        info.mOpen = TheGameDb->HasSong(info.mParams.GetSong().c_str());
         info.mStatus = LobbyRT::LaunchpadStatusOf(pResponse->worldStatus);
-        if (info.mPlayerCount >= info.mParams.mMaxPlayers) {
+        if (info.mPlayerCount >= info.mParams.GetMaxPlayers()) {
             info.mStatus = NetLaunchpadInfo::kStatusFull;
         }
         TheLobbyRT->GetLaunchpads().push_back(info);

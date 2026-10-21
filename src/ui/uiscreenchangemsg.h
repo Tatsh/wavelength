@@ -96,6 +96,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The screen to change to. */
+    UIScreen *GetScreen() const {
+        return mScreen;
+    }
+
+    /** @return The current screen. */
+    UIScreen *GetOldScreen() const {
+        return mOldScreen;
+    }
+
+private:
     UIScreen *mScreen;    /*!< The screen to change to. */
     UIScreen *mOldScreen; /*!< The current screen. */
 };

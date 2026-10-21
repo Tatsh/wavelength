@@ -138,6 +138,7 @@ public:
      */
     static Vector2 sDepthRange;
 
+private:
     int mWanted;             /*!< Whether Show() asked for the display. */
     signed char mPlayer;     /*!< The player shown, or kNoPlayer. */
     AvatarPartSet *mAvatar;  /*!< The avatar of mPlayer, or null. */

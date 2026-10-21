@@ -93,10 +93,10 @@ void MetagameArena::PollLoad([[maybe_unused]] float flTime) {
 
     mView = dynamic_cast<RndView *>(TheManager.Find(FormatString(kViewFormat, mPrefix.c_str())));
     mTransitionView = dynamic_cast<RndView *>(TheManager.Find(kTransitionView));
-    for (RndAnimatable *pAnim : mView->mAnims) {
+    for (RndAnimatable *pAnim : mView->GetAnims()) {
         RndView *pView = dynamic_cast<RndView *>(pAnim);
         if (pView != nullptr) {
-            pView->SetVisibleRange(-pView->mVisibleRange.x, -pView->mVisibleRange.y);
+            pView->SetVisibleRange(-pView->GetVisibleRange().x, -pView->GetVisibleRange().y);
         }
     }
 
@@ -146,14 +146,14 @@ void MetagameArena::Poll(int nState, int nLoadStage, float flTime, float flTick)
         nLoadStage == Metagame::kLoadStageDone) {
         TheTriggerMgr.MetagameEvent(flTime, flTime, 0.0f);
         TheTriggerMgr.Poll();
-        const float flFrame = mTransitionView->mFrame;
-        for (RndAnimatable *pAnim : mView->mAnims) {
+        const float flFrame = mTransitionView->GetFrame();
+        for (RndAnimatable *pAnim : mView->GetAnims()) {
             RndView *pView = dynamic_cast<RndView *>(pAnim);
-            if (pView == nullptr || !(pView->mVisibleRange.y < pView->mVisibleRange.x)) {
+            if (pView == nullptr || !(pView->GetVisibleRange().y < pView->GetVisibleRange().x)) {
                 continue;
             }
             int nActive = 0;
-            if (-pView->mVisibleRange.x <= flFrame && flFrame < -pView->mVisibleRange.y) {
+            if (-pView->GetVisibleRange().x <= flFrame && flFrame < -pView->GetVisibleRange().y) {
                 nActive = 1;
             }
             pView->SetInRange(nActive);

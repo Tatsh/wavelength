@@ -78,7 +78,7 @@ bool UploadNoteScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
     UIPanel *pPanel = mFocusPanel;
@@ -86,8 +86,8 @@ bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
-    if (pMsg->mButton == kPadCircle) {
-        if (pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadCircle) {
+        if (pMsg->GetPressed() != 0) {
             KeyboardPanel *pKeyboard =
                 dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
             UITextEntry *pNote =
@@ -98,15 +98,15 @@ bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
                                           pNote->Text(),
                                           kKeyboardPad,
                                           kNoCharLimit,
-                                          static_cast<int>(pNote->mMaxEntryWidth),
+                                          static_cast<int>(pNote->GetMaxEntryWidth()),
                                           kNoFunctionKeys,
                                           kNoInvalidChars,
                                           kShowText,
-                                          pNote->mWordWrapLines);
+                                          pNote->GetWordWrapLines());
             pKeyboard->SetRequest(request);
             TheUI.GotoScreen(kKeyboardScreen);
         }
-    } else if (pMsg->mButton == kPadCross && pMsg->mPressed != 0) {
+    } else if (pMsg->GetButton() == kPadCross && pMsg->GetPressed() != 0) {
         mFocusPanel->SetFocus(TheUI.FindComponent(kNotePanel, kUploadButton, false), kPadNone);
         return true;
     }
@@ -121,14 +121,14 @@ bool UploadNoteScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         if (mIsTool != 0) {
             auto *pRepos =
                 dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false));
-            pRepos->mNote = pNote->Text();
+            pRepos->SetNote(pNote->Text());
             TheUI.GotoScreen(pRepos);
             return UIScreen::HandleSelect(pMsg);
         }
 #endif
         NetDoUploadScreen *pUpload =
             dynamic_cast<NetDoUploadScreen *>(TheUI.FindScreen(kUploadScreen, false));
-        pUpload->mNote = pNote->Text();
+        pUpload->SetNote(pNote->Text());
         TheUI.GotoScreen(pUpload);
     }
     return UIScreen::HandleSelect(pMsg);

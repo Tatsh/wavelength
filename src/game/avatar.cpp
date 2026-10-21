@@ -105,12 +105,12 @@ void Avatar::Init() {
 
     sCam = dynamic_cast<RndCam *>(TheManager.Find("base_freq.cam"));
     const Vector3 position{0.0f, 0.0f, 0.0f};
-    sCam->mDirty = 1;
-    sCam->mLocalXfm.mTranslation = position;
+    sCam->SetDirty(1);
+    sCam->GetLocalXfm().mTranslation = position;
     sView = dynamic_cast<RndView *>(TheManager.Find("base_freq.view"));
     sView->ClearTrans();
-    sFov = sCam->mFov;
-    sTargetTex = sCam->mTargetTex;
+    sFov = sCam->GetFov();
+    sTargetTex = sCam->GetTargetTex();
     sNone = LookupSymbol("fm_none");
     sIdle = LookupSymbol("idle");
     sCams = pAvatar->FindArray("cams", true);
@@ -316,22 +316,22 @@ void Avatar::Draw(const Rect *pScreenRect) {
 
     if (pScreenRect != nullptr) {
         sCam->SetTargetTex(nullptr);
-        const Rect &current = sCam->mScreenRect;
+        const Rect &current = sCam->GetScreenRect();
         const bool bSame = pScreenRect->x == current.x && pScreenRect->y == current.y &&
                            pScreenRect->w == current.w && pScreenRect->h == current.h;
         if (!bSame) {
             const float fFov = RndCam::ConvertFov(
                 1.0f, (pScreenRect->h * TheRnd->AspectRatio()) / pScreenRect->w, sFov);
-            sCam->mScreenRect = *pScreenRect;
+            sCam->GetScreenRect() = *pScreenRect;
             sCam->UpdateProjection();
-            sCam->SetFrustum(sCam->mNearPlane, sCam->mFarPlane, fFov);
+            sCam->SetFrustum(sCam->GetNearPlane(), sCam->GetFarPlane(), fFov);
         }
-    } else if (sCam->mTargetTex == nullptr) {
+    } else if (sCam->GetTargetTex() == nullptr) {
         sCam->SetTargetTex(sTargetTex);
         const Rect full{0.0f, 0.0f, 1.0f, 1.0f};
-        sCam->mScreenRect = full;
+        sCam->GetScreenRect() = full;
         sCam->UpdateProjection();
-        sCam->SetFrustum(sCam->mNearPlane, sCam->mFarPlane, sFov);
+        sCam->SetFrustum(sCam->GetNearPlane(), sCam->GetFarPlane(), sFov);
     }
 
     RndEnviron *pEnviron = RndEnviron::sCurrent;
@@ -366,20 +366,20 @@ void Avatar::DrawCamera() {
 }
 
 void Avatar::GetDepthRange(float *pfNear, float *pfFar) {
-    *pfNear = sCam->mZRange.x;
-    *pfFar = sCam->mZRange.y;
+    *pfNear = sCam->GetZRange().x;
+    *pfFar = sCam->GetZRange().y;
 }
 
 void Avatar::SetDepthRange(float fNear, float fFar) {
     const Vector2 range{fNear, fFar};
-    sCam->mZRange = range;
+    sCam->GetZRange() = range;
 }
 
 void Avatar::SetViewAngles(float fTilt, float fTurn) {
-    const Vector3 position{0.0f, 0.0f, sCam->mLocalXfm.mTranslation.z};
+    const Vector3 position{0.0f, 0.0f, sCam->GetLocalXfm().mTranslation.z};
     sView->SetOrigin(position);
-    sView->mLocalXfm.mTranslation = position;
-    sView->mDirty = 1;
+    sView->GetLocalXfm().mTranslation = position;
+    sView->SetDirty(1);
 
     const float fTurnCos = SinApprox(fTurn + kHalfPi);
     const float fTurnSin = SinApprox(fTurn);
@@ -398,10 +398,10 @@ void Avatar::SetViewAngles(float fTilt, float fTurn) {
     for (Vector3 &row : rows) {
         MultiplyRow(row, tilt);
     }
-    sView->mLocalXfm.mBasisX = rows[0];
-    sView->mLocalXfm.mBasisY = rows[1];
-    sView->mDirty = 1;
-    sView->mLocalXfm.mBasisZ = rows[2];
+    sView->GetLocalXfm().mBasisX = rows[0];
+    sView->GetLocalXfm().mBasisY = rows[1];
+    sView->SetDirty(1);
+    sView->GetLocalXfm().mBasisZ = rows[2];
     sView->UpdateWorldXfm(nullptr, 0);
 }
 
@@ -571,10 +571,10 @@ void Avatar::Poll(float fTime) {
     }
     Vector3 rows[3];
     Rnd::MakeRotMatrix(rotation, &rows[0].x);
-    sCam->mLocalXfm.mBasisX = rows[0];
-    sCam->mLocalXfm.mBasisY = rows[1];
-    sCam->mDirty = 1;
-    sCam->mLocalXfm.mBasisZ = rows[2];
+    sCam->GetLocalXfm().mBasisX = rows[0];
+    sCam->GetLocalXfm().mBasisY = rows[1];
+    sCam->SetDirty(1);
+    sCam->GetLocalXfm().mBasisZ = rows[2];
     sCam->SetOrigin(origin);
 }
 
@@ -621,10 +621,10 @@ void Avatar::SnapCamera(const char *pszCam) {
     angles.z *= kDegreesToRadians;
     Vector3 rows[3];
     Rnd::MakeRotMatrix(&angles.x, &rows[0].x);
-    sCam->mLocalXfm.mBasisX = rows[0];
-    sCam->mLocalXfm.mBasisY = rows[1];
-    sCam->mDirty = 1;
-    sCam->mLocalXfm.mBasisZ = rows[2];
+    sCam->GetLocalXfm().mBasisX = rows[0];
+    sCam->GetLocalXfm().mBasisY = rows[1];
+    sCam->SetDirty(1);
+    sCam->GetLocalXfm().mBasisZ = rows[2];
 }
 
 void Avatar::SetUser(AvatarPartSet *pUser) {

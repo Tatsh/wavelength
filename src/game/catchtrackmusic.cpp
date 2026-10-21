@@ -87,7 +87,7 @@ void CatchTrackMusic::PlayBar() {
     const int nEndBar = mPlayMap->GetEndBar();
     Muse *pBar;
     if (nBar < nEndBar) {
-        if (mState->GetCapturedBy(nBar) == nullptr && TheGameConfig->mPlayAllGems == 0) {
+        if (mState->GetCapturedBy(nBar) == nullptr && TheGameConfig->GetPlayAllGems() == 0) {
             return;
         }
         pBar = mBars[mPlayMap->MapBar(nBar)].Get();

@@ -132,6 +132,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return Whether the edit repeats on every other bar of the section. */
+    int GetRepeat() const {
+        return mRepeat;
+    }
+
+    /** @return The gem button of the gem. */
+    int GetSlot() const {
+        return mSlot;
+    }
+
+    /** @return The tick of the gem. */
+    int GetTick() const {
+        return mTick;
+    }
+
+    /** @return The track, in a duel the side of the player who catches the gem. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+private:
     int mTrack;  /*!< The track, in a duel the side of the player who catches the gem. */
     int mSlot;   /*!< The gem button of the gem. */
     int mTick;   /*!< The tick of the gem. */

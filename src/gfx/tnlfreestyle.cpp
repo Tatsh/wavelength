@@ -39,14 +39,6 @@ constexpr int kTranslationRow = 3;
 // The rows of a basis.
 constexpr int kBasisRows = 3;
 
-// Give an approach the curve and the greatest speed of its configuration.
-inline void SetCurve(QuadraticApproach *pApproach, const Vector3 &curve, float flMaxSpeed) {
-    pApproach->mSquare = curve.x;
-    pApproach->mLinear = curve.y;
-    pApproach->mConstant = curve.z;
-    pApproach->mMaxSpeed = flMaxSpeed;
-}
-
 } // namespace
 
 // The static initialiser of the unit, and the routine that runs it to construct the statics of
@@ -151,13 +143,13 @@ void TnlFreestyle::LoadConfig(
     }
     sLaneScale = (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) ? 1.0f : 2.0f;
     sInvLaneScale = 1.0f / sLaneScale;
-    SetCurve(&mX, sChangeFunc, sMaxChangePerMs);
-    SetCurve(&mY, sChangeFunc, sMaxChangePerMs);
-    SetCurve(&mTumbleX, sTumbleChangeFunc, 1.0f);
-    SetCurve(&mTumbleY, sTumbleChangeFunc, 1.0f);
-    SetCurve(&mCamX, sCamChangeFunc, sCamMaxChangePerMs);
-    SetCurve(&mCamY, sCamChangeFunc, sCamMaxChangePerMs);
-    SetCurve(&mConstraint, sConstraintChangeFunc, 1.0f);
+    mX.SetCurve(sChangeFunc, sMaxChangePerMs);
+    mY.SetCurve(sChangeFunc, sMaxChangePerMs);
+    mTumbleX.SetCurve(sTumbleChangeFunc, 1.0f);
+    mTumbleY.SetCurve(sTumbleChangeFunc, 1.0f);
+    mCamX.SetCurve(sCamChangeFunc, sCamMaxChangePerMs);
+    mCamY.SetCurve(sCamChangeFunc, sCamMaxChangePerMs);
+    mConstraint.SetCurve(sConstraintChangeFunc, 1.0f);
 }
 
 void TnlFreestyle::Reset() {
@@ -223,7 +215,7 @@ void TnlFreestyle::SetActive(bool bActive, int bVictory, bool bQuick) {
     mCamBlend->Reset(flCam, 1.0f, flTick, flEndTick);
     mAssembled = 0;
     mActive = 1;
-    sFreestylus->mBeamGrow.SetTarget(0.0f);
+    sFreestylus->GetBeamGrow().SetTarget(0.0f);
     BeginPass();
 }
 
@@ -233,7 +225,7 @@ void TnlFreestyle::SetPlaying(bool bPlaying, [[maybe_unused]] int nColumn) {
     }
     mPlaying = bPlaying;
     const bool bGrow = bPlaying && (mType != Freestylus::kTypeScratch);
-    sFreestylus->mBeamGrow.SetTarget(bGrow ? kBeamsPlaying : 0.0f);
+    sFreestylus->GetBeamGrow().SetTarget(bGrow ? kBeamsPlaying : 0.0f);
     if (mType != Freestylus::kTypeScratch) {
         return;
     }
@@ -248,7 +240,7 @@ void TnlFreestyle::Sample() {
     if (!mActive) {
         return;
     }
-    sFreestylus->mSample.Jump(kSampleStart, kSampleEnd);
+    sFreestylus->GetSample().Jump(kSampleStart, kSampleEnd);
     if (mType == Freestylus::kTypeScratch) {
         mTrail->StartSample();
     }
@@ -332,8 +324,8 @@ void TnlFreestyle::Poll(float flTicks, float flTime) {
     float flPitch;
     float flColor;
     if (mType == Freestylus::kTypeAxe) {
-        flPitch = (((sInvRange.x * kNeutralPose) * mX.mValue) + kNeutralPose);
-        flColor = (((sInvRange.y * kNeutralPose) * mY.mValue) + kNeutralPose);
+        flPitch = (((sInvRange.x * kNeutralPose) * mX.GetValue()) + kNeutralPose);
+        flColor = (((sInvRange.y * kNeutralPose) * mY.GetValue()) + kNeutralPose);
     } else {
         flColor = kNeutralPose;
         flPitch = kNeutralPose;
@@ -345,7 +337,7 @@ void TnlFreestyle::UpdateTrail() {
     if (mType != Freestylus::kTypeScratch) {
         return;
     }
-    float flBlend = mY.mValue * sInvRange.y;
+    float flBlend = mY.GetValue() * sInvRange.y;
     if (0.0f < flBlend) {
         flBlend *= sInvLaneScale;
     }
@@ -355,7 +347,7 @@ void TnlFreestyle::UpdateTrail() {
         flBlend = -1.0f;
     }
     mTrail->Update(
-        flBlend, static_cast<RndTransformable *>(mShip->GetView())->mWorldXfm, &mPathAxis);
+        flBlend, static_cast<RndTransformable *>(mShip->GetView())->GetWorldXfm(), &mPathAxis);
 }
 
 void TnlFreestyle::Draw() {
@@ -364,7 +356,7 @@ void TnlFreestyle::Draw() {
     }
     sFreestylus->Draw(mShip->GetView(), mAssembled);
     if (mType == Freestylus::kTypeScratch) {
-        mTrail->mRibbon->Draw();
+        mTrail->GetRibbon()->Draw();
     }
 }
 
@@ -384,22 +376,22 @@ void TnlFreestyle::ComputeXfms(bool bCam,
     float flConstraint = 0.0f;
     (void)mConstraint.Step(flTime, mTunnel->GetFreestyleConstraint());
     if (bCam) {
-        flConstraint = mConstraint.mValue;
+        flConstraint = mConstraint.GetValue();
     }
     const float flCamRangeX = ((sConstrainedCamRange.x - sCamRange.x) * flConstraint) + sCamRange.x;
     const float flSpeedX = mX.Step(flTime, flStickX);
     const float flSpeedY = mY.Step(flTime, flStickY);
     (void)mTumbleX.Step(flTime, flSpeedX);
     (void)mTumbleY.Step(flTime, flSpeedY);
-    sFreestylus->Spin(flTime, mTumbleX.mValue, mTumbleY.mValue);
+    sFreestylus->Spin(flTime, mTumbleX.GetValue(), mTumbleY.GetValue());
 
     for (int i = 0; i < kBasisRows; ++i) {
         for (int j = 0; j < kBasisRows; ++j) {
             pShipXfm[i][j] = (i == j) ? 1.0f : 0.0f;
         }
     }
-    pShipXfm[kTranslationRow][0] = mX.mValue;
-    pShipXfm[kTranslationRow][2] = mY.mValue;
+    pShipXfm[kTranslationRow][0] = mX.GetValue();
+    pShipXfm[kTranslationRow][2] = mY.GetValue();
     pShipXfm[kTranslationRow][1] = 0.0f;
 
     Vector3 center;
@@ -416,10 +408,10 @@ void TnlFreestyle::ComputeXfms(bool bCam,
     }
 
     if (bCam) {
-        (void)mCamX.Step(flTime, mX.mValue);
-        (void)mCamY.Step(flTime, mY.mValue);
-        const float flCamX = flCamRangeX * mCamX.mValue;
-        const float flCamY = mCamY.mValue;
+        (void)mCamX.Step(flTime, mX.GetValue());
+        (void)mCamY.Step(flTime, mY.GetValue());
+        const float flCamX = flCamRangeX * mCamX.GetValue();
+        const float flCamY = mCamY.GetValue();
         Vector3 &camPos = pCamXfm->mTranslation;
         camPos.y = 0.0f;
         camPos.x = flCamX;

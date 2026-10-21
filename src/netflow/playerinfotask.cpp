@@ -12,7 +12,7 @@ void PlayerInfoTask::OnStart() {
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
-    request.id = mPlayer->mId;
+    request.id = mPlayer->GetId();
     const int nError = rtMediusPlayerInfo(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1079, nError);
@@ -39,11 +39,11 @@ void PlayerInfoTask::OnResponse(int nConnection,
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
 #ifdef VIDEO_STANDARD_PAL
         const String name = Utf8DecodedString(pResponse->accountName);
-        pTask->mPlayer->mName = name.c_str();
+        pTask->mPlayer->SetName(name.c_str());
 #else
-        pTask->mPlayer->mName = pResponse->accountName;
+        pTask->mPlayer->SetName(pResponse->accountName);
 #endif
-        pTask->mPlayer->mConnectionType = LobbyRT::ConnectionTypeOf(pResponse->connectionClass);
+        pTask->mPlayer->SetConnectionType(LobbyRT::ConnectionTypeOf(pResponse->connectionClass));
         LobbyRT::DecodePlayer(pTask->mPlayer, pResponse->stats);
     }
     pTask->Finish(pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS,

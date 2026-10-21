@@ -145,7 +145,7 @@ void ErrorScreen::ShowCardError(int nStatus, const char *pszContinueScreen, int 
             ErrorScreen *pWarning = FindErrorScreen(kNoFormatContinueScreen);
             auto *pMessage =
                 pWarning != nullptr ? dynamic_cast<MsgErrorScreen *>(pWarning) : nullptr;
-            pMessage->mMessage = TheLocale.Localize(kNoFormatSaveToken, true);
+            pMessage->SetMessage(TheLocale.Localize(kNoFormatSaveToken, true));
             pWarning->ClearTransitions();
             pWarning->AddTransition(kRetryComponent, kPadNone, mName);
             pWarning->AddTransition(kContinueComponent, kPadNone, pszContinueScreen);
@@ -255,7 +255,7 @@ void ErrorScreen::ShowCardErrorTwoOption(int nStatus, int nOperation) {
         auto *pWarning =
             dynamic_cast<MsgErrorScreen *>(TheUI.FindScreen(kNoFormatCancelScreen, false));
         pWarning->SetSlot(mSlot, kOperationNone);
-        pWarning->mMessage = TheLocale.Localize(NoFormatToken(nOperation), true);
+        pWarning->SetMessage(TheLocale.Localize(NoFormatToken(nOperation), true));
         pWarning->ClearTransitions();
         pWarning->AddTransition(kRetryComponent, kPadNone, mName);
         pWarning->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
@@ -283,8 +283,8 @@ void ErrorScreen::ShowNoSpaceError(int nSpace,
                                    const char *pszSaveName) {
     auto *pError = dynamic_cast<SpaceErrorScreen *>(TheUI.FindScreen(kNoSpaceScreen, false));
     pError->SetSlot(mSlot, kOperationSave);
-    pError->mSpace = nSpace;
-    pError->mSaveName = pszSaveName;
+    pError->SetSpace(nSpace);
+    pError->SetSaveName(pszSaveName);
     pError->ClearTransitions();
     pError->AddTransition(kRetryComponent, kPadNone, mName);
     pError->AddTransition(kContinueComponent, kPadNone, pszContinueScreen);
@@ -319,7 +319,7 @@ void ErrorScreen::ShowCardErrorTwoOption(int nStatus, int nOperation) {
         auto *pWarning =
             dynamic_cast<MsgErrorScreen *>(TheUI.FindScreen(kNoFormatCancelScreen, false));
         pWarning->SetSlot(mSlot);
-        pWarning->mMessage = TheLocale.Localize(NoFormatToken(nOperation), true);
+        pWarning->SetMessage(TheLocale.Localize(NoFormatToken(nOperation), true));
         pWarning->ClearTransitions();
         pWarning->AddTransition(kRetryComponent, kPadNone, mName);
         pWarning->AddTransition(kCancelComponent, kPadNone, mStartScreen.c_str());
@@ -345,7 +345,7 @@ void ErrorScreen::ShowCardErrorTwoOption(int nStatus, int nOperation) {
 void ErrorScreen::ShowNoSpaceError(int nSpace) {
     auto *pError = dynamic_cast<SpaceErrorScreen *>(TheUI.FindScreen(kNoSpaceScreen, false));
     pError->SetSlot(mSlot);
-    pError->mSpace = nSpace;
+    pError->SetSpace(nSpace);
     pError->ClearTransitions();
     pError->AddTransition(kRetryComponent, kPadNone, mName);
     pError->AddTransition(kContinueComponent, kPadNone, mDoneScreen.c_str());

@@ -407,17 +407,17 @@ bool FreqMakerPartConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMs
 }
 
 bool FreqMakerPartConfigScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    const int nButton = pMsg->mButton;
-    if (nButton == kPadTriangle && pMsg->mPressed != 0) {
+    const int nButton = pMsg->GetButton();
+    if (nButton == kPadTriangle && pMsg->GetPressed() != 0) {
         const char *pszChoice = mChoices[mOriginalIndex];
         AvatarPartSet *pAvatar = TheGameDb->GetAvatar(0);
         pAvatar->SetPart(mPart, pszChoice);
         pAvatar->SetColor(mPart, &mOriginalColor);
         TheUI.GotoScreen(TheUI.FindScreen("f_maker_custom", false));
-    } else if (pMsg->mPressed == 0 && (nButton == kPadDLeft || nButton == kPadDRight)) {
+    } else if (pMsg->GetPressed() == 0 && (nButton == kPadDLeft || nButton == kPadDRight)) {
         mErrorPlayed = 0;
     }
     return FreqScreen::HandleJoypad(pMsg);

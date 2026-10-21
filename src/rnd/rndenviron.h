@@ -213,13 +213,65 @@ public:
      */
     static int sRev;
 
-    std::list<RndLight *> mLights; /*!< The lights. */
-    Color mAmbientColor;           /*!< The ambient colour. */
-    float mFogStart;               /*!< The distance fog starts at. */
-    float mFogEnd;                 /*!< The distance fog is full at. */
-    float mFogDensity;             /*!< The density of exponential fog. */
-    Color mFogColor;               /*!< The fog colour. */
-    int mFogMode;                  /*!< The FogMode. */
+    /** @return The ambient colour. */
+    const Color &GetAmbientColor() const {
+        return mAmbientColor;
+    }
+
+    /** @return The ambient colour, for writing. */
+    Color &GetAmbientColor() {
+        return mAmbientColor;
+    }
+
+    /** @return The fog colour. */
+    const Color &GetFogColor() const {
+        return mFogColor;
+    }
+
+    /** @return The fog colour, for writing. */
+    Color &GetFogColor() {
+        return mFogColor;
+    }
+
+    /** @return The density of exponential fog. */
+    float GetFogDensity() const {
+        return mFogDensity;
+    }
+
+    /** @param fFogDensity The density of exponential fog. */
+    void SetFogDensity(float fFogDensity) {
+        mFogDensity = fFogDensity;
+    }
+
+    /** @return The distance fog is full at. */
+    float GetFogEnd() const {
+        return mFogEnd;
+    }
+
+    /** @param fFogEnd The distance fog is full at. */
+    void SetFogEnd(float fFogEnd) {
+        mFogEnd = fFogEnd;
+    }
+
+    /** @return The distance fog starts at. */
+    float GetFogStart() const {
+        return mFogStart;
+    }
+
+    /** @param fFogStart The distance fog starts at. */
+    void SetFogStart(float fFogStart) {
+        mFogStart = fFogStart;
+    }
+
+    /** @return The lights. */
+    const std::list<RndLight *> &GetLights() const {
+        return mLights;
+    }
+
+    /** @return The lights, for writing. */
+    std::list<RndLight *> &GetLights() {
+        return mLights;
+    }
 
 protected:
     /**
@@ -241,6 +293,16 @@ protected:
      * @ghidraAddress PAL: 0x0022e110
      */
     void AcquireRefs();
+
+    Color mAmbientColor;           /*!< The ambient colour. */
+    Color mFogColor;               /*!< The fog colour. */
+    float mFogEnd;                 /*!< The distance fog is full at. */
+    int mFogMode;                  /*!< The FogMode. */
+    float mFogStart;               /*!< The distance fog starts at. */
+    std::list<RndLight *> mLights; /*!< The lights. */
+
+private:
+    float mFogDensity; /*!< The density of exponential fog. */
 };
 
 /**

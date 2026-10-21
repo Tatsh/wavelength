@@ -149,12 +149,6 @@ public:
      */
     bool HandleSelect(JoypadInputMsg *pMsg);
 
-    RndMesh *mLeftArrow;  /*!< The left arrow, or null. */
-    RndMesh *mRightArrow; /*!< The right arrow, or null. */
-    int mArrowButton;     /*!< The directional button whose arrow flashes, or kPadNone. */
-    int mArrowFlashDone;  /*!< Whether no arrow flashes. */
-    UIStyle *mArrowStyle; /*!< The style of the arrows. */
-
 private:
     /**
      * Number of times a pressed arrow flashes.
@@ -173,4 +167,10 @@ private:
      * @return Whether mArrowButton has an arrow.
      */
     bool SetArrowState(int nState);
+
+    RndMesh *mLeftArrow;  /*!< The left arrow, or null. */
+    RndMesh *mRightArrow; /*!< The right arrow, or null. */
+    int mArrowButton;     /*!< The directional button whose arrow flashes, or kPadNone. */
+    int mArrowFlashDone;  /*!< Whether no arrow flashes. */
+    UIStyle *mArrowStyle; /*!< The style of the arrows. */
 };

@@ -22,6 +22,6 @@ void SetBlurAction::Exec() {
         mBlur->SetRate(mRate);
     }
     if ((mFlags & kFlagFalloff) != 0) {
-        mBlur->mFalloff = mFalloff;
+        mBlur->SetFalloff(mFalloff);
     }
 }

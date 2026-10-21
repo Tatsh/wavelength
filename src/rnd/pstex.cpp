@@ -204,9 +204,9 @@ constexpr int kHighDword = 1;
 
 inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mDword[kLowDword] = qwLow;
-    packet.mCursor->mDword[kHighDword] = qwHigh;
-    ++packet.mCursor;
+    packet.GetCursor()->mDword[kLowDword] = qwLow;
+    packet.GetCursor()->mDword[kHighDword] = qwHigh;
+    ++packet.GetCursor();
 }
 
 inline unsigned int DmaAddressOf(const void *pAddress) {
@@ -407,7 +407,7 @@ void PsTex::BeginFrame() {
     for (auto it = sUsedRanges.begin(); it != sUsedRanges.end();) {
         UsedRange *pRange = *it;
         ++it;
-        if (pRange->mFrame < sEvictStamp) {
+        if (pRange->GetFrame() < sEvictStamp) {
             pRange->Release();
         }
     }
@@ -494,7 +494,7 @@ void PsTex::BuildMoviePacket(bool bBuild) {
     mMoviePacket = static_cast<DmaQuadword *>(PoolMemAlloc(
         nBlocks * kMovieBlockTagQwords * kQwordBytes, "mMoviePacket", kMoviePacketAlign));
     DmaPacket packet;
-    packet.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+    packet.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
     packet.Init(mMoviePacket, kDmaChannelToSpr, 1);
 
     const int nBlockQwords = ((mTex0 >> kTex0PsmShift) & kTex0PsmMask) == kPsmCt32 ?
@@ -506,13 +506,13 @@ void PsTex::BuildMoviePacket(bool bBuild) {
         for (int nX = 0; nX < mWidth; nX += kMovieBlockSize) {
             packet.OpenDmaTag();
             packet.OpenGifTag(kGifFlgPacked, kGifAdRegs, kGifRegAd, 0);
-            packet.mCursor->mDword[kLowDword] =
+            packet.GetCursor()->mDword[kLowDword] =
                 (static_cast<unsigned long long>(nX) << kTrxPosDsaxShift) | qwY;
-            packet.mCursor->mDword[kHighDword] = kGsRegTrxPos;
-            ++packet.mCursor;
-            packet.mCursor->mDword[kLowDword] = 0;
-            packet.mCursor->mDword[kHighDword] = kGsRegTrxDir;
-            ++packet.mCursor;
+            packet.GetCursor()->mDword[kHighDword] = kGsRegTrxPos;
+            ++packet.GetCursor();
+            packet.GetCursor()->mDword[kLowDword] = 0;
+            packet.GetCursor()->mDword[kHighDword] = kGsRegTrxDir;
+            ++packet.GetCursor();
             packet.CloseGifTag(0, 0);
             packet.OpenGifTag(kGifFlgImage, 0, 0, 0);
             packet.CloseGifTag(1, nBlockQwords);
@@ -539,19 +539,19 @@ void PsTex::UploadMovie() {
     int nRemaining = (mWidth * mHeight) >> kMovieBlockPixelsShift;
     DmaQuadword *pSource = mMoviePacket;
     DmaPacket packet;
-    packet.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+    packet.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
     while (nRemaining != 0) {
         const int nRoom = ThePs.PacketQwordsFree() / kMovieBlockTagQwords;
         const int nBlocks = nRoom < nRemaining ? nRoom : nRemaining;
         nRemaining -= nBlocks;
         const int nQwords = nBlocks * kMovieBlockTagQwords;
         frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
-        DmaQuadword *pDest = frame.mCursor;
+        DmaQuadword *pDest = frame.GetCursor();
         packet.Init(pSource, kDmaChannelToSpr, 1);
         pSource += nQwords;
-        packet.mCursor = pSource;
+        packet.GetCursor() = pSource;
         packet.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
-        frame.mCursor = pDest + nQwords;
+        frame.GetCursor() = pDest + nQwords;
         ThePs.Flush();
     }
 }
@@ -562,7 +562,7 @@ void PsTex::UploadImage(
         return;
     }
     DmaPacket &frame = DmaPacket::shared();
-    if (frame.mGifTag == nullptr || frame.mGifTag->mDword[kHighDword] != kGifRegAd) {
+    if (frame.GetGifTag() == nullptr || frame.GetGifTag()->mDword[kHighDword] != kGifRegAd) {
         frame.OpenGifTag(kGifFlgPacked, kGifAdRegs, kGifRegAd, 0);
     }
     const auto qwWidth = static_cast<unsigned long long>(BufferWidth(nBpp, nWidth));
@@ -759,17 +759,17 @@ void PsTex::SyncRegisters() {
     if (mBitmap.GetPalette() != nullptr) {
         range.mStart = 0;
         range.mPinned = mRendered & 1;
-        range.mFrame = 0;
-        range.mCount = mBpp == kBpp8 ? kClutBlocks : kSmallClutBlocks;
+        range.SetFrame(0);
+        range.SetCount(mBpp == kBpp8 ? kClutBlocks : kSmallClutBlocks);
         mRanges.push_back(range);
     }
 
     int nLevel = kLevel0;
     for (const RndBitmap *pMip = &mBitmap; pMip != nullptr; pMip = pMip->GetMip(), ++nLevel) {
-        range.mCount = static_cast<unsigned short>(NumBlocks(*pMip));
+        range.SetCount(static_cast<unsigned short>(NumBlocks(*pMip)));
         range.mStart = 0;
         range.mPinned = mRendered & 1;
-        range.mFrame = 0;
+        range.SetFrame(0);
         mRanges.push_back(range);
 
         const unsigned long long qwWidth = BufferWidth(nBpp, pMip->GetWidth());
@@ -827,7 +827,7 @@ void PsTex::Select(int nTexFunction) {
         ThePs.SetGsReg(kGsRegMipTbp21, mMipTbp2, 0);
     }
     for (auto &range : mRanges) {
-        range.mFrame = sStamp;
+        range.SetFrame(sStamp);
     }
     ++sStamp;
 }

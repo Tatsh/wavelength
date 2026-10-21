@@ -160,7 +160,7 @@ int PsMat::Select(int nPass) {
 }
 
 void PsMat::SelectBlendMode(int nPass) {
-    const int nBlend = nPass == 0 ? mBlend : mStages[nPass].mBlend;
+    const int nBlend = nPass == 0 ? mBlend : mStages[nPass].GetBlend();
     switch (nBlend) {
     case kBlendDest:
         g_nAlphaBlendEnabled = 1;
@@ -227,7 +227,7 @@ void PsMat::SelectBlendMode(int nPass) {
 }
 
 void PsMat::SelectStageClamp(const Stage &stage) {
-    if (stage.mWrap == kTexWrapClamp) {
+    if (stage.GetWrap() == kTexWrapClamp) {
         ThePs.SetGsReg(kGsRegClamp1, kClampBothAxes, kClampMask);
     } else {
         ThePs.SetGsReg(kGsRegClamp1, kRepeatBothAxes, kClampMask);
@@ -240,7 +240,8 @@ int PsMat::TexFunction(int nBlend) {
 
 void PsMat::BindStageTexture(int nPass) {
     g_nLightingEnabled = mEnable;
-    if (mStages.empty() || mStages[nPass].mTex == nullptr || mStages[nPass].mBlend == kBlendDest) {
+    if (mStages.empty() || mStages[nPass].GetTex() == nullptr ||
+        mStages[nPass].GetBlend() == kBlendDest) {
         g_colorScale.r = kColorScaleFull;
         g_colorScale.a = kAlphaScale;
         g_nTextured = 0;
@@ -251,11 +252,11 @@ void PsMat::BindStageTexture(int nPass) {
     Stage &stage = mStages[nPass];
     int nBlend;
     if (nPass == 0) {
-        nBlend = stage.mBlend;
+        nBlend = stage.GetBlend();
     } else {
         nBlend = mMultiPass == kMultiPassDouble ? kBlendMultiply : kBlendSrc;
     }
-    static_cast<PsTex *>(stage.mTex)->Select(TexFunction(nBlend));
+    static_cast<PsTex *>(stage.GetTex())->Select(TexFunction(nBlend));
     if (nBlend == kBlendSrc) {
         g_nLightingEnabled = 0;
     }
@@ -274,17 +275,17 @@ void PsMat::SetupUvXfm(int nPass) {
         return;
     }
     const Stage &stage = mStages[nPass];
-    g_nSelectedGenMode = stage.mGenMode;
-    if (stage.mGenMode == kTexGenSphere) {
+    g_nSelectedGenMode = stage.GetGenMode();
+    if (stage.GetGenMode() == kTexGenSphere) {
         SetIdentityUvXfm();
         g_uvXfm.mTranslation.y = kSphereMapScale;
         g_uvXfm.mBasisX.x = kSphereMapScale;
         g_uvXfm.mBasisY.y = -kSphereMapScale;
         g_uvXfm.mTranslation.x = kSphereMapScale;
-        if (stage.mUseXfm != 0) {
-            g_stageXfm[0] = stage.mXfm.mBasisX;
-            g_stageXfm[1] = stage.mXfm.mBasisY;
-            g_stageXfm[2] = stage.mXfm.mBasisZ;
+        if (stage.GetUseXfm() != 0) {
+            g_stageXfm[0] = stage.GetXfm().mBasisX;
+            g_stageXfm[1] = stage.GetXfm().mBasisY;
+            g_stageXfm[2] = stage.GetXfm().mBasisZ;
             return;
         }
         g_stageXfm[0].x = 1.0f;
@@ -298,12 +299,12 @@ void PsMat::SetupUvXfm(int nPass) {
         g_stageXfm[2].y = 0.0f;
         return;
     }
-    if (stage.mUseXfm == 0) {
+    if (stage.GetUseXfm() == 0) {
         SetIdentityUvXfm();
         return;
     }
     // The stage transform is applied about the texel centre, with v flipped.
-    const Transform &xfm = stage.mXfm;
+    const Transform &xfm = stage.GetXfm();
     const float fOffsetU = -xfm.mTranslation.x - kTexelCentreOffset;
     const float fOffsetV = xfm.mTranslation.y - kTexelCentreOffset;
     g_uvXfm.mBasisX.x = xfm.mBasisX.x;

@@ -83,6 +83,12 @@ public:
      */
     void ShowButton(int nButton, bool bShow);
 
+    /** @return `HUD controller map pos.tnm`. */
+    RndAnimatable *GetPosAnim() const {
+        return mPosAnim;
+    }
+
+private:
     Button mButtons[kNumButtons];  /*!< The buttons, indexed by JoypadButton. */
     RndView *mView;                /*!< `HUD controller map.view`. */
     RndMat *mMats[kNumHighlights]; /*!< The materials, indexed by Highlight. */

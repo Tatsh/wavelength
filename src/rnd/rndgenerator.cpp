@@ -45,7 +45,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -67,7 +67,7 @@ void WriteFloat(BinStream &stream, float fValue) {
 }
 
 void WriteObjectName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 template <typename T>
@@ -148,7 +148,7 @@ void RndGenerator::DumpText(PrnStream &stream) {
     RndTransformable::DumpText(stream);
     RndDrawable::DumpText(stream);
     RndAnimatable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndGenerator]\n";
@@ -165,7 +165,7 @@ void RndGenerator::DumpText(PrnStream &stream) {
            << " animateFromStart:" << (mAnimateFromStart != 0) << "\n";
     stream << "multiMesh:" << static_cast<const RndObject *>(mMultiMesh)
            << " particleSys:" << static_cast<const RndObject *>(mParticleSys) << "\n";
-    if (stream.mDumpLevel < kDumpInstances) {
+    if (stream.GetDumpLevel() < kDumpInstances) {
         return;
     }
     stream << "instances:" << mInstances << "\n";
@@ -317,7 +317,7 @@ void RndGenerator::Load(BinStream &stream) {
     } else if (nRev < kRevView) {
         String name;
         stream >> name;
-        if (name.mLength != 0) {
+        if (name.GetLength() != 0) {
             TheManager.Find(name.c_str()); // Yes, the binary discards the object it finds.
         }
         int nUnused;
@@ -381,12 +381,12 @@ void RndGenerator::SetPath(RndTransAnim *pPath, float fStart, float fEnd) {
 void RndGenerator::Generate(float fFrame) {
     if (mBirthCam != nullptr) {
         const Vector3 &pos = mWorldXfm.mTranslation;
-        const Vector3 &camPos = mBirthCam->mWorldXfm.mTranslation;
+        const Vector3 &camPos = mBirthCam->GetWorldXfm().mTranslation;
         const float fDeltaX = pos.x - camPos.x;
         const float fDeltaY = pos.y - camPos.y;
         const float fDeltaZ = pos.z - camPos.z;
         if (mBirthFrontOnly != 0) {
-            const Vector3 &forward = mBirthCam->mWorldXfm.mBasisY;
+            const Vector3 &forward = mBirthCam->GetWorldXfm().mBasisY;
             if ((fDeltaX * forward.x) + (fDeltaY * forward.y) + (fDeltaZ * forward.z) < 0.0f) {
                 return;
             }
@@ -451,7 +451,7 @@ int RndGenerator::SetFrameSelf(float fFrame) {
         return 1;
     }
     const int nDirection = 0.0f < mPathEndFrame - mPathStartFrame ? 1 : -1;
-    mCurParticle = mParticleSys != nullptr ? mParticleSys->mLiveParticles : nullptr;
+    mCurParticle = mParticleSys != nullptr ? mParticleSys->GetLiveParticles() : nullptr;
     const float fDirection = static_cast<float>(nDirection);
     for (auto it = mInstances.begin(); it != mInstances.end();) {
         const float fSpan = fDirection * (mPathEndFrame - mPathStartFrame);
@@ -532,13 +532,13 @@ void RndGenerator::ListDrawables(std::list<RndDrawable *> &drawables) {
                 Transform xfm;
                 const float fAge = InstanceXfm(instance, fDirection, xfm);
                 if (mMesh != nullptr) {
-                    mMesh->mLocalXfm = xfm;
-                    mMesh->mDirty = 1;
+                    mMesh->GetLocalXfm() = xfm;
+                    mMesh->SetDirty(1);
                     mMesh->UpdateWorldXfm(nullptr, 0);
                     mMesh->ListDrawables(subjectDrawables);
                 } else if (mView != nullptr) {
-                    mView->mLocalXfm = xfm;
-                    mView->mDirty = 1;
+                    mView->GetLocalXfm() = xfm;
+                    mView->SetDirty(1);
                     if (mAnimateFromStart != 0) {
                         mView->SetFrame(fAge);
                     }
@@ -558,8 +558,8 @@ void RndGenerator::ListDrawables(std::list<RndDrawable *> &drawables) {
 }
 
 void RndGenerator::DrawView(float fAge, const Transform &xfm) {
-    mView->mLocalXfm = xfm;
-    mView->mDirty = 1;
+    mView->GetLocalXfm() = xfm;
+    mView->SetDirty(1);
     if (mAnimateFromStart != 0) {
         mView->SetFrame(fAge);
     }
@@ -568,8 +568,8 @@ void RndGenerator::DrawView(float fAge, const Transform &xfm) {
 }
 
 void RndGenerator::DrawMesh([[maybe_unused]] float fAge, const Transform &xfm) {
-    mMesh->mLocalXfm = xfm;
-    mMesh->mDirty = 1;
+    mMesh->GetLocalXfm() = xfm;
+    mMesh->SetDirty(1);
     mMesh->UpdateWorldXfm(nullptr, 0);
     mMesh->Draw();
 }
@@ -600,15 +600,15 @@ int RndGenerator::DrawShowing() {
     } else if (mMesh != nullptr) {
         pfnDraw = &RndGenerator::DrawMesh;
     } else if (mMultiMesh != nullptr) {
-        if (mMultiMesh->mTransforms.size() != mInstances.size()) {
+        if (mMultiMesh->GetTransforms().size() != mInstances.size()) {
             // The binary leaves this stack transform uninitialised. Here Vector3 sets each w to 1.
             Transform fill;
-            mMultiMesh->mTransforms.resize(mInstances.size(), fill);
+            mMultiMesh->GetTransforms().resize(mInstances.size(), fill);
         }
-        mCurXfm = mMultiMesh->mTransforms.begin();
+        mCurXfm = mMultiMesh->GetTransforms().begin();
         pfnDraw = &RndGenerator::SetMultiMeshXfm;
     } else {
-        mCurParticle = mParticleSys->mLiveParticles;
+        mCurParticle = mParticleSys->GetLiveParticles();
         pfnDraw = &RndGenerator::SetParticlePos;
     }
 

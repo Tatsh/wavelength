@@ -116,6 +116,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return Whether the preview started rather than stopped. */
+    int GetPreviewing() const {
+        return mPreviewing;
+    }
+
+    /** @param nPreviewing Whether the preview started rather than stopped. */
+    void SetPreviewing(int nPreviewing) {
+        mPreviewing = nPreviewing;
+    }
+
+    /** @return The section previewed. */
+    int GetSection() const {
+        return mSection;
+    }
+
+    /** @param nSection The section previewed. */
+    void SetSection(int nSection) {
+        mSection = nSection;
+    }
+
+private:
     int mSection;    /*!< The section previewed. */
     int mPreviewing; /*!< Whether the preview started rather than stopped. */
 };

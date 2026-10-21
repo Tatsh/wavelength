@@ -83,6 +83,7 @@ public:
      */
     void Draw();
 
+private:
     GfxTunnel *mTunnel;         /*!< The tunnel. */
     RndAnimatable *mAnim;       /*!< The animation of the material, `slowdown overlay.mnm`. */
     LinearInterpolator mFrames; /*!< The frame of mAnim at each tick, 0 to 1000. */

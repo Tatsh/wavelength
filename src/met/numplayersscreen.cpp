@@ -58,28 +58,28 @@ bool NumPlayersScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     }
 
     String button(pMsg->GetComponent()->GetName());
-    if (TheGameDb->GetProfile(0)->mCustom != 0) {
+    if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
         Campaign first(*TheGameDb->GetProfile(0));
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&first);
     } else {
         TheGameDb->ClearPlayers();
         Campaign first;
-        first.mName = TheLocale.Localize("player_1", true);
+        first.SetName(TheLocale.Localize("player_1", true));
         TheGameDb->AddPlayer(&first);
     }
 
     // The binary renames one profile for each further player.
     Campaign other;
-    other.mName = TheLocale.Localize("player_2", true);
+    other.SetName(TheLocale.Localize("player_2", true));
     TheGameDb->AddPlayer(&other);
     if (button == kThreePlayersButton) {
-        other.mName = TheLocale.Localize("player_3", true);
+        other.SetName(TheLocale.Localize("player_3", true));
         TheGameDb->AddPlayer(&other);
     } else if (button == kFourPlayersButton) {
-        other.mName = TheLocale.Localize("player_3", true);
+        other.SetName(TheLocale.Localize("player_3", true));
         TheGameDb->AddPlayer(&other);
-        other.mName = TheLocale.Localize("player_4", true);
+        other.SetName(TheLocale.Localize("player_4", true));
         TheGameDb->AddPlayer(&other);
     }
 #ifdef VIDEO_STANDARD_PAL

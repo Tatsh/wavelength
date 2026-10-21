@@ -222,15 +222,55 @@ public:
      */
     static int sRev;
 
-    RndTransformable *mTrans;             /*!< The transformable the animation drives. */
-    int mTransInterp;                     /*!< The Interp of the translation keys. */
-    int mScaleInterp;                     /*!< The Interp of the scale keys. */
-    std::vector<Key<Quat>> mRotKeys;      /*!< The rotation keys. */
-    std::vector<Key<Vector3>> mTransKeys; /*!< The translation keys. */
-    std::vector<Key<Vector3>> mScaleKeys; /*!< The scale keys. */
-    RndTransAnim *mFramesOwner;           /*!< The animation that has the keys. */
-    int mRepeatTrans;                     /*!< Non-zero to repeat the translation path. */
-    int mFollowPath;                      /*!< Non-zero to turn along the translation path. */
+    /** @return The animation that has the keys. */
+    RndTransAnim *GetFramesOwner() const {
+        return mFramesOwner;
+    }
+
+    /** @return The rotation keys. */
+    const std::vector<Key<Quat>> &GetRotKeys() const {
+        return mRotKeys;
+    }
+
+    /** @return The rotation keys, for writing. */
+    std::vector<Key<Quat>> &GetRotKeys() {
+        return mRotKeys;
+    }
+
+    /** @return The scale keys. */
+    const std::vector<Key<Vector3>> &GetScaleKeys() const {
+        return mScaleKeys;
+    }
+
+    /** @return The scale keys, for writing. */
+    std::vector<Key<Vector3>> &GetScaleKeys() {
+        return mScaleKeys;
+    }
+
+    /** @return The transformable the animation drives. */
+    RndTransformable *GetTrans() const {
+        return mTrans;
+    }
+
+    /** @return The Interp of the translation keys. */
+    int GetTransInterp() const {
+        return mTransInterp;
+    }
+
+    /** @param nTransInterp The Interp of the translation keys. */
+    void SetTransInterp(int nTransInterp) {
+        mTransInterp = nTransInterp;
+    }
+
+    /** @return The translation keys. */
+    const std::vector<Key<Vector3>> &GetTransKeys() const {
+        return mTransKeys;
+    }
+
+    /** @return The translation keys, for writing. */
+    std::vector<Key<Vector3>> &GetTransKeys() {
+        return mTransKeys;
+    }
 
 protected:
     /**
@@ -269,6 +309,17 @@ protected:
      * @ghidraAddress PAL: 0x0024ff48
      */
     float SegmentLength(int nFrom, int nTo, float fStep, float fStart, float fEnd);
+
+private:
+    RndTransformable *mTrans;             /*!< The transformable the animation drives. */
+    int mTransInterp;                     /*!< The Interp of the translation keys. */
+    int mScaleInterp;                     /*!< The Interp of the scale keys. */
+    std::vector<Key<Quat>> mRotKeys;      /*!< The rotation keys. */
+    std::vector<Key<Vector3>> mTransKeys; /*!< The translation keys. */
+    std::vector<Key<Vector3>> mScaleKeys; /*!< The scale keys. */
+    RndTransAnim *mFramesOwner;           /*!< The animation that has the keys. */
+    int mRepeatTrans;                     /*!< Non-zero to repeat the translation path. */
+    int mFollowPath;                      /*!< Non-zero to turn along the translation path. */
 };
 
 /**

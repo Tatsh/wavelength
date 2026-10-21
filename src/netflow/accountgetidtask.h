@@ -49,8 +49,6 @@ public:
                            int nSize,
                            const rtMediusAccountGetIdResponse *pResponse);
 
-    LobbyPlayer *mPlayer; /*!< The player. */
-
 protected:
     /**
      * Send the request.
@@ -59,4 +57,7 @@ protected:
      * @ghidraAddress PAL: 0x0026d7b8
      */
     void OnStart() override;
+
+private:
+    LobbyPlayer *mPlayer; /*!< The player. */
 };

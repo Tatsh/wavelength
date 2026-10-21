@@ -32,9 +32,6 @@ public:
         : mSource(pSource), mTarget(pTarget) {
     }
 
-    LobbyPlayer *mSource; /*!< The player the server reported. */
-    LobbyPlayer *mTarget; /*!< The local player. */
-
 protected:
     /**
      * Copy the rating, the games, and the record when the server reported a rating, and finish.
@@ -43,4 +40,8 @@ protected:
      * @ghidraAddress PAL: 0x0026d490
      */
     void OnStart() override;
+
+private:
+    LobbyPlayer *mSource; /*!< The player the server reported. */
+    LobbyPlayer *mTarget; /*!< The local player. */
 };

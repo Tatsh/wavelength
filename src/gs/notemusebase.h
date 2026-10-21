@@ -92,6 +92,22 @@ public:
          */
         void NoteOn();
 
+        /** @return The note. */
+        NoteMuseBase *GetMuse() const {
+            return mMuse;
+        }
+
+        /** @return The scheduler that queued the command, or null. */
+        Scheduler *GetScheduler() const {
+            return mScheduler;
+        }
+
+        /** @param pScheduler The scheduler that queued the command, or null. */
+        void SetScheduler(Scheduler *pScheduler) {
+            mScheduler = pScheduler;
+        }
+
+    private:
         NoteMuseBase *mMuse;   /*!< The note. */
         Scheduler *mScheduler; /*!< The scheduler that queued the command, or null. */
     };

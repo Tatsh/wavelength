@@ -106,6 +106,7 @@ public:
      */
     static float sTravels[2];
 
+private:
     char mTrack;                    /*!< The track of the burst, or -1 for an idle burst. */
     RndView *mView;                 /*!< The view the burst animates. */
     Transform mSpin;                /*!< The turn and the scale of the burst. */

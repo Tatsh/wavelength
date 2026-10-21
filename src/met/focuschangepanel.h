@@ -48,5 +48,6 @@ public:
      */
     void Unfocus() override;
 
+protected:
     String mMaterialPrefix; /*!< The `focus_material_prefix` entry. */
 };

@@ -215,12 +215,40 @@ public:
      */
     static int sRev;
 
-    std::list<RndTransformable *> mTransList; /*!< The children, which follow this object. */
-    Transform mLocalXfm;                      /*!< The transform relative to the parent. */
-    Transform mWorldXfm;                      /*!< The transform relative to the world. */
-    Vector3 mOrigin;                          /*!< The point the world transform subtracts. */
-    int mDirty;                               /*!< Non-zero when mWorldXfm is out of date. */
-    int mBillboard;                           /*!< The Billboard mode. */
+    /** @return The transform relative to the parent. */
+    const Transform &GetLocalXfm() const {
+        return mLocalXfm;
+    }
+
+    /** @return The transform relative to the parent, for writing. */
+    Transform &GetLocalXfm() {
+        return mLocalXfm;
+    }
+
+    /** @return The transform relative to the world. */
+    const Transform &GetWorldXfm() const {
+        return mWorldXfm;
+    }
+
+    /** @return The transform relative to the world, for writing. */
+    Transform &GetWorldXfm() {
+        return mWorldXfm;
+    }
+
+    /** @return Non-zero when mWorldXfm is out of date. */
+    int GetDirty() const {
+        return mDirty;
+    }
+
+    /** @param nDirty Non-zero when mWorldXfm is out of date. */
+    void SetDirty(int nDirty) {
+        mDirty = nDirty;
+    }
+
+    /** @return The children. Each follows this object. */
+    const std::list<RndTransformable *> &GetTransList() const {
+        return mTransList;
+    }
 
 protected:
     /**
@@ -242,6 +270,15 @@ protected:
      * @ghidraAddress PAL: 0x0024d868
      */
     void AcquireTransRefs();
+
+    Transform mLocalXfm; /*!< The transform relative to the parent. */
+    Transform mWorldXfm; /*!< The transform relative to the world. */
+    int mDirty;          /*!< Non-zero when mWorldXfm is out of date. */
+    int mBillboard;      /*!< The Billboard mode. */
+
+private:
+    std::list<RndTransformable *> mTransList; /*!< The children. Each follows this object. */
+    Vector3 mOrigin;                          /*!< The point the world transform subtracts. */
 };
 
 /**

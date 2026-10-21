@@ -83,6 +83,7 @@ public:
      */
     void Insert(const char *pszKind, float flStartTick, float flEndTick);
 
+private:
     std::list<ActiveBlur> mBlurs; /*!< The queued blurs in the order of the start ticks. */
     float mAlpha;                 /*!< The opacity of the screen blur. */
     float mAlphaChangeUp;         /*!< The largest rise of the opacity per update. */

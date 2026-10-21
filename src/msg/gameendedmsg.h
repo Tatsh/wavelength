@@ -124,6 +124,17 @@ public:
      */
     GameEndedMsg(const GameEndedMsg &other) = default;
 
+    /** @return One of Result. */
+    int GetResult() const {
+        return mResult;
+    }
+
+    /** @return The final score of each player. */
+    const std::vector<NetGameScore> &GetScores() const {
+        return mScores;
+    }
+
+private:
     int mResult;                       /*!< One of Result. */
     std::vector<NetGameScore> mScores; /*!< The final score of each player. */
 };

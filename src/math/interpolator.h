@@ -134,6 +134,7 @@ public:
      */
     float Interp(float fX) override;
 
+private:
     float mSlope;  /*!< The change of the output per unit of input. */
     float mOffset; /*!< The output at an input of 0. */
 };
@@ -203,6 +204,7 @@ public:
      */
     float Interp(float fX) override;
 
+private:
     float mExponent;  /*!< The power. */
     float mRange;     /*!< mY1 less mY0. */
     float mInvXRange; /*!< The reciprocal of the input range. */
@@ -271,6 +273,7 @@ public:
      */
     float Interp(float fX) override;
 
+private:
     float mExponent;  /*!< The power. */
     float mRange;     /*!< mY1 less mY0. */
     float mInvXRange; /*!< The reciprocal of the input range. */
@@ -339,6 +342,7 @@ public:
      */
     float Interp(float fX) override;
 
+private:
     LinearInterpolator mLinear; /*!< Maps the input onto the arctangent's argument. */
     float mScale;               /*!< The factor applied to the arctangent. */
     float mOffset;              /*!< The value added after the factor. */
@@ -437,6 +441,15 @@ public:
      */
     virtual void Update();
 
+protected:
+    /**
+     * Read the numbers of an array into the table.
+     *
+     * @param pArray The array.
+     * @param nFirst The index of the first entry in the array.
+     */
+    void FillTable(const DataArray *pArray, int nFirst);
+
     float mStep;    /*!< The input range covered by one entry. */
     float mInvStep; /*!< The entries per unit of input, or 1 for a range narrower than 1e-6. */
     float *mTable;  /*!< The entries. */
@@ -519,5 +532,6 @@ public:
      */
     void Update() override;
 
+private:
     float *mSlopes; /*!< Each entry less the one before it, one fewer than the entries. */
 };

@@ -77,7 +77,29 @@ public:
 
         unsigned short mStart : 15; /*!< The first block, or 0 while the range has none. */
         unsigned short mPinned
-            : 1;               /*!< Set for a render target. A pinned range is never evicted. */
+            : 1; /*!< Set for a render target. A pinned range is never evicted. */
+
+        /** @return The number of blocks. */
+        unsigned short GetCount() const {
+            return mCount;
+        }
+
+        /** @param nCount The number of blocks. */
+        void SetCount(unsigned short nCount) {
+            mCount = nCount;
+        }
+
+        /** @return The value of sStamp when the texture was last selected. */
+        int GetFrame() const {
+            return mFrame;
+        }
+
+        /** @param nFrame The value of sStamp when the texture was last selected. */
+        void SetFrame(int nFrame) {
+            mFrame = nFrame;
+        }
+
+    private:
         unsigned short mCount; /*!< The number of blocks. */
         int mFrame;            /*!< The value of sStamp when the texture was last selected. */
     };
@@ -370,6 +392,7 @@ public:
      */
     static int sEvictStamp;
 
+private:
     unsigned long long mTex0;       /*!< The TEX0_1 image. */
     unsigned long long mTex1;       /*!< The TEX1_1 image. */
     unsigned long long mMipTbp1;    /*!< The MIPTBP1_1 image, mipmaps 1 to 3. */

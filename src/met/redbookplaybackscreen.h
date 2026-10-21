@@ -99,7 +99,10 @@ public:
      */
     void AddSong(const char *pszSong);
 
-    int mShuffle; /*!< Non-zero when the songs play in a random order. */
+    /** @param nShuffle Non-zero when the songs play in a random order. */
+    void SetShuffle(int nShuffle) {
+        mShuffle = nShuffle;
+    }
 
 private:
     /**
@@ -139,4 +142,5 @@ private:
     int mPlaying;                       // Whether songs are picked and played.
     int mStopping;                      // Whether the playback stops.
     String mNextSong;                   // The song to load next, or empty.
+    int mShuffle;                       /*!< Non-zero when the songs play in a random order. */
 };

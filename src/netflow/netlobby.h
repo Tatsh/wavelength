@@ -254,6 +254,12 @@ public:
      */
     virtual void DeleteFile(MsgSink *pSink, const char *pszName) = 0;
 
+    /** @return The receiver of the result messages. */
+    MsgSink *GetSink() const {
+        return mSink;
+    }
+
+private:
     MsgSink *mSink; /*!< The receiver of the result messages. +0x04 */
 };
 

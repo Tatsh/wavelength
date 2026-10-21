@@ -99,6 +99,7 @@ public:
      */
     void Stop();
 
+private:
     Scheduler *mScheduler;               /*!< The scheduler the events run on. */
     WorldTrack *mTrack;                  /*!< The events. */
     std::vector<Ptr<Command>> mCommands; /*!< The command of each letter. */

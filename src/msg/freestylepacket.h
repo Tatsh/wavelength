@@ -41,7 +41,7 @@ public:
      * Inline. FreestyleTrack::SendUpdate() expands it on its stack.
      *
      * @param bActive Whether the player is playing freestyle.
-     * @param nButton The button held.
+     * @param nButton The button pressed.
      * @param fX The stick's horizontal position.
      * @param fY The stick's vertical position.
      */
@@ -163,8 +163,29 @@ public:
      */
     static float Dequantize(int nValue, int nBits);
 
+    /** @return Whether the player is playing freestyle. */
+    int GetActive() const {
+        return mActive;
+    }
+
+    /** @return The button pressed. */
+    int GetButton() const {
+        return mButton;
+    }
+
+    /** @return The stick's horizontal position. */
+    float GetX() const {
+        return mX;
+    }
+
+    /** @return The stick's vertical position. */
+    float GetY() const {
+        return mY;
+    }
+
+private:
     int mActive; /*!< Whether the player is playing freestyle. */
-    int mButton; /*!< The button held. */
+    int mButton; /*!< The button pressed. */
     float mX;    /*!< The stick's horizontal position. */
     float mY;    /*!< The stick's vertical position. */
 };

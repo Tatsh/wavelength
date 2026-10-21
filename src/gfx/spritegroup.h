@@ -19,5 +19,11 @@ public:
      */
     SpriteGroup(const char *pszName, int nMaxGems);
 
+    /** @return The particle system. */
+    RndParticleSys *GetParticles() const {
+        return mParticles;
+    }
+
+private:
     RndParticleSys *mParticles; /*!< The particle system. */
 };

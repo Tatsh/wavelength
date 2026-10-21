@@ -774,7 +774,7 @@ void Song::ReadDuelPatterns() {
     DataArray *pPatterns = mConfig->FindArray(kDuelPatternsKey, false);
     if (pPatterns == nullptr) {
         const DuelPattern pattern(nullptr);
-        mDuelPatterns.mEntries.push_back(DuelPatternTable::Entry{0, pattern});
+        mDuelPatterns.GetEntries().push_back(DuelPatternTable::Entry{0, pattern});
         return;
     }
     DataArray *pLevel = pPatterns->Array(mDifficulty);
@@ -783,7 +783,7 @@ void Song::ReadDuelPatterns() {
         DataArray *pEntry = pLevel->Array(i);
         const int nTick = (pEntry->Int(0) - kFirstBar) * nTicksPerBar;
         const DuelPattern pattern(pEntry->Array(1));
-        mDuelPatterns.mEntries.push_back(DuelPatternTable::Entry{nTick, pattern});
+        mDuelPatterns.GetEntries().push_back(DuelPatternTable::Entry{nTick, pattern});
     }
 }
 

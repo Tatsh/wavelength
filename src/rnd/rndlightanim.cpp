@@ -12,14 +12,14 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
 }
 
 void WriteName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 } // namespace
@@ -49,7 +49,7 @@ int RndLightAnim::SetFrameSelf(float fFrame) {
     if (mLight == nullptr) {
         return 1;
     }
-    Color color = mLight->mColor;
+    Color color = mLight->GetColor();
     InterpKeys(mKeysOwner->mDiffuseKeys, fFrame, color);
     mLight->SetColor(color);
     return 1;
@@ -58,7 +58,7 @@ int RndLightAnim::SetFrameSelf(float fFrame) {
 void RndLightAnim::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndLightAnim]\n";

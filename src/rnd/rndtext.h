@@ -422,15 +422,25 @@ public:
      */
     static int sRev;
 
-    Color mColor;        /*!< The colour of every character. */
-    int mAlign;          /*!< The Align bits. */
-    RndFont *mFont;      /*!< The font, or null. */
-    int mWordWrap;       /*!< Non-zero to wrap lines at mWrapWidth. */
-    float mWrapWidth;    /*!< The width lines wrap at. */
-    String mText;        /*!< The text the mesh shows, after the tabs and the wrapping. */
-    String mPreWrapText; /*!< The text as set. */
-    std::unique_ptr<RndMesh> mMesh; /*!< The mesh of the characters, or null. */
-    int mDepthTest;                 /*!< Non-zero for the mesh to test depth. */
+    /** @return The Align bits. */
+    int GetAlign() const {
+        return mAlign;
+    }
+
+    /** @return The font, or null. */
+    RndFont *GetFont() const {
+        return mFont;
+    }
+
+    /** @return The text as set. */
+    const String &GetPreWrapText() const {
+        return mPreWrapText;
+    }
+
+    /** @return The width lines wrap at. */
+    float GetWrapWidth() const {
+        return mWrapWidth;
+    }
 
 protected:
     /**
@@ -452,6 +462,17 @@ protected:
      * @ghidraAddress PAL: 0x0024a988
      */
     void AcquireRefs();
+
+private:
+    Color mColor;        /*!< The colour of every character. */
+    int mAlign;          /*!< The Align bits. */
+    RndFont *mFont;      /*!< The font, or null. */
+    int mWordWrap;       /*!< Non-zero to wrap lines at mWrapWidth. */
+    float mWrapWidth;    /*!< The width lines wrap at. */
+    String mText;        /*!< The text the mesh shows, after the tabs and the wrapping. */
+    String mPreWrapText; /*!< The text as set. */
+    std::unique_ptr<RndMesh> mMesh; /*!< The mesh of the characters, or null. */
+    int mDepthTest;                 /*!< Non-zero for the mesh to test depth. */
 };
 
 /**

@@ -81,6 +81,7 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
+private:
     String mSong;               /*!< The song chosen last. */
     std::vector<String> mSongs; /*!< The listed songs. */
 };

@@ -93,5 +93,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The key. */
+    int GetKey() const {
+        return mKey;
+    }
+
+private:
     int mKey; /*!< The key. */
 };

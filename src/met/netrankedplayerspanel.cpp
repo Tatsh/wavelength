@@ -44,7 +44,7 @@ bool NetRankedPlayersPanel::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
         return false;
     }
 
-    std::list<LobbyPlayer> *pPlayers = pMsg->mPlayers;
+    std::list<LobbyPlayer> *pPlayers = pMsg->GetPlayers();
     int nRow = 0;
     for (auto player = pPlayers->begin(); player != pPlayers->end() && nRow < kNumRows; ++player) {
         ++nRow;
@@ -52,9 +52,9 @@ bool NetRankedPlayersPanel::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
         if (player->IsNewbie()) {
             pRank->SetText(TheLocale.Localize(kNewbieToken, true));
         } else {
-            pRank->SetText(FormatString(kRankFormat, player->mRank));
+            pRank->SetText(FormatString(kRankFormat, player->GetRank()));
         }
-        FindRowText(kNameTextFormat, nRow)->SetText(player->mName.c_str());
+        FindRowText(kNameTextFormat, nRow)->SetText(player->GetName().c_str());
     }
     return false;
 }

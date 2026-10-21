@@ -18,7 +18,8 @@ constexpr float kLowFraction = 1.0f / 6.0f;
 } // namespace
 
 JuiceMeter::JuiceMeter(float fValue) : mValue(fValue), mMax(kUnsetMax), mWarned(0) {
-    mMax = TheGameConfig->mJuiceMeterMax * TheGameConfig->mInitialJuice[TheGameDb->GetSkillLevel()];
+    mMax = TheGameConfig->GetJuiceMeterMax() *
+           TheGameConfig->GetInitialJuice()[TheGameDb->GetSkillLevel()];
     UpdateDisplay();
 }
 

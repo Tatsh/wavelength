@@ -51,11 +51,11 @@ DuelTrackPitcher::DuelTrackPitcher(Track *pTrack,
 void DuelTrackPitcher::ShowPattern(int nStartBar) {
     const int nStartTick = nStartBar * mTicksPerBar;
     const int nSteps = (mTicksPerBar * mPhraseBars) / mStepTicks;
-    const int nTrack = mTrack->mIndex;
+    const int nTrack = mTrack->GetIndex();
     const auto pattern = mPatterns->Find(nStartTick);
     for (int nStep = 0; nStep < nSteps; ++nStep) {
         for (int nSlot = 0; nSlot < kDuelPatternLanes; ++nSlot) {
-            if (pattern->mPattern.mAllowed[nStep][nSlot] != 0) {
+            if (pattern->mPattern.IsAllowed(nStep, nSlot)) {
                 TheGfxManager.PlaceGem(nTrack,
                                        nSlot,
                                        kNoPlayer,
@@ -92,7 +92,7 @@ void DuelTrackPitcher::Press(int nSlot) {
         return;
     }
 
-    if (pattern->mPattern.mAllowed[nPhraseStep][nSlot] == 0) {
+    if (!pattern->mPattern.IsAllowed(nPhraseStep, nSlot)) {
         if (mEasiest) {
             return;
         }
@@ -114,8 +114,8 @@ void DuelTrackPitcher::Press(int nSlot) {
 
     const float fTick = static_cast<float>(nTick);
     TheGfxManager.PlaceGem(
-        mTrack->mIndex, nSlot, mTrack->mPlayer->GetIndex(), fTick, kGemStyle, kGemFlags);
-    TheGfxManager.HitGem(mTrack->mPlayer->GetIndex(), mTrack->mIndex, nSlot, fTick);
+        mTrack->GetIndex(), nSlot, mTrack->GetPlayer()->GetIndex(), fTick, kGemStyle, kGemFlags);
+    TheGfxManager.HitGem(mTrack->GetPlayer()->GetIndex(), mTrack->GetIndex(), nSlot, fTick);
 
     Muse *pCatchRiff = mRiffData->GetRiff(nCatchSongTick, nSlot);
     Muse *pRiff = mRiffData->GetRiff(nSongTick, nSlot);
@@ -129,7 +129,7 @@ void DuelTrackPitcher::Press(int nSlot) {
     mGems->AddGem(gem);
     TheGfxManager.PlaceGem(mCatchSide,
                            nSlot,
-                           mTrack->mPlayer->GetIndex(),
+                           mTrack->GetPlayer()->GetIndex(),
                            static_cast<float>(nCatchTick),
                            kGemStyle,
                            kGemFlags);

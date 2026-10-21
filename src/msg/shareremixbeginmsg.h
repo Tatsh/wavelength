@@ -78,6 +78,7 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+private:
     int mReserved04; // +0x04, the alignment of mInfo to eight bytes.
     RemixInfo mInfo; /*!< The description of the remix. */
 };

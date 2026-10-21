@@ -117,5 +117,16 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The identifier in the session of the guest removed, or kUnset. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @param nPlayer The identifier in the session of the guest removed, or kUnset. */
+    void SetPlayer(int nPlayer) {
+        mPlayer = nPlayer;
+    }
+
+private:
     int mPlayer; /*!< The identifier in the session of the guest removed, or kUnset. */
 };

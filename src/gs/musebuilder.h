@@ -113,6 +113,7 @@ public:
                          [[maybe_unused]] int nDenominator) override {
     }
 
+private:
     Ptr<Muse> *mMuse;         /*!< The owner the finished piece is stored through. */
     MidiValidator mValidator; /*!< The checker of the messages. */
     MuseFactory mPieces;      /*!< The collected messages. */

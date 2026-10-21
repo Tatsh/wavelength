@@ -48,7 +48,7 @@ bool FreqCopyDelScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool FreqCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return UIScreen::HandleJoypad(pMsg);
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
@@ -57,19 +57,19 @@ bool FreqCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     {
         UIList *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kListComponent, false));
         Campaign profile(mProfiles[pList->GetSelected()]);
-        if (pMsg->mButton == kPadCircle) {
+        if (pMsg->GetButton() == kPadCircle) {
             const int nOtherSlot = mSlot == 0;
             CopyFreqScreen *pCopy =
                 dynamic_cast<CopyFreqScreen *>(TheUI.FindScreen("copy_freq", false));
             pCopy->SetSlot(nOtherSlot);
-            pCopy->mOverwriteStatus = 0;
-            pCopy->mProfile = profile;
+            pCopy->SetOverwriteStatus(0);
+            pCopy->SetProfile(profile);
             TheUI.GotoScreen(pCopy);
-        } else if (pMsg->mButton == kPadSquare) {
+        } else if (pMsg->GetButton() == kPadSquare) {
             String check("del_freq_check");
-            if (mSlot == 0 && TheGameDb->GetProfile(kFirstPlayer)->mCustom != 0 &&
-                strcmp(profile.mName.c_str(), TheGameDb->GetProfile(kFirstPlayer)->mName.c_str()) ==
-                    0) {
+            if (mSlot == 0 && TheGameDb->GetProfile(kFirstPlayer)->GetCustom() != 0 &&
+                strcmp(profile.GetName().c_str(),
+                       TheGameDb->GetProfile(kFirstPlayer)->GetName().c_str()) == 0) {
                 if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                     FxMidi::PlayWrong();
                     TheUI.GotoScreen("no_del_freq_net");
@@ -87,7 +87,7 @@ bool FreqCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             FxMidi::PlaySquare();
             DeleteFreqScreen *pDelete =
                 dynamic_cast<DeleteFreqScreen *>(TheUI.FindScreen("del_freq", false));
-            pDelete->mFreqName = profile.mName.c_str();
+            pDelete->SetFreqName(profile.GetName().c_str());
             pDelete->SetSlot(mSlot);
             pDelete->SetStartScreen("mem_freqs");
             if (mProfiles.size() == 1) {
@@ -98,7 +98,7 @@ bool FreqCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             NameErrorScreen *pCheck =
                 dynamic_cast<NameErrorScreen *>(TheUI.FindScreen(check.c_str(), false));
             pCheck->SetSlot(mSlot);
-            pCheck->mSaveName = profile.mName.c_str();
+            pCheck->SetSaveName(profile.GetName().c_str());
             TheUI.GotoScreen(pCheck);
         }
     }

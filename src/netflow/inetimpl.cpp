@@ -235,7 +235,7 @@ void InetImpl::DeliverConfigs(int nResult) {
             config.mDescription = String(pCombination->deviceName);
             config.mName = String(pCombination->interfaceName);
             config.mDefault = sConfigList.defaultNumber == i;
-            msg.mConfigs.push_back(config);
+            msg.GetConfigs().push_back(config);
         }
     }
     mConfigsSink->Dispatch(&msg);

@@ -75,6 +75,12 @@ public:
      */
     const char *GetName() const override;
 
+    /** @return Non-zero while the authentication runs. */
+    int GetRunning() const {
+        return mRunning;
+    }
+
+private:
     int mRunning; /*!< Non-zero while the authentication runs. */
 };
 

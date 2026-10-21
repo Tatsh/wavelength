@@ -85,5 +85,11 @@ public:
         return "FileListMsg";
     }
 
+    /** @return The names of the files. */
+    std::list<String> *GetFiles() const {
+        return mFiles;
+    }
+
+private:
     std::list<String> *mFiles; /*!< The names of the files. */
 };

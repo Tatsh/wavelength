@@ -129,10 +129,33 @@ public:
     /** The bit of the Copy() flags that copies the child lists of the mix-ins. */
     static constexpr int kCopyChildLists = 0x200;
 
+    /** @return The registry key. */
+    const char *GetName() const {
+        return mName.c_str();
+    }
+
+    /** @return The objects that store a pointer to this one. */
+    const std::list<RndObject *> &GetRefs() const {
+        return mRefs;
+    }
+
+    /** @return Non-zero for an object the renderer made, not a file. */
+    int GetInternal() const {
+        return mInternal;
+    }
+
+    /** @param nInternal Non-zero for an object the renderer made, not a file. */
+    void SetInternal(int nInternal) {
+        mInternal = nInternal;
+    }
+
+protected:
     std::list<RndObject *> mRefs; /*!< Objects that store a pointer to this one. */
     String mName;                 /*!< Registry key. */
-    int mInternal;                /*!< Non-zero for an object the renderer made, not a file. */
-    int mDeleting;                /*!< Set while the destructor notifies the referrers. */
+
+private:
+    int mInternal; /*!< Non-zero for an object the renderer made, not a file. */
+    int mDeleting; /*!< Set while the destructor notifies the referrers. */
 };
 
 /**

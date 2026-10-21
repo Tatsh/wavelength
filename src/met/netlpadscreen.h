@@ -188,6 +188,22 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+    /** @return The players shown. */
+    const std::list<NetLaunchpadPlayer> &GetPlayers() const {
+        return mPlayers;
+    }
+
+    /** @return The players shown. */
+    std::list<NetLaunchpadPlayer> &GetPlayers() {
+        return mPlayers;
+    }
+
+    /** @return The `buttonPanel` entry of the description. */
+    const char *GetButtonPanel() const {
+        return mButtonPanel;
+    }
+
+private:
     const char *mDataPanel;                 /*!< The `dataPanel` entry of the description. */
     const char *mButtonPanel;               /*!< The `buttonPanel` entry of the description. */
     std::list<NetLaunchpadPlayer> mPlayers; /*!< The players shown. */

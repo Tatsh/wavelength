@@ -118,15 +118,15 @@ Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mStarted(0) {
     AttachView(mHudView, pLayout);
     DetachView(pLayout,
                dynamic_cast<RndView *>(TheManager.Find(FormatString("%s test.anim", sHudPrefix))));
-    for (RndDrawable *pChild : static_cast<RndDrawable *>(pLayout)->mDraws) {
-        const char *pszName = pChild->mName.c_str();
+    for (RndDrawable *pChild : static_cast<RndDrawable *>(pLayout)->GetDraws()) {
+        const char *pszName = pChild->GetName();
         if (std::strcmp(pszName, kHudCam) != 0 && std::strcmp(pszName, kHudEnv) != 0) {
             pChild->SetShowing(false);
         }
     }
     mCam = dynamic_cast<RndCam *>(TheManager.Find(kHudCam));
-    mCamPos = mCam->mLocalXfm.mTranslation;
-    mCam->mZRange = sHudZ;
+    mCamPos = mCam->GetLocalXfm().mTranslation;
+    mCam->GetZRange() = sHudZ;
     if (TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel) {
         int nPosition = 0;
         for (int i = 0; i < nPlayers; ++i) {
@@ -168,7 +168,7 @@ Overlay::~Overlay() {
     mAlls.clear();
     mLocals.clear();
     mCommon.reset();
-    ThePs.mBlurActive = 0;
+    ThePs.SetBlurActive(0);
     HideablePanel::Terminate();
 }
 
@@ -293,7 +293,7 @@ void Overlay::SetPowerupEnabled(int nPlayer, int nEnabled) {
     if (pAll != nullptr && pAll->GetScore() != nullptr &&
         pAll->GetScore()->GetPowerup() != nullptr) {
         HudPowerup *pPowerup = pAll->GetScore()->GetPowerup();
-        pPowerup->mEnabled = nEnabled;
+        pPowerup->SetEnabled(nEnabled);
         pPowerup->UpdateSlide();
     }
 }
@@ -321,7 +321,7 @@ void Overlay::SetLetterbox(bool bClosed) {
 }
 
 float Overlay::GetLetterbox() {
-    return mCommon->GetLetterbox().mSlide.GetValue() * kLetterboxPerFrame;
+    return mCommon->GetLetterbox().GetSlide().GetValue() * kLetterboxPerFrame;
 }
 
 void Overlay::SetPartsShown(bool bShow, [[maybe_unused]] int nUnused) {
@@ -351,7 +351,7 @@ void Overlay::SetPartsShown(bool bShow, [[maybe_unused]] int nUnused) {
             if (pAll->GetScore() != nullptr) {
                 pAll->GetScore()->Show(false);
                 if (pAll->GetScore()->GetPowerup() != nullptr) {
-                    pAll->GetScore()->GetPowerup()->mEnabled = 0;
+                    pAll->GetScore()->GetPowerup()->SetEnabled(0);
                     pAll->GetScore()->GetPowerup()->UpdateSlide();
                 }
             }
@@ -390,7 +390,7 @@ void Overlay::SetPartsShown(bool bShow, [[maybe_unused]] int nUnused) {
         if (pAll->GetScore() != nullptr) {
             pAll->GetScore()->Show(bPlayParts);
             if (pAll->GetScore()->GetPowerup() != nullptr) {
-                pAll->GetScore()->GetPowerup()->mEnabled = bPlayParts;
+                pAll->GetScore()->GetPowerup()->SetEnabled(bPlayParts);
                 pAll->GetScore()->GetPowerup()->UpdateSlide();
             }
         }
@@ -511,7 +511,7 @@ void Overlay::ShowController(bool bShow, float fPosition) {
     }
     pController->Show(bShow);
     if (0.0f <= fPosition) {
-        mCommon->GetController()->mPosAnim->SetFrame(fPosition);
+        mCommon->GetController()->GetPosAnim()->SetFrame(fPosition);
     }
 }
 
@@ -621,9 +621,9 @@ void Overlay::SetCameraOffset(const Vector3 *pOffset) {
     const float fX = pOffset->x + mCamPos.x;
     const float fY = pOffset->y + mCamPos.y;
     const float fZ = pOffset->z + mCamPos.z;
-    Vector3 &current = mCam->mLocalXfm.mTranslation;
+    Vector3 &current = mCam->GetLocalXfm().mTranslation;
     if (fX != current.x || fY != current.y || fZ != current.z) {
-        mCam->mDirty = 1;
+        mCam->SetDirty(1);
         // The binary also copies an unset fourth word, which is left as it was here.
         current.x = fX;
         current.y = fY;
@@ -680,7 +680,7 @@ void Overlay::ShowCheckpoint() {
 
 void Overlay::ShowResult(bool bWon, [[maybe_unused]] int nMode) {
     if (!bWon) {
-        mCommon->GetJuice().mHideBar = 1;
+        mCommon->GetJuice().SetHideBar(1);
         return;
     }
     for (const auto &pLocal : mLocals) {

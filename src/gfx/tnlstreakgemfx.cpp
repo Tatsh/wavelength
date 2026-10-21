@@ -46,9 +46,13 @@ TnlStreakGemFX::TnlStreakGemFX(int nTrack, int nPlayer) {
     mFontMat =
         dynamic_cast<RndMat *>(TheManager.Find(FormatString("streakarrow font_%c.mat", nColor)));
     pMesh->SetMat(mMat);
-    RndFont *pFont = mText->mFont;
-    pFont->Set(
-        mFontMat, pFont->mChars.c_str(), pFont->mRows, pFont->mCols, pFont->mSize, pFont->mSpace);
+    RndFont *pFont = mText->GetFont();
+    pFont->Set(mFontMat,
+               pFont->GetChars().c_str(),
+               pFont->GetRows(),
+               pFont->GetCols(),
+               pFont->GetSize(),
+               pFont->GetSpace());
 }
 
 TnlStreakGemFX::~TnlStreakGemFX() = default;
@@ -128,12 +132,12 @@ void TnlStreakGemFX::Draw() {
         return;
     }
     mFontMat->SetAlpha(flAlpha);
-    Color edge = mMat->mEdgeColor;
+    Color edge = mMat->GetEdgeColor();
     edge.a = flAlpha;
     mMat->SetEdgeColor(edge);
     mMat->SetAlpha(flAlpha);
-    mView->mLocalXfm = mXfm;
-    mView->mDirty = 1;
+    mView->GetLocalXfm() = mXfm;
+    mView->SetDirty(1);
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();
 }

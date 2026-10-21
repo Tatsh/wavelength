@@ -31,25 +31,25 @@ bool NetDoPlayerSearchScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetDoPlayerSearchScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->FindPlayer(this, mPlayerName.c_str());
     }
     return false;
 }
 
 bool NetDoPlayerSearchScreen::HandleFindPlayer(FindPlayerMsg *pMsg) {
-    if (pMsg->mResult != 0) {
+    if (pMsg->GetResult() != 0) {
         TheUI.GotoScreen(kSearchErrorScreen);
         return false;
     }
 
     const String unused(""); // Yes, the binary builds and discards this string.
-    const NetChatroomInfo chatroom(pMsg->mChatroom);
+    const NetChatroomInfo chatroom(pMsg->GetChatroom());
     const char *pszScreen =
         chatroom.mId == kNoChatroom ? kOfflineResultsScreen : kOnlineResultsScreen;
     PlayerSearchResultsScreen *pResults =
         dynamic_cast<PlayerSearchResultsScreen *>(TheUI.FindScreen(pszScreen, false));
-    pResults->SetPlayer(pMsg->mPlayer, chatroom);
+    pResults->SetPlayer(pMsg->GetPlayer(), chatroom);
     TheUI.GotoScreen(pResults);
     return false;
 }

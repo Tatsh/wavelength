@@ -30,9 +30,6 @@ public:
      */
     WaitForTaskTask(const char *pszName, TaskDoneNotifier *pNotifier);
 
-    TaskDoneNotifier *mNotifier; /*!< The notifier that reports the work. */
-    const char *mName;           /*!< The name of the work. */
-
 protected:
     /**
      * Arrange for the notifier to report the work to this task.
@@ -41,4 +38,8 @@ protected:
      * @ghidraAddress PAL: 0x00143260
      */
     void OnStart() override;
+
+private:
+    TaskDoneNotifier *mNotifier; /*!< The notifier that reports the work. */
+    const char *mName;           /*!< The name of the work. */
 };

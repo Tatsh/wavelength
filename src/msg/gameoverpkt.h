@@ -122,5 +122,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The final score of each player. */
+    const std::vector<NetGameScore> &GetScores() const {
+        return mScores;
+    }
+
+private:
     std::vector<NetGameScore> mScores; /*!< The final score of each player. */
 };

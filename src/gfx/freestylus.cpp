@@ -56,7 +56,7 @@ inline void Normalize(Vector3 *pVec) {
 
 // Write the three basis rows of a transform as a uniform scale, keeping the translation.
 inline void SetScaleBasis(RndTransformable *pTrans, float flScale) {
-    Transform &xfm = pTrans->mLocalXfm;
+    Transform &xfm = pTrans->GetLocalXfm();
     xfm.mBasisX.x = flScale;
     xfm.mBasisX.y = 0.0f;
     xfm.mBasisX.z = 0.0f;
@@ -66,7 +66,7 @@ inline void SetScaleBasis(RndTransformable *pTrans, float flScale) {
     xfm.mBasisZ.x = 0.0f;
     xfm.mBasisZ.y = 0.0f;
     xfm.mBasisZ.z = flScale;
-    pTrans->mDirty = 1;
+    pTrans->SetDirty(1);
 }
 
 } // namespace
@@ -94,9 +94,9 @@ Freestylus::Freestylus(GfxTunnel *, int nType)
     FindObject<RndAnimatable>("freestylus axe to scratch.mnm")
         ->SetFrame((nType == kTypeScratch) ? kScratchFrame : 0.0f);
     mParticles = FindObject<RndParticleSys>("freestylus.part");
-    mButton.mSys = FindObject<RndParticleSys>("freestylus button 0.part");
-    mButton.mSys->SetEmitFrame(mTime);
-    mButton.mSys->FreeAllParticles();
+    mButton.SetSys(FindObject<RndParticleSys>("freestylus button 0.part"));
+    mButton.GetSys()->SetEmitFrame(mTime);
+    mButton.GetSys()->FreeAllParticles();
     mBasis[0].x = 1.0f;
     mBasis[0].z = 0.0f;
     mBasis[0].y = 0.0f;
@@ -116,11 +116,11 @@ void Freestylus::Setup(float flScale) {
     }
     mScale = flScale;
     const float flSize = flScale * TheGfxManager.GetScrollSpeed();
-    mButtonForce = mButton.mSys->mForce;
-    ScaleParticles(mButton.mSys, flSize);
+    mButtonForce = mButton.GetSys()->GetForce();
+    ScaleParticles(mButton.GetSys(), flSize);
     mArm.Init(FindObject<RndParticleSys>("freestylus2.part"), mView, flSize);
     mArm.Scale(mParticles, flSize);
-    mView->RemoveDraw(mArm.mSys);
+    mView->RemoveDraw(mArm.GetSys());
     SetScaleBasis(mFlash, TheGfxManager.GetScrollSpeed());
 }
 
@@ -161,10 +161,10 @@ void Freestylus::Spin(float flTime, float flTumbleX, float flTumbleY) {
     CrossVec3(&mBasis[1].x, &mBasis[2].x, &mBasis[0].x);
     Normalize(&mBasis[0]);
     CrossVec3(&mBasis[0].x, &mBasis[1].x, &mBasis[2].x);
-    mTumble->mLocalXfm.mBasisX = mBasis[0];
-    mTumble->mLocalXfm.mBasisY = mBasis[1];
-    mTumble->mLocalXfm.mBasisZ = mBasis[2];
-    mTumble->mDirty = 1;
+    mTumble->GetLocalXfm().mBasisX = mBasis[0];
+    mTumble->GetLocalXfm().mBasisY = mBasis[1];
+    mTumble->GetLocalXfm().mBasisZ = mBasis[2];
+    mTumble->SetDirty(1);
 }
 
 void Freestylus::Flash() {
@@ -175,8 +175,8 @@ void Freestylus::ClearParticles() {
     const float flTime = TheGameDb->GetSongTime();
     mParticles->SetEmitFrame(flTime);
     mParticles->FreeAllParticles();
-    mArm.mSys->SetEmitFrame(flTime);
-    mArm.mSys->FreeAllParticles();
+    mArm.GetSys()->SetEmitFrame(flTime);
+    mArm.GetSys()->FreeAllParticles();
 }
 
 void Freestylus::Update(bool bPlaying, float, float flTime, float flScale) {
@@ -200,15 +200,15 @@ void Freestylus::Draw(RndTransformable *pParent, int) {
             bFlash = true;
         }
     }
-    const Transform &world = pParent->mWorldXfm;
+    const Transform &world = pParent->GetWorldXfm();
     const Vector3 basis[] = {world.mBasisX, world.mBasisY, world.mBasisZ};
-    mButton.mSys->mForce = RotateDir(basis, mButtonForce);
+    mButton.GetSys()->GetForce() = RotateDir(basis, mButtonForce);
     mView->SetFrame(TheGameDb->GetSongTime());
     mTempo->SetFrame(TheGameDb->GetSongTick());
     mView->UpdateWorldXfm(pParent, 1);
     mFlash->UpdateWorldXfm(pParent, 1);
     mParticles->SetEmitFrame(flTime);
-    mArm.mSys->SetEmitFrame(flTime);
+    mArm.GetSys()->SetEmitFrame(flTime);
     mButton.Update(flTime, mTime);
     mBeams->SetShowing(mBeamGrow.GetValue() != 0.0f);
     mView->Draw();

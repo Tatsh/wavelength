@@ -69,17 +69,17 @@ void AttachView(RndView *pParent, RndView *pChild) {
 
 void SetFilterScale(RndAnimatable *pAnim, float fScale) {
     RndAnimatable::ScaleOffset *pFilter = nullptr;
-    if (!pAnim->mFilters.empty()) {
-        pFilter = dynamic_cast<RndAnimatable::ScaleOffset *>(pAnim->mFilters.front());
+    if (!pAnim->GetFilters().empty()) {
+        pFilter = dynamic_cast<RndAnimatable::ScaleOffset *>(pAnim->GetFilters().front());
     }
     if (pFilter == nullptr) {
-        DebugWarn("%s must have scale-offset filter in slot 1", pAnim->mName.c_str());
+        DebugWarn("%s must have scale-offset filter in slot 1", pAnim->GetName());
         return;
     }
-    const float fFrame = pAnim->mFrame;
+    const float fFrame = pAnim->GetFrame();
     const float fFiltered = pFilter->Apply(fFrame);
-    pFilter->mScale = fScale;
-    pFilter->mOffset = fFiltered - (fFrame * fScale);
+    pFilter->SetScale(fScale);
+    pFilter->SetOffset(fFiltered - (fFrame * fScale));
 }
 
 void Rotate(Vector2 *pPoint, float fAngle) {
@@ -133,13 +133,13 @@ void BuildTrackArc(std::vector<Vector2> *pPoints, DataArray *pConfig) {
 
 void ResetXfmTree(RndTransformable *pRoot, bool bReset) {
     if (bReset) {
-        pRoot->mLocalXfm = Transform{Vector3{1.0f, 0.0f, 0.0f},
-                                     Vector3{0.0f, 1.0f, 0.0f},
-                                     Vector3{0.0f, 0.0f, 1.0f},
-                                     Vector3{0.0f, 0.0f, 0.0f, 1.0f}};
-        pRoot->mDirty = 1;
+        pRoot->GetLocalXfm() = Transform{Vector3{1.0f, 0.0f, 0.0f},
+                                         Vector3{0.0f, 1.0f, 0.0f},
+                                         Vector3{0.0f, 0.0f, 1.0f},
+                                         Vector3{0.0f, 0.0f, 0.0f, 1.0f}};
+        pRoot->SetDirty(1);
     }
-    for (RndTransformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->GetTransList()) {
         ResetXfmTree(pChild, true);
     }
 }
@@ -147,10 +147,10 @@ void ResetXfmTree(RndTransformable *pRoot, bool bReset) {
 void SetZModeTree(RndTransformable *pRoot, RndMesh::ZMode zMode, RndMesh::ZFunc zFunc) {
     RndMesh *pMesh = (pRoot != nullptr) ? dynamic_cast<RndMesh *>(pRoot) : nullptr;
     if (pMesh != nullptr) {
-        pMesh->mZFunc = zFunc;
-        pMesh->mZMode = zMode;
+        pMesh->SetZFunc(zFunc);
+        pMesh->SetZMode(zMode);
     }
-    for (RndTransformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->GetTransList()) {
         SetZModeTree(pChild, zMode, zFunc);
     }
 }
@@ -158,12 +158,12 @@ void SetZModeTree(RndTransformable *pRoot, RndMesh::ZMode zMode, RndMesh::ZFunc 
 void ClearMeshSpheres(RndTransformable *pRoot) {
     RndMesh *pMesh = (pRoot != nullptr) ? dynamic_cast<RndMesh *>(pRoot) : nullptr;
     if (pMesh != nullptr) {
-        pMesh->mSphere.mCenter.x = 0.0f;
-        pMesh->mSphere.mCenter.y = 0.0f;
-        pMesh->mSphere.mCenter.z = 0.0f;
-        pMesh->mSphere.mRadius = 0.0f;
+        pMesh->GetSphere().mCenter.x = 0.0f;
+        pMesh->GetSphere().mCenter.y = 0.0f;
+        pMesh->GetSphere().mCenter.z = 0.0f;
+        pMesh->GetSphere().mRadius = 0.0f;
     }
-    for (RndTransformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->GetTransList()) {
         ClearMeshSpheres(pChild);
     }
 }
@@ -181,7 +181,7 @@ void LoadFloatKeys(DataArray *pData, std::vector<FloatKey> *pKeys) {
 
 void ScaleTransKeys(const char *pszName, float fScale) {
     RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(TheManager.Find(pszName));
-    ScaleKeys(pAnim->mFramesOwner->mTransKeys, fScale);
+    ScaleKeys(pAnim->GetFramesOwner()->GetTransKeys(), fScale);
 }
 
 void ScaleKeys(std::vector<Key<Vector3>> &keys, float fScale) {
@@ -202,9 +202,9 @@ void InterpBasis(const float *pFrom, const float *pTo, float *pOut, float fBlend
 }
 
 void ScaleParticles(RndParticleSys *pSys, float fScale) {
-    pSys->mSize.x *= fScale;
-    pSys->mSize.y *= fScale;
-    Vector3 &force = pSys->mForce;
+    pSys->GetSize().x *= fScale;
+    pSys->GetSize().y *= fScale;
+    Vector3 &force = pSys->GetForce();
     force.x *= fScale;
     force.y *= fScale;
     force.z *= fScale;
@@ -218,7 +218,7 @@ void ScaleParticleTree(RndTransformable *pRoot, float fScale) {
     if (pSys != nullptr) {
         ScaleParticles(pSys, fScale);
     }
-    for (RndTransformable *pChild : pRoot->mTransList) {
+    for (RndTransformable *pChild : pRoot->GetTransList()) {
         ScaleParticleTree(pChild, fScale);
     }
 }

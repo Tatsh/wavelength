@@ -271,6 +271,7 @@ public:
      */
     void SetLogic(DuelLogic *pLogic);
 
+private:
     DuelLogic *mLogic; /*!< The logic CreateLogic() installed, or null. */
     int mFxBankSlot;   /*!< The synthesiser slot of the effect bank, -1 until it is read. */
 };

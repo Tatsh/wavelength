@@ -78,6 +78,7 @@ public:
      */
     bool HandleSelectStart(UIComponentSelectStartMsg *pMsg);
 
+private:
     UIScreen *mContinueScreen; /*!< The screen `continue` leads to. */
     UIScreen *mCancelScreen;   /*!< The Freq maker screen `cancel` returns to. */
 };

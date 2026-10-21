@@ -56,7 +56,7 @@ void TnlBlurs::Update() {
     while (it != mBlurs.end()) {
         if (flTick < it->mStartTick) {
             if (mAlpha == 0.0f) {
-                ThePs.mBlurActive = 0;
+                ThePs.SetBlurActive(0);
                 return;
             }
             break;
@@ -100,13 +100,13 @@ void TnlBlurs::Update() {
     }
 
     if (mAlpha == 0.0f) {
-        ThePs.mBlurActive = 0;
+        ThePs.SetBlurActive(0);
         return;
     }
-    ThePs.mBlurAmount = mAlpha;
-    ThePs.mBlurCount = mEnlarge;
-    memcpy(ThePs.mBlurRect, kScreenRect, sizeof(kScreenRect));
-    ThePs.mBlurActive = 1;
+    ThePs.SetBlurAmount(mAlpha);
+    ThePs.SetBlurCount(mEnlarge);
+    memcpy(ThePs.GetBlurRect(), kScreenRect, sizeof(kScreenRect));
+    ThePs.SetBlurActive(1);
 }
 
 void TnlBlurs::Insert(const char *pszKind, float flStartTick, float flEndTick) {

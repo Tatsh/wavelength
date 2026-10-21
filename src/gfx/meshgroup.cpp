@@ -21,46 +21,46 @@ MeshGroup::MeshGroup(RndMultiMesh *pMultiMesh,
         mMeshes.splice(mMeshes.begin(), *pMeshes);
         pMesh = mMeshes.front();
     } else {
-        pMesh = mMultiMesh->mMesh;
+        pMesh = mMultiMesh->GetMesh();
     }
-    mLookahead = pMesh->mMinScreen + flLookahead;
-    mMultiMesh->mTransforms.clear();
+    mLookahead = pMesh->GetMinScreen() + flLookahead;
+    mMultiMesh->GetTransforms().clear();
     if (mParticles != nullptr) {
-        mParticles->mParticlesOwner->SetNumParticles(nMaxGems + kSpareCount);
+        mParticles->GetParticlesOwner()->SetNumParticles(nMaxGems + kSpareCount);
     }
 }
 
 void MeshGroup::Bind(TnlGem *pGem) {
-    std::list<Transform> &instances = mMultiMesh->mTransforms;
+    std::list<Transform> &instances = mMultiMesh->GetTransforms();
     if (mTransforms->empty()) {
         // The original fills the new transforms from an uninitialised temporary.
         mTransforms->resize(kSpareCount, Transform());
     }
     instances.splice(instances.begin(), *mTransforms, mTransforms->begin());
-    pGem->mTransform = instances.begin();
+    pGem->SetTransform(instances.begin());
     if (mParticles == nullptr) {
-        pGem->mParticle = nullptr;
+        pGem->SetParticle(nullptr);
         return;
     }
     Particle *pParticle = mParticles->AllocParticle();
-    pGem->mParticle = pParticle;
+    pGem->SetParticle(pParticle);
     if (pParticle != nullptr) {
-        pParticle->mCol = mParticles->mStartColorLow;
-        pGem->mParticle->mSize = mParticles->mSize.x;
+        pParticle->mCol = mParticles->GetStartColorLow();
+        pGem->GetParticle()->mSize = mParticles->GetSize().x;
     }
 }
 
 void MeshGroup::Unbind(TnlGem *pGem) {
-    if (pGem->mParticle != nullptr) {
-        mParticles->FreeParticle(pGem->mParticle);
-        pGem->mParticle = nullptr;
+    if (pGem->GetParticle() != nullptr) {
+        mParticles->FreeParticle(pGem->GetParticle());
+        pGem->SetParticle(nullptr);
     }
-    mTransforms->splice(mTransforms->end(), mMultiMesh->mTransforms, pGem->mTransform);
+    mTransforms->splice(mTransforms->end(), mMultiMesh->GetTransforms(), pGem->GetTransform());
 }
 
 void MeshGroup::TakeGem(MeshGroup *pFrom, TnlGem *pGem) {
     // Yes, the binary copies the transform of the gem and never reads the copy.
-    [[maybe_unused]] const Transform xfm = *pGem->mTransform;
+    [[maybe_unused]] const Transform xfm = *pGem->GetTransform();
     pFrom->Unbind(pGem);
     Bind(pGem);
 }

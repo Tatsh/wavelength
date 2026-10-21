@@ -86,6 +86,7 @@ public:
          */
         void Report();
 
+    private:
         DataArray *mAllowed; /*!< The `allowed_rnd_merges` array. */
         String mRejected;    /*!< The names skipped without permission, one per line. */
     };

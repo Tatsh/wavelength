@@ -108,6 +108,7 @@ public:
      */
     void Update(float fTick);
 
+private:
     RndView *mArrow;                       /*!< `HUD hilite arrow.view`. */
     RndMat *mArrowMat;                     /*!< `HUD hilite arrow.mat`. */
     RndMesh *mBox;                         /*!< `HUD hilite_box.mesh`. */

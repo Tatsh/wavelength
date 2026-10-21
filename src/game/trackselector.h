@@ -74,6 +74,17 @@ public:
          */
         void Remove(int nPlayer);
 
+        /** @return The player in each slot, or -1. */
+        const std::vector<int> &GetPlayers() const {
+            return mPlayers;
+        }
+
+        /** @return The player in each slot, or -1. */
+        std::vector<int> &GetPlayers() {
+            return mPlayers;
+        }
+
+    private:
         std::vector<int> mPlayers; /*!< The player in each slot, or -1. */
     };
 
@@ -205,6 +216,7 @@ public:
      */
     const int *GetPlayersOnTrack(int nTrack) const;
 
+private:
     std::vector<int> mPlayerTracks;     /*!< The track of each player, or -1. */
     std::vector<TrackInfo> mTrackInfos; /*!< The players on each track. */
     int mNeedsCompact;                  /*!< Set by SwapPlayer() and cleared by Compact(). */

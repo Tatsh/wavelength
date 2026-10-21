@@ -38,7 +38,7 @@ StdMidiMuse::~StdMidiMuse() {
 void StdMidiMuse::Play(Scheduler *pScheduler) {
     StdMidiCommand *pCmd = mCmd.operator->();
     pCmd->Cancel();
-    pCmd->mScheduler = pScheduler;
+    pCmd->SetScheduler(pScheduler);
     pScheduler->PostIn(pCmd, 0, false);
 }
 
@@ -48,7 +48,7 @@ void StdMidiMuse::PlayFrom(Scheduler *pScheduler, int nOffset) {
         nOffset = 0;
     }
     pCmd->Cancel();
-    pCmd->mScheduler = pScheduler;
+    pCmd->SetScheduler(pScheduler);
     pScheduler->PostIn(pCmd, -nOffset, false);
 }
 
@@ -61,7 +61,7 @@ void StdMidiMuse::PlayWindow(Scheduler *pScheduler, int nStart, int nEnd) {
         nStart = 0;
     }
     pCmd->Cancel();
-    pCmd->mScheduler = pScheduler;
+    pCmd->SetScheduler(pScheduler);
     pScheduler->PostIn(pCmd, -nStart, false);
 }
 
@@ -70,7 +70,7 @@ void StdMidiMuse::Stop() {
 }
 
 bool StdMidiMuse::IsPlaying() {
-    return mCmd.Get()->mScheduler != nullptr;
+    return mCmd.Get()->GetScheduler() != nullptr;
 }
 
 Muse *StdMidiMuse::Clone() {

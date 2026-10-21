@@ -74,6 +74,7 @@ public:
      */
     bool Update(GfxTunnel *pTunnel, float flTick);
 
+private:
     GfxTunnel *mTunnel;     /*!< The tunnel. */
     int mTrack;             /*!< The track. */
     int mBar;               /*!< The bar of the track. */

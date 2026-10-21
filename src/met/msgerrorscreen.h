@@ -55,5 +55,11 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+    /** @param pszMessage The locale token of the message. */
+    void SetMessage(const char *pszMessage) {
+        mMessage = pszMessage;
+    }
+
+private:
     String mMessage; /*!< The locale token of the message. */
 };

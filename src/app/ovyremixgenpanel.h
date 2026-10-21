@@ -134,8 +134,16 @@ public:
      */
     void SetLit(int nIndex, bool bLit);
 
-    RndMesh *mBackground;           /*!< `<prefix>_bg.mesh`, the root of the drawing. */
-    RndMesh *mPanel;                /*!< `<prefix>_panel.mesh`. */
+    /** @return `<prefix>_panel.mesh`. */
+    RndMesh *GetPanel() const {
+        return mPanel;
+    }
+
+protected:
+    RndMesh *mBackground; /*!< `<prefix>_bg.mesh`, the root of the drawing. */
+    RndMesh *mPanel;      /*!< `<prefix>_panel.mesh`. */
+
+private:
     std::vector<Option> mOptions;   /*!< The options, in order. */
     std::list<RndObject *> mClones; /*!< Every object the panel cloned and owns. */
     RndMat *mCursorOffMat;          /*!< The material of an option the cursor is not on. */

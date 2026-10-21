@@ -83,6 +83,7 @@ public:
      */
     void SetSong(const char *pszSong);
 
+private:
     const char *mSong;          /*!< The song, a symbol. */
     RndMatAnim *mPicAnim;       /*!< The reveal, `band_pic.mnm`, or null. */
     ViewAnimPlayer mAnimPlayer; /*!< The player of `s_g_bonus.view`. +0x78 */

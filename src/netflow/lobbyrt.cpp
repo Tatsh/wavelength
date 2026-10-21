@@ -272,7 +272,7 @@ void LobbyRT::EncodeGameName(String *pName,
                              int nConnectionType,
                              int nAccountId) {
     int nLevel = 0;
-    EncodeSong(&nLevel, pParams->mSong.c_str());
+    EncodeSong(&nLevel, pParams->GetSong().c_str());
     char szName[kGameNameBufferSize];
     sprintf(szName,
 #ifdef VIDEO_STANDARD_PAL
@@ -281,17 +281,17 @@ void LobbyRT::EncodeGameName(String *pName,
             "%d%d%d%d%d%d%d%d%d%02d%010d%s",
 #endif
             kGameNameVersion,
-            pParams->mLoadRemix,
-            pParams->mRemixReadOnly,
-            pParams->mSkillLevel,
-            pParams->mRuleSet,
-            pParams->mMaxPlayers,
-            pParams->mPowerupLevel,
+            pParams->GetLoadRemix(),
+            pParams->GetRemixReadOnly(),
+            pParams->GetSkillLevel(),
+            pParams->GetRuleSet(),
+            pParams->GetMaxPlayers(),
+            pParams->GetPowerupLevel(),
             nPlayers,
             nConnectionType,
             nLevel,
             nAccountId,
-            pParams->mRemixName.c_str());
+            pParams->GetRemixName().c_str());
     szName[strlen(szName)] = '\0'; // Yes, the binary terminates the text again.
     *pName = szName;
 }
@@ -301,15 +301,15 @@ void LobbyRT::DecodeGameName(NetGameParams *pParams,
                              int *pnConnectionType,
                              int *pnAccountId,
                              const char *pszName) {
-    pParams->mSong.Clear();
-    pParams->mRuleSet = NetGameParams::kDefaultSelection;
-    pParams->mMaxPlayers = NetGameParams::kDefaultMaxPlayers;
-    pParams->mLoadRemix = 0;
-    pParams->mPracticeMode = 0;
-    pParams->mTutorial = 0;
-    pParams->mSkillLevel = 0;
-    pParams->mPowerupLevel = NetGameParams::kDefaultSelection;
-    pParams->mCommunity = GameDb::kCommunityOnline;
+    pParams->GetSong().Clear();
+    pParams->SetRuleSet(NetGameParams::kDefaultSelection);
+    pParams->SetMaxPlayers(NetGameParams::kDefaultMaxPlayers);
+    pParams->SetLoadRemix(0);
+    pParams->SetPracticeMode(0);
+    pParams->SetTutorial(0);
+    pParams->SetSkillLevel(0);
+    pParams->SetPowerupLevel(NetGameParams::kDefaultSelection);
+    pParams->SetCommunity(GameDb::kCommunityOnline);
     *pnPlayers = 0;
     *pnConnectionType = LobbyPlayer::kConnectionFast;
     *pnAccountId = 0;
@@ -323,27 +323,27 @@ void LobbyRT::DecodeGameName(NetGameParams *pParams,
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
-    pParams->mLoadRemix = nValue != 0;
+    pParams->SetLoadRemix(nValue != 0);
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
-    pParams->mRemixReadOnly = nValue != 0;
+    pParams->SetRemixReadOnly(nValue != 0);
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
-    pParams->mSkillLevel = nValue;
+    pParams->SetSkillLevel(nValue);
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
-    pParams->mRuleSet = nValue;
+    pParams->SetRuleSet(nValue);
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
-    pParams->mMaxPlayers = nValue;
+    pParams->SetMaxPlayers(nValue);
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
-    pParams->mPowerupLevel = nValue;
+    pParams->SetPowerupLevel(nValue);
     if (!ReadNumber(&nValue, &pszText, &nRemaining, kFlagDigits)) {
         return;
     }
@@ -360,11 +360,11 @@ void LobbyRT::DecodeGameName(NetGameParams *pParams,
         return;
     }
     *pnAccountId = nValue;
-    pParams->mRemixName = pszText;
+    pParams->SetRemixName(pszText);
 }
 
 void LobbyRT::EncodePlayer(String *pText, const LobbyPlayer *pPlayer) {
-    const unsigned int nSeconds = pPlayer->mLastOnline.ToSeconds();
+    const unsigned int nSeconds = pPlayer->GetLastOnline().ToSeconds();
     char szText[kPlayerBufferSize];
     sprintf(szText,
 #ifdef VIDEO_STANDARD_PAL
@@ -373,19 +373,19 @@ void LobbyRT::EncodePlayer(String *pText, const LobbyPlayer *pPlayer) {
             "%d%010d%d%07d%010d%03d%03d%08d%03d",
 #endif
             kPlayerVersion,
-            pPlayer->mRating,
-            pPlayer->mRankIcon + 1,
-            pPlayer->mGames,
+            pPlayer->GetRating(),
+            pPlayer->GetRankIcon() + 1,
+            pPlayer->GetGames(),
             nSeconds,
-            static_cast<int>(static_cast<double>(pPlayer->mRecord.mWins) * kWinsEncodeScale),
-            pPlayer->mRecord.mGames,
-            pPlayer->mRecord.mPoints,
-            pPlayer->mRecord.mOpponents);
+            static_cast<int>(static_cast<double>(pPlayer->GetRecord().mWins) * kWinsEncodeScale),
+            pPlayer->GetRecord().mGames,
+            pPlayer->GetRecord().mPoints,
+            pPlayer->GetRecord().mOpponents);
     int nLength = static_cast<int>(strlen(szText));
 
     char avatar[kAvatarBufferSize];
     BufStream stream(avatar, kAvatarBufferSize, true);
-    pPlayer->mAvatar.Save(stream);
+    pPlayer->GetAvatar().Save(stream);
     int nEncoded;
     Base64Encode(&szText[nLength],
                  &nEncoded,
@@ -395,19 +395,19 @@ void LobbyRT::EncodePlayer(String *pText, const LobbyPlayer *pPlayer) {
     nLength += nEncoded;
     memset(&szText[nLength], kAvatarPadding, nPadding);
     nLength += nPadding;
-    sprintf(&szText[nLength], "%010d", pPlayer->mChannelId + 1);
+    sprintf(&szText[nLength], "%010d", pPlayer->GetChannelId() + 1);
     szText[strlen(szText)] = '\0'; // Yes, the binary terminates the text again.
     *pText = szText;
 }
 
 void LobbyRT::DecodePlayer(LobbyPlayer *pPlayer, const char *pszText) {
-    pPlayer->mRankIcon = -1;
-    pPlayer->mRating = 0;
-    pPlayer->mGames = 0;
-    pPlayer->mLastOnline = DateTime(0);
-    pPlayer->mAvatar = AvatarPartSet();
-    pPlayer->mRecord = RatingRecord();
-    pPlayer->mChannelId = -1;
+    pPlayer->SetRankIcon(-1);
+    pPlayer->SetRating(0);
+    pPlayer->SetGames(0);
+    pPlayer->SetLastOnline(DateTime(0));
+    pPlayer->SetAvatar(AvatarPartSet());
+    pPlayer->SetRecord(RatingRecord());
+    pPlayer->SetChannelId(-1);
 
     const char *pszCursor = pszText;
     int nRemaining = static_cast<int>(strlen(pszText));
@@ -415,7 +415,7 @@ void LobbyRT::DecodePlayer(LobbyPlayer *pPlayer, const char *pszText) {
     // Yes, the binary scans the characters whatever the length of the text.
     for (int i = 0; i < kSignScanLength; ++i) {
         if (pszText[i] == '-') {
-            pPlayer->mChannelId = kSignedChannel;
+            pPlayer->SetChannelId(kSignedChannel);
             return;
         }
     }
@@ -425,45 +425,47 @@ void LobbyRT::DecodePlayer(LobbyPlayer *pPlayer, const char *pszText) {
         nVersion != kPlayerVersion) {
         return;
     }
-    if (!ReadNumber(&pPlayer->mRating, &pszCursor, &nRemaining, kRatingDigits)) {
+    int nValue;
+    if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kRatingDigits)) {
         return;
     }
-    int nValue;
+    pPlayer->SetRating(nValue);
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kRankIconDigits)) {
         return;
     }
-    pPlayer->mRankIcon = nValue - 1;
-    if (!ReadNumber(&pPlayer->mGames, &pszCursor, &nRemaining, kGamesDigits)) {
+    pPlayer->SetRankIcon(nValue - 1);
+    if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kGamesDigits)) {
         return;
     }
+    pPlayer->SetGames(nValue);
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kSecondsDigits)) {
         return;
     }
-    pPlayer->mLastOnline = DateTime(nValue);
+    pPlayer->SetLastOnline(DateTime(nValue));
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kWinsDigits)) {
         return;
     }
-    pPlayer->mRecord.mWins =
+    pPlayer->GetRecord().mWins =
         static_cast<float>(static_cast<unsigned int>(nValue)) * kWinsDecodeScale;
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kRecordGamesDigits)) {
         return;
     }
-    pPlayer->mRecord.mGames = nValue;
+    pPlayer->GetRecord().mGames = nValue;
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kPointsDigits)) {
         return;
     }
-    pPlayer->mRecord.mPoints = nValue;
+    pPlayer->GetRecord().mPoints = nValue;
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kOpponentsDigits)) {
         return;
     }
-    pPlayer->mRecord.mOpponents = nValue;
+    pPlayer->GetRecord().mOpponents = nValue;
 
     char avatar[kAvatarBufferSize];
     int nSize;
     Base64Decode(reinterpret_cast<unsigned char *>(avatar), &nSize, pszCursor, nRemaining);
     if (nSize >= kMinAvatarSize) {
         BufStream stream(avatar, kAvatarBufferSize, true);
-        pPlayer->mAvatar.Load(stream);
+        pPlayer->GetAvatar().Load(stream);
     }
     if (strlen(pszCursor) < static_cast<size_t>(kAvatarTextSize)) {
         return;
@@ -472,7 +474,7 @@ void LobbyRT::DecodePlayer(LobbyPlayer *pPlayer, const char *pszText) {
     if (!ReadNumber(&nValue, &pszCursor, &nRemaining, kChannelDigits)) {
         return;
     }
-    pPlayer->mChannelId = nValue - 1;
+    pPlayer->SetChannelId(nValue - 1);
 }
 
 void LobbyRT::EncodeRules(int *pnValue, int *pnComparison, int nRuleSet, int nSkillLevel) {
@@ -522,11 +524,11 @@ void LobbyRT::EncodeSong(int *pnLevel, const char *pszSong) {
 }
 
 void LobbyRT::DecodeSong(NetGameParams *pParams, int nLevel) {
-    SongEntry song{nullptr};
-    if (TheGameDb->FindSongById(&song.mData, nLevel)) {
-        pParams->mSong = song.GetName();
+    DataArray *pData = nullptr;
+    if (TheGameDb->FindSongById(&pData, nLevel)) {
+        pParams->SetSong(SongEntry{pData}.GetName());
     } else {
-        pParams->mSong = "";
+        pParams->SetSong("");
     }
 }
 
@@ -727,9 +729,9 @@ LobbyRT::~LobbyRT() {
 }
 
 void LobbyRT::SetProfile(Campaign *pProfile) {
-    mLocalPlayer.mRankIcon = pProfile->GetHighestBeatenSkillLevel();
-    mLocalPlayer.mAvatar = pProfile->mAvatar;
-    mLocalPlayer.mName = pProfile->mName.c_str();
+    mLocalPlayer.SetRankIcon(pProfile->GetHighestBeatenSkillLevel());
+    mLocalPlayer.SetAvatar(pProfile->GetAvatar());
+    mLocalPlayer.SetName(pProfile->GetName().c_str());
     mPassword = "";
 }
 
@@ -745,13 +747,13 @@ void LobbyRT::Connect(MsgSink *pSink) {
 
 void LobbyRT::Login(MsgSink *pSink, int nLocation, const char *pszPassword) {
     (void)mDisconnectTask.GetState(); // Yes, the binary discards the state.
-    mLocalPlayer.mRating = 0;
-    mLocalPlayer.mRank = 0;
-    mLocalPlayer.mGames = 0;
-    mLocalPlayer.mRecord = RatingRecord();
-    mLocalPlayer.mChannelId = -1;
-    (void)mLocalPlayer.mLastOnline.ReadClock(); // Yes, the binary discards the result.
-    mLocalPlayer.mConnectionType = TheNetInet->GetConnectionType();
+    mLocalPlayer.SetRating(0);
+    mLocalPlayer.SetRank(0);
+    mLocalPlayer.SetGames(0);
+    mLocalPlayer.SetRecord(RatingRecord());
+    mLocalPlayer.SetChannelId(-1);
+    (void)mLocalPlayer.GetLastOnline().ReadClock(); // Yes, the binary discards the result.
+    mLocalPlayer.SetConnectionType(TheNetInet->GetConnectionType());
     mFoundPlayer = LobbyPlayer();
     mLocationId = nLocation;
     mRanksPage = 0;
@@ -761,7 +763,7 @@ void LobbyRT::Login(MsgSink *pSink, int nLocation, const char *pszPassword) {
 }
 
 int LobbyRT::GetAccountId() {
-    return mLocalPlayer.mId;
+    return mLocalPlayer.GetId();
 }
 
 void LobbyRT::CreateAccount(MsgSink *pSink, const char *pszPassword) {
@@ -791,13 +793,13 @@ void LobbyRT::SetMuted(int nAccount, bool bMuted) {
 
 void LobbyRT::ApplyMuted(std::list<LobbyPlayer> *pPlayers) {
     for (LobbyPlayer &player : *pPlayers) {
-        player.mMuted = IsMuted(player.mId);
+        player.SetMuted(IsMuted(player.GetId()));
     }
 }
 
 void LobbyRT::MoveLocalPlayerToFront(std::list<LobbyPlayer> *pPlayers) {
     for (auto it = pPlayers->begin(); it != pPlayers->end(); ++it) {
-        if (it->mId == GetAccountId()) {
+        if (it->GetId() == GetAccountId()) {
             pPlayers->splice(pPlayers->begin(), *pPlayers, it);
             return;
         }
@@ -865,7 +867,7 @@ void LobbyRT::RequestLaunchpads(
 }
 
 void LobbyRT::FindPlayer(MsgSink *pSink, const char *pszName) {
-    mFoundPlayer.mName = pszName;
+    mFoundPlayer.SetName(pszName);
     mFindPlayerTask.Start(pSink);
 }
 
@@ -909,7 +911,7 @@ void LobbyRT::UploadRemix(MsgSink *pSink, const char *pszNote) {
     RemixInfo info = *TheGameDb->GetRemixInfo();
     info.mReadOnly = 1;
     String note(pszNote);
-    mTransferSize = note.mLength + RemixInfo::WireSize() + kLengthSize + info.mDataSize;
+    mTransferSize = note.GetLength() + RemixInfo::WireSize() + kLengthSize + info.mDataSize;
     mTransferBuffer = static_cast<char *>(PoolMemAlloc(mTransferSize, "Upload", 0));
     BufStream stream(mTransferBuffer, mTransferSize, true);
     (stream << info).WriteString(note.c_str());
@@ -927,9 +929,9 @@ bool LobbyRT::StartUpload(MsgSink *pSink) {
     (void)now.ReadClock(); // Yes, the binary discards the result.
     mTransferName.Clear();
     mTransferName.Printf(kRemixFileFormat,
-                         now.mYear - kCenturyYears,
-                         now.mMonth + 1,
-                         now.mDay,
+                         now.GetYear() - kCenturyYears,
+                         now.GetMonth() + 1,
+                         now.GetDay(),
                          pInfo->mSong,
                          pInfo->mName,
                          mUploadAttempts);
@@ -945,7 +947,8 @@ void LobbyRT::UploadDirectory(MsgSink *pSink, std::list<NetRepoRemix> *pRemixes)
     mTransferSize = kLengthSize;
     mDeleteBeforeUpload = 1;
     for (const NetRepoRemix &remix : *pRemixes) {
-        mTransferSize += remix.mFile.mLength + (remix.mNote.mLength + kLengthSize + kLengthSize) +
+        mTransferSize += remix.mFile.GetLength() +
+                         (remix.mNote.GetLength() + kLengthSize + kLengthSize) +
                          RemixInfo::WireSize();
     }
     mTransferBuffer = static_cast<char *>(PoolMemAlloc(mTransferSize, "Upload", 0));
@@ -1120,14 +1123,14 @@ void LobbyRT::Poll() {
             DebugPrint("Inet failure\n");
             mCheckInet.Suspend();
             mDisconnected = 1;
-            Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
+            Fail(GetSink(), LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
         }
         const int nError = rtMediusUpdate();
         if (nError != 0) {
             mDisconnected = 1;
             DebugPrint("Medius Error:%d\n", nError);
             if (mDisconnectTask.GetState() != Task::kStateRunning) {
-                Fail(mSink, LobbyConnectResultMsg::kResultFailed, kReasonLost);
+                Fail(GetSink(), LobbyConnectResultMsg::kResultFailed, kReasonLost);
             }
         }
     }
@@ -1139,9 +1142,10 @@ void LobbyRT::Poll() {
     } else if (nState == Task::kStateDone) {
         LobbyConnectResultMsg msg(LobbyConnectResultMsg::kResultSuccess);
         if (mLocations.size() != 0) {
-            msg.mLocations.insert(msg.mLocations.end(), mLocations.begin(), mLocations.end());
+            msg.GetLocations().insert(
+                msg.GetLocations().end(), mLocations.begin(), mLocations.end());
         } else {
-            msg.mLocations.push_back(LobbyLocation{String(kDefaultLocation), 0});
+            msg.GetLocations().push_back(LobbyLocation{String(kDefaultLocation), 0});
         }
         mConnectTask.Stop();
         mConnectTask.Notify(&msg);
@@ -1164,7 +1168,7 @@ void LobbyRT::Poll() {
 #ifdef VIDEO_STANDARD_PAL
         // A failed reconnection to the lobby server of the room loses the lobby.
         if (mJoinChatroomTask.GetResult() == LobbyConnectResultMsg::kResultConnectFailed) {
-            Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
+            Fail(GetSink(), LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
         } else {
             JoinChatroomResultMsg msg(mJoinChatroomTask.GetResult());
             mJoinChatroomTask.Notify(&msg);
@@ -1184,7 +1188,7 @@ void LobbyRT::Poll() {
         mCreateChatroomTask.Stop();
 #ifdef VIDEO_STANDARD_PAL
         if (mCreateChatroomTask.GetResult() == LobbyConnectResultMsg::kResultConnectFailed) {
-            Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
+            Fail(GetSink(), LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
         } else {
             JoinChatroomResultMsg msg(mCreateChatroomTask.GetResult());
             mCreateChatroomTask.Notify(&msg);
@@ -1387,15 +1391,15 @@ void LobbyRT::Fail(MsgSink *pSink, int nResult, int nReason) {
 }
 
 void LobbyRT::SetAccount(int nAccount, int nChannel, const rtNetConnectionInfo *pInfo) {
-    mLocalPlayer.mId = nAccount;
+    mLocalPlayer.SetId(nAccount);
     mChatroom.mId = nChannel;
-    mFoundPlayer.mId = nAccount;
-    mLocalPlayer.mChannelId = nChannel;
+    mFoundPlayer.SetId(nAccount);
+    mLocalPlayer.SetChannelId(nChannel);
     mLobbyInfo = *pInfo;
 }
 
 const char *LobbyRT::GetName() {
-    return mLocalPlayer.mName.c_str();
+    return mLocalPlayer.GetName().c_str();
 }
 
 const char *LobbyRT::GetPassword() {
@@ -1408,18 +1412,18 @@ const char *LobbyRT::GetPlayerStats() {
 }
 
 void LobbyRT::UpdateStats(const LobbyPlayer *pPlayer) {
-    const RatingRecord &record = mLocalPlayer.mRecord;
-    const RatingRecord &other = pPlayer->mRecord;
-    if (mLocalPlayer.mRating == pPlayer->mRating && mLocalPlayer.mGames == pPlayer->mGames &&
-        record.mWins == other.mWins && record.mGames == other.mGames &&
-        record.mOpponents == other.mOpponents && record.mPoints == other.mPoints &&
-        mLocalPlayer.mRank == pPlayer->mRank) {
+    const RatingRecord &record = mLocalPlayer.GetRecord();
+    const RatingRecord &other = pPlayer->GetRecord();
+    if (mLocalPlayer.GetRating() == pPlayer->GetRating() &&
+        mLocalPlayer.GetGames() == pPlayer->GetGames() && record.mWins == other.mWins &&
+        record.mGames == other.mGames && record.mOpponents == other.mOpponents &&
+        record.mPoints == other.mPoints && mLocalPlayer.GetRank() == pPlayer->GetRank()) {
         return;
     }
-    mLocalPlayer.mRating = pPlayer->mRating;
-    mLocalPlayer.mGames = pPlayer->mGames;
-    mLocalPlayer.mRecord = pPlayer->mRecord;
-    mLocalPlayer.mRank = pPlayer->mRank;
+    mLocalPlayer.SetRating(pPlayer->GetRating());
+    mLocalPlayer.SetGames(pPlayer->GetGames());
+    mLocalPlayer.SetRecord(pPlayer->GetRecord());
+    mLocalPlayer.SetRank(pPlayer->GetRank());
     mTasks.Add(new AccountUpdateStatsTask);
 }
 

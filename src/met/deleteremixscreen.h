@@ -77,7 +77,10 @@ public:
      */
     void OnRemixDeleted(int nStatus) override;
 
-    String mRemixName; /*!< The name of the remix to delete. */
+    /** @param pszRemixName The name of the remix to delete. */
+    void SetRemixName(const char *pszRemixName) {
+        mRemixName = pszRemixName;
+    }
 
 private:
     /**
@@ -89,4 +92,6 @@ private:
      * @ghidraAddress PAL: 0x001b6640
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+    String mRemixName; /*!< The name of the remix to delete. */
 };

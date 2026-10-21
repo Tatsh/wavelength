@@ -64,5 +64,6 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+private:
     float mAdvanceMs; /*!< The system time the next queued unlock shows. */
 };

@@ -112,6 +112,17 @@ public:
      */
     void SetPictureShowing(bool bShowing);
 
+    /** @return Whether the loaded picture is placed on the mesh. */
+    int GetPictureReady() const {
+        return mPictureReady;
+    }
+
+    /** @return Whether the picture shows. */
+    int GetPictureShowing() const {
+        return mPictureShowing;
+    }
+
+private:
     FilePath mPicturePath; /*!< The texture file of the picture, or an empty path. +0xe4 */
     RndMesh *mPictureMesh; /*!< The mesh `<name>.mesh` the picture shows on. */
     int mUnlocked;         /*!< Whether the band's song is unlocked. */

@@ -28,7 +28,7 @@ void FreqLoadList::SetProfiles(const std::vector<Campaign> &profiles) {
 }
 
 void FreqLoadList::UpdateRow(int nRow, int nItem) {
-    SetCellText(nRow, 0, mProfiles[nItem].mName.c_str());
+    SetCellText(nRow, 0, mProfiles[nItem].GetName().c_str());
 }
 
 void FreqLoadList::UpdateCursor() {
@@ -40,13 +40,13 @@ void FreqLoadList::UpdateCursor() {
     format = TheLocale.Localize("f_load_p_14", true);
     const Campaign &profile = mProfiles[mSelected];
     String born;
-    profile.mBorn.FormatDate(born);
+    profile.GetBorn().FormatDate(born);
     text = FormatString(format.c_str(), born.c_str());
     pComponent->SetText(text.c_str());
 
     pComponent = TheUI.FindComponent(kPanel, "account", false);
     format = TheLocale.Localize("f_load_p_15", true);
-    if (mProfiles[mSelected].mNameLocked == kNameLocked) {
+    if (mProfiles[mSelected].GetNameLocked() == kNameLocked) {
         text = FormatString(format.c_str(), TheLocale.Localize("yes", true));
     } else {
         text = FormatString(format.c_str(), TheLocale.Localize("no", true));
@@ -54,7 +54,7 @@ void FreqLoadList::UpdateCursor() {
     pComponent->SetText(text.c_str());
 
     dynamic_cast<AvatarPanel *>(TheUI.FindPanel(kPanel, false))
-        ->SetAvatar(&mProfiles[mSelected].mAvatar);
+        ->SetAvatar(&mProfiles[mSelected].GetAvatar());
 
     RndMesh *pRank = dynamic_cast<RndMesh *>(TheManager.Find("f_load_p_rank.mesh"));
     pRank->SetMat(FindRankMaterial(mProfiles[mSelected].GetHighestBeatenSkillLevel()));

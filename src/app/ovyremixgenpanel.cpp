@@ -87,8 +87,8 @@ void OvyRemixGenPanel::Load(char chHud,
         option.mMesh->SetMat(mCursorOffMat);
         option.mText->SetText("");
         option.mText->SetColor(kWhite);
-        if (mFonts[kFontNormal] == nullptr && option.mText->mFont != mFonts[kFontSelected]) {
-            mFonts[kFontNormal] = option.mText->mFont;
+        if (mFonts[kFontNormal] == nullptr && option.mText->GetFont() != mFonts[kFontSelected]) {
+            mFonts[kFontNormal] = option.mText->GetFont();
         }
     }
     for (const Option &option : mOptions) {
@@ -128,7 +128,7 @@ RndObject *OvyRemixGenPanel::Clone(const char *pszName, int nPlayer) {
     }
     TheManager.Clone(pSource, "Copy foo ", &mClones, kCloneFlags, 0, 0);
     RndObject *pClone = mClones.back();
-    pClone->SetName(FormatString("%s pl %d", pSource->mName.c_str(), nPlayer));
+    pClone->SetName(FormatString("%s pl %d", pSource->GetName(), nPlayer));
     return pClone;
 }
 

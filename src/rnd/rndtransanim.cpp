@@ -102,7 +102,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -190,13 +190,13 @@ void RndTransAnim::ListAnimObjects(std::list<RndObject *> &objects) {
 
 int RndTransAnim::SetFrameSelf(float fFrame) {
     if (mTrans != nullptr) {
-        Transform xfm = mTrans->mLocalXfm;
+        Transform xfm = mTrans->GetLocalXfm();
         MakeTransform(fFrame, xfm, 0);
-        mTrans->mLocalXfm.mBasisX = xfm.mBasisX;
-        mTrans->mLocalXfm.mBasisY = xfm.mBasisY;
-        mTrans->mLocalXfm.mBasisZ = xfm.mBasisZ;
-        mTrans->mDirty = 1;
-        mTrans->mLocalXfm.mTranslation = xfm.mTranslation;
+        mTrans->GetLocalXfm().mBasisX = xfm.mBasisX;
+        mTrans->GetLocalXfm().mBasisY = xfm.mBasisY;
+        mTrans->GetLocalXfm().mBasisZ = xfm.mBasisZ;
+        mTrans->SetDirty(1);
+        mTrans->GetLocalXfm().mTranslation = xfm.mTranslation;
     }
     return 1;
 }
@@ -214,7 +214,7 @@ void RndTransAnim::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
     RndDrawable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndTransAnim]\n";
@@ -233,10 +233,10 @@ void RndTransAnim::Save(BinStream &stream) {
     RndAnimatable::Save(stream);
     RndDrawable::Save(stream);
     const RndObject *pTrans = mTrans;
-    stream.WriteString(pTrans != nullptr ? pTrans->mName.c_str() : "");
+    stream.WriteString(pTrans != nullptr ? pTrans->GetName() : "");
     stream << mRotKeys << mTransKeys;
     const RndObject *pOwner = mFramesOwner;
-    stream.WriteString(pOwner != nullptr ? pOwner->mName.c_str() : "");
+    stream.WriteString(pOwner != nullptr ? pOwner->GetName() : "");
     stream.WriteEndian(&mTransInterp, sizeof(mTransInterp));
     WriteFlag(stream, mRepeatTrans);
     stream << mScaleKeys;

@@ -68,6 +68,27 @@ public:
      */
     bool Contains(char nTrack, float flTick) const;
 
+    /** @return The first track of the range, or -1. */
+    char GetFirstTrack() const {
+        return mFirstTrack;
+    }
+
+    /** @return The track after the last of the range, or -1. */
+    char GetEndTrack() const {
+        return mEndTrack;
+    }
+
+    /** @return The start of the range. */
+    float GetStartTick() const {
+        return mStartTick;
+    }
+
+    /** @return The end of the range. */
+    float GetEndTick() const {
+        return mEndTick;
+    }
+
+private:
     char mFirstTrack; /*!< The first track of the range, or -1. */
     char mEndTrack;   /*!< The track after the last of the range, or -1. */
     float mStartTick; /*!< The start of the range. */

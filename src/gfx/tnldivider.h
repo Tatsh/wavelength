@@ -147,6 +147,17 @@ public:
      */
     static Vector3 sOffset;
 
+    /** @param flConditionFrame The frame of mConditionView. */
+    void SetConditionFrame(float flConditionFrame) {
+        mConditionFrame = flConditionFrame;
+    }
+
+    /** @param nEnabled Whether the boundary shows. */
+    void SetEnabled(int nEnabled) {
+        mEnabled = nEnabled;
+    }
+
+private:
     RndView *mView;                   /*!< `boundary.view`. */
     RndView *mTransparentView;        /*!< `boundary transparent.view`, which draws the text. */
     RndView *mTopView;                /*!< `boundary top.view`, placed on the path. */
@@ -167,7 +178,6 @@ public:
     int mStarted;                          /*!< Whether mCurrent is set. */
     int mEnabled;                          /*!< Whether the boundary shows. */
 
-private:
     /**
      * Set the text of the boundary for a section and show its particles or its flash.
      *

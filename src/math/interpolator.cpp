@@ -34,13 +34,6 @@ constexpr int kConfigSizeWithShape = kConfigShape + 1;
 // The allocation tag of the tables.
 constexpr const char *kTableTag = "Interp";
 
-// Read the numbers of an array into the table of an interpolator.
-inline void FillTable(TableInterpolator *pInterp, const DataArray *pArray, int nFirst) {
-    for (int i = 0; i < pInterp->mCount; ++i) {
-        pInterp->mTable[i] = pArray->Float(i + nFirst);
-    }
-}
-
 // The optional last number of a configuration array.
 inline float ShapeOrDefault(const DataArray *pArray, float fDefault) {
     return pArray->Size() >= kConfigSizeWithShape ? pArray->Float(kConfigShape) : fDefault;
@@ -212,6 +205,12 @@ float ATanInterpolator::Interp(float fX) {
 
 #pragma mark - TableInterpolator
 
+void TableInterpolator::FillTable(const DataArray *pArray, int nFirst) {
+    for (int i = 0; i < mCount; ++i) {
+        mTable[i] = pArray->Float(i + nFirst);
+    }
+}
+
 TableInterpolator::TableInterpolator(int nCount, float fX0, float fX1) {
     mTable = nullptr;
     mCount = 0;
@@ -222,7 +221,7 @@ TableInterpolator::TableInterpolator(int nCount, float fX0, float fX1) {
 TableInterpolator::TableInterpolator(float fX0, float fX1, const DataArray *pArray, int nFirst) {
     // Yes, the binary does not clear mTable and mCount before SetSize() reads them.
     TableInterpolator::SetSize(pArray->Size() - nFirst, fX0, fX1);
-    FillTable(this, pArray, nFirst);
+    FillTable(pArray, nFirst);
 }
 
 TableInterpolator::~TableInterpolator() {
@@ -313,7 +312,7 @@ TableLinInterpolator::TableLinInterpolator(float fX0,
                                            int nFirst)
     : TableInterpolator(0, 0.0F, 0.0F), mSlopes(nullptr) {
     TableLinInterpolator::SetSize(pArray->Size() - nFirst, fX0, fX1);
-    FillTable(this, pArray, nFirst);
+    FillTable(pArray, nFirst);
     TableLinInterpolator::Update();
 }
 

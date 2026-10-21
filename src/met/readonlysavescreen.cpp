@@ -40,7 +40,7 @@ bool ReadOnlySaveScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen(pszNext, false));
         pSave->SetStartScreen(kGuestLaunchpad);
         pSave->SetDoneScreen(kGuestLaunchpad);
-        pSave->mOverwriteStatus = 0;
+        pSave->SetOverwriteStatus(0);
         if (TheNetLaunchpad == nullptr) {
             if (TheMetagame.GetNetScreenPending() != 0) {
                 pSave->SetDoneScreen(TheMetagame.GetNetScreen());
@@ -48,7 +48,7 @@ bool ReadOnlySaveScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
                 String text(TheLocale.Localize("net_lpad_lost_error_msg", true));
                 auto *pError =
                     dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-                pError->mMessage = text.c_str();
+                pError->SetMessage(text.c_str());
                 pSave->SetDoneScreen(kErrorScreen);
             }
         }

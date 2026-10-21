@@ -52,12 +52,7 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusFileResponse *pResponse);
 
-    String *mPrefix;           /*!< The prefix. */
-    std::list<String> *mFiles; /*!< Receives the names of the files. */
 #ifdef VIDEO_STANDARD_PAL
-    int mPage;     /*!< The page RequestPage() requests, from 0. */
-    int mReceived; /*!< The files of the page received so far. */
-    int mPageDone; /*!< Non-zero once the last file of the page arrives. */
 #endif
 
 protected:
@@ -88,4 +83,10 @@ private:
      */
     void RequestPage();
 #endif
+
+    String *mPrefix;           /*!< The prefix. */
+    std::list<String> *mFiles; /*!< Receives the names of the files. */
+    int mPage;                 /*!< The page RequestPage() requests, from 0. */
+    int mReceived;             /*!< The files of the page received so far. */
+    int mPageDone;             /*!< Non-zero once the last file of the page arrives. */
 };

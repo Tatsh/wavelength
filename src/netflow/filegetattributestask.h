@@ -65,10 +65,7 @@ public:
                            int nSize,
                            const rtMediusFileAttributesResponse *pResponse);
 
-    String *mName; /*!< The file. */
-    int *mSize;    /*!< Receives the size of the file in bytes. */
 #ifdef VIDEO_STANDARD_PAL
-    int *mPermissions; /*!< Receives the access of the owner of the file. */
 #endif
 
 protected:
@@ -79,4 +76,9 @@ protected:
      * @ghidraAddress PAL: 0x00270298
      */
     void OnStart() override;
+
+private:
+    String *mName;     /*!< The file. */
+    int *mSize;        /*!< Receives the size of the file in bytes. */
+    int *mPermissions; /*!< Receives the access of the owner of the file. */
 };

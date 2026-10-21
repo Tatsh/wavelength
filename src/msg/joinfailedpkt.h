@@ -128,5 +128,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return Why the console was turned away, a LaunchpadAbortedMsg::Reason. */
+    int GetReason() const {
+        return mReason;
+    }
+
+private:
     int mReason; /*!< Why the console was turned away, a LaunchpadAbortedMsg::Reason. */
 };

@@ -116,11 +116,11 @@ void NetMainLaunchpadsPanel::ShowLaunchpad(NetLaunchpadInfo *pLaunchpad) {
 #else
         pHost->SetText(kUnavailable);
 #endif
-    } else if (params.mLoadRemix != 0) {
+    } else if (params.GetLoadRemix() != 0) {
         const String format(TheLocale.Localize(kCustomNameToken, true));
-        pHost->SetText(FormatString(format.c_str(), params.mRemixName.c_str()));
+        pHost->SetText(FormatString(format.c_str(), params.GetRemixName().c_str()));
     } else {
-        const SongEntry entry{TheGameDb->FindSong(params.mSong.c_str())};
+        const SongEntry entry{TheGameDb->FindSong(params.GetSong().c_str())};
         pHost->SetText(entry.GetTitle());
     }
     mLaunchpad = pLaunchpad->mLaunchpadId;
@@ -135,10 +135,10 @@ void NetMainLaunchpadsPanel::ShowPlayers(std::list<LobbyPlayer> *pPlayers, int n
     for (const auto &player : *pPlayers) {
         RndMesh *pRank = FindRankMesh(nRow + 1);
         pRank->SetShowing(true);
-        pRank->SetMat(FindRankMaterial(player.mRankIcon));
+        pRank->SetMat(FindRankMaterial(player.GetRankIcon()));
         RndText *pName = FindNameText(nRow);
         pName->SetShowing(true);
-        pName->SetText(player.mName.c_str());
+        pName->SetText(player.GetName().c_str());
         ++nRow;
     }
 }
@@ -157,7 +157,7 @@ bool NetMainLaunchpadsPanel::DispatchPriv(Message *pMsg) {
 bool NetMainLaunchpadsPanel::HandleLaunchpads(LobbyLaunchpadsMsg *pMsg) {
     if (mLoaded) {
         NetMainLaunchpadsList *pList = FindList(this);
-        pList->SetLaunchpads(pMsg->mLaunchpads, kCurrentSelection);
+        pList->SetLaunchpads(pMsg->GetLaunchpads(), kCurrentSelection);
         if (TheUI.GetCurrentScreen()->GetFocusPanel() != this) {
             pList->SetCursorSelected(false);
             HidePlayers();

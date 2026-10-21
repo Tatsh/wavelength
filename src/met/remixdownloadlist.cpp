@@ -27,7 +27,7 @@ void RemixDownloadList::SetNoteShowing(int nShowing) {
     TheUI.FindComponent(mPicPanel, kNoteLabel, false)->SetShowing(nShowing);
     SongPicPanel *pPicPanel = static_cast<SongPicPanel *>(TheUI.FindPanel(mPicPanel, false));
     pPicPanel->SetPictureShowing(!nShowing);
-    if (pPicPanel->mPictureShowing) {
+    if (pPicPanel->GetPictureShowing()) {
         pPicPanel->SetBandPicture(mSong.GetName(), true, false, false);
     }
 }
@@ -51,7 +51,7 @@ void RemixDownloadList::UpdateCursor() {
         return;
     }
     const NetRepoRemix &remix = *ListAt(mRemixes, mSelected);
-    mSong.mData = TheGameDb->FindSong(remix.mInfo.mSong);
+    mSong.SetData(TheGameDb->FindSong(remix.mInfo.mSong));
 #ifdef VIDEO_STANDARD_PAL
     remix.mInfo.ShowDetails(mPicPanel, true);
 #else

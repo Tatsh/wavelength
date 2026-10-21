@@ -14,7 +14,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -37,12 +37,12 @@ RndView::~RndView() {
 }
 
 inline void RndView::SyncChildren() {
-    for (RndAnimatable *pAnim : mChildrenOwner->mAnims) {
+    for (RndAnimatable *pAnim : mChildrenOwner->GetAnims()) {
         pAnim->SetFrame(mFilteredFrame);
     }
-    for (RndTransformable *pTrans : mChildrenOwner->mTransList) {
+    for (RndTransformable *pTrans : mChildrenOwner->GetTransList()) {
         pTrans->UpdateWorldXfm(this, 1);
-        pTrans->mDirty = 1;
+        pTrans->SetDirty(1);
     }
 }
 
@@ -73,7 +73,7 @@ int RndView::DrawShowing() {
         return 1;
     }
     SyncChildren();
-    for (RndDrawable *pDraw : mChildrenOwner->mDraws) {
+    for (RndDrawable *pDraw : mChildrenOwner->GetDraws()) {
         pDraw->Draw();
     }
     return 1;
@@ -92,7 +92,7 @@ void RndView::DumpText(PrnStream &stream) {
     RndTransformable::DumpText(stream);
     RndDrawable::DumpText(stream);
     RndCollideable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndView]\n";
@@ -107,7 +107,7 @@ void RndView::Save(BinStream &stream) {
     RndDrawable::Save(stream);
     RndCollideable::Save(stream);
     const RndObject *pOwner = mChildrenOwner;
-    stream.WriteString(pOwner != nullptr ? pOwner->mName.c_str() : "");
+    stream.WriteString(pOwner != nullptr ? pOwner->GetName() : "");
     stream.WriteEndian(&mVisibleRange.x, sizeof(mVisibleRange.x));
     stream.WriteEndian(&mVisibleRange.y, sizeof(mVisibleRange.y));
 }
@@ -139,7 +139,7 @@ void RndView::Copy(const RndObject *pSource, int nFlags) {
     RndDrawable::Copy(pSource, nFlags);
     RndCollideable::Copy(pSource, nFlags);
     ReleaseRefs();
-    mVisibleRange = pView->mVisibleRange;
+    mVisibleRange = pView->GetVisibleRange();
     if ((nFlags & kCopyShareChildren) == 0 && pView->mChildrenOwner == pView) {
         mChildrenOwner = this;
     } else {

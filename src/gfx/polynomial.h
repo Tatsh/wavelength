@@ -47,5 +47,6 @@ public:
      */
     float Eval(float flX) const;
 
+private:
     std::vector<float> mCoefficients; /*!< The coefficients, the highest power first. */
 };

@@ -67,7 +67,10 @@ public:
         return "";
     }
 
-    std::list<NetRepoRemix> mRemixes; /*!< The remixes to upload as the repository. */
+    /** @param remixes The remixes to upload as the repository. */
+    void SetRemixes(const std::list<NetRepoRemix> &remixes) {
+        mRemixes = remixes;
+    }
 
 private:
     /**
@@ -92,6 +95,8 @@ private:
      * @ghidraAddress PAL: 0x0018eff0
      */
     bool HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg);
+
+    std::list<NetRepoRemix> mRemixes; /*!< The remixes to upload as the repository. */
 };
 
 #endif

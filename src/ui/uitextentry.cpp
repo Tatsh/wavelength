@@ -77,12 +77,12 @@ UITextEntry::UITextEntry(DataArray *pData, const char *pszPanel)
     mTextObj->SetText("");
     mCaret = FindText(FormatString("%s_%s_cursor.txt", pszPanel, mName));
     mCaret->SetShowing(false);
-    mCaretOrigin = mCaret->mLocalXfm.mTranslation;
+    mCaretOrigin = mCaret->GetLocalXfm().mTranslation;
     mLastCaret = FindText(FormatString("%s_%s_lastcursor.txt", pszPanel, mName));
     mLastCaret->SetText("");
-    mLastCaretOrigin = mLastCaret->mLocalXfm.mTranslation;
+    mLastCaretOrigin = mLastCaret->GetLocalXfm().mTranslation;
     if (mWordWrapLines != 0) {
-        mMaxEntryWidth = mTextObj->mWrapWidth;
+        mMaxEntryWidth = mTextObj->GetWrapWidth();
     }
     if (mMaxEntryWidth == kNoWidthLimit && !mScroll) {
         mMaxEntryWidth = mLastCaretOrigin.x - mCaretOrigin.x;
@@ -98,16 +98,16 @@ UITextEntry::~UITextEntry() {
 
 String UITextEntry::MaskText(const char *pszText) const {
     String masked(pszText);
-    for (int i = 0; i < masked.mLength; ++i) {
+    for (int i = 0; i < masked.GetLength(); ++i) {
         masked.Replace(i, 1, String("*"));
     }
     return masked;
 }
 
 float UITextEntry::CharWidth(int nIndex) {
-    RndFont *pFont = mTextObj->mFont;
+    RndFont *pFont = mTextObj->GetFont();
     float fWidth = pFont->CharWidth(kMaskChar);
-    const float fSpace = pFont->mSpace;
+    const float fSpace = pFont->GetSpace();
     if (!mPassword) {
         fWidth = pFont->CharWidth(mText[nIndex]);
     }
@@ -116,7 +116,7 @@ float UITextEntry::CharWidth(int nIndex) {
 
 void UITextEntry::SetText(const char *pszText) {
     mText = pszText;
-    mCursor = mText.mLength;
+    mCursor = mText.GetLength();
     mScrollStart = 0;
     if (mPassword) {
         String masked = MaskText(mText.c_str());
@@ -164,7 +164,7 @@ bool UITextEntry::HandleKey(int nKey) {
 }
 
 void UITextEntry::ToggleCaret() {
-    if (mCaret->mShowing != 0) {
+    if (mCaret->GetShowing() != 0) {
         mCaret->SetShowing(false);
     } else {
         mCaret->SetShowing(true);
@@ -197,18 +197,18 @@ void UITextEntry::Layout() {
         return;
     }
 
-    RndFont *pFont = mTextObj->mFont;
-    const float fSpace = pFont->mSpace;
+    RndFont *pFont = mTextObj->GetFont();
+    const float fSpace = pFont->GetSpace();
     const float fMaskWidth = pFont->CharWidth(kMaskChar);
 
     if (0.0f < mCaretPos.x - mLastCaretOrigin.x &&
-        static_cast<unsigned int>(mScrollStart) < static_cast<unsigned int>(mText.mLength)) {
+        static_cast<unsigned int>(mScrollStart) < static_cast<unsigned int>(mText.GetLength())) {
         do {
             mCaretPos.x -= CharWidth(mScrollStart);
             ++mScrollStart;
         } while (0.0f < mCaretPos.x - mLastCaretOrigin.x &&
                  static_cast<unsigned int>(mScrollStart) <
-                     static_cast<unsigned int>(mText.mLength));
+                     static_cast<unsigned int>(mText.GetLength()));
     }
     if (0.0f < mCaretOrigin.x - mCaretPos.x && mScrollStart > 0) {
         do {
@@ -222,7 +222,7 @@ void UITextEntry::Layout() {
     mVisibleText.Erase(0, mScrollStart);
     float fWidth = 0.0f;
     int nCount = 0;
-    if (0.0f < mLastCaretOrigin.x - mCaretOrigin.x && mVisibleText.mLength != 0) {
+    if (0.0f < mLastCaretOrigin.x - mCaretOrigin.x && mVisibleText.GetLength() != 0) {
         do {
             fWidth += fSpace;
             if (mPassword) {
@@ -233,7 +233,7 @@ void UITextEntry::Layout() {
             ++nCount;
         } while (fWidth < mLastCaretOrigin.x - mCaretOrigin.x &&
                  static_cast<unsigned int>(nCount) <
-                     static_cast<unsigned int>(mVisibleText.mLength));
+                     static_cast<unsigned int>(mVisibleText.GetLength()));
     }
     mVisibleText.Truncate(nCount);
     mTextObj->SetText(mVisibleText.c_str()); // Yes, a scrolled password shows unmasked.
@@ -241,8 +241,8 @@ void UITextEntry::Layout() {
 }
 
 void UITextEntry::UpdateCaret() {
-    mCaret->mDirty = 1;
-    mCaret->mLocalXfm.mTranslation = mCaretPos;
+    mCaret->SetDirty(1);
+    mCaret->GetLocalXfm().mTranslation = mCaretPos;
 }
 
 bool UITextEntry::ProcessKey(int nKey) {
@@ -271,7 +271,7 @@ bool UITextEntry::ProcessKey(int nKey) {
         return true;
     }
     if (nKey == kKeyRight) {
-        if (static_cast<unsigned int>(mCursor) < static_cast<unsigned int>(mText.mLength)) {
+        if (static_cast<unsigned int>(mCursor) < static_cast<unsigned int>(mText.GetLength())) {
             const float fWidth = CharWidth(mCursor);
             ++mCursor;
             mCaretPos.x += fWidth;
@@ -280,7 +280,7 @@ bool UITextEntry::ProcessKey(int nKey) {
         return true;
     }
     if (nKey == kKeyDelete) {
-        if (static_cast<unsigned int>(mCursor) < static_cast<unsigned int>(mText.mLength)) {
+        if (static_cast<unsigned int>(mCursor) < static_cast<unsigned int>(mText.GetLength())) {
             mText.Erase(mCursor, 1);
             Layout();
         }
@@ -307,7 +307,7 @@ bool UITextEntry::ProcessKey(int nKey) {
 
     bool bFits;
     if (mScroll || mWordWrapLines != 0) {
-        mVisibleText = mTextObj->mPreWrapText;
+        mVisibleText = mTextObj->GetPreWrapText();
         mTextObj->SetWordWrap(1);
         mTextObj->SetWrapWidth(mMaxEntryWidth);
         String text(mText);
@@ -330,14 +330,14 @@ bool UITextEntry::ProcessKey(int nKey) {
         if (mMaxEntryWidth == kNoWidthLimit) {
             bFits = true;
         } else {
-            const Vector3 end = mTextObj->CharPosition(mText.mLength);
+            const Vector3 end = mTextObj->CharPosition(mText.GetLength());
             char glyph = ch;
             const float fWidth = mTextObj->MeasureWidth(&glyph, 1);
             bFits = static_cast<float>(static_cast<int>(end.x + fWidth)) < mMaxEntryWidth;
         }
         if (bFits && mMaxNumChars != kNoCharLimit) {
-            bFits =
-                static_cast<unsigned int>(mText.mLength) < static_cast<unsigned int>(mMaxNumChars);
+            bFits = static_cast<unsigned int>(mText.GetLength()) <
+                    static_cast<unsigned int>(mMaxNumChars);
         }
 #ifdef VIDEO_STANDARD_PAL
         if (bFits && mUtf8MaxLen != kNoCharLimit) {
@@ -365,7 +365,7 @@ bool UITextEntry::DispatchPriv(Message *pMsg) {
 }
 
 bool UITextEntry::HandleKeyMsg(KeyboardKeyMsg *pMsg) {
-    return ProcessKey(pMsg->mKey);
+    return ProcessKey(pMsg->GetKey());
 }
 
 void UITextEntry::Print(PrnStream &stream) {

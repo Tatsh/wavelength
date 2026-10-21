@@ -121,6 +121,7 @@ public:
                          [[maybe_unused]] int nDenominator) override {
     }
 
+private:
     AxeTrackData *mData;            /*!< The data to fill. */
     MidiValidator mValidator;       /*!< The checker of the channel messages. */
     int mIntroTicks;                /*!< The length of the song intro. */

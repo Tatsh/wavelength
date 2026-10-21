@@ -33,10 +33,6 @@ public:
      */
     void Set(int nPort, const char *pszDir, MemcardSerialTask *pUser);
 
-    String mDir;              /*!< The directory. */
-    MCGetDirTask mGetDir;     /*!< The step that lists the directory. */
-    MemcardSerialTask *mUser; /*!< The task told whether the directory is whole, or null. */
-
 protected:
     /**
      * Start listing the directory.
@@ -64,6 +60,10 @@ private:
      * @ghidraAddress PAL: 0x00161288
      */
     void CheckFiles(int *pbDamaged, int *pbWhole);
+
+    String mDir;              /*!< The directory. */
+    MCGetDirTask mGetDir;     /*!< The step that lists the directory. */
+    MemcardSerialTask *mUser; /*!< The task told whether the directory is whole, or null. */
 };
 
 #endif

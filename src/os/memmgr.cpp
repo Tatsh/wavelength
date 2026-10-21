@@ -141,7 +141,8 @@ void MemInit() {
     MemPushHeap(0);
     g_nMemTrackingEnabled = MemTrackInit();
     if (g_nMemTrackingEnabled != 0) {
-        MemTrackAddHeap(0, g_aHeaps[0].mStart, &g_aHeaps[0].mStart[g_aHeaps[0].mSizeWords]);
+        MemTrackAddHeap(
+            0, g_aHeaps[0].GetStart(), &g_aHeaps[0].GetStart()[g_aHeaps[0].GetSizeWords()]);
     }
 }
 
@@ -170,7 +171,8 @@ void MemConfigureHeaps() {
                 MemRegisterHeap(pHeap->Sym(0), pNext, nSizeWords, bHandles);
             }
             if (g_nMemTrackingEnabled != 0) {
-                MemTrackAddHeap(i, g_aHeaps[i].mStart, &g_aHeaps[i].mStart[g_aHeaps[i].mSizeWords]);
+                MemTrackAddHeap(
+                    i, g_aHeaps[i].GetStart(), &g_aHeaps[i].GetStart()[g_aHeaps[i].GetSizeWords()]);
             }
             pNext = &pNext[nSizeWords];
         }
@@ -255,7 +257,7 @@ void PoolMemFree(void *pBlock) {
 
 int MemFindHeap(const char *pszName) {
     for (int i = 0; i < g_nNumHeaps; ++i) {
-        if (strcmp(g_aHeaps[i].mName, pszName) == 0) {
+        if (strcmp(g_aHeaps[i].GetName(), pszName) == 0) {
             return i;
         }
     }

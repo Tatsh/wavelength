@@ -76,7 +76,12 @@ public:
      */
     void PollFlash(float fTime);
 
-    int mHilite;          /*!< Non-zero when the mesh ends with mHiliteMat. */
+protected:
+    int mHilite;       /*!< Non-zero when the mesh ends with mHiliteMat. */
+    RndText *mRefresh; /*!< The text `<panel>_refresh.txt`. */
+    RndView *mTitles;  /*!< The view `<panel>_titles.view`. */
+
+private:
     int mFlashing;        /*!< Non-zero while the mesh flashes. */
     int mFlashes;         /*!< The number of swaps so far. */
     int mMaxFlashes;      /*!< The number of swaps a flash makes. */
@@ -84,7 +89,5 @@ public:
     RndMat *mHiliteMat;   /*!< The material `panel_<kind>_hi.mat`. */
     float mFlashTime;     /*!< The time of the last swap, or 0. */
     float mFlashInterval; /*!< The time between swaps in milliseconds. */
-    RndView *mTitles;     /*!< The view `<panel>_titles.view`. */
-    RndText *mRefresh;    /*!< The text `<panel>_refresh.txt`. */
     RndMesh *mPanelMesh;  /*!< The mesh `<panel>_panel.mesh`. */
 };

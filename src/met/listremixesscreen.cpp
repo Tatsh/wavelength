@@ -112,7 +112,7 @@ bool ListRemixesScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool ListRemixesScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.ListRemixes(this, mSlot);
     }
     return false;

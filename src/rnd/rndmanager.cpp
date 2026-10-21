@@ -270,7 +270,7 @@ void RndManager::Clone(RndObject *pSource,
                        int bRecurse,
                        int bLink) {
     RndObject *pClone =
-        Create(pSource->ClassName(), FormatString("%s%s", pszPrefix, pSource->mName.c_str()));
+        Create(pSource->ClassName(), FormatString("%s%s", pszPrefix, pSource->GetName()));
     if (pClone == nullptr) {
         return;
     }
@@ -355,11 +355,11 @@ void RndManager::SortObjects(std::list<RndObject *> &objects) {
             continue;
         }
         RndTex *pTex = *it != nullptr ? dynamic_cast<RndTex *>(*it) : nullptr;
-        const char *pszFile = pTex->mFile.c_str();
+        const char *pszFile = pTex->GetFile().c_str();
         auto pos = objects.begin();
         for (; pos != sorted; ++pos) {
             RndTex *pOther = *pos != nullptr ? dynamic_cast<RndTex *>(*pos) : nullptr;
-            if (strcmp(pszFile, pOther->mFile.c_str()) < 0) {
+            if (strcmp(pszFile, pOther->GetFile().c_str()) < 0) {
                 break;
             }
         }
@@ -373,7 +373,7 @@ void RndManager::SortObjects(std::list<RndObject *> &objects) {
 void RndManager::Write(BinStream &stream) {
     std::list<RndObject *> objects;
     for (const auto &entry : mObjects) {
-        if (entry.second->mInternal == 0) {
+        if (entry.second->GetInternal() == 0) {
             objects.push_back(entry.second);
         }
     }
@@ -384,19 +384,19 @@ void RndManager::Write(BinStream &stream) {
     nValue = static_cast<int>(objects.size());
     stream.WriteEndian(&nValue, sizeof(nValue));
     for (RndObject *pObject : objects) {
-        stream.WriteString(pObject->ClassName()).WriteString(pObject->mName.c_str());
+        stream.WriteString(pObject->ClassName()).WriteString(pObject->GetName());
     }
 
     std::vector<FilePath> files;
     for (RndObject *pObject : objects) {
         RndTex *pTex = pObject != nullptr ? dynamic_cast<RndTex *>(pObject) : nullptr;
         if (pTex != nullptr) {
-            files.push_back(pTex->mFile);
+            files.push_back(pTex->GetFile());
             continue;
         }
         RndMovie *pMovie = pObject != nullptr ? dynamic_cast<RndMovie *>(pObject) : nullptr;
         if (pMovie != nullptr) {
-            files.push_back(pMovie->mFile);
+            files.push_back(pMovie->GetFile());
         }
     }
     EndChunk(stream << files);
@@ -467,15 +467,15 @@ const char *RndManager::ResourcePath(const char *pszFile) {
     MemStream stream(true);
     converted.Save(stream);
     const int nSize =
-        GzipCompressRamToRam(stream.mBuffer.data(), stream.mTell, stream.mBuffer.data());
+        GzipCompressRamToRam(stream.GetBuffer().data(), stream.Tell(), stream.GetBuffer().data());
     FileMkDir(FileGetPath(sResourcePath));
     FileStream file(sResourcePath, true, true, kFileFlagsNone);
-    file.Write(stream.mBuffer.data(), nSize);
+    file.Write(stream.GetBuffer().data(), nSize);
     return sResourcePath;
 }
 
 bool RndManager::AcquireTexture(const FilePath &path) {
-    if (path.mLength == 0 || !TheRnd->SupportsTextures()) {
+    if (path.GetLength() == 0 || !TheRnd->SupportsTextures()) {
         return true;
     }
     const auto it = mResources.find(path);
@@ -519,7 +519,7 @@ int RndManager::IsTextureLoaded(const FilePath &path) {
 void RndManager::DeleteLoadedObjects() {
     for (;;) {
         auto it = mObjects.begin();
-        while (it != mObjects.end() && it->second->mInternal != 0) {
+        while (it != mObjects.end() && it->second->GetInternal() != 0) {
             ++it;
         }
         if (it == mObjects.end()) {

@@ -19,7 +19,7 @@ AnimateAction::AnimateAction(DataArray *pAction) {
 
 void AnimateAction::Exec() {
     if (mHasStart == 0) {
-        mStart = mAnim->mFrame;
+        mStart = mAnim->GetFrame();
     }
     if (mDuration == 0.0f) {
         mAnim->SetFrame(mStart);

@@ -76,6 +76,17 @@ public:
          */
         void Cancel();
 
+        /** @return The scheduler that queued the command, or null. */
+        Scheduler *GetScheduler() const {
+            return mScheduler;
+        }
+
+        /** @param pScheduler The scheduler that queued the command, or null. */
+        void SetScheduler(Scheduler *pScheduler) {
+            mScheduler = pScheduler;
+        }
+
+    private:
         StdMidiMuse *mMuse;    /*!< The muse. */
         Scheduler *mScheduler; /*!< The scheduler that queued the command, or null. */
     };
@@ -229,6 +240,17 @@ public:
     static StdMidiMuse *
     NewControlChange(unsigned char nChannel, unsigned char nController, unsigned char nValue);
 
+    /** @return The second data byte. */
+    unsigned char GetData2() const {
+        return mData2;
+    }
+
+    /** @return The first data byte. */
+    unsigned char GetData1() const {
+        return mData1;
+    }
+
+private:
     unsigned char mStatus;    /*!< The status byte. */
     unsigned char mData1;     /*!< The first data byte. */
     unsigned char mData2;     /*!< The second data byte. */

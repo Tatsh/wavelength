@@ -47,7 +47,7 @@ void CardsConnectedScreen::CheckNextSlot() {
         return;
     }
     auto *pChoose = dynamic_cast<ChooseMemCardScreen *>(TheUI.FindScreen(kChooseScreen, false));
-    pChoose->mSlots = mSlots;
+    pChoose->SetSlots(mSlots);
     TheUI.GotoScreen(pChoose);
 }
 
@@ -66,7 +66,7 @@ bool CardsConnectedScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool CardsConnectedScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.GetCardStatus(this, mSlot);
     }
     return false;

@@ -74,30 +74,30 @@ NetCreateUserScreen::NetCreateUserScreen(DataArray *pData) : NetPasswordScreen(p
 void NetCreateUserScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UITextEntry *pName = dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kNameEntry, false));
     if (std::strcmp(mUserName.c_str(), kNoText) == 0) {
-        pName->SetText(TheGameDb->GetProfile(kLocalPlayer)->mName.c_str());
+        pName->SetText(TheGameDb->GetProfile(kLocalPlayer)->GetName().c_str());
     } else {
         pName->SetText(mUserName.c_str());
     }
-    pName->mMaxNumChars = kMaxNameChars;
+    pName->SetMaxNumChars(kMaxNameChars);
 #ifdef VIDEO_STANDARD_PAL
-    pName->mUtf8MaxLen = kMaxNameChars;
+    pName->SetUtf8MaxLen(kMaxNameChars);
 #endif
-    pName->mMaxEntryWidth = kNameMaxWidth;
+    pName->SetMaxEntryWidth(kNameMaxWidth);
 
     UITextEntry *pPassword =
         dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kPasswordEntry, false));
     RestoreEntry(pPassword, mPassword);
-    pPassword->mMaxNumChars = kMaxPasswordChars;
+    pPassword->SetMaxNumChars(kMaxPasswordChars);
 #ifdef VIDEO_STANDARD_PAL
-    pPassword->mUtf8MaxLen = kMaxPasswordChars;
+    pPassword->SetUtf8MaxLen(kMaxPasswordChars);
 #endif
 
     UITextEntry *pConfirm =
         dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kConfirmEntry, false));
     RestoreEntry(pConfirm, mConfirm);
-    pConfirm->mMaxNumChars = kMaxPasswordChars;
+    pConfirm->SetMaxNumChars(kMaxPasswordChars);
 #ifdef VIDEO_STANDARD_PAL
-    pConfirm->mUtf8MaxLen = kMaxPasswordChars;
+    pConfirm->SetUtf8MaxLen(kMaxPasswordChars);
 #endif
 
     if (std::strcmp(mKeyboardText.c_str(), kNoText) != 0) {
@@ -128,7 +128,7 @@ void NetCreateUserScreen::Submit() {
 
     String name(mFocusPanel->FindComponent(kNameEntry, false)->Text());
     const bool bTrimmed = TrimSpaces(&name);
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         mKeyboardEntry = kNoText;
         mKeyboardText = kNoText;
         mUserName = kNoText;
@@ -147,13 +147,13 @@ void NetCreateUserScreen::Submit() {
         return;
     }
 
-    TheGameDb->GetProfile(kLocalPlayer)->mName = name.c_str();
+    TheGameDb->GetProfile(kLocalPlayer)->SetName(name.c_str());
     TheNetLobby->SetProfile(TheGameDb->GetProfile(kLocalPlayer));
     NetCreateAccount *pCreate =
         static_cast<NetCreateAccount *>(TheUI.FindScreen(kCreateAccountScreen, false));
-    pCreate->mPassword = password.c_str();
+    pCreate->SetPassword(password.c_str());
 #ifdef VIDEO_STANDARD_PAL
-    pCreate->mSavePassword = mSavePassword;
+    pCreate->SetSavePassword(mSavePassword);
 #endif
     TheUI.GotoScreen(pCreate);
 }
@@ -166,7 +166,7 @@ void NetCreateUserScreen::OpenKeyboard(const char *pszEntry) {
     KeyboardPanel *pKeyboard =
         dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
     const int nMaxWidth =
-        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->GetFocus())->mMaxEntryWidth);
+        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->GetFocus())->GetMaxEntryWidth());
 
     if (std::strcmp(pszEntry, kNameEntry) == 0) {
         const KeyboardRequest request(this,
@@ -229,22 +229,22 @@ bool NetCreateUserScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetCreateUserScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
 
     UIPanel *pPanel = mFocusPanel;
-    if (pPanel == nullptr || pMsg->mPressed == 0) {
+    if (pPanel == nullptr || pMsg->GetPressed() == 0) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
     const char *pszFocus = pPanel->GetFocus()->GetName();
-    if (pMsg->mButton == kPadCircle) {
+    if (pMsg->GetButton() == kPadCircle) {
         if (std::strcmp(pszFocus, kNameEntry) == 0 || std::strcmp(pszFocus, kPasswordEntry) == 0 ||
             std::strcmp(pszFocus, kConfirmEntry) == 0) {
             OpenKeyboard(pszFocus);
         }
-    } else if (pMsg->mButton == kPadCross) {
+    } else if (pMsg->GetButton() == kPadCross) {
         // The cross button opens the keyboard on an empty entry and otherwise moves on.
         const char *pszNext = nullptr;
         bool bEntry = true;
@@ -305,7 +305,7 @@ bool NetCreateUserScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetCreateUserScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    const char *pszEntry = pMsg->mEntry->GetName();
+    const char *pszEntry = pMsg->GetEntry()->GetName();
     const char *pszNext = nullptr;
     if (std::strcmp(pszEntry, kNameEntry) == 0) {
         pszNext = kPasswordEntry;
@@ -313,7 +313,7 @@ bool NetCreateUserScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) 
         pszNext = kConfirmEntry;
     } else if (std::strcmp(pszEntry, kConfirmEntry) == 0) {
         pszNext = kSaveButton;
-    } else if (std::strcmp(pszEntry, kLoginButton) == 0 && pMsg->mText.mLength != 0) {
+    } else if (std::strcmp(pszEntry, kLoginButton) == 0 && pMsg->GetText().GetLength() != 0) {
         Submit();
     }
     if (pszNext != nullptr) {
@@ -324,7 +324,7 @@ bool NetCreateUserScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) 
 }
 
 bool NetCreateUserScreen::HandleTextEntryInvalid(UITextEntryInvalidMsg *pMsg) {
-    if (std::strcmp(pMsg->mEntry->GetName(), kNameEntry) == 0) {
+    if (std::strcmp(pMsg->GetEntry()->GetName(), kNameEntry) == 0) {
         FxMidi::PlayWrong();
     }
     return false;

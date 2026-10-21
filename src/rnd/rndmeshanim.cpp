@@ -9,14 +9,14 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
 }
 
 void WriteName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 // The keys at a frame, or nothing for no keys.
@@ -105,7 +105,7 @@ int RndMeshAnim::SetFrameSelf(float fFrame) {
     }
     int nSync = 0;
     if (!mKeysOwner->mVertPointsKeys.empty()) {
-        std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
+        std::vector<RndMesh::Vert> &verts = mMesh->GetGeomOwner()->GetVerts();
         nSync |= RndMesh::kSyncPositions;
         const Key<std::vector<Vector3>> *pNext;
         float fRatio = 0.0f;
@@ -115,7 +115,7 @@ int RndMeshAnim::SetFrameSelf(float fFrame) {
         }
     }
     if (!mKeysOwner->mVertTexsKeys.empty()) {
-        std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
+        std::vector<RndMesh::Vert> &verts = mMesh->GetGeomOwner()->GetVerts();
         nSync |= RndMesh::kSyncTexCoords;
         const Key<std::vector<Vector2>> *pNext;
         float fRatio = 0.0f;
@@ -125,7 +125,7 @@ int RndMeshAnim::SetFrameSelf(float fFrame) {
         }
     }
     if (!mKeysOwner->mVertColorsKeys.empty()) {
-        std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
+        std::vector<RndMesh::Vert> &verts = mMesh->GetGeomOwner()->GetVerts();
         nSync |= RndMesh::kSyncColors;
         const Key<std::vector<Color>> *pNext;
         float fRatio = 0.0f;
@@ -143,7 +143,7 @@ int RndMeshAnim::SetFrameSelf(float fFrame) {
 void RndMeshAnim::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndMeshAnim]\n";

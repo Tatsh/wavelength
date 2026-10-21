@@ -86,12 +86,12 @@ void PitchTrackMusic::PlayGem() {
     }
 
     const PitchGem &gem = mBar.At(mNextGem);
-    if (gem.mTick + mBar.mOffset == nNow) {
+    if (gem.GetTick() + mBar.GetOffset() == nNow) {
         if (mMuted == 0) {
             if (mPlaying != nullptr) {
                 mPlaying->Stop();
             }
-            Muse *pRiff = mRiffs->GetRiff(gem.mSlot);
+            Muse *pRiff = mRiffs->GetRiff(gem.GetSlot());
             pRiff->Play(&TheSongScheduler);
             mPlaying = pRiff;
         }

@@ -70,6 +70,7 @@ public:
      */
     void UpdateShown();
 
+private:
     int mWanted;    /*!< Whether Show() asked for the label. */
     int mHasText;   /*!< Whether the label has a text. */
     int mPlayer;    /*!< The player the label follows, the first local player. */

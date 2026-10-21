@@ -95,6 +95,7 @@ public:
      */
     void Poll();
 
+private:
     std::list<Gem> mGems; /*!< The bursts, sorted by time. */
     GfxTunnel *mTunnel;   /*!< The tunnel. */
 };

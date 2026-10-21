@@ -134,6 +134,37 @@ public:
      */
     void Load(BinStream &stream);
 
+    /** @return The speaker output mode. */
+    int GetOutputMode() const {
+        return mOutputMode;
+    }
+
+    /** @return Whether the settings changed since they were saved. */
+    int GetModified() const {
+        return mModified;
+    }
+
+    /** @param nModified Whether the settings changed since they were saved. */
+    void SetModified(int nModified) {
+        mModified = nModified;
+    }
+
+    /** @return Whether hints are shown, as a word of 0 or 1. */
+    int GetHelpText() const {
+        return mHelpText;
+    }
+
+    /** @return The size of the display of the tracks, one of FreqSize. */
+    int GetFreqSize() const {
+        return mFreqSize;
+    }
+
+    /** @return Whether controller vibration is on. */
+    int GetForceFeedback() const {
+        return mForceFeedback;
+    }
+
+private:
     int mFreqSize;      /*!< The size of the display of the tracks, one of FreqSize. */
     int mOutputMode;    /*!< The speaker output mode. */
     int mHelpText;      /*!< Whether hints are shown, as a word of 0 or 1. */

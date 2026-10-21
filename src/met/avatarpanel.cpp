@@ -46,7 +46,7 @@ void AvatarPanel::Draw() {
     FreqPanel::Draw();
     if (mAvatar != nullptr) {
         if (mSpinControl != 0 && mState == kStateShown) {
-            const JoypadStick &stick = JoypadGetState(kSpinPad)->mSticks[kSpinStick];
+            const JoypadStick &stick = JoypadGetState(kSpinPad)->GetSticks()[kSpinStick];
             mSpinX += (stick.mX - mSpinX) / kSpinEasing;
             mSpinY += (stick.mY - mSpinY) / kSpinEasing;
             Avatar::SetViewAngles(0.0f, mSpinX * kSpinTurnScale);

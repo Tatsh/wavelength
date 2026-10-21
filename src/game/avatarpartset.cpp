@@ -267,7 +267,7 @@ void AvatarPartSet::Poll(float fTime) {
         sLastTime = fTime;
         Avatar::Poll(fTime);
     }
-    const int nStaleFrame = TheRnd->mFrameCount - 1;
+    const int nStaleFrame = TheRnd->GetFrameCount() - 1;
     for (int i = 0; i < Avatar::NumAvatars(); ++i) {
         AvatarPartSet *pUser = Avatar::GetAvatar(i)->GetUser();
         if (pUser != nullptr && pUser->mFrame < nStaleFrame) {
@@ -365,7 +365,7 @@ bool AvatarPartSet::UpdatePlayer() {
 
 void AvatarPartSet::Render(const Rect *pScreenRect) {
     AcquirePlayer();
-    mFrame = TheRnd->mFrameCount;
+    mFrame = TheRnd->GetFrameCount();
     // An avatar one part away from the set is drawn while that part loads.
     if (UpdatePlayer() || mPending == kOnePending) {
         mPlayer->Draw(pScreenRect);

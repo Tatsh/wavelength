@@ -85,11 +85,11 @@ void ScratchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
     }
 
     if (pPlayer == mPlayer) {
-        mX = event.mX;
-        mY = event.mY;
-        if (event.mState != 0) {
-            StartScratch(event.mButton, event.mX, event.mY);
-        } else if (mActiveButton == event.mButton) {
+        mX = event.GetX();
+        mY = event.GetY();
+        if (event.GetState() != 0) {
+            StartScratch(event.GetButton(), event.GetX(), event.GetY());
+        } else if (mActiveButton == event.GetButton()) {
             EndScratch();
         }
     }
@@ -102,11 +102,11 @@ void ScratchTrack::HandleInput(Player *pPlayer, const StickEvent<2> &event) {
         return;
     }
 
-    mX = event.mX;
-    mY = event.mY;
+    mX = event.GetX();
+    mY = event.GetY();
     if (mActiveButton != kNoButton) {
-        mScratchers[mActiveButton]->SetPosition(event.mX);
-        mScratchers[mActiveButton]->SetPitch(event.mY);
+        mScratchers[mActiveButton]->SetPosition(event.GetX());
+        mScratchers[mActiveButton]->SetPitch(event.GetY());
     }
 }
 
@@ -195,7 +195,7 @@ void ScratchTrack::UpdateScratchers() {
 }
 
 void ScratchTrack::PlayReleaseSound(int nButton) {
-    const int nQuantum = TheGameConfig->mScratcherSampleQuantizationTicks;
+    const int nQuantum = TheGameConfig->GetScratcherSampleQuantizationTicks();
     const int nRemainder = TheSongScheduler.GetTick() % nQuantum;
     const int nDelay = (nRemainder == 0) ? 0 : (nQuantum - nRemainder);
     mReleaseSounds[nButton]->PlayFrom(&TheSongScheduler, -nDelay);

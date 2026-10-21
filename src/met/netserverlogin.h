@@ -67,10 +67,25 @@ public:
         return "";
     }
 
-    int mLocation;     /*!< The identifier of the lobby location NetServerSelScreen chose. */
-    String mPassword;  /*!< The password to log in with. */
-    int mSaveChanged;  /*!< Non-zero when the choice of saving the password changed. */
-    int mSavePassword; /*!< Whether the password is saved in the profile after the login. */
+    /** @param pszPassword The password to log in with. */
+    void SetPassword(const char *pszPassword) {
+        mPassword = pszPassword;
+    }
+
+    /** @param nSaveChanged Non-zero when the choice of saving the password changed. */
+    void SetSaveChanged(int nSaveChanged) {
+        mSaveChanged = nSaveChanged;
+    }
+
+    /** @param nSavePassword Whether the password is saved in the profile after the login. */
+    void SetSavePassword(int nSavePassword) {
+        mSavePassword = nSavePassword;
+    }
+
+    /** @param nLocation The identifier of the lobby location NetServerSelScreen chose. */
+    void SetLocation(int nLocation) {
+        mLocation = nLocation;
+    }
 
 private:
     /**
@@ -109,4 +124,9 @@ private:
      * @ghidraAddress PAL: 0x0017fa48
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
+
+    int mLocation;     /*!< The identifier of the lobby location NetServerSelScreen chose. */
+    String mPassword;  /*!< The password to log in with. */
+    int mSaveChanged;  /*!< Non-zero when the choice of saving the password changed. */
+    int mSavePassword; /*!< Whether the password is saved in the profile after the login. */
 };

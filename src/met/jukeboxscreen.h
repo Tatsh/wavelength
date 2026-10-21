@@ -81,8 +81,15 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
-    std::vector<PlaylistSongData> mPlaylist; /*!< The playlist. */
-    int mShowAllSongs; /*!< Non-zero when every song is listed, finished or not. */
+    /** @return Non-zero when every song is listed, finished or not. */
+    int GetShowAllSongs() const {
+        return mShowAllSongs;
+    }
+
+    /** @param nShowAllSongs Non-zero when every song is listed, finished or not. */
+    void SetShowAllSongs(int nShowAllSongs) {
+        mShowAllSongs = nShowAllSongs;
+    }
 
 private:
     /**
@@ -121,4 +128,7 @@ private:
      * @ghidraAddress PAL: 0x001afbc0
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
+
+    std::vector<PlaylistSongData> mPlaylist; /*!< The playlist. */
+    int mShowAllSongs; /*!< Non-zero when every song is listed, finished or not. */
 };

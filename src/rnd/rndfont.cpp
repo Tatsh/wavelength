@@ -35,7 +35,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -94,7 +94,7 @@ RndFont::~RndFont() {
 
 void RndFont::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndFont]\n";
@@ -108,7 +108,7 @@ void RndFont::DumpText(PrnStream &stream) {
 
 void RndFont::Save(BinStream &stream) {
     stream.WriteEndian(&sRev, sizeof(sRev));
-    stream.WriteString(mMat != nullptr ? mMat->mName.c_str() : "");
+    stream.WriteString(mMat != nullptr ? mMat->GetName() : "");
     stream.WriteEndian(&mRows, sizeof(mRows));
     stream.WriteEndian(&mCols, sizeof(mCols));
     stream.WriteEndian(&mSize, sizeof(mSize));
@@ -214,7 +214,8 @@ void RndFont::BuildCharMap() {
     }
     int nRow = 0;
     int nCol = 0;
-    for (const char *pChar = mChars.c_str(); pChar != mChars.c_str() + mChars.mLength; ++pChar) {
+    for (const char *pChar = mChars.c_str(); pChar != mChars.c_str() + mChars.GetLength();
+         ++pChar) {
         if (nRow >= static_cast<int>(mRows)) {
             DebugPrint("%s: too many characters\n", mName.c_str());
             return;
@@ -231,8 +232,8 @@ void RndFont::BuildCharMap() {
 RndFont::CharInfo RndFont::CellInfo(int nRow, int nCol) const {
     CharInfo info;
     RndTex *pTex = nullptr;
-    if (mMat != nullptr && !mMat->mStages.empty()) {
-        pTex = mMat->mStages[0].mTex;
+    if (mMat != nullptr && !mMat->GetStages().empty()) {
+        pTex = mMat->GetStages()[0].GetTex();
     }
     if (pTex == nullptr) {
         info.mWidth = 0.0f;

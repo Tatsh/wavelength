@@ -52,6 +52,7 @@ public:
      */
     bool Start(bool bShow);
 
+private:
     Ship *mShip;              /*!< The ship. */
     int mStarted;             /*!< Whether the flight has started. */
     LinearInterpolator mPath; /*!< The frame of the flight over the ticks of the song. */

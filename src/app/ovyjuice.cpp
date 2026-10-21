@@ -101,7 +101,7 @@ void OvyJuice::Poll(float fDelta) {
             if (mWarningLeft < 0.0f) {
                 mWarningLeft = sWarningBlinkTime;
             }
-            mWarning->SetShowing(mWarning->mShowing ^ 1);
+            mWarning->SetShowing(mWarning->GetShowing() ^ 1);
         }
     }
     if (mGhostFade.GetX1() <= fNow) {
@@ -120,7 +120,7 @@ void OvyJuice::Poll(float fDelta) {
         if (sBlinkLeft < 0.0f) {
             do {
                 sBlinkLeft += 1.0f;
-                mBar->SetShowing(mBar->mShowing ^ 1);
+                mBar->SetShowing(mBar->GetShowing() ^ 1);
                 if (sBlinkLeft < 0.0f) {
                     sBlinkLeft = 0.0f;
                 }

@@ -284,9 +284,9 @@ alignas(64) GsDoubleBuffer sDoubleBuffer;
 
 inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mDword[0] = qwLow;
-    packet.mCursor->mDword[1] = qwHigh;
-    ++packet.mCursor;
+    packet.GetCursor()->mDword[0] = qwLow;
+    packet.GetCursor()->mDword[1] = qwHigh;
+    ++packet.GetCursor();
 }
 
 inline unsigned long long PackColor(const Color &color) {
@@ -314,7 +314,7 @@ inline unsigned char *Scratchpad() {
 
 // The draw environment of one of the two buffers.
 inline const sceGsDrawEnv1 &DrawEnv(const GsDoubleBuffer *pBuffers, int nHalf) {
-    return pBuffers->mHalves[nHalf].mDraw;
+    return pBuffers->GetHalf(nHalf).mDraw;
 }
 
 // NTSC-U/C: 0x0020fba8, PAL: 0x002189c0
@@ -458,7 +458,7 @@ float Ps::DrawString(const char *pszText,
 }
 
 int Ps::GetReservedVramWords() const {
-    return (mDisplayBuffers->mZbp << kPageWordsShift) +
+    return (mDisplayBuffers->GetZbp() << kPageWordsShift) +
            ((mScreenWidth * mScreenHeight * mDepthBytes) >> kBytesPerWordShift);
 }
 
@@ -583,18 +583,18 @@ void Ps::RestoreAfterMovie() {
     PsMovie::InstallHandler();
 
     DmaPacket packet;
-    packet.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+    packet.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
     packet.Init(g_vu0MicrocodeChain, DMAC_VIF0, 0);
     packet.Send(DmaPacket::kModeChainTagged, 0);
     packet.Init(g_vu1MicrocodeChain, DMAC_VIF1, 0);
     packet.Send(DmaPacket::kModeChainTagged, 0);
 
     DmaPacket &frame = DmaPacket::shared();
-    frame.mCursor->mWord[kVifCodeWord] = kVifMscalInit;
-    frame.mCursor->mWord[1] = 0;
-    frame.mCursor->mWord[2] = 0;
-    frame.mCursor->mWord[3] = 0;
-    ++frame.mCursor;
+    frame.GetCursor()->mWord[kVifCodeWord] = kVifMscalInit;
+    frame.GetCursor()->mWord[1] = 0;
+    frame.GetCursor()->mWord[2] = 0;
+    frame.GetCursor()->mWord[3] = 0;
+    ++frame.GetCursor();
     SetGsReg(kGsRegPabe, 0, 0);
     SetGsReg(kGsRegTexA, kTexATa1, 0);
     packet.Wait();
@@ -641,7 +641,7 @@ void Ps::SetGsReg(int nReg, unsigned long long qwValue, unsigned long long qwMas
     }
 
     DmaPacket &packet = DmaPacket::shared();
-    if (packet.mGifTag == nullptr || packet.mGifTag->mDword[1] != kGifRegAd) {
+    if (packet.GetGifTag() == nullptr || packet.GetGifTag()->mDword[1] != kGifRegAd) {
         packet.OpenGifTag(kGifFlgPacked, kGifAdRegs, kGifRegAd, 0);
     }
     PushQuadword(mGsRegs[nReg], static_cast<unsigned long long>(nReg));
@@ -649,24 +649,25 @@ void Ps::SetGsReg(int nReg, unsigned long long qwValue, unsigned long long qwMas
 
 void Ps::SetClearColor(const Color &color) {
     mClearColor = color;
-    mDisplayBuffers->mHalves[0].mClear.rgbaqWord = PackColor(color);
-    mDisplayBuffers->mHalves[1].mClear.rgbaqWord = PackColor(color);
+    mDisplayBuffers->GetHalf(0).mClear.rgbaqWord = PackColor(color);
+    mDisplayBuffers->GetHalf(1).mClear.rgbaqWord = PackColor(color);
 }
 
 int Ps::PacketQwordsFree() const {
     const DmaPacket &packet = DmaPacket::shared();
-    return kPacketQwords - static_cast<int>(packet.mCursor - packet.mBase);
+    return kPacketQwords - static_cast<int>(packet.GetCursor() - packet.GetBase());
 }
 
 void Ps::Flush() {
     DmaPacket &packet = DmaPacket::shared();
-    if (packet.mCursor == packet.mBase) {
+    if (packet.GetCursor() == packet.GetBase()) {
         return;
     }
     packet.CloseDmaTag(kDmaTagIdCnt, 0, 0);
     packet.Wait();
 
-    const auto nBytes = static_cast<unsigned int>(packet.mCursor - packet.mBase) << kQwordShift;
+    const auto nBytes = static_cast<unsigned int>(packet.GetCursor() - packet.GetBase())
+                        << kQwordShift;
     unsigned int nFree;
     do {
         const unsigned int nRead = *D1_TADR;
@@ -675,7 +676,7 @@ void Ps::Flush() {
     } while (!(nBytes < nFree));
     packet.Send(DmaPacket::kModeNormal, 0);
 
-    if (packet.mBase == PacketHalf(kPacketHalf0)) {
+    if (packet.GetBase() == PacketHalf(kPacketHalf0)) {
         packet.Init(PacketHalf(kPacketHalf1), DMAC_FROM_SPR, 1);
     } else {
         packet.Init(PacketHalf(kPacketHalf0), DMAC_FROM_SPR, 1);

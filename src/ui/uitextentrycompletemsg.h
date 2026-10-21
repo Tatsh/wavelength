@@ -105,6 +105,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The text. */
+    const String &GetText() const {
+        return mText;
+    }
+
+    /** @return The text entry. */
+    UITextEntry *GetEntry() const {
+        return mEntry;
+    }
+
+private:
     String mText;        /*!< The text. */
     UITextEntry *mEntry; /*!< The text entry. */
 };

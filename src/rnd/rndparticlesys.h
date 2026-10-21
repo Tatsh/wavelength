@@ -373,10 +373,254 @@ public:
         return mParticles.get();
     }
 
-    RndParticleSys *mParticlesOwner;        /*!< The system that has the pool. Borrowed. */
     std::unique_ptr<Particle[]> mParticles; /*!< The pool this system allocated. */
-    int mNumParticles;                      /*!< The size of the pool. */
-    Particle *mLiveParticles;               /*!< The head of the live list. */
+
+    /** @return Non-zero to add the bubble motion. */
+    int GetBubble() const {
+        return mBubble;
+    }
+
+    /** @param nBubble Non-zero to add the bubble motion. */
+    void SetBubble(int nBubble) {
+        mBubble = nBubble;
+    }
+
+    /** @return The range of the period of the bubble motion. */
+    const Vector2 &GetBubblePeriod() const {
+        return mBubblePeriod;
+    }
+
+    /** @return The range of the period of the bubble motion, for writing. */
+    Vector2 &GetBubblePeriod() {
+        return mBubblePeriod;
+    }
+
+    /** @return The range of the size of the bubble motion. */
+    const Vector2 &GetBubbleSize() const {
+        return mBubbleSize;
+    }
+
+    /** @return The range of the size of the bubble motion, for writing. */
+    Vector2 &GetBubbleSize() {
+        return mBubbleSize;
+    }
+
+    /** @return Non-zero to reflect the particles off mCollidePlane. */
+    int GetCollide() const {
+        return mCollide;
+    }
+
+    /** @param nCollide Non-zero to reflect the particles off mCollidePlane. */
+    void SetCollide(int nCollide) {
+        mCollide = nCollide;
+    }
+
+    /** @return The collision plane, in world space. */
+    const Plane &GetCollidePlane() const {
+        return mCollidePlane;
+    }
+
+    /** @param plane The collision plane, in world space. */
+    void SetCollidePlane(const Plane &plane) {
+        mCollidePlane = plane;
+    }
+
+    /** @return The range of the particles emitted per frame. */
+    const Vector2 &GetEmitRate() const {
+        return mEmitRate;
+    }
+
+    /** @return The range of the particles emitted per frame, for writing. */
+    Vector2 &GetEmitRate() {
+        return mEmitRate;
+    }
+
+    /** @return The high end of the colour a particle fades to. */
+    const Color &GetEndColorHigh() const {
+        return mEndColorHigh;
+    }
+
+    /** @return The high end of the colour a particle fades to, for writing. */
+    Color &GetEndColorHigh() {
+        return mEndColorHigh;
+    }
+
+    /** @return The low end of the colour a particle fades to. */
+    const Color &GetEndColorLow() const {
+        return mEndColorLow;
+    }
+
+    /** @return The low end of the colour a particle fades to, for writing. */
+    Color &GetEndColorLow() {
+        return mEndColorLow;
+    }
+
+    /** @return The change of velocity per frame. */
+    const Vector3 &GetForce() const {
+        return mForce;
+    }
+
+    /** @return The change of velocity per frame, for writing. */
+    Vector3 &GetForce() {
+        return mForce;
+    }
+
+    /** @return The range of the life, in frames. */
+    const Vector2 &GetLife() const {
+        return mLife;
+    }
+
+    /** @return The range of the life, in frames, for writing. */
+    Vector2 &GetLife() {
+        return mLife;
+    }
+
+    /** @return The head of the live list. */
+    Particle *GetLiveParticles() const {
+        return mLiveParticles;
+    }
+
+    /** @return The primitive each particle is drawn as. */
+    Mode GetMode() const {
+        return mMode;
+    }
+
+    /** @param pMode The primitive each particle is drawn as. */
+    void SetMode(Mode pMode) {
+        mMode = pMode;
+    }
+
+    /** @return The size of the pool. */
+    int GetNumParticles() const {
+        return mNumParticles;
+    }
+
+    /** @return The system that has the pool. Borrowed. */
+    RndParticleSys *GetParticlesOwner() const {
+        return mParticlesOwner;
+    }
+
+    /** @return The range of the pitch of the direction, in radians. */
+    const Vector2 &GetPitch() const {
+        return mPitch;
+    }
+
+    /** @return The range of the pitch of the direction, in radians, for writing. */
+    Vector2 &GetPitch() {
+        return mPitch;
+    }
+
+    /** @return The high corner of the emission box, in local space. */
+    const Vector3 &GetPosHigh() const {
+        return mPosHigh;
+    }
+
+    /** @return The high corner of the emission box, in local space, for writing. */
+    Vector3 &GetPosHigh() {
+        return mPosHigh;
+    }
+
+    /** @return The low corner of the emission box, in local space. */
+    const Vector3 &GetPosLow() const {
+        return mPosLow;
+    }
+
+    /** @return The low corner of the emission box, in local space, for writing. */
+    Vector3 &GetPosLow() {
+        return mPosLow;
+    }
+
+    /** @return Non-zero to test the particles against the depth buffer. */
+    int GetReadZ() const {
+        return mReadZ;
+    }
+
+    /** @param nReadZ Non-zero to test the particles against the depth buffer. */
+    void SetReadZ(int nReadZ) {
+        mReadZ = nReadZ;
+    }
+
+    /** @return The range of the size. */
+    const Vector2 &GetSize() const {
+        return mSize;
+    }
+
+    /** @return The range of the size, for writing. */
+    Vector2 &GetSize() {
+        return mSize;
+    }
+
+    /** @return The range of the speed. */
+    const Vector2 &GetSpeed() const {
+        return mSpeed;
+    }
+
+    /** @return The range of the speed, for writing. */
+    Vector2 &GetSpeed() {
+        return mSpeed;
+    }
+
+    /** @return The high end of the colour a particle starts with. */
+    const Color &GetStartColorHigh() const {
+        return mStartColorHigh;
+    }
+
+    /** @return The high end of the colour a particle starts with, for writing. */
+    Color &GetStartColorHigh() {
+        return mStartColorHigh;
+    }
+
+    /** @return The low end of the colour a particle starts with. */
+    const Color &GetStartColorLow() const {
+        return mStartColorLow;
+    }
+
+    /** @return The low end of the colour a particle starts with, for writing. */
+    Color &GetStartColorLow() {
+        return mStartColorLow;
+    }
+
+    /** @return The range of the yaw of the direction, in radians. */
+    const Vector2 &GetYaw() const {
+        return mYaw;
+    }
+
+    /** @return The range of the yaw of the direction, in radians, for writing. */
+    Vector2 &GetYaw() {
+        return mYaw;
+    }
+
+protected:
+    /**
+     * Take the references on the material and the owner, and prepare the pool.
+     *
+     * An owner reallocates its pool and empties the live list of every sharer. A sharer joins the
+     * sharers of its owner. The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0023dd38
+     * @ghidraAddress PAL: 0x00246868
+     */
+    void AddObjectRefs();
+
+    /**
+     * Drop the references on the material and the owner, free the live particles, and withdraw
+     * from the sharers of the owner.
+     *
+     * The name is inferred.
+     *
+     * @ghidraAddress NTSC-U/C: 0x0023df00
+     * @ghidraAddress PAL: 0x00246a30
+     */
+    void RemoveObjectRefs();
+
+    Particle *mLiveParticles; /*!< The head of the live list. */
+    RndMat *mMat;             /*!< The material the particles are drawn with. */
+    Mode mMode;               /*!< The primitive each particle is drawn as. */
+    int mReadZ;               /*!< Non-zero to test the particles against the depth buffer. */
+
+private:
+    RndParticleSys *mParticlesOwner;      /*!< The system that has the pool. Borrowed. */
+    int mNumParticles;                    /*!< The size of the pool. */
     Particle *mFreeParticles;             /*!< The head of the free list, used in the owner only. */
     float mLastFrame;                     /*!< The frame SetFrameSelf() last received. */
     float mLastEmitFrame;                 /*!< The frame SetEmitFrame() last received. */
@@ -399,34 +643,8 @@ public:
     int mCollide;          /*!< Non-zero to reflect the particles off mCollidePlane. */
     Plane mCollidePlane;   /*!< The collision plane, in world space. */
     Vector3 mForce;        /*!< The change of velocity per frame. */
-    RndMat *mMat;          /*!< The material the particles are drawn with. */
-    Mode mMode;            /*!< The primitive each particle is drawn as. */
     int mBubble;           /*!< Non-zero to add the bubble motion. */
-    int mReadZ;            /*!< Non-zero to test the particles against the depth buffer. */
     float mLineLength;     /*!< The length of a line particle. */
-
-protected:
-    /**
-     * Take the references on the material and the owner, and prepare the pool.
-     *
-     * An owner reallocates its pool and empties the live list of every sharer. A sharer joins the
-     * sharers of its owner. The name is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0023dd38
-     * @ghidraAddress PAL: 0x00246868
-     */
-    void AddObjectRefs();
-
-    /**
-     * Drop the references on the material and the owner, free the live particles, and leave the
-     * sharers of the owner.
-     *
-     * The name is inferred.
-     *
-     * @ghidraAddress NTSC-U/C: 0x0023df00
-     * @ghidraAddress PAL: 0x00246a30
-     */
-    void RemoveObjectRefs();
 };
 
 /**

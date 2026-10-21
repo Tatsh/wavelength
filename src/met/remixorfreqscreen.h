@@ -71,5 +71,11 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
+    /** @param nSlot The memory card slot. */
+    void SetSlot(int nSlot) {
+        mSlot = nSlot;
+    }
+
+private:
     int mSlot; /*!< The memory card slot. */
 };

@@ -35,8 +35,8 @@ T *FindIndexed(const char *pszFormat, int nIndex) {
 }
 
 void SetTranslation(RndTransformable *pTrans, const Vector3 &position) {
-    pTrans->mDirty = 1;
-    pTrans->mLocalXfm.mTranslation = position;
+    pTrans->SetDirty(1);
+    pTrans->GetLocalXfm().mTranslation = position;
 }
 
 } // namespace
@@ -68,7 +68,7 @@ OvyScore::OvyScore(int nPlayer, int nIndex, RndView *pHudView)
     mCheckpointPos = nullptr;
     mMesh = FindIndexed<RndDrawable>("%s score%d.mesh", nIndex);
     SetObjects(
-        FormatString("%s score%d.tnm", Overlay::sHudPrefix, nIndex), mMesh->mName.c_str(), false);
+        FormatString("%s score%d.tnm", Overlay::sHudPrefix, nIndex), mMesh->GetName(), false);
     mScoreText = FindIndexed<RndText>("%s score%d.txt", nIndex);
     auto *pPoints = FindIndexed<RndMesh>("%s pts%d.mesh", nIndex);
     if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
@@ -82,7 +82,7 @@ OvyScore::OvyScore(int nPlayer, int nIndex, RndView *pHudView)
             dynamic_cast<RndMat *>(TheManager.Find(FormatString("HUD score bar%d.mat", nIndex)));
         mBarGrow.SetAnim(FindIndexed<RndAnimatable>("%s score bar%d.anim", nIndex));
         mBar->SetShowing(false);
-        mTopPos = mTop->mLocalXfm.mTranslation;
+        mTopPos = mTop->GetLocalXfm().mTranslation;
         mBackgroundMat =
             dynamic_cast<RndMat *>(TheManager.Find(FormatString("HUD score%d bg.mat", nIndex)));
         const Color *pColor = TheGfxManager.GetPlayerBgColor(nPlayer);
@@ -159,7 +159,7 @@ void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
                 fProgress = 0.0f;
                 mState = kStateIdle;
                 if (mPowerup != nullptr) {
-                    mPowerup->mEnabled = 1;
+                    mPowerup->SetEnabled(1);
                     mPowerup->UpdateSlide();
                 }
                 if (mPointsSlide != nullptr) {
@@ -192,7 +192,7 @@ void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
         }
         break;
     case kStateFade: {
-        Color color = mBarMat->mEdgeColor;
+        Color color = mBarMat->GetEdgeColor();
         if (mMove.GetX1() <= fTick) {
             mState = kStateMoveOut;
             mMove.Reset(1.0f, 0.0f, mMove.GetX1(), mMove.GetX1() + sMoveOutTicks);
@@ -236,12 +236,12 @@ void OvyScore::ShowCheckpoint(float fShare, int nPlace) {
     mBarGrow.Update(0.0f, true);
     mCheckpointPos = &sCheckpointPositions[nPlace];
     mStableEnd = mMove.GetX1() + sBarGrowTicks + sStableTicks;
-    Color color = mBarMat->mEdgeColor;
+    Color color = mBarMat->GetEdgeColor();
     color.a = 1.0f;
     mBarMat->SetEdgeColor(color);
     mBarMat->SetAlpha(color.a);
     if (mPowerup != nullptr) {
-        mPowerup->mEnabled = 0;
+        mPowerup->SetEnabled(0);
         mPowerup->UpdateSlide();
     }
     if (mPointsSlide != nullptr) {

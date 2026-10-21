@@ -44,11 +44,11 @@ void MainOptionsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 bool MainOptionsScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed) {
+    if (pMsg->GetPressed()) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadTriangle) {
+        if (pMsg->GetButton() == kPadTriangle) {
             if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                 TheUI.GotoScreen(kOnlineMainScreen);
             } else {

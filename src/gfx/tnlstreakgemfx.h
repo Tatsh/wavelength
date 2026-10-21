@@ -120,6 +120,7 @@ public:
      */
     static LinearInterpolator sDistanceFade;
 
+private:
     int mTrack;         /*!< The track. */
     unsigned char mBit; /*!< The bit of the arrow in sShownMask. */
     RndView *mView;     /*!< The view of the arrow, `streakarrow.view`. */
@@ -133,7 +134,6 @@ public:
     Transform mXfm;     /*!< The placed transform of the arrow. */
     int mMovePending;   /*!< Whether the arrow moves once it has faded out. */
 
-private:
     /**
      * Place the arrow at its gem.
      *

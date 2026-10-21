@@ -36,7 +36,7 @@ void TransportRT::Receive(Packet *pPacket) {
     if (mSink == nullptr || mOpen == 0) {
         return;
     }
-    if (std::find(mAborted.begin(), mAborted.end(), pPacket->mSender) == mAborted.end()) {
+    if (std::find(mAborted.begin(), mAborted.end(), pPacket->GetSender()) == mAborted.end()) {
         mSink->Dispatch(pPacket);
     }
 }

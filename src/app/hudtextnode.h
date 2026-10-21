@@ -45,5 +45,6 @@ public:
      */
     void Draw();
 
+private:
     RndText *mText; /*!< The text object. */
 };

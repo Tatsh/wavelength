@@ -68,8 +68,8 @@ void SetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     auto *pTitle =
         static_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->GetName(), kTitle, false));
     pTitle->SetEditing(true);
-    pTitle->mMaxNumChars = kMaxTitleChars;
-    pTitle->mMaxEntryWidth = kMaxTitleWidth;
+    pTitle->SetMaxNumChars(kMaxTitleChars);
+    pTitle->SetMaxEntryWidth(kMaxTitleWidth);
 
     RemixInfo record = *TheGameDb->GetRemixInfo();
     String discard(DiscardScreenName(mName));
@@ -83,13 +83,13 @@ void SetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
             pTitle->SetText(record.mName);
         } else {
             SongEntry song;
-            song.mData = TheGameDb->FindSong(pszSong);
+            song.SetData(TheGameDb->FindSong(pszSong));
             pTitle->SetText(FormatString("%s 01", song.GetRemixTitle()));
         }
     }
 
     SongEntry song;
-    song.mData = TheGameDb->FindSong(pszSong);
+    song.SetData(TheGameDb->FindSong(pszSong));
     dynamic_cast<UILabel *>(TheUI.FindComponent(mPanel, "genre", false))
         ->SetText(FormatGenreTempo(song, &record));
     UIComponent *pReadOnly = TheUI.FindComponent(mPanel, "read_only", true);
@@ -142,9 +142,9 @@ void SetupRemixSaveScreen::Proceed() {
     FxMidi::PlayMenuSelect();
     String title(TheUI.FindComponent("s_r_end_player", kTitle, false)->Text());
     const bool bTrimmed = TrimSpaces(&title);
-    if (title.mLength == 0 || bTrimmed) {
+    if (title.GetLength() == 0 || bTrimmed) {
         const char *pszError =
-            title.mLength == 0 ? "no_empty_filename_screen" : "no_lead_trail_spaces_screen";
+            title.GetLength() == 0 ? "no_empty_filename_screen" : "no_lead_trail_spaces_screen";
         UIScreen *pError = TheUI.FindScreen(pszError, false);
         pError->ClearTransitions();
         pError->AddTransition("ok", kPadNone, "s_r_end_remix");
@@ -157,14 +157,14 @@ void SetupRemixSaveScreen::Proceed() {
     pSave->SetDoneScreen("s_r_mode");
 #ifdef VIDEO_STANDARD_PAL
     // Continuing without the save asks whether to discard the remix.
-    pSave->mContinueScreen = kMemcardDiscardScreen;
-    pSave->mOverwriteStatus = 0;
-    dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(kMemcardDiscardScreen, false))->mPlayer =
-        mPlayer;
+    pSave->SetContinueScreen(kMemcardDiscardScreen);
+    pSave->SetOverwriteStatus(0);
+    dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(kMemcardDiscardScreen, false))
+        ->SetPlayer(mPlayer);
 #else
-    pSave->mOverwriteStatus = 0;
+    pSave->SetOverwriteStatus(0);
 #endif
-    pSave->mRemixName = title.c_str();
+    pSave->SetRemixName(title.c_str());
     TheUI.GotoScreen(pSave);
 }
 
@@ -186,14 +186,14 @@ bool SetupRemixSaveScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SetupRemixSaveScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (strcmp(mFocusPanel->GetFocus()->GetName(), kTitle) == 0 && pMsg->mPressed != 0 &&
-        pMsg->mPad == mPlayer - 1) {
-        if (pMsg->mButton == kPadCross) {
+    if (strcmp(mFocusPanel->GetFocus()->GetName(), kTitle) == 0 && pMsg->GetPressed() != 0 &&
+        pMsg->GetPad() == mPlayer - 1) {
+        if (pMsg->GetButton() == kPadCross) {
             Proceed();
-        } else if (pMsg->mButton == kPadCircle) {
+        } else if (pMsg->GetButton() == kPadCircle) {
             auto *pKeyboard = dynamic_cast<KeyboardPanel *>(TheUI.FindPanel("keyboard", false));
             KeyboardRequest request(this,
                                     TheUI.GetCurrentScreen(),
@@ -207,12 +207,12 @@ bool SetupRemixSaveScreen::HandleJoypad(JoypadInputMsg *pMsg) {
                                     kOneLine);
             pKeyboard->SetRequest(request);
             TheUI.GotoScreen(kKeyboardScreen);
-        } else if (pMsg->mButton == kPadSquare) {
+        } else if (pMsg->GetButton() == kPadSquare) {
             FxMidi::PlaySquare();
             String discard(DiscardScreenName(mName));
             auto *pDiscard =
                 dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(discard.c_str(), false));
-            pDiscard->mPlayer = mPlayer;
+            pDiscard->SetPlayer(mPlayer);
             TheUI.GotoScreen(pDiscard);
             SetPanelsShowing(false);
         }
@@ -223,7 +223,7 @@ bool SetupRemixSaveScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 bool SetupRemixSaveScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     String discard(DiscardScreenName(mName));
     String localDiscard(FormatString(kLocalDiscardFormat, mPlayer - 1));
-    const char *pszPrev = pMsg->mPrevScreen->GetName();
+    const char *pszPrev = pMsg->GetPrevScreen()->GetName();
     if (strcmp(pszPrev, discard.c_str()) == 0 || strcmp(pszPrev, localDiscard.c_str()) == 0) {
         SetPanelsShowing(true);
     }
@@ -231,14 +231,14 @@ bool SetupRemixSaveScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
 }
 
 bool SetupRemixSaveScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    if (pMsg->mText.mLength != 0) {
+    if (pMsg->GetText().GetLength() != 0) {
         Proceed();
     }
     return true;
 }
 
 bool SetupRemixSaveScreen::HandleTextEntryInvalid(UITextEntryInvalidMsg *pMsg) {
-    if (strcmp(pMsg->mEntry->GetName(), kTitle) == 0) {
+    if (strcmp(pMsg->GetEntry()->GetName(), kTitle) == 0) {
         FxMidi::PlayWrong();
     }
     return false;

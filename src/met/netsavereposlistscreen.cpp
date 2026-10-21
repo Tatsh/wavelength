@@ -26,16 +26,16 @@ bool NetSaveReposListScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetSaveReposListScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->UploadDirectory(this, &mRemixes);
     }
     return false;
 }
 
 bool NetSaveReposListScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
-    if (pMsg->mStatus == RepoRemixStatusMsg::kStatusDone) {
+    if (pMsg->GetStatus() == RepoRemixStatusMsg::kStatusDone) {
         TheUI.GotoScreen(kUploadToolScreen);
-    } else if (pMsg->mStatus == RepoRemixStatusMsg::kStatusFailed) {
+    } else if (pMsg->GetStatus() == RepoRemixStatusMsg::kStatusFailed) {
         TheUI.GotoScreen(kErrorScreen);
     }
     return false;

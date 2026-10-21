@@ -69,6 +69,7 @@ public:
      */
     virtual void ShowSlotText();
 
+private:
 #ifdef VIDEO_STANDARD_PAL
     int mErrorMsg; /*!< Non-zero to name the failed operation, `error_msg`. */
 #endif

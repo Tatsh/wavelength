@@ -98,19 +98,6 @@ public:
      */
     void OnPatternMenuOpen() override;
 
-    RemixTutorial *mTutorial; /*!< The tutorial the step belongs to. */
-    DataArray *mStep;         /*!< The step. */
-    int mPitchCount;          /*!< Pitch changes since `pitch` last fired. */
-    float mIdleTime;          /*!< Song clock time `idle` counts from. */
-    float mIdle2Time;         /*!< Song clock time `idle2` counts from. */
-    int mLoopOn;              /*!< Nonzero once looping was switched on. */
-    int mForwardSection;      /*!< Nonzero once the section changed. */
-    int mBurnPattern;         /*!< Nonzero once a pattern was burned. */
-    int mEraseCount;          /*!< Erased patterns. */
-    int mRotation;            /*!< Rotations to the right less rotations to the left. */
-    int mEraseSection;        /*!< Nonzero once a section was erased. */
-    int mPatternMenuOpen;     /*!< Nonzero once the pattern menu was opened. */
-
 protected:
     /**
      * Install the task as TheGameCallback, and restart the idle times.
@@ -163,4 +150,17 @@ private:
      * @ghidraAddress PAL: 0x00144000
      */
     void RunActions(DataArray *pCondition, int nFirst);
+
+    RemixTutorial *mTutorial; /*!< The tutorial the step belongs to. */
+    DataArray *mStep;         /*!< The step. */
+    int mPitchCount;          /*!< Pitch changes since `pitch` last fired. */
+    float mIdleTime;          /*!< Song clock time `idle` counts from. */
+    float mIdle2Time;         /*!< Song clock time `idle2` counts from. */
+    int mLoopOn;              /*!< Nonzero once looping was switched on. */
+    int mForwardSection;      /*!< Nonzero once the section changed. */
+    int mBurnPattern;         /*!< Nonzero once a pattern was burned. */
+    int mEraseCount;          /*!< Erased patterns. */
+    int mRotation;            /*!< Rotations to the right less rotations to the left. */
+    int mEraseSection;        /*!< Nonzero once a section was erased. */
+    int mPatternMenuOpen;     /*!< Nonzero once the pattern menu was opened. */
 };

@@ -49,7 +49,7 @@ void Scheduler::CommandInfo::Load(BinStream &stream) {
 }
 
 bool Scheduler::ByCommand::operator()(const CommandInfo &info) const {
-    return info.mCommand.Get() == mCommand;
+    return info.GetCommand().Get() == mCommand;
 }
 
 Scheduler::Recorder::~Recorder() {
@@ -98,7 +98,11 @@ void Scheduler::Playbacker::QueueAll() {
     CommandInfo info{Ptr<Command>(), 0.0f, 0, TheDefaultCommandId, false};
     while (!mStream->Eof()) {
         info.Load(*mStream);
-        mScheduler->Insert(info.mCommand.Get(), info.mTime, info.mTick, info.mId, info.mRecordable);
+        mScheduler->Insert(info.GetCommand().Get(),
+                           info.GetTime(),
+                           info.GetTick(),
+                           info.GetId(),
+                           info.GetRecordable());
     }
 }
 
@@ -251,16 +255,16 @@ void Scheduler::Poll() {
     mFrameTick = static_cast<int>(mFrameTime / *mTickDuration);
     for (;;) {
         auto it = mCommands->begin();
-        if (it == mCommands->end() || mFrameTime < it->mTime) {
+        if (it == mCommands->end() || mFrameTime < it->GetTime()) {
             break;
         }
-        if (mRecorder != nullptr && it->mRecordable) {
+        if (mRecorder != nullptr && it->GetRecordable()) {
             mRecorder->Record(*it);
         }
         {
-            Ptr<Command> command(it->mCommand);
-            mTime = it->mTime;
-            mTick = it->mTick;
+            Ptr<Command> command(it->GetCommand());
+            mTime = it->GetTime();
+            mTick = it->GetTick();
             mCommands->erase(it);
             command->Execute();
         }
@@ -279,7 +283,7 @@ void Scheduler::RemoveIf(const CancelPred &pred) {
     auto it = mCommands->begin();
     while (it != mCommands->end()) {
         if (pred(*it)) {
-            (void)it->mCommand.Get(); // Yes, the binary discards this call's result.
+            (void)it->GetCommand().Get(); // Yes, the binary discards this call's result.
             mCommands->erase(it++);
         } else {
             ++it;

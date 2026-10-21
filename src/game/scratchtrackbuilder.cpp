@@ -82,7 +82,7 @@ void ScratchTrackBuilder::OnEndTrack() {
         Error(kTrackErrorTick, kSetSizeError);
     }
 
-    const int nQuantum = TheGameConfig->mScratcherQuantizationTicks;
+    const int nQuantum = TheGameConfig->GetScratcherQuantizationTicks();
     int nSetTick = kFirstSetTick;
     const int nChannel = mPieces.GetChannel();
     Ptr<Muse> apPieces[ScratchTrackData::kSetSize];

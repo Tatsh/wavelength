@@ -67,8 +67,8 @@ TnlCatcher::TnlCatcher(const char *pszColor, GfxTunnel *pTunnel)
                             Vector3{0.0f, sTargetSize, 0.0f},
                             Vector3{0.0f, 0.0f, 1.0f},
                             Vector3{flX * flPanelWidth, 0.0f, sTargetOffset}};
-        mTargets[i]->mLocalXfm = xfm;
-        mTargets[i]->mDirty = 1;
+        mTargets[i]->GetLocalXfm() = xfm;
+        mTargets[i]->SetDirty(1);
         mTargets[i]->UpdateWorldXfm(nullptr, 0);
         mTargetHits[i] =
             FindObject<RndAnimatable>(FormatString("target hit %d_%c.tnm", i, cLetter));
@@ -77,11 +77,11 @@ TnlCatcher::TnlCatcher(const char *pszColor, GfxTunnel *pTunnel)
 
     mBumpFlare = FindObject<RndMatAnim>(FormatString("target bump flare_%c.mnm", cLetter));
     if (mBumpFlare != nullptr) {
-        sBumpEndTime = mBumpFlare->mKeysOwner->mAlphaKeys.back().frame;
+        sBumpEndTime = mBumpFlare->GetKeysOwner()->GetAlphaKeys().back().frame;
     }
     mBumpFlareMesh = FindObject<RndDrawable>(FormatString("target bump flare 0_%c.mesh", cLetter));
     if (mBumpFlare != nullptr) {
-        mColor = mBumpFlare->mKeysOwner->mBaseKeys.back().value;
+        mColor = mBumpFlare->GetKeysOwner()->GetBaseKeys().back().value;
     }
     mAmbient = FindObject<RndAnimatable>(FormatString("target ambient_%c.view", cLetter));
     mAnim.SetAnim(FindObject<RndAnimatable>(FormatString("target anim_%c.view", cLetter)));
@@ -112,7 +112,7 @@ void TnlCatcher::AttachTo(RndView *pParent) {
 }
 
 void TnlCatcher::Hit(int nTarget) {
-    if (mView->mShowing) {
+    if (mView->GetShowing()) {
         mHitTimes[nTarget] = TheGameDb->GetSongTime();
     }
 }
@@ -144,7 +144,7 @@ void TnlCatcher::StartBump(const TnlActivator *pAttacker, TnlGeom *pGeom, int nP
         return;
     }
     mAnim.Jump(kPoseRest, kPoseRest);
-    mBumpFlare->mKeysOwner->mBaseKeys.back().value = pAttacker->mCatcher.mColor;
+    mBumpFlare->GetKeysOwner()->GetBaseKeys().back().value = pAttacker->GetCatcher().mColor;
     mBumpFlareMesh->SetShowing(1);
     pGeom->GetPlayer(nPlayer)->SetHoldCam(1);
     mBumping = 1;

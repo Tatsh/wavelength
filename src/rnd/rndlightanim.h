@@ -163,10 +163,6 @@ public:
      */
     static int sRev;
 
-    RndLight *mLight;                     /*!< The light the animation drives. */
-    std::vector<Key<Color>> mDiffuseKeys; /*!< The colour keys. */
-    RndLightAnim *mKeysOwner;             /*!< The animation that has the keys. */
-
 protected:
     /**
      * Drop the references on the light and the keys owner.
@@ -187,4 +183,9 @@ protected:
      * @ghidraAddress PAL: 0x00253f30
      */
     void AcquireRefs();
+
+private:
+    RndLight *mLight;                     /*!< The light the animation drives. */
+    std::vector<Key<Color>> mDiffuseKeys; /*!< The colour keys. */
+    RndLightAnim *mKeysOwner;             /*!< The animation that has the keys. */
 };

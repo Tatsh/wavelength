@@ -61,5 +61,6 @@ public:
         }
     }
 
+private:
     int mRefs; /*!< The number of references. */
 };

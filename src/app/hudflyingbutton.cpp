@@ -27,11 +27,11 @@ constexpr float kHalfPi = 1.5707964f;
 constexpr float kPulseTurnsPerTick = 0.002f;
 
 void Place(RndText *pText, float fX, float fZ) {
-    pText->mDirty = 1;
+    pText->SetDirty(1);
     // The binary also copies an unset fourth word, which is left as it was here.
-    pText->mLocalXfm.mTranslation.x = fX;
-    pText->mLocalXfm.mTranslation.y = 0.0f;
-    pText->mLocalXfm.mTranslation.z = fZ;
+    pText->GetLocalXfm().mTranslation.x = fX;
+    pText->GetLocalXfm().mTranslation.y = 0.0f;
+    pText->GetLocalXfm().mTranslation.z = fZ;
 }
 
 } // namespace
@@ -60,7 +60,7 @@ HudFlyingButton::~HudFlyingButton() {
 }
 
 void HudFlyingButton::Reset() {
-    mBlur->mXfms.clear();
+    mBlur->GetXfms().clear();
     mBlur->SetShowing(false);
     SetPulse(false);
     mStartTime = kNoFlight;
@@ -77,7 +77,7 @@ void HudFlyingButton::Fly(const Vector2 *pFrom, const Vector2 *pTo) {
         mStartTime = TheGameDb->GetSongTime();
         SetPulse(false);
     }
-    mBlur->mXfms.clear();
+    mBlur->GetXfms().clear();
     mBlur->SetShowing(true);
 }
 
@@ -88,13 +88,13 @@ void HudFlyingButton::Hide() {
 
 void HudFlyingButton::SetPulse(bool bPulse) {
     if (!bPulse) {
-        mText->mFont->mMat->SetAlpha(1.0f);
+        mText->GetFont()->GetMat()->SetAlpha(1.0f);
     }
     mPulse = bPulse;
 }
 
 void HudFlyingButton::Poll([[maybe_unused]] float fRealDelta) {
-    if (mText->mShowing == 0 || mStartTime == kNoFlight) {
+    if (mText->GetShowing() == 0 || mStartTime == kNoFlight) {
         return;
     }
     const float fElapsed = TheGameDb->GetSongTime() - mStartTime;
@@ -109,15 +109,15 @@ void HudFlyingButton::Poll([[maybe_unused]] float fRealDelta) {
 }
 
 void HudFlyingButton::Draw() {
-    if (mBlur->mShowing == 0) {
+    if (mBlur->GetShowing() == 0) {
         return;
     }
     if (mPulse != 0) {
         const float fTick = TheGameDb->GetSongTick();
         const float fWave = FastSin((fTick + fTick) * kPi * kPulseTurnsPerTick + kHalfPi);
-        mText->mFont->mMat->SetAlpha(fWave * 0.5f + 0.5f);
+        mText->GetFont()->GetMat()->SetAlpha(fWave * 0.5f + 0.5f);
     } else {
-        mText->mFont->mMat->SetAlpha(1.0f);
+        mText->GetFont()->GetMat()->SetAlpha(1.0f);
     }
     mBlur->Draw();
 }

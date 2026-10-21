@@ -84,5 +84,11 @@ public:
         return "InetCheckConnectionResultMsg";
     }
 
+    /** @return The outcome, zero while the connection works. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult; /*!< The outcome, zero while the connection works. */
 };

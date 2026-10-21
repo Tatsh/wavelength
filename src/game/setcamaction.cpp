@@ -26,8 +26,8 @@ void SetCamAction::Exec() {
     if (mFlags == 0) {
         return;
     }
-    const float flNear = (mFlags & kFlagNear) != 0 ? mNear : mCam->mNearPlane;
-    const float flFar = (mFlags & kFlagFar) != 0 ? mFar : mCam->mFarPlane;
-    const float flFov = (mFlags & kFlagFov) != 0 ? mFov : mCam->mFov;
+    const float flNear = (mFlags & kFlagNear) != 0 ? mNear : mCam->GetNearPlane();
+    const float flFar = (mFlags & kFlagFar) != 0 ? mFar : mCam->GetFarPlane();
+    const float flFov = (mFlags & kFlagFov) != 0 ? mFov : mCam->GetFov();
     mCam->SetFrustum(flNear, flFar, flFov);
 }

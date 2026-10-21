@@ -26,7 +26,8 @@ void BumperPacket::saveGuts(BinStream &stream) const {
         bits.Pack(victim.mTrack, kTrackBits);
     }
     stream.Write(buffer,
-                 static_cast<int>(static_cast<unsigned int>(bits.mBitPos - 1) / kBitsPerByte) + 1);
+                 static_cast<int>(static_cast<unsigned int>(bits.GetBitPos() - 1) / kBitsPerByte) +
+                     1);
 }
 
 void BumperPacket::restoreGuts(BinStream &stream) {

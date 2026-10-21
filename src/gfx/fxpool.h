@@ -24,7 +24,7 @@ public:
     explicit FxPool(int nCount) : mCount(nCount), mItems(std::make_unique<T[]>(nCount)) {
         mFree = mItems.get();
         for (int i = 0; i < nCount; ++i) {
-            mFree[i].mNextFree = i == nCount - 1 ? nullptr : &mFree[i + 1];
+            mFree[i].SetNextFree(i == nCount - 1 ? nullptr : &mFree[i + 1]);
             Prepare(&mFree[i]);
         }
     }
@@ -63,7 +63,7 @@ public:
         T *const pItems = mItems.get();
         T *pOldest = pItems;
         for (T *pItem = pItems + 1; pItem != pItems + mCount; ++pItem) {
-            if (pItem->mStartTime < pOldest->mStartTime) {
+            if (pItem->GetStartTime() < pOldest->GetStartTime()) {
                 pOldest = pItem;
             }
         }
@@ -82,8 +82,8 @@ public:
         if (pItem == nullptr) {
             return nullptr;
         }
-        mFree = pItem->mNextFree;
-        pItem->mNextFree = nullptr;
+        mFree = pItem->GetNextFree();
+        pItem->SetNextFree(nullptr);
         return pItem;
     }
 
@@ -113,7 +113,7 @@ public:
      */
     void Release(T *pItem) {
         pItem->Stop();
-        pItem->mNextFree = mFree;
+        pItem->SetNextFree(mFree);
         mFree = pItem;
     }
 

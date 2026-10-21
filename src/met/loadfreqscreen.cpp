@@ -109,7 +109,7 @@ bool LoadFreqScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool LoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.LoadFreqs(this, mSlot);
     }
     return false;

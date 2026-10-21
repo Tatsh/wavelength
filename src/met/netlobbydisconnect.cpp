@@ -37,8 +37,8 @@ bool NetLobbyDisconnect::DispatchPriv(Message *pMsg) {
 }
 
 bool NetLobbyDisconnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
-        mAsked = std::strcmp(pMsg->mPrevScreen->GetName(), kAskScreen) == 0;
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
+        mAsked = std::strcmp(pMsg->GetPrevScreen()->GetName(), kAskScreen) == 0;
         TheNetLobby->Disconnect(this);
     }
     return false;

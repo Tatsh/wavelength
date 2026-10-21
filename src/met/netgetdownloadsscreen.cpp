@@ -29,17 +29,17 @@ bool NetGetDownloadsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetGetDownloadsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->RequestRemixes(this);
     }
     return false;
 }
 
 bool NetGetDownloadsScreen::HandleRepoRemixes(RepoRemixesMsg *pMsg) {
-    if (pMsg->mResult == kResultOk && !pMsg->mRemixes->empty()) {
+    if (pMsg->GetResult() == kResultOk && !pMsg->GetRemixes()->empty()) {
         auto *pScreen =
             dynamic_cast<SelRemixDownloadScreen *>(TheUI.FindScreen(kDownloadScreen, false));
-        pScreen->mRemixes = *pMsg->mRemixes;
+        pScreen->SetRemixes(*pMsg->GetRemixes());
         TheUI.GotoScreen(pScreen);
     } else {
         TheUI.GotoScreen(kErrorScreen);

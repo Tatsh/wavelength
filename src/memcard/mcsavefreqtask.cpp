@@ -31,9 +31,9 @@ MCSaveFreqTask::MCSaveFreqTask() {
 void MCSaveFreqTask::Set(int nPort, Campaign *pProfile, const char *pszOldName, int nOverwrite) {
     mNeeded = 0;
     mPort = nPort;
-    mName = pProfile->mName.c_str();
+    mName = pProfile->GetName().c_str();
     mGetInfo->Set(nullptr, nPort, 0);
-    for (char *pChar = mName.mBuffer; pChar < mName.mBuffer + mName.mLength; ++pChar) {
+    for (char *pChar = mName.GetBuffer(); pChar < mName.GetBuffer() + mName.GetLength(); ++pChar) {
         *pChar = tolower(*pChar);
     }
     if (strcasecmp(mName.c_str(), pszOldName) != 0) {

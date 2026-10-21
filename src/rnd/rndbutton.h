@@ -158,12 +158,6 @@ public:
      */
     static int sLoadRev;
 
-    int mState;                    /*!< The index of the current state. */
-    RndMesh *mMesh;                /*!< The mesh target, or null. */
-    RndText *mText;                /*!< The text target, or null. */
-    std::vector<RndMat *> mMats;   /*!< The material of each state. */
-    std::vector<RndFont *> mFonts; /*!< The font of each state. */
-
 protected:
     /**
      * Drop the references on the targets and on every palette entry.
@@ -184,4 +178,11 @@ protected:
      * @ghidraAddress PAL: 0x002534e0
      */
     void AcquireRefs();
+
+private:
+    int mState;                    /*!< The index of the current state. */
+    RndMesh *mMesh;                /*!< The mesh target, or null. */
+    RndText *mText;                /*!< The text target, or null. */
+    std::vector<RndMat *> mMats;   /*!< The material of each state. */
+    std::vector<RndFont *> mFonts; /*!< The font of each state. */
 };

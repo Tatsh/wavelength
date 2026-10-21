@@ -81,6 +81,10 @@ public:
      */
     void Draw();
 
+    /** The value of mStartTime when no message shows. */
+    static constexpr float kNotShown = -1e9f;
+
+private:
     RndBlur *mBlur;        /*!< `HUD textmsg.blur`. */
     RndBlur *mSmallBlur;   /*!< `HUD sm textmsg.blur`. */
     RndText *mText;        /*!< `HUD textmsg.txt`, the large line. */
@@ -93,7 +97,4 @@ public:
     float mStartTime;      /*!< The song time Show() ran at, or kNotShown. */
     float mDuration;       /*!< The time the message rests in view. */
     int mShowing;          /*!< Whether a message shows. Show() does not set it. */
-
-    /** The value of mStartTime when no message shows. */
-    static constexpr float kNotShown = -1e9f;
 };

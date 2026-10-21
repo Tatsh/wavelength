@@ -152,6 +152,12 @@ public:
     /** The frame of sParticles. @ghidraAddress NTSC-U/C: 0x003afb90, PAL: 0x0042ea28 */
     static float sParticleFrame;
 
+    /** @return The phase, one of State. */
+    char GetState() const {
+        return mState;
+    }
+
+private:
     char mState;        /*!< The phase, one of State. */
     char mVictim;       /*!< The crippled player. */
     RndView *mView;     /*!< The view of the crippler, `crippler.view`. */

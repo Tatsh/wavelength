@@ -116,6 +116,22 @@ public:
      */
     void Update(float flDelta);
 
+    /** @return The catcher. */
+    TnlCatcher &GetCatcher() {
+        return mCatcher;
+    }
+
+    /** @return The catcher. */
+    const TnlCatcher &GetCatcher() const {
+        return mCatcher;
+    }
+
+    /** @return The place over the ticks of the slide. */
+    const LinearInterpolator &GetPlace() const {
+        return mPlace;
+    }
+
+private:
     int mPlayer;                    /*!< The player. */
     RndView *mRot;                  /*!< `activator rot<n>`. */
     RndView *mView;                 /*!< `activator<n>.view`. */

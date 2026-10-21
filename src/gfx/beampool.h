@@ -59,5 +59,6 @@ public:
         }
     }
 
+private:
     BeamParams mParams; /*!< The look of the beams. */
 };

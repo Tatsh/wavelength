@@ -18,12 +18,12 @@ void SetupNewChatroomScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     SetupNameScreen::Enter(pPrevScreen, fTime);
     mEntry =
         dynamic_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->GetName(), kNameEntry, false));
-    mEntry->mMaxEntryWidth = kNameMaxWidth;
+    mEntry->SetMaxEntryWidth(kNameMaxWidth);
 }
 
 void SetupNewChatroomScreen::Submit() {
     NetNewChatroomScreen *pCreate =
         dynamic_cast<NetNewChatroomScreen *>(TheUI.FindScreen(kCreateLobbyScreen, false));
-    pCreate->mChatroomName = mEntry->Text();
+    pCreate->SetChatroomName(mEntry->Text());
     TheUI.GotoScreen(pCreate);
 }

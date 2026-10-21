@@ -38,14 +38,14 @@ TnlSlowdownFX::TnlSlowdownFX(const char *pszName, GfxTunnel *pTunnel)
     mMesh = FindObject<RndMesh>("slowdown overlay.mesh");
     const float flAspect = TheRnd->AspectRatio();
     const float flScale = sqrtf((flAspect * flAspect) + 1.0f) * kOverscan;
-    Key<Vector3> &key = mTransAnim->mFramesOwner->mScaleKeys.front();
+    Key<Vector3> &key = mTransAnim->GetFramesOwner()->GetScaleKeys().front();
     key.value.z = flScale;
     key.value.x = flScale;
     key.value.y = flScale;
-    mMesh->mDirty = 1;
-    mMesh->mLocalXfm.mTranslation.x = kMeshX;
-    mMesh->mLocalXfm.mTranslation.y = 0.0f;
-    mMesh->mLocalXfm.mTranslation.z = flAspect * kMeshZPerAspect;
+    mMesh->SetDirty(1);
+    mMesh->GetLocalXfm().mTranslation.x = kMeshX;
+    mMesh->GetLocalXfm().mTranslation.y = 0.0f;
+    mMesh->GetLocalXfm().mTranslation.z = flAspect * kMeshZPerAspect;
     Reset();
 }
 

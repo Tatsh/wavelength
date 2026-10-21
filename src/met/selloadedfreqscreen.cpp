@@ -58,12 +58,12 @@ bool SelLoadedFreqScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool SelLoadedFreqScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadTriangle && pMsg->mPad == kFirstPad) {
-            if (TheGameDb->GetProfile(0)->mCustom != 0) {
+        if (pMsg->GetButton() == kPadTriangle && pMsg->GetPad() == kFirstPad) {
+            if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
                 TheGameDb->ClearPlayers();
                 TheGameDb->AddPlayer(&mProfile);
             }

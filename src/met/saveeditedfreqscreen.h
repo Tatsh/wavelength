@@ -79,5 +79,11 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+    /** @param pszFreqName The name the Freq is saved under. */
+    void SetFreqName(const char *pszFreqName) {
+        mFreqName = pszFreqName;
+    }
+
+private:
     String mFreqName; /*!< The name the Freq is saved under. +0xd0 */
 };

@@ -134,8 +134,8 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
     if (UIButton::HandleSelect(pMsg)) {
         return true;
     }
-    const bool bArrow = (mLeftArrow != nullptr && pMsg->mButton == kPadDLeft) ||
-                        (mRightArrow != nullptr && pMsg->mButton == kPadDRight);
+    const bool bArrow = (mLeftArrow != nullptr && pMsg->GetButton() == kPadDLeft) ||
+                        (mRightArrow != nullptr && pMsg->GetButton() == kPadDRight);
     if (bArrow && mFlashDone == 0) {
         mFlashDone = 1;
         if (mArrowButton == kPadDLeft) {
@@ -147,18 +147,19 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
         mArrowButton = kPadNone;
         mArrowFlashDone = 1;
     }
-    if (!bArrow || pMsg->mPressed == 0) {
+    if (!bArrow || pMsg->GetPressed() == 0) {
         return false;
     }
     UIScreen *pScreen = TheUI.GetCurrentScreen();
-    UIComponentSelectStartMsg msg(this, TheUI.FocusPanel(), pScreen, pMsg->mButton, pMsg->mPad);
+    UIComponentSelectStartMsg msg(
+        this, TheUI.FocusPanel(), pScreen, pMsg->GetButton(), pMsg->GetPad());
     (void)Dispatch(&msg); // The arrow flashes even when a handler stops the choice.
     if (mArrowButton == kPadDLeft) {
         mLeftArrow->SetMat(mArrowStyle->GetMat(mRevertState));
     } else if (mArrowButton == kPadDRight) {
         mRightArrow->SetMat(mArrowStyle->GetMat(mRevertState));
     }
-    mArrowButton = pMsg->mButton;
+    mArrowButton = pMsg->GetButton();
     StartFlash(
         TheUI.GetTime(), sArrowFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
     mFlashDone = 1;

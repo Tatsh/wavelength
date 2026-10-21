@@ -59,7 +59,7 @@ bool NetServerSelScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         NetServerLogin *pLogin =
             static_cast<NetServerLogin *>(TheUI.FindScreen(kServerLoginScreen, false));
         // Yes, the binary does not check that a location of the name was found.
-        pLogin->mLocation = location->mId;
+        pLogin->SetLocation(location->mId);
         TheUI.GotoScreen(pLogin);
     }
     return UIScreen::HandleSelect(pMsg);

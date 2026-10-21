@@ -129,6 +129,32 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return Whether an autocatcher captured the phrase. */
+    int GetAutocatch() const {
+        return mAutocatch;
+    }
+
+    /** @return The bar of the capture. */
+    int GetBar() const {
+        return mBar;
+    }
+
+    /** @return The index of the track. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+    /** @return Whether a sender filled the packet. */
+    int GetValid() const {
+        return mValid;
+    }
+
+    /** @param nValid Whether a sender filled the packet. */
+    void SetValid(int nValid) {
+        mValid = nValid;
+    }
+
+private:
     int mTrack;     /*!< The index of the track. */
     int mBar;       /*!< The bar of the capture. */
     int mAutocatch; /*!< Whether an autocatcher captured the phrase. */

@@ -73,6 +73,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     int mNumPages;               /*!< `num_pages`, or -1. */
     int mPage;                   /*!< `page`, the number of this page, or -1. */
     const char *mNextScreenName; /*!< `next_screen`, the next page, or null. */

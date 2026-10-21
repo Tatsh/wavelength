@@ -66,8 +66,8 @@ Scratcher::~Scratcher() {
 void Scratcher::Start(int nPlayer, int nTickOffset) {
     SendPitchBend(mPitch);
     SwitchPiece(mPiece);
-    mNoteCB.mPlayer = nPlayer;
-    mNoteCB.mTickOffset = nTickOffset;
+    mNoteCB.SetPlayer(nPlayer);
+    mNoteCB.SetTickOffset(nTickOffset);
     const int nPosition = TheSongScheduler.GetTick() % mQuantumTicks;
     if (nPosition < mQuantumTicks / 2) {
         mLoopers[mPiece]->Play(&TheSongScheduler, nPosition);

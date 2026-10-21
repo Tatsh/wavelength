@@ -98,7 +98,7 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     UIPanel *pPanel = TheUI.FindPanel("f_maker", false);
     UIButton *pName = dynamic_cast<UIButton *>(pPanel->FindComponent("name", false));
-    if (TheGameDb->GetProfile(0)->mNameLocked != 0) {
+    if (TheGameDb->GetProfile(0)->GetNameLocked() != 0) {
         pName->SetStyle(TheUI.FindStyle("button_style_grey", false));
     }
 
@@ -120,7 +120,7 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     UIScreen *pKeyboard = TheUI.FindScreen("kb_screen", false);
     if (pPrevScreen == pKeyboard) {
-        const bool bEmpty = mFreqName.mLength == 0;
+        const bool bEmpty = mFreqName.GetLength() == 0;
         if (bEmpty || mNameTrimmed != 0) {
             if (mNameTyped != 0) {
                 UIScreen *pError = TheUI.FindScreen(
@@ -152,7 +152,7 @@ void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         if (mEditing == 0 && mSaveStarted == 0) {
             Campaign profile;
             mFreqName = "";
-            profile.mName = mFreqName.c_str();
+            profile.SetName(mFreqName.c_str());
             AvatarPanel *pAvatarPanel = FindAvatarPanel();
             pAvatarPanel->SetAvatar(nullptr);
             *TheGameDb->GetProfile(0) = profile;
@@ -207,7 +207,7 @@ int FreqMakerMainScreen::ReceiveKeyboardText(const char *pszText) {
     mNameTyped = 1;
     mFreqName = pszText;
     mNameTrimmed = TrimSpaces(&mFreqName) ? 1 : 0;
-    if (mFreqName.mLength != 0 && mSaveOnName != 0) {
+    if (mFreqName.GetLength() != 0 && mSaveOnName != 0) {
         GotoSave();
         return 0;
     }
@@ -217,7 +217,7 @@ int FreqMakerMainScreen::ReceiveKeyboardText(const char *pszText) {
 void FreqMakerMainScreen::OpenKeyboard() {
     KeyboardPanel *pKeyboard = dynamic_cast<KeyboardPanel *>(TheUI.FindPanel("keyboard", false));
     const char *pszName =
-        mFreqName.mLength != 0 ? mFreqName.c_str() : TheLocale.Localize("player_1", true);
+        mFreqName.GetLength() != 0 ? mFreqName.c_str() : TheLocale.Localize("player_1", true);
     KeyboardRequest request(this, this, pszName, 0, kMaxNameChars, kMaxNameWidth, 0, 1, 0, 0);
     pKeyboard->SetRequest(request);
     TheUI.GotoScreen("kb_screen");
@@ -248,17 +248,17 @@ void FreqMakerMainScreen::GotoSave() {
     TheMetagame.GetGizmo()->SetShowAvatar(true);
     SaveEditedFreqScreen *pSave =
         dynamic_cast<SaveEditedFreqScreen *>(TheUI.FindScreen(pszScreen, false));
-    pSave->mOverwriteStatus = mEditing;
+    pSave->SetOverwriteStatus(mEditing);
     if (mEditing != 0) {
-        pSave->mFreqName = TheGameDb->GetPlayerName(0);
+        pSave->SetFreqName(TheGameDb->GetPlayerName(0));
     } else {
-        pSave->mFreqName = mFreqName.c_str();
+        pSave->SetFreqName(mFreqName.c_str());
     }
     if (strcmp(mFreqName.c_str(), TheGameDb->GetPlayerName(0)) != 0) {
-        pSave->mOverwriteStatus = 0;
+        pSave->SetOverwriteStatus(0);
     }
-    TheGameDb->GetProfile(0)->mName = mFreqName.c_str();
-    TheGameDb->GetProfile(0)->mCustom = 1;
+    TheGameDb->GetProfile(0)->SetName(mFreqName.c_str());
+    TheGameDb->GetProfile(0)->SetCustom(1);
     TheGameDb->GetProfile(0)->SetModified(1);
     TheUI.GotoScreen(pSave);
     mSaveStarted = 1;
@@ -272,7 +272,7 @@ bool FreqMakerMainScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool FreqMakerMainScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (pMsg->mScreen == this && mFocusPanel != nullptr && mFocusPanel->GetFocus() != nullptr) {
+    if (pMsg->GetScreen() == this && mFocusPanel != nullptr && mFocusPanel->GetFocus() != nullptr) {
         ShowSaveHelp(mFocusPanel->GetFocus());
     }
     return false;
@@ -335,13 +335,13 @@ bool FreqMakerMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         pAvatar->SetEmblem(types[nEmblem]);
         mChanged = 1;
     } else if (strcmp(pszButton, "save") == 0) {
-        if (mFreqName.mLength == 0 || (mNameTyped == 0 && mFreqName == kDefaultName)) {
+        if (mFreqName.GetLength() == 0 || (mNameTyped == 0 && mFreqName == kDefaultName)) {
             mSaveOnName = 1;
             OpenKeyboard();
             return true;
         }
     } else if (strcmp(pszButton, "name") == 0) {
-        if (TheGameDb->GetProfile(0)->mNameLocked != 0) {
+        if (TheGameDb->GetProfile(0)->GetNameLocked() != 0) {
             TheUI.GotoScreen("f_maker_name_locked_screen");
         } else {
             OpenKeyboard();
@@ -355,10 +355,10 @@ bool FreqMakerMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool FreqMakerMainScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadTriangle && pMsg->GetPressed() != 0) {
         if (mChanged != 0) {
             FreqMakerErrorScreen *pError = dynamic_cast<FreqMakerErrorScreen *>(
                 TheUI.FindScreen("f_maker_lose_main_changes", false));

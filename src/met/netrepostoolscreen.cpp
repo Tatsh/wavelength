@@ -55,7 +55,7 @@ void NetReposToolScreen::Exit(UIScreen *pNextScreen, float fTime) {
     mSelection = mList->GetSelected();
     auto *pNoteScreen = dynamic_cast<UploadNoteScreen *>(TheUI.FindScreen(kNoteScreen, false));
     const NetRepoRemix &remix = *ListAt(mRemixes, mSelection);
-    pNoteScreen->mKeyboardText = remix.mNote.c_str();
+    pNoteScreen->SetKeyboardText(remix.mNote.c_str());
     mNote = remix.mNote;
 }
 
@@ -75,7 +75,7 @@ void NetReposToolScreen::AddRemix(const NetRepoRemix &remix) {
 }
 
 bool NetReposToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return UIScreen::HandleJoypad(pMsg);
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
@@ -85,13 +85,13 @@ bool NetReposToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     if (static_cast<unsigned int>(nSelected) >= mRemixes.size()) {
         return UIScreen::HandleJoypad(pMsg);
     }
-    switch (pMsg->mButton) {
+    switch (pMsg->GetButton()) {
     case kPadStart: {
         dynamic_cast<NetUploadToolScreen *>(TheUI.FindScreen(kUploadToolScreen, false))
             ->MarkRemixes(mRemixes);
         auto *pSave =
             dynamic_cast<NetSaveReposListScreen *>(TheUI.FindScreen(kSaveReposScreen, false));
-        pSave->mRemixes = mRemixes;
+        pSave->SetRemixes(mRemixes);
         TheUI.GotoScreen(pSave);
         break;
     }

@@ -28,7 +28,7 @@ bool SaveErrorScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         std::strcmp(pMsg->GetComponent()->GetName(), kReplaceComponent) == 0) {
         auto *pScreen =
             dynamic_cast<OverwriteSaveScreen *>(TheUI.FindScreen(mStartScreen.c_str(), false));
-        pScreen->mOverwriteStatus = kOverwrite;
+        pScreen->SetOverwriteStatus(kOverwrite);
         TheUI.GotoScreen(pScreen);
     }
     return UIScreen::HandleSelect(pMsg);

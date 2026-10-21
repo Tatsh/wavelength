@@ -121,6 +121,7 @@ public:
      */
     bool HandleSelectStart(UIComponentSelectStartMsg *pMsg);
 
+private:
     AvatarPartSet mSaved;  /*!< The Freq as it was when the screen first entered. +0x70 */
     int mSavedValid;       /*!< Non-zero while mSaved is the Freq to restore. +0xac */
     int mChanged;          /*!< Non-zero once the Freq changed on the screen. */

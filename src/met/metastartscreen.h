@@ -139,6 +139,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     float mAttractTime;  /*!< The system time the attract demo starts at, or -1 when disarmed. */
     RndView *mMusicView; /*!< The `logo_music_anim.view` the music animates, or null. */
 };

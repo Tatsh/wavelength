@@ -38,7 +38,7 @@ TnlGrid::GridLine::GridLine() : mScale(nullptr) {
 TnlGrid::GridLine::~GridLine() = default;
 
 void TnlGrid::GridLine::Attach(const Vector3 *pScale, RndMultiMesh *pMesh) {
-    std::list<Transform> &instances = pMesh->mTransforms;
+    std::list<Transform> &instances = pMesh->GetTransforms();
     Transform xfm; // Yes, the binary adds a transform it never set. Place() sets it.
     instances.insert(instances.begin(), xfm);
     mScale = pScale;
@@ -70,7 +70,7 @@ void TnlGrid::GridLine::SetShowing(bool bShowing,
         return;
     }
 
-    std::list<Transform> &instances = pMesh->mTransforms;
+    std::list<Transform> &instances = pMesh->GetTransforms();
     if (bShowing) {
         instances.splice(instances.begin(), hidden, mInstance);
         mInstance = instances.begin();
@@ -91,7 +91,7 @@ TnlGrid::TnlGrid(GfxTunnel *pTunnel, int nCam) : mTrack(0), mTunnel(pTunnel), mM
 
     mMesh = FindObject<RndMultiMesh>("grid.mm");
     if (nCam == kFirstCam) {
-        mMesh->mTransforms.clear(); // Yes, the binary does not check for a missing mesh.
+        mMesh->GetTransforms().clear(); // Yes, the binary does not check for a missing mesh.
     }
     mLines.resize(kNumLines, GridLine());
 
@@ -112,7 +112,7 @@ TnlGrid::TnlGrid(GfxTunnel *pTunnel, int nCam) : mTrack(0), mTunnel(pTunnel), mM
 
 TnlGrid::~TnlGrid() {
     if (mMesh != nullptr) {
-        mMesh->mTransforms.clear();
+        mMesh->GetTransforms().clear();
     }
 }
 

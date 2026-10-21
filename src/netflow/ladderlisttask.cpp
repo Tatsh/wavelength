@@ -91,15 +91,15 @@ void LadderListTask::OnResponse(int nConnection,
     }
     if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS) {
         LobbyPlayer player;
-        player.mId = pResponse->accountId;
+        player.SetId(pResponse->accountId);
 #ifdef VIDEO_STANDARD_PAL
         const String name = Utf8DecodedString(pResponse->accountName);
-        player.mName = name.c_str();
+        player.SetName(name.c_str());
 #else
-        player.mName = pResponse->accountName;
+        player.SetName(pResponse->accountName);
 #endif
-        player.mRank = pResponse->rank;
-        player.mRating = kRankedRating;
+        player.SetRank(pResponse->rank);
+        player.SetRating(kRankedRating);
         TheLobbyRT->GetRankedPlayers().push_back(player);
         if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;

@@ -29,10 +29,10 @@ LocalPlayer::~LocalPlayer() {
 
 void LocalPlayer::SetTrack(Track *pTrack) {
     if (mTrack != nullptr) {
-        TheMixer->RemovePlayer(mTrack->mIndex);
+        TheMixer->RemovePlayer(mTrack->GetIndex());
     }
     Player::SetTrack(pTrack);
-    TheMixer->AddPlayer(pTrack->mIndex);
+    TheMixer->AddPlayer(pTrack->GetIndex());
     Broadcast();
 }
 
@@ -79,10 +79,10 @@ void LocalPlayer::Broadcast() {
 
     const int nRuleSet = TheGameDb->GetRuleSet();
     if (nRuleSet == GameDb::kRuleSetGame || nRuleSet == GameDb::kRuleSetDuel) {
-        PlayerUpdatePacket packet(mTrack->mIndex, mScore, mCatching, ++sPlayerUpdateVersion);
+        PlayerUpdatePacket packet(mTrack->GetIndex(), mScore, mCatching, ++sPlayerUpdateVersion);
         TheNetTransport->Send(packet);
     } else if (nRuleSet == GameDb::kRuleSetRemix) {
-        RemixerUpdatePacket packet(mTrack->mIndex, mRepeat, ++sRemixerUpdateVersion);
+        RemixerUpdatePacket packet(mTrack->GetIndex(), mRepeat, ++sRemixerUpdateVersion);
         TheNetTransport->Send(packet);
     }
 

@@ -48,6 +48,27 @@ public:
          */
         void OnNote(unsigned char nNote, int nDuration) override;
 
+        /** @return The ticks added to the current tick of each note. */
+        int GetTickOffset() const {
+            return mTickOffset;
+        }
+
+        /** @param nTickOffset The ticks added to the current tick of each note. */
+        void SetTickOffset(int nTickOffset) {
+            mTickOffset = nTickOffset;
+        }
+
+        /** @return The scratching player. */
+        int GetPlayer() const {
+            return mPlayer;
+        }
+
+        /** @param nPlayer The scratching player. */
+        void SetPlayer(int nPlayer) {
+            mPlayer = nPlayer;
+        }
+
+    private:
         int mPlayer;     /*!< The scratching player. */
         int mTickOffset; /*!< The ticks added to the current tick of each note. */
     };

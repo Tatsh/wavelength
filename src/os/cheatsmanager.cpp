@@ -40,14 +40,14 @@ void CheatsManager::RunAction(DataArray *pAction, int nPad) {
 }
 
 bool CheatsManager::HandleButton(JoypadInputMsg *pMsg) {
-    const int nPad = pMsg->mPad;
-    const int nHeld = JoypadGetState(nPad)->mButtons;
+    const int nPad = pMsg->GetPad();
+    const int nHeld = JoypadGetState(nPad)->GetButtons();
     const bool bComboLeft = (nHeld & kComboLeftMask) == kComboLeftMask;
     const bool bComboRight = (nHeld & kComboRightMask) == kComboRightMask;
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return true;
     }
-    const int nButton = pMsg->mButton;
+    const int nButton = pMsg->GetButton();
 
     if (bComboLeft || bComboRight) {
         for (const auto &cheat : mComboCheats[bComboLeft ? kComboLeft : kComboRight]) {

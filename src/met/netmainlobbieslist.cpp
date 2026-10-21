@@ -35,10 +35,10 @@ void NetMainLobbiesList::SetChatrooms(std::list<NetChatroomInfo> *pChatrooms) {
 }
 
 bool NetMainLobbiesList::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadCross && pMsg->GetPressed() != 0) {
         auto *pScreen =
             dynamic_cast<NetSwitchLobbyScreen *>(TheUI.FindScreen(kSwitchScreen, false));
-        pScreen->mChatroomId = ListAt(mChatrooms, mSelected)->mId;
+        pScreen->SetChatroomId(ListAt(mChatrooms, mSelected)->mId);
     }
     return UIList::HandleJoypad(pMsg);
 }

@@ -178,6 +178,12 @@ public:
     /** The ticks a line falls behind the song tick before it moves to the far end of the span. */
     static constexpr float kRecycleTicks = 960.0f;
 
+    /** @return The track the lines lie across. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+private:
     std::vector<GridLine> mLines; /*!< The lines. */
     int mTrack;                   /*!< The track the lines lie across. */
     GfxTunnel *mTunnel;           /*!< The tunnel. */

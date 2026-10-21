@@ -19,14 +19,14 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
 }
 
 void WriteName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 } // namespace
@@ -81,13 +81,13 @@ float RndMatAnim::EndFrame() {
     const RndMatAnim *pOwner = mKeysOwner;
     float fEnd = 0.0f;
     for (const Stage &stage : pOwner->mStages) {
-        const float fTrans = LastFrame(stage.mTransKeys);
-        const float fScale = LastFrame(stage.mScaleKeys);
+        const float fTrans = LastFrame(stage.GetTransKeys());
+        const float fScale = LastFrame(stage.GetScaleKeys());
         if (fEnd < (fTrans < fScale ? fScale : fTrans)) {
             fEnd = fTrans < fScale ? fScale : fTrans;
         }
-        const float fRot = LastFrame(stage.mRotKeys);
-        const float fTex = LastFrame(stage.mTexKeys);
+        const float fRot = LastFrame(stage.GetRotKeys());
+        const float fTex = LastFrame(stage.GetTexKeys());
         if (fEnd < (fRot < fTex ? fTex : fRot)) {
             fEnd = fRot < fTex ? fTex : fRot;
         }
@@ -115,38 +115,38 @@ int RndMatAnim::SetFrameSelf(float fFrame) {
         return 1;
     }
     const RndMatAnim *pOwner = mKeysOwner;
-    std::vector<RndMat::Stage> &matStages = mMat->mStages;
+    std::vector<RndMat::Stage> &matStages = mMat->GetStages();
     unsigned int nIndex = 0;
     for (auto it = pOwner->mStages.begin();
          it != pOwner->mStages.end() && nIndex < matStages.size();
          ++it, ++nIndex) {
         const Stage &stage = *it;
         RndMat::Stage &matStage = matStages[nIndex];
-        InterpKeys(stage.mTransKeys, fFrame, matStage.mXfm.mTranslation);
-        if (!stage.mRotKeys.empty()) {
+        InterpKeys(stage.GetTransKeys(), fFrame, matStage.GetXfm().mTranslation);
+        if (!stage.GetRotKeys().empty()) {
             Vector3 angles;
-            InterpKeys(stage.mRotKeys, fFrame, angles);
-            Rnd::MakeRotMatrix(&angles.x, &matStage.mXfm.mBasisX.x);
+            InterpKeys(stage.GetRotKeys(), fFrame, angles);
+            Rnd::MakeRotMatrix(&angles.x, &matStage.GetXfm().mBasisX.x);
         }
-        if (!stage.mScaleKeys.empty()) {
+        if (!stage.GetScaleKeys().empty()) {
             Vector3 scale;
-            InterpKeys(stage.mScaleKeys, fFrame, scale);
-            Vector3 &basisX = matStage.mXfm.mBasisX;
+            InterpKeys(stage.GetScaleKeys(), fFrame, scale);
+            Vector3 &basisX = matStage.GetXfm().mBasisX;
             basisX.x *= scale.x;
             basisX.y *= scale.x;
             basisX.z *= scale.x;
-            Vector3 &basisY = matStage.mXfm.mBasisY;
+            Vector3 &basisY = matStage.GetXfm().mBasisY;
             basisY.x *= scale.y;
             basisY.y *= scale.y;
             basisY.z *= scale.y;
-            Vector3 &basisZ = matStage.mXfm.mBasisZ;
+            Vector3 &basisZ = matStage.GetXfm().mBasisZ;
             basisZ.x *= scale.z;
             basisZ.y *= scale.z;
             basisZ.z *= scale.z;
         }
-        if (!stage.mTexKeys.empty()) {
+        if (!stage.GetTexKeys().empty()) {
             RndTex *pTex = nullptr;
-            InterpKeys(stage.mTexKeys, fFrame, pTex);
+            InterpKeys(stage.GetTexKeys(), fFrame, pTex);
             matStage.SetTex(pTex);
         }
     }
@@ -176,7 +176,7 @@ int RndMatAnim::SetFrameSelf(float fFrame) {
 void RndMatAnim::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndMatAnim]\n";
@@ -223,7 +223,7 @@ void RndMatAnim::Replace(RndObject *pFrom, RndObject *pTo) {
         }
     }
     for (Stage &stage : mStages) {
-        std::vector<Key<RndTex *>> &keys = stage.mTexKeys;
+        std::vector<Key<RndTex *>> &keys = stage.GetTexKeys();
         auto it = keys.begin();
         while (it != keys.end()) {
             if (static_cast<RndObject *>(it->value) == pFrom) {
@@ -308,7 +308,7 @@ void RndMatAnim::ResizeStages(int nStages) {
     std::vector<Stage> &stages = mKeysOwner->mStages;
     if (static_cast<unsigned int>(nStages) < stages.size()) {
         for (auto it = stages.begin() + nStages; it != mKeysOwner->mStages.end(); ++it) {
-            for (const Key<RndTex *> &key : it->mTexKeys) {
+            for (const Key<RndTex *> &key : it->GetTexKeys()) {
                 if (key.value != nullptr) {
                     key.value->RemoveRef(this);
                 }
@@ -317,7 +317,7 @@ void RndMatAnim::ResizeStages(int nStages) {
     }
     mKeysOwner->mStages.resize(nStages, Stage());
     for (Stage &stage : mKeysOwner->mStages) {
-        stage.mMatAnim = this;
+        stage.SetMatAnim(this);
     }
 }
 
@@ -329,7 +329,7 @@ void RndMatAnim::ReleaseRefs() {
         mKeysOwner->RemoveRef(this);
     }
     for (const Stage &stage : mStages) {
-        for (const Key<RndTex *> &key : stage.mTexKeys) {
+        for (const Key<RndTex *> &key : stage.GetTexKeys()) {
             if (key.value != nullptr) {
                 key.value->RemoveRef(this);
             }
@@ -345,8 +345,8 @@ void RndMatAnim::AcquireRefs() {
         mKeysOwner->AddRef(this);
     }
     for (Stage &stage : mStages) {
-        stage.mMatAnim = this;
-        for (const Key<RndTex *> &key : stage.mTexKeys) {
+        stage.SetMatAnim(this);
+        for (const Key<RndTex *> &key : stage.GetTexKeys()) {
             if (key.value != nullptr) {
                 key.value->AddRef(this);
             }

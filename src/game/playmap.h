@@ -13,6 +13,19 @@ public:
     /** Stretch of the song as written that plays from a bar on. */
     class Loop {
     public:
+        Loop() = default;
+
+        /**
+         * Construct a stretch.
+         *
+         * @param nStartBar The first bar of the stretch as written, or -1 for silence.
+         * @param nNumBars The length of the stretch in bars.
+         * @param nPlayBar The bar the song plays the stretch from.
+         */
+        Loop(int nStartBar, int nNumBars, int nPlayBar)
+            : mStartBar(nStartBar), mNumBars(nNumBars), mPlayBar(nPlayBar) {
+        }
+
         /**
          * Order loops by the bar they play from.
          *
@@ -25,6 +38,22 @@ public:
             return mPlayBar < other.mPlayBar;
         }
 
+        /** @return The first bar of the stretch as written, or -1 for silence. */
+        int GetStartBar() const {
+            return mStartBar;
+        }
+
+        /** @return The bar the song plays the stretch from. */
+        int GetPlayBar() const {
+            return mPlayBar;
+        }
+
+        /** @return The length of the stretch in bars. */
+        int GetNumBars() const {
+            return mNumBars;
+        }
+
+    private:
         int mStartBar; /*!< The first bar of the stretch as written, or -1 for silence. */
         int mNumBars;  /*!< The length of the stretch in bars. */
         int mPlayBar;  /*!< The bar the song plays the stretch from. */
@@ -110,6 +139,12 @@ public:
      */
     void ClearLoops();
 
+    /** @return Whether a loop was added. */
+    int GetLooping() const {
+        return mLooping;
+    }
+
+private:
     int mTicksPerBar;         /*!< The song ticks in one bar. */
     std::vector<Loop> mLoops; /*!< The loops, by the bar they play from. */
     int mEndBar;              /*!< The bar the song ends at while no loop was added. */

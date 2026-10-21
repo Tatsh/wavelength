@@ -82,6 +82,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The remixes found. */
+    std::list<NetRepoRemix> *GetRemixes() const {
+        return mRemixes;
+    }
+
+    /** @return The outcome, zero on success. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;                       /*!< The outcome, zero on success. */
     std::list<NetRepoRemix> *mRemixes; /*!< The remixes found. */
 };

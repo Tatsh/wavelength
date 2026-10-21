@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 
 /**
@@ -10,6 +11,16 @@
  */
 class SectionBoundaries {
 public:
+    SectionBoundaries() = default;
+
+    /**
+     * Construct the list from the end measures.
+     *
+     * @param ends The end measure of each section, ascending.
+     */
+    explicit SectionBoundaries(std::vector<int> ends) : mEnds(std::move(ends)) {
+    }
+
     /**
      * Report the number of sections.
      *
@@ -70,5 +81,6 @@ public:
      */
     int SectionAt(int nMeasure) const;
 
+private:
     std::vector<int> mEnds; /*!< The end measure of each section, ascending. */
 };

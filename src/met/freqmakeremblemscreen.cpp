@@ -73,10 +73,10 @@ bool FreqMakerEmblemScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool FreqMakerEmblemScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadTriangle && pMsg->GetPressed() != 0) {
         const char *pszEmblem = mEmblems[mOriginalIndex];
         TheGameDb->GetAvatar(0)->SetEmblem(pszEmblem);
         TheUI.GotoScreen(TheUI.FindScreen("f_maker_custom", false));

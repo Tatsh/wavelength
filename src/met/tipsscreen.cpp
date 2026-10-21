@@ -33,10 +33,10 @@ void TipsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 bool TipsScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     const bool bHandled = FreqScreen::HandleJoypad(pMsg);
-    if (!bHandled && pMsg->mPressed) {
-        if (pMsg->mButton == kPadCross) {
+    if (!bHandled && pMsg->GetPressed()) {
+        if (pMsg->GetButton() == kPadCross) {
             TheUI.GotoScreen(mNextScreenName);
-        } else if (pMsg->mButton == kPadTriangle) {
+        } else if (pMsg->GetButton() == kPadTriangle) {
             TheUI.GotoScreen(mPrevScreenName);
         }
     }

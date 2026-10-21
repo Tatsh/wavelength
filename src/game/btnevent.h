@@ -45,5 +45,16 @@ public:
         stream.Read(&mPlayer, sizeof(mPlayer));
     }
 
+    /** @return The player index. */
+    unsigned char GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @param nPlayer The player index. */
+    void SetPlayer(unsigned char nPlayer) {
+        mPlayer = nPlayer;
+    }
+
+private:
     unsigned char mPlayer; /*!< The player index. */
 };

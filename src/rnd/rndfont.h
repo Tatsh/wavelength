@@ -221,13 +221,35 @@ public:
      */
     static int sRev;
 
-    std::map<char, CharInfo> mCharMap; /*!< The placement of each character. */
-    RndMat *mMat;                      /*!< The material whose first stage has the texture. */
-    float mRows;                       /*!< The number of rows of cells. */
-    float mCols;                       /*!< The number of columns of cells. */
-    float mSize;                       /*!< The size of the characters. */
-    float mSpace;                      /*!< The space between characters. */
-    String mChars;                     /*!< The characters, in cell order. */
+    /** @return The characters, in cell order. */
+    const String &GetChars() const {
+        return mChars;
+    }
+
+    /** @return The number of columns of cells. */
+    float GetCols() const {
+        return mCols;
+    }
+
+    /** @return The material whose first stage has the texture. */
+    RndMat *GetMat() const {
+        return mMat;
+    }
+
+    /** @return The number of rows of cells. */
+    float GetRows() const {
+        return mRows;
+    }
+
+    /** @return The size of the characters. */
+    float GetSize() const {
+        return mSize;
+    }
+
+    /** @return The space between characters. */
+    float GetSpace() const {
+        return mSpace;
+    }
 
 protected:
     /**
@@ -239,4 +261,13 @@ protected:
      * @ghidraAddress PAL: 0x0022ee08
      */
     void ReleaseRefs();
+
+private:
+    std::map<char, CharInfo> mCharMap; /*!< The placement of each character. */
+    RndMat *mMat;                      /*!< The material whose first stage has the texture. */
+    float mRows;                       /*!< The number of rows of cells. */
+    float mCols;                       /*!< The number of columns of cells. */
+    float mSize;                       /*!< The size of the characters. */
+    float mSpace;                      /*!< The space between characters. */
+    String mChars;                     /*!< The characters, in cell order. */
 };

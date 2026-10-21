@@ -96,6 +96,7 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+private:
     float mStartMs;             /*!< The front-end time the view started, or 0 once it stopped. */
     ViewAnimPlayer mAnimPlayer; /*!< The player of `s_unlock_arena.view`. +0x74 */
     int mCount;                 /*!< The number of unlocked arenas. +0x84 */

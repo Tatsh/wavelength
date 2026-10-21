@@ -35,14 +35,14 @@ void FreqConfirmScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UIComponent *pEdit = TheUI.FindComponent("f_confirm", "edit", false);
     String name("");
 
-    int nCustom = TheGameDb->GetProfile(0)->mCustom;
+    int nCustom = TheGameDb->GetProfile(0)->GetCustom();
     if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         CheatsManager::IsCheatEntered() != 0) {
         nCustom = 0;
     }
     if (nCustom != 0) {
         mFocusPanel->SetFocus(pConfirm, kPadNone);
-        name = TheGameDb->GetProfile(0)->mName.c_str();
+        name = TheGameDb->GetProfile(0)->GetName().c_str();
     } else {
         pConfirm->SetState(UIComponent::kStateDisabled, false);
         pEdit->SetState(UIComponent::kStateDisabled, false);
@@ -65,17 +65,17 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (strcmp(pszButton, "edit") == 0) {
         FreqMakerMainScreen *pMaker =
             dynamic_cast<FreqMakerMainScreen *>(TheUI.FindScreen("f_maker", false));
-        pMaker->mSaveStarted = 0;
-        pMaker->mEditing = 1;
-        pMaker->mFreqName = TheGameDb->GetPlayerName(0);
-        pMaker->mProfile = *TheGameDb->GetProfile(0);
+        pMaker->SetSaveStarted(0);
+        pMaker->SetEditing(1);
+        pMaker->SetFreqName(TheGameDb->GetPlayerName(0));
+        pMaker->SetProfile(*TheGameDb->GetProfile(0));
     } else if (strcmp(pszButton, "create") == 0) {
         FreqMakerMainScreen *pMaker =
             dynamic_cast<FreqMakerMainScreen *>(TheUI.FindScreen("f_maker", false));
-        pMaker->mEditing = 0;
-        pMaker->mSaveStarted = 0;
-        pMaker->mFreqName = "";
-        pMaker->mProfile = *TheGameDb->GetProfile(0);
+        pMaker->SetEditing(0);
+        pMaker->SetSaveStarted(0);
+        pMaker->SetFreqName("");
+        pMaker->SetProfile(*TheGameDb->GetProfile(0));
     } else if (strcmp(pszButton, "load") == 0) {
         String screen;
         if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
@@ -85,14 +85,14 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         }
         SelLoadedFreqScreen *pLoad =
             dynamic_cast<SelLoadedFreqScreen *>(TheUI.FindScreen(screen.c_str(), false));
-        pLoad->mProfile = *TheGameDb->GetProfile(0);
+        pLoad->SetProfile(*TheGameDb->GetProfile(0));
     }
 
     if (strcmp(pszButton, "create") != 0 && strcmp(pszButton, "load") != 0) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    if (TheGameDb->GetProfile(0)->mCustom != 0 && TheGameDb->GetProfile(0)->IsModified() != 0) {
+    if (TheGameDb->GetProfile(0)->GetCustom() != 0 && TheGameDb->GetProfile(0)->IsModified() != 0) {
         UIScreen *pScreen = TheUI.FindScreen("cur_freq_not_saved", false);
         pScreen->ClearTransitions();
         const bool bOnline = TheGameDb->GetCommunity() == GameDb::kCommunityOnline;
@@ -115,7 +115,7 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (strcmp(pszButton, "create") == 0) {
         TheGameDb->ClearPlayers();
         Campaign profile;
-        profile.mName = TheLocale.Localize("player_1", true);
+        profile.SetName(TheLocale.Localize("player_1", true));
         TheGameDb->AddPlayer(&profile);
     }
     return UIScreen::HandleSelect(pMsg);

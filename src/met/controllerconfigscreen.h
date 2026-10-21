@@ -290,6 +290,7 @@ public:
      */
     bool HandleFocusChange(UIComponentFocusChangeMsg *pMsg);
 
+private:
     UIScreen *mReturnScreen;         /*!< The screen the menu was entered from, or null. */
     const char *mFocusName;          /*!< The component of the event the focus is on. */
     int mActive;                     /*!< Whether the screen shows, between Enter() and Exit(). */

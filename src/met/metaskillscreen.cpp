@@ -82,7 +82,7 @@ bool MetaSkillScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool MetaSkillScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (pMsg->mScreen == this) {
+    if (pMsg->GetScreen() == this) {
         mFocusPanel->SetFocus(mFocusPanel->GetFocus(), kPadNone);
     }
     return false;

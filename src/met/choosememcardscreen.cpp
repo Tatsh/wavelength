@@ -80,16 +80,16 @@ bool ChooseMemCardScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool ChooseMemCardScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed) {
+    if (pMsg->GetPressed()) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadCircle) {
+        if (pMsg->GetButton() == kPadCircle) {
             TheUI.GotoScreen(kCardsConnectedScreen);
-        } else if (pMsg->mButton == kPadCross && !mSlots.empty()) {
+        } else if (pMsg->GetButton() == kPadCross && !mSlots.empty()) {
             RemixOrFreqScreen *pNext =
                 dynamic_cast<RemixOrFreqScreen *>(TheUI.FindScreen(kRemixOrFreqScreen, false));
-            pNext->mSlot = mSlots[mSlot];
+            pNext->SetSlot(mSlots[mSlot]);
             TheUI.GotoScreen(pNext);
         }
     }

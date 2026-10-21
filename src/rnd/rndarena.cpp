@@ -22,7 +22,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -77,7 +77,7 @@ void RndArena::DumpText(PrnStream &stream) {
     RndTransformable::DumpText(stream);
     RndDrawable::DumpText(stream);
     RndCollideable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndArena]\n";
@@ -164,8 +164,8 @@ void RndArena::Replace(RndObject *pFrom, RndObject *pTo) {
         }
     }
     for (Sort &sort : mSorts) {
-        if (static_cast<RndObject *>(sort.mView) == pFrom) {
-            sort.mView = nullptr;
+        if (static_cast<RndObject *>(sort.GetView()) == pFrom) {
+            sort.SetView(nullptr);
         }
     }
 }
@@ -183,7 +183,7 @@ void RndArena::UpdateSection(Section &section) {
             section.mView->SetFrame(fLocalFrame);
         }
         section.mView->SetShowing(1);
-    } else if (section.mView->mShowing != 0) {
+    } else if (section.mView->GetShowing() != 0) {
         section.mView->SetShowing(0);
     }
 }
@@ -193,28 +193,28 @@ void RndArena::SetSectionLoop(Section &section, int nLoop) {
     if (pView == nullptr || section.mLoop == nLoop) {
         return;
     }
-    Vector3 translation = pView->mLocalXfm.mTranslation;
+    Vector3 translation = pView->GetLocalXfm().mTranslation;
     if (section.mLoop < nLoop) {
         const float fLoops = static_cast<float>(nLoop - section.mLoop);
         const float fX = mLoopDist.x * fLoops;
         const float fY = mLoopDist.y * fLoops;
         const float fZ = mLoopDist.z * fLoops;
-        translation.x = pView->mLocalXfm.mTranslation.x + fX;
-        translation.y = pView->mLocalXfm.mTranslation.y + fY;
-        translation.z = pView->mLocalXfm.mTranslation.z + fZ;
+        translation.x = pView->GetLocalXfm().mTranslation.x + fX;
+        translation.y = pView->GetLocalXfm().mTranslation.y + fY;
+        translation.z = pView->GetLocalXfm().mTranslation.z + fZ;
     } else if (nLoop < section.mLoop) {
         const float fLoops = static_cast<float>(section.mLoop - nLoop);
         const float fX = mLoopDist.x * fLoops;
         const float fY = mLoopDist.y * fLoops;
         const float fZ = mLoopDist.z * fLoops;
-        translation.x = pView->mLocalXfm.mTranslation.x - fX;
-        translation.y = pView->mLocalXfm.mTranslation.y - fY;
-        translation.z = pView->mLocalXfm.mTranslation.z - fZ;
+        translation.x = pView->GetLocalXfm().mTranslation.x - fX;
+        translation.y = pView->GetLocalXfm().mTranslation.y - fY;
+        translation.z = pView->GetLocalXfm().mTranslation.z - fZ;
     }
     section.mLoop = nLoop;
     if (section.mTeleport != 0) {
-        pView->mDirty = 1;
-        pView->mLocalXfm.mTranslation = translation;
+        pView->SetDirty(1);
+        pView->GetLocalXfm().mTranslation = translation;
     }
 }
 
@@ -222,15 +222,15 @@ int RndArena::SetFrameSelf([[maybe_unused]] float fFrame) {
     auto sort = mSorts.begin();
     for (Section &section : mSections) {
         UpdateSection(section);
-        if (section.mView != nullptr && section.mView->mShowing != 0) {
-            sort->mView = section.mView;
-            sort->mSortKey = section.mFrame + static_cast<float>(section.mLoop) * mLoopFrames;
+        if (section.mView != nullptr && section.mView->GetShowing() != 0) {
+            sort->SetView(section.mView);
+            sort->SetSortKey(section.mFrame + static_cast<float>(section.mLoop) * mLoopFrames);
             if (section.mSortStart != 0) {
-                sort->mSortKey -= section.mDelta;
+                sort->SetSortKey(sort->GetSortKey() - section.mDelta);
             }
         } else {
-            sort->mView = nullptr;
-            sort->mSortKey = 0.0f;
+            sort->SetView(nullptr);
+            sort->SetSortKey(0.0f);
         }
         ++sort;
     }
@@ -241,7 +241,7 @@ int RndArena::SetFrameSelf([[maybe_unused]] float fFrame) {
 int RndArena::UpdateWorldXfm(RndTransformable *pParent, int bForce) {
     const int nUpdated = RndTransformable::UpdateWorldXfm(pParent, bForce);
     for (Section &section : mSections) {
-        if (section.mView != nullptr && section.mView->mShowing != 0) {
+        if (section.mView != nullptr && section.mView->GetShowing() != 0) {
             section.mView->UpdateWorldXfm(this, nUpdated);
         }
     }
@@ -250,8 +250,8 @@ int RndArena::UpdateWorldXfm(RndTransformable *pParent, int bForce) {
 
 int RndArena::DrawShowing() {
     for (Sort &sort : mSorts) {
-        if (sort.mView != nullptr) {
-            sort.mView->Draw();
+        if (sort.GetView() != nullptr) {
+            sort.GetView()->Draw();
         }
     }
     return 1;
@@ -259,7 +259,7 @@ int RndArena::DrawShowing() {
 
 void RndArena::Collide(const Segment &segment, std::list<Collision> &collisions) {
     for (Section &section : mSections) {
-        if (section.mView != nullptr && section.mView->mShowing != 0) {
+        if (section.mView != nullptr && section.mView->GetShowing() != 0) {
             section.mView->Collide(segment, collisions);
         }
     }
@@ -275,7 +275,7 @@ PrnStream &operator<<(PrnStream &stream, const RndArena::Section &section) {
 
 BinStream &operator<<(BinStream &stream, const RndArena::Section &section) {
     const RndObject *pView = section.mView;
-    stream.WriteString(pView != nullptr ? pView->mName.c_str() : "");
+    stream.WriteString(pView != nullptr ? pView->GetName() : "");
     stream.WriteEndian(&section.mFrame, sizeof(section.mFrame));
     stream.WriteEndian(&section.mLoop, sizeof(section.mLoop));
     stream.WriteEndian(&section.mDelta, sizeof(section.mDelta));

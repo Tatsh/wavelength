@@ -60,7 +60,7 @@ AnimateToAction::~AnimateToAction() = default;
 void AnimateToAction::Exec() {
     const float flNow = TheTriggerMgr.GetCurrentTime();
     mEndTime = flNow + mDuration;
-    float flFrom = mAnim->mFrame;
+    float flFrom = mAnim->GetFrame();
     if (mLoops == 0) {
         mCurve->Reset(flFrom, mTarget, flNow, mEndTime);
     } else {

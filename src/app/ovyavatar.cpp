@@ -58,14 +58,14 @@ OvyAvatar::OvyAvatar(int nPlayer, int nIndex, RndView *pHudView)
     }
     mBackgroundMat = dynamic_cast<RndMat *>(TheManager.Find("HUD freq_background.mat"));
     if (nPlayer < 0 || TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
-        mBackgroundColor = mBackgroundMat->mBaseColor;
+        mBackgroundColor = mBackgroundMat->GetBaseColor();
     } else {
         mBackgroundColor = *TheGfxManager.GetPlayerColor(nPlayer);
     }
     mNameMat = dynamic_cast<RndMat *>(TheManager.Find("HUD freq track.mat"));
     if (mName != nullptr) {
         mName->SetText("");
-        mNameColor = mNameMat->mBaseColor;
+        mNameColor = mNameMat->GetBaseColor();
         mNameColor.a = kNameAlpha;
     }
     static_cast<RndDrawable *>(pHudView)->RemoveDraw(mView);
@@ -166,7 +166,7 @@ void OvyAvatar::SetFreqSize(int nFreqSize) {
 
 void OvyAvatar::Reset() {
     ClearAllAnims(mAvatar);
-    SetFreqSize(TheGameDb->GetOptions()->mFreqSize);
+    SetFreqSize(TheGameDb->GetOptions()->GetFreqSize());
     if (mSwing.GetAnim() == nullptr) {
         return;
     }

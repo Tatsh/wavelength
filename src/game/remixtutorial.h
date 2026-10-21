@@ -358,6 +358,80 @@ public:
      */
     static void OnAllowRotationLeft(DataArray *pCommand, void *pUserData);
 
+    /** @return Set by "allow_tempo_change". */
+    int GetTempoChangeAllowed() const {
+        return mTempoChangeAllowed;
+    }
+
+    /** @return Whether the remix passes on a StickEvent<6>. Always 0. */
+    int GetStick6Enabled() const {
+        return mStick6Enabled;
+    }
+
+    /** @return Whether the remix passes on a StickEvent<2>. Always 0. */
+    int GetStick2Enabled() const {
+        return mStick2Enabled;
+    }
+
+    /** @return Cleared by "disable_section_change". */
+    int GetSectionChangeEnabled() const {
+        return mSectionChangeEnabled;
+    }
+
+    /** @return Set by "allow_rotation_left", initially 1. */
+    int GetRotationLeftAllowed() const {
+        return mRotationLeftAllowed;
+    }
+
+    /** @return Cleared by "disable_rot". */
+    int GetRotationEnabled() const {
+        return mRotationEnabled;
+    }
+
+    /** @return Whether the remix starts or stops a preview. Always 0. */
+    int GetPreviewEnabled() const {
+        return mPreviewEnabled;
+    }
+
+    /** @return Cleared by "disable_pitching". */
+    int GetPitchingEnabled() const {
+        return mPitchingEnabled;
+    }
+
+    /** @return Set by "allow_looping". */
+    int GetLoopingAllowed() const {
+        return mLoopingAllowed;
+    }
+
+    /** @return Cleared by "disable_hud". */
+    int GetHudEnabled() const {
+        return mHudEnabled;
+    }
+
+    /** @return Cleared by "disable_erasing". */
+    int GetErasingEnabled() const {
+        return mErasingEnabled;
+    }
+
+    /** @return Whether the remix passes on a BtnEvent<10>. Always 0. */
+    int GetButton10Enabled() const {
+        return mButton10Enabled;
+    }
+
+private:
+    /**
+     * Build the task for one script step.
+     *
+     * A "wait_stream" step waits for a narration stream, a "wait_time" step waits for a time, and
+     * a "wait_interactive" step waits for the player. Any other step runs as a script command.
+     *
+     * @param pStep The step.
+     * @return The task.
+     * @ghidraAddress NTSC-U/C: 0x00137078
+     * @ghidraAddress PAL: 0x001388d8
+     */
+    Task *CreateTask(DataArray *pStep);
+
     SerialTasks mScript;       /*!< The steps, in order. */
     StreamQueue mStreams;      /*!< The narration streams. */
     int mPitchingEnabled;      /*!< Cleared by "disable_pitching". */
@@ -377,18 +451,4 @@ public:
     int mLastRotation;         /*!< The rotation NotifyRotate() last recorded, initially -1. */
     int mRotationLeftAllowed;  /*!< Set by "allow_rotation_left", initially 1. */
     RemixLogic *mLogic;        /*!< The remix session the tutorial drives. */
-
-private:
-    /**
-     * Build the task for one script step.
-     *
-     * A "wait_stream" step waits for a narration stream, a "wait_time" step waits for a time, and
-     * a "wait_interactive" step waits for the player. Any other step runs as a script command.
-     *
-     * @param pStep The step.
-     * @return The task.
-     * @ghidraAddress NTSC-U/C: 0x00137078
-     * @ghidraAddress PAL: 0x001388d8
-     */
-    Task *CreateTask(DataArray *pStep);
 };

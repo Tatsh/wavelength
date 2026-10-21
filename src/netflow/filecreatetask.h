@@ -40,9 +40,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusFileResponse *pResponse);
 
-    String *mName; /*!< The file. */
-    int *mSize;    /*!< The size of the file in bytes. */
-
 protected:
     /**
      * Send the request, with every access for every account.
@@ -51,4 +48,8 @@ protected:
      * @ghidraAddress PAL: 0x002706e8
      */
     void OnStart() override;
+
+private:
+    String *mName; /*!< The file. */
+    int *mSize;    /*!< The size of the file in bytes. */
 };

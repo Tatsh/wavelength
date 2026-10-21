@@ -254,6 +254,7 @@ public:
      */
     static int sLoadRev;
 
+private:
     RndText *mText;                   /*!< The text the cursor sweeps, or null. */
     RndBlur *mBlur;                   /*!< The blur the internal blur copies, or null. */
     std::unique_ptr<RndBlur> mCursor; /*!< The internal blur that marks the cursor, or null. */

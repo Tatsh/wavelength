@@ -24,8 +24,8 @@ void SubstepParticles::SetSteps(int nSteps) {
 
 void SubstepParticles::Update(float fFrame, float fTime) {
     mSys->SetFrame(fFrame);
-    Transform &local = mSys->mLocalXfm;
-    const Transform &world = mSys->mWorldXfm;
+    Transform &local = mSys->GetLocalXfm();
+    const Transform &world = mSys->GetWorldXfm();
     if (mLastTime == kNever) {
         mLastPos = world.mTranslation;
         mLastTime = fTime;
@@ -43,12 +43,12 @@ void SubstepParticles::Update(float fFrame, float fTime) {
         local.mBasisX = world.mBasisX;
         local.mBasisY = world.mBasisY;
         local.mBasisZ = world.mBasisZ;
-        mSys->mDirty = 1;
+        mSys->SetDirty(1);
         // Yes, the binary steps from the current position back toward the last one.
         for (int n = mSteps; n != 0; --n) {
             mLastTime += fStep;
             local.mTranslation = pos;
-            mSys->mDirty = 1;
+            mSys->SetDirty(1);
             mSys->UpdateWorldXfm(nullptr, 0);
             mSys->SetEmitFrame(mLastTime);
             pos.x += delta[0];
@@ -56,7 +56,7 @@ void SubstepParticles::Update(float fFrame, float fTime) {
             pos.z += delta[2];
         }
         local = saved;
-        mSys->mDirty = 1;
+        mSys->SetDirty(1);
     }
     mLastTime = fTime;
 }

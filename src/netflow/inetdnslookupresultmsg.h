@@ -82,6 +82,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The address of the host, as text. */
+    const char *GetAddress() const {
+        return mAddress;
+    }
+
+    /** @return The outcome, zero on success. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;          /*!< The outcome, zero on success. */
     const char *mAddress; /*!< The address of the host, as text. */
 };

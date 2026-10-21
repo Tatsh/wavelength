@@ -98,5 +98,16 @@ public:
      */
     void *Resize(int nBytes);
 
+    /** @return The block. */
+    HandleBlock *GetBlock() const {
+        return mBlock;
+    }
+
+    /** @param pBlock The block. */
+    void SetBlock(HandleBlock *pBlock) {
+        mBlock = pBlock;
+    }
+
+private:
     HandleBlock *mBlock; /*!< The block. */
 };

@@ -87,6 +87,12 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+    /** @param slots The memory card slots that have saves. */
+    void SetSlots(const std::vector<int> &slots) {
+        mSlots = slots;
+    }
+
+private:
     std::vector<int> mSlots; /*!< The memory card slots that have saves. */
     int mSlot;               /*!< The index into mSlots of the chosen card. */
 };

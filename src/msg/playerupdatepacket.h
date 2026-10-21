@@ -141,6 +141,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The player's catching state. */
+    int GetCatching() const {
+        return mCatching;
+    }
+
+    /** @return The player's score. */
+    int GetPoints() const {
+        return mPoints;
+    }
+
+    /** @return The index of the player's track. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+    /** @return The update's sequence number. */
+    int GetVersion() const {
+        return mVersion;
+    }
+
+private:
     int mTrack;    /*!< The index of the player's track. */
     int mPoints;   /*!< The player's score. */
     int mCatching; /*!< The player's catching state. */

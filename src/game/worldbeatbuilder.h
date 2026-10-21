@@ -96,6 +96,7 @@ public:
                          [[maybe_unused]] int nDenominator) override {
     }
 
+private:
     int mIntroTicks;          /*!< The length of the song intro. */
     WorldTrack *mTrack;       /*!< The events to fill. */
     MidiValidator mValidator; /*!< The checker of the messages. */

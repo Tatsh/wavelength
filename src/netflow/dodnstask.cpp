@@ -14,9 +14,9 @@ void DoDNSTask::OnStop() {
 }
 
 bool DoDNSTask::OnResult(InetDNSLookupResultMsg *pMsg) {
-    Finish(pMsg->mResult == 0, LobbyConnectResultMsg::kResultLookupFailed);
-    if (pMsg->mResult == 0) {
-        TheLobbyRT->GetServerAddress() = pMsg->mAddress;
+    Finish(pMsg->GetResult() == 0, LobbyConnectResultMsg::kResultLookupFailed);
+    if (pMsg->GetResult() == 0) {
+        TheLobbyRT->GetServerAddress() = pMsg->GetAddress();
     }
     return false;
 }

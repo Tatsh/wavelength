@@ -65,7 +65,10 @@ public:
         return "";
     }
 
-    String mPlayerName; /*!< The name of the player to find. */
+    /** @param pszPlayerName The name of the player to find. */
+    void SetPlayerName(const char *pszPlayerName) {
+        mPlayerName = pszPlayerName;
+    }
 
 private:
     /**
@@ -91,4 +94,6 @@ private:
      * @ghidraAddress PAL: 0x00181898
      */
     bool HandleFindPlayer(FindPlayerMsg *pMsg);
+
+    String mPlayerName; /*!< The name of the player to find. */
 };

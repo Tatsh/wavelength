@@ -61,5 +61,6 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+private:
     int mDone; /*!< Set once the journey is done. */
 };

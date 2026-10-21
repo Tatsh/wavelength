@@ -137,6 +137,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     int mLaunchpadId;     /*!< The first identifier of the session, or -1. */
     int mLaunchpadWorld;  /*!< The second identifier of the session, or -1. */
     String mReturnScreen; /*!< The screen the attempt started from. */

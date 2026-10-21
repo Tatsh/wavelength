@@ -12,7 +12,7 @@
 extern int g_nTimeResponsePktType;
 
 /**
- * Packet that answers a TimeRequestPkt with the clock of the answering console.
+ * Packet that responds to a TimeRequestPkt with the clock of the responding console.
  *
  * The RTTI records the class as deriving from InternalPacket. The members Clone(), Type(), and
  * GetName() are inline. The member names are inferred.
@@ -33,7 +33,7 @@ public:
      *
      * @param nReceiver The peer the packet is for.
      * @param fSendTime The clock of this console now.
-     * @param fRequestTime The time of the request the packet answers.
+     * @param fRequestTime The time of the request the packet responds to.
      */
     TimeResponsePkt(int nReceiver, float fSendTime, float fRequestTime)
         : InternalPacket(0, nReceiver), mSendTime(fSendTime), mRequestTime(fRequestTime) {
@@ -121,6 +121,17 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
-    float mSendTime;    /*!< The clock of the answering console when it sent the packet. */
-    float mRequestTime; /*!< The time of the request the packet answers. */
+    /** @return The time of the request the packet responds to. */
+    float GetRequestTime() const {
+        return mRequestTime;
+    }
+
+    /** @return The clock of the responding console when it sent the packet. */
+    float GetSendTime() const {
+        return mSendTime;
+    }
+
+private:
+    float mSendTime;    /*!< The clock of the responding console when it sent the packet. */
+    float mRequestTime; /*!< The time of the request the packet responds to. */
 };

@@ -35,12 +35,12 @@ void ViewAnimPlayer::Poll(float fNowMs) {
         return;
     }
     int nMoving = 0;
-    for (RndAnimatable *pChild : mAnim->mAnims) {
+    for (RndAnimatable *pChild : mAnim->GetAnims()) {
         RndCursor *pCursor = pChild != nullptr ? dynamic_cast<RndCursor *>(pChild) : nullptr;
         if (pCursor == nullptr) {
             continue;
         }
-        const float fCursorFrame = pCursor->mFilteredFrame;
+        const float fCursorFrame = pCursor->GetFilteredFrame();
         if (0.0f <= fCursorFrame && fCursorFrame <= pCursor->EndFrame()) {
             nMoving = 1;
         }

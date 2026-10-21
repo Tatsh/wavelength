@@ -15,10 +15,10 @@ bool UnlockScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool UnlockScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadCross && pMsg->mPressed) {
+    if (pMsg->GetButton() == kPadCross && pMsg->GetPressed()) {
         FxMidi::PlayMenuSelect();
         TheMetagame.AdvanceUnlocks();
     }

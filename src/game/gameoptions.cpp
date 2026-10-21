@@ -60,7 +60,8 @@ bool GameOptions::UploadedToday() const {
     DateTime now;
     memset(static_cast<void *>(&now), 0, sizeof(now));
     (void)now.ReadClock(); // Yes, the binary discards the result.
-    return (mDate.mDay == now.mDay) && (mDate.mMonth == now.mMonth) && (mDate.mYear == now.mYear);
+    return (mDate.GetDay() == now.GetDay()) && (mDate.GetMonth() == now.GetMonth()) &&
+           (mDate.GetYear() == now.GetYear());
 }
 
 void GameOptions::ApplyOutputMode() {

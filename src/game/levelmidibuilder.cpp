@@ -368,7 +368,8 @@ void LevelMidiBuilder::OnText(int nTick, const char *pszText, unsigned char nTyp
 
 void LevelMidiBuilder::ClassifyTrack(const char *pszName) {
     String name(pszName);
-    std::transform(name.mBuffer, name.mBuffer + name.mLength, name.mBuffer, toupper);
+    std::transform(
+        name.GetBuffer(), name.GetBuffer() + name.GetLength(), name.GetBuffer(), toupper);
     if (name.Find(kIgnoreTrackPrefix) == 0) {
         mTrackKind = kTrackKindIgnore;
     } else if (name.Find(kBankTrackPrefix) == 0) {
@@ -397,7 +398,7 @@ void LevelMidiBuilder::ClassifyTrack(const char *pszName) {
 void LevelMidiBuilder::ParseGameTrackName(const String &name) {
     const int nNumber = atoi(name.Substring(kNumberPos).c_str());
     if (!isdigit(name[kNumberPos]) || nNumber < 0 || nNumber >= kMaxTrackNumber ||
-        name[kNumberEnd] != kNameSeparator || name.mLength < kMinNameLength) {
+        name[kNumberEnd] != kNameSeparator || name.GetLength() < kMinNameLength) {
         String message;
         PrnStream &stream = message << kImproperNameStart;
         stream.Print(name.c_str());
@@ -482,7 +483,7 @@ void LevelMidiBuilder::ParseGameTrackName(const String &name) {
         Error(kNoTick, String(kInstrumentCodeError));
     }
     if (static_cast<unsigned int>(nColon + kLabelSeparatorOffset) >=
-        static_cast<unsigned int>(name.mLength)) {
+        static_cast<unsigned int>(name.GetLength())) {
         Error(kNoTick, String(kInstrumentCodeError));
     }
     const char cInstrument = name[nColon + kInstrumentOffset];
@@ -716,8 +717,9 @@ void LevelMidiBuilder::LoadRemix() {
             gems.ApplyPatterns();
             for (int nBar = 0; nBar < mNumBars; ++nBar) {
                 for (const PitchGem &pitchGem : *gems.GetBar(nBar)) {
-                    Muse *pRiff = track.mRiffs->GetRiff(pitchGem.mTick, pitchGem.mSlot);
-                    const Gem gem{pitchGem.mSlot, pitchGem.mTick, Ptr<Muse>(pRiff->Clone())};
+                    Muse *pRiff = track.mRiffs->GetRiff(pitchGem.GetTick(), pitchGem.GetSlot());
+                    const Gem gem{
+                        pitchGem.GetSlot(), pitchGem.GetTick(), Ptr<Muse>(pRiff->Clone())};
                     track.mCatch->AddGem(gem);
                 }
             }
@@ -812,7 +814,7 @@ Muse *LevelMidiBuilder::GetIntroMuse(int nIndex) const {
 
 ScriptTrackData *LevelMidiBuilder::FindScriptTrack(const char *pszName) const {
     for (const auto &pScript : mScriptTracks) {
-        if (pScript->mName == pszName) {
+        if (pScript->GetName() == pszName) {
             return pScript.get();
         }
     }

@@ -80,5 +80,6 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+private:
     String mPendingScreen; /*!< The screen to go to once the entry finishes, or empty. */
 };

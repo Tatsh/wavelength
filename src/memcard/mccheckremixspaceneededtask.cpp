@@ -109,7 +109,7 @@ void MCCheckRemixSpaceNeededTask::OnDirListed() {
 }
 
 void MCCheckRemixSpaceNeededTask::Evaluate() {
-    if (g_MemcardPath.mLength == 0) {
+    if (g_MemcardPath.GetLength() == 0) {
         for (unsigned int i = 0; i < mDirRemixCounts.size(); ++i) {
             const int nRemixCount = mDirRemixCounts[i];
             if (nRemixCount != kDirMissing && nRemixCount < g_nMaxRemixesPerDir) {
@@ -119,7 +119,7 @@ void MCCheckRemixSpaceNeededTask::Evaluate() {
             }
         }
     }
-    if (g_MemcardPath.mLength == 0) {
+    if (g_MemcardPath.GetLength() == 0) {
         for (unsigned int i = 0; i < mDirRemixCounts.size(); ++i) {
             if (mDirRemixCounts[i] == kDirMissing) {
                 g_MemcardPath = GetRemixDirName(i);
@@ -139,7 +139,7 @@ void MCCheckRemixSpaceNeededTask::Evaluate() {
     }
     if (mFound != 0 && mOverwrite == 0) {
         MemcardTask::sStatus = MemcardTask::kStatusExists;
-    } else if (g_MemcardPath.mLength == 0) {
+    } else if (g_MemcardPath.GetLength() == 0) {
         MemcardTask::sStatus = MemcardTask::kStatusLimit;
     } else if (mGetInfo->GetFree() < mNeeded) {
         MemcardTask::sStatus = MemcardTask::kStatusFull;
@@ -151,7 +151,7 @@ void MCCheckRemixSpaceNeededTask::Evaluate() {
 void MCCheckRemixSpaceNeededTask::OnDirListed() {
     if (mFound == 0) {
         if (MemcardTask::sDirCount == 0) {
-            if (g_MemcardPath.mLength == 0) {
+            if (g_MemcardPath.GetLength() == 0) {
                 g_MemcardPath = GetRemixDirName(mDirIndex);
                 g_bMemcardDirExists = 0;
             }
@@ -168,7 +168,8 @@ void MCCheckRemixSpaceNeededTask::OnDirListed() {
             }
             if (i == MemcardTask::sDirCount) {
                 mRemixCount += static_cast<unsigned char>(MemcardTask::sDirCount);
-                if (MemcardTask::sDirCount != g_nMaxRemixesPerDir && g_MemcardPath.mLength == 0) {
+                if (MemcardTask::sDirCount != g_nMaxRemixesPerDir &&
+                    g_MemcardPath.GetLength() == 0) {
                     g_MemcardPath = GetRemixDirName(mDirIndex);
                     g_bMemcardDirExists = 1;
                 }

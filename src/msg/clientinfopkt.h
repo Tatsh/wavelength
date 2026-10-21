@@ -121,5 +121,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The player. */
+    const NetLaunchpadPlayer &GetPlayer() const {
+        return mPlayer;
+    }
+
+private:
     NetLaunchpadPlayer mPlayer; /*!< The player. */
 };

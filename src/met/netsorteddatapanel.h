@@ -91,5 +91,6 @@ public:
      */
     void Reset();
 
+private:
     int mLaunchpad; /*!< The identifier of the launchpad shown. */
 };

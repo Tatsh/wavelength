@@ -446,7 +446,7 @@ BinStream &operator<<(BinStream &stream, const std::list<T *> &list) {
     stream.WriteEndian(&nSize, sizeof(nSize));
     for (T *pElement : list) {
         const RndObject *pObject = pElement;
-        stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+        stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
     }
     return stream;
 }
@@ -481,7 +481,7 @@ BinStream &operator>>(BinStream &stream, std::list<T *> &list) {
     for (T *&pElement : list) {
         String name;
         stream >> name;
-        if (name.mLength == 0) {
+        if (name.GetLength() == 0) {
             pElement = nullptr;
         } else {
             pElement = dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -510,7 +510,7 @@ BinStream &operator<<(BinStream &stream, const std::vector<T *> &objects) {
     stream.WriteEndian(&nSize, sizeof(nSize));
     for (T *pElement : objects) {
         const RndObject *pObject = pElement;
-        stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+        stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
     }
     return stream;
 }
@@ -537,7 +537,7 @@ BinStream &operator>>(BinStream &stream, std::vector<T *> &objects) {
     for (T *&pElement : objects) {
         String name;
         stream >> name;
-        if (name.mLength == 0) {
+        if (name.GetLength() == 0) {
             pElement = nullptr;
         } else {
             pElement = dynamic_cast<T *>(TheManager.Find(name.c_str()));

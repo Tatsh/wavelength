@@ -95,7 +95,7 @@ void TnlPath::Segment::Xfm(float flTick, float flTime, Transform *pXfm) const {
     }
     flFrame = mAnim->FilterFrame(flFrame);
 
-    const std::vector<Key<Vector3>> &keys = mAnim->mFramesOwner->mTransKeys;
+    const std::vector<Key<Vector3>> &keys = mAnim->GetFramesOwner()->GetTransKeys();
     const float flFirst = keys.front().frame;
     if (!(flFrame < flFirst)) {
         mAnim->MakeTransform(flFrame, *pXfm, 1);

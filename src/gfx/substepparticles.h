@@ -48,6 +48,17 @@ public:
      */
     void Update(float fFrame, float fTime);
 
+    /** @return The particle system. */
+    RndParticleSys *GetSys() const {
+        return mSys;
+    }
+
+    /** @param pSys The particle system. */
+    void SetSys(RndParticleSys *pSys) {
+        mSys = pSys;
+    }
+
+private:
     RndParticleSys *mSys; /*!< The particle system. */
     float mLastTime;      /*!< The time of the last update, or -1e9 for none. */
     Vector3 mLastPos;     /*!< The world position of the system at the last update. */

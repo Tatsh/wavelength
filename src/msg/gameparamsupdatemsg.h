@@ -86,5 +86,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The settings of the game. */
+    const NetGameParams &GetParams() const {
+        return mParams;
+    }
+
+private:
     NetGameParams mParams; /*!< The settings of the game. */
 };

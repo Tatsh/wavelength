@@ -58,9 +58,9 @@ NetMainPlayersList::NetMainPlayersList(DataArray *pData, const char *pszPanel)
 
 void NetMainPlayersList::UpdateRow(int nRow, int nItem) {
     const LobbyPlayer &player = *ListAt(mPlayers, nItem);
-    SetCellMat(nRow, kColumnRank, FindRankMaterial(player.mRankIcon));
-    SetCellText(nRow, kColumnName, player.mName.c_str());
-    if (player.mMuted != 0) {
+    SetCellMat(nRow, kColumnRank, FindRankMaterial(player.GetRankIcon()));
+    SetCellText(nRow, kColumnName, player.GetName().c_str());
+    if (player.GetMuted() != 0) {
         SetCellText(nRow, kColumnMute, TheLocale.Localize(kMuteToken, true));
     } else {
         SetCellText(nRow, kColumnMute, kNoText);
@@ -89,26 +89,27 @@ void NetMainPlayersList::UpdateCursor() {
     if (player.IsNewbie()) {
         std::strcpy(szRank, TheLocale.Localize(kNewbieToken, true));
     } else {
-        if (player.mRank > 0) {
-            std::sprintf(szRank, kRankFormat, player.mRank);
+        if (player.GetRank() > 0) {
+            std::sprintf(szRank, kRankFormat, player.GetRank());
         } else {
             szRank[0] = kNoText[0];
         }
-        if (player.mRank == kRankUnknown) {
-            player.mRank = kRankRequested;
-            TheNetLobby->AddLadderListener(TheUI.FindPanel(kDetailPanel, false), player.mId);
+        if (player.GetRank() == kRankUnknown) {
+            player.SetRank(kRankRequested);
+            TheNetLobby->AddLadderListener(TheUI.FindPanel(kDetailPanel, false), player.GetId());
         }
     }
     pRank->SetText(FormatString(TheLocale.Localize(kRankToken, true), szRank));
 
     UIComponent *pNet = TheUI.FindComponent(kDetailPanel, kNetComponent, false);
     pNet->SetText(FormatString(TheLocale.Localize(kNetToken, true),
-                               GetConnectionTypeName(player.mConnectionType)));
+                               GetConnectionTypeName(player.GetConnectionType())));
 
     UIComponent *pGames = TheUI.FindComponent(kDetailPanel, kGamesComponent, false);
-    pGames->SetText(FormatString(TheLocale.Localize(kGamesToken, true), player.mGames));
+    pGames->SetText(FormatString(TheLocale.Localize(kGamesToken, true), player.GetGames()));
 
-    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))->SetMat(FindRankMaterial(player.mRankIcon));
+    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))
+        ->SetMat(FindRankMaterial(player.GetRankIcon()));
 }
 
 void NetMainPlayersList::SetPlayers(std::list<LobbyPlayer> *pPlayers, int nSelected) {
@@ -121,8 +122,8 @@ void NetMainPlayersList::SetPlayers(std::list<LobbyPlayer> *pPlayers, int nSelec
 void NetMainPlayersList::SetRank(int nAccount, int nRank) {
     int nItem = 0;
     for (auto &player : mPlayers) {
-        if (player.mId == nAccount) {
-            player.mRank = nRank;
+        if (player.GetId() == nAccount) {
+            player.SetRank(nRank);
             if (nItem == mSelected) {
                 UpdateCursor();
             }
@@ -136,16 +137,16 @@ AvatarPartSet *NetMainPlayersList::SelectedAvatar() {
     if (mPlayers.empty()) {
         return nullptr;
     }
-    return &ListAt(mPlayers, mSelected)->mAvatar;
+    return &ListAt(mPlayers, mSelected)->GetAvatar();
 }
 
 bool NetMainPlayersList::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (mMuteEnabled != 0 && pMsg->mButton == kPadSquare && pMsg->mPressed != 0) {
+    if (mMuteEnabled != 0 && pMsg->GetButton() == kPadSquare && pMsg->GetPressed() != 0) {
         LobbyPlayer &player = *ListAt(mPlayers, mSelected);
-        if (TheNetLobby->GetAccountId() != player.mId) {
+        if (TheNetLobby->GetAccountId() != player.GetId()) {
             FxMidi::PlaySquare();
-            player.mMuted ^= 1;
-            TheNetLobby->SetMuted(player.mId, player.mMuted != 0);
+            player.SetMuted(player.GetMuted() ^ 1);
+            TheNetLobby->SetMuted(player.GetId(), player.GetMuted() != 0);
             UpdateRow(mCursorRow, mSelected);
         } else {
             FxMidi::PlayWrong();

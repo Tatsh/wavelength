@@ -10,8 +10,8 @@ void LadderPositionFastTask::OnStart() {
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
-    request.accountId = mPlayer->mId;
-    request.statValue = mPlayer->mRating;
+    request.accountId = mPlayer->GetId();
+    request.statValue = mPlayer->GetRating();
     const int nError = rtMediusLadderPositionFast(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1868, nError);
@@ -37,7 +37,7 @@ void LadderPositionFastTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS) {
-        pTask->mPlayer->mRank = pResponse->rank;
+        pTask->mPlayer->SetRank(pResponse->rank);
     }
     pTask->Finish(true, 0);
 }

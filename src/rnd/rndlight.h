@@ -240,6 +240,22 @@ public:
      */
     static int sRev;
 
+    /** @return The colour. */
+    const Color &GetColor() const {
+        return mColor;
+    }
+
+    /** @return The range. */
+    float GetRange() const {
+        return mRange;
+    }
+
+    /** @return The Type. */
+    int GetType() const {
+        return mType;
+    }
+
+private:
     Color mColor;          /*!< The colour. */
     float mInnerAng;       /*!< The angle of full light of a spot light. */
     float mOuterAng;       /*!< The angle a spot light ends at. */

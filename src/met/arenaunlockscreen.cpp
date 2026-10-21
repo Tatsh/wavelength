@@ -25,7 +25,7 @@ void ArenaUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UILabel *pLabel = dynamic_cast<UILabel *>(TheUI.FindComponent("s_unlock_arena", "03", false));
     const String arena(TheMetagame.ArenaName(arenas[mCount - 1]));
     pLabel->SetText(FormatString(TheLocale.Localize("unlock_arena", true), arena.c_str()));
-    pLabel->mText->UpdateCursors();
+    pLabel->GetText()->UpdateCursors();
     mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find("s_unlock_arena.view")));
 }
 

@@ -97,6 +97,7 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+private:
     int mPad;   /*!< The controller. */
     int mStick; /*!< The stick, 0 for the left one. */
     float mX;   /*!< The horizontal position, from -1 to 1. */

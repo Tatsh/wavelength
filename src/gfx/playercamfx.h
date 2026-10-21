@@ -146,6 +146,32 @@ public:
      */
     void SetBlend(float flBlend);
 
+    /** @return The camera the algorithm places. */
+    const Transform &GetCamera() const {
+        return mCamera;
+    }
+
+    /** @return The camera after the pull back and the intro. */
+    const Transform &GetView() const {
+        return mView;
+    }
+
+    /** @return The pull back that scales sPullBack. */
+    float GetPullBackLevel() const {
+        return mPullBackLevel;
+    }
+
+    /** @return Whether the far pull back is selected. */
+    int GetZoomedOut() const {
+        return mZoomedOut;
+    }
+
+    /** @return The jiggle across the screen. */
+    const Vector3 *GetScreenJiggle() const {
+        return &mScreenJiggle;
+    }
+
+private:
     int mPlayer;                        /*!< The player the camera follows. */
     int mSkipIntro;                     /*!< Whether the intro is not played. */
     RndTransformable *mFx;              /*!< The jiggle transformable, `tnl cam fx1`. */
@@ -156,7 +182,7 @@ public:
     Transform mCamera;                  /*!< The camera the algorithm places. */
     Transform mView;                    /*!< The camera after the pull back and the intro. */
     ATanInterpolator mPullBackCurve;    /*!< The pull back over song time. */
-    float mPullBackLevel;               /*!< The pull back, which scales sPullBack. */
+    float mPullBackLevel;               /*!< The pull back that scales sPullBack. */
     int mPullingBack;                   /*!< Whether mPullBackCurve runs. */
     float mZoom;                        /*!< The pull back as a multiple of the far one, or 0. */
     int mZoomedOut;                     /*!< Whether the far pull back is selected. */
@@ -176,7 +202,6 @@ public:
     Algorithm mBlendAlgorithm;                        /*!< The second algorithm, or null. */
     float mBlend;                                     /*!< The blend towards mBlendAlgorithm. */
 
-private:
     /**
      * Play the intro fly-in at a tick.
      *

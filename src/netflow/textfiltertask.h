@@ -51,10 +51,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusTextFilterResponse *pResponse);
 
-    String *mText;     /*!< The text. */
-    String *mFiltered; /*!< Receives the filtered text. */
-    int mReplaceStars; /*!< Non-zero to write `#` for each `*` of the filtered text. */
-
 protected:
     /**
      * Send the request.
@@ -63,4 +59,9 @@ protected:
      * @ghidraAddress PAL: 0x0026c9c8
      */
     void OnStart() override;
+
+private:
+    String *mText;     /*!< The text. */
+    String *mFiltered; /*!< Receives the filtered text. */
+    int mReplaceStars; /*!< Non-zero to write `#` for each `*` of the filtered text. */
 };

@@ -74,7 +74,7 @@ void LoadNetConfigsScreen::OnNetConfigsListed(int nStatus, std::list<InetConfig>
     const String text(
         FormatString(TheLocale.Localize(pszToken, true), TheMCManager.GetSlotName(kFirstSlot)));
     auto *pError = dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-    pError->mMessage = text.c_str();
+    pError->SetMessage(text.c_str());
     TheUI.GotoScreen(pError);
 }
 
@@ -86,7 +86,7 @@ bool LoadNetConfigsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool LoadNetConfigsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         const std::list<InetConfig> noConfigs;
         FindConfigScreen()->SetConfigs(noConfigs);
         TheMCManager.ListNetConfigs(this, mSlot);

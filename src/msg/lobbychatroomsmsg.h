@@ -80,5 +80,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The chat rooms. */
+    std::list<NetChatroomInfo> *GetChatrooms() const {
+        return mChatrooms;
+    }
+
+private:
     std::list<NetChatroomInfo> *mChatrooms; /*!< The chat rooms. */
 };

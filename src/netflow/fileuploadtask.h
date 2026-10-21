@@ -45,14 +45,6 @@ public:
                            int nSize,
                            const rtMediusFileTransferResponse *pResponse);
 
-    String *mName;   /*!< The file. */
-    char **mBuffer;  /*!< The buffer. */
-    int *mSize;      /*!< The size of the buffer in bytes. */
-    int mDone;       /*!< Non-zero once the last part was sent. */
-    float mPolls;    /*!< The polls since the start. */
-    float mRate;     /*!< The bytes sent per poll. */
-    float mProgress; /*!< The part reported, from 0 to 1. */
-
 protected:
     /**
      * Send the request.
@@ -69,4 +61,13 @@ protected:
      * @ghidraAddress PAL: 0x002708e0
      */
     void OnPoll() override;
+
+private:
+    String *mName;   /*!< The file. */
+    char **mBuffer;  /*!< The buffer. */
+    int *mSize;      /*!< The size of the buffer in bytes. */
+    int mDone;       /*!< Non-zero once the last part was sent. */
+    float mPolls;    /*!< The polls since the start. */
+    float mRate;     /*!< The bytes sent per poll. */
+    float mProgress; /*!< The part reported, from 0 to 1. */
 };

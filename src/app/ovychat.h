@@ -202,6 +202,14 @@ public:
         return mLines;
     }
 
+    /** @return `HUDnr_chat_mask.mesh`, the drawing of the chat. */
+    RndDrawable *GetDrawable() const {
+        return mDrawable;
+    }
+
+private:
+    std::list<std::unique_ptr<Line>> mLines; /*!< The lines, from the bottom row up. */
+
     std::vector<float> mRows;       /*!< The position of each row. */
     std::list<PendingMsg> mPending; /*!< The lines that wait for the top of the panel. */
     RndDrawable *mDrawable;         /*!< `HUDnr_chat_mask.mesh`, the drawing of the chat. */
@@ -217,7 +225,4 @@ public:
     float mLastTime;                /*!< The time of the last poll, or -1e9. */
     float mTimeout;                 /*!< `chat_timeout`, in milliseconds. */
     int mLocalPlayer;               /*!< The first player on this console. */
-
-private:
-    std::list<std::unique_ptr<Line>> mLines; /*!< The lines, from the bottom row up. */
 };

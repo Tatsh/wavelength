@@ -80,6 +80,7 @@ public:
      */
     void ShowLetters(int nCount, bool bSetFonts);
 
+private:
     int mLitCount;                    /*!< The number of lit letters. */
     RndView *mView;                   /*!< `HUDd letters <n>.view`. */
     RndText *mLetters[kNumLetters];   /*!< The letters. */

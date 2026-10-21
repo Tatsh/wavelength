@@ -82,7 +82,7 @@ bool NetDoDownloadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetDoDownloadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         ShowProgress(0.0f);
         TheNetLobby->DownloadRemix(this, mFile.c_str());
     }
@@ -91,8 +91,8 @@ bool NetDoDownloadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg
 
 #ifdef VIDEO_STANDARD_PAL
 bool NetDoDownloadScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
-    if (pMsg->mStatus == RepoRemixStatusMsg::kStatusProgress) {
-        ShowProgress(pMsg->mProgress);
+    if (pMsg->GetStatus() == RepoRemixStatusMsg::kStatusProgress) {
+        ShowProgress(pMsg->GetProgress());
     }
     if (std::strcmp(mName, kDownloadToolScreen) == 0 ||
         std::strcmp(mName, kPreviewRemixScreen) == 0 ||
@@ -100,11 +100,11 @@ bool NetDoDownloadScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
         return false;
     }
     // Yes, the binary sends a progress report of the other screens to the error screen as well.
-    if (pMsg->mStatus == RepoRemixStatusMsg::kStatusDone) {
+    if (pMsg->GetStatus() == RepoRemixStatusMsg::kStatusDone) {
         SaveRemixScreen *pSave =
             dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen(kSaveScreen, false));
-        pSave->mRemixName = mRemixName.c_str();
-        pSave->mOverwriteStatus = kNoOverwrite;
+        pSave->SetRemixName(mRemixName.c_str());
+        pSave->SetOverwriteStatus(kNoOverwrite);
         TheUI.GotoScreen(pSave);
     } else {
         TheUI.GotoScreen(kErrorScreen);
@@ -113,7 +113,7 @@ bool NetDoDownloadScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
 }
 
 bool NetDoDownloadScreen::HandleRemixDownload(RemixDownloadMsg *pMsg) {
-    if (pMsg->mResult != kDownloadSucceeded) {
+    if (pMsg->GetResult() != kDownloadSucceeded) {
         auto *pUploadTool =
             dynamic_cast<NetUploadToolScreen *>(TheUI.FindScreen(kUploadToolScreen, false));
         if (mUploadIndex != kNoUploadIndex) {
@@ -127,8 +127,8 @@ bool NetDoDownloadScreen::HandleRemixDownload(RemixDownloadMsg *pMsg) {
         auto *pRepos =
             dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false));
         NetRepoRemix remix;
-        remix.mFile = pMsg->mName;
-        remix.mNote = pMsg->mNote;
+        remix.mFile = pMsg->GetName();
+        remix.mNote = pMsg->GetNote();
         remix.mInfo = *TheGameDb->GetRemixInfo();
         pRepos->AddRemix(remix);
         TheUI.GotoScreen(kReposToolScreen);
@@ -147,14 +147,14 @@ bool NetDoDownloadScreen::HandleRemixDownload(RemixDownloadMsg *pMsg) {
 }
 #else
 bool NetDoDownloadScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
-    if (pMsg->mStatus == RepoRemixStatusMsg::kStatusDone) {
+    if (pMsg->GetStatus() == RepoRemixStatusMsg::kStatusDone) {
         SaveRemixScreen *pSave =
             dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen(kSaveScreen, false));
-        pSave->mRemixName = mRemixName.c_str();
-        pSave->mOverwriteStatus = kNoOverwrite;
+        pSave->SetRemixName(mRemixName.c_str());
+        pSave->SetOverwriteStatus(kNoOverwrite);
         TheUI.GotoScreen(pSave);
-    } else if (pMsg->mStatus == RepoRemixStatusMsg::kStatusProgress) {
-        ShowProgress(pMsg->mProgress);
+    } else if (pMsg->GetStatus() == RepoRemixStatusMsg::kStatusProgress) {
+        ShowProgress(pMsg->GetProgress());
     } else {
         TheUI.GotoScreen(kErrorScreen);
     }

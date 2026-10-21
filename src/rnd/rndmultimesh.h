@@ -163,8 +163,20 @@ public:
      */
     static int sLoadRev;
 
-    RndMesh *mMesh;                   /*!< The mesh to draw. */
-    std::list<Transform> mTransforms; /*!< The transform of each instance, as the mesh's local. */
+    /** @return The mesh to draw. */
+    RndMesh *GetMesh() const {
+        return mMesh;
+    }
+
+    /** @return The transform of each instance, as the mesh's local. */
+    const std::list<Transform> &GetTransforms() const {
+        return mTransforms;
+    }
+
+    /** @return The transform of each instance, as the mesh's local, for writing. */
+    std::list<Transform> &GetTransforms() {
+        return mTransforms;
+    }
 
 protected:
     /**
@@ -186,6 +198,11 @@ protected:
      * @ghidraAddress PAL: 0x00244050
      */
     void ReleaseRefs();
+
+    RndMesh *mMesh;                   /*!< The mesh to draw. */
+    std::list<Transform> mTransforms; /*!< The transform of each instance, as the mesh's local. */
+
+private:
 };
 
 /**

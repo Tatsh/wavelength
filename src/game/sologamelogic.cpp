@@ -113,7 +113,7 @@ inline int CheckpointBars() {
         TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         return 0;
     }
-    return TheGameConfig->mCheckpointBars;
+    return TheGameConfig->GetCheckpointBars();
 }
 
 // Shows the winner movie on alternate periods of the victory lap.
@@ -152,8 +152,8 @@ void SoloGameLogic::CheckpointTextCmd::Execute() {
 
 SoloGameLogic::SoloGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
     : GameLogic(pSong, pConfig, nSeed),
-      mJuice(TheGameConfig->mInitialJuice[TheGameDb->GetSkillLevel()]), mPlayer(mLocalPlayers[0]),
-      mTickOffset(0), mTimeOffset(0.0f), mBankSlot(-1),
+      mJuice(TheGameConfig->GetInitialJuice()[TheGameDb->GetSkillLevel()]),
+      mPlayer(mLocalPlayers[0]), mTickOffset(0), mTimeOffset(0.0f), mBankSlot(-1),
       mFreezeCmd(NewMemFunCommand(this, &SoloGameLogic::FreezeAfterLoss)),
       mRestartCmd(NewMemFun1Command(this, &SoloGameLogic::Restart, true)),
       mIntroCmd(NewMemFunCommand(&TheGfxManager, &GfxManager::StartIntro)),
@@ -195,7 +195,7 @@ SoloGameLogic::SoloGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
         }
     }
 
-    mCaptureJuice = TheGameConfig->mCaptureJuice[TheGameDb->GetSkillLevel()];
+    mCaptureJuice = TheGameConfig->GetCaptureJuice()[TheGameDb->GetSkillLevel()];
     ScriptFunction::Register(OnJuice, kJuiceCommand, this);
     ScriptFunction::Register(OnWinCheat, kWinCheatCommand, this);
     ScriptFunction::Register(OnWinSequence, kWinSequenceCommand, this);
@@ -210,7 +210,7 @@ SoloGameLogic::~SoloGameLogic() {
 }
 
 void SoloGameLogic::OnStart() {
-    mJuice.Set(TheGameConfig->mInitialJuice[TheGameDb->GetSkillLevel()]);
+    mJuice.Set(TheGameConfig->GetInitialJuice()[TheGameDb->GetSkillLevel()]);
     mPendingJuice = 0.0f;
     if (TheGfxManager.GetOption()) {
         TheControllerDisplay->SetOption(true);
@@ -358,7 +358,7 @@ void SoloGameLogic::HandleInput(const BtnEvent<3> &event) {
 }
 
 void SoloGameLogic::HandleInput(const PlayNoteEvent &event) {
-    if (!mDialogOpen || !event.mState) {
+    if (!mDialogOpen || !event.GetState()) {
         GameLogic::HandleInput(event);
     }
 }
@@ -410,11 +410,11 @@ void SoloGameLogic::OnPhraseMissed(Track *pTrack) {
     if (TheGameDb->GetPracticeMode()) {
         return;
     }
-    int nTrack = pTrack->mIndex;
+    int nTrack = pTrack->GetIndex();
     if (mFailingTrack == nTrack) {
         Finish(false);
     }
-    if (mPlayer->GetTrack()->mIndex == nTrack) {
+    if (mPlayer->GetTrack()->GetIndex() == nTrack) {
         CommitPendingJuice();
     }
 }
@@ -471,7 +471,7 @@ void SoloGameLogic::OnBar(int nBar) {
         (mSectionStartBar == 0 || mSectionStartBar + nCheckpointBars < nBar) &&
         mFailingTrack == kNoTrack) {
 #endif
-        unsigned int nTrack = mPlayer->GetTrack()->mIndex;
+        unsigned int nTrack = mPlayer->GetTrack()->GetIndex();
         int nStartTick;
         int nEndTick;
         if (nTrack < mCatchTracks.size() &&
@@ -516,8 +516,8 @@ void SoloGameLogic::OnSection() {
 
     const GameConfig *pConfig = TheGameConfig;
     float fCaptureShare =
-        pConfig->mCaptureJuice[nSkillLevel] / pConfig->mBarsPerCapture[nSkillLevel];
-    int nBars = mNextSectionBar - mSectionStartBar - pConfig->mCheckpointBars;
+        pConfig->GetCaptureJuice()[nSkillLevel] / pConfig->GetBarsPerCapture()[nSkillLevel];
+    int nBars = mNextSectionBar - mSectionStartBar - pConfig->GetCheckpointBars();
     float fBonus = std::max(kMinEnergyBonus, static_cast<float>(nBars) * (1.0f - fCaptureShare));
     mPendingJuice += fBonus;
     CommitPendingJuice();
@@ -594,8 +594,8 @@ bool SoloGameLogic::DeployFreestyle(Player *pPlayer) {
     if (bDeployed) {
         int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
         int nDurationBars = TheGameDb->GetCommunity() == GameDb::kCommunitySolo ?
-                                TheGameConfig->mFreestyleDurationBarsSolo :
-                                TheGameConfig->mFreestyleDurationBarsMultiNet;
+                                TheGameConfig->GetFreestyleDurationBarsSolo() :
+                                TheGameConfig->GetFreestyleDurationBarsMultiNet();
         int nEndBar = std::min(nBar + nDurationBars + kFreestyleExtraBars, mNumBars);
         mPossibleCaptureBars += static_cast<int>(mCatchTracks.size()) * (nEndBar - nBar);
     }
@@ -760,7 +760,7 @@ void SoloGameLogic::Restart(bool bRestartIntro) {
     int nSongTicks = mNumBars * mTicksPerBar;
     int nTick = TheSongScheduler.GetTick();
     mTickOffset = nTick % nSongTicks - nTick;
-    mFreestyleTrack->mTickOffset = mTickOffset;
+    mFreestyleTrack->SetTickOffset(mTickOffset);
     const float *pfOffsetMsPerTick = mSong->GetMsPerTick();
     mState = kStateRunning;
     mTimeOffset = static_cast<float>(mTickOffset) * *pfOffsetMsPerTick;

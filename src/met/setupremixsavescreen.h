@@ -135,8 +135,11 @@ public:
      */
     bool HandleTextEntryInvalid(UITextEntryInvalidMsg *pMsg);
 
+protected:
+    int mPlayer; /*!< The player who saves, from 1. */
+
+private:
     int mReserved74[3]; // +0x74, not yet recovered.
     const char *mPanel; /*!< The `band_pic_panel` entry of the description. */
-    int mPlayer;        /*!< The player who saves, from 1. */
     String mTypedTitle; /*!< The text the keyboard returned, until the next entry takes it. */
 };

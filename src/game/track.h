@@ -90,6 +90,17 @@ public:
      */
     virtual void HandleInput(Player *pPlayer, const BtnEvent<10> &event) = 0;
 
+    /** @return The track's index in the song. */
+    int GetIndex() const {
+        return mIndex;
+    }
+
+    /** @return The player on the track, or null. */
+    Player *GetPlayer() const {
+        return mPlayer;
+    }
+
+protected:
     int mIndex;      /*!< The track's index in the song. +0x00 */
     Player *mPlayer; /*!< The player on the track, or null. +0x04 */
 };

@@ -135,6 +135,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The session order of the player bumped. */
+    int GetNetOrder() const {
+        return mNetOrder;
+    }
+
+    /** @return The track the player was moved to. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+private:
     int mNetOrder; /*!< The session order of the player bumped. */
     int mTrack;    /*!< The track the player was moved to. */
 };

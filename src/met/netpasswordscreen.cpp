@@ -34,7 +34,7 @@ void NetPasswordScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     UIComponent *pSave = mFocusPanel->FindComponent(kSaveButton, false);
     mSavePasswordInitial =
-        std::strcmp(TheGameDb->GetProfile(kLocalPlayer)->mPassword.c_str(), kNoPassword) != 0;
+        std::strcmp(TheGameDb->GetProfile(kLocalPlayer)->GetPassword().c_str(), kNoPassword) != 0;
     mSavePassword = mSavePasswordInitial;
     LabelSaveChoice(pSave);
 }

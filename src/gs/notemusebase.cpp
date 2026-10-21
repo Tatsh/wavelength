@@ -67,23 +67,23 @@ NoteMuseBase::~NoteMuseBase() {
 
 void NoteMuseBase::Play(Scheduler *pScheduler) {
     NoteCommand *pCmd = mCmd.operator->();
-    const int nDuration = pCmd->mMuse->mDuration;
+    const int nDuration = pCmd->GetMuse()->mDuration;
     pCmd->Cancel();
     pScheduler->PostIn(pCmd, 0, false);
     pScheduler->PostIn(pCmd, nDuration, false);
-    pCmd->mScheduler = pScheduler;
+    pCmd->SetScheduler(pScheduler);
 }
 
 void NoteMuseBase::PlayFrom(Scheduler *pScheduler, int nOffset) {
     NoteCommand *pCmd = mCmd.operator->();
-    const int nDuration = pCmd->mMuse->mDuration;
+    const int nDuration = pCmd->GetMuse()->mDuration;
     if (nOffset > 0) {
         return;
     }
     pCmd->Cancel();
     pScheduler->PostIn(pCmd, -nOffset, false);
     pScheduler->PostIn(pCmd, nDuration - nOffset, false);
-    pCmd->mScheduler = pScheduler;
+    pCmd->SetScheduler(pScheduler);
 }
 
 void NoteMuseBase::PlayWindow(Scheduler *pScheduler, int nStart, int nEnd) {
@@ -98,7 +98,7 @@ void NoteMuseBase::Stop() {
 }
 
 bool NoteMuseBase::IsPlaying() {
-    return mCmd.Get()->mScheduler != nullptr;
+    return mCmd.Get()->GetScheduler() != nullptr;
 }
 
 void NoteMuseBase::SetNoteCB(NoteCB *pNoteCB) {

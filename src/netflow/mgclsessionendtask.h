@@ -34,8 +34,6 @@ public:
      */
     static void OnResponse(int nConnection, int nType, int nSize, const rtMgclResponse *pResponse);
 
-    float mDeadline; /*!< When the step finishes without an answer, from SystemMs(). */
-
 protected:
     /**
      * Report the end of the game and send the request.
@@ -52,4 +50,7 @@ protected:
      * @ghidraAddress PAL: 0x00264768
      */
     void OnPoll() override;
+
+private:
+    float mDeadline; /*!< When the step finishes without an answer, from SystemMs(). */
 };

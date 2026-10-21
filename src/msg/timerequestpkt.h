@@ -128,5 +128,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The clock of the requesting console when it sent the packet. */
+    float GetSendTime() const {
+        return mSendTime;
+    }
+
+private:
     float mSendTime; /*!< The clock of the requesting console when it sent the packet. */
 };

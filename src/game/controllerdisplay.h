@@ -87,10 +87,6 @@ public:
      */
     void RefreshLabels();
 
-    int mShowCount; /*!< The requests to show the display. */
-    int mOption;    /*!< Nonzero in the mode that hides the buttons. */
-    int mHighlight; /*!< Nonzero while the buttons are highlighted. */
-
 private:
     /**
      * Show the button of every lane while the display is requested, or hide it.
@@ -110,6 +106,10 @@ private:
      * @ghidraAddress PAL: 0x0014c7d8
      */
     static const char *GetButtonGlyph(InputMap *pMap, int nAction);
+
+    int mShowCount; /*!< The requests to show the display. */
+    int mOption;    /*!< Nonzero in the mode that hides the buttons. */
+    int mHighlight; /*!< Nonzero while the buttons are highlighted. */
 };
 
 /**

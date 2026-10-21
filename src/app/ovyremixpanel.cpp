@@ -52,14 +52,14 @@ OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, RndTransformable *pPare
     Load(chHud, prefix.c_str(), nPlayer, pParent);
 
     const Vector3 &position = sPositions[nPosition];
-    mPanel->mDirty = 1;
-    mPanel->mLocalXfm.mTranslation = position;
+    mPanel->SetDirty(1);
+    mPanel->GetLocalXfm().mTranslation = position;
 
     auto *pSlideAnim =
         dynamic_cast<RndTransAnim *>(Clone(FormatString("%s.tnm", prefix.c_str()), nPlayer));
     pSlideAnim->SetTrans(mPanel);
     String unused(FormatString("HUD%cr", chHud)); // Yes, the binary builds this and never reads it.
-    SetObjects(pSlideAnim->mName.c_str(), nullptr, false);
+    SetObjects(pSlideAnim->GetName(), nullptr, false);
 
     mSubPanels.push_back(
         std::make_unique<OvyRemixSubPanel>(GfxManager::kRemixSubPanelChorus, chHud, nPlayer));
@@ -75,7 +75,7 @@ OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, RndTransformable *pPare
             std::make_unique<OvyRemixSubPanel>(GfxManager::kRemixSubPanelTempo, chHud, nPlayer));
     }
     for (const auto &pSubPanel : mSubPanels) {
-        mPanel->AddTrans(pSubPanel->mPanel);
+        mPanel->AddTrans(pSubPanel->GetPanel());
     }
 }
 
@@ -88,7 +88,7 @@ void OvyRemixPanel::Poll(float fDelta) {
         pSubPanel->Poll(fDelta);
     }
     if (mNextSubPanel != mShownSubPanel &&
-        mShownSubPanel->mSlide.GetValue() == OvyRemixSubPanel::kHiddenFrame) {
+        mShownSubPanel->GetSlide().GetValue() == OvyRemixSubPanel::kHiddenFrame) {
         mShownSubPanel = mNextSubPanel;
         if (mNextSubPanel != nullptr) {
             mNextSubPanel->Show(true);

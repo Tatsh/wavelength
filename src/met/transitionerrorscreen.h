@@ -54,5 +54,11 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+    /** @param pszMessage The message the screen shows. */
+    void SetMessage(const char *pszMessage) {
+        mMessage = pszMessage;
+    }
+
+private:
     String mMessage; /*!< The message the screen shows. */
 };

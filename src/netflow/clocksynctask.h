@@ -73,9 +73,6 @@ public:
      */
     void FinishSync();
 
-    std::vector<Sample> mSamples; /*!< The answers. */
-    int mCountdown;               /*!< The polls until the next request. */
-
 protected:
     /**
      * Forget the answers, and ask at the next poll.
@@ -92,4 +89,8 @@ protected:
      * @ghidraAddress PAL: 0x00265788
      */
     void OnPoll() override;
+
+private:
+    std::vector<Sample> mSamples; /*!< The answers. */
+    int mCountdown;               /*!< The polls until the next request. */
 };

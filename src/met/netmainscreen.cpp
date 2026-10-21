@@ -151,12 +151,12 @@ bool NetMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool NetMainScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
         UIPanel *pFocus = TheUI.FocusPanel();
-        const int nButton = pMsg->mButton;
+        const int nButton = pMsg->GetButton();
         if (nButton == kPadTriangle && IsNamed(pFocus->GetName(), kMainPanel)) {
             TheUI.GotoScreen(kLeaveScreen);
         } else if (nButton == kPadTriangle && IsNamed(pFocus->GetName(), kLobbiesScreen)) {
@@ -187,7 +187,7 @@ bool NetMainScreen::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
     if (pScreen != nullptr && IsNamed(pScreen->GetName(), kJoinScreen) &&
         IsNamed(pScreen->GetFocusPanel()->GetName(), kJoinPanel)) {
         static_cast<NetMainLaunchpadsPanel *>(TheUI.FindPanel(kJoinPanel, false))
-            ->ShowPlayers(pMsg->mPlayers, pMsg->mLaunchpad);
+            ->ShowPlayers(pMsg->GetPlayers(), pMsg->GetLaunchpad());
     }
     return false;
 }

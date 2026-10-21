@@ -49,9 +49,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusFileDeleteResponse *pResponse);
 
-    String *mName; /*!< The file. */
-    int *mEnabled; /*!< The word that enables the deletion when non-zero. */
-
 protected:
     /**
      * Send the request, or finish when the deletion is not enabled.
@@ -60,4 +57,8 @@ protected:
      * @ghidraAddress PAL: 0x00270f10
      */
     void OnStart() override;
+
+private:
+    String *mName; /*!< The file. */
+    int *mEnabled; /*!< The word that enables the deletion when non-zero. */
 };

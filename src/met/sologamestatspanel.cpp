@@ -27,5 +27,5 @@ void SoloGameStatsPanel::Refresh() {
 void SoloGameStatsPanel::SetLabel(const char *pszComponent, const char *pszText) {
     UILabel *pLabel = dynamic_cast<UILabel *>(FindComponent(pszComponent, false));
     pLabel->SetText(pszText);
-    pLabel->mText->UpdateCursors();
+    pLabel->GetText()->UpdateCursors();
 }

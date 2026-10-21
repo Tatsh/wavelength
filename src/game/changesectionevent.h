@@ -43,6 +43,27 @@ public:
      */
     void Load(BinStream &stream);
 
+    /** @return The player index. */
+    unsigned char GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @param nPlayer The player index. */
+    void SetPlayer(unsigned char nPlayer) {
+        mPlayer = nPlayer;
+    }
+
+    /** @return The direction of the change, 0 or 1. */
+    int GetDirection() const {
+        return mDirection;
+    }
+
+    /** @param nDirection The direction of the change, 0 or 1. */
+    void SetDirection(int nDirection) {
+        mDirection = nDirection;
+    }
+
+private:
     unsigned char mPlayer; /*!< The player index. */
     int mDirection;        /*!< The direction of the change, 0 or 1. */
 };

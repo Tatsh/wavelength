@@ -57,26 +57,26 @@ TnlFire::Emitter::Emitter() : mSys(nullptr) {
 
 TnlFire::Emitter::~Emitter() {
     if (mSys != nullptr) {
-        mSys->mEmitRate.x = mEmitRateLow;
-        mSys->mEmitRate.y = mEmitRateHigh;
-        mSys->mForce = mForce;
+        mSys->GetEmitRate().x = mEmitRateLow;
+        mSys->GetEmitRate().y = mEmitRateHigh;
+        mSys->GetForce() = mForce;
     }
 }
 
 void TnlFire::Emitter::Init(RndParticleSys *pSys, GfxTunnel *) {
     mSys = pSys;
     const float flScale = sPanelSize;
-    mEmitRateLow = pSys->mEmitRate.x;
-    mEmitRateHigh = pSys->mEmitRate.y;
-    mForce.x = pSys->mForce.x * flScale;
-    mForce.z = pSys->mForce.z * flScale;
-    mForce.y = pSys->mForce.y * flScale;
-    mSys->mSize.x *= flScale;
-    mSys->mSize.y *= flScale;
-    mSys->mSpeed.x *= flScale;
-    mSys->mSpeed.y *= flScale;
-    Vector3 &low = mSys->mPosLow;
-    Vector3 &high = mSys->mPosHigh;
+    mEmitRateLow = pSys->GetEmitRate().x;
+    mEmitRateHigh = pSys->GetEmitRate().y;
+    mForce.x = pSys->GetForce().x * flScale;
+    mForce.z = pSys->GetForce().z * flScale;
+    mForce.y = pSys->GetForce().y * flScale;
+    mSys->GetSize().x *= flScale;
+    mSys->GetSize().y *= flScale;
+    mSys->GetSpeed().x *= flScale;
+    mSys->GetSpeed().y *= flScale;
+    Vector3 &low = mSys->GetPosLow();
+    Vector3 &high = mSys->GetPosHigh();
     low.x *= flScale;
     low.y *= flScale;
     low.z *= flScale;
@@ -94,11 +94,11 @@ void TnlFire::Emitter::SetColor(const Color *pColor) {
     }
     Color color = *pColor;
     color.a = 1.0f;
-    mSys->mStartColorLow = Color{1.0f, 1.0f, 1.0f, 1.0f};
-    mSys->mStartColorHigh = color;
+    mSys->GetStartColorLow() = Color{1.0f, 1.0f, 1.0f, 1.0f};
+    mSys->GetStartColorHigh() = color;
     color.a = 0.0f;
-    mSys->mEndColorLow = color;
-    mSys->mEndColorHigh = color;
+    mSys->GetEndColorLow() = color;
+    mSys->GetEndColorHigh() = color;
 }
 
 void TnlFire::Emitter::Rotate(const Vector3 *pBasis) {
@@ -112,7 +112,7 @@ void TnlFire::Emitter::Rotate(const Vector3 *pBasis) {
     force.x = (x.x * mForce.x) + (y.x * mForce.y) + (z.x * mForce.z);
     force.y = (x.y * mForce.x) + (y.y * mForce.y) + (z.y * mForce.z);
     force.z = (x.z * mForce.x) + (y.z * mForce.y) + (z.z * mForce.z);
-    mSys->mForce = force;
+    mSys->GetForce() = force;
 }
 
 void TnlFire::Emitter::Start() {
@@ -120,16 +120,16 @@ void TnlFire::Emitter::Start() {
         return;
     }
     mSys->FreeAllParticles();
-    mSys->mEmitRate.y = mEmitRateHigh;
-    mSys->mEmitRate.x = mEmitRateLow;
+    mSys->GetEmitRate().y = mEmitRateHigh;
+    mSys->GetEmitRate().x = mEmitRateLow;
 }
 
 void TnlFire::Emitter::Stop() {
     if (mSys == nullptr) {
         return;
     }
-    mSys->mEmitRate.y = 0.0f;
-    mSys->mEmitRate.x = 0.0f;
+    mSys->GetEmitRate().y = 0.0f;
+    mSys->GetEmitRate().x = 0.0f;
 }
 
 TnlFire::ChunkModel::~ChunkModel() = default;
@@ -183,13 +183,13 @@ void TnlFire::Chunk::Spawn(ChunkModel *pModel,
     mXfm.mBasisZ.z = pCellXfm->mBasisZ.z * scale.z;
     mXfm.mBasisZ.y = pCellXfm->mBasisZ.y * scale.z;
 
-    std::list<Transform> &instances = pModel->mMultiMesh->mTransforms;
+    std::list<Transform> &instances = pModel->mMultiMesh->GetTransforms();
     instances.splice(instances.begin(), *pFreeXfms, pFreeXfms->begin());
     mInstance = instances.begin();
 }
 
 void TnlFire::Chunk::Reset(std::list<Transform> *pFreeXfms) {
-    pFreeXfms->splice(pFreeXfms->end(), mModel->mMultiMesh->mTransforms, mInstance);
+    pFreeXfms->splice(pFreeXfms->end(), mModel->mMultiMesh->GetTransforms(), mInstance);
     mModel = nullptr;
     mStartTick = kUnsetTick;
 }
@@ -359,8 +359,8 @@ void TnlFire::Update(float flTicks, float) {
     }
     Transform cellXfm;
     mTunnel->GetGeom()->CellXfm(mTrack, &cellXfm, true, true, flHead, kMiddle);
-    mView->mLocalXfm = cellXfm;
-    mView->mDirty = 1;
+    mView->GetLocalXfm() = cellXfm;
+    mView->SetDirty(1);
 
     while (mNextChunkTick <= flHead) {
         const std::vector<float>::iterator gem =

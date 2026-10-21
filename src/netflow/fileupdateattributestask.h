@@ -47,9 +47,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusFileResponse *pResponse);
 
-    String *mName;       /*!< The file. */
-    int mReserved10 = 0; // +0x10, the constructor clears it and the step does not read it.
-
 protected:
     /**
      * Send the request.
@@ -57,4 +54,8 @@ protected:
      * @ghidraAddress PAL: 0x00270e00
      */
     void OnStart() override;
+
+private:
+    String *mName;       /*!< The file. */
+    int mReserved10 = 0; // +0x10, the constructor clears it and the step does not read it.
 };

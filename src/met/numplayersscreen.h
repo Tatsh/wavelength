@@ -96,5 +96,6 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
+private:
     int mMultitap; /*!< Whether a multitap was connected when the buttons were last updated. */
 };

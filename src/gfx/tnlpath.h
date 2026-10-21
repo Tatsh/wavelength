@@ -114,6 +114,18 @@ public:
     void Xfm(float flTick, float flTime, Transform *pXfm);
 
     /** The segment that is blended out, then the segment in use. */
+
+    /**
+     * Report one of the two segments.
+     *
+     * @param nSegment The segment, 0 or 1.
+     * @return The segment.
+     */
+    const Segment &GetSegment(int nSegment) const {
+        return mSegments[nSegment];
+    }
+
+private:
     Segment mSegments[2];
 
     /** The blend from the first segment to the second over ticks. */

@@ -503,7 +503,7 @@ void RemixLogic::SetPaused(bool bPaused, int nPad, int nReason) {
             TheSongScheduler.Resume();
         }
         if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
-            TheGfxManager.SetFreqSize(kFirstPlayer, TheGameDb->GetOptions()->mFreqSize);
+            TheGfxManager.SetFreqSize(kFirstPlayer, TheGameDb->GetOptions()->GetFreqSize());
         }
     }
     if (mTutorial != nullptr) {
@@ -642,19 +642,19 @@ void RemixLogic::HandleInput(const RotateEvent &event) {
         return;
     }
     if (mTutorial != nullptr) {
-        if (mTutorial->mRotationEnabled == 0) {
+        if (mTutorial->GetRotationEnabled() == 0) {
             return;
         }
-        if (mTutorial->mRotationLeftAllowed == 0 &&
-            event.mDirection == RotateEvent::kDirectionPrevious) {
+        if (mTutorial->GetRotationLeftAllowed() == 0 &&
+            event.GetDirection() == RotateEvent::kDirectionPrevious) {
             return;
         }
     }
-    const int nPlayer = event.mPlayer;
+    const int nPlayer = event.GetPlayer();
     if (mPlayers[nPlayer]->GetTrack() == mFreestyleTrack.get()) {
         return;
     }
-    if (event.mDirection == RotateEvent::kDirectionNext) {
+    if (event.GetDirection() == RotateEvent::kDirectionNext) {
         mTrackSelector->RotateNext(nPlayer);
     } else {
         mTrackSelector->RotatePrevious(nPlayer);
@@ -664,7 +664,7 @@ void RemixLogic::HandleInput(const RotateEvent &event) {
     }
     UpdateHuds();
     if (mTutorial != nullptr) {
-        mTutorial->NotifyRotate(event.mDirection == RotateEvent::kDirectionNext,
+        mTutorial->NotifyRotate(event.GetDirection() == RotateEvent::kDirectionNext,
                                 mTrackSelector->GetPlayerTrack(kFirstPlayer));
     }
 }
@@ -673,20 +673,20 @@ void RemixLogic::HandleInput(const PlayNoteEvent &event) {
     if (mState != kStatePlaying) {
         return;
     }
-    if (IsInputLocked(event.mState, true)) {
+    if (IsInputLocked(event.GetState(), true)) {
         return;
     }
     if (mPreviewing != 0 && TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         return;
     }
-    if (mTutorial != nullptr && mTutorial->mPitchingEnabled == 0) {
+    if (mTutorial != nullptr && mTutorial->GetPitchingEnabled() == 0) {
         return;
     }
-    const int nPlayer = event.mPlayer;
+    const int nPlayer = event.GetPlayer();
     Player *pPlayer = mPlayers[nPlayer].get();
     bool bOnAssignedTrack = true;
     if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
-        const int nTrack = pPlayer->GetTrack()->mIndex;
+        const int nTrack = pPlayer->GetTrack()->GetIndex();
         if (TheNetTransport->IsHost()) {
             bOnAssignedTrack = nTrack == mNetArbiter->GetTrack(nPlayer);
         } else {
@@ -697,7 +697,7 @@ void RemixLogic::HandleInput(const PlayNoteEvent &event) {
         pPlayer->HandleInput(event);
         mModified = 1;
     }
-    if (event.mState != 0 && mTutorial != nullptr) {
+    if (event.GetState() != 0 && mTutorial != nullptr) {
         mTutorial->NotifyPitch();
     }
 }
@@ -709,10 +709,10 @@ void RemixLogic::HandleInput(const BtnEvent<8> &event) {
     if (IsInputLocked(1, false)) {
         return;
     }
-    if (mTutorial != nullptr && mTutorial->mErasingEnabled == 0) {
+    if (mTutorial != nullptr && mTutorial->GetErasingEnabled() == 0) {
         return;
     }
-    mPlayers[event.mPlayer]->HandleInput(event);
+    mPlayers[event.GetPlayer()]->HandleInput(event);
     mModified = 1;
 }
 
@@ -720,7 +720,7 @@ void RemixLogic::HandleInput(const BtnEvent<3> &event) {
     if (mState != kStatePlaying) {
         return;
     }
-    SetPaused(true, TheGameDb->GetPlayerPad(event.mPlayer), kNotDisconnected);
+    SetPaused(true, TheGameDb->GetPlayerPad(event.GetPlayer()), kNotDisconnected);
 }
 
 void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
@@ -730,22 +730,23 @@ void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
     if (IsInputLocked(1, false)) {
         return;
     }
-    if (mTutorial != nullptr && (mTutorial->mSectionChangeEnabled == 0 || event.mDirection != 0)) {
+    if (mTutorial != nullptr &&
+        (mTutorial->GetSectionChangeEnabled() == 0 || event.GetDirection() != 0)) {
         return;
     }
     if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline && !TheNetTransport->IsHost()) {
         const char *pszFormat = TheLocale.Localize(
-            event.mDirection == 0 ? kNextSectionRequestKey : kPrevSectionRequestKey, true);
+            event.GetDirection() == 0 ? kNextSectionRequestKey : kPrevSectionRequestKey, true);
         (void)ChatMsg::Send(kNoticeChannel,
                             kAllConsoles,
-                            FormatString(pszFormat, TheGameDb->GetPlayerName(event.mPlayer)),
+                            FormatString(pszFormat, TheGameDb->GetPlayerName(event.GetPlayer())),
                             kEchoChat);
         return;
     }
-    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal && event.mPlayer != kFirstPlayer) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal && event.GetPlayer() != kFirstPlayer) {
         return;
     }
-    if (event.mDirection == 0) {
+    if (event.GetDirection() == 0) {
         ++mSectionIndex;
         if (static_cast<unsigned int>(mSectionIndex) >= mPlayableSections.size()) {
             mSectionIndex = 0;
@@ -767,12 +768,12 @@ void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
     QueueSectionChange(mSectionIndex);
     if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         SectionChangePacket packet;
-        packet.mSection = mSectionIndex;
-        packet.mTick = mLoopBar; // Yes, the binary sends the bar the section loops from.
+        packet.SetSection(mSectionIndex);
+        packet.SetTick(mLoopBar); // Yes, the binary sends the bar the section loops from.
         TheNetTransport->Send(packet);
     }
     if (mTutorial != nullptr) {
-        mTutorial->NotifySectionChange(event.mDirection == 0);
+        mTutorial->NotifySectionChange(event.GetDirection() == 0);
     }
 }
 
@@ -784,7 +785,7 @@ void RemixLogic::HandleInput(const BtnEvent<9> &event) {
         return;
     }
     const int nCommunity = TheGameDb->GetCommunity();
-    if (nCommunity == GameDb::kCommunityLocal && event.mPlayer != kFirstPlayer) {
+    if (nCommunity == GameDb::kCommunityLocal && event.GetPlayer() != kFirstPlayer) {
         return;
     }
     if (nCommunity == GameDb::kCommunityOnline && !TheNetTransport->IsHost()) {
@@ -792,11 +793,11 @@ void RemixLogic::HandleInput(const BtnEvent<9> &event) {
             TheLocale.Localize(mPreviewing != 0 ? kEditRequestKey : kPreviewRequestKey, true);
         (void)ChatMsg::Send(kNoticeChannel,
                             kAllConsoles,
-                            FormatString(pszFormat, TheGameDb->GetPlayerName(event.mPlayer)),
+                            FormatString(pszFormat, TheGameDb->GetPlayerName(event.GetPlayer())),
                             kEchoChat);
         return;
     }
-    if (mTutorial != nullptr && mTutorial->mPreviewEnabled == 0) {
+    if (mTutorial != nullptr && mTutorial->GetPreviewEnabled() == 0) {
         return;
     }
     if (mPreviewing != 0) {
@@ -810,20 +811,20 @@ void RemixLogic::HandleInput(const StickEvent<2> &event) {
     if (mState != kStatePlaying) {
         return;
     }
-    if (mTutorial != nullptr && mTutorial->mStick2Enabled == 0) {
+    if (mTutorial != nullptr && mTutorial->GetStick2Enabled() == 0) {
         return;
     }
-    mPlayers[event.mPlayer]->HandleInput(event);
+    mPlayers[event.GetPlayer()]->HandleInput(event);
 }
 
 void RemixLogic::HandleInput(const StickEvent<6> &event) {
     if (mState != kStatePlaying) {
         return;
     }
-    if (mTutorial != nullptr && mTutorial->mStick6Enabled == 0) {
+    if (mTutorial != nullptr && mTutorial->GetStick6Enabled() == 0) {
         return;
     }
-    mPlayers[event.mPlayer]->HandleInput(event);
+    mPlayers[event.GetPlayer()]->HandleInput(event);
 }
 
 void RemixLogic::HandleInput(const BtnEvent<10> &event) {
@@ -833,15 +834,15 @@ void RemixLogic::HandleInput(const BtnEvent<10> &event) {
     if (IsInputLocked(1, false)) {
         return;
     }
-    if (mTutorial != nullptr && mTutorial->mButton10Enabled == 0) {
+    if (mTutorial != nullptr && mTutorial->GetButton10Enabled() == 0) {
         return;
     }
-    mPlayers[event.mPlayer]->HandleInput(event);
+    mPlayers[event.GetPlayer()]->HandleInput(event);
 }
 
 PitchTrack *RemixLogic::FindPitchTrack(int nTrack) const {
     for (PitchTrack *pTrack : mPitchTracks) {
-        if (pTrack->mIndex == nTrack) {
+        if (pTrack->GetIndex() == nTrack) {
             return pTrack;
         }
     }
@@ -850,7 +851,7 @@ PitchTrack *RemixLogic::FindPitchTrack(int nTrack) const {
 
 VoxTrack *RemixLogic::FindVoxTrack(int nTrack) const {
     for (VoxTrack *pTrack : mVoxTracks) {
-        if (pTrack->mIndex == nTrack) {
+        if (pTrack->GetIndex() == nTrack) {
             return pTrack;
         }
     }
@@ -869,8 +870,8 @@ void RemixLogic::UpdateHud(int nPlayer) {
     Player *pPlayer = mPlayers[nPlayer].get();
     const Track *pTrack = pPlayer->GetTrack();
     const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
-    const int nTrack = pTrack->mIndex;
-    if (pTrack->mPlayer == pPlayer && nBar >= mLoopBar) {
+    const int nTrack = pTrack->GetIndex();
+    if (pTrack->GetPlayer() == pPlayer && nBar >= mLoopBar) {
         nActive = mPreviewing == 0;
     }
 
@@ -1076,8 +1077,8 @@ void RemixLogic::StartPreview(int nBar, bool bTransition) {
         if (nCommunity == GameDb::kCommunityOnline) {
             if (TheNetTransport->IsHost() && bTransition) {
                 PreviewPacket packet;
-                packet.mSection = nBar; // Yes, the binary sends the bar the preview starts at.
-                packet.mPreviewing = 1;
+                packet.SetSection(nBar); // Yes, the binary sends the bar the preview starts at.
+                packet.SetPreviewing(1);
                 TheNetTransport->Send(packet);
             }
             TheSongScheduler.PostAfter(
@@ -1162,8 +1163,8 @@ void RemixLogic::StopPreview(int nBar) {
         if (nCommunity == GameDb::kCommunityOnline) {
             if (TheNetTransport->IsHost()) {
                 PreviewPacket packet;
-                packet.mSection = mLoopBar; // Yes, the binary sends the bar of the loop.
-                packet.mPreviewing = 0;
+                packet.SetSection(mLoopBar); // Yes, the binary sends the bar of the loop.
+                packet.SetPreviewing(0);
                 TheNetTransport->Send(packet);
             }
             TheSongScheduler.PostAfter(
@@ -1217,7 +1218,7 @@ void RemixLogic::AdjustTempo(float fDelta) {
 void RemixLogic::SetLooping(int nPlayer, bool bLooping) {
     Player *pPlayer = mPlayers[nPlayer].get();
     pPlayer->SetRepeat(bLooping);
-    PitchTrack *pTrack = FindPitchTrack(pPlayer->GetTrack()->mIndex);
+    PitchTrack *pTrack = FindPitchTrack(pPlayer->GetTrack()->GetIndex());
     if (pTrack != nullptr) {
         pTrack->SetRepeat(bLooping);
     }
@@ -1275,10 +1276,10 @@ void RemixLogic::LoadRemix() {
 void RemixLogic::SaveRemix() {
     MemStream stream(true);
     Save(stream);
-    const int nSize = stream.mTell;
+    const int nSize = stream.Tell();
     void *pPacked =
         PoolMemAlloc(nSize + nSize / kPackedSlackDivisor + kPackedHeaderSize, kRemixBufferTag, 0);
-    const int nPackedSize = GzipCompressRamToRam(stream.mBuffer.data(), nSize, pPacked);
+    const int nPackedSize = GzipCompressRamToRam(stream.GetBuffer().data(), nSize, pPacked);
     TheGameDb->SetRemixBuffer(nPackedSize);
     memcpy(TheGameDb->GetRemixBuffer(), pPacked, nPackedSize);
     PoolMemFree(pPacked);
@@ -1365,7 +1366,7 @@ bool RemixLogic::IsTickInCurrentSection(int nTick) {
 
 int RemixLogic::OnSectionChange(SectionChangePacket *pPacket) {
     StartTransition();
-    ChangeSection(pPacket->mSection, pPacket->mTick);
+    ChangeSection(pPacket->GetSection(), pPacket->GetTick());
     TheGfxManager.ShowMessage(mSong->GetSectionLabel(mSectionIndex),
                               nullptr,
                               kNoPlayer,
@@ -1377,15 +1378,15 @@ int RemixLogic::OnSectionChange(SectionChangePacket *pPacket) {
 }
 
 int RemixLogic::OnFX(FXPacket *pPacket) {
-    switch (pPacket->mType) {
+    switch (pPacket->GetType()) {
     case kEffectStutter:
-        mFx.SetStutter(pPacket->mSection, pPacket->mTrack, pPacket->mOn);
+        mFx.SetStutter(pPacket->GetSection(), pPacket->GetTrack(), pPacket->GetOn());
         break;
     case kEffectFilter:
-        mFx.SetFilter(pPacket->mSection, pPacket->mTrack, pPacket->mOn);
+        mFx.SetFilter(pPacket->GetSection(), pPacket->GetTrack(), pPacket->GetOn());
         break;
     case kEffectChorus:
-        mFx.SetChorus(pPacket->mSection, pPacket->mTrack, pPacket->mOn);
+        mFx.SetChorus(pPacket->GetSection(), pPacket->GetTrack(), pPacket->GetOn());
         break;
     default:
         DebugWarn("illegal effect");
@@ -1396,55 +1397,55 @@ int RemixLogic::OnFX(FXPacket *pPacket) {
 }
 
 int RemixLogic::OnMuteVocals(MuteVocalsPacket *pPacket) {
-    const int nSection = mPlayableSections[pPacket->mSection];
-    FindVoxTrack(pPacket->mTrack)->SetSectionMuted(nSection, pPacket->mMute);
+    const int nSection = mPlayableSections[pPacket->GetSection()];
+    FindVoxTrack(pPacket->GetTrack())->SetSectionMuted(nSection, pPacket->GetMute());
     UpdateHuds();
     return 0;
 }
 
 int RemixLogic::OnPreview(PreviewPacket *pPacket) {
-    if (pPacket->mPreviewing) {
-        StartPreview(pPacket->mSection, true);
+    if (pPacket->GetPreviewing()) {
+        StartPreview(pPacket->GetSection(), true);
     } else {
-        StopPreview(pPacket->mSection);
+        StopPreview(pPacket->GetSection());
     }
     return 0;
 }
 
 int RemixLogic::OnEditGem(EditGemPacket *pPacket) {
-    if (!IsTickInCurrentSection(pPacket->mTick)) {
+    if (!IsTickInCurrentSection(pPacket->GetTick())) {
         return 0;
     }
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    (void)FindPitchTrack(pPacket->mTrack)
-        ->ToggleGem(static_cast<signed char>(pPacket->mSlot),
-                    pPacket->mTick,
-                    pPacket->mRepeat,
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
+    (void)FindPitchTrack(pPacket->GetTrack())
+        ->ToggleGem(static_cast<signed char>(pPacket->GetSlot()),
+                    pPacket->GetTick(),
+                    pPacket->GetRepeat(),
                     static_cast<signed char>(nPlayer));
     mModified = 1;
     return 0;
 }
 
 int RemixLogic::OnEraseBar(EraseBarPacket *pPacket) {
-    FindPitchTrack(pPacket->mTrack)->EraseBar(pPacket->mBar);
+    FindPitchTrack(pPacket->GetTrack())->EraseBar(pPacket->GetBar());
     mModified = 1;
     return 0;
 }
 
 int RemixLogic::OnEraseSection(EraseSectionPacket *pPacket) {
-    FindPitchTrack(pPacket->mTrack)->EraseSection(pPacket->mBar);
+    FindPitchTrack(pPacket->GetTrack())->EraseSection(pPacket->GetBar());
     mModified = 1;
     return 0;
 }
 
 int RemixLogic::OnRemixerUpdate(RemixerUpdatePacket *pPacket) {
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    const unsigned int nVersion = pPacket->mVersion;
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
+    const unsigned int nVersion = pPacket->GetVersion();
     if (nVersion < mUpdateVersions[nPlayer]) {
         return 0;
     }
     mUpdateVersions[nPlayer] = nVersion;
-    const int nTrack = pPacket->mTrack;
+    const int nTrack = pPacket->GetTrack();
     if (nTrack != mTrackSelector->GetPlayerTrack(nPlayer)) {
         mTrackSelector->MovePlayer(nPlayer, nTrack);
         if (mNetArbiter != nullptr) {
@@ -1452,20 +1453,20 @@ int RemixLogic::OnRemixerUpdate(RemixerUpdatePacket *pPacket) {
         }
         UpdateHuds();
     }
-    if (mPlayers[nPlayer]->GetRepeat() != pPacket->mRepeat) {
-        SetLooping(nPlayer, pPacket->mRepeat);
+    if (mPlayers[nPlayer]->GetRepeat() != pPacket->GetRepeat()) {
+        SetLooping(nPlayer, pPacket->GetRepeat());
     }
     return 0;
 }
 
 int RemixLogic::OnArbiter(ArbiterPacket *pPacket) {
-    if (static_cast<unsigned int>(pPacket->mVersion) < mArbiterVersion) {
+    if (static_cast<unsigned int>(pPacket->GetVersion()) < mArbiterVersion) {
         return 0;
     }
-    mArbiterVersion = pPacket->mVersion;
+    mArbiterVersion = pPacket->GetVersion();
     bool bChanged = false;
-    for (int i = 0; i < static_cast<int>(pPacket->mPlayers.size()); ++i) {
-        const ArbiterPacket::PlayerData &data = pPacket->mPlayers[i];
+    for (int i = 0; i < static_cast<int>(pPacket->GetPlayers().size()); ++i) {
+        const ArbiterPacket::PlayerData &data = pPacket->GetPlayers()[i];
         const int nPlayer = GetPlayerFromNetOrder(data.mNetOrder);
         if (mPlayers[nPlayer]->IsAborted()) {
             continue;
@@ -1494,7 +1495,7 @@ int RemixLogic::OnArbiter(ArbiterPacket *pPacket) {
 }
 
 int RemixLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
-    const int nPlayer = GetPlayerFromNetOrder(pMsg->mNetOrder);
+    const int nPlayer = GetPlayerFromNetOrder(pMsg->GetNetOrder());
     Player *pPlayer = mPlayers[nPlayer].get();
     if (pPlayer->IsAborted()) {
         return 0;
@@ -1519,7 +1520,7 @@ int RemixLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
 int RemixLogic::OnGameEnded(GameEndedMsg *pMsg) {
     const char *pszLine = nullptr;
     const char *pszSecondLine = nullptr;
-    switch (pMsg->mResult) {
+    switch (pMsg->GetResult()) {
     case GameEndedMsg::kResultHostAborted:
         pszLine = TheLocale.Localize(kHostAborted1Key, true);
         pszSecondLine = TheLocale.Localize(kHostAborted2Key, true);
@@ -1553,8 +1554,8 @@ void RemixLogic::OnHudEvent(int nPlayer, int nEvent, void *pData) {
 }
 
 void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
-    const int nTrack = mPlayers[nPlayer]->GetTrack()->mIndex;
-    if (mTutorial != nullptr && mTutorial->mHudEnabled == 0) {
+    const int nTrack = mPlayers[nPlayer]->GetTrack()->GetIndex();
+    if (mTutorial != nullptr && mTutorial->GetHudEnabled() == 0) {
         mTutorial->PlaySound();
         return;
     }
@@ -1569,9 +1570,9 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         MuteVocals(nTrack, bMute);
         if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             MuteVocalsPacket packet;
-            packet.mSection = mSectionIndex;
-            packet.mTrack = nTrack;
-            packet.mMute = bMute;
+            packet.SetSection(mSectionIndex);
+            packet.SetTrack(nTrack);
+            packet.SetMute(bMute);
             TheNetTransport->Send(packet);
         }
         mModified = 1;
@@ -1579,7 +1580,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
     }
     case RemixHUD::kEventLoopOn:
     case RemixHUD::kEventLoopOff: {
-        if (mTutorial != nullptr && mTutorial->mLoopingAllowed == 0) {
+        if (mTutorial != nullptr && mTutorial->GetLoopingAllowed() == 0) {
             mTutorial->PlaySound();
             return;
         }
@@ -1600,10 +1601,10 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         SetFilter(nTrack, bOn); // Yes, the chorus panel switches the filter.
         if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             FXPacket packet;
-            packet.mSection = mSectionIndex;
-            packet.mTrack = nTrack;
-            packet.mType = kEffectFilter;
-            packet.mOn = bOn;
+            packet.SetSection(mSectionIndex);
+            packet.SetTrack(nTrack);
+            packet.SetType(kEffectFilter);
+            packet.SetOn(bOn);
             TheNetTransport->Send(packet);
         }
         mModified = 1;
@@ -1619,10 +1620,10 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         SetStutter(nTrack, bOn);
         if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             FXPacket packet;
-            packet.mSection = mSectionIndex;
-            packet.mTrack = nTrack;
-            packet.mType = kEffectStutter;
-            packet.mOn = bOn;
+            packet.SetSection(mSectionIndex);
+            packet.SetTrack(nTrack);
+            packet.SetType(kEffectStutter);
+            packet.SetOn(bOn);
             TheNetTransport->Send(packet);
         }
         mModified = 1;
@@ -1638,10 +1639,10 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         SetChorus(nTrack, bOn);
         if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             FXPacket packet;
-            packet.mSection = mSectionIndex;
-            packet.mTrack = nTrack;
-            packet.mType = kEffectChorus;
-            packet.mOn = bOn;
+            packet.SetSection(mSectionIndex);
+            packet.SetTrack(nTrack);
+            packet.SetType(kEffectChorus);
+            packet.SetOn(bOn);
             TheNetTransport->Send(packet);
         }
         mModified = 1;
@@ -1657,7 +1658,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         break;
     case RemixHUD::kEventTempoUp:
     case RemixHUD::kEventTempoDown:
-        if (mTutorial != nullptr && mTutorial->mTempoChangeAllowed == 0) {
+        if (mTutorial != nullptr && mTutorial->GetTempoChangeAllowed() == 0) {
             return;
         }
         AdjustTempo(nEvent == RemixHUD::kEventTempoUp ? kTempoStep : -kTempoStep);

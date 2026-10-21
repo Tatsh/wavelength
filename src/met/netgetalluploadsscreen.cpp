@@ -38,7 +38,7 @@ bool NetGetAllUploadsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetGetAllUploadsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->RequestFiles(this, kOnlyRemixes);
     }
     return false;
@@ -51,7 +51,7 @@ bool NetGetAllUploadsScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
 }
 
 bool NetGetAllUploadsScreen::HandleFileList(FileListMsg *pMsg) {
-    mFiles = *pMsg->mFiles;
+    mFiles = *pMsg->GetFiles();
     TheNetLobby->RequestRemixes(this);
     return false;
 }
@@ -59,10 +59,10 @@ bool NetGetAllUploadsScreen::HandleFileList(FileListMsg *pMsg) {
 bool NetGetAllUploadsScreen::HandleRepoRemixes(RepoRemixesMsg *pMsg) {
     std::list<NetRepoRemix> noRemixes;
     std::list<NetRepoRemix> *pRemixes = &noRemixes;
-    if (pMsg->mResult == kRequestSucceeded) {
-        pRemixes = pMsg->mRemixes;
+    if (pMsg->GetResult() == kRequestSucceeded) {
+        pRemixes = pMsg->GetRemixes();
     }
-    dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false))->mRemixes =
+    dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false))->GetRemixes() =
         *pRemixes;
     auto *pUploadTool =
         dynamic_cast<NetUploadToolScreen *>(TheUI.FindScreen(kUploadToolScreen, false));

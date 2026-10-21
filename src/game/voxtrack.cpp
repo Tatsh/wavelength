@@ -106,7 +106,7 @@ void VoxTrack::Redraw(int nStartBar) {
 }
 
 void VoxTrack::HandleInput([[maybe_unused]] Player *pPlayer, const PlayNoteEvent &event) {
-    if (event.mState != 0) {
+    if (event.GetState() != 0) {
         FxMidi::PlaySound1();
     }
 }

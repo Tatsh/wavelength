@@ -72,5 +72,6 @@ public:
      */
     static int StoreNodeWords(int nIndex);
 
+private:
     FreeStore *mStores[kNumStores]; /*!< The store of each size, or null before its first use. */
 };

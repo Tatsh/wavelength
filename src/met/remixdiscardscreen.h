@@ -68,5 +68,16 @@ public:
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
 
+    /** @return The player whose save screen opened this one, from 1. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @param nPlayer The player whose save screen opened this one, from 1. */
+    void SetPlayer(int nPlayer) {
+        mPlayer = nPlayer;
+    }
+
+private:
     int mPlayer; /*!< The player whose save screen opened this one, from 1. */
 };

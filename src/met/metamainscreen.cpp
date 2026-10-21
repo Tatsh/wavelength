@@ -84,7 +84,7 @@ bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     }
 
     if (button == "solo_but" || button == "freqnet_but") {
-        if (TheGameDb->GetProfile(0)->mCustom != 0) {
+        if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
             Campaign profile(*TheGameDb->GetProfile(0));
             TheGameDb->ClearPlayers();
             TheGameDb->AddPlayer(&profile);
@@ -92,7 +92,7 @@ bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         } else {
             TheGameDb->ClearPlayers();
             Campaign profile;
-            profile.mName = TheLocale.Localize("player_1", true);
+            profile.SetName(TheLocale.Localize("player_1", true));
             TheGameDb->AddPlayer(&profile);
             TheMetagame.GetGizmo()->SetShowAvatar(false);
         }

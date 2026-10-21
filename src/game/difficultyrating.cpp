@@ -155,7 +155,7 @@ int DifficultyRating::RatePitchTrack(PitchTrackGems *pGems) {
     for (int i = 0; i < mNumBars; ++i) {
         std::vector<PitchGem> *pBar = pGems->GetBar(i);
         for (auto it = pBar->begin(); it != pBar->end(); ++it) {
-            AddGem(it->mSlot, it->mTick);
+            AddGem(it->GetSlot(), it->GetTick());
         }
     }
     return EndTrack();

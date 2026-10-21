@@ -146,7 +146,7 @@ void BinStream::ReadString(String &text) {
     int nLength;
     ReadEndian(&nLength, sizeof(nLength));
     text.Resize(nLength);
-    Read(text.mBuffer, nLength);
+    Read(text.GetBuffer(), nLength);
 }
 
 void BinStream::ReadString(char *pszBuffer, int /* nSize */) {

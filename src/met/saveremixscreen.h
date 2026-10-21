@@ -78,9 +78,17 @@ public:
      */
     void OnRemixSaved(int nStatus, int nNeeded) override;
 
-    String mRemixName; /*!< The name the remix is saved under. */
+    /** @param pszRemixName The name the remix is saved under. */
+    void SetRemixName(const char *pszRemixName) {
+        mRemixName = pszRemixName;
+    }
+
 #ifdef VIDEO_STANDARD_PAL
-    String mContinueScreen; /*!< The screen continue leads to, or empty for the done screen. */
+    /** @param pszContinueScreen The screen continue leads to, or empty for the done screen. */
+    void SetContinueScreen(const char *pszContinueScreen) {
+        mContinueScreen = pszContinueScreen;
+    }
+
 #endif
 
 private:
@@ -93,4 +101,9 @@ private:
      * @ghidraAddress PAL: 0x001b6380
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+    String mRemixName; /*!< The name the remix is saved under. */
+#ifdef VIDEO_STANDARD_PAL
+    String mContinueScreen; /*!< The screen continue leads to, or empty for the done screen. */
+#endif
 };

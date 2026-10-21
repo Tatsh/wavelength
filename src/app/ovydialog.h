@@ -61,6 +61,7 @@ public:
      */
     void Close();
 
+private:
     RndText *mText;           /*!< `HUD dialog.txt`. */
     RndAnimatable *mSizeAnim; /*!< `HUD dialog panel size.msnm`. */
     RndAnimatable *mPosAnim;  /*!< `HUD dialog pos.tnm`. */

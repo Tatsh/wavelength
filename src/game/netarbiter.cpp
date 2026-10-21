@@ -106,7 +106,7 @@ void NetArbiter::Broadcast() {
     TheSongScheduler.Cancel(mBroadcastCommand.Get());
 
     ArbiterPacket packet(++sVersion);
-    packet.mPlayers.reserve(mTrackSelector.GetNumPlayers());
+    packet.GetPlayers().reserve(mTrackSelector.GetNumPlayers());
     for (int i = 0; i < mTrackSelector.GetNumPlayers(); ++i) {
         const int nNetOrder = TheGameDb->GetPlayerNetOrder(i);
         const int nTrack = mTrackSelector.GetPlayerTrack(i);
@@ -114,10 +114,10 @@ void NetArbiter::Broadcast() {
             continue;
         }
         const int nSlot = mTrackSelector.GetPlayerSlot(i);
-        packet.mPlayers.push_back(
+        packet.GetPlayers().push_back(
             ArbiterPacket::PlayerData{nNetOrder, mVersions[i], nTrack, nSlot});
     }
-    if (!packet.mPlayers.empty()) {
+    if (!packet.GetPlayers().empty()) {
         TheNetTransport->Send(packet);
     }
 

@@ -45,8 +45,8 @@ bool CopyFreqScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool CopyFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
-        TheMCManager.SaveFreq(this, mSlot, &mProfile, mProfile.mName.c_str(), mOverwriteStatus);
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
+        TheMCManager.SaveFreq(this, mSlot, &mProfile, mProfile.GetName().c_str(), mOverwriteStatus);
     }
     return false;
 }

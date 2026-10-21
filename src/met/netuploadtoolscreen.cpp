@@ -159,9 +159,9 @@ bool NetUploadToolScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
             auto *pDownload =
                 dynamic_cast<NetDoDownloadScreen *>(TheUI.FindScreen(kDownloadScreen, false));
             const int nSelected = pList->GetSelected();
-            pDownload->mFile = info.mName.c_str();
-            pDownload->mRemixName = kNoText;
-            pDownload->mUploadIndex = nSelected;
+            pDownload->SetFile(info.mName.c_str());
+            pDownload->SetRemixName(kNoText);
+            pDownload->SetUploadIndex(nSelected);
             TheUI.GotoScreen(pDownload);
         }
         return UIScreen::HandleSelect(pMsg);
@@ -184,7 +184,7 @@ bool NetUploadToolScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetUploadToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return UIScreen::HandleJoypad(pMsg);
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
@@ -194,7 +194,7 @@ bool NetUploadToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
     const int nSelected = pList->GetSelected();
     if (mFocusPanel->GetFocus() != pList) {
-        if (pMsg->mButton != kPadDDown) {
+        if (pMsg->GetButton() != kPadDDown) {
             return UIScreen::HandleJoypad(pMsg);
         }
         mFocusPanel->SetFocus(pList, kPadNone);
@@ -205,7 +205,7 @@ bool NetUploadToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return UIScreen::HandleJoypad(pMsg);
     }
     const UploadInfo info = *ListAt(mFiles, nSelected);
-    if (pMsg->mButton == kPadSquare) {
+    if (pMsg->GetButton() == kPadSquare) {
         TheNetLobby->DeleteFile(this, info.mName.c_str());
         mFiles.erase(ListAt(mFiles, nSelected));
         pList->SetFiles(mFiles, nSelected);
@@ -214,26 +214,27 @@ bool NetUploadToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         if (pRepos->RemoveRemix(info)) {
             auto *pSave =
                 dynamic_cast<NetSaveReposListScreen *>(TheUI.FindScreen(kSaveReposScreen, false));
-            pSave->mRemixes = pRepos->mRemixes;
+            pSave->SetRemixes(pRepos->GetRemixes());
             TheUI.GotoScreen(pSave);
         }
-    } else if (pMsg->mButton == kPadSelect) {
+    } else if (pMsg->GetButton() == kPadSelect) {
         // Yes, the binary discards the cast.
         (void)dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false));
         TheUI.GotoScreen(kReposToolScreen);
-    } else if (pMsg->mButton == kPadR1 || pMsg->mButton == kPadR2) {
-        const char *pszScreen = pMsg->mButton == kPadR1 ? kPreviewRemixScreen : kPreviewGameScreen;
+    } else if (pMsg->GetButton() == kPadR1 || pMsg->GetButton() == kPadR2) {
+        const char *pszScreen =
+            pMsg->GetButton() == kPadR1 ? kPreviewRemixScreen : kPreviewGameScreen;
         auto *pPreview = dynamic_cast<NetDoDownloadScreen *>(TheUI.FindScreen(pszScreen, false));
         const int nPreviewed = pList->GetSelected();
-        pPreview->mFile = info.mName.c_str();
-        pPreview->mRemixName = kNoText;
-        pPreview->mUploadIndex = nPreviewed;
+        pPreview->SetFile(info.mName.c_str());
+        pPreview->SetRemixName(kNoText);
+        pPreview->SetUploadIndex(nPreviewed);
         TheUI.GotoScreen(pPreview);
-    } else if (pMsg->mButton == kPadL1) {
+    } else if (pMsg->GetButton() == kPadL1) {
         if (nSelected >= pList->GetRowCount()) {
             pList->SetSelected(nSelected - pList->GetRowCount());
         }
-    } else if (pMsg->mButton == kPadL2) {
+    } else if (pMsg->GetButton() == kPadL2) {
         if (pList->GetItemCount() - pList->GetRowCount() >= nSelected) {
             pList->SetSelected(nSelected + pList->GetRowCount());
         }

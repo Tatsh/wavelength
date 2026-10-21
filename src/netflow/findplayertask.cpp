@@ -21,7 +21,7 @@ constexpr int kLocationChannel = 1;
 
 void FindPlayerTask::OnStart() {
     mChatroom->mId = kNoChatroom;
-    if (mPlayer->mConnectionType == LobbyPlayer::kConnectionOffline) {
+    if (mPlayer->GetConnectionType() == LobbyPlayer::kConnectionOffline) {
         Finish(true, 0);
         return;
     }
@@ -30,7 +30,7 @@ void FindPlayerTask::OnStart() {
     strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.searchType = kSearchByAccount;
-    request.accountId = mPlayer->mId;
+    request.accountId = mPlayer->GetId();
     const int nError = rtMediusFindPlayer(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1923, nError);
@@ -61,7 +61,7 @@ void FindPlayerTask::OnResponse(int nConnection,
         if (pResponse->locationType == kLocationChannel) {
             pTask->mChatroom->mId = pResponse->worldId;
         } else {
-            pTask->mChatroom->mId = pTask->mPlayer->mChannelId;
+            pTask->mChatroom->mId = pTask->mPlayer->GetChannelId();
         }
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;

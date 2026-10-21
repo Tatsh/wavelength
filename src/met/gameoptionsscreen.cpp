@@ -74,10 +74,10 @@ void GameOptionsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void GameOptionsScreen::Refresh() {
     const GameOptions *pOptions = TheGameDb->GetOptions();
-    SetToggle(kToggleHelpText, pOptions->mHelpText);
-    SetToggle(kToggleForceFeedback, pOptions->mForceFeedback);
-    mOutputMode = pOptions->mOutputMode;
-    mFreqSize = pOptions->mFreqSize;
+    SetToggle(kToggleHelpText, pOptions->GetHelpText());
+    SetToggle(kToggleForceFeedback, pOptions->GetForceFeedback());
+    mOutputMode = pOptions->GetOutputMode();
+    mFreqSize = pOptions->GetFreqSize();
     RefreshToggle(kHelpTextComponent);
     RefreshToggle(kVibrationComponent);
     TheUI.FindComponent(kPanel, kFreqSizeComponent, false)->SetText(FreqSizeLabel(mFreqSize));
@@ -189,11 +189,11 @@ bool GameOptionsScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool GameOptionsScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed) {
+    if (pMsg->GetPressed()) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadTriangle && mReturnScreen != nullptr) {
+        if (pMsg->GetButton() == kPadTriangle && mReturnScreen != nullptr) {
             TheUI.GotoScreen(mReturnScreen);
         }
     }

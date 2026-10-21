@@ -122,8 +122,8 @@ void OvySongPos::Draw() {
             position.y = sEndPos.y * checkpoint.mPos + sStartPos.y * fRest;
             position.z = sEndPos.z * checkpoint.mPos + sStartPos.z * fRest;
         }
-        mCheckpointMesh->mDirty = 1;
-        mCheckpointMesh->mLocalXfm.mTranslation = position;
+        mCheckpointMesh->SetDirty(1);
+        mCheckpointMesh->GetLocalXfm().mTranslation = position;
         mCheckpointMesh->UpdateWorldXfm(mFuture, 0);
         mCheckpointMesh->Draw();
         if (checkpoint.mText != nullptr) {

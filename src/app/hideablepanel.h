@@ -148,6 +148,9 @@ public:
      */
     static float sMaterialFrame;
 
-    RampAnimator mSlide;    /*!< The slide, from 0 (hidden) to kShownFrame (shown). */
+protected:
+    RampAnimator mSlide; /*!< The slide, from 0 (hidden) to kShownFrame (shown). */
+
+private:
     RndDrawable *mDrawable; /*!< The drawable shown with the panel, or null. */
 };

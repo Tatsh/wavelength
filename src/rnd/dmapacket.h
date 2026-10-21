@@ -128,6 +128,32 @@ public:
      */
     void Send(Mode eMode, unsigned int nAddress);
 
+    /** @return The first quadword of the packet. */
+    DmaQuadword *GetBase() const {
+        return mBase;
+    }
+
+    /** @param pBase The first quadword of the packet. */
+    void SetBase(DmaQuadword *pBase) {
+        mBase = pBase;
+    }
+
+    /** @return The next quadword to write. */
+    DmaQuadword *GetCursor() const {
+        return mCursor;
+    }
+
+    /** @return The next quadword to write, for writing. */
+    DmaQuadword *&GetCursor() {
+        return mCursor;
+    }
+
+    /** @return The GIF tag being filled, or null. */
+    DmaQuadword *GetGifTag() const {
+        return mGifTag;
+    }
+
+private:
     DmaQuadword *mDmaTag;    /*!< The DMA tag being filled, or null. */
     DmaQuadword *mBase;      /*!< The first quadword of the packet. */
     DmaQuadword *mCursor;    /*!< The next quadword to write. */

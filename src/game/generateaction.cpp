@@ -5,5 +5,5 @@ GenerateAction::GenerateAction(DataArray *pAction) {
 }
 
 void GenerateAction::Exec() {
-    mGenerator->Generate(mGenerator->mFilteredFrame);
+    mGenerator->Generate(mGenerator->GetFilteredFrame());
 }

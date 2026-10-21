@@ -175,6 +175,12 @@ public:
      */
     bool HandleSelect(JoypadInputMsg *pMsg);
 
+    /** @return The style. */
+    UIStyle *GetStyle() const {
+        return mStyle;
+    }
+
+protected:
     int mFlashDone;     /*!< Whether no flash runs. */
     float mFlashStart;  /*!< The time the first flash period started. */
     float mFlashPeriod; /*!< The length of one selected and one normal phase. */
@@ -184,7 +190,9 @@ public:
     int mNormalState;   /*!< The state of the normal phase. */
     int mSelectedState; /*!< The state of the selected phase. */
     int mRevertState;   /*!< The state to restore when the flash ends. */
-    RndMesh *mMesh;     /*!< The mesh, or null when the file has none of that name. */
-    RndText *mText;     /*!< The text object, or null when the file has none of that name. */
     UIStyle *mStyle;    /*!< The style. */
+
+private:
+    RndMesh *mMesh; /*!< The mesh, or null when the file has no mesh of that name. */
+    RndText *mText; /*!< The text object, or null when the file has no text object of that name. */
 };

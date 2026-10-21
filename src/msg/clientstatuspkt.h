@@ -127,5 +127,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The state, as NetLaunchpadPlayer::mReady. */
+    int GetReady() const {
+        return mReady;
+    }
+
+private:
     int mReady; /*!< The state, as NetLaunchpadPlayer::mReady. */
 };

@@ -86,7 +86,7 @@ void Game::OnStart() {
 }
 
 void Game::CreateLogic() {
-    if (TheGameDb->GetDemo() != nullptr || TheGameConfig->mZeroRandSeed) {
+    if (TheGameDb->GetDemo() != nullptr || TheGameConfig->GetZeroRandSeed()) {
         mSeed = 0;
     }
     if (TheGameDb->GetTutorial() != 0) {
@@ -251,8 +251,8 @@ void Game::BuildTracks(int nStartTick) {
 
 void Game::TogglePlayAllGems([[maybe_unused]] DataArray *pCommand,
                              [[maybe_unused]] void *pUserData) {
-    TheGameConfig->mPlayAllGems = !TheGameConfig->mPlayAllGems;
-    DebugPrint("CHEAT: %splaying all gems\n", TheGameConfig->mPlayAllGems ? kOnText : kNotText);
+    TheGameConfig->SetPlayAllGems(!TheGameConfig->GetPlayAllGems());
+    DebugPrint("CHEAT: %splaying all gems\n", TheGameConfig->GetPlayAllGems() ? kOnText : kNotText);
 }
 
 void Game::TogglePracticeMode([[maybe_unused]] DataArray *pCommand,
@@ -263,6 +263,6 @@ void Game::TogglePracticeMode([[maybe_unused]] DataArray *pCommand,
 }
 
 void Game::ToggleNoCapture([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {
-    TheGameConfig->mNoCapture = !TheGameConfig->mNoCapture;
-    DebugPrint("CHEAT: %sin no capture mode\n", TheGameConfig->mNoCapture ? kOnText : kNotText);
+    TheGameConfig->SetNoCapture(!TheGameConfig->GetNoCapture());
+    DebugPrint("CHEAT: %sin no capture mode\n", TheGameConfig->GetNoCapture() ? kOnText : kNotText);
 }

@@ -92,7 +92,7 @@ TnlSeeker::TnlSeeker(TnlGeom *pGeom, int, const char *pszColor)
     mMesh.reset(dynamic_cast<RndMesh *>(
         TheManager.Create(RndMesh::sClassName, FormatString("seeker %s.mesh", pszColor))));
     mMesh->SetMat(mMat);
-    mMesh->mGeomOwner->mMutable = 1;
+    mMesh->GetGeomOwner()->SetMutable(1);
     dynamic_cast<RndView *>(TheManager.Find("tnl opaque"))->AddDraw(mMesh.get(), nullptr);
     mMesh->SetShowing(0);
 }
@@ -124,7 +124,7 @@ void TnlSeeker::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *
     sMultiFrameHeight *= TheGfxManager.GetScrollSpeed();
 
     mSectionVerts = (sDivisions * 2) + kExtraSectionVerts;
-    std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
+    std::vector<RndMesh::Vert> &verts = mMesh->GetGeomOwner()->GetVerts();
     verts = std::vector<RndMesh::Vert>();
     RndMesh::Vert vert;
     vert.mPos = Vector3{0.0f, 0.0f, 0.0f};
@@ -136,7 +136,7 @@ void TnlSeeker::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *
     verts.resize(mSectionVerts * 4, vert);
 
     mNumQuads = (sDivisions * kQuadsPerDivision) + kExtraQuads;
-    std::vector<RndMesh::Face> &faces = mMesh->mGeomOwner->mFaces;
+    std::vector<RndMesh::Face> &faces = mMesh->GetGeomOwner()->GetFaces();
     faces = std::vector<RndMesh::Face>();
     faces.reserve(mNumQuads * 2);
 
@@ -427,7 +427,7 @@ void TnlSeeker::Poll(float, float) {
             if (kMaxTrailTicks < flTick - mEndTick) {
                 mMesh->SetShowing(0);
             } else {
-                Layout(mMesh->mGeomOwner->mVerts, mTrack, mStartTick, mEndTick);
+                Layout(mMesh->GetGeomOwner()->GetVerts(), mTrack, mStartTick, mEndTick);
                 mMesh->Sync(RndMesh::kSyncVertexData);
                 mMesh->SetShowing(1);
             }

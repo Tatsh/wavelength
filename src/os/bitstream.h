@@ -78,9 +78,10 @@ public:
      */
     int UnpackSigned(int nBits);
 
-    unsigned char *mBuffer; /*!< The buffer. */
-    unsigned int mBitPos;   /*!< The position of the next bit. */
-    int mSize;              /*!< The buffer size in bytes. */
+    /** @return The position of the next bit. */
+    unsigned int GetBitPos() const {
+        return mBitPos;
+    }
 
 private:
     /**
@@ -92,4 +93,8 @@ private:
      * @ghidraAddress PAL: 0x002a0b00
      */
     void Write(unsigned int nValue, unsigned int nBits);
+
+    unsigned char *mBuffer; /*!< The buffer. */
+    unsigned int mBitPos;   /*!< The position of the next bit. */
+    int mSize;              /*!< The buffer size in bytes. */
 };

@@ -120,5 +120,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The settings of the game. */
+    const NetGameParams &GetParams() const {
+        return mParams;
+    }
+
+private:
     NetGameParams mParams; /*!< The settings of the game. */
 };

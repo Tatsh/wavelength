@@ -85,5 +85,6 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+private:
     float mEndTime; /*!< The SystemMs() time at which the game ends, or 0 for none. */
 };

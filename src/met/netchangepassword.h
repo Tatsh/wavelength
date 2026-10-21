@@ -65,10 +65,25 @@ public:
         return "";
     }
 
-    String mOldPassword; /*!< The password to replace. */
-    String mNewPassword; /*!< The replacement password. */
-    int mSaveChanged;    /*!< Non-zero when the profile's password is written after the change. */
-    int mSavePassword;   /*!< Whether the profile saves the new password, or clears it. */
+    /** @param pszOldPassword The password to replace. */
+    void SetOldPassword(const char *pszOldPassword) {
+        mOldPassword = pszOldPassword;
+    }
+
+    /** @param pszNewPassword The replacement password. */
+    void SetNewPassword(const char *pszNewPassword) {
+        mNewPassword = pszNewPassword;
+    }
+
+    /** @param nSaveChanged Non-zero when the profile's password is written after the change. */
+    void SetSaveChanged(int nSaveChanged) {
+        mSaveChanged = nSaveChanged;
+    }
+
+    /** @param nSavePassword Whether the profile saves the new password, or clears it. */
+    void SetSavePassword(int nSavePassword) {
+        mSavePassword = nSavePassword;
+    }
 
 private:
     /**
@@ -94,4 +109,9 @@ private:
      * @ghidraAddress PAL: 0x0017f460
      */
     bool HandleChangePasswordResult(ChangePasswordResultMsg *pMsg);
+
+    String mOldPassword; /*!< The password to replace. */
+    String mNewPassword; /*!< The replacement password. */
+    int mSaveChanged;    /*!< Non-zero when the profile's password is written after the change. */
+    int mSavePassword;   /*!< Whether the profile saves the new password, or clears it. */
 };

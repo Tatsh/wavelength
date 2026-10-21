@@ -15,11 +15,12 @@ KeyboardKey::~KeyboardKey() {
 }
 
 bool KeyboardKey::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mButton != kPadCross || mFlashDone == 0 || pMsg->mPressed == 0) {
+    if (pMsg->GetButton() != kPadCross || mFlashDone == 0 || pMsg->GetPressed() == 0) {
         return false;
     }
     UIScreen *pScreen = TheUI.GetCurrentScreen();
-    UIComponentSelectStartMsg msg(this, TheUI.FocusPanel(), pScreen, pMsg->mButton, pMsg->mPad);
+    UIComponentSelectStartMsg msg(
+        this, TheUI.FocusPanel(), pScreen, pMsg->GetButton(), pMsg->GetPad());
     if (!Dispatch(&msg)) {
         StartFlash(
             TheUI.GetTime(), sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);

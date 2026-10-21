@@ -101,25 +101,25 @@ void SpotLightFX::Draw() {
     mGlows->Draw();
 
     RndEnviron *pEnviron = RndEnviron::sCurrent;
-    const Color ambient = pEnviron->mAmbientColor;
+    const Color ambient = pEnviron->GetAmbientColor();
     for (it = mLights.begin(); it != mLights.end() && it->mTick < flFadeEnd; ++it) {
         if (it->mSpotActive) {
             DetachSpot(it);
         }
         if (flFadeStart < it->mTick) {
             const float flLevel = fade.LinearInterpolator::Interp(it->mTick);
-            pEnviron->mAmbientColor = Color{flLevel, flLevel, flLevel, 1.0f};
+            pEnviron->GetAmbientColor() = Color{flLevel, flLevel, flLevel, 1.0f};
             pEnviron->Draw();
-            mMesh->mLocalXfm = *it->mSpot;
-            mMesh->mDirty = 1;
+            mMesh->GetLocalXfm() = *it->mSpot;
+            mMesh->SetDirty(1);
             mMesh->UpdateWorldXfm(nullptr, 0);
             mMesh->Draw();
         }
     }
-    pEnviron->mAmbientColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
+    pEnviron->GetAmbientColor() = Color{1.0f, 1.0f, 1.0f, 1.0f};
     pEnviron->Draw();
     mSpots->Draw();
-    pEnviron->mAmbientColor = ambient;
+    pEnviron->GetAmbientColor() = ambient;
     pEnviron->Draw();
 }
 
@@ -139,8 +139,8 @@ void SpotLightFX::AddLight(char nTrack, TnlGeom *pGeom, float flTick, float flLa
     it->mTick = flTick;
     it->mTrack = nTrack;
     it->mLateral = flLateral;
-    std::list<Transform> &glows = mGlows->mTransforms;
-    std::list<Transform> &spots = mSpots->mTransforms;
+    std::list<Transform> &glows = mGlows->GetTransforms();
+    std::list<Transform> &spots = mSpots->GetTransforms();
     glows.splice(glows.begin(), mTransforms, mTransforms.begin());
     spots.splice(spots.begin(), mTransforms, mTransforms.begin());
     it->mGlow = glows.begin();
@@ -175,18 +175,18 @@ void SpotLightFX::Clear() {
 
 void SpotLightFX::UpdateRange(TnlGeom *pGeom, const TnlTrackRange *pRange) {
     auto it =
-        std::lower_bound(mLights.begin(), mLights.end(), pRange->mStartTick, LightPos::Before);
-    for (; it != mLights.end() && it->mTick < pRange->mEndTick; ++it) {
-        if (pRange->mFirstTrack <= it->mTrack && it->mTrack < pRange->mEndTrack) {
+        std::lower_bound(mLights.begin(), mLights.end(), pRange->GetStartTick(), LightPos::Before);
+    for (; it != mLights.end() && it->mTick < pRange->GetEndTick(); ++it) {
+        if (pRange->GetFirstTrack() <= it->mTrack && it->mTrack < pRange->GetEndTrack()) {
             Place(&*it, pGeom);
         }
     }
 }
 
 void SpotLightFX::Release(std::list<LightPos>::iterator light) {
-    mTransforms.splice(mTransforms.end(), mGlows->mTransforms, light->mGlow);
+    mTransforms.splice(mTransforms.end(), mGlows->GetTransforms(), light->mGlow);
     if (light->mSpotActive) {
-        mTransforms.splice(mTransforms.end(), mSpots->mTransforms, light->mSpot);
+        mTransforms.splice(mTransforms.end(), mSpots->GetTransforms(), light->mSpot);
         light->mSpot = std::prev(mTransforms.end());
         light->mSpotActive = 0;
     }
@@ -194,7 +194,7 @@ void SpotLightFX::Release(std::list<LightPos>::iterator light) {
 
 void SpotLightFX::DetachSpot(std::list<LightPos>::iterator light) {
     if (light->mSpotActive) {
-        mTransforms.splice(mTransforms.end(), mSpots->mTransforms, light->mSpot);
+        mTransforms.splice(mTransforms.end(), mSpots->GetTransforms(), light->mSpot);
         light->mSpot = std::prev(mTransforms.end());
         light->mSpotActive = 0;
     }

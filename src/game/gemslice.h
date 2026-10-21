@@ -80,9 +80,15 @@ public:
      * @return The tick.
      */
     int TickAt(int nIndex) const {
-        return At(nIndex).mTick + mOffset;
+        return At(nIndex).GetTick() + mOffset;
     }
 
+    /** @return The ticks added to the tick of each gem. */
+    int GetOffset() const {
+        return mOffset;
+    }
+
+private:
     const std::vector<PitchGem> *mGems; /*!< The gems, or null. */
     int mOffset;                        /*!< The ticks added to the tick of each gem. */
 };

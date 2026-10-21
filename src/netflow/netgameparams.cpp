@@ -28,12 +28,12 @@ inline void WriteByte(BinStream &stream, int nValue) {
 } // namespace
 
 PrnStream &operator<<(PrnStream &stream, const NetGameParams &params) {
-    stream.Print(params.mSong.c_str());
-    if (params.mRuleSet == GameDb::kRuleSetRemix || params.mLoadRemix != 0) {
-        (stream << " ").Print(params.mRemixName.c_str());
+    stream.Print(params.GetSong().c_str());
+    if (params.GetRuleSet() == GameDb::kRuleSetRemix || params.GetLoadRemix() != 0) {
+        (stream << " ").Print(params.GetRemixName().c_str());
     }
-    stream << " sk:" << params.mSkillLevel << " max:" << params.mMaxPlayers;
-    switch (params.mRuleSet) {
+    stream << " sk:" << params.GetSkillLevel() << " max:" << params.GetMaxPlayers();
+    switch (params.GetRuleSet()) {
     case GameDb::kRuleSetGame:
         stream << " game";
         break;
@@ -46,7 +46,7 @@ PrnStream &operator<<(PrnStream &stream, const NetGameParams &params) {
     default:
         break;
     }
-    switch (params.mCommunity) {
+    switch (params.GetCommunity()) {
     case GameDb::kCommunitySolo:
         stream << " solo";
         break;
@@ -60,7 +60,7 @@ PrnStream &operator<<(PrnStream &stream, const NetGameParams &params) {
         break;
     }
     stream << " pu:";
-    switch (params.mPowerupLevel) {
+    switch (params.GetPowerupLevel()) {
     case kPowerupHigh:
         stream << " high";
         break;
@@ -73,13 +73,13 @@ PrnStream &operator<<(PrnStream &stream, const NetGameParams &params) {
     default:
         break;
     }
-    if (params.mLoadRemix != 0) {
+    if (params.GetLoadRemix() != 0) {
         stream << " remix-data";
     }
-    if (params.mRemixReadOnly != 0) {
+    if (params.GetRemixReadOnly() != 0) {
         stream << " read-only";
     }
-    if (params.mPracticeMode != 0) {
+    if (params.GetPracticeMode() != 0) {
         stream << " practice";
     }
     return stream;
@@ -87,35 +87,35 @@ PrnStream &operator<<(PrnStream &stream, const NetGameParams &params) {
 
 BinStream &operator<<(BinStream &stream, const NetGameParams &params) {
     BinStream &out =
-        stream.WriteString(params.mSong.c_str()).WriteString(params.mRemixName.c_str());
-    WriteByte(out, params.mSkillLevel);
-    WriteByte(out, params.mMaxPlayers);
-    WriteByte(out, params.mRuleSet);
-    WriteByte(out, params.mCommunity);
-    WriteByte(out, params.mPowerupLevel);
-    WriteByte(out, params.mRemixReadOnly);
-    WriteByte(out, params.mLoadRemix);
-    WriteByte(out, params.mPracticeMode);
+        stream.WriteString(params.GetSong().c_str()).WriteString(params.GetRemixName().c_str());
+    WriteByte(out, params.GetSkillLevel());
+    WriteByte(out, params.GetMaxPlayers());
+    WriteByte(out, params.GetRuleSet());
+    WriteByte(out, params.GetCommunity());
+    WriteByte(out, params.GetPowerupLevel());
+    WriteByte(out, params.GetRemixReadOnly());
+    WriteByte(out, params.GetLoadRemix());
+    WriteByte(out, params.GetPracticeMode());
     return stream;
 }
 
 BinStream &operator>>(BinStream &stream, NetGameParams &params) {
-    BinStream &in = stream >> params.mSong >> params.mRemixName;
+    BinStream &in = stream >> params.GetSong() >> params.GetRemixName();
     signed char settings[kSettingCount];
     for (signed char &cSetting : settings) {
         in.Read(&cSetting, sizeof(cSetting));
     }
     unsigned char cFlag;
     in.Read(&cFlag, sizeof(cFlag));
-    params.mRemixReadOnly = cFlag != 0;
+    params.SetRemixReadOnly(cFlag != 0);
     in.Read(&cFlag, sizeof(cFlag));
-    params.mLoadRemix = cFlag != 0;
+    params.SetLoadRemix(cFlag != 0);
     in.Read(&cFlag, sizeof(cFlag));
-    params.mPracticeMode = cFlag != 0;
-    params.mPowerupLevel = settings[kSettingPowerupLevel];
-    params.mSkillLevel = settings[kSettingSkillLevel];
-    params.mMaxPlayers = settings[kSettingMaxPlayers];
-    params.mRuleSet = settings[kSettingRuleSet];
-    params.mCommunity = settings[kSettingCommunity];
+    params.SetPracticeMode(cFlag != 0);
+    params.SetPowerupLevel(settings[kSettingPowerupLevel]);
+    params.SetSkillLevel(settings[kSettingSkillLevel]);
+    params.SetMaxPlayers(settings[kSettingMaxPlayers]);
+    params.SetRuleSet(settings[kSettingRuleSet]);
+    params.SetCommunity(settings[kSettingCommunity]);
     return stream;
 }

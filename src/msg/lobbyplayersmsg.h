@@ -101,6 +101,22 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return Non-zero when more players precede a ranking page. */
+    int GetHasPrevious() const {
+        return mHasPrevious;
+    }
+
+    /** @return The index of the session in the lobby list. */
+    int GetLaunchpad() const {
+        return mLaunchpad;
+    }
+
+    /** @return The players, in 0x90-byte list nodes. */
+    std::list<LobbyPlayer> *GetPlayers() const {
+        return mPlayers;
+    }
+
+private:
     std::list<LobbyPlayer> *mPlayers; /*!< The players, in 0x90-byte list nodes. */
     int mLaunchpad;                   /*!< The index of the session in the lobby list. */
     int mHasPrevious;                 /*!< Non-zero when more players precede a ranking page. */

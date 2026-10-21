@@ -313,6 +313,62 @@ public:
      */
     static int sRev;
 
+    /** @return The most rotation about each axis, in degrees. */
+    const float *GetPathVarMax() const {
+        return mPathVarMax;
+    }
+
+    /** @return The most rotation about each axis, in degrees, for writing. */
+    float *GetPathVarMax() {
+        return mPathVarMax;
+    }
+
+    /** @return The most number of frames between births. */
+    float GetRateGenHigh() const {
+        return mRateGenHigh;
+    }
+
+    /** @param fRateGenHigh The most number of frames between births. */
+    void SetRateGenHigh(float fRateGenHigh) {
+        mRateGenHigh = fRateGenHigh;
+    }
+
+    /** @return The least number of frames between births. */
+    float GetRateGenLow() const {
+        return mRateGenLow;
+    }
+
+    /** @param fRateGenLow The least number of frames between births. */
+    void SetRateGenLow(float fRateGenLow) {
+        mRateGenLow = fRateGenLow;
+    }
+
+    /** @return The most scale of an instance. */
+    float GetScaleGenHigh() const {
+        return mScaleGenHigh;
+    }
+
+    /** @param fScaleGenHigh The most scale of an instance. */
+    void SetScaleGenHigh(float fScaleGenHigh) {
+        mScaleGenHigh = fScaleGenHigh;
+    }
+
+    /** @return The least scale of an instance. */
+    float GetScaleGenLow() const {
+        return mScaleGenLow;
+    }
+
+    /** @param fScaleGenLow The least scale of an instance. */
+    void SetScaleGenLow(float fScaleGenLow) {
+        mScaleGenLow = fScaleGenLow;
+    }
+
+private:
+    // Build the transform of an instance from the path at its age, its scale, and its birth
+    // transform, and report the age. The binary inlines the routine in ListDrawables() and
+    // DrawShowing().
+    inline float InstanceXfm(const Instance &instance, float fDirection, Transform &xfm);
+
     std::list<Instance> mInstances;         /*!< The live instances, oldest first. */
     RndTransAnim *mPath;                    /*!< The path the instances follow, or null. */
     float mPathStartFrame;                  /*!< The frame of the path an instance starts at. */
@@ -334,11 +390,6 @@ public:
     float mPathVarMax[3];                   /*!< The most rotation about each axis, in degrees. */
     Particle *mCurParticle;                 /*!< The particle of the instance being placed. */
     std::list<Transform>::iterator mCurXfm; /*!< The multimesh transform being placed. */
-
-private:
-    // Build the transform of an instance from the path at its age, its scale, and its birth
-    // transform, and report the age. The binary inlines this in ListDrawables() and DrawShowing().
-    inline float InstanceXfm(const Instance &instance, float fDirection, Transform &xfm);
 };
 
 /**

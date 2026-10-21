@@ -133,6 +133,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     int mNumPlayers;                   /*!< The chosen entry of mPlayerCounts. */
     int mLastNumPlayers;               /*!< The last entry of mPlayerCounts. */
     int mDuelNumPlayers;               /*!< The entry of mPlayerCounts for a duel. */

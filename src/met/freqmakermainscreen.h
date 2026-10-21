@@ -226,6 +226,27 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+    /** @param nSaveStarted Non-zero once the Freq went to the save screen. */
+    void SetSaveStarted(int nSaveStarted) {
+        mSaveStarted = nSaveStarted;
+    }
+
+    /** @param nEditing 1 when the screen edits the player's Freq, 0 for a new one. */
+    void SetEditing(int nEditing) {
+        mEditing = nEditing;
+    }
+
+    /** @param pszFreqName The name of the Freq. */
+    void SetFreqName(const char *pszFreqName) {
+        mFreqName = pszFreqName;
+    }
+
+    /** @param profile The profile the screen started from. */
+    void SetProfile(Campaign profile) {
+        mProfile = profile;
+    }
+
+private:
     int mReserved74[3];                 // +0x74, not yet recovered.
     int mPrefabIndex;                   /*!< The entry of mPrefabs that `prefabs` shows. +0x80 */
     std::vector<const char *> mPrefabs; /*!< The prefabs, then the unlocked locked prefabs. */

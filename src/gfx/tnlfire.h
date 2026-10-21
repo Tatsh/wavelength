@@ -100,6 +100,7 @@ public:
          */
         void Stop();
 
+    private:
         RndParticleSys *mSys;       /*!< The system, or null. */
         float mEmitRateLow;         /*!< The low end of the saved emission rate. */
         float mEmitRateHigh;        /*!< The high end of the saved emission rate. */
@@ -199,6 +200,7 @@ public:
          */
         bool Update(float flTicks);
 
+    private:
         std::list<Transform>::iterator mInstance; /*!< The instance in the mesh of the model. */
         ChunkModel *mModel;                       /*!< The model, or null while idle. */
         alignas(16) Vector3 mVelocity;            /*!< The distance per tick. */

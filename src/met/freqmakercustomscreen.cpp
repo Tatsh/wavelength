@@ -86,10 +86,10 @@ void FreqMakerCustomScreen::Undo() {
 }
 
 bool FreqMakerCustomScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadTriangle && pMsg->GetPressed() != 0) {
         if (mChanged != 0) {
             FreqMakerErrorScreen *pError = dynamic_cast<FreqMakerErrorScreen *>(
                 TheUI.FindScreen("f_maker_lose_custom_changes", false));

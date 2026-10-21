@@ -95,5 +95,11 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+    /** @param nPad The controller that paused. */
+    void SetPad(int nPad) {
+        mPad = nPad;
+    }
+
+private:
     int mPad; /*!< The controller that paused. */
 };

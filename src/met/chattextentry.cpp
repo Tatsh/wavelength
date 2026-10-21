@@ -18,7 +18,7 @@ ChatTextEntry::ChatTextEntry(DataArray *pData, const char *pszPanel)
 }
 
 bool ChatTextEntry::HandleKeyboardKey(KeyboardKeyMsg *pMsg) {
-    const int nIndex = pMsg->mKey - kKeyF1;
+    const int nIndex = pMsg->GetKey() - kKeyF1;
     if (nIndex >= 0 && nIndex < kNumFunctionKeys) {
         SetText(TheLocale.Localize(FormatString(kFunctionKeyFormat, nIndex + 1), true));
     }

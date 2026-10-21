@@ -47,9 +47,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusResponse *pResponse);
 
-    int mWorldId;   /*!< The game. */
-    int mAccountId; /*!< The account of the player. */
-
 protected:
     /**
      * Send the request and finish.
@@ -58,4 +55,8 @@ protected:
      * @ghidraAddress PAL: 0x002656c0
      */
     void OnStart() override;
+
+private:
+    int mWorldId;   /*!< The game. */
+    int mAccountId; /*!< The account of the player. */
 };

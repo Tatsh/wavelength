@@ -38,10 +38,10 @@ bool ShareRemixScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool ShareRemixScreen::HandleProgress(ShareRemixProgressMsg *pMsg) {
-    if (!(static_cast<double>(pMsg->mProgress) >= 1.0)) {
+    if (!(static_cast<double>(pMsg->GetProgress()) >= 1.0)) {
         DebugPrint("ShareRemixProgressMsg:: progress\n");
         String text(FormatString(TheLocale.Localize("share_progress", true),
-                                 static_cast<int>(pMsg->mProgress * kPercent)));
+                                 static_cast<int>(pMsg->GetProgress() * kPercent)));
         dynamic_cast<DialogPanel *>(mFocusPanel)->SetText(text.c_str());
         return false;
     }
@@ -55,12 +55,12 @@ bool ShareRemixScreen::HandleProgress(ShareRemixProgressMsg *pMsg) {
             return false;
         }
         next = TheMetagame.GetNetScreen();
-    } else if (pMsg->mReceived != 0 && TheNetLaunchpad->IsGuest() != kHostIndex) {
+    } else if (pMsg->GetReceived() != 0 && TheNetLaunchpad->IsGuest() != kHostIndex) {
         auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix", false));
         TheDebug << "just received this remix " << *TheGameDb->GetRemixInfo() << "\n";
         if (TheGameDb->GetRemixReadOnly() != 0) {
             next = "net_save_read_only";
-            pSave->mRemixName = TheGameDb->GetRemixInfo()->mName;
+            pSave->SetRemixName(TheGameDb->GetRemixInfo()->mName);
         } else {
             next = "net_end_remix";
         }

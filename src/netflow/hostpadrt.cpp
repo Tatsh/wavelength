@@ -76,17 +76,17 @@ constexpr int kFilterRemixName = 1;
 
 // Copy the settings of the game from the game database into mParams.
 inline void CopyGameParams(NetGameParams &params) {
-    params.mSong = TheGameDb->GetSong();
-    params.mLoadRemix = TheGameDb->GetLoadRemix();
-    params.mRemixReadOnly = TheGameDb->GetRemixReadOnly();
-    params.mRemixName = TheGameDb->GetRemixName();
-    params.mPracticeMode = TheGameDb->GetPracticeMode();
-    params.mTutorial = TheGameDb->GetTutorial();
-    params.mSkillLevel = TheGameDb->GetSkillLevel();
-    params.mPowerupLevel = TheGameDb->GetPowerupLevel();
-    params.mRuleSet = TheGameDb->GetRuleSet();
-    params.mCommunity = TheGameDb->GetCommunity();
-    params.mMaxPlayers = TheGameDb->GetMaxPlayers();
+    params.SetSong(TheGameDb->GetSong().c_str());
+    params.SetLoadRemix(TheGameDb->GetLoadRemix());
+    params.SetRemixReadOnly(TheGameDb->GetRemixReadOnly());
+    params.SetRemixName(TheGameDb->GetRemixName().c_str());
+    params.SetPracticeMode(TheGameDb->GetPracticeMode());
+    params.SetTutorial(TheGameDb->GetTutorial());
+    params.SetSkillLevel(TheGameDb->GetSkillLevel());
+    params.SetPowerupLevel(TheGameDb->GetPowerupLevel());
+    params.SetRuleSet(TheGameDb->GetRuleSet());
+    params.SetCommunity(TheGameDb->GetCommunity());
+    params.SetMaxPlayers(TheGameDb->GetMaxPlayers());
 }
 
 } // namespace
@@ -112,12 +112,12 @@ HostpadRT::HostpadRT(MsgSink *pScreen, MsgSink *pGame)
     }
 
     CopyGameParams(mParams);
-    if (mParams.mLoadRemix == 0) {
-        mParams.mRemixName.Clear();
+    if (mParams.GetLoadRemix() == 0) {
+        mParams.GetRemixName().Clear();
     }
 
     mConnectTask.Add(
-        new TextFilterTask(&mParams.mRemixName, &mParams.mRemixName, kFilterRemixName));
+        new TextFilterTask(&mParams.GetRemixName(), &mParams.GetRemixName(), kFilterRemixName));
     mConnectTask.Add(new LadderPositionTask(&TheLobbyRT->GetLocalPlayer()));
     mConnectTask.Add(new MGCLConnectTask(MGCLConnectTask::kServerLobby));
     mConnectTask.Add(new MGCLSessionBeginTask());
@@ -145,13 +145,13 @@ HostpadRT::~HostpadRT() {
 void HostpadRT::EndEdit() {
     mRemixShared = 0;
     CopyGameParams(mParams);
-    if (mParams.mLoadRemix == 0) {
-        mParams.mRemixName.Clear();
+    if (mParams.GetLoadRemix() == 0) {
+        mParams.GetRemixName().Clear();
     }
     NetMultiTask *pTask = new NetMultiTask();
     // Yes, the binary adds these steps without making the request their parent.
     pTask->SerialTasks::Add(
-        new TextFilterTask(&mParams.mRemixName, &mParams.mRemixName, kFilterRemixName));
+        new TextFilterTask(&mParams.GetRemixName(), &mParams.GetRemixName(), kFilterRemixName));
     pTask->SerialTasks::Add(new FinishUpdateGameParamsTask());
     mTasks.Add(pTask);
 }
@@ -206,7 +206,7 @@ bool HostpadRT::StartShare(int nShareOnly) {
     (void)(TheGameDb->GetRemixName() == pInfo->mName); // Yes, the binary discards this comparison.
 
     ShareRemixPkt pkt(*pInfo, mShareOnly);
-    strncpy(pkt.mInfo.mName, mParams.mRemixName.c_str(), kRemixInfoNameSize - 1);
+    strncpy(pkt.GetInfo().mName, mParams.GetRemixName().c_str(), kRemixInfoNameSize - 1);
     Send(&pkt);
     ShareRemixProgressMsg msg(0.0f, mShareOnly);
     mGameSink->Dispatch(&msg);
@@ -223,7 +223,7 @@ int HostpadRT::Launch() {
     mInGame = 1;
     ReportNow();
     mSyncDeadline = PeriodicTask::kNever;
-    if (mParams.mLoadRemix != 0) {
+    if (mParams.GetLoadRemix() != 0) {
         StartShare(0);
         mShareTask.Start(nullptr);
         return 1;
@@ -241,7 +241,7 @@ void HostpadRT::Kick(int nId, int nBan) {
     if (nBan != 0) {
         const NetLaunchpadPlayer *pPlayer = FindPlayer(nId);
         if (pPlayer != nullptr) {
-            BanPlayerTask task(mWorldId, pPlayer->mPlayer.mId);
+            BanPlayerTask task(mWorldId, pPlayer->mPlayer.GetId());
             task.Start();
             task.Stop();
         }
@@ -251,7 +251,7 @@ void HostpadRT::Kick(int nId, int nBan) {
     }
     {
         BootPkt pkt;
-        pkt.mPlayer = nId;
+        pkt.SetPlayer(nId);
         Send(&pkt);
     }
     RemovePlayer(nId);
@@ -310,8 +310,8 @@ void HostpadRT::PollStart() {
 #endif
     const float fStart = GetTime() + kStartDelayMs;
     StartGamePkt pkt;
-    pkt.mTime = fStart;
-    pkt.mSeed = RandomInt(0, kSeedRange);
+    pkt.SetTime(fStart);
+    pkt.SetSeed(RandomInt(0, kSeedRange));
     Send(&pkt);
     Dispatch(&pkt);
 }
@@ -388,7 +388,8 @@ void HostpadRT::SetLocalId(int nId) {
     const int nColor = AssignColor(nId);
     const NetLaunchpadPlayer player = {TheLobbyRT->GetLocalPlayer(), nId, nColor, kReadyNo};
     AddPlayer(player);
-    mClientData.push_back(ClientData(player.mId, player.mPlayer.mRank, player.mPlayer.mRating));
+    mClientData.push_back(
+        ClientData(player.mId, player.mPlayer.GetRank(), player.mPlayer.GetRating()));
     mState = kStateSynced;
 }
 
@@ -399,7 +400,7 @@ void HostpadRT::AddClient(int nId) {
         Send(&pkt);
         return;
     }
-    if (mPlayers.size() < static_cast<unsigned int>(mParams.mMaxPlayers)) {
+    if (mPlayers.size() < static_cast<unsigned int>(mParams.GetMaxPlayers())) {
         const int nColor = AssignColor(nId);
         if (nColor != kNoColor) {
             mRemixShared = 0;
@@ -425,7 +426,7 @@ int HostpadRT::CanJoin() {
     if (mInGame != 0 || mSharing != 0) {
         return 0;
     }
-    return mPlayers.size() < static_cast<unsigned int>(mParams.mMaxPlayers);
+    return mPlayers.size() < static_cast<unsigned int>(mParams.GetMaxPlayers());
 }
 
 int HostpadRT::GetWorldStatus() {
@@ -477,31 +478,32 @@ void HostpadRT::SendRating(int nRank) {
     ClientData *pData = VectorFind(mClientData, ClientData(mLocalId, 0, 0));
     if (pData != nullptr) {
         pData->mRank = nRank;
-        pData->mRating = GetLocalPlayer()->mPlayer.mRating;
+        pData->mRating = GetLocalPlayer()->mPlayer.GetRating();
     }
 }
 
 bool HostpadRT::OnMsg(ClientInfoPkt *pPkt) {
     if (CanJoin() != 0) {
-        AddPlayer(pPkt->mPlayer);
-        mClientData.push_back(ClientData(
-            pPkt->mPlayer.mId, pPkt->mPlayer.mPlayer.mRank, pPkt->mPlayer.mPlayer.mRating));
+        AddPlayer(pPkt->GetPlayer());
+        mClientData.push_back(ClientData(pPkt->GetPlayer().mId,
+                                         pPkt->GetPlayer().mPlayer.GetRank(),
+                                         pPkt->GetPlayer().mPlayer.GetRating()));
         ReportNow();
     } else {
-        Kick(pPkt->mPlayer.mId, 0);
+        Kick(pPkt->GetPlayer().mId, 0);
     }
     return false;
 }
 
 bool HostpadRT::OnMsg(TimeRequestPkt *pPkt) {
     const float fNow = SystemMs();
-    TimeResponsePkt pkt(pPkt->mSender, fNow, pPkt->mSendTime);
+    TimeResponsePkt pkt(pPkt->GetSender(), fNow, pPkt->GetSendTime());
     Send(&pkt);
     return false;
 }
 
 bool HostpadRT::OnMsg(DataAckPkt *pPkt) {
-    VectorRemove(mAwaiting, pPkt->mSender);
+    VectorRemove(mAwaiting, pPkt->GetSender());
     return false;
 }
 
@@ -510,16 +512,16 @@ bool HostpadRT::OnMsg(ChatMsg *pMsg) {
     for (int i = 0; i < kKeySize; ++i) {
         EncodeByte(&szKey[i * 2], mKey[i]);
     }
-    ChatMsg::SendPrivate(kKeyChannel, pMsg->mAccountId, szKey);
+    ChatMsg::SendPrivate(kKeyChannel, pMsg->GetAccountId(), szKey);
     return false;
 }
 
 bool HostpadRT::OnMsg(ClientRatingPkt *pPkt) {
     LaunchpadRT::OnMsg(pPkt);
-    ClientData *pData = VectorFind(mClientData, ClientData(pPkt->mSender, 0, 0));
+    ClientData *pData = VectorFind(mClientData, ClientData(pPkt->GetSender(), 0, 0));
     if (pData != nullptr) {
-        pData->mRating = pPkt->mRating;
-        pData->mRank = pPkt->mRank;
+        pData->mRating = pPkt->GetRating();
+        pData->mRank = pPkt->GetRank();
         SendRanks();
     }
     return false;

@@ -26,9 +26,6 @@ public:
      */
     explicit WaitTimeTask(float fSeconds);
 
-    float mDuration; /*!< The time to wait, in milliseconds. */
-    float mEndTime;  /*!< The song clock time the task is done at, in milliseconds. */
-
 protected:
     /**
      * Set the end time from the song clock.
@@ -45,4 +42,8 @@ protected:
      * @ghidraAddress PAL: 0x00143358
      */
     void OnPoll() override;
+
+private:
+    float mDuration; /*!< The time to wait, in milliseconds. */
+    float mEndTime;  /*!< The song clock time the task is done at, in milliseconds. */
 };

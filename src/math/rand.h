@@ -70,6 +70,7 @@ public:
      */
     int Int();
 
+private:
     int mIndex;             /*!< The word the next draw replaces. */
     int mLagIndex;          /*!< The word the next draw combines with the replaced one. */
     int mTable[kTableSize]; /*!< The state. */

@@ -140,6 +140,22 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The player's repeat state. */
+    int GetRepeat() const {
+        return mRepeat;
+    }
+
+    /** @return The index of the player's track. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+    /** @return The update's sequence number. */
+    int GetVersion() const {
+        return mVersion;
+    }
+
+private:
     int mTrack;   /*!< The index of the player's track. */
     int mRepeat;  /*!< The player's repeat state. */
     int mVersion; /*!< The update's sequence number. */

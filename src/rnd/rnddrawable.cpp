@@ -26,7 +26,7 @@ void RndDrawable::SetHighlight(int nHighlight) {
 }
 
 void RndDrawable::DumpText(PrnStream &stream) {
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndDrawable]\n";
@@ -45,7 +45,7 @@ void RndDrawable::Replace(RndObject *pFrom, RndObject *pTo) {
     for (auto it = mDraws.begin(); it != mDraws.end();) {
         RndObject *pChild = *it;
         if (pChild == pTo) {
-            DebugNotify("%s already in %s", pTo->mName.c_str(), mName.c_str());
+            DebugNotify("%s already in %s", pTo->GetName(), mName.c_str());
         }
         if (pChild == pFrom) {
             if (pFrom != nullptr) {
@@ -113,7 +113,7 @@ void RndDrawable::Draw() {
 
 bool RndDrawable::AddDraw(RndDrawable *pDraw, RndDrawable *pBefore) {
     if (ListContains(mDraws, pDraw)) {
-        DebugNotify("%s already in %s", pDraw->mName.c_str(), mName.c_str());
+        DebugNotify("%s already in %s", pDraw->GetName(), mName.c_str());
         return false;
     }
     const auto position = std::find(mDraws.begin(), mDraws.end(), pBefore);

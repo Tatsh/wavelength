@@ -35,28 +35,28 @@ bool NetChangePassword::DispatchPriv(Message *pMsg) {
 }
 
 bool NetChangePassword::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->ChangePassword(this, mOldPassword.c_str(), mNewPassword.c_str());
     }
     return false;
 }
 
 bool NetChangePassword::HandleChangePasswordResult(ChangePasswordResultMsg *pMsg) {
-    if (pMsg->mResult == ChangePasswordResultMsg::kResultUpdateFailed) {
+    if (pMsg->GetResult() == ChangePasswordResultMsg::kResultUpdateFailed) {
         TheUI.GotoScreen(kUpdateErrorScreen);
-    } else if (pMsg->mResult != ChangePasswordResultMsg::kResultSuccess) {
+    } else if (pMsg->GetResult() != ChangePasswordResultMsg::kResultSuccess) {
         TheUI.GotoScreen(kChangeErrorScreen);
     } else if (mSaveChanged == 0) {
         TheUI.GotoScreen(kWelcomeScreen);
     } else {
         if (mSavePassword != 0) {
-            TheGameDb->GetProfile(kLocalPlayer)->mPassword = mNewPassword.c_str();
+            TheGameDb->GetProfile(kLocalPlayer)->SetPassword(mNewPassword.c_str());
         } else {
-            TheGameDb->GetProfile(kLocalPlayer)->mPassword = kNoPassword;
+            TheGameDb->GetProfile(kLocalPlayer)->SetPassword(kNoPassword);
         }
         SaveFreqScreen *pSave =
             dynamic_cast<SaveFreqScreen *>(TheUI.FindScreen(kSaveFreqScreen, false));
-        pSave->mOverwriteStatus = kOverwrite;
+        pSave->SetOverwriteStatus(kOverwrite);
         TheUI.GotoScreen(pSave);
     }
     return false;

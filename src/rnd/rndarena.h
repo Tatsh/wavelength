@@ -70,6 +70,27 @@ public:
             return mSortKey > other.mSortKey;
         }
 
+        /** @return The frame of the view's window in its current loop. */
+        float GetSortKey() const {
+            return mSortKey;
+        }
+
+        /** @param fSortKey The frame of the view's window in its current loop. */
+        void SetSortKey(float fSortKey) {
+            mSortKey = fSortKey;
+        }
+
+        /** @return The view to draw, or null. */
+        RndView *GetView() const {
+            return mView;
+        }
+
+        /** @param pView The view to draw, or null. */
+        void SetView(RndView *pView) {
+            mView = pView;
+        }
+
+    private:
         RndView *mView; /*!< The view to draw, or null. */
         float mSortKey; /*!< The frame of the view's window in its current loop. */
     };
@@ -252,12 +273,6 @@ public:
      */
     static int sLoadRev;
 
-    Vector3 mLoopDist;              /*!< The distance a teleporting view moves on every loop. */
-    float mLoopFrames;              /*!< The length of a loop, in frames. */
-    std::vector<Section> mSections; /*!< The sections. */
-    std::list<Sort> mSorts;         /*!< The drawing order, one entry per section. */
-    int mAnimateViews; /*!< Non-zero to set the frame of each shown view. The title is inferred. */
-
 protected:
     /**
      * Drop the references on the views and empty the drawing order.
@@ -302,6 +317,13 @@ protected:
      * @ghidraAddress PAL: 0x00251d28
      */
     void SetSectionLoop(Section &section, int nLoop);
+
+private:
+    Vector3 mLoopDist;              /*!< The distance a teleporting view moves on every loop. */
+    float mLoopFrames;              /*!< The length of a loop, in frames. */
+    std::vector<Section> mSections; /*!< The sections. */
+    std::list<Sort> mSorts;         /*!< The drawing order, one entry per section. */
+    int mAnimateViews; /*!< Non-zero to set the frame of each shown view. The name is inferred. */
 };
 
 /**

@@ -111,6 +111,7 @@ public:
      */
     static const char *sLetters;
 
+private:
     float mPulse;                            /*!< The pulse, which fades by 0.1 each poll. */
     float mPulseFloor;                       /*!< The level the pulse fades to. */
     int mRevealPending;                      /*!< Whether a reveal waits for the flight. */

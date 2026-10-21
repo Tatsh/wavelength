@@ -39,7 +39,7 @@ bool NetDoUploadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetDoUploadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         ShowProgress(0.0f);
         TheNetLobby->UploadRemix(this, mNote.c_str());
     }
@@ -47,12 +47,12 @@ bool NetDoUploadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) 
 }
 
 bool NetDoUploadScreen::HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg) {
-    switch (pMsg->mStatus) {
+    switch (pMsg->GetStatus()) {
     case RepoRemixStatusMsg::kStatusDone:
         TheUI.GotoScreen(kDoneScreen);
         break;
     case RepoRemixStatusMsg::kStatusProgress:
-        ShowProgress(pMsg->mProgress);
+        ShowProgress(pMsg->GetProgress());
         break;
     case RepoRemixStatusMsg::kStatusAlreadyExists:
         TheUI.GotoScreen(kAlreadyExistsScreen);

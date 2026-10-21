@@ -66,6 +66,7 @@ public:
          */
         void Execute() override;
 
+    private:
         SoloGameLogic *mLogic; /*!< The logic. */
     };
 

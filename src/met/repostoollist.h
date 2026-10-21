@@ -71,6 +71,7 @@ public:
      */
     void UpdateCursor() override;
 
+private:
     std::list<NetRepoRemix> mRemixes; /*!< The listed remixes. */
     const char *mPicPanel;            /*!< `pic_panel`, the panel of the selection. */
 };

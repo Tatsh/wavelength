@@ -89,7 +89,7 @@ void TnlGems::SetRenderScale(RndObject *pObject, float flScale) {
 }
 
 void TnlGems::SetRenderScale(RndMesh *pMesh, float flScale) {
-    sRenderScales[pMesh->mGeomOwner] = flScale;
+    sRenderScales[pMesh->GetGeomOwner()] = flScale;
 }
 
 void TnlGems::ApplyRenderScales(float flWorldScale) {
@@ -107,8 +107,8 @@ void TnlGems::ApplyRenderScales(float flWorldScale) {
             scale.mBasisY.y = flScale;
             pMesh->TransformVerts(scale);
         } else if (auto *pSys = dynamic_cast<RndParticleSys *>(pObject)) {
-            pSys->mSize.x = (pSys->mSize.x * it->second) * flWorldScale;
-            pSys->mSize.y = (pSys->mSize.y * it->second) * flWorldScale;
+            pSys->GetSize().x = (pSys->GetSize().x * it->second) * flWorldScale;
+            pSys->GetSize().y = (pSys->GetSize().y * it->second) * flWorldScale;
         } else {
             DebugWarn("unkown object type: %s", pObject->ClassName());
         }
@@ -125,7 +125,7 @@ void TnlGems::AddRotation(RndMesh *pMesh,
                           float flStartAngle,
                           float flEndFrame,
                           float flEndAngle) {
-    const char *pszName = FormatString("%s rot.msnm", pMesh->mName.c_str());
+    const char *pszName = FormatString("%s rot.msnm", pMesh->GetName());
     if (dynamic_cast<RndMeshAnim *>(TheManager.Find(pszName)) != nullptr) {
         return;
     }
@@ -135,10 +135,10 @@ void TnlGems::AddRotation(RndMesh *pMesh,
     AddRotationKeys(pMesh, pAnim, nKeys, flStartFrame, flStartAngle, flEndFrame, flEndAngle);
     if (bLoop) {
         auto *pLoop = new RndAnimatable::MinMaxLoop;
-        pLoop->mMin = flStartFrame;
-        pLoop->mMax = flEndFrame;
-        pLoop->mLoop = kLoopRotation;
-        pAnim->mFilters.push_back(pLoop);
+        pLoop->SetMin(flStartFrame);
+        pLoop->SetMax(flEndFrame);
+        pLoop->SetLoop(kLoopRotation);
+        pAnim->GetFilters().push_back(pLoop);
     }
     pParent->AddAnim(pAnim);
 }
@@ -159,12 +159,12 @@ char TnlGems::AddMeshGroups(const char *pszName, const char *pszDrawParent, floa
         if (pParent != nullptr) {
             pParent->AddDraw(pMultiMesh, nullptr);
         }
-        SetRenderScale(pMultiMesh->mMesh, sMeshScale);
+        SetRenderScale(pMultiMesh->GetMesh(), sMeshScale);
         mMeshGroups.push_back(std::make_unique<MeshGroup>(
             pMultiMesh, nullptr, nullptr, &mTransforms, mMaxGems, flLookahead));
         MeshGroup *pGroup = mMeshGroups.back().get();
         if (pPrev != nullptr) {
-            pPrev->mNext = pGroup;
+            pPrev->SetNext(pGroup);
         }
         pPrev = pGroup;
     }
@@ -208,7 +208,7 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
             pMultiMesh, &meshes, pSys, &mTransforms, mMaxGems, flLookahead));
         MeshGroup *pGroup = mMeshGroups.back().get();
         if (pPrev != nullptr) {
-            pPrev->mNext = pGroup;
+            pPrev->SetNext(pGroup);
         }
         pPrev = pGroup;
         meshes.clear();
@@ -219,7 +219,7 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
 char TnlGems::AddSpriteGroup(const char *pszName) {
     const int nType = static_cast<int>(mSpriteGroups.size()) + TnlGem::kTypeSprite;
     mSpriteGroups.push_back(std::make_unique<SpriteGroup>(pszName, mMaxGems));
-    RndParticleSys *pSys = mSpriteGroups.back()->mParticles;
+    RndParticleSys *pSys = mSpriteGroups.back()->GetParticles();
     if (pSys != nullptr) {
         SetRenderScale(static_cast<RndObject *>(pSys), sSpriteScale);
     }
@@ -234,9 +234,9 @@ void TnlGems::AddRotations(char nType,
                            float flStartAngle,
                            float flEndFrame,
                            float flEndAngle) {
-    for (MeshGroup *pGroup = GetMeshGroup(nType); pGroup != nullptr; pGroup = pGroup->mNext) {
-        if (pGroup->mMeshes.empty()) {
-            AddRotation(pGroup->mMultiMesh->mMesh,
+    for (MeshGroup *pGroup = GetMeshGroup(nType); pGroup != nullptr; pGroup = pGroup->GetNext()) {
+        if (pGroup->GetMeshes().empty()) {
+            AddRotation(pGroup->GetMultiMesh()->GetMesh(),
                         &mObjects,
                         nKeys,
                         bLoop,
@@ -246,7 +246,7 @@ void TnlGems::AddRotations(char nType,
                         flEndFrame,
                         flEndAngle);
         } else {
-            for (auto *pMesh : pGroup->mMeshes) {
+            for (auto *pMesh : pGroup->GetMeshes()) {
                 AddRotation(pMesh,
                             &mObjects,
                             nKeys,
@@ -268,7 +268,7 @@ void TnlGems::ClearInstances(const char *pszName) {
         if (pMultiMesh == nullptr) {
             break;
         }
-        pMultiMesh->mTransforms.clear();
+        pMultiMesh->GetTransforms().clear();
     }
 }
 
@@ -287,27 +287,27 @@ SpriteGroup *TnlGems::GetSpriteGroup(char nType) {
 void TnlGems::AddGem(
     char nTrack, char nType, char nSlot, int bFlash, char nColor, float flTick, float flShowTick) {
     auto it = FindNearest(flTick);
-    for (; it != mGems.end() && it->mTick <= flTick; ++it) {
-        if (flTick == it->mTick && nSlot == it->mSlot && nTrack == it->mTrack) {
-            it->mRemoveTick = flShowTick;
+    for (; it != mGems.end() && it->GetTick() <= flTick; ++it) {
+        if (flTick == it->GetTick() && nSlot == it->GetSlot() && nTrack == it->GetTrack()) {
+            it->SetRemoveTick(flShowTick);
         }
     }
     TnlGem &gem = *mGems.insert(it, TnlGem());
-    gem.mType = nType;
-    gem.mTrack = nTrack;
-    gem.mTick = flTick;
-    gem.mSlot = nSlot;
-    gem.mFlags = bFlash ? TnlGem::kFlagFlash : TnlGem::kFlagNoFlash;
-    gem.mShowTick = flShowTick;
+    gem.SetType(nType);
+    gem.SetTrack(nTrack);
+    gem.SetTick(flTick);
+    gem.SetSlot(nSlot);
+    gem.SetFlags(bFlash ? TnlGem::kFlagFlash : TnlGem::kFlagNoFlash);
+    gem.SetShowTick(flShowTick);
     if (nColor >= 0) {
-        gem.mFlags |= nColor | TnlGem::kFlagPlayerColor;
+        gem.SetFlags(gem.GetFlags() | nColor | TnlGem::kFlagPlayerColor);
     }
 }
 
 void TnlGems::RemoveGems(char nTrack, float flStartTick, float flEndTick) {
     auto it = FindNearest(flStartTick);
-    while (it != mGems.end() && it->mTick < flEndTick) {
-        if (it->mTrack == nTrack) {
+    while (it != mGems.end() && it->GetTick() < flEndTick) {
+        if (it->GetTrack() == nTrack) {
             it->Release(mTunnel);
             it = mGems.erase(it);
         } else {
@@ -318,8 +318,8 @@ void TnlGems::RemoveGems(char nTrack, float flStartTick, float flEndTick) {
 
 void TnlGems::RemoveGem(char nTrack, char nSlot, float flTick) {
     auto it = FindNearest(flTick);
-    while (it != mGems.end() && it->mTick == flTick) {
-        if (it->mSlot == nSlot && it->mTrack == nTrack) {
+    while (it != mGems.end() && it->GetTick() == flTick) {
+        if (it->GetSlot() == nSlot && it->GetTrack() == nTrack) {
             it->Release(mTunnel);
             it = mGems.erase(it);
         } else {
@@ -341,7 +341,7 @@ void TnlGems::Poll(const TnlTrackRange *pRange) {
     const char nFocusTrack = mHasFocusTrack ? mFocusTrack : kNoTrack;
     const float flTrailTick = flTick - mTrailTicks;
     auto it = mGems.begin();
-    while (it != mGems.end() && it->mTick < flTrailTick) {
+    while (it != mGems.end() && it->GetTick() < flTrailTick) {
         it->Release(nullptr);
         it = mGems.erase(it);
     }
@@ -349,23 +349,23 @@ void TnlGems::Poll(const TnlTrackRange *pRange) {
     const float flHorizonTick = flTick + kHorizonTicks;
     int nPlaced = 0;
     while (it != mGems.end()) {
-        if (it->mRemoveTick < flTick || flHorizonTick < it->mTick) {
+        if (it->GetRemoveTick() < flTick || flHorizonTick < it->GetTick()) {
             it->Release(mTunnel);
             it = mGems.erase(it);
             continue;
         }
-        if ((it->mFlags & TnlGem::kFlagPassed) == 0 && kPassTicks < flTick - it->mTick) {
-            if ((it->mFlags & TnlGem::kFlagFlash) != 0) {
+        if ((it->GetFlags() & TnlGem::kFlagPassed) == 0 && kPassTicks < flTick - it->GetTick()) {
+            if ((it->GetFlags() & TnlGem::kFlagFlash) != 0) {
                 it->Flash(mTunnel);
             }
-            it->mFlags |= TnlGem::kFlagPassed;
-            TheTriggerMgr.GemEvent(it->mTrack, it->mSlot);
-            if (it->mTrack == nFocusTrack) {
-                TheTriggerMgr.HitEvent(kFocusPlayer, it->mSlot);
+            it->SetFlags(it->GetFlags() | TnlGem::kFlagPassed);
+            TheTriggerMgr.GemEvent(it->GetTrack(), it->GetSlot());
+            if (it->GetTrack() == nFocusTrack) {
+                TheTriggerMgr.HitEvent(kFocusPlayer, it->GetSlot());
             }
         }
         if (nPlaced < mMaxGems) {
-            if (it->mShowTick < flTick) {
+            if (it->GetShowTick() < flTick) {
                 it->Update(this, mTunnel, pRange, flTick);
                 ++nPlaced;
             }
@@ -378,18 +378,18 @@ void TnlGems::Poll(const TnlTrackRange *pRange) {
 
 void TnlGems::DrawComposites() {
     for (const auto &pGroup : mMeshGroups) {
-        if (pGroup->mMeshes.empty()) {
+        if (pGroup->GetMeshes().empty()) {
             continue;
         }
-        RndMultiMesh *pMultiMesh = pGroup->mMultiMesh;
-        auto it = pGroup->mMeshes.begin();
+        RndMultiMesh *pMultiMesh = pGroup->GetMultiMesh();
+        auto it = pGroup->GetMeshes().begin();
         pMultiMesh->SetMesh(*it);
         pMultiMesh->Draw();
         ++it;
-        if (pGroup->mParticles != nullptr) {
-            pGroup->mParticles->Draw();
+        if (pGroup->GetParticles() != nullptr) {
+            pGroup->GetParticles()->Draw();
         }
-        for (; it != pGroup->mMeshes.end(); ++it) {
+        for (; it != pGroup->GetMeshes().end(); ++it) {
             pMultiMesh->SetMesh(*it);
             pMultiMesh->Draw();
         }
@@ -415,13 +415,13 @@ std::list<TnlGem>::iterator TnlGems::FindLowerBound(float flTick) {
         return first;
     }
     auto it = std::prev(mGems.end());
-    if (it->mTick < flTick) {
+    if (it->GetTick() < flTick) {
         return mGems.end();
     }
-    if (std::fabs(it->mTick - flTick) < std::fabs(first->mTick - flTick)) {
+    if (std::fabs(it->GetTick() - flTick) < std::fabs(first->GetTick() - flTick)) {
         while (it != first) {
             const auto prev = std::prev(it);
-            if (prev->mTick < flTick) {
+            if (prev->GetTick() < flTick) {
                 return it;
             }
             it = prev;
@@ -429,7 +429,7 @@ std::list<TnlGem>::iterator TnlGems::FindLowerBound(float flTick) {
         return first;
     }
     for (; first != mGems.end(); ++first) {
-        if (flTick <= first->mTick) {
+        if (flTick <= first->GetTick()) {
             break;
         }
     }

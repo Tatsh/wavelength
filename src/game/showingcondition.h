@@ -37,7 +37,7 @@ public:
      * @ghidraAddress PAL: 0x003e4268
      */
     bool Test() override {
-        return mDrawable->mShowing != 0;
+        return mDrawable->GetShowing() != 0;
     }
 
 private:

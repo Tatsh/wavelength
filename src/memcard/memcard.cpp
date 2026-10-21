@@ -148,12 +148,12 @@ struct DirEntriesInit {
 } gDirEntriesInit;
 
 void CopyDate(DateTime &date, const sceMcStDateTime &card) {
-    date.mYear = static_cast<unsigned char>(card.Year - kDateBaseYear);
-    date.mMonth = card.Month;
-    date.mDay = card.Day;
-    date.mHour = card.Hour;
-    date.mMinute = card.Min;
-    date.mSecond = card.Sec;
+    date.SetYear(static_cast<unsigned char>(card.Year - kDateBaseYear));
+    date.SetMonth(card.Month);
+    date.SetDay(card.Day);
+    date.SetHour(card.Hour);
+    date.SetMinute(card.Min);
+    date.SetSecond(card.Sec);
 }
 
 // Convert the listing of a finished sceMcGetDir() and pass it to the handler.

@@ -70,6 +70,17 @@ public:
     class ObjectLoader {
     public:
         /**
+         * Construct the record of one object.
+         *
+         * @param pObject The object.
+         * @param nLoad Non-zero to load the record into the object.
+         * @param nDelete Non-zero to delete the object once the load ends.
+         */
+        ObjectLoader(RndObject *pObject, int nLoad, int nDelete)
+            : mObject(pObject), mLoad(nLoad), mDelete(nDelete) {
+        }
+
+        /**
          * Load the record of the object, or skip it.
          *
          * From version 2 every record ends with an end marker, and the stream is read up to the
@@ -93,6 +104,17 @@ public:
          */
         void Release();
 
+        /** @return Non-zero to load the record into mObject. */
+        int GetLoad() const {
+            return mLoad;
+        }
+
+        /** @return The object. */
+        RndObject *GetObject() const {
+            return mObject;
+        }
+
+    private:
         RndObject *mObject; /*!< The object. */
         int mLoad;          /*!< Non-zero to load the record into mObject. */
         int mDelete;        /*!< Non-zero to delete mObject once the load ends. */
@@ -260,6 +282,22 @@ public:
      */
     void Finish();
 
+    /** @return The file. */
+    const String &GetFile() const {
+        return mFile;
+    }
+
+    /** @return Objects. */
+    const std::list<RndObject *> &GetObjects() const {
+        return mObjects;
+    }
+
+    /** @return Objects, for writing. */
+    std::list<RndObject *> &GetObjects() {
+        return mObjects;
+    }
+
+private:
     State mState;       /*!< The stage the next Poll() runs. */
     int mOwnsStream;    /*!< Non-zero when LoadFile() opened mStream. */
     String mFile;       /*!< The file. */

@@ -134,6 +134,7 @@ public:
      */
     static int sNumLabels;
 
+private:
     RndView *mView;                  /*!< The view of the bar. */
     RndMesh *mCheckpointMesh;        /*!< The marker drawn at every checkpoint. */
     RndTransformable *mFuture;       /*!< The future part, which the markers are placed under. */

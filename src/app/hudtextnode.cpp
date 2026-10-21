@@ -25,9 +25,9 @@ void HudTextNode::Hide() {
 }
 
 void HudTextNode::Draw() {
-    if (mText->mShowing == 0) {
+    if (mText->GetShowing() == 0) {
         return;
     }
-    mText->mFont->mMat->SetAlpha(1.0f);
+    mText->GetFont()->GetMat()->SetAlpha(1.0f);
     mText->Draw();
 }

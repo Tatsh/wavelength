@@ -310,6 +310,7 @@ public:
      */
     static void ToggleNoCapture(DataArray *pCommand, void *pUserData);
 
+private:
     GameLogic *mLogic;  /*!< The logic CreateLogic() installed, or null. */
     int mFxBankSlot;    /*!< The synthesiser slot of the effect bank, or -1. */
     int mCheerBankSlot; /*!< The synthesiser slot of the cheer bank, or -1. */

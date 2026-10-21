@@ -47,8 +47,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusFileResponse *pResponse);
 
-    String *mName; /*!< The file. */
-
 protected:
     /**
      * Send the request.
@@ -57,4 +55,7 @@ protected:
      * @ghidraAddress PAL: 0x00270a30
      */
     void OnStart() override;
+
+private:
+    String *mName; /*!< The file. */
 };

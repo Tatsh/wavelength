@@ -65,7 +65,7 @@ bool TorsoPart::RebuildEmblem() {
     }
     // Preserve the original deletion point, before the new texture is taken from the loader.
     mEmblemTex.reset();
-    std::list<RndObject *> &objects = mEmblemLoader->mObjects;
+    std::list<RndObject *> &objects = mEmblemLoader->GetObjects();
     for (auto it = objects.begin(); it != objects.end(); ++it) {
         // Only the texture is taken over; the other objects stay with the loader.
         mEmblemTex.reset(dynamic_cast<RndTex *>(*it));
@@ -77,23 +77,22 @@ bool TorsoPart::RebuildEmblem() {
     }
     mEmblemLoader.reset();
     // The binary does not check for a file without a texture.
-    mEmblemTex->SetName(
-        FormatString("avatar%d_%s", mAvatar->GetIndex(), mEmblemTex->mName.c_str()));
+    mEmblemTex->SetName(FormatString("avatar%d_%s", mAvatar->GetIndex(), mEmblemTex->GetName()));
     mEmblem = mPendingEmblem;
     ApplyEmblem();
     return true;
 }
 
 void TorsoPart::ApplyEmblem() {
-    std::vector<RndMat::Stage> &stages = mMat->mStages;
+    std::vector<RndMat::Stage> &stages = mMat->GetStages();
     if (stages.size() < kMinEmblemStages) {
         return;
     }
     RndMat::Stage &stage = stages[stages.size() - 1];
     if (mEmblem != Avatar::GetNone()) {
         stage.SetTex(mEmblemTex.get());
-        stage.mBlend = RndMat::kBlendSrcAlpha;
+        stage.SetBlend(RndMat::kBlendSrcAlpha);
     } else {
-        stage.mBlend = RndMat::kBlendDest;
+        stage.SetBlend(RndMat::kBlendDest);
     }
 }

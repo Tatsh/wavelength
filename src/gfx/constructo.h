@@ -91,6 +91,7 @@ public:
      */
     void Poll(float fTick, float fTime) override;
 
+private:
     Level mLevel;                     /*!< The level, unset for a name of no level. */
     std::list<MovingPSPlane> mPlanes; /*!< The building parts and their planes. */
 };

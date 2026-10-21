@@ -31,7 +31,7 @@ void SongPicPanel::SetBandPicture(const char *pszSong,
     mUnlocked = bUnlocked;
     mEncrypted = bEncrypted;
     mSong = pszSong;
-    if (mPicturePath.mLength != 0) {
+    if (mPicturePath.GetLength() != 0) {
         TheManager.ReleaseTexture(mPicturePath);
     }
     FilePath::SetRoot(FileRoot());
@@ -55,7 +55,7 @@ void SongPicPanel::SetBandPicture(const char *pszSong,
 void SongPicPanel::SetArenaPicture(const char *pszArena) {
     mSong = "";
     mUnlocked = 0;
-    if (mPicturePath.mLength != 0) {
+    if (mPicturePath.GetLength() != 0) {
         TheManager.ReleaseTexture(mPicturePath);
     }
     FilePath::SetRoot(FileRoot());
@@ -84,7 +84,8 @@ void SongPicPanel::SetPictureShowing(bool bShowing) {
 
 void SongPicPanel::Poll(float fTime) {
     FreqPanel::Poll(fTime);
-    if (mLoaded == 0 || mPicturePath.mLength == 0 || !TheManager.IsTextureLoaded(mPicturePath)) {
+    if (mLoaded == 0 || mPicturePath.GetLength() == 0 ||
+        !TheManager.IsTextureLoaded(mPicturePath)) {
         return;
     }
 
@@ -104,7 +105,7 @@ void SongPicPanel::Poll(float fTime) {
 
 void SongPicPanel::Exit(bool bForce, float fTime) {
     FreqPanel::Exit(bForce, fTime);
-    if (mPicturePath.mLength != 0) {
+    if (mPicturePath.GetLength() != 0) {
         TheManager.ReleaseTexture(mPicturePath);
     }
 }

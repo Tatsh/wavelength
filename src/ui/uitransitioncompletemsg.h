@@ -103,6 +103,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The screen that entered. */
+    UIScreen *GetScreen() const {
+        return mScreen;
+    }
+
+    /** @return The screen it entered from, or null. */
+    UIScreen *GetPrevScreen() const {
+        return mPrevScreen;
+    }
+
+private:
     UIScreen *mScreen;     /*!< The screen that entered. */
     UIScreen *mPrevScreen; /*!< The screen it entered from, or null. */
 };

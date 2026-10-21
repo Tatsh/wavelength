@@ -7,7 +7,7 @@ PreLaunchScreen::PreLaunchScreen(DataArray *pData) : TransitionScreen(pData) {
 }
 
 bool PreLaunchScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (pMsg->mScreen == this) {
+    if (pMsg->GetScreen() == this) {
         TheUI.GotoScreen(mLaunchName);
     }
     return false;

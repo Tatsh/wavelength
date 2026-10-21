@@ -31,13 +31,13 @@ bool RemixCreateModeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool RemixCreateModeScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle) {
+    if (pMsg->GetButton() == kPadTriangle) {
         if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
             TheUI.GotoScreen("m_r_sel_song");
         } else {

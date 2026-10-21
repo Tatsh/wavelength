@@ -68,6 +68,37 @@ public:
         }
     }
 
+    /** @return The song tick the ticks of the commands count from. */
+    int GetStartTick() const {
+        return mStartTick;
+    }
+
+    /** @param nStartTick The song tick the ticks of the commands count from. */
+    void SetStartTick(int nStartTick) {
+        mStartTick = nStartTick;
+    }
+
+    /** @return The index of the command that runs next. */
+    int GetNextCommand() const {
+        return mNextCommand;
+    }
+
+    /** @param nNextCommand The index of the command that runs next. */
+    void SetNextCommand(int nNextCommand) {
+        mNextCommand = nNextCommand;
+    }
+
+    /** @return The commands. */
+    ScriptTrackData *GetTrack() const {
+        return mTrack;
+    }
+
+    /** @param pWaitingTask The task waiting for the end of the track, or null. */
+    void SetWaitingTask(Task *pWaitingTask) {
+        mWaitingTask = pWaitingTask;
+    }
+
+private:
     ScriptTrackData *mTrack; /*!< The commands. */
     float *mTickDuration;    /*!< The duration of one song tick, from Song::GetMsPerTick(). */
     int mNextCommand;        /*!< The index of the command that runs next. */

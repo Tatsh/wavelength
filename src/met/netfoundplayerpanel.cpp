@@ -39,22 +39,22 @@ NetFoundPlayerPanel::NetFoundPlayerPanel(DataArray *pData, const char *pszDir)
 
 void NetFoundPlayerPanel::Enter(bool bForce, float fTime) {
     AvatarPanel::Enter(bForce, fTime);
-    FindComponent(kNameComponent, false)->SetText(mPlayer.mName.c_str());
+    FindComponent(kNameComponent, false)->SetText(mPlayer.GetName().c_str());
 
     UIComponent *pRank = FindComponent(kRankComponent, false);
     char szRank[kRankTextSize];
     if (mPlayer.IsNewbie()) {
         std::strcpy(szRank, TheLocale.Localize(kNewbieToken, true));
     } else {
-        std::sprintf(szRank, kRankFormat, mPlayer.mRank);
+        std::sprintf(szRank, kRankFormat, mPlayer.GetRank());
     }
     pRank->SetText(FormatString(TheLocale.Localize(kRankToken, true), szRank));
 
     FindComponent(kGamesComponent, false)
-        ->SetText(FormatString(TheLocale.Localize(kGamesToken, true), mPlayer.mGames));
+        ->SetText(FormatString(TheLocale.Localize(kGamesToken, true), mPlayer.GetGames()));
 
     UIComponent *pNet = FindComponent(kNetComponent, false);
-    const String connection(GetConnectionTypeName(mPlayer.mConnectionType));
+    const String connection(GetConnectionTypeName(mPlayer.GetConnectionType()));
     pNet->SetText(FormatString(TheLocale.Localize(kNetToken, true), connection.c_str()));
 
     String text;
@@ -64,7 +64,7 @@ void NetFoundPlayerPanel::Enter(bool bForce, float fTime) {
         text = FormatString(pszFormat, TheLocale.Localize(kYesToken, true));
     } else {
         String date;
-        mPlayer.mLastOnline.FormatDate(date);
+        mPlayer.GetLastOnline().FormatDate(date);
         text = FormatString(TheLocale.Localize(kOnlineToken, true), date.c_str());
     }
     pOnline->SetText(text.c_str());
@@ -78,6 +78,6 @@ void NetFoundPlayerPanel::Enter(bool bForce, float fTime) {
     pLobby->SetText(text.c_str());
 
     dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))
-        ->SetMat(FindRankMaterial(mPlayer.mRankIcon));
-    SetAvatar(&mPlayer.mAvatar);
+        ->SetMat(FindRankMaterial(mPlayer.GetRankIcon()));
+    SetAvatar(&mPlayer.GetAvatar());
 }

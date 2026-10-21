@@ -46,22 +46,22 @@ void NetLoginScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     NetPasswordScreen::Enter(pPrevScreen, fTime);
     UIPanel *pPanel = mFocusPanel;
     pPanel->FindComponent(kNameEntry, false)
-        ->SetText(TheGameDb->GetProfile(kLocalPlayer)->mName.c_str());
+        ->SetText(TheGameDb->GetProfile(kLocalPlayer)->GetName().c_str());
 
     UITextEntry *pPassword =
         static_cast<UITextEntry *>(pPanel->FindComponent(kPasswordEntry, false));
-    pPassword->mMaxNumChars = kMaxPasswordChars;
+    pPassword->SetMaxNumChars(kMaxPasswordChars);
 #ifdef VIDEO_STANDARD_PAL
-    pPassword->mUtf8MaxLen = kMaxPasswordChars;
+    pPassword->SetUtf8MaxLen(kMaxPasswordChars);
 #endif
     if (std::strcmp(mTypedPassword.c_str(), kNoPassword) != 0) {
         pPassword->SetText(mTypedPassword.c_str());
         mTypedPassword = kNoPassword;
     } else {
-        pPassword->SetText(TheGameDb->GetProfile(kLocalPlayer)->mPassword.c_str());
+        pPassword->SetText(TheGameDb->GetProfile(kLocalPlayer)->GetPassword().c_str());
     }
 
-    if (TheGameDb->GetProfile(kLocalPlayer)->mNameLocked == kNameLocked) {
+    if (TheGameDb->GetProfile(kLocalPlayer)->GetNameLocked() == kNameLocked) {
         pPanel->FindComponent(kCreateButton, false)->SetState(UIComponent::kStateDisabled, false);
         pPanel->SetFocus(pPanel->FindComponent(kPasswordEntry, false), kPadNone);
         pPassword->SetEditing(true);
@@ -79,9 +79,9 @@ void NetLoginScreen::Login() {
     const String password(mFocusPanel->FindComponent(kPasswordEntry, false)->Text());
     NetServerLogin *pLogin =
         static_cast<NetServerLogin *>(TheUI.FindScreen(kServerLoginScreen, false));
-    pLogin->mPassword = password.c_str();
-    pLogin->mSaveChanged = mSavePassword != mSavePasswordInitial;
-    pLogin->mSavePassword = mSavePassword;
+    pLogin->SetPassword(password.c_str());
+    pLogin->SetSaveChanged(mSavePassword != mSavePasswordInitial);
+    pLogin->SetSavePassword(mSavePassword);
     TheNetLobby->SetProfile(TheGameDb->GetProfile(kLocalPlayer));
     TheUI.GotoScreen(pLogin);
     mTypedPassword = kNoPassword;
@@ -93,7 +93,7 @@ void NetLoginScreen::OpenKeyboard() {
         dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
     UITextEntry *pPassword =
         static_cast<UITextEntry *>(pPanel->FindComponent(kPasswordEntry, false));
-    const int nMaxWidth = static_cast<int>(pPassword->mMaxEntryWidth);
+    const int nMaxWidth = static_cast<int>(pPassword->GetMaxEntryWidth());
     const KeyboardRequest request(this,
                                   TheUI.GetCurrentScreen(),
                                   pPassword->Text(),
@@ -123,14 +123,14 @@ bool NetLoginScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetLoginScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
 
     UIPanel *pPanel = mFocusPanel;
-    if (pPanel != nullptr && pMsg->mPressed != 0) {
+    if (pPanel != nullptr && pMsg->GetPressed() != 0) {
         const char *pszFocus = pPanel->GetFocus()->GetName();
-        if (pMsg->mButton == kPadCross) {
+        if (pMsg->GetButton() == kPadCross) {
             if (std::strcmp(pszFocus, kPasswordEntry) == 0) {
                 UITextEntry *pPassword =
                     dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kPasswordEntry, false));
@@ -148,7 +148,7 @@ bool NetLoginScreen::HandleJoypad(JoypadInputMsg *pMsg) {
                 }
                 return true;
             }
-        } else if (pMsg->mButton == kPadCircle && std::strcmp(pszFocus, kPasswordEntry) == 0) {
+        } else if (pMsg->GetButton() == kPadCircle && std::strcmp(pszFocus, kPasswordEntry) == 0) {
             OpenKeyboard();
         }
     }
@@ -176,7 +176,7 @@ int NetLoginScreen::ReceiveKeyboardText(const char *pszText) {
 }
 
 bool NetLoginScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    if (pMsg->mText.mLength != 0) {
+    if (pMsg->GetText().GetLength() != 0) {
         Login();
     }
     return true;

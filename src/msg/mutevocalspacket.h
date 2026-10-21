@@ -126,6 +126,37 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return Whether the vocals are muted. */
+    int GetMute() const {
+        return mMute;
+    }
+
+    /** @param nMute Whether the vocals are muted. */
+    void SetMute(int nMute) {
+        mMute = nMute;
+    }
+
+    /** @return The section. */
+    int GetSection() const {
+        return mSection;
+    }
+
+    /** @param nSection The section. */
+    void SetSection(int nSection) {
+        mSection = nSection;
+    }
+
+    /** @return The track. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+    /** @param nTrack The track. */
+    void SetTrack(int nTrack) {
+        mTrack = nTrack;
+    }
+
+private:
     int mSection; /*!< The section. */
     int mTrack;   /*!< The track. */
     int mMute;    /*!< Whether the vocals are muted. */

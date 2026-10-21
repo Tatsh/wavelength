@@ -39,6 +39,7 @@ public:
      */
     float GetMedian();
 
+private:
     float mMin;                  /*!< The smallest sample. */
     float mMax;                  /*!< The largest sample. */
     float mSum;                  /*!< The sum of the samples. */

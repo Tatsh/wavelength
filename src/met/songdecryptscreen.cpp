@@ -31,7 +31,7 @@ SongDecryptScreen::SongDecryptScreen(DataArray *pData)
 
 void SongDecryptScreen::SetSong(const char *pszSong) {
     mSong = pszSong;
-    static_cast<BonusPicPanel *>(TheUI.FindPanel("s_g_bonus_pic", false))->mSong = pszSong;
+    static_cast<BonusPicPanel *>(TheUI.FindPanel("s_g_bonus_pic", false))->SetSong(pszSong);
 }
 
 void SongDecryptScreen::Enter(UIScreen *pPrevScreen, float fTime) {
@@ -63,10 +63,11 @@ void SongDecryptScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void SongDecryptScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
-    const float fFrame = mPicAnim->mFilteredFrame;
+    const float fFrame = mPicAnim->GetFilteredFrame();
     mAnimPlayer.Poll(TheUI.GetTime()); // Yes, the binary polls with the front-end time.
     // The second texture key of the first stage starts the decryption, and the third ends it.
-    const std::vector<Key<RndTex *>> &keys = mPicAnim->mKeysOwner->mStages[kRevealStage].mTexKeys;
+    const std::vector<Key<RndTex *>> &keys =
+        mPicAnim->GetKeysOwner()->GetStages()[kRevealStage].GetTexKeys();
     auto key = keys.begin() + kDecryptKey;
     if (!mDecryptPlayed && key->frame <= fFrame) {
         FxMidi::PlayDecrypt();

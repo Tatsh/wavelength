@@ -65,7 +65,10 @@ public:
         return "";
     }
 
-    String mNote; /*!< The note uploaded with the remix. */
+    /** @param pszNote The note uploaded with the remix. */
+    void SetNote(const char *pszNote) {
+        mNote = pszNote;
+    }
 
 private:
     /**
@@ -102,4 +105,6 @@ private:
      * @ghidraAddress PAL: 0x00183110
      */
     bool HandleRepoRemixStatus(RepoRemixStatusMsg *pMsg);
+
+    String mNote; /*!< The note uploaded with the remix. */
 };

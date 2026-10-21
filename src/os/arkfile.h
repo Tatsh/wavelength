@@ -165,6 +165,7 @@ public:
      */
     void TaskDone(int nBytes);
 
+private:
     long long mArkOffset;  /*!< The byte of the disc the file starts at. */
     int mSize;             /*!< The size in bytes. */
     int mUncompressedSize; /*!< The size before compression. */

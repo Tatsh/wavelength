@@ -34,7 +34,7 @@ inline int CheckpointBars() {
         TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         return 0;
     }
-    return TheGameConfig->mCheckpointBars;
+    return TheGameConfig->GetCheckpointBars();
 }
 
 } // namespace
@@ -98,7 +98,7 @@ void CatchTrack::Start() {
     for (BackMusic *pMusic : mBackMusic) {
         pMusic->Stop();
     }
-    if (TheGameDb->GetNumPads() != kGuideTickerPads || TheGameConfig->mGuideTicks == 0) {
+    if (TheGameDb->GetNumPads() != kGuideTickerPads || TheGameConfig->GetGuideTicks() == 0) {
         return;
     }
     mGuideTicker.Start();
@@ -162,7 +162,7 @@ void CatchTrack::SetBarPowerup(int nBar, int nPowerup) {
 
 void CatchTrack::Enable(int nBar) {
     mEnabled = 1;
-    for (int i = mPlayMap->mLooping ? kFirstBar : nBar; i < mNumBars; ++i) {
+    for (int i = mPlayMap->GetLooping() ? kFirstBar : nBar; i < mNumBars; ++i) {
         const int nSectionStart = mSections->SectionStart(mSections->SectionAt(i));
         const bool bCheckpoint = (nSectionStart > 0) && ((i - nSectionStart) < CheckpointBars());
         const bool bEmpty = mState.IsWrittenBarEmpty(i);
@@ -173,12 +173,13 @@ void CatchTrack::Enable(int nBar) {
 }
 
 void CatchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
-    if (event.mState == 0) {
+    if (event.GetState() == 0) {
         return;
     }
 
     if (pPlayer != mPlayer) {
-        (void)TheHelpText->ShowCatchBehind(event.mPlayer); // Yes, the binary discards the result.
+        (void)TheHelpText->ShowCatchBehind(
+            event.GetPlayer()); // Yes, the binary discards the result.
         return;
     }
     if (mShowHints != 0) {
@@ -187,7 +188,7 @@ void CatchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
     if (TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
         mGuideTicker.MuteForTwoBars();
     }
-    mCapturer.Press(event.mButton);
+    mCapturer.Press(event.GetButton());
 }
 
 void CatchTrack::Restart(Player *pPlayer, int nTick) {
@@ -231,7 +232,7 @@ bool CatchTrack::Autocatch(int nBar, Player *pPlayer) {
     }
 
     if (TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
-        pPlayer->AddScore(TheGameConfig->mAutocatcherPoints[TheGameDb->GetSkillLevel()]);
+        pPlayer->AddScore(TheGameConfig->GetAutocatcherPoints()[TheGameDb->GetSkillLevel()]);
     }
     pPlayer->SetPendingPoints(0, true);
     pPlayer->SetCatching(false);
@@ -269,7 +270,7 @@ void CatchTrack::ActivateBars(
         pMusic->Start(mPlayMap);
     }
     TheSongScheduler.Cancel(mDeactivateCommand.Get());
-    if (TheGameConfig->mNoDeactivate == 0) {
+    if (TheGameConfig->GetNoDeactivate() == 0) {
         const int nLastTick = (nEndBar * mTicksPerBar) - 1;
         if (nLastTick >= TheSongScheduler.GetTick()) {
             TheSongScheduler.PostAt(mDeactivateCommand.Get(), nLastTick, false);
@@ -318,7 +319,7 @@ void CatchTrack::ScheduleHint() {
 }
 
 int CatchTrack::GetStrandBars() {
-    return TheGameConfig->mStrandBars[TheGameDb->GetNumPlayers() - 1];
+    return TheGameConfig->GetStrandBars()[TheGameDb->GetNumPlayers() - 1];
 }
 
 void CatchTrack::OnCapture(const GemCursor &cursor) {

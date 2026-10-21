@@ -142,6 +142,7 @@ public:
      */
     float GetEmptyFraction() const;
 
+private:
     float mTempo;                                 /*!< The tempo, in beats per minute. */
     float mMsPerTick;                             /*!< The duration of one tick. */
     int mNumBars;                                 /*!< The number of bars. */

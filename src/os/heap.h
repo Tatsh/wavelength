@@ -167,6 +167,22 @@ public:
      */
     void Compact(int nByteBudget, bool bStrict);
 
+    /** @return The first word of the heap. */
+    int *GetStart() const {
+        return mStart;
+    }
+
+    /** @return The size of the heap in words. */
+    int GetSizeWords() const {
+        return mSizeWords;
+    }
+
+    /** @return The name of the heap. */
+    const char *GetName() const {
+        return mName;
+    }
+
+private:
     FreeBlock *mFreeList; /*!< The free blocks in address order. */
     int *mStart;          /*!< The first word of the heap. */
     const char *mName;    /*!< The name of the heap. */

@@ -166,16 +166,16 @@ void Vortex::Draw() {
     if ((mMode == kModeIdle) || (mTopView == nullptr)) {
         return;
     }
-    const JoypadStick &stick = JoypadGetState(kStickPad)->mSticks[0];
+    const JoypadStick &stick = JoypadGetState(kStickPad)->GetSticks()[0];
     mStick = Vector2{stick.mX, stick.mY};
     const Vector3 up{mStick.x * mMotionRange.x, 1.0f, mStick.y * mMotionRange.y};
     const Vector3 forward{0.0f, 0.0f, 1.0f};
     Vector3 basis[kBasisRows];
     Mat33BuildOrthonormal(&up.x, &forward.x, &basis[0].x);
-    mWiggle->mLocalXfm.mBasisX = basis[0];
-    mWiggle->mLocalXfm.mBasisY = basis[1];
-    mWiggle->mLocalXfm.mBasisZ = basis[2];
-    mWiggle->mDirty = 1;
+    mWiggle->GetLocalXfm().mBasisX = basis[0];
+    mWiggle->GetLocalXfm().mBasisY = basis[1];
+    mWiggle->GetLocalXfm().mBasisZ = basis[2];
+    mWiggle->SetDirty(1);
     // Yes, the binary drives the X animation with both axes and never the Y animation.
     mWiggleXAnim->SetFrame(mStick.x * kWiggleFrames);
     mWiggleXAnim->SetFrame(mStick.y * kWiggleFrames);

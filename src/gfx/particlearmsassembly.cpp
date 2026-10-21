@@ -52,7 +52,7 @@ ParticleArmsAssembly::ParticleArmsAssembly(DataArray *pData)
       mAngle(0.0f) {
     mSys.reset(dynamic_cast<RndParticleSys *>(
         TheManager.Create(RndParticleSys::sClassName, pData->Sym(0))));
-    mSys->mMode = RndParticleSys::kModeSprite;
+    mSys->SetMode(RndParticleSys::kModeSprite);
     const char *pszParent = kDefaultDrawParent;
     pData->FindSymbol("draw_parent", &pszParent, false);
     dynamic_cast<RndDrawable *>(TheManager.Find(pszParent))->AddDraw(mSys.get(), nullptr);
@@ -63,8 +63,8 @@ ParticleArmsAssembly::~ParticleArmsAssembly() = default;
 
 void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
     mSys->FreeAllParticles();
-    mSys->mEmitRate.y = 0.0f;
-    mSys->mEmitRate.x = 0.0f;
+    mSys->GetEmitRate().y = 0.0f;
+    mSys->GetEmitRate().x = 0.0f;
     DataArray *pTicksAhead = pData->FindArray("ticks_ahead", false);
     if (pTicksAhead != nullptr) {
         mTicksAhead.reset(ObjectToInterpolator(pTicksAhead->Array(1)));
@@ -101,69 +101,70 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
 
     Vector2 range;
     if (pSys->FindVector("emit_rate", &range, false)) {
-        mSys->mEmitRate.x = range.x;
-        mSys->mEmitRate.y = range.y;
+        mSys->GetEmitRate().x = range.x;
+        mSys->GetEmitRate().y = range.y;
     }
     if (pSys->FindVector("life", &range, false)) {
-        mSys->mLife = range;
+        mSys->GetLife() = range;
     }
     if (pSys->FindVector("speed", &range, false)) {
-        mSys->mSpeed = range;
+        mSys->GetSpeed() = range;
     }
     if (pSys->FindVector("pitch", &range, false)) {
-        mSys->mPitch = ToRadians(range);
+        mSys->GetPitch() = ToRadians(range);
     }
     if (pSys->FindVector("yaw", &range, false)) {
-        mSys->mYaw = ToRadians(range);
+        mSys->GetYaw() = ToRadians(range);
     }
     if (pSys->FindVector("size", &range, false)) {
-        mSys->mSize.x = range.x;
-        mSys->mSize.y = range.y;
+        mSys->GetSize().x = range.x;
+        mSys->GetSize().y = range.y;
     }
 
     DataArray *pRange = pSys->FindArray("pos", false);
     if (pRange != nullptr) {
         const Vector3 low = ReadVector3(pRange->Array(1));
         const Vector3 high = ReadVector3(pRange->Array(2));
-        mSys->mPosLow = low;
-        mSys->mPosHigh = high;
+        mSys->GetPosLow() = low;
+        mSys->GetPosHigh() = high;
     }
     pRange = pSys->FindArray("start_color", false);
     if (pRange != nullptr) {
         const Color low = ReadColor(pRange->Array(1));
         const Color high = ReadColor(pRange->Array(2));
-        mSys->mStartColorLow = low;
-        mSys->mStartColorHigh = high;
+        mSys->GetStartColorLow() = low;
+        mSys->GetStartColorHigh() = high;
     }
     pRange = pSys->FindArray("end_color", false);
     if (pRange != nullptr) {
         const Color low = ReadColor(pRange->Array(1));
         const Color high = ReadColor(pRange->Array(2));
-        mSys->mEndColorLow = low;
-        mSys->mEndColorHigh = high;
+        mSys->GetEndColorLow() = low;
+        mSys->GetEndColorHigh() = high;
     }
     DataArray *pBubble = pSys->FindArray("bubble", false);
     if (pBubble != nullptr) {
-        mSys->mBubble = 1;
+        mSys->SetBubble(1);
         if (pBubble->FindVector("period", &range, false)) {
-            mSys->mBubblePeriod = range;
+            mSys->GetBubblePeriod() = range;
         }
         if (pBubble->FindVector("size", &range, false)) {
-            mSys->mBubbleSize = range;
+            mSys->GetBubbleSize() = range;
         }
     }
     Vector3 force;
     if (pSys->FindVector("force", &force, false)) {
-        mSys->mForce = force;
+        mSys->GetForce() = force;
     }
     if (pSys->FindInt("read_z", &nValue, false)) {
-        mSys->mReadZ = (nValue != 0);
+        mSys->SetReadZ((nValue != 0));
     }
 }
 
 void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
     RndParticleSys *pSys = mSys.get();
-    if (pSys->mLiveParticles == nullptr && pSys->mEmitRate.x == 0.0f && pSys->mEmitRate.y == 0.0f) {
+    if (pSys->GetLiveParticles() == nullptr && pSys->GetEmitRate().x == 0.0f &&
+        pSys->GetEmitRate().y == 0.0f) {
         mTick = flTick;
         pSys->ResetEmitFrame();
         return;
@@ -191,9 +192,9 @@ void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
         arm.mTranslation = Vector3{flSin * mArmLength, mArmLength * 0.0f, flCos * mArmLength};
         sceVu0MulAffineMatrixXyz(&arm.mBasisX.x, &base.mBasisX.x, &arm.mBasisX.x);
 
-        pSys->mLocalXfm = arm;
+        pSys->GetLocalXfm() = arm;
 
-        pSys->mDirty = 1;
+        pSys->SetDirty(1);
         pSys->UpdateWorldXfm(nullptr, 0);
 
         mTick += flDelta;
@@ -207,15 +208,15 @@ void ParticleArmsAssembly::Move(float flFromTicks, float flToTicks, float flTick
 }
 
 void ParticleArmsAssembly::Report() {
-    const char *pszName = mSys->mName.c_str();
+    const char *pszName = mSys->GetName();
     const int nLive = mSys->NumLiveParticles();
-    RndParticleSys *pOwner = mSys->mParticlesOwner;
-    const int nPool = pOwner->mNumParticles;
-    const char *pszOwner = (pOwner == mSys.get()) ? "self" : pOwner->mName.c_str();
+    RndParticleSys *pOwner = mSys->GetParticlesOwner();
+    const int nPool = pOwner->GetNumParticles();
+    const char *pszOwner = (pOwner == mSys.get()) ? "self" : pOwner->GetName();
     DebugPrint(
         "particle arm %s: %d particles of %d (owner: %s)\n", pszName, nLive, nPool, pszOwner);
 }
 
 const char *ParticleArmsAssembly::Name() const {
-    return mSys->mName.c_str();
+    return mSys->GetName();
 }

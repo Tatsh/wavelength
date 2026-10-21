@@ -60,7 +60,7 @@ Vector3 Blend(const Vector3 &from, const Vector3 &to, float fProgress) {
 
 // Place a vertex of a mesh on the plane of the display.
 void SetVert(RndMesh *pMesh, int nVert, float fX, float fZ) {
-    Vector3 &point = pMesh->mGeomOwner->mVerts[nVert].mPos;
+    Vector3 &point = pMesh->GetGeomOwner()->GetVerts()[nVert].mPos;
     point.x = fX;
     point.y = 0.0f;
     point.z = fZ;
@@ -75,11 +75,11 @@ void CopyRow(Vector3 &destination, const float (&source)[kRowFloatCount]) {
 }
 
 void CopyTranslation(RndTransformable *pTrans, const Vector3 &position) {
-    pTrans->mLocalXfm.mTranslation = position;
+    pTrans->GetLocalXfm().mTranslation = position;
 }
 
 void SetTranslation(RndTransformable *pTrans, const Vector3 &position) {
-    pTrans->mDirty = 1;
+    pTrans->SetDirty(1);
     CopyTranslation(pTrans, position);
 }
 
@@ -98,7 +98,7 @@ HudHiliteBox::HudHiliteBox()
     for (int i = 0; i < kNumBoxVerts; ++i) {
         mBoxVerts[i] = kBoxVerts[i];
     }
-    const std::vector<RndMesh::Vert> &verts = mBox->mGeomOwner->mVerts;
+    const std::vector<RndMesh::Vert> &verts = mBox->GetGeomOwner()->GetVerts();
     mCornerSize.x = verts[kCornerFarVert].mPos.x - verts[kCornerNearVert].mPos.x;
     mCornerSize.y = verts[kCornerFarVert].mPos.z - verts[kCornerNearVert].mPos.z;
     Reset();
@@ -140,7 +140,7 @@ void HudHiliteBox::SetBoxRect(float fX0, float fY0, float fX1, float fY1, float 
     if (!(mCornerSize.y + mCornerSize.y < fHeight)) {
         DebugNotify("too short.\n");
     }
-    mFromPos = mBox->mLocalXfm.mTranslation;
+    mFromPos = mBox->GetLocalXfm().mTranslation;
     mToPos.x = (fX0 + fX1) * 0.5f;
     mToPos.z = (fY0 + fY1) * 0.5f;
     mToPos.y = 0.0f;
@@ -205,7 +205,7 @@ void HudHiliteBox::Update(float fTick) {
         const float fProgress = mArrowMove.Interpolator::Eval(fTick);
         RndTransformable *pArrow = mArrow;
         CopyTranslation(pArrow, Blend(mFromArrowPos, mToArrowPos, fProgress));
-        pArrow->mDirty = 1;
+        pArrow->SetDirty(1);
         const float fAngle = (mToArrowAngle - mFromArrowAngle) * fProgress + mFromArrowAngle;
         const float fCos = SinApprox(fAngle + kHalfPi);
         const float fSin = SinApprox(fAngle);
@@ -223,10 +223,10 @@ void HudHiliteBox::Update(float fTick) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-        CopyRow(pArrow->mLocalXfm.mBasisX, basis[kXfmRowBasisX]);
-        CopyRow(pArrow->mLocalXfm.mBasisY, basis[kXfmRowBasisY]);
-        pArrow->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
-        CopyRow(pArrow->mLocalXfm.mBasisZ, basis[kXfmRowBasisZ]);
+        CopyRow(pArrow->GetLocalXfm().mBasisX, basis[kXfmRowBasisX]);
+        CopyRow(pArrow->GetLocalXfm().mBasisY, basis[kXfmRowBasisY]);
+        pArrow->SetDirty(1); // Yes, the binary marks the transform before the last row is written.
+        CopyRow(pArrow->GetLocalXfm().mBasisZ, basis[kXfmRowBasisZ]);
 #pragma GCC diagnostic pop
         if (mArrowMove.GetX1() <= fTick) {
             mChanging &= ~kChangingArrowMove;

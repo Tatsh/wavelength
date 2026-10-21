@@ -88,5 +88,6 @@ public:
      */
     void StartAnim(float fTime);
 
+private:
     ViewAnimPlayer mReveal; /*!< The reveal of the statistics. */
 };

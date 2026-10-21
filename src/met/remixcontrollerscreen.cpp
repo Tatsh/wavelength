@@ -16,10 +16,10 @@ bool RemixControllerScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool RemixControllerScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadCross && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadCross && pMsg->GetPressed() != 0) {
         FxMidi::PlayMenuSelect();
         if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
             TheUI.GotoScreen("pre_solotut2launchseq");

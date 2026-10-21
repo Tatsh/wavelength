@@ -370,6 +370,17 @@ public:
         return mBuffer;
     }
 
+    /** @return Characters before the terminator. */
+    int GetLength() const {
+        return mLength;
+    }
+
+    /** @return The terminated text. */
+    char *GetBuffer() const {
+        return mBuffer;
+    }
+
+private:
     int mLength;   /*!< Characters before the terminator. */
     int mCapacity; /*!< Bytes allocated for mBuffer. */
     char *mBuffer; /*!< The terminated text. */

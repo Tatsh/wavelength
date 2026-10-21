@@ -81,6 +81,7 @@ public:
      */
     void ScrollUp() override;
 
+private:
     std::list<UploadInfo> mFiles; /*!< The listed files. */
 };
 

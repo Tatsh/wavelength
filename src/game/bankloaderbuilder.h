@@ -121,12 +121,6 @@ public:
                          [[maybe_unused]] int nDenominator) override {
     }
 
-    const String *mDirectory; /*!< The directory of the bank files. */
-    int mIntroTicks;          /*!< The length of the song intro. */
-    int mTicksPerBar;         /*!< The song ticks in one bar. */
-    BankLoader *mLoader;      /*!< The loader to fill. */
-    String mLastSwapBank;     /*!< The name of the last swapped bank. */
-
 private:
     /**
      * Report whether a bank name ends in `_p`.
@@ -157,4 +151,10 @@ private:
      * @ghidraAddress PAL: 0x0014bf58
      */
     void AddBank(int nTick, const char *pszFile);
+
+    const String *mDirectory; /*!< The directory of the bank files. */
+    int mIntroTicks;          /*!< The length of the song intro. */
+    int mTicksPerBar;         /*!< The song ticks in one bar. */
+    BankLoader *mLoader;      /*!< The loader to fill. */
+    String mLastSwapBank;     /*!< The name of the last swapped bank. */
 };

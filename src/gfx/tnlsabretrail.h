@@ -186,6 +186,12 @@ public:
      */
     static Vector2 sSampleSweepTicks;
 
+    /** @return The scratch ribbon of the ship. */
+    RndLine *GetRibbon() const {
+        return mRibbon;
+    }
+
+private:
     float mSweep;                   /*!< The width of a sweep, `sweep`. */
     float mNeedleLength;            /*!< The length of the needle, `needle_length`. */
     unsigned char mReserved08[0x8]; // +0x08 to +0x0f are not yet identified.

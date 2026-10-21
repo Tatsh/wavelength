@@ -84,5 +84,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The seed of the random numbers every console's logic draws. */
+    int GetSeed() const {
+        return mSeed;
+    }
+
+private:
     int mSeed; /*!< The seed of the random numbers every console's logic draws. */
 };

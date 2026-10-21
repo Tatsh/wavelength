@@ -143,7 +143,7 @@ DuelLogic::DuelLogic(Song *pSong)
 
     const float *pTickDuration = mSong->GetMsPerTick();
     mState = kStatePlaying;
-    mSlopTicks = static_cast<int>(static_cast<float>(TheGameConfig->mSlopMs) / *pTickDuration);
+    mSlopTicks = static_cast<int>(static_cast<float>(TheGameConfig->GetSlopMs()) / *pTickDuration);
 
     for (int nSide = 0; nSide < kSideCount; ++nSide) {
         mGems.push_back(std::make_unique<CatchTrackData>(mTicksPerBar * mSong->GetNumBars()));
@@ -405,7 +405,7 @@ void DuelLogic::SetPaused(bool bPaused, int nPad, int nReason) {
             TheSongScheduler.Resume();
         }
         if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
-            TheGfxManager.SetFreqSize(kGfxPlayer, TheGameDb->GetOptions()->mFreqSize);
+            TheGfxManager.SetFreqSize(kGfxPlayer, TheGameDb->GetOptions()->GetFreqSize());
         }
     }
     WorldLogic::SetPaused(bPaused, nPad, nReason);
@@ -548,7 +548,7 @@ void DuelLogic::StartFirstPhrase() {
         pTrack->ShowPhrase(nNextMode, nBar, nBar + mPhraseBars);
         if (nMode == DuelTrack::kModePitch) {
             TheGfxManager.ShowPhrase(pTrack->GetPlayer()->GetIndex(),
-                                     pTrack->mIndex,
+                                     pTrack->GetIndex(),
                                      true,
                                      static_cast<float>(mTicksPerBar),
                                      static_cast<float>(mPhraseBars * mTicksPerBar),
@@ -556,7 +556,7 @@ void DuelLogic::StartFirstPhrase() {
                                      kPhraseSlide);
         } else if (nNextMode != DuelTrack::kModeIdle) {
             TheGfxManager.ShowPhrase(pTrack->GetPlayer()->GetIndex(),
-                                     pTrack->mIndex,
+                                     pTrack->GetIndex(),
                                      true,
                                      static_cast<float>(nBar * mTicksPerBar),
                                      static_cast<float>((nBar + mPhraseBars) * mTicksPerBar),
@@ -611,7 +611,7 @@ void DuelLogic::ShowNextPhrase(int nBar, int nPhase) {
         }
         if (nMode == DuelTrack::kModePitch) {
             TheGfxManager.ShowPhrase(pTrack->GetPlayer()->GetIndex(),
-                                     pTrack->mIndex,
+                                     pTrack->GetIndex(),
                                      true,
                                      static_cast<float>(nBar * mTicksPerBar),
                                      static_cast<float>((nBar + mPhraseBars) * mTicksPerBar),
@@ -620,7 +620,7 @@ void DuelLogic::ShowNextPhrase(int nBar, int nPhase) {
         } else if (nNextMode == DuelTrack::kModeCatch && mNextPhraseBar < mSong->GetNumBars()) {
             TheGfxManager.ShowPhrase(
                 pTrack->GetPlayer()->GetIndex(),
-                pTrack->mIndex,
+                pTrack->GetIndex(),
                 true,
                 static_cast<float>(mNextPhraseBar * mTicksPerBar),
                 static_cast<float>((mNextPhraseBar + mPhraseBars) * mTicksPerBar),
@@ -661,7 +661,7 @@ int DuelLogic::AdvancePhrase(int nBar) {
             mCatchMade = 0;
         } else if (mPhase == kPhaseCatch) {
             if (mCatchMade) {
-                TheTriggerMgr.PhraseEndEvent(mCatcherTrack->mIndex);
+                TheTriggerMgr.PhraseEndEvent(mCatcherTrack->GetIndex());
             }
             std::swap(mPitcher, mCatcher);
             std::swap(mPitcherTrack, mCatcherTrack);
@@ -705,14 +705,14 @@ void DuelLogic::HandleInput(const PlayNoteEvent &event) {
     if (mState != kStatePlaying) {
         return;
     }
-    mPlayers[mInputPlayers[event.mPlayer]]->HandleInput(event);
+    mPlayers[mInputPlayers[event.GetPlayer()]]->HandleInput(event);
 }
 
 void DuelLogic::HandleInput(const BtnEvent<3> &event) {
     if (mState != kStatePlaying) {
         return;
     }
-    SetPaused(true, TheGameDb->GetPlayerPad(event.mPlayer), 0);
+    SetPaused(true, TheGameDb->GetPlayerPad(event.GetPlayer()), 0);
 }
 
 void DuelLogic::HandleInput([[maybe_unused]] const BtnEvent<4> &event) {
@@ -778,14 +778,14 @@ void DuelLogic::OnCatchMissed(DuelTrack *pTrack, Player *pPlayer, int nBar) {
         kGfxPlayer, pCatcher->GetIndex() != 0 ? kPointForFirstSide : kPointForSecondSide);
     pScorer->AddScore(1);
     TheGfxManager.ShowPhrase(pCatcher->GetIndex(),
-                             mCatcherTrack->mIndex,
+                             mCatcherTrack->GetIndex(),
                              false,
                              static_cast<float>(nBar * mTicksPerBar),
                              static_cast<float>((nBar + mPhraseBars) * mTicksPerBar),
                              kPhraseStyle,
                              kPhraseSlide);
     for (int nDimBar = 0; nDimBar < nBar + mPhraseBars; ++nDimBar) {
-        TheGfxManager.DimBar(mCatcherTrack->mIndex, static_cast<float>(nDimBar * mTicksPerBar));
+        TheGfxManager.DimBar(mCatcherTrack->GetIndex(), static_cast<float>(nDimBar * mTicksPerBar));
     }
     FxMidi::PlayDuelMiss();
 
@@ -910,7 +910,7 @@ void DuelLogic::ApplyBarTrack(int nBar) {
 
     for (unsigned int i = 0; i < mPitchTracks.size(); ++i) {
         PitchTrack *pPitchTrack = mPitchTracks[i].get();
-        const int nPitchTrack = pPitchTrack->mIndex;
+        const int nPitchTrack = pPitchTrack->GetIndex();
         if (nPitchTrack == nTrack) {
             pPitchTrack->SetActive(true);
             TheMixer->SetVolume(nTrack, GetTrackVolume(nTrack, false), kVolumeRampTicks);
@@ -966,7 +966,7 @@ void DuelLogic::DecideDuel(bool bLocalWinner) {
         }
     } else {
         FinalScorePacket packet;
-        packet.mScore = mLocalPlayer->GetScore();
+        packet.SetScore(mLocalPlayer->GetScore());
         TheNetTransport->Send(packet);
     }
 }
@@ -1015,22 +1015,22 @@ void DuelLogic::LogEndMultiGame() {
 }
 
 int DuelLogic::OnPlayerUpdate(PlayerUpdatePacket *pPacket) {
-    const int nPlayer = mSeatPlayers[pPacket->mSender];
-    const unsigned int nVersion = static_cast<unsigned int>(pPacket->mVersion);
+    const int nPlayer = mSeatPlayers[pPacket->GetSender()];
+    const unsigned int nVersion = static_cast<unsigned int>(pPacket->GetVersion());
     if (nVersion < mUpdateVersions[nPlayer]) {
         return 0;
     }
     mUpdateVersions[nPlayer] = nVersion;
-    mPlayers[nPlayer]->SetCatching(pPacket->mCatching);
+    mPlayers[nPlayer]->SetCatching(pPacket->GetCatching());
     return 0;
 }
 
 int DuelLogic::OnEditGem(EditGemPacket *pPacket) {
-    const int nSide = pPacket->mTrack;
+    const int nSide = pPacket->GetTrack();
     const int nOtherSide = kSecondSide - nSide;
     CatchTrackData *pGems = mGems[nSide].get();
-    const int nTick = pPacket->mTick;
-    const int nSlot = pPacket->mSlot;
+    const int nTick = pPacket->GetTick();
+    const int nSlot = pPacket->GetSlot();
     if (nTick < TheSongScheduler.GetTick() + kMinGemLeadTicks) {
         return 0;
     }
@@ -1049,9 +1049,9 @@ int DuelLogic::OnEditGem(EditGemPacket *pPacket) {
 }
 
 int DuelLogic::OnCapture(CapturePacket *pPacket) {
-    DuelTrack *pTrack = mTracks[pPacket->mTrack].get();
-    if (pPacket->mValid) {
-        pTrack->MakeCatch(pPacket->mBar);
+    DuelTrack *pTrack = mTracks[pPacket->GetTrack()].get();
+    if (pPacket->GetValid()) {
+        pTrack->MakeCatch(pPacket->GetBar());
     } else {
         pTrack->MissCatch();
     }
@@ -1060,7 +1060,7 @@ int DuelLogic::OnCapture(CapturePacket *pPacket) {
 
 int DuelLogic::OnFinalScore(FinalScorePacket *pPacket) {
     (void)TheNetTransport->IsHost(); // Yes, the binary discards the result.
-    mScoresReceived[mSeatPlayers[pPacket->mSender]] = true;
+    mScoresReceived[mSeatPlayers[pPacket->GetSender()]] = true;
     if (AllScoresReceived()) {
         ReportScores();
     }
@@ -1068,7 +1068,7 @@ int DuelLogic::OnFinalScore(FinalScorePacket *pPacket) {
 }
 
 int DuelLogic::OnGameEnded(GameEndedMsg *pMsg) {
-    switch (pMsg->mResult) {
+    switch (pMsg->GetResult()) {
     case GameEndedMsg::kResultFinished:
         TheMetagame.ShowDialog(Metagame::kDialogEndGame, OnGameOverDialog, this, kNoPad);
         break;
@@ -1108,7 +1108,7 @@ int DuelLogic::OnGameEnded(GameEndedMsg *pMsg) {
 }
 
 int DuelLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
-    const int nPlayer = mSeatPlayers[pMsg->mNetOrder];
+    const int nPlayer = mSeatPlayers[pMsg->GetNetOrder()];
     Player *pPlayer = mPlayers[mInputPlayers[nPlayer]].get();
     if (pPlayer->IsAborted()) {
         return 0;

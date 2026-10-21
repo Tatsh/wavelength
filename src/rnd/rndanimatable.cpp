@@ -103,7 +103,7 @@ void RndAnimatable::ListAnimObjects(std::list<RndObject *> &objects) {
 }
 
 void RndAnimatable::DumpText(PrnStream &stream) {
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndAnimatable]\n";
@@ -120,7 +120,7 @@ void RndAnimatable::Replace(RndObject *pFrom, RndObject *pTo) {
     for (auto it = mAnims.begin(); it != mAnims.end();) {
         RndObject *pChild = *it;
         if (pChild == pTo) {
-            DebugNotify("%s already in %s", pTo->mName.c_str(), mName.c_str());
+            DebugNotify("%s already in %s", pTo->GetName(), mName.c_str());
         }
         if (pChild == pFrom) {
             if (pFrom != nullptr) {
@@ -217,7 +217,7 @@ float RndAnimatable::ChildrenEndFrame() {
 
 bool RndAnimatable::AddAnim(RndAnimatable *pAnim) {
     if (ListContains(mAnims, pAnim)) {
-        DebugNotify("%s already in %s", pAnim->mName.c_str(), mName.c_str());
+        DebugNotify("%s already in %s", pAnim->GetName(), mName.c_str());
         return false;
     }
     if (pAnim != nullptr) {

@@ -41,5 +41,16 @@ public:
         return it - 1;
     }
 
+    /** @return The patterns in the order of their ticks. */
+    const std::vector<Entry> &GetEntries() const {
+        return mEntries;
+    }
+
+    /** @return The patterns in the order of their ticks. */
+    std::vector<Entry> &GetEntries() {
+        return mEntries;
+    }
+
+private:
     std::vector<Entry> mEntries; /*!< The patterns in the order of their ticks. */
 };

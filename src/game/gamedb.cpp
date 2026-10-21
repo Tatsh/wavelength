@@ -390,7 +390,7 @@ void GameDb::Init() {
     for (int i = 0; i < nPlayers; ++i) {
         const char *pszName = pPlayers->Sym(i + 1);
         Campaign profile;
-        profile.mName = pszName;
+        profile.SetName(pszName);
         if (bNet != 0) {
             AddPlayer(i == 0, &profile, i, i);
         } else {
@@ -463,7 +463,7 @@ const char *GameDb::GetPlayerColor(int nPlayer) const {
 }
 
 const char *GameDb::GetPlayerName(int nPlayer) const {
-    return mPlayers[nPlayer]->GetProfile().mName.c_str();
+    return mPlayers[nPlayer]->GetProfile().GetName().c_str();
 }
 
 int GameDb::GetPlayerNetOrder(int nPlayer) const {
@@ -482,7 +482,7 @@ Campaign *GameDb::GetProfile(int nPlayer) {
 }
 
 AvatarPartSet *GameDb::GetAvatar(int nPlayer) {
-    return &mPlayers[nPlayer]->GetProfile().mAvatar;
+    return &mPlayers[nPlayer]->GetProfile().GetAvatar();
 }
 
 int GameDb::GetPlayerScore(int nPlayer) const {
@@ -503,18 +503,18 @@ void GameDb::SetPlayerScore(int nPlayer, int nScore) {
 }
 
 void GameDb::SetGameParams(const NetGameParams *pParams) {
-    mSong = pParams->mSong;
-    mLoadRemix = pParams->mLoadRemix;
-    mRemixReadOnly = pParams->mRemixReadOnly;
-    mRemixName = pParams->mRemixName;
-    mPracticeMode = pParams->mPracticeMode;
-    mTutorial = pParams->mTutorial;
-    mSkillLevel = pParams->mSkillLevel;
-    mPowerupLevel = pParams->mPowerupLevel;
-    mRuleSet = pParams->mRuleSet;
-    mCommunity = pParams->mCommunity;
-    mMaxPlayers = pParams->mMaxPlayers;
-    const SongEntry song{FindSong(pParams->mSong.c_str())};
+    mSong = pParams->GetSong();
+    mLoadRemix = pParams->GetLoadRemix();
+    mRemixReadOnly = pParams->GetRemixReadOnly();
+    mRemixName = pParams->GetRemixName();
+    mPracticeMode = pParams->GetPracticeMode();
+    mTutorial = pParams->GetTutorial();
+    mSkillLevel = pParams->GetSkillLevel();
+    mPowerupLevel = pParams->GetPowerupLevel();
+    mRuleSet = pParams->GetRuleSet();
+    mCommunity = pParams->GetCommunity();
+    mMaxPlayers = pParams->GetMaxPlayers();
+    const SongEntry song{FindSong(pParams->GetSong().c_str())};
     SetArena(song.GetArenaPath());
 }
 
@@ -569,7 +569,7 @@ void GameDb::SetMaxPlayers(int nMaxPlayers) {
 }
 
 const char *GameDb::GetDemo() const {
-    return mDemo.mLength != 0 ? mDemo.c_str() : nullptr;
+    return mDemo.GetLength() != 0 ? mDemo.c_str() : nullptr;
 }
 
 void GameDb::SetDemo(const char *pszDemo) {

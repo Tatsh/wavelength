@@ -110,7 +110,7 @@ bool HelpText::Show(const char *pszFirst,
         return false;
     }
     if (mEnabled == 0 || TheGameDb->GetRuleSet() != GameDb::kRuleSetGame ||
-        TheGameDb->GetOptions()->mHelpText == 0) {
+        TheGameDb->GetOptions()->GetHelpText() == 0) {
         return false;
     }
     const float fNowMs = TheSongScheduler.GetTime();

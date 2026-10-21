@@ -69,14 +69,14 @@ SetParticlesAction::SetParticlesAction(DataArray *pAction) {
 
 void SetParticlesAction::Exec() {
     mStartTime = TheTriggerMgr.GetCurrentTime();
-    mStartLife = mParticleSys->mLife;
-    mStartSpeed = mParticleSys->mSpeed;
-    mStartSize.x = mParticleSys->mSize.x;
-    mStartSize.y = mParticleSys->mSize.y;
-    mStartEmitRate.x = mParticleSys->mEmitRate.x;
-    mStartEmitRate.y = mParticleSys->mEmitRate.y;
-    mStartPos[kCornerLow] = mParticleSys->mPosLow;
-    mStartPos[kCornerHigh] = mParticleSys->mPosHigh;
+    mStartLife = mParticleSys->GetLife();
+    mStartSpeed = mParticleSys->GetSpeed();
+    mStartSize.x = mParticleSys->GetSize().x;
+    mStartSize.y = mParticleSys->GetSize().y;
+    mStartEmitRate.x = mParticleSys->GetEmitRate().x;
+    mStartEmitRate.y = mParticleSys->GetEmitRate().y;
+    mStartPos[kCornerLow] = mParticleSys->GetPosLow();
+    mStartPos[kCornerHigh] = mParticleSys->GetPosHigh();
     if ((mFlags & kFlagMaxParticles) != 0) {
         mParticleSys->SetNumParticles(mMaxParticles);
     }
@@ -101,26 +101,26 @@ bool SetParticlesAction::Poll() {
         }
     }
     if ((mFlags & kFlagLife) != 0) {
-        mParticleSys->mLife.x = Lerp(mStartLife.x, mLife.x, flT);
-        mParticleSys->mLife.y = Lerp(mStartLife.y, mLife.y, flT);
+        mParticleSys->GetLife().x = Lerp(mStartLife.x, mLife.x, flT);
+        mParticleSys->GetLife().y = Lerp(mStartLife.y, mLife.y, flT);
     }
     if ((mFlags & kFlagSpeed) != 0) {
-        mParticleSys->mSpeed.x = Lerp(mStartSpeed.x, mSpeed.x, flT);
-        mParticleSys->mSpeed.y = Lerp(mStartSpeed.y, mSpeed.y, flT);
+        mParticleSys->GetSpeed().x = Lerp(mStartSpeed.x, mSpeed.x, flT);
+        mParticleSys->GetSpeed().y = Lerp(mStartSpeed.y, mSpeed.y, flT);
     }
     if ((mFlags & kFlagSize) != 0) {
-        mParticleSys->mSize.x = Lerp(mStartSize.x, mSize.x, flT);
-        mParticleSys->mSize.y = Lerp(mStartSize.y, mSize.y, flT);
+        mParticleSys->GetSize().x = Lerp(mStartSize.x, mSize.x, flT);
+        mParticleSys->GetSize().y = Lerp(mStartSize.y, mSize.y, flT);
     }
     if ((mFlags & kFlagEmitRate) != 0) {
-        mParticleSys->mEmitRate.x = Lerp(mStartEmitRate.x, mEmitRate.x, flT);
-        mParticleSys->mEmitRate.y = Lerp(mStartEmitRate.y, mEmitRate.y, flT);
+        mParticleSys->GetEmitRate().x = Lerp(mStartEmitRate.x, mEmitRate.x, flT);
+        mParticleSys->GetEmitRate().y = Lerp(mStartEmitRate.y, mEmitRate.y, flT);
     }
     if ((mFlags & kFlagPos) != 0) {
         const Vector3 low = LerpCorner(mStartPos[kCornerLow], mPos[kCornerLow], flT);
         const Vector3 high = LerpCorner(mStartPos[kCornerHigh], mPos[kCornerHigh], flT);
-        mParticleSys->mPosLow = low;
-        mParticleSys->mPosHigh = high;
+        mParticleSys->GetPosLow() = low;
+        mParticleSys->GetPosHigh() = high;
     }
     return flT == 1.0f;
 }

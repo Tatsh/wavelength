@@ -133,7 +133,7 @@ bool UIPanel::IsLoaded() {
 }
 
 void UIPanel::FinishLoad() {
-    LocalizeTexts(mFile.c_str(), mLoader->mObjects);
+    LocalizeTexts(mFile.c_str(), mLoader->GetObjects());
     mView = dynamic_cast<RndView *>(TheManager.Find(FormatString("%s.view", mName)));
     mLoopAnim =
         dynamic_cast<RndAnimatable *>(TheManager.Find(FormatString("%s_always.anim", mName)));
@@ -197,7 +197,7 @@ void UIPanel::SetTextsShowing(bool bShowing) {
 void UIPanel::Enter(bool bForce, float fTime) {
     SetTextsShowing(true);
     if (mNavigator != nullptr) {
-        mNavigator->mEnabled = true;
+        mNavigator->SetEnabled(true);
     }
     if (bForce) {
         if (mEnterExitAnim != nullptr) {
@@ -328,7 +328,7 @@ void UIPanel::SetShowing(bool bShowing) {
 
 void UIPanel::Focus() {
     if (mNavigator != nullptr) {
-        mNavigator->mEnabled = true;
+        mNavigator->SetEnabled(true);
     }
 }
 
@@ -366,9 +366,9 @@ void UIPanel::LocalizeTexts(const char *pszFile, std::list<RndObject *> &objects
         }
         mTexts.push_back(pText);
         pText->SetShowing(false);
-        String token(pText->mName.c_str());
-        if (token.Compare(token.mLength - kTextSuffixLength, kTextSuffixLength, ".txt") == 0) {
-            token.Erase(token.mLength - kTextSuffixLength, kTextSuffixLength);
+        String token(pText->GetName());
+        if (token.Compare(token.GetLength() - kTextSuffixLength, kTextSuffixLength, ".txt") == 0) {
+            token.Erase(token.GetLength() - kTextSuffixLength, kTextSuffixLength);
         }
         const char *pszLocalized = TheLocale.Localize(token.c_str(), false);
         if (TheUI.GetEditMode()) {
@@ -378,7 +378,7 @@ void UIPanel::LocalizeTexts(const char *pszFile, std::list<RndObject *> &objects
             pText->SetText(pszLocalized);
         } else if (TheUI.GetEditMode()) {
             errors.GetErrors().push_back(LocalizeErrors::SingleError{
-                String(pText->mName.c_str()), String(pText->mPreWrapText.c_str())});
+                String(pText->GetName()), String(pText->GetPreWrapText().c_str())});
         }
         pText->UpdateCursors();
     }

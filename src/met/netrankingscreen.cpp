@@ -76,8 +76,8 @@ bool NetRankingScreen::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
     if (TheUI.GetCurrentScreen() != this || mNextScreen != nullptr) {
         return false;
     }
-    mHasPrevious = pMsg->mHasPrevious;
-    mList->SetPlayers(pMsg->mPlayers, mSelectFirst != 0 ? kSelectFirst : kSelectLast);
+    mHasPrevious = pMsg->GetHasPrevious();
+    mList->SetPlayers(pMsg->GetPlayers(), mSelectFirst != 0 ? kSelectFirst : kSelectLast);
     mLoading = 0;
     FindRankPanel()->HideFlash();
     mList->GetUpArrow()->SetShowing(mHasPrevious != 0);

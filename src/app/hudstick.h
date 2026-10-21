@@ -61,6 +61,12 @@ public:
      */
     void Show(int nDirection, const Vector2 *pPosition);
 
+    /** @return The marker. */
+    RndMesh *GetMesh() const {
+        return mMesh;
+    }
+
+private:
     RndMesh *mMesh;                /*!< The marker. */
     RndMat *mMats[kNumDirections]; /*!< The materials, indexed by Direction. */
 };

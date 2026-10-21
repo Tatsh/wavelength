@@ -21,9 +21,9 @@ void AddRotationKeys(RndMesh *pMesh,
                      float flStartAngle,
                      float flEndFrame,
                      float flEndAngle) {
-    std::vector<PointsKey> &keys = pAnim->mKeysOwner->mVertPointsKeys;
+    std::vector<PointsKey> &keys = pAnim->GetKeysOwner()->GetVertPointsKeys();
     keys.clear();
-    const std::vector<RndMesh::Vert> &verts = pMesh->mGeomOwner->mVerts;
+    const std::vector<RndMesh::Vert> &verts = pMesh->GetGeomOwner()->GetVerts();
     for (int i = 0; i < nKeys; ++i) {
         const float flT = static_cast<float>(i) / static_cast<float>(nKeys - 1);
         const float flAngle = ((flEndAngle - flStartAngle) * flT) + flStartAngle;

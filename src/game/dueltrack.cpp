@@ -214,20 +214,20 @@ void DuelTrack::CancelPhrase() {
 }
 
 void DuelTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
-    if (pPlayer != mPlayer || event.mState == 0) {
+    if (pPlayer != mPlayer || event.GetState() == 0) {
         return;
     }
     if (mMode == kModePitch) {
         if (mCatchMissed) {
             FxMidi::PlaySound1();
         } else {
-            mPitcher.Press(event.mButton);
+            mPitcher.Press(event.GetButton());
         }
     } else if (mMode == kModeCatch) {
         if (mCatchMade) {
             FxMidi::PlaySound1();
         } else {
-            mGemCatcher.Catch(event.mButton);
+            mGemCatcher.Catch(event.GetButton());
         }
     }
 }
@@ -342,7 +342,7 @@ void DuelTrack::MissCatch() {
     if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         TheGameDb->IsLocalPlayer(mPlayer->GetIndex())) {
         CapturePacket packet(mIndex, mCatchBar, false);
-        packet.mValid = 0;
+        packet.SetValid(0);
         TheNetTransport->Send(packet);
     }
     mLogic->OnCatchMissed(this, mSidePlayer, mCatchBar);

@@ -60,6 +60,27 @@ public:
      */
     float Sine(float flTime) const;
 
+    /** @return The amplitude. */
+    float GetAmplitude() const {
+        return mAmplitude;
+    }
+
+    /** @param flAmplitude The amplitude. */
+    void SetAmplitude(float flAmplitude) {
+        mAmplitude = flAmplitude;
+    }
+
+    /** @param flFrequency The frequency, in cycles per tick. */
+    void SetFrequency(float flFrequency) {
+        mFrequency = flFrequency;
+    }
+
+    /** @param flPhase The phase in radians. */
+    void SetPhase(float flPhase) {
+        mPhase = flPhase;
+    }
+
+private:
     String mName;     /*!< The name. */
     float mAmplitude; /*!< The amplitude. */
     float mFrequency; /*!< The frequency, in cycles per tick. */

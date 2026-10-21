@@ -95,6 +95,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The part transferred, from 0 to 1, with kStatusProgress. */
+    float GetProgress() const {
+        return mProgress;
+    }
+
+    /** @return One of Status, or another negative error. */
+    int GetStatus() const {
+        return mStatus;
+    }
+
+private:
     int mStatus;     /*!< One of Status, or another negative error. */
     float mProgress; /*!< The part transferred, from 0 to 1, with kStatusProgress. */
 };

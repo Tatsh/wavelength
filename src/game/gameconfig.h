@@ -85,50 +85,275 @@ public:
      */
     static GameConfig *shared();
 
-    int mSlopMs;                           /*!< `slop_ms`. */
-    std::vector<int> mStrandBars;          /*!< `strand_bars`. */
-    std::vector<GemPointValue> mGemPoints; /*!< `gem` of `points`, in order. */
-    int mPhraseScale;                      /*!< `phrase_scale` of `points`. */
-    std::vector<int> mFreestylePoints;     /*!< `freestyle` of `points`. */
-    std::vector<int> mAutocatcherPoints;   /*!< `autocatcher` of `points`. */
-    const char *mPlayFromFile;             /*!< `play_from_file`, or null. */
-    const char *mRecordToFile;             /*!< `record_to_file`, or null. */
-    int mZeroRandSeed;                     /*!< `zero_rand_seed`. */
-    int mForceFeedbackEnabled;             /*!< `force_feedback_enabled`. */
-    int mBeatDurationMs;                   /*!< `beat_duration_ms`. */
-    int mBeatLeadMs;                       /*!< `beat_lead_ms`. */
-    int mScratcherQuantizationTicks;       /*!< `scratcher_quantization_ticks`. */
-    int mScratcherSampleQuantizationTicks; /*!< `scratcher_sample_quantization_ticks`. */
-    int mBarCaptureThreshold;              /*!< `bar_capture_threshold`. */
-    int mCheckpointBars;                   /*!< `checkpoint_bars`. */
-    float mPowerupProbSolo;                /*!< `powerup_prob_solo`. */
-    std::vector<float> mPowerupProbMulti;  /*!< `powerup_prob_multi`. */
-    /** `powerup_dist`, one table for each GameLogic::Powerup. */
-    std::vector<std::vector<std::vector<float>>> mPowerupDist;
-    int mSlowdownStartTicks;             /*!< `slowdown_start_ticks`. */
-    int mSlowdownStopTicks;              /*!< `slowdown_stop_ticks`. */
-    int mSlowdownDurationBars;           /*!< `slowdown_duration_bars`. */
-    float mSlowdownSpeed;                /*!< `slowdown_speed`. */
-    int mMultiplierDurationBars;         /*!< `multiplier_duration_bars`. */
-    int mMultiplierValue;                /*!< `multiplier_value`. */
-    int mFreestyleDurationBarsSolo;      /*!< `freestyle_duration_bars_solo`. */
-    int mFreestyleDurationBarsMultiNet;  /*!< `freestyle_duration_bars_multi_net`. */
-    int mCripplerDurationBars;           /*!< `crippler_duration_bars`. */
-    float mAxeSoftFxVolume;              /*!< `axe_softfx_volume`. */
-    int mStreakMultiplierMaxSolo;        /*!< `streak_multiplier_max_solo`. */
-    int mStreakMultiplierMaxMulti;       /*!< `streak_multiplier_max_multi`. */
-    float mRotationRepeatInitialDelayMs; /*!< `rotation_repeat_initial_delay_ms`. */
-    float mRotationRepeatDelayMs;        /*!< `rotation_repeat_delay_ms`. */
-    std::vector<float> mBarsPerCapture;  /*!< `bars_per_capture`, by skill level. */
-    std::vector<float> mInitialJuice;    /*!< `initial_juice`, by skill level. */
-    std::vector<float> mCaptureJuice;    /*!< `capture_juice`, by skill level. */
-    float mJuiceMeterMax;                /*!< `juice_meter_max`. */
-    int mFakeInput;                      /*!< `fake_input`, toggled by the `autopilot` command. */
-    int mPlayAllGems;                    /*!< `play_all_gems`. */
-    int mStreaksEnabled;                 /*!< `streaks_enabled`. */
-    int mNoCapture;                      /*!< `no_capture`. */
-    int mNoDeactivate;                   /*!< Set by the `set_no_deactivate` command. */
-    int mGuideTicks;                     /*!< `guide_ticks`. */
+    /** @return `zero_rand_seed`. */
+    int GetZeroRandSeed() const {
+        return mZeroRandSeed;
+    }
+
+    /** @return `streaks_enabled`. */
+    int GetStreaksEnabled() const {
+        return mStreaksEnabled;
+    }
+
+    /** @param nStreaksEnabled `streaks_enabled`. */
+    void SetStreaksEnabled(int nStreaksEnabled) {
+        mStreaksEnabled = nStreaksEnabled;
+    }
+
+    /** @return `streak_multiplier_max_solo`. */
+    int GetStreakMultiplierMaxSolo() const {
+        return mStreakMultiplierMaxSolo;
+    }
+
+    /** @return `streak_multiplier_max_multi`. */
+    int GetStreakMultiplierMaxMulti() const {
+        return mStreakMultiplierMaxMulti;
+    }
+
+    /** @return `strand_bars`. */
+    const std::vector<int> &GetStrandBars() const {
+        return mStrandBars;
+    }
+
+    /** @return `strand_bars`. */
+    std::vector<int> &GetStrandBars() {
+        return mStrandBars;
+    }
+
+    /** @return `slowdown_stop_ticks`. */
+    int GetSlowdownStopTicks() const {
+        return mSlowdownStopTicks;
+    }
+
+    /** @return `slowdown_start_ticks`. */
+    int GetSlowdownStartTicks() const {
+        return mSlowdownStartTicks;
+    }
+
+    /** @return `slowdown_speed`. */
+    float GetSlowdownSpeed() const {
+        return mSlowdownSpeed;
+    }
+
+    /** @return `slowdown_duration_bars`. */
+    int GetSlowdownDurationBars() const {
+        return mSlowdownDurationBars;
+    }
+
+    /** @return `slop_ms`. */
+    int GetSlopMs() const {
+        return mSlopMs;
+    }
+
+    /** @return `scratcher_sample_quantization_ticks`. */
+    int GetScratcherSampleQuantizationTicks() const {
+        return mScratcherSampleQuantizationTicks;
+    }
+
+    /** @return `scratcher_quantization_ticks`. */
+    int GetScratcherQuantizationTicks() const {
+        return mScratcherQuantizationTicks;
+    }
+
+    /** @return `rotation_repeat_initial_delay_ms`. */
+    float GetRotationRepeatInitialDelayMs() const {
+        return mRotationRepeatInitialDelayMs;
+    }
+
+    /** @return `rotation_repeat_delay_ms`. */
+    float GetRotationRepeatDelayMs() const {
+        return mRotationRepeatDelayMs;
+    }
+
+    /** @return `powerup_prob_solo`. */
+    float GetPowerupProbSolo() const {
+        return mPowerupProbSolo;
+    }
+
+    /** @return `powerup_prob_multi`. */
+    const std::vector<float> &GetPowerupProbMulti() const {
+        return mPowerupProbMulti;
+    }
+
+    /** @return `powerup_prob_multi`. */
+    std::vector<float> &GetPowerupProbMulti() {
+        return mPowerupProbMulti;
+    }
+
+    /** @return `play_all_gems`. */
+    int GetPlayAllGems() const {
+        return mPlayAllGems;
+    }
+
+    /** @param nPlayAllGems `play_all_gems`. */
+    void SetPlayAllGems(int nPlayAllGems) {
+        mPlayAllGems = nPlayAllGems;
+    }
+
+    /** @return `phrase_scale` of `points`. */
+    int GetPhraseScale() const {
+        return mPhraseScale;
+    }
+
+    /** @return Set by the `set_no_deactivate` command. */
+    int GetNoDeactivate() const {
+        return mNoDeactivate;
+    }
+
+    /** @param nNoDeactivate Set by the `set_no_deactivate` command. */
+    void SetNoDeactivate(int nNoDeactivate) {
+        mNoDeactivate = nNoDeactivate;
+    }
+
+    /** @return `no_capture`. */
+    int GetNoCapture() const {
+        return mNoCapture;
+    }
+
+    /** @param nNoCapture `no_capture`. */
+    void SetNoCapture(int nNoCapture) {
+        mNoCapture = nNoCapture;
+    }
+
+    /** @return `multiplier_value`. */
+    int GetMultiplierValue() const {
+        return mMultiplierValue;
+    }
+
+    /** @return `multiplier_duration_bars`. */
+    int GetMultiplierDurationBars() const {
+        return mMultiplierDurationBars;
+    }
+
+    /** @return `juice_meter_max`. */
+    float GetJuiceMeterMax() const {
+        return mJuiceMeterMax;
+    }
+
+    /** @return `initial_juice`, by skill level. */
+    const std::vector<float> &GetInitialJuice() const {
+        return mInitialJuice;
+    }
+
+    /** @return `initial_juice`, by skill level. */
+    std::vector<float> &GetInitialJuice() {
+        return mInitialJuice;
+    }
+
+    /** @return `guide_ticks`. */
+    int GetGuideTicks() const {
+        return mGuideTicks;
+    }
+
+    /** @param nGuideTicks `guide_ticks`. */
+    void SetGuideTicks(int nGuideTicks) {
+        mGuideTicks = nGuideTicks;
+    }
+
+    /** @return `gem` of `points`, in order. */
+    const std::vector<GemPointValue> &GetGemPoints() const {
+        return mGemPoints;
+    }
+
+    /** @return `freestyle` of `points`. */
+    const std::vector<int> &GetFreestylePoints() const {
+        return mFreestylePoints;
+    }
+
+    /** @return `freestyle` of `points`. */
+    std::vector<int> &GetFreestylePoints() {
+        return mFreestylePoints;
+    }
+
+    /** @return `freestyle_duration_bars_solo`. */
+    int GetFreestyleDurationBarsSolo() const {
+        return mFreestyleDurationBarsSolo;
+    }
+
+    /** @return `freestyle_duration_bars_multi_net`. */
+    int GetFreestyleDurationBarsMultiNet() const {
+        return mFreestyleDurationBarsMultiNet;
+    }
+
+    /** @return `force_feedback_enabled`. */
+    int GetForceFeedbackEnabled() const {
+        return mForceFeedbackEnabled;
+    }
+
+    /** @return `fake_input`, toggled by the `autopilot` command. */
+    int GetFakeInput() const {
+        return mFakeInput;
+    }
+
+    /** @return `crippler_duration_bars`. */
+    int GetCripplerDurationBars() const {
+        return mCripplerDurationBars;
+    }
+
+    /** @return `checkpoint_bars`. */
+    int GetCheckpointBars() const {
+        return mCheckpointBars;
+    }
+
+    /** @return `capture_juice`, by skill level. */
+    const std::vector<float> &GetCaptureJuice() const {
+        return mCaptureJuice;
+    }
+
+    /** @return `capture_juice`, by skill level. */
+    std::vector<float> &GetCaptureJuice() {
+        return mCaptureJuice;
+    }
+
+    /** @return `beat_lead_ms`. */
+    int GetBeatLeadMs() const {
+        return mBeatLeadMs;
+    }
+
+    /** @return `beat_duration_ms`. */
+    int GetBeatDurationMs() const {
+        return mBeatDurationMs;
+    }
+
+    /** @return `bars_per_capture`, by skill level. */
+    const std::vector<float> &GetBarsPerCapture() const {
+        return mBarsPerCapture;
+    }
+
+    /** @return `bars_per_capture`, by skill level. */
+    std::vector<float> &GetBarsPerCapture() {
+        return mBarsPerCapture;
+    }
+
+    /** @return `bar_capture_threshold`. */
+    int GetBarCaptureThreshold() const {
+        return mBarCaptureThreshold;
+    }
+
+    /** @return `axe_softfx_volume`. */
+    float GetAxeSoftFxVolume() const {
+        return mAxeSoftFxVolume;
+    }
+
+    /** @return `autocatcher` of `points`. */
+    const std::vector<int> &GetAutocatcherPoints() const {
+        return mAutocatcherPoints;
+    }
+
+    /** @return `autocatcher` of `points`. */
+    std::vector<int> &GetAutocatcherPoints() {
+        return mAutocatcherPoints;
+    }
+
+    /** @return `play_from_file`, or null. */
+    const char *GetPlayFromFile() const {
+        return mPlayFromFile;
+    }
+
+    /** @return `record_to_file`, or null. */
+    const char *GetRecordToFile() const {
+        return mRecordToFile;
+    }
 
 private:
     /** Rows of each `powerup_dist` table, one for each number of players. */
@@ -237,6 +462,51 @@ private:
      * @ghidraAddress PAL: 0x00111b28
      */
     static void ToggleAutopilot(DataArray *pCommand, void *pUserData);
+
+    int mSlopMs;                           /*!< `slop_ms`. */
+    std::vector<int> mStrandBars;          /*!< `strand_bars`. */
+    std::vector<GemPointValue> mGemPoints; /*!< `gem` of `points`, in order. */
+    int mPhraseScale;                      /*!< `phrase_scale` of `points`. */
+    std::vector<int> mFreestylePoints;     /*!< `freestyle` of `points`. */
+    std::vector<int> mAutocatcherPoints;   /*!< `autocatcher` of `points`. */
+    const char *mPlayFromFile;             /*!< `play_from_file`, or null. */
+    const char *mRecordToFile;             /*!< `record_to_file`, or null. */
+    int mZeroRandSeed;                     /*!< `zero_rand_seed`. */
+    int mForceFeedbackEnabled;             /*!< `force_feedback_enabled`. */
+    int mBeatDurationMs;                   /*!< `beat_duration_ms`. */
+    int mBeatLeadMs;                       /*!< `beat_lead_ms`. */
+    int mScratcherQuantizationTicks;       /*!< `scratcher_quantization_ticks`. */
+    int mScratcherSampleQuantizationTicks; /*!< `scratcher_sample_quantization_ticks`. */
+    int mBarCaptureThreshold;              /*!< `bar_capture_threshold`. */
+    int mCheckpointBars;                   /*!< `checkpoint_bars`. */
+    float mPowerupProbSolo;                /*!< `powerup_prob_solo`. */
+    std::vector<float> mPowerupProbMulti;  /*!< `powerup_prob_multi`. */
+    /** `powerup_dist`, one table for each GameLogic::Powerup. */
+    std::vector<std::vector<std::vector<float>>> mPowerupDist;
+    int mSlowdownStartTicks;             /*!< `slowdown_start_ticks`. */
+    int mSlowdownStopTicks;              /*!< `slowdown_stop_ticks`. */
+    int mSlowdownDurationBars;           /*!< `slowdown_duration_bars`. */
+    float mSlowdownSpeed;                /*!< `slowdown_speed`. */
+    int mMultiplierDurationBars;         /*!< `multiplier_duration_bars`. */
+    int mMultiplierValue;                /*!< `multiplier_value`. */
+    int mFreestyleDurationBarsSolo;      /*!< `freestyle_duration_bars_solo`. */
+    int mFreestyleDurationBarsMultiNet;  /*!< `freestyle_duration_bars_multi_net`. */
+    int mCripplerDurationBars;           /*!< `crippler_duration_bars`. */
+    float mAxeSoftFxVolume;              /*!< `axe_softfx_volume`. */
+    int mStreakMultiplierMaxSolo;        /*!< `streak_multiplier_max_solo`. */
+    int mStreakMultiplierMaxMulti;       /*!< `streak_multiplier_max_multi`. */
+    float mRotationRepeatInitialDelayMs; /*!< `rotation_repeat_initial_delay_ms`. */
+    float mRotationRepeatDelayMs;        /*!< `rotation_repeat_delay_ms`. */
+    std::vector<float> mBarsPerCapture;  /*!< `bars_per_capture`, by skill level. */
+    std::vector<float> mInitialJuice;    /*!< `initial_juice`, by skill level. */
+    std::vector<float> mCaptureJuice;    /*!< `capture_juice`, by skill level. */
+    float mJuiceMeterMax;                /*!< `juice_meter_max`. */
+    int mFakeInput;                      /*!< `fake_input`, toggled by the `autopilot` command. */
+    int mPlayAllGems;                    /*!< `play_all_gems`. */
+    int mStreaksEnabled;                 /*!< `streaks_enabled`. */
+    int mNoCapture;                      /*!< `no_capture`. */
+    int mNoDeactivate;                   /*!< Set by the `set_no_deactivate` command. */
+    int mGuideTicks;                     /*!< `guide_ticks`. */
 };
 
 /**

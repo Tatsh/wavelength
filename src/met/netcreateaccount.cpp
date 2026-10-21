@@ -41,21 +41,21 @@ bool NetCreateAccount::DispatchPriv(Message *pMsg) {
 }
 
 bool NetCreateAccount::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLobby->CreateAccount(this, mPassword.c_str());
     }
     return false;
 }
 
 bool NetCreateAccount::HandleCreateAccountResult(CreateAccountResultMsg *pMsg) {
-    switch (pMsg->mResult) {
+    switch (pMsg->GetResult()) {
     case CreateAccountResultMsg::kResultSuccess: {
         NetServerLogin *pLogin =
             static_cast<NetServerLogin *>(TheUI.FindScreen(kServerLoginScreen, false));
-        pLogin->mPassword = mPassword.c_str();
-        TheGameDb->GetProfile(kLocalPlayer)->mNameLocked = kNameLocked;
-        pLogin->mSaveChanged = kSaveChanged;
-        pLogin->mSavePassword = mSavePassword;
+        pLogin->SetPassword(mPassword.c_str());
+        TheGameDb->GetProfile(kLocalPlayer)->SetNameLocked(kNameLocked);
+        pLogin->SetSaveChanged(kSaveChanged);
+        pLogin->SetSavePassword(mSavePassword);
         TheUI.GotoScreen(pLogin);
         break;
     }
@@ -76,13 +76,13 @@ bool NetCreateAccount::HandleCreateAccountResult(CreateAccountResultMsg *pMsg) {
 }
 
 bool NetCreateAccount::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle) {
+    if (pMsg->GetButton() == kPadTriangle) {
         TheUI.GotoScreen(kDisconnectLobbyScreen);
     }
     return false;

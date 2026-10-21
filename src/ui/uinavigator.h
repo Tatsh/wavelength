@@ -137,6 +137,12 @@ public:
      */
     void Step(bool bForward, int nButton, int nIndex);
 
+    /** @param nEnabled Whether the directional buttons move the focus. */
+    void SetEnabled(int nEnabled) {
+        mEnabled = nEnabled;
+    }
+
+private:
     UIPanel *mPanel;                                      /*!< The panel whose focus moves. */
     std::vector<std::vector<UIComponent *> > mHorizontal; /*!< The horizontal lists. */
     std::vector<std::vector<UIComponent *> > mVertical;   /*!< The vertical lists. */

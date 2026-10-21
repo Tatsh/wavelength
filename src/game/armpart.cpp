@@ -33,9 +33,9 @@ inline void Normalize(Vector3 &v) {
 // Report the distance between the world positions of two meshes.
 inline float Distance(const RndMesh *pFrom, const RndMesh *pTo) {
     Vector3 offset;
-    offset.x = pFrom->mWorldXfm.mTranslation.x - pTo->mWorldXfm.mTranslation.x;
-    offset.y = pFrom->mWorldXfm.mTranslation.y - pTo->mWorldXfm.mTranslation.y;
-    offset.z = pFrom->mWorldXfm.mTranslation.z - pTo->mWorldXfm.mTranslation.z;
+    offset.x = pFrom->GetWorldXfm().mTranslation.x - pTo->GetWorldXfm().mTranslation.x;
+    offset.y = pFrom->GetWorldXfm().mTranslation.y - pTo->GetWorldXfm().mTranslation.y;
+    offset.z = pFrom->GetWorldXfm().mTranslation.z - pTo->GetWorldXfm().mTranslation.z;
     return Length(offset);
 }
 
@@ -63,15 +63,15 @@ void ArmPart::SetFrame(float fFrame) {
     }
     AvatarPart *pInstrument = mAvatar->GetPart(AvatarPartSet::kPartInstrument);
     Transform toJoint;
-    Invert(toJoint, mJoint->mWorldXfm);
-    Multiply(toJoint, toJoint, pInstrument->GetTransRoot()->mWorldXfm);
+    Invert(toJoint, mJoint->GetWorldXfm());
+    Multiply(toJoint, toJoint, pInstrument->GetTransRoot()->GetWorldXfm());
 
     Transform hand;
     mAnims[kHandAnim]->MakeTransform(fFrame, hand, 0);
     Multiply(hand, toJoint, hand);
 
     Vector3 pole;
-    InterpKeys(mAnims[kForearmAnim]->mFramesOwner->mTransKeys, fFrame, pole);
+    InterpKeys(mAnims[kForearmAnim]->GetFramesOwner()->GetTransKeys(), fFrame, pole);
     MultiplyPoint(toJoint, pole, pole);
     SolveIK(hand, pole);
 }
@@ -82,8 +82,8 @@ void ArmPart::SetFrames(float fFrom, float fTo, float fBlend) {
     }
     AvatarPart *pInstrument = mAvatar->GetPart(AvatarPartSet::kPartInstrument);
     Transform toJoint;
-    Invert(toJoint, mJoint->mWorldXfm);
-    Multiply(toJoint, toJoint, pInstrument->GetTransRoot()->mWorldXfm);
+    Invert(toJoint, mJoint->GetWorldXfm());
+    Multiply(toJoint, toJoint, pInstrument->GetTransRoot()->GetWorldXfm());
 
     Transform hand;
     BlendTranslation(mAnims[kHandAnim].get(), fFrom, fTo, fBlend, hand.mTranslation);
@@ -155,19 +155,19 @@ void ArmPart::SolveIK(const Transform &hand, const Vector3 &pole) {
     Vector3 upperX;
     CrossVec3(&upperY.x, &upperZ.x, &upperX.x);
 
-    mTransRoot->mLocalXfm.mBasisX = upperX;
-    mTransRoot->mLocalXfm.mBasisY = upperY;
-    mTransRoot->mDirty = 1;
-    mTransRoot->mLocalXfm.mBasisZ = upperZ;
+    mTransRoot->GetLocalXfm().mBasisX = upperX;
+    mTransRoot->GetLocalXfm().mBasisY = upperY;
+    mTransRoot->SetDirty(1);
+    mTransRoot->GetLocalXfm().mBasisZ = upperZ;
 
-    mForearm->mLocalXfm.mBasisX = forearmX;
-    mForearm->mLocalXfm.mBasisY = forearmY;
-    mForearm->mLocalXfm.mBasisZ = forearmZ;
-    mForearm->mDirty = 1;
-    mForearm->mLocalXfm.mTranslation = elbow;
+    mForearm->GetLocalXfm().mBasisX = forearmX;
+    mForearm->GetLocalXfm().mBasisY = forearmY;
+    mForearm->GetLocalXfm().mBasisZ = forearmZ;
+    mForearm->SetDirty(1);
+    mForearm->GetLocalXfm().mTranslation = elbow;
 
-    mHand->mLocalXfm = hand;
-    mHand->mDirty = 1;
+    mHand->GetLocalXfm() = hand;
+    mHand->SetDirty(1);
 }
 
 void ArmPart::SetType(const char *pszType) {

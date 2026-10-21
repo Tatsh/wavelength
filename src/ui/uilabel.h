@@ -114,6 +114,12 @@ public:
      */
     void SetStyle(UIStyle *pStyle);
 
-    RndText *mText;  /*!< The text object, or null when the file has none of that name. */
+    /** @return The text object, or null when the file has no text object of that name. */
+    RndText *GetText() const {
+        return mText;
+    }
+
+private:
+    RndText *mText;  /*!< The text object, or null when the file has no text object of that name. */
     UIStyle *mStyle; /*!< The style, or null when the description lists none. */
 };

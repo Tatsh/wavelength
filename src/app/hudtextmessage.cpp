@@ -28,10 +28,10 @@ void CopyRow(Vector3 &destination, const float (&source)[kRowFloatCount]) {
 
 // Set the basis of a text's local transform.
 void SetBasis(RndText *pText, const float (&basis)[kBasisRowCount][kRowFloatCount]) {
-    CopyRow(pText->mLocalXfm.mBasisX, basis[kXfmRowBasisX]);
-    CopyRow(pText->mLocalXfm.mBasisY, basis[kXfmRowBasisY]);
-    pText->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
-    CopyRow(pText->mLocalXfm.mBasisZ, basis[kXfmRowBasisZ]);
+    CopyRow(pText->GetLocalXfm().mBasisX, basis[kXfmRowBasisX]);
+    CopyRow(pText->GetLocalXfm().mBasisY, basis[kXfmRowBasisY]);
+    pText->SetDirty(1); // Yes, the binary marks the transform before the last row is written.
+    CopyRow(pText->GetLocalXfm().mBasisZ, basis[kXfmRowBasisZ]);
 }
 
 } // namespace
@@ -44,11 +44,11 @@ HudTextMessage::HudTextMessage(RndView *pHudView) {
     mText = dynamic_cast<RndText *>(TheManager.Find("HUD textmsg.txt"));
     mSmallBlur = dynamic_cast<RndBlur *>(TheManager.Find("HUD sm textmsg.blur"));
     mSmallText = dynamic_cast<RndText *>(TheManager.Find("HUD sm textmsg.txt"));
-    mMat = mText->mFont->mMat;
+    mMat = mText->GetFont()->GetMat();
     mFlight = dynamic_cast<RndTransAnim *>(
         TheManager.Find(FormatString("%s textmsg.tnm", Overlay::sHudPrefix)));
     mOffsetView = dynamic_cast<RndView *>(TheManager.Find("HUD textmsg offset.view"));
-    mDefaultColor = mMat->mBaseColor;
+    mDefaultColor = mMat->GetBaseColor();
     mText->SetShowing(false);
     mSmallText->SetShowing(false);
     mBlur->SetShowing(true);
@@ -94,8 +94,8 @@ void HudTextMessage::Show(const char *pszText,
     SetBasis(mText, basis);
     SetBasis(mSmallText, basis);
 #pragma GCC diagnostic pop
-    mBlur->mXfms.clear();
-    mSmallBlur->mXfms.clear();
+    mBlur->GetXfms().clear();
+    mSmallBlur->GetXfms().clear();
     mText->SetText(pszText);
     mSmallText->SetText(pszSmallText);
     mText->SetShowing(true);
@@ -105,11 +105,11 @@ void HudTextMessage::Show(const char *pszText,
     } else {
         mMat->SetBaseColor(*TheGfxManager.GetPlayerColor(nPlayer));
     }
-    mOffsetView->mDirty = 1;
+    mOffsetView->SetDirty(1);
     // The binary also copies an unset fourth word, which is left as it was here.
-    mOffsetView->mLocalXfm.mTranslation.x = fX;
-    mOffsetView->mLocalXfm.mTranslation.y = 0.0f;
-    mOffsetView->mLocalXfm.mTranslation.z = fZ;
+    mOffsetView->GetLocalXfm().mTranslation.x = fX;
+    mOffsetView->GetLocalXfm().mTranslation.y = 0.0f;
+    mOffsetView->GetLocalXfm().mTranslation.z = fZ;
     mDuration = fDuration;
     mStartTime = TheGameDb->GetSongTime();
     mFlight->SetFrame(0.0f);
@@ -136,7 +136,7 @@ void HudTextMessage::Poll() {
 }
 
 void HudTextMessage::Draw() {
-    if (mText->mShowing != 0) {
+    if (mText->GetShowing() != 0) {
         mFlight->SetFrame(mFrame);
     }
     mBlur->Draw();

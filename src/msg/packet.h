@@ -52,9 +52,25 @@ public:
      */
     virtual int Route() = 0;
 
-    int mSender;          /*!< The peer that sent the packet, or kUnset. */
-    int mReceiver;        /*!< The peer the packet is for, kAllPeers, or kUnset. */
-    unsigned char mFlags; /*!< Delivery flags NetTransport::Send() translates. */
+    /** @return Delivery flags NetTransport::Send() translates. */
+    unsigned char GetFlags() const {
+        return mFlags;
+    }
+
+    /** @return The peer the packet is for, kAllPeers, or kUnset. */
+    int GetReceiver() const {
+        return mReceiver;
+    }
+
+    /** @return The peer that sent the packet, or kUnset. */
+    int GetSender() const {
+        return mSender;
+    }
+
+    /** @param nSender The peer that sent the packet, or kUnset. */
+    void SetSender(int nSender) {
+        mSender = nSender;
+    }
 
 protected:
     /**
@@ -68,4 +84,9 @@ protected:
     Packet(unsigned char nFlags, int nReceiver)
         : mSender(kUnset), mReceiver(nReceiver), mFlags(nFlags) {
     }
+
+private:
+    int mSender;          /*!< The peer that sent the packet, or kUnset. */
+    int mReceiver;        /*!< The peer the packet is for, kAllPeers, or kUnset. */
+    unsigned char mFlags; /*!< Delivery flags NetTransport::Send() translates. */
 };

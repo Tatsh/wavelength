@@ -58,6 +58,7 @@ public:
      */
     void Apply();
 
+private:
     std::vector<unsigned int> mMessages; /*!< The packed control changes of the buses. */
     SoftFxFilter mFilter;                /*!< The software effect, from `filter` of bus 1. */
     int mSoftFxOutput;                   /*!< `soft_fx_output` of bus 1. */

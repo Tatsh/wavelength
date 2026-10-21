@@ -14,8 +14,8 @@ constexpr char kMeshFormat[] = "o_controller_map_%s.mesh";
 
 ControllerPanel::ControllerPanel(DataArray *pData, const char *pszDir) : FreqPanel(pData, pszDir) {
     for (Region &region : mRegions) {
-        region.mAnim = nullptr;
-        region.mMesh = nullptr;
+        region.SetAnim(nullptr);
+        region.SetMesh(nullptr);
     }
 }
 
@@ -39,7 +39,7 @@ void ControllerPanel::Enter(bool bForce, float fTime) {
     mRegions[kPadDLeft].Load("dpadl");
     mView->RemoveAllAnims();
     for (Region &region : mRegions) {
-        region.mMesh->SetShowing(false);
+        region.GetMesh()->SetShowing(false);
     }
     FreqPanel::Enter(bForce, fTime);
     mRegion = kPadNone;
@@ -55,13 +55,13 @@ void ControllerPanel::Poll(float fTime) {
 void ControllerPanel::SetRegion(int nRegion) {
     if (mRegion != kPadNone) {
         Region &previous = mRegions[mRegion];
-        mView->RemoveAnim(previous.mAnim);
-        previous.mMesh->SetShowing(false);
+        mView->RemoveAnim(previous.GetAnim());
+        previous.GetMesh()->SetShowing(false);
     }
     if (nRegion != kPadNone) {
         Region &next = mRegions[nRegion];
-        next.mMesh->SetShowing(true);
-        mView->AddAnim(next.mAnim);
+        next.GetMesh()->SetShowing(true);
+        mView->AddAnim(next.GetAnim());
     }
     mRegion = nRegion;
 }

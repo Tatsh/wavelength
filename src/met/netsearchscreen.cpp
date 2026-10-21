@@ -116,8 +116,8 @@ void NetSearchScreen::OnChoiceChanged([[maybe_unused]] int bReset) {
     auto *pList =
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
     String selected;
-    if (!pList->mSongs.empty()) {
-        selected = pList->mSongs[pList->GetSelected()].c_str();
+    if (!pList->GetSongs().empty()) {
+        selected = pList->GetSongs()[pList->GetSelected()].c_str();
     }
 
     std::vector<String> choices;
@@ -187,8 +187,9 @@ bool NetSearchScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (mSkill == kAnySkillEntry) {
         nSkill = kAnySkill;
     }
-    const char *pszSong =
-        pList->GetSelected() != kAllChoice ? pList->mSongs[pList->GetSelected()].c_str() : kNoSong;
+    const char *pszSong = pList->GetSelected() != kAllChoice ?
+                              pList->GetSongs()[pList->GetSelected()].c_str() :
+                              kNoSong;
     pSorted->SetSearch(pszSong, nRuleSet, nSkill);
     TheUI.GotoScreen(pSorted);
     return NetParamsScreen::HandleSelect(pMsg);

@@ -12,14 +12,14 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
 }
 
 void WriteName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 // Move a colour range so that its low end is a new colour, retaining its width.
@@ -72,17 +72,17 @@ int RndParticleSysAnim::SetFrameSelf(float fFrame) {
     if (!mFramesOwner->mStartColorKeys.empty()) {
         Color color;
         InterpKeys(mFramesOwner->mStartColorKeys, fFrame, color);
-        MoveColorRange(color, mParticleSys->mStartColorLow, mParticleSys->mStartColorHigh);
+        MoveColorRange(color, mParticleSys->GetStartColorLow(), mParticleSys->GetStartColorHigh());
     }
     if (!mFramesOwner->mEndColorKeys.empty()) {
         Color color;
         InterpKeys(mFramesOwner->mEndColorKeys, fFrame, color);
-        MoveColorRange(color, mParticleSys->mEndColorLow, mParticleSys->mEndColorHigh);
+        MoveColorRange(color, mParticleSys->GetEndColorLow(), mParticleSys->GetEndColorHigh());
     }
     if (!mFramesOwner->mEmitRateKeys.empty()) {
         float fEmitRate;
         InterpKeys(mFramesOwner->mEmitRateKeys, fFrame, fEmitRate);
-        Vector2 &emitRate = mParticleSys->mEmitRate;
+        Vector2 &emitRate = mParticleSys->GetEmitRate();
         if (emitRate.x != 0.0f) {
             mEmitRateRatio = emitRate.y / emitRate.x;
         }
@@ -99,7 +99,7 @@ int RndParticleSysAnim::SetFrameSelf(float fFrame) {
 void RndParticleSysAnim::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndParticleSysAnim]\n";

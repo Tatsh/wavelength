@@ -87,5 +87,11 @@ public:
      */
     bool HandleJoinResult(JoinChatroomResultMsg *pMsg);
 
+    /** @param nChatroomId The room to join, set by the screen that opens this one. */
+    void SetChatroomId(int nChatroomId) {
+        mChatroomId = nChatroomId;
+    }
+
+private:
     int mChatroomId; /*!< The room to join, set by the screen that opens this one. */
 };

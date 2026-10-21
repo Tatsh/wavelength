@@ -137,6 +137,102 @@ public:
      */
     static float sMeshFlashRate;
 
+    /** @return The gem type, with the flags above. */
+    char GetType() const {
+        return mType;
+    }
+
+    /** @param nType The gem type, with the flags above. */
+    void SetType(char nType) {
+        mType = nType;
+    }
+
+    /** @return The flags of the gem. */
+    unsigned char GetFlags() const {
+        return mFlags;
+    }
+
+    /** @param nFlags The flags of the gem. */
+    void SetFlags(unsigned char nFlags) {
+        mFlags = nFlags;
+    }
+
+    /** @return The track the gem sits on. */
+    char GetTrack() const {
+        return mTrack;
+    }
+
+    /** @param nTrack The track the gem sits on. */
+    void SetTrack(char nTrack) {
+        mTrack = nTrack;
+    }
+
+    /** @return The tick of the gem. */
+    float GetTick() const {
+        return mTick;
+    }
+
+    /** @param flTick The tick of the gem. */
+    void SetTick(float flTick) {
+        mTick = flTick;
+    }
+
+    /** @return The lateral slot of the gem on its track. */
+    char GetSlot() const {
+        return mSlot;
+    }
+
+    /** @param nSlot The lateral slot of the gem on its track. */
+    void SetSlot(char nSlot) {
+        mSlot = nSlot;
+    }
+
+    /** @return The tick the gem is placed from. */
+    float GetShowTick() const {
+        return mShowTick;
+    }
+
+    /** @param flShowTick The tick the gem is placed from. */
+    void SetShowTick(float flShowTick) {
+        mShowTick = flShowTick;
+    }
+
+    /** @return The tick the gem is removed at, or kNever. */
+    float GetRemoveTick() const {
+        return mRemoveTick;
+    }
+
+    /** @param flRemoveTick The tick the gem is removed at, or kNever. */
+    void SetRemoveTick(float flRemoveTick) {
+        mRemoveTick = flRemoveTick;
+    }
+
+    /** @return The group that draws a mesh gem, or null. */
+    MeshGroup *GetMeshGroup() const {
+        return mMeshGroup;
+    }
+
+    /** @return The particle of the gem, or null. */
+    Particle *GetParticle() const {
+        return mParticle;
+    }
+
+    /** @param pParticle The particle of the gem, or null. */
+    void SetParticle(Particle *pParticle) {
+        mParticle = pParticle;
+    }
+
+    /** @return The instance of the gem in mMeshGroup. */
+    const std::list<Transform>::iterator &GetTransform() const {
+        return mTransform;
+    }
+
+    /** @param transform The instance of the gem in mMeshGroup. */
+    void SetTransform(const std::list<Transform>::iterator &transform) {
+        mTransform = transform;
+    }
+
+private:
     char mType;                                /*!< The gem type, with the flags above. */
     unsigned char mFlags;                      /*!< The flags of the gem. */
     char mTrack;                               /*!< The track the gem sits on. */
@@ -149,7 +245,6 @@ public:
     std::list<Transform>::iterator mTransform; /*!< The instance of the gem in mMeshGroup. */
     Particle *mParticle = nullptr;             /*!< The particle of the gem, or null. */
 
-private:
     /**
      * Report the colour of a player slot.
      *

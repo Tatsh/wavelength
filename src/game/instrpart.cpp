@@ -42,9 +42,8 @@ bool InstrPart::Rebuild() {
     }
     if (mRenamed == 0) {
         mRenamed = 1;
-        for (RndObject *pObject : mLoader->mObjects) {
-            pObject->SetName(
-                FormatString("avatar%d_%s", mAvatar->GetIndex(), pObject->mName.c_str()));
+        for (RndObject *pObject : mLoader->GetObjects()) {
+            pObject->SetName(FormatString("avatar%d_%s", mAvatar->GetIndex(), pObject->GetName()));
         }
     }
     mType = mPendingType;
@@ -56,7 +55,7 @@ bool InstrPart::Rebuild() {
     if (!mAnims.empty()) {
         mAnims[0]->SetTrans(mTransRoot);
     }
-    mMat = mMesh->mMat;
+    mMat = mMesh->GetMat();
     if (mMat != nullptr) {
         mMat->SetLightColor(mColor);
     }

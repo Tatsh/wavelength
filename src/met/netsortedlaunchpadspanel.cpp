@@ -90,14 +90,14 @@ bool NetSortedLaunchpadsPanel::DispatchPriv(Message *pMsg) {
 }
 
 bool NetSortedLaunchpadsPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     UIScreen *pScreen = TheUI.GetCurrentScreen();
     if (pScreen->GetNextScreen() != nullptr || pScreen->GetPrevScreen() != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadL1) {
+    if (pMsg->GetButton() == kPadL1) {
         Request(kPageRefresh);
     }
     return false;
@@ -115,13 +115,13 @@ bool NetSortedLaunchpadsPanel::HandleLobbyLaunchpads(LobbyLaunchpadsMsg *pMsg) {
     } else {
         nSelected = kSelectFirst;
     }
-    mNoneText->SetShowing(pMsg->mLaunchpads->empty());
+    mNoneText->SetShowing(pMsg->GetLaunchpads()->empty());
 
     NetSortedLaunchpadsList *pList =
         static_cast<NetSortedLaunchpadsList *>(FindComponent(kListComponent, false));
-    pList->SetLaunchpads(pMsg->mLaunchpads, nSelected);
-    mHasPrevious = pMsg->mHasPrevious;
-    const unsigned int nCount = pMsg->mLaunchpads->size();
+    pList->SetLaunchpads(pMsg->GetLaunchpads(), nSelected);
+    mHasPrevious = pMsg->GetHasPrevious();
+    const unsigned int nCount = pMsg->GetLaunchpads()->size();
     pList->GetUpArrow()->SetShowing(mHasPrevious != 0);
     pList->SetShowUpArrow(mHasPrevious != 0);
     pList->GetDownArrow()->SetShowing(nCount >= kRowsShown);

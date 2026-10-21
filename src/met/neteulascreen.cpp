@@ -55,7 +55,7 @@ void NetEULAScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     pText->SetWordWrap(kNoWordWrap);
 
     int nLines = 0;
-    char *pChar = mWrappedText.mBuffer;
+    char *pChar = mWrappedText.GetBuffer();
     mPages.clear();
     mPages.push_back(pChar);
     for (; *pChar != '\0'; ++pChar) {
@@ -77,13 +77,13 @@ bool NetEULAScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetEULAScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadDUp) {
+        if (pMsg->GetButton() == kPadDUp) {
             TurnPage(kPreviousPage);
-        } else if (pMsg->mButton == kPadDDown) {
+        } else if (pMsg->GetButton() == kPadDDown) {
             TurnPage(kNextPage);
         }
     }

@@ -39,17 +39,18 @@ void SetAnimAction::Exec() {
         RndAnimatable::ScaleOffset *pFilter =
             static_cast<RndAnimatable::ScaleOffset *>(mAnim->GetFilters().front());
         if ((mFlags & kFlagOffset) == 0) {
-            pFilter->mOffset = (mAnim->mFrame * (pFilter->mScale - mScale)) + pFilter->mOffset;
+            pFilter->SetOffset((mAnim->GetFrame() * (pFilter->GetScale() - mScale)) +
+                               pFilter->GetOffset());
         }
-        pFilter->mScale = mScale;
+        pFilter->SetScale(mScale);
     }
     if ((mFlags & kFlagOffset) != 0) {
-        static_cast<RndAnimatable::ScaleOffset *>(mAnim->mFilters.front())->mOffset = mOffset;
+        static_cast<RndAnimatable::ScaleOffset *>(mAnim->GetFilters().front())->SetOffset(mOffset);
     }
     if ((mFlags & kFlagMin) != 0) {
-        static_cast<RndAnimatable::MinMaxLoop *>(mAnim->mFilters.front())->mMin = mMin;
+        static_cast<RndAnimatable::MinMaxLoop *>(mAnim->GetFilters().front())->SetMin(mMin);
     }
     if ((mFlags & kFlagMax) != 0) {
-        static_cast<RndAnimatable::MinMaxLoop *>(mAnim->mFilters.front())->mMax = mMax;
+        static_cast<RndAnimatable::MinMaxLoop *>(mAnim->GetFilters().front())->SetMax(mMax);
     }
 }

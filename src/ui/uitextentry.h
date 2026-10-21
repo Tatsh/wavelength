@@ -208,6 +208,54 @@ public:
      */
     bool HandleKeyMsg(KeyboardKeyMsg *pMsg);
 
+    /** @return The `max_entry_width` setting, or -1 for no limit. */
+    float GetMaxEntryWidth() const {
+        return mMaxEntryWidth;
+    }
+
+    /** @param fMaxEntryWidth The `max_entry_width` setting, or -1 for no limit. */
+    void SetMaxEntryWidth(float fMaxEntryWidth) {
+        mMaxEntryWidth = fMaxEntryWidth;
+    }
+
+    /** @param nMaxNumChars The `max_num_chars` setting, or -1 for no limit. */
+    void SetMaxNumChars(int nMaxNumChars) {
+        mMaxNumChars = nMaxNumChars;
+    }
+
+    /** @param nScroll The `scroll` setting. */
+    void SetScroll(int nScroll) {
+        mScroll = nScroll;
+    }
+
+    /** @param nNumLines The `num_lines` setting. */
+    void SetNumLines(int nNumLines) {
+        mNumLines = nNumLines;
+    }
+
+    /** @param nPassword The `password` setting. It masks the text. */
+    void SetPassword(int nPassword) {
+        mPassword = nPassword;
+    }
+
+    /** @param pInvalidChars The `invalid_chars` array, or null. */
+    void SetInvalidChars(DataArray *pInvalidChars) {
+        mInvalidChars = pInvalidChars;
+    }
+
+#ifdef VIDEO_STANDARD_PAL
+    /** @param nUtf8MaxLen The `utf8_max_len` setting, the most UTF-8 bytes, or -1 for no limit. */
+    void SetUtf8MaxLen(int nUtf8MaxLen) {
+        mUtf8MaxLen = nUtf8MaxLen;
+    }
+#endif
+
+    /** @return The `word_wrap_lines` setting, or 0 for no wrapping. */
+    int GetWordWrapLines() const {
+        return mWordWrapLines;
+    }
+
+private:
     String mText;                         /*!< The text the player has entered. */
     RndText *mTextObj;                    /*!< The text object that shows the text. */
     RndText *mCaret;                      /*!< The caret. */
@@ -228,12 +276,11 @@ public:
     int mUtf8MaxLen; /*!< The `utf8_max_len` setting, the most UTF-8 bytes, or -1 for no limit. */
 #endif
     int mWordWrapLines;       /*!< The `word_wrap_lines` setting, or 0 for no wrapping. */
-    int mPassword;            /*!< The `password` setting, which masks the text. */
+    int mPassword;            /*!< The `password` setting. It masks the text. */
     int mEditing;             /*!< Whether the caret blinks. */
     float mNextBlink;         /*!< The time the caret next changes. */
     DataArray *mInvalidChars; /*!< The `invalid_chars` array, or null. */
 
-private:
     /**
      * Milliseconds between changes of the blinking caret.
      *

@@ -19,5 +19,11 @@ public:
     explicit OverwriteSaveScreen(DataArray *pData) : ErrorScreen(pData) {
     }
 
+    /** @param nOverwriteStatus Non-zero when a saved copy of the same name may be replaced. */
+    void SetOverwriteStatus(int nOverwriteStatus) {
+        mOverwriteStatus = nOverwriteStatus;
+    }
+
+protected:
     int mOverwriteStatus; /*!< Non-zero when a saved copy of the same name may be replaced. */
 };

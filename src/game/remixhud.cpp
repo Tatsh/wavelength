@@ -433,21 +433,21 @@ bool RemixHUD::Confirm() {
 }
 
 bool RemixHUD::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPad != mPlayer) {
+    if (pMsg->GetPad() != mPlayer) {
         return false;
     }
-    switch (pMsg->mButton) {
+    switch (pMsg->GetButton()) {
     case kButtonUp:
     case kButtonDown:
-        if (pMsg->mPressed) {
-            Navigate(pMsg->mButton == kButtonUp, false);
+        if (pMsg->GetPressed()) {
+            Navigate(pMsg->GetButton() == kButtonUp, false);
         } else {
             TheSongScheduler.Cancel(mRepeatUpCmd.Get());
             TheSongScheduler.Cancel(mRepeatDownCmd.Get());
         }
         break;
     case kButtonConfirm:
-        if (pMsg->mPressed) {
+        if (pMsg->GetPressed()) {
             if (Confirm()) {
                 FxMidi::PlayMenuSelect();
             } else {

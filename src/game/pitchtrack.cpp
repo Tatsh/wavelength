@@ -183,7 +183,7 @@ void PitchTrack::EraseSection(int nBar) {
 }
 
 void PitchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
-    if (mPreviewPattern != kNoPattern || event.mState == 0 || pPlayer != mPlayer) {
+    if (mPreviewPattern != kNoPattern || event.GetState() == 0 || pPlayer != mPlayer) {
         return;
     }
 
@@ -197,7 +197,7 @@ void PitchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
 
     const int nStep = mTicksPerBar / kStepsPerBar;
     const int nTick = ((nNow - kPressLeadTicks + nStep / 2) / nStep) * nStep;
-    const signed char nSlot = static_cast<signed char>(event.mButton);
+    const signed char nSlot = static_cast<signed char>(event.GetButton());
     const bool bPlaced = ToggleGem(nSlot, nTick, mRepeat, static_cast<signed char>(nPlayer));
     if (bPlaced) {
         Muse *pRiff = mRiffs.GetRiff(nSlot, nTick);

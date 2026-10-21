@@ -86,6 +86,17 @@ public:
         return "RemixDownloadMsg";
     }
 
+    /** @return The note of the remix. */
+    const char *GetNote() const {
+        return mNote;
+    }
+
+    /** @return Zero on success, otherwise a negative error. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;       /*!< Zero on success, otherwise a negative error. */
     const char *mName; /*!< The file of the remix. */
     const char *mNote; /*!< The note of the remix. */

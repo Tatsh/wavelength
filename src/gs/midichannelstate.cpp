@@ -77,7 +77,7 @@ StdMidiMuse *MidiChannelState::GetProgramMuse() {
     if (mProgram == kUnset) {
         return nullptr;
     }
-    if (mProgramMuse.Get() == nullptr || mProgramMuse->mData1 != mProgram) {
+    if (mProgramMuse.Get() == nullptr || mProgramMuse->GetData1() != mProgram) {
         mProgramMuse = Ptr<StdMidiMuse>(
             StdMidiMuse::NewProgramChange(mChannel, static_cast<unsigned char>(mProgram)));
     }
@@ -88,7 +88,7 @@ StdMidiMuse *MidiChannelState::GetPressureMuse() {
     if (mPressure == kUnset) {
         return nullptr;
     }
-    if (mPressureMuse.Get() == nullptr || mPressureMuse->mData1 != mPressure) {
+    if (mPressureMuse.Get() == nullptr || mPressureMuse->GetData1() != mPressure) {
         mPressureMuse = Ptr<StdMidiMuse>(
             StdMidiMuse::NewChannelPressure(mChannel, static_cast<unsigned char>(mPressure)));
     }
@@ -99,8 +99,8 @@ StdMidiMuse *MidiChannelState::GetPitchBendMuse() {
     if (mBendLow == kUnset) {
         return nullptr;
     }
-    if (mBendMuse.Get() == nullptr || mBendMuse->mData1 != mBendLow ||
-        mBendMuse->mData2 != mBendHigh) {
+    if (mBendMuse.Get() == nullptr || mBendMuse->GetData1() != mBendLow ||
+        mBendMuse->GetData2() != mBendHigh) {
         mBendMuse = Ptr<StdMidiMuse>(new StdMidiMuse(mChannel | kStatusPitchBend,
                                                      static_cast<unsigned char>(mBendLow),
                                                      static_cast<unsigned char>(mBendHigh)));
@@ -114,7 +114,7 @@ StdMidiMuse *MidiChannelState::GetControllerMuse(unsigned char nController) {
         return nullptr;
     }
     Ptr<StdMidiMuse> &muse = mControllerMuses[nController];
-    if (muse.Get() == nullptr || muse->mData2 != nValue) {
+    if (muse.Get() == nullptr || muse->GetData2() != nValue) {
         muse = Ptr<StdMidiMuse>(StdMidiMuse::NewControlChange(
             mChannel, nController, static_cast<unsigned char>(nValue)));
     }

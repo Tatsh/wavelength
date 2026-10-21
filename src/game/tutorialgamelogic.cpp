@@ -257,12 +257,12 @@ void TutorialGameLogic::OnMoveTrackCommand(DataArray *pCommand, void *pUserData)
 
 void TutorialGameLogic::OnSetNoCaptureCommand(DataArray *pCommand,
                                               [[maybe_unused]] void *pUserData) {
-    TheGameConfig->mNoCapture = pCommand->Int(kCommandNodeFirst) != 0;
+    TheGameConfig->SetNoCapture(pCommand->Int(kCommandNodeFirst) != 0);
 }
 
 void TutorialGameLogic::OnSetNoDeactivateCommand(DataArray *pCommand,
                                                  [[maybe_unused]] void *pUserData) {
-    TheGameConfig->mNoDeactivate = pCommand->Int(kCommandNodeFirst) != 0;
+    TheGameConfig->SetNoDeactivate(pCommand->Int(kCommandNodeFirst) != 0);
 }
 
 void TutorialGameLogic::OnSetNoSeekerCommand(DataArray *pCommand, void *pUserData) {
@@ -271,7 +271,7 @@ void TutorialGameLogic::OnSetNoSeekerCommand(DataArray *pCommand, void *pUserDat
 
 void TutorialGameLogic::OnSetNoStreaksCommand(DataArray *pCommand,
                                               [[maybe_unused]] void *pUserData) {
-    TheGameConfig->mStreaksEnabled = pCommand->Int(kCommandNodeFirst) == 0;
+    TheGameConfig->SetStreaksEnabled(pCommand->Int(kCommandNodeFirst) == 0);
 }
 
 void TutorialGameLogic::OnSetStrandBarsCommand(DataArray *pCommand,
@@ -379,12 +379,12 @@ TutorialGameLogic::TutorialGameLogic(Song *pSong, DataArray *pSongConfig)
         mScript.Add(CreateTask(pScript->Array(i)));
     }
 
-    mSavedNoCapture = TheGameConfig->mNoCapture;
-    mSavedNoDeactivate = TheGameConfig->mNoDeactivate;
-    mSavedStreaksEnabled = TheGameConfig->mStreaksEnabled;
-    mSavedGuideTicks = TheGameConfig->mGuideTicks;
-    mSavedStrandBars = TheGameConfig->mStrandBars[TheGameDb->GetNumPlayers() - 1];
-    TheGameConfig->mGuideTicks = false;
+    mSavedNoCapture = TheGameConfig->GetNoCapture();
+    mSavedNoDeactivate = TheGameConfig->GetNoDeactivate();
+    mSavedStreaksEnabled = TheGameConfig->GetStreaksEnabled();
+    mSavedGuideTicks = TheGameConfig->GetGuideTicks();
+    mSavedStrandBars = TheGameConfig->GetStrandBars()[TheGameDb->GetNumPlayers() - 1];
+    TheGameConfig->SetGuideTicks(false);
 
     gSavedInputMap = *TheGameDb->GetProfile(kTutorialPlayer)->GetInputMap();
     TheGameDb->GetProfile(kTutorialPlayer)->GetInputMap()->LoadDefaults();
@@ -429,10 +429,10 @@ TutorialGameLogic::~TutorialGameLogic() {
     mScript.Stop();
     mStreams.Stop();
 
-    TheGameConfig->mNoCapture = mSavedNoCapture;
-    TheGameConfig->mNoDeactivate = mSavedNoDeactivate;
-    TheGameConfig->mStreaksEnabled = mSavedStreaksEnabled;
-    TheGameConfig->mGuideTicks = mSavedGuideTicks;
+    TheGameConfig->SetNoCapture(mSavedNoCapture);
+    TheGameConfig->SetNoDeactivate(mSavedNoDeactivate);
+    TheGameConfig->SetStreaksEnabled(mSavedStreaksEnabled);
+    TheGameConfig->SetGuideTicks(mSavedGuideTicks);
     TheGameConfig->SetStrandBars(TheGameDb->GetNumPlayers(), mSavedStrandBars);
 
     *TheGameDb->GetProfile(kTutorialPlayer)->GetInputMap() = gSavedInputMap;
@@ -444,12 +444,12 @@ void TutorialGameLogic::HandleInput(const RotateEvent &event) {
     }
     switch (mRotateMode) {
     case kRotateModeNextOnly:
-        if (event.mDirection != RotateEvent::kDirectionNext) {
+        if (event.GetDirection() != RotateEvent::kDirectionNext) {
             return;
         }
         break;
     case kRotateModePreviousOnly:
-        if (event.mDirection != RotateEvent::kDirectionPrevious) {
+        if (event.GetDirection() != RotateEvent::kDirectionPrevious) {
             return;
         }
         break;
@@ -585,15 +585,15 @@ void TutorialGameLogic::PlayScriptTrack(const char *pszName) {
     }
     Ptr<PlayScriptCmd> cmd(new PlayScriptCmd(pTrack, mSong->GetMsPerTick()));
     mScriptCmds.push_back(cmd);
-    cmd->mNextCommand = 0;
-    cmd->mStartTick = TheSongScheduler.GetTick();
+    cmd->SetNextCommand(0);
+    cmd->SetStartTick(TheSongScheduler.GetTick());
     cmd->ScheduleNext();
 }
 
 void TutorialGameLogic::NotifyWhenDone(Task *pTask, const char *pszName) {
     for (const auto &cmd : mScriptCmds) {
-        if (strcmp(cmd->mTrack->mName.c_str(), pszName) == 0) {
-            cmd->mWaitingTask = pTask;
+        if (strcmp(cmd->GetTrack()->GetName().c_str(), pszName) == 0) {
+            cmd->SetWaitingTask(pTask);
             return;
         }
     }
@@ -630,14 +630,14 @@ void TutorialGameLogic::ActivateBars(int nBar, int nBars, int nTrack) {
 void TutorialGameLogic::ScheduleDeactivateTrack(int nBarsAhead, int nBar, int nBars) {
     const int nTick = TheSongScheduler.GetTick() - TheSongScheduler.GetTick() % mTicksPerBar +
                       (nBarsAhead * mTicksPerBar + mTicksPerBar);
-    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
+    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->GetIndex();
     auto *pDeactivator = new TrackDeactivator(nTrack, nBar, nBars, mCatchTracks[nTrack].get());
     mDeactivators.push_back(Ptr<Command>(pDeactivator));
     TheSongScheduler.PostAt(pDeactivator, nTick, false);
 }
 
 void TutorialGameLogic::CaptureTrack() {
-    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
+    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->GetIndex();
     mCatchTracks[nTrack]->Capture(mBar, mPlayers[kTutorialPlayer].get());
 }
 
@@ -658,12 +658,12 @@ void TutorialGameLogic::MoveTrack(int nTrack) {
 }
 
 void TutorialGameLogic::SetAutopilot(bool bAutopilot) {
-    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
+    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->GetIndex();
     mCatchTracks[nTrack]->SetAutopilot(bAutopilot);
 }
 
 void TutorialGameLogic::SetNoSeeker(bool bNoSeeker) {
-    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
+    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->GetIndex();
     mCatchTracks[nTrack]->SetNoSeeker(bNoSeeker);
 }
 
@@ -690,7 +690,7 @@ Task *TutorialGameLogic::CreateTask(DataArray *pStep) {
 
 bool TutorialGameLogic::IsPhraseAbsent() {
     const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
-    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
+    const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->GetIndex();
     int nStartTick;
     int nEndTick;
     return !mCatchTracks[nTrack]->FindPhrase(nBar, &nStartTick, &nEndTick);

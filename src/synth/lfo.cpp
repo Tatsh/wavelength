@@ -32,7 +32,7 @@ void Lfo::Stop() {
 
 float Lfo::Tick() {
     mTimer.Stop();
-    mElapsedMs += static_cast<float>(mTimer.mCycles) * gSystemCycles2Ms;
+    mElapsedMs += static_cast<float>(mTimer.GetCycles()) * gSystemCycles2Ms;
     mTimer.Reset();
     mTimer.Start();
     if (mPeriod * kMsPerSecond <= mElapsedMs) {

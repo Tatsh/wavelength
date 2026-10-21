@@ -179,16 +179,16 @@ void GfxArena::PollLoad(bool bHudLoaded) {
         // Yes, the timer is never read.
         Timer timer;
         timer.Start();
-        for (RndObject *pObject : mLoader->mObjects) {
+        for (RndObject *pObject : mLoader->GetObjects()) {
             if (mEnviron == nullptr) {
                 mEnviron = dynamic_cast<RndEnviron *>(pObject);
             }
         }
         RndCam *pCam = FindObject<RndCam>("outer 1.cam");
         if ((pCam != nullptr) && (mCamPath == nullptr)) {
-            for (RndObject *pRef : pCam->mRefs) {
+            for (RndObject *pRef : pCam->GetRefs()) {
                 RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(pRef);
-                if ((pAnim == nullptr) || (pAnim->mTrans != pCam)) {
+                if ((pAnim == nullptr) || (pAnim->GetTrans() != pCam)) {
                     continue;
                 }
                 mCamPath = pAnim;
@@ -197,8 +197,8 @@ void GfxArena::PollLoad(bool bHudLoaded) {
                                    Vector3{0.0f, 1.0f, 0.0f},
                                    Vector3{0.0f, 0.0f, 1.0f},
                                    Vector3{0.0f, 0.0f, 0.0f, 1.0f}};
-                pCam->mLocalXfm = identity;
-                pCam->mDirty = 1;
+                pCam->GetLocalXfm() = identity;
+                pCam->SetDirty(1);
                 break;
             }
         }
@@ -209,8 +209,8 @@ void GfxArena::PollLoad(bool bHudLoaded) {
         mMovies.resize(kNumMovies, nullptr);
         for (int i = 0; i < kNumMovies; ++i) {
             mMovies[i] = FindObject<RndMovie>(FormatString("movie%d.mov", i + 1));
-            CollectMovieMats(mMovies[i]->mTex, &mMovieMats);
-            CollectMatAnims(mMovies[i]->mTex, &mMatAnims);
+            CollectMovieMats(mMovies[i]->GetTex(), &mMovieMats);
+            CollectMatAnims(mMovies[i]->GetTex(), &mMatAnims);
             DetachAnim(mMovies[i]);
         }
         for (RndMatAnim *pAnim : mMatAnims) {
@@ -312,7 +312,7 @@ void GfxArena::HandleBeat(signed char nEvent) {
 }
 
 void GfxArena::CollectMovieMats(RndTex *pTex, std::list<MovieMat> *pMats) {
-    for (RndObject *pRef : pTex->mRefs) {
+    for (RndObject *pRef : pTex->GetRefs()) {
         RndMat *pMat = (pRef != nullptr) ? dynamic_cast<RndMat *>(pRef) : nullptr;
         if (pMat == nullptr) {
             continue;
@@ -322,8 +322,8 @@ void GfxArena::CollectMovieMats(RndTex *pTex, std::list<MovieMat> *pMats) {
             pMats->begin(), pMats->end(), [pMat](const MovieMat &mat) { return mat.mMat == pMat; });
         pMats->push_back(MovieMat{pMat, pTex, kNoStage});
         MovieMat &added = pMats->back();
-        for (unsigned int i = 0; i < pMat->mStages.size(); ++i) {
-            if (pMat->mStages[i].mTex == pTex) {
+        for (unsigned int i = 0; i < pMat->GetStages().size(); ++i) {
+            if (pMat->GetStages()[i].GetTex() == pTex) {
                 added.mStage = static_cast<char>(i);
                 break;
             }
@@ -332,7 +332,7 @@ void GfxArena::CollectMovieMats(RndTex *pTex, std::list<MovieMat> *pMats) {
 }
 
 void GfxArena::CollectMatAnims(RndTex *pTex, std::list<RndMatAnim *> *pAnims) {
-    for (RndObject *pRef : pTex->mRefs) {
+    for (RndObject *pRef : pTex->GetRefs()) {
         RndMatAnim *pAnim = (pRef != nullptr) ? dynamic_cast<RndMatAnim *>(pRef) : nullptr;
         if (pAnim == nullptr) {
             continue;
@@ -340,8 +340,8 @@ void GfxArena::CollectMatAnims(RndTex *pTex, std::list<RndMatAnim *> *pAnims) {
         if (std::find(pAnims->begin(), pAnims->end(), pAnim) != pAnims->end()) {
             continue;
         }
-        for (const RndMatAnim::Stage &stage : pAnim->mKeysOwner->mStages) {
-            for (const Key<RndTex *> &key : stage.mTexKeys) {
+        for (const RndMatAnim::Stage &stage : pAnim->GetKeysOwner()->GetStages()) {
+            for (const Key<RndTex *> &key : stage.GetTexKeys()) {
                 if (key.value == pTex) {
                     pAnims->push_back(pAnim);
                     break;
@@ -355,14 +355,14 @@ void GfxArena::DetachAnim(RndAnimatable *pAnim) {
     bool bRemoved = true;
     while (bRemoved) {
         bRemoved = false;
-        for (RndObject *pRef : pAnim->mRefs) {
+        for (RndObject *pRef : pAnim->GetRefs()) {
             RndAnimatable *pParent =
                 (pRef != nullptr) ? dynamic_cast<RndAnimatable *>(pRef) : nullptr;
             if (pParent == nullptr) {
                 continue;
             }
-            if (std::find(pParent->mAnims.begin(), pParent->mAnims.end(), pAnim) !=
-                pParent->mAnims.end()) {
+            if (std::find(pParent->GetAnims().begin(), pParent->GetAnims().end(), pAnim) !=
+                pParent->GetAnims().end()) {
                 pParent->RemoveAnim(pAnim);
                 bRemoved = true;
                 break;
@@ -374,10 +374,10 @@ void GfxArena::DetachAnim(RndAnimatable *pAnim) {
 void GfxArena::FitCamPath(RndTransAnim *pPath) {
     const float fScale = (mSongTicks - kPathStartTick) / (mLength - kPathStartTick);
     const float fOffset = kPathStartTick - (fScale * kPathStartTick);
-    RndTransAnim *pOwner = pPath->mFramesOwner;
-    FitKeys(pOwner->mTransKeys, fScale, fOffset);
-    FitKeys(pOwner->mRotKeys, fScale, fOffset);
-    FitKeys(pOwner->mScaleKeys, fScale, fOffset);
+    RndTransAnim *pOwner = pPath->GetFramesOwner();
+    FitKeys(pOwner->GetTransKeys(), fScale, fOffset);
+    FitKeys(pOwner->GetRotKeys(), fScale, fOffset);
+    FitKeys(pOwner->GetScaleKeys(), fScale, fOffset);
 }
 
 void GfxArena::SetPanelFlags(char nFlags, bool bOn) {
@@ -394,9 +394,9 @@ void GfxArena::SetPanelFlags(char nFlags, bool bOn) {
     if ((mPanelFlags & kPanelFrequency) != 0) {
         pTex = mFrequencyTex;
     } else if ((mPanelFlags & kPanelLowEnergy) != 0) {
-        pTex = mSnow->mTex;
+        pTex = mSnow->GetTex();
     } else if ((mPanelFlags & kPanelBeat) != 0) {
-        pTex = mMovies[kBeatMovie]->mTex;
+        pTex = mMovies[kBeatMovie]->GetTex();
     } else {
         pTex = nullptr;
     }
@@ -409,5 +409,5 @@ void GfxArena::ShowTexture(const MovieMat *pMat, RndTex *pTex) {
     if (pTex == nullptr) {
         pTex = pMat->mTex;
     }
-    pMat->mMat->mStages[pMat->mStage].SetTex(pTex);
+    pMat->mMat->GetStages()[pMat->mStage].SetTex(pTex);
 }

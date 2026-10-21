@@ -93,7 +93,7 @@ bool NetInetConnect::DispatchPriv(Message *pMsg) {
 }
 
 bool NetInetConnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.GetCardStatus(this, kConfigSlot);
     }
     return false;
@@ -102,32 +102,32 @@ bool NetInetConnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
 bool NetInetConnect::HandleStatus(InetConnectStatusMsg *pMsg) {
     DialogPanel *pDialog =
         mFocusPanel != nullptr ? dynamic_cast<DialogPanel *>(mFocusPanel) : nullptr;
-    pDialog->SetText(pMsg->mStatus.c_str());
+    pDialog->SetText(pMsg->GetStatus().c_str());
     return false;
 }
 
 bool NetInetConnect::HandleResult(InetConnectResultMsg *pMsg) {
     mConnecting = 0;
-    if (pMsg->mResult == InetConnectResultMsg::kResultSuccess) {
+    if (pMsg->GetResult() == InetConnectResultMsg::kResultSuccess) {
         TheUI.GotoScreen(kLobbyScreen);
         return false;
     }
 
-    String message(TheLocale.Localize(ErrorToken(pMsg->mResult), true));
+    String message(TheLocale.Localize(ErrorToken(pMsg->GetResult()), true));
     auto *pError = dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-    pError->mMessage = message.c_str();
+    pError->SetMessage(message.c_str());
     TheUI.GotoScreen(pError);
     return false;
 }
 
 bool NetInetConnect::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle && mConnecting != 0) {
+    if (pMsg->GetButton() == kPadTriangle && mConnecting != 0) {
         mConnecting = 0;
         TheUI.GotoScreen(kDisconnectScreen);
     }

@@ -34,7 +34,7 @@ void Lyric::Start() {
     TheTriggerMgr.LyricEvent("");
     if (!mLyrics.empty()) {
         mCurrent = mLyrics.begin();
-        TheSongScheduler.PostAt(mAdvanceCommand.Get(), mCurrent->mTick, false);
+        TheSongScheduler.PostAt(mAdvanceCommand.Get(), mCurrent->GetTick(), false);
     }
 }
 
@@ -43,7 +43,7 @@ void Lyric::Stop() {
 }
 
 void Lyric::Advance() {
-    const char *pszText = mCurrent->mText.c_str();
+    const char *pszText = mCurrent->GetText().c_str();
     TheTriggerMgr.LyricEvent(pszText);
     if (mShowing) {
         TheGfxManager.SetLyricText(pszText, true);
@@ -54,13 +54,13 @@ void Lyric::Advance() {
     if (mCurrent == mLyrics.end()) {
         mCurrent = mLyrics.begin();
         ++nLoop;
-        while (mCurrent->mTick < 0) {
+        while (mCurrent->GetTick() < 0) {
             ++mCurrent;
         }
     }
 
     TheSongScheduler.PostAt(
-        mAdvanceCommand.Get(), nLoop * mLoopBars * mTicksPerBar + mCurrent->mTick, false);
+        mAdvanceCommand.Get(), nLoop * mLoopBars * mTicksPerBar + mCurrent->GetTick(), false);
 }
 
 void Lyric::ToggleShowing([[maybe_unused]] DataArray *pCommand, void *pUserData) {

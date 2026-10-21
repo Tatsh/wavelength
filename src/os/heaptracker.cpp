@@ -65,11 +65,11 @@ void HeapTracker::CreateTables() {
 
 void HeapTracker::Alloc(int nRequested, const char *pszTag, int nActual, void *pData) {
     AllocInfo *pInfo = static_cast<AllocInfo *>(g_AllocInfoPool.Alloc());
-    pInfo->mSizeRequested = nRequested;
-    pInfo->mTag = pszTag;
-    pInfo->mSizeActual = nActual;
-    pInfo->mPoolTag = nullptr;
-    pInfo->mPoolSize = 0;
+    pInfo->SetSizeRequested(nRequested);
+    pInfo->SetTag(pszTag);
+    pInfo->SetSizeActual(nActual);
+    pInfo->SetPoolTag(nullptr);
+    pInfo->SetPoolSize(0);
     pInfo->CaptureStack();
     mInfos[static_cast<int *>(pData) - mStart] = pInfo;
     ++mNumAllocs;
@@ -81,12 +81,12 @@ void HeapTracker::Alloc(int nRequested, const char *pszTag, int nActual, void *p
 
 void HeapTracker::Realloc(void *pOld, int nRequested, int nActual, void *pNew) {
     const AllocInfo *pInfo = mInfos[static_cast<int *>(pOld) - mStart];
-    const char *pszTag = pInfo->mTag;
+    const char *pszTag = pInfo->GetTag();
     if (nRequested == -1) {
-        nRequested = pInfo->mSizeRequested;
+        nRequested = pInfo->GetSizeRequested();
     }
     if (nActual == -1) {
-        nActual = pInfo->mSizeActual;
+        nActual = pInfo->GetSizeActual();
     }
     Free(pOld, false);
     Alloc(nRequested, pszTag, nActual, pNew);
@@ -99,29 +99,29 @@ void HeapTracker::PoolAlloc(int nSize, const char *pszTag, void *pData) {
         pInfo = pSlot;
     } else {
         pInfo = static_cast<AllocInfo *>(g_AllocInfoPool.Alloc());
-        pInfo->mSizeRequested = 0;
-        pInfo->mSizeActual = 0;
-        pInfo->mTag = nullptr;
+        pInfo->SetSizeRequested(0);
+        pInfo->SetSizeActual(0);
+        pInfo->SetTag(nullptr);
         pInfo->CaptureStack();
         pSlot = pInfo;
     }
-    pInfo->mPoolSize = nSize;
-    pInfo->mPoolTag = pszTag;
+    pInfo->SetPoolSize(nSize);
+    pInfo->SetPoolTag(pszTag);
 }
 
 void HeapTracker::Free(void *pData, bool bPool) {
     AllocInfo *&pSlot = mInfos[static_cast<int *>(pData) - mStart];
     AllocInfo *pInfo = pSlot;
     if (bPool) {
-        if (pInfo->mTag != nullptr) {
-            pInfo->mPoolTag = nullptr;
-            pSlot->mPoolSize = 0;
+        if (pInfo->GetTag() != nullptr) {
+            pInfo->SetPoolTag(nullptr);
+            pSlot->SetPoolSize(0);
             return;
         }
     } else {
         --mNumAllocs;
         ++mFreesThisFrame;
-        mBytesActual -= pSlot->mSizeActual;
+        mBytesActual -= pSlot->GetSizeActual();
     }
     g_AllocInfoPool.Free(pSlot);
     pSlot = nullptr;
@@ -189,14 +189,16 @@ void HeapTracker::Report(PrnStream &stream, int nMinSize) {
         if (pInfo == nullptr) {
             continue;
         }
-        if (pInfo->mTag != nullptr) {
+        if (pInfo->GetTag() != nullptr) {
             ++nAllocs;
-            nRequested += pInfo->mSizeRequested;
-            nActual += pInfo->mSizeActual;
-            mStats[mCurrentStats]->Update(pInfo->mTag, pInfo->mSizeRequested, pInfo->mSizeActual);
+            nRequested += pInfo->GetSizeRequested();
+            nActual += pInfo->GetSizeActual();
+            mStats[mCurrentStats]->Update(
+                pInfo->GetTag(), pInfo->GetSizeRequested(), pInfo->GetSizeActual());
         }
-        if (pInfo->mPoolTag != nullptr) {
-            mPoolStats[mCurrentStats]->Update(pInfo->mPoolTag, pInfo->mPoolSize, pInfo->mPoolSize);
+        if (pInfo->GetPoolTag() != nullptr) {
+            mPoolStats[mCurrentStats]->Update(
+                pInfo->GetPoolTag(), pInfo->GetPoolSize(), pInfo->GetPoolSize());
         }
     }
 
@@ -219,7 +221,7 @@ void HeapTracker::Report(PrnStream &stream, int nMinSize) {
     (void)FreeBytes(); // Yes, the binary discards this call's result.
 
     mStats[mCurrentStats]->SortBySize();
-    int nCount = mStats[mCurrentStats]->mCount;
+    int nCount = mStats[mCurrentStats]->GetCount();
     stream.Printf("\n  TYPE                                          NumAllocs  SizeRequest  "
                   "SizeActual\n");
     for (int i = 0; i < nCount; ++i) {
@@ -235,7 +237,7 @@ void HeapTracker::Report(PrnStream &stream, int nMinSize) {
     }
 
     mPoolStats[mCurrentStats]->SortBySize();
-    nCount = mPoolStats[mCurrentStats]->mCount;
+    nCount = mPoolStats[mCurrentStats]->GetCount();
     stream.Printf("\n  POOL TYPE                                     NumAllocs  SizeRequest  "
                   "SizeActual\n");
     for (int i = 0; i < nCount; ++i) {

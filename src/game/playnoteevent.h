@@ -54,6 +54,32 @@ public:
      */
     void Load(BinStream &stream);
 
+    /** @return The second coordinate the input router stores for the player. */
+    float GetY() const {
+        return mY;
+    }
+
+    /** @return The first coordinate the input router stores for the player. */
+    float GetX() const {
+        return mX;
+    }
+
+    /** @return The state of the button the controller reported. */
+    int GetState() const {
+        return mState;
+    }
+
+    /** @return The player index. */
+    unsigned char GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return The gem button, 0 to 2. */
+    unsigned char GetButton() const {
+        return mButton;
+    }
+
+private:
     unsigned char mPlayer; /*!< The player index. */
     unsigned char mButton; /*!< The gem button, 0 to 2. */
     int mState;            /*!< The state of the button the controller reported. */

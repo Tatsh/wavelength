@@ -618,6 +618,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         int mScores[kNumScores]; /*!< The score of each player. */
     };
 

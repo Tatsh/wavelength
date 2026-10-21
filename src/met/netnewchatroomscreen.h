@@ -65,7 +65,10 @@ public:
         return "";
     }
 
-    String mChatroomName; /*!< The name of the new chatroom. */
+    /** @param pszChatroomName The name of the new chatroom. */
+    void SetChatroomName(const char *pszChatroomName) {
+        mChatroomName = pszChatroomName;
+    }
 
 private:
     /**
@@ -91,4 +94,6 @@ private:
      * @ghidraAddress PAL: 0x001814c8
      */
     bool HandleJoinChatroomResult(JoinChatroomResultMsg *pMsg);
+
+    String mChatroomName; /*!< The name of the new chatroom. */
 };

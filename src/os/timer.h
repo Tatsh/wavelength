@@ -102,6 +102,42 @@ public:
      */
     static std::vector<Timer> sTimers;
 
+    /** @return Cycles of the last completed measurement. */
+    unsigned GetCycles() const {
+        return mCycles;
+    }
+
+    /** @param nCycles Cycles of the last completed measurement. */
+    void SetCycles(unsigned nCycles) {
+        mCycles = nCycles;
+    }
+
+    /** @return mCycles converted to milliseconds when the timer last stopped. */
+    float GetLastMs() const {
+        return mLastMs;
+    }
+
+    /** @param fLastMs mCycles converted to milliseconds when the timer last stopped. */
+    void SetLastMs(float fLastMs) {
+        mLastMs = fLastMs;
+    }
+
+    /** @return The name Find() matches, or null for an unnamed timer. */
+    const char *GetName() const {
+        return mName;
+    }
+
+    /** @param pszName The name Find() matches, or null for an unnamed timer. */
+    void SetName(const char *pszName) {
+        mName = pszName;
+    }
+
+    /** @param nRunning Start count. The timer measures while the count is non-zero. */
+    void SetRunning(int nRunning) {
+        mRunning = nRunning;
+    }
+
+private:
     unsigned mStart;   /*!< Counter reading at the start of the current measurement. */
     unsigned mCycles;  /*!< Cycles of the last completed measurement. */
     float mLastMs;     /*!< mCycles converted to milliseconds when the timer last stopped. */

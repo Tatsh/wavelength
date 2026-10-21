@@ -49,9 +49,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusPlayerInfoResponse *pResponse);
 
-    LobbyPlayer *mPlayer; /*!< The player. */
-    int mFlag;            /*!< 1 in the chains of LobbyRT, 0 in LadderListTask. Never read. */
-
 protected:
     /**
      * Send the request.
@@ -60,4 +57,8 @@ protected:
      * @ghidraAddress PAL: 0x0026d948
      */
     void OnStart() override;
+
+private:
+    LobbyPlayer *mPlayer; /*!< The player. */
+    int mFlag;            /*!< 1 in the chains of LobbyRT, 0 in LadderListTask. Never read. */
 };

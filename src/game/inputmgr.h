@@ -30,9 +30,9 @@ public:
     public:
         /** Construct the state with a stopped repeat timer. */
         ControllerData() {
-            mRepeatTimer.mCycles = 0;
-            mRepeatTimer.mLastMs = 0.0f;
-            mRepeatTimer.mRunning = 0;
+            mRepeatTimer.SetCycles(0);
+            mRepeatTimer.SetLastMs(0.0f);
+            mRepeatTimer.SetRunning(0);
         }
 
         /** @return The stick that bends the notes of the player. */

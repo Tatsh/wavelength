@@ -14,12 +14,12 @@ void AccountGetIDTask::OnStart() {
     MakeTag(this, request.header.messageId);
 #ifdef VIDEO_STANDARD_PAL
     strncpy(request.accountName,
-            Utf8String(mPlayer->mName.c_str()).c_str(),
+            Utf8String(mPlayer->GetName().c_str()).c_str(),
             RT_MEDIUS_PLAYER_NAME_SIZE);
     const int nError = rtMediusAccountGetId(&request, OnResponse);
     LobbyRT::ReportMediusError(1047, nError);
 #else
-    strncpy(request.accountName, mPlayer->mName.c_str(), RT_MEDIUS_PLAYER_NAME_SIZE);
+    strncpy(request.accountName, mPlayer->GetName().c_str(), RT_MEDIUS_PLAYER_NAME_SIZE);
     const int nError = rtMediusAccountGetId(&request, OnResponse);
     LobbyRT::ReportMediusError(900, nError);
 #endif
@@ -41,7 +41,7 @@ void AccountGetIDTask::OnResponse(int nConnection,
     if (pTask == nullptr) {
         return;
     }
-    pTask->mPlayer->mId = pResponse->accountId;
+    pTask->mPlayer->SetId(pResponse->accountId);
     pTask->Finish(pResponse->status == RT_MEDIUS_STATUS_SUCCESS,
                   LoginResultMsg::kResultAccountNotFound);
 }

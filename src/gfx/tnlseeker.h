@@ -125,6 +125,7 @@ public:
      */
     static float sFadeSpeed;
 
+private:
     TnlGeom *mGeom;                                  /*!< The geometry of the tunnel. Borrowed. */
     std::unique_ptr<RndMesh> mMesh;                  /*!< The mesh, `seeker <colour>.mesh`. */
     std::unique_ptr<InvExpInterpolator> mTrackCurve; /*!< The glide across the tracks. */
@@ -150,7 +151,6 @@ public:
     float mMultiplierStartTime;         /*!< The song time the multiplier started at. */
     LinearInterpolator mMultiplierFade; /*!< The fraction of the multiplier passed, over ticks. */
 
-private:
     /**
      * Append the two triangles of each quad of a strip.
      *

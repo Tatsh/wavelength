@@ -46,6 +46,7 @@ public:
      */
     bool Match(int *pnIndex) const;
 
+protected:
     const char *mName; /*!< The name, without the leading `-`. */
 };
 

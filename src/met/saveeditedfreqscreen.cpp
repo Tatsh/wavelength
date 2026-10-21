@@ -16,7 +16,7 @@ SaveEditedFreqScreen::~SaveEditedFreqScreen() {
 }
 
 bool SaveEditedFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.SaveFreq(
             this, mSlot, TheGameDb->GetProfile(0), mFreqName.c_str(), mOverwriteStatus);
     }

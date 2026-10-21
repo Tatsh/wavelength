@@ -48,6 +48,7 @@ public:
         DebugPrint("\t-%s\n", mName);
     }
 
+private:
     int *mTarget; /*!< Receives mValue when the option is present. */
     int mValue;   /*!< The value. */
 };

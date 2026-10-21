@@ -101,6 +101,22 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The configurations found. */
+    const std::list<InetConfig> &GetConfigs() const {
+        return mConfigs;
+    }
+
+    /** @return The configurations found, for filling. */
+    std::list<InetConfig> &GetConfigs() {
+        return mConfigs;
+    }
+
+    /** @return The outcome, negative when the search failed. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;                    /*!< The outcome, negative when the search failed. */
     std::list<InetConfig> mConfigs; /*!< The configurations found. */
 };

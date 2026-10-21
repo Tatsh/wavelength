@@ -12,6 +12,6 @@ constexpr char kSearchScreen[] = "fn_do_search";
 void PlayerSearchSetupScreen::Submit() {
     NetDoPlayerSearchScreen *pSearch =
         dynamic_cast<NetDoPlayerSearchScreen *>(TheUI.FindScreen(kSearchScreen, false));
-    pSearch->mPlayerName = mEntry->Text();
+    pSearch->SetPlayerName(mEntry->Text());
     TheUI.GotoScreen(pSearch);
 }

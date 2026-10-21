@@ -21,7 +21,7 @@ constexpr char kCancelComponent[] = "cancel";
 void SaveSettingsScreen::OnSettingsSaved(int nStatus, int nNeeded) {
     switch (nStatus) {
     case MemcardTask::kStatusOk:
-        TheGameDb->GetOptions()->mModified = 0;
+        TheGameDb->GetOptions()->SetModified(0);
         TheUI.GotoScreen(mDoneScreen.c_str());
         break;
 #ifdef VIDEO_STANDARD_PAL
@@ -72,7 +72,7 @@ bool SaveSettingsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SaveSettingsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.SaveSettings(this, mSlot, TheGameDb->GetOptions(), mOverwriteStatus);
     }
     return false;

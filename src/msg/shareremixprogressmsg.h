@@ -79,6 +79,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The part exchanged, from 0 to 1. */
+    float GetProgress() const {
+        return mProgress;
+    }
+
+    /** @return The share-only flag of the remix, non-zero for a remix only shared. */
+    int GetReceived() const {
+        return mReceived;
+    }
+
+private:
     float mProgress; /*!< The part exchanged, from 0 to 1. */
     int mReceived;   /*!< The share-only flag of the remix, non-zero for a remix only shared. */
 };

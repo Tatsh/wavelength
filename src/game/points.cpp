@@ -6,7 +6,7 @@
 #include "os/debug.h"
 
 int GetGemPoints(int nTick) {
-    for (const auto &value : TheGameConfig->mGemPoints) {
+    for (const auto &value : TheGameConfig->GetGemPoints()) {
         if (nTick % value.mDivisor == 0) {
             return value.mPoints;
         }
@@ -25,6 +25,6 @@ int GetPhrasePoints(const GemCursor &cursor, int /* nStartBar */, int nEndBar, i
         nPoints += GetGemPoints(gem.GetTick());
         (void)gem.Next();
     }
-    return static_cast<int>(
-        std::ceil(static_cast<float>(nPoints) / static_cast<float>(TheGameConfig->mPhraseScale)));
+    return static_cast<int>(std::ceil(static_cast<float>(nPoints) /
+                                      static_cast<float>(TheGameConfig->GetPhraseScale())));
 }

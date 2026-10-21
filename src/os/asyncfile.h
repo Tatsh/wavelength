@@ -184,20 +184,6 @@ public:
      */
     void Close();
 
-    int mMode;             /*!< The open mode. */
-    int mFd;               /*!< The descriptor, or negative while the file is not open. */
-    int mSize;             /*!< The size in bytes. */
-    int mUncompressedSize; /*!< The size before compression of a `.gz` file, or 0. */
-    int mTell;             /*!< The position. */
-    int mBufferOffset;     /*!< The position in the buffer. */
-    int mReadStarted;      /*!< Non-zero once the buffer was first filled. */
-    int mFail;             /*!< Non-zero once an operation failed. */
-    char *mBuffer;         /*!< The buffer. */
-    char *mReadDest;       /*!< Where the read copies its next bytes. */
-    int mReadRemaining;    /*!< Bytes the read still copies. */
-    int mReadDone;         /*!< Bytes the read copied. */
-    String mFilename;      /*!< The device path. */
-
 private:
     /**
      * Close the descriptors of files opened to read until a descriptor is free, while every
@@ -262,4 +248,18 @@ private:
      * @ghidraAddress PAL: 0x002990b8
      */
     void CloseDescriptor();
+
+    int mMode;             /*!< The open mode. */
+    int mFd;               /*!< The descriptor, or negative while the file is not open. */
+    int mSize;             /*!< The size in bytes. */
+    int mUncompressedSize; /*!< The size before compression of a `.gz` file, or 0. */
+    int mTell;             /*!< The position. */
+    int mBufferOffset;     /*!< The position in the buffer. */
+    int mReadStarted;      /*!< Non-zero once the buffer was first filled. */
+    int mFail;             /*!< Non-zero once an operation failed. */
+    char *mBuffer;         /*!< The buffer. */
+    char *mReadDest;       /*!< Where the read copies its next bytes. */
+    int mReadRemaining;    /*!< Bytes the read still copies. */
+    int mReadDone;         /*!< Bytes the read copied. */
+    String mFilename;      /*!< The device path. */
 };

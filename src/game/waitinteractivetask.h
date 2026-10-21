@@ -92,23 +92,6 @@ public:
      */
     void OnPowerup() override;
 
-    TutorialGameLogic *mLogic; /*!< The tutorial the step belongs to. */
-    DataArray *mStep;          /*!< The step. */
-    int mPassCount;            /*!< Gems passed since the last hit, miss, or capture. */
-    int mMissCount;            /*!< Gems missed since the last hit, pass, or capture. */
-    int mHitCount;             /*!< Gems hit since the last miss or pass. */
-    int mCaptureCount;         /*!< Captures. */
-    int mNthCapture;           /*!< Captures, set past every count once `nth_capture` fires. */
-    int mCaptureFailCount;     /*!< Broken streaks. */
-    int mMissLane;             /*!< The lane OnGemMiss() last reported. */
-    float mPromptTime;         /*!< Song clock time `delay` and `inactive_delay` count from. */
-    float mActiveIdleTime;     /*!< Song clock time `active_idle` counts from. */
-    int mPowerupCount;         /*!< Deployed powerups. */
-    int mStreak; /*!< One more than the last captured track, negated once the streak breaks. */
-    int mAutocaptureCount; /*!< Automatic captures. */
-    int mMissStreak;       /*!< Gems missed since the last hit or pass. */
-    int mMashCount;        /*!< Times `button_mash` held without firing. */
-
 protected:
     /**
      * Install the task as TheGameCallback, and reset the counts and the times.
@@ -161,4 +144,21 @@ private:
      * @ghidraAddress PAL: 0x00143b68
      */
     void RunActions(DataArray *pCondition, int nFirst);
+
+    TutorialGameLogic *mLogic; /*!< The tutorial the step belongs to. */
+    DataArray *mStep;          /*!< The step. */
+    int mPassCount;            /*!< Gems passed since the last hit, miss, or capture. */
+    int mMissCount;            /*!< Gems missed since the last hit, pass, or capture. */
+    int mHitCount;             /*!< Gems hit since the last miss or pass. */
+    int mCaptureCount;         /*!< Captures. */
+    int mNthCapture;           /*!< Captures, set past every count once `nth_capture` fires. */
+    int mCaptureFailCount;     /*!< Broken streaks. */
+    int mMissLane;             /*!< The lane OnGemMiss() last reported. */
+    float mPromptTime;         /*!< Song clock time `delay` and `inactive_delay` count from. */
+    float mActiveIdleTime;     /*!< Song clock time `active_idle` counts from. */
+    int mPowerupCount;         /*!< Deployed powerups. */
+    int mStreak; /*!< One more than the last captured track, negated once the streak breaks. */
+    int mAutocaptureCount; /*!< Automatic captures. */
+    int mMissStreak;       /*!< Gems missed since the last hit or pass. */
+    int mMashCount;        /*!< Times `button_mash` was met without firing. */
 };

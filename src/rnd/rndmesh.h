@@ -452,19 +452,80 @@ public:
      */
     static int sLoadRev;
 
-    int mZMode;                    /*!< The ZMode. */
-    int mZFunc;                    /*!< The ZFunc. */
-    std::vector<Vert> mVerts;      /*!< The vertices. */
-    std::vector<Face> mFaces;      /*!< The triangles. */
-    std::vector<Edge> mEdges;      /*!< The edges. */
-    RndMat *mMat;                  /*!< The material, or null. */
-    Sphere mSphere;                /*!< The bounding sphere, of radius 0 for none. */
-    RndMesh *mGeomOwner;           /*!< The mesh that has the geometry. */
-    RndTransformable *mTransOwner; /*!< The transformable whose world transform places the mesh. */
-    std::unique_ptr<Bones> mBones; /*!< The bones, or null. */
-    float mMinScreen;              /*!< The least projected size to draw at, or 0 for any. */
-    RndMesh *mNext;                /*!< The next lower detail mesh, or null. */
-    int mMutable;                  /*!< Non-zero when the geometry changes at run time. */
+    /** @return The triangles. */
+    const std::vector<Face> &GetFaces() const {
+        return mFaces;
+    }
+
+    /** @return The triangles, for writing. */
+    std::vector<Face> &GetFaces() {
+        return mFaces;
+    }
+
+    /** @return The mesh that has the geometry. */
+    RndMesh *GetGeomOwner() const {
+        return mGeomOwner;
+    }
+
+    /** @return The material, or null. */
+    RndMat *GetMat() const {
+        return mMat;
+    }
+
+    /** @return The least projected size to draw at, or 0 for any. */
+    float GetMinScreen() const {
+        return mMinScreen;
+    }
+
+    /** @return Non-zero when the geometry changes at run time. */
+    int GetMutable() const {
+        return mMutable;
+    }
+
+    /** @param nMutable Non-zero when the geometry changes at run time. */
+    void SetMutable(int nMutable) {
+        mMutable = nMutable;
+    }
+
+    /** @return The bounding sphere, of radius 0 for none. */
+    const Sphere &GetSphere() const {
+        return mSphere;
+    }
+
+    /** @return The bounding sphere, of radius 0 for none, for writing. */
+    Sphere &GetSphere() {
+        return mSphere;
+    }
+
+    /** @return The vertices. */
+    const std::vector<Vert> &GetVerts() const {
+        return mVerts;
+    }
+
+    /** @return The vertices, for writing. */
+    std::vector<Vert> &GetVerts() {
+        return mVerts;
+    }
+
+    /** @return The ZFunc. */
+    int GetZFunc() const {
+        return mZFunc;
+    }
+
+    /** @param nZFunc The ZFunc. */
+    void SetZFunc(int nZFunc) {
+        mZFunc = nZFunc;
+    }
+
+    /** @return The ZMode. */
+    int GetZMode() const {
+        return mZMode;
+    }
+
+    /** @param nZMode The ZMode. */
+    void SetZMode(int nZMode) {
+        mZMode = nZMode;
+    }
 
 protected:
     /**
@@ -488,6 +549,22 @@ protected:
      * @ghidraAddress PAL: 0x0023c218
      */
     void AcquireRefs();
+
+    std::unique_ptr<Bones> mBones; /*!< The bones, or null. */
+    std::vector<Edge> mEdges;      /*!< The edges. */
+    std::vector<Face> mFaces;      /*!< The triangles. */
+    RndMesh *mGeomOwner;           /*!< The mesh that has the geometry. */
+    RndMat *mMat;                  /*!< The material, or null. */
+    int mMutable;                  /*!< Non-zero when the geometry changes at run time. */
+    Sphere mSphere;                /*!< The bounding sphere, of radius 0 for none. */
+    RndTransformable *mTransOwner; /*!< The transformable whose world transform places the mesh. */
+    std::vector<Vert> mVerts;      /*!< The vertices. */
+    int mZFunc;                    /*!< The ZFunc. */
+    int mZMode;                    /*!< The ZMode. */
+
+private:
+    float mMinScreen; /*!< The least projected size to draw at, or 0 for any. */
+    RndMesh *mNext;   /*!< The next lower detail mesh, or null. */
 };
 
 /**

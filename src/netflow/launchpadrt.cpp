@@ -155,8 +155,10 @@ void LaunchpadRT::SetReady(int nReady) {
 
 void LaunchpadRT::SendRating(int nRank) {
     const NetLaunchpadPlayer *pPlayer = GetLocalPlayer();
-    ClientRatingPkt pkt(
-        pPlayer->mPlayer.mRating, nRank, pPlayer->mPlayer.mGames, pPlayer->mPlayer.mRecord);
+    ClientRatingPkt pkt(pPlayer->mPlayer.GetRating(),
+                        nRank,
+                        pPlayer->mPlayer.GetGames(),
+                        pPlayer->mPlayer.GetRecord());
     Send(&pkt);
 }
 
@@ -179,7 +181,7 @@ int LaunchpadRT::Poll() {
     }
 
     if (mRankTask.Poll() == Task::kStateDone) {
-        SendRating(TheLobbyRT->GetLocalPlayer().mRank);
+        SendRating(TheLobbyRT->GetLocalPlayer().GetRank());
         mRankTask.Stop();
     }
 
@@ -275,9 +277,9 @@ void LaunchpadRT::StartGame() {
     for (auto &player : mPlayers) {
         RatingStat &stat = mRatings[nIndex];
         stat.Set(&player);
-        stat.mScore = player.mId == mLocalId ? kStartScoreLocal : kStartScoreOther;
+        stat.SetScore(player.mId == mLocalId ? kStartScoreLocal : kStartScoreOther);
         if (player.mId == mLocalId) {
-            ++player.mPlayer.mGames;
+            player.mPlayer.SetGames(player.mPlayer.GetGames() + 1);
         }
         ++nIndex;
     }
@@ -289,10 +291,10 @@ void LaunchpadRT::DropRating(int nId) {
         return;
     }
     for (auto it = mRatings.begin(); it != mRatings.end();) {
-        if (it->mId == nId) {
-            it->mScore = kLeftScore;
+        if (it->GetId() == nId) {
+            it->SetScore(kLeftScore);
         }
-        if (nId == kHostId && it->mId != mLocalId && it->mId != kHostId) {
+        if (nId == kHostId && it->GetId() != mLocalId && it->GetId() != kHostId) {
             it = mRatings.erase(it);
         } else {
             ++it;
@@ -315,7 +317,7 @@ void LaunchpadRT::RateGame(const std::vector<NetGameScore> &scores) {
         return;
     }
     for (unsigned int i = 0; i < mRatings.size(); ++i) {
-        mRatings[i].mScore = FindScore(scores, mRatings[i].mId);
+        mRatings[i].SetScore(FindScore(scores, mRatings[i].GetId()));
     }
     UpdateRating();
     mRatings.clear();
@@ -344,7 +346,7 @@ void LaunchpadRT::Exit(MsgSink *pSink, int nReason) {
 
 int LaunchpadRT::FindIdByAccount(int nAccountId) {
     for (const auto &player : mPlayers) {
-        if (player.mPlayer.mId == nAccountId) {
+        if (player.mPlayer.GetId() == nAccountId) {
             return player.mId;
         }
     }
@@ -368,15 +370,15 @@ void LaunchpadRT::Send(Packet *pPacket) {
     rtDmeMessage message;
     stream.Read(message.data, nSize);
     message.length = static_cast<unsigned short>(nSize);
-    int nFlags = (pPacket->mFlags & Packet::kFlagOrdered) != 0 ?
+    int nFlags = (pPacket->GetFlags() & Packet::kFlagOrdered) != 0 ?
                      RT_DME_SEND_BASE | RT_DME_SEND_ORDERED :
                      RT_DME_SEND_BASE;
-    if ((pPacket->mFlags & Packet::kFlagGuaranteed) != 0) {
+    if ((pPacket->GetFlags() & Packet::kFlagGuaranteed) != 0) {
         nFlags |= RT_DME_SEND_GUARANTEED;
     }
     rtDmeSend(static_cast<signed char>(nFlags),
               mConnection,
-              pPacket->mReceiver,
+              pPacket->GetReceiver(),
               sMessageType,
               static_cast<unsigned short>(nSize + kLengthSize),
               &message);
@@ -399,7 +401,7 @@ int LaunchpadRT::Receive(int nConnection, int nType, int nSender, rtDmeMessage *
     if (!stream.Fail()) {
         Packet *pPacket = dynamic_cast<Packet *>(pMsg.get());
         if (pPacket != nullptr) {
-            pPacket->mSender = nSender;
+            pPacket->SetSender(nSender);
             const int nRoute = pPacket->Route();
             if ((nRoute & Packet::kRouteLaunchpad) != 0) {
                 static_cast<MsgSink *>(TheLaunchpadRT.get())->Dispatch(pMsg.get());
@@ -483,20 +485,20 @@ void LaunchpadRT::EndGame() {
 }
 
 bool LaunchpadRT::OnMsg(ClientStatusPkt *pPkt) {
-    NetLaunchpadPlayer *pPlayer = FindPlayer(pPkt->mSender);
+    NetLaunchpadPlayer *pPlayer = FindPlayer(pPkt->GetSender());
     if (pPlayer != nullptr) {
-        pPlayer->mReady = pPkt->mReady;
+        pPlayer->mReady = pPkt->GetReady();
         PlayersChanged();
     }
     return false;
 }
 
 bool LaunchpadRT::OnMsg(ClientRatingPkt *pPkt) {
-    NetLaunchpadPlayer *pPlayer = FindPlayer(pPkt->mSender);
+    NetLaunchpadPlayer *pPlayer = FindPlayer(pPkt->GetSender());
     if (pPlayer != nullptr) {
-        pPlayer->mPlayer.mRating = pPkt->mRating;
-        pPlayer->mPlayer.mGames = pPkt->mGames;
-        pPlayer->mPlayer.mRecord = pPkt->mRecord;
+        pPlayer->mPlayer.SetRating(pPkt->GetRating());
+        pPlayer->mPlayer.SetGames(pPkt->GetGames());
+        pPlayer->mPlayer.SetRecord(pPkt->GetRecord());
         PlayersChanged();
     }
     return false;
@@ -519,17 +521,17 @@ bool LaunchpadRT::OnMsg(StartGamePkt *pPkt) {
     mSyncDeadline = 0.0f;
 #endif
     const float fNow = GetTime();
-    if (pPkt->mTime < fNow) {
+    if (pPkt->GetTime() < fNow) {
         DebugPrint("Net Problem: Starting late by %d milliseconds!\n",
-                   static_cast<int>(fNow - pPkt->mTime));
+                   static_cast<int>(fNow - pPkt->GetTime()));
     }
-    mStartTime = pPkt->mTime;
-    mSeed = pPkt->mSeed;
+    mStartTime = pPkt->GetTime();
+    mSeed = pPkt->GetSeed();
     return false;
 }
 
 bool LaunchpadRT::OnMsg(ClientAbortedPkt *pPkt) {
-    const int nId = pPkt->mSender;
+    const int nId = pPkt->GetSender();
     DropRating(nId);
     if (nId == kHostId) {
         {
@@ -544,10 +546,10 @@ bool LaunchpadRT::OnMsg(ClientAbortedPkt *pPkt) {
 }
 
 bool LaunchpadRT::OnMsg(UpdateRanksPkt *pPkt) {
-    for (const auto &info : pPkt->mRanks) {
+    for (const auto &info : pPkt->GetRanks()) {
         NetLaunchpadPlayer *pPlayer = FindPlayer(info.mPlayer);
         if (pPlayer != nullptr) {
-            pPlayer->mPlayer.mRank = info.mRank;
+            pPlayer->mPlayer.SetRank(info.mRank);
         }
     }
     PlayersChanged();

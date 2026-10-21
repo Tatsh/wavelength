@@ -63,7 +63,7 @@ void RedbookPlaybackScreen::PickSong() {
 void RedbookPlaybackScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
     if (mStopping != 0) {
-        if (mNextSong.mLength == 0 && SongPreview::IsPlaying()) {
+        if (mNextSong.GetLength() == 0 && SongPreview::IsPlaying()) {
             TheUI.GotoScreen(kJukeboxScreen);
             mStopping = 0;
             mPlaying = 0;
@@ -74,9 +74,9 @@ void RedbookPlaybackScreen::Poll(float fTime) {
         return;
     }
     auto *pBand = static_cast<SongPicPanel *>(TheUI.FindPanel(kBandPanel, false));
-    if (mNextSong.mLength == 0) {
+    if (mNextSong.GetLength() == 0) {
         PickSong();
-    } else if (pBand->mPictureReady != 0) {
+    } else if (pBand->GetPictureReady() != 0) {
         (void)SongPreview::IsIdle(); // Yes, the binary asks again and discards the answer.
         SongPreview::Load(mNextSong.c_str(), false);
         mNextSong.Clear();
@@ -101,10 +101,10 @@ bool RedbookPlaybackScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool RedbookPlaybackScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadStart && pMsg->mPressed != 0 && mStopping == 0) {
+    if (pMsg->GetButton() == kPadStart && pMsg->GetPressed() != 0 && mStopping == 0) {
         StopPlayback();
         mStopping = 1;
     }

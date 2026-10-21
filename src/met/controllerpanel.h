@@ -38,8 +38,30 @@ public:
          */
         void Load(const char *pszName);
 
+        /** @return The animation, `o_controller_map_<name>.tnm`. */
+        RndAnimatable *GetAnim() const {
+            return mAnim;
+        }
+
+        /** @param pAnim The animation, `o_controller_map_<name>.tnm`. */
+        void SetAnim(RndAnimatable *pAnim) {
+            mAnim = pAnim;
+        }
+
+        /** @return The highlight, `o_controller_map_<name>.mesh`. */
+        RndDrawable *GetMesh() const {
+            return mMesh;
+        }
+
+        /** @param pMesh The highlight, `o_controller_map_<name>.mesh`. */
+        void SetMesh(RndDrawable *pMesh) {
+            mMesh = pMesh;
+        }
+
+    private:
         RndAnimatable *mAnim; /*!< The animation, `o_controller_map_<name>.tnm`. */
-        RndDrawable *mMesh;   /*!< The highlight, `o_controller_map_<name>.mesh`. */
+
+        RndDrawable *mMesh; /*!< The highlight, `o_controller_map_<name>.mesh`. */
     };
 
     /**
@@ -93,6 +115,7 @@ public:
      */
     void SetRegion(int nRegion);
 
+private:
     Region mRegions[kNumRegions]; /*!< The regions, indexed by JoypadButton. */
     RndView *mView;               /*!< The view of the picture, `o_controller_map.view`. */
     int mRegion;                  /*!< The highlighted region, or kPadNone. */

@@ -25,5 +25,17 @@ public:
      */
     explicit DuelPattern(const DataArray *pLanes);
 
+    /**
+     * Report whether a step allows a gem in a lane.
+     *
+     * @param nStep The step.
+     * @param nLane The lane.
+     * @return Whether the step allows a gem.
+     */
+    bool IsAllowed(int nStep, int nLane) const {
+        return mAllowed[nStep][nLane] != 0;
+    }
+
+private:
     int mAllowed[kDuelPatternSteps][kDuelPatternLanes]; /*!< Whether each step allows a gem. */
 };

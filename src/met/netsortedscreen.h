@@ -89,6 +89,7 @@ public:
      */
     bool HandleLobbyPlayers(LobbyPlayersMsg *pMsg);
 
+private:
     std::list<NetLaunchpadInfo> mLaunchpads; /*!< Constructed and destroyed only. */
     String mArena;                           /*!< The arena of the search. */
     int mRuleSet;                            /*!< The game mode of the search. */

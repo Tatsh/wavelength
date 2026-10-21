@@ -126,6 +126,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The index of the block. */
+    short GetBlock() const {
+        return mBlock;
+    }
+
+    /** @return The part of the remix delivered with the block, 0 to 1. */
+    float GetProgress() const {
+        return mProgress;
+    }
+
+    /** @return The number of bytes of the block. */
+    short GetSize() const {
+        return mSize;
+    }
+
+    /** @return The bytes restoreGuts() receives. */
+    const char *GetBuffer() const {
+        return mBuffer;
+    }
+
+private:
     const char *mData;           /*!< The bytes saveGuts() sends. */
     char mBuffer[kMaxBlockSize]; /*!< The bytes restoreGuts() receives. */
     short mBlock;                /*!< The index of the block. */

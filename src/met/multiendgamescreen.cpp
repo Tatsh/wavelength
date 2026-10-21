@@ -97,12 +97,12 @@ void MultiEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
             dynamic_cast<MultiGameStatsPanel *>(TheUI.FindPanel(panelName.c_str(), false));
         // The neighbours are compared by player, not by the ranking, as the binary does.
         if (nRow == 0) {
-            pPanel->mTied = !bNoTie;
+            pPanel->SetTied(!bNoTie);
         } else if (nRow == static_cast<int>(ranking.size()) - 1) {
-            pPanel->mTied = TheGameDb->GetPlayerRank(nRow) == TheGameDb->GetPlayerRank(nRow - 1);
+            pPanel->SetTied(TheGameDb->GetPlayerRank(nRow) == TheGameDb->GetPlayerRank(nRow - 1));
         } else {
-            pPanel->mTied = TheGameDb->GetPlayerRank(nRow) == TheGameDb->GetPlayerRank(nRow - 1) ||
-                            TheGameDb->GetPlayerRank(nRow) == TheGameDb->GetPlayerRank(nRow + 1);
+            pPanel->SetTied(TheGameDb->GetPlayerRank(nRow) == TheGameDb->GetPlayerRank(nRow - 1) ||
+                            TheGameDb->GetPlayerRank(nRow) == TheGameDb->GetPlayerRank(nRow + 1));
         }
         pPanel->SetPlayer(ranking[nRow]);
         mPlayerRows[ranking[nRow]] = nRow;

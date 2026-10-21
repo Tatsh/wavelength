@@ -64,8 +64,8 @@ void TnlGem::Update(TnlGems *pGems, GfxTunnel *pTunnel, const TnlTrackRange *pRa
             }
         }
         MeshGroup *pGroup = mMeshGroup;
-        while (pGroup != nullptr && !(flTick + pGroup->mLookahead < mTick)) {
-            pGroup = pGroup->mNext;
+        while (pGroup != nullptr && !(flTick + pGroup->GetLookahead() < mTick)) {
+            pGroup = pGroup->GetNext();
         }
         if (pGroup != nullptr && pGroup != mMeshGroup) {
             pGroup->TakeGem(mMeshGroup, this);
@@ -76,7 +76,7 @@ void TnlGem::Update(TnlGems *pGems, GfxTunnel *pTunnel, const TnlTrackRange *pRa
 
     if (mSpriteGroup == nullptr) {
         mSpriteGroup = pGems->GetSpriteGroup(mType);
-        mParticle = mSpriteGroup->mParticles->AllocParticle();
+        mParticle = mSpriteGroup->GetParticles()->AllocParticle();
         if (mParticle == nullptr) {
             mSpriteGroup = nullptr;
             return;
@@ -89,10 +89,10 @@ void TnlGem::Update(TnlGems *pGems, GfxTunnel *pTunnel, const TnlTrackRange *pRa
         if ((mFlags & kFlagPlayerColor) != 0) {
             mParticle->mCol = PlayerColor(static_cast<char>(mFlags & kFlagColorMask));
         } else {
-            mParticle->mCol = mSpriteGroup->mParticles->mStartColorLow;
+            mParticle->mCol = mSpriteGroup->GetParticles()->GetStartColorLow();
         }
         mParticle->mPos = xfm.mTranslation;
-        mParticle->mSize = mSpriteGroup->mParticles->mSize.x;
+        mParticle->mSize = mSpriteGroup->GetParticles()->GetSize().x;
     } else if (pRange != nullptr && pRange->Contains(mTrack, mTick)) {
         const float flLateral = Lateral();
         const char nTrack = mTrack;
@@ -112,7 +112,7 @@ void TnlGem::Release(GfxTunnel *pTunnel) {
         mMeshGroup = nullptr;
     } else if (mSpriteGroup != nullptr) {
         // Yes, the original leaves mParticle pointing at the freed particle.
-        mSpriteGroup->mParticles->FreeParticle(mParticle);
+        mSpriteGroup->GetParticles()->FreeParticle(mParticle);
         mSpriteGroup = nullptr;
     } else if (pTunnel != nullptr && (static_cast<unsigned char>(mType) & kTypeSprite) == 0) {
         pTunnel->OnGemRemoved(this);

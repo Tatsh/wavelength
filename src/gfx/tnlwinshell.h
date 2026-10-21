@@ -74,6 +74,7 @@ public:
      */
     void Update();
 
+private:
     RndView *mView;   /*!< The view, `win_shell.view`. */
     float mStartTick; /*!< The tick the shell started at, or kNoTick. */
     float mDuration;  /*!< The ticks the shell plays, `duration`. */

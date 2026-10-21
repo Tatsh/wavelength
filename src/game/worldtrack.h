@@ -56,5 +56,6 @@ public:
     /** The number of event lists, one for each letter from `A` to `G`. */
     static constexpr int kListCount = 7;
 
+private:
     std::vector<std::vector<int>> mEvents; /*!< The event lists. */
 };

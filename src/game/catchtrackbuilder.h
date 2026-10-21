@@ -146,17 +146,6 @@ public:
      */
     static bool DecodeGemNote(unsigned char nNote, int *pnLane, int *pnSkill);
 
-    int mIntroTicks;            /*!< The length of the song intro. */
-    CatchTrackData *mData;      /*!< The data to fill. */
-    int mFilterEffects;         /*!< Nonzero to leave controllers 93 and 94 out of the samples. */
-    Lyric *mLyric;              /*!< The lyrics to fill. */
-    MidiValidator mValidator;   /*!< The checker of the channel messages. */
-    int mSkill;                 /*!< The skill level whose gems the builder reads. */
-    std::vector<GemData> mGems; /*!< The gems in tick order. */
-    MuseFactory mSamples;       /*!< The sample messages. */
-    int mLastNoteOnTick;        /*!< The tick of the last note-on message, or -1. */
-    int mFirstSampleTick;       /*!< The tick of the first sample note, or -1. */
-
 private:
     /**
      * Record a gem of the skill level the builder reads.
@@ -170,4 +159,15 @@ private:
      * @ghidraAddress PAL: 0x0014cf90
      */
     bool AddGem(int nTick, unsigned char nStatus, unsigned char nData1, unsigned char nData2);
+
+    int mIntroTicks;            /*!< The length of the song intro. */
+    CatchTrackData *mData;      /*!< The data to fill. */
+    int mFilterEffects;         /*!< Nonzero to omit controllers 93 and 94 from the samples. */
+    Lyric *mLyric;              /*!< The lyrics to fill. */
+    MidiValidator mValidator;   /*!< The checker of the channel messages. */
+    int mSkill;                 /*!< The skill level whose gems the builder reads. */
+    std::vector<GemData> mGems; /*!< The gems in tick order. */
+    MuseFactory mSamples;       /*!< The sample messages. */
+    int mLastNoteOnTick;        /*!< The tick of the last note-on message, or -1. */
+    int mFirstSampleTick;       /*!< The tick of the first sample note, or -1. */
 };

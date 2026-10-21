@@ -20,6 +20,17 @@ public:
     /** One lyric and the tick it is shown at. */
     class LyricData {
     public:
+        LyricData() = default;
+
+        /**
+         * Construct a lyric.
+         *
+         * @param nTick The tick within the loop.
+         * @param text The text.
+         */
+        LyricData(int nTick, const String &text) : mTick(nTick), mText(text) {
+        }
+
         /**
          * Order lyrics by tick.
          *
@@ -30,6 +41,17 @@ public:
             return mTick < other.mTick;
         }
 
+        /** @return The tick within the loop, negative before the loop's first pass. */
+        int GetTick() const {
+            return mTick;
+        }
+
+        /** @return The text. */
+        const String &GetText() const {
+            return mText;
+        }
+
+    private:
         int mTick;    /*!< The tick within the loop, negative before the loop's first pass. */
         String mText; /*!< The text. */
     };

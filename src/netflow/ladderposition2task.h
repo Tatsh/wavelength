@@ -51,9 +51,6 @@ public:
                            int nSize,
                            const rtMediusLadderPositionResponse *pResponse);
 
-    MsgSink *mSink; /*!< The receiver of the PlayerRankMsg, or null. */
-    int mAccount;   /*!< The account. */
-
 protected:
     /**
      * Send the request, or finish and report a position of 0 when it cannot be sent.
@@ -62,4 +59,8 @@ protected:
      * @ghidraAddress PAL: 0x0026f690
      */
     void OnStart() override;
+
+private:
+    MsgSink *mSink; /*!< The receiver of the PlayerRankMsg, or null. */
+    int mAccount;   /*!< The account. */
 };

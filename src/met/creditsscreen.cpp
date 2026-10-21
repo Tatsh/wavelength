@@ -68,11 +68,11 @@ void CreditsScreen::Poll(float fTime) {
 }
 
 bool CreditsScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadTriangle) {
+        if (pMsg->GetButton() == kPadTriangle) {
             TheUI.GotoScreen(kExitScreen);
         } else {
             Advance();

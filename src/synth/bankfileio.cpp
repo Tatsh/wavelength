@@ -66,7 +66,7 @@ bool BankFileIO::operator!() const {
 String BankFileIO::AudioDataFilename(const String &bankFileName) {
     String filename(bankFileName);
     const int nExtension = filename.Find(kBankExtension.c_str());
-    filename.Replace(nExtension, kAudioDataExtension.mLength, kAudioDataExtension);
+    filename.Replace(nExtension, kAudioDataExtension.GetLength(), kAudioDataExtension);
     return filename;
 }
 

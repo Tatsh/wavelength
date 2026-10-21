@@ -91,9 +91,9 @@ void NetRankedPlayersList::UpdateRow(int nRow, int nItem) {
         if (player.IsNewbie()) {
             SetCellText(nRow, kColumnRank, TheLocale.Localize(kNewbieToken, true));
         } else {
-            SetCellText(nRow, kColumnRank, FormatString(kRowRankFormat, player.mRank));
+            SetCellText(nRow, kColumnRank, FormatString(kRowRankFormat, player.GetRank()));
         }
-        SetCellText(nRow, kColumnName, player.mName.c_str());
+        SetCellText(nRow, kColumnName, player.GetName().c_str());
     } else {
         SetCellText(nRow, kColumnName, kNoText);
         SetCellText(nRow, kColumnRank, kNoText);
@@ -116,31 +116,32 @@ void NetRankedPlayersList::UpdateCursor() {
 
     UIComponent *pName = TheUI.FindComponent(kDetailPanel, kNameComponent, false);
     LobbyPlayer &player = *ListAt(mPlayers, mSelected);
-    pName->SetText(player.mName.c_str());
+    pName->SetText(player.GetName().c_str());
 
     UIComponent *pRank = TheUI.FindComponent(kDetailPanel, kRankComponent, false);
     char szRank[kRankTextSize];
     if (player.IsNewbie()) {
         std::strcpy(szRank, TheLocale.Localize(kNewbieToken, true));
-    } else if (player.mRank > 0) {
-        std::sprintf(szRank, kRankFormat, player.mRank);
+    } else if (player.GetRank() > 0) {
+        std::sprintf(szRank, kRankFormat, player.GetRank());
     } else {
         szRank[0] = kNoText[0];
     }
-    FindAvatarPanel()->SetAvatar(&player.mAvatar);
+    FindAvatarPanel()->SetAvatar(&player.GetAvatar());
     pRank->SetText(FormatString(TheLocale.Localize(kRankToken, true), szRank));
 
     UIComponent *pGames = TheUI.FindComponent(kDetailPanel, kGamesComponent, false);
-    pGames->SetText(FormatString(TheLocale.Localize(kGamesToken, true), player.mGames));
+    pGames->SetText(FormatString(TheLocale.Localize(kGamesToken, true), player.GetGames()));
 
     UIComponent *pNet = TheUI.FindComponent(kDetailPanel, kNetComponent, false);
     pNet->SetText(FormatString(TheLocale.Localize(kNetToken, true),
-                               GetConnectionTypeName(player.mConnectionType)));
+                               GetConnectionTypeName(player.GetConnectionType())));
 
     UIComponent *pLogin = TheUI.FindComponent(kDetailPanel, kLoginComponent, false);
     String login;
-    player.mLastOnline.FormatShortDate(login);
+    player.GetLastOnline().FormatShortDate(login);
     pLogin->SetText(FormatString(TheLocale.Localize(kLoginToken, true), login.c_str()));
 
-    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))->SetMat(FindRankMaterial(player.mRankIcon));
+    dynamic_cast<RndMesh *>(TheManager.Find(kRankMesh))
+        ->SetMat(FindRankMaterial(player.GetRankIcon()));
 }

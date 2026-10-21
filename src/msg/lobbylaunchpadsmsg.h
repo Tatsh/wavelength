@@ -82,6 +82,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return Non-zero when launchpads precede the list. */
+    int GetHasPrevious() const {
+        return mHasPrevious;
+    }
+
+    /** @return The launchpads. */
+    std::list<NetLaunchpadInfo> *GetLaunchpads() const {
+        return mLaunchpads;
+    }
+
+private:
     std::list<NetLaunchpadInfo> *mLaunchpads; /*!< The launchpads. */
     int mHasPrevious;                         /*!< Non-zero when launchpads precede the list. */
 };

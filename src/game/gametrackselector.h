@@ -178,6 +178,7 @@ public:
      */
     void RefreshTrack(int nTrack);
 
+private:
     TrackSelector mSelector;        /*!< The grid of the players on the tracks. */
     std::vector<Player *> mPlayers; /*!< Every player, by index. */
     std::vector<Track *> mTracks;   /*!< The catch tracks, then the freestyle track. */

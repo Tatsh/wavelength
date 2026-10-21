@@ -35,7 +35,7 @@ int MCSaveRemixTask::GetNeeded() {
 
 void MCSaveRemixTask::OnSaveSpace(int nNeeded) {
     if (MemcardTask::sStatus == MemcardTask::kStatusOk) {
-        const char cDirTag = g_MemcardPath[g_MemcardPath.mLength - 1];
+        const char cDirTag = g_MemcardPath[g_MemcardPath.GetLength() - 1];
         const char *pszLabel;
         g_pMemcardConfig->FindSymbol("remix_label", &pszLabel, true);
         mCreateDir->Set(mPort, FormatString("%s %c", pszLabel, cDirTag));

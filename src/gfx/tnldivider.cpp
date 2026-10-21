@@ -76,8 +76,8 @@ TnlDivider::TnlDivider()
     mView->RemoveDraw(mTransparentView);
     mTransparentView->AddDraw(mText, nullptr);
     for (int i = 0; i < 2; ++i) {
-        mEmitRates[i] = Vector2{mParticles[i]->mEmitRate.x, mParticles[i]->mEmitRate.y};
-        mSizes[i] = Vector2{mParticles[i]->mSize.x, mParticles[i]->mSize.y};
+        mEmitRates[i] = Vector2{mParticles[i]->GetEmitRate().x, mParticles[i]->GetEmitRate().y};
+        mSizes[i] = Vector2{mParticles[i]->GetSize().x, mParticles[i]->GetSize().y};
     }
     mText->SetShowing(0);
     mView->SetShowing(0);
@@ -92,22 +92,22 @@ TnlDivider::TnlDivider()
     layout.mBasisY = Vector3{0.0f, flScale, 0.0f};
     layout.mBasisZ = Vector3{0.0f, 0.0f, flScale};
     layout.mTranslation = sOffset;
-    mView->mLocalXfm = layout;
-    mView->mDirty = 1;
+    mView->GetLocalXfm() = layout;
+    mView->SetDirty(1);
     ScaleParticleTree(mView, sScale.x);
     RndTransAnim *pMessage = FindObject<RndTransAnim>("boundary msg.tnm");
-    ScaleKeys(pMessage->mFramesOwner->mTransKeys, sScale.x);
-    ScaleKeys(pMessage->mFramesOwner->mScaleKeys, sScale.x);
+    ScaleKeys(pMessage->GetFramesOwner()->GetTransKeys(), sScale.x);
+    ScaleKeys(pMessage->GetFramesOwner()->GetScaleKeys(), sScale.x);
     RndTransAnim *pFlash = FindObject<RndTransAnim>("boundary flash.tnm");
-    ScaleKeys(pFlash->mFramesOwner->mScaleKeys, sScale.x);
+    ScaleKeys(pFlash->GetFramesOwner()->GetScaleKeys(), sScale.x);
     ScaleParticles(0.0f);
     mCurrent = mSections.begin();
 }
 
 void TnlDivider::ScaleParticles(float flScale) {
     for (int i = 0; i < 2; ++i) {
-        mParticles[i]->mEmitRate.x = mEmitRates[i].x * flScale;
-        mParticles[i]->mEmitRate.y = mEmitRates[i].y * flScale;
+        mParticles[i]->GetEmitRate().x = mEmitRates[i].x * flScale;
+        mParticles[i]->GetEmitRate().y = mEmitRates[i].y * flScale;
     }
 }
 
@@ -184,10 +184,10 @@ void TnlDivider::Poll(float flDelta, GfxTunnel *pTunnel) {
                                       Vector3{0.0f, flScale, 0.0f},
                                       Vector3{0.0f, 0.0f, flScale},
                                       Vector3{}};
-            mTextScaleView->mLocalXfm.mBasisX = xfm.mBasisX;
-            mTextScaleView->mLocalXfm.mBasisY = xfm.mBasisY;
-            mTextScaleView->mLocalXfm.mBasisZ = xfm.mBasisZ;
-            mTextScaleView->mDirty = 1;
+            mTextScaleView->GetLocalXfm().mBasisX = xfm.mBasisX;
+            mTextScaleView->GetLocalXfm().mBasisY = xfm.mBasisY;
+            mTextScaleView->GetLocalXfm().mBasisZ = xfm.mBasisZ;
+            mTextScaleView->SetDirty(1);
             UpdateText(it);
         }
         const float flSince = flNow - it->mTick;
@@ -197,8 +197,8 @@ void TnlDivider::Poll(float flDelta, GfxTunnel *pTunnel) {
         ScaleParticles(mParticleFade.Eval(flSince));
         if (mFlashing) {
             Segment sight;
-            sight.mEnds[0] = pTunnel->GetCamFX()->mView.mTranslation;
-            sight.mEnds[1] = mTopView->mLocalXfm.mTranslation;
+            sight.mEnds[0] = pTunnel->GetCamFX()->GetView().mTranslation;
+            sight.mEnds[1] = mTopView->GetLocalXfm().mTranslation;
             int nTrack;
             int nBar;
             const float flTarget =
@@ -263,7 +263,7 @@ void TnlDivider::UpdateText(std::list<Section>::iterator section) {
 void TnlDivider::PlaceOnPath(RndTransformable *pTrans, TnlGeom *pGeom, float flTick) {
     Transform xfm;
     pGeom->PathXfm(&xfm, flTick);
-    pTrans->mLocalXfm = xfm;
-    pTrans->mDirty = 1;
+    pTrans->GetLocalXfm() = xfm;
+    pTrans->SetDirty(1);
     pTrans->UpdateWorldXfm(nullptr, 0);
 }

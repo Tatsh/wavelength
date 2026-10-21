@@ -70,7 +70,7 @@ void NetFlashUpdate::PollFlash(float fTime) {
         return;
     }
     ++mFlashes;
-    if (mPanelMesh->mMat == mMat) {
+    if (mPanelMesh->GetMat() == mMat) {
         mPanelMesh->SetMat(mHiliteMat);
     } else {
         mPanelMesh->SetMat(mMat);

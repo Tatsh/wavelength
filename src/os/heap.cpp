@@ -321,10 +321,10 @@ void Heap::Compact(int nByteBudget, bool bStrict) {
                 break;
             }
             HandleBlock *pData = reinterpret_cast<HandleBlock *>(&pBlock[kHandleDataWord]);
-            pData->mHandle->mBlock =
-                reinterpret_cast<HandleBlock *>(&pBlock[kHandleDataWord - nFreeWords]);
+            pData->mHandle->SetBlock(
+                reinterpret_cast<HandleBlock *>(&pBlock[kHandleDataWord - nFreeWords]));
             if (g_nMemTrackingEnabled != 0) {
-                MemTrackRealloc(mNum, pData, -1, -1, pData->mHandle->mBlock);
+                MemTrackRealloc(mNum, pData, -1, -1, pData->mHandle->GetBlock());
             }
             nMovedWords += nWords;
             pBlock = &pBlock[nWords];

@@ -135,7 +135,7 @@ void SongPreview::FadeOut() {
 }
 
 bool SongPreview::IsIdle() {
-    return sPlayer == nullptr && sClip.mLength == 0;
+    return sPlayer == nullptr && sClip.GetLength() == 0;
 }
 
 bool SongPreview::IsPlaying() {
@@ -164,7 +164,7 @@ void SongPreview::Poll() {
             sPlayer.reset();
             sVolume = 0.0f;
         }
-    } else if (sClip.mLength != 0) {
+    } else if (sClip.GetLength() != 0) {
         sFadeRate = sFadeStep;
         sVolume = 0.0f;
         const bool bAudio = sClip.Find(kAudioDir) != String::npos;

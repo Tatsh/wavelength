@@ -43,6 +43,26 @@ public:
      */
     float Step(float fDelta, float fTarget);
 
+    /** @return The value. */
+    float GetValue() const {
+        return mValue;
+    }
+
+    /**
+     * Set the curve and the greatest speed.
+     *
+     * @param coeffs The coefficients of the square of the distance, of the distance, and of no
+     * distance.
+     * @param flMaxSpeed The greatest speed.
+     */
+    void SetCurve(const Vector3 &coeffs, float flMaxSpeed) {
+        mSquare = coeffs.x;
+        mLinear = coeffs.y;
+        mConstant = coeffs.z;
+        mMaxSpeed = flMaxSpeed;
+    }
+
+private:
     float mSquare;   /*!< The coefficient of the square of the distance. */
     float mLinear;   /*!< The coefficient of the distance. */
     float mConstant; /*!< The speed at no distance. */

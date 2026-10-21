@@ -99,9 +99,20 @@ public:
      */
     void AddRemix(const NetRepoRemix &remix);
 
-    ReposToolList *mList;             /*!< The list, from the last entry. */
-    std::list<NetRepoRemix> mRemixes; /*!< The remixes of the repository. */
-    String mNote;                     /*!< The note being edited. */
+    /** @return The remixes of the repository. */
+    const std::list<NetRepoRemix> &GetRemixes() const {
+        return mRemixes;
+    }
+
+    /** @return The remixes of the repository. */
+    std::list<NetRepoRemix> &GetRemixes() {
+        return mRemixes;
+    }
+
+    /** @param pszNote The note being edited. */
+    void SetNote(const char *pszNote) {
+        mNote = pszNote;
+    }
 
 private:
     /** The value of mSelection when no note is being edited. */
@@ -118,7 +129,10 @@ private:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    int mSelection = kNoSelection; // The remix whose note is being edited.
+    int mSelection = kNoSelection;    // The remix whose note is being edited.
+    ReposToolList *mList;             /*!< The list, from the last entry. */
+    std::list<NetRepoRemix> mRemixes; /*!< The remixes of the repository. */
+    String mNote;                     /*!< The note being edited. */
 };
 
 #endif

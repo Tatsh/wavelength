@@ -76,10 +76,10 @@ void CopyRow(Vector3 &destination, const ScaleBasis &basis, int nRow) {
 
 void SetScale(RndTransformable *pTrans, float fScale) {
     const ScaleBasis basis = MakeScaleBasis(fScale);
-    CopyRow(pTrans->mLocalXfm.mBasisX, basis, kXfmRowBasisX);
-    CopyRow(pTrans->mLocalXfm.mBasisY, basis, kXfmRowBasisY);
-    pTrans->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
-    CopyRow(pTrans->mLocalXfm.mBasisZ, basis, kXfmRowBasisZ);
+    CopyRow(pTrans->GetLocalXfm().mBasisX, basis, kXfmRowBasisX);
+    CopyRow(pTrans->GetLocalXfm().mBasisY, basis, kXfmRowBasisY);
+    pTrans->SetDirty(1); // Yes, the binary marks the transform before the last row is written.
+    CopyRow(pTrans->GetLocalXfm().mBasisZ, basis, kXfmRowBasisZ);
 }
 
 } // namespace
@@ -104,11 +104,11 @@ HudPoints::HudPoints(int nIndex)
         dynamic_cast<RndText *>(TheManager.Find(FormatString("%s pts%d.txt", pszHud, nIndex)));
     mMultText =
         dynamic_cast<RndText *>(TheManager.Find(FormatString("%s ptsmult%d.txt", pszHud, nIndex)));
-    if (mPointsText->mFont != nullptr) {
-        mPointsMat = mPointsText->mFont->mMat;
+    if (mPointsText->GetFont() != nullptr) {
+        mPointsMat = mPointsText->GetFont()->GetMat();
     }
-    if (mMultText->mFont != nullptr) {
-        mMultMat = mMultText->mFont->mMat;
+    if (mMultText->GetFont() != nullptr) {
+        mMultMat = mMultText->GetFont()->GetMat();
     }
     mColdMat = dynamic_cast<RndMat *>(TheManager.Find("HUD ptstmp.mat"));
     mHotMat = dynamic_cast<RndMat *>(TheManager.Find("HUD ptstmphot.mat"));
@@ -144,7 +144,7 @@ void HudPoints::Poll([[maybe_unused]] float fUnused, float fDelta) {
     ScaleText(mPointsText);
     const float fGlow = mGlow * 0.5f + 0.5f;
     mMultMat->SetBaseColor(Color{fGlow, fGlow, fGlow, 1.0f});
-    mPointsMat->SetBaseColor((mHot != 0 ? mHotMat : mColdMat)->mBaseColor);
+    mPointsMat->SetBaseColor((mHot != 0 ? mHotMat : mColdMat)->GetBaseColor());
     mGlow -= kGlowStep;
     if (mGlow < 0.0f) {
         mGlow = 0.0f;
@@ -158,10 +158,10 @@ void HudPoints::Poll([[maybe_unused]] float fUnused, float fDelta) {
 void HudPoints::ScaleText(RndTransformable *pText) {
     const ScaleBasis basis =
         MakeScaleBasis(Overlay::sPointsScale * (mSwell * kSwellPart + kRestPart));
-    pText->mDirty = 1;
-    CopyRow(pText->mLocalXfm.mBasisX, basis, kXfmRowBasisX);
-    CopyRow(pText->mLocalXfm.mBasisY, basis, kXfmRowBasisY);
-    CopyRow(pText->mLocalXfm.mBasisZ, basis, kXfmRowBasisZ);
+    pText->SetDirty(1);
+    CopyRow(pText->GetLocalXfm().mBasisX, basis, kXfmRowBasisX);
+    CopyRow(pText->GetLocalXfm().mBasisY, basis, kXfmRowBasisY);
+    CopyRow(pText->GetLocalXfm().mBasisZ, basis, kXfmRowBasisZ);
 }
 
 void HudPoints::ShowPoints(int nPoints, const char *pszText) {
@@ -229,6 +229,6 @@ void HudPoints::End(int nResult) {
         return;
     }
     if (mExitBlur != nullptr) {
-        mExitBlur->mXfms.clear();
+        mExitBlur->GetXfms().clear();
     }
 }

@@ -109,6 +109,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The seed of the random numbers every console's logic draws. */
+    int GetSeed() const {
+        return mSeed;
+    }
+
+    /** @param nSeed The seed of the random numbers every console's logic draws. */
+    void SetSeed(int nSeed) {
+        mSeed = nSeed;
+    }
+
+    /** @return The clock of the host the song starts at. */
+    float GetTime() const {
+        return mTime;
+    }
+
+    /** @param fTime The clock of the host the song starts at. */
+    void SetTime(float fTime) {
+        mTime = fTime;
+    }
+
+private:
     float mTime; /*!< The clock of the host the song starts at. */
     int mSeed;   /*!< The seed of the random numbers every console's logic draws. */
 };

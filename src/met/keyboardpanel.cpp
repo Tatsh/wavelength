@@ -93,30 +93,30 @@ void KeyboardPanel::Enter(bool bForce, float fTime) {
     mRightShiftButton = FindKey("but_rshift");
     mEntry = dynamic_cast<UITextEntry *>(TheUI.FindComponent("keyboard", "01", false));
     mEntry->SetEditing(true);
-    mEntry->mPassword = mRequest.mPassword != 0;
-    if (mRequest.mInvalidChars != 0) {
+    mEntry->SetPassword(mRequest.GetPassword() != 0);
+    if (mRequest.GetInvalidChars() != 0) {
         // Yes, the binary looks up `invalid_chars` inside `invalid_chars`.
-        mEntry->mInvalidChars = SystemConfig()
+        mEntry->SetInvalidChars(SystemConfig()
                                     ->FindArray("metagame", true)
                                     ->FindArray("invalid_chars", true)
-                                    ->FindArray("invalid_chars", true);
+                                    ->FindArray("invalid_chars", true));
     } else {
-        mEntry->mInvalidChars = nullptr;
+        mEntry->SetInvalidChars(nullptr);
     }
     SetShiftMode(kShiftNone);
-    mEntry->mMaxEntryWidth = static_cast<float>(mRequest.mMaxWidth);
-    mEntry->mMaxNumChars = mRequest.mMaxChars;
-    if (mRequest.mNumLines != 0) {
-        mEntry->mScroll = 1;
-        mEntry->mNumLines = mRequest.mNumLines;
+    mEntry->SetMaxEntryWidth(static_cast<float>(mRequest.GetMaxWidth()));
+    mEntry->SetMaxNumChars(mRequest.GetMaxChars());
+    if (mRequest.GetNumLines() != 0) {
+        mEntry->SetScroll(1);
+        mEntry->SetNumLines(mRequest.GetNumLines());
     } else {
-        mEntry->mScroll = 0;
-        mEntry->mNumLines = 1;
+        mEntry->SetScroll(0);
+        mEntry->SetNumLines(1);
     }
-    if (mRequest.mText.mLength != 0) {
+    if (mRequest.GetText().GetLength() != 0) {
         mReplaceText = 1;
     }
-    mEntry->SetText(mRequest.mText.c_str());
+    mEntry->SetText(mRequest.GetText().c_str());
     mSelectAnim = dynamic_cast<RndMatAnim *>(TheManager.Find("keyboard_sel.mnm"));
     SetFocus(FindComponent("but_enter", false), kPadNone);
 }
@@ -186,15 +186,15 @@ void KeyboardPanel::FlashKey(const char *pszKey) {
 }
 
 bool KeyboardPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPad != mRequest.mPad) {
+    if (pMsg->GetPad() != mRequest.GetPad()) {
         return true;
     }
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
-    switch (pMsg->mButton) {
+    switch (pMsg->GetButton()) {
     case kPadTriangle:
-        TheUI.GotoScreen(mRequest.mReturnScreen);
+        TheUI.GotoScreen(mRequest.GetReturnScreen());
         return false;
     case kPadCircle:
         FlashKey("but_enter");
@@ -231,7 +231,7 @@ bool KeyboardPanel::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool KeyboardPanel::HandleKey(KeyboardKeyMsg *pMsg) {
-    const int nKey = pMsg->mKey;
+    const int nKey = pMsg->GetKey();
     if (static_cast<unsigned>(nKey - kFirstPrintable) < static_cast<unsigned>(kPrintableCount)) {
         TypeChar(static_cast<char>(nKey));
     } else if (nKey == kKeyLeft) {
@@ -332,20 +332,20 @@ void KeyboardPanel::Delete() {
 
 void KeyboardPanel::Commit() {
     int nReturn = 1;
-    if (mRequest.mUser != nullptr) {
-        nReturn = mRequest.mUser->ReceiveKeyboardText(mEntry->Text());
+    if (mRequest.GetUser() != nullptr) {
+        nReturn = mRequest.GetUser()->ReceiveKeyboardText(mEntry->Text());
     }
-    if (mRequest.mReturnScreen == nullptr) {
+    if (mRequest.GetReturnScreen() == nullptr) {
         DebugWarn(" Keyboard has no screen to transition to!");
         return;
     }
     if (nReturn != 0) {
-        TheUI.GotoScreen(mRequest.mReturnScreen);
+        TheUI.GotoScreen(mRequest.GetReturnScreen());
     }
 }
 
 void KeyboardPanel::TypeFunctionKey(const char *pszKey) {
-    if (mRequest.mFunctionKeys == 0) {
+    if (mRequest.GetFunctionKeys() == 0) {
         TheUI.GotoScreen("kb_fkey_error_screen");
         return;
     }
@@ -367,10 +367,10 @@ void KeyboardPanel::TypeChar(char ch) {
 }
 
 bool KeyboardPanel::HandleInvalid(UITextEntryInvalidMsg *pMsg) {
-    if (strcmp(pMsg->mEntry->GetName(), "01") != 0) {
+    if (strcmp(pMsg->GetEntry()->GetName(), "01") != 0) {
         return false;
     }
-    if (pMsg->mEndOfField) {
+    if (pMsg->GetEndOfField()) {
         FxMidi::PlayWrong();
         return false;
     }

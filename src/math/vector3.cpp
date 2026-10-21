@@ -28,7 +28,7 @@ void Vec3Normalize(const float *pSrc, float *pOut) {
 
 PrnStream &operator<<(PrnStream &stream, const Vector3 &vector) {
     stream << "(x:" << vector.x << " y:" << vector.y << " z:" << vector.z;
-    if (stream.mDumpLevel == kPrnModeFull) {
+    if (stream.GetDumpLevel() == kPrnModeFull) {
         stream << " w:" << vector.w;
     }
     stream << ")";

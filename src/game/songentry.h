@@ -12,6 +12,16 @@
  */
 class SongEntry {
 public:
+    SongEntry() = default;
+
+    /**
+     * Construct the entry of a song.
+     *
+     * @param pData The entry, or null.
+     */
+    explicit SongEntry(DataArray *pData) : mData(pData) {
+    }
+
     /** Values of GetType(). */
     enum Type {
         kTypeNormal = 0,   /*!< A song whose entry does not specify a type. */
@@ -273,5 +283,11 @@ public:
      */
     static DataArray *Find(const std::vector<SongEntry> &songs, const char *pszName);
 
+    /** @param pData The entry. */
+    void SetData(DataArray *pData) {
+        mData = pData;
+    }
+
+private:
     DataArray *mData; /*!< The entry. */
 };

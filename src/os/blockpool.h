@@ -42,13 +42,13 @@ public:
         Node *mNext; /*!< The next free block, or null. */
     };
 
-    Node *mMemory;  /*!< The region. */
-    Node *mFree;    /*!< The first free block, or null. */
-    int mBlockSize; /*!< The size of each block in bytes. */
-    int mNumBlocks; /*!< The number of blocks. */
-
 private:
     // Fill in the members and link every block of the region.
     // NTSC-U/C: 0x0029dac8, PAL: 0x002a7790
     Node *Setup(int nBlockSize, int nNumBlocks, void *pMemory);
+
+    Node *mMemory;  /*!< The region. */
+    Node *mFree;    /*!< The first free block, or null. */
+    int mBlockSize; /*!< The size of each block in bytes. */
+    int mNumBlocks; /*!< The number of blocks. */
 };

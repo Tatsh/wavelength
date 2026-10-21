@@ -50,24 +50,24 @@ NetChangePasswordScreen::NetChangePasswordScreen(DataArray *pData) : NetPassword
 void NetChangePasswordScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UITextEntry *pOld = dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kOldEntry, false));
     RestoreEntry(pOld, mOld);
-    pOld->mMaxNumChars = kMaxPasswordChars;
+    pOld->SetMaxNumChars(kMaxPasswordChars);
 #ifdef VIDEO_STANDARD_PAL
-    pOld->mUtf8MaxLen = kMaxPasswordChars;
+    pOld->SetUtf8MaxLen(kMaxPasswordChars);
 #endif
 
     UITextEntry *pNew = dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kNewEntry, false));
     RestoreEntry(pNew, mNew);
-    pNew->mMaxNumChars = kMaxPasswordChars;
+    pNew->SetMaxNumChars(kMaxPasswordChars);
 #ifdef VIDEO_STANDARD_PAL
-    pNew->mUtf8MaxLen = kMaxPasswordChars;
+    pNew->SetUtf8MaxLen(kMaxPasswordChars);
 #endif
 
     UITextEntry *pConfirm =
         dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kConfirmEntry, false));
     RestoreEntry(pConfirm, mConfirm);
-    pConfirm->mMaxNumChars = kMaxPasswordChars;
+    pConfirm->SetMaxNumChars(kMaxPasswordChars);
 #ifdef VIDEO_STANDARD_PAL
-    pConfirm->mUtf8MaxLen = kMaxPasswordChars;
+    pConfirm->SetUtf8MaxLen(kMaxPasswordChars);
 #endif
 
     if (std::strcmp(mKeyboardText.c_str(), kNoText) != 0) {
@@ -100,11 +100,11 @@ void NetChangePasswordScreen::Submit() {
     const String oldPassword(mFocusPanel->FindComponent(kOldEntry, false)->Text());
     NetChangePassword *pChange =
         static_cast<NetChangePassword *>(TheUI.FindScreen(kChangePasswordScreen, false));
-    pChange->mOldPassword = oldPassword.c_str();
-    pChange->mNewPassword = newPassword.c_str();
+    pChange->SetOldPassword(oldPassword.c_str());
+    pChange->SetNewPassword(newPassword.c_str());
     // Yes, the binary reports a change whenever either choice saves the password.
-    pChange->mSaveChanged = (mSavePasswordInitial != 0 || mSavePassword != 0);
-    pChange->mSavePassword = mSavePassword;
+    pChange->SetSaveChanged((mSavePasswordInitial != 0 || mSavePassword != 0));
+    pChange->SetSavePassword(mSavePassword);
     TheUI.GotoScreen(pChange);
     mNew = kNoText;
 }
@@ -117,7 +117,7 @@ void NetChangePasswordScreen::OpenKeyboard(const char *pszEntry) {
     KeyboardPanel *pKeyboard =
         dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
     const int nMaxWidth =
-        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->GetFocus())->mMaxEntryWidth);
+        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->GetFocus())->GetMaxEntryWidth());
 
     const String *pText = nullptr;
     if (std::strcmp(pszEntry, kOldEntry) == 0) {
@@ -161,22 +161,22 @@ bool NetChangePasswordScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetChangePasswordScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
 
     UIPanel *pPanel = mFocusPanel;
-    if (pPanel == nullptr || pMsg->mPressed == 0) {
+    if (pPanel == nullptr || pMsg->GetPressed() == 0) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
     const char *pszFocus = pPanel->GetFocus()->GetName();
-    if (pMsg->mButton == kPadCircle) {
+    if (pMsg->GetButton() == kPadCircle) {
         if (std::strcmp(pszFocus, kOldEntry) == 0 || std::strcmp(pszFocus, kNewEntry) == 0 ||
             std::strcmp(pszFocus, kConfirmEntry) == 0) {
             OpenKeyboard(pszFocus);
         }
-    } else if (pMsg->mButton == kPadCross) {
+    } else if (pMsg->GetButton() == kPadCross) {
         // The cross button opens the keyboard on an empty entry and otherwise moves on.
         const char *pszNext = nullptr;
         bool bEntry = true;
@@ -228,7 +228,7 @@ bool NetChangePasswordScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetChangePasswordScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    const char *pszEntry = pMsg->mEntry->GetName();
+    const char *pszEntry = pMsg->GetEntry()->GetName();
     const char *pszNext = nullptr;
     if (std::strcmp(pszEntry, kOldEntry) == 0) {
         pszNext = kNewEntry;
@@ -236,7 +236,7 @@ bool NetChangePasswordScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pM
         pszNext = kConfirmEntry;
     } else if (std::strcmp(pszEntry, kConfirmEntry) == 0) {
         pszNext = kSaveButton;
-    } else if (std::strcmp(pszEntry, kDoneButton) == 0 && pMsg->mText.mLength != 0) {
+    } else if (std::strcmp(pszEntry, kDoneButton) == 0 && pMsg->GetText().GetLength() != 0) {
         Submit();
     }
     if (pszNext != nullptr) {

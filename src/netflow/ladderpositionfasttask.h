@@ -50,8 +50,6 @@ public:
                            int nSize,
                            const rtMediusLadderPositionResponse *pResponse);
 
-    LobbyPlayer *mPlayer; /*!< The player. */
-
 protected:
     /**
      * Send the request.
@@ -60,4 +58,7 @@ protected:
      * @ghidraAddress PAL: 0x0026f878
      */
     void OnStart() override;
+
+private:
+    LobbyPlayer *mPlayer; /*!< The player. */
 };

@@ -69,7 +69,7 @@ int WorldLogic::FindDisconnectedPad() {
     }
     for (int i = 0; i < TheGameDb->GetNumPads(); ++i) {
         const int nPad = TheGameDb->GetPlayerPad(i);
-        if (nPad != kNoPad && JoypadGetState(nPad)->mConnected == 0) {
+        if (nPad != kNoPad && JoypadGetState(nPad)->GetConnected() == 0) {
             return nPad;
         }
     }
@@ -80,8 +80,8 @@ int WorldLogic::OnJoypadConnection(JoypadConnectionMsg *pMsg) {
     if (TheGameDb->GetDemo() != nullptr || !IsPlaying()) {
         return 0;
     }
-    if (pMsg->mPad < TheGameDb->GetNumPads() && pMsg->mConnected == 0) {
-        SetPaused(true, pMsg->mPad, kDisconnectedReason);
+    if (pMsg->GetPad() < TheGameDb->GetNumPads() && pMsg->GetConnected() == 0) {
+        SetPaused(true, pMsg->GetPad(), kDisconnectedReason);
     }
     return 0;
 }

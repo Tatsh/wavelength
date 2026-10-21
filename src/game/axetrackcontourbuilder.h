@@ -147,14 +147,6 @@ public:
      */
     static int ButtonForNote(unsigned char nNote);
 
-    AxeTrackData *mData;                        /*!< The data to fill. */
-    int mTicksPerBar;                           /*!< The length of a bar. */
-    int mIntroTicks;                            /*!< The length of the song intro. */
-    std::vector<MidiMsg> mMessages;             /*!< The channel messages in tick order. */
-    std::vector<std::pair<int, int> > mButtons; /*!< The start and end tick of each note. */
-    MidiChannelState mChannelState;             /*!< The controller state the notes start with. */
-    MidiValidator mValidator;                   /*!< The checker of the channel messages. */
-
 private:
     /**
      * Build the notes of a span from the channel messages.
@@ -166,4 +158,12 @@ private:
      * @ghidraAddress PAL: 0x00149c48
      */
     AxeContour *BuildContour(std::vector<MidiMsg>::iterator itMessage, int nEndTick);
+
+    AxeTrackData *mData;                        /*!< The data to fill. */
+    int mTicksPerBar;                           /*!< The length of a bar. */
+    int mIntroTicks;                            /*!< The length of the song intro. */
+    std::vector<MidiMsg> mMessages;             /*!< The channel messages in tick order. */
+    std::vector<std::pair<int, int> > mButtons; /*!< The start and end tick of each note. */
+    MidiChannelState mChannelState;             /*!< The controller state the notes start with. */
+    MidiValidator mValidator;                   /*!< The checker of the channel messages. */
 };

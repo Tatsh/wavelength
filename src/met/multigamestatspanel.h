@@ -68,6 +68,12 @@ public:
      */
     static const char *RankLabel(int nRank, bool bTied);
 
+    /** @param nTied Non-zero when the player shares the place. */
+    void SetTied(int nTied) {
+        mTied = nTied;
+    }
+
+private:
     int mRankOrder; /*!< `rank_order`, the place of the players this panel shows. */
     int mPlayer;    /*!< The player shown. */
     int mTied;      /*!< Non-zero when the player shares the place. */

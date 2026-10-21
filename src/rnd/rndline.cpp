@@ -31,7 +31,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -83,42 +83,42 @@ void ClipToNear(Vector3 &clipped, const Vector3 &visible, float fRatio) {
 }
 
 void Project(RndLine::Point &point) {
-    const float fInverse = 1.0f / point.mCamPoint.y;
-    point.mScreen.x = point.mCamPoint.x * fInverse;
-    point.mScreen.y = point.mCamPoint.z * fInverse;
+    const float fInverse = 1.0f / point.GetCamPoint().y;
+    point.GetScreen().x = point.GetCamPoint().x * fInverse;
+    point.GetScreen().y = point.GetCamPoint().z * fInverse;
 }
 
 // Set the direction to the next point, of unit length or zero, and the offset of the edges.
 void SetDirection(RndLine::Point &point, const Vector2 &next, float fWidth) {
-    point.mDir.x = next.x - point.mScreen.x;
-    point.mDir.y = next.y - point.mScreen.y;
-    if (point.mDir.x == 0.0f && point.mDir.y == 0.0f) {
-        point.mDir.x = 0.0f;
-        point.mDir.y = 0.0f;
+    point.GetDir().x = next.x - point.GetScreen().x;
+    point.GetDir().y = next.y - point.GetScreen().y;
+    if (point.GetDir().x == 0.0f && point.GetDir().y == 0.0f) {
+        point.GetDir().x = 0.0f;
+        point.GetDir().y = 0.0f;
     } else {
-        const float fScale =
-            1.0f / std::sqrt(point.mDir.x * point.mDir.x + point.mDir.y * point.mDir.y);
-        point.mDir.x *= fScale;
-        point.mDir.y *= fScale;
+        const float fScale = 1.0f / std::sqrt(point.GetDir().x * point.GetDir().x +
+                                              point.GetDir().y * point.GetDir().y);
+        point.GetDir().x *= fScale;
+        point.GetDir().y *= fScale;
     }
-    point.mOffset.y = point.mDir.x;
-    point.mOffset.x = -point.mDir.y;
-    point.mOffset.y *= fWidth;
-    point.mOffset.x *= fWidth;
+    point.GetOffset().y = point.GetDir().x;
+    point.GetOffset().x = -point.GetDir().y;
+    point.GetOffset().y *= fWidth;
+    point.GetOffset().x *= fWidth;
 }
 
 void FillPair(const RndLine::Point &point, RndMesh::Vert *&pVert) {
-    SubtractScreen(point.mCamPoint, point.mOffset, pVert->mPos);
+    SubtractScreen(point.GetCamPoint(), point.GetOffset(), pVert->mPos);
     ++pVert;
-    AddScreen(point.mCamPoint, point.mOffset, pVert->mPos);
+    AddScreen(point.GetCamPoint(), point.GetOffset(), pVert->mPos);
     ++pVert;
 }
 
 void FillCap(const RndLine::Point &point, const Vector2 &cap, RndMesh::Vert *&pVert) {
-    SubtractScreen(point.mCamPoint, point.mOffset, pVert->mPos);
+    SubtractScreen(point.GetCamPoint(), point.GetOffset(), pVert->mPos);
     AddScreen(pVert->mPos, cap, pVert->mPos);
     ++pVert;
-    AddScreen(point.mCamPoint, point.mOffset, pVert->mPos);
+    AddScreen(point.GetCamPoint(), point.GetOffset(), pVert->mPos);
     AddScreen(pVert->mPos, cap, pVert->mPos);
     ++pVert;
 }
@@ -143,7 +143,7 @@ RndLine::~RndLine() {
 }
 
 void RndLine::ListDrawObjects(std::list<RndObject *> &objects) {
-    objects.push_back(mMesh->mMat);
+    objects.push_back(mMesh->GetMat());
 }
 
 void RndLine::ListDrawables(std::list<RndDrawable *> &drawables) {
@@ -169,15 +169,15 @@ int RndLine::DrawShowing() {
         return 1;
     }
     Transform xfm;
-    Invert(xfm, pCam->mWorldXfm);
+    Invert(xfm, pCam->GetWorldXfm());
     Multiply(xfm, xfm, mWorldXfm);
-    const float fNear = pCam->mNearPlane + kNearMargin;
+    const float fNear = pCam->GetNearPlane() + kNearMargin;
     int nFirstBehind = -1;
     int nLastBehind = -1;
     for (int i = 0; i < nPoints; ++i) {
         Point &point = mPoints[i];
-        MultiplyPoint(xfm, point.mPoint, point.mCamPoint);
-        if (point.mCamPoint.y < fNear) {
+        MultiplyPoint(xfm, point.GetPoint(), point.GetCamPoint());
+        if (point.GetCamPoint().y < fNear) {
             nLastBehind = i;
             if (nFirstBehind == -1) {
                 nFirstBehind = i;
@@ -195,20 +195,20 @@ int RndLine::DrawShowing() {
             if (nPoints - nAfter < nFirstBehind) {
                 Point &clipped = mPoints[nFirstBehind];
                 const Point &visible = mPoints[nFirstBehind - 1];
-                const float fRatio =
-                    (fNear - visible.mCamPoint.y) / (clipped.mCamPoint.y - visible.mCamPoint.y);
+                const float fRatio = (fNear - visible.GetCamPoint().y) /
+                                     (clipped.GetCamPoint().y - visible.GetCamPoint().y);
                 if (fRatio == 0.0f) {
-                    clipped.mCamPoint = visible.mCamPoint;
+                    clipped.GetCamPoint() = visible.GetCamPoint();
                 } else if (fRatio != 1.0f) {
-                    ClipToNear(clipped.mCamPoint, visible.mCamPoint, 1.0f - fRatio);
+                    ClipToNear(clipped.GetCamPoint(), visible.GetCamPoint(), 1.0f - fRatio);
                 }
                 nEnd = nFirstBehind;
             } else {
                 Point &clipped = mPoints[nLastBehind];
                 const Point &visible = mPoints[nAfter];
-                const float fRatio =
-                    (fNear - clipped.mCamPoint.y) / (visible.mCamPoint.y - clipped.mCamPoint.y);
-                ClipToNear(clipped.mCamPoint, visible.mCamPoint, fRatio);
+                const float fRatio = (fNear - clipped.GetCamPoint().y) /
+                                     (visible.GetCamPoint().y - clipped.GetCamPoint().y);
+                ClipToNear(clipped.GetCamPoint(), visible.GetCamPoint(), fRatio);
                 nStart = nLastBehind;
             }
         }
@@ -217,28 +217,28 @@ int RndLine::DrawShowing() {
         for (int i = 0; i < nPoints - 1; i += 2) {
             Point *pFirst = &mPoints[i];
             Point *pSecond = &mPoints[i + 1];
-            if (pFirst->mCamPoint.y < fNear) {
-                if (pSecond->mCamPoint.y < fNear) {
+            if (pFirst->GetCamPoint().y < fNear) {
+                if (pSecond->GetCamPoint().y < fNear) {
                     pSecond = pFirst;
                 } else {
-                    const float fRatio = (fNear - pFirst->mCamPoint.y) /
-                                         (pSecond->mCamPoint.y - pFirst->mCamPoint.y);
-                    ClipToNear(pFirst->mCamPoint, pSecond->mCamPoint, fRatio);
+                    const float fRatio = (fNear - pFirst->GetCamPoint().y) /
+                                         (pSecond->GetCamPoint().y - pFirst->GetCamPoint().y);
+                    ClipToNear(pFirst->GetCamPoint(), pSecond->GetCamPoint(), fRatio);
                 }
-            } else if (pSecond->mCamPoint.y < fNear) {
-                const float fRatio =
-                    (fNear - pSecond->mCamPoint.y) / (pFirst->mCamPoint.y - pSecond->mCamPoint.y);
-                ClipToNear(pSecond->mCamPoint, pFirst->mCamPoint, fRatio);
+            } else if (pSecond->GetCamPoint().y < fNear) {
+                const float fRatio = (fNear - pSecond->GetCamPoint().y) /
+                                     (pFirst->GetCamPoint().y - pSecond->GetCamPoint().y);
+                ClipToNear(pSecond->GetCamPoint(), pFirst->GetCamPoint(), fRatio);
             }
             BuildPair(pFirst, pSecond);
         }
     }
     mMesh->Sync(RndMesh::kSyncPositions);
-    mMesh->mLocalXfm.mBasisX = pCam->mWorldXfm.mBasisX;
-    mMesh->mLocalXfm.mBasisY = pCam->mWorldXfm.mBasisY;
-    mMesh->mLocalXfm.mBasisZ = pCam->mWorldXfm.mBasisZ;
-    mMesh->mDirty = 1;
-    mMesh->mLocalXfm.mTranslation = pCam->mWorldXfm.mTranslation;
+    mMesh->GetLocalXfm().mBasisX = pCam->GetWorldXfm().mBasisX;
+    mMesh->GetLocalXfm().mBasisY = pCam->GetWorldXfm().mBasisY;
+    mMesh->GetLocalXfm().mBasisZ = pCam->GetWorldXfm().mBasisZ;
+    mMesh->SetDirty(1);
+    mMesh->GetLocalXfm().mTranslation = pCam->GetWorldXfm().mTranslation;
     mMesh->UpdateWorldXfm(nullptr, 0);
     mMesh->Draw();
     return 1;
@@ -265,7 +265,7 @@ void RndLine::DumpText(PrnStream &stream) {
     RndDrawable::DumpText(stream);
     RndCollideable::DumpText(stream);
     RndTransformable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndLine]\n";
@@ -273,7 +273,7 @@ void RndLine::DumpText(PrnStream &stream) {
     stream << "width:" << mWidth << " foldAngle:" << mFoldAngle << " hasCaps:" << (mHasCaps != 0)
            << "\n";
     stream << "linePairs:" << (mLinePairs != 0) << "\n";
-    if (stream.mDumpLevel < 2) {
+    if (stream.GetDumpLevel() < 2) {
         return;
     }
     stream << "mesh:" << static_cast<const RndObject *>(mMesh.get()) << "\n";
@@ -284,8 +284,8 @@ void RndLine::Save(BinStream &stream) {
     RndDrawable::Save(stream);
     RndCollideable::Save(stream);
     RndTransformable::Save(stream);
-    const RndMat *pMat = mMesh->mMat;
-    stream.WriteString(pMat != nullptr ? pMat->mName.c_str() : "");
+    const RndMat *pMat = mMesh->GetMat();
+    stream.WriteString(pMat != nullptr ? pMat->GetName() : "");
     stream << mPoints;
     stream.WriteEndian(&mWidth, sizeof(mWidth));
     stream.WriteEndian(&mFoldAngle, sizeof(mFoldAngle));
@@ -305,7 +305,7 @@ void RndLine::Copy(const RndObject *pSource, int nFlags) {
     RndCollideable::Copy(pSource, nFlags);
     RndTransformable::Copy(pSource, nFlags);
     ReleaseMesh();
-    mMat = pLine->mMesh->mMat;
+    mMat = pLine->mMesh->GetMat();
     mPoints = pLine->mPoints;
     mWidth = pLine->mWidth;
     mFoldAngle = pLine->mFoldAngle;
@@ -339,7 +339,7 @@ void RndLine::Load(BinStream &stream) {
 }
 
 RndMat *RndLine::Mat() const {
-    return mMesh->mMat;
+    return mMesh->GetMat();
 }
 
 void RndLine::SetMat(RndMat *pMat) {
@@ -365,9 +365,9 @@ void RndLine::SetNumPoints(int nPoints) {
         nVertPairs = nPoints + 2;
     }
     const int nVerts = nVertPairs * 2;
-    mMesh->mGeomOwner->mVerts.resize(nVerts, RndMesh::Vert());
+    mMesh->GetGeomOwner()->GetVerts().resize(nVerts, RndMesh::Vert());
     for (unsigned int i = 0; i < mPoints.size(); ++i) {
-        const Color &color = mPoints[i].mColor;
+        const Color &color = mPoints[i].GetColor();
         PointVerts verts;
         FindPointVerts(static_cast<int>(i), verts);
         RndMesh::Vert *pVert = verts.mVerts;
@@ -407,7 +407,7 @@ void RndLine::SetNumPoints(int nPoints) {
     } else {
         nFaces = nVertPairs;
     }
-    std::vector<RndMesh::Face> &faces = mMesh->mGeomOwner->mFaces;
+    std::vector<RndMesh::Face> &faces = mMesh->GetGeomOwner()->GetFaces();
     faces.resize(nFaces, RndMesh::Face());
     for (int nFace = nFaces - 2; nFace >= 0; nFace -= 2) {
         int nVert;
@@ -418,11 +418,11 @@ void RndLine::SetNumPoints(int nPoints) {
         } else {
             nVert = (nFace / 6) * 8 + nFace % 6;
         }
-        RndMesh::Face &first = mMesh->mGeomOwner->mFaces[nFace];
+        RndMesh::Face &first = mMesh->GetGeomOwner()->GetFaces()[nFace];
         first.mVerts[2] = static_cast<unsigned short>(nVert + 1);
         first.mVerts[0] = static_cast<unsigned short>(nVert);
         first.mVerts[1] = static_cast<unsigned short>(nVert + 2);
-        RndMesh::Face &second = mMesh->mGeomOwner->mFaces[nFace + 1];
+        RndMesh::Face &second = mMesh->GetGeomOwner()->GetFaces()[nFace + 1];
         second.mVerts[2] = static_cast<unsigned short>(nVert + 3);
         second.mVerts[0] = static_cast<unsigned short>(nVert + 1);
         second.mVerts[1] = static_cast<unsigned short>(nVert + 2);
@@ -431,11 +431,11 @@ void RndLine::SetNumPoints(int nPoints) {
 }
 
 void RndLine::SetPoint(int nIndex, const Vector3 &point) {
-    mPoints[nIndex].mPoint = point;
+    mPoints[nIndex].GetPoint() = point;
 }
 
 void RndLine::SetPointColor(int nIndex, const Color &color) {
-    mPoints[nIndex].mColor = color;
+    mPoints[nIndex].GetColor() = color;
     PointVerts verts;
     FindPointVerts(nIndex, verts);
     RndMesh::Vert *pVert = verts.mVerts;
@@ -449,7 +449,7 @@ void RndLine::SetPointColor(int nIndex, const Color &color) {
 }
 
 void RndLine::FindPointVerts(int nIndex, PointVerts &verts) {
-    std::vector<RndMesh::Vert> &meshVerts = mMesh->mGeomOwner->mVerts;
+    std::vector<RndMesh::Vert> &meshVerts = mMesh->GetGeomOwner()->GetVerts();
     if (mHasCaps == 0) {
         verts.mCaps = 0;
         verts.mVerts = &meshVerts[nIndex * 2];
@@ -476,11 +476,11 @@ void RndLine::BuildMesh() {
     const char *pszMeshName = FormatString("[%s_mesh]", mName.c_str());
     RndObject *pObject = TheManager.Create(RndMesh::sClassName, pszMeshName);
     mMesh.reset(pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr);
-    mMesh->mInternal = 1;
-    mMesh->mGeomOwner->mMutable = 1;
+    mMesh->SetInternal(1);
+    mMesh->GetGeomOwner()->SetMutable(1);
     mMesh->SetMat(mMat);
-    mMesh->mZFunc = RndMesh::kZFuncLess;
-    mMesh->mZMode = RndMesh::kZModeZReadOnly;
+    mMesh->SetZFunc(RndMesh::kZFuncLess);
+    mMesh->SetZMode(RndMesh::kZModeZReadOnly);
     mFoldCos = std::cos(mFoldAngle);
     SetNumPoints(static_cast<int>(mPoints.size()));
 }
@@ -491,57 +491,57 @@ void RndLine::BuildStrip(Point *pFirst, Point *pLast) {
     }
     Point *p = pFirst;
     for (; p != pLast; ++p) {
-        SetDirection(*p, p[1].mScreen, mWidth);
+        SetDirection(*p, p[1].GetScreen(), mWidth);
     }
-    p->mDir = p[-1].mDir;
-    p->mOffset = p[-1].mOffset;
+    p->GetDir() = p[-1].GetDir();
+    p->GetOffset() = p[-1].GetOffset();
 
     Rnd::Ray edge;
-    edge.mPoint.x = pFirst->mScreen.x + pFirst->mOffset.x;
-    edge.mPoint.y = pFirst->mScreen.y + pFirst->mOffset.y;
-    edge.mDirection = pFirst->mDir;
+    edge.mPoint.x = pFirst->GetScreen().x + pFirst->GetOffset().x;
+    edge.mPoint.y = pFirst->GetScreen().y + pFirst->GetOffset().y;
+    edge.mDirection = pFirst->GetDir();
     int bFlipped = 0;
     for (p = pFirst + 1; p != pLast; ++p) {
-        const float fCos = p->mDir.x * p[-1].mDir.x + p->mDir.y * p[-1].mDir.y;
+        const float fCos = p->GetDir().x * p[-1].GetDir().x + p->GetDir().y * p[-1].GetDir().y;
         if (fCos < mFoldCos) {
             bFlipped ^= 1;
         }
         if (bFlipped != 0) {
-            p->mOffset.x = -p->mOffset.x;
-            p->mOffset.y = -p->mOffset.y;
+            p->GetOffset().x = -p->GetOffset().x;
+            p->GetOffset().y = -p->GetOffset().y;
         }
         const Rnd::Ray previous = edge;
-        edge.mPoint.x = p->mScreen.x + p->mOffset.x;
-        edge.mPoint.y = p->mScreen.y + p->mOffset.y;
-        edge.mDirection = p->mDir;
+        edge.mPoint.x = p->GetScreen().x + p->GetOffset().x;
+        edge.mPoint.y = p->GetScreen().y + p->GetOffset().y;
+        edge.mDirection = p->GetDir();
         if (fCos < kStraightCos) {
-            p->mOffset = Rnd::Intersect(edge, previous);
-            p->mOffset.x -= p->mScreen.x;
-            p->mOffset.y -= p->mScreen.y;
+            p->GetOffset() = Rnd::Intersect(edge, previous);
+            p->GetOffset().x -= p->GetScreen().x;
+            p->GetOffset().y -= p->GetScreen().y;
         }
     }
     if (bFlipped != 0) {
-        p->mOffset.x = -p->mOffset.x;
-        p->mOffset.y = -p->mOffset.y;
+        p->GetOffset().x = -p->GetOffset().x;
+        p->GetOffset().y = -p->GetOffset().y;
     }
 
     Point *pBegin = &mPoints.front();
     if (pFirst == pBegin) {
         for (Point *pClipped = pLast + 1; pClipped <= &mPoints.back(); ++pClipped) {
-            pClipped->mOffset = pLast->mOffset;
-            pClipped->mCamPoint = pLast->mCamPoint;
+            pClipped->GetOffset() = pLast->GetOffset();
+            pClipped->GetCamPoint() = pLast->GetCamPoint();
         }
     } else {
         for (Point *pClipped = pBegin; pClipped < pFirst; ++pClipped) {
-            pClipped->mOffset = pFirst->mOffset;
-            pClipped->mCamPoint = pFirst->mCamPoint;
+            pClipped->GetOffset() = pFirst->GetOffset();
+            pClipped->GetCamPoint() = pFirst->GetCamPoint();
         }
     }
 
     Point *pEnd = &mPoints.back();
     Vector2 cap;
-    cap.y = pBegin->mOffset.x;
-    cap.x = -pBegin->mOffset.y;
+    cap.y = pBegin->GetOffset().x;
+    cap.x = -pBegin->GetOffset().y;
     PointVerts verts;
     FindPointVerts(0, verts);
     RndMesh::Vert *pVert = verts.mVerts;
@@ -553,11 +553,11 @@ void RndLine::BuildStrip(Point *pFirst, Point *pLast) {
     }
     if (mHasCaps != 0) {
         if (bFlipped != 0) {
-            cap.y = pEnd->mOffset.x;
-            cap.x = -pEnd->mOffset.y;
+            cap.y = pEnd->GetOffset().x;
+            cap.x = -pEnd->GetOffset().y;
         } else {
-            cap.x = pEnd->mOffset.y;
-            cap.y = -pEnd->mOffset.x;
+            cap.x = pEnd->GetOffset().y;
+            cap.y = -pEnd->GetOffset().x;
         }
         FillCap(*pEnd, cap, pVert);
     }
@@ -570,53 +570,53 @@ void RndLine::BuildPair(Point *pFirst, Point *pSecond) {
     if (pFirst == pSecond) {
         const int nVerts = mHasCaps != 0 ? 8 : 4;
         for (int i = 0; i < nVerts; ++i) {
-            pVert[i].mPos = pSecond->mCamPoint;
+            pVert[i].mPos = pSecond->GetCamPoint();
         }
         return;
     }
     Project(*pFirst);
     Project(*pSecond);
-    SetDirection(*pFirst, pSecond->mScreen, mWidth);
-    pSecond->mOffset = pFirst->mOffset;
+    SetDirection(*pFirst, pSecond->GetScreen(), mWidth);
+    pSecond->GetOffset() = pFirst->GetOffset();
     Vector2 cap;
-    cap.y = pFirst->mOffset.x;
-    cap.x = -pFirst->mOffset.y;
+    cap.y = pFirst->GetOffset().x;
+    cap.x = -pFirst->GetOffset().y;
     if (mHasCaps != 0) {
         FillCap(*pFirst, cap, pVert);
     }
     FillPair(*pFirst, pVert);
     FillPair(*pSecond, pVert);
     if (mHasCaps != 0) {
-        cap.x = pSecond->mOffset.y;
-        cap.y = -pSecond->mOffset.x;
+        cap.x = pSecond->GetOffset().y;
+        cap.y = -pSecond->GetOffset().x;
         FillCap(*pSecond, cap, pVert);
     }
 }
 
 PrnStream &operator<<(PrnStream &stream, const RndLine::Point &point) {
-    stream << "\n\tv:" << point.mPoint;
-    stream << "\n\tc:" << point.mColor;
+    stream << "\n\tv:" << point.GetPoint();
+    stream << "\n\tc:" << point.GetColor();
     return stream;
 }
 
 BinStream &operator<<(BinStream &stream, const RndLine::Point &point) {
-    stream.WriteEndian(&point.mPoint.x, sizeof(point.mPoint.x));
-    stream.WriteEndian(&point.mPoint.y, sizeof(point.mPoint.y));
-    stream.WriteEndian(&point.mPoint.z, sizeof(point.mPoint.z));
-    stream.WriteEndian(&point.mColor.r, sizeof(point.mColor.r));
-    stream.WriteEndian(&point.mColor.g, sizeof(point.mColor.g));
-    stream.WriteEndian(&point.mColor.b, sizeof(point.mColor.b));
-    stream.WriteEndian(&point.mColor.a, sizeof(point.mColor.a));
+    stream.WriteEndian(&point.GetPoint().x, sizeof(point.GetPoint().x));
+    stream.WriteEndian(&point.GetPoint().y, sizeof(point.GetPoint().y));
+    stream.WriteEndian(&point.GetPoint().z, sizeof(point.GetPoint().z));
+    stream.WriteEndian(&point.GetColor().r, sizeof(point.GetColor().r));
+    stream.WriteEndian(&point.GetColor().g, sizeof(point.GetColor().g));
+    stream.WriteEndian(&point.GetColor().b, sizeof(point.GetColor().b));
+    stream.WriteEndian(&point.GetColor().a, sizeof(point.GetColor().a));
     return stream;
 }
 
 BinStream &operator>>(BinStream &stream, RndLine::Point &point) {
-    stream.ReadEndian(&point.mPoint.x, sizeof(point.mPoint.x));
-    stream.ReadEndian(&point.mPoint.y, sizeof(point.mPoint.y));
-    stream.ReadEndian(&point.mPoint.z, sizeof(point.mPoint.z));
-    stream.ReadEndian(&point.mColor.r, sizeof(point.mColor.r));
-    stream.ReadEndian(&point.mColor.g, sizeof(point.mColor.g));
-    stream.ReadEndian(&point.mColor.b, sizeof(point.mColor.b));
-    stream.ReadEndian(&point.mColor.a, sizeof(point.mColor.a));
+    stream.ReadEndian(&point.GetPoint().x, sizeof(point.GetPoint().x));
+    stream.ReadEndian(&point.GetPoint().y, sizeof(point.GetPoint().y));
+    stream.ReadEndian(&point.GetPoint().z, sizeof(point.GetPoint().z));
+    stream.ReadEndian(&point.GetColor().r, sizeof(point.GetColor().r));
+    stream.ReadEndian(&point.GetColor().g, sizeof(point.GetColor().g));
+    stream.ReadEndian(&point.GetColor().b, sizeof(point.GetColor().b));
+    stream.ReadEndian(&point.GetColor().a, sizeof(point.GetColor().a));
     return stream;
 }

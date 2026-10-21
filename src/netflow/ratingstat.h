@@ -91,14 +91,6 @@ public:
      */
     static float RatingDifference(float fScore);
 
-    int mId;        /*!< The player's identifier in the session. */
-    int mRating;    /*!< The rating, as LobbyPlayer::mRating. */
-    int mGames;     /*!< The games counted, as RatingRecord::mGames. */
-    int mOpponents; /*!< The sum of the opponents' weights, as RatingRecord::mOpponents. */
-    float mWins;    /*!< The games won, as RatingRecord::mWins. */
-    int mPoints;    /*!< The weighted sum of the opponents' ratings, as RatingRecord::mPoints. */
-    int mScore;     /*!< The score of the game being rated. */
-
     /** The number of entries of sDifferences. */
     static constexpr int kDifferenceCount = 51;
 
@@ -109,4 +101,48 @@ public:
      * @ghidraAddress PAL: 0x0042faa8
      */
     static int sDifferences[kDifferenceCount];
+
+    /** @return The games counted, as RatingRecord::mGames. */
+    int GetGames() const {
+        return mGames;
+    }
+
+    /** @return The player's identifier in the session. */
+    int GetId() const {
+        return mId;
+    }
+
+    /** @return The sum of the opponents' weights, as RatingRecord::mOpponents. */
+    int GetOpponents() const {
+        return mOpponents;
+    }
+
+    /** @return The weighted sum of the opponents' ratings, as RatingRecord::mPoints. */
+    int GetPoints() const {
+        return mPoints;
+    }
+
+    /** @return The rating, as LobbyPlayer::mRating. */
+    int GetRating() const {
+        return mRating;
+    }
+
+    /** @param nScore The score of the game being rated. */
+    void SetScore(int nScore) {
+        mScore = nScore;
+    }
+
+    /** @return The games won, as RatingRecord::mWins. */
+    float GetWins() const {
+        return mWins;
+    }
+
+private:
+    int mId;        /*!< The player's identifier in the session. */
+    int mRating;    /*!< The rating, as LobbyPlayer::mRating. */
+    int mGames;     /*!< The games counted, as RatingRecord::mGames. */
+    int mOpponents; /*!< The sum of the opponents' weights, as RatingRecord::mOpponents. */
+    float mWins;    /*!< The games won, as RatingRecord::mWins. */
+    int mPoints;    /*!< The weighted sum of the opponents' ratings, as RatingRecord::mPoints. */
+    int mScore;     /*!< The score of the game being rated. */
 };

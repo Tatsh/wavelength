@@ -116,6 +116,7 @@ public:
      */
     static int sHunkBytes;
 
+private:
     int mNodeWords;     /*!< The size of each node in words. */
     int mNumAllocs;     /*!< The nodes handed out. */
     int mMaxAllocs;     /*!< The most nodes handed out at one time. */

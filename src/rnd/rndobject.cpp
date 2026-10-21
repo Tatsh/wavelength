@@ -22,7 +22,7 @@ void RndObject::DumpText(PrnStream &stream) {
     PrnStream &line = stream << "name:";
     line.Print(mName.c_str());
     line << " class:" << ClassName() << " internal:" << (mInternal != 0) << "\n";
-    if (stream.mDumpLevel > 0) {
+    if (stream.GetDumpLevel() > 0) {
         stream << "references:" << mRefs << "\n";
     }
 }
@@ -56,7 +56,7 @@ void RndObject::RemoveRef(RndObject *pReferrer) {
 
 PrnStream &operator<<(PrnStream &stream, const RndObject *pObject) {
     if (pObject != nullptr) {
-        stream << pObject->mName.c_str();
+        stream << pObject->GetName();
     } else {
         stream << "no object";
     }

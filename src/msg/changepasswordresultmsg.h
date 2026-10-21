@@ -91,5 +91,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return One of Result, or another negative error. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult; /*!< One of Result, or another negative error. */
 };

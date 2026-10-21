@@ -84,7 +84,7 @@ void LoadThreshold(DataArray *pConfig) {
     float fThreshold = kDefaultThreshold;
     pConfig->FindFloat("threshold", &fThreshold, true);
     for (auto &state : gStates) {
-        state.mThreshold = fThreshold;
+        state.SetThreshold(fThreshold);
     }
     gThresholdLoaded = 1;
 }
@@ -93,11 +93,11 @@ void LoadThreshold(DataArray *pConfig) {
 // NTSC-U/C: 0x0028ad40, PAL: 0x00294538
 void MapPad(int nPad, int nPort) {
     if (nPad == kJoypadNoPad) {
-        gStates[nPort].mPad = kJoypadNoPad;
+        gStates[nPort].SetPad(kJoypadNoPad);
         return;
     }
     gPadPorts[nPad] = nPort;
-    gStates[nPort].mPad = nPad;
+    gStates[nPort].SetPad(nPad);
 }
 
 // NTSC-U/C: 0x0028ad98, PAL: 0x00294590
@@ -177,13 +177,13 @@ int JoypadWait() {
         TimerSleep(kUninitializedWaitMs);
         return 0;
     }
-    while (JoypadGetState(0)->mButtons != 0) {
+    while (JoypadGetState(0)->GetButtons() != 0) {
         JoypadPoll();
     }
-    while (JoypadGetState(0)->mButtons == 0) {
+    while (JoypadGetState(0)->GetButtons() == 0) {
         JoypadPoll();
     }
-    return JoypadGetState(0)->mButtons;
+    return JoypadGetState(0)->GetButtons();
 }
 
 void JoypadPoll() {
@@ -194,7 +194,7 @@ void JoypadPoll() {
     int nButtons = 0;
     for (int i = 0; i < kJoypadNumPorts; ++i) {
         JoypadState &state = gStates[i];
-        if (state.mPad == kJoypadNoPad) {
+        if (state.GetPad() == kJoypadNoPad) {
             continue;
         }
         unsigned char abAxes[kJoypadNumSticks * 2];
@@ -202,10 +202,10 @@ void JoypadPoll() {
         const int nLevel = ReadPad(
             i, &nButtons, &abAxes[0], &abAxes[1], &abAxes[2], &abAxes[3], abPressures, nullptr);
         if (nLevel == 0) {
-            if (state.mConnected == 1) {
-                JoypadConnectionMsg msg(state.mPad, 0);
+            if (state.GetConnected() == 1) {
+                JoypadConnectionMsg msg(state.GetPad(), 0);
                 gJoypadSource.Send(&msg);
-                state.mConnected = 0;
+                state.SetConnected(0);
             }
             continue;
         }
@@ -213,10 +213,10 @@ void JoypadPoll() {
         if (nLevel < 2) {
             continue;
         }
-        if (state.mConnected == 0) {
-            JoypadConnectionMsg msg(state.mPad, 1);
+        if (state.GetConnected() == 0) {
+            JoypadConnectionMsg msg(state.GetPad(), 1);
             gJoypadSource.Send(&msg);
-            state.mConnected = 1;
+            state.SetConnected(1);
         }
 
         for (int j = 0; j < kJoypadNumSticks; ++j) {
@@ -224,30 +224,30 @@ void JoypadPoll() {
                 static_cast<float>(static_cast<signed char>(abAxes[j * 2])) * kStickScale;
             const float fY =
                 static_cast<float>(static_cast<signed char>(abAxes[j * 2 + 1])) * kStickScale;
-            JoypadStick &stick = state.mSticks[j];
+            JoypadStick &stick = state.GetSticks()[j];
             if (gStickMessages != 0 && (stick.mX != fX || stick.mY != fY)) {
-                JoypadAnalogStickMsg msg(state.mPad, j, fX, fY);
+                JoypadAnalogStickMsg msg(state.GetPad(), j, fX, fY);
                 gJoypadSource.Send(&msg);
             }
             stick.mX = fX;
             stick.mY = fY;
         }
 
-        state.AddStickButtons(&nButtons, gMenuControl[state.mPad] != 0);
-        const int nChanged = nButtons ^ state.mButtons;
-        state.mButtons = nButtons;
+        state.AddStickButtons(&nButtons, gMenuControl[state.GetPad()] != 0);
+        const int nChanged = nButtons ^ state.GetButtons();
+        state.SetButtons(nButtons);
         const int nReleased = nChanged & ~nButtons;
         const int nPressed = nChanged & nButtons;
         for (int j = 0; j < kJoypadNumButtons; ++j) {
-            state.mPressures[j] = static_cast<float>(abPressures[j]) / kPressureMax;
+            state.GetPressures()[j] = static_cast<float>(abPressures[j]) / kPressureMax;
         }
         for (int j = 0; j < kJoypadNumButtons; ++j) {
             const int nBit = 1 << j;
             if ((nReleased & nBit) != 0) {
-                JoypadInputMsg msg(state.mPad, j, 0);
+                JoypadInputMsg msg(state.GetPad(), j, 0);
                 gJoypadSource.Send(&msg);
             } else if ((nPressed & nBit) != 0) {
-                JoypadInputMsg msg(state.mPad, j, 1);
+                JoypadInputMsg msg(state.GetPad(), j, 1);
                 gJoypadSource.Send(&msg);
             }
         }

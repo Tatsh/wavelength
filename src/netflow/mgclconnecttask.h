@@ -46,8 +46,6 @@ public:
      */
     static void OnConnect(int nConnection, int nStatus);
 
-    int mServer; /*!< One of Server. */
-
     /**
      * The step that waits for OnConnect(), or null.
      *
@@ -80,4 +78,7 @@ protected:
      * @ghidraAddress PAL: 0x00264418
      */
     void OnStop() override;
+
+private:
+    int mServer; /*!< One of Server. */
 };

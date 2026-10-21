@@ -54,24 +54,24 @@ TnlSabreTrail::TnlSabreTrail(int nPlayer, Ship *pShip)
       mState(kStateHidden), mRestart(0), mSweeping(0), mNewSegment(0), mSampling(0),
       mStopPending(0), mNumPoints(0), mHead(kNoHead) {
     mRibbon = pShip->GetScratchRibbon();
-    RndMesh *pMesh = FindObject<RndMesh>(FormatString("[%s_mesh]", mRibbon->mName.c_str()));
+    RndMesh *pMesh = FindObject<RndMesh>(FormatString("[%s_mesh]", mRibbon->GetName()));
     if (pMesh != nullptr) {
-        pMesh->mZMode = RndMesh::kZModeDisable;
-        pMesh->mZFunc = RndMesh::kZFuncAlways;
+        pMesh->SetZMode(RndMesh::kZModeDisable);
+        pMesh->SetZFunc(RndMesh::kZFuncAlways);
     }
-    Vector3 &translation = mRibbon->mLocalXfm.mTranslation;
+    Vector3 &translation = mRibbon->GetLocalXfm().mTranslation;
     mRibbonOffset = translation;
     translation.x = 0.0f;
     translation.y = 0.0f;
     translation.z = 0.0f;
-    mRibbon->mDirty = 1;
+    mRibbon->SetDirty(1);
     mRibbon->UpdateWorldXfm(nullptr, 0);
     mColor = *TheGfxManager.GetPlayerColor(nPlayer);
     for (int i = 0; i < 3; ++i) {
-        mPointColors[i] = mRibbon->mPoints[i].mColor;
+        mPointColors[i] = mRibbon->GetPoints()[i].GetColor();
     }
     mColor.a = mPointColors[kColorMiddle].a;
-    mNumPoints = static_cast<int>(mRibbon->mPoints.size());
+    mNumPoints = static_cast<int>(mRibbon->GetPoints().size());
 }
 
 TnlSabreTrail::~TnlSabreTrail() = default;
@@ -81,7 +81,7 @@ void TnlSabreTrail::LoadConfig(DataArray *pConfig, DataArray *pDefaults) {
     FindConfigArray(pConfig, pDefaults, "scratch_ribbon", &pSection, true);
     float flWidth;
     pSection->FindFloat("width", &flWidth, true);
-    mRibbon->mWidth = flWidth * TheGfxManager.GetScrollSpeed();
+    mRibbon->SetWidth(flWidth * TheGfxManager.GetScrollSpeed());
     pSection->FindFloat("sweep", &mSweep, true);
     pSection->FindFloat("sample_envelope_frequency", &sSampleFrequency, true);
     sSampleFrequency *= kAnglePerTickPerTurn;
@@ -121,8 +121,8 @@ void TnlSabreTrail::AddSegment(const Vector3 *pPos) {
         mRibbon->SetPoint(mHead + 1, *pPos);
         return;
     }
-    mRibbon->SetPoint(mHead, mRibbon->mPoints[nOld].mPoint);
-    mRibbon->SetPoint(mHead + 1, mRibbon->mPoints[nOld].mPoint);
+    mRibbon->SetPoint(mHead, mRibbon->GetPoints()[nOld].GetPoint());
+    mRibbon->SetPoint(mHead + 1, mRibbon->GetPoints()[nOld].GetPoint());
 }
 
 void TnlSabreTrail::Start() {
@@ -145,7 +145,7 @@ void TnlSabreTrail::Stop(bool bForce) {
         return;
     }
     mState = kStateShown;
-    mRibbon->SetPoint(kNeedleTip, mRibbon->mPoints[kNeedleBase].mPoint);
+    mRibbon->SetPoint(kNeedleTip, mRibbon->GetPoints()[kNeedleBase].GetPoint());
     mNeedle.Reset(0.0f, 0.0f, 0.0f, 1.0f);
 }
 

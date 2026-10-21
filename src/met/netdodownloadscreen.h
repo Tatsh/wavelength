@@ -68,15 +68,28 @@ public:
         return "";
     }
 
-    String mRemixName; /*!< The name the remix is saved under. */
-    String mFile;      /*!< The file of the remix on the server. */
-
 #ifdef VIDEO_STANDARD_PAL
     /** The value of mUploadIndex when the file does not belong to the upload tool. */
     static constexpr int kNoUploadIndex = -1;
 
-    /** The upload tool's file being downloaded, or kNoUploadIndex. */
-    int mUploadIndex = kNoUploadIndex;
+#endif
+
+    /** @param pszFile The file of the remix on the server. */
+    void SetFile(const char *pszFile) {
+        mFile = pszFile;
+    }
+
+    /** @param pszRemixName The name the remix is saved under. */
+    void SetRemixName(const char *pszRemixName) {
+        mRemixName = pszRemixName;
+    }
+
+#ifdef VIDEO_STANDARD_PAL
+    /** @param nUploadIndex The upload index. */
+    void SetUploadIndex(int nUploadIndex) {
+        mUploadIndex = nUploadIndex;
+    }
+
 #endif
 
 private:
@@ -129,5 +142,11 @@ private:
      * @ghidraAddress PAL: 0x001839d8
      */
     bool HandleRemixDownload(RemixDownloadMsg *pMsg);
+#endif
+    String mRemixName; /*!< The name the remix is saved under. */
+    String mFile;      /*!< The file of the remix on the server. */
+#ifdef VIDEO_STANDARD_PAL
+    /** The upload tool's file being downloaded, or kNoUploadIndex. */
+    int mUploadIndex = kNoUploadIndex;
 #endif
 };

@@ -40,7 +40,7 @@ void RndEnviron::ListDrawObjects(std::list<RndObject *> &objects) {
 void RndEnviron::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndDrawable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndEnviron]\n";
@@ -74,7 +74,7 @@ void RndEnviron::Replace(RndObject *pFrom, RndObject *pTo) {
     while (it != mLights.end()) {
         RndLight *&pLight = *it;
         if (static_cast<RndObject *>(pLight) == pTo) {
-            DebugNotify("%s already in %s", pTo->mName.c_str(), mName.c_str());
+            DebugNotify("%s already in %s", pTo->GetName(), mName.c_str());
         }
         if (static_cast<RndObject *>(pLight) == pFrom) {
             if (pFrom != nullptr) {
@@ -141,7 +141,7 @@ void RndEnviron::Load(BinStream &stream) {
 
 void RndEnviron::AddLight(RndLight *pLight) {
     if (ListContains(mLights, pLight)) {
-        DebugNotify("%s already in %s", pLight->mName.c_str(), mName.c_str());
+        DebugNotify("%s already in %s", pLight->GetName(), mName.c_str());
         return;
     }
     if (pLight != nullptr) {
@@ -154,7 +154,7 @@ void RndEnviron::CreateDefault() {
     RndObject *pObject = TheManager.Create(sClassName, "[default environ]");
     RndEnviron *pEnviron = pObject != nullptr ? dynamic_cast<RndEnviron *>(pObject) : nullptr;
     sDefault = pEnviron;
-    pEnviron->mInternal = 1;
+    pEnviron->SetInternal(1);
     RndCam::sDefault->AddDraw(pEnviron, nullptr);
 }
 

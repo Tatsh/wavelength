@@ -161,6 +161,13 @@ public:
      */
     void Space(int nCount);
 
+    /** @return Detail of an object dump. RndObject::DumpText() lists the referrers only above 0.
+     * The name is inferred. */
+    int GetDumpLevel() const {
+        return mDumpLevel;
+    }
+
+private:
     /**
      * Detail of an object dump. RndObject::DumpText() lists the referrers only above 0.
      *

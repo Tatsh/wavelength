@@ -174,8 +174,8 @@ void SetXfmRows(Transform &xfm, const float (*pXfm)[kTransformRowFloatCount]) {
 
 // Copy a transform into the local transform of an object and mark it for recomposing.
 void SetLocalXfm(RndTransformable *pTrans, const float (*pXfm)[kTransformRowFloatCount]) {
-    SetXfmRows(pTrans->mLocalXfm, pXfm);
-    pTrans->mDirty = 1;
+    SetXfmRows(pTrans->GetLocalXfm(), pXfm);
+    pTrans->SetDirty(1);
 }
 
 // Set the three components of each basis row of a transform, leaving the fourth words.
@@ -227,8 +227,8 @@ void SetLocalScale(RndTransformable *pTrans, float fScale) {
             aflBasis[i][j] = i == j ? fScale : 0.0f;
         }
     }
-    SetBasis(pTrans->mLocalXfm, aflBasis);
-    pTrans->mDirty = 1;
+    SetBasis(pTrans->GetLocalXfm(), aflBasis);
+    pTrans->SetDirty(1);
 }
 
 // Evaluate a curve of keys at a frame, clamped to its ends, or 1 for an empty curve.
@@ -346,20 +346,20 @@ void Ship::ConfigureCrippler(RndParticleSys *pSys, int nPlayer) {
             return;
         }
     }
-    pSys->mEmitRate.y = kRemoteCripplerRate;
-    pSys->mEmitRate.x = kRemoteCripplerRate;
+    pSys->GetEmitRate().y = kRemoteCripplerRate;
+    pSys->GetEmitRate().x = kRemoteCripplerRate;
     pSys->SetNumParticles(kRemoteCripplerParticles);
     float aflPosLow[kTransformRowFloatCount];
     float aflPosHigh[kTransformRowFloatCount];
     BuildZeroPoints(aflPosLow, aflPosHigh);
-    pSys->mLife.y = kRemoteCripplerLife;
-    memcpy(&pSys->mPosHigh, aflPosHigh, sizeof(aflPosHigh));
-    pSys->mSpeed.x = kRemoteCripplerSpeedLow;
-    pSys->mSpeed.y = kRemoteCripplerSpeedHigh;
-    pSys->mSize.y = kRemoteCripplerSize;
-    memcpy(&pSys->mPosLow, aflPosLow, sizeof(aflPosLow));
-    pSys->mLife.x = kRemoteCripplerLife;
-    pSys->mSize.x = kRemoteCripplerSize;
+    pSys->GetLife().y = kRemoteCripplerLife;
+    memcpy(&pSys->GetPosHigh(), aflPosHigh, sizeof(aflPosHigh));
+    pSys->GetSpeed().x = kRemoteCripplerSpeedLow;
+    pSys->GetSpeed().y = kRemoteCripplerSpeedHigh;
+    pSys->GetSize().y = kRemoteCripplerSize;
+    memcpy(&pSys->GetPosLow(), aflPosLow, sizeof(aflPosLow));
+    pSys->GetLife().x = kRemoteCripplerLife;
+    pSys->GetSize().x = kRemoteCripplerSize;
 }
 
 void Ship::ConfigureArm(RndParticleSys *pSys, int nPlayer) {
@@ -369,20 +369,20 @@ void Ship::ConfigureArm(RndParticleSys *pSys, int nPlayer) {
             return;
         }
     }
-    pSys->mEmitRate.y = kRemoteArmRate;
-    pSys->mEmitRate.x = kRemoteArmRate;
+    pSys->GetEmitRate().y = kRemoteArmRate;
+    pSys->GetEmitRate().x = kRemoteArmRate;
     pSys->SetNumParticles(kRemoteArmParticles);
     float aflPosLow[kTransformRowFloatCount];
     float aflPosHigh[kTransformRowFloatCount];
     BuildZeroPoints(aflPosLow, aflPosHigh);
-    pSys->mLife.x = kRemoteArmLifeLow;
-    memcpy(&pSys->mPosHigh, aflPosHigh, sizeof(aflPosHigh));
-    pSys->mLife.y = kRemoteArmLifeHigh;
-    pSys->mSpeed.y = kRemoteArmSpeed;
-    pSys->mSize.x = kRemoteArmSizeLow;
-    pSys->mSize.y = kRemoteArmSizeHigh;
-    memcpy(&pSys->mPosLow, aflPosLow, sizeof(aflPosLow));
-    pSys->mSpeed.x = kRemoteArmSpeed;
+    pSys->GetLife().x = kRemoteArmLifeLow;
+    memcpy(&pSys->GetPosHigh(), aflPosHigh, sizeof(aflPosHigh));
+    pSys->GetLife().y = kRemoteArmLifeHigh;
+    pSys->GetSpeed().y = kRemoteArmSpeed;
+    pSys->GetSize().x = kRemoteArmSizeLow;
+    pSys->GetSize().y = kRemoteArmSizeHigh;
+    memcpy(&pSys->GetPosLow(), aflPosLow, sizeof(aflPosLow));
+    pSys->GetSpeed().x = kRemoteArmSpeed;
 }
 
 void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
@@ -497,9 +497,9 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     mAttackTime = kFarFuture;
     mMulti = TheGameDb->GetCommunity() != GameDb::kCommunitySolo;
     mBank = std::make_unique<RndAnimatable::SecondOrder>();
-    mBank->mLevel = 0.0f;
-    mBank->mSpring = sBankSpring;
-    mBank->mDamper = sBankDamper;
+    mBank->SetLevel(0.0f);
+    mBank->SetSpring(sBankSpring);
+    mBank->SetDamper(sBankDamper);
     mFlyIn = nullptr;
 
     const float fScrollSpeed = TheGfxManager.GetScrollSpeed();
@@ -557,26 +557,26 @@ Ship::Ship(const char *pszColor, int nPlayer) {
             FindObject<RndParticleSys>(FormatString("ship %s_%c.ps", pszArm, nColor));
         ConfigureArm(pSys, mPlayer);
         mArms[i].Init(pSys, mArmXfms[i], sScale);
-        pViewDraw->RemoveDraw(mArms[i].mSys);
+        pViewDraw->RemoveDraw(mArms[i].GetSys());
         mTrodes[i] =
             FindObject<RndMesh>(FormatString("ship trode core %s_%c.mesh", pszArm, nColor));
         if (mTrodes[i] != nullptr) {
-            mTrodeMats[i] = mTrodes[i]->mMat;
+            mTrodeMats[i] = mTrodes[i]->GetMat();
             pViewDraw->RemoveDraw(mTrodes[i]);
         } else {
             mTrodeMats[i] = nullptr;
         }
-        RndParticleSys *pArmSys = mArms[i].mSys;
-        mArmColors[i][kArmColorStartLow] = pArmSys->mStartColorLow;
-        mArmColors[i][kArmColorStartHigh] = pArmSys->mStartColorHigh;
-        mArmColors[i][kArmColorEndLow] = pArmSys->mEndColorLow;
-        mArmColors[i][kArmColorEndHigh] = pArmSys->mEndColorHigh;
+        RndParticleSys *pArmSys = mArms[i].GetSys();
+        mArmColors[i][kArmColorStartLow] = pArmSys->GetStartColorLow();
+        mArmColors[i][kArmColorStartHigh] = pArmSys->GetStartColorHigh();
+        mArmColors[i][kArmColorEndLow] = pArmSys->GetEndColorLow();
+        mArmColors[i][kArmColorEndHigh] = pArmSys->GetEndColorHigh();
     }
-    mArmSizeLow = mArms[0].mSys->mSize.x;
-    mArmSizeHigh = mArms[0].mSys->mSize.y;
+    mArmSizeLow = mArms[0].GetSys()->GetSize().x;
+    mArmSizeHigh = mArms[0].GetSys()->GetSize().y;
     if (mTrodes[0] != nullptr) {
         float aflScale[kNumComponents];
-        Mat33ExtractScale(&static_cast<RndTransformable *>(mTrodes[0])->mLocalXfm.mBasisX.x,
+        Mat33ExtractScale(&static_cast<RndTransformable *>(mTrodes[0])->GetLocalXfm().mBasisX.x,
                           aflScale);
         mTrodeSize = aflScale[0];
     } else {
@@ -590,7 +590,7 @@ Ship::Ship(const char *pszColor, int nPlayer) {
         FindObject<RndTransformable>(FormatString("ship_%c.mesh", nColor));
     ConfigureCrippler(pThrusterSys, mPlayer);
     mThruster.Init(pThrusterSys, pThrusterXfm, sScale);
-    pViewDraw->RemoveDraw(mThruster.mSys);
+    pViewDraw->RemoveDraw(mThruster.GetSys());
     const float fSpeedOffset = TheGfxManager.GetCamPathScale() / fScrollSpeed;
     mCripplerPs = FindObject<RndParticleSys>(FormatString("ship crippler_%c.part", nColor));
     if (mCripplerPs != nullptr) {
@@ -614,8 +614,8 @@ Ship::Ship(const char *pszColor, int nPlayer) {
         static_cast<RndDrawable *>(mBumperPs)->SetShowing(1);
         mBumperPs->FreeAllParticles();
         ScaleParticles(mBumperPs, sScale);
-        mBumperPs->mSpeed.x += fSpeedOffset;
-        mBumperPs->mSpeed.y += fSpeedOffset;
+        mBumperPs->GetSpeed().x += fSpeedOffset;
+        mBumperPs->GetSpeed().y += fSpeedOffset;
         mView->RemoveAnim(mBumperPs);
     }
     ClearMeshSpheres(mView);
@@ -631,8 +631,8 @@ Ship::Ship(const char *pszColor, int nPlayer) {
                 aflZero[i][j] = 0.0f;
             }
         }
-        SetBasis(pNameXfm->mLocalXfm, aflZero);
-        pNameXfm->mDirty = 1;
+        SetBasis(pNameXfm->GetLocalXfm(), aflZero);
+        pNameXfm->SetDirty(1);
         mName->SetText(TheGameDb->GetPlayerName(mPlayer));
     }
 
@@ -655,14 +655,14 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     do {
         bMoved = false;
         RndAnimatable *pViewAnim = mView;
-        for (RndAnimatable *pAnim : pViewAnim->mAnims) {
+        for (RndAnimatable *pAnim : pViewAnim->GetAnims()) {
             RndParticleSys *pSys = dynamic_cast<RndParticleSys *>(pAnim);
             if (pSys == nullptr) {
                 continue;
             }
             pViewAnim->RemoveAnim(pAnim);
             bMoved = true;
-            if (pSys == mThruster.mSys || pSys == mThruster2 || pSys == mThruster3) {
+            if (pSys == mThruster.GetSys() || pSys == mThruster2 || pSys == mThruster3) {
                 mBackPsAnim->AddAnim(pAnim);
             } else {
                 mPsAnim->AddAnim(pAnim);
@@ -753,15 +753,15 @@ void Ship::SetEnergy(float fEnergy, int nZone, [[maybe_unused]] float fZoneFract
         pTrodeMat = mTrodeMats[kArmOfLowZone];
     }
     for (ParticleArm &arm : mArms) {
-        arm.mSys->mStartColorLow = pColors[kArmColorStartLow];
-        arm.mSys->mStartColorHigh = pColors[kArmColorStartHigh];
+        arm.GetSys()->GetStartColorLow() = pColors[kArmColorStartLow];
+        arm.GetSys()->GetStartColorHigh() = pColors[kArmColorStartHigh];
     }
     for (ParticleArm &arm : mArms) {
-        arm.mSys->mEndColorLow = pColors[kArmColorEndLow];
-        arm.mSys->mEndColorHigh = pColors[kArmColorEndHigh];
+        arm.GetSys()->GetEndColorLow() = pColors[kArmColorEndLow];
+        arm.GetSys()->GetEndColorHigh() = pColors[kArmColorEndHigh];
     }
     for (ParticleArm &arm : mArms) {
-        memcpy(&arm.mSys->mForce, aflForce, sizeof(aflForce));
+        memcpy(&arm.GetSys()->GetForce(), aflForce, sizeof(aflForce));
     }
     if (mTrodes[0] == nullptr) {
         return;
@@ -780,8 +780,8 @@ void Ship::ScaleArms(float fScale) {
     const float fSizeLow = fScale * mArmSizeLow;
     const float fSizeHigh = fScale * mArmSizeHigh;
     for (ParticleArm &arm : mArms) {
-        arm.mSys->mSize.x = fSizeLow;
-        arm.mSys->mSize.y = fSizeHigh;
+        arm.GetSys()->GetSize().x = fSizeLow;
+        arm.GetSys()->GetSize().y = fSizeHigh;
     }
     if (mTrodes[0] == nullptr) {
         return;
@@ -792,8 +792,8 @@ void Ship::ScaleArms(float fScale) {
 }
 
 void Ship::ScaleArm(int nArm, float fScale) {
-    mArms[nArm].mSys->mSize.x = fScale * mArmSizeLow;
-    mArms[nArm].mSys->mSize.y = fScale * mArmSizeHigh;
+    mArms[nArm].GetSys()->GetSize().x = fScale * mArmSizeLow;
+    mArms[nArm].GetSys()->GetSize().y = fScale * mArmSizeHigh;
     if (mTrodes[0] == nullptr) {
         return;
     }
@@ -858,7 +858,7 @@ void Ship::StartBump(bool bVictim, int nTrack) {
         mFlags &= ~kFlagBumpReverse;
     }
     if (mBumperBlur != nullptr) {
-        mBumperBlur->mXfms.clear();
+        mBumperBlur->GetXfms().clear();
     }
 }
 
@@ -877,7 +877,7 @@ void Ship::AddBeam(std::list<BeamData> *pList,
     } else {
         // Steal the beam that started first from whichever ship holds it.
         pBeam = pPool->FindOldest();
-        std::list<BeamData> *pOwnerList = pBeam->mOwnerList;
+        std::list<BeamData> *pOwnerList = pBeam->GetOwnerList();
         std::list<BeamData>::iterator it = pOwnerList->begin();
         while (it != pOwnerList->end() && it->mBeam != pBeam) {
             ++it;
@@ -887,10 +887,10 @@ void Ship::AddBeam(std::list<BeamData> *pList,
         pList->back().mSlot = nSlot;
         pList->back().mTrack = nTrack;
         pBeam = pList->back().mBeam;
-        pBeam->mOwner = this;
-        pBeam->mOwnerList = pList;
+        pBeam->SetOwner(this);
+        pBeam->SetOwnerList(pList);
     }
-    pBeam->SetEnd(0, &mArmXfms[nSlot]->mWorldXfm.mTranslation.x);
+    pBeam->SetEnd(0, &mArmXfms[nSlot]->GetWorldXfm().mTranslation.x);
     alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
     const float fOffset = (static_cast<float>(nSlot) * kSlotSpacing) + kSlotOffset;
     Transform cell;
@@ -941,7 +941,7 @@ void Ship::UpdateBeams(std::list<BeamData> *pList,
     while (it != pList->end()) {
         Beam *pBeam = it->mBeam;
         if (bMoveStart) {
-            pBeam->SetEnd(0, &mArmXfms[it->mSlot]->mWorldXfm.mTranslation.x);
+            pBeam->SetEnd(0, &mArmXfms[it->mSlot]->GetWorldXfm().mTranslation.x);
         }
         if (bMoveEnd) {
             // Yes, the binary rebuilds the cell only when the button changes, not the track.
@@ -1012,8 +1012,8 @@ void Ship::PollBump(float fTimeDelta) {
     aflTranslation[0] = 0.0f;
     aflTranslation[1] = 0.0f;
     aflTranslation[2] = mBumpHeight;
-    pFxXfm->mDirty = 1;
-    memcpy(&pFxXfm->mLocalXfm.mTranslation, aflTranslation, sizeof(aflTranslation));
+    pFxXfm->SetDirty(1);
+    memcpy(&pFxXfm->GetLocalXfm().mTranslation, aflTranslation, sizeof(aflTranslation));
     mBumperFly->SetTrans(mFxView);
     mBumperFly->SetFrame(fFrame);
     mBumperFly->SetTrans(nullptr);
@@ -1055,7 +1055,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     const float fTime = TheGameDb->GetSongTime();
     const float fVelocity = fTick < kBankStartTick ? 0.0f : pPlayer->GetVelocity();
     PlayerCamFX *pCamFX = GfxTunnel::sCurrent->GetCamFX();
-    bool bShowThrusters = mMulti != 0 || pCamFX->mPullBackLevel != 0.0f;
+    bool bShowThrusters = mMulti != 0 || pCamFX->GetPullBackLevel() != 0.0f;
 
     float fBankTarget = 0.0f;
     if ((mFlags & kFlagBumped) == 0) {
@@ -1071,10 +1071,10 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     aflForce[0] = sBankForce * fBank;
     aflForce[1] = 0.0f;
     aflForce[2] = 0.0f;
-    memcpy(&mThruster.mSys->mForce, aflForce, sizeof(aflForce));
+    memcpy(&mThruster.GetSys()->GetForce(), aflForce, sizeof(aflForce));
     if (mThruster2 != nullptr) {
-        memcpy(&mThruster2->mForce, aflForce, sizeof(aflForce));
-        memcpy(&mThruster3->mForce, aflForce, sizeof(aflForce));
+        memcpy(&mThruster2->GetForce(), aflForce, sizeof(aflForce));
+        memcpy(&mThruster3->GetForce(), aflForce, sizeof(aflForce));
     }
 
     alignas(kMatrixAlign) float aflBasis[kTransformRowCount][kTransformRowFloatCount];
@@ -1107,7 +1107,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         Mat33BuildOrthonormal(aflUp, aflForward, &aflBasis[0][0]);
     } else {
         alignas(kMatrixAlign) float aflCamXfm[kTransformRowCount][kTransformRowFloatCount];
-        CopyRows(pCamFX->mCamera, aflCamXfm);
+        CopyRows(pCamFX->GetCamera(), aflCamXfm);
         const float (*pCamXfm)[kTransformRowFloatCount] = aflCamXfm;
         XfmPoint(pCamXfm, sOffsetPivot, pPosition);
         // Yes, the binary leaves the fourth word of both rows unset.
@@ -1178,7 +1178,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     if (bShowThrusters) {
         mBackPsAnim->SetFrame(fNow);
     }
-    static_cast<RndDrawable *>(mThruster.mSys)->SetShowing(nShowThrusters);
+    static_cast<RndDrawable *>(mThruster.GetSys())->SetShowing(nShowThrusters);
     if (mMulti == 0) {
         static_cast<RndDrawable *>(mThruster2)->SetShowing(nShowThrusters);
         static_cast<RndDrawable *>(mThruster3)->SetShowing(nShowThrusters);
@@ -1215,7 +1215,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
 void Ship::PollSoloIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformRowFloatCount]) {
     float *pPosition = pXfm[kTransformRowCount - 1];
     alignas(kMatrixAlign) float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
-    CopyRows(pCamFX->mView, aflSlideXfm);
+    CopyRows(pCamFX->GetView(), aflSlideXfm);
     const float (*pSlideXfm)[kTransformRowFloatCount] = aflSlideXfm;
     RndTransformable *pViewXfm = mView;
     if (sIntroBlendEndTick <= fTick) {
@@ -1270,7 +1270,7 @@ void Ship::PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformR
     }
     alignas(kMatrixAlign) float aflIntroXfm[kTransformRowCount][kTransformRowFloatCount];
     alignas(kMatrixAlign) float aflSlideXfm[kTransformRowCount][kTransformRowFloatCount];
-    CopyRows(pCamFX->mView, aflSlideXfm);
+    CopyRows(pCamFX->GetView(), aflSlideXfm);
     sceVu0MulAffineMatrixXyz(&aflIntroXfm[0][0], &aflSlideXfm[0][0], &mXfm.mBasisX.x);
     float *pIntroTranslation = aflIntroXfm[kTransformRowCount - 1];
     if (fBlend == 1.0f) {
@@ -1338,10 +1338,10 @@ void Ship::DrawShared() {
 
 void Ship::DrawTrack() {
     RndDrawable *pViewDraw = mView;
-    if (pViewDraw->mShowing == 0) {
+    if (pViewDraw->GetShowing() == 0) {
         return;
     }
-    const Vector3 &translation = static_cast<RndTransformable *>(mView)->mWorldXfm.mTranslation;
+    const Vector3 &translation = static_cast<RndTransformable *>(mView)->GetWorldXfm().mTranslation;
     const Vector3 position{translation.x, translation.y, translation.z};
     RndCam::sCurrent->WorldToScreen(position, mScreenPos);
     if ((mFlags & kFlagBumped) != 0) {
@@ -1353,7 +1353,7 @@ void Ship::DrawTrack() {
 }
 
 void Ship::DrawEffects() {
-    if (static_cast<RndDrawable *>(mView)->mShowing == 0) {
+    if (static_cast<RndDrawable *>(mView)->GetShowing() == 0) {
         return;
     }
     if (mTrodes[0] != nullptr) {
@@ -1430,7 +1430,7 @@ void Ship::DrawArrow() {
     pUp[2] = 0.0f;
     CrossVec3(pUp, pDirection, pRight);
 
-    RndMat *pMat = sArrowMesh->mMat;
+    RndMat *pMat = sArrowMesh->GetMat();
     const float fSinceArrow = TheGameDb->GetSongTime() - mArrowStart;
     if (kArrowPulseTime < fSinceArrow || fSinceArrow < 0.0f) {
         pMat->SetBaseColor(mColor);

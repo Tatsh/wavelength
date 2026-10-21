@@ -211,12 +211,12 @@ void Stats::AppendTimestamp(String &text) {
     DateTime date{};
     (void)date.ReadClock(); // Yes, the binary discards this call's result.
     text << FormatString(kTimestampFormat,
-                         date.mYear - kYearsBefore2000,
-                         date.mMonth + 1,
-                         date.mDay,
-                         date.mHour,
-                         date.mMinute,
-                         date.mSecond);
+                         date.GetYear() - kYearsBefore2000,
+                         date.GetMonth() + 1,
+                         date.GetDay(),
+                         date.GetHour(),
+                         date.GetMinute(),
+                         date.GetSecond());
 }
 
 Stats::Stats()
@@ -246,12 +246,12 @@ void Stats::End() {
                                   mMemcardSlot,
                                   name.c_str(),
                                   mLog.c_str(),
-                                  mLog.mLength,
+                                  mLog.GetLength(),
                                   kSaveFlag);
         } else {
             AppendTimestamp(name);
             FileStream file(name.c_str(), kWriteFile, kLittleEndian, kFileFlags);
-            file.Write(mLog.c_str(), mLog.mLength);
+            file.Write(mLog.c_str(), mLog.GetLength());
             mLog.Clear();
         }
     }

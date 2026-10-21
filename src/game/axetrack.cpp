@@ -33,7 +33,7 @@ AxeTrack::AxeTrack(AxeTrackData *pData,
     (void)mData->GetContours(kFirstTick, &mContours[0], &mContours[1], &mContours[2]);
     (void)mData->GetHarmony(kFirstTick, &mHarmony);
 
-    float fVolume = TheGameConfig->mAxeSoftFxVolume;
+    float fVolume = TheGameConfig->GetAxeSoftFxVolume();
     TheGameDb->FindSong(TheGameDb->GetSong().c_str())->FindFloat(kAxeSoftFxVolume, &fVolume, false);
     for (int i = 0; i < kNumAxers; ++i) {
         mAxers[i] = std::make_unique<Axer>(mContours[i], mHarmony, mData->GetReserved(), fVolume);
@@ -75,11 +75,11 @@ void AxeTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
     }
 
     if (pPlayer == mPlayer) {
-        mX = event.mX;
-        mY = event.mY;
-        if (event.mState != 0) {
-            StartNote(event.mButton, mX, mY);
-        } else if (mActiveButton == event.mButton) {
+        mX = event.GetX();
+        mY = event.GetY();
+        if (event.GetState() != 0) {
+            StartNote(event.GetButton(), mX, mY);
+        } else if (mActiveButton == event.GetButton()) {
             EndNote();
         }
     }
@@ -92,8 +92,8 @@ void AxeTrack::HandleInput(Player *pPlayer, const StickEvent<2> &event) {
         return;
     }
 
-    mX = event.mX;
-    mY = event.mY;
+    mX = event.GetX();
+    mY = event.GetY();
     Axer *pAxer = mAxers[mActiveButton].get();
     (void)pAxer->IsActive(); // Yes, the binary discards this call's result.
     pAxer->SetX(mX);

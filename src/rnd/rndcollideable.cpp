@@ -25,7 +25,7 @@ void RndCollideable::Collide(const Vector2 &point, std::list<Collision> &collisi
 }
 
 void RndCollideable::DumpText(PrnStream &stream) {
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndCollideable]\n";
@@ -41,7 +41,7 @@ void RndCollideable::Replace(RndObject *pFrom, RndObject *pTo) {
     for (auto it = mCollides.begin(); it != mCollides.end();) {
         RndObject *pChild = *it;
         if (pChild == pTo) {
-            DebugNotify("%s already in %s", pTo->mName.c_str(), mName.c_str());
+            DebugNotify("%s already in %s", pTo->GetName(), mName.c_str());
         }
         if (pChild == pFrom) {
             if (pFrom != nullptr) {
@@ -97,7 +97,7 @@ RndCollideable *RndCollideable::Parent() {
 
 bool RndCollideable::AddCollide(RndCollideable *pCollide) {
     if (ListContains(mCollides, pCollide)) {
-        DebugNotify("%s already in %s", pCollide->mName.c_str(), mName.c_str());
+        DebugNotify("%s already in %s", pCollide->GetName(), mName.c_str());
         return false;
     }
     if (pCollide != nullptr) {

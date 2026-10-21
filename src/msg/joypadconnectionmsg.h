@@ -94,6 +94,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return 1 when the controller was connected, 0 when it was disconnected. */
+    int GetConnected() const {
+        return mConnected;
+    }
+
+    /** @return The controller. */
+    int GetPad() const {
+        return mPad;
+    }
+
+private:
     int mPad;       /*!< The controller. */
     int mConnected; /*!< 1 when the controller was connected, 0 when it was disconnected. */
 };

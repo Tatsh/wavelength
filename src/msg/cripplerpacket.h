@@ -124,5 +124,11 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The session order of the player struck. */
+    int GetVictim() const {
+        return mVictim;
+    }
+
+private:
     int mVictim; /*!< The session order of the player struck. */
 };

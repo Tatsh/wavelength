@@ -26,8 +26,8 @@ bool PitchTrackGems::AddGem(signed char nSlot, int nTick, signed char nOwner) {
     const PitchGem gem{nSlot, nTick, nOwner};
     std::vector<PitchGem> &gems = mBars[nBar];
     const auto it = std::lower_bound(gems.begin(), gems.end(), gem);
-    if (it != gems.end() && it->mTick == nTick) {
-        RemoveOwner(it->mOwner, nBar);
+    if (it != gems.end() && it->GetTick() == nTick) {
+        RemoveOwner(it->GetOwner(), nBar);
         AddOwner(nOwner, nBar);
         *it = gem;
         return true;
@@ -42,10 +42,10 @@ bool PitchTrackGems::RemoveGem(int nTick) {
     const PitchGem key{0, nTick, kNoOwner};
     std::vector<PitchGem> &gems = mBars[nBar];
     const auto it = std::lower_bound(gems.begin(), gems.end(), key);
-    if (it == gems.end() || it->mTick != nTick) {
+    if (it == gems.end() || it->GetTick() != nTick) {
         return false;
     }
-    RemoveOwner(it->mOwner, nBar);
+    RemoveOwner(it->GetOwner(), nBar);
     gems.erase(it);
     return true;
 }
@@ -55,9 +55,9 @@ bool PitchTrackGems::ToggleGem(signed char nSlot, int nTick, signed char nOwner)
     const PitchGem gem{nSlot, nTick, nOwner};
     std::vector<PitchGem> &gems = mBars[nBar];
     const auto it = std::lower_bound(gems.begin(), gems.end(), gem);
-    if (it != gems.end() && it->mTick == nTick) {
-        RemoveOwner(it->mOwner, nBar);
-        if (it->mSlot == nSlot) {
+    if (it != gems.end() && it->GetTick() == nTick) {
+        RemoveOwner(it->GetOwner(), nBar);
+        if (it->GetSlot() == nSlot) {
             gems.erase(it);
             return false;
         }
@@ -77,7 +77,7 @@ int PitchTrackGems::GetOwner(int nBar) {
 void PitchTrackGems::ClearBar(int nBar) {
     std::vector<PitchGem> &gems = mBars[nBar];
     for (unsigned int i = 0; i < gems.size(); ++i) {
-        RemoveOwner(gems[i].mOwner, nBar);
+        RemoveOwner(gems[i].GetOwner(), nBar);
     }
     gems.clear();
 }
@@ -114,14 +114,14 @@ void PitchTrackGems::CopyBars(
     if (nShift != 0) {
         for (int nBar = nDestBar; nBar < nDestEndBar; ++nBar) {
             for (auto &gem : mBars[nBar]) {
-                gem.mTick += nShift;
+                gem.SetTick(gem.GetTick() + nShift);
             }
         }
     }
     if (nOwner != kNoOwner) {
         for (int nBar = nDestBar; nBar < nDestEndBar; ++nBar) {
             for (auto &gem : mBars[nBar]) {
-                gem.mOwner = static_cast<signed char>(nOwner);
+                gem.SetOwner(static_cast<signed char>(nOwner));
             }
         }
     }
@@ -142,7 +142,7 @@ void PitchTrackGems::CopyBars(
         for (int nBar = nSectionStart; nBar < nSectionEnd; ++nBar) {
             const std::vector<PitchGem> &gems = mBars[nBar];
             for (unsigned int i = 0; i < gems.size(); ++i) {
-                AddOwner(gems[i].mOwner, nBar);
+                AddOwner(gems[i].GetOwner(), nBar);
             }
         }
     }
@@ -201,9 +201,9 @@ void PitchTrackGems::Save(BinStream &stream) {
         mSections->GetSectionRange(sections[i], &nStartBar, &nEndBar);
         for (int nBar = nStartBar; nBar < nEndBar; ++nBar) {
             for (const auto &gem : mBars[nBar]) {
-                int nTick = gem.mTick;
+                int nTick = gem.GetTick();
                 stream.WriteEndian(&nTick, sizeof(nTick));
-                signed char nSlot = gem.mSlot;
+                signed char nSlot = gem.GetSlot();
                 stream.Write(&nSlot, sizeof(nSlot));
             }
         }

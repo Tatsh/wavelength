@@ -41,7 +41,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -67,7 +67,7 @@ void ReadFloat(BinStream &stream, float &fValue) {
 }
 
 void WriteObjectName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 } // namespace
@@ -185,7 +185,7 @@ void RndParticleSys::DumpText(PrnStream &stream) {
     RndAnimatable::DumpText(stream);
     RndTransformable::DumpText(stream);
     RndDrawable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndParticleSys]\n";
@@ -204,7 +204,7 @@ void RndParticleSys::DumpText(PrnStream &stream) {
     const RndObject *pOwner = mParticlesOwner;
     stream << "bubble:" << (mBubble != 0) << " readZ:" << (mReadZ != 0)
            << " particlesOwner:" << pOwner << "\n";
-    if (stream.mDumpLevel < kDumpParticles) {
+    if (stream.GetDumpLevel() < kDumpParticles) {
         return;
     }
     stream << "particles:(size: " << mNumParticles << ")";
@@ -643,8 +643,8 @@ void RndParticleSys::ListDrawObjects(std::list<RndObject *> &objects) {
     if (mMat == nullptr) {
         return;
     }
-    for (int i = static_cast<int>(mMat->mStages.size()) - 1; i >= 0; --i) {
-        objects.push_back(mMat->mStages[i].mTex);
+    for (int i = static_cast<int>(mMat->GetStages().size()) - 1; i >= 0; --i) {
+        objects.push_back(mMat->GetStages()[i].GetTex());
     }
 }
 
@@ -652,7 +652,7 @@ void RndParticleSys::ListDrawables(std::list<RndDrawable *> &drawables) {
     const RndCam *pCam = RndCam::sCurrent;
     for (const Particle *pParticle = mLiveParticles; pParticle != nullptr;
          pParticle = pParticle->mNext) {
-        if (IsPointInsideFrustum(pParticle->mPos, pCam->mWorldFrustum)) {
+        if (IsPointInsideFrustum(pParticle->mPos, pCam->GetWorldFrustum())) {
             drawables.push_back(this);
             break;
         }

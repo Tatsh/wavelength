@@ -90,7 +90,7 @@ bool NetMainPlayersPanel::DispatchPriv(Message *pMsg) {
 bool NetMainPlayersPanel::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
     if (mLoaded) {
         static_cast<NetMainPlayersList *>(FindComponent(kListComponent, false))
-            ->SetPlayers(pMsg->mPlayers, kCurrentSelection);
+            ->SetPlayers(pMsg->GetPlayers(), kCurrentSelection);
         HideFlash();
     }
     mRequestTime = SystemMs() + kRequestIntervalMs;
@@ -100,7 +100,7 @@ bool NetMainPlayersPanel::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
 bool NetMainPlayersPanel::HandlePlayerRank(PlayerRankMsg *pMsg) {
     if (mLoaded) {
         static_cast<NetMainPlayersList *>(FindComponent(kListComponent, false))
-            ->SetRank(pMsg->mAccount, pMsg->mRank);
+            ->SetRank(pMsg->GetAccount(), pMsg->GetRank());
     }
     return false;
 }

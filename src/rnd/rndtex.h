@@ -221,11 +221,34 @@ public:
      */
     static int sRev;
 
+    /** @return The file the bitmap loads from. */
+    const FilePath &GetFile() const {
+        return mFile;
+    }
+
+    /** @return Height in pixels. */
+    int GetHeight() const {
+        return mHeight;
+    }
+
+    /** @return The mipmap distance factor. */
+    int GetMipMapK() const {
+        return mMipMapK;
+    }
+
+    /** @return Width in pixels. */
+    int GetWidth() const {
+        return mWidth;
+    }
+
+protected:
     RndBitmap mBitmap; /*!< The bitmap. */
+    int mBpp;          /*!< Bits per pixel. */
+    int mHeight;       /*!< Height in pixels. */
     int mMipMapK;      /*!< The mipmap distance factor. */
     int mRendered;     /*!< Non-zero for a texture rendered to. */
     int mWidth;        /*!< Width in pixels. */
-    int mHeight;       /*!< Height in pixels. */
-    int mBpp;          /*!< Bits per pixel. */
-    FilePath mFile;    /*!< The file the bitmap loads from. */
+
+private:
+    FilePath mFile; /*!< The file the bitmap loads from. */
 };

@@ -21,9 +21,6 @@ public:
     AllocateBufferTask(char **ppBuffer, int *pnSize) : mBuffer(ppBuffer), mSize(pnSize) {
     }
 
-    char **mBuffer; /*!< Receives the buffer. */
-    int *mSize;     /*!< The size of the buffer in bytes. */
-
 protected:
     /**
      * Allocate the buffer from the `FileDownload` pool and finish.
@@ -32,4 +29,8 @@ protected:
      * @ghidraAddress PAL: 0x002703d8
      */
     void OnStart() override;
+
+private:
+    char **mBuffer; /*!< Receives the buffer. */
+    int *mSize;     /*!< The size of the buffer in bytes. */
 };

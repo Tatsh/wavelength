@@ -38,6 +38,7 @@ public:
      */
     void Read(BinStream &stream);
 
+private:
     char *mStrings;      /*!< The string block. */
     char *mStringsEnd;   /*!< The end of the string block. */
     char *mStringsLimit; /*!< The end of the allocation of the string block. */

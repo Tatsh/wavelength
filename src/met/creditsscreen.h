@@ -113,6 +113,7 @@ public:
      */
     void ShowPage();
 
+private:
     const char *mTextTag;       /*!< Token of the text and prefix of the text objects. */
     const char *mCursor;        /*!< The next line of the text. */
     const char *mEnd;           /*!< The byte after the terminator of the text. */

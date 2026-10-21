@@ -190,15 +190,43 @@ public:
      */
     virtual bool SupportsTextures();
 
+    /** @return Colour the frame is cleared to. */
+    const Color &GetClearColor() const {
+        return mClearColor;
+    }
+
+    /** @return Frames opened by BeginFrame(). */
+    int GetFrameCount() const {
+        return mFrameCount;
+    }
+
+    /** @return Display height in pixels. */
+    int GetScreenHeight() const {
+        return mScreenHeight;
+    }
+
+    /** @return Display width in pixels. */
+    int GetScreenWidth() const {
+        return mScreenWidth;
+    }
+
+    /** @return Time the timer overlay's scale spans, in milliseconds. */
+    int GetTimerMaxMs() const {
+        return mTimerMaxMs;
+    }
+
+protected:
     Color mClearColor; /*!< Colour the frame is cleared to. */
-    int mScreenWidth;  /*!< Display width in pixels. */
-    int mScreenHeight; /*!< Display height in pixels. */
-    int mScreenBpp;    /*!< Display depth in bits per pixel. */
-    int mTimerMaxMs;   /*!< Time the timer overlay's scale spans, in milliseconds. */
     int mFrameCount;   /*!< Frames opened by BeginFrame(). */
-    int mShowTimers;   /*!< Non-zero to show the timer overlay. */
-    int mShowStats;    /*!< Non-zero to show the statistics overlay. */
+    int mScreenBpp;    /*!< Display depth in bits per pixel. */
+    int mScreenHeight; /*!< Display height in pixels. */
+    int mScreenWidth;  /*!< Display width in pixels. */
     int mShowRate;     /*!< Non-zero to show the frame rate overlay. */
+    int mShowStats;    /*!< Non-zero to show the statistics overlay. */
+    int mShowTimers;   /*!< Non-zero to show the timer overlay. */
+
+private:
+    int mTimerMaxMs; /*!< Time the timer overlay's scale spans, in milliseconds. */
 };
 
 /**

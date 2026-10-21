@@ -126,6 +126,47 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return Whether the effect is switched on. */
+    int GetOn() const {
+        return mOn;
+    }
+
+    /** @param nOn Whether the effect is switched on. */
+    void SetOn(int nOn) {
+        mOn = nOn;
+    }
+
+    /** @return The section. */
+    int GetSection() const {
+        return mSection;
+    }
+
+    /** @param nSection The section. */
+    void SetSection(int nSection) {
+        mSection = nSection;
+    }
+
+    /** @return The track. */
+    int GetTrack() const {
+        return mTrack;
+    }
+
+    /** @param nTrack The track. */
+    void SetTrack(int nTrack) {
+        mTrack = nTrack;
+    }
+
+    /** @return The effect. */
+    int GetType() const {
+        return mType;
+    }
+
+    /** @param nType The effect. */
+    void SetType(int nType) {
+        mType = nType;
+    }
+
+private:
     int mSection; /*!< The section. */
     int mTrack;   /*!< The track. */
     int mType;    /*!< The effect. */

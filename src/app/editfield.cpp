@@ -30,7 +30,7 @@ EditField::EditField(int nMaxLength) : mCapacity(nMaxLength + kTailLength), mCur
 EditField::~EditField() = default;
 
 int EditField::HandleKey(KeyboardKeyMsg *pMsg) {
-    const int nKey = pMsg->mKey;
+    const int nKey = pMsg->GetKey();
     if (static_cast<unsigned>(nKey - kFirstPrintable) < kPrintableCount) {
         if (mText.size() >= static_cast<unsigned>(mCapacity)) {
             return kKeyIgnored;

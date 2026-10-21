@@ -125,6 +125,7 @@ public:
      */
     void OnTimeSignature(int nTick, int nNumerator, int nDenominator) override;
 
+private:
     int mNumBars;                       /*!< The length of the song in bars. */
     int mTicksPerBeat;                  /*!< The song ticks in one beat. */
     const float *mMsPerTick;            /*!< The length of a tick that the song text gives. */

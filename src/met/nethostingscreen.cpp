@@ -90,13 +90,13 @@ void AddLabel(std::vector<String> &labels, const char *pszFormat, const char *ps
 
 NetHostingScreen::NetHostingScreen(DataArray *pData) : NetParamsScreen(pData) {
     mNumPlayers = 0;
-    mSavedParams.mPracticeMode = 0;
-    mSavedParams.mTutorial = 0;
-    mSavedParams.mSkillLevel = 0;
-    mSavedParams.mPowerupLevel = 1;
-    mSavedParams.mRuleSet = GameDb::kRuleSetGame;
-    mSavedParams.mCommunity = GameDb::kCommunitySolo;
-    mSavedParams.mMaxPlayers = kMaxPlayers;
+    mSavedParams.SetPracticeMode(0);
+    mSavedParams.SetTutorial(0);
+    mSavedParams.SetSkillLevel(0);
+    mSavedParams.SetPowerupLevel(1);
+    mSavedParams.SetRuleSet(GameDb::kRuleSetGame);
+    mSavedParams.SetCommunity(GameDb::kCommunitySolo);
+    mSavedParams.SetMaxPlayers(kMaxPlayers);
     pData->FindBool(kIsEditTag, &mIsEdit, false);
 }
 
@@ -105,17 +105,17 @@ void NetHostingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     const char *pszModeFormat = TheLocale.Localize(kModeFormatToken, true);
     AddLabel(mModes, pszModeFormat, kGameToken);
     if (mIsEdit != 0 && std::strcmp(pPrevScreen->GetName(), kLaunchpadScreen) == 0) {
-        mSavedParams.mSong = TheGameDb->GetSong();
-        mSavedParams.mLoadRemix = TheGameDb->GetLoadRemix();
-        mSavedParams.mRemixReadOnly = TheGameDb->GetRemixReadOnly();
-        mSavedParams.mRemixName = TheGameDb->GetRemixName();
-        mSavedParams.mPracticeMode = TheGameDb->GetPracticeMode();
-        mSavedParams.mTutorial = TheGameDb->GetTutorial();
-        mSavedParams.mSkillLevel = TheGameDb->GetSkillLevel();
-        mSavedParams.mPowerupLevel = TheGameDb->GetPowerupLevel();
-        mSavedParams.mRuleSet = TheGameDb->GetRuleSet();
-        mSavedParams.mCommunity = TheGameDb->GetCommunity();
-        mSavedParams.mMaxPlayers = TheGameDb->GetMaxPlayers();
+        mSavedParams.SetSong(TheGameDb->GetSong().c_str());
+        mSavedParams.SetLoadRemix(TheGameDb->GetLoadRemix());
+        mSavedParams.SetRemixReadOnly(TheGameDb->GetRemixReadOnly());
+        mSavedParams.SetRemixName(TheGameDb->GetRemixName().c_str());
+        mSavedParams.SetPracticeMode(TheGameDb->GetPracticeMode());
+        mSavedParams.SetTutorial(TheGameDb->GetTutorial());
+        mSavedParams.SetSkillLevel(TheGameDb->GetSkillLevel());
+        mSavedParams.SetPowerupLevel(TheGameDb->GetPowerupLevel());
+        mSavedParams.SetRuleSet(TheGameDb->GetRuleSet());
+        mSavedParams.SetCommunity(TheGameDb->GetCommunity());
+        mSavedParams.SetMaxPlayers(TheGameDb->GetMaxPlayers());
     }
     if (mIsEdit != 0 && TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel &&
         TheGameDb->GetMaxPlayers() > kMinPlayers) {
@@ -207,8 +207,8 @@ void NetHostingScreen::OnChoiceChanged(int bReset) {
     auto *pList =
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
     String selected;
-    if (!pList->mSongs.empty()) {
-        selected = pList->mSongs[pList->GetSelected()].c_str();
+    if (!pList->GetSongs().empty()) {
+        selected = pList->GetSongs()[pList->GetSelected()].c_str();
     }
 
     std::vector<String> choices;
@@ -330,9 +330,9 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     }
     TheGameDb->SetLoadRemix(false);
     if (nSong == kRandomChoice) {
-        nSong = RandomInt(mChoiceCount, static_cast<int>(pList->mSongs.size()));
+        nSong = RandomInt(mChoiceCount, static_cast<int>(pList->GetSongs().size()));
     }
-    TheGameDb->SetSong(pList->mSongs[nSong].c_str());
+    TheGameDb->SetSong(pList->GetSongs()[nSong].c_str());
 
     if (mMode == mRemixMode) {
         RemixInfo info;
@@ -344,7 +344,7 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         }
         info.mDate.ReadClock();
         info.mReadOnly = 0;
-        std::strcpy(info.mSong, pList->mSongs[nSong].c_str());
+        std::strcpy(info.mSong, pList->GetSongs()[nSong].c_str());
         TheGameDb->SetRemix(&info);
         TheGameDb->SetRemixReadOnly(0);
     }
@@ -380,11 +380,11 @@ bool NetHostingScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool NetHostingScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mButton == kPadTriangle && mIsEdit != 0) {
+        if (pMsg->GetButton() == kPadTriangle && mIsEdit != 0) {
             TheGameDb->SetGameParams(&mSavedParams);
         }
     }

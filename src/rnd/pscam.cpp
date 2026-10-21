@@ -103,9 +103,9 @@ inline void TransformPlane(Plane &plane, const Transform &xfm) {
 
 inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
-    packet.mCursor->mDword[kLowDword] = qwLow;
-    packet.mCursor->mDword[kHighDword] = qwHigh;
-    ++packet.mCursor;
+    packet.GetCursor()->mDword[kLowDword] = qwLow;
+    packet.GetCursor()->mDword[kHighDword] = qwHigh;
+    ++packet.GetCursor();
 }
 
 inline unsigned long long PackXy(int nX, int nY) {
@@ -130,7 +130,7 @@ PsCam::~PsCam() {
 }
 
 int PsCam::DrawShowing() {
-    const bool bPreviousTarget = sCurrent != nullptr && sCurrent->mTargetTex != nullptr;
+    const bool bPreviousTarget = sCurrent != nullptr && sCurrent->GetTargetTex() != nullptr;
     if (bPreviousTarget) {
         DmaPacket::shared().OpenGifTag(kGifFlgPacked, kGifAdRegs, kGifRegAd, 0);
         PushQuadword(0, kGsRegTexFlush);
@@ -140,14 +140,14 @@ int PsCam::DrawShowing() {
     int nTargetHeight;
     if (mTargetTex != nullptr) {
         static_cast<PsTex *>(mTargetTex)->BindAsRenderTarget();
-        nTargetHeight = mTargetTex->mHeight;
-        nTargetWidth = mTargetTex->mWidth;
+        nTargetHeight = mTargetTex->GetHeight();
+        nTargetWidth = mTargetTex->GetWidth();
     } else {
         if (bPreviousTarget) {
             ThePs.RestoreFrameBufferTarget();
         }
-        nTargetHeight = ThePs.mScreenHeight;
-        nTargetWidth = ThePs.mScreenWidth;
+        nTargetHeight = ThePs.GetScreenHeight();
+        nTargetWidth = ThePs.GetScreenWidth();
     }
     const float fWidth = static_cast<float>(nTargetWidth);
     const float fHeight = static_cast<float>(nTargetHeight);
@@ -193,7 +193,7 @@ int PsCam::DrawShowing() {
     viewport.mTranslation.z = 0.0f;
     viewport.mTranslation.w = 1.0f;
 
-    const int nMaxDepth = (1 << (ThePs.mDepthBytes * kBitsPerByte)) - 1;
+    const int nMaxDepth = (1 << (ThePs.GetDepthBytes() * kBitsPerByte)) - 1;
     const float fHalfDepth = static_cast<float>(nMaxDepth) * kHalf;
     viewport.mBasisX.x = fWidth * mScreenRect.w * kHalf;
     viewport.mBasisY.y = fHeight * mScreenRect.h * kHalf;

@@ -151,6 +151,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     UIComponent *mFocusArena; /*!< The arena button that last had the focus, or null. */
     String mPendingScreen;    /*!< The screen to change to once the change is pending. */
     int mChangePending;       /*!< Non-zero while the screen waits to change to mPendingScreen. */

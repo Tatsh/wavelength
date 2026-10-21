@@ -90,6 +90,7 @@ public:
      */
     bool HandleSelectStart(UIComponentSelectStartMsg *pMsg);
 
+private:
     int mLevel;                  /*!< The power-up level shown, an index into mLabels. */
     std::vector<String> mLabels; /*!< The label of each power-up level. */
 };

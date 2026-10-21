@@ -274,6 +274,7 @@ public:
      */
     bool HandleInvalid(UITextEntryInvalidMsg *pMsg);
 
+private:
     KeyboardRequest mRequest;    /*!< The request of the screen that opened the keyboard. +0xe0 */
     int mShiftMode;              /*!< One of ShiftMode. +0x118 */
     int mReplaceText;            /*!< Non-zero while the next character replaces the text. */

@@ -12,7 +12,7 @@ bool XProceedScreen::DispatchPriv(Message *pMsg) {
 
 bool XProceedScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     const bool bHandled = FreqScreen::HandleJoypad(pMsg);
-    if (!bHandled && pMsg->mButton == kPadCross && pMsg->mPressed != 0) {
+    if (!bHandled && pMsg->GetButton() == kPadCross && pMsg->GetPressed() != 0) {
         FxMidi::PlayMenuSelect();
     }
     return bHandled;

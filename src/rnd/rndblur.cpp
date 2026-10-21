@@ -17,7 +17,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -63,7 +63,7 @@ void RndBlur::Copy(const RndObject *pSource, int nFlags) {
 void RndBlur::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndDrawable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndBlur]\n";
@@ -76,12 +76,12 @@ void RndBlur::Save(BinStream &stream) {
     stream.WriteEndian(&sRev, sizeof(sRev));
     RndDrawable::Save(stream);
     const RndObject *pMesh = mMesh;
-    stream.WriteString(pMesh != nullptr ? pMesh->mName.c_str() : "");
+    stream.WriteString(pMesh != nullptr ? pMesh->GetName() : "");
     stream.WriteEndian(&mLength, sizeof(mLength));
     stream.WriteEndian(&mRate, sizeof(mRate));
     stream.WriteEndian(&mFalloff, sizeof(mFalloff));
     const RndObject *pText = mText;
-    stream.WriteString(pText != nullptr ? pText->mName.c_str() : "");
+    stream.WriteString(pText != nullptr ? pText->GetName() : "");
 }
 
 void RndBlur::Load(BinStream &stream) {
@@ -173,12 +173,12 @@ void RndBlur::ListDrawables(std::list<RndDrawable *> &drawables) {
         } else {
             pSubject = mMesh;
         }
-        const Transform savedLocal = pTrans->mLocalXfm;
-        const Transform savedWorld = pTrans->mWorldXfm;
+        const Transform savedLocal = pTrans->GetLocalXfm();
+        const Transform savedWorld = pTrans->GetWorldXfm();
         pSubject->ListDrawables(subjectDrawables);
         for (const Transform &xfm : mXfms) {
-            pTrans->mLocalXfm = xfm;
-            pTrans->mDirty = 1;
+            pTrans->GetLocalXfm() = xfm;
+            pTrans->SetDirty(1);
             pTrans->UpdateWorldXfm(nullptr, 0);
             pSubject->ListDrawables(subjectDrawables);
             if (!subjectDrawables.empty()) {
@@ -188,11 +188,11 @@ void RndBlur::ListDrawables(std::list<RndDrawable *> &drawables) {
         }
         // Yes, the binary rebuilds the world transform from the saved world transform as a local
         // one before it puts the saved local transform back.
-        pTrans->mLocalXfm = savedWorld;
-        pTrans->mDirty = 1;
+        pTrans->GetLocalXfm() = savedWorld;
+        pTrans->SetDirty(1);
         pTrans->UpdateWorldXfm(nullptr, 0);
-        pTrans->mLocalXfm = savedLocal;
-        pTrans->mDirty = 1;
+        pTrans->GetLocalXfm() = savedLocal;
+        pTrans->SetDirty(1);
     }
     RndDrawable::ListDrawables(drawables);
 }
@@ -212,17 +212,17 @@ int RndBlur::DrawShowing() {
 
     RndMat *pMat = nullptr;
     if (mText != nullptr) {
-        RndFont *pFont = mText->mFont;
+        RndFont *pFont = mText->GetFont();
         if (pFont == nullptr) {
             return 1;
         }
-        pMat = pFont->mMat;
+        pMat = pFont->GetMat();
         if (pMat == nullptr) {
             return 1;
         }
     }
     if (mMesh != nullptr) {
-        pMat = mMesh->mMat;
+        pMat = mMesh->GetMat();
         if (pMat == nullptr) {
             return 1;
         }
@@ -241,28 +241,28 @@ int RndBlur::DrawShowing() {
     } else {
         pSubject = mMesh;
     }
-    const Transform savedLocal = pTrans->mLocalXfm;
-    const Transform savedWorld = pTrans->mWorldXfm;
+    const Transform savedLocal = pTrans->GetLocalXfm();
+    const Transform savedWorld = pTrans->GetWorldXfm();
 
-    const float fAlpha = pMat->mBaseColor.a;
+    const float fAlpha = pMat->GetBaseColor().a;
     const float fStart = fAlpha * mFalloff;
     float fStep = fStart / static_cast<float>(mLength * mRate);
     float fStepAlpha = fStart - fStep * static_cast<float>(mRate - mCountdown);
     fStep = fStep * static_cast<float>(mRate);
 
     // The zeros are never stored. The mesh depth state is read and restored only without a text.
-    const int nZMode = mText == nullptr ? mMesh->mZMode : 0;
-    const int nZFunc = mText == nullptr ? mMesh->mZFunc : 0;
+    const int nZMode = mText == nullptr ? mMesh->GetZMode() : 0;
+    const int nZFunc = mText == nullptr ? mMesh->GetZFunc() : 0;
     if (mText == nullptr && nZMode != RndMesh::kZModeDisable) {
-        mMesh->mZMode = RndMesh::kZModeZReadOnly;
+        mMesh->SetZMode(RndMesh::kZModeZReadOnly);
     }
 
     const Transform *pPrevious = &savedWorld;
     for (const Transform &xfm : mXfms) {
         if (!SameXfm(xfm, *pPrevious)) {
             pMat->SetAlpha(fStepAlpha);
-            pTrans->mLocalXfm = xfm;
-            pTrans->mDirty = 1;
+            pTrans->GetLocalXfm() = xfm;
+            pTrans->SetDirty(1);
             pTrans->UpdateWorldXfm(nullptr, 0);
             pSubject->Draw();
         }
@@ -272,15 +272,15 @@ int RndBlur::DrawShowing() {
 
     // Yes, the binary rebuilds the world transform from the saved world transform as a local one
     // before it puts the saved local transform back.
-    pTrans->mLocalXfm = savedWorld;
-    pTrans->mDirty = 1;
+    pTrans->GetLocalXfm() = savedWorld;
+    pTrans->SetDirty(1);
     pTrans->UpdateWorldXfm(nullptr, 0);
-    pTrans->mLocalXfm = savedLocal;
-    pTrans->mDirty = 1;
+    pTrans->GetLocalXfm() = savedLocal;
+    pTrans->SetDirty(1);
     pMat->SetAlpha(fAlpha);
     if (mText == nullptr) {
-        mMesh->mZFunc = nZFunc;
-        mMesh->mZMode = nZMode;
+        mMesh->SetZFunc(nZFunc);
+        mMesh->SetZMode(nZMode);
     }
 
     if (mCountdown == 0) {

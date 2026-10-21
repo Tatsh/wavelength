@@ -29,6 +29,127 @@ public:
           mCommunity(kDefaultSelection), mMaxPlayers(kDefaultMaxPlayers) {
     }
 
+    /** @return The community of the game. */
+    int GetCommunity() const {
+        return mCommunity;
+    }
+
+    /** @param nCommunity The community of the game. */
+    void SetCommunity(int nCommunity) {
+        mCommunity = nCommunity;
+    }
+
+    /** @return Whether a saved remix is played. */
+    int GetLoadRemix() const {
+        return mLoadRemix;
+    }
+
+    /** @param nLoadRemix Whether a saved remix is played. */
+    void SetLoadRemix(int nLoadRemix) {
+        mLoadRemix = nLoadRemix;
+    }
+
+    /** @return The number of players the session takes. */
+    int GetMaxPlayers() const {
+        return mMaxPlayers;
+    }
+
+    /** @param nMaxPlayers The number of players the session takes. */
+    void SetMaxPlayers(int nMaxPlayers) {
+        mMaxPlayers = nMaxPlayers;
+    }
+
+    /** @return The power-up level. */
+    int GetPowerupLevel() const {
+        return mPowerupLevel;
+    }
+
+    /** @param nPowerupLevel The power-up level. */
+    void SetPowerupLevel(int nPowerupLevel) {
+        mPowerupLevel = nPowerupLevel;
+    }
+
+    /** @return The practice mode. */
+    int GetPracticeMode() const {
+        return mPracticeMode;
+    }
+
+    /** @param nPracticeMode The practice mode. */
+    void SetPracticeMode(int nPracticeMode) {
+        mPracticeMode = nPracticeMode;
+    }
+
+    /** @return The name of the remix the game plays. */
+    const String &GetRemixName() const {
+        return mRemixName;
+    }
+
+    /** @return The name of the remix the game plays, for filling. */
+    String &GetRemixName() {
+        return mRemixName;
+    }
+
+    /** @param remixName The name of the remix the game plays. */
+    void SetRemixName(const char *pszRemixName) {
+        mRemixName = pszRemixName;
+    }
+
+    /** @return Whether the remix of the game cannot be changed. */
+    int GetRemixReadOnly() const {
+        return mRemixReadOnly;
+    }
+
+    /** @param nRemixReadOnly Whether the remix of the game cannot be changed. */
+    void SetRemixReadOnly(int nRemixReadOnly) {
+        mRemixReadOnly = nRemixReadOnly;
+    }
+
+    /** @return The game mode. */
+    int GetRuleSet() const {
+        return mRuleSet;
+    }
+
+    /** @param nRuleSet The game mode. */
+    void SetRuleSet(int nRuleSet) {
+        mRuleSet = nRuleSet;
+    }
+
+    /** @return The skill level. */
+    int GetSkillLevel() const {
+        return mSkillLevel;
+    }
+
+    /** @param nSkillLevel The skill level. */
+    void SetSkillLevel(int nSkillLevel) {
+        mSkillLevel = nSkillLevel;
+    }
+
+    /** @return The song of the game. */
+    const String &GetSong() const {
+        return mSong;
+    }
+
+    /** @return The song of the game, for filling. */
+    String &GetSong() {
+        return mSong;
+    }
+
+    /** @param song The song of the game. */
+    void SetSong(const char *pszSong) {
+        mSong = pszSong;
+    }
+
+    /** @return Whether the tutorial is played. */
+    int GetTutorial() const {
+        return mTutorial;
+    }
+
+    /** @param nTutorial Whether the tutorial is played. */
+    void SetTutorial(int nTutorial) {
+        mTutorial = nTutorial;
+    }
+
+private:
     String mSong;       /*!< The song of the game. */
     int mLoadRemix;     /*!< Whether a saved remix is played. */
     int mRemixReadOnly; /*!< Whether the remix of the game cannot be changed. */

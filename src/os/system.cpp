@@ -339,9 +339,10 @@ void SystemInit(int argc, char **argv, const char *pszConfigFile) {
     Archive::Init();
     DateTime now{};
     now.ReadClock();
-    SeedRand(now.mSecond + (now.mMinute * kSecondsPerMinute) + (now.mHour * kSecondsPerHour));
+    SeedRand(now.GetSecond() + (now.GetMinute() * kSecondsPerMinute) +
+             (now.GetHour() * kSecondsPerHour));
     FileOpenTraceLog(gFileOrder.c_str());
-    if (gFileOrder.mLength != 0) {
+    if (gFileOrder.GetLength() != 0) {
         DataSetCompiled();
     }
     LoadConfigFile(".", pszConfigFile);

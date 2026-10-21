@@ -92,6 +92,23 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The chatroom the player is in, with an identifier of -1 when the player is offline.
+     */
+    const NetChatroomInfo &GetChatroom() const {
+        return mChatroom;
+    }
+
+    /** @return The player. */
+    const LobbyPlayer &GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return 0 when the player was found, otherwise a negative error. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;               /*!< 0 when the player was found, otherwise a negative error. */
     LobbyPlayer mPlayer;       /*!< The player. */
     NetChatroomInfo mChatroom; /*!< The chatroom the player is in, with an identifier of -1 when the

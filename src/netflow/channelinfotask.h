@@ -39,8 +39,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusChannelInfoResponse *pResponse);
 
-    NetChatroomInfo *mChatroom; /*!< The room. */
-
 protected:
     /**
      * Send the request, or clear the room and finish when it has no identifier.
@@ -49,4 +47,7 @@ protected:
      * @ghidraAddress PAL: 0x0026db18
      */
     void OnStart() override;
+
+private:
+    NetChatroomInfo *mChatroom; /*!< The room. */
 };

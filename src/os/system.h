@@ -147,7 +147,7 @@ extern unsigned long long gSystemCycles;
  */
 inline float SystemMs() {
     gSystemTimer.Split();
-    gSystemCycles += gSystemTimer.mCycles;
+    gSystemCycles += gSystemTimer.GetCycles();
     // Yes, the binary converts the cycle count as a signed value.
     return static_cast<float>(static_cast<long long>(gSystemCycles)) * gSystemCycles2Ms;
 }
@@ -162,6 +162,6 @@ inline float SystemMs() {
  */
 inline unsigned long long SystemCycles() {
     gSystemTimer.Split();
-    gSystemCycles += gSystemTimer.mCycles;
+    gSystemCycles += gSystemTimer.GetCycles();
     return gSystemCycles;
 }

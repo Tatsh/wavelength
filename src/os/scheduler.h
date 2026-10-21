@@ -29,6 +29,20 @@ public:
     class CommandInfo {
     public:
         /**
+         * Construct a run.
+         *
+         * @param command The command.
+         * @param fTime The time it runs at, in milliseconds.
+         * @param nTick The tick it runs at.
+         * @param id The tag stored with the run.
+         * @param nRecordable Non-zero when a recording writes the run.
+         */
+        CommandInfo(
+            Ptr<Command> command, float fTime, int nTick, const CommandId &id, int nRecordable)
+            : mCommand(command), mTime(fTime), mTick(nTick), mId(id), mRecordable(nRecordable) {
+        }
+
+        /**
          * Report whether this run comes before another.
          *
          * @param other The other run.
@@ -56,6 +70,32 @@ public:
          */
         void Load(BinStream &stream);
 
+        /** @return The command. */
+        const Ptr<Command> &GetCommand() const {
+            return mCommand;
+        }
+
+        /** @return The time it runs at, in milliseconds. */
+        float GetTime() const {
+            return mTime;
+        }
+
+        /** @return The tick it runs at. */
+        int GetTick() const {
+            return mTick;
+        }
+
+        /** @return The tag stored with the run. */
+        CommandId GetId() const {
+            return mId;
+        }
+
+        /** @return Non-zero when a recording writes the run. */
+        int GetRecordable() const {
+            return mRecordable;
+        }
+
+    private:
         Ptr<Command> mCommand; /*!< The command. */
         float mTime;           /*!< The time it runs at, in milliseconds. */
         int mTick;             /*!< The tick it runs at. */

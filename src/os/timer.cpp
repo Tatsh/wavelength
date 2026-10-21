@@ -47,7 +47,7 @@ void TimerLoadNames() {
     const DataArray *pConfig = SystemConfig()->FindArray("timer", true);
     Timer::sTimers.resize(pConfig->Size() - 1, Timer());
     for (int i = 1; i < pConfig->Size(); ++i) {
-        Timer::sTimers[i - 1].mName = pConfig->Sym(i);
+        Timer::sTimers[i - 1].SetName(pConfig->Sym(i));
     }
 }
 

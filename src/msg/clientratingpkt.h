@@ -125,6 +125,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The number of online games played. */
+    int GetGames() const {
+        return mGames;
+    }
+
+    /** @return The position in the ranking. */
+    int GetRank() const {
+        return mRank;
+    }
+
+    /** @return The rating, as LobbyPlayer::mRating. */
+    int GetRating() const {
+        return mRating;
+    }
+
+    /** @return The results the next rating weighs. */
+    const RatingRecord &GetRecord() const {
+        return mRecord;
+    }
+
+private:
     int mRating;          /*!< The rating, as LobbyPlayer::mRating. */
     int mRank;            /*!< The position in the ranking. */
     int mGames;           /*!< The number of online games played. */

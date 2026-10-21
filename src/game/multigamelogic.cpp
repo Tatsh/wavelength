@@ -212,7 +212,7 @@ float MultiGameLogic::GetTime() {
 void MultiGameLogic::HandleInput(const RotateEvent &event) {
     GameLogic::HandleInput(event);
     if (mArbiter != nullptr) {
-        const int nPlayer = event.mPlayer;
+        const int nPlayer = event.GetPlayer();
         mArbiter->RequestTrack(nPlayer, mTrackSelector->GetPlayerTrack(nPlayer));
     }
 }
@@ -264,7 +264,8 @@ void MultiGameLogic::OnPhraseCaptured(CatchTrack *pTrack,
                                       bool bAutocatch) {
     UpdateLeader();
     if (IsOnline() && TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
-        CapturePacket packet(pTrack->mIndex, TheSongScheduler.GetTick() / mTicksPerBar, bAutocatch);
+        CapturePacket packet(
+            pTrack->GetIndex(), TheSongScheduler.GetTick() / mTicksPerBar, bAutocatch);
         TheNetTransport->Send(packet);
     }
 }
@@ -383,14 +384,14 @@ bool MultiGameLogic::DeploySlowdown(Player *pPlayer) {
 
 bool MultiGameLogic::DeployFreestyle(Player *pPlayer) {
     if (!IsOnline()) {
-        Player *pFreestyler = mFreestyleTrack->mPlayer;
+        Player *pFreestyler = mFreestyleTrack->GetPlayer();
         if (pFreestyler != nullptr) {
             LeaveFreestyle(pFreestyler, RandomInt(0, static_cast<int>(mCatchTracks.size())));
         }
     }
     (void)GameLogic::DeployFreestyle(pPlayer); // Yes, the binary discards this call's result.
     if (mArbiter != nullptr) {
-        mArbiter->RequestTrack(pPlayer->GetIndex(), mFreestyleTrack->mIndex);
+        mArbiter->RequestTrack(pPlayer->GetIndex(), mFreestyleTrack->GetIndex());
     }
     return true;
 }
@@ -399,7 +400,7 @@ void MultiGameLogic::EndFreestyle(Player *pPlayer) {
     (void)TheGameDb->IsLocalPlayer(pPlayer->GetIndex()); // Yes, the binary discards the result.
     GameLogic::EndFreestyle(pPlayer);
     if (mArbiter != nullptr) {
-        mArbiter->RequestTrack(pPlayer->GetIndex(), pPlayer->GetTrack()->mIndex);
+        mArbiter->RequestTrack(pPlayer->GetIndex(), pPlayer->GetTrack()->GetIndex());
     }
 }
 
@@ -422,10 +423,10 @@ bool MultiGameLogic::DeployBumper(Player *pPlayer) {
         }
 
         int nNewTrack = RandomInt(0, static_cast<int>(mCatchTracks.size()) - 1);
-        if (nNewTrack >= pTrack->mIndex) {
+        if (nNewTrack >= pTrack->GetIndex()) {
             ++nNewTrack;
         }
-        packet.mVictims.push_back(
+        packet.GetVictims().push_back(
             BumperPacket::VictimData{TheGameDb->GetPlayerNetOrder(nVictim), nNewTrack});
 
         TheGfxManager.ShowBump(nAttacker, nVictim, nNewTrack);
@@ -513,18 +514,18 @@ void MultiGameLogic::OnPlayerUpdate(PlayerUpdatePacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    const unsigned nVersion = pPacket->mVersion;
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
+    const unsigned nVersion = pPacket->GetVersion();
     if (nVersion < mVersions[nPlayer]) {
         return;
     }
     mVersions[nPlayer] = nVersion;
 
     Player *pPlayer = mPlayers[nPlayer].get();
-    pPlayer->SetScore(pPacket->mPoints);
-    const int nTrack = pPacket->mTrack;
+    pPlayer->SetScore(pPacket->GetPoints());
+    const int nTrack = pPacket->GetTrack();
     if (mTrackSelector->GetPlayerTrack(nPlayer) != nTrack) {
-        if (nTrack == mFreestyleTrack->mIndex) {
+        if (nTrack == mFreestyleTrack->GetIndex()) {
             mTrackSelector->EnterFreestyle(nPlayer, false);
         } else {
             mTrackSelector->MovePlayer(nPlayer, nTrack);
@@ -533,21 +534,21 @@ void MultiGameLogic::OnPlayerUpdate(PlayerUpdatePacket *pPacket) {
             mArbiter->UpdatePlayer(nPlayer, nTrack, static_cast<int>(nVersion));
         }
     }
-    pPlayer->SetCatching(pPacket->mCatching);
+    pPlayer->SetCatching(pPacket->GetCatching());
 }
 
 void MultiGameLogic::OnArbiter(ArbiterPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const unsigned nVersion = pPacket->mVersion;
+    const unsigned nVersion = pPacket->GetVersion();
     if (nVersion < mArbiterVersion) {
         return;
     }
     mArbiterVersion = nVersion;
     mVersions[mLocalPlayer->GetIndex()] = LocalPlayer::sPlayerUpdateVersion;
 
-    for (const ArbiterPacket::PlayerData &data : pPacket->mPlayers) {
+    for (const ArbiterPacket::PlayerData &data : pPacket->GetPlayers()) {
         const int nPlayer = GetPlayerFromNetOrder(data.mNetOrder);
         if (mPlayers[nPlayer]->IsAborted()) {
             continue;
@@ -571,14 +572,14 @@ void MultiGameLogic::OnCapture(CapturePacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    CatchTrack *pTrack = mCatchTracks[pPacket->mTrack].get();
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
+    CatchTrack *pTrack = mCatchTracks[pPacket->GetTrack()].get();
     Player *pPlayer = mPlayers[nPlayer].get();
-    if (pPacket->mAutocatch == 0) {
-        pTrack->Capture(pPacket->mBar, pPlayer);
+    if (pPacket->GetAutocatch() == 0) {
+        pTrack->Capture(pPacket->GetBar(), pPlayer);
         return;
     }
-    pTrack->Autocatch(pPacket->mBar, pPlayer);
+    pTrack->Autocatch(pPacket->GetBar(), pPlayer);
     FxMidi::PlayPowerupSound(kPowerupAutocatcher);
     if (mLocalPlayer->GetTrack() == pTrack) {
         TheForceFeedbackMgr->PlayAutocatchEffect(TheGameDb->GetPlayerPad(mLocalPlayer->GetIndex()));
@@ -589,9 +590,9 @@ void MultiGameLogic::OnBumper(BumperPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const int nAttacker = GetPlayerFromNetOrder(pPacket->mSender);
+    const int nAttacker = GetPlayerFromNetOrder(pPacket->GetSender());
     FxMidi::PlayPowerupSound(kPowerupBumper);
-    for (const BumperPacket::VictimData &victim : pPacket->mVictims) {
+    for (const BumperPacket::VictimData &victim : pPacket->GetVictims()) {
         const int nVictim = GetPlayerFromNetOrder(victim.mNetOrder);
         if (mPlayers[nVictim]->IsAborted()) {
             continue;
@@ -613,8 +614,8 @@ void MultiGameLogic::OnCrippler(CripplerPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const int nAttacker = GetPlayerFromNetOrder(pPacket->mSender);
-    const int nVictim = GetPlayerFromNetOrder(pPacket->mVictim);
+    const int nAttacker = GetPlayerFromNetOrder(pPacket->GetSender());
+    const int nVictim = GetPlayerFromNetOrder(pPacket->GetVictim());
     if (mPlayers[nVictim]->IsAborted()) {
         return;
     }
@@ -630,7 +631,7 @@ void MultiGameLogic::OnSlowdown(SlowdownPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
     DeploySlowdown(mPlayers[nPlayer].get());
     FxMidi::PlayPowerupSound(kPowerupSlowdown);
 }
@@ -639,7 +640,7 @@ void MultiGameLogic::OnMultiplier(MultiplierPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->mSender)].get();
+    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->GetSender())].get();
     if (pPlayer->IsAborted()) {
         return;
     }
@@ -651,20 +652,21 @@ void MultiGameLogic::OnFreestyle(FreestylePacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
     Player *pPlayer = mPlayers[nPlayer].get();
     if (pPlayer->IsAborted() || pPlayer->GetTrack() != mFreestyleTrack.get()) {
         return;
     }
-    if (pPacket->mActive != mFreestyleTrack->IsActive()) {
+    if (pPacket->GetActive() != mFreestyleTrack->IsActive()) {
         const PlayNoteEvent event(static_cast<unsigned char>(nPlayer),
-                                  static_cast<unsigned char>(pPacket->mButton),
-                                  pPacket->mActive,
-                                  pPacket->mX,
-                                  pPacket->mY);
+                                  static_cast<unsigned char>(pPacket->GetButton()),
+                                  pPacket->GetActive(),
+                                  pPacket->GetX(),
+                                  pPacket->GetY());
         mFreestyleTrack->HandleInput(pPlayer, event);
     } else if (mFreestyleTrack->IsActive()) {
-        const StickEvent<2> event{static_cast<unsigned char>(nPlayer), pPacket->mX, pPacket->mY};
+        const StickEvent<2> event{
+            static_cast<unsigned char>(nPlayer), pPacket->GetX(), pPacket->GetY()};
         mFreestyleTrack->HandleInput(pPlayer, event);
     }
 }
@@ -673,26 +675,26 @@ void MultiGameLogic::OnFreestyleBump(FreestyleBumpPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->mNetOrder)].get();
+    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->GetNetOrder())].get();
     if (pPlayer->GetTrack() != mFreestyleTrack.get() || pPlayer->IsAborted()) {
         return;
     }
-    LeaveFreestyle(pPlayer, pPacket->mTrack);
+    LeaveFreestyle(pPlayer, pPacket->GetTrack());
 }
 
 void MultiGameLogic::OnFinalScore(FinalScorePacket *pPacket) {
     (void)TheNetTransport->IsHost(); // Yes, the binary discards this call's result.
-    const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
+    const int nPlayer = GetPlayerFromNetOrder(pPacket->GetSender());
     mFinished[nPlayer] = true;
-    mPlayers[nPlayer]->SetScore(pPacket->mScore);
-    TheGameDb->SetPlayerScore(nPlayer, pPacket->mScore);
+    mPlayers[nPlayer]->SetScore(pPacket->GetScore());
+    TheGameDb->SetPlayerScore(nPlayer, pPacket->GetScore());
     if (AllPlayersFinished()) {
         SendResults();
     }
 }
 
 void MultiGameLogic::OnGameEnded(GameEndedMsg *pMsg) {
-    for (const NetGameScore &score : pMsg->mScores) {
+    for (const NetGameScore &score : pMsg->GetScores()) {
         for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
             if (TheGameDb->GetPlayerNetOrder(i) == score.mNetOrder) {
                 TheGameDb->SetPlayerScore(i, score.mScore);
@@ -700,7 +702,7 @@ void MultiGameLogic::OnGameEnded(GameEndedMsg *pMsg) {
         }
     }
 
-    switch (pMsg->mResult) {
+    switch (pMsg->GetResult()) {
     case GameEndedMsg::kResultFinished:
         ShowResults();
         break;
@@ -733,7 +735,7 @@ void MultiGameLogic::OnGameEnded(GameEndedMsg *pMsg) {
 }
 
 void MultiGameLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
-    const int nPlayer = GetPlayerFromNetOrder(pMsg->mNetOrder);
+    const int nPlayer = GetPlayerFromNetOrder(pMsg->GetNetOrder());
     Player *pPlayer = mPlayers[nPlayer].get();
     if (pPlayer->IsAborted()) {
         return;

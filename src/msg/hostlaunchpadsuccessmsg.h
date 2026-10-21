@@ -86,6 +86,7 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+private:
     NetGameParams mParams;      /*!< The settings of the game, left at their defaults. */
     NetLaunchpadPlayer mPlayer; /*!< The player of this console in the session. */
 };

@@ -30,6 +30,7 @@ public:
      */
     String ToString() const;
 
+private:
     int mMeasure; /*!< The measure, counted from 1. */
     int mBeat;    /*!< The beat within the measure, counted from 1. */
     int mTick;    /*!< The tick within the beat, counted from 0. */

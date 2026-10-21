@@ -102,19 +102,19 @@ void MetaStartScreen::LaunchAttract() {
     pSong->FindInt("skill_level", &nSkillLevel, true);
     pSong->FindInt("num_players", &nNumPlayers, true);
 
-    if (TheGameDb->GetProfile(0)->mCustom != 0) {
+    if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
         Campaign profile(*TheGameDb->GetProfile(0));
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&profile);
     } else {
         TheGameDb->ClearPlayers();
         Campaign profile;
-        profile.mName = TheLocale.Localize("default_name_1", true);
+        profile.SetName(TheLocale.Localize("default_name_1", true));
         TheGameDb->AddPlayer(&profile);
     }
     for (int i = 1; i < nNumPlayers; ++i) {
         Campaign profile;
-        profile.mName = TheLocale.Localize(FormatString("default_name_%d", i + 1), true);
+        profile.SetName(TheLocale.Localize(FormatString("default_name_%d", i + 1), true));
         TheGameDb->AddPlayer(&profile);
     }
 
@@ -144,11 +144,12 @@ bool MetaStartScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
 }
 
 bool MetaStartScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0) {
+    if (pMsg->GetPressed() != 0) {
         if (mNextScreen != nullptr || mPrevScreen != nullptr) {
             return true;
         }
-        if (pMsg->mPad == kFirstPad && (pMsg->mButton == kPadCross || pMsg->mButton == kPadStart)) {
+        if (pMsg->GetPad() == kFirstPad &&
+            (pMsg->GetButton() == kPadCross || pMsg->GetButton() == kPadStart)) {
             FxMidi::PlayMenuSelect();
         }
     }

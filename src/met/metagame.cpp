@@ -481,7 +481,7 @@ void SoloSongScreen([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void 
     TheGameDb->SetCommunity(GameDb::kCommunitySolo);
     TheGameDb->ClearPlayers();
     Campaign profile;
-    profile.mName = TheLocale.Localize(kDefaultNameToken, true);
+    profile.SetName(TheLocale.Localize(kDefaultNameToken, true));
     TheGameDb->AddPlayer(&profile);
     TheGameDb->UnlockAllSongs();
     TheUI.GotoScreen(kSelectArenaScreen);
@@ -531,7 +531,7 @@ void UnlockAll(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
     FxMidi::PlayCheat();
     if (strcmp(pCommand->Sym(1), kUnlockSongsArg) == 0) {
         TheGameDb->UnlockAllSongs();
-        dynamic_cast<JukeboxScreen *>(TheUI.FindScreen(kJukeboxScreen, false))->mShowAllSongs = 1;
+        dynamic_cast<JukeboxScreen *>(TheUI.FindScreen(kJukeboxScreen, false))->SetShowAllSongs(1);
     } else if (strcmp(pCommand->Sym(1), kUnlockFreqsArg) == 0) {
         Campaign::UnlockAllParts();
     }
@@ -1137,7 +1137,7 @@ void Metagame::PollLoad() {
             }
             TheSynth->Poll();
 #ifdef VIDEO_STANDARD_PAL
-            if (PlayMovieFile(path.c_str(), ThePs.mNtsc, 0)) {
+            if (PlayMovieFile(path.c_str(), ThePs.GetNtsc(), 0)) {
 #else
             if (PlayMovieFile(path.c_str())) {
 #endif
@@ -1175,7 +1175,7 @@ void Metagame::Draw() {
 void Metagame::DrawOverlay() {
     if (mLoadStage < kLoadStageStartFxBanks) {
         RndMat *pMat = dynamic_cast<RndMat *>(TheManager.Find(kLoadingMatName));
-        const float flLevel = std::max(0.0f, pMat->mBaseColor.r - kLoadingFadeStep);
+        const float flLevel = std::max(0.0f, pMat->GetBaseColor().r - kLoadingFadeStep);
         const Color ambient{flLevel, flLevel, flLevel, 1.0f};
         pMat->SetBaseColor(ambient);
         dynamic_cast<RndView *>(TheManager.Find(kLoadingViewName))->Draw();
@@ -1246,7 +1246,7 @@ void Metagame::ExitFrontEnd() {
             } else if (TheGameDb->GetRemixReadOnly()) {
                 mNextScreen = kNetEndSaveReadOnlyScreen;
                 dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen(kSaveRemixScreen, false))
-                    ->mRemixName = TheGameDb->GetRemixInfo()->mName;
+                    ->SetRemixName(TheGameDb->GetRemixInfo()->mName);
             } else {
                 mNextScreen = kNetEndRemixScreen;
             }
@@ -1421,13 +1421,13 @@ void Metagame::QueueUnlocks() {
     if (TheGameDb->GetProfile(0)->IsModified()) {
         mUnlockScreens.push_back(kUnlockEventSaveFreq);
     }
-    if (TheGameDb->GetOptions()->mModified) {
+    if (TheGameDb->GetOptions()->GetModified()) {
         mUnlockScreens.push_back(kUnlockEventSaveSettings);
     }
 
     if (nBossIndex >= 0 && mDialogAction == kDialogActionResume) {
-        dynamic_cast<BossUnlockScreen *>(TheUI.FindScreen(kUnlockBossScreen, false))->mSong =
-            mUnlocks[nBossIndex].mName;
+        dynamic_cast<BossUnlockScreen *>(TheUI.FindScreen(kUnlockBossScreen, false))
+            ->SetSong(mUnlocks[nBossIndex].mName);
         mUnlockScreens.push_back(kUnlockEventBoss);
     } else if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo &&
                !TheGameDb->GetProfile(0)->HasSeenFreestyleTip() &&
@@ -1464,7 +1464,7 @@ void Metagame::ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUs
         } else {
             pszScreen = kMultiRemixPauseScreen;
         }
-        dynamic_cast<PauseScreen *>(TheUI.FindScreen(pszScreen, false))->mPad = nPad;
+        dynamic_cast<PauseScreen *>(TheUI.FindScreen(pszScreen, false))->SetPad(nPad);
     } else if (type == kDialogNoController) {
 #ifdef VIDEO_STANDARD_PAL
         // A game of three or four players without a multitap asks for the multitap.
@@ -1474,7 +1474,7 @@ void Metagame::ShowDialog(DialogType type, DialogCallback pfnCallback, void *pUs
 #else
         pszScreen = kNoControllerScreen;
 #endif
-        dynamic_cast<NoControllerScreen *>(TheUI.FindScreen(pszScreen, false))->mPad = nPad;
+        dynamic_cast<NoControllerScreen *>(TheUI.FindScreen(pszScreen, false))->SetPad(nPad);
     } else if (TheGameDb->GetPracticeMode()) {
         pszScreen = kPracticeEndScreen;
     } else if (type == kDialogSoloWon || type == kDialogSoloLost) {
@@ -1525,7 +1525,7 @@ void Metagame::ShowEndGameScreens(DialogAction action) {
         FinishDialog();
         return;
     }
-    if (TheGameDb->GetProfile(0)->IsModified() || TheGameDb->GetOptions()->mModified) {
+    if (TheGameDb->GetProfile(0)->IsModified() || TheGameDb->GetOptions()->GetModified()) {
         QueueUnlocks();
         AdvanceUnlocks();
     } else {
@@ -1562,7 +1562,7 @@ void Metagame::AdvanceUnlocks() {
     case kUnlockEventSaveFreq: {
         SaveFreqScreen *pScreen =
             dynamic_cast<SaveFreqScreen *>(TheUI.FindScreen(kAutoSaveFreqScreen, false));
-        pScreen->mOverwriteStatus = 1;
+        pScreen->SetOverwriteStatus(1);
         TheUI.GotoScreen(pScreen);
         break;
     }
@@ -1607,14 +1607,14 @@ bool Metagame::OnJoypadInput(JoypadInputMsg *pMsg) {
     }
 #endif
 
-    if (pMsg->mPressed != 0 && mState == kStateFrontEnd) {
-        const int nPad = pMsg->mPad;
+    if (pMsg->GetPressed() != 0 && mState == kStateFrontEnd) {
+        const int nPad = pMsg->GetPad();
         if (nPad >= TheGameDb->GetNumPads()) {
             return true;
         }
-        TheTriggerMgr.ButtonEvent(nPad, JoypadGetState(nPad)->mButtons);
-        if (pMsg->mButton == kPadTriangle || pMsg->mButton == kPadCross) {
-            mLastSelectButton = pMsg->mButton;
+        TheTriggerMgr.ButtonEvent(nPad, JoypadGetState(nPad)->GetButtons());
+        if (pMsg->GetButton() == kPadTriangle || pMsg->GetButton() == kPadCross) {
+            mLastSelectButton = pMsg->GetButton();
         }
     }
     return TheUI.Dispatch(pMsg);
@@ -1623,52 +1623,52 @@ bool Metagame::OnJoypadInput(JoypadInputMsg *pMsg) {
 bool Metagame::OnTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (mHelpPanel != nullptr) {
         mHelpPanel->Refresh();
-        mHelpPanel->ShowActions(pMsg->mScreen);
+        mHelpPanel->ShowActions(pMsg->GetScreen());
     }
 
-    if (strcmp(pMsg->mScreen->GetName(), kBlankScreen) == 0) {
+    if (strcmp(pMsg->GetScreen()->GetName(), kBlankScreen) == 0) {
         if (mDialogCallback != nullptr) {
             mDialogCallback(mDialogAction, mDialogUserData);
             mDialogCallback = nullptr;
         }
-    } else if (strcmp(pMsg->mScreen->GetName(), kBackToShellScreen) == 0) {
+    } else if (strcmp(pMsg->GetScreen()->GetName(), kBackToShellScreen) == 0) {
         mEvent = kEventQuit;
 #ifdef VIDEO_STANDARD_PAL
-    } else if (strcmp(pMsg->mScreen->GetName(), kPreSceePresentsScreen) == 0) {
+    } else if (strcmp(pMsg->GetScreen()->GetName(), kPreSceePresentsScreen) == 0) {
         if (SystemLanguageIsEnglish()) {
             TheUI.GotoScreen(kSceePresentsScreen);
         } else {
             TheUI.GotoScreen(FormatString(kLanguageSceePresentsScreenFormat, GetSystemLanguage()));
         }
 #endif
-    } else if (strcmp(pMsg->mScreen->GetName(), kJustMtvLeaveGizmoScreen) == 0) {
+    } else if (strcmp(pMsg->GetScreen()->GetName(), kJustMtvLeaveGizmoScreen) == 0) {
         mGizmo->SetShowAvatar(false);
         TheUI.GotoScreen(kJustMtvScreen);
-    } else if (strcmp(pMsg->mScreen->GetName(), kLaunchScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kLaunchTrainingScreen) == 0) {
+    } else if (strcmp(pMsg->GetScreen()->GetName(), kLaunchScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kLaunchTrainingScreen) == 0) {
         mGizmo->SetShowAvatar(false);
-    } else if (strcmp(pMsg->mScreen->GetName(), kSoloMetaScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kSoloRemixScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kSoloRemixModeScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kSoloRemixModeSaveScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kSoloArenaScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kSoloArenaSaveScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kSoloCustomScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kNetLaunchHostScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kNetLaunchGuestScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kNetEndRemixScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kNetEndSaveReadOnlyScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kLostLaunchpadScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kLostLobbyScreen) == 0 ||
-               strcmp(pMsg->mScreen->GetName(), kUnlockArenaScreen) == 0 ||
-               (strcmp(pMsg->mScreen->GetName(), kStartScreen) == 0 &&
-                strcmp(pMsg->mPrevScreen->GetName(), kPreGame2MetaScreen) == 0)) {
-        if (TheGameDb->GetProfile(0)->mCustom != 0) {
+    } else if (strcmp(pMsg->GetScreen()->GetName(), kSoloMetaScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kSoloRemixScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kSoloRemixModeScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kSoloRemixModeSaveScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kSoloArenaScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kSoloArenaSaveScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kSoloCustomScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kNetLaunchHostScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kNetLaunchGuestScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kNetEndRemixScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kNetEndSaveReadOnlyScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kLostLaunchpadScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kLostLobbyScreen) == 0 ||
+               strcmp(pMsg->GetScreen()->GetName(), kUnlockArenaScreen) == 0 ||
+               (strcmp(pMsg->GetScreen()->GetName(), kStartScreen) == 0 &&
+                strcmp(pMsg->GetPrevScreen()->GetName(), kPreGame2MetaScreen) == 0)) {
+        if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
             mGizmo->SetShowAvatar(true);
         }
     }
 
-    if (IsStopSpeedUp(pMsg->mPrevScreen->GetName(), pMsg->mScreen->GetName())) {
+    if (IsStopSpeedUp(pMsg->GetPrevScreen()->GetName(), pMsg->GetScreen()->GetName())) {
         mSpeedingUp = 0;
         mSpeed = 1.0f;
     }
@@ -1699,13 +1699,13 @@ bool Metagame::OnComponentFocusChange(UIComponentFocusChangeMsg *pMsg) {
 bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
     TheTriggerMgr.ScreenChangeEvent(pMsg);
 
-    FreqScreen *pScreen = dynamic_cast<FreqScreen *>(pMsg->mScreen);
+    FreqScreen *pScreen = dynamic_cast<FreqScreen *>(pMsg->GetScreen());
     RndText *pTitle = dynamic_cast<RndText *>(TheManager.Find(kTitleTextName));
     if (pTitle != nullptr && pScreen != nullptr) {
         RndView *pView = dynamic_cast<RndView *>(TheManager.Find(kTitleViewName));
         const String title(pScreen->Title());
         pTitle->SetText(title.c_str());
-        if (title.mLength != 0) {
+        if (title.GetLength() != 0) {
             pView->SetShowing(1);
             const float flWidth =
                 pTitle->MeasureWidth(title.c_str(), static_cast<int>(strlen(title.c_str())));
@@ -1722,7 +1722,7 @@ bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
         return false;
     }
 
-    const char *pszScreen = pMsg->mScreen->GetName();
+    const char *pszScreen = pMsg->GetScreen()->GetName();
     if (strcmp(pszScreen, kHostLaunchpadScreen) == 0 ||
         strcmp(pszScreen, kGuestLaunchpadScreen) == 0) {
         if (mNetScreenPending != 0) {
@@ -1734,18 +1734,18 @@ bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
         mNetScreenPending = 0;
         mReserved144 = 1;
     } else if (strcmp(pszScreen, kPreLogoScreen) == 0) {
-        if (TheGameDb->GetProfile(0)->mCustom != 0) {
+        if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
             mGizmo->SetShowAvatar(true);
         }
     } else if (strcmp(pszScreen, kUnlockArenaAnimScreen) == 0) {
         mArena->StartReveal(mTime);
     }
 
-    if (IsSpeedUp(pMsg->mOldScreen->GetName(), pMsg->mScreen->GetName())) {
+    if (IsSpeedUp(pMsg->GetOldScreen()->GetName(), pMsg->GetScreen()->GetName())) {
         mSpeedingUp = 1;
     }
     if (mLastSelectButton == kPadTriangle &&
-        dynamic_cast<TransitionScreen *>(pMsg->mOldScreen) == nullptr) {
+        dynamic_cast<TransitionScreen *>(pMsg->GetOldScreen()) == nullptr) {
         FxMidi::PlayBack();
     }
     mLastSelectButton = kPadNone;
@@ -1753,7 +1753,7 @@ bool Metagame::OnScreenChange(UIScreenChangeMsg *pMsg) {
 }
 
 bool Metagame::OnLaunchpadAborted(LaunchpadAbortedMsg *pMsg) {
-    if (pMsg->mReason == LaunchpadAbortedMsg::kReasonNone) {
+    if (pMsg->GetReason() == LaunchpadAbortedMsg::kReasonNone) {
         return false;
     }
     UIScreen *pCurrent = TheUI.GetCurrentScreen();
@@ -1767,7 +1767,7 @@ bool Metagame::OnLaunchpadAborted(LaunchpadAbortedMsg *pMsg) {
     }
 
     const char *pszError;
-    switch (pMsg->mReason) {
+    switch (pMsg->GetReason()) {
     case LaunchpadAbortedMsg::kReasonIncompatible:
         pszError = kLaunchpadIncompatibleError;
         break;
@@ -1790,7 +1790,7 @@ bool Metagame::OnLaunchpadAborted(LaunchpadAbortedMsg *pMsg) {
     const String message(TheLocale.Localize(FormatString(kErrorMessageFormat, pszError), true));
     TransitionErrorScreen *pError =
         dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kLaunchpadErrorScreen, false));
-    pError->mMessage = message.c_str();
+    pError->SetMessage(message.c_str());
 
     if (mReserved144) {
         TheUI.GotoScreen(pError);
@@ -1808,14 +1808,14 @@ bool Metagame::OnLaunchpadAborted(LaunchpadAbortedMsg *pMsg) {
 bool Metagame::OnLostInternet(LobbyConnectionLostMsg *pMsg) {
     TransitionErrorScreen *pError =
         dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kLobbyErrorScreen, false));
-    if (pMsg->mError == LobbyConnectionLostMsg::kInternetDown) {
+    if (pMsg->GetError() == LobbyConnectionLostMsg::kInternetDown) {
         printf(kInternetDownLog);
-        pError->mMessage = TheLocale.Localize(kLostInternetToken, true);
+        pError->SetMessage(TheLocale.Localize(kLostInternetToken, true));
         pError->ClearTransitions();
         pError->AddTransition(kErrorOkComponent, kPadNone, kNetConfigScreen);
     } else {
         printf(kOtherErrorLog);
-        pError->mMessage = TheLocale.Localize(kLostLobbyToken, true);
+        pError->SetMessage(TheLocale.Localize(kLostLobbyToken, true));
         pError->ClearTransitions();
         pError->AddTransition(kErrorOkComponent, kPadNone, kNetPortalScreen);
     }
@@ -1834,13 +1834,13 @@ bool Metagame::OnLostInternet(LobbyConnectionLostMsg *pMsg) {
 }
 
 bool Metagame::OnGameParamsUpdate(GameParamsUpdateMsg *pMsg) {
-    TheGameDb->SetGameParams(&pMsg->mParams);
+    TheGameDb->SetGameParams(&pMsg->GetParams());
     RemixInfo info = *TheGameDb->GetRemixInfo();
-    info.mReadOnly = static_cast<signed char>(pMsg->mParams.mRemixReadOnly);
+    info.mReadOnly = static_cast<signed char>(pMsg->GetParams().GetRemixReadOnly());
     TheGameDb->SetRemix(&info);
     auto *pLaunchpad = dynamic_cast<NetLpadScreen *>(TheUI.GetCurrentScreen());
     if (pLaunchpad != nullptr) {
-        pLaunchpad->UpdateGameParams(&pMsg->mParams);
+        pLaunchpad->UpdateGameParams(&pMsg->GetParams());
     }
     return false;
 }
@@ -1865,8 +1865,8 @@ bool Metagame::OnLoadGame([[maybe_unused]] Message *pMsg) {
             continue;
         }
         Campaign other;
-        other.mName = player.mPlayer.mName.c_str();
-        other.mAvatar = player.mPlayer.mAvatar;
+        other.SetName(player.mPlayer.GetName().c_str());
+        other.GetAvatar() = player.mPlayer.GetAvatar();
         TheGameDb->AddPlayer(kRemotePlayer, &other, player.mId, player.mColor);
     }
 

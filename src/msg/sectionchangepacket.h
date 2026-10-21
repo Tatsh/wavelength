@@ -116,6 +116,27 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The section. Four bits travel. */
+    int GetSection() const {
+        return mSection;
+    }
+
+    /** @param nSection The section. Four bits travel. */
+    void SetSection(int nSection) {
+        mSection = nSection;
+    }
+
+    /** @return The tick of the change. 28 bits travel. */
+    int GetTick() const {
+        return mTick;
+    }
+
+    /** @param nTick The tick of the change. 28 bits travel. */
+    void SetTick(int nTick) {
+        mTick = nTick;
+    }
+
+private:
     int mSection; /*!< The section. Four bits travel. */
     int mTick;    /*!< The tick of the change. 28 bits travel. */
 };

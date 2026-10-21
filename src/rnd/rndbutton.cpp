@@ -9,7 +9,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -68,7 +68,7 @@ void RndButton::Copy(const RndObject *pSource, [[maybe_unused]] int nFlags) {
 
 void RndButton::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndButton]\n";
@@ -82,9 +82,9 @@ void RndButton::Save(BinStream &stream) {
     stream.WriteEndian(&sRev, sizeof(sRev));
     stream.WriteEndian(&mState, sizeof(mState));
     const RndObject *pMesh = mMesh;
-    stream.WriteString(pMesh != nullptr ? pMesh->mName.c_str() : "");
+    stream.WriteString(pMesh != nullptr ? pMesh->GetName() : "");
     const RndObject *pText = mText;
-    stream.WriteString(pText != nullptr ? pText->mName.c_str() : "");
+    stream.WriteString(pText != nullptr ? pText->GetName() : "");
     stream << mMats << mFonts;
 }
 

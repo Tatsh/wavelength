@@ -40,7 +40,7 @@ SaveFreqScreen::SaveFreqScreen(DataArray *pData) : OverwriteSaveScreen(pData) {
     pData->FindBool("isCancel", &mIsCancel, false);
     // Yes, the binary passes overwrite_status as the failure flag.
     pData->FindString("overwrite_save_screen", &mOverwriteSaveScreen, mOverwriteStatus != 0);
-    if (mOverwriteSaveScreen.mLength == 0) {
+    if (mOverwriteSaveScreen.GetLength() == 0) {
         mOverwriteSaveScreen = mName;
     }
 }
@@ -79,7 +79,7 @@ void SaveFreqScreen::OnFreqSaved(int nStatus, int nSpace) {
         if (mOverwriteStatus != 0) {
             auto *pOverwrite = dynamic_cast<OverwriteSaveScreen *>(
                 TheUI.FindScreen(mOverwriteSaveScreen.c_str(), false));
-            pOverwrite->mOverwriteStatus = 0;
+            pOverwrite->SetOverwriteStatus(0);
             pOverwrite->SetDoneScreen(mDoneScreen.c_str());
             pOverwrite->SetStartScreen(mStartScreen.c_str());
             pScreen =
@@ -173,7 +173,7 @@ void SaveFreqScreen::OnFreqSaved(int nStatus, int nSpace) {
 #endif
 
 bool SaveFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheMCManager.SaveFreq(
             this, mSlot, TheGameDb->GetProfile(0), TheGameDb->GetPlayerName(0), mOverwriteStatus);
     }

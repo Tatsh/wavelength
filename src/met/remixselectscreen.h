@@ -86,9 +86,8 @@ public:
         mRemixes = remixes;
     }
 
+protected:
     std::vector<RemixInfo> mRemixes; /*!< The listed remixes. */
-    int mGreyReadOnly;               /*!< Whether remixes that cannot be changed show greyed out. */
-    int mGreyUnplayable;             /*!< Whether remixes that cannot be played show greyed out. */
 
 private:
     /**
@@ -131,4 +130,7 @@ private:
      * @ghidraAddress PAL: 0x00190468
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
+
+    int mGreyReadOnly;   /*!< Whether remixes that cannot be changed show greyed out. */
+    int mGreyUnplayable; /*!< Whether remixes that cannot be played show greyed out. */
 };

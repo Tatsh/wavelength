@@ -113,6 +113,7 @@ public:
                          [[maybe_unused]] int nDenominator) override {
     }
 
+private:
     int mReserved10;        // +0x10, recorded and not yet identified.
     ScriptTrackData *mData; /*!< The data to fill. */
 };

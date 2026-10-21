@@ -181,6 +181,7 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     int mFreqSize;           /*!< The size of the track display, one of GameOptions::FreqSize. */
     int mOutputMode;         /*!< The speaker output mode. */
     unsigned char mToggles;  /*!< The bits of Toggle that are on. */

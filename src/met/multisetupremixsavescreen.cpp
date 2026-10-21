@@ -35,9 +35,9 @@ constexpr char kMemcardDiscardScreen[] = "mc_remix_discard";
 
 // Have continuing without the save ask the player whether to discard the remix.
 inline void UseDiscardScreen(SaveRemixScreen *pSave, int nPlayer) {
-    pSave->mContinueScreen = kMemcardDiscardScreen;
-    dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(kMemcardDiscardScreen, false))->mPlayer =
-        nPlayer;
+    pSave->SetContinueScreen(kMemcardDiscardScreen);
+    dynamic_cast<RemixDiscardScreen *>(TheUI.FindScreen(kMemcardDiscardScreen, false))
+        ->SetPlayer(nPlayer);
 }
 #endif
 
@@ -66,9 +66,9 @@ void MultiSetupRemixSaveScreen::Proceed() {
     FxMidi::PlayMenuSelect();
     String title(TheUI.FindComponent(kPanel, "title", false)->Text());
     const bool bTrimmed = TrimSpaces(&title);
-    if (title.mLength == 0 || bTrimmed) {
+    if (title.GetLength() == 0 || bTrimmed) {
         const char *pszError =
-            title.mLength == 0 ? "no_empty_filename_screen" : "no_lead_trail_spaces_screen";
+            title.GetLength() == 0 ? "no_empty_filename_screen" : "no_lead_trail_spaces_screen";
         UIScreen *pError = TheUI.FindScreen(pszError, false);
         pError->ClearTransitions();
         pError->AddTransition("ok", kPadNone, FormatString(kSaveFormat, mPlayer));
@@ -78,7 +78,7 @@ void MultiSetupRemixSaveScreen::Proceed() {
 
     auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix", false));
     pSave->SetStartScreen(mName);
-    pSave->mOverwriteStatus = 0;
+    pSave->SetOverwriteStatus(0);
     if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
         if (mPlayer < TheGameDb->GetNumPlayers()) {
             pSave->SetDoneScreen(FormatString(kSaveFormat, mPlayer + 1));
@@ -101,7 +101,7 @@ void MultiSetupRemixSaveScreen::Proceed() {
                 String text(TheLocale.Localize("net_lpad_lost_error_msg", true));
                 auto *pError =
                     dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-                pError->mMessage = text.c_str();
+                pError->SetMessage(text.c_str());
                 pSave->SetDoneScreen(kErrorScreen);
             }
         } else if (mFromShare != 0) {
@@ -113,7 +113,7 @@ void MultiSetupRemixSaveScreen::Proceed() {
             pSave->SetDoneScreen("netlobby2netlaunchpad_guest");
         }
     }
-    pSave->mRemixName = title.c_str();
+    pSave->SetRemixName(title.c_str());
     TheUI.GotoScreen(pSave);
 }
 
@@ -125,7 +125,7 @@ bool MultiSetupRemixSaveScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MultiSetupRemixSaveScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mPrevScreen->GetName(), "net_share_remix") == 0) {
+    if (strcmp(pMsg->GetPrevScreen()->GetName(), "net_share_remix") == 0) {
         mFromShare = 1;
 #ifdef VIDEO_STANDARD_PAL
     } else if ((mPlayer == kThirdPlayer || mPlayer == kFourthPlayer) &&

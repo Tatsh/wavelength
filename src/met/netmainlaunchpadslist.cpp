@@ -70,34 +70,34 @@ void NetMainLaunchpadsList::UpdateRow(int nRow, int nItem) {
     case NetLaunchpadInfo::kStatusOpen:
         SetCellText(nRow,
                     kColumnStatus,
-                    FormatString(kPlayersFormat, launchpad.mPlayerCount, params.mMaxPlayers));
+                    FormatString(kPlayersFormat, launchpad.mPlayerCount, params.GetMaxPlayers()));
         break;
     default:
         break;
     }
 
-    SetCellText(nRow, kColumnMode, TheGameDb->GetModeName(params.mRuleSet));
-    if (params.mRuleSet == GameDb::kRuleSetDuel) {
-        SetCellText(nRow, kColumnDifficulty, GetDuelDifficultyAbbrev(params.mSkillLevel));
+    SetCellText(nRow, kColumnMode, TheGameDb->GetModeName(params.GetRuleSet()));
+    if (params.GetRuleSet() == GameDb::kRuleSetDuel) {
+        SetCellText(nRow, kColumnDifficulty, GetDuelDifficultyAbbrev(params.GetSkillLevel()));
     } else {
 #ifdef VIDEO_STANDARD_PAL
-        SetCellText(nRow, kColumnDifficulty, GetSkillAbbrev(params.mSkillLevel));
+        SetCellText(nRow, kColumnDifficulty, GetSkillAbbrev(params.GetSkillLevel()));
 #else
         SetCellText(nRow,
                     kColumnDifficulty,
-                    TheGameDb->GetDifficultyName(params.mSkillLevel, params.mRuleSet));
+                    TheGameDb->GetDifficultyName(params.GetSkillLevel(), params.GetRuleSet()));
 #endif
     }
 #ifndef VIDEO_STANDARD_PAL
     SetCellText(nRow, kColumnConnection, GetConnectionTypeAbbrev(launchpad.mConnectionType));
 #endif
-    if (params.mRuleSet == GameDb::kRuleSetGame) {
-        SetCellText(nRow, kColumnPowerups, TheGameDb->GetPowerupName(params.mPowerupLevel));
+    if (params.GetRuleSet() == GameDb::kRuleSetGame) {
+        SetCellText(nRow, kColumnPowerups, TheGameDb->GetPowerupName(params.GetPowerupLevel()));
     } else {
         SetCellText(nRow, kColumnPowerups, TheLocale.Localize(kNoPowerupsToken, true));
     }
     if (launchpad.mOpen != 0) {
-        const SongEntry entry{TheGameDb->FindSong(params.mSong.c_str())};
+        const SongEntry entry{TheGameDb->FindSong(params.GetSong().c_str())};
         SetCellText(nRow, kColumnArtist, entry.GetArtistShortest());
     } else {
         SetCellText(nRow, kColumnArtist, kUnavailable);
@@ -106,7 +106,7 @@ void NetMainLaunchpadsList::UpdateRow(int nRow, int nItem) {
     const char *pszFont;
     if (bGrey) {
         pszFont = kGreyFont;
-    } else if (params.mLoadRemix != 0) {
+    } else if (params.GetLoadRemix() != 0) {
         pszFont = kRemixFont;
     } else {
         pszFont = kFont;
@@ -127,7 +127,7 @@ void NetMainLaunchpadsList::UpdateCursor() {
 }
 
 bool NetMainLaunchpadsList::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadCross && pMsg->GetPressed() != 0) {
         if (mLaunchpads.empty()) {
             return false;
         }

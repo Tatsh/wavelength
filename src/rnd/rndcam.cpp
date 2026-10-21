@@ -132,14 +132,14 @@ void RndCam::DumpText(PrnStream &stream) {
     RndTransformable::DumpText(stream);
     RndDrawable::DumpText(stream);
     RndCollideable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndCam]\n";
     stream << "nearPlane:" << mNearPlane << " farPlane:" << mFarPlane << " fov:" << mFov << "\n";
     stream << "screenRect:" << mScreenRect << "\n";
     stream << "zRange:" << mZRange << " targetTex:" << mTargetTex << "\n";
-    if (stream.mDumpLevel < 2) {
+    if (stream.GetDumpLevel() < 2) {
         return;
     }
     stream << "localProject:" << mLocalProject << "\n";
@@ -163,7 +163,7 @@ void RndCam::Save(BinStream &stream) {
     WriteFloat(stream, mScreenRect.h);
     WriteFloat(stream, mZRange.x);
     WriteFloat(stream, mZRange.y);
-    stream.WriteString(mTargetTex != nullptr ? mTargetTex->mName.c_str() : "");
+    stream.WriteString(mTargetTex != nullptr ? mTargetTex->GetName() : "");
 }
 
 void RndCam::Replace(RndObject *pFrom, RndObject *pTo) {
@@ -234,7 +234,7 @@ void RndCam::Load(BinStream &stream) {
     if (nRev >= kRevTargetTex) {
         String name;
         stream >> name;
-        if (name.mLength == 0) {
+        if (name.GetLength() == 0) {
             mTargetTex = nullptr;
         } else {
             mTargetTex = dynamic_cast<RndTex *>(TheManager.Find(name.c_str()));
@@ -292,7 +292,8 @@ void RndCam::SetFrustum(float fNear, float fFar, float fFov) {
 void RndCam::UpdateProjection() {
     float fAspect = mScreenRect.h / mScreenRect.w;
     if (mTargetTex != nullptr) {
-        fAspect *= static_cast<float>(mTargetTex->mHeight) / static_cast<float>(mTargetTex->mWidth);
+        fAspect *= static_cast<float>(mTargetTex->GetHeight()) /
+                   static_cast<float>(mTargetTex->GetWidth());
     } else {
         fAspect *= TheRnd->AspectRatio();
     }
@@ -343,7 +344,7 @@ void RndCam::CreateDefault() {
     RndObject *pObject = TheManager.Create(sClassName, "[default cam]");
     RndCam *pCam = pObject != nullptr ? dynamic_cast<RndCam *>(pObject) : nullptr;
     sDefault = pCam;
-    pCam->mInternal = 1;
+    pCam->SetInternal(1);
     pCam->mDirty = 1;
     // Yes, the binary leaves the fourth word of the translation unset.
     pCam->mLocalXfm.mTranslation.x = 0.0f;

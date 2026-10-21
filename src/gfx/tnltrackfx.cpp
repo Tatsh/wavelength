@@ -181,7 +181,7 @@ void TnlTrackFX::Enable(GfxTunnel *pTunnel) {
     mState = kStateEnable;
     mStartTime = TheGameDb->GetSongTime();
     mEnableCurve.Reset(0.0f, 1.0f, mStartTime, mStartTime + sEnableTimes[0]);
-    mMat->mBlend = RndMat::kBlendSrcAlphaAdd;
+    mMat->SetBlend(RndMat::kBlendSrcAlphaAdd);
     pTunnel->GetGeom()->SetTrackOverlay(mTrack, mMat, kOverlayEnabling);
     mPhase = kPhaseRise;
 }
@@ -194,16 +194,16 @@ void TnlTrackFX::Capture(GfxTunnel *pTunnel, float flTick) {
     mCaptureTick = flTick;
     mStartTime = TheGameDb->GetSongTime();
     mDropCurve.Reset(0.0f, 1.0f, mStartTime, mStartTime + sCaptureTimes[0]);
-    mMat->mBlend = RndMat::kBlendSrcAlphaAdd;
-    mMat->mStages[0].mBlend = RndMat::kBlendSrcAlphaAdd;
+    mMat->SetBlend(RndMat::kBlendSrcAlphaAdd);
+    mMat->GetStages()[0].SetBlend(RndMat::kBlendSrcAlphaAdd);
     pTunnel->GetGeom()->SetTrackOverlay(mTrack, mMat, kOverlayNormal);
 
     Transform xfm;
     pTunnel->GetGeom()->CellXfm(
         mTrack, &xfm, false, true, TheGameDb->GetSongTick() + sCaptureSpewTicks, kSpewLateral);
     ScaleBasis(&xfm, TheGfxManager.GetScrollSpeed());
-    sSpew->mLocalXfm = xfm;
-    sSpew->mDirty = 1;
+    sSpew->GetLocalXfm() = xfm;
+    sSpew->SetDirty(1);
     sSpew->UpdateWorldXfm(nullptr, 0);
     sSpewFrame += kSpewFrames;
     sSpew->SetEmitFrame(sSpewFrame);
@@ -252,7 +252,7 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
                 flAlpha = 0.0f;
                 mEnableCurve.Reset(
                     1.0f, flAlpha, mEnableCurve.GetX1(), mEnableCurve.GetX1() + sEnableTimes[2]);
-                mMat->mBlend = RndMat::kBlendSrcAlpha;
+                mMat->SetBlend(RndMat::kBlendSrcAlpha);
             } else {
                 flAlpha = mEnableCurve.Interp(flNow);
             }
@@ -270,7 +270,7 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
             return false;
         }
         mMat->SetAlpha(flAlpha);
-        mMat->mStages[0].mBlend = stageBlend;
+        mMat->GetStages()[0].SetBlend(stageBlend);
         return false;
     }
     case kStateCapture: {
@@ -336,11 +336,11 @@ float TnlTrackFX::CaptureEndTime() const {
 
 void TnlTrackFX::SetGlowSizes(std::list<TnlGem> *pGems, char nTrack, float flSize) {
     for (TnlGem &gem : *pGems) {
-        if ((gem.mTrack != nTrack) || ((gem.mType & TnlGem::kTypeSprite) != 0)) {
+        if ((gem.GetTrack() != nTrack) || ((gem.GetType() & TnlGem::kTypeSprite) != 0)) {
             continue;
         }
-        if (gem.mParticle != nullptr) {
-            gem.mParticle->mSize = flSize;
+        if (gem.GetParticle() != nullptr) {
+            gem.GetParticle()->mSize = flSize;
         }
     }
 }
@@ -349,11 +349,11 @@ void TnlTrackFX::RestoreGlowSizes(std::list<TnlGem> *pGems,
                                   char nTrack,
                                   [[maybe_unused]] float flSize) {
     for (TnlGem &gem : *pGems) {
-        if ((gem.mTrack != nTrack) || ((gem.mType & TnlGem::kTypeSprite) != 0)) {
+        if ((gem.GetTrack() != nTrack) || ((gem.GetType() & TnlGem::kTypeSprite) != 0)) {
             continue;
         }
-        if (gem.mParticle != nullptr) {
-            gem.mParticle->mSize = gem.mMeshGroup->mParticles->mSize.x;
+        if (gem.GetParticle() != nullptr) {
+            gem.GetParticle()->mSize = gem.GetMeshGroup()->GetParticles()->GetSize().x;
         }
     }
 }

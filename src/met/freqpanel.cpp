@@ -92,7 +92,7 @@ void FreqPanel::FinishLoad() {
     mPanelAnim = dynamic_cast<RndView *>(TheManager.Find(pszPanelAnim));
     if (mPanelAnim == nullptr) {
         mPanelAnim = dynamic_cast<RndView *>(TheManager.Create(RndView::sClassName, pszPanelAnim));
-        mLoader->mObjects.push_back(mPanelAnim);
+        mLoader->GetObjects().push_back(mPanelAnim);
 
         RndTransAnim *pSource = dynamic_cast<RndTransAnim *>(TheManager.Find(sPanelAnimName));
         RndTransAnim *pAnim = dynamic_cast<RndTransAnim *>(TheManager.Create(
@@ -102,7 +102,7 @@ void FreqPanel::FinishLoad() {
             dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_panel.mesh", mName)));
         pAnim->SetTrans(pPanelMesh);
         mPanelAnim->AddAnim(pAnim);
-        mLoader->mObjects.push_back(pAnim);
+        mLoader->GetObjects().push_back(pAnim);
 
         if (!mData->FindInt("gizmoOffsetIndex", &mGizmoOffsetIndex, false)) {
             mGizmoOffsetIndex = 0;
@@ -113,7 +113,7 @@ void FreqPanel::FinishLoad() {
         TheManager.Clone(pPyramid, mName, &clones, 0, 0, 0);
         RndObject *pClone = clones.front();
         mGizmoMesh = pClone != nullptr ? dynamic_cast<RndMesh *>(pClone) : nullptr;
-        mLoader->mObjects.push_back(mGizmoMesh);
+        mLoader->GetObjects().push_back(mGizmoMesh);
         mBgMesh = dynamic_cast<RndMesh *>(TheManager.Find(FormatString("%s_bg.mesh", mName)));
         UpdateBgBox();
     } else {
@@ -169,16 +169,16 @@ void FreqPanel::Poll(float fTime) {
 }
 
 void FreqPanel::DrawGizmo() {
-    if (mLoader == nullptr || mGizmoMesh == nullptr || !mGizmoMesh->mShowing) {
+    if (mLoader == nullptr || mGizmoMesh == nullptr || !mGizmoMesh->GetShowing()) {
         return;
     }
 
     const Transform gizmoXfm = TheMetagame.GetGizmo()->WorldXfm();
     const Vector3 tip = XfmPoint(gizmoXfm, sGizmoOffsets[mGizmoOffsetIndex]);
-    SetRow(mGizmoMesh->mLocalXfm.mTranslation, tip.x, tip.y, tip.z, tip.w);
-    mGizmoMesh->mDirty = 1;
+    SetRow(mGizmoMesh->GetLocalXfm().mTranslation, tip.x, tip.y, tip.z, tip.w);
+    mGizmoMesh->SetDirty(1);
 
-    const Transform &bgXfm = mBgMesh->mWorldXfm;
+    const Transform &bgXfm = mBgMesh->GetWorldXfm();
     const Vector3 low = XfmPoint(bgXfm, mBgBox.mMin);
     const Vector3 high = XfmPoint(bgXfm, mBgBox.mMax);
     const float fCentreX = high.x * kHalf + low.x * kHalf;
@@ -186,11 +186,14 @@ void FreqPanel::DrawGizmo() {
     const float fCentreZ = high.z * kHalf + low.z * kHalf;
 
     // Yes, the binary leaves the fourth word of each basis row unset.
-    SetRow(mGizmoMesh->mLocalXfm.mBasisX, std::fabs(high.x - low.x), 0.0f, 0.0f, 0.0f);
-    SetRow(
-        mGizmoMesh->mLocalXfm.mBasisY, tip.x - fCentreX, tip.y - fCentreY, tip.z - fCentreZ, 0.0f);
-    SetRow(mGizmoMesh->mLocalXfm.mBasisZ, 0.0f, 0.0f, std::fabs(high.z - low.z), 0.0f);
-    mGizmoMesh->mDirty = 1;
+    SetRow(mGizmoMesh->GetLocalXfm().mBasisX, std::fabs(high.x - low.x), 0.0f, 0.0f, 0.0f);
+    SetRow(mGizmoMesh->GetLocalXfm().mBasisY,
+           tip.x - fCentreX,
+           tip.y - fCentreY,
+           tip.z - fCentreZ,
+           0.0f);
+    SetRow(mGizmoMesh->GetLocalXfm().mBasisZ, 0.0f, 0.0f, std::fabs(high.z - low.z), 0.0f);
+    mGizmoMesh->SetDirty(1);
 
     mGizmoMesh->UpdateWorldXfm(mView, 0);
     mGizmoMesh->Draw();

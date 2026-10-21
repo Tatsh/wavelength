@@ -175,7 +175,20 @@ public:
      */
     void SendUpdate(Player *pPlayer, float fX, float fY);
 
-    int mTickOffset;                    /*!< The offset of the game tick from the song tick. */
+    /** @return The offset of the game tick from the song tick. */
+    int GetTickOffset() const {
+        return mTickOffset;
+    }
+
+    /** @param nTickOffset The offset of the game tick from the song tick. */
+    void SetTickOffset(int nTickOffset) {
+        mTickOffset = nTickOffset;
+    }
+
+protected:
+    int mTickOffset; /*!< The offset of the game tick from the song tick. */
+
+private:
     const SectionBoundaries *mSections; /*!< The section boundaries of the song. */
     PlayMap *mPlayMap;                  /*!< The map of the song positions. */
     const float *mMsPerTick;            /*!< The length of a tick, in milliseconds. */

@@ -59,25 +59,26 @@ bool SetupNameScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SetupNameScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
     if (mFocusPanel == nullptr ||
-        std::strcmp(mFocusPanel->GetFocus()->GetName(), kNameEntry) != 0 || pMsg->mPressed == 0) {
+        std::strcmp(mFocusPanel->GetFocus()->GetName(), kNameEntry) != 0 ||
+        pMsg->GetPressed() == 0) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
-    if (pMsg->mButton == kPadCircle) {
+    if (pMsg->GetButton() == kPadCircle) {
         KeyboardPanel *pKeyboard =
             dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
         UIScreen *pScreen = TheUI.GetCurrentScreen();
-        const int nMaxWidth = static_cast<int>(mEntry->mMaxEntryWidth);
+        const int nMaxWidth = static_cast<int>(mEntry->GetMaxEntryWidth());
         const char *pszText = mEntry->Text();
 #ifdef VIDEO_STANDARD_PAL
         const int nMaxChars = kNoCharLimit;
 #else
         // Yes, the binary limits the number of characters by the width as well.
-        const int nMaxChars = static_cast<int>(mEntry->mMaxEntryWidth);
+        const int nMaxChars = static_cast<int>(mEntry->GetMaxEntryWidth());
 #endif
         const KeyboardRequest request(this,
                                       pScreen,
@@ -91,7 +92,7 @@ bool SetupNameScreen::HandleJoypad(JoypadInputMsg *pMsg) {
                                       kSingleLine);
         pKeyboard->SetRequest(request);
         TheUI.GotoScreen(kKeyboardScreen);
-    } else if (pMsg->mButton == kPadCross) {
+    } else if (pMsg->GetButton() == kPadCross) {
         Submit();
     }
     return FreqScreen::HandleJoypad(pMsg);

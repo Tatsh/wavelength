@@ -13,5 +13,5 @@ constexpr int kSpareCount = 64;
 SpriteGroup::SpriteGroup(const char *pszName, int nMaxGems) {
     mParticles = dynamic_cast<RndParticleSys *>(TheManager.Find(FormatString("%s.ps", pszName)));
     mParticles->FreeAllParticles();
-    mParticles->mParticlesOwner->SetNumParticles(nMaxGems + kSpareCount);
+    mParticles->GetParticlesOwner()->SetNumParticles(nMaxGems + kSpareCount);
 }

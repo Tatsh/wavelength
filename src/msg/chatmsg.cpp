@@ -141,7 +141,7 @@ bool ChatMsg::Send(int nChannel, int nRecipient, const char *pszText, int nEcho)
         if (TheLaunchpadRT != nullptr) {
             nPlayer = TheLaunchpadRT->GetLocalId();
         }
-        ChatMsg msg(TheLobbyRT->GetLocalPlayer().mId, nPlayer, pszText, TheLobbyRT->GetName());
+        ChatMsg msg(TheLobbyRT->GetLocalPlayer().GetId(), nPlayer, pszText, TheLobbyRT->GetName());
         pSink->Dispatch(&msg); // Yes, the binary does not test for a missing sink.
     }
     rtMediusChatRequest request;
@@ -159,16 +159,16 @@ bool ChatMsg::Send(int nChannel, int nRecipient, const char *pszText, int nEcho)
         request.toAccount = 1;
         const std::list<NetLaunchpadPlayer> players = *TheLaunchpadRT->GetPlayers();
         for (const auto &player : players) {
-            if (player.mPlayer.mId != TheLobbyRT->GetLocalPlayer().mId) {
-                recipients.push_back(player.mPlayer.mId);
+            if (player.mPlayer.GetId() != TheLobbyRT->GetLocalPlayer().GetId()) {
+                recipients.push_back(player.mPlayer.GetId());
             }
         }
     }
     if (recipients.size() != 0) {
         const String text(pszText);
-        for (int nOffset = 0; nOffset < text.mLength; nOffset += kPartLength) {
+        for (int nOffset = 0; nOffset < text.GetLength(); nOffset += kPartLength) {
             request.header.messageId[0] =
-                nOffset + kPartLength < text.mLength ? kLinePart : kLineFinal;
+                nOffset + kPartLength < text.GetLength() ? kLinePart : kLineFinal;
             request.header.messageId[1] = static_cast<char>(nChannel + kChannelBase);
             strncpy(&request.header.messageId[2], pszName, kRequestNameLength);
             strcpy(request.text, text.Substring(nOffset, kPartLength).c_str());

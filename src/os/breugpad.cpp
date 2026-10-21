@@ -83,99 +83,97 @@ float gDeadzoneScale;
 // NTSC-U/C: 0x003b226c, PAL: 0x0043114c
 float gDeadzoneBias;
 
+} // namespace
+
 // Replace a failed request's phase with the request that failed, and report completion.
-inline bool WaitForRequest(BreugPad *pPad) {
-    if (scePadGetReqState(pPad->mPort, pPad->mSlot) == scePadReqStateFaild) {
-        --pPad->mPhase;
+bool BreugPad::WaitForRequest() {
+    if (scePadGetReqState(mPort, mSlot) == scePadReqStateFaild) {
+        --mPhase;
     }
-    return scePadGetReqState(pPad->mPort, pPad->mSlot) == scePadReqStateComplete;
+    return scePadGetReqState(mPort, mSlot) == scePadReqStateComplete;
 }
 
 // The setup step for the current phase. Read() expands it inline.
-inline void AdvancePhase(BreugPad *pPad, int nState) {
-    switch (pPad->mPhase) {
+void BreugPad::AdvancePhase(int nState) {
+    switch (mPhase) {
     case kPhaseProbe: {
         if (nState != scePadStateStable && nState != scePadStateFindCTP1) {
             break;
         }
-        int nId = scePadInfoMode(pPad->mPort, pPad->mSlot, InfoModeCurID, 0);
+        int nId = scePadInfoMode(mPort, mSlot, InfoModeCurID, 0);
         if (nId == 0) {
             break;
         }
-        const int nExtendedId = scePadInfoMode(pPad->mPort, pPad->mSlot, InfoModeCurExID, 0);
+        const int nExtendedId = scePadInfoMode(mPort, mSlot, InfoModeCurExID, 0);
         if (nExtendedId > 0) {
             nId = nExtendedId;
         }
         if (nId == kPadIdAnalog) {
-            pPad->mReadyLevel = kReadyDigital;
-            pPad->mPhase = kPhaseAnalogProbe;
+            mReadyLevel = kReadyDigital;
+            mPhase = kPhaseAnalogProbe;
         } else if (nId == kPadIdDualShock2) {
-            pPad->mPhase = kPhaseActuatorAlign;
+            mPhase = kPhaseActuatorAlign;
         } else {
-            pPad->mPhase = kPhaseDone;
+            mPhase = kPhaseDone;
         }
         break;
     }
     case kPhaseAnalogProbe:
-        if (scePadInfoMode(pPad->mPort, pPad->mSlot, InfoModeCurExID, 0) == 0) {
-            pPad->mPhase = kPhaseDone;
+        if (scePadInfoMode(mPort, mSlot, InfoModeCurExID, 0) == 0) {
+            mPhase = kPhaseDone;
             break;
         }
-        ++pPad->mPhase;
+        ++mPhase;
         [[fallthrough]];
     case kPhaseAnalogSetMode:
-        if (scePadSetMainMode(pPad->mPort, pPad->mSlot, kMainModeAnalog, kMainModeLock) ==
-            kPadCallSucceeded) {
-            ++pPad->mPhase;
+        if (scePadSetMainMode(mPort, mSlot, kMainModeAnalog, kMainModeLock) == kPadCallSucceeded) {
+            ++mPhase;
         }
         break;
     case kPhaseAnalogWait:
-        if (WaitForRequest(pPad)) {
-            pPad->mPhase = kPhaseProbe;
-            pPad->mReadyLevel = kReadyAnalog;
+        if (WaitForRequest()) {
+            mPhase = kPhaseProbe;
+            mReadyLevel = kReadyAnalog;
         }
         break;
     case kPhaseActuatorAlign:
-        if (scePadInfoAct(pPad->mPort, pPad->mSlot, kInfoActCount, 0) == 0) {
-            pPad->mPhase = kPhaseDone;
+        if (scePadInfoAct(mPort, mSlot, kInfoActCount, 0) == 0) {
+            mPhase = kPhaseDone;
             break;
         }
-        if (scePadSetActAlign(pPad->mPort, pPad->mSlot, pPad->mActAlign) == 0) {
+        if (scePadSetActAlign(mPort, mSlot, mActAlign) == 0) {
             printf("BreugPad: Set actAlign failed!!!!!!!!!!!!\n");
             break;
         }
-        ++pPad->mPhase;
-        if (scePadGetReqState(pPad->mPort, pPad->mSlot) != scePadReqStateBusy) {
+        ++mPhase;
+        if (scePadGetReqState(mPort, mSlot) != scePadReqStateBusy) {
             printf("BreugPad: Set actAlign warning!!!!!!!!!!!!\n");
         }
         break;
     case kPhaseActuatorWait:
-        if (WaitForRequest(pPad)) {
-            ++pPad->mPhase;
+        if (WaitForRequest()) {
+            ++mPhase;
         }
         break;
     case kPhasePressureProbe:
-        pPad->mPhase = scePadInfoPressMode(pPad->mPort, pPad->mSlot) == kPadCallSucceeded ?
-                           kPhasePressureEnter :
-                           kPhaseDone;
+        mPhase = scePadInfoPressMode(mPort, mSlot) == kPadCallSucceeded ? kPhasePressureEnter :
+                                                                          kPhaseDone;
         break;
     case kPhasePressureEnter:
-        if (scePadEnterPressMode(pPad->mPort, pPad->mSlot) == kPadCallSucceeded) {
-            ++pPad->mPhase;
+        if (scePadEnterPressMode(mPort, mSlot) == kPadCallSucceeded) {
+            ++mPhase;
         }
         break;
     case kPhasePressureWait:
-        if (WaitForRequest(pPad)) {
-            pPad->mPhase = kPhaseDone;
-            pPad->mReadyLevel = kReadyPressure;
+        if (WaitForRequest()) {
+            mPhase = kPhaseDone;
+            mReadyLevel = kReadyPressure;
         }
         break;
     default:
         break;
     }
 }
-
-} // namespace
 
 void BreugPad::SetActuators(int nSmallMotor, unsigned char nBigMotor) {
     if (mReadyLevel < kReadyAnalog) {
@@ -251,7 +249,7 @@ int BreugPad::Read(int *pButtons,
         mReadyLevel = 0;
     }
     if (static_cast<unsigned>(mPhase) < kPhaseTableSize) {
-        AdvancePhase(this, nState);
+        AdvancePhase(nState);
     }
 
     if (nState != scePadStateStable && nState != scePadStateFindCTP1) {

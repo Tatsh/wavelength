@@ -91,10 +91,6 @@ public:
      */
     void SetProfiles(const std::vector<Campaign> &profiles, int nSelected);
 
-    int mAvatarIndex; /*!< `avatar_index`, the player who chooses. */
-    int mNumProfiles; /*!< The number of profiles, from the last entry. */
-    int mSelected;    /*!< The chosen profile. */
-
     /**
      * Mark the choice as made or not, lighting the tab and the Freq and hiding the arrows.
      *
@@ -144,4 +140,7 @@ private:
 
     int mReserved10C;                // +0x10c, not yet identified.
     std::vector<Campaign> mProfiles; /*!< The profiles to choose from. */
+    int mAvatarIndex;                /*!< `avatar_index`, the player who chooses. */
+    int mNumProfiles;                /*!< The number of profiles, from the last entry. */
+    int mSelected;                   /*!< The chosen profile. */
 };

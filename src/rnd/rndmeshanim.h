@@ -171,11 +171,20 @@ public:
      */
     static int sRev;
 
-    RndMesh *mMesh;                                         /*!< The mesh the animation drives. */
-    std::vector<Key<std::vector<Vector3>>> mVertPointsKeys; /*!< The vertex position keys. */
-    std::vector<Key<std::vector<Vector2>>> mVertTexsKeys;   /*!< The texture coordinate keys. */
-    std::vector<Key<std::vector<Color>>> mVertColorsKeys;   /*!< The vertex colour keys. */
-    RndMeshAnim *mKeysOwner;                                /*!< The animation that has the keys. */
+    /** @return The animation that has the keys. */
+    RndMeshAnim *GetKeysOwner() const {
+        return mKeysOwner;
+    }
+
+    /** @return The vertex position keys. */
+    const std::vector<Key<std::vector<Vector3>>> &GetVertPointsKeys() const {
+        return mVertPointsKeys;
+    }
+
+    /** @return The vertex position keys, for writing. */
+    std::vector<Key<std::vector<Vector3>>> &GetVertPointsKeys() {
+        return mVertPointsKeys;
+    }
 
 protected:
     /**
@@ -197,4 +206,11 @@ protected:
      * @ghidraAddress PAL: 0x0023e3e8
      */
     void AcquireRefs();
+
+private:
+    RndMesh *mMesh;                                         /*!< The mesh the animation drives. */
+    std::vector<Key<std::vector<Vector3>>> mVertPointsKeys; /*!< The vertex position keys. */
+    std::vector<Key<std::vector<Vector2>>> mVertTexsKeys;   /*!< The texture coordinate keys. */
+    std::vector<Key<std::vector<Color>>> mVertColorsKeys;   /*!< The vertex colour keys. */
+    RndMeshAnim *mKeysOwner;                                /*!< The animation that has the keys. */
 };

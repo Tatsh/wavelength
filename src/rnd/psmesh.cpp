@@ -210,28 +210,28 @@ inline int RndHeap(int &nCached) {
 }
 
 inline void PushVector(const Vector3 &v) {
-    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    DmaQuadword &quad = *DmaPacket::shared().GetCursor();
     quad.mFloat[kWordX] = v.x;
     quad.mFloat[kWordY] = v.y;
     quad.mFloat[kWordZ] = v.z;
     quad.mFloat[kWordW] = v.w;
-    ++DmaPacket::shared().mCursor;
+    ++DmaPacket::shared().GetCursor();
 }
 
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
-    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    DmaQuadword &quad = *DmaPacket::shared().GetCursor();
     quad.mFloat[kWordX] = fX;
     quad.mFloat[kWordY] = fY;
     quad.mFloat[kWordZ] = fZ;
     quad.mFloat[kWordW] = fW;
-    ++DmaPacket::shared().mCursor;
+    ++DmaPacket::shared().GetCursor();
 }
 
 inline void PushDwords(unsigned long long qwLow, unsigned long long qwHigh) {
-    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    DmaQuadword &quad = *DmaPacket::shared().GetCursor();
     quad.mDword[kLowDword] = qwLow;
     quad.mDword[kHighDword] = qwHigh;
-    ++DmaPacket::shared().mCursor;
+    ++DmaPacket::shared().GetCursor();
 }
 
 inline void PushTransform(const Transform &xfm) {
@@ -245,11 +245,11 @@ inline void PushTransform(const Transform &xfm) {
 inline void PushSettingsUnpack(unsigned int nQwords) {
     DmaPacket &packet = DmaPacket::shared();
     packet.CloseGifTag(1, 0);
-    packet.mCursor->mWord[kWordX] = 0;
-    packet.mCursor->mWord[kWordY] = 0;
-    packet.mCursor->mWord[kWordZ] = 0;
-    packet.mCursor->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, nQwords, 0);
-    ++packet.mCursor;
+    packet.GetCursor()->mWord[kWordX] = 0;
+    packet.GetCursor()->mWord[kWordY] = 0;
+    packet.GetCursor()->mWord[kWordZ] = 0;
+    packet.GetCursor()->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, nQwords, 0);
+    ++packet.GetCursor();
 }
 
 // Send a packet of a geometry. A mesh that is not mutable sends it by reference. A mutable mesh
@@ -257,7 +257,7 @@ inline void PushSettingsUnpack(unsigned int nQwords) {
 // memory.
 inline void SendPacket(const PsMesh &geom, DmaQuadword *pData, int nQwords) {
     DmaPacket &frame = DmaPacket::shared();
-    if (geom.mMutable == 0) {
+    if (geom.GetMutable() == 0) {
         frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
         frame.OpenDmaTag();
         frame.CloseDmaTag(kDmaTagIdRef, DmaAddressOf(pData), nQwords);
@@ -266,13 +266,13 @@ inline void SendPacket(const PsMesh &geom, DmaQuadword *pData, int nQwords) {
     }
     (void)ThePs.PacketQwordsFree(); // Yes, the binary discards this call's result.
     frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
-    DmaQuadword *pDest = frame.mCursor;
+    DmaQuadword *pDest = frame.GetCursor();
     DmaPacket copy;
-    copy.mBase = nullptr; // Yes, the binary clears the base that Init() then replaces.
+    copy.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
     copy.Init(pData, DMAC_TO_SPR, 1);
-    copy.mCursor = pData + nQwords;
+    copy.GetCursor() = pData + nQwords;
     copy.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
-    frame.mCursor = pDest + nQwords;
+    frame.GetCursor() = pDest + nQwords;
     ThePs.Flush();
 }
 
@@ -722,17 +722,17 @@ void PsMesh::DrawEdges(const Transform &xfm) {
                g_viewportXfm.mTranslation.z,
                g_fogOffset);
 
-    const Color color = mMat != nullptr ? mMat->mEdgeColor : Color{1.0f, 1.0f, 1.0f, 1.0f};
+    const Color color = mMat != nullptr ? mMat->GetEdgeColor() : Color{1.0f, 1.0f, 1.0f, 1.0f};
     const auto nRed = static_cast<unsigned int>(color.r * kColorScale);
     const auto nGreen = static_cast<unsigned int>(color.g * kColorScale);
     const auto nBlue = static_cast<unsigned int>(color.b * kColorScale);
     const auto nAlpha = static_cast<unsigned int>(color.a * kAlphaScale);
-    DmaQuadword &quad = *DmaPacket::shared().mCursor;
+    DmaQuadword &quad = *DmaPacket::shared().GetCursor();
     quad.mWord[kWordX] = nRed;
     quad.mWord[kWordY] = nGreen;
     quad.mWord[kWordZ] = nBlue;
     quad.mWord[kWordW] = nAlpha;
-    ++DmaPacket::shared().mCursor;
+    ++DmaPacket::shared().GetCursor();
 
     auto *pGeom = static_cast<PsMesh *>(mGeomOwner);
     auto *pData = static_cast<DmaQuadword *>(pGeom->mEdgesPacket->Lock());
@@ -747,8 +747,8 @@ void PsMesh::DrawEdges(const Transform &xfm) {
         DmaPacket &frame = DmaPacket::shared();
         frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
         for (int n = pGeom->mEdgesQwords; n-- != 0;) {
-            *frame.mCursor = *pData;
-            ++frame.mCursor;
+            *frame.GetCursor() = *pData;
+            ++frame.GetCursor();
             ++pData;
         }
         ThePs.Flush();
@@ -762,14 +762,14 @@ const Transform &PsMesh::SkinXfm() {
     }
 
     Transform first;
-    Multiply(first, mBones->mTrans[0]->mWorldXfm, mBones->mXfms[0]);
-    const Transform &world = mTransOwner->mWorldXfm;
+    Multiply(first, mBones->mTrans[0]->GetWorldXfm(), mBones->mXfms[0]);
+    const Transform &world = mTransOwner->GetWorldXfm();
     const SkinVert *pSkin = mSkinVerts.get();
     Vert *pOut = mVerts.data();
     const SkinVert *pEnd = mSkinVerts.get() + mVerts.size();
     if (mBones->mTrans[1] != nullptr) {
         Transform second;
-        Multiply(second, mBones->mTrans[1]->mWorldXfm, mBones->mXfms[1]);
+        Multiply(second, mBones->mTrans[1]->GetWorldXfm(), mBones->mXfms[1]);
         // The VU0 microprogram at instruction 0x156, byte 0xab0, blends the two bones. Each run
         // takes the next bind pose while the results of the run before are read.
         __asm__ volatile(

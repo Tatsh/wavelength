@@ -17,9 +17,9 @@ PlayMap::PlayMap(int nTicksPerBar, int nEndBar)
 void PlayMap::AddLoop(int nStartBar, int nNumBars, int nPlayBar) {
     mLooping = 1;
     const Loop &last = mLoops.back();
-    const int nPartBars = (nPlayBar - last.mPlayBar) % last.mNumBars;
+    const int nPartBars = (nPlayBar - last.GetPlayBar()) % last.GetNumBars();
     if (nPartBars != 0) {
-        mLoops.push_back(Loop{last.mStartBar, nPartBars, nPlayBar - nPartBars});
+        mLoops.push_back(Loop{last.GetStartBar(), nPartBars, nPlayBar - nPartBars});
     }
     mLoops.push_back(Loop{nStartBar, nNumBars, nPlayBar});
 }
@@ -30,7 +30,7 @@ int PlayMap::MapBar(int nBar) const {
     if (it != mLoops.begin()) {
         --it;
     }
-    return it->mStartBar + (nBar - it->mPlayBar) % it->mNumBars;
+    return it->GetStartBar() + (nBar - it->GetPlayBar()) % it->GetNumBars();
 }
 
 int PlayMap::MapTick(int nTick) const {
@@ -48,23 +48,23 @@ void PlayMap::GetSegment(
     if (it != mLoops.begin()) {
         --it;
     }
-    if (it->mNumBars == kEndlessBars) {
+    if (it->GetNumBars() == kEndlessBars) {
         *pChangeTick = kEndlessBars;
         *pIsLast = 1;
         return;
     }
 
-    int nChangeBar = nBar - (nBar - it->mPlayBar) % it->mNumBars + it->mNumBars;
-    *pEnd = (it->mStartBar + it->mNumBars) * mTicksPerBar;
+    int nChangeBar = nBar - (nBar - it->GetPlayBar()) % it->GetNumBars() + it->GetNumBars();
+    *pEnd = (it->GetStartBar() + it->GetNumBars()) * mTicksPerBar;
     const auto next = it + 1;
     *pIsLast = next == mLoops.end();
     auto nextLoop = it;
-    if (next != mLoops.end() && !(nChangeBar < next->mPlayBar)) {
+    if (next != mLoops.end() && !(nChangeBar < next->GetPlayBar())) {
         nextLoop = next;
-        nChangeBar = next->mPlayBar;
+        nChangeBar = next->GetPlayBar();
     }
-    *pNextStart = nextLoop->mStartBar * mTicksPerBar;
-    *pNextLength = nextLoop->mNumBars * mTicksPerBar;
+    *pNextStart = nextLoop->GetStartBar() * mTicksPerBar;
+    *pNextLength = nextLoop->GetNumBars() * mTicksPerBar;
     *pChangeTick = nChangeBar * mTicksPerBar;
 }
 

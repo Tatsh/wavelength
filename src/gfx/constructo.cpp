@@ -90,16 +90,16 @@ void Constructo::SetSongTicks(float fSongTicks) {
                 mConfig->Sym(kFileNode));
             return;
         }
-        if (std::find(pView->mAnims.begin(), pView->mAnims.end(), pParticles) ==
-            pView->mAnims.end()) {
+        if (std::find(pView->GetAnims().begin(), pView->GetAnims().end(), pParticles) ==
+            pView->GetAnims().end()) {
             DebugNotify("couldn't find %s in\nanim list of %s, in file\n%s",
-                        pParticles->mName.c_str(),
-                        pView->mName.c_str(),
+                        pParticles->GetName(),
+                        pView->GetName(),
                         mConfig->Sym(kFileNode));
             continue;
         }
         pView->RemoveAnim(pParticles);
-        pParticles->mCollide = 1;
+        pParticles->SetCollide(1);
         mPlanes.push_back(MovingPSPlane{pParticles, pPlane, kAxisY});
     }
 }
@@ -116,17 +116,17 @@ void Constructo::Poll(float fTick, float fTime) {
 void Constructo::MovingPSPlane::Update(float fFrame) {
     const Vector3 *pNormal;
     if (mAxis == kAxisX) {
-        pNormal = &mPlane->mWorldXfm.mBasisX;
+        pNormal = &mPlane->GetWorldXfm().mBasisX;
     } else if (mAxis == kAxisY) {
-        pNormal = &mPlane->mWorldXfm.mBasisY;
+        pNormal = &mPlane->GetWorldXfm().mBasisY;
     } else {
-        pNormal = &mPlane->mWorldXfm.mBasisZ;
+        pNormal = &mPlane->GetWorldXfm().mBasisZ;
     }
-    const Vector3 &origin = mPlane->mWorldXfm.mTranslation;
-    mParticles->mCollidePlane =
+    const Vector3 &origin = mPlane->GetWorldXfm().mTranslation;
+    mParticles->SetCollidePlane(
         Plane{pNormal->x,
               pNormal->y,
               pNormal->z,
-              -((pNormal->x * origin.x) + (pNormal->y * origin.y) + (pNormal->z * origin.z))};
+              -((pNormal->x * origin.x) + (pNormal->y * origin.y) + (pNormal->z * origin.z))});
     mParticles->SetFrame(fFrame);
 }

@@ -112,7 +112,7 @@ bool NetChooseIConfigScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
             TheUI.GotoScreen(kCreateConfigScreen);
         } else {
             UIScreen *pConnect = TheUI.FindScreen(kConnectScreen, false);
-            static_cast<NetInetConnect *>(pConnect)->mConfig = ListAt(mConfigs, mSelected)->mId;
+            static_cast<NetInetConnect *>(pConnect)->SetConfig(ListAt(mConfigs, mSelected)->mId);
             TheUI.GotoScreen(pConnect);
         }
     }

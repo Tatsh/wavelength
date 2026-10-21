@@ -14,10 +14,10 @@ bool FreestyleLapTipScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool FreestyleLapTipScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadCross && pMsg->mPressed) {
+    if (pMsg->GetButton() == kPadCross && pMsg->GetPressed()) {
         TheMetagame.AdvanceUnlocks();
     }
     return FreqScreen::HandleJoypad(pMsg);

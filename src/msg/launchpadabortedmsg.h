@@ -98,5 +98,11 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return One of Reason, or another error code. */
+    int GetReason() const {
+        return mReason;
+    }
+
+private:
     int mReason; /*!< One of Reason, or another error code. */
 };

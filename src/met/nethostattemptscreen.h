@@ -112,5 +112,6 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+private:
     int mCancelling; /*!< Non-zero once the player cancelled the attempt. */
 };

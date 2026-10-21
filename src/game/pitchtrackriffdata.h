@@ -100,10 +100,15 @@ public:
      */
     bool IsEnabled() const;
 
-    std::vector<TickObj<RiffSet>> mRiffSets; /*!< The sets, by the tick they start at. */
-    int mReserved10;                         // +0x10, set to 1 and not read by any routine here.
-    int mEnabled;                            /*!< Whether the track takes part in a remix. */
-    String mName;                            /*!< The name of the track. */
+    /** @return The name of the track. */
+    const String &GetName() const {
+        return mName;
+    }
+
+    /** @param pszName The name of the track. */
+    void SetName(const char *pszName) {
+        mName = pszName;
+    }
 
 private:
     /**
@@ -133,4 +138,9 @@ private:
     static bool TickBefore(const TickObj<RiffSet> &first, const TickObj<RiffSet> &second) {
         return first.mPosition < second.mPosition;
     }
+
+    std::vector<TickObj<RiffSet>> mRiffSets; /*!< The sets, by the tick they start at. */
+    int mReserved10;                         // +0x10, set to 1 and not read by any routine here.
+    int mEnabled;                            /*!< Whether the track takes part in a remix. */
+    String mName;                            /*!< The name of the track. */
 };

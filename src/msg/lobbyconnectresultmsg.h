@@ -91,6 +91,22 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The locations of the server. */
+    const std::list<LobbyLocation> &GetLocations() const {
+        return mLocations;
+    }
+
+    /** @return The locations of the server, for filling. */
+    std::list<LobbyLocation> &GetLocations() {
+        return mLocations;
+    }
+
+    /** @return One of Result, or another negative error. */
+    int GetResult() const {
+        return mResult;
+    }
+
+private:
     int mResult;                         /*!< One of Result, or another negative error. */
     std::list<LobbyLocation> mLocations; /*!< The locations of the server. */
 };

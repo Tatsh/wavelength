@@ -214,16 +214,16 @@ RndMat *FindGradeMaterial(int nGrade, bool bEnd) {
 
 void DrawAvatarOnMesh(AvatarPartSet *pAvatar, RndMesh *pMesh) {
     if (pAvatar->IsWinAnim()) {
-        RndMat *pOldMat = pMesh->mMat;
+        RndMat *pOldMat = pMesh->GetMat();
         pMesh->SetMat(g_pWinnerMat);
         static_cast<RndDrawable *>(pMesh)->Draw();
         pMesh->SetMat(pOldMat);
     }
 
-    const std::vector<RndMesh::Vert> &verts = pMesh->mGeomOwner->mVerts;
+    const std::vector<RndMesh::Vert> &verts = pMesh->GetGeomOwner()->GetVerts();
     Vector3 corners[kNumMeshCorners];
-    MultiplyPoint(pMesh->mWorldXfm, verts[kMeshCornerFirst].mPos, corners[0]);
-    MultiplyPoint(pMesh->mWorldXfm, verts[kMeshCornerLast].mPos, corners[1]);
+    MultiplyPoint(pMesh->GetWorldXfm(), verts[kMeshCornerFirst].mPos, corners[0]);
+    MultiplyPoint(pMesh->GetWorldXfm(), verts[kMeshCornerLast].mPos, corners[1]);
     Vector2 ptScreen[kNumMeshCorners];
     for (int i = 0; i < kNumMeshCorners; ++i) {
         RndCam::sCurrent->WorldToScreen(corners[i], ptScreen[i]);
@@ -246,13 +246,13 @@ const char *FormatGenreTempo(const SongEntry &song, const RemixInfo *pInfo) {
 }
 
 bool TrimSpaces(String *pText) {
-    if (pText->mLength == 0) {
+    if (pText->GetLength() == 0) {
         return false;
     }
 
     bool bTrimmed = false;
     int nLeading = 0;
-    while (static_cast<unsigned>(nLeading) < static_cast<unsigned>(pText->mLength) &&
+    while (static_cast<unsigned>(nLeading) < static_cast<unsigned>(pText->GetLength()) &&
            (*pText)[nLeading] == ' ') {
         ++nLeading;
     }
@@ -261,13 +261,13 @@ bool TrimSpaces(String *pText) {
         bTrimmed = true;
     }
 
-    int nLast = pText->mLength - 1;
+    int nLast = pText->GetLength() - 1;
     while (nLast > 0 && (*pText)[nLast] == ' ') {
         --nLast;
     }
-    if (static_cast<unsigned>(nLast) < static_cast<unsigned>(pText->mLength - 1)) {
+    if (static_cast<unsigned>(nLast) < static_cast<unsigned>(pText->GetLength() - 1)) {
         // The count is one more than the characters after nLast, as in the binary.
-        pText->Erase(nLast + 1, pText->mLength - nLast);
+        pText->Erase(nLast + 1, pText->GetLength() - nLast);
         bTrimmed = true;
     }
     return bTrimmed;

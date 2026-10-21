@@ -39,15 +39,15 @@ void GetGamePlayersTask::OnResponse(int nConnection,
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
         LobbyPlayer player;
-        player.mId = pResponse->accountId;
+        player.SetId(pResponse->accountId);
 #ifdef VIDEO_STANDARD_PAL
         const String name = Utf8DecodedString(pResponse->accountName);
-        player.mName = name.c_str();
+        player.SetName(name.c_str());
 #else
-        player.mName = pResponse->accountName;
+        player.SetName(pResponse->accountName);
 #endif
-        player.mConnectionType = LobbyRT::ConnectionTypeOf(pResponse->connectionClass);
-        player.mRank = 0;
+        player.SetConnectionType(LobbyRT::ConnectionTypeOf(pResponse->connectionClass));
+        player.SetRank(0);
         LobbyRT::DecodePlayer(&player, pResponse->stats);
         TheLobbyRT->GetLaunchpadPlayers().push_back(player);
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {

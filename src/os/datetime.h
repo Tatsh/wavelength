@@ -110,12 +110,65 @@ public:
      */
     bool operator<(const DateTime &other) const;
 
-    unsigned char mSecond; /*!< The second, 0 to 59. */
-    unsigned char mMinute; /*!< The minute, 0 to 59. */
-    unsigned char mHour;   /*!< The hour, 0 to 23. */
-    unsigned char mDay;    /*!< The day of the month, from 1. */
-    unsigned char mMonth;  /*!< The month, from 0. */
-    unsigned char mYear;   /*!< The years since 1900. */
+    /** @return The second, 0 to 59. */
+    unsigned char GetSecond() const {
+        return mSecond;
+    }
+
+    /** @param nSecond The second, 0 to 59. */
+    void SetSecond(unsigned char nSecond) {
+        mSecond = nSecond;
+    }
+
+    /** @return The minute, 0 to 59. */
+    unsigned char GetMinute() const {
+        return mMinute;
+    }
+
+    /** @param nMinute The minute, 0 to 59. */
+    void SetMinute(unsigned char nMinute) {
+        mMinute = nMinute;
+    }
+
+    /** @return The hour, 0 to 23. */
+    unsigned char GetHour() const {
+        return mHour;
+    }
+
+    /** @param nHour The hour, 0 to 23. */
+    void SetHour(unsigned char nHour) {
+        mHour = nHour;
+    }
+
+    /** @return The day of the month, from 1. */
+    unsigned char GetDay() const {
+        return mDay;
+    }
+
+    /** @param nDay The day of the month, from 1. */
+    void SetDay(unsigned char nDay) {
+        mDay = nDay;
+    }
+
+    /** @return The month, from 0. */
+    unsigned char GetMonth() const {
+        return mMonth;
+    }
+
+    /** @param nMonth The month, from 0. */
+    void SetMonth(unsigned char nMonth) {
+        mMonth = nMonth;
+    }
+
+    /** @return The years since 1900. */
+    unsigned char GetYear() const {
+        return mYear;
+    }
+
+    /** @param nYear The years since 1900. */
+    void SetYear(unsigned char nYear) {
+        mYear = nYear;
+    }
 
 private:
     /**
@@ -135,6 +188,13 @@ private:
      * @ghidraAddress PAL: 0x00292100
      */
     static void OnClockRead(int nResult);
+
+    unsigned char mSecond; /*!< The second, 0 to 59. */
+    unsigned char mMinute; /*!< The minute, 0 to 59. */
+    unsigned char mHour;   /*!< The hour, 0 to 23. */
+    unsigned char mDay;    /*!< The day of the month, from 1. */
+    unsigned char mMonth;  /*!< The month, from 0. */
+    unsigned char mYear;   /*!< The years since 1900. */
 };
 
 /**

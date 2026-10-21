@@ -189,7 +189,7 @@ bool PartUnlockScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
 }
 
 bool PartUnlockScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
     return FreqScreen::HandleJoypad(pMsg);

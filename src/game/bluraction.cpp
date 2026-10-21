@@ -14,12 +14,12 @@ BlurAction::BlurAction(DataArray *pAction) {
 }
 
 void BlurAction::Exec() {
-    ThePs.mBlurAmount = mAmount;
-    ThePs.mBlurCount = mCount;
+    ThePs.SetBlurAmount(mAmount);
+    ThePs.SetBlurCount(mCount);
     for (int i = 0; i < kRectSize; ++i) {
-        ThePs.mBlurRect[i] = mRect[i];
+        ThePs.GetBlurRect()[i] = mRect[i];
     }
-    ThePs.mBlurActive = 1;
+    ThePs.SetBlurActive(1);
     if (mDuration != 0.0f) {
         mEndTime = TheTriggerMgr.GetCurrentTime() + mDuration;
         TheTriggerMgr.AddRunning(this);
@@ -30,6 +30,6 @@ bool BlurAction::Poll() {
     if (!(mEndTime <= TheTriggerMgr.GetCurrentTime())) {
         return false;
     }
-    ThePs.mBlurActive = 0;
+    ThePs.SetBlurActive(0);
     return true;
 }

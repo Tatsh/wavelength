@@ -155,5 +155,16 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The players struck. */
+    const std::vector<VictimData> &GetVictims() const {
+        return mVictims;
+    }
+
+    /** @return The players struck, for filling. */
+    std::vector<VictimData> &GetVictims() {
+        return mVictims;
+    }
+
+private:
     std::vector<VictimData> mVictims; /*!< The players struck. */
 };

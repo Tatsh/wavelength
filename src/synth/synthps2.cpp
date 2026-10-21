@@ -226,7 +226,7 @@ SynthPS2::SynthPS2()
     float fSmoothing; // Left unset when the entry is missing, as in the binary.
     SystemConfig()->FindArray("synth", false)->FindFloat("volume_smoothing", &fSmoothing, true);
     for (int i = 0; i < kNumChannels; ++i) {
-        mChannelVolumes[i].mCoefficient = fSmoothing;
+        mChannelVolumes[i].SetCoefficient(fSmoothing);
     }
 
     mAudioData.reserve(kAudioBufferSize);
@@ -352,7 +352,7 @@ int SynthPS2::InitIop() {
 void SynthPS2::UpdateVolumes() {
     for (int i = 0; i < kNumChannels; ++i) {
         OnePoleFilter &volume = mChannelVolumes[i];
-        if (kVolumeStep < fabsf(volume.mTarget - volume.mValue)) {
+        if (kVolumeStep < fabsf(volume.GetTarget() - volume.GetValue())) {
             const float fVolume = volume.Update();
             mMidiQueue.push_back(
                 PackMessage(kStatusControlChange | i,
@@ -644,7 +644,7 @@ int SynthPS2::SendMessage(unsigned char nByte0,
     } else if (IsController(nByte0, nByte1, kControllerOutputLevel)) {
         SetLevelFromController(nByte2);
     } else if (IsController(nByte0, nByte1, kControllerVolumeTarget)) {
-        mChannelVolumes[nByte0 & kChannelMask].mTarget = static_cast<float>(nByte2);
+        mChannelVolumes[nByte0 & kChannelMask].SetTarget(static_cast<float>(nByte2));
     } else {
         mMidiQueue.push_back(nMessage);
     }
@@ -961,9 +961,9 @@ void SynthPS2::SetSoftFxFilter(const SoftFxFilter &filter) {
         for (int i = 0; i < kNumTaps; ++i) {
             const SoftFxFilter::Tap &tap = filter.mTaps[i];
             Lfo &lfo = mTapOscillators[i];
-            lfo.mWaveform = tap.mLfo;
-            lfo.mPeriod = (tap.mOscMin + tap.mOscMax) * 0.5f;
-            lfo.mPhase = tap.mPhase;
+            lfo.SetWaveform(tap.mLfo);
+            lfo.SetPeriod((tap.mOscMin + tap.mOscMax) * 0.5f);
+            lfo.SetPhase(tap.mPhase);
             lfo.Stop();
             lfo.Start();
         }
@@ -1108,7 +1108,7 @@ void SynthPS2::UpdateSoftFx() {
             const SoftFxFilter::Tap &tap = mFilter.mTaps[i];
             Lfo &lfo = mTapOscillators[i];
             const float fFastest = 1.0f / tap.mOscMax;
-            lfo.mPeriod = (1.0f / tap.mOscMin - fFastest) * fSweep + fFastest;
+            lfo.SetPeriod((1.0f / tap.mOscMin - fFastest) * fSweep + fFastest);
             const float fValue = lfo.Evaluate();
             params.mTaps[i].mDelay = static_cast<int>(
                 static_cast<float>(tap.mDelayMin) +

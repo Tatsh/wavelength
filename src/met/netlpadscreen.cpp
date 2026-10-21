@@ -135,10 +135,10 @@ bool NetLpadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetLpadScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadCircle && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadCircle && pMsg->GetPressed() != 0) {
         TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(mButtonPanel, false));
         TheUI.GetCurrentScreen()->GetFocusPanel()->SetFocus(nullptr, kPadNone);
         FindChatPanel()->Dispatch(pMsg);
@@ -210,7 +210,7 @@ bool NetLpadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetLpadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (TheNetLaunchpad != nullptr && strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (TheNetLaunchpad != nullptr && strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         TheNetLaunchpad->Activate();
     } else {
         NetJoinLPadScreen::ShowLaunchpadLost();

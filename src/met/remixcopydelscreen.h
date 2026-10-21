@@ -74,5 +74,16 @@ public:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
+    /** @return The memory card slot. */
+    int GetSlot() const {
+        return mSlot;
+    }
+
+    /** @param nSlot The memory card slot. */
+    void SetSlot(int nSlot) {
+        mSlot = nSlot;
+    }
+
+private:
     int mSlot; /*!< The memory card slot. */
 };

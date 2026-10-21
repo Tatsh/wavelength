@@ -55,6 +55,20 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+    /** @param nSpace The space the save needs, set by ErrorScreen::ShowNoSpaceError(). */
+    void SetSpace(int nSpace) {
+        mSpace = nSpace;
+    }
+
+#ifdef VIDEO_STANDARD_PAL
+    /** @param pszSaveName The name of the save, set by ErrorScreen::ShowNoSpaceError(). */
+    void SetSaveName(const char *pszSaveName) {
+        mSaveName = pszSaveName;
+    }
+
+#endif
+
+private:
     int mSpace; /*!< The space the save needs, which ErrorScreen::ShowNoSpaceError() sets. */
 #ifdef VIDEO_STANDARD_PAL
     String mSaveName; /*!< The name of the save, which ErrorScreen::ShowNoSpaceError() sets. */

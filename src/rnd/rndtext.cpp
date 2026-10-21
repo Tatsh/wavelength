@@ -50,7 +50,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -91,13 +91,13 @@ RndText::~RndText() {
 
 void RndText::ListDrawObjects(std::list<RndObject *> &objects) {
     if (mMesh != nullptr) {
-        objects.push_back(mMesh->mMat);
+        objects.push_back(mMesh->GetMat());
     }
 }
 
 void RndText::ListDrawables(std::list<RndDrawable *> &drawables) {
-    if (mMesh != nullptr && !mMesh->mGeomOwner->mVerts.empty()) {
-        const std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
+    if (mMesh != nullptr && !mMesh->GetGeomOwner()->GetVerts().empty()) {
+        const std::vector<RndMesh::Vert> &verts = mMesh->GetGeomOwner()->GetVerts();
         const Vector3 &first = verts.front().mPos;
         const Vector3 &last = verts.back().mPos;
         Sphere sphere;
@@ -108,8 +108,8 @@ void RndText::ListDrawables(std::list<RndDrawable *> &drawables) {
         const float fY = first.y - sphere.mCenter.y;
         const float fZ = first.z - sphere.mCenter.z;
         sphere.mRadius = std::sqrt(fX * fX + fY * fY + fZ * fZ);
-        MultiplyPoint(mMesh->mWorldXfm, sphere.mCenter, sphere.mCenter);
-        if (IsSphereOutsideFrustum(sphere, RndCam::sCurrent->mWorldFrustum) == 0) {
+        MultiplyPoint(mMesh->GetWorldXfm(), sphere.mCenter, sphere.mCenter);
+        if (IsSphereOutsideFrustum(sphere, RndCam::sCurrent->GetWorldFrustum()) == 0) {
             drawables.push_back(this);
         }
     }
@@ -141,8 +141,8 @@ int RndText::DrawShowing() {
         return 1;
     }
     const Vector2 charSize{0.0f, 0.0f};
-    const Vector2 pos{mLocalXfm.mTranslation.x * static_cast<float>(TheRnd->mScreenWidth),
-                      mLocalXfm.mTranslation.y * static_cast<float>(TheRnd->mScreenHeight)};
+    const Vector2 pos{mLocalXfm.mTranslation.x * static_cast<float>(TheRnd->GetScreenWidth()),
+                      mLocalXfm.mTranslation.y * static_cast<float>(TheRnd->GetScreenHeight())};
     TheRnd->DrawString(mText.c_str(), pos, charSize, mColor);
     return 1;
 }
@@ -208,7 +208,7 @@ void RndText::DumpText(PrnStream &stream) {
     RndDrawable::DumpText(stream);
     RndCollideable::DumpText(stream);
     RndTransformable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndText]\n";
@@ -219,7 +219,7 @@ void RndText::DumpText(PrnStream &stream) {
     stream << "\n";
     stream << "color:" << mColor << " word wrap:" << (mWordWrap != 0)
            << " wrap width:" << mWrapWidth << "\n";
-    if (stream.mDumpLevel < 2) {
+    if (stream.GetDumpLevel() < 2) {
         return;
     }
     stream << "text:";
@@ -232,7 +232,7 @@ void RndText::Save(BinStream &stream) {
     RndDrawable::Save(stream);
     RndCollideable::Save(stream);
     RndTransformable::Save(stream);
-    stream.WriteString(mFont != nullptr ? mFont->mName.c_str() : "");
+    stream.WriteString(mFont != nullptr ? mFont->GetName() : "");
     stream.WriteEndian(&mAlign, sizeof(mAlign));
     stream.WriteString(mPreWrapText.c_str());
     stream.WriteEndian(&mColor.r, sizeof(mColor.r));
@@ -359,7 +359,7 @@ void RndText::SyncText() {
         const String spaces(kTabSpaces);
         mText.Replace(nPos, 1, spaces);
     }
-    if (mText.mLength > kMaxTextLength) {
+    if (mText.GetLength() > kMaxTextLength) {
         mText.Truncate(kMaxTextLength);
     }
     if (mWordWrap != 0 && mFont != nullptr) {
@@ -383,11 +383,11 @@ void RndText::SyncDepthTest() {
         return;
     }
     if (mDepthTest != 0) {
-        mMesh->mZFunc = RndMesh::kZFuncLess;
-        mMesh->mZMode = RndMesh::kZModeZReadOnly;
+        mMesh->SetZFunc(RndMesh::kZFuncLess);
+        mMesh->SetZMode(RndMesh::kZModeZReadOnly);
     } else {
-        mMesh->mZFunc = RndMesh::kZFuncNever;
-        mMesh->mZMode = RndMesh::kZModeDisable;
+        mMesh->SetZFunc(RndMesh::kZFuncNever);
+        mMesh->SetZMode(RndMesh::kZModeDisable);
     }
 }
 
@@ -457,10 +457,10 @@ int RndText::NumLines() {
 
 const char *RndText::MeasureLine(const char *pszLine, float &fWidth) {
     fWidth = 0.0f;
-    const char *pEnd = mText.c_str() + mText.mLength;
+    const char *pEnd = mText.c_str() + mText.GetLength();
     const char *p = pszLine;
     while (p < pEnd && *p != '\n') {
-        fWidth += mFont->CharWidth(*p) + mFont->mSpace;
+        fWidth += mFont->CharWidth(*p) + mFont->GetSpace();
         ++p;
     }
     return p + 1;
@@ -468,7 +468,7 @@ const char *RndText::MeasureLine(const char *pszLine, float &fWidth) {
 
 void RndText::BuildMesh() {
     mMesh.reset();
-    if (mShowing == 0 || mFont == nullptr || mPreWrapText.mLength == 0) {
+    if (mShowing == 0 || mFont == nullptr || mPreWrapText.GetLength() == 0) {
         return;
     }
     const char *pszMeshName = FormatString("[%s_mesh]", mName.c_str());
@@ -476,12 +476,13 @@ void RndText::BuildMesh() {
     mMesh.reset(pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr);
     const int nLines = NumLines();
     mMesh->SetBillboard(mBillboard);
-    mMesh->mInternal = 1;
-    mMesh->SetMat(mFont->mMat);
-    RndMesh *pGeom = mMesh->mGeomOwner;
-    pGeom->mFaces.resize((mText.mLength + 1 - nLines) * kFacesPerChar, RndMesh::Face());
-    pGeom = mMesh->mGeomOwner;
-    pGeom->mVerts.resize(pGeom->mFaces.size() * kVertsPerChar / kFacesPerChar, RndMesh::Vert());
+    mMesh->SetInternal(1);
+    mMesh->SetMat(mFont->GetMat());
+    RndMesh *pGeom = mMesh->GetGeomOwner();
+    pGeom->GetFaces().resize((mText.GetLength() + 1 - nLines) * kFacesPerChar, RndMesh::Face());
+    pGeom = mMesh->GetGeomOwner();
+    pGeom->GetVerts().resize(pGeom->GetFaces().size() * kVertsPerChar / kFacesPerChar,
+                             RndMesh::Vert());
     float fLine = 0.0f;
     SyncDepthTest();
     if ((mAlign & kAlignMiddle) != 0) {
@@ -493,7 +494,7 @@ void RndText::BuildMesh() {
     const char *p = pStart;
     int nFirstChar = 0;
     float fWidth = 0.0f;
-    for (; p != mText.c_str() + mText.mLength; ++p) {
+    for (; p != mText.c_str() + mText.GetLength(); ++p) {
         if (*p == '\n') {
             BuildLine(nFirstChar, pStart, p, fLine, fWidth);
             fLine += 1.0f;
@@ -501,7 +502,7 @@ void RndText::BuildMesh() {
             fWidth = 0.0f;
             pStart = p + 1;
         } else {
-            fWidth += mFont->CharWidth(*p) + mFont->mSpace;
+            fWidth += mFont->CharWidth(*p) + mFont->GetSpace();
         }
     }
     BuildLine(nFirstChar, pStart, p, fLine, fWidth);
@@ -517,18 +518,18 @@ void RndText::BuildLine(
     } else if ((mAlign & kAlignRight) != 0) {
         fX = -fWidth;
     }
-    RndMesh *pGeom = mMesh->mGeomOwner;
-    const float fZ = -fLine * mFont->mSize;
+    RndMesh *pGeom = mMesh->GetGeomOwner();
+    const float fZ = -fLine * mFont->GetSize();
     int nFace = nFirstChar * kFacesPerChar;
     int nVert = nFirstChar * kVertsPerChar;
     for (const char *p = pszStart; p != pszEnd; ++p) {
         Vector2 uvStart;
         Vector2 uvEnd;
         mFont->CharUv(*p, uvStart, uvEnd);
-        RndMesh::Vert &topLeft = pGeom->mVerts[nVert];
-        RndMesh::Vert &bottomLeft = pGeom->mVerts[nVert + 1];
-        RndMesh::Vert &bottomRight = pGeom->mVerts[nVert + 2];
-        RndMesh::Vert &topRight = pGeom->mVerts[nVert + 3];
+        RndMesh::Vert &topLeft = pGeom->GetVerts()[nVert];
+        RndMesh::Vert &bottomLeft = pGeom->GetVerts()[nVert + 1];
+        RndMesh::Vert &bottomRight = pGeom->GetVerts()[nVert + 2];
+        RndMesh::Vert &topRight = pGeom->GetVerts()[nVert + 3];
         topLeft.mTex = uvStart;
         bottomLeft.mTex.x = uvStart.x;
         bottomLeft.mTex.y = uvEnd.y;
@@ -537,7 +538,7 @@ void RndText::BuildLine(
         topRight.mTex.x = uvEnd.x;
         const float fAdvance = mFont->CharWidth(*p);
         const float fRight = fX + fAdvance;
-        const float fBottom = fZ - mFont->mSize;
+        const float fBottom = fZ - mFont->GetSize();
         topLeft.mPos.x = fX;
         bottomLeft.mPos.x = fX;
         topLeft.mPos.y = 0.0f;
@@ -555,8 +556,8 @@ void RndText::BuildLine(
         bottomRight.mColor = mColor;
         bottomLeft.mColor = mColor;
         const auto nIndex = static_cast<unsigned short>(nVert);
-        RndMesh::Face &first = pGeom->mFaces[nFace];
-        RndMesh::Face &second = pGeom->mFaces[nFace + 1];
+        RndMesh::Face &first = pGeom->GetFaces()[nFace];
+        RndMesh::Face &second = pGeom->GetFaces()[nFace + 1];
         first.mVerts[1] = nIndex + 1;
         second.mVerts[0] = nIndex;
         second.mVerts[1] = nIndex + 2;
@@ -565,7 +566,7 @@ void RndText::BuildLine(
         first.mVerts[2] = nIndex + 2;
         nFace += kFacesPerChar;
         nVert += kVertsPerChar;
-        fX += fAdvance + mFont->mSpace;
+        fX += fAdvance + mFont->GetSpace();
     }
 }
 
@@ -599,7 +600,7 @@ Vector3 RndText::CharPosition(int nIndex) {
     }
     float fX = 0.0f;
     for (const char *p = pLine; p < pEnd && p < pNext; ++p) {
-        fX += mFont->CharWidth(*p) + mFont->mSpace;
+        fX += mFont->CharWidth(*p) + mFont->GetSpace();
     }
     if ((mAlign & kAlignCenter) != 0) {
         fX -= fWidth * 0.5f;
@@ -612,7 +613,7 @@ Vector3 RndText::CharPosition(int nIndex) {
     } else if ((mAlign & kAlignBottom) != 0) {
         fLine -= fLines - 1.0f;
     }
-    return Vector3{fX, 0.0f, -fLine * mFont->mSize, 1.0f};
+    return Vector3{fX, 0.0f, -fLine * mFont->GetSize(), 1.0f};
 }
 
 void RndText::ReleaseRefs() {

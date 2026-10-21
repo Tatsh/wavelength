@@ -89,9 +89,18 @@ public:
      */
     void ToggleSelected();
 
-    std::vector<PlaylistSongData> mSongs; /*!< The entries of the list. */
+    /** @return The entries of the list. */
+    const std::vector<PlaylistSongData> &GetSongs() const {
+        return mSongs;
+    }
+
+    /** @return The entries of the list. */
+    std::vector<PlaylistSongData> &GetSongs() {
+        return mSongs;
+    }
 
 private:
     String mPicPanel; // The description's `pic_panel`, the panel of the picture.
     int mNumGroups;   // The number of entries at the start that stand for groups of songs.
+    std::vector<PlaylistSongData> mSongs; /*!< The entries of the list. */
 };

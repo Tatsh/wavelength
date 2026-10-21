@@ -40,7 +40,7 @@ public:
      * @ghidraAddress PAL: 0x003e4448
      */
     bool Test() override {
-        const float flFrame = mAnim->mFilteredFrame;
+        const float flFrame = mAnim->GetFilteredFrame();
         const bool bPassed = mLastFrame < mFrame && mFrame <= flFrame;
         mLastFrame = flFrame;
         return bPassed;

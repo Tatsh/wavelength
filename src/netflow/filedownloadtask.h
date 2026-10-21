@@ -45,15 +45,6 @@ public:
                            int nSize,
                            const rtMediusFileTransferResponse *pResponse);
 
-    String *mName;   /*!< The file. */
-    char **mBuffer;  /*!< The buffer. */
-    int *mSize;      /*!< The size of the buffer in bytes. */
-    int mReceived;   /*!< The bytes received. */
-    int mDone;       /*!< Non-zero once the last part arrived. */
-    float mPolls;    /*!< The polls since the start. */
-    float mRate;     /*!< The bytes received per poll. */
-    float mProgress; /*!< The part reported, from 0 to 1. */
-
 protected:
     /**
      * Send the request.
@@ -82,4 +73,13 @@ private:
      * @ghidraAddress PAL: 0x00270650
      */
     void Append(const rtMediusFileTransferResponse *pResponse, int nBytes);
+
+    String *mName;   /*!< The file. */
+    char **mBuffer;  /*!< The buffer. */
+    int *mSize;      /*!< The size of the buffer in bytes. */
+    int mReceived;   /*!< The bytes received. */
+    int mDone;       /*!< Non-zero once the last part arrived. */
+    float mPolls;    /*!< The polls since the start. */
+    float mRate;     /*!< The bytes received per poll. */
+    float mProgress; /*!< The part reported, from 0 to 1. */
 };

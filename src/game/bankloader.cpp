@@ -235,7 +235,7 @@ void BankLoader::SwapBankLoader::Advance() {
     const int nTick = TheSongScheduler.GetTick();
     int nBar = nTick / mTicksPerBar;
     int nNext;
-    if (mPlayMap->mLooping == 0) {
+    if (mPlayMap->GetLooping() == 0) {
         const int nCurrent = GetBank(nBar % mNumBars);
         do {
             ++nBar;

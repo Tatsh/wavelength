@@ -21,12 +21,12 @@ ForceFeedbackMgr::Controller::Controller(int nController, int nTicksPerBar)
     : mSmallMotor(0), mBigMotor(0), mEnabled(1), mEffects(kEffectCount) {
     // The configured duration is in milliseconds by its key, and the scheduler reads it as ticks.
     mBeatEffect = std::make_unique<MotorEffect>(
-        nController, kSmallMotorOn, kBigMotorOff, TheGameConfig->mBeatDurationMs);
+        nController, kSmallMotorOn, kBigMotorOff, TheGameConfig->GetBeatDurationMs());
     mEffects[kEffectCripple] =
         std::make_unique<MotorEffect>(nController,
                                       kSmallMotorOn,
                                       kBigMotorFull,
-                                      TheGameConfig->mCripplerDurationBars * nTicksPerBar);
+                                      TheGameConfig->GetCripplerDurationBars() * nTicksPerBar);
     mEffects[kEffectBump] =
         std::make_unique<MotorEffect>(nController, kSmallMotorOff, kBigMotorFull, kBumpTicks);
     mEffects[kEffectAutocatch] = std::make_unique<MotorEffect>(

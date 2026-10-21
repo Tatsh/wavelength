@@ -80,6 +80,7 @@ public:
      */
     void SetText(const char *pszText);
 
+private:
     int mTriCancel;       /*!< Non-zero when the cancel hint shows, `tri_cancel`. +0xe0 */
     RndView *mPanelView;  /*!< The view `dialog_panel.view`, whose frame sets the height. */
     RndView *mButtonView; /*!< The view `dialog_text.view`, whose frame places the buttons. */

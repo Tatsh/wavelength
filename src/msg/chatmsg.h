@@ -169,10 +169,25 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
-    int mAccountId;      /*!< The sender's account identifier. */
-    int mPlayer;         /*!< The sender's identifier in the session, or -2 for none. */
-    const char *mText;   /*!< The text. */
-    const char *mSender; /*!< The sender's name. */
+    /** @return The sender's account identifier. */
+    int GetAccountId() const {
+        return mAccountId;
+    }
+
+    /** @return The sender's identifier in the session, or -2 for none. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return The sender's name. */
+    const char *GetSender() const {
+        return mSender;
+    }
+
+    /** @return The text. */
+    const char *GetText() const {
+        return mText;
+    }
 
 private:
     /**
@@ -198,4 +213,9 @@ private:
      * @ghidraAddress PAL: 0x0025ae40
      */
     static bool AllowLine();
+
+    int mAccountId;      /*!< The sender's account identifier. */
+    int mPlayer;         /*!< The sender's identifier in the session, or -2 for none. */
+    const char *mText;   /*!< The text. */
+    const char *mSender; /*!< The sender's name. */
 };

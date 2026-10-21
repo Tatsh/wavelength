@@ -104,6 +104,22 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The button, one of JoypadButton. */
+    int GetButton() const {
+        return mButton;
+    }
+
+    /** @return The controller. */
+    int GetPad() const {
+        return mPad;
+    }
+
+    /** @return 1 when the button went down, 0 when it went up. */
+    int GetPressed() const {
+        return mPressed;
+    }
+
+private:
     int mPad;     /*!< The controller. */
     int mButton;  /*!< The button, one of JoypadButton. */
     int mPressed; /*!< 1 when the button went down, 0 when it went up. */

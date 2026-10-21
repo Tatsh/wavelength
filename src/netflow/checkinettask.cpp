@@ -9,7 +9,7 @@ void CheckInetTask::OnStart() {
 }
 
 bool CheckInetTask::OnResult(InetCheckConnectionResultMsg *pMsg) {
-    Finish(pMsg->mResult == 0, LobbyConnectResultMsg::kResultLostInternet);
+    Finish(pMsg->GetResult() == 0, LobbyConnectResultMsg::kResultLostInternet);
     return false;
 }
 

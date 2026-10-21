@@ -165,13 +165,6 @@ public:
      */
     static int sRev;
 
-    RndParticleSys *mParticleSys;            /*!< The particle system the animation drives. */
-    std::vector<Key<Color>> mStartColorKeys; /*!< The low end of the start colour range. */
-    std::vector<Key<Color>> mEndColorKeys;   /*!< The low end of the end colour range. */
-    std::vector<Key<float>> mEmitRateKeys;   /*!< The low end of the emission rate. */
-    RndParticleSysAnim *mFramesOwner;        /*!< The animation that has the keys. */
-    float mEmitRateRatio; /*!< The ratio of the high end of the emission rate to the low end. */
-
 protected:
     /**
      * Drop the references on the particle system and the frames owner.
@@ -192,4 +185,12 @@ protected:
      * @ghidraAddress PAL: 0x00248bc0
      */
     void AcquireRefs();
+
+private:
+    RndParticleSys *mParticleSys;            /*!< The particle system the animation drives. */
+    std::vector<Key<Color>> mStartColorKeys; /*!< The low end of the start colour range. */
+    std::vector<Key<Color>> mEndColorKeys;   /*!< The low end of the end colour range. */
+    std::vector<Key<float>> mEmitRateKeys;   /*!< The low end of the emission rate. */
+    RndParticleSysAnim *mFramesOwner;        /*!< The animation that has the keys. */
+    float mEmitRateRatio; /*!< The ratio of the high end of the emission rate to the low end. */
 };

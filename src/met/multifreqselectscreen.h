@@ -116,6 +116,7 @@ public:
      */
     void CheckDone();
 
+private:
     int mNumPlayers;              /*!< The number of players, from `num_players`. */
     std::vector<bool> mConfirmed; /*!< Whether each player has chosen. */
 };

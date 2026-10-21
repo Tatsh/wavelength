@@ -177,27 +177,39 @@ PrnStream &operator<<(PrnStream &stream, const DateTime &date) {
 
 BinStream &operator<<(BinStream &stream, const DateTime &date) {
     // Each field is copied to its own stack byte just before it is written.
-    const unsigned char nSecond = date.mSecond;
+    const unsigned char nSecond = date.GetSecond();
     stream.Write(&nSecond, sizeof(nSecond));
-    const unsigned char nMinute = date.mMinute;
+    const unsigned char nMinute = date.GetMinute();
     stream.Write(&nMinute, sizeof(nMinute));
-    const unsigned char nHour = date.mHour;
+    const unsigned char nHour = date.GetHour();
     stream.Write(&nHour, sizeof(nHour));
-    const unsigned char nDay = date.mDay;
+    const unsigned char nDay = date.GetDay();
     stream.Write(&nDay, sizeof(nDay));
-    const unsigned char nMonth = date.mMonth;
+    const unsigned char nMonth = date.GetMonth();
     stream.Write(&nMonth, sizeof(nMonth));
-    const unsigned char nYear = date.mYear;
+    const unsigned char nYear = date.GetYear();
     stream.Write(&nYear, sizeof(nYear));
     return stream;
 }
 
 BinStream &operator>>(BinStream &stream, DateTime &date) {
-    stream.Read(&date.mSecond, sizeof(date.mSecond));
-    stream.Read(&date.mMinute, sizeof(date.mMinute));
-    stream.Read(&date.mHour, sizeof(date.mHour));
-    stream.Read(&date.mDay, sizeof(date.mDay));
-    stream.Read(&date.mMonth, sizeof(date.mMonth));
-    stream.Read(&date.mYear, sizeof(date.mYear));
+    unsigned char nSecond;
+    stream.Read(&nSecond, sizeof(nSecond));
+    date.SetSecond(nSecond);
+    unsigned char nMinute;
+    stream.Read(&nMinute, sizeof(nMinute));
+    date.SetMinute(nMinute);
+    unsigned char nHour;
+    stream.Read(&nHour, sizeof(nHour));
+    date.SetHour(nHour);
+    unsigned char nDay;
+    stream.Read(&nDay, sizeof(nDay));
+    date.SetDay(nDay);
+    unsigned char nMonth;
+    stream.Read(&nMonth, sizeof(nMonth));
+    date.SetMonth(nMonth);
+    unsigned char nYear;
+    stream.Read(&nYear, sizeof(nYear));
+    date.SetYear(nYear);
     return stream;
 }

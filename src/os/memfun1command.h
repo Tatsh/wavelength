@@ -81,6 +81,7 @@ public:
         (mObject->*mMember)(mArgument);
     }
 
+private:
     Object *mObject;    /*!< The object. */
     Function mMember;   /*!< The member function. */
     Argument mArgument; /*!< The argument. */

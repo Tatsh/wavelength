@@ -74,7 +74,7 @@ void NetJoinLPadScreen::ShowLaunchpadLost() {
     }
     String text(TheLocale.Localize("net_lpad_lost_error_msg", true));
     auto *pScreen = dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-    pScreen->mMessage = text.c_str();
+    pScreen->SetMessage(text.c_str());
     TheUI.GotoScreen(pScreen);
 }
 
@@ -96,9 +96,9 @@ bool NetJoinLPadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetJoinLPadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         mCancelling = 0;
-        mReturnScreen = pMsg->mPrevScreen->GetName();
+        mReturnScreen = pMsg->GetPrevScreen()->GetName();
         JoinpadRT::Create(this, &TheMetagame, mLaunchpadId, mLaunchpadWorld);
     }
     return false;
@@ -108,20 +108,21 @@ bool NetJoinLPadScreen::HandleSuccess(JoinLaunchpadSuccessMsg *pMsg) {
     if (mCancelling != 0) {
         return false;
     }
-    TheGameDb->SetGameParams(&pMsg->mParams);
+    TheGameDb->SetGameParams(&pMsg->GetParams());
     dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_h_lpad_c", false))->ClearMessages();
     TheUI.GotoScreen("netlobby2netlaunchpad_guest");
     return false;
 }
 
 bool NetJoinLPadScreen::HandleAborted(LaunchpadAbortedMsg *pMsg) {
-    if (pMsg->mReason == 0) {
+    if (pMsg->GetReason() == 0) {
         TheUI.GotoScreen(mReturnScreen.c_str());
         return false;
     }
-    String text(TheLocale.Localize(FormatString("%s_msg", JoinErrorToken(pMsg->mReason)), true));
+    String text(
+        TheLocale.Localize(FormatString("%s_msg", JoinErrorToken(pMsg->GetReason())), true));
     auto *pScreen = dynamic_cast<TransitionErrorScreen *>(TheUI.FindScreen(kErrorScreen, false));
-    pScreen->mMessage = text.c_str();
+    pScreen->SetMessage(text.c_str());
     pScreen->ClearTransitions();
     pScreen->AddTransition("ok", kPadNone, mReturnScreen.c_str());
     TheUI.GotoScreen(pScreen);
@@ -129,13 +130,13 @@ bool NetJoinLPadScreen::HandleAborted(LaunchpadAbortedMsg *pMsg) {
 }
 
 bool NetJoinLPadScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton != kPadTriangle) {
+    if (pMsg->GetButton() != kPadTriangle) {
         return false;
     }
     if (TheNetLaunchpad != nullptr) {

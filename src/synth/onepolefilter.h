@@ -33,6 +33,27 @@ public:
         return mValue;
     }
 
+    /** @return The value. */
+    float GetValue() const {
+        return mValue;
+    }
+
+    /** @return The value the filter moves toward. */
+    float GetTarget() const {
+        return mTarget;
+    }
+
+    /** @return The fraction of the distance covered at each step. */
+    float GetCoefficient() const {
+        return mCoefficient;
+    }
+
+    /** @param fCoefficient The fraction of the distance covered at each step. */
+    void SetCoefficient(float fCoefficient) {
+        mCoefficient = fCoefficient;
+    }
+
+private:
     float mCoefficient; /*!< The fraction of the distance covered at each step. */
     float mValue;       /*!< The current value. */
     float mTarget;      /*!< The value the filter moves toward. */

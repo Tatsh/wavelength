@@ -36,7 +36,7 @@ constexpr unsigned char kStatusNoteOff = 0x80;
 constexpr unsigned char kStatusNoteOn = 0x90;
 constexpr unsigned char kStatusControlChange = 0xb0;
 
-// The effect depth controllers mFilterEffects leaves out.
+// The effect depth controllers mFilterEffects omits.
 constexpr unsigned char kFirstFilteredController = 93;
 constexpr unsigned char kFilteredControllers = 2;
 

@@ -146,6 +146,33 @@ public:
     void PutDrawBufferSmall(int nHalf, int bClear);
 
     /** Display environments of the two halves. +0x000 */
+
+    /** @return The zbp. */
+    short GetZbp() const {
+        return mZbp;
+    }
+
+    /**
+     * Report one of the two buffers.
+     *
+     * @param nHalf The buffer, 0 or 1.
+     * @return The buffer.
+     */
+    DrawHalf &GetHalf(int nHalf) {
+        return mHalves[nHalf];
+    }
+
+    /**
+     * Report one of the two buffers.
+     *
+     * @param nHalf The buffer, 0 or 1.
+     * @return The buffer.
+     */
+    const DrawHalf &GetHalf(int nHalf) const {
+        return mHalves[nHalf];
+    }
+
+private:
     DispEnv mDisp[2];
 
     /** Draw environments of the two halves. +0x080 */

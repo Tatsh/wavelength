@@ -93,7 +93,8 @@ void FileListTask::OnResponse(int nConnection,
 #ifdef VIDEO_STANDARD_PAL
         ++pTask->mReceived;
 #endif
-        if (pTask->mPrefix->Compare(0, pTask->mPrefix->mLength, pResponse->file.fileName) == 0) {
+        if (pTask->mPrefix->Compare(0, pTask->mPrefix->GetLength(), pResponse->file.fileName) ==
+            0) {
             pTask->mFiles->push_back(String(pResponse->file.fileName));
         }
         if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {

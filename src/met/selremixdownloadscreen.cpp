@@ -45,18 +45,18 @@ bool SelRemixDownloadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         }
         auto *pScreen =
             dynamic_cast<NetDoDownloadScreen *>(TheUI.FindScreen(kDoDownloadScreen, false));
-        pScreen->mFile = remix->mFile.c_str();
-        pScreen->mRemixName = remix->mInfo.mName;
+        pScreen->SetFile(remix->mFile.c_str());
+        pScreen->SetRemixName(remix->mInfo.mName);
         TheUI.GotoScreen(pScreen);
     }
     return UIScreen::HandleSelect(pMsg);
 }
 
 bool SelRemixDownloadScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mButton == kPadCircle && pMsg->mPressed != 0) {
+    if (pMsg->GetButton() == kPadCircle && pMsg->GetPressed() != 0) {
         auto *pList = static_cast<RemixDownloadList *>(
             TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
         mShowNote ^= 1;

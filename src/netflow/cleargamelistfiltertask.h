@@ -53,8 +53,6 @@ public:
      */
     static bool HasField(int nField, const std::vector<RTFilter> *pFilters);
 
-    int mPending; /*!< The requests without a response, set by OnStart(). */
-
 protected:
     /**
      * Send a request for each filter to clear, or finish when there is none.
@@ -63,4 +61,7 @@ protected:
      * @ghidraAddress PAL: 0x0026feb8
      */
     void OnStart() override;
+
+private:
+    int mPending; /*!< The requests without a response, set by OnStart(). */
 };

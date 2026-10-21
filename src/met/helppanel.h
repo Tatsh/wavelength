@@ -201,14 +201,16 @@ public:
      */
     static std::unique_ptr<RndLoader> sLoader;
 
-    RndView *mView;                                                 /*!< `help.view`. */
-    DataArray *mFonts;                                              /*!< The `help_fonts` entry. */
-    std::vector<RndText *> mHelpTexts;                              /*!< `help_help<n>.txt`. */
-    std::vector<RndText *> mActionTexts;                            /*!< `help_action<n>.txt`. */
     alignas(16) float mHelpOrigin[sizeof(Vector3) / sizeof(float)]; /*!< Where the help starts. */
     alignas(
         16) float mActionOrigin[sizeof(Vector3) / sizeof(float)]; /*!< Where the buttons start. */
-    const char *mHelpText;                                        /*!< The help that shows. */
-    const char *mActionText;                                      /*!< The text of the buttons. */
-    std::vector<HelpText> mRuns;                                  /*!< The runs of the last text. */
+
+private:
+    RndView *mView;                      /*!< `help.view`. */
+    DataArray *mFonts;                   /*!< The `help_fonts` entry. */
+    std::vector<RndText *> mHelpTexts;   /*!< `help_help<n>.txt`. */
+    std::vector<RndText *> mActionTexts; /*!< `help_action<n>.txt`. */
+    const char *mHelpText;               /*!< The help that shows. */
+    const char *mActionText;             /*!< The text of the buttons. */
+    std::vector<HelpText> mRuns;         /*!< The runs of the last text. */
 };

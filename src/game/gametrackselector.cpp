@@ -69,7 +69,7 @@ void GameTrackSelector::SetPlayerTrack(int nPlayer, int nTrack, bool bVictory) {
             mTracks[nOldTrack]->SetPlayer(nullptr);
         } else {
             Track *pOldTrack = mTracks[nOldTrack];
-            Player *pCurrent = pOldTrack->mPlayer;
+            Player *pCurrent = pOldTrack->GetPlayer();
             const int nFirst = mSelector.GetFirstPlayer(nOldTrack);
             Player *pFirst = mPlayers[nFirst];
             if (pCurrent != pFirst) {
@@ -155,12 +155,12 @@ void GameTrackSelector::Resync() {
         const int nTrack = static_cast<int>(i);
         Track *pTrack = mTracks[i];
         if (mSelector.GetNumPlayersOnTrack(nTrack) == 0) {
-            if (pTrack->mPlayer != nullptr) {
+            if (pTrack->GetPlayer() != nullptr) {
                 pTrack->SetPlayer(nullptr);
             }
         } else {
             Player *pFirst = mPlayers[mSelector.GetFirstPlayer(nTrack)];
-            if (pTrack->mPlayer != pFirst) {
+            if (pTrack->GetPlayer() != pFirst) {
                 pTrack->SetPlayer(pFirst);
             }
         }

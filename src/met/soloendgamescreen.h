@@ -108,6 +108,7 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+private:
     const char *mStatsPanel;  /*!< `stats_panel`, the panel of the statistics, or empty. */
     const char *mAvatarPanel; /*!< `av_panel`, the panel of the Freq, or empty. */
 };

@@ -145,8 +145,8 @@ inline Vector3 RotateByBasis(const Transform &xfm, const Vector3 &vec) {
 
 // Set the translation of the local transform of a transformable and mark it dirty.
 inline void SetLocalTranslation(RndTransformable *pTrans, const Vector3 &pos) {
-    pTrans->mDirty = 1;
-    pTrans->mLocalXfm.mTranslation = pos;
+    pTrans->SetDirty(1);
+    pTrans->GetLocalXfm().mTranslation = pos;
 }
 
 inline void Register(const char *pszName, PlayerCamFX::Algorithm algorithm) {
@@ -243,8 +243,8 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel,
         BlendPosition(mView.mTranslation, mSlideXfm.mTranslation, mSlideBlend);
         InterpBasis(&mView.mBasisX.x, &mSlideXfm.mBasisX.x, &mView.mBasisX.x, mSlideBlend);
     }
-    mSlide->mLocalXfm = mView;
-    mSlide->mDirty = 1;
+    mSlide->GetLocalXfm() = mView;
+    mSlide->SetDirty(1);
 
     float flJiggle = mJiggle.Apply(0.0f);
     if (flJiggle < kMinJiggle) {
@@ -258,7 +258,7 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel,
     mScreenJiggle.x = mScreenJiggleAxis.x * flScreenJiggleScale;
     mScreenJiggle.z = mScreenJiggleAxis.z * flScreenJiggleScale;
     mScreenJiggle.y = mScreenJiggleAxis.y * flScreenJiggleScale;
-    const Vector3 &translation = mFx->mLocalXfm.mTranslation;
+    const Vector3 &translation = mFx->GetLocalXfm().mTranslation;
     jiggle.x += translation.x;
     jiggle.y += translation.y;
     jiggle.z += translation.z;
@@ -429,8 +429,8 @@ void PlayerCamFX::Reset(bool bNearPullBack) {
     identity.mBasisY = Vector3{0.0f, 1.0f, 0.0f};
     identity.mBasisZ = Vector3{0.0f, 0.0f, 1.0f};
     identity.mTranslation = Vector3{0.0f, 0.0f, 0.0f};
-    mFx->mLocalXfm = identity;
-    mFx->mDirty = 1;
+    mFx->GetLocalXfm() = identity;
+    mFx->SetDirty(1);
     mFx->UpdateWorldXfm(nullptr, 0);
 
     if (TheGameDb->GetTutorial()) {
@@ -451,15 +451,15 @@ void PlayerCamFX::Reset(bool bNearPullBack) {
     mJiggleAxis = Vector3{0.0f, 0.0f, 1.0f};
     mScreenJiggleAxis = Vector3{0.0f, 0.0f, 1.0f};
     mScreenJiggle = Vector3{0.0f, 0.0f, 0.0f};
-    mJiggle.mLevel = 0.0f;
-    mJiggle.mVel = 0.0f;
+    mJiggle.SetLevel(0.0f);
+    mJiggle.SetVel(0.0f);
     mSkipIntro = 1;
-    mJiggle.mSpring = sJiggleSpring;
-    mJiggle.mDamper = sJiggleDamper;
+    mJiggle.SetSpring(sJiggleSpring);
+    mJiggle.SetDamper(sJiggleDamper);
 }
 
 void PlayerCamFX::Kick(float flAmount) {
-    if (std::fabs(mJiggle.mVel) < kRestingJiggleSpeed) {
+    if (std::fabs(mJiggle.GetVel()) < kRestingJiggleSpeed) {
         const float flX = sJiggleVariation.x * (RandomFraction() - kRandomCenter);
         const float flY = sJiggleVariation.y * (RandomFraction() - kRandomCenter);
         mJiggleAxis.x = flX;
@@ -473,7 +473,7 @@ void PlayerCamFX::Kick(float flAmount) {
         mScreenJiggleAxis.z = (sJiggleVariation.z * (RandomFraction() - kRandomCenter)) + 1.0f;
         Vec3Normalize(&mScreenJiggleAxis.x, &mScreenJiggleAxis.x);
     }
-    mJiggle.mVel += flAmount;
+    mJiggle.SetVel(mJiggle.GetVel() + flAmount);
 }
 
 void PlayerCamFX::SetBlendAlgorithm(const char *pszName, float flBlend) {

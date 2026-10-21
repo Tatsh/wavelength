@@ -27,12 +27,12 @@ void MediusSendWorldReportTask::OnStart() {
                             pParams,
                             nPlayers,
                             TheNetInet->GetConnectionType(),
-                            TheLobbyRT->GetLocalPlayer().mId);
+                            TheLobbyRT->GetLocalPlayer().GetId());
     int nRules;
     int nRulesVariant;
-    LobbyRT::EncodeRules(&nRules, &nRulesVariant, pParams->mRuleSet, pParams->mSkillLevel);
+    LobbyRT::EncodeRules(&nRules, &nRulesVariant, pParams->GetRuleSet(), pParams->GetSkillLevel());
     int nLevel;
-    LobbyRT::EncodeSong(&nLevel, pParams->mSong.c_str());
+    LobbyRT::EncodeSong(&nLevel, pParams->GetSong().c_str());
 
     rtMediusWorldReportData report;
     memset(&report, 0, sizeof(report));

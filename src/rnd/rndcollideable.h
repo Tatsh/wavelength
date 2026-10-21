@@ -179,8 +179,6 @@ public:
      */
     static int sRev;
 
-    std::list<RndCollideable *> mCollides; /*!< The children, tested after the collideable. */
-
 protected:
     /**
      * Drop the reference on every child without emptying the list.
@@ -201,4 +199,7 @@ protected:
      * @ghidraAddress PAL: 0x0022b0f8
      */
     void AcquireCollideRefs();
+
+private:
+    std::list<RndCollideable *> mCollides; /*!< The children, tested after the collideable. */
 };

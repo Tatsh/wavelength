@@ -124,14 +124,14 @@ void JoinpadRT::OnClockSynced(float fOffset, float fRoundTrip) {
 }
 
 bool JoinpadRT::OnMsg(WelcomePkt *pPkt) {
-    if (!TheGameDb->HasSong(pPkt->mParams.mSong.c_str())) {
+    if (!TheGameDb->HasSong(pPkt->GetParams().GetSong().c_str())) {
         mError = LaunchpadAbortedMsg::kReasonIncompatible;
         mState = kStateFailed;
         return false;
     }
-    mParams = pPkt->mParams;
+    mParams = pPkt->GetParams();
     const NetLaunchpadPlayer player = {
-        TheLobbyRT->GetLocalPlayer(), mLocalId, pPkt->mColor, kReadyNo};
+        TheLobbyRT->GetLocalPlayer(), mLocalId, pPkt->GetColor(), kReadyNo};
     AddPlayer(player);
     mState = kStateWelcomed;
     mClockSync->Start();
@@ -140,23 +140,23 @@ bool JoinpadRT::OnMsg(WelcomePkt *pPkt) {
 
 bool JoinpadRT::OnMsg(JoinFailedPkt *pPkt) {
     mState = kStateFailed;
-    mError = pPkt->mReason;
+    mError = pPkt->GetReason();
     return false;
 }
 
 bool JoinpadRT::OnMsg(ClientInfoPkt *pPkt) {
-    AddPlayer(pPkt->mPlayer);
+    AddPlayer(pPkt->GetPlayer());
     return false;
 }
 
 bool JoinpadRT::OnMsg(TimeResponsePkt *pPkt) {
-    mClockSync->AddSample(pPkt->mRequestTime, pPkt->mSendTime);
+    mClockSync->AddSample(pPkt->GetRequestTime(), pPkt->GetSendTime());
     return false;
 }
 
 bool JoinpadRT::OnMsg(GameParamsPkt *pPkt) {
-    if (TheGameDb->HasSong(pPkt->mParams.mSong.c_str())) {
-        GameParamsUpdateMsg msg(pPkt->mParams);
+    if (TheGameDb->HasSong(pPkt->GetParams().GetSong().c_str())) {
+        GameParamsUpdateMsg msg(pPkt->GetParams());
         mGameSink->Dispatch(&msg);
     } else {
         Exit(mGameSink, LaunchpadAbortedMsg::kReasonIncompatible);
@@ -165,10 +165,10 @@ bool JoinpadRT::OnMsg(GameParamsPkt *pPkt) {
 }
 
 bool JoinpadRT::OnMsg(BootPkt *pPkt) {
-    if (pPkt->mPlayer == mLocalId) {
+    if (pPkt->GetPlayer() == mLocalId) {
         Exit(mGameSink, LaunchpadAbortedMsg::kReasonBoot);
     } else {
-        RemovePlayer(pPkt->mPlayer);
+        RemovePlayer(pPkt->GetPlayer());
     }
     return false;
 }
@@ -177,9 +177,9 @@ bool JoinpadRT::OnMsg(GameOverPkt *pPkt) {
     if (mInGame == 0) {
         return false;
     }
-    RateGame(pPkt->mScores);
+    RateGame(pPkt->GetScores());
     {
-        GameEndedMsg msg(GameEndedMsg::kResultFinished, pPkt->mScores);
+        GameEndedMsg msg(GameEndedMsg::kResultFinished, pPkt->GetScores());
         TheTransportRT->Notify(&msg);
     }
     EndGame();
@@ -187,36 +187,36 @@ bool JoinpadRT::OnMsg(GameOverPkt *pPkt) {
 }
 
 bool JoinpadRT::OnMsg(ShareRemixPkt *pPkt) {
-    mRemixInfo = pPkt->mInfo;
-    mShareOnly = pPkt->mShareOnly;
+    mRemixInfo = pPkt->GetInfo();
+    mShareOnly = pPkt->GetShareOnly();
     if (mShareOnly != 0) {
         SetReady(kReadyNo);
     }
     TheGameDb->SetRemixBuffer(mRemixInfo.mDataSize);
-    ShareRemixBeginMsg msg(pPkt->mInfo);
+    ShareRemixBeginMsg msg(pPkt->GetInfo());
     mGameSink->Dispatch(&msg);
     return false;
 }
 
 bool JoinpadRT::OnMsg(DataBlockPkt *pPkt) {
-    memcpy(TheGameDb->GetRemixBuffer() + pPkt->mBlock * DataBlockPkt::kMaxBlockSize,
-           pPkt->mBuffer,
-           pPkt->mSize);
+    memcpy(TheGameDb->GetRemixBuffer() + pPkt->GetBlock() * DataBlockPkt::kMaxBlockSize,
+           pPkt->GetBuffer(),
+           pPkt->GetSize());
     {
         DataAckPkt pkt;
         Send(&pkt);
     }
-    if (pPkt->mProgress == 1.0f) {
+    if (pPkt->GetProgress() == 1.0f) {
         TheGameDb->SetRemix(&mRemixInfo);
     }
-    ShareRemixProgressMsg msg(pPkt->mProgress, mShareOnly);
+    ShareRemixProgressMsg msg(pPkt->GetProgress(), mShareOnly);
     mGameSink->Dispatch(&msg);
     return false;
 }
 
 bool JoinpadRT::OnMsg(ChatMsg *pMsg) {
     unsigned char key[kKeySize];
-    const char *pszText = pMsg->mText;
+    const char *pszText = pMsg->GetText();
     for (int i = 0; i < kKeySize; ++i) {
         key[i] = DecodeByte(pszText);
         pszText += 2;

@@ -78,6 +78,57 @@ public:
          */
         void Load(BinStream &stream);
 
+        /** @return The animation that has the stage. */
+        RndMatAnim *GetMatAnim() const {
+            return mMatAnim;
+        }
+
+        /** @param pMatAnim The animation that has the stage. */
+        void SetMatAnim(RndMatAnim *pMatAnim) {
+            mMatAnim = pMatAnim;
+        }
+
+        /** @return The texture rotation keys, as Euler angles. */
+        const std::vector<Key<Vector3>> &GetRotKeys() const {
+            return mRotKeys;
+        }
+
+        /** @return The texture rotation keys, as Euler angles, for writing. */
+        std::vector<Key<Vector3>> &GetRotKeys() {
+            return mRotKeys;
+        }
+
+        /** @return The texture scale keys. */
+        const std::vector<Key<Vector3>> &GetScaleKeys() const {
+            return mScaleKeys;
+        }
+
+        /** @return The texture scale keys, for writing. */
+        std::vector<Key<Vector3>> &GetScaleKeys() {
+            return mScaleKeys;
+        }
+
+        /** @return The texture keys. */
+        const std::vector<Key<RndTex *>> &GetTexKeys() const {
+            return mTexKeys;
+        }
+
+        /** @return The texture keys, for writing. */
+        std::vector<Key<RndTex *>> &GetTexKeys() {
+            return mTexKeys;
+        }
+
+        /** @return The texture translation keys. */
+        const std::vector<Key<Vector3>> &GetTransKeys() const {
+            return mTransKeys;
+        }
+
+        /** @return The texture translation keys, for writing. */
+        std::vector<Key<Vector3>> &GetTransKeys() {
+            return mTransKeys;
+        }
+
+    private:
         std::vector<Key<Vector3>> mTransKeys; /*!< The texture translation keys. */
         std::vector<Key<Vector3>> mScaleKeys; /*!< The texture scale keys. */
         std::vector<Key<Vector3>> mRotKeys;   /*!< The texture rotation keys, as Euler angles. */
@@ -256,13 +307,40 @@ public:
      */
     static int sLoadRev;
 
-    RndMat *mMat;                       /*!< The material the animation drives. */
-    std::vector<Stage> mStages;         /*!< The keys of each texture stage. */
-    RndMatAnim *mKeysOwner;             /*!< The animation that has the keys. */
-    std::vector<Key<Color>> mLightKeys; /*!< The light colour keys. */
-    std::vector<Key<Color>> mBaseKeys;  /*!< The base colour keys. */
-    std::vector<Key<Color>> mEdgeKeys;  /*!< The edge colour keys. */
-    std::vector<Key<float>> mAlphaKeys; /*!< The alpha keys. */
+    /** @return The alpha keys. */
+    const std::vector<Key<float>> &GetAlphaKeys() const {
+        return mAlphaKeys;
+    }
+
+    /** @return The alpha keys, for writing. */
+    std::vector<Key<float>> &GetAlphaKeys() {
+        return mAlphaKeys;
+    }
+
+    /** @return The base colour keys. */
+    const std::vector<Key<Color>> &GetBaseKeys() const {
+        return mBaseKeys;
+    }
+
+    /** @return The base colour keys, for writing. */
+    std::vector<Key<Color>> &GetBaseKeys() {
+        return mBaseKeys;
+    }
+
+    /** @return The animation that has the keys. */
+    RndMatAnim *GetKeysOwner() const {
+        return mKeysOwner;
+    }
+
+    /** @return The keys of each texture stage. */
+    const std::vector<Stage> &GetStages() const {
+        return mStages;
+    }
+
+    /** @return The keys of each texture stage, for writing. */
+    std::vector<Stage> &GetStages() {
+        return mStages;
+    }
 
 protected:
     /**
@@ -284,6 +362,15 @@ protected:
      * @ghidraAddress PAL: 0x00238810
      */
     void AcquireRefs();
+
+private:
+    RndMat *mMat;                       /*!< The material the animation drives. */
+    std::vector<Stage> mStages;         /*!< The keys of each texture stage. */
+    RndMatAnim *mKeysOwner;             /*!< The animation that has the keys. */
+    std::vector<Key<Color>> mLightKeys; /*!< The light colour keys. */
+    std::vector<Key<Color>> mBaseKeys;  /*!< The base colour keys. */
+    std::vector<Key<Color>> mEdgeKeys;  /*!< The edge colour keys. */
+    std::vector<Key<float>> mAlphaKeys; /*!< The alpha keys. */
 };
 
 /**

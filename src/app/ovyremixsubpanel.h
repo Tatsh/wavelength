@@ -74,6 +74,12 @@ public:
      */
     bool IsType(int nType) const;
 
+    /** @return The slide, from kHiddenFrame to kShownFrame. */
+    const RampAnimator &GetSlide() const {
+        return mSlide;
+    }
+
+private:
     int mType;           /*!< The type, one of GfxManager::RemixSubPanel. */
     RampAnimator mSlide; /*!< The slide, from kHiddenFrame to kShownFrame. */
 };

@@ -96,6 +96,17 @@ public:
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
 
+    /** @return The unlocked boss song, a symbol. */
+    const char *GetSong() const {
+        return mSong;
+    }
+
+    /** @param pszSong The unlocked boss song, a symbol. */
+    void SetSong(const char *pszSong) {
+        mSong = pszSong;
+    }
+
+private:
     float mGoMs;                /*!< The system time the screen moves on. */
     int mStarted;               /*!< Set while the view plays. */
     const char *mSong;          /*!< The unlocked boss song, a symbol. */

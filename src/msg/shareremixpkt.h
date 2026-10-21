@@ -130,6 +130,22 @@ public:
      */
     void restoreGuts(BinStream &stream) override;
 
+    /** @return The description of the remix. */
+    const RemixInfo &GetInfo() const {
+        return mInfo;
+    }
+
+    /** @return The description of the remix, for filling. */
+    RemixInfo &GetInfo() {
+        return mInfo;
+    }
+
+    /** @return Non-zero when the remix is only shared, not played. */
+    int GetShareOnly() const {
+        return mShareOnly;
+    }
+
+private:
     RemixInfo mInfo; /*!< The description of the remix. */
     int mShareOnly;  /*!< Non-zero when the remix is only shared, not played. */
 };

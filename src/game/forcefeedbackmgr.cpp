@@ -23,7 +23,7 @@ ForceFeedbackMgr::~ForceFeedbackMgr() {
 void ForceFeedbackMgr::Start(const float *pTickDuration, int nTicksPerBar) {
     const int nPlayers = TheGameDb->GetNumPads();
     if (nPlayers > kMaxPlayers || TheGameDb->GetDemo() != nullptr ||
-        TheGameConfig->mForceFeedbackEnabled == 0) {
+        TheGameConfig->GetForceFeedbackEnabled() == 0) {
         return;
     }
 
@@ -48,7 +48,7 @@ void ForceFeedbackMgr::Start(const float *pTickDuration, int nTicksPerBar) {
     }
 
     for (unsigned i = 0; i < mControllers.size(); ++i) {
-        mControllers[i]->SetVibration(TheGameDb->GetOptions()->mForceFeedback);
+        mControllers[i]->SetVibration(TheGameDb->GetOptions()->GetForceFeedback());
     }
     mTickDuration = pTickDuration;
 }
@@ -75,7 +75,7 @@ void ForceFeedbackMgr::StartMetronome(int nPeriod, int nTick) {
     if (nRemainder != 0) {
         nTick += nPeriod - nRemainder;
     }
-    const float fLead = static_cast<float>(TheGameConfig->mBeatLeadMs);
+    const float fLead = static_cast<float>(TheGameConfig->GetBeatLeadMs());
     float fTime = static_cast<float>(nTick) * *mTickDuration - fLead;
     while (fTime < TheSongScheduler.GetTime()) {
         nTick += nPeriod;
@@ -143,7 +143,7 @@ void ForceFeedbackMgr::Resume() {
     mPaused = 0;
     for (unsigned i = 0; i < mControllers.size(); ++i) {
         Controller *pController = mControllers[i].get();
-        pController->SetVibration(TheGameDb->GetOptions()->mForceFeedback);
+        pController->SetVibration(TheGameDb->GetOptions()->GetForceFeedback());
         if (pController->GetVibration() != 0) {
             JoypadSetVibration(
                 static_cast<int>(i), pController->GetSmallMotor(), pController->GetBigMotor());

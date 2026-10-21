@@ -76,7 +76,10 @@ public:
      */
     void OnFreqSaved(int nStatus, int nSpace) override;
 
-    Campaign mProfile; /*!< The Freq to copy. */
+    /** @param profile The Freq to copy. */
+    void SetProfile(Campaign profile) {
+        mProfile = profile;
+    }
 
 private:
     /**
@@ -88,4 +91,6 @@ private:
      * @ghidraAddress PAL: 0x001b4c20
      */
     bool HandleTransitionComplete(UITransitionCompleteMsg *pMsg);
+
+    Campaign mProfile; /*!< The Freq to copy. */
 };

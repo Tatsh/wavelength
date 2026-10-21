@@ -98,12 +98,12 @@ int UINavigator::FindFocus(int nAxis) {
 }
 
 bool UINavigator::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (mEnabled == 0 || !pMsg->mPressed) {
+    if (mEnabled == 0 || !pMsg->GetPressed()) {
         return false;
     }
     int nAxis;
     bool bForward;
-    switch (pMsg->mButton) {
+    switch (pMsg->GetButton()) {
     case kPadDUp:
         nAxis = kAxisVertical;
         bForward = false;
@@ -125,7 +125,7 @@ bool UINavigator::HandleJoypad(JoypadInputMsg *pMsg) {
     }
     const int nIndex = FindFocus(nAxis);
     if (nIndex != kNotFound) {
-        Step(bForward, pMsg->mButton, nIndex);
+        Step(bForward, pMsg->GetButton(), nIndex);
     }
     return false;
 }

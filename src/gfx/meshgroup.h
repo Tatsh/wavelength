@@ -67,6 +67,37 @@ public:
      */
     void TakeGem(MeshGroup *pFrom, TnlGem *pGem);
 
+    /** @return The multimesh that draws the instances. */
+    RndMultiMesh *GetMultiMesh() const {
+        return mMultiMesh;
+    }
+
+    /** @return The glow particles of the gems, or null. */
+    RndParticleSys *GetParticles() const {
+        return mParticles;
+    }
+
+    /** @return The meshes of a composite group. */
+    const std::list<RndMesh *> &GetMeshes() const {
+        return mMeshes;
+    }
+
+    /** @return The farthest ticks ahead the group draws. */
+    float GetLookahead() const {
+        return mLookahead;
+    }
+
+    /** @return The group of the next distance, or null. */
+    MeshGroup *GetNext() const {
+        return mNext;
+    }
+
+    /** @param pNext The group of the next distance, or null. */
+    void SetNext(MeshGroup *pNext) {
+        mNext = pNext;
+    }
+
+private:
     RndMultiMesh *mMultiMesh;          /*!< The multimesh that draws the instances. */
     RndParticleSys *mParticles;        /*!< The glow particles of the gems, or null. */
     std::list<RndMesh *> mMeshes;      /*!< The meshes of a composite group. */

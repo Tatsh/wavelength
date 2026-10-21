@@ -78,14 +78,10 @@ public:
      */
     int ReceiveKeyboardText(const char *pszText) override;
 
-    String mKeyboardText; /*!< The text the keyboard typed, or empty. */
-#ifdef VIDEO_STANDARD_PAL
-    /**
-     * `is_tool`, non-zero when the `upload` button passes the note to the repository tool
-     * `fn_repos_tool` instead of NetDoUploadScreen.
-     */
-    int mIsTool = 0;
-#endif
+    /** @param pszKeyboardText The text the keyboard typed, or empty. */
+    void SetKeyboardText(const char *pszKeyboardText) {
+        mKeyboardText = pszKeyboardText;
+    }
 
 private:
     /**
@@ -138,4 +134,13 @@ private:
      * @ghidraAddress PAL: 0x00182e80
      */
     bool HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg);
+
+    String mKeyboardText; /*!< The text the keyboard typed, or empty. */
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * `is_tool`, non-zero when the `upload` button passes the note to the repository tool
+     * `fn_repos_tool` instead of NetDoUploadScreen.
+     */
+    int mIsTool = 0;
+#endif
 };

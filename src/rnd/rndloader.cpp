@@ -106,7 +106,7 @@ void RndLoader::ObjectLoader::Release() {
 RndLoader::RndLoader(const char *pszFile, int nFlags, Callback *pCallback, BinStream *pStream)
     : mOwnsStream(0), mFile(pszFile), mFlags(nFlags), mStream(pStream),
       mTextures(kTextureSlots, FilePath()), mCallback(pCallback) {
-    if (mFile.mLength == 0) {
+    if (mFile.GetLength() == 0) {
         mDir = FilePath::sRoot.c_str();
     } else {
         mDir = FileGetPath(mFile.c_str());
@@ -231,7 +231,7 @@ void RndLoader::CreateObjects(float fDeadlineMs) {
         }
 
         if (pObject != nullptr) {
-            if (pObject->mInternal != 0 || strcmp(pObject->ClassName(), szClass) != 0) {
+            if (pObject->GetInternal() != 0 || strcmp(pObject->ClassName(), szClass) != 0) {
                 DebugNotify("Can't load object %s", szName);
                 Finish();
                 return;
@@ -256,11 +256,11 @@ void RndLoader::CreateObjects(float fDeadlineMs) {
     if ((mFlags & kReportExisting) != 0) {
         String existing;
         for (const ObjectLoader &loader : mObjectLoaders) {
-            if (loader.mLoad == 0) {
-                existing.Printf("  %s\n", loader.mObject->mName.c_str());
+            if (loader.GetLoad() == 0) {
+                existing.Printf("  %s\n", loader.GetObject()->GetName());
             }
         }
-        if (existing.mLength != 0) {
+        if (existing.GetLength() != 0) {
             DebugNotify("These objects in %s\nwon't be loaded because they\nalready exist:\n%s",
                         mFile.c_str(),
                         existing.c_str());
@@ -288,7 +288,7 @@ void RndLoader::LoadResources(float fDeadlineMs) {
         if (!mTextures.empty()) {
             do {
                 FilePath &texture = mTextures[nSlot];
-                if (texture.mLength != 0 &&
+                if (texture.GetLength() != 0 &&
                     TheManager.IsTextureLoaded(texture) == RndManager::kTextureLoading) {
                     nIdle = 0;
                 } else if (mRemaining == 0) {
@@ -301,12 +301,12 @@ void RndLoader::LoadResources(float fDeadlineMs) {
                     texture.Set(szPath);
                     --mRemaining;
                     if (mVersion >= kFirstTextureOwnerVersion) {
-                        while (mCurLoader->mObject->ClassName() != RndTex::sClassName &&
-                               mCurLoader->mObject->ClassName() != RndMovie::sClassName) {
+                        while (mCurLoader->GetObject()->ClassName() != RndTex::sClassName &&
+                               mCurLoader->GetObject()->ClassName() != RndMovie::sClassName) {
                             ++mCurLoader;
                         }
                         const ObjectLoader &owner = *mCurLoader++;
-                        if (owner.mLoad != 1) {
+                        if (owner.GetLoad() != 1) {
                             // Yes, the binary fills the same slot again without a deadline test.
                             texture.Clear();
                             continue;

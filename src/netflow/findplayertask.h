@@ -51,9 +51,6 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusFindPlayerResponse *pResponse);
 
-    NetChatroomInfo *mChatroom; /*!< Receives the identifier of the room. */
-    LobbyPlayer *mPlayer;       /*!< The player. */
-
 protected:
     /**
      * Clear the room and send the request, or finish for an offline player.
@@ -62,4 +59,8 @@ protected:
      * @ghidraAddress PAL: 0x0026f9b8
      */
     void OnStart() override;
+
+private:
+    NetChatroomInfo *mChatroom; /*!< Receives the identifier of the room. */
+    LobbyPlayer *mPlayer;       /*!< The player. */
 };

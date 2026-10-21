@@ -46,10 +46,10 @@ void NetSortedDataPanel::SetPlayers(std::list<LobbyPlayer> *pPlayers, int nLaunc
         ++nRow;
         RndMesh *pRank = FindRankMesh(nRow);
         pRank->SetShowing(true);
-        pRank->SetMat(FindRankMaterial(player.mRankIcon));
+        pRank->SetMat(FindRankMaterial(player.GetRankIcon()));
         UIComponent *pName = FindComponent(FormatString(kNameFormat, nRow), false);
         pName->SetShowing(true);
-        pName->SetText(player.mName.c_str());
+        pName->SetText(player.GetName().c_str());
     }
 }
 
@@ -57,14 +57,14 @@ void NetSortedDataPanel::ShowLaunchpad(NetLaunchpadInfo *pLaunchpad) {
     UIComponent *pGenre = FindComponent(kGenreComponent, false);
     const NetGameParams &params = pLaunchpad->mParams;
     if (pLaunchpad->mOpen != 0) {
-        if (params.mLoadRemix != 0) {
-            pGenre->SetText(params.mRemixName.c_str());
+        if (params.GetLoadRemix() != 0) {
+            pGenre->SetText(params.GetRemixName().c_str());
         } else {
-            const SongEntry entry{TheGameDb->FindSong(params.mSong.c_str())};
+            const SongEntry entry{TheGameDb->FindSong(params.GetSong().c_str())};
             pGenre->SetText(entry.GetGenre());
         }
         SetPictureShowing(true);
-        SetBandPicture(params.mSong.c_str(), true, false, false);
+        SetBandPicture(params.GetSong().c_str(), true, false, false);
     } else {
         pGenre->SetText(kNoText);
         SetPictureShowing(false);

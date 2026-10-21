@@ -42,7 +42,7 @@ RndLight::~RndLight() = default;
 void RndLight::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndTransformable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndLight]\n";
@@ -121,7 +121,7 @@ void RndLight::CreateDefault() {
     RndObject *pObject = TheManager.Create(sClassName, "[default light]");
     RndLight *pLight = pObject != nullptr ? dynamic_cast<RndLight *>(pObject) : nullptr;
     sDefault = pLight;
-    pLight->mInternal = 1;
+    pLight->SetInternal(1);
     RndEnviron::sDefault->AddLight(pLight);
     RndCam::sDefault->AddTrans(sDefault);
 }

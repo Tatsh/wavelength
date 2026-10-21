@@ -20,8 +20,6 @@ public:
      */
     ~NetConnectTask() override = default;
 
-    float mDeadline; /*!< When the step fails, from SystemMs(). */
-
 protected:
     /**
      * Start connecting to LaunchpadRT::mConnectionInfo, with LaunchpadRT::sNetTask set to the
@@ -47,4 +45,7 @@ protected:
      * @ghidraAddress PAL: 0x00264d20
      */
     void OnPoll() override;
+
+private:
+    float mDeadline; /*!< When the step fails, from SystemMs(). */
 };

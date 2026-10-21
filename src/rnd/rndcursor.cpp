@@ -31,14 +31,14 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
 }
 
 void WriteObjectName(BinStream &stream, const RndObject *pObject) {
-    stream.WriteString(pObject != nullptr ? pObject->mName.c_str() : "");
+    stream.WriteString(pObject != nullptr ? pObject->GetName() : "");
 }
 
 } // namespace
@@ -80,7 +80,7 @@ void RndCursor::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
     RndAnimatable::DumpText(stream);
     RndDrawable::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndCursor]\n";
@@ -88,7 +88,7 @@ void RndCursor::DumpText(PrnStream &stream) {
     const RndObject *pBlur = mBlur;
     stream << "text:" << pText << " blur:" << pBlur << " offset:" << mOffset << "\n";
     stream << "stutter:" << mStutter << "\n";
-    if (stream.mDumpLevel < kDumpInternals) {
+    if (stream.GetDumpLevel() < kDumpInternals) {
         return;
     }
     const RndObject *pMask = mMask.get();
@@ -149,38 +149,39 @@ void RndCursor::ReleaseRefs() {
 
 void RndCursor::BuildCursor() {
     mCursor.reset();
-    if (mBlur == nullptr || mBlur->mMesh == nullptr) {
+    if (mBlur == nullptr || mBlur->GetMesh() == nullptr) {
         return;
     }
     RndObject *pObject =
         TheManager.Create(RndBlur::sClassName, FormatString("[%s_cursor]", mName.c_str()));
     mCursor.reset(pObject != nullptr ? dynamic_cast<RndBlur *>(pObject) : nullptr);
-    mCursor->mInternal = 1;
+    mCursor->SetInternal(1);
     mCursor->Copy(mBlur, 0);
-    RndMesh *pMesh = mCursor->mMesh;
-    pMesh->mZFunc = 1;
-    pMesh->mZMode = 0;
+    RndMesh *pMesh = mCursor->GetMesh();
+    pMesh->SetZFunc(1);
+    pMesh->SetZMode(0);
 }
 
 void RndCursor::BuildMask() {
     mMask.reset();
-    if (mText == nullptr || mText->mFont == nullptr) {
+    if (mText == nullptr || mText->GetFont() == nullptr) {
         return;
     }
     mText->SetDepthTest(1);
     if (mText->NumLines() != 1) {
-        DebugNotify("%s must be one line", mText->mName.c_str());
+        DebugNotify("%s must be one line", mText->GetName());
         return;
     }
     RndObject *pObject =
         TheManager.Create(RndMesh::sClassName, FormatString("[%s_mask]", mName.c_str()));
     mMask.reset(pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr);
-    mMask->mInternal = 1;
+    mMask->SetInternal(1);
 
     Vector3 start = mText->CharPosition(0);
-    Vector3 end = mText->CharPosition(static_cast<int>(std::strlen(mText->mPreWrapText.c_str())));
-    const int nAlign = mText->mAlign;
-    const float fSize = mText->mFont->mSize;
+    Vector3 end =
+        mText->CharPosition(static_cast<int>(std::strlen(mText->GetPreWrapText().c_str())));
+    const int nAlign = mText->GetAlign();
+    const float fSize = mText->GetFont()->GetSize();
     if ((nAlign & RndText::kAlignMiddle) != 0) {
         const float fHalf = fSize * kHalf;
         start.z += fHalf;
@@ -194,8 +195,8 @@ void RndCursor::BuildMask() {
     mWidth = end.x - start.x;
     mCenterZ = (start.z + end.z) * kHalf;
 
-    mMask->mGeomOwner->mVerts.resize(kMaskVertCount);
-    std::vector<RndMesh::Vert> &verts = mMask->mGeomOwner->mVerts;
+    mMask->GetGeomOwner()->GetVerts().resize(kMaskVertCount);
+    std::vector<RndMesh::Vert> &verts = mMask->GetGeomOwner()->GetVerts();
     verts[kMaskTopLeft].mPos = start;
     verts[kMaskBottomLeft].mPos.x = start.x;
     verts[kMaskBottomLeft].mPos.z = end.z;
@@ -208,8 +209,8 @@ void RndCursor::BuildMask() {
         verts[i].mColor = Color{0.0f, 0.0f, 0.0f, 0.0f};
     }
 
-    mMask->mGeomOwner->mFaces.resize(kMaskFaceCount);
-    std::vector<RndMesh::Face> &faces = mMask->mGeomOwner->mFaces;
+    mMask->GetGeomOwner()->GetFaces().resize(kMaskFaceCount);
+    std::vector<RndMesh::Face> &faces = mMask->GetGeomOwner()->GetFaces();
     faces[0].mVerts[0] = kMaskTopLeft;
     faces[0].mVerts[1] = kMaskBottomLeft;
     faces[0].mVerts[2] = kMaskTopRight;
@@ -258,14 +259,14 @@ float RndCursor::CursorPos() {
 }
 
 float RndCursor::EndFrame() {
-    return static_cast<float>(std::strlen(mText->mPreWrapText.c_str())) + mStutter;
+    return static_cast<float>(std::strlen(mText->GetPreWrapText().c_str())) + mStutter;
 }
 
 int RndCursor::DrawShowing() {
-    if (mText == nullptr || mText->mShowing == 0) {
+    if (mText == nullptr || mText->GetShowing() == 0) {
         return 1;
     }
-    const int nLength = static_cast<int>(std::strlen(mText->mPreWrapText.c_str()));
+    const int nLength = static_cast<int>(std::strlen(mText->GetPreWrapText().c_str()));
     float fX = (mWidth * CursorPos()) / static_cast<float>(nLength);
     if (mWidth < fX) {
         fX = mWidth;
@@ -275,8 +276,8 @@ int RndCursor::DrawShowing() {
 
     if (mMask != nullptr) {
         // The binary also copies an uninitialised fourth word into the translation.
-        Vector3 &translation = mMask->mLocalXfm.mTranslation;
-        mMask->mDirty = 1;
+        Vector3 &translation = mMask->GetLocalXfm().mTranslation;
+        mMask->SetDirty(1);
         translation.x = fX;
         translation.y = mOffset;
         translation.z = 0.0f;
@@ -288,12 +289,12 @@ int RndCursor::DrawShowing() {
     if (mCursor == nullptr) {
         return 1;
     }
-    RndMesh *pMesh = mCursor->mMesh;
+    RndMesh *pMesh = mCursor->GetMesh();
     if (pMesh == nullptr) {
         return 1;
     }
     // The binary also copies an uninitialised fourth word into the translation.
-    Transform xfm = pMesh->mLocalXfm;
+    Transform xfm = pMesh->GetLocalXfm();
     xfm.mTranslation.x = fX + mStartX;
     xfm.mTranslation.y = 0.0f;
     xfm.mTranslation.z = mCenterZ;
@@ -307,8 +308,8 @@ int RndCursor::DrawShowing() {
     xfm.mBasisX.x = fScale;
     xfm.mBasisX.y = 0.0f;
     xfm.mBasisX.z = 0.0f;
-    pMesh->mLocalXfm = xfm;
-    pMesh->mDirty = 1;
+    pMesh->GetLocalXfm() = xfm;
+    pMesh->SetDirty(1);
     pMesh->UpdateWorldXfm(mText, 0);
     mCursor->Draw();
     return 1;

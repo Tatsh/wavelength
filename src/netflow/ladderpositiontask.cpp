@@ -18,7 +18,7 @@ void LadderPositionTask::OnStart() {
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
-    request.accountId = mPlayer->mId;
+    request.accountId = mPlayer->GetId();
     request.ladderType = kLadderType;
     request.statId = kLadderStat;
     request.reserved34 = 0;
@@ -47,6 +47,6 @@ void LadderPositionTask::OnResponse(int nConnection,
         return;
     }
     const int nRank = pResponse->status == RT_MEDIUS_STATUS_SUCCESS ? pResponse->rank : 0;
-    pTask->mPlayer->mRank = nRank;
+    pTask->mPlayer->SetRank(nRank);
     pTask->Finish(true, 0);
 }

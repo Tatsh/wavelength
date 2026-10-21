@@ -111,20 +111,20 @@ bool NetParamsScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool NetParamsScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return false;
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
     if (mFocusPanel == TheUI.FindPanel(mSongPanelName, false) &&
-        (pMsg->mButton == kPadTriangle || pMsg->mButton == kPadDLeft)) {
+        (pMsg->GetButton() == kPadTriangle || pMsg->GetButton() == kPadDLeft)) {
         SetFocus(TheUI.FindPanel(mButtonPanelName, false));
         static_cast<UIList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false))
             ->SetCursorSelected(true);
         return false;
     }
-    if (pMsg->mPressed != 0 && pMsg->mButton == kPadTriangle) {
+    if (pMsg->GetPressed() != 0 && pMsg->GetButton() == kPadTriangle) {
         TheUI.GotoScreen(mTriBackScreen);
     }
     return false;

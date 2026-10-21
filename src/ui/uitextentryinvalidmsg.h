@@ -106,6 +106,17 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
+    /** @return The text entry. */
+    UITextEntry *GetEntry() const {
+        return mEntry;
+    }
+
+    /** @return Whether the character was refused because the text is full. */
+    int GetEndOfField() const {
+        return mEndOfField;
+    }
+
+private:
     char mChar;          /*!< The refused character. */
     int mEndOfField;     /*!< Whether the character was refused because the text is full. */
     UITextEntry *mEntry; /*!< The text entry. */

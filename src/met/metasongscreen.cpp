@@ -131,8 +131,8 @@ void MetaSongScreen::Poll(float fTime) {
     }
     SongPicPanel *pPicture =
         static_cast<SongPicPanel *>(TheUI.FindPanel("s_g_sel_song_pic", false));
-    if (mPreviewSong.mLength != 0) {
-        if (pPicture->mPictureReady == 0) {
+    if (mPreviewSong.GetLength() != 0) {
+        if (pPicture->GetPictureReady() == 0) {
             return;
         }
         TheMetagame.SetSongScreenMix(false);
@@ -199,7 +199,7 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
     bool bLocked = false;
     UIButton *pSongButton = dynamic_cast<UIButton *>(pButton);
     if (pSongButton != nullptr) {
-        bLocked = pSongButton->mStyle == TheUI.FindStyle("locked_song_style", false);
+        bLocked = pSongButton->GetStyle() == TheUI.FindStyle("locked_song_style", false);
     }
     RndText *pBio = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_bio.txt"));
     RndText *pGenre = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_pic_genre.txt"));
@@ -475,7 +475,7 @@ bool MetaSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 
     mSongChosen = 1;
     UIButton *pButton = dynamic_cast<UIButton *>(pMsg->GetComponent());
-    if (pButton->mStyle == TheUI.FindStyle("locked_song_style", false)) {
+    if (pButton->GetStyle() == TheUI.FindStyle("locked_song_style", false)) {
         return UIScreen::HandleSelect(pMsg);
     }
     SongEntry song = FindSong(pMsg->GetComponent());
@@ -509,21 +509,21 @@ bool MetaSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
     mSongChosen = 0;
     if (mExitPending != 0) {
         return true;
     }
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return FreqScreen::HandleJoypad(pMsg);
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
 
-    if (pMsg->mButton == kPadSquare && TheGameDb->GetCommunity() == kPracticeCommunity &&
+    if (pMsg->GetButton() == kPadSquare && TheGameDb->GetCommunity() == kPracticeCommunity &&
         TheGameDb->GetRuleSet() == kPracticeRuleSet) {
         FxMidi::PlaySquare();
         UIComponent *pFocus = mBandPanel->GetFocus();
@@ -531,7 +531,7 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         bool bUnlocked = true;
         UIButton *pButton = dynamic_cast<UIButton *>(pFocus);
         if (pButton != nullptr) {
-            bUnlocked = pButton->mStyle != TheUI.FindStyle("locked_song_style", false);
+            bUnlocked = pButton->GetStyle() != TheUI.FindStyle("locked_song_style", false);
         }
         if (song.GetType() != kSongTypeTutorial && bUnlocked) {
             DebugPrint("going to launch - practice\n");
@@ -542,13 +542,13 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             mSong = song.GetName();
             GotoNextScreen("pre_launchpad2launchseq");
         }
-    } else if (pMsg->mButton == kPadCircle) {
+    } else if (pMsg->GetButton() == kPadCircle) {
         (void)TheUI.FindPanel("s_g_sel_song_band", false); // Yes, the binary discards these.
         (void)FindSong(dynamic_cast<UIButton *>(mBandPanel->GetFocus()));
         (void)TheUI.FindPanel("s_g_sel_song_pic", false);
         RndView *pBio = dynamic_cast<RndView *>(TheManager.Find("s_g_sel_song_pic_bio.view"));
-        ShowPicture(pBio->mShowing != 0);
-    } else if (pMsg->mButton == kPadTriangle) {
+        ShowPicture(pBio->GetShowing() != 0);
+    } else if (pMsg->GetButton() == kPadTriangle) {
         if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
             GotoNextScreen("multisong2multiarena");
         } else if (strcmp(TheMetagame.SelectedArenaName(), "Tutorial") == 0) {
@@ -566,7 +566,7 @@ bool MetaSongScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool MetaSongScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (pMsg->mScreen == this) {
+    if (pMsg->GetScreen() == this) {
         UpdatePreview(mFocusPanel->GetFocus(), mFocusPanel);
     }
     return false;

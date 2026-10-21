@@ -53,12 +53,12 @@ constexpr int kKeyboardMaxChars = 256;
 constexpr int kKeyboardMaxWidth = 512;
 
 Vector3 Translation(const RndText *pText) {
-    return pText->mLocalXfm.mTranslation;
+    return pText->GetLocalXfm().mTranslation;
 }
 
 void MoveText(RndText *pText, const Vector3 &position) {
-    pText->mDirty = 1;
-    pText->mLocalXfm.mTranslation = position;
+    pText->SetDirty(1);
+    pText->GetLocalXfm().mTranslation = position;
 }
 
 RndText *FindText(const char *pszFormat, const char *pszPanel) {
@@ -146,13 +146,13 @@ void ChatPanel::Enter(bool bForce, float fTime) {
     const String sender(FormatString(kSenderFormat, name.c_str()));
     RndText *pSender = mRows[0].first;
     pSender->SetText(sender.c_str());
-    const Vector3 end = pSender->CharPosition(sender.mLength);
+    const Vector3 end = pSender->CharPosition(sender.GetLength());
     mTextStart.x = mRowStart.x + end.x;
     mTextStart.y = mRowStart.y + end.y;
     mTextStart.z = mRowStart.z + end.z;
-    const float fWidth = mRows[0].first->MeasureWidth(sender.c_str(), sender.mLength);
+    const float fWidth = mRows[0].first->MeasureWidth(sender.c_str(), sender.GetLength());
     auto *pEntry = static_cast<UITextEntry *>(FindComponent(kEntryComponent, false));
-    pEntry->mMaxEntryWidth = mRows[0].first->mWrapWidth - fWidth;
+    pEntry->SetMaxEntryWidth(mRows[0].first->GetWrapWidth() - fWidth);
     pEntry->SetEditing(true);
     Refresh();
     if (std::strcmp(kNoText, mKeyboardText.c_str()) != 0) {
@@ -193,9 +193,9 @@ bool ChatPanel::DispatchPriv(Message *pMsg) {
 
 bool ChatPanel::HandleChat(ChatMsg *pMsg) {
     ChatMessage line;
-    line.mText = pMsg->mText;
-    line.mSender = pMsg->mSender;
-    line.mPlayer = pMsg->mPlayer;
+    line.mText = pMsg->GetText();
+    line.mSender = pMsg->GetSender();
+    line.mPlayer = pMsg->GetPlayer();
     mMessages.push_back(line);
     if (mMessages.size() > static_cast<unsigned int>(mNumLines)) {
         mMessages.pop_front();
@@ -232,7 +232,7 @@ void ChatPanel::Refresh() {
 }
 
 bool ChatPanel::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mButton != kPadCircle || pMsg->mPressed == 0) {
+    if (pMsg->GetButton() != kPadCircle || pMsg->GetPressed() == 0) {
         return false;
     }
     UIPanel *pPanel = TheUI.FindPanel(kKeyboardPanel, false);
@@ -265,8 +265,8 @@ bool ChatPanel::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool ChatPanel::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    mText = pMsg->mText;
-    if (mText.mLength != 0 &&
+    mText = pMsg->GetText();
+    if (mText.GetLength() != 0 &&
         ChatMsg::Send(mChatType, mChatType == kChatLobby, mText.c_str(), kEcho)) {
         FindComponent(kEntryComponent, false)->SetText(kNoText);
     }
@@ -291,7 +291,7 @@ void ChatPanel::ShowLine(const char *pszSender, const char *pszText, int nPlayer
 
     RndText *pSender = mRows[mRow].first;
     pSender->SetText(sender.c_str());
-    const Vector3 end = pSender->CharPosition(sender.mLength);
+    const Vector3 end = pSender->CharPosition(sender.GetLength());
     const Vector3 &rowPosition = mRowPositions[mRow];
     Vector3 position;
     position.x = rowPosition.x + end.x;
@@ -300,8 +300,8 @@ void ChatPanel::ShowLine(const char *pszSender, const char *pszText, int nPlayer
     MoveText(mRows[mRow].second, position);
 
     // The binary measures the name and reads the wrap width in the first row for every row.
-    const float fWidth = mRows[0].first->MeasureWidth(sender.c_str(), sender.mLength);
-    mRows[mRow].second->SetWrapWidth(mRows[0].first->mWrapWidth - fWidth);
+    const float fWidth = mRows[0].first->MeasureWidth(sender.c_str(), sender.GetLength());
+    mRows[mRow].second->SetWrapWidth(mRows[0].first->GetWrapWidth() - fWidth);
     mRows[mRow].second->SetText(pszText);
 
     if (mRow < mNumLines) {

@@ -38,13 +38,13 @@ bool PauseScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool PauseScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
+    if (pMsg->GetPressed() && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (pMsg->mPad != mPad) {
+    if (pMsg->GetPad() != mPad) {
         return true;
     }
-    if (pMsg->mPressed && pMsg->mButton == kPadStart) {
+    if (pMsg->GetPressed() && pMsg->GetButton() == kPadStart) {
         TheMetagame.ShowEndGameScreens(Metagame::kDialogActionResume);
     }
     return false;

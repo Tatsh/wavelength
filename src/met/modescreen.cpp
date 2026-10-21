@@ -28,7 +28,7 @@ bool ModeScreen::DispatchPriv(Message *pMsg) {
 void ModeScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal &&
-        TheGameDb->GetProfile(0)->mCustom != 0) {
+        TheGameDb->GetProfile(0)->GetCustom() != 0) {
         TheMetagame.GetGizmo()->SetShowAvatar(false);
     }
     if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
@@ -37,7 +37,7 @@ void ModeScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     JukeboxScreen *pJukebox =
         dynamic_cast<JukeboxScreen *>(TheUI.FindScreen("jbox_redbook", false));
-    if (pJukebox->mShowAllSongs != 0) {
+    if (pJukebox->GetShowAllSongs() != 0) {
         return;
     }
     std::vector<SongEntry> songs;
@@ -66,18 +66,18 @@ bool ModeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         TheGameDb->SetTutorial(0);
         TheGameDb->SetRuleSet(GameDb::kRuleSetDuel);
         TheGameDb->SetSkillLevel(GameDb::kSkillIntermediate);
-        if (TheGameDb->GetProfile(0)->mCustom != 0) {
+        if (TheGameDb->GetProfile(0)->GetCustom() != 0) {
             Campaign first(*TheGameDb->GetProfile(0));
             TheGameDb->ClearPlayers();
             TheGameDb->AddPlayer(&first);
         } else {
             TheGameDb->ClearPlayers();
             Campaign first;
-            first.mName = TheLocale.Localize("player_1", true);
+            first.SetName(TheLocale.Localize("player_1", true));
             TheGameDb->AddPlayer(&first);
         }
         Campaign second;
-        second.mName = TheLocale.Localize("player_2", true);
+        second.SetName(TheLocale.Localize("player_2", true));
         TheGameDb->AddPlayer(&second);
 #ifdef VIDEO_STANDARD_PAL
         dynamic_cast<MultiLoadFreqScreen *>(TheUI.FindScreen("multi_load_freq", false))->Reset();

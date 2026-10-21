@@ -22,11 +22,11 @@ void HudStick::Hide() {
 }
 
 void HudStick::Show(int nDirection, const Vector2 *pPosition) {
-    mMesh->mDirty = 1;
+    mMesh->SetDirty(1);
     // The binary also copies an unset fourth word, which is left as it was here.
-    mMesh->mLocalXfm.mTranslation.x = pPosition->x;
-    mMesh->mLocalXfm.mTranslation.y = 0.0f;
-    mMesh->mLocalXfm.mTranslation.z = pPosition->y;
+    mMesh->GetLocalXfm().mTranslation.x = pPosition->x;
+    mMesh->GetLocalXfm().mTranslation.y = 0.0f;
+    mMesh->GetLocalXfm().mTranslation.z = pPosition->y;
     mMesh->SetShowing(true);
     mMesh->SetMat(mMats[nDirection]);
 }

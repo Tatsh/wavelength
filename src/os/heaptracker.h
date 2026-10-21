@@ -159,6 +159,7 @@ public:
      */
     void ReportDiff(PrnStream &stream);
 
+private:
     int mHeap;                          /*!< The index of the heap. */
     int *mStart;                        /*!< The first word of the heap. */
     int *mEnd;                          /*!< The end of the heap. */

@@ -116,7 +116,7 @@ template <typename T>
 T *FindByName(BinStream &stream) {
     String name;
     stream >> name;
-    if (name.mLength == 0) {
+    if (name.GetLength() == 0) {
         return nullptr;
     }
     return dynamic_cast<T *>(TheManager.Find(name.c_str()));
@@ -175,7 +175,7 @@ void RndMat::Stage::Save(BinStream &stream) const {
     WriteRow(stream, mXfm.mTranslation);
     WriteFlag(stream, mUseXfm);
     stream.WriteEndian(&mWrap, sizeof(mWrap));
-    stream.WriteString(mTex != nullptr ? mTex->mName.c_str() : "");
+    stream.WriteString(mTex != nullptr ? mTex->GetName() : "");
 }
 
 void RndMat::Stage::Load(BinStream &stream) {
@@ -237,7 +237,7 @@ RndMat::~RndMat() {
 
 void RndMat::DumpText(PrnStream &stream) {
     RndObject::DumpText(stream);
-    if (stream.mDumpLevel <= 0) {
+    if (stream.GetDumpLevel() <= 0) {
         return;
     }
     stream << "[RndMat]\n";
@@ -271,17 +271,17 @@ void RndMat::Save(BinStream &stream) {
 
 void RndMat::Replace(RndObject *pFrom, RndObject *pTo) {
     for (Stage &stage : mStages) {
-        if (stage.mTex != pFrom) {
+        if (stage.GetTex() != pFrom) {
             continue;
         }
         if (pFrom != nullptr) {
             pFrom->RemoveRef(this);
         }
-        if (stage.mTex != nullptr) {
-            stage.mTex = pTo != nullptr ? dynamic_cast<RndTex *>(pTo) : nullptr;
+        if (stage.GetTex() != nullptr) {
+            stage.SetTex(pTo != nullptr ? dynamic_cast<RndTex *>(pTo) : nullptr);
         }
-        if (stage.mTex != nullptr) {
-            stage.mTex->AddRef(this);
+        if (stage.GetTex() != nullptr) {
+            stage.GetTex()->AddRef(this);
         }
     }
 }
@@ -397,9 +397,9 @@ void RndMat::SetLighting(
 void RndMat::Refresh() {
     int nStage = 0;
     for (Stage &stage : mStages) {
-        stage.mMat = this;
-        if (stage.mTex != nullptr) {
-            stage.mTex->AddRef(this);
+        stage.SetMat(this);
+        if (stage.GetTex() != nullptr) {
+            stage.GetTex()->AddRef(this);
         }
         SyncStage(nStage);
         ++nStage;
@@ -409,13 +409,13 @@ void RndMat::Refresh() {
 void RndMat::AddStage() {
     const Stage stage;
     mStages.resize(mStages.size() + 1, stage);
-    mStages.back().mMat = this;
+    mStages.back().SetMat(this);
 }
 
 void RndMat::ReleaseStageTex() {
     for (Stage &stage : mStages) {
-        if (stage.mTex != nullptr) {
-            stage.mTex->RemoveRef(this);
+        if (stage.GetTex() != nullptr) {
+            stage.GetTex()->RemoveRef(this);
         }
     }
 }

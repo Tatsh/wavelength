@@ -69,7 +69,10 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
-    std::list<NetRepoRemix> mRemixes; /*!< The remixes of the repository. */
+    /** @param remixes The remixes of the repository. */
+    void SetRemixes(const std::list<NetRepoRemix> &remixes) {
+        mRemixes = remixes;
+    }
 
 private:
     /**
@@ -97,4 +100,5 @@ private:
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
     int mShowNote; // Whether the list shows the note rather than the band picture.
+    std::list<NetRepoRemix> mRemixes; /*!< The remixes of the repository. */
 };

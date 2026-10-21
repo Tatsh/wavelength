@@ -44,6 +44,12 @@ public:
      */
     float GetMean() const;
 
+    /** @return The sum of the rates. */
+    float GetSum() const {
+        return mSum;
+    }
+
+private:
     int mTicksPerBar; /*!< The length of a bar in ticks. */
     float mSum;       /*!< The sum of the rates. */
     int mCount;       /*!< The number of samples. */

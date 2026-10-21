@@ -177,18 +177,6 @@ public:
      */
     void Poll(bool bCaptured, float flTime, float flDelta);
 
-    int mPlayer;            /*!< The player. */
-    GfxTunnel *mTunnel;     /*!< The tunnel. */
-    float mFade;            /*!< The opacity of the beam, from 0 to 1. */
-    State mState;           /*!< The fade, one of State. */
-    char mTrack;            /*!< The track of the pending window, or -1. */
-    float mStartTick;       /*!< The start of the pending window. */
-    float mEndTick;         /*!< The end of the pending window. */
-    TnlGems *mGems;         /*!< The gems of the pending window, or null. */
-    Color mColor;           /*!< The colour of the player. */
-    float mTargetStartTick; /*!< The start of the last target. */
-    float mTargetEndTick;   /*!< The end of the last target. */
-    char mTargetTrack;      /*!< The track of the last target, or -1. */
     /** @return The beam. */
     TnlConnectorBeam *GetBeam() const {
         return mBeam.get();
@@ -199,7 +187,39 @@ public:
         return mSeeker.get();
     }
 
+    /** @return The colour of the player. */
+    const Color &GetColor() const {
+        return mColor;
+    }
+
+    /** @return The start of the last target. */
+    float GetTargetStartTick() const {
+        return mTargetStartTick;
+    }
+
+    /** @return The end of the last target. */
+    float GetTargetEndTick() const {
+        return mTargetEndTick;
+    }
+
+    /** @return The track of the last target, or -1. */
+    char GetTargetTrack() const {
+        return mTargetTrack;
+    }
+
 private:
+    int mPlayer;                             /*!< The player. */
+    GfxTunnel *mTunnel;                      /*!< The tunnel. */
+    float mFade;                             /*!< The opacity of the beam, from 0 to 1. */
+    State mState;                            /*!< The fade, one of State. */
+    char mTrack;                             /*!< The track of the pending window, or -1. */
+    float mStartTick;                        /*!< The start of the pending window. */
+    float mEndTick;                          /*!< The end of the pending window. */
+    TnlGems *mGems;                          /*!< The gems of the pending window, or null. */
+    Color mColor;                            /*!< The colour of the player. */
+    float mTargetStartTick;                  /*!< The start of the last target. */
+    float mTargetEndTick;                    /*!< The end of the last target. */
+    char mTargetTrack;                       /*!< The track of the last target, or -1. */
     std::unique_ptr<TnlConnectorBeam> mBeam; /*!< The beam. */
     std::unique_ptr<TnlSeeker> mSeeker;      /*!< The frame. */
 };

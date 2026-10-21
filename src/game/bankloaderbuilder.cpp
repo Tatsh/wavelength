@@ -39,7 +39,7 @@ String g_strNoiseFileSuffix(".nse");
 // Report whether a string ends with another string.
 // NTSC-U/C: 0x0014a300, PAL: 0x0014bcc0
 bool EndsWith(const String &text, const String &suffix) {
-    const String tail = text.Substring(text.mLength - suffix.mLength);
+    const String tail = text.Substring(text.GetLength() - suffix.GetLength());
     return tail == suffix;
 }
 
@@ -50,7 +50,7 @@ bool BankLoaderBuilder::IsPermBankName(const String &name) {
 }
 
 bool BankLoaderBuilder::IsSwapBankName(const String &name) {
-    int nPos = name.mLength - 1;
+    int nPos = name.GetLength() - 1;
     while (isdigit(name[nPos])) {
         if (nPos < 0) {
             break;

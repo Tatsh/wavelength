@@ -49,7 +49,7 @@ void CheckLeftoverObjects() {
     }
     bool bLeftover = false;
     for (const auto &entry : TheManager.GetObjects()) {
-        if (entry.second->mInternal == 0) {
+        if (entry.second->GetInternal() == 0) {
             bLeftover = true;
             break;
         }

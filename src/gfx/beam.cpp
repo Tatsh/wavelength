@@ -65,12 +65,16 @@ void Beam::Start(Ship *pOwner, std::list<Ship::BeamData> *pOwnerList, float fSta
     mEndTime = fEnd;
     mOwner = pOwner;
     mLine->SetShowing(1);
-    const float fFrequencyA = RandomFloat(mParams->mMinFrequency.x, mParams->mMaxFrequency.x);
-    const float fFrequencyB = RandomFloat(mParams->mMinFrequency.y, mParams->mMaxFrequency.y);
+    const float fFrequencyA =
+        RandomFloat(mParams->GetMinFrequency().x, mParams->GetMaxFrequency().x);
+    const float fFrequencyB =
+        RandomFloat(mParams->GetMinFrequency().y, mParams->GetMaxFrequency().y);
     mFrequencies.x = fFrequencyA;
     mFrequencies.y = fFrequencyB;
-    const float fPeriodA = RandomFloat(mParams->mMinTravelPeriod.x, mParams->mMaxTravelPeriod.x);
-    const float fPeriodB = RandomFloat(mParams->mMinTravelPeriod.y, mParams->mMaxTravelPeriod.y);
+    const float fPeriodA =
+        RandomFloat(mParams->GetMinTravelPeriod().x, mParams->GetMaxTravelPeriod().x);
+    const float fPeriodB =
+        RandomFloat(mParams->GetMinTravelPeriod().y, mParams->GetMaxTravelPeriod().y);
     mTravelPeriods.x = fPeriodA;
     mTravelPeriods.y = fPeriodB;
 }
@@ -87,10 +91,10 @@ bool Beam::Update(const Vector3 &direction, const Vector3 &side, const Color &co
         return true;
     }
     const float fT = (fNow - mStartTime) / (mEndTime - mStartTime);
-    const float fAmplitude = ((mParams->mAmplitudes[BeamParams::kEndFinish] -
-                               mParams->mAmplitudes[BeamParams::kEndStart]) *
+    const float fAmplitude = ((mParams->GetAmplitude(BeamParams::kEndFinish) -
+                               mParams->GetAmplitude(BeamParams::kEndStart)) *
                               fT) +
-                             mParams->mAmplitudes[BeamParams::kEndStart];
+                             mParams->GetAmplitude(BeamParams::kEndStart);
     const float fLift[] = {
         direction.x * fAmplitude, direction.y * fAmplitude, direction.z * fAmplitude};
     const float fShift[] = {side.x * fAmplitude, side.y * fAmplitude, side.z * fAmplitude};
@@ -99,7 +103,7 @@ bool Beam::Update(const Vector3 &direction, const Vector3 &side, const Color &co
     const float fPhaseA0 = fPhase / mTravelPeriods.x;
     const float fCyclesA = (mFrequencies.x + mFrequencies.x) * kPi;
     const float fCyclesB = (mFrequencies.y + mFrequencies.y) * kPi;
-    const int nPoints = mParams->mPoints;
+    const int nPoints = mParams->GetPoints();
     const float fInvPoints = 1.0f / static_cast<float>(nPoints);
     float fStep[kNumComponents];
     for (int i = 0; i < kNumComponents; ++i) {

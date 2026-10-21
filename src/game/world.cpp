@@ -487,8 +487,8 @@ void World::StartClock(int nTick) {
         TheSongScheduler.ResetForPlayback(pTickDuration, mDemoBuffer, mDemoSize, nTick);
     } else {
         int nDevice = kHostDevice;
-        const char *pszRecordFile = TheGameConfig->mRecordToFile;
-        const char *pszPlayFile = TheGameConfig->mPlayFromFile;
+        const char *pszRecordFile = TheGameConfig->GetRecordToFile();
+        const char *pszPlayFile = TheGameConfig->GetPlayFromFile();
         // Yes, the binary discards the result. A missing key leaves the host.
         (void)SystemConfig()
             ->FindArray(kGameSection, false)
@@ -498,12 +498,12 @@ void World::StartClock(int nTick) {
             DateTime now{};
             (void)now.ReadClock(); // Yes, the binary discards the result.
             file << FormatString(kRecordingSuffixFormat,
-                                 now.mYear - kCenturyYears,
-                                 now.mMonth + kFirstMonth,
-                                 now.mDay,
-                                 now.mHour,
-                                 now.mMinute,
-                                 now.mSecond);
+                                 now.GetYear() - kCenturyYears,
+                                 now.GetMonth() + kFirstMonth,
+                                 now.GetDay(),
+                                 now.GetHour(),
+                                 now.GetMinute(),
+                                 now.GetSecond());
             if (nDevice == kHostDevice) {
                 MakeUniqueHostName(file);
             } else {
@@ -523,7 +523,7 @@ void World::StartClock(int nTick) {
 int World::OnStartGame(StartGameMsg *pMsg) {
     mState = kStateLoaded;
     mLoadStep = kLoadStepComplete;
-    mSeed = pMsg->mSeed;
+    mSeed = pMsg->GetSeed();
     return 0;
 }
 

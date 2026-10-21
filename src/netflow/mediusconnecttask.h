@@ -62,9 +62,7 @@ public:
      */
     static int sConnecting;
 
-    int mServer; /*!< One of Server. */
 #ifdef VIDEO_STANDARD_PAL
-    float mDeadline; /*!< When the step fails without a connection, from SystemMs(). */
 #endif
 
 protected:
@@ -93,4 +91,8 @@ protected:
      */
     void OnPoll() override;
 #endif
+
+private:
+    int mServer;     /*!< One of Server. */
+    float mDeadline; /*!< When the step fails without a connection, from SystemMs(). */
 };

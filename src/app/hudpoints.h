@@ -126,6 +126,7 @@ public:
      */
     void End(int nResult);
 
+private:
     float mGlow;          /*!< The glow of the pending points, from 1 down to 0. */
     float mSwell;         /*!< The swell of the pending points. */
     float mMinSwell;      /*!< The swell the points shrink back to. */

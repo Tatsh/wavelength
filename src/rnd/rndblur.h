@@ -216,13 +216,30 @@ public:
      */
     static int sLoadRev;
 
-    RndMesh *mMesh;             /*!< The mesh subject, or null. */
-    RndText *mText;             /*!< The text subject, or null. */
-    int mLength;                /*!< The number of transforms to record. */
-    int mRate;                  /*!< The number of frames between two recorded transforms. */
-    float mFalloff;             /*!< The fraction of the material alpha of the first step. */
-    std::list<Transform> mXfms; /*!< The recorded world transforms, newest first. */
-    int mCountdown;             /*!< The frames left before the next transform is recorded. */
+    /** @return The fraction of the material alpha of the first step. */
+    float GetFalloff() const {
+        return mFalloff;
+    }
+
+    /** @param fFalloff The fraction of the material alpha of the first step. */
+    void SetFalloff(float fFalloff) {
+        mFalloff = fFalloff;
+    }
+
+    /** @return The mesh subject, or null. */
+    RndMesh *GetMesh() const {
+        return mMesh;
+    }
+
+    /** @return The recorded world transforms, newest first. */
+    const std::list<Transform> &GetXfms() const {
+        return mXfms;
+    }
+
+    /** @return The recorded world transforms, newest first, for writing. */
+    std::list<Transform> &GetXfms() {
+        return mXfms;
+    }
 
 protected:
     /**
@@ -244,4 +261,13 @@ protected:
      * @ghidraAddress PAL: 0x00228148
      */
     void AcquireRefs();
+
+private:
+    RndMesh *mMesh;             /*!< The mesh subject, or null. */
+    RndText *mText;             /*!< The text subject, or null. */
+    int mLength;                /*!< The number of transforms to record. */
+    int mRate;                  /*!< The number of frames between two recorded transforms. */
+    float mFalloff;             /*!< The fraction of the material alpha of the first step. */
+    std::list<Transform> mXfms; /*!< The recorded world transforms, newest first. */
+    int mCountdown;             /*!< The frames remaining before the next transform is recorded. */
 };

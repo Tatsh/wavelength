@@ -49,7 +49,7 @@ PitchTrackBuilder::PitchTrackBuilder(int nTrack,
                                      PitchTrackRiffData *pRiffData)
     : TrackBuilder(nTrack, bValidate, pfnError), mStartTick(nStartTick), mEndTick(nEndTick),
       mRiffData(pRiffData), mValidator(nTrack, pfnError, nChannel, true), mRiffs(), mGems() {
-    mRiffData->mName = riffName;
+    mRiffData->SetName(riffName.c_str());
 }
 
 void PitchTrackBuilder::OnEndTrack() {

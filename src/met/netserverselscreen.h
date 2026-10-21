@@ -66,8 +66,6 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
-    std::list<LobbyLocation> mLocations; /*!< The locations of the lobby server. */
-
 private:
     /**
      * Pass the chosen location to NetServerLogin and change to it.
@@ -80,4 +78,6 @@ private:
      * @ghidraAddress PAL: 0x0017bf20
      */
     bool HandleSelect(UIComponentSelectMsg *pMsg);
+
+    std::list<LobbyLocation> mLocations; /*!< The locations of the lobby server. */
 };

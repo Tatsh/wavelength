@@ -120,7 +120,7 @@ void PsMovie::OpenData() {
 
     FilePath file;
     file.Set("");
-    pTex->SetBitmap(mWidth, mHeight, kMovieBpp, file, pTex->mMipMapK, 0);
+    pTex->SetBitmap(mWidth, mHeight, kMovieBpp, file, pTex->GetMipMapK(), 0);
     static_cast<PsTex *>(pTex)->BuildMoviePacket(true);
 
     const int nTags =

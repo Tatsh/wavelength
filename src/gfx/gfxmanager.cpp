@@ -250,11 +250,11 @@ void GfxManager::GfxLoader::Start(const char *pszFile, int nFlags) {
 
 void GfxManager::GfxLoader::Finish() {
     mDone = 1;
-    if (mSkipped.mLength != 0) {
+    if (mSkipped.GetLength() != 0) {
         DebugNotify(
             "These objects in %s\nwon't be loaded because they\nalready exist, and are not\n"
             "in the allowed list:\n%s",
-            mLoader->mFile.c_str(),
+            mLoader->GetFile().c_str(),
             mSkipped.c_str());
     }
     mSkipped.Clear();
@@ -442,16 +442,16 @@ void GfxManager::OnStickDiagram(DataArray *pCommand, [[maybe_unused]] void *pUse
 void GfxManager::DrawDrugs() {
     const float aflRect[] = {0.0f, 0.0f, 1.0f, 1.0f};
     float aflSavedRect[kNumRectComponents];
-    memcpy(aflSavedRect, ThePs.mBlurRect, sizeof(aflSavedRect));
-    const float fSavedAmount = ThePs.mBlurAmount;
-    const int nSavedCount = ThePs.mBlurCount;
-    ThePs.mBlurCount = kDrugsOffset;
-    ThePs.mBlurAmount = kDrugsAlpha;
-    memcpy(ThePs.mBlurRect, aflRect, sizeof(aflRect));
+    memcpy(aflSavedRect, ThePs.GetBlurRect(), sizeof(aflSavedRect));
+    const float fSavedAmount = ThePs.GetBlurAmount();
+    const int nSavedCount = ThePs.GetBlurCount();
+    ThePs.SetBlurCount(kDrugsOffset);
+    ThePs.SetBlurAmount(kDrugsAlpha);
+    memcpy(ThePs.GetBlurRect(), aflRect, sizeof(aflRect));
     ThePs.DrawBlur();
-    ThePs.mBlurAmount = fSavedAmount;
-    ThePs.mBlurCount = nSavedCount;
-    memcpy(ThePs.mBlurRect, aflSavedRect, sizeof(aflSavedRect));
+    ThePs.SetBlurAmount(fSavedAmount);
+    ThePs.SetBlurCount(nSavedCount);
+    memcpy(ThePs.GetBlurRect(), aflSavedRect, sizeof(aflSavedRect));
 }
 
 #pragma mark - Life cycle
@@ -656,7 +656,7 @@ void GfxManager::Load(float fTime) {
         }
     }
 
-    if (mVortex->mMode != Vortex::kModeIn && mVortex->mMode != Vortex::kModeHold) {
+    if (mVortex->GetMode() != Vortex::kModeIn && mVortex->GetMode() != Vortex::kModeHold) {
         mVortex->Start(kDefaultPosition, Vortex::kModeIn);
     }
     mVortexAfterViews = 0;
@@ -788,7 +788,7 @@ void GfxManager::Teardown() {
     while (!mLoaders.empty()) {
         mLoaders.pop_front();
     }
-    TheGameDb->GetProfile(0)->mAvatar.SetPose(kTeardownPose);
+    TheGameDb->GetProfile(0)->GetAvatar().SetPose(kTeardownPose);
     mWinner = -1;
     mVictoryLap = 0;
     mMsPerTick = nullptr;
@@ -813,7 +813,7 @@ float GfxManager::StartIntro(float fLength) {
 }
 
 bool GfxManager::IsIntroFinished() const {
-    return mVortex->mMode != Vortex::kModeIn;
+    return mVortex->GetMode() != Vortex::kModeIn;
 }
 
 float GfxManager::RestartIntro() {
@@ -830,7 +830,7 @@ float GfxManager::StartOutro(float fLength) {
 }
 
 bool GfxManager::IsOutroDone() {
-    return mVortex->mFrame == mVortex->mInterp.GetY1();
+    return mVortex->GetFrame() == mVortex->GetInterp().GetY1();
 }
 
 void GfxManager::UpdateScrollSpeed(float fSongTicks) {
@@ -1173,17 +1173,17 @@ void GfxManager::Debug(DataArray *pCommand) {
         DebugPrint("----------------- Timers -----------------\n");
         int nWidth = 1;
         for (const Timer &timer : Timer::sTimers) {
-            const int nLength = static_cast<int>(strlen(timer.mName));
+            const int nLength = static_cast<int>(strlen(timer.GetName()));
             if (nWidth < nLength) {
                 nWidth = nLength;
             }
         }
         for (const Timer &timer : Timer::sTimers) {
-            DebugPrint("   %s:", timer.mName);
-            for (int i = static_cast<int>(strlen(timer.mName)); i < nWidth; ++i) {
+            DebugPrint("   %s:", timer.GetName());
+            for (int i = static_cast<int>(strlen(timer.GetName())); i < nWidth; ++i) {
                 DebugPrint(" ");
             }
-            DebugPrint(" %8.2f\n", timer.mLastMs);
+            DebugPrint(" %8.2f\n", timer.GetLastMs());
         }
     } else if (mState == kStateIdle) {
         if (strcmp(pszCommand, "no_arena") == 0) {
@@ -1201,7 +1201,7 @@ void GfxManager::Debug(DataArray *pCommand) {
             } while ((mHudFlags & kHudFlagSkipMask) == kHudFlagSkipValue ||
                      (mHudFlags != kHudFlagLast && (mHudFlags & kHudFlagStatsText) != 0));
             TheRnd->SetShowStats(0);
-            TheRnd->SetShowTimers(0, TheRnd->mTimerMaxMs);
+            TheRnd->SetShowTimers(0, TheRnd->GetTimerMaxMs());
             TheRnd->SetShowRate((mHudFlags & kHudFlagStatsText) != 0);
         } else if (strcmp(pszCommand, "particle_report") == 0) {
             mTunnel->ReportParticles();

@@ -51,5 +51,11 @@ public:
      */
     void Enter(UIScreen *pPrevScreen, float fTime) override;
 
+    /** @param pszNews The news to show. */
+    void SetNews(const char *pszNews) {
+        mNews = pszNews;
+    }
+
+private:
     const char *mNews; /*!< The news to show. */
 };

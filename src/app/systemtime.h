@@ -62,15 +62,15 @@ public:
      */
     void Advance(int nAmount);
 
-    /** The millisecond reading the current run started at. `+0x10` */
-    long long mOriginMs;
-
 private:
     double mNsPerUnit;      // +0x00 nanoseconds in one clock unit
     long long mStartMs;     // +0x08 the reading the running time is measured from
     int mRunning;           // +0x18 set to 1 on construction, cleared while paused
     int mReserved1c;        // +0x1c never accessed
     long long mPausedRunMs; // +0x20 the running time at the last pause, cleared on construction
+
+    /** The millisecond reading the current run started at. `+0x10` */
+    long long mOriginMs;
 };
 
 } // namespace Sch

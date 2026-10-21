@@ -106,6 +106,12 @@ public:
      */
     bool Fail() override;
 
+    /** @return The bytes. */
+    std::vector<char> &GetBuffer() {
+        return mBuffer;
+    }
+
+private:
     int mFail;                 /*!< Whether a transfer failed. */
     int mTell;                 /*!< The position, which Write() extends the bytes to reach. */
     std::vector<char> mBuffer; /*!< The bytes. */

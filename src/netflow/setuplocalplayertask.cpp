@@ -3,10 +3,10 @@
 #include "netflow/lobbyplayer.h"
 
 void SetupLocalPlayerTask::OnStart() {
-    if (mSource->mRating != 0) {
-        mTarget->mRating = mSource->mRating;
-        mTarget->mGames = mSource->mGames;
-        mTarget->mRecord = mSource->mRecord;
+    if (mSource->GetRating() != 0) {
+        mTarget->SetRating(mSource->GetRating());
+        mTarget->SetGames(mSource->GetGames());
+        mTarget->SetRecord(mSource->GetRecord());
     }
     Finish(true, 0);
 }

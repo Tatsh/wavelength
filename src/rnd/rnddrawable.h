@@ -216,9 +216,15 @@ public:
      */
     static int sRev;
 
-    int mShowing;                    /*!< Non-zero to draw. */
-    int mHighlight;                  /*!< Non-zero to draw with the highlight treatment. */
-    std::list<RndDrawable *> mDraws; /*!< The children, drawn after the drawable. */
+    /** @return Non-zero to draw. */
+    int GetShowing() const {
+        return mShowing;
+    }
+
+    /** @return The children, drawn after the drawable. */
+    const std::list<RndDrawable *> &GetDraws() const {
+        return mDraws;
+    }
 
 protected:
     /**
@@ -240,4 +246,10 @@ protected:
      * @ghidraAddress PAL: 0x0022d490
      */
     void AcquireDrawRefs();
+
+    int mShowing; /*!< Non-zero to draw. */
+
+private:
+    int mHighlight;                  /*!< Non-zero to draw with the highlight treatment. */
+    std::list<RndDrawable *> mDraws; /*!< The children, drawn after the drawable. */
 };

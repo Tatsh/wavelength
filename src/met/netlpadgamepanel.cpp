@@ -74,11 +74,11 @@ void NetLPadGamePanel::ShowPlayers(const char *pszPanel, std::list<NetLaunchpadP
         } else {
             name = FormatString(kNameTextFormat, pszPanel, nRow);
             RndText *pName = FindObject<RndText>(name.c_str());
-            pName->SetText(player->mPlayer.mName.c_str());
+            pName->SetText(player->mPlayer.GetName().c_str());
             pName->SetFont(
                 FindObject<RndFont>(player->mReady == kReady ? kReadyFont : kNotReadyFont));
             FindObject<RndMesh>(FormatString(kRankMeshFormat, pszPanel, nRow))
-                ->SetMat(FindRankMaterial(player->mPlayer.mRankIcon));
+                ->SetMat(FindRankMaterial(player->mPlayer.GetRankIcon()));
 
             name = FormatString(kRankTextFormat, pszPanel, nRow);
             RndText *pRank = FindObject<RndText>(name.c_str());
@@ -86,7 +86,7 @@ void NetLPadGamePanel::ShowPlayers(const char *pszPanel, std::list<NetLaunchpadP
             if (player->mPlayer.IsNewbie()) {
                 std::strcpy(szRank, TheLocale.Localize(kNewbieToken, true));
             } else {
-                std::sprintf(szRank, kRankFormat, player->mPlayer.mRank);
+                std::sprintf(szRank, kRankFormat, player->mPlayer.GetRank());
             }
             pRank->SetText(FormatString(TheLocale.Localize(kRankToken, true), szRank));
 

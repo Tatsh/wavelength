@@ -143,16 +143,17 @@ bool RemixSelectScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool RemixSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
-    if (pMsg->mPressed == 0) {
+    if (pMsg->GetPressed() == 0) {
         return UIScreen::HandleJoypad(pMsg);
     }
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    if (pMsg->mButton == kPadTriangle && pMsg->mPad == kFirstPad &&
+    if (pMsg->GetButton() == kPadTriangle && pMsg->GetPad() == kFirstPad &&
         TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         TheUI.GotoScreen(TheNetLaunchpad != nullptr ? kEditHostScreen : kHostingScreen);
-    } else if (pMsg->mButton == kPadSquare && TheGameDb->GetCommunity() == GameDb::kCommunitySolo &&
+    } else if (pMsg->GetButton() == kPadSquare &&
+               TheGameDb->GetCommunity() == GameDb::kCommunitySolo &&
                TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         const int nResult = LoadSelectedRemix(true);
         if (nResult != kLoadStarted) {

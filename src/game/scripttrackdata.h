@@ -59,6 +59,12 @@ public:
      */
     TickObj<DataArray *> *GetCommand(int nIndex);
 
+    /** @return The name of the data. */
+    const String &GetName() const {
+        return mName;
+    }
+
+private:
     String mName;                                 /*!< The name of the data. */
     std::vector<TickObj<DataArray *> > mCommands; /*!< The commands in ascending tick order. */
 };

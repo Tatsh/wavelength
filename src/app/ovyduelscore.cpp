@@ -22,7 +22,7 @@ OvyDuelScore::OvyDuelScore(int nIndex, [[maybe_unused]] RndView *pHudView)
     mFlashTime = kNoFlash;
     mView = dynamic_cast<RndView *>(TheManager.Find(FormatString("HUDd letters %d.view", nIndex)));
     SetObjects(FormatString("HUDd letters %d.tnm", nIndex),
-               static_cast<RndDrawable *>(mView)->mName.c_str(),
+               static_cast<RndDrawable *>(mView)->GetName(),
                false);
     mFlashAnim = dynamic_cast<RndAnimatable *>(
         TheManager.Find(FormatString("HUDd letter hi %d.mnm", nIndex)));
@@ -74,7 +74,7 @@ void OvyDuelScore::ShowLetters(int nCount, bool bSetFonts) {
             continue;
         }
         RndFont *pFont = mFonts[i < mLitCount ? kLetterFontNormal : kLetterFontNew];
-        if (pFont != pLetter->mFont) {
+        if (pFont != pLetter->GetFont()) {
             pLetter->SetFont(pFont);
         }
     }

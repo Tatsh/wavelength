@@ -78,6 +78,17 @@ public:
      */
     void SetSongs(const std::vector<String> &songs, int nChoiceCount);
 
+    /** @return The localised choices, then the songs. */
+    const std::vector<String> &GetSongs() const {
+        return mSongs;
+    }
+
+    /** @return The localised choices, then the songs. */
+    std::vector<String> &GetSongs() {
+        return mSongs;
+    }
+
+private:
     std::vector<String> mSongs; /*!< The localised choices, then the songs. +0xc0 */
     const char *mPicPanel;      /*!< `pic_panel`, the panel of the selection. +0xd0 */
     int mChoiceCount;           /*!< The number of choices ahead of the songs. */

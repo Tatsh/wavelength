@@ -106,6 +106,7 @@ public:
      */
     void OnFreqSaved(int nStatus, int nSpace) override;
 
+private:
     int mReservedB4[3]; // +0xb4, not yet recovered.
     int mIsCancel;      /*!< Non-zero when a failure also offers to continue, `isCancel`. +0xc0 */
 #ifdef VIDEO_STANDARD_PAL

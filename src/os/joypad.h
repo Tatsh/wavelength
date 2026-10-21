@@ -90,7 +90,58 @@ public:
      */
     void AddStickButtons(int *pButtons, bool bMenu);
 
-    int mButtons;                          /*!< The buttons held, one bit for each JoypadButton. */
+    /** @return The analogue sticks. */
+    const JoypadStick *GetSticks() const {
+        return mSticks;
+    }
+
+    /** @return The analogue sticks. */
+    JoypadStick *GetSticks() {
+        return mSticks;
+    }
+
+    /** @return Each button's pressure, from 0 to 1. */
+    float *GetPressures() {
+        return mPressures;
+    }
+
+    /** @return The buttons pressed, one bit for each JoypadButton. */
+    int GetButtons() const {
+        return mButtons;
+    }
+
+    /** @param nButtons The buttons pressed, one bit for each JoypadButton. */
+    void SetButtons(int nButtons) {
+        mButtons = nButtons;
+    }
+
+    /** @return The player this port serves, or kJoypadNoPad. */
+    int GetPad() const {
+        return mPad;
+    }
+
+    /** @param nPad The player this port serves, or kJoypadNoPad. */
+    void SetPad(int nPad) {
+        mPad = nPad;
+    }
+
+    /** @return Non-zero while the controller is connected. */
+    int GetConnected() const {
+        return mConnected;
+    }
+
+    /** @param nConnected Non-zero while the controller is connected. */
+    void SetConnected(int nConnected) {
+        mConnected = nConnected;
+    }
+
+    /** @param fThreshold How far a stick moves before its bit is set. */
+    void SetThreshold(float fThreshold) {
+        mThreshold = fThreshold;
+    }
+
+private:
+    int mButtons; /*!< The buttons pressed, one bit for each JoypadButton. */
     JoypadStick mSticks[kJoypadNumSticks]; /*!< The analogue sticks. */
     float mPressures[kJoypadNumButtons];   /*!< Each button's pressure, from 0 to 1. */
     int mPad;                              /*!< The player this port serves, or kJoypadNoPad. */

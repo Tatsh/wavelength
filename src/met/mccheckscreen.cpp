@@ -47,7 +47,7 @@ ErrorScreen *FindErrorScreen(const char *pszName) {
 
 void MCCheckScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
-    if (TheGameDb->GetProfile(kFirstPlayer)->mCustom != 0) {
+    if (TheGameDb->GetProfile(kFirstPlayer)->GetCustom() != 0) {
         return;
     }
     TheGameDb->ClearPlayers();
@@ -103,7 +103,7 @@ bool MCCheckScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MCCheckScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+    if (std::strcmp(pMsg->GetScreen()->GetName(), mName) == 0) {
         mLoadFreqs = 0;
         mLoadSettings = 0;
         mAdvanceTime = 0.0f;
@@ -132,7 +132,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
         auto *pDialog = dynamic_cast<TransitionErrorScreen *>(pError);
         const String format(TheLocale.Localize(kNoCardToken, true));
         const String text(FormatString(format.c_str(), GetSlotName(), GetSlotName()));
-        pDialog->mMessage = text.c_str();
+        pDialog->SetMessage(text.c_str());
         break;
     }
     case MemcardTask::kStatusFull: {
@@ -140,7 +140,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
         auto *pDialog = dynamic_cast<TransitionErrorScreen *>(pError);
         const String format(TheLocale.Localize(kNoSpaceToken, true));
         const String text(FormatString(format.c_str(), GetSlotName(), nFree, nNeeded));
-        pDialog->mMessage = text.c_str();
+        pDialog->SetMessage(text.c_str());
         break;
     }
 #ifndef VIDEO_STANDARD_PAL
