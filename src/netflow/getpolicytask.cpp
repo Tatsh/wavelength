@@ -13,10 +13,10 @@ constexpr int kUsagePolicy = 0;
 } // namespace
 
 void GetPolicyTask::OnStart() {
-    TheLobbyRT->mPolicy = "";
+    TheLobbyRT->GetPolicy() = "";
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.id = kUsagePolicy;
     const int nError = rtMediusGetPolicy(&request, OnResponse);
@@ -44,9 +44,9 @@ void GetPolicyTask::OnResponse(int nConnection,
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
 #ifdef VIDEO_STANDARD_PAL
         const String policy = Utf8DecodedString(pResponse->policy);
-        TheLobbyRT->mPolicy << policy.c_str();
+        TheLobbyRT->GetPolicy() << policy.c_str();
 #else
-        TheLobbyRT->mPolicy << pResponse->policy;
+        TheLobbyRT->GetPolicy() << pResponse->policy;
 #endif
         // Yes, the binary tests the status again.
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfText == 0 &&

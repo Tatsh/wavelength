@@ -194,7 +194,8 @@ bool Campaign::CheckCondition(DataArray *pCondition, int nSkillLevel) {
     if (strcmp(pszTag, "always") == 0) {
         return true;
     }
-    DebugWarn("Unrecognized token:%s (%s:%d)\n", pszTag, pCondition->mFile, pCondition->mLine);
+    DebugWarn(
+        "Unrecognized token:%s (%s:%d)\n", pszTag, pCondition->GetFile(), pCondition->GetLine());
     return false;
 }
 
@@ -237,7 +238,8 @@ void Campaign::ParseFilter(DataArray *pFilter, int nSkillLevel, std::vector<cons
     } else if (strcmp(pszTag, "songs") == 0) {
         FromList(pFilter, nSkillLevel, pSongs);
     } else {
-        DebugWarn("Unrecognized token:%s (%s:%d)\n", pszTag, pFilter->mFile, pFilter->mLine);
+        DebugWarn(
+            "Unrecognized token:%s (%s:%d)\n", pszTag, pFilter->GetFile(), pFilter->GetLine());
     }
 }
 
@@ -380,7 +382,7 @@ void Campaign::ApplyUnlockNode(DataArray *pNode,
     if (strcmp(pszTag, "unlock") == 0) {
         nSkillLevel = GameDb::kSkillAny;
     } else if (strcmp(pszTag, "skill_unlock") != 0) {
-        DebugWarn("Unrecognized token:%s (%s:%d)\n", pszTag, pNode->mFile, pNode->mLine);
+        DebugWarn("Unrecognized token:%s (%s:%d)\n", pszTag, pNode->GetFile(), pNode->GetLine());
     }
     const int nSize = pNode->Size();
     pUnlocks->reserve(pUnlocks->size() + nSize - 1);

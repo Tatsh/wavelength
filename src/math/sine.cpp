@@ -1,6 +1,7 @@
 #include "math/sine.h"
 
 #include <math.h>
+#include <memory>
 
 #include "os/system.h"
 #include "script/dataarray.h"
@@ -28,11 +29,11 @@ constexpr int kQuadrantMask = 3;
 int gSinTableSize = 32;
 
 // NTSC-U/C: 0x003b2354, PAL: 0x00431214
-float *gSinTable;
+std::unique_ptr<float[]> gSinTable;
 
 // Each quarter-wave entry less the one before it.
 // NTSC-U/C: 0x003b2358, PAL: 0x00431218
-float *gSinSlopes;
+std::unique_ptr<float[]> gSinSlopes;
 
 // The quarter-wave entries per radian.
 // NTSC-U/C: 0x002939f8, PAL: 0x0029d3c0 (static initialiser)
@@ -60,8 +61,8 @@ float Lookup(float fEntry) {
 void SinTableInit() {
     SystemConfig()->FindArray("math", true)->FindInt("sin_table_size", &gSinTableSize, true);
     gSinTableScale = (static_cast<float>(gSinTableSize) + static_cast<float>(gSinTableSize)) / kPi;
-    gSinTable = new float[gSinTableSize + 1];
-    gSinSlopes = new float[gSinTableSize + 1];
+    gSinTable = std::make_unique<float[]>(gSinTableSize + 1);
+    gSinSlopes = std::make_unique<float[]>(gSinTableSize + 1);
     const float fStep = kHalfPi / static_cast<float>(gSinTableSize);
     for (int i = 0; i < gSinTableSize; ++i) {
         const float fSin = sinf(static_cast<float>(i) * fStep);
@@ -85,10 +86,8 @@ void SinTableInit() {
 }
 
 void SinTableTerminate() {
-    delete[] gSinSlopes;
-    delete[] gSinTable;
-    gSinTable = nullptr;
-    gSinSlopes = nullptr;
+    gSinSlopes.reset();
+    gSinTable.reset();
 }
 
 float SinApprox(float fRadians) {

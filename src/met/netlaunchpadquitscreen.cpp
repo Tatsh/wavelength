@@ -27,7 +27,7 @@ bool NetLaunchpadQuitScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetLaunchpadQuitScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         if (TheNetLaunchpad != nullptr) {
             TheNetLaunchpad->Cancel(this);
         } else {

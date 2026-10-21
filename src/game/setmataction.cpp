@@ -48,8 +48,8 @@ inline void SetMatAction::CheckStage(DataArray *pAction, int nStage) {
     DebugWarn("Mat '%s' doesn't have stage %d (file %s, line %d)",
               nStage,
               pAction->Sym(1),
-              pAction->mFile,
-              pAction->mLine);
+              pAction->GetFile(),
+              pAction->GetLine());
 }
 
 void SetMatAction::Exec() {

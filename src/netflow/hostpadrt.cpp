@@ -76,17 +76,17 @@ constexpr int kFilterRemixName = 1;
 
 // Copy the settings of the game from the game database into mParams.
 inline void CopyGameParams(NetGameParams &params) {
-    params.mSong = TheGameDb->mSong;
-    params.mLoadRemix = TheGameDb->mLoadRemix;
-    params.mRemixReadOnly = TheGameDb->mRemixReadOnly;
-    params.mRemixName = TheGameDb->mRemixName;
-    params.mPracticeMode = TheGameDb->mPracticeMode;
-    params.mTutorial = TheGameDb->mTutorial;
-    params.mSkillLevel = TheGameDb->mSkillLevel;
-    params.mPowerupLevel = TheGameDb->mPowerupLevel;
-    params.mRuleSet = TheGameDb->mRuleSet;
-    params.mCommunity = TheGameDb->mCommunity;
-    params.mMaxPlayers = TheGameDb->mMaxPlayers;
+    params.mSong = TheGameDb->GetSong();
+    params.mLoadRemix = TheGameDb->GetLoadRemix();
+    params.mRemixReadOnly = TheGameDb->GetRemixReadOnly();
+    params.mRemixName = TheGameDb->GetRemixName();
+    params.mPracticeMode = TheGameDb->GetPracticeMode();
+    params.mTutorial = TheGameDb->GetTutorial();
+    params.mSkillLevel = TheGameDb->GetSkillLevel();
+    params.mPowerupLevel = TheGameDb->GetPowerupLevel();
+    params.mRuleSet = TheGameDb->GetRuleSet();
+    params.mCommunity = TheGameDb->GetCommunity();
+    params.mMaxPlayers = TheGameDb->GetMaxPlayers();
 }
 
 } // namespace
@@ -94,7 +94,7 @@ inline void CopyGameParams(NetGameParams &params) {
 HostpadRT *TheHostpadRT;
 
 void HostpadRT::Create(MsgSink *pScreen, MsgSink *pGame) {
-    new HostpadRT(pScreen, pGame);
+    TheLaunchpadRT = std::make_unique<HostpadRT>(pScreen, pGame);
 }
 
 HostpadRT::HostpadRT(MsgSink *pScreen, MsgSink *pGame)
@@ -118,7 +118,7 @@ HostpadRT::HostpadRT(MsgSink *pScreen, MsgSink *pGame)
 
     mConnectTask.Add(
         new TextFilterTask(&mParams.mRemixName, &mParams.mRemixName, kFilterRemixName));
-    mConnectTask.Add(new LadderPositionTask(&TheLobbyRT->mLocalPlayer));
+    mConnectTask.Add(new LadderPositionTask(&TheLobbyRT->GetLocalPlayer()));
     mConnectTask.Add(new MGCLConnectTask(MGCLConnectTask::kServerLobby));
     mConnectTask.Add(new MGCLSessionBeginTask());
     mConnectTask.Add(new MGCLAuthenticationTask());
@@ -203,7 +203,7 @@ bool HostpadRT::StartShare(int nShareOnly) {
     mBlock = 0;
     mBlockCount =
         (pInfo->mDataSize + DataBlockPkt::kMaxBlockSize - 1) / DataBlockPkt::kMaxBlockSize;
-    (void)(TheGameDb->mRemixName == pInfo->mName); // Yes, the binary discards this comparison.
+    (void)(TheGameDb->GetRemixName() == pInfo->mName); // Yes, the binary discards this comparison.
 
     ShareRemixPkt pkt(*pInfo, mShareOnly);
     strncpy(pkt.mInfo.mName, mParams.mRemixName.c_str(), kRemixInfoNameSize - 1);
@@ -386,7 +386,7 @@ void HostpadRT::ReportNow() {
 void HostpadRT::SetLocalId(int nId) {
     LaunchpadRT::SetLocalId(nId);
     const int nColor = AssignColor(nId);
-    const NetLaunchpadPlayer player = {TheLobbyRT->mLocalPlayer, nId, nColor, kReadyNo};
+    const NetLaunchpadPlayer player = {TheLobbyRT->GetLocalPlayer(), nId, nColor, kReadyNo};
     AddPlayer(player);
     mClientData.push_back(ClientData(player.mId, player.mPlayer.mRank, player.mPlayer.mRating));
     mState = kStateSynced;

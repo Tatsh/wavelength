@@ -84,8 +84,8 @@ FreqMakerMainScreen::~FreqMakerMainScreen() {
 }
 
 void FreqMakerMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
-    if (strcmp(pPrevScreen->mName, "pre_f_maker_save") == 0 ||
-        strcmp(pPrevScreen->mName, "pre_f_maker_save_net") == 0) {
+    if (strcmp(pPrevScreen->GetName(), "pre_f_maker_save") == 0 ||
+        strcmp(pPrevScreen->GetName(), "pre_f_maker_save_net") == 0) {
         if (mProfile.IsModified() != 0 && TheGameDb->GetProfile(0)->IsModified() == 0) {
             mProfile.SetModified(0);
         }
@@ -233,7 +233,7 @@ void FreqMakerMainScreen::Undo() {
 }
 
 void FreqMakerMainScreen::ShowSaveHelp(UIComponent *pComponent) {
-    if (strcmp(pComponent->mName, "save") != 0) {
+    if (strcmp(pComponent->GetName(), "save") != 0) {
         return;
     }
     String help(
@@ -242,7 +242,7 @@ void FreqMakerMainScreen::ShowSaveHelp(UIComponent *pComponent) {
 }
 
 void FreqMakerMainScreen::GotoSave() {
-    const char *pszScreen = TheGameDb->mCommunity == GameDb::kCommunitySolo ?
+    const char *pszScreen = TheGameDb->GetCommunity() == GameDb::kCommunitySolo ?
                                 "fmaker_save_freq" :
                                 "fmaker_save_freq_net";
     TheMetagame.GetGizmo()->SetShowAvatar(true);
@@ -265,29 +265,29 @@ void FreqMakerMainScreen::GotoSave() {
 }
 
 bool FreqMakerMainScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mComponent != nullptr) {
-        ShowSaveHelp(pMsg->mComponent);
+    if (pMsg->GetComponent() != nullptr) {
+        ShowSaveHelp(pMsg->GetComponent());
     }
     return false;
 }
 
 bool FreqMakerMainScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (pMsg->mScreen == this && mFocusPanel != nullptr && mFocusPanel->mFocus != nullptr) {
-        ShowSaveHelp(mFocusPanel->mFocus);
+    if (pMsg->mScreen == this && mFocusPanel != nullptr && mFocusPanel->GetFocus() != nullptr) {
+        ShowSaveHelp(mFocusPanel->GetFocus());
     }
     return false;
 }
 
 bool FreqMakerMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && strcmp(pMsg->mComponent->mName, "save") == 0) {
+    if (pMsg->GetButton() == kPadCross && strcmp(pMsg->GetComponent()->GetName(), "save") == 0) {
         GotoSave();
     }
     return UIScreen::HandleSelect(pMsg);
 }
 
 bool FreqMakerMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const char *pszButton = pMsg->mComponent->mName;
-    if (pMsg->mButton != kPadCross) {
+    const char *pszButton = pMsg->GetComponent()->GetName();
+    if (pMsg->GetButton() != kPadCross) {
         if (strcmp(pszButton, "prefabs") != 0) {
             return FreqScreen::HandleSelectStart(pMsg);
         }
@@ -295,10 +295,10 @@ bool FreqMakerMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         // Yes, the binary discards this lookup.
         (void)SystemConfig()->FindArray("metagame", true)->FindArray("prefabs", true);
         const int nPrefabs = static_cast<int>(mPrefabs.size());
-        if (pMsg->mButton == kPadDLeft) {
+        if (pMsg->GetButton() == kPadDLeft) {
             mPrefabIndex = mPrefabIndex - 1 > -1 ? mPrefabIndex - 1 : nPrefabs - 1;
             FxMidi::PlayMenuDown();
-        } else if (pMsg->mButton == kPadDRight) {
+        } else if (pMsg->GetButton() == kPadDRight) {
             mPrefabIndex = mPrefabIndex + 1 < nPrefabs ? mPrefabIndex + 1 : 0;
             FxMidi::PlayMenuUp();
         }
@@ -362,7 +362,7 @@ bool FreqMakerMainScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         if (mChanged != 0) {
             FreqMakerErrorScreen *pError = dynamic_cast<FreqMakerErrorScreen *>(
                 TheUI.FindScreen("f_maker_lose_main_changes", false));
-            if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+            if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                 pError->SetScreens("f_net_confirm", "f_maker");
             } else {
                 pError->SetScreens("f_confirm", "f_maker");
@@ -370,7 +370,7 @@ bool FreqMakerMainScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             TheUI.GotoScreen(pError);
         } else {
             Undo();
-            if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+            if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                 TheUI.GotoScreen("f_net_confirm");
             } else {
                 TheUI.GotoScreen("f_confirm");

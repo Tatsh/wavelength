@@ -22,11 +22,11 @@ constexpr int DebugBit(TriggerEvent::Type type) {
 }
 
 const char *NameOrNull(const UIComponent *pComponent) {
-    return pComponent != nullptr ? pComponent->mName : nullptr;
+    return pComponent != nullptr ? pComponent->GetName() : nullptr;
 }
 
 const char *NameOrNull(const UIScreen *pScreen) {
-    return pScreen != nullptr ? pScreen->mName : nullptr;
+    return pScreen != nullptr ? pScreen->GetName() : nullptr;
 }
 
 } // namespace
@@ -97,7 +97,7 @@ void TriggerMgr::Poll() {
         }
     }
     for (auto it = mRunning.begin(); it != mRunning.end();) {
-        mClock = (*it)->mClock;
+        mClock = (*it)->GetClock();
         if ((*it)->Poll()) {
             it = mRunning.erase(it);
         } else {
@@ -139,9 +139,9 @@ void TriggerMgr::BeatEvent(char chNote) {
 }
 
 void TriggerMgr::ComponentSelectEvent(UIComponentSelectMsg *pMsg) {
-    mComponent = pMsg->mComponent->mName;
-    mPanel = pMsg->mPanel->mName;
-    mScreen = pMsg->mScreen->mName;
+    mComponent = pMsg->GetComponent()->GetName();
+    mPanel = pMsg->GetPanel()->GetName();
+    mScreen = pMsg->GetScreen()->GetName();
     mEvents[TriggerEvent::kTypeComponentSelect].Fire();
     if ((mDebug & DebugBit(TriggerEvent::kTypeComponentSelect)) != 0) {
         DebugPrint("Component select event (component %s, panel %s, screen %s)\n",
@@ -152,9 +152,9 @@ void TriggerMgr::ComponentSelectEvent(UIComponentSelectMsg *pMsg) {
 }
 
 void TriggerMgr::ComponentSelectStartEvent(UIComponentSelectStartMsg *pMsg) {
-    mComponent = pMsg->mComponent->mName;
-    mPanel = pMsg->mPanel->mName;
-    mScreen = pMsg->mScreen->mName;
+    mComponent = pMsg->GetComponent()->GetName();
+    mPanel = pMsg->GetPanel()->GetName();
+    mScreen = pMsg->GetScreen()->GetName();
     mEvents[TriggerEvent::kTypeComponentSelectStart].Fire();
     if ((mDebug & DebugBit(TriggerEvent::kTypeComponentSelectStart)) != 0) {
         DebugPrint("Component select start event (component %s, panel %s, screen %s)\n",
@@ -165,10 +165,10 @@ void TriggerMgr::ComponentSelectStartEvent(UIComponentSelectStartMsg *pMsg) {
 }
 
 void TriggerMgr::ComponentFocusEvent(UIComponentFocusChangeMsg *pMsg) {
-    mComponent = NameOrNull(pMsg->mComponent);
-    mOldComponent = NameOrNull(pMsg->mOldComponent);
-    mPanel = pMsg->mPanel->mName;
-    mScreen = pMsg->mScreen->mName;
+    mComponent = NameOrNull(pMsg->GetComponent());
+    mOldComponent = NameOrNull(pMsg->GetOldComponent());
+    mPanel = pMsg->GetPanel()->GetName();
+    mScreen = pMsg->GetScreen()->GetName();
     mEvents[TriggerEvent::kTypeComponentFocus].Fire();
     if ((mDebug & DebugBit(TriggerEvent::kTypeComponentFocus)) != 0) {
         DebugPrint("Component focus change event (component %s, old component %s, panel %s, "

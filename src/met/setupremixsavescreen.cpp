@@ -62,11 +62,11 @@ int SetupRemixSaveScreen::ReceiveKeyboardText(const char *pszText) {
 void SetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     auto *pPicture = static_cast<SongPicPanel *>(TheUI.FindPanel(mPanel, false));
-    const char *pszSong = TheGameDb->mSong.c_str();
+    const char *pszSong = TheGameDb->GetSong().c_str();
     pPicture->SetBandPicture(pszSong, true, false, false);
 
     auto *pTitle =
-        static_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->mName, kTitle, false));
+        static_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->GetName(), kTitle, false));
     pTitle->SetEditing(true);
     pTitle->mMaxNumChars = kMaxTitleChars;
     pTitle->mMaxEntryWidth = kMaxTitleWidth;
@@ -74,7 +74,7 @@ void SetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     RemixInfo record = *TheGameDb->GetRemixInfo();
     String discard(DiscardScreenName(mName));
     String localDiscard(FormatString(kLocalDiscardFormat, mPlayer - 1));
-    const char *pszPrev = pPrevScreen->mName;
+    const char *pszPrev = pPrevScreen->GetName();
     if (strcmp(pszPrev, discard.c_str()) != 0 && strcmp(pszPrev, localDiscard.c_str()) != 0) {
         if (strcmp(pszPrev, kKeyboardScreen) == 0 || strcmp(mTypedTitle.c_str(), "") != 0) {
             pTitle->SetText(mTypedTitle.c_str());
@@ -122,12 +122,12 @@ void SetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
             FormatString(ratingFormat.c_str(), TheLocale.Localize("skill_unplayable", true)));
     }
 
-    UIComponent *pPlayer = TheUI.FindComponent(mFocusPanel->mName, "player", false);
+    UIComponent *pPlayer = TheUI.FindComponent(mFocusPanel->GetName(), "player", false);
     String player(FormatString(TheLocale.Localize("save_remix_player", true),
                                TheGameDb->GetPlayerName(mPlayer - 1)));
     pPlayer->SetText(player.c_str());
 
-    UIComponent *pMemcard = TheUI.FindComponent(mFocusPanel->mName, "memcard", false);
+    UIComponent *pMemcard = TheUI.FindComponent(mFocusPanel->GetName(), "memcard", false);
 #ifdef VIDEO_STANDARD_PAL
     // The European text does not name the slot.
     pMemcard->SetText(TheLocale.Localize("save_remix_memcard", true));
@@ -189,14 +189,14 @@ bool SetupRemixSaveScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (strcmp(mFocusPanel->mFocus->mName, kTitle) == 0 && pMsg->mPressed != 0 &&
+    if (strcmp(mFocusPanel->GetFocus()->GetName(), kTitle) == 0 && pMsg->mPressed != 0 &&
         pMsg->mPad == mPlayer - 1) {
         if (pMsg->mButton == kPadCross) {
             Proceed();
         } else if (pMsg->mButton == kPadCircle) {
             auto *pKeyboard = dynamic_cast<KeyboardPanel *>(TheUI.FindPanel("keyboard", false));
             KeyboardRequest request(this,
-                                    TheUI.mCurrentScreen,
+                                    TheUI.GetCurrentScreen(),
                                     "",
                                     mPlayer - 1,
                                     kMaxTitleChars,
@@ -223,7 +223,7 @@ bool SetupRemixSaveScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 bool SetupRemixSaveScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     String discard(DiscardScreenName(mName));
     String localDiscard(FormatString(kLocalDiscardFormat, mPlayer - 1));
-    const char *pszPrev = pMsg->mPrevScreen->mName;
+    const char *pszPrev = pMsg->mPrevScreen->GetName();
     if (strcmp(pszPrev, discard.c_str()) == 0 || strcmp(pszPrev, localDiscard.c_str()) == 0) {
         SetPanelsShowing(true);
     }
@@ -238,7 +238,7 @@ bool SetupRemixSaveScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg)
 }
 
 bool SetupRemixSaveScreen::HandleTextEntryInvalid(UITextEntryInvalidMsg *pMsg) {
-    if (strcmp(pMsg->mEntry->mName, kTitle) == 0) {
+    if (strcmp(pMsg->mEntry->GetName(), kTitle) == 0) {
         FxMidi::PlayWrong();
     }
     return false;

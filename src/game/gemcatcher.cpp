@@ -19,7 +19,7 @@ GemCatcher::CatchCheckCmd::CatchCheckCmd(Receiver *pReceiver,
 }
 
 void GemCatcher::CatchCheckCmd::Schedule() {
-    mCursor = mState->GetCursor(mLane, TheSongScheduler.mTick);
+    mCursor = mState->GetCursor(mLane, TheSongScheduler.GetTick());
     if (mCursor.IsValid()) {
         TheSongScheduler.PostAtTime(this,
                                     static_cast<float>(mCursor.GetTick()) * *mMsPerTick +
@@ -33,7 +33,7 @@ void GemCatcher::CatchCheckCmd::Execute() {
     if (mCursor.IsValid()) {
         const int nBar = mCursor.GetTick() / mTicksPerBar;
         if (!mState->GetCapturedBy(nBar) && mState->IsEnabled(nBar)) {
-            Pass(TheSongScheduler.mTick, mCursor);
+            Pass(TheSongScheduler.GetTick(), mCursor);
         }
     }
     ScheduleNext();
@@ -46,7 +46,7 @@ void GemCatcher::CatchCheckCmd::Restart() {
 }
 
 void GemCatcher::CatchCheckCmd::Catch() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     if (!mCursor.IsValid()) {
         Miss(nTick);
         return;

@@ -42,6 +42,7 @@ public:
      */
     void OnMkdir(int nResult) override;
 
+private:
     String mName; /*!< The directory. */
 
 protected:

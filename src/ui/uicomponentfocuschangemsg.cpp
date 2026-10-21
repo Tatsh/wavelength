@@ -3,8 +3,8 @@
 int g_nUIComponentFocusChangeMsgType = 203;
 
 void UIComponentFocusChangeMsg::PrintExtra(PrnStream &stream) const {
-    stream << "  from " << (mOldComponent != nullptr ? mOldComponent->mName : "null") << "  to "
-           << (mComponent != nullptr ? mComponent->mName : "null")
-           << "  on UIPanel: " << (mPanel != nullptr ? mPanel->mName : "null")
-           << "  on UIScreen: " << (mScreen != nullptr ? mScreen->mName : "null");
+    stream << "  from " << (mOldComponent != nullptr ? mOldComponent->GetName() : "null") << "  to "
+           << (mComponent != nullptr ? mComponent->GetName() : "null")
+           << "  on UIPanel: " << (mPanel != nullptr ? mPanel->GetName() : "null")
+           << "  on UIScreen: " << (mScreen != nullptr ? mScreen->GetName() : "null");
 }

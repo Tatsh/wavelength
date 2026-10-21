@@ -53,7 +53,7 @@ TnlSabreTrail::TnlSabreTrail(int nPlayer, Ship *pShip)
     : mSweep(0.0f), mNeedleLength(0.0f), mRibbon(nullptr), mNeedle(0.0f, 0.0f, 0.0f, 1.0f),
       mState(kStateHidden), mRestart(0), mSweeping(0), mNewSegment(0), mSampling(0),
       mStopPending(0), mNumPoints(0), mHead(kNoHead) {
-    mRibbon = pShip->mScratchRibbon;
+    mRibbon = pShip->GetScratchRibbon();
     RndMesh *pMesh = FindObject<RndMesh>(FormatString("[%s_mesh]", mRibbon->mName.c_str()));
     if (pMesh != nullptr) {
         pMesh->mZMode = RndMesh::kZModeDisable;
@@ -81,7 +81,7 @@ void TnlSabreTrail::LoadConfig(DataArray *pConfig, DataArray *pDefaults) {
     FindConfigArray(pConfig, pDefaults, "scratch_ribbon", &pSection, true);
     float flWidth;
     pSection->FindFloat("width", &flWidth, true);
-    mRibbon->mWidth = flWidth * TheGfxManager.mScrollSpeed;
+    mRibbon->mWidth = flWidth * TheGfxManager.GetScrollSpeed();
     pSection->FindFloat("sweep", &mSweep, true);
     pSection->FindFloat("sample_envelope_frequency", &sSampleFrequency, true);
     sSampleFrequency *= kAnglePerTickPerTurn;
@@ -89,7 +89,7 @@ void TnlSabreTrail::LoadConfig(DataArray *pConfig, DataArray *pDefaults) {
     pSection->FindFloat("sample_duration", &sSampleDuration, true);
     pSection->FindFloat("needle_length", &mNeedleLength, true);
     // Yes, the binary scales the sweep and leaves the needle as configured.
-    mSweep *= TheGfxManager.mScrollSpeed;
+    mSweep *= TheGfxManager.GetScrollSpeed();
     int nSegments;
     pSection->FindInt("segments", &nSegments, true);
     mNumPoints = nSegments * 2;
@@ -174,8 +174,8 @@ void TnlSabreTrail::Scratch(float flTick, float flDuration) {
         return;
     }
     const float flFrom = mNeedle.Eval(flTick);
-    const float flTo = SweepTarget(mNeedle.mY1, mSweep);
-    mNeedle.Reset(flFrom, flTo, TheGameDb->mSongTick, flTick + flDuration);
+    const float flTo = SweepTarget(mNeedle.GetY1(), mSweep);
+    mNeedle.Reset(flFrom, flTo, TheGameDb->GetSongTick(), flTick + flDuration);
     if (mState == kStateDrawing) {
         mSweeping = 1;
         mNewSegment = 1;
@@ -183,13 +183,13 @@ void TnlSabreTrail::Scratch(float flTick, float flDuration) {
 }
 
 void TnlSabreTrail::StartSample() {
-    mSampleEnd = TheGameDb->mSongTick + sSampleDuration;
+    mSampleEnd = TheGameDb->GetSongTick() + sSampleDuration;
     if (mSampling) {
         return;
     }
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     const float flFrom = mNeedle.Eval(flTick);
-    const float flTo = Wobble(mNeedle.mY1, mSweep);
+    const float flTo = Wobble(mNeedle.GetY1(), mSweep);
     const float flTicks = RandomFloat(sSampleSweepTicks.x, sSampleSweepTicks.y);
     mNeedle.Reset(flFrom, flTo, flTick, flTick + flTicks);
     mSampling = 1;
@@ -204,15 +204,15 @@ void TnlSabreTrail::StartSample() {
 }
 
 float TnlSabreTrail::UpdateSample() {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     if (mSampling) {
         if (mSampleEnd <= flTick) {
             mSampling = 0;
             if (mStopPending) {
                 Stop(true);
             }
-        } else if (mNeedle.mX1 <= flTick) {
-            const float flFrom = mNeedle.mY1;
+        } else if (mNeedle.GetX1() <= flTick) {
+            const float flFrom = mNeedle.GetY1();
             const float flTo = Wobble(flFrom, mSweep);
             const float flTicks = RandomFloat(sSampleSweepTicks.x, sSampleSweepTicks.y);
             mNeedle.Reset(flFrom, flTo, flTick, flTick + flTicks);
@@ -227,7 +227,7 @@ void TnlSabreTrail::Update(float flBlend, const Transform &xfm, const Vector3 *)
     if (mState != kStateDrawing) {
         return;
     }
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     Color color;
     if (flBlend <= 0.0f) {
         color = Lerp(mPointColors[kColorLow], mPointColors[kColorMiddle], flBlend + 1.0f);
@@ -248,10 +248,10 @@ void TnlSabreTrail::Update(float flBlend, const Transform &xfm, const Vector3 *)
         return;
     }
     if (mSweeping) {
-        if (mNeedle.mX1 <= flTick) {
+        if (mNeedle.GetX1() <= flTick) {
             mSweeping = 0;
             mNewSegment = 1;
-        } else if (!(flTick <= mNeedle.mX0)) {
+        } else if (!(flTick <= mNeedle.GetX0())) {
             (void)mNeedle.Interp(flTick); // Yes, the binary discards this call's result.
         }
     }
@@ -273,7 +273,7 @@ float TnlSabreTrail::SweepTarget(float flFrom, float flSweep) {
 }
 
 float TnlSabreTrail::Wobble(float flFrom, float flSweep) {
-    float flEnvelope = std::fabs(FastSin(TheGameDb->mSongTick * sSampleFrequency));
+    float flEnvelope = std::fabs(FastSin(TheGameDb->GetSongTick() * sSampleFrequency));
     if (0.0f < flFrom) {
         flEnvelope = -flEnvelope;
     }

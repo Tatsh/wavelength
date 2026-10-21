@@ -91,8 +91,8 @@ void RndCursor::DumpText(PrnStream &stream) {
     if (stream.mDumpLevel < kDumpInternals) {
         return;
     }
-    const RndObject *pMask = mMask;
-    const RndObject *pCursor = mCursor;
+    const RndObject *pMask = mMask.get();
+    const RndObject *pCursor = mCursor.get();
     stream << "mask:" << pMask << "\n";
     stream << "cursor:" << pCursor << "\n";
 }
@@ -143,21 +143,18 @@ void RndCursor::ReleaseRefs() {
     if (mBlur != nullptr) {
         mBlur->RemoveRef(this);
     }
-    delete mMask;
-    mMask = nullptr;
-    delete mCursor;
-    mCursor = nullptr;
+    mMask.reset();
+    mCursor.reset();
 }
 
 void RndCursor::BuildCursor() {
-    delete mCursor;
-    mCursor = nullptr;
+    mCursor.reset();
     if (mBlur == nullptr || mBlur->mMesh == nullptr) {
         return;
     }
     RndObject *pObject =
         TheManager.Create(RndBlur::sClassName, FormatString("[%s_cursor]", mName.c_str()));
-    mCursor = pObject != nullptr ? dynamic_cast<RndBlur *>(pObject) : nullptr;
+    mCursor.reset(pObject != nullptr ? dynamic_cast<RndBlur *>(pObject) : nullptr);
     mCursor->mInternal = 1;
     mCursor->Copy(mBlur, 0);
     RndMesh *pMesh = mCursor->mMesh;
@@ -166,8 +163,7 @@ void RndCursor::BuildCursor() {
 }
 
 void RndCursor::BuildMask() {
-    delete mMask;
-    mMask = nullptr;
+    mMask.reset();
     if (mText == nullptr || mText->mFont == nullptr) {
         return;
     }
@@ -178,7 +174,7 @@ void RndCursor::BuildMask() {
     }
     RndObject *pObject =
         TheManager.Create(RndMesh::sClassName, FormatString("[%s_mask]", mName.c_str()));
-    mMask = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
+    mMask.reset(pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr);
     mMask->mInternal = 1;
 
     Vector3 start = mText->CharPosition(0);

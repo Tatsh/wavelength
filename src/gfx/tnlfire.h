@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "gfx/gfxtunnel.h"
@@ -119,6 +120,9 @@ public:
         ChunkModel() : mWeight(0.0f), mMultiMesh(nullptr), mTransAnim(nullptr), mMesh(nullptr) {
         }
 
+        /** Move a model. The vector of models moves its entries as the vector grows. */
+        ChunkModel(ChunkModel &&) noexcept = default;
+
         /**
          * Delete the instanced mesh.
          *
@@ -136,10 +140,10 @@ public:
          */
         void CreateMultiMesh();
 
-        float mWeight;            /*!< The chance of the model against the other models. */
-        RndMultiMesh *mMultiMesh; /*!< The instances of the mesh, one for each flying chunk. */
-        RndTransAnim *mTransAnim; /*!< The tumble of a chunk over its life. */
-        RndMesh *mMesh;           /*!< The mesh. */
+        float mWeight; /*!< The chance of the model against the other models. */
+        std::unique_ptr<RndMultiMesh> mMultiMesh; /*!< The instances of the mesh. */
+        RndTransAnim *mTransAnim; /*!< The tumble of a chunk over its life. Borrowed. */
+        RndMesh *mMesh;           /*!< The mesh. Borrowed. */
     };
 
     /**
@@ -410,6 +414,7 @@ public:
      */
     static Vector2 sChunkLifespan;
 
+private:
     std::list<Chunk> mFreeChunks;    /*!< The idle chunks. */
     std::list<Chunk> mChunks;        /*!< The flying chunks. */
     std::vector<ChunkModel> mModels; /*!< The models of `capture_chunks`. */

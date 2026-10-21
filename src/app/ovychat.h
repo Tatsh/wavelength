@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "app/editfield.h"
@@ -90,8 +91,19 @@ public:
          */
         static float sSlideTime;
 
-        RndText *mText;       /*!< The text. */
-        Interpolator *mSlide; /*!< The position of the text over time. */
+        /** @return The text. */
+        RndText *GetText() const {
+            return mText;
+        }
+
+        /** @return The position of the text over time. */
+        Interpolator *GetSlide() const {
+            return mSlide.get();
+        }
+
+    private:
+        RndText *mText;                       /*!< The text. Borrowed. */
+        std::unique_ptr<Interpolator> mSlide; /*!< The position of the text over time. */
     };
 
     /** A line that arrived and waits for the top of the panel. */
@@ -185,7 +197,11 @@ public:
      */
     bool DispatchPriv(Message *pMsg) override;
 
-    std::list<Line *> mLines;       /*!< The lines, from the bottom row up. */
+    /** @return The lines, from the bottom row up. */
+    const std::list<std::unique_ptr<Line>> &GetLines() const {
+        return mLines;
+    }
+
     std::vector<float> mRows;       /*!< The position of each row. */
     std::list<PendingMsg> mPending; /*!< The lines that wait for the top of the panel. */
     RndDrawable *mDrawable;         /*!< `HUDnr_chat_mask.mesh`, the drawing of the chat. */
@@ -201,4 +217,7 @@ public:
     float mLastTime;                /*!< The time of the last poll, or -1e9. */
     float mTimeout;                 /*!< `chat_timeout`, in milliseconds. */
     int mLocalPlayer;               /*!< The first player on this console. */
+
+private:
+    std::list<std::unique_ptr<Line>> mLines; /*!< The lines, from the bottom row up. */
 };

@@ -26,7 +26,7 @@ void MCDialogPanel::Enter(bool bForce, float fTime) {
 }
 
 void MCDialogPanel::ShowSlotText() {
-    UIScreen *pCurrent = TheUI.mCurrentScreen;
+    UIScreen *pCurrent = TheUI.GetCurrentScreen();
     ErrorScreen *pScreen = pCurrent != nullptr ? dynamic_cast<ErrorScreen *>(pCurrent) : nullptr;
     String slot(pScreen->GetSlotName());
     // Where the binary passes only the slot, a text with a second %s (del_remix_check_dlg) reads

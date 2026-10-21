@@ -82,7 +82,7 @@ bool NetDoDownloadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetDoDownloadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         ShowProgress(0.0f);
         TheNetLobby->DownloadRemix(this, mFile.c_str());
     }

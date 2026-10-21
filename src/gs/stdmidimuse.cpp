@@ -16,7 +16,7 @@ void StdMidiMuse::StdMidiCommand::Execute() {
         mMuse->mStatus,
         mMuse->mData1,
         mMuse->mData2,
-        static_cast<int>(mScheduler->mTime - mScheduler->mPrevFrameTime + kRound));
+        static_cast<int>(mScheduler->GetTime() - mScheduler->GetPrevFrameTime() + kRound));
     mScheduler = nullptr;
 }
 

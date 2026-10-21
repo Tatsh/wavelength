@@ -17,12 +17,12 @@ void NetHostTask::OnStart() {
     params.maxClients = LaunchpadRT::kMaxClients;
     rtDmeConnectStatus status;
     memset(&status, 0, sizeof(status));
-    LaunchpadRT::sNetTask = this;
+    LaunchpadRT::SetNetTask(this);
     if (rtDmeHost(&params, &status) != 0) {
-        LaunchpadRT::sNetTask->Finish(false, LaunchpadAbortedMsg::kReasonHostFailed);
+        LaunchpadRT::GetNetTask()->Finish(false, LaunchpadAbortedMsg::kReasonHostFailed);
     }
 }
 
 void NetHostTask::OnStop() {
-    LaunchpadRT::sNetTask = nullptr;
+    LaunchpadRT::SetNetTask(nullptr);
 }

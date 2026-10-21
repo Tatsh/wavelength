@@ -136,7 +136,7 @@ void OvyRemixGenPanel::Poll([[maybe_unused]] float fDelta) {
     if (mFlashTime == kNoFlash) {
         return;
     }
-    const float fElapsed = TheGameDb->mSongTime - mFlashTime;
+    const float fElapsed = TheGameDb->GetSongTime() - mFlashTime;
     if (mSelected == nullptr || kBlinkTicks <= fElapsed) {
         mFlashTime = kNoFlash;
         if (mSelected != nullptr) {
@@ -161,7 +161,7 @@ void OvyRemixGenPanel::SetText(int nIndex, const char *pszText) {
 
 void OvyRemixGenPanel::Flash() {
     if (mSelected != nullptr) {
-        mFlashTime = TheGameDb->mSongTime;
+        mFlashTime = TheGameDb->GetSongTime();
     }
 }
 

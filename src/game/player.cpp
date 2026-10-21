@@ -35,7 +35,7 @@ Player::~Player() {
 
 void Player::SetTrack(Track *pTrack) {
     mTrack = pTrack;
-    TheStats->ChangeTrack(mIndex, pTrack->mIndex, TheSongScheduler.mTick);
+    TheStats->ChangeTrack(mIndex, pTrack->mIndex, TheSongScheduler.GetTick());
 }
 
 Track *Player::GetTrack() const {
@@ -123,7 +123,7 @@ void Player::ActivateMultiplier() {
         mIndex, StreakMultiplier(mStreak), StreakMultiplier(mStreak + 1), true);
     SetPendingPoints(mPendingPoints, true);
     const int nEndTick =
-        TheSongScheduler.mTick + TheGameConfig->mMultiplierDurationBars * mTicksPerBar;
+        TheSongScheduler.GetTick() + TheGameConfig->mMultiplierDurationBars * mTicksPerBar;
     TheGfxManager.SetMultiplierEndTick(mIndex, static_cast<float>(nEndTick));
     TheSongScheduler.Cancel(mMultiplierEndCommand.Get());
     TheSongScheduler.PostAt(mMultiplierEndCommand.Get(), nEndTick, false);
@@ -186,7 +186,7 @@ void Player::SetRepeat(bool bRepeat) {
 
 int Player::StreakMultiplier(int nStreak) const {
     const int nMultiplier = nStreak + 1;
-    const int nMaximum = TheGameDb->mCommunity == GameDb::kCommunitySolo ?
+    const int nMaximum = TheGameDb->GetCommunity() == GameDb::kCommunitySolo ?
                              TheGameConfig->mStreakMultiplierMaxSolo :
                              TheGameConfig->mStreakMultiplierMaxMulti;
     return nMaximum < nMultiplier ? nMaximum : nMultiplier;

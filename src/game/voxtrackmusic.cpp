@@ -34,7 +34,7 @@ void VoxTrackMusic::Stop() {
 
 void VoxTrackMusic::SetMuted(bool bMuted) {
     mMuted = bMuted;
-    const int nNow = TheSongScheduler.mTick;
+    const int nNow = TheSongScheduler.GetTick();
     if (nNow < 0) {
         return;
     }
@@ -56,7 +56,7 @@ void VoxTrackMusic::SetMuted(bool bMuted) {
 }
 
 void VoxTrackMusic::StartBar() {
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     mLastBar = mBar;
     mBar = mPlayMap->MapBar(nBar);
     if (mBar != mLastBar + 1) {

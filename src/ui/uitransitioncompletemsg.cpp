@@ -3,6 +3,6 @@
 int g_nUITransitionCompleteMsgType = 205;
 
 void UITransitionCompleteMsg::PrintExtra(PrnStream &stream) const {
-    stream << "  from " << (mPrevScreen != nullptr ? mPrevScreen->mName : "null") << "  to "
-           << (mScreen != nullptr ? mScreen->mName : "null");
+    stream << "  from " << (mPrevScreen != nullptr ? mPrevScreen->GetName() : "null") << "  to "
+           << (mScreen != nullptr ? mScreen->GetName() : "null");
 }

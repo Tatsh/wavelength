@@ -54,8 +54,8 @@ void MetaArenaScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mPendingScreen.Clear();
     std::vector<const char *> arenas;
     mChangePending = 0;
-    const int nSkillLevel = TheGameDb->mSkillLevel;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    const int nSkillLevel = TheGameDb->GetSkillLevel();
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         TheGameDb->GetUnlockedArenas(&arenas, nSkillLevel, true, true);
     } else {
         TheGameDb->GetUnlockedArenas(&arenas, nSkillLevel, false, false);
@@ -67,13 +67,13 @@ void MetaArenaScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     }
 
     UIPanel *pPanel = TheUI.FindPanel("s_g_sel_arena", false);
-    UIComponent *pFocus = pPanel->mFocus;
-    for (const auto &entry : pPanel->mComponents) {
+    UIComponent *pFocus = pPanel->GetFocus();
+    for (const auto &entry : pPanel->GetComponents()) {
         const char *pszArena = entry.first;
-        UIComponent *pButton = entry.second;
+        UIComponent *pButton = entry.second.get();
         std::vector<SongEntry> songs;
         TheGameDb->GetArenaSongs(&songs, pszArena, nSkillLevel, kArenaSongFilter);
-        if (songs.empty() || (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
+        if (songs.empty() || (TheGameDb->GetCommunity() != GameDb::kCommunitySolo &&
                               strcmp(pszArena, "Tutorial") == 0)) {
             pButton->SetState(UIComponent::kStateDisabled, false);
         } else {
@@ -83,7 +83,7 @@ void MetaArenaScreen::Enter(UIScreen *pPrevScreen, float fTime) {
             dynamic_cast<UIButton *>(pButton)->SetStyle(
                 TheUI.FindStyle("button_style_grey", false));
         }
-        if (strcmp(pPrevScreen->mName, "solosong2soloarena") == 0) {
+        if (strcmp(pPrevScreen->GetName(), "solosong2soloarena") == 0) {
             if (strcmp(pszArena, TheMetagame.GetSelectedArena()) == 0) {
                 pFocus = pButton;
             }
@@ -97,22 +97,22 @@ void MetaArenaScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 void MetaArenaScreen::UpdateBand(UIComponent *pArena, UIPanel *pPanel) {
-    if (pArena == nullptr || strcmp(pPanel->mName, "s_g_sel_arena") != 0) {
+    if (pArena == nullptr || strcmp(pPanel->GetName(), "s_g_sel_arena") != 0) {
         return;
     }
 
-    const char *pszArena = pArena->mName;
-    const int nSkillLevel = TheGameDb->mSkillLevel;
+    const char *pszArena = pArena->GetName();
+    const int nSkillLevel = TheGameDb->GetSkillLevel();
     std::vector<SongEntry> songs;
     TheGameDb->GetArenaSongs(&songs, pszArena, nSkillLevel, kArenaSongFilter);
     if (!songs.empty()) {
         std::vector<SongEntry> unlocked;
         TheGameDb->GetUnlockedSongs(
-            &unlocked, pszArena, nSkillLevel, TheGameDb->mCommunity == GameDb::kCommunitySolo);
+            &unlocked, pszArena, nSkillLevel, TheGameDb->GetCommunity() == GameDb::kCommunitySolo);
         UIPanel *pBand = TheUI.FindPanel("s_g_sel_arena_band", false);
         unsigned int i = 0;
-        for (const auto &entry : pBand->mComponents) {
-            UIComponent *pLabel = entry.second;
+        for (const auto &entry : pBand->GetComponents()) {
+            UIComponent *pLabel = entry.second.get();
             if (i >= songs.size()) {
                 pLabel->SetText("");
                 ++i;
@@ -141,7 +141,8 @@ void MetaArenaScreen::UpdateBand(UIComponent *pArena, UIPanel *pPanel) {
             }
         }
 
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo && strcmp(pszArena, "Tutorial") != 0) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo &&
+            strcmp(pszArena, "Tutorial") != 0) {
             UIComponent *pHigh = pBand->FindComponent("score_hi", false);
             const int nScore = TheGameDb->GetProfile(0)->GetArenaScore(pszArena, nSkillLevel);
             pHigh->SetText(
@@ -166,10 +167,10 @@ void MetaArenaScreen::UpdateBand(UIComponent *pArena, UIPanel *pPanel) {
 }
 
 bool MetaArenaScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    UIComponent *pArena = pMsg->mComponent;
-    UpdateBand(pArena, pMsg->mPanel);
+    UIComponent *pArena = pMsg->GetComponent();
+    UpdateBand(pArena, pMsg->GetPanel());
     if (pArena != nullptr) {
-        String arena(pArena->mName);
+        String arena(pArena->GetName());
         if (arena != "Tutorial") {
             if (pArena != mFocusArena) {
                 FxMidi::PlayLazySusan();
@@ -181,19 +182,19 @@ bool MetaArenaScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool MetaArenaScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    UIButton *pButton = dynamic_cast<UIButton *>(pMsg->mComponent);
+    UIButton *pButton = dynamic_cast<UIButton *>(pMsg->GetComponent());
     if (mChangePending != 0) {
         return true;
     }
     if (pButton->mStyle == TheUI.FindStyle("button_style_grey", false) ||
-        pMsg->mButton != kPadCross) {
+        pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
     TheSynth->SetOutputLevel(0.0f);
-    TheMetagame.SetSelectedArena(pMsg->mComponent->mName);
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        if (strcmp(pMsg->mComponent->mName, "Tutorial") == 0) {
+    TheMetagame.SetSelectedArena(pMsg->GetComponent()->GetName());
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
+        if (strcmp(pMsg->GetComponent()->GetName(), "Tutorial") == 0) {
             TheGameDb->SetTutorial(1);
             mPendingScreen = "soloarena2solotut";
         } else {
@@ -201,7 +202,7 @@ bool MetaArenaScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
             mPendingScreen = "soloarena2solosong";
         }
     } else {
-        if (strcmp(pMsg->mComponent->mName, "Tutorial") == 0) {
+        if (strcmp(pMsg->GetComponent()->GetName(), "Tutorial") == 0) {
             return UIScreen::HandleSelect(pMsg);
         }
         mPendingScreen = "multiarena2multisong";
@@ -238,9 +239,9 @@ bool MetaArenaScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 
     TheMetagame.SetSelectedArena("");
     const char *pszScreen;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         pszScreen = "soloarena2soloskill";
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         pszScreen = "m_r_mode";
     } else {
         pszScreen = "multiarena2multiskill";

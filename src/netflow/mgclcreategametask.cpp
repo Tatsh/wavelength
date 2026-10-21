@@ -24,9 +24,9 @@ MGCLCreateGameTask *MGCLCreateGameTask::sTask;
 void MGCLCreateGameTask::OnStart() {
     String name;
     sTask = this;
-    const NetGameParams *pParams = &TheHostpadRT->mParams;
+    const NetGameParams *pParams = &TheHostpadRT->GetParams();
     LobbyRT::EncodeGameName(
-        &name, pParams, 1, TheNetInet->GetConnectionType(), TheLobbyRT->mLocalPlayer.mId);
+        &name, pParams, 1, TheNetInet->GetConnectionType(), TheLobbyRT->GetLocalPlayer().mId);
     int nRules;
     int nRulesVariant;
     LobbyRT::EncodeRules(&nRules, &nRulesVariant, pParams->mRuleSet, pParams->mSkillLevel);
@@ -46,7 +46,7 @@ void MGCLCreateGameTask::OnStart() {
     request.minClients = kMinClients;
     request.playerSkillLevel = 0;
     request.genericField1 = 0;
-    request.genericField2 = TheLobbyRT->mChatroom.mId;
+    request.genericField2 = TheLobbyRT->GetChatroom().mId;
     request.genericField3 = TheHostpadRT->CanJoin();
     request.gameHostType = LaunchpadRT::kGameHostPeerToPeer;
     request.worldStatus = kWorldStatusOpen;
@@ -67,7 +67,7 @@ void MGCLCreateGameTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MGCL_STATUS_SUCCESS) {
-        TheHostpadRT->mWorldId = pResponse->worldId;
+        TheHostpadRT->SetWorldId(pResponse->worldId);
     }
     sTask->Finish(pResponse->header.status == RT_MGCL_STATUS_SUCCESS,
                   LaunchpadAbortedMsg::kReasonCreateFailed);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gs/muse.h"
@@ -163,14 +164,14 @@ private:
      */
     void Restart();
 
-    int mChannel;                       /*!< The MIDI channel of the pieces. */
-    int mQuantumTicks;                  /*!< The ticks of the beat a piece starts on. */
-    std::vector<MuseLooper *> mLoopers; /*!< The looper of each piece. */
-    std::vector<Ptr<Muse> > mCopies;    /*!< A copy of each piece. */
-    Ptr<Command> mRestartCmd;           /*!< The command that calls Restart(). */
-    int mScratching;                    /*!< Whether the scratcher is scratching. */
-    float mPitch;                       /*!< The pitch SetPitch() last took. */
-    int mReserved34;                    // +0x34, cleared by the constructor and not yet identified.
-    int mPiece;                         /*!< The current piece. */
-    ScratchNoteCB mNoteCB;              /*!< The receiver every piece reports its notes to. */
+    int mChannel;      /*!< The MIDI channel of the pieces. */
+    int mQuantumTicks; /*!< The ticks of the beat a piece starts on. */
+    std::vector<std::unique_ptr<MuseLooper>> mLoopers; /*!< The looper of each piece. */
+    std::vector<Ptr<Muse>> mCopies;                    /*!< A copy of each piece. */
+    Ptr<Command> mRestartCmd;                          /*!< The command that calls Restart(). */
+    int mScratching;                                   /*!< Whether the scratcher is scratching. */
+    float mPitch;                                      /*!< The pitch SetPitch() last took. */
+    int mReserved34;       // +0x34, cleared by the constructor and not yet identified.
+    int mPiece;            /*!< The current piece. */
+    ScratchNoteCB mNoteCB; /*!< The receiver every piece reports its notes to. */
 };

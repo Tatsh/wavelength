@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e4390
      */
     bool Test() override {
-        return mLow <= TheTriggerMgr.mDistance && TheTriggerMgr.mDistance <= mHigh;
+        return mLow <= TheTriggerMgr.GetDistance() && TheTriggerMgr.GetDistance() <= mHigh;
     }
 
 private:

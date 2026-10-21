@@ -45,7 +45,8 @@ public:
      */
     void OnGetDir(int nResult, MemcardDirEntry *pEntries) override;
 
-    MemcardSerialTask *mOwner; /*!< The task OnGetDir() tells, or null. */
+private:
+    MemcardSerialTask *mOwner; /*!< The task OnGetDir() tells, or null. Borrowed. */
     String mName;              /*!< The name, wildcards included. */
     int mMode;                 /*!< The library's listing mode. */
     int mMaxEntries;           /*!< The entries requested, and the entries listed once done. */

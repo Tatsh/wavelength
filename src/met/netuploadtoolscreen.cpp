@@ -66,14 +66,15 @@ void NetUploadToolScreen::MarkRemixes(std::list<NetRepoRemix> &remixes) {
 void NetUploadToolScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     TheGameDb->SetCommunity(GameDb::kCommunityOnline);
-    static_cast<UploadToolList *>(TheUI.FindComponent(mFocusPanel->mName, kListComponent, false))
+    static_cast<UploadToolList *>(
+        TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false))
         ->SetFiles(mFiles, mSelection);
 }
 
 void NetUploadToolScreen::Exit(UIScreen *pNextScreen, float fTime) {
     mSelection =
-        static_cast<UIList *>(TheUI.FindComponent(mFocusPanel->mName, kListComponent, false))
-            ->mSelected;
+        static_cast<UIList *>(TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false))
+            ->GetSelected();
     FreqScreen::Exit(pNextScreen, fTime);
 }
 
@@ -146,18 +147,18 @@ bool NetUploadToolScreen::InReposFirst(const UploadInfo &a, const UploadInfo &b)
 }
 
 bool NetUploadToolScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
     auto *pList = static_cast<UploadToolList *>(
-        TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
-    const char *pszButton = pMsg->mComponent->mName;
+        TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
+    const char *pszButton = pMsg->GetComponent()->GetName();
     if (std::strcmp(pszButton, kCursorComponent) == 0) {
-        const UploadInfo &info = *ListAt(mFiles, pList->mSelected);
+        const UploadInfo &info = *ListAt(mFiles, pList->GetSelected());
         if (info.mInRepos == 0) {
             auto *pDownload =
                 dynamic_cast<NetDoDownloadScreen *>(TheUI.FindScreen(kDownloadScreen, false));
-            const int nSelected = pList->mSelected;
+            const int nSelected = pList->GetSelected();
             pDownload->mFile = info.mName.c_str();
             pDownload->mRemixName = kNoText;
             pDownload->mUploadIndex = nSelected;
@@ -176,7 +177,7 @@ bool NetUploadToolScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     }
     // Yes, the binary refreshes the list after any other button as well.
     auto *pSorted = static_cast<UploadToolList *>(
-        TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
+        TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
     pSorted->SetFiles(mFiles, kFirstItem);
     mFocusPanel->SetFocus(pSorted, kPadNone);
     return UIScreen::HandleSelect(pMsg);
@@ -190,9 +191,9 @@ bool NetUploadToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     auto *pList = static_cast<UploadToolList *>(
-        TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
-    const int nSelected = pList->mSelected;
-    if (mFocusPanel->mFocus != pList) {
+        TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
+    const int nSelected = pList->GetSelected();
+    if (mFocusPanel->GetFocus() != pList) {
         if (pMsg->mButton != kPadDDown) {
             return UIScreen::HandleJoypad(pMsg);
         }
@@ -223,18 +224,18 @@ bool NetUploadToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     } else if (pMsg->mButton == kPadR1 || pMsg->mButton == kPadR2) {
         const char *pszScreen = pMsg->mButton == kPadR1 ? kPreviewRemixScreen : kPreviewGameScreen;
         auto *pPreview = dynamic_cast<NetDoDownloadScreen *>(TheUI.FindScreen(pszScreen, false));
-        const int nPreviewed = pList->mSelected;
+        const int nPreviewed = pList->GetSelected();
         pPreview->mFile = info.mName.c_str();
         pPreview->mRemixName = kNoText;
         pPreview->mUploadIndex = nPreviewed;
         TheUI.GotoScreen(pPreview);
     } else if (pMsg->mButton == kPadL1) {
-        if (nSelected >= pList->mRowCount) {
-            pList->SetSelected(nSelected - pList->mRowCount);
+        if (nSelected >= pList->GetRowCount()) {
+            pList->SetSelected(nSelected - pList->GetRowCount());
         }
     } else if (pMsg->mButton == kPadL2) {
-        if (pList->mItemCount - pList->mRowCount >= nSelected) {
-            pList->SetSelected(nSelected + pList->mRowCount);
+        if (pList->GetItemCount() - pList->GetRowCount() >= nSelected) {
+            pList->SetSelected(nSelected + pList->GetRowCount());
         }
     }
     return UIScreen::HandleJoypad(pMsg);

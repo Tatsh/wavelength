@@ -22,8 +22,8 @@ void PauseScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 bool PauseScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszName = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszName = pMsg->GetComponent()->GetName();
         if (strcmp(pszName, kResumeButton) == 0) {
             TheMetagame.ShowEndGameScreens(Metagame::kDialogActionResume);
         } else if (strcmp(pszName, "quit") == 0) {

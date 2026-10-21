@@ -141,7 +141,7 @@ void MCCheckRemixSpaceNeededTask::Evaluate() {
         MemcardTask::sStatus = MemcardTask::kStatusExists;
     } else if (g_MemcardPath.mLength == 0) {
         MemcardTask::sStatus = MemcardTask::kStatusLimit;
-    } else if (mGetInfo->mFree < mNeeded) {
+    } else if (mGetInfo->GetFree() < mNeeded) {
         MemcardTask::sStatus = MemcardTask::kStatusFull;
     } else {
         MemcardTask::sStatus = MemcardTask::kStatusOk;
@@ -192,7 +192,7 @@ void MCCheckRemixSpaceNeededTask::OnDirListed() {
     } else if (mOverwrite == 0) {
         MemcardTask::sStatus = MemcardTask::kStatusExists;
     }
-    if (mGetInfo->mFree < mNeeded) {
+    if (mGetInfo->GetFree() < mNeeded) {
         MemcardTask::sStatus = MemcardTask::kStatusFull;
     }
 }

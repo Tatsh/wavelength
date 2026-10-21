@@ -5,7 +5,7 @@ Polynomial::Polynomial() = default;
 Polynomial::~Polynomial() = default;
 
 void Polynomial::Load(const DataArray *pData) {
-    mCoefficients.resize(pData->mSize - 1);
+    mCoefficients.resize(pData->Size() - 1);
     for (unsigned i = 0; i < mCoefficients.size(); ++i) {
         mCoefficients[i] = pData->Float(i + 1);
     }

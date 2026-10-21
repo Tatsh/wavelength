@@ -70,6 +70,17 @@ public:
      */
     bool HandleButton(JoypadInputMsg *pMsg);
 
+    /** @return The horizontal position, from -1 to 1. */
+    float GetX() const {
+        return mX;
+    }
+
+    /** @return The vertical position, from -1 to 1. */
+    float GetY() const {
+        return mY;
+    }
+
+private:
     int mPad;               /*!< The controller. */
     int mStick;             /*!< The stick. */
     float mX;               /*!< The horizontal position, from -1 to 1. */

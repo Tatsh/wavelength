@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/triggeraction.h"
 #include "math/interpolator.h"
 #include "rnd/rndanimatable.h"
@@ -60,7 +62,7 @@ private:
     RndAnimatable *mAnim;
     float mTarget;
     float mDuration;
-    Interpolator *mCurve;
+    std::unique_ptr<Interpolator> mCurve;
     int mLoops;
     float mLoopLength;
     float mEndTime;

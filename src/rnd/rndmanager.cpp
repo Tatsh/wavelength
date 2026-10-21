@@ -462,7 +462,7 @@ const char *RndManager::ResourcePath(const char *pszFile) {
          ++nMip) {
     }
     converted.Create(bitmap,
-                     bitmap.mBpp == kPackedBpp ? kWideBpp : bitmap.mBpp,
+                     bitmap.GetBpp() == kPackedBpp ? kWideBpp : bitmap.GetBpp(),
                      RndBitmap::kOrderRGBA | RndBitmap::kOrderGs);
     MemStream stream(true);
     converted.Save(stream);

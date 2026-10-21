@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "gs/musebuilder.h"
 #include "mid/midireceiver.h"
 
@@ -117,9 +119,9 @@ public:
     }
 
 private:
-    const char *mFile;     // The MIDI file.
-    MuseBuilder *mBuilder; // The builder of the current track's cue, or null.
-    int mTrack;            // The number of tracks ended so far.
+    const char *mFile;                     // The MIDI file. Borrowed.
+    std::unique_ptr<MuseBuilder> mBuilder; // The builder of the current track's cue, or null.
+    int mTrack;                            // The number of tracks ended so far.
 };
 
 /**
@@ -127,4 +129,4 @@ private:
  *
  * @ghidraAddress NTSC-U/C: 0x00440d5c
  */
-extern float *TheSfxTickDuration;
+extern std::unique_ptr<float> TheSfxTickDuration;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <stddef.h>
 #include <vector>
 
@@ -808,29 +809,29 @@ private:
      */
     bool HasPendingLoad(unsigned short nSlot);
 
-    std::vector<bool> mBankLoaded;            /*!< Whether each slot has a bank. */
-    std::list<QueuedJob *> mJobs;             /*!< The queued jobs, in order. */
-    int mLoadSlot;                            /*!< The slot of the load under way, or -1. */
-    std::vector<unsigned char> mChunk;        /*!< The chunk of the bank being loaded. */
-    BankFileIO *mBankFile;                    /*!< The bank file being loaded, or null. */
-    int mLoadState;                           /*!< One of LoadState. */
-    std::vector<unsigned int> mMidiQueue;     /*!< The packed messages waiting to be sent. */
-    int mInitialized;                         /*!< 1 once Init() ran. */
-    float mLagMs;                             /*!< The lag of the output in milliseconds. */
-    float mNowMs;                             /*!< The system time of the last UpdateTime(). */
-    float mLastMs;                            /*!< The system time of the UpdateTime() before. */
-    int mTimeUpdated;                         /*!< 1 when UpdateTime() ran since the last Poll(). */
-    BufStream *mCommands;                     /*!< The writer of mCommandBuffer. */
-    BufStream *mSoftFxCommands;               /*!< The writer of mSoftFxBuffer. */
-    alignas(64) CommandBuffer mCommandBuffer; /*!< The commands for the synthesiser. */
-    CommandBuffer mSoftFxBuffer;              /*!< The commands for the software effect. */
-    StreamPlayer *mStream;                    /*!< The stream that plays, or null. */
-    int mSoftFxEnabled;                       /*!< 1 while the software effects are on. */
-    float mSoftFxSweep;                       /*!< The sweep of the software filter. */
-    float mSoftFxModulation;                  /*!< The second control of the software effect. */
-    float mOutputLevel;                       /*!< The level SetOutputLevel() set. */
-    SoftFxFilter mFilter;                     /*!< The settings of the software effect. */
-    Lfo mTapOscillators[kNumTaps];            /*!< The oscillators of the echo taps. */
+    std::vector<bool> mBankLoaded;               /*!< Whether each slot has a bank. */
+    std::list<std::unique_ptr<QueuedJob>> mJobs; /*!< The queued jobs, in order. */
+    int mLoadSlot;                               /*!< The slot of the load under way, or -1. */
+    std::vector<unsigned char> mChunk;           /*!< The chunk of the bank being loaded. */
+    std::unique_ptr<BankFileIO> mBankFile;       /*!< The bank file being loaded, or null. */
+    int mLoadState;                              /*!< One of LoadState. */
+    std::vector<unsigned int> mMidiQueue;        /*!< The packed messages waiting to be sent. */
+    int mInitialized;                            /*!< 1 once Init() ran. */
+    float mLagMs;                                /*!< The lag of the output in milliseconds. */
+    float mNowMs;                                /*!< The system time of the last UpdateTime(). */
+    float mLastMs;                               /*!< The system time of the UpdateTime() before. */
+    int mTimeUpdated;                     /*!< 1 when UpdateTime() ran since the last Poll(). */
+    std::unique_ptr<BufStream> mCommands; /*!< The writer of mCommandBuffer. */
+    std::unique_ptr<BufStream> mSoftFxCommands; /*!< The writer of mSoftFxBuffer. */
+    alignas(64) CommandBuffer mCommandBuffer;   /*!< The commands for the synthesiser. */
+    CommandBuffer mSoftFxBuffer;                /*!< The commands for the software effect. */
+    StreamPlayer *mStream;   /*!< The stream that plays, or null. Belongs to its StreamTask. */
+    int mSoftFxEnabled;      /*!< 1 while the software effects are on. */
+    float mSoftFxSweep;      /*!< The sweep of the software filter. */
+    float mSoftFxModulation; /*!< The second control of the software effect. */
+    float mOutputLevel;      /*!< The level SetOutputLevel() set. */
+    SoftFxFilter mFilter;    /*!< The settings of the software effect. */
+    Lfo mTapOscillators[kNumTaps];              /*!< The oscillators of the echo taps. */
     std::vector<OnePoleFilter> mChannelVolumes; /*!< The smoothed volume of each channel. */
     int mGotAudioData;                     /*!< Whether the last read of audio data completed. */
     int mMoreAudioData;                    /*!< Whether more audio data is to come. */

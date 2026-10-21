@@ -49,17 +49,19 @@ InputMgr::InputMgr(World *pWorld)
     for (int i = 0; i < TheGameDb->GetNumPads(); ++i) {
         InputMap *pMap = TheGameDb->GetInputMap(i);
         ControllerData data;
-        data.mStick = new ExpressionStick(i, pMap->FindStick(kStickActionExpression));
-        data.mPositionStick = pMap->FindStick(kStickActionPosition);
-        data.mRepeatMs = 0.0f;
-        mControllers.push_back(data);
+        data.SetStick(
+            std::make_unique<ExpressionStick>(i, pMap->FindStick(kStickActionExpression)));
+        data.SetPositionStick(pMap->FindStick(kStickActionPosition));
+        data.SetRepeatMs(0.0f);
+        mControllers.push_back(std::move(data));
     }
 }
 
 InputMgr::~InputMgr() {
     JoypadRemoveSink(this);
+    // Preserve the original deletion point, after the sink is removed.
     for (ControllerData &data : mControllers) {
-        delete data.mStick;
+        data.ResetStick();
     }
 }
 
@@ -68,14 +70,14 @@ void InputMgr::Poll() {
         const unsigned char nPlayer = static_cast<unsigned char>(mLocalPlayers[i]);
         ControllerData &data = mControllers[i];
         RepeatRotation(i);
-        if (data.mStick->Poll()) {
+        if (data.GetStick()->Poll()) {
             StickEvent<2> expression;
             expression.mPlayer = nPlayer;
-            expression.mX = data.mStick->mX;
-            expression.mY = data.mStick->mY;
+            expression.mX = data.GetStick()->GetX();
+            expression.mY = data.GetStick()->GetY();
             mWorld->Handle(expression);
         }
-        const JoypadStick &stick = JoypadGetState(i)->mSticks[data.mPositionStick];
+        const JoypadStick &stick = JoypadGetState(i)->mSticks[data.GetPositionStick()];
         StickEvent<6> position;
         position.mPlayer = nPlayer;
         position.mX = stick.mX;
@@ -87,20 +89,20 @@ void InputMgr::Poll() {
 void InputMgr::RepeatRotation(int nPad) {
     ControllerData &data = mControllers[nPad];
     const unsigned char nPlayer = static_cast<unsigned char>(mLocalPlayers[nPad]);
-    data.mRepeatTimer.Stop();
-    const float fOverMs = CyclesToMs(data.mRepeatTimer.mCycles) - mRepeatInitialDelayMs;
+    data.GetRepeatTimer().Stop();
+    const float fOverMs = CyclesToMs(data.GetRepeatTimer().mCycles) - mRepeatInitialDelayMs;
     if (fOverMs > 0.0f) {
-        const float fLastOverMs = data.mRepeatMs - mRepeatInitialDelayMs;
+        const float fLastOverMs = data.GetRepeatMs() - mRepeatInitialDelayMs;
         if (static_cast<int>(fLastOverMs / mRepeatDelayMs) <
             static_cast<int>(fOverMs / mRepeatDelayMs)) {
             RotateEvent rotate;
             rotate.mPlayer = nPlayer;
-            rotate.mDirection = data.mDirection;
+            rotate.mDirection = data.GetDirection();
             mWorld->Handle(rotate);
         }
     }
-    data.mRepeatMs = CyclesToMs(data.mRepeatTimer.mCycles);
-    data.mRepeatTimer.Start();
+    data.SetRepeatMs(CyclesToMs(data.GetRepeatTimer().mCycles));
+    data.GetRepeatTimer().Start();
 }
 
 bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
@@ -138,40 +140,40 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
             if (mWorld->IsFreestyling(nPad)) {
                 break;
             }
-            data.mStick->Reset();
+            data.GetStick()->Reset();
             RotateEvent rotate;
             rotate.mPlayer = nPlayer;
             rotate.mDirection = nDirection;
             mWorld->Handle(rotate);
-            data.mRepeatTimer.Start();
-            data.mDirection = nDirection;
+            data.GetRepeatTimer().Start();
+            data.SetDirection(nDirection);
         } else {
-            data.mRepeatTimer.Stop();
+            data.GetRepeatTimer().Stop();
             if (mWorld->IsFreestyling(nPad)) {
                 break;
             }
-            const float fHeldMs = CyclesToMs(data.mRepeatTimer.mCycles);
-            data.mRepeatTimer.mRunning = 0;
-            data.mRepeatTimer.mCycles = 0;
-            data.mRepeatTimer.mLastMs = fHeldMs;
+            const float fHeldMs = CyclesToMs(data.GetRepeatTimer().mCycles);
+            data.GetRepeatTimer().mRunning = 0;
+            data.GetRepeatTimer().mCycles = 0;
+            data.GetRepeatTimer().mLastMs = fHeldMs;
         }
         break;
     }
     case kActionFirstGem:
     case kActionFirstGem + 1:
     case kActionLastGem: {
-        const ExpressionStick *pStick = mControllers[nPad].mStick;
+        const ExpressionStick *pStick = mControllers[nPad].GetStick();
         const PlayNoteEvent note(nPlayer,
                                  static_cast<unsigned char>(nAction - kActionFirstGem),
                                  nPressed,
-                                 pStick->mX,
-                                 pStick->mY);
+                                 pStick->GetX(),
+                                 pStick->GetY());
         mWorld->Handle(note);
         break;
     }
     case kActionOption:
         if (nPressed != 0) {
-            if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+            if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
                 BtnEvent<9> event;
                 event.mPlayer = nPlayer;
                 mWorld->Handle(event);
@@ -184,7 +186,7 @@ bool InputMgr::HandleButton(JoypadInputMsg *pMsg) {
         break;
     case kActionDeploy:
         if (nPressed != 0) {
-            if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+            if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
                 BtnEvent<8> event;
                 event.mPlayer = nPlayer;
                 mWorld->Handle(event);

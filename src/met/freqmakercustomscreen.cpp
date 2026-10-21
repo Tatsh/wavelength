@@ -104,8 +104,8 @@ bool FreqMakerCustomScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool FreqMakerCustomScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszButton = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszButton = pMsg->GetComponent()->GetName();
         if (strcmp(pszButton, "done") == 0) {
             mChanged = 0;
             mSavedValid = 0;

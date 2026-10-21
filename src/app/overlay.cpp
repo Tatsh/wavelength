@@ -51,11 +51,12 @@ float Overlay::sDuelPointsMoveRate = 1.0f / 480.0f;
 
 void Overlay::SetHudPrefix() {
     const GameDb *pDb = TheGameDb;
-    if (pDb->mCommunity == GameDb::kCommunitySolo ||
-        (pDb->mCommunity == GameDb::kCommunityOnline && pDb->mRuleSet == GameDb::kRuleSetRemix)) {
+    if (pDb->GetCommunity() == GameDb::kCommunitySolo ||
+        (pDb->GetCommunity() == GameDb::kCommunityOnline &&
+         pDb->GetRuleSet() == GameDb::kRuleSetRemix)) {
         sHudLetter = '1';
         sHudPrefix = "HUD1";
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         sHudLetter = 'd';
         sHudPrefix = "HUDd";
     } else {
@@ -126,7 +127,7 @@ Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mStarted(0) {
     mCam = dynamic_cast<RndCam *>(TheManager.Find(kHudCam));
     mCamPos = mCam->mLocalXfm.mTranslation;
     mCam->mZRange = sHudZ;
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel) {
         int nPosition = 0;
         for (int i = 0; i < nPlayers; ++i) {
             if (!TheGameDb->IsLocalPlayer(i)) {
@@ -179,11 +180,11 @@ bool Overlay::DispatchPriv(Message *pMsg) {
 void Overlay::CreateTutorialParts() {
     auto *pLayout =
         dynamic_cast<RndView *>(TheManager.Find(FormatString("_hud%c.view", sHudLetter)));
-    if (TheGameDb->mTutorial == 0) {
+    if (TheGameDb->GetTutorial() == 0) {
         return;
     }
     mCommon->SetController(std::make_unique<OvyController>(pLayout));
-    if (TheGameDb->mTutorial == 0) {
+    if (TheGameDb->GetTutorial() == 0) {
         return;
     }
     mCommon->SetDialog(std::make_unique<OvyDialog>(pLayout));
@@ -191,7 +192,7 @@ void Overlay::CreateTutorialParts() {
 
 OvyLocalPlayer *Overlay::FindLocal(int nPlayer) {
     for (const auto &pLocal : mLocals) {
-        if (pLocal->mPlayer == nPlayer) {
+        if (pLocal->GetPlayer() == nPlayer) {
             return pLocal.get();
         }
     }
@@ -200,7 +201,7 @@ OvyLocalPlayer *Overlay::FindLocal(int nPlayer) {
 
 OvyAllPlayer *Overlay::FindAll(int nPlayer) {
     for (const auto &pAll : mAlls) {
-        if (pAll->mPlayer == nPlayer) {
+        if (pAll->GetPlayer() == nPlayer) {
             return pAll.get();
         }
     }
@@ -232,17 +233,17 @@ void Overlay::SetScore(int nPlayer, int nScore) {
     if (pAll == nullptr) {
         return;
     }
-    if (pAll->mScore != nullptr) {
-        pAll->mScore->SetScore(nScore);
-    } else if (pAll->mDuelScore != nullptr) {
-        pAll->mDuelScore->SetLitCount(nScore);
+    if (pAll->GetScore() != nullptr) {
+        pAll->GetScore()->SetScore(nScore);
+    } else if (pAll->GetDuelScore() != nullptr) {
+        pAll->GetDuelScore()->SetLitCount(nScore);
     }
 }
 
 void Overlay::SetMultiplier(int nPlayer, int nMultiplier, int bHot, const char *pszText) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mPoints != nullptr) {
-        pLocal->mPoints->SetMultiplier(nMultiplier, bHot, pszText);
+    if (pLocal != nullptr && pLocal->GetPoints() != nullptr) {
+        pLocal->GetPoints()->SetMultiplier(nMultiplier, bHot, pszText);
     }
 }
 
@@ -252,15 +253,15 @@ void Overlay::ShowPoints(int nPlayer, int nPoints, const char *pszText) {
         return;
     }
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mPoints != nullptr) {
-        pLocal->mPoints->ShowPoints(nPoints, pszText);
+    if (pLocal != nullptr && pLocal->GetPoints() != nullptr) {
+        pLocal->GetPoints()->ShowPoints(nPoints, pszText);
     }
 }
 
 void Overlay::HideMultiplier(int nPlayer) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mPoints != nullptr) {
-        pLocal->mPoints->HideMultiplier();
+    if (pLocal != nullptr && pLocal->GetPoints() != nullptr) {
+        pLocal->GetPoints()->HideMultiplier();
     }
 }
 
@@ -270,8 +271,8 @@ void Overlay::EndPoints(int nPlayer, int nResult) {
         return;
     }
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mPoints != nullptr) {
-        pLocal->mPoints->End(nResult);
+    if (pLocal != nullptr && pLocal->GetPoints() != nullptr) {
+        pLocal->GetPoints()->End(nResult);
     }
 }
 
@@ -281,15 +282,17 @@ void Overlay::SetPlaying(int nPlayer, bool bPlaying) {
 
 void Overlay::ShowPowerup(int nPlayer, int nPowerup) {
     OvyAllPlayer *pAll = FindAll(nPlayer);
-    if (pAll != nullptr && pAll->mScore != nullptr && pAll->mScore->mPowerup != nullptr) {
-        pAll->mScore->mPowerup->ShowPowerup(nPowerup);
+    if (pAll != nullptr && pAll->GetScore() != nullptr &&
+        pAll->GetScore()->GetPowerup() != nullptr) {
+        pAll->GetScore()->GetPowerup()->ShowPowerup(nPowerup);
     }
 }
 
 void Overlay::SetPowerupEnabled(int nPlayer, int nEnabled) {
     OvyAllPlayer *pAll = FindAll(nPlayer);
-    if (pAll != nullptr && pAll->mScore != nullptr && pAll->mScore->mPowerup != nullptr) {
-        HudPowerup *pPowerup = pAll->mScore->mPowerup;
+    if (pAll != nullptr && pAll->GetScore() != nullptr &&
+        pAll->GetScore()->GetPowerup() != nullptr) {
+        HudPowerup *pPowerup = pAll->GetScore()->GetPowerup();
         pPowerup->mEnabled = nEnabled;
         pPowerup->UpdateSlide();
     }
@@ -318,21 +321,21 @@ void Overlay::SetLetterbox(bool bClosed) {
 }
 
 float Overlay::GetLetterbox() {
-    return mCommon->GetLetterbox().mSlide.mValue * kLetterboxPerFrame;
+    return mCommon->GetLetterbox().mSlide.GetValue() * kLetterboxPerFrame;
 }
 
 void Overlay::SetPartsShown(bool bShow, [[maybe_unused]] int nUnused) {
-    if (bShow && TheGameDb->mRuleSet == GameDb::kRuleSetRemix &&
+    if (bShow && TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix &&
         TheGameDb->GetRemixInfo()->mReadOnly != 0) {
         if (mCommon->GetSections() != nullptr) {
             mCommon->GetSections()->Show(false);
         }
         for (const auto &pLocal : mLocals) {
-            if (pLocal->mRemix != nullptr) {
-                static_cast<HideablePanel *>(pLocal->mRemix)->Show(false);
+            if (pLocal->GetRemix() != nullptr) {
+                static_cast<HideablePanel *>(pLocal->GetRemix())->Show(false);
             }
-            if (pLocal->mPoints != nullptr) {
-                pLocal->mPoints->SetEnabled(false);
+            if (pLocal->GetPoints() != nullptr) {
+                pLocal->GetPoints()->SetEnabled(false);
             }
         }
         if (mCommon->GetSongPos() != nullptr) {
@@ -342,18 +345,18 @@ void Overlay::SetPartsShown(bool bShow, [[maybe_unused]] int nUnused) {
             mCommon->GetLeaderAvatar()->Show(true);
         }
         for (const auto &pAll : mAlls) {
-            if (pAll->mAvatar != nullptr) {
-                pAll->mAvatar->Show(true);
+            if (pAll->GetAvatar() != nullptr) {
+                pAll->GetAvatar()->Show(true);
             }
-            if (pAll->mScore != nullptr) {
-                pAll->mScore->Show(false);
-                if (pAll->mScore->mPowerup != nullptr) {
-                    pAll->mScore->mPowerup->mEnabled = 0;
-                    pAll->mScore->mPowerup->UpdateSlide();
+            if (pAll->GetScore() != nullptr) {
+                pAll->GetScore()->Show(false);
+                if (pAll->GetScore()->GetPowerup() != nullptr) {
+                    pAll->GetScore()->GetPowerup()->mEnabled = 0;
+                    pAll->GetScore()->GetPowerup()->UpdateSlide();
                 }
             }
-            if (pAll->mDuelScore != nullptr) {
-                pAll->mDuelScore->Show(false);
+            if (pAll->GetDuelScore() != nullptr) {
+                pAll->GetDuelScore()->Show(false);
             }
         }
         mCommon->GetJuice().Show(false);
@@ -366,36 +369,36 @@ void Overlay::SetPartsShown(bool bShow, [[maybe_unused]] int nUnused) {
         mCommon->GetTrackLabel()->Show(false);
     }
     for (const auto &pLocal : mLocals) {
-        if (pLocal->mRemix != nullptr) {
-            static_cast<HideablePanel *>(pLocal->mRemix)->Show(bShow);
+        if (pLocal->GetRemix() != nullptr) {
+            static_cast<HideablePanel *>(pLocal->GetRemix())->Show(bShow);
         }
-        if (pLocal->mPoints != nullptr) {
-            pLocal->mPoints->SetEnabled(bShow);
+        if (pLocal->GetPoints() != nullptr) {
+            pLocal->GetPoints()->SetEnabled(bShow);
         }
     }
-    const bool bPlayParts = TheGameDb->mTutorial != 0 ? false : bShow;
+    const bool bPlayParts = TheGameDb->GetTutorial() != 0 ? false : bShow;
     if (mCommon->GetSongPos() != nullptr) {
-        mCommon->GetSongPos()->Show(bPlayParts && TheGameDb->mRuleSet != GameDb::kRuleSetRemix);
+        mCommon->GetSongPos()->Show(bPlayParts && TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix);
     }
     if (mCommon->GetLeaderAvatar() != nullptr) {
         mCommon->GetLeaderAvatar()->Show(bPlayParts);
     }
     for (const auto &pAll : mAlls) {
-        if (pAll->mAvatar != nullptr) {
-            pAll->mAvatar->Show(bPlayParts);
+        if (pAll->GetAvatar() != nullptr) {
+            pAll->GetAvatar()->Show(bPlayParts);
         }
-        if (pAll->mScore != nullptr) {
-            pAll->mScore->Show(bPlayParts);
-            if (pAll->mScore->mPowerup != nullptr) {
-                pAll->mScore->mPowerup->mEnabled = bPlayParts;
-                pAll->mScore->mPowerup->UpdateSlide();
+        if (pAll->GetScore() != nullptr) {
+            pAll->GetScore()->Show(bPlayParts);
+            if (pAll->GetScore()->GetPowerup() != nullptr) {
+                pAll->GetScore()->GetPowerup()->mEnabled = bPlayParts;
+                pAll->GetScore()->GetPowerup()->UpdateSlide();
             }
         }
-        if (pAll->mDuelScore != nullptr) {
-            pAll->mDuelScore->Show(bPlayParts);
+        if (pAll->GetDuelScore() != nullptr) {
+            pAll->GetDuelScore()->Show(bPlayParts);
         }
     }
-    mCommon->GetJuice().Show(TheGameDb->mPracticeMode == 0 ? bPlayParts : false);
+    mCommon->GetJuice().Show(TheGameDb->GetPracticeMode() == 0 ? bPlayParts : false);
 }
 
 void Overlay::ShowEnergy(bool bShow) {
@@ -405,15 +408,15 @@ void Overlay::ShowEnergy(bool bShow) {
 void Overlay::ShowScore(int nPlayer, bool bShow) {
     OvyAllPlayer *pAll = FindAll(nPlayer);
     if (pAll != nullptr) {
-        if (pAll->mScore != nullptr) {
-            pAll->mScore->Show(bShow);
-        } else if (pAll->mDuelScore != nullptr) {
-            pAll->mDuelScore->Show(bShow);
+        if (pAll->GetScore() != nullptr) {
+            pAll->GetScore()->Show(bShow);
+        } else if (pAll->GetDuelScore() != nullptr) {
+            pAll->GetDuelScore()->Show(bShow);
         }
     }
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mPoints != nullptr) {
-        pLocal->mPoints->SetEnabled(bShow);
+    if (pLocal != nullptr && pLocal->GetPoints() != nullptr) {
+        pLocal->GetPoints()->SetEnabled(bShow);
     }
 }
 
@@ -427,8 +430,8 @@ void Overlay::ShowArrow(bool bShow) {
 
 void Overlay::ShowAvatar(int nPlayer, bool bShow) {
     OvyAllPlayer *pAll = FindAll(nPlayer);
-    if (pAll != nullptr && pAll->mAvatar != nullptr) {
-        pAll->mAvatar->Show(bShow);
+    if (pAll != nullptr && pAll->GetAvatar() != nullptr) {
+        pAll->GetAvatar()->Show(bShow);
     } else if (nPlayer == 0 && mCommon->GetLeaderAvatar() != nullptr) {
         mCommon->GetLeaderAvatar()->Show(bShow);
     }
@@ -448,15 +451,15 @@ void Overlay::ShowTrackLabel(bool bShow) {
 
 void Overlay::SetFreqSize(int nPlayer, int nFreqSize) {
     OvyAllPlayer *pAll = FindAll(nPlayer);
-    if (pAll != nullptr && pAll->mAvatar != nullptr) {
-        pAll->mAvatar->SetFreqSize(nFreqSize);
+    if (pAll != nullptr && pAll->GetAvatar() != nullptr) {
+        pAll->GetAvatar()->SetFreqSize(nFreqSize);
     }
 }
 
 void Overlay::SetTrack(int nPlayer, int nInstrument, int nTrackKind) {
     OvyAllPlayer *pAll = FindAll(nPlayer);
-    if (pAll != nullptr && pAll->mAvatar != nullptr) {
-        pAll->mAvatar->SetInstrument(nPlayer, nInstrument, nTrackKind);
+    if (pAll != nullptr && pAll->GetAvatar() != nullptr) {
+        pAll->GetAvatar()->SetInstrument(nPlayer, nInstrument, nTrackKind);
     }
     if (mCommon->GetTrackLabel() != nullptr) {
         mCommon->GetTrackLabel()->SetTrack(nPlayer, nInstrument, nTrackKind);
@@ -472,8 +475,8 @@ void Overlay::FlashPoints(int nPlayer, float fValue) {
         return;
     }
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mPoints != nullptr) {
-        pLocal->mPoints->Flash(fValue);
+    if (pLocal != nullptr && pLocal->GetPoints() != nullptr) {
+        pLocal->GetPoints()->Flash(fValue);
     }
 }
 
@@ -562,43 +565,43 @@ void Overlay::HighlightSection(int nIndex) {
 
 void Overlay::SetRemixPanelText(int nPlayer, int nIndex, const char *pszText, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel, 0)->SetText(nIndex, pszText);
+    if (pLocal != nullptr && pLocal->GetRemix() != nullptr) {
+        pLocal->GetRemix()->FindSubPanel(nPanel, 0)->SetText(nIndex, pszText);
     }
 }
 
 void Overlay::SelectRemixPanelEntry(int nPlayer, int nIndex, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel, 0)->Select(nIndex);
+    if (pLocal != nullptr && pLocal->GetRemix() != nullptr) {
+        pLocal->GetRemix()->FindSubPanel(nPanel, 0)->Select(nIndex);
     }
 }
 
 void Overlay::FlashRemixPanel(int nPlayer, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel, 0)->Flash();
+    if (pLocal != nullptr && pLocal->GetRemix() != nullptr) {
+        pLocal->GetRemix()->FindSubPanel(nPanel, 0)->Flash();
     }
 }
 
 void Overlay::SetRemixPanelLit(int nPlayer, int nIndex, int bLit, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->FindSubPanel(nPanel, 0)->SetLit(nIndex, bLit);
+    if (pLocal != nullptr && pLocal->GetRemix() != nullptr) {
+        pLocal->GetRemix()->FindSubPanel(nPanel, 0)->SetLit(nIndex, bLit);
     }
 }
 
 void Overlay::ShowRemixPanel(int nPlayer, int nPanel) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        pLocal->mRemix->ShowSubPanel(nPanel);
+    if (pLocal != nullptr && pLocal->GetRemix() != nullptr) {
+        pLocal->GetRemix()->ShowSubPanel(nPanel);
     }
 }
 
 void Overlay::ShowRemix(int nPlayer, bool bShow) {
     OvyLocalPlayer *pLocal = FindLocal(nPlayer);
-    if (pLocal != nullptr && pLocal->mRemix != nullptr) {
-        static_cast<HideablePanel *>(pLocal->mRemix)->Show(bShow);
+    if (pLocal != nullptr && pLocal->GetRemix() != nullptr) {
+        static_cast<HideablePanel *>(pLocal->GetRemix())->Show(bShow);
     }
 }
 
@@ -644,24 +647,24 @@ void Overlay::ClearStarted() {
 }
 
 void Overlay::ShowCheckpoint() {
-    if (mAlls.size() < 2 || TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (mAlls.size() < 2 || TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         return;
     }
     std::vector<OvyScore *> scores(OvyScore::kNumCheckpointPositions);
     scores.clear();
     int nMaxScore = 0;
     for (const auto &pAll : mAlls) {
-        OvyScore *pScore = pAll->mScore;
+        OvyScore *pScore = pAll->GetScore();
         if (pScore == nullptr) {
             continue;
         }
         scores.push_back(pScore);
-        if (nMaxScore < pScore->mScore) {
-            nMaxScore = pScore->mScore;
+        if (nMaxScore < pScore->GetScore()) {
+            nMaxScore = pScore->GetScore();
         }
     }
     std::stable_sort(scores.begin(), scores.end(), [](OvyScore *pLeft, OvyScore *pRight) {
-        return pLeft->mScore < pRight->mScore;
+        return pLeft->GetScore() < pRight->GetScore();
     });
     if (!(0 < nMaxScore)) {
         nMaxScore = 1;
@@ -669,7 +672,8 @@ void Overlay::ShowCheckpoint() {
     const int nCount = static_cast<int>(scores.size());
     for (int i = nCount - 1; i >= 0; --i) {
         OvyScore *pScore = scores[i];
-        pScore->ShowCheckpoint(static_cast<float>(pScore->mScore) / static_cast<float>(nMaxScore),
+        pScore->ShowCheckpoint(static_cast<float>(pScore->GetScore()) /
+                                   static_cast<float>(nMaxScore),
                                nCount - (i + 1));
     }
 }
@@ -680,11 +684,11 @@ void Overlay::ShowResult(bool bWon, [[maybe_unused]] int nMode) {
         return;
     }
     for (const auto &pLocal : mLocals) {
-        if (pLocal->mPoints == nullptr) {
+        if (pLocal->GetPoints() == nullptr) {
             continue;
         }
-        pLocal->mPoints->SetMultiplier(1, 0, "");
-        pLocal->mPoints->End(GfxManager::kPendingPointsCleared);
+        pLocal->GetPoints()->SetMultiplier(1, 0, "");
+        pLocal->GetPoints()->End(GfxManager::kPendingPointsCleared);
     }
 }
 
@@ -711,7 +715,7 @@ void Overlay::Poll(float fFrame, float fSongDelta, float fUnused, float fRealDel
 }
 
 void Overlay::Draw() {
-    TheGfxManager.mWinnerDrawn = 0;
+    TheGfxManager.SetWinnerDrawn(0);
     static_cast<RndTransformable *>(mHudView)->UpdateWorldXfm(nullptr, 0);
     HideablePanel::PoseMaterials();
     static_cast<RndDrawable *>(mHudView)->Draw();
@@ -726,9 +730,9 @@ void Overlay::Draw() {
         pAll->DrawHud();
     }
     mCommon->DrawAvatar();
-    const int nWinner = TheGfxManager.mWinner;
+    const int nWinner = TheGfxManager.GetWinner();
     for (const auto &pAll : mAlls) {
-        if (pAll->mPlayer != nWinner) {
+        if (pAll->GetPlayer() != nWinner) {
             pAll->DrawAvatar();
         }
     }

@@ -30,7 +30,7 @@ bool MainOptionsScreen::DispatchPriv(Message *pMsg) {
 
 void MainOptionsScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
-    if (strcmp(pNextScreen->mName, kCreditsInScreen) == 0) {
+    if (strcmp(pNextScreen->GetName(), kCreditsInScreen) == 0) {
         const Vector3 position{kCreditsGizmoX, 0.0f, 0.0f};
         TheMetagame.GetGizmo()->MoveTo(position, mGizmoRot, fTime);
     }
@@ -38,7 +38,7 @@ void MainOptionsScreen::Exit(UIScreen *pNextScreen, float fTime) {
 
 void MainOptionsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
-    if (strcmp(pPrevScreen->mName, kCreditsOutScreen) == 0) {
+    if (strcmp(pPrevScreen->GetName(), kCreditsOutScreen) == 0) {
         TheMetagame.GetGizmo()->MoveTo(mGizmoOrig, mGizmoRot, fTime);
     }
 }
@@ -49,7 +49,7 @@ bool MainOptionsScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             return true;
         }
         if (pMsg->mButton == kPadTriangle) {
-            if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+            if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                 TheUI.GotoScreen(kOnlineMainScreen);
             } else {
                 TheUI.GotoScreen(kMainScreen);

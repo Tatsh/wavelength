@@ -150,7 +150,7 @@ void HudLetterExit::Reset() {
 }
 
 void HudLetterExit::Poll() {
-    const float fTick = TheGameDb->mSongTick;
+    const float fTick = TheGameDb->GetSongTick();
     ScaleByPulse(mView);
     if (mFlightStart == kNoFlight) {
         mAnims[0]->SetFrame(fTick);
@@ -264,7 +264,7 @@ void HudLetterExit::Fly(int nResult) {
         mFlyBasis[i][kColumnZ] = row.z;
         mFlyBasis[i][kColumnW] = row.w;
     }
-    mFlightStart = TheGameDb->mSongTick;
+    mFlightStart = TheGameDb->GetSongTick();
     mFlipped = (nSide ^ mSecondSidePlayer) != 0;
     mFlight = mLetterPaths[mLetters[nSide]];
     SetBasis(pTextTrans, MakeScaleBasis(kIdentityScale));

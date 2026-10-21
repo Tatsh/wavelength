@@ -35,13 +35,13 @@ void RemixOrFreqScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 bool RemixOrFreqScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         ErrorScreen *pLoad = nullptr;
-        if (strcmp(pMsg->mComponent->mName, kRemixComponent) == 0) {
+        if (strcmp(pMsg->GetComponent()->GetName(), kRemixComponent) == 0) {
             dynamic_cast<RemixCopyDelScreen *>(TheUI.FindScreen(kRemixListScreen, false))->mSlot =
                 mSlot;
             pLoad = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kRemixLoadScreen, false));
-        } else if (strcmp(pMsg->mComponent->mName, kFreqComponent) == 0) {
+        } else if (strcmp(pMsg->GetComponent()->GetName(), kFreqComponent) == 0) {
             dynamic_cast<FreqCopyDelScreen *>(TheUI.FindScreen(kFreqListScreen, false))->mSlot =
                 mSlot;
             pLoad = dynamic_cast<ErrorScreen *>(TheUI.FindScreen(kFreqLoadScreen, false));

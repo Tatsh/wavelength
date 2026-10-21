@@ -66,7 +66,7 @@ bool HelpText::ShowCripplerFailed() {
 }
 
 bool HelpText::ShowNotesAreEnergized() {
-    if (TheGameDb->mTutorial != 0) {
+    if (TheGameDb->GetTutorial() != 0) {
         return Show("NOTES_ARE_ENERGIZED_TUTORIAL", nullptr, true, true, kAllPlayers, true);
     }
     return Show("NOTES_ARE_ENERGIZED", nullptr, true, true, kAllPlayers, true);
@@ -75,13 +75,13 @@ bool HelpText::ShowNotesAreEnergized() {
 bool HelpText::ShowCatchBehind(int nPlayer) {
     const char *pszFirst = TheLocale.Localize("CATCH_BEHIND_1", true);
     const int nShownPlayer =
-        TheGameDb->mCommunity == GameDb::kCommunityLocal ? nPlayer : kAllPlayers;
+        TheGameDb->GetCommunity() == GameDb::kCommunityLocal ? nPlayer : kAllPlayers;
     const char *pszSecond = TheLocale.Localize("CATCH_BEHIND_2", true);
     return Show(pszFirst, pszSecond, true, false, nShownPlayer, false);
 }
 
 void HelpText::ShowEnergizeNotes(bool bCatchable) {
-    if (TheGameDb->mPracticeMode != 0 || TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+    if (TheGameDb->GetPracticeMode() != 0 || TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         return;
     }
     if (bCatchable) {
@@ -106,14 +106,14 @@ bool HelpText::Show(const char *pszFirst,
     if (bOnePadOnly && TheGameDb->GetNumPads() >= 2) {
         return false;
     }
-    if (bBeginnerOnly && TheGameDb->mSkillLevel >= kFirstExpertSkillLevel) {
+    if (bBeginnerOnly && TheGameDb->GetSkillLevel() >= kFirstExpertSkillLevel) {
         return false;
     }
-    if (mEnabled == 0 || TheGameDb->mRuleSet != GameDb::kRuleSetGame ||
+    if (mEnabled == 0 || TheGameDb->GetRuleSet() != GameDb::kRuleSetGame ||
         TheGameDb->GetOptions()->mHelpText == 0) {
         return false;
     }
-    const float fNowMs = TheSongScheduler.mTime;
+    const float fNowMs = TheSongScheduler.GetTime();
     if (fNowMs - mLastShownMs < kMinIntervalMs) {
         return false;
     }
@@ -125,7 +125,7 @@ bool HelpText::Show(const char *pszFirst,
         }
     }
     const float fDurationMs = pszSecond != nullptr ? kTwoLineDurationMs : kOneLineDurationMs;
-    const int nCommunity = TheGameDb->mCommunity;
+    const int nCommunity = TheGameDb->GetCommunity();
     const bool bMultiplayer =
         nCommunity == GameDb::kCommunityLocal || nCommunity == GameDb::kCommunityOnline;
     const float fOffsetY = bMultiplayer ? kMultiplayerOffsetY : kNoOffset;

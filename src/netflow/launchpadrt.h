@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include <librtdme.h>
@@ -458,7 +459,7 @@ public:
     bool OnMsg(StartGamePkt *pPkt);
 
     /**
-     * Drop a player who left the game, and end the game when the host left.
+     * Drop a player who exited the game, and end the game when the host exited.
      *
      * @param pPkt The packet.
      * @return False.
@@ -510,6 +511,16 @@ public:
      */
     static int IsMgclReady();
 
+    /** @return The NetHostTask or NetConnectTask that waits for OnNetConnect(), or null. */
+    static NetTask *GetNetTask() {
+        return sNetTask;
+    }
+
+    /** @param pTask The NetHostTask or NetConnectTask that waits for OnNetConnect(), or null. */
+    static void SetNetTask(NetTask *pTask) {
+        sNetTask = pTask;
+    }
+
     /**
      * Read a byte EncodeByte() wrote.
      *
@@ -546,6 +557,81 @@ public:
      * @ghidraAddress PAL: 0x0025eee8
      */
     static int FindScore(const std::vector<NetGameScore> &scores, int nId);
+
+    /** @return The session on the game server, or kNoWorld. */
+    int GetWorldId() const {
+        return mWorldId;
+    }
+
+    /** @param nValue The session on the game server, or kNoWorld. */
+    void SetWorldId(int nValue) {
+        mWorldId = nValue;
+    }
+
+    /** @return The connection to the session. */
+    rtNetConnectionInfo &GetConnectionInfo() {
+        return mConnectionInfo;
+    }
+
+    /** @return The connection to the session. */
+    const rtNetConnectionInfo &GetConnectionInfo() const {
+        return mConnectionInfo;
+    }
+
+    /** @return The connection of the session library, or -1. */
+    int GetConnection() const {
+        return mConnection;
+    }
+
+    /** @param nValue The connection of the session library, or -1. */
+    void SetConnection(int nValue) {
+        mConnection = nValue;
+    }
+
+    /** @return The identifier of this console, or kNoId. */
+    int GetLocalId() const {
+        return mLocalId;
+    }
+
+    /** @param nValue The identifier of this console, or kNoId. */
+    void SetLocalIdValue(int nValue) {
+        mLocalId = nValue;
+    }
+
+    /** @return One of State. */
+    int GetState() const {
+        return mState;
+    }
+
+    /** @param nValue One of State. */
+    void SetState(int nValue) {
+        mState = nValue;
+    }
+
+    /** @return Why the host turned the console away. */
+    int GetError() const {
+        return mError;
+    }
+
+    /** @param nValue Why the host turned the console away. */
+    void SetError(int nValue) {
+        mError = nValue;
+    }
+
+    /** @return The sink that receives the messages of the session. Borrowed. */
+    MsgSink *GetGameSink() const {
+        return mGameSink;
+    }
+
+    /** @return The players, in the order of their colours. */
+    std::list<NetLaunchpadPlayer> &GetPlayersList() {
+        return mPlayers;
+    }
+
+    /** @return The consoles AddClient() noted. */
+    const std::vector<int> &GetClients() const {
+        return mClients;
+    }
 
     /**
      * Receive a message of the session, the handler rtDmeRegisterMessageHandler() registers.
@@ -604,18 +690,19 @@ public:
      */
     static void OnNetClientLeave(int nConnection, int nClient, const char *pszAddress);
 
+protected:
     int mWorldId;                        /*!< The session on the game server, or kNoWorld. */
     rtNetConnectionInfo mConnectionInfo; /*!< The connection to the session. */
     int mConnection;                     /*!< The connection of the session library, or -1. */
     int mLocalId;                        /*!< The identifier of this console, or kNoId. */
     int mState;                          /*!< One of State. */
     int mError;                          /*!< Why the host turned the console away. */
-    MsgSink *mGameSink;                  /*!< The sink that receives the session's messages. */
-    NetMultiTask mConnectTask;           /*!< The request that connects to the session. */
-    NetMultiTask mExitTask;              /*!< The request that leaves the session. */
-    NetMultiTask mRankTask;              /*!< The request for the ladder position after a game. */
-    PeriodicTask mPlayerReport;          /*!< The report of the player to the game server. */
-    TaskList mTasks;                     /*!< Further requests that run side by side. */
+    MsgSink *mGameSink;         /*!< The sink that receives the session's messages. Borrowed. */
+    NetMultiTask mConnectTask;  /*!< The request that connects to the session. */
+    NetMultiTask mExitTask;     /*!< The request that exits the session. */
+    NetMultiTask mRankTask;     /*!< The request for the ladder position after a game. */
+    PeriodicTask mPlayerReport; /*!< The report of the player to the game server. */
+    TaskList mTasks;            /*!< Further requests that run side by side. */
     std::list<NetLaunchpadPlayer> mPlayers; /*!< The players, in the order of their colours. */
     float mStartTime;                       /*!< The clock of the session the song starts at. */
     int mSeed;                              /*!< The seed of the game. */
@@ -633,6 +720,7 @@ public:
     std::vector<int> mClients;        /*!< The consoles AddClient() noted. */
     std::vector<RatingStat> mRatings; /*!< The rating of the game, while it runs. */
 
+private:
     /**
      * The registered type of the packets of the session.
      *
@@ -672,4 +760,4 @@ public:
  * @ghidraAddress NTSC-U/C: 0x003b0ac4
  * @ghidraAddress PAL: 0x0042f990
  */
-extern LaunchpadRT *TheLaunchpadRT;
+extern std::unique_ptr<LaunchpadRT> TheLaunchpadRT;

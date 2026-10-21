@@ -14,8 +14,9 @@ ForceFeedbackMgr::ForceFeedbackMgr()
 }
 
 ForceFeedbackMgr::~ForceFeedbackMgr() {
-    for (auto *pController : mControllers) {
-        delete pController;
+    // Preserve the original forward deletion order of the controllers.
+    for (auto &pController : mControllers) {
+        pController.reset();
     }
 }
 
@@ -37,15 +38,17 @@ void ForceFeedbackMgr::Start(const float *pTickDuration, int nTicksPerBar) {
 
     const auto nCount = static_cast<unsigned>(nPlayers);
     while (mControllers.size() < nCount) {
-        mControllers.push_back(new Controller(static_cast<int>(mControllers.size()), nTicksPerBar));
+        mControllers.push_back(
+            std::make_unique<Controller>(static_cast<int>(mControllers.size()), nTicksPerBar));
     }
     while (mControllers.size() > nCount) {
-        delete mControllers.back();
+        // Preserve the original deletion point, before the later controllers are used again.
+        mControllers.back().reset();
         mControllers.pop_back();
     }
 
     for (unsigned i = 0; i < mControllers.size(); ++i) {
-        mControllers[i]->mVibration = TheGameDb->GetOptions()->mForceFeedback;
+        mControllers[i]->SetVibration(TheGameDb->GetOptions()->mForceFeedback);
     }
     mTickDuration = pTickDuration;
 }
@@ -63,9 +66,9 @@ void ForceFeedbackMgr::StartMetronome(int nPeriod, int nTick) {
         return;
     }
     StopMetronome();
-    mBeatCmd->mPeriod = nPeriod;
+    mBeatCmd->SetPeriod(nPeriod);
     for (unsigned i = 0; i < mControllers.size(); ++i) {
-        mControllers[i]->mEnabled = 1;
+        mControllers[i]->SetEnabled(1);
     }
 
     const int nRemainder = nTick % nPeriod;
@@ -74,7 +77,7 @@ void ForceFeedbackMgr::StartMetronome(int nPeriod, int nTick) {
     }
     const float fLead = static_cast<float>(TheGameConfig->mBeatLeadMs);
     float fTime = static_cast<float>(nTick) * *mTickDuration - fLead;
-    while (fTime < TheSongScheduler.mTime) {
+    while (fTime < TheSongScheduler.GetTime()) {
         nTick += nPeriod;
         fTime = static_cast<float>(nTick) * *mTickDuration - fLead;
     }
@@ -87,15 +90,15 @@ void ForceFeedbackMgr::StopMetronome() {
 
 void ForceFeedbackMgr::SetBeatEnabled(int nPad, bool bEnabled) {
     if (mEnabled != 0) {
-        mControllers[nPad]->mEnabled = bEnabled ? 1 : 0;
+        mControllers[nPad]->SetEnabled(bEnabled ? 1 : 0);
     }
 }
 
 void ForceFeedbackMgr::SetVibration(int nController, int nSmallMotor, int nBigMotor) {
-    Controller *pController = mControllers[nController];
-    pController->mSmallMotor = nSmallMotor;
-    pController->mBigMotor = nBigMotor;
-    if (mPaused == 0 && pController->mVibration != 0) {
+    Controller *pController = mControllers[nController].get();
+    pController->SetSmallMotor(nSmallMotor);
+    pController->SetBigMotor(nBigMotor);
+    if (mPaused == 0 && pController->GetVibration() != 0) {
         JoypadSetVibration(nController, nSmallMotor, nBigMotor);
     }
 }
@@ -119,9 +122,9 @@ void ForceFeedbackMgr::PlayAutocatchEffect(int nController) {
 }
 
 void ForceFeedbackMgr::PlayEffect(int nController, int nEffect) {
-    Controller *pController = mControllers[nController];
+    Controller *pController = mControllers[nController].get();
     pController->CancelAll();
-    pController->mEffects[nEffect]->Start();
+    pController->GetEffects()[nEffect]->Start();
 }
 
 void ForceFeedbackMgr::Pause() {
@@ -139,11 +142,11 @@ void ForceFeedbackMgr::Resume() {
     }
     mPaused = 0;
     for (unsigned i = 0; i < mControllers.size(); ++i) {
-        Controller *pController = mControllers[i];
-        pController->mVibration = TheGameDb->GetOptions()->mForceFeedback;
-        if (pController->mVibration != 0) {
+        Controller *pController = mControllers[i].get();
+        pController->SetVibration(TheGameDb->GetOptions()->mForceFeedback);
+        if (pController->GetVibration() != 0) {
             JoypadSetVibration(
-                static_cast<int>(i), pController->mSmallMotor, pController->mBigMotor);
+                static_cast<int>(i), pController->GetSmallMotor(), pController->GetBigMotor());
         }
     }
 }

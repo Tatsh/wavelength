@@ -173,7 +173,7 @@ void SaveFreqScreen::OnFreqSaved(int nStatus, int nSpace) {
 #endif
 
 bool SaveFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheMCManager.SaveFreq(
             this, mSlot, TheGameDb->GetProfile(0), TheGameDb->GetPlayerName(0), mOverwriteStatus);
     }

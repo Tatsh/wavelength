@@ -8,5 +8,5 @@ AvatarInstrumentAction::AvatarInstrumentAction(DataArray *pAction) : mPose(pActi
 }
 
 void AvatarInstrumentAction::Exec() {
-    TheGameDb->GetAvatar(TheTriggerMgr.mPlayer)->SetPose(mPose);
+    TheGameDb->GetAvatar(TheTriggerMgr.GetPlayer())->SetPose(mPose);
 }

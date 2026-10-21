@@ -38,7 +38,7 @@ void NetTask::OnStop() {
 
 void NetTask::Finish(bool bSucceeded, int nResult) {
     if (mParent != nullptr && !bSucceeded) {
-        mParent->mResult = nResult;
+        mParent->SetResult(nResult);
     }
     Task::Finish(bSucceeded);
 }
@@ -53,7 +53,7 @@ NetTask *NetTask::FindTag(const char *pszTag) {
 }
 
 void NetMultiTask::Add(NetTask *pTask) {
-    pTask->mParent = this;
+    pTask->SetParent(this);
     SerialTasks::Add(pTask);
 }
 
@@ -74,12 +74,11 @@ PeriodicTask::PeriodicTask(float fPeriod) : mTask(nullptr), mPeriod(fPeriod), mN
 PeriodicTask::~PeriodicTask() {
     if (mTask != nullptr) {
         mTask->Stop();
-        delete mTask;
     }
 }
 
 void PeriodicTask::SetTask(Task *pTask) {
-    mTask = pTask;
+    mTask.reset(pTask);
 }
 
 int PeriodicTask::Poll() {
@@ -108,16 +107,15 @@ void PeriodicTask::Suspend() {
 }
 
 void TaskList::Add(Task *pTask) {
-    mTasks.push_back(pTask);
+    mTasks.emplace_back(pTask);
     pTask->Start();
 }
 
 TaskList::~TaskList() {
-    for (Task *pTask : mTasks) {
-        pTask->Stop();
-        delete pTask;
+    while (!mTasks.empty()) {
+        mTasks.front()->Stop();
+        mTasks.pop_front();
     }
-    mTasks.clear();
 }
 
 void TaskList::Poll() {
@@ -125,7 +123,6 @@ void TaskList::Poll() {
     while (it != mTasks.end()) {
         if ((*it)->Poll() != Task::kStateRunning) {
             (*it)->Stop();
-            delete *it;
             it = mTasks.erase(it);
         } else {
             ++it;

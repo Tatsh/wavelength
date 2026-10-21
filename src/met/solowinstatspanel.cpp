@@ -56,7 +56,7 @@ void SoloWinStatsPanel::Refresh() {
     SoloGameStatsPanel::Refresh();
     SongStats record;
     TheGameDb->GetProfile(0)->GetSongStats(
-        TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel, &record);
+        TheGameDb->GetSong().c_str(), TheGameDb->GetSkillLevel(), &record);
 
     SetLabel(kScoreLabel, FormatString(kNumberFormat, TheGameDb->GetPlayerScore(0)));
     SetLabel(kBlastedLabel,
@@ -65,7 +65,7 @@ void SoloWinStatsPanel::Refresh() {
     SetLabel(kFullMixLabel, FormatString(pszFullMixFormat, TheGameDb->GetFullMixBars()));
     SetLabel(kStreakLabel, FormatString(kStreakFormat, TheGameDb->GetBestStreak()));
 
-    if (TheGameDb->mLoadRemix) {
+    if (TheGameDb->GetLoadRemix()) {
         SetLabel(kScoreBestTitle, kNoText);
         SetLabel(kBlastedBestTitle, kNoText);
         SetLabel(kFullMixBestTitle, kNoText);
@@ -78,14 +78,14 @@ void SoloWinStatsPanel::Refresh() {
         SetLabel(kFullMixBestLabel, FormatString(pszFullMixFormat, record.mFullMixBars));
     }
 
-    const bool bShowGrade = !TheGameDb->mLoadRemix;
+    const bool bShowGrade = !TheGameDb->GetLoadRemix();
     RndMesh *pGrade =
         dynamic_cast<RndMesh *>(TheManager.Find(FormatString(kGradeMeshFormat, mName)));
     pGrade->SetShowing(bShowGrade);
     if (bShowGrade) {
         Campaign *pProfile = TheGameDb->GetProfile(0);
-        const int nMedal = pProfile->GetMedalForScore(TheGameDb->mSong.c_str(),
-                                                      TheGameDb->mSkillLevel,
+        const int nMedal = pProfile->GetMedalForScore(TheGameDb->GetSong().c_str(),
+                                                      TheGameDb->GetSkillLevel(),
                                                       TheGameDb->GetPlayerScore(0),
                                                       kFullSong);
         pGrade->SetMat(FindGradeMaterial(nMedal, true));

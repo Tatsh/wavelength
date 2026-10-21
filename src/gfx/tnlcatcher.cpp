@@ -53,7 +53,7 @@ TnlCatcher::TnlCatcher(const char *pszColor, GfxTunnel *pTunnel)
     : mView(nullptr), mShown(1), mEnabled(1), mAnim(kPoseRest, nullptr, nullptr, kPoseSpeed),
       mMultiplied(0), mBumping(0) {
     const char cLetter =
-        (TheGameDb->mCommunity == GameDb::kCommunitySolo) ? kSoloLetter : pszColor[0];
+        (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ? kSoloLetter : pszColor[0];
     mView = FindObject<RndView>(FormatString("catcher_%c", pszColor[0]));
     mView->ClearDraws();
     const float flPanelWidth = pTunnel->PanelWidth();
@@ -113,7 +113,7 @@ void TnlCatcher::AttachTo(RndView *pParent) {
 
 void TnlCatcher::Hit(int nTarget) {
     if (mView->mShowing) {
-        mHitTimes[nTarget] = TheGameDb->mSongTime;
+        mHitTimes[nTarget] = TheGameDb->GetSongTime();
     }
 }
 
@@ -136,7 +136,7 @@ void TnlCatcher::StopBump(TnlGeom *pGeom, int nPlayer) {
     if (mBumpFlareMesh != nullptr) {
         mBumpFlareMesh->SetShowing(0);
     }
-    pGeom->GetPlayer(nPlayer)->mHoldCam = 0;
+    pGeom->GetPlayer(nPlayer)->SetHoldCam(0);
 }
 
 void TnlCatcher::StartBump(const TnlActivator *pAttacker, TnlGeom *pGeom, int nPlayer) {
@@ -146,12 +146,12 @@ void TnlCatcher::StartBump(const TnlActivator *pAttacker, TnlGeom *pGeom, int nP
     mAnim.Jump(kPoseRest, kPoseRest);
     mBumpFlare->mKeysOwner->mBaseKeys.back().value = pAttacker->mCatcher.mColor;
     mBumpFlareMesh->SetShowing(1);
-    pGeom->GetPlayer(nPlayer)->mHoldCam = 1;
+    pGeom->GetPlayer(nPlayer)->SetHoldCam(1);
     mBumping = 1;
 }
 
 void TnlCatcher::SetRaised(bool bRaised) {
-    const float flPose = mAnim.mValue;
+    const float flPose = mAnim.GetValue();
     if (bRaised) {
         if (kPoseRaised <= flPose) {
             return;
@@ -175,8 +175,8 @@ void TnlCatcher::SetRaised(bool bRaised) {
 
 void TnlCatcher::Update(
     TnlGeom *pGeom, int nPlayer, bool bBumped, float flDelta, float flBumpTime) {
-    const float flTick = TheGameDb->mSongTick;
-    const float flTime = TheGameDb->mSongTime;
+    const float flTick = TheGameDb->GetSongTick();
+    const float flTime = TheGameDb->GetSongTime();
     for (int i = 0; i < kNumTargets; ++i) {
         float flFrame = 0.0f;
         if (mHitTimes[i] != kNoHit) {
@@ -198,7 +198,7 @@ void TnlCatcher::Update(
             flRise = 0.0f;
         }
         mAnim.Jump(kPoseRest, kPoseRest);
-        mAnim.mAnim->SetFrame((flRise * kRiseFrames) - kRiseFrames);
+        mAnim.GetAnim()->SetFrame((flRise * kRiseFrames) - kRiseFrames);
     } else {
         mAnim.Update(flDelta, false);
     }
@@ -211,7 +211,7 @@ void TnlCatcher::Update(
             if (sBumpEndTime <= flSinceBump) {
                 mBumping = 0;
                 mBumpFlareMesh->SetShowing(0);
-                pGeom->GetPlayer(nPlayer)->mHoldCam = 0;
+                pGeom->GetPlayer(nPlayer)->SetHoldCam(0);
                 bFlare = false;
             }
         }
@@ -232,6 +232,6 @@ void TnlCatcher::LoadConfig(DataArray *pConfig,
     FindConfigBool(pConfig, pDefaults, "targets_always_on_top", &sTargetsOnTop, true);
     FindConfigFloat(pConfig, pDefaults, "target_size", &sTargetSize, true);
     FindConfigFloat(pConfig, pDefaults, "target_offset", &sTargetOffset, true);
-    sTargetSize *= TheGfxManager.mScrollSpeed;
-    sTargetOffset *= TheGfxManager.mScrollSpeed;
+    sTargetSize *= TheGfxManager.GetScrollSpeed();
+    sTargetOffset *= TheGfxManager.GetScrollSpeed();
 }

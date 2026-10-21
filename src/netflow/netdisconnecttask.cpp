@@ -25,14 +25,14 @@ void NetDisconnectTask::OnStart() {
 }
 
 int NetDisconnectTask::Disconnect() {
-    return rtDmeDisconnect(TheLaunchpadRT->mConnection);
+    return rtDmeDisconnect(TheLaunchpadRT->GetConnection());
 }
 
 void NetDisconnectTask::OnDisconnected(int nResult) {
     (void)nResult;
-    TheLaunchpadRT->mConnection = LaunchpadRT::kNoWorld;
+    TheLaunchpadRT->SetConnection(LaunchpadRT::kNoWorld);
     rtMediusUserState state;
-    strcpy(state.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(state.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     state.userAction = kUserActionLeftGame;
     (void)rtMediusUpdateUserState(&state);
     sTask->Finish(true, 0);

@@ -23,14 +23,12 @@ TnlCursor::TnlCursor(GfxTunnel *pTunnel,
     : mPlayer(nPlayer), mTunnel(pTunnel), mFade(0.0f), mState(kStateIdle), mTrack(kNoTrack),
       mStartTick(kNoTick), mEndTick(kNoTick), mGems(nullptr), mTargetStartTick(0.0f),
       mTargetEndTick(0.0f), mTargetTrack(kNoTrack),
-      mBeam(new TnlConnectorBeam(pTunnel, nPlayer, pszColor, nExcludedType, nOtherExcludedType)),
-      mSeeker(new TnlSeeker(pTunnel->mGeom, nPlayer, pszColor)) {
+      mBeam(std::make_unique<TnlConnectorBeam>(
+          pTunnel, nPlayer, pszColor, nExcludedType, nOtherExcludedType)),
+      mSeeker(std::make_unique<TnlSeeker>(pTunnel->GetGeom(), nPlayer, pszColor)) {
 }
 
-TnlCursor::~TnlCursor() {
-    delete mSeeker;
-    delete mBeam;
-}
+TnlCursor::~TnlCursor() = default;
 
 void TnlCursor::LoadConfig(DataArray *pConfig,
                            DataArray *pDefaults,

@@ -12,20 +12,17 @@ OvyLocalPlayer::OvyLocalPlayer(int nPlayer, int nPosition, [[maybe_unused]] RndV
     mRemix = nullptr;
     mReserved10[0] = 0;
     mReserved10[1] = 0;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix && TheGameDb->IsLocalPlayer(nPlayer)) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix && TheGameDb->IsLocalPlayer(nPlayer)) {
         auto *pLetterbox = dynamic_cast<RndTransformable *>(
             TheManager.Find(FormatString("%s letterbox scale all.view", Overlay::sHudPrefix)));
-        mRemix = new OvyRemixPanel(nPlayer, nPosition, pLetterbox);
+        mRemix = std::make_unique<OvyRemixPanel>(nPlayer, nPosition, pLetterbox);
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
-        mPoints = new HudPoints(nPosition);
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
+        mPoints = std::make_unique<HudPoints>(nPosition);
     }
 }
 
-OvyLocalPlayer::~OvyLocalPlayer() {
-    delete mPoints;
-    delete mRemix;
-}
+OvyLocalPlayer::~OvyLocalPlayer() = default;
 
 void OvyLocalPlayer::Poll([[maybe_unused]] float fUnused,
                           [[maybe_unused]] float fUnused2,

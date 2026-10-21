@@ -138,6 +138,6 @@ private:
     float mRevealLength;            /*!< The length of the reveal. */
     float mParticlesLength;         /*!< The length of the reveal's particles. */
     const char *mTriggerFile;       /*!< The `trigger_file` entry of the metagame configuration. */
-    AsyncStream *mTriggerStream;    /*!< The read of the trigger file, or null. */
-    int mLoadState;                 /*!< One of LoadState. */
+    std::unique_ptr<AsyncStream> mTriggerStream; /*!< The read of the trigger file, or null. */
+    int mLoadState;                              /*!< One of LoadState. */
 };

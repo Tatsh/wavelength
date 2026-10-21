@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -57,6 +58,15 @@ public:
     /** Owner of a mesh the panels are built from, 4 bytes. */
     class MeshHolder {
     public:
+        /** Construct a holder with no mesh. */
+        MeshHolder() = default;
+
+        /** Take over the mesh of another holder. */
+        MeshHolder(MeshHolder &&) = default;
+
+        /** Take over the mesh of another holder. */
+        MeshHolder &operator=(MeshHolder &&) = default;
+
         /**
          * Delete the mesh unless sKeepMeshes is set.
          *
@@ -65,6 +75,21 @@ public:
          */
         ~MeshHolder();
 
+        /** @return The mesh, or null. */
+        RndMesh *GetMesh() const {
+            return mMesh.get();
+        }
+
+        /**
+         * Replace the mesh.
+         *
+         * @param pMesh The new mesh.
+         */
+        void SetMesh(std::unique_ptr<RndMesh> pMesh) {
+            mMesh = std::move(pMesh);
+        }
+
+    private:
         /**
          * Whether a holder retains its mesh on destruction. The image never writes it.
          *
@@ -73,7 +98,7 @@ public:
          */
         static bool sKeepMeshes;
 
-        RndMesh *mMesh; /*!< The mesh, or null. */
+        std::unique_ptr<RndMesh> mMesh; /*!< The mesh, or null. */
     };
 
     /** One built bar of one track, 0xd0 bytes. */
@@ -86,12 +111,11 @@ public:
          */
         PanelData();
 
-        /**
-         * Delete the mesh of the panel.
-         *
-         * The destructor of the geometry and the resize of mPanels inline it.
-         */
-        ~PanelData();
+        /** Take over the mesh and the sections of another panel. */
+        PanelData(PanelData &&) = default;
+
+        /** Take over the mesh and the sections of another panel. */
+        PanelData &operator=(PanelData &&) = default;
 
         /**
          * Rebuild the vertices of the mesh from the sections of the panel and a source mesh.
@@ -125,9 +149,147 @@ public:
          */
         bool Hit(const Segment *pSegment) const;
 
+        /** @return The sections as the bar was built. */
+        std::vector<CrossSectionXfm> &GetBaseSections() {
+            return mBaseSections;
+        }
+
+        /** @return The sections as the bar was built. */
+        const std::vector<CrossSectionXfm> &GetBaseSections() const {
+            return mBaseSections;
+        }
+
+        /** @return The sections as drawn, possibly bent. */
+        std::vector<CrossSectionXfm> &GetSections() {
+            return mSections;
+        }
+
+        /** @return The sections as drawn, possibly bent. */
+        const std::vector<CrossSectionXfm> &GetSections() const {
+            return mSections;
+        }
+
+        /** @return The mesh of the panel. */
+        RndMesh *GetMesh() const {
+            return mMesh.get();
+        }
+
+        /**
+         * Replace the mesh of the panel.
+         *
+         * @param pMesh The new mesh.
+         */
+        void SetMesh(std::unique_ptr<RndMesh> pMesh) {
+            mMesh = std::move(pMesh);
+        }
+
+        /** @return The checkpoint material of the panel, or null. */
+        RndMat *GetCheckpointMat() const {
+            return mCheckpointMat;
+        }
+
+        /**
+         * Set the checkpoint material of the panel.
+         *
+         * @param pMat The material, or null.
+         */
+        void SetCheckpointMat(RndMat *pMat) {
+            mCheckpointMat = pMat;
+        }
+
+        /** @return The colour of the panel. */
+        Color &GetColor() {
+            return mColor;
+        }
+
+        /** @return The colour of the panel. */
+        const Color &GetColor() const {
+            return mColor;
+        }
+
+        /**
+         * Set the colour of the panel.
+         *
+         * @param color The colour.
+         */
+        void SetColor(const Color &color) {
+            mColor = color;
+        }
+
+        /** @return Whether the panel is drawn highlighted. */
+        char GetHighlighted() const {
+            return mHighlighted;
+        }
+
+        /**
+         * Set whether the panel is drawn highlighted.
+         *
+         * @param bHighlighted Whether it is highlighted.
+         */
+        void SetHighlighted(char bHighlighted) {
+            mHighlighted = bHighlighted;
+        }
+
+        /** @return Whether the mesh needs Rebuild(). */
+        int GetDirty() const {
+            return mDirty;
+        }
+
+        /**
+         * Set whether the mesh needs Rebuild().
+         *
+         * @param bDirty Whether it needs a rebuild.
+         */
+        void SetDirty(int bDirty) {
+            mDirty = bDirty;
+        }
+
+        /** @return Whether Hit() tests the panel. */
+        int GetPickable() const {
+            return mPickable;
+        }
+
+        /**
+         * Set whether Hit() tests the panel.
+         *
+         * @param bPickable Whether picks test it.
+         */
+        void SetPickable(int bPickable) {
+            mPickable = bPickable;
+        }
+
+        /** @return Whether the panel does not write depth. */
+        char GetTransparent() const {
+            return mTransparent;
+        }
+
+        /**
+         * Set whether the panel does not write depth.
+         *
+         * @param bTransparent Whether it is transparent.
+         */
+        void SetTransparent(char bTransparent) {
+            mTransparent = bTransparent;
+        }
+
+        /** @return The first section Rebuild() moves along. */
+        char GetStartSection() const {
+            return mStartSection;
+        }
+
+        /**
+         * Set the first section Rebuild() moves along.
+         *
+         * @param nSection The section.
+         */
+        void SetStartSection(char nSection) {
+            mStartSection = nSection;
+        }
+
+    private:
         std::vector<CrossSectionXfm> mBaseSections; /*!< The sections as the bar was built. */
-        std::vector<CrossSectionXfm> mSections;     /*!< The sections as drawn, which may bend. */
-        RndMesh *mMesh;                             /*!< The mesh of the panel. */
+        std::vector<CrossSectionXfm> mSections;     /*!< The sections as drawn, possibly bent. */
+        std::unique_ptr<RndMesh> mMesh;             /*!< The mesh of the panel. */
         RndMat *mCheckpointMat; /*!< The checkpoint material of the panel, or null. */
         Triangle mTriangles[2]; /*!< The halves of the panel a pick tests. */
         Color mColor;           /*!< The colour of the panel. */
@@ -157,6 +319,68 @@ public:
          */
         void Clear();
 
+        /** @return The material drawn over the track, or null. */
+        RndMat *GetOverlayMat() const {
+            return mOverlayMat;
+        }
+
+        /**
+         * Set the material drawn over the track.
+         *
+         * @param pMat The material, or null.
+         */
+        void SetOverlayMat(RndMat *pMat) {
+            mOverlayMat = pMat;
+        }
+
+        /** @return How the overlay is drawn. */
+        int GetOverlayMode() const {
+            return mOverlayMode;
+        }
+
+        /**
+         * Set how the overlay is drawn.
+         *
+         * @param nMode The mode.
+         */
+        void SetOverlayMode(int nMode) {
+            mOverlayMode = nMode;
+        }
+
+        /** @return The colour of the panels of the track. */
+        Color &GetColor() {
+            return mColor;
+        }
+
+        /** @return The colour of the panels of the track. */
+        const Color &GetColor() const {
+            return mColor;
+        }
+
+        /**
+         * Set the colour of the panels of the track.
+         *
+         * @param color The colour.
+         */
+        void SetColor(const Color &color) {
+            mColor = color;
+        }
+
+        /** @return One bit for each player on the track. */
+        unsigned char GetPlayers() const {
+            return mPlayers;
+        }
+
+        /**
+         * Set the players on the track.
+         *
+         * @param nPlayers One bit for each player.
+         */
+        void SetPlayers(unsigned char nPlayers) {
+            mPlayers = nPlayers;
+        }
+
+    private:
         RndMat *mOverlayMat;    /*!< The material drawn over the track, or null. */
         int mOverlayMode;       /*!< How the overlay is drawn. */
         Color mColor;           /*!< The colour of the panels of the track. */
@@ -173,6 +397,12 @@ public:
          * @ghidraAddress PAL: 0x001dbb08
          */
         Player();
+
+        /** Take over the curves of another player. */
+        Player(Player &&) = default;
+
+        /** Take over the curves of another player. */
+        Player &operator=(Player &&) = default;
 
         /**
          * Delete the curves of the player.
@@ -264,6 +494,75 @@ public:
          */
         void PlaceActivator(const Transform *pXfm);
 
+        /** @return The transformable of the camera slide. */
+        RndTransformable *GetCamSlide() const {
+            return mCamSlide;
+        }
+
+        /** @return Whether the camera stops following the player. */
+        int GetHoldCam() const {
+            return mHoldCam;
+        }
+
+        /**
+         * Set whether the camera stops following the player.
+         *
+         * @param bHold Whether it stops.
+         */
+        void SetHoldCam(int bHold) {
+            mHoldCam = bHold;
+        }
+
+        /** @return The track the player is on. */
+        char GetTrack() const {
+            return mTrack;
+        }
+
+        /** @return The position of the activator. */
+        float GetActivatorPosition() const {
+            return mActivatorPosition;
+        }
+
+        /** @return The ticks from the current tick to the first tick Poll() retains bars from. */
+        float GetTrailTicks() const {
+            return mTrailTicks;
+        }
+
+        /** @return The view of the activator, or null. */
+        RndView *GetActivator() const {
+            return mActivator;
+        }
+
+        /** @return The track the player is on, fractional while moving. */
+        float GetPosition() const {
+            return mPosition;
+        }
+
+        /** @return The tracks moved per tick at the last update. */
+        float GetVelocity() const {
+            return mVelocity;
+        }
+
+        /** @return The multiple of the length of a move. */
+        float GetMoveTime() const {
+            return mMoveTime;
+        }
+
+        /**
+         * Set the multiple of the length of a move.
+         *
+         * @param flMoveTime The multiple.
+         */
+        void SetMoveTime(float flMoveTime) {
+            mMoveTime = flMoveTime;
+        }
+
+        /** @return The track the camera of the player is on. */
+        float GetCamPosition() const {
+            return mCamPosition;
+        }
+
+    private:
         RndTransformable *mCamSlide; /*!< The transformable of the camera slide. */
         int mHoldCam;                /*!< Whether the camera stops following the player. */
         char mTrack;                 /*!< The track the player is on. */
@@ -278,8 +577,8 @@ public:
         float mVelocity;     /*!< The tracks moved per tick at the last update. */
         float mMoveTime;     /*!< The multiple of the length of a move. */
         float mCamPosition;  /*!< The track the camera of the player is on. */
-        TableLinInterpolator *mCamCurve;  /*!< The move of the camera, or null. */
-        TableLinInterpolator *mMoveCurve; /*!< The move of the player, or null. */
+        std::unique_ptr<TableLinInterpolator> mCamCurve;  /*!< The move of the camera, or null. */
+        std::unique_ptr<TableLinInterpolator> mMoveCurve; /*!< The move of the player, or null. */
     };
 
     /**
@@ -808,6 +1107,89 @@ public:
      */
     bool Pick(const Segment *pSegment, int *pnTrack, int *pnBar);
 
+    /** @return The bars of each track in the ring of built panels. */
+    int GetNumBars() const {
+        return mNumBars;
+    }
+
+    /** @return The built bars retained behind the current bar. */
+    int GetBarsBehind() const {
+        return mBarsBehind;
+    }
+
+    /** @return Whether the panels show. */
+    int GetShowPanels() const {
+        return mShowPanels;
+    }
+
+    /**
+     * Set whether the panels show.
+     *
+     * @param bShow Whether they show.
+     */
+    void SetShowPanels(int bShow) {
+        mShowPanels = bShow;
+    }
+
+    /** @return The reciprocal of the ticks of one bar. */
+    float GetBarsPerTick() const {
+        return mBarsPerTick;
+    }
+
+    /** @return The cross sections of one bar. */
+    int GetSectionsPerBar() const {
+        return mSectionsPerBar;
+    }
+
+    /** @return The first bar of the ring. */
+    int GetFirstBar() const {
+        return mFirstBar;
+    }
+
+    /** @return The least bar Poll() starts the ring at. */
+    int GetMinFirstBar() const {
+        return mMinFirstBar;
+    }
+
+    /**
+     * Set the least bar Poll() starts the ring at.
+     *
+     * @param nBar The bar.
+     */
+    void SetMinFirstBar(int nBar) {
+        mMinFirstBar = nBar;
+    }
+
+    /** @return The first bar that is never built. */
+    int GetEndBar() const {
+        return mEndBar;
+    }
+
+    /**
+     * Set the first bar that is never built.
+     *
+     * @param nBar The bar.
+     */
+    void SetEndBar(int nBar) {
+        mEndBar = nBar;
+    }
+
+    /** @return The number of tracks. */
+    int GetNumTracks() const {
+        return mNumTracks;
+    }
+
+    /**
+     * Report the flat cross section of a track.
+     *
+     * @param nTrack The track.
+     * @return The cross section.
+     */
+    const TrackGeometry &GetTrackGeometry(int nTrack) const {
+        return mTrackGeometry[nTrack];
+    }
+
+private:
     /**
      * A transform with no rotation and no translation.
      *
@@ -815,16 +1197,16 @@ public:
      */
     static Transform sIdentity;
 
-    int mNumBars;        /*!< The bars of each track in the ring of built panels. */
-    int mReserved04;     // +0x04 Starts at 2, the nDetail of Init(), not yet read.
-    float mSlabDepth;    /*!< The depth of a slab under the panels. */
-    float mSlabAngle;    /*!< The angle of the sides of a slab, in radians. */
-    TnlPath *mPath;      /*!< The path of the tunnel. */
-    int mBarsBehind;     /*!< The built bars kept behind the current bar. */
-    float mMoveLength;   /*!< The ticks of a move of a player to the next track. */
-    float mCamMoveSpeed; /*!< The tracks a camera moves per tick. */
-    int mWraps;          /*!< Whether the tracks wrap around the tunnel. */
-    int mShowPanels;     /*!< Whether the panels show, `show_panels`. */
+    int mNumBars;                   /*!< The bars of each track in the ring of built panels. */
+    int mReserved04;                // +0x04 Starts at 2, the nDetail of Init(), not yet read.
+    float mSlabDepth;               /*!< The depth of a slab under the panels. */
+    float mSlabAngle;               /*!< The angle of the sides of a slab, in radians. */
+    std::unique_ptr<TnlPath> mPath; /*!< The path of the tunnel. */
+    int mBarsBehind;                /*!< The built bars retained behind the current bar. */
+    float mMoveLength;              /*!< The ticks of a move of a player to the next track. */
+    float mCamMoveSpeed;            /*!< The tracks a camera moves per tick. */
+    int mWraps;                     /*!< Whether the tracks wrap around the tunnel. */
+    int mShowPanels;                /*!< Whether the panels show, `show_panels`. */
     /*!< Whether players move between tracks along curves and BuildBars() builds one bar a call. */
     int mAnimateMoves;
     float mBarsPerTick;               /*!< The reciprocal of mTicksPerBar. */
@@ -840,9 +1222,9 @@ public:
     std::vector<TrackData> mTracks;   /*!< The state of each track. */
     std::vector<RndMat *> mBarValues; /*!< The checkpoint material of each slot of the ring. */
     /*!< The material of each pass of the standard panel, `tnl std panel mat pass <n>`. */
-    std::vector<RndMat *> mPassMats;
+    std::vector<std::unique_ptr<RndMat>> mPassMats;
     /*!< The animations of the passes, `tnl std matanim stage <n>`. */
-    std::vector<RndMatAnim *> mPassAnims;
+    std::vector<std::unique_ptr<RndMatAnim>> mPassAnims;
     unsigned char mReservedC4[0xc]; // +0xc4 to +0xcf are not yet identified.
     /*!< The light colour DrawPanelsMultiplayer() gives the passes after the first for a panel that
          is not highlighted, opaque black, and for a highlighted panel, the diffuse colour of the
@@ -857,7 +1239,6 @@ public:
     int mNumTracks;                            /*!< The number of tracks. */
     std::vector<Player> mPlayers;              /*!< The players. */
 
-private:
     /** Below this index SetPanelMat() sets the default material. */
     static constexpr int kDefaultMatThreshold = -16;
 
@@ -921,7 +1302,8 @@ private:
      * @ghidraAddress NTSC-U/C: 0x001cf6f8
      * @ghidraAddress PAL: 0x001d8498
      */
-    RndMesh *BuildPanelMesh(float flWidth, int nLevel, Vector3 *pExtent, bool bSolid);
+    std::unique_ptr<RndMesh>
+    BuildPanelMesh(float flWidth, int nLevel, Vector3 *pExtent, bool bSolid);
 
     /**
      * Size the ring of panels, the tracks, and their offsets for the tracks Init() set, and build

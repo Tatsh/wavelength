@@ -36,7 +36,8 @@ public:
      */
     void OnRead(int nResult) override;
 
-    void *mBuffer; /*!< Receives the bytes. */
+private:
+    void *mBuffer; /*!< Receives the bytes. Borrowed. */
     int mSize;     /*!< The number of bytes. */
 
 protected:

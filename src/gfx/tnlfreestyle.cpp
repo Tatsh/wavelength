@@ -1,6 +1,7 @@
 #include "gfx/tnlfreestyle.h"
 
 #include <cmath>
+#include <memory>
 
 #include "game/gamedb.h"
 #include "gfx/gfxconfig.h"
@@ -59,7 +60,7 @@ float TnlFreestyle::sMaxChangePerMs = 0.01f;
 float TnlFreestyle::sCamMaxChangePerMs = 0.01f;
 float TnlFreestyle::sLaneScale = 2.0f;
 float TnlFreestyle::sInvLaneScale = 0.5f;
-Freestylus *TnlFreestyle::sFreestylus = nullptr;
+std::unique_ptr<Freestylus> TnlFreestyle::sFreestylus;
 Vector2 TnlFreestyle::sRange{4.0f, 2.0f};
 Vector2 TnlFreestyle::sInvRange{0.25f, 0.5f};
 // Yes, the fourth word of these vectors is zero because the binary never writes it.
@@ -78,10 +79,11 @@ Vector3 TnlFreestyle::sConstraintChangeFunc{0.1f, 0.0f, 0.0f, 0.0f};
 
 TnlFreestyle::TnlFreestyle(
     int nPlayer, int nType, Ship *pShip, TnlActivator *pActivator, GfxTunnel *pTunnel)
-    : mTrail(new TnlSabreTrail(nPlayer, pShip)), mPlayer(nPlayer), mActive(0), mAssembled(0),
-      mPlaying(0), mType(nType), mTunnel(pTunnel), mShip(pShip), mActivator(pActivator),
-      mAssembly(new LinearInterpolator(0.0f, 0.0f, 0.0f, 1.0f)),
-      mCamBlend(new LinearInterpolator(0.0f, 0.0f, 0.0f, 1.0f)),
+    : mTrail(std::make_unique<TnlSabreTrail>(nPlayer, pShip)), mPlayer(nPlayer), mActive(0),
+      mAssembled(0), mPlaying(0), mType(nType), mTunnel(pTunnel), mShip(pShip),
+      mActivator(pActivator),
+      mAssembly(std::make_unique<LinearInterpolator>(0.0f, 0.0f, 0.0f, 1.0f)),
+      mCamBlend(std::make_unique<LinearInterpolator>(0.0f, 0.0f, 0.0f, 1.0f)),
       mX(sChangeFunc, 0.0f, sMaxChangePerMs), mY(sChangeFunc, 0.0f, sMaxChangePerMs),
       mTumbleX(sTumbleChangeFunc, 0.0f, 1.0f), mTumbleY(sTumbleChangeFunc, 0.0f, 1.0f),
       mCamX(sCamChangeFunc, 0.0f, sCamMaxChangePerMs),
@@ -94,16 +96,12 @@ TnlFreestyle::TnlFreestyle(
     mShipPos.z = 0.0f;
     mShipPos.y = 0.0f;
     if (sFreestylus == nullptr) {
-        sFreestylus = new Freestylus(mTunnel, mType);
+        sFreestylus = std::make_unique<Freestylus>(mTunnel, mType);
     }
 }
 
 TnlFreestyle::~TnlFreestyle() {
-    delete sFreestylus;
-    sFreestylus = nullptr;
-    delete mTrail;
-    delete mCamBlend;
-    delete mAssembly;
+    sFreestylus.reset();
 }
 
 void TnlFreestyle::LoadConfig(
@@ -125,7 +123,7 @@ void TnlFreestyle::LoadConfig(
         FindConfigVector3(pType, pSection, "cam_look_offset", &sCamLookOffset, true);
         FindConfigVector3(pType, pSection, "cam_win_offset", &sCamWinOffset, true);
         FindConfigVector3(pType, pSection, "cam_win_look_offset", &sCamWinLookOffset, true);
-        const float flScale = TheGfxManager.mScrollSpeed;
+        const float flScale = TheGfxManager.GetScrollSpeed();
         sCenter.x *= flScale;
         sCenter.z *= flScale;
         sConstrainedCenter.x *= flScale;
@@ -151,7 +149,7 @@ void TnlFreestyle::LoadConfig(
             sFreestylus->Setup(flFreestylerScale);
         }
     }
-    sLaneScale = (TheGameDb->mCommunity == GameDb::kCommunityLocal) ? 1.0f : 2.0f;
+    sLaneScale = (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) ? 1.0f : 2.0f;
     sInvLaneScale = 1.0f / sLaneScale;
     SetCurve(&mX, sChangeFunc, sMaxChangePerMs);
     SetCurve(&mY, sChangeFunc, sMaxChangePerMs);
@@ -164,7 +162,7 @@ void TnlFreestyle::LoadConfig(
 
 void TnlFreestyle::Reset() {
     if (mActive && !mAssembled) {
-        if (mAssembly->mY1 == 1.0f) {
+        if (mAssembly->GetY1() == 1.0f) {
             OnAssembled();
             mAssembled = 1;
         } else {
@@ -177,7 +175,7 @@ void TnlFreestyle::Reset() {
 }
 
 void TnlFreestyle::SetActive(bool bActive, int bVictory, bool bQuick) {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     if (!bActive) {
         if (!mActive) {
             return;
@@ -185,7 +183,7 @@ void TnlFreestyle::SetActive(bool bActive, int bVictory, bool bQuick) {
         float flAssembly = 1.0f;
         float flCam = 1.0f;
         if (!mAssembled) {
-            if (mAssembly->mY1 == 0.0f) {
+            if (mAssembly->GetY1() == 0.0f) {
                 return;
             }
             flAssembly = mAssembly->Interp(flTick);
@@ -209,7 +207,7 @@ void TnlFreestyle::SetActive(bool bActive, int bVictory, bool bQuick) {
             }
             EndPass();
             mActive = 0;
-        } else if (mAssembled || (mAssembly->mY1 == 1.0f)) {
+        } else if (mAssembled || (mAssembly->GetY1() == 1.0f)) {
             return;
         }
         flAssembly = mAssembly->Interp(flTick);
@@ -267,7 +265,7 @@ void TnlFreestyle::Scratch(float flTick, float flDuration) {
 }
 
 void TnlFreestyle::Poll(float flTicks, float flTime) {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     if (!mActive) {
         return;
     }
@@ -285,9 +283,9 @@ void TnlFreestyle::Poll(float flTicks, float flTime) {
     } else {
         flAssembly = mAssembly->Interp(flTick);
         flCam = mCamBlend->Interp(flTick);
-        const bool bAssemblyDone = mAssembly->mX1 <= flTick;
-        const bool bCamDone = mCamBlend->mX1 <= flTick;
-        if (mAssembly->mY1 == 1.0f) {
+        const bool bAssemblyDone = mAssembly->GetX1() <= flTick;
+        const bool bCamDone = mCamBlend->GetX1() <= flTick;
+        if (mAssembly->GetY1() == 1.0f) {
             if (bCamDone) {
                 flCam = 1.0f;
                 if (bAssemblyDone) {
@@ -314,7 +312,7 @@ void TnlFreestyle::Poll(float flTicks, float flTime) {
     }
     const bool bPlaying = mPlaying && (mType != Freestylus::kTypeScratch);
     sFreestylus->Update(bPlaying, flTicks, flTime, flAssembly);
-    RndTransAnim *pAnim = (mVictory && bShip) ? Ship::sWinFlyOff : nullptr;
+    RndTransAnim *pAnim = (mVictory && bShip) ? Ship::GetWinFlyOff() : nullptr;
     alignas(kMatrixAlign) float shipXfm[kTransformRowCount][kTransformRowFloatCount];
     Transform camXfm;
     ComputeXfms(
@@ -329,7 +327,7 @@ void TnlFreestyle::Poll(float flTicks, float flTime) {
         mShip->SetOverride(shipXfm, flAssembly);
     }
     if (bCam) {
-        mTunnel->mCamFX->SetSlide(&camXfm, flCam);
+        mTunnel->GetCamFX()->SetSlide(&camXfm, flCam);
     }
     float flPitch;
     float flColor;
@@ -356,14 +354,15 @@ void TnlFreestyle::UpdateTrail() {
     } else if (flBlend < -1.0f) {
         flBlend = -1.0f;
     }
-    mTrail->Update(flBlend, static_cast<RndTransformable *>(mShip->mView)->mWorldXfm, &mPathAxis);
+    mTrail->Update(
+        flBlend, static_cast<RndTransformable *>(mShip->GetView())->mWorldXfm, &mPathAxis);
 }
 
 void TnlFreestyle::Draw() {
     if (!mActive || mVictory) {
         return;
     }
-    sFreestylus->Draw(mShip->mView, mAssembled);
+    sFreestylus->Draw(mShip->GetView(), mAssembled);
     if (mType == Freestylus::kTypeScratch) {
         mTrail->mRibbon->Draw();
     }
@@ -446,9 +445,9 @@ void TnlFreestyle::ComputeXfms(bool bCam,
             camPos.y += sCamOffset.y;
             camPos.z += sCamOffset.z;
         }
-        camPos.x *= TheGfxManager.mScrollSpeed;
-        camPos.y *= TheGfxManager.mScrollSpeed;
-        camPos.z *= TheGfxManager.mScrollSpeed;
+        camPos.x *= TheGfxManager.GetScrollSpeed();
+        camPos.y *= TheGfxManager.GetScrollSpeed();
+        camPos.z *= TheGfxManager.GetScrollSpeed();
         if (!mVictory) {
             camPos.x += center.x;
             camPos.y += center.y;
@@ -462,7 +461,7 @@ void TnlFreestyle::ComputeXfms(bool bCam,
         sceVu0MulAffineMatrixXyz(&pShipXfm[0][0], &pShipXfm[0][0], &animXfm.mBasisX.x);
     }
     for (int i = 0; i < kBasisRows; ++i) {
-        pShipXfm[kTranslationRow][i] *= TheGfxManager.mScrollSpeed;
+        pShipXfm[kTranslationRow][i] *= TheGfxManager.GetScrollSpeed();
     }
     if (!mVictory) {
         pShipXfm[kTranslationRow][0] += center.x;
@@ -475,7 +474,7 @@ void TnlFreestyle::ComputeXfms(bool bCam,
                        pShipXfm[kTranslationRow][kVec3PaddingFloat]};
 
     Transform path;
-    mTunnel->mGeom->PathXfm(&path, TheGameDb->mSongTick);
+    mTunnel->GetGeom()->PathXfm(&path, TheGameDb->GetSongTick());
     sceVu0MulAffineMatrixXyz(&pShipXfm[0][0], &path.mBasisX.x, &pShipXfm[0][0]);
     if (bCam) {
         sceVu0MulAffineMatrixXyz(&pCamXfm->mBasisX.x, &path.mBasisX.x, &pCamXfm->mBasisX.x);
@@ -513,7 +512,7 @@ void TnlFreestyle::EndPass() {
         mShip->SetOverride(nullptr, 0.0f);
     }
     if (bCam) {
-        mTunnel->mCamFX->SetSlide(nullptr, 0.0f);
+        mTunnel->GetCamFX()->SetSlide(nullptr, 0.0f);
     }
     mTrail->SetShowing(false);
 }
@@ -525,9 +524,9 @@ void TnlFreestyle::OnDisassemble() {
 }
 
 int TnlFreestyle::GetTrack() {
-    const TnlGeom *pGeom = mTunnel->mGeom;
-    for (int nTrack = pGeom->mNumTracks - 1; nTrack >= 0; --nTrack) {
-        if (pGeom->mTrackGeometry[nTrack].mLeftX <= mShipPos.x) {
+    const TnlGeom *pGeom = mTunnel->GetGeom();
+    for (int nTrack = pGeom->GetNumTracks() - 1; nTrack >= 0; --nTrack) {
+        if (pGeom->GetTrackGeometry(nTrack).mLeftX <= mShipPos.x) {
             return nTrack;
         }
     }
@@ -537,11 +536,11 @@ int TnlFreestyle::GetTrack() {
 void TnlFreestyle::GetPassFlags(int *pbCam, int *pbShip, int *pbShowShip) {
     if (mVictory) {
         *pbCam = 1;
-        *pbShip = (TheGameDb->mCommunity == GameDb::kCommunitySolo);
+        *pbShip = (TheGameDb->GetCommunity() == GameDb::kCommunitySolo);
         *pbShowShip = 1;
         return;
     }
-    switch (TheGameDb->mCommunity) {
+    switch (TheGameDb->GetCommunity()) {
     case GameDb::kCommunityLocal:
         *pbCam = 0;
         *pbShip = 1;

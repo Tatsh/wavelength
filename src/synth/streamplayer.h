@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/filestreambuffer.h"
 
 /**
@@ -69,10 +71,21 @@ public:
      */
     bool IsPlaying() const;
 
-    int mChannel;              /*!< The value the constructor received first. */
-    int mPlaying;              /*!< Non-zero while the stream plays. */
-    FileStreamBuffer *mBuffer; /*!< The reader of the stream file. */
-    char *mRun;                /*!< The run handed to the sound output last, or null. */
-    float mEndMs;              /*!< The system time to end the stream at, or -1 before the end. */
-    int mEndSent;              /*!< Whether the end of the stream was sent. */
+    /** @return The value the constructor received first. */
+    int GetChannel() const {
+        return mChannel;
+    }
+
+    /** @return The reader of the stream file. */
+    FileStreamBuffer *GetBuffer() const {
+        return mBuffer.get();
+    }
+
+private:
+    int mChannel;                              /*!< The value the constructor received first. */
+    int mPlaying;                              /*!< Non-zero while the stream plays. */
+    std::unique_ptr<FileStreamBuffer> mBuffer; /*!< The reader of the stream file. */
+    char *mRun;   /*!< The run handed to the sound output last, or null. Borrowed. */
+    float mEndMs; /*!< The system time to end the stream at, or -1 before the end. */
+    int mEndSent; /*!< Whether the end of the stream was sent. */
 };

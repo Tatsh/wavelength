@@ -81,8 +81,9 @@ bool NetMainLobbiesPanel::HandleChatrooms(LobbyChatroomsMsg *pMsg) {
 }
 
 bool NetMainLobbiesPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
-        TheUI.mCurrentScreen->SetFocus(TheUI.FindPanel(kMainPanel, false));
+    if (pMsg->GetButton() == kPadCross &&
+        std::strcmp(pMsg->GetComponent()->GetName(), kCursorComponent) == 0) {
+        TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(kMainPanel, false));
         TheUI.GotoScreen(kSwitchScreen);
     }
     return false;
@@ -90,13 +91,13 @@ bool NetMainLobbiesPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
 
 bool NetMainLobbiesPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed != 0) {
-        UIScreen *pScreen = TheUI.mCurrentScreen;
-        if (pScreen->mNextScreen != nullptr || pScreen->mPrevScreen != nullptr) {
+        UIScreen *pScreen = TheUI.GetCurrentScreen();
+        if (pScreen->GetNextScreen() != nullptr || pScreen->GetPrevScreen() != nullptr) {
             return true;
         }
         if (pMsg->mButton == kPadSquare) {
             FxMidi::PlaySquare();
-            TheUI.mCurrentScreen->SetFocus(TheUI.FindPanel(kMainPanel, false));
+            TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(kMainPanel, false));
             TheUI.GotoScreen(kNewChatroomScreen);
         }
     }

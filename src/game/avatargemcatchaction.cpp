@@ -20,9 +20,9 @@ AvatarGemCatchAction::AvatarGemCatchAction(DataArray *pAction) {
 }
 
 void AvatarGemCatchAction::Exec() {
-    AvatarPartSet *pAvatar = TheGameDb->GetAvatar(TheTriggerMgr.mPlayer);
+    AvatarPartSet *pAvatar = TheGameDb->GetAvatar(TheTriggerMgr.GetPlayer());
     if (mLane == kEventLane) {
-        pAvatar->CatchGem(TheTriggerMgr.mGemPos, mCatch);
+        pAvatar->CatchGem(TheTriggerMgr.GetGemPos(), mCatch);
     } else {
         pAvatar->CatchGem(mLane, mCatch);
     }

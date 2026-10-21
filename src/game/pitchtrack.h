@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/pitchtrackdisplay.h"
@@ -47,7 +48,7 @@ public:
                int nNumBars,
                int nTicksPerBar,
                PitchTrackRiffData *pRiffData,
-               const std::vector<PitchTrackGems *> *pPatterns,
+               const std::vector<std::unique_ptr<PitchTrackGems>> *pPatterns,
                PlayMap *pPlayMap,
                SectionBoundaries *pSections,
                SlotGrid *pPatternGrid,
@@ -286,9 +287,12 @@ public:
      */
     void EraseSection(int nBar);
 
-private:
-    friend class RemixLogic; // SaveRemix() rates mGems.
+    /** @return The gems the players placed. */
+    PitchTrackGems *GetGems() {
+        return &mGems;
+    }
 
+private:
     /**
      * Show the gems of the track again in place of a previewed pattern.
      *
@@ -325,15 +329,15 @@ private:
      */
     void UpdateMute();
 
-    int mTicksPerBar;                            /*!< The song ticks in one bar. */
-    PlayMap *mPlayMap;                           /*!< The map of the song positions. */
-    SectionBoundaries *mSections;                /*!< The sections of the song. */
-    PitchTrackGems mGems;                        /*!< The gems the players placed. */
-    PitchTrackPlayGems mPlayGems;                /*!< mGems by the bars the song plays. */
-    std::vector<PitchTrackPlayGems *> mPatterns; /*!< The patterns the track can select. */
+    int mTicksPerBar;             /*!< The song ticks in one bar. */
+    PlayMap *mPlayMap;            /*!< The map of the song positions. */
+    SectionBoundaries *mSections; /*!< The sections of the song. */
+    PitchTrackGems mGems;         /*!< The gems the players placed. */
+    PitchTrackPlayGems mPlayGems; /*!< mGems by the bars the song plays. */
+    std::vector<std::unique_ptr<PitchTrackPlayGems>> mPatterns; /*!< The selectable patterns. */
     PitchTrackRiffs mRiffs;                      /*!< The riffs of the gem buttons. */
     PitchTrackMusic mMusic;                      /*!< The player of the gems' riffs. */
-    PitchTrackDisplay *mDisplay;                 /*!< The display of the gems, or null. */
+    std::unique_ptr<PitchTrackDisplay> mDisplay; /*!< The display of the gems, or null. */
     int mRepeat;                                 /*!< Whether edits repeat in the section. */
     int mEditing;                                /*!< Whether the remix editor is open. */
     int mMuteRemote;                             /*!< Whether remote players silence it. */

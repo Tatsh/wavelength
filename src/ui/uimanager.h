@@ -500,18 +500,34 @@ public:
      */
     void ReportLocalizeErrors();
 
+    /** @return The screen that shows, or null. */
+    UIScreen *GetCurrentScreen() const {
+        return mCurrentScreen;
+    }
+
+    /** @return The time the last Poll() received. */
+    float GetTime() const {
+        return mTime;
+    }
+
+    /** @return Whether the `editmode` setting of the configuration is on. */
+    int GetEditMode() const {
+        return mEditMode;
+    }
+
+private:
     std::unique_ptr<Callback> mCallback; /*!< The callback of the shared loads during Init(). */
-    DataArray *mAllowableGroups;         /*!< The `allowable_groups` array of the configuration. */
-    std::map<const char *, UIScreen *, StrLess> mScreens; /*!< The screens by name. */
-    std::map<const char *, UIPanel *, StrLess> mPanels;   /*!< The panels by name. */
-    std::map<const char *, UIStyle *, StrLess> mStyles;   /*!< The styles by name. */
-    UIScreen *mCurrentScreen;                             /*!< The screen that shows, or null. */
-    float mTime;                                          /*!< The time the last Poll() received. */
-    int mEditMode; /*!< Whether the `editmode` setting of the configuration is on. */
-    std::list<RndObject *> mSharedObjects;            /*!< The objects the shared files created. */
-    std::map<String, PanelFactory> mPanelFactories;   /*!< The panel types. */
-    std::map<String, ScreenFactory> mScreenFactories; /*!< The screen types. */
-    std::map<String, StyleFactory> mStyleFactories;   /*!< The style types. */
+    DataArray *mAllowableGroups; /*!< The `allowable_groups` array. Borrowed (reference counted). */
+    std::map<const char *, std::unique_ptr<UIScreen>, StrLess> mScreens; /*!< The screens. */
+    std::map<const char *, std::unique_ptr<UIPanel>, StrLess> mPanels;   /*!< The panels. */
+    std::map<const char *, std::unique_ptr<UIStyle>, StrLess> mStyles;   /*!< The styles. */
+    UIScreen *mCurrentScreen; /*!< The screen that shows, or null. Points into mScreens. */
+    float mTime;              /*!< The time the last Poll() received. */
+    int mEditMode;            /*!< Whether the `editmode` setting of the configuration is on. */
+    std::list<std::unique_ptr<RndObject>> mSharedObjects;   /*!< The shared files' objects. */
+    std::map<String, PanelFactory> mPanelFactories;         /*!< The panel types. */
+    std::map<String, ScreenFactory> mScreenFactories;       /*!< The screen types. */
+    std::map<String, StyleFactory> mStyleFactories;         /*!< The style types. */
     std::map<String, ComponentFactory> mComponentFactories; /*!< The component types. */
     int mRepeatButton;  /*!< The directional button that repeats. */
     int mRepeatPad;     /*!< The controller whose button repeats, or -1 for none. */
@@ -519,7 +535,6 @@ public:
     int mRepeatPending; /*!< Non-zero while mRepeatTime still holds a delay rather than a time. */
     int mRepeatCount;   /*!< The number of repeats so far. */
 
-private:
     /**
      * Report the delay before a repeat.
      *

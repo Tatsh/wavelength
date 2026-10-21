@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "gfx/gfxutil.h"
@@ -265,6 +266,55 @@ public:
      */
     void ScaleArm(int nArm, float fScale);
 
+    /** @return `ship win fly-off.tnm`. */
+    static RndTransAnim *GetWinFlyOff() {
+        return sWinFlyOff;
+    }
+
+    /** @return `ship beam draw.view`, the view the beams draw under. */
+    static RndView *GetBeamView() {
+        return sBeamView.get();
+    }
+
+    /** @return `ship_<c>.view`. */
+    RndView *GetView() const {
+        return mView;
+    }
+
+    /** @return `scratch ribbon_<c>.line`. */
+    RndLine *GetScratchRibbon() const {
+        return mScratchRibbon;
+    }
+
+    /** @return A combination of Flag. */
+    unsigned char GetFlags() const {
+        return mFlags;
+    }
+
+    /** @return The time the knock started. */
+    float GetBumpStart() const {
+        return mBumpStart;
+    }
+
+    /**
+     * Set the slope of the edge arrow.
+     *
+     * @param fAspect The slope, the activator scale.
+     */
+    void SetArrowAspect(float fAspect) {
+        mArrowAspect = fAspect;
+    }
+
+    /**
+     * Set how far apart the ships of a shared screen fly.
+     *
+     * @param fSpread The distance.
+     */
+    void SetSpread(float fSpread) {
+        mSpread = fSpread;
+    }
+
+private:
     /** `ship_offset`, scaled by the tunnel. @ghidraAddress NTSC-U/C: 0x0043b210 */
     static Vector3 sOffset;
     /** `ship_multi_offset_start` and `_end`, scaled. @ghidraAddress NTSC-U/C: 0x0043b220 */
@@ -333,14 +383,14 @@ public:
      * 0x0042e858 */
     static float sIntroTrodeEnd;
     /** The beams of the missed gems. @ghidraAddress NTSC-U/C: 0x003af9c4, PAL: 0x0042e85c */
-    static BeamPool<false> *sMissBeams;
+    static std::unique_ptr<BeamPool<false>> sMissBeams;
     /** The beams of the hit gems. @ghidraAddress NTSC-U/C: 0x003af9c8, PAL: 0x0042e860 */
-    static BeamPool<false> *sHitBeams;
+    static std::unique_ptr<BeamPool<false>> sHitBeams;
     /** The second beams of the hit gems. @ghidraAddress NTSC-U/C: 0x003af9cc, PAL: 0x0042e864 */
-    static BeamPool<false> *sHit2Beams;
+    static std::unique_ptr<BeamPool<false>> sHit2Beams;
     /** `ship beam draw.view`, which the beams draw under. @ghidraAddress NTSC-U/C: 0x003af9d0, PAL:
      * 0x0042e868 */
-    static RndView *sBeamView;
+    static std::unique_ptr<RndView> sBeamView;
     /** `ship.env`. @ghidraAddress NTSC-U/C: 0x003af9d8, PAL: 0x0042e870 */
     static RndEnviron *sEnviron;
     /** `ship loading.view`. @ghidraAddress NTSC-U/C: 0x003af9dc, PAL: 0x0042e874 */
@@ -355,7 +405,6 @@ public:
      * 0x0042e884 */
     static RndMesh *sArrowMesh;
 
-private:
     /**
      * Set the particles of the crippler of a ship of another console or of a shared screen.
      *
@@ -466,11 +515,10 @@ private:
      */
     inline void PollIntro(float fTick, PlayerCamFX *pCamFX, float (*pXfm)[kTransformRowFloatCount]);
 
-public:
     RndView *mView;                       /*!< `ship_<c>.view`. */
     RndMesh *mMesh;                       /*!< `ship_<c>.mesh`. */
-    RndView *mPsAnim;                     /*!< `ship ps anim <c>.view`, created. */
-    RndView *mBackPsAnim;                 /*!< `ship backps anim <c>.view`, created. */
+    std::unique_ptr<RndView> mPsAnim;     /*!< `ship ps anim <c>.view`, created. */
+    std::unique_ptr<RndView> mBackPsAnim; /*!< `ship backps anim <c>.view`, created. */
     RndView *mFxView;                     /*!< `ship fx_<c>.view`. */
     RndMat *mMat;                         /*!< `ship_<c>.mat`. */
     RndMat *mLeaderMat;                   /*!< `ship leader_<c>.mat`, or null. */
@@ -507,24 +555,24 @@ public:
     float mOverrideBlend;           /*!< The blend SetOverride() gave. */
     /*!< The transform of the intro, or the transform SetOverride() gave. +0x1d0 */
     Transform mXfm;
-    int mShown;                        /*!< Whether SetShown() shows the ship. */
-    int mHidden;                       /*!< Whether SetHidden() hides the ship. */
-    int mMulti;                        /*!< Whether the game is not solo. */
-    unsigned char mFlags;              /*!< A combination of Flag. */
-    signed char mAttackTrack;          /*!< The track the attack of a bumper plays on. */
-    float mAttackTime;                 /*!< The time the attack started. */
-    RndView *mBumperAttack;            /*!< `bumper attack.view`. */
-    RndBlur *mBumperBlur;              /*!< `ship bumper_<c>.blur`. */
-    float mBumpStart;                  /*!< The time the knock started. */
-    float mBumpEnd;                    /*!< The time the knock ends. */
-    RndTransAnim *mBumperFly;          /*!< `bumper fly.tnm`. */
-    float mBumpHeight;                 /*!< The height of the knock. */
-    float mBumpVel;                    /*!< The vertical speed of the knock. */
-    RndParticleSys *mCripplerPs;       /*!< `ship crippler_<c>.part`. */
-    float mCripplerTime;               /*!< The time the crippler particles have run. */
-    RndParticleSys *mBumperPs;         /*!< `ship bumper_<c>.ps`. */
-    float mBumperTime;                 /*!< The time the bumper particles have run. */
-    float mArrowStart;                 /*!< The time the ship left the screen, or -1e9. */
-    RndAnimatable::SecondOrder *mBank; /*!< The spring of the bank of the ship. */
-    ShipFlyIn *mFlyIn;                 /*!< The flight of the tutorial, or null. */
+    int mShown;                  /*!< Whether SetShown() shows the ship. */
+    int mHidden;                 /*!< Whether SetHidden() hides the ship. */
+    int mMulti;                  /*!< Whether the game is not solo. */
+    unsigned char mFlags;        /*!< A combination of Flag. */
+    signed char mAttackTrack;    /*!< The track the attack of a bumper plays on. */
+    float mAttackTime;           /*!< The time the attack started. */
+    RndView *mBumperAttack;      /*!< `bumper attack.view`. */
+    RndBlur *mBumperBlur;        /*!< `ship bumper_<c>.blur`. */
+    float mBumpStart;            /*!< The time the knock started. */
+    float mBumpEnd;              /*!< The time the knock ends. */
+    RndTransAnim *mBumperFly;    /*!< `bumper fly.tnm`. */
+    float mBumpHeight;           /*!< The height of the knock. */
+    float mBumpVel;              /*!< The vertical speed of the knock. */
+    RndParticleSys *mCripplerPs; /*!< `ship crippler_<c>.part`. */
+    float mCripplerTime;         /*!< The time the crippler particles have run. */
+    RndParticleSys *mBumperPs;   /*!< `ship bumper_<c>.ps`. */
+    float mBumperTime;           /*!< The time the bumper particles have run. */
+    float mArrowStart;           /*!< The time the ship exited the screen, or -1e9. */
+    std::unique_ptr<RndAnimatable::SecondOrder> mBank; /*!< The spring of the bank of the ship. */
+    std::unique_ptr<ShipFlyIn> mFlyIn;                 /*!< The flight of the tutorial, or null. */
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/forcefeedbackmgr.h"
@@ -48,18 +49,85 @@ public:
      * @return Whether an effect runs.
      */
     bool IsPlayingEffect() const {
-        for (const auto *pEffect : mEffects) {
-            if (pEffect->mActive != 0) {
+        for (const auto &pEffect : mEffects) {
+            if (pEffect->GetActive() != 0) {
                 return true;
             }
         }
         return false;
     }
 
-    int mSmallMotor;                     /*!< The small motor's last state. */
-    int mBigMotor;                       /*!< The big motor's last level. */
-    int mVibration;                      /*!< The vibration option of the game. */
-    int mEnabled;                        /*!< Whether the beat pulse drives the controller. */
-    std::vector<MotorEffect *> mEffects; /*!< The effects, indexed by Effect. */
-    MotorEffect *mBeatEffect;            /*!< The beat pulse. */
+    /** @return The small motor's last state. */
+    int GetSmallMotor() const {
+        return mSmallMotor;
+    }
+
+    /**
+     * Set the small motor's last state.
+     *
+     * @param nSmallMotor The state.
+     */
+    void SetSmallMotor(int nSmallMotor) {
+        mSmallMotor = nSmallMotor;
+    }
+
+    /** @return The big motor's last level. */
+    int GetBigMotor() const {
+        return mBigMotor;
+    }
+
+    /**
+     * Set the big motor's last level.
+     *
+     * @param nBigMotor The level.
+     */
+    void SetBigMotor(int nBigMotor) {
+        mBigMotor = nBigMotor;
+    }
+
+    /** @return The vibration option of the game. */
+    int GetVibration() const {
+        return mVibration;
+    }
+
+    /**
+     * Set the vibration option of the game.
+     *
+     * @param nVibration The option.
+     */
+    void SetVibration(int nVibration) {
+        mVibration = nVibration;
+    }
+
+    /** @return Whether the beat pulse drives the controller. */
+    int GetEnabled() const {
+        return mEnabled;
+    }
+
+    /**
+     * Set whether the beat pulse drives the controller.
+     *
+     * @param nEnabled Whether it does.
+     */
+    void SetEnabled(int nEnabled) {
+        mEnabled = nEnabled;
+    }
+
+    /** @return The effects, indexed by Effect, deleted with the controller. */
+    const std::vector<std::unique_ptr<MotorEffect>> &GetEffects() const {
+        return mEffects;
+    }
+
+    /** @return The beat pulse. */
+    MotorEffect *GetBeatEffect() {
+        return mBeatEffect.get();
+    }
+
+private:
+    int mSmallMotor; /*!< The small motor's last state. */
+    int mBigMotor;   /*!< The big motor's last level. */
+    int mVibration;  /*!< The vibration option of the game. */
+    int mEnabled;    /*!< Whether the beat pulse drives the controller. */
+    std::vector<std::unique_ptr<MotorEffect>> mEffects; /*!< The effects, indexed by Effect. */
+    std::unique_ptr<MotorEffect> mBeatEffect;           /*!< The beat pulse. */
 };

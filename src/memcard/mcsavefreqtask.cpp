@@ -43,7 +43,7 @@ void MCSaveFreqTask::Set(int nPort, Campaign *pProfile, const char *pszOldName, 
     } else {
         mDelete->Set(mPort, kNoPreviousFile);
     }
-    BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
+    BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
     stream << *pProfile;
     const char *pszFreqExt;
     g_pMemcardConfig->FindSymbol("freq_ext", &pszFreqExt, true);
@@ -66,7 +66,7 @@ void MCSaveFreqTask::OnSaveSpace(int nNeeded) {
         g_pMemcardConfig->FindSymbol("freq_ext", &pszFreqExt, true);
         mSaveFile->Set(mPort,
                        FormatString("%s/%s%s", g_MemcardPath.c_str(), mName.c_str(), pszFreqExt),
-                       g_pMemcardBuffer,
+                       g_pMemcardBuffer.get(),
                        mFileSize);
     } else {
         mNeeded = nNeeded;

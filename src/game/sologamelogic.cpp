@@ -109,8 +109,8 @@ constexpr float kRestartPollTime = 100.0f;
 // Bars at the start of each section that do not count against the player. An insane solo game
 // has none.
 inline int CheckpointBars() {
-    if (TheGameDb->mSkillLevel == kSkillLevelInsane &&
-        TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetSkillLevel() == kSkillLevelInsane &&
+        TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         return 0;
     }
     return TheGameConfig->mCheckpointBars;
@@ -152,19 +152,19 @@ void SoloGameLogic::CheckpointTextCmd::Execute() {
 
 SoloGameLogic::SoloGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
     : GameLogic(pSong, pConfig, nSeed),
-      mJuice(TheGameConfig->mInitialJuice[TheGameDb->mSkillLevel]), mPlayer(mLocalPlayers[0]),
+      mJuice(TheGameConfig->mInitialJuice[TheGameDb->GetSkillLevel()]), mPlayer(mLocalPlayers[0]),
       mTickOffset(0), mTimeOffset(0.0f), mBankSlot(-1),
       mFreezeCmd(NewMemFunCommand(this, &SoloGameLogic::FreezeAfterLoss)),
       mRestartCmd(NewMemFun1Command(this, &SoloGameLogic::Restart, true)),
       mIntroCmd(NewMemFunCommand(&TheGfxManager, &GfxManager::StartIntro)),
       mSaveOrRetryCmd(NewMemFunCommand(this, &SoloGameLogic::SaveOrRetry)),
       mCheckpointTextCmd(new CheckpointTextCmd(this)),
-      mSwapMovieCmd(new SwapMovieCmd(pSong->mBuilder->mTicksPerBar)), mIntroDuration(0.0f),
-      mPlayBars(0), mCapturedTracks(0), mFailingTrack(kNoTrack), mPendingJuice(0.0f),
+      mSwapMovieCmd(new SwapMovieCmd(pSong->GetTicksPerBar())), mIntroDuration(0.0f), mPlayBars(0),
+      mCapturedTracks(0), mFailingTrack(kNoTrack), mPendingJuice(0.0f),
       mCaptureJuice(kInitialCaptureJuice), mDialogOpen(0), mForceWinSequence(0),
       mWinSequenceStep(kWinStepCampaign), mFullMixBars(0), mBestStreak(0), mPossibleCaptureBars(0) {
     (void)TheGameDb->GetNumPlayers(); // Yes, the binary discards this call's result.
-    if (TheGameDb->mPracticeMode) {
+    if (TheGameDb->GetPracticeMode()) {
         TheGfxManager.SetLyricText(TheLocale.Localize(kPracticeModeToken, true), true);
     }
 
@@ -195,7 +195,7 @@ SoloGameLogic::SoloGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
         }
     }
 
-    mCaptureJuice = TheGameConfig->mCaptureJuice[TheGameDb->mSkillLevel];
+    mCaptureJuice = TheGameConfig->mCaptureJuice[TheGameDb->GetSkillLevel()];
     ScriptFunction::Register(OnJuice, kJuiceCommand, this);
     ScriptFunction::Register(OnWinCheat, kWinCheatCommand, this);
     ScriptFunction::Register(OnWinSequence, kWinSequenceCommand, this);
@@ -210,12 +210,12 @@ SoloGameLogic::~SoloGameLogic() {
 }
 
 void SoloGameLogic::OnStart() {
-    mJuice.Set(TheGameConfig->mInitialJuice[TheGameDb->mSkillLevel]);
+    mJuice.Set(TheGameConfig->mInitialJuice[TheGameDb->GetSkillLevel()]);
     mPendingJuice = 0.0f;
     if (TheGfxManager.GetOption()) {
         TheControllerDisplay->SetOption(true);
     }
-    if (TheGameDb->mSkillLevel < kSkillLevelBrutal) {
+    if (TheGameDb->GetSkillLevel() < kSkillLevelBrutal) {
         TheControllerDisplay->Show();
     }
     EnableNextTracks(0);
@@ -238,7 +238,7 @@ void SoloGameLogic::AdvanceWinSequence() {
         const char *pszFormat = TheLocale.Localize(kWonCampaign12Token, true);
         const char *pszDifficulty = TheGameDb->GetDifficultyName();
         pszSecondLine = FormatString(pszFormat, pszDifficulty);
-        if (TheGameDb->mSkillLevel == kSkillLevelInsane) {
+        if (TheGameDb->GetSkillLevel() == kSkillLevelInsane) {
             ++mWinSequenceStep;
         }
         break;
@@ -247,7 +247,7 @@ void SoloGameLogic::AdvanceWinSequence() {
         fScale = kNextDifficultyScale;
         const char *pszFormat = TheLocale.Localize(kWonCampaign2Token, true);
         const char *pszDifficulty =
-            TheGameDb->GetDifficultyName(TheGameDb->mSkillLevel + 1, GameDb::kRuleSetGame);
+            TheGameDb->GetDifficultyName(TheGameDb->GetSkillLevel() + 1, GameDb::kRuleSetGame);
         pszLine = FormatString(pszFormat, pszDifficulty);
         break;
     }
@@ -382,16 +382,16 @@ void SoloGameLogic::OnPhraseCaptured([[maybe_unused]] CatchTrack *pTrack,
     if (++mCapturedTracks == static_cast<int>(mCatchTracks.size())) {
         ++mFullMixBars;
     }
-    int nCurrentBar = TheSongScheduler.mTick / mTicksPerBar;
+    int nCurrentBar = TheSongScheduler.GetTick() / mTicksPerBar;
     mBestStreak = std::max(pPlayer->GetStreak(), mBestStreak);
     mPossibleCaptureBars += std::min(nBar, mNumBars) - nCurrentBar + 1;
     TheSongScheduler.PostAfter(
         NewMemFun1Command(this,
                           &GameLogic::EnableNextTracks,
-                          std::max(TheSongScheduler.mTick / mTicksPerBar + 1, 0)),
+                          std::max(TheSongScheduler.GetTick() / mTicksPerBar + 1, 0)),
         kEnableTracksDelayMs,
         false);
-    if (TheGameDb->mPracticeMode) {
+    if (TheGameDb->GetPracticeMode()) {
         return;
     }
     mPendingJuice += mCaptureJuice;
@@ -407,7 +407,7 @@ void SoloGameLogic::OnPhraseEnded([[maybe_unused]] Track *pTrack) {
 }
 
 void SoloGameLogic::OnPhraseMissed(Track *pTrack) {
-    if (TheGameDb->mPracticeMode) {
+    if (TheGameDb->GetPracticeMode()) {
         return;
     }
     int nTrack = pTrack->mIndex;
@@ -428,11 +428,11 @@ void SoloGameLogic::CommitPendingJuice() {
 }
 
 void SoloGameLogic::DrainPendingJuice() {
-    int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     if (nBar < 0 || nBar >= mNumBars) {
         return;
     }
-    if (mPlayer->GetTrack() == mFreestyleTrack || mPhraseThisBar == 0) {
+    if (mPlayer->GetTrack() == mFreestyleTrack.get() || mPhraseThisBar == 0) {
         return;
     }
     mPendingJuice -= kJuiceDrainPerBar;
@@ -453,7 +453,7 @@ void SoloGameLogic::OnBar(int nBar) {
     if (nBar < mNumBars) {
         TheGfxManager.SetWinner(bFullMix ? kLocalPlayer : kNoWinner);
     }
-    if (TheGameDb->mPracticeMode) {
+    if (TheGameDb->GetPracticeMode()) {
         return;
     }
 
@@ -462,12 +462,12 @@ void SoloGameLogic::OnBar(int nBar) {
     }
     DrainPendingJuice();
 #ifdef VIDEO_STANDARD_PAL
-    if (mJuice.Get() <= kNoJuice && !TheGameDb->mPracticeMode && nBar != mNextSectionBar &&
+    if (mJuice.Get() <= kNoJuice && !TheGameDb->GetPracticeMode() && nBar != mNextSectionBar &&
         (mSectionStartBar == 0 || nCheckpointBars == 0 ||
          mSectionStartBar + nCheckpointBars < nBar) &&
         mFailingTrack == kNoTrack) {
 #else
-    if (mJuice.Get() <= kNoJuice && !TheGameDb->mPracticeMode && nBar != mNextSectionBar &&
+    if (mJuice.Get() <= kNoJuice && !TheGameDb->GetPracticeMode() && nBar != mNextSectionBar &&
         (mSectionStartBar == 0 || mSectionStartBar + nCheckpointBars < nBar) &&
         mFailingTrack == kNoTrack) {
 #endif
@@ -489,11 +489,11 @@ void SoloGameLogic::OnBar(int nBar) {
 }
 
 void SoloGameLogic::OnSection() {
-    int nSkillLevel = TheGameDb->mSkillLevel;
+    int nSkillLevel = TheGameDb->GetSkillLevel();
     if (nSkillLevel < kSkillLevelBrutal) {
         TheControllerDisplay->Hide();
     }
-    if (mSong->GetSections()->IsPastEnd(TheSongScheduler.mTick / mTicksPerBar)) {
+    if (mSong->GetSections()->IsPastEnd(TheSongScheduler.GetTick() / mTicksPerBar)) {
         if (mState == kStatePlaying) {
             Finish(true);
         }
@@ -504,7 +504,7 @@ void SoloGameLogic::OnSection() {
     }
 
     TheSongScheduler.PostIn(mCheckpointTextCmd.Get(), kCheckpointTextDelayTicks, false);
-    if (TheGameDb->mPracticeMode) {
+    if (TheGameDb->GetPracticeMode()) {
         return;
     }
     TheGfxManager.CompleteStage(kLocalPlayer, mSection);
@@ -592,8 +592,8 @@ void SoloGameLogic::OnResultDialog(Metagame::DialogAction action, void *pUserDat
 bool SoloGameLogic::DeployFreestyle(Player *pPlayer) {
     bool bDeployed = GameLogic::DeployFreestyle(pPlayer);
     if (bDeployed) {
-        int nBar = TheSongScheduler.mTick / mTicksPerBar;
-        int nDurationBars = TheGameDb->mCommunity == GameDb::kCommunitySolo ?
+        int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
+        int nDurationBars = TheGameDb->GetCommunity() == GameDb::kCommunitySolo ?
                                 TheGameConfig->mFreestyleDurationBarsSolo :
                                 TheGameConfig->mFreestyleDurationBarsMultiNet;
         int nEndBar = std::min(nBar + nDurationBars + kFreestyleExtraBars, mNumBars);
@@ -631,7 +631,7 @@ void SoloGameLogic::SaveOrRetry() {
 }
 
 void SoloGameLogic::OnFinish(bool bWon) {
-    int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     float fProgress =
         std::min(kFullProgress, static_cast<float>(nBar) / static_cast<float>(mNumBars));
     // Yes, the binary limits the fraction of a lost song to 99.
@@ -651,7 +651,7 @@ void SoloGameLogic::OnFinish(bool bWon) {
         TheStats->WinSoloGame(mPlayer->GetScore(), mFullMixBars, mBestStreak, fEnergized);
         mState = kStateWon;
         TheMixer->PlayFullMix();
-        if (!TheGameDb->mPracticeMode) {
+        if (!TheGameDb->GetPracticeMode()) {
             TheGfxManager.ShowMessage(TheLocale.Localize(kWonSoloGameToken, true),
                                       nullptr,
                                       kAllPlayers,
@@ -663,13 +663,13 @@ void SoloGameLogic::OnFinish(bool bWon) {
         TheGfxManager.SetDying(0, false);
         TheGfxManager.SetWinner(kLocalPlayer);
         TheSongScheduler.PostAt(mSwapMovieCmd.Get(), (nBar + 1) * mTicksPerBar, false);
-        if (TheGameDb->mPracticeMode) {
+        if (TheGameDb->GetPracticeMode()) {
             TheMetagame.ShowDialog(Metagame::kDialogSoloWon, OnResultDialog, this, kNoPad);
             mDialogOpen = 1;
         } else {
             FxMidi::PlayWinSound();
             Campaign *pProfile = TheGameDb->GetProfile(kLocalPlayer);
-            if (pProfile->CompletesTier(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel) ||
+            if (pProfile->CompletesTier(TheGameDb->GetSong().c_str(), TheGameDb->GetSkillLevel()) ||
                 mForceWinSequence) {
                 TheGameDb->SetWinSequence(true);
                 mReserved60 = 1;
@@ -683,7 +683,7 @@ void SoloGameLogic::OnFinish(bool bWon) {
             }
         }
     } else {
-        TheStats->LoseSoloGame(TheSongScheduler.mTick, mPlayer->GetScore(), fProgress);
+        TheStats->LoseSoloGame(TheSongScheduler.GetTick(), mPlayer->GetScore(), fProgress);
         mState = kStateSuspended;
         mSpeedRamp->MoveTo(kLossSlowdownTicks, kLossSlowdownStepTicks, kLossSpeed);
         TheSongScheduler.PostIn(mFreezeCmd.Get(), kLossSlowdownTicks + 1, false);
@@ -728,7 +728,7 @@ void SoloGameLogic::ResumeWithCue(bool bIntro) {
     if (bIntro) {
         mIntroDuration = TheGfxManager.StartIntro(kIntroArgument);
     }
-    if (mPlayer->GetTrack() == mFreestyleTrack) {
+    if (mPlayer->GetTrack() == mFreestyleTrack.get()) {
         LeaveFreestyle(mPlayer, kTrackOfCamera);
     }
     TheGfxManager.SetActive(true);
@@ -743,9 +743,11 @@ void SoloGameLogic::ResumeWithCue(bool bIntro) {
     int nSongTicks = mNumBars * mTicksPerBar;
     float fDelay = mIntroDuration;
     float fLoopEnd =
-        static_cast<float>((TheSongScheduler.mTick / nSongTicks + 1) * nSongTicks) * *pfMsPerTick;
-    if (fLoopEnd - kLoopEndMarginMs < TheSongScheduler.mTime + (mIntroDuration + mIntroDuration)) {
-        fDelay = (fLoopEnd - TheSongScheduler.mTime) + fDelay;
+        static_cast<float>((TheSongScheduler.GetTick() / nSongTicks + 1) * nSongTicks) *
+        *pfMsPerTick;
+    if (fLoopEnd - kLoopEndMarginMs <
+        TheSongScheduler.GetTime() + (mIntroDuration + mIntroDuration)) {
+        fDelay = (fLoopEnd - TheSongScheduler.GetTime()) + fDelay;
     }
     TheSongScheduler.PostAfter(mRestartCmd.Get(), fDelay + kRestartDelayMs, false);
 }
@@ -756,15 +758,15 @@ void SoloGameLogic::Restart(bool bRestartIntro) {
         TheGfxManager.SetLyricText(TheLocale.Localize(kPressStartToExitToken, true), true);
     }
     int nSongTicks = mNumBars * mTicksPerBar;
-    int nTick = TheSongScheduler.mTick;
+    int nTick = TheSongScheduler.GetTick();
     mTickOffset = nTick % nSongTicks - nTick;
     mFreestyleTrack->mTickOffset = mTickOffset;
     const float *pfOffsetMsPerTick = mSong->GetMsPerTick();
     mState = kStateRunning;
     mTimeOffset = static_cast<float>(mTickOffset) * *pfOffsetMsPerTick;
     const float *pfMsPerTick = mSong->GetMsPerTick();
-    TheGameDb->mSongTick = static_cast<float>(GetTick());
-    TheGameDb->mSongTime = static_cast<float>(nTick) * *pfMsPerTick;
+    TheGameDb->SetSongTick(static_cast<float>(GetTick()));
+    TheGameDb->SetSongTime(static_cast<float>(nTick) * *pfMsPerTick);
     (void)TheGfxManager.Poll(kRestartPollTime); // Yes, the binary discards this call's result.
     for (unsigned int i = 0; i < mCatchTracks.size(); ++i) {
         mCatchTracks[i]->Restart(mPlayer, GetTick());

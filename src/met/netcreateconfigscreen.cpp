@@ -26,8 +26,8 @@ bool NetCreateConfigScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetCreateConfigScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszButton = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszButton = pMsg->GetComponent()->GetName();
         if (std::strcmp(pszButton, kYesButton) == 0) {
             TheNetInet->LaunchConfigTool();
             return true;

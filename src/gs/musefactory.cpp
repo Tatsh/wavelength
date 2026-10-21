@@ -39,9 +39,7 @@ MuseFactory::MuseFactory()
     mOpenNotes.reserve(kReservedOpenNotes);
 }
 
-MuseFactory::~MuseFactory() {
-    delete mState;
-}
+MuseFactory::~MuseFactory() = default;
 
 void MuseFactory::AddMidi(int nTick,
                           unsigned char nStatus,
@@ -49,7 +47,7 @@ void MuseFactory::AddMidi(int nTick,
                           unsigned char nData2) {
     if (mChannel == kNoChannel) {
         mChannel = nStatus & kChannelMask;
-        mState = new MidiChannelState(static_cast<unsigned char>(mChannel));
+        mState = std::make_unique<MidiChannelState>(static_cast<unsigned char>(mChannel));
     }
     switch (nStatus & kTypeMask) {
     case kNoteOn:

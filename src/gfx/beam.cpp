@@ -44,22 +44,19 @@ Beam::Beam() {
     mTravelPeriods.x = 1.0f;
     // The names only have to be unique, and the address of the beam makes them so.
     const unsigned int nId = static_cast<unsigned int>(reinterpret_cast<std::uintptr_t>(this));
-    mMat = dynamic_cast<RndMat *>(
-        TheManager.Create(RndMat::sClassName, FormatString("beam mat 0x%08x.mat", nId)));
-    mLine = dynamic_cast<RndLine *>(
-        TheManager.Create(RndLine::sClassName, FormatString("beam line 0x%08x.mat", nId)));
-    mLine->SetMat(mMat);
+    mMat.reset(dynamic_cast<RndMat *>(
+        TheManager.Create(RndMat::sClassName, FormatString("beam mat 0x%08x.mat", nId))));
+    mLine.reset(dynamic_cast<RndLine *>(
+        TheManager.Create(RndLine::sClassName, FormatString("beam line 0x%08x.mat", nId))));
+    mLine->SetMat(mMat.get());
     mLine->SetShowing(0);
 }
 
-Beam::~Beam() {
-    delete mLine;
-    delete mMat;
-}
+Beam::~Beam() = default;
 
 void Beam::Configure(const BeamParams *pParams) {
     mParams = pParams;
-    pParams->Apply(mLine, mMat);
+    pParams->Apply(mLine.get(), mMat.get());
 }
 
 void Beam::Start(Ship *pOwner, std::list<Ship::BeamData> *pOwnerList, float fStart, float fEnd) {
@@ -85,7 +82,7 @@ void Beam::Stop() {
 }
 
 bool Beam::Update(const Vector3 &direction, const Vector3 &side, const Color &color) {
-    const float fNow = TheGameDb->mSongTime;
+    const float fNow = TheGameDb->GetSongTime();
     if (mEndTime < fNow) {
         return true;
     }

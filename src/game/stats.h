@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "memcard/memcarduser.h"
@@ -46,6 +47,12 @@ public:
          */
         virtual String ToString() const = 0;
 
+        /** @return The name the log writes ahead of the fields. */
+        const char *GetName() const {
+            return mName;
+        }
+
+    private:
         const char *mName; /*!< The name the log writes ahead of the fields. */
     };
 
@@ -88,6 +95,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         unsigned char mTrack;  /*!< The track. */
         int mGemTick;          /*!< The tick of the gem. */
@@ -134,6 +142,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         unsigned char mTrack;  /*!< The track. */
         int mGemTick;          /*!< The tick of the nearest gem, or 0. */
@@ -177,6 +186,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         signed char mTrack;    /*!< The track. */
         int mTick;             /*!< The tick of the gem. */
@@ -220,6 +230,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         signed char mOldTrack; /*!< The track the player left. */
         signed char mNewTrack; /*!< The new track. */
@@ -264,6 +275,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer;  /*!< The player. */
         unsigned char mTrack;   /*!< The track. */
         int mTick;              /*!< The song tick. */
@@ -303,6 +315,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         int mTick; /*!< The song tick. */
     };
 
@@ -343,6 +356,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         unsigned char mTrack;  /*!< The track. */
         int mTick;             /*!< The song tick. */
@@ -386,6 +400,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         unsigned char mTrack;  /*!< The track. */
         int mTick;             /*!< The song tick. */
@@ -428,6 +443,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         int mTick;             /*!< The song tick. */
         unsigned char mType;   /*!< The kind of power-up. */
@@ -469,6 +485,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         int mTick;             /*!< The song tick. */
         unsigned char mType;   /*!< The kind of power-up. */
@@ -510,6 +527,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         int mTick;       /*!< The song tick. */
         int mScore;      /*!< The score. */
         float mProgress; /*!< The fraction of the song played. */
@@ -553,6 +571,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         int mScore;       /*!< The score. */
         float mEnergized; /*!< The fraction of the possible capture bars captured. */
         int mFullMixBars; /*!< The bars played with every track captured. */
@@ -637,6 +656,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         unsigned char mPlayer; /*!< The player. */
         int mTick;             /*!< The song tick. */
     };
@@ -675,6 +695,7 @@ public:
          */
         String ToString() const override;
 
+    private:
         float mValue; /*!< The juice. */
         int mTick;    /*!< The song tick. */
     };
@@ -944,17 +965,6 @@ public:
      */
     void Juice(float fValue, int nTick);
 
-    std::vector<int> mPlayerTracks; /*!< The track of each player. */
-    std::vector<int> mTrackPlayers; /*!< The player of each track, or -1. */
-    int mSongBars;                  /*!< The "song_bars" value of the log, initially -1. */
-    String mStartTime;              /*!< The "start_time" value of the log. */
-    std::vector<Event *> mEvents;   /*!< The recorded events, in order. */
-    const char *mLogName;           /*!< The name of the log file, or null to record nothing. */
-    int mMemcardSlot;               /*!< The memory card slot of the log, or -1 for a file. */
-    String mLog;                    /*!< The text of the log. */
-    StatsMemcardUser *mMemcardUser; /*!< Receives the result of saving the log. */
-    int mActive;                    /*!< Non-zero while the session records events. */
-
 private:
     /**
      * Format one field of the log as `(name value)` and a line break.
@@ -1006,6 +1016,17 @@ private:
      * @ghidraAddress PAL: 0x0013fae0
      */
     void WriteSessionLog();
+
+    std::vector<int> mPlayerTracks; /*!< The track of each player. */
+    std::vector<int> mTrackPlayers; /*!< The player of each track, or -1. */
+    int mSongBars;                  /*!< The "song_bars" value of the log, initially -1. */
+    String mStartTime;              /*!< The "start_time" value of the log. */
+    std::vector<std::unique_ptr<Event>> mEvents; /*!< The recorded events, in order. */
+    const char *mLogName; /*!< The name of the log file, or null to record nothing. */
+    int mMemcardSlot;     /*!< The memory card slot of the log, or -1 for a file. */
+    String mLog;          /*!< The text of the log. */
+    std::unique_ptr<StatsMemcardUser> mMemcardUser; /*!< Receives the result of saving the log. */
+    int mActive; /*!< Non-zero while the session records events. */
 };
 
 /**

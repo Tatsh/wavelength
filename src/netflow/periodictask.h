@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/task.h"
 
 /**
@@ -63,7 +65,32 @@ public:
      */
     void Suspend();
 
-    Task *mTask;     /*!< The task, or null. */
-    float mPeriod;   /*!< The wait after each run, in milliseconds. */
-    float mNextTime; /*!< When the task starts next, from SystemMs(), or kNever. */
+    /** @return The task, or null. */
+    Task *GetTask() const {
+        return mTask.get();
+    }
+
+    /** @return The wait after each run, in milliseconds. */
+    float GetPeriod() const {
+        return mPeriod;
+    }
+
+    /** @return When the task starts next, from SystemMs(), or kNever. */
+    float GetNextTime() const {
+        return mNextTime;
+    }
+
+    /**
+     * Set when the task starts next.
+     *
+     * @param fNextTime The time, from SystemMs(), or kNever.
+     */
+    void SetNextTime(float fNextTime) {
+        mNextTime = fNextTime;
+    }
+
+private:
+    std::unique_ptr<Task> mTask; /*!< The task, or null. */
+    float mPeriod;               /*!< The wait after each run, in milliseconds. */
+    float mNextTime;             /*!< When the task starts next, from SystemMs(), or kNever. */
 };

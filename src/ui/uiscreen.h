@@ -263,12 +263,46 @@ public:
      */
     bool IsLoaded();
 
+    /** @return The name, a symbol. */
+    const char *GetName() const {
+        return mName;
+    }
+
+    /** @return The loading group, a symbol. */
+    const char *GetGroup() const {
+        return mGroup;
+    }
+
+    /** @return The panel with the focus, or null. */
+    UIPanel *GetFocusPanel() const {
+        return mFocusPanel;
+    }
+
+    /** @return The screen this one is exiting to, until the exit finishes. */
+    UIScreen *GetNextScreen() const {
+        return mNextScreen;
+    }
+
+    /** @return The screen this one is entering from, until the entry finishes. */
+    UIScreen *GetPrevScreen() const {
+        return mPrevScreen;
+    }
+
+    /** @return The panels by name. */
+    const std::map<const char *, UIPanel *, StrLess> &GetPanels() const {
+        return mPanels;
+    }
+
+protected:
     const char *mName;                                  /*!< The name, a symbol. */
-    const char *mGroup;                                 /*!< The loading group, a symbol. */
-    std::map<const char *, UIPanel *, StrLess> mPanels; /*!< The panels by name. */
-    UIPanel *mFocusPanel;                               /*!< The panel with the focus, or null. */
-    std::vector<Transition> mTransitions;               /*!< The transition table. */
+    std::map<const char *, UIPanel *, StrLess> mPanels; /*!< The panels by name. Borrowed. */
+    UIPanel *mFocusPanel;                               /*!< The panel with the focus. */
+
+    std::vector<Transition> mTransitions; /*!< The transition table. */
     UIScreen *mPrevScreen; /*!< The screen this one is entering from, until the entry finishes. */
     UIScreen *mNextScreen; /*!< The screen this one is exiting to, until the exit finishes. */
     int mForceEntryExit;   /*!< Whether the panels skip their animations. */
+
+private:
+    const char *mGroup; /*!< The loading group, a symbol. */
 };

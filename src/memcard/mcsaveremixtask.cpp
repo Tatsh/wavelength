@@ -23,7 +23,7 @@ void MCSaveRemixTask::Set(int nPort,
     mNeeded = 0;
     mName = pszName;
     mCheck->Set(this, nPort, pszName, nSize + static_cast<int>(sizeof(RemixInfo)), nOverwrite);
-    BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
+    BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
     stream << *pInfo;
     stream.Write(pData, nSize);
     mSize = stream.Tell();
@@ -43,7 +43,7 @@ void MCSaveRemixTask::OnSaveSpace(int nNeeded) {
         g_pMemcardConfig->FindSymbol("remix_ext", &pszRemixExt, true);
         mSaveFile->Set(mPort,
                        FormatString("%s/%s%s", g_MemcardPath.c_str(), mName.c_str(), pszRemixExt),
-                       g_pMemcardBuffer,
+                       g_pMemcardBuffer.get(),
                        mSize);
     } else {
         mNeeded = nNeeded;

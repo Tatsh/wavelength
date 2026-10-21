@@ -43,8 +43,8 @@ WaitInteractiveRemixTask::WaitInteractiveRemixTask(DataArray *pStep, RemixTutori
 
 void WaitInteractiveRemixTask::OnStart() {
     GameCallback::Set(this);
-    mIdleTime = TheSongScheduler.mTime;
-    mIdle2Time = TheSongScheduler.mTime;
+    mIdleTime = TheSongScheduler.GetTime();
+    mIdle2Time = TheSongScheduler.GetTime();
 }
 
 void WaitInteractiveRemixTask::OnStop() {
@@ -54,7 +54,7 @@ void WaitInteractiveRemixTask::OnStop() {
 void WaitInteractiveRemixTask::OnPoll() {
     DataArray *pCondition = mStep->FindArray(kIdleCondition, false);
     if (pCondition != nullptr) {
-        const float fNow = TheSongScheduler.mTime;
+        const float fNow = TheSongScheduler.GetTime();
         if (mIdleTime + pCondition->Float(kConditionValue) * kMsPerSecond < fNow) {
             mIdleTime = fNow;
             RunActions(pCondition, kActionsAfterValue);
@@ -63,7 +63,7 @@ void WaitInteractiveRemixTask::OnPoll() {
 
     pCondition = mStep->FindArray(kIdle2Condition, false);
     if (pCondition != nullptr) {
-        const float fNow = TheSongScheduler.mTime;
+        const float fNow = TheSongScheduler.GetTime();
         if (mIdle2Time + pCondition->Float(kConditionValue) * kMsPerSecond < fNow) {
             mIdle2Time = fNow;
             RunActions(pCondition, kActionsAfterValue);
@@ -73,8 +73,8 @@ void WaitInteractiveRemixTask::OnPoll() {
 
 void WaitInteractiveRemixTask::OnPitch() {
     ++mPitchCount;
-    mIdleTime = TheSongScheduler.mTime;
-    mIdle2Time = TheSongScheduler.mTime;
+    mIdleTime = TheSongScheduler.GetTime();
+    mIdle2Time = TheSongScheduler.GetTime();
     EvaluateConditions();
 }
 
@@ -85,8 +85,8 @@ void WaitInteractiveRemixTask::OnLoop() {
 
 void WaitInteractiveRemixTask::OnSectionChange([[maybe_unused]] int nSection) {
     mForwardSection = kFlagSet;
-    mIdleTime = TheSongScheduler.mTime;
-    mIdle2Time = TheSongScheduler.mTime;
+    mIdleTime = TheSongScheduler.GetTime();
+    mIdle2Time = TheSongScheduler.GetTime();
     EvaluateConditions();
 }
 

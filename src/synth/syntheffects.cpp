@@ -111,15 +111,15 @@ SynthEffects::SynthEffects(DataArray *pConfig) : SynthEffects() {
 void SynthEffects::Load(DataArray *pConfig) {
     for (int nBus = 1; nBus <= kNumBuses; ++nBus) {
         DataArray *pBus = nullptr;
-        const int nRuleSet = TheGameDb->mRuleSet;
+        const int nRuleSet = TheGameDb->GetRuleSet();
         if (nRuleSet == GameDb::kRuleSetRemix ||
-            (nRuleSet == GameDb::kRuleSetGame && TheGameDb->mLoadRemix != 0)) {
+            (nRuleSet == GameDb::kRuleSetGame && TheGameDb->GetLoadRemix() != 0)) {
             pBus = pConfig->FindArray(FormatString("remix_bus_%i", nBus), false);
         }
         if (pBus == nullptr) {
             pBus = pConfig->FindArray(FormatString("bus_%i", nBus), false);
             if (pBus == nullptr) {
-                for (int i = 1; i < pConfig->mSize; ++i) {
+                for (int i = 1; i < pConfig->Size(); ++i) {
                     DataArray *pEntry = pConfig->Array(i);
                     int nNumber = 0;
                     pEntry->FindInt("bus", &nNumber, false);
@@ -158,7 +158,7 @@ void SynthEffects::Load(DataArray *pConfig) {
 }
 
 void SynthEffects::Apply() {
-    Synth *pSynth = TheSynth;
+    Synth *pSynth = TheSynth.get();
     (void)pSynth->DisableSoftFx(); // Yes, the binary discards the result.
     pSynth->SendMessages(mMessages);
     if (mFilter.mType == SoftFxFilter::kTypeOff) {

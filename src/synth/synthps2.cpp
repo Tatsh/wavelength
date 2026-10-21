@@ -216,8 +216,8 @@ SynthPS2::SynthPS2()
     mFilter.mMix.mResonance = kDefaultResonance;
 
     mBankLoaded.resize(kNumBankSlots);
-    mCommands = new BufStream(mCommandBuffer.mBytes, kCommandBufferSize, true);
-    mSoftFxCommands = new BufStream(mSoftFxBuffer.mBytes, kCommandBufferSize, true);
+    mCommands = std::make_unique<BufStream>(mCommandBuffer.mBytes, kCommandBufferSize, true);
+    mSoftFxCommands = std::make_unique<BufStream>(mSoftFxBuffer.mBytes, kCommandBufferSize, true);
     WriteNotify(g_pSynthTransferPending, 0);
     WriteNotify(g_pSynthCoreFxPending, 0);
     WriteNotify(g_pSynthStreamStatus, 0);
@@ -233,10 +233,7 @@ SynthPS2::SynthPS2()
     mAudioData.resize(0);
 }
 
-SynthPS2::~SynthPS2() {
-    delete mCommands;
-    delete mSoftFxCommands;
-}
+SynthPS2::~SynthPS2() = default;
 
 int SynthPS2::ReadStreamStatus() {
     return ReadNotify(g_pSynthStreamStatus);
@@ -280,7 +277,7 @@ int SynthPS2::Terminate() {
 
 void SynthPS2::SendCommand(int nCommand, const void *pData, int nSize) {
     (void)IsRpcBusy(); // Yes, the binary discards the check.
-    BufStream *pStream = mCommands;
+    BufStream *pStream = mCommands.get();
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     pStream->WriteEndian(&nSize, sizeof(nSize));
     (void)mCommands->Fail();
@@ -406,8 +403,7 @@ void SynthPS2::SetCoreFxPending() {
 
 int SynthPS2::PollBankLoad() {
     const auto finishLoad = [this]() {
-        delete mBankFile;
-        mBankFile = nullptr;
+        mBankFile.reset();
         mLoadSlot = kNoSlot;
         mLoadState = kLoadIdle;
         g_nSynthLoadStatePolls = 0;
@@ -535,7 +531,7 @@ int SynthPS2::UnloadBank(unsigned short nSlot) {
     if (!HasPendingLoad(nSlot)) {
         if (mBankLoaded[nSlot]) {
             mBankLoaded[nSlot] = false;
-            mJobs.push_back(new DeactivateBankQJ(nSlot));
+            mJobs.push_back(std::make_unique<DeactivateBankQJ>(nSlot));
         }
         return 0;
     }
@@ -543,16 +539,17 @@ int SynthPS2::UnloadBank(unsigned short nSlot) {
     int nIndex = 0;
     auto it = mJobs.begin();
     for (; it != mJobs.end(); ++it) {
-        const BankLoadQJ *pLoad = dynamic_cast<BankLoadQJ *>(*it);
-        if ((pLoad != nullptr) && (pLoad->mSlot == nSlot)) {
+        const BankLoadQJ *pLoad = dynamic_cast<BankLoadQJ *>(it->get());
+        if ((pLoad != nullptr) && (pLoad->GetSlot() == nSlot)) {
             break;
         }
         ++nIndex;
     }
     if ((mLoadState != kLoadIdle) && (nIndex == 0)) {
         mLoadState = kAbortLoad;
-        mJobs.push_back(new DeactivateBankQJ(nSlot));
+        mJobs.push_back(std::make_unique<DeactivateBankQJ>(nSlot));
     } else {
+        (void)it->release();
         mJobs.erase(it); // Yes, the job itself is not deleted.
     }
     return 0;
@@ -562,9 +559,9 @@ int SynthPS2::GetBankBlockCount(const String &file) {
     const String audioFile = BankFileIO::AudioDataFilename(file);
     const int bTrace = FileIsTraceEnabled();
     FileSetTraceEnabled(0);
-    File *pFile = File::New(audioFile.c_str(), File::kModeRead, 0);
+    std::unique_ptr<File> pFile(File::New(audioFile.c_str(), File::kModeRead, 0));
     const unsigned int nSize = static_cast<unsigned int>(pFile->Size());
-    delete pFile;
+    pFile.reset();
     FileSetTraceEnabled(bTrace);
     unsigned int nBlocks = nSize / kBankBlockSize;
     if ((nSize % kBankBlockSize) != 0) {
@@ -576,7 +573,7 @@ int SynthPS2::GetBankBlockCount(const String &file) {
 int SynthPS2::StartBankLoad(unsigned short nSlot, const String &file) {
     (void)mBankLoaded[nSlot]; // Yes, the binary looks the flag up and discards it.
     mLoadSlot = nSlot;
-    mBankFile = new BankFileIO(file, BankFileIO::kRead);
+    mBankFile = std::make_unique<BankFileIO>(file, BankFileIO::kRead);
     (void)!*mBankFile; // Yes, the binary discards the check.
     mBankFile->FindChunk(BankFileIO::kBankChunk);
     (void)mBankFile->ReadChunk(mChunk);
@@ -590,7 +587,7 @@ int SynthPS2::LoadBank(unsigned short nSlot, const String &file, bool bSkipPendi
     if (bSkipPending && HasPendingLoad(nSlot)) {
         return 0;
     }
-    mJobs.push_back(new BankLoadQJ(nSlot, file));
+    mJobs.push_back(std::make_unique<BankLoadQJ>(nSlot, file));
     return 0;
 }
 
@@ -604,7 +601,7 @@ int SynthPS2::SendBankData(const std::vector<unsigned char> &data,
     header.mOffset = nOffset;
     mCommandBuffer.mLastHeader = header; // Yes, the binary overwrites the buffer's first bytes.
     const int nSize = static_cast<int>(data.size() + sizeof(header));
-    BufStream *pStream = mCommands;
+    BufStream *pStream = mCommands.get();
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     pStream->WriteEndian(&nSize, sizeof(nSize));
     (void)mCommands->Fail();
@@ -724,19 +721,18 @@ void SynthPS2::ProcessJobs() {
         return;
     }
     const bool bBusy = IsRpcBusy();
-    QueuedJob *pJob = mJobs.front();
-    switch (pJob->mType) {
+    QueuedJob *pJob = mJobs.front().get();
+    switch (pJob->GetType()) {
     case QueuedJob::kTypePartition: {
         PartitionQJ *pPartition = dynamic_cast<PartitionQJ *>(pJob);
         if (bBusy) {
             return;
         }
-        if (pPartition->mStarted == 1) {
+        if (pPartition->GetStarted() == 1) {
             mJobs.pop_front();
-            delete pJob;
         } else {
-            (void)SendPartition(pPartition->mBlocks);
-            pPartition->mStarted = 1;
+            (void)SendPartition(pPartition->GetBlocks());
+            pPartition->SetStarted(1);
         }
         break;
     }
@@ -745,12 +741,11 @@ void SynthPS2::ProcessJobs() {
         if (bBusy) {
             return;
         }
-        if (pDeactivate->mStarted == 1) {
+        if (pDeactivate->GetStarted() == 1) {
             mJobs.pop_front();
-            delete pJob;
         } else {
-            (void)SendUnloadBank(pDeactivate->mSlot);
-            pDeactivate->mStarted = 1;
+            (void)SendUnloadBank(pDeactivate->GetSlot());
+            pDeactivate->SetStarted(1);
         }
         break;
     }
@@ -759,52 +754,49 @@ void SynthPS2::ProcessJobs() {
         if (mLoadState != kLoadIdle) {
             return;
         }
-        if (pLoad->mStarted == 1) {
+        if (pLoad->GetStarted() == 1) {
+            pLoad->GetTimer().Stop();
             mJobs.pop_front();
-            pLoad->mTimer.Stop();
-            delete pJob;
         } else {
-            pLoad->mTimer.Reset();
-            pLoad->mTimer.Start();
-            (void)StartBankLoad(pLoad->mSlot, pLoad->mFile);
-            pLoad->mStarted = 1;
+            pLoad->GetTimer().Reset();
+            pLoad->GetTimer().Start();
+            (void)StartBankLoad(pLoad->GetSlot(), pLoad->GetFile());
+            pLoad->SetStarted(1);
         }
         break;
     }
     case QueuedJob::kTypeEnableDisableSoftFx: {
         EnableDisableSoftFxQJ *pSoftFx = dynamic_cast<EnableDisableSoftFxQJ *>(pJob);
-        if (pSoftFx->mStarted != 1) {
-            SendSoftFxEnable(pSoftFx->mEnable);
-            pSoftFx->mStarted = 1;
-        } else if (pSoftFx->mWaitPolls == 0) {
+        if (pSoftFx->GetStarted() != 1) {
+            SendSoftFxEnable(pSoftFx->GetEnable());
+            pSoftFx->SetStarted(1);
+        } else if (pSoftFx->GetWaitPolls() == 0) {
             mJobs.pop_front();
-            delete pJob;
         } else {
-            --pSoftFx->mWaitPolls;
+            pSoftFx->SetWaitPolls(pSoftFx->GetWaitPolls() - 1);
         }
         break;
     }
     case QueuedJob::kTypeSetupCoreFx: {
         SetupCoreFxQJ *pCoreFx = dynamic_cast<SetupCoreFxQJ *>(pJob);
-        if (pCoreFx->mStarted != 1) {
+        if (pCoreFx->GetStarted() != 1) {
             SetCoreFxPending();
-            SendMessageList(pCoreFx->mMessages);
-            pCoreFx->mStarted = 1;
-        } else if (pCoreFx->mWaitPolls > 0) {
-            --pCoreFx->mWaitPolls;
+            SendMessageList(pCoreFx->GetMessages());
+            pCoreFx->SetStarted(1);
+        } else if (pCoreFx->GetWaitPolls() > 0) {
+            pCoreFx->SetWaitPolls(pCoreFx->GetWaitPolls() - 1);
         } else if (IsCoreFxDone()) {
             mJobs.pop_front();
-            delete pJob;
         } else {
-            --pCoreFx->mWaitPolls; // Yes, the count goes on below zero.
+            // Yes, the count goes on below zero.
+            pCoreFx->SetWaitPolls(pCoreFx->GetWaitPolls() - 1);
         }
         break;
     }
     case QueuedJob::kTypeCallback: {
         const CallbackQJ *pCallback = dynamic_cast<CallbackQJ *>(pJob);
-        pCallback->mCallback(pCallback->mArg);
+        pCallback->GetCallback()(pCallback->GetArg());
         mJobs.pop_front();
-        delete pJob;
         break;
     }
     default:
@@ -841,16 +833,16 @@ int SynthPS2::FlushMidi() {
 }
 
 int SynthPS2::EnableSoftFx() {
-    mJobs.push_back(new EnableDisableSoftFxQJ(1));
+    mJobs.push_back(std::make_unique<EnableDisableSoftFxQJ>(1));
     return 0;
 }
 
 void SynthPS2::QueueCallback(Callback pfnCallback, int nArg) {
-    mJobs.push_back(new CallbackQJ(pfnCallback, nArg));
+    mJobs.push_back(std::make_unique<CallbackQJ>(pfnCallback, nArg));
 }
 
 void SynthPS2::SendSoftFxEnable(int nEnable) {
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     if (nEnable) {
         const int nCommand = kSoftFxCommandStart;
         pStream->WriteEndian(&nCommand, sizeof(nCommand));
@@ -867,7 +859,7 @@ void SynthPS2::SendSoftFxEnable(int nEnable) {
 }
 
 int SynthPS2::DisableSoftFx() {
-    mJobs.push_back(new EnableDisableSoftFxQJ(0));
+    mJobs.push_back(std::make_unique<EnableDisableSoftFxQJ>(0));
     return 0;
 }
 
@@ -884,7 +876,7 @@ int SynthPS2::SendPartition(const std::vector<int> &blocks) {
 }
 
 int SynthPS2::Partition(const std::vector<int> &blocks) {
-    mJobs.push_back(new PartitionQJ(blocks));
+    mJobs.push_back(std::make_unique<PartitionQJ>(blocks));
     return 0;
 }
 
@@ -894,7 +886,7 @@ void SynthPS2::SetStream(StreamPlayer *pStream) {
 }
 
 void SynthPS2::SendStreamData(const void *pData, int nSize) {
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandStreamData;
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     pStream->WriteEndian(&nSize, sizeof(nSize));
@@ -936,7 +928,7 @@ void SynthPS2::SetSoftFxSweep(float fPosition) {
 }
 
 void SynthPS2::SetSoftFxFilter(const SoftFxFilter &filter) {
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandSetEffect;
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     const int nSize = kWordSize;
@@ -987,7 +979,7 @@ void SynthPS2::UpdateSoftFx() {
         return;
     }
 
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandSetParams;
     const int nSize = kSoftFxParamsSize;
     SoftFxParams params;
@@ -1136,7 +1128,7 @@ void SynthPS2::UpdateSoftFx() {
 }
 
 void SynthPS2::SetSoftFxInput(int nInput) {
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandRouteInput;
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     const int nSize = kWordSize;
@@ -1145,7 +1137,7 @@ void SynthPS2::SetSoftFxInput(int nInput) {
 }
 
 void SynthPS2::SetBusToCoreFx(int nOn) {
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandRouteVoices;
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     const int nSize = kWordSize;
@@ -1157,7 +1149,7 @@ void SynthPS2::SetBusToSoftFx([[maybe_unused]] int nOn) {
 }
 
 void SynthPS2::SendMessages(const std::vector<unsigned int> &messages) {
-    mJobs.push_back(new SetupCoreFxQJ(messages));
+    mJobs.push_back(std::make_unique<SetupCoreFxQJ>(messages));
 }
 
 void SynthPS2::SendMessageList(const std::vector<unsigned int> &messages) {
@@ -1178,7 +1170,7 @@ void SynthPS2::SetLevelFromController(unsigned char nValue) {
 void SynthPS2::SetOutputLevel(float fLevel) {
     mOutputLevel = fLevel;
     const unsigned int nVolume = static_cast<unsigned int>(fLevel * kFullVolume);
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandSetVolume;
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     const int nSize = kWordSize;
@@ -1192,9 +1184,9 @@ float SynthPS2::GetOutputLevel() {
 
 bool SynthPS2::HasPendingLoad(unsigned short nSlot) {
     bool bPending = false;
-    for (QueuedJob *pJob : mJobs) {
-        const BankLoadQJ *pLoad = dynamic_cast<BankLoadQJ *>(pJob);
-        if ((pLoad != nullptr) && (pLoad->mSlot == nSlot)) {
+    for (const auto &pJob : mJobs) {
+        const BankLoadQJ *pLoad = dynamic_cast<const BankLoadQJ *>(pJob.get());
+        if ((pLoad != nullptr) && (pLoad->GetSlot() == nSlot)) {
             bPending = true;
             break;
         }
@@ -1214,7 +1206,7 @@ void SynthPS2::SetSurround(bool bSurround) {
 void SynthPS2::SetMono(bool bMono) {
     const int nMono = bMono ? 1 : 0;
     SendCommand(kCommandMono, &nMono, sizeof(nMono));
-    BufStream *pStream = mSoftFxCommands;
+    BufStream *pStream = mSoftFxCommands.get();
     const int nCommand = kSoftFxCommandSetMonoStream;
     pStream->WriteEndian(&nCommand, sizeof(nCommand));
     const int nSize = kWordSize;

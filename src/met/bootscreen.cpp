@@ -33,8 +33,8 @@ bool BootScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool BootScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszButton = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszButton = pMsg->GetComponent()->GetName();
         if (strcmp(pszButton, "yes") == 0) {
             if (TheNetLaunchpad != nullptr) {
                 TheNetLaunchpad->BootPlayer(mPlayer);

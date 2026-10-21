@@ -25,12 +25,12 @@ bool MultiNoCardScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MultiNoCardScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         auto *pLoad = dynamic_cast<MultiLoadFreqScreen *>(TheUI.FindScreen(kLoadScreen, false));
-        if (std::strcmp(pMsg->mComponent->mName, kRetryComponent) == 0) {
+        if (std::strcmp(pMsg->GetComponent()->GetName(), kRetryComponent) == 0) {
             TheUI.GotoScreen(pLoad);
-        } else if (std::strcmp(pMsg->mComponent->mName, kContinueComponent) == 0) {
-            pLoad->mLoaded = 1;
+        } else if (std::strcmp(pMsg->GetComponent()->GetName(), kContinueComponent) == 0) {
+            pLoad->SetLoaded(1);
             TheUI.GotoScreen(pLoad);
         }
     }

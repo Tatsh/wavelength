@@ -117,7 +117,7 @@ void NetSearchScreen::OnChoiceChanged([[maybe_unused]] int bReset) {
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
     String selected;
     if (!pList->mSongs.empty()) {
-        selected = pList->mSongs[pList->mSelected].c_str();
+        selected = pList->mSongs[pList->GetSelected()].c_str();
     }
 
     std::vector<String> choices;
@@ -152,16 +152,16 @@ bool NetSearchScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetSearchScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return NetParamsScreen::HandleSelect(pMsg);
     }
-    if (std::strcmp(pMsg->mComponent->mName, kSearchComponent) != 0) {
+    if (std::strcmp(pMsg->GetComponent()->GetName(), kSearchComponent) != 0) {
         // Yes, the binary checks the button again and focuses the search button on both paths.
-        if (pMsg->mButton == kPadCross &&
-            std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
+        if (pMsg->GetButton() == kPadCross &&
+            std::strcmp(pMsg->GetComponent()->GetName(), kCursorComponent) == 0) {
             UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
             pPanel->SetFocus(pPanel->FindComponent(kSearchComponent, false), kPadNone);
-        } else if (pMsg->mButton == kPadCross) {
+        } else if (pMsg->GetButton() == kPadCross) {
             UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
             pPanel->SetFocus(pPanel->FindComponent(kSearchComponent, false), kPadNone);
         }
@@ -188,7 +188,7 @@ bool NetSearchScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         nSkill = kAnySkill;
     }
     const char *pszSong =
-        pList->mSelected != kAllChoice ? pList->mSongs[pList->mSelected].c_str() : kNoSong;
+        pList->GetSelected() != kAllChoice ? pList->mSongs[pList->GetSelected()].c_str() : kNoSong;
     pSorted->SetSearch(pszSong, nRuleSet, nSkill);
     TheUI.GotoScreen(pSorted);
     return NetParamsScreen::HandleSelect(pMsg);

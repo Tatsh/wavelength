@@ -60,7 +60,7 @@ void FreqSelPanel::SetProfiles(const std::vector<Campaign> &profiles, int nSelec
 
 void FreqSelPanel::Enter(bool bForce, float fTime) {
     mNumProfiles = static_cast<int>(mProfiles.size());
-    if (TheGameDb->mCommunity == GameDb::kCommunityLocal && TheUI.FocusPanel() == this) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal && TheUI.FocusPanel() == this) {
         if (mAvatarIndex != kFirstPlayer || TheGameDb->GetProfile(kFirstPlayer)->mCustom == 0) {
             *TheGameDb->GetProfile(mAvatarIndex) = mProfiles[mSelected];
         }
@@ -96,22 +96,22 @@ bool FreqSelPanel::DispatchPriv(Message *pMsg) {
 }
 
 bool FreqSelPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mPad != mAvatarIndex) {
+    if (pMsg->GetPad() != mAvatarIndex) {
         return false;
     }
 
     bool bMoved = false;
-    if (pMsg->mButton == kPadDLeft) {
+    if (pMsg->GetButton() == kPadDLeft) {
         bMoved = true;
         mSelected = mSelected - 1 > -1 ? mSelected - 1 : mNumProfiles - 1;
         FxMidi::PlayMenuLeft();
-    } else if (pMsg->mButton == kPadDRight) {
+    } else if (pMsg->GetButton() == kPadDRight) {
         bMoved = true;
         mSelected = mSelected + 1 < mNumProfiles ? mSelected + 1 : 0;
         FxMidi::PlayMenuRight();
     }
 
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         *TheGameDb->GetProfile(mAvatarIndex) = mProfiles[mSelected];
         FxMidi::PlayMenuSelect();
         return false;
@@ -125,7 +125,7 @@ bool FreqSelPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool FreqSelPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         SetChosen(true);
     }
     return false;

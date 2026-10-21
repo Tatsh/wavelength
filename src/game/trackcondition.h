@@ -31,7 +31,7 @@ public:
      * @ghidraAddress PAL: 0x003e4b20
      */
     bool Test() override {
-        return TheTriggerMgr.mTrack[TheTriggerMgr.mPlayer] == mTrack;
+        return TheTriggerMgr.GetTrack(TheTriggerMgr.GetPlayer()) == mTrack;
     }
 
 private:

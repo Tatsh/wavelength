@@ -46,7 +46,7 @@ void OvyDuelScore::Poll([[maybe_unused]] float fSongDelta, [[maybe_unused]] floa
     if (mFlashTime == kNoFlash) {
         return;
     }
-    const float fElapsed = TheGameDb->mSongTime - mFlashTime;
+    const float fElapsed = TheGameDb->GetSongTime() - mFlashTime;
     if (!(0.0f <= fElapsed)) {
         mFlashAnim->SetFrame(0.0f);
         return;
@@ -79,7 +79,7 @@ void OvyDuelScore::ShowLetters(int nCount, bool bSetFonts) {
         }
     }
     if (bSetFonts && mLitCount < nCount) {
-        mFlashTime =
-            (TheGameDb->mSongTick + Overlay::sDuelPointsMoveTicks) * *TheGfxManager.mMsPerTick;
+        mFlashTime = (TheGameDb->GetSongTick() + Overlay::sDuelPointsMoveTicks) *
+                     *TheGfxManager.GetMsPerTick();
     }
 }

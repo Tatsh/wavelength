@@ -42,16 +42,16 @@ void MediusConnectTask::OnStart() {
     if (mServer != kServerLocation) {
         rtMediusSetConnectParams(&params,
                                  nullptr,
-                                 TheLobbyRT->mServerAddress.c_str(),
-                                 TheLobbyRT->mServerPort,
+                                 TheLobbyRT->GetServerAddress().c_str(),
+                                 TheLobbyRT->GetServerPort(),
                                  kLobbyServerWorld);
-        if (TheLobbyRT->mSecure != 0) {
+        if (TheLobbyRT->GetSecure() != 0) {
             unsigned char key[RT_NET_SERVER_KEY_SIZE];
             (void)rtMgclGetServerKey(key);
             memcpy(params.info.serverKey, key, sizeof(key));
         }
     } else {
-        params.info = TheLobbyRT->mLobbyInfo;
+        params.info = TheLobbyRT->GetLobbyInfo();
     }
     params.maxPlayers = kMaxPlayers;
     params.onConnect = OnConnect;
@@ -91,6 +91,6 @@ void MediusConnectTask::OnConnect(int nConnection) {
     if (sTask != nullptr) {
         const bool bConnected = nConnection != kNoConnection;
         sTask->Finish(bConnected, LobbyConnectResultMsg::kResultConnectFailed);
-        TheLobbyRT->mMediusConnected = bConnected;
+        TheLobbyRT->SetMediusConnected(bConnected);
     }
 }

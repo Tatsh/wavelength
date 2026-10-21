@@ -27,6 +27,6 @@ public:
      */
     bool Test() override {
         const TriggerMgr &mgr = TheTriggerMgr;
-        return mgr.mCapturer[mgr.mTrack[mgr.mPlayer]] == mgr.mPlayer;
+        return mgr.GetCapturer(mgr.GetTrack(mgr.GetPlayer())) == mgr.GetPlayer();
     }
 };

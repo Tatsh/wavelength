@@ -27,6 +27,17 @@ public:
     ~CallbackQJ() override {
     }
 
+    /** @return The routine. */
+    Synth::Callback GetCallback() const {
+        return mCallback;
+    }
+
+    /** @return The argument passed to the routine. */
+    int GetArg() const {
+        return mArg;
+    }
+
+private:
     Synth::Callback mCallback; /*!< The routine. */
     int mArg;                  /*!< The argument passed to the routine. */
 };

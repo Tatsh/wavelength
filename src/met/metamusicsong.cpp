@@ -1,5 +1,6 @@
 #include "met/metamusicsong.h"
 
+#include <memory>
 #include <vector>
 
 #include "os/fileutil.h"
@@ -13,12 +14,10 @@ MetaMusicSong::MetaMusicSong(Mix *pMix, DataArray *pConfig) {
     FindBankFile();
 }
 
-MetaMusicSong::~MetaMusicSong() {
-    delete mBuilder;
-}
+MetaMusicSong::~MetaMusicSong() = default;
 
 void MetaMusicSong::StartLoad() {
-    mBuilder = new MixMidiBuilder(mConfig);
+    mBuilder = std::make_unique<MixMidiBuilder>(mConfig);
     mBuilder->StartLoad();
     mLoaded = 0;
 }
@@ -42,7 +41,7 @@ const char *MetaMusicSong::BankFile() const {
 
 void MetaMusicSong::FindBankFile() {
     DataArray *pBank = mConfig->FindArray("bank_file", true);
-    mBankFile = String(FileGetPath(pBank->mFile)) + "/" + pBank->Sym(1);
+    mBankFile = String(FileGetPath(pBank->GetFile())) + "/" + pBank->Sym(1);
 }
 
 void MetaMusicSong::AddTracks() {
@@ -56,11 +55,11 @@ void MetaMusicSong::AddTracks() {
     }
 
     DataArray *pMixes = mConfig->FindArray("mix", true);
-    for (int i = 1; i < pMixes->mSize; ++i) {
+    for (int i = 1; i < pMixes->Size(); ++i) {
         DataArray *pMix = pMixes->Array(i);
         const int nMix = pMix->Int(0);
         std::vector<String> names;
-        for (int j = 1; j < pMix->mSize; ++j) {
+        for (int j = 1; j < pMix->Size(); ++j) {
             names.push_back(String(pMix->Sym(j)));
         }
         mMix->SetMixTracks(nMix, names);

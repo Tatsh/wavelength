@@ -120,20 +120,20 @@ bool MidiReader::CompareMidi(const Midi &left, const Midi &right) {
 }
 
 MidiReader::MidiReader(const char *pszFile, MidiReceiver *pReceiver)
-    : mStream(new FileStream(pszFile, false, false, 0)), mReceiver(pReceiver), mState(kStateHeader),
-      mNumTracks(0), mDivision(0), mTargetDivision(kTargetDivision), mTrackIndex(0), mTrackTick(0),
-      mRunningStatus(0), mPending(), mPendingTick(0), mCompare(&MidiReader::CompareMidi) {
+    : mStream(std::make_unique<FileStream>(pszFile, false, false, 0)), mReceiver(pReceiver),
+      mState(kStateHeader), mNumTracks(0), mDivision(0), mTargetDivision(kTargetDivision),
+      mTrackIndex(0), mTrackTick(0), mRunningStatus(0), mPending(), mPendingTick(0),
+      mCompare(&MidiReader::CompareMidi) {
 }
 
 MidiReader::MidiReader(char *pBuffer, int nSize, MidiReceiver *pReceiver)
-    : mStream(new BufStream(pBuffer, nSize, false)), mReceiver(pReceiver), mState(kStateHeader),
-      mNumTracks(0), mDivision(0), mTargetDivision(kTargetDivision), mTrackIndex(0), mTrackTick(0),
-      mRunningStatus(0), mPending(), mPendingTick(0), mCompare(&MidiReader::CompareMidi) {
+    : mStream(std::make_unique<BufStream>(pBuffer, nSize, false)), mReceiver(pReceiver),
+      mState(kStateHeader), mNumTracks(0), mDivision(0), mTargetDivision(kTargetDivision),
+      mTrackIndex(0), mTrackTick(0), mRunningStatus(0), mPending(), mPendingTick(0),
+      mCompare(&MidiReader::CompareMidi) {
 }
 
-MidiReader::~MidiReader() {
-    delete mStream;
-}
+MidiReader::~MidiReader() = default;
 
 void MidiReader::ReadAll() {
     while (ReadTrack()) {
@@ -302,11 +302,10 @@ void MidiReader::ReadMeta(int nTick, unsigned char nType, BinStream &stream) {
     const VarLen length(stream);
     const int nStart = stream.Tell();
     if (nType >= kMetaFirstText && nType <= kMetaLastText) {
-        char *pszText = new char[length.mValue + 1];
-        stream.Read(pszText, length.mValue);
+        auto pszText = std::make_unique<char[]>(length.mValue + 1);
+        stream.Read(pszText.get(), length.mValue);
         pszText[length.mValue] = '\0';
-        mReceiver->OnText(nTick, pszText, nType);
-        delete[] pszText;
+        mReceiver->OnText(nTick, pszText.get(), nType);
     } else {
         switch (nType) {
         case kMetaTempo: {

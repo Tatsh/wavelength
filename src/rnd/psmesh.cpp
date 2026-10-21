@@ -289,8 +289,6 @@ PsMesh::PsMesh(const char *pszName)
 PsMesh::~PsMesh() {
     ThePs.ReleaseAfterFrame(mFacesPacket);
     ThePs.ReleaseAfterFrame(mEdgesPacket);
-    delete[] mSkinVerts;
-    mSkinVerts = nullptr;
 }
 
 void PsMesh::Copy(const RndObject *pSource, int nFlags) {
@@ -601,12 +599,11 @@ void PsMesh::Sync(int nFlags) {
     const int nFaces = nFlags & kSyncFaces;
 
     if ((nFlags & kSyncVertexData) != 0) {
-        delete[] mSkinVerts;
-        mSkinVerts = nullptr;
+        mSkinVerts.reset();
         if (mBones != nullptr) {
             mMutable = 1;
-            mSkinVerts = new SkinVert[mVerts.size()];
-            SkinVert *pSkin = mSkinVerts;
+            mSkinVerts = std::make_unique<SkinVert[]>(mVerts.size());
+            SkinVert *pSkin = mSkinVerts.get();
             for (const auto &vert : mVerts) {
                 pSkin->mPos[kWordX] = vert.mPos.x;
                 pSkin->mPos[kWordY] = vert.mPos.y;
@@ -767,9 +764,9 @@ const Transform &PsMesh::SkinXfm() {
     Transform first;
     Multiply(first, mBones->mTrans[0]->mWorldXfm, mBones->mXfms[0]);
     const Transform &world = mTransOwner->mWorldXfm;
-    const SkinVert *pSkin = mSkinVerts;
+    const SkinVert *pSkin = mSkinVerts.get();
     Vert *pOut = mVerts.data();
-    const SkinVert *pEnd = mSkinVerts + mVerts.size();
+    const SkinVert *pEnd = mSkinVerts.get() + mVerts.size();
     if (mBones->mTrans[1] != nullptr) {
         Transform second;
         Multiply(second, mBones->mTrans[1]->mWorldXfm, mBones->mXfms[1]);

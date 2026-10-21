@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/catchtrackstate.h"
 #include "game/gemcatcher.h"
 #include "game/gemcursor.h"
@@ -156,8 +158,18 @@ public:
             mCapturer->UpdateRun(mBar);
         }
 
+        /**
+         * Set the bar to look from.
+         *
+         * @param nBar The bar.
+         */
+        void SetBar(int nBar) {
+            mBar = nBar;
+        }
+
+    private:
         int mBar;                 /*!< The bar to look from. */
-        TrackCapturer *mCapturer; /*!< The capturer. */
+        TrackCapturer *mCapturer; /*!< The capturer. Borrowed. */
     };
 
     /**
@@ -198,7 +210,17 @@ public:
          */
         void Update();
 
-        TrackCapturer *mCapturer; /*!< The capturer. */
+        /**
+         * Set whether the autopilot presses the gems.
+         *
+         * @param nEnabled Non-zero to press them.
+         */
+        void SetEnabled(int nEnabled) {
+            mEnabled = nEnabled;
+        }
+
+    private:
+        TrackCapturer *mCapturer; /*!< The capturer. Borrowed. */
         GemCursor mCursor;        /*!< The next gem. */
         Ptr<Command> mUpdateCmd;  /*!< The command that calls Update(). */
         int mEnabled;             /*!< Whether the autopilot presses the gems. */
@@ -529,20 +551,20 @@ private:
      */
     void MissPress(int nTick, int nLane);
 
-    CatchReceiver *mCatchReceiver;            /*!< The receiver of the gem catcher. */
-    CatchTrackState *mState;                  /*!< The state of the bars of the track. */
-    const SectionBoundaries *mSections;       /*!< The sections of the song. */
-    GemCatcher mCatcher;                      /*!< The judge of the presses. */
-    NetFaker *mNetFaker;                      /*!< The stand-in of a remote player, online only. */
-    Faker *mFaker;                            /*!< The autopilot, or null. */
-    Receiver *mReceiver;                      /*!< The receiver of the runs. */
-    Player *mPlayer;                          /*!< The player who plays the track, or null. */
-    Muse *mLastMuse;                          /*!< The note of the last gem hit, or null. */
-    int mTrack;                               /*!< The track. */
-    int mTicksPerBar;                         /*!< The song ticks in one bar. */
-    int mStopPreviousNote;                    /*!< Whether a hit stops the previous note. */
-    int mEndBar;                              /*!< The bar the song ends at. */
-    int mStarted;                             /*!< Whether the capturer judges the presses. */
+    std::unique_ptr<CatchReceiver> mCatchReceiver; /*!< The receiver of the gem catcher. */
+    CatchTrackState *mState;             /*!< The state of the bars of the track. Borrowed. */
+    const SectionBoundaries *mSections;  /*!< The sections of the song. Borrowed. */
+    GemCatcher mCatcher;                 /*!< The judge of the presses. */
+    std::unique_ptr<NetFaker> mNetFaker; /*!< The stand-in of a remote player, online only. */
+    std::unique_ptr<Faker> mFaker;       /*!< The autopilot, or null. */
+    Receiver *mReceiver;                 /*!< The receiver of the runs. Borrowed. */
+    Player *mPlayer;                     /*!< The player who plays the track, or null. Borrowed. */
+    Muse *mLastMuse;                     /*!< The note of the last gem hit, or null. Borrowed. */
+    int mTrack;                          /*!< The track. */
+    int mTicksPerBar;                    /*!< The song ticks in one bar. */
+    int mStopPreviousNote;               /*!< Whether a hit stops the previous note. */
+    int mEndBar;                         /*!< The bar the song ends at. */
+    int mStarted;                        /*!< Whether the capturer judges the presses. */
     Ptr<SetCaptureStartCmd> mCaptureStartCmd; /*!< The delayed search for the next run. */
     int mGemsCaught;                          /*!< The gems caught in the run. */
     int mRunGems;                             /*!< The gems of the run. */

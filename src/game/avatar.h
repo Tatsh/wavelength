@@ -67,6 +67,26 @@ public:
          */
         bool IsDone() const;
 
+        /** @return The animation, a symbol, or null. */
+        const char *GetAnim() const {
+            return mAnim;
+        }
+
+        /**
+         * Set only the animation, without a frame range.
+         *
+         * @param pszAnim The animation, a symbol, or null.
+         */
+        void SetAnim(const char *pszAnim) {
+            mAnim = pszAnim;
+        }
+
+        /** @return Non-zero when the range has type 3 (the looping type). */
+        int GetLoop() const {
+            return mLoop;
+        }
+
+    private:
         const char *mAnim; /*!< The animation, a symbol, or null. */
         int mLoop;         /*!< Non-zero when the range has type 3, which loops. */
         float mStart;      /*!< The first frame. */
@@ -102,7 +122,7 @@ public:
     /**
      * Delete the avatars and the loader of the base model.
      *
-     * sAvatars retains the deleted pointers.
+     * sAvatars retains its size, with every avatar released.
      *
      * @ghidraAddress NTSC-U/C: 0x0026f8c8
      * @ghidraAddress PAL: 0x00279468
@@ -311,20 +331,41 @@ public:
      */
     void SetUser(AvatarPartSet *pUser);
 
-    std::vector<AvatarPart *> mParts; /*!< The models, one for each AvatarPartSet::Part. */
-    int mIndex;                       /*!< The index of the avatar. */
-    AvatarPartSet *mUser;             /*!< The set that borrows the avatar, or null. */
-    Anim mBody;                       /*!< The body animation. */
-    Anim mPrevBody;                   /*!< The body animation mBody blends from. */
-    int mOneShot;                     /*!< Non-zero while a one-shot body animation plays. */
-    float mBodyBlendStart;            /*!< When the body blend started, or kNever. */
-    Anim mPoseAnim;                   /*!< The animation of the pose. */
-    Anim mPrevPoseAnim;               /*!< The animation mPoseAnim blends from. */
-    float mPoseBlendStart;            /*!< When the pose blend started, or kNever. */
-    const char *mPose;                /*!< The pose, a symbol. */
-    const char *mPrevPose;            /*!< The pose mPose replaced. */
-    float mPoseChangeTime;            /*!< When mPose changed, or kNever once the swap is done. */
-    float mActiveTime; /*!< The last time the avatar acted, which starts the wait for idle. */
+    /** @return The index of the avatar. */
+    int GetIndex() const {
+        return mIndex;
+    }
+
+    /** @return The set that borrows the avatar, or null. Borrowed. */
+    AvatarPartSet *GetUser() {
+        return mUser;
+    }
+
+    /** @return The symbol `fm_none`. */
+    static const char *GetNone() {
+        return sNone;
+    }
+
+    /** @return The target texture of the shared camera as Init() found it. Borrowed. */
+    static RndTex *GetTargetTex() {
+        return sTargetTex;
+    }
+
+private:
+    std::vector<std::unique_ptr<AvatarPart>> mParts; /*!< The models, one for each part. */
+    int mIndex;                                      /*!< The index of the avatar. */
+    AvatarPartSet *mUser;  /*!< The set that borrows the avatar, or null. Borrowed. */
+    Anim mBody;            /*!< The body animation. */
+    Anim mPrevBody;        /*!< The body animation mBody blends from. */
+    int mOneShot;          /*!< Non-zero while a one-shot body animation plays. */
+    float mBodyBlendStart; /*!< When the body blend started, or kNever. */
+    Anim mPoseAnim;        /*!< The animation of the pose. */
+    Anim mPrevPoseAnim;    /*!< The animation mPoseAnim blends from. */
+    float mPoseBlendStart; /*!< When the pose blend started, or kNever. */
+    const char *mPose;     /*!< The pose, a symbol. */
+    const char *mPrevPose; /*!< The pose mPose replaced. */
+    float mPoseChangeTime; /*!< When mPose changed, or kNever once the swap is done. */
+    float mActiveTime;     /*!< The last time the avatar acted, the start of the wait for idle. */
 
     /**
      * The `anim_blend` of the `avatar` entry, the length of a blend in milliseconds.
@@ -463,9 +504,7 @@ public:
      *
      * @ghidraAddress NTSC-U/C: 0x00440d48
      */
-    static std::vector<Avatar *> sAvatars;
-
-private:
+    static std::vector<std::unique_ptr<Avatar>> sAvatars;
     /**
      * Swap the instrument model between mPrevPose and mPose as the pose blend passes its middle,
      * and fade it out and in.

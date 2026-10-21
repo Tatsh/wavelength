@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e4990
      */
     bool Test() override {
-        const float flTime = TheTriggerMgr.mTime[TheTriggerMgr.mClock];
+        const float flTime = TheTriggerMgr.GetTime(TheTriggerMgr.GetClock());
         return static_cast<float>(mLow) <= flTime && flTime <= static_cast<float>(mHigh);
     }
 

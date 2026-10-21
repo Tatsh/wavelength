@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <iterator>
+#include <memory>
 
 #include "game/gamedb.h"
 #include "game/triggermgr.h"
@@ -60,29 +61,22 @@ TnlGems::TnlGems(GfxTunnel *pTunnel, int nMaxGems, int)
 }
 
 TnlGems::~TnlGems() {
-    for (auto *pGroup : mMeshGroups) {
-        delete pGroup;
-    }
-    for (auto *pGroup : mSpriteGroups) {
-        delete pGroup;
-    }
-    while (!mObjects.empty()) {
-        delete mObjects.front();
-        mObjects.pop_front();
-    }
+    // The groups go before the animations, as in the binary.
+    mMeshGroups.clear();
+    mSpriteGroups.clear();
 }
 
 void TnlGems::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *, int) {
     FindConfigFloat(pConfig, pDefaults, "gem_particle_height", &TnlGem::sParticleHeight, true);
     FindConfigFloat(pConfig, pDefaults, "sprite_gem_height", &TnlGem::sSpriteHeight, true);
-    const float flScale = TheGfxManager.mScrollSpeed;
+    const float flScale = TheGfxManager.GetScrollSpeed();
     const float flSpriteDepth = flScale * TnlGem::sSpriteHeight;
     TnlGem::sParticleHeight *= flScale;
     TnlGem::sSpriteHeight = 1.0f - flSpriteDepth;
     FindConfigFloat(pConfig, pDefaults, "gem_mesh_flash_size", &TnlGem::sMeshFlashSize, true);
-    TnlGem::sMeshFlashSize *= TheGfxManager.mScrollSpeed;
+    TnlGem::sMeshFlashSize *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "gem_mesh_flash_time", &TnlGem::sMeshFlashRate, true);
-    TnlGem::sMeshFlashRate = TheGfxManager.mScrollSpeed / TnlGem::sMeshFlashRate;
+    TnlGem::sMeshFlashRate = TheGfxManager.GetScrollSpeed() / TnlGem::sMeshFlashRate;
     FindConfigFloat(pConfig, pDefaults, "gem_flare_flash_size", &TnlGem::sFlareFlashSize, true);
     FindConfigFloat(pConfig, pDefaults, "gem_flare_flash_time", &TnlGem::sFlareFlashRate, true);
     TnlGem::sFlareFlashRate = 1.0f / TnlGem::sFlareFlashRate;
@@ -123,7 +117,7 @@ void TnlGems::ApplyRenderScales(float flWorldScale) {
 }
 
 void TnlGems::AddRotation(RndMesh *pMesh,
-                          std::list<RndObject *> *pObjects,
+                          std::list<std::unique_ptr<RndObject>> *pObjects,
                           int nKeys,
                           int bLoop,
                           RndAnimatable *pParent,
@@ -136,7 +130,7 @@ void TnlGems::AddRotation(RndMesh *pMesh,
         return;
     }
     auto *pAnim = dynamic_cast<RndMeshAnim *>(TheManager.Create(RndMeshAnim::sClassName, pszName));
-    pObjects->push_back(pAnim);
+    pObjects->push_back(std::unique_ptr<RndObject>(pAnim));
     pAnim->SetMesh(pMesh);
     AddRotationKeys(pMesh, pAnim, nKeys, flStartFrame, flStartAngle, flEndFrame, flEndAngle);
     if (bLoop) {
@@ -166,9 +160,9 @@ char TnlGems::AddMeshGroups(const char *pszName, const char *pszDrawParent, floa
             pParent->AddDraw(pMultiMesh, nullptr);
         }
         SetRenderScale(pMultiMesh->mMesh, sMeshScale);
-        auto *pGroup =
-            new MeshGroup(pMultiMesh, nullptr, nullptr, &mTransforms, mMaxGems, flLookahead);
-        mMeshGroups.push_back(pGroup);
+        mMeshGroups.push_back(std::make_unique<MeshGroup>(
+            pMultiMesh, nullptr, nullptr, &mTransforms, mMaxGems, flLookahead));
+        MeshGroup *pGroup = mMeshGroups.back().get();
         if (pPrev != nullptr) {
             pPrev->mNext = pGroup;
         }
@@ -210,9 +204,9 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
         if (pSys != nullptr) {
             SetRenderScale(static_cast<RndObject *>(pSys), sMeshScale);
         }
-        auto *pGroup =
-            new MeshGroup(pMultiMesh, &meshes, pSys, &mTransforms, mMaxGems, flLookahead);
-        mMeshGroups.push_back(pGroup);
+        mMeshGroups.push_back(std::make_unique<MeshGroup>(
+            pMultiMesh, &meshes, pSys, &mTransforms, mMaxGems, flLookahead));
+        MeshGroup *pGroup = mMeshGroups.back().get();
         if (pPrev != nullptr) {
             pPrev->mNext = pGroup;
         }
@@ -224,7 +218,7 @@ char TnlGems::AddCompositeMeshGroups(const char *pszName,
 
 char TnlGems::AddSpriteGroup(const char *pszName) {
     const int nType = static_cast<int>(mSpriteGroups.size()) + TnlGem::kTypeSprite;
-    mSpriteGroups.push_back(new SpriteGroup(pszName, mMaxGems));
+    mSpriteGroups.push_back(std::make_unique<SpriteGroup>(pszName, mMaxGems));
     RndParticleSys *pSys = mSpriteGroups.back()->mParticles;
     if (pSys != nullptr) {
         SetRenderScale(static_cast<RndObject *>(pSys), sSpriteScale);
@@ -279,15 +273,15 @@ void TnlGems::ClearInstances(const char *pszName) {
 }
 
 void TnlGems::ApplyRenderScales() {
-    ApplyRenderScales(TheGfxManager.mScrollSpeed);
+    ApplyRenderScales(TheGfxManager.GetScrollSpeed());
 }
 
 MeshGroup *TnlGems::GetMeshGroup(char nType) {
-    return mMeshGroups[nType];
+    return mMeshGroups[nType].get();
 }
 
 SpriteGroup *TnlGems::GetSpriteGroup(char nType) {
-    return mSpriteGroups[static_cast<char>(nType - TnlGem::kTypeSprite)];
+    return mSpriteGroups[static_cast<char>(nType - TnlGem::kTypeSprite)].get();
 }
 
 void TnlGems::AddGem(
@@ -343,7 +337,7 @@ void TnlGems::Clear() {
 }
 
 void TnlGems::Poll(const TnlTrackRange *pRange) {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     const char nFocusTrack = mHasFocusTrack ? mFocusTrack : kNoTrack;
     const float flTrailTick = flTick - mTrailTicks;
     auto it = mGems.begin();
@@ -383,7 +377,7 @@ void TnlGems::Poll(const TnlTrackRange *pRange) {
 }
 
 void TnlGems::DrawComposites() {
-    for (auto *pGroup : mMeshGroups) {
+    for (const auto &pGroup : mMeshGroups) {
         if (pGroup->mMeshes.empty()) {
             continue;
         }

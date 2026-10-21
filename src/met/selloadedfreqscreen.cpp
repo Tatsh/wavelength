@@ -42,13 +42,13 @@ bool SelLoadedFreqScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SelLoadedFreqScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         auto *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kList, false));
-        Campaign profile(mProfiles[pList->mSelected]);
+        Campaign profile(mProfiles[pList->GetSelected()]);
         TheGameDb->ClearPlayers();
         TheGameDb->AddPlayer(&profile);
         TheMetagame.GetGizmo()->SetShowAvatar(true);
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
             TheUI.GotoScreen("solofreq2soloskill");
         } else {
             TheUI.GotoScreen("net_load_config");
@@ -67,7 +67,7 @@ bool SelLoadedFreqScreen::HandleJoypad(JoypadInputMsg *pMsg) {
                 TheGameDb->ClearPlayers();
                 TheGameDb->AddPlayer(&mProfile);
             }
-            if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+            if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                 TheUI.GotoScreen("f_net_confirm");
             } else {
                 TheUI.GotoScreen("f_confirm");

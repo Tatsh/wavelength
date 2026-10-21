@@ -33,11 +33,11 @@ bool RemixTypeScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool RemixTypeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     TheGameDb->SetTutorial(0);
     if (button == "new") {
         TheGameDb->SetPracticeMode(false);

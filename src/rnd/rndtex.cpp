@@ -156,9 +156,9 @@ void RndTex::SyncBitmap() {
     TheManager.GetResource(mFile, &pData, &nSize);
     if (pData != nullptr) {
         mBitmap.Create(static_cast<unsigned char *>(pData));
-        mWidth = mBitmap.mWidth;
-        mHeight = mBitmap.mHeight;
-        mBpp = mBitmap.mBpp;
+        mWidth = mBitmap.GetWidth();
+        mHeight = mBitmap.GetHeight();
+        mBpp = mBitmap.GetBpp();
     }
     if (!CheckSize()) {
         mBitmap.Reset();

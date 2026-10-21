@@ -101,8 +101,8 @@ Interpolator *ObjectToInterpolator(const DataArray *pArray) {
     }
     DebugWarn("unknown interpolator type: %s\nat %d in %s",
               pArray->Sym(kConfigType),
-              pArray->mLine,
-              pArray->mFile);
+              pArray->GetLine(),
+              pArray->GetFile());
     return nullptr;
 }
 
@@ -255,11 +255,11 @@ void TableInterpolator::Resample(Interpolator &source, int nCount) {
         mTable = static_cast<float *>(PoolMemAlloc(nCount * sizeof(float), kTableTag, 0));
         mCount = nCount;
     }
-    float fX = source.mX0;
+    float fX = source.GetX0();
     mX0 = fX;
-    mX1 = source.mX1;
-    mY0 = source.mY0;
-    mY1 = source.mY1;
+    mX1 = source.GetX1();
+    mY0 = source.GetY0();
+    mY1 = source.GetY1();
     const float fStep = (mX1 - fX) / static_cast<float>(nCount - 1);
     for (int i = 0; i < mCount; ++i) {
         mTable[i] = source.Interp(fX);

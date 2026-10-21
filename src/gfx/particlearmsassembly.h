@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "gfx/tnlgeom.h"
 #include "math/interpolator.h"
 #include "rnd/rndparticlesys.h"
@@ -80,12 +82,14 @@ public:
      */
     const char *Name() const;
 
-    RndParticleSys *mSys;      /*!< The particle system. */
-    RndTransAnim *mPath;       /*!< The path the arms follow, `path`, or null. */
-    Interpolator *mTicksAhead; /*!< The ticks ahead of the song the arms turn at, over ticks. */
-    int mNumArms;              /*!< The number of arms, `num_arms`. */
-    float mRotationSpeed;      /*!< The turn of the arms per tick, in radians. */
-    float mArmLength;          /*!< The length of an arm, `arm_length`. */
-    float mTick;               /*!< The tick the particles are emitted up to. */
-    float mAngle;              /*!< The angle of the first arm, in radians. */
+private:
+    std::unique_ptr<RndParticleSys> mSys; /*!< The particle system. */
+    RndTransAnim *mPath; /*!< The path the arms follow, `path`, or null. Borrowed. */
+    std::unique_ptr<Interpolator> mTicksAhead; /*!< The ticks ahead of the song the arms turn at,
+                                                  over ticks. */
+    int mNumArms;                              /*!< The number of arms, `num_arms`. */
+    float mRotationSpeed;                      /*!< The turn of the arms per tick, in radians. */
+    float mArmLength;                          /*!< The length of an arm, `arm_length`. */
+    float mTick;                               /*!< The tick the particles are emitted up to. */
+    float mAngle;                              /*!< The angle of the first arm, in radians. */
 };

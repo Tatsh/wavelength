@@ -15,89 +15,89 @@ MCManager TheMCManager;
 
 void MCManager::Init() {
     LoadMemcardConfig();
-    mInitialCheck = new MCInitialCheckTask;
-    mSaveFreq = new MCSaveFreqTask;
-    mLoadFreqs = new MCLoadFreqsTask;
-    mDeleteFreq = new MCDeleteFreqTask;
-    mSaveRemix = new MCSaveRemixTask;
-    mLoadRemix = new MCLoadRemixTask;
-    mListRemixes = new MCListRemixesTask;
-    mDeleteRemix = new MCDeleteRemixTask;
-    mSaveSettings = new MCSaveSettingsTask;
-    mLoadSettings = new MCLoadSettingsTask;
-    mSaveData = new MCSaveDataTask;
-    mFormatCard = new MCFormatCardTask;
-    mUnformatCard = new MCUnformatCardTask;
-    mCardStatus = new MCCardStatusTask;
-    mListNetConfigs = new MCListNetConfigsTask;
+    mInitialCheck = std::make_unique<MCInitialCheckTask>();
+    mSaveFreq = std::make_unique<MCSaveFreqTask>();
+    mLoadFreqs = std::make_unique<MCLoadFreqsTask>();
+    mDeleteFreq = std::make_unique<MCDeleteFreqTask>();
+    mSaveRemix = std::make_unique<MCSaveRemixTask>();
+    mLoadRemix = std::make_unique<MCLoadRemixTask>();
+    mListRemixes = std::make_unique<MCListRemixesTask>();
+    mDeleteRemix = std::make_unique<MCDeleteRemixTask>();
+    mSaveSettings = std::make_unique<MCSaveSettingsTask>();
+    mLoadSettings = std::make_unique<MCLoadSettingsTask>();
+    mSaveData = std::make_unique<MCSaveDataTask>();
+    mFormatCard = std::make_unique<MCFormatCardTask>();
+    mUnformatCard = std::make_unique<MCUnformatCardTask>();
+    mCardStatus = std::make_unique<MCCardStatusTask>();
+    mListNetConfigs = std::make_unique<MCListNetConfigsTask>();
 }
 
 void MCManager::Terminate() {
-    delete mListNetConfigs;
-    delete mCardStatus;
-    delete mUnformatCard;
-    delete mFormatCard;
-    delete mSaveData;
-    delete mLoadSettings;
-    delete mSaveSettings;
-    delete mDeleteRemix;
-    delete mListRemixes;
-    delete mLoadRemix;
-    delete mSaveRemix;
-    delete mDeleteFreq;
-    delete mLoadFreqs;
-    delete mSaveFreq;
-    delete mInitialCheck;
+    mListNetConfigs.reset();
+    mCardStatus.reset();
+    mUnformatCard.reset();
+    mFormatCard.reset();
+    mSaveData.reset();
+    mLoadSettings.reset();
+    mSaveSettings.reset();
+    mDeleteRemix.reset();
+    mListRemixes.reset();
+    mLoadRemix.reset();
+    mSaveRemix.reset();
+    mDeleteFreq.reset();
+    mLoadFreqs.reset();
+    mSaveFreq.reset();
+    mInitialCheck.reset();
     FreeMemcardConfig();
 }
 
 void MCManager::InitialCheck(MemcardUser *pUser, int nSlot) {
     mInitialCheck->Set(nSlot);
-    StartTask(mInitialCheck, pUser);
+    StartTask(mInitialCheck.get(), pUser);
 }
 
 void MCManager::GetCardStatus(MemcardUser *pUser, int nSlot) {
     mCardStatus->Set(nSlot);
-    StartTask(mCardStatus, pUser);
+    StartTask(mCardStatus.get(), pUser);
 }
 
 void MCManager::SaveFreq(
     MemcardUser *pUser, int nSlot, Campaign *pProfile, const char *pszOldName, int nOverwrite) {
     mSaveFreq->Set(nSlot, pProfile, pszOldName, nOverwrite);
-    StartTask(mSaveFreq, pUser);
+    StartTask(mSaveFreq.get(), pUser);
 }
 
 void MCManager::LoadFreqs(MemcardUser *pUser, int nSlot) {
     ClearResults();
     mLoadFreqs->Set(nSlot, &mProfiles);
-    StartTask(mLoadFreqs, pUser);
+    StartTask(mLoadFreqs.get(), pUser);
 }
 
 void MCManager::DeleteFreq(MemcardUser *pUser, int nSlot, const char *pszName) {
     mDeleteFreq->Set(nSlot, pszName);
-    StartTask(mDeleteFreq, pUser);
+    StartTask(mDeleteFreq.get(), pUser);
 }
 
 void MCManager::SaveRemix(
     MemcardUser *pUser, int nSlot, RemixInfo *pInfo, const void *pData, int nOverwrite) {
     mSaveRemix->Set(nSlot, pInfo->mName, pInfo, pData, pInfo->mDataSize, nOverwrite);
-    StartTask(mSaveRemix, pUser);
+    StartTask(mSaveRemix.get(), pUser);
 }
 
 void MCManager::LoadRemix(
     MemcardUser *pUser, int nSlot, const char *pszName, void *pBuffer, int nSize) {
     mLoadRemix->Set(nSlot, pszName, pBuffer, nSize);
-    StartTask(mLoadRemix, pUser);
+    StartTask(mLoadRemix.get(), pUser);
 }
 
 void MCManager::ListRemixes(MemcardUser *pUser, int nSlot) {
     mListRemixes->Set(nSlot, &mRemixInfos);
-    StartTask(mListRemixes, pUser);
+    StartTask(mListRemixes.get(), pUser);
 }
 
 void MCManager::DeleteRemix(MemcardUser *pUser, int nSlot, const char *pszName) {
     mDeleteRemix->Set(nSlot, pszName);
-    StartTask(mDeleteRemix, pUser);
+    StartTask(mDeleteRemix.get(), pUser);
 }
 
 void MCManager::SaveSettings(MemcardUser *pUser,
@@ -105,22 +105,22 @@ void MCManager::SaveSettings(MemcardUser *pUser,
                              GameOptions *pSettings,
                              int nOverwrite) {
     mSaveSettings->Set(nSlot, pSettings, nOverwrite);
-    StartTask(mSaveSettings, pUser);
+    StartTask(mSaveSettings.get(), pUser);
 }
 
 void MCManager::LoadSettings(MemcardUser *pUser, int nSlot) {
     mLoadSettings->Set(nSlot, &mSettings);
-    StartTask(mLoadSettings, pUser);
+    StartTask(mLoadSettings.get(), pUser);
 }
 
 void MCManager::ListNetConfigs(MemcardUser *pUser, int nSlot) {
     mListNetConfigs->Set(nSlot);
-    StartTask(mListNetConfigs, pUser);
+    StartTask(mListNetConfigs.get(), pUser);
 }
 
 void MCManager::FormatCard(MemcardUser *pUser, int nSlot) {
     mFormatCard->Set(nSlot);
-    StartTask(mFormatCard, pUser);
+    StartTask(mFormatCard.get(), pUser);
 }
 
 void MCManager::SaveFile(MemcardUser *pUser,
@@ -130,7 +130,7 @@ void MCManager::SaveFile(MemcardUser *pUser,
                          int nSize,
                          [[maybe_unused]] bool bReserved) {
     mSaveData->Set(nSlot, pszName, pData, nSize);
-    StartTask(mSaveData, pUser);
+    StartTask(mSaveData.get(), pUser);
 }
 
 void MCManager::StartTask(MemcardSerialTask *pTask, MemcardUser *pUser) {
@@ -160,38 +160,38 @@ void MCManager::Poll() {
         return;
     }
     const int nStatus = mCurrentTask->GetResult();
-    if (mCurrentTask == mSaveFreq) {
+    if (mCurrentTask == mSaveFreq.get()) {
         mUser->OnFreqSaved(nStatus, mSaveFreq->GetNeeded());
-    } else if (mCurrentTask == mLoadFreqs) {
+    } else if (mCurrentTask == mLoadFreqs.get()) {
         mUser->OnFreqsLoaded(nStatus, &mProfiles);
-    } else if (mCurrentTask == mDeleteFreq) {
+    } else if (mCurrentTask == mDeleteFreq.get()) {
         mUser->OnFreqDeleted(nStatus);
-    } else if (mCurrentTask == mSaveRemix) {
+    } else if (mCurrentTask == mSaveRemix.get()) {
         mUser->OnRemixSaved(nStatus, mSaveRemix->GetNeeded());
-    } else if (mCurrentTask == mLoadRemix) {
+    } else if (mCurrentTask == mLoadRemix.get()) {
         mUser->OnRemixLoaded(nStatus);
-    } else if (mCurrentTask == mListRemixes) {
+    } else if (mCurrentTask == mListRemixes.get()) {
         mUser->OnRemixesListed(nStatus, &mRemixInfos);
-    } else if (mCurrentTask == mDeleteRemix) {
+    } else if (mCurrentTask == mDeleteRemix.get()) {
         mUser->OnRemixDeleted(nStatus);
-    } else if (mCurrentTask == mSaveSettings) {
+    } else if (mCurrentTask == mSaveSettings.get()) {
         mUser->OnSettingsSaved(nStatus, mSaveSettings->GetNeeded());
-    } else if (mCurrentTask == mLoadSettings) {
+    } else if (mCurrentTask == mLoadSettings.get()) {
         mUser->OnSettingsLoaded(nStatus, mSettings);
-    } else if (mCurrentTask == mInitialCheck) {
+    } else if (mCurrentTask == mInitialCheck.get()) {
         mUser->OnInitialCheck(nStatus,
-                              mInitialCheck->mGetInfo->mFormat,
-                              mInitialCheck->mGetInfo->mFree,
-                              mInitialCheck->mNeeded);
-    } else if (mCurrentTask == mCardStatus) {
+                              mInitialCheck->GetGetInfo()->GetFormat(),
+                              mInitialCheck->GetGetInfo()->GetFree(),
+                              mInitialCheck->GetNeeded());
+    } else if (mCurrentTask == mCardStatus.get()) {
         mUser->OnCardStatus(nStatus);
-    } else if (mCurrentTask == mSaveData) {
+    } else if (mCurrentTask == mSaveData.get()) {
         mUser->OnFileSaved(nStatus);
-    } else if (mCurrentTask == mListNetConfigs) {
+    } else if (mCurrentTask == mListNetConfigs.get()) {
         mUser->OnNetConfigsListed(nStatus, mListNetConfigs->GetConfigs());
-    } else if (mCurrentTask == mFormatCard) {
+    } else if (mCurrentTask == mFormatCard.get()) {
         mUser->OnCardFormatted(nStatus);
-    } else if (mCurrentTask == mUnformatCard) {
+    } else if (mCurrentTask == mUnformatCard.get()) {
         mUser->OnCardUnformatted(nStatus);
     } else {
         DebugWarn(" ERROR: bad task!!!\n");

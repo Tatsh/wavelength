@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/inputmgr.h"
 #include "game/world.h"
 
@@ -165,13 +167,21 @@ private:
      */
     static void ResetSynthControllers();
 
-public:
-    World *mWorld;       /*!< The world Load() built, or null. */
-    InputMgr *mInputMgr; /*!< The router Start() attached, or null. */
-    int mState;          /*!< One of State. */
-    int mEvent;          /*!< The Event Poll() reports next. */
-    int mInitialized;    /*!< Set by Init(). */
-    int mWorldStarted;   /*!< Set once the loading world was told to load its assets. */
+    /** @return The world Load() built, or null. */
+    World *GetWorld() const {
+        return mWorld.get();
+    }
+
+    /** @return The router Start() attached, or null. */
+    InputMgr *GetInputMgr() const {
+        return mInputMgr.get();
+    }
+    std::unique_ptr<World> mWorld;       /*!< The world Load() built, or null. */
+    std::unique_ptr<InputMgr> mInputMgr; /*!< The router Start() attached, or null. */
+    int mState;                          /*!< One of State. */
+    int mEvent;                          /*!< The Event Poll() reports next. */
+    int mInitialized;                    /*!< Set by Init(). */
+    int mWorldStarted; /*!< Set once the loading world was told to load its assets. */
 };
 
 /**

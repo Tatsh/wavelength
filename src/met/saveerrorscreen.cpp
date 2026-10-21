@@ -24,8 +24,8 @@ bool SaveErrorScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SaveErrorScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross &&
-        std::strcmp(pMsg->mComponent->mName, kReplaceComponent) == 0) {
+    if (pMsg->GetButton() == kPadCross &&
+        std::strcmp(pMsg->GetComponent()->GetName(), kReplaceComponent) == 0) {
         auto *pScreen =
             dynamic_cast<OverwriteSaveScreen *>(TheUI.FindScreen(mStartScreen.c_str(), false));
         pScreen->mOverwriteStatus = kOverwrite;

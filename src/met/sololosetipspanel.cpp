@@ -71,7 +71,7 @@ void SoloLoseTipsPanel::Poll(float fTime) {
 }
 
 const char *SoloLoseTipsPanel::PickTip(DataArray *pTips) {
-    const int nSkillLevel = TheGameDb->mSkillLevel;
+    const int nSkillLevel = TheGameDb->GetSkillLevel();
     if (mProgressTipNext == 0) {
         return PickFillerTip(pTips->FindArray(kFillerEntry, true), nSkillLevel);
     }

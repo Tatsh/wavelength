@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/gamelogic.h"
@@ -231,7 +232,7 @@ private:
      * @return Whether the current bar is at or after the end of the song.
      */
     bool IsPastEnd() const {
-        return TheSongScheduler.mTick / mTicksPerBar >= mNumBars;
+        return TheSongScheduler.GetTick() / mTicksPerBar >= mNumBars;
     }
 
     /**
@@ -479,13 +480,13 @@ private:
      */
     void OnPlayerAborted(PlayerAbortedMsg *pMsg);
 
-    Player *mLocalPlayer;            /*!< The player on this console, online. */
-    int mLeader;                     /*!< The index of the score leader, or -1. */
-    Ptr<Command> mFinishCommand;     /*!< The command that calls Finish() at the song end. */
-    Ptr<Command> mLeaderCommand;     /*!< The command that calls PlayLeaderSound(). */
-    std::vector<unsigned> mVersions; /*!< The last update sequence number of each player. */
-    unsigned mArbiterVersion;        /*!< The sequence number of the last arbiter packet. */
-    std::vector<int> mNetToPlayer;   /*!< The player of each session order. */
-    NetArbiter *mArbiter;            /*!< The arbiter, on the hosting console. */
-    std::vector<bool> mFinished;     /*!< Whether each player finished the song. */
+    Player *mLocalPlayer;                 /*!< The player on this console, online. Borrowed. */
+    int mLeader;                          /*!< The index of the score leader, or -1. */
+    Ptr<Command> mFinishCommand;          /*!< The command that calls Finish() at the song end. */
+    Ptr<Command> mLeaderCommand;          /*!< The command that calls PlayLeaderSound(). */
+    std::vector<unsigned> mVersions;      /*!< The last update sequence number of each player. */
+    unsigned mArbiterVersion;             /*!< The sequence number of the last arbiter packet. */
+    std::vector<int> mNetToPlayer;        /*!< The player of each session order. */
+    std::unique_ptr<NetArbiter> mArbiter; /*!< The arbiter, on the hosting console. */
+    std::vector<bool> mFinished;          /*!< Whether each player finished the song. */
 };

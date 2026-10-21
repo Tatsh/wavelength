@@ -79,12 +79,17 @@ public:
      */
     bool RebuildEmblem();
 
-    const char *mEmblem;                      /*!< The emblem shown, Avatar::sNone for none. */
-    const char *mPendingEmblem;               /*!< The emblem SetEmblem() last requested. */
-    RndTex *mEmblemTex;                       /*!< The texture of the emblem, or null. */
-    std::unique_ptr<RndLoader> mEmblemLoader; /*!< The load of the file of mPendingEmblem. */
+    /** @return The emblem shown, the symbol of no emblem for none. */
+    const char *GetEmblem() const {
+        return mEmblem;
+    }
 
 private:
+    const char *mEmblem;                      /*!< The emblem shown, Avatar::sNone for none. */
+    const char *mPendingEmblem;               /*!< The emblem SetEmblem() last requested. */
+    std::unique_ptr<RndTex> mEmblemTex;       /*!< The texture of the emblem, or null. */
+    std::unique_ptr<RndLoader> mEmblemLoader; /*!< The load of the file of mPendingEmblem. */
+
     /**
      * Show the emblem on the last stage of the material, or hide that stage for no emblem.
      *

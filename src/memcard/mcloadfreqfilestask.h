@@ -32,11 +32,6 @@ public:
      */
     void Set(int nPort, std::vector<Campaign> *pProfiles);
 
-    int mCardPort; /*!< The memory card slot the files load from. */
-    int mIndex;    /*!< The index into MemcardTask::sDirEntries of the file loading now. */
-    std::vector<Campaign> *mProfiles; /*!< Receives the profiles. */
-    MCLoadFileTask mLoad;             /*!< The step that loads one file. */
-
 protected:
     /**
      * Size the profiles to the files, sort the files, and start loading the newest. The PAL build
@@ -64,4 +59,9 @@ private:
      * @ghidraAddress PAL: 0x00162e28
      */
     void LoadNext();
+
+    int mCardPort; /*!< The memory card slot the files load from. */
+    int mIndex;    /*!< The index into MemcardTask::sDirEntries of the file loading now. */
+    std::vector<Campaign> *mProfiles; /*!< Receives the profiles. Borrowed. */
+    MCLoadFileTask mLoad;             /*!< The step that loads one file. */
 };

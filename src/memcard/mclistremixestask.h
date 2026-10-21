@@ -42,7 +42,9 @@ public:
      */
     void Set(int nPort, std::vector<RemixInfo> *pInfos);
 
-    MCGetInfoTask *mGetInfo;        /*!< The step that reads the card information. */
-    MCGetRemixNamesTask *mNames;    /*!< The step that lists the remix files. */
-    MCGetAllRemixInfosTask *mInfos; /*!< The step that reads the descriptions. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;        /*!< The step that reads the card information. Borrowed. */
+    MCGetRemixNamesTask *mNames;    /*!< The step that lists the remix files. Borrowed. */
+    MCGetAllRemixInfosTask *mInfos; /*!< The step that reads the descriptions. Borrowed. */
 };

@@ -40,6 +40,8 @@ public:
      */
     void Set(int nPort, const char *pszName, const void *pData, int nSize);
 
-    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. */
-    MCSaveFileTask *mSaveFile; /*!< The work that saves the file. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. Borrowed. */
+    MCSaveFileTask *mSaveFile; /*!< The work that saves the file. Borrowed. */
 };

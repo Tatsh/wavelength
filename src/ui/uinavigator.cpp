@@ -32,7 +32,7 @@ UINavigator::UINavigator(DataArray *pData, UIPanel *pPanel) {
         for (int j = kFirstNameIndex; j < pList->Size(); ++j) {
             row.push_back(pPanel->FindComponent(pList->Sym(j), true));
         }
-        Highlight(mPanel->mFocus, row);
+        Highlight(mPanel->GetFocus(), row);
         if (bVertical) {
             mVertical.push_back(row);
         } else {
@@ -74,7 +74,7 @@ bool UINavigator::DispatchPriv(Message *pMsg) {
 }
 
 int UINavigator::FindFocus(int nAxis) {
-    UIComponent *pFocus = mPanel->mFocus;
+    UIComponent *pFocus = mPanel->GetFocus();
     int nIndex = kNotFound;
     std::vector<UIComponent *> *pRow = nullptr;
     if (pFocus != nullptr) {
@@ -132,10 +132,10 @@ bool UINavigator::HandleJoypad(JoypadInputMsg *pMsg) {
 
 bool UINavigator::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
     for (unsigned int i = 0; i < mHorizontal.size(); ++i) {
-        Highlight(pMsg->mComponent, mHorizontal[i]);
+        Highlight(pMsg->GetComponent(), mHorizontal[i]);
     }
     for (unsigned int i = 0; i < mVertical.size(); ++i) {
-        Highlight(pMsg->mComponent, mVertical[i]);
+        Highlight(pMsg->GetComponent(), mVertical[i]);
     }
     return false;
 }

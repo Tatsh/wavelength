@@ -19,11 +19,9 @@ constexpr float kMicrosecondsPerMillisecond = 1000.0f;
 
 } // namespace
 
-float *TheSfxTickDuration;
+std::unique_ptr<float> TheSfxTickDuration;
 
-SFXBuilder::~SFXBuilder() {
-    delete mBuilder;
-}
+SFXBuilder::~SFXBuilder() = default;
 
 void SFXBuilder::Read() {
     MidiReader reader(mFile, this);
@@ -33,9 +31,8 @@ void SFXBuilder::Read() {
 void SFXBuilder::OnEndTrack() {
     if (mBuilder != nullptr) {
         mBuilder->OnEndTrack();
-        delete mBuilder;
+        mBuilder.reset();
     }
-    mBuilder = nullptr;
     ++mTrack;
 }
 
@@ -49,7 +46,7 @@ void SFXBuilder::OnMidi(int nTick,
 }
 
 void SFXBuilder::OnTempo([[maybe_unused]] int nTick, int nMicrosecondsPerBeat) {
-    TheSfxTickDuration = new float;
+    TheSfxTickDuration = std::make_unique<float>();
     *TheSfxTickDuration =
         static_cast<float>(nMicrosecondsPerBeat) / kMicrosecondsPerMillisecond / kTicksPerBeat;
 }
@@ -65,89 +62,90 @@ void SFXBuilder::OnText([[maybe_unused]] int nTick, const char *pszText, unsigne
         const char *pszName;
         Ptr<Muse> *(*pfnCue)(FxMidi *pFx);
     } cues[] = {
-        {"MISS", [](FxMidi *pFx) { return &pFx->mMiss; }},
-        {"UNCATCHABLE", [](FxMidi *pFx) { return &pFx->mUncatchable; }},
-        {"CHECKPOINT_CHEER", [](FxMidi *pFx) { return &pFx->mCheckpointCheer; }},
-        {"CHECKPOINT_INSANE", [](FxMidi *pFx) { return &pFx->mCheckpointInsane; }},
-        {"WIN_CHEER", [](FxMidi *pFx) { return &pFx->mWinCheer; }},
-        {"WARNING", [](FxMidi *pFx) { return &pFx->mWarning; }},
-        {"GUIDETICK1", [](FxMidi *pFx) { return &pFx->mGuideTicks[0]; }},
-        {"GUIDETICK2", [](FxMidi *pFx) { return &pFx->mGuideTicks[1]; }},
-        {"GUIDETICK3", [](FxMidi *pFx) { return &pFx->mGuideTicks[2]; }},
+        {"MISS", [](FxMidi *pFx) { return &pFx->GetMiss(); }},
+        {"UNCATCHABLE", [](FxMidi *pFx) { return &pFx->GetUncatchable(); }},
+        {"CHECKPOINT_CHEER", [](FxMidi *pFx) { return &pFx->GetCheckpointCheer(); }},
+        {"CHECKPOINT_INSANE", [](FxMidi *pFx) { return &pFx->GetCheckpointInsane(); }},
+        {"WIN_CHEER", [](FxMidi *pFx) { return &pFx->GetWinCheer(); }},
+        {"WARNING", [](FxMidi *pFx) { return &pFx->GetWarning(); }},
+        {"GUIDETICK1", [](FxMidi *pFx) { return &pFx->GetGuideTicks(0); }},
+        {"GUIDETICK2", [](FxMidi *pFx) { return &pFx->GetGuideTicks(1); }},
+        {"GUIDETICK3", [](FxMidi *pFx) { return &pFx->GetGuideTicks(2); }},
         {"AUTOCATCHER_CATCH",
-         [](FxMidi *pFx) { return &pFx->mPowerupCatches[FxMidi::kPowerupAutocatcher]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupCatches(FxMidi::kPowerupAutocatcher); }},
         {"FREESTYLER_CATCH",
-         [](FxMidi *pFx) { return &pFx->mPowerupCatches[FxMidi::kPowerupFreestyler]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupCatches(FxMidi::kPowerupFreestyler); }},
         {"MULTIPLIER_CATCH",
-         [](FxMidi *pFx) { return &pFx->mPowerupCatches[FxMidi::kPowerupMultiplier]; }},
-        {"BUMPER_CATCH", [](FxMidi *pFx) { return &pFx->mPowerupCatches[FxMidi::kPowerupBumper]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupCatches(FxMidi::kPowerupMultiplier); }},
+        {"BUMPER_CATCH",
+         [](FxMidi *pFx) { return &pFx->GetPowerupCatches(FxMidi::kPowerupBumper); }},
         {"CRIPPLER_CATCH",
-         [](FxMidi *pFx) { return &pFx->mPowerupCatches[FxMidi::kPowerupCrippler]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupCatches(FxMidi::kPowerupCrippler); }},
         {"SLOWDOWN_CATCH",
-         [](FxMidi *pFx) { return &pFx->mPowerupCatches[FxMidi::kPowerupSlowdown]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupCatches(FxMidi::kPowerupSlowdown); }},
         {"AUTOCATCHER_DEPLOY",
-         [](FxMidi *pFx) { return &pFx->mPowerupDeploys[FxMidi::kPowerupAutocatcher]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupDeploys(FxMidi::kPowerupAutocatcher); }},
         {"FREESTYLER_DEPLOY",
-         [](FxMidi *pFx) { return &pFx->mPowerupDeploys[FxMidi::kPowerupFreestyler]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupDeploys(FxMidi::kPowerupFreestyler); }},
         {"MULTIPLIER_DEPLOY",
-         [](FxMidi *pFx) { return &pFx->mPowerupDeploys[FxMidi::kPowerupMultiplier]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupDeploys(FxMidi::kPowerupMultiplier); }},
         {"BUMPER_DEPLOY",
-         [](FxMidi *pFx) { return &pFx->mPowerupDeploys[FxMidi::kPowerupBumper]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupDeploys(FxMidi::kPowerupBumper); }},
         {"CRIPPLER_DEPLOY",
-         [](FxMidi *pFx) { return &pFx->mPowerupDeploys[FxMidi::kPowerupCrippler]; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupDeploys(FxMidi::kPowerupCrippler); }},
         {"SLOWDOWN_DEPLOY",
-         [](FxMidi *pFx) { return &pFx->mPowerupDeploys[FxMidi::kPowerupSlowdown]; }},
-        {"WRONG", [](FxMidi *pFx) { return &pFx->mWrong; }},
-        {"SQUARE", [](FxMidi *pFx) { return &pFx->mSquare; }},
-        {"LAZYSUSAN", [](FxMidi *pFx) { return &pFx->mLazySusan; }},
-        {"SOLOPORTAL", [](FxMidi *pFx) { return &pFx->mSoloPortal; }},
-        {"MULTIPORTAL", [](FxMidi *pFx) { return &pFx->mMultiPortal; }},
-        {"NETPORTAL", [](FxMidi *pFx) { return &pFx->mNetPortal; }},
-        {"TRAVELSWOOSH", [](FxMidi *pFx) { return &pFx->mTravelSwoosh; }},
-        {"LEFT", [](FxMidi *pFx) { return &pFx->mLeft; }},
-        {"RIGHT", [](FxMidi *pFx) { return &pFx->mRight; }},
-        {"UP", [](FxMidi *pFx) { return &pFx->mUp; }},
-        {"DOWN", [](FxMidi *pFx) { return &pFx->mDown; }},
-        {"SELECT", [](FxMidi *pFx) { return &pFx->mSelect; }},
-        {"BACK", [](FxMidi *pFx) { return &pFx->mBack; }},
-        {"CHEAT", [](FxMidi *pFx) { return &pFx->mCheat; }},
-        {"PROJECTOR", [](FxMidi *pFx) { return &pFx->mProjector; }},
-        {"UNLOCK", [](FxMidi *pFx) { return &pFx->mUnlock; }},
-        {"REDLEAD", [](FxMidi *pFx) { return &pFx->mLeads[FxMidi::kColorRed]; }},
-        {"REDWINS", [](FxMidi *pFx) { return &pFx->mWins[FxMidi::kColorRed]; }},
-        {"GREENLEAD", [](FxMidi *pFx) { return &pFx->mLeads[FxMidi::kColorGreen]; }},
-        {"GREENWINS", [](FxMidi *pFx) { return &pFx->mWins[FxMidi::kColorGreen]; }},
-        {"PURPLELEAD", [](FxMidi *pFx) { return &pFx->mLeads[FxMidi::kColorPurple]; }},
-        {"PURPLEWINS", [](FxMidi *pFx) { return &pFx->mWins[FxMidi::kColorPurple]; }},
-        {"YELLOWLEAD", [](FxMidi *pFx) { return &pFx->mLeads[FxMidi::kColorYellow]; }},
-        {"YELLOWWINS", [](FxMidi *pFx) { return &pFx->mWins[FxMidi::kColorYellow]; }},
-        {"DUEL_PLAYER1", [](FxMidi *pFx) { return &pFx->mDuelPlayers[0]; }},
-        {"DUEL_PLAYER2", [](FxMidi *pFx) { return &pFx->mDuelPlayers[1]; }},
-        {"KEYBOARD_LEFT_UP", [](FxMidi *pFx) { return &pFx->mKeyboardLeftUp; }},
-        {"KEYBOARD_RIGHT_DOWN", [](FxMidi *pFx) { return &pFx->mKeyboardRightDown; }},
-        {"KEYBOARD_CIRCLE", [](FxMidi *pFx) { return &pFx->mKeyboardCircle; }},
-        {"KEYBOARD_BACK", [](FxMidi *pFx) { return &pFx->mKeyboardBack; }},
-        {"KEYBOARD_KEYENTER", [](FxMidi *pFx) { return &pFx->mKeyboardKeyEnter; }},
-        {"ARENA_UNLOCK", [](FxMidi *pFx) { return &pFx->mArenaUnlock; }},
-        {"DUEL_LAYPATT", [](FxMidi *pFx) { return &pFx->mDuelLayPattern; }},
-        {"DUEL_CATCHPATT", [](FxMidi *pFx) { return &pFx->mDuelCatchPattern; }},
-        {"DUEL_NICE", [](FxMidi *pFx) { return &pFx->mDuelNice; }},
-        {"DUEL_YOUGOTIT", [](FxMidi *pFx) { return &pFx->mDuelYouGotIt; }},
-        {"DUEL_ALMOST", [](FxMidi *pFx) { return &pFx->mDuelAlmost; }},
-        {"DUEL_ONELETTER", [](FxMidi *pFx) { return &pFx->mDuelOneLetter; }},
-        {"DUEL_AWW", [](FxMidi *pFx) { return &pFx->mDuelAww; }},
-        {"DUEL_PERFECT", [](FxMidi *pFx) { return &pFx->mDuelPerfect; }},
-        {"DUEL_YEAH", [](FxMidi *pFx) { return &pFx->mDuelYeah; }},
-        {"DECRYPT", [](FxMidi *pFx) { return &pFx->mDecrypt; }},
-        {"TEXT", [](FxMidi *pFx) { return &pFx->mText; }},
-        {"DUEL_GAMETIE", [](FxMidi *pFx) { return &pFx->mDuelGameTie; }},
-        {"DUEL_GREENWINS", [](FxMidi *pFx) { return &pFx->mDuelGreenWins; }},
-        {"DUEL_PURPLEWINS", [](FxMidi *pFx) { return &pFx->mDuelPurpleWins; }},
-        {"DUEL_MISS", [](FxMidi *pFx) { return &pFx->mDuelMiss; }},
-        {"DUEL_MISSTHIS", [](FxMidi *pFx) { return &pFx->mDuelMissThis; }},
-        {"DUEL_CHEER", [](FxMidi *pFx) { return &pFx->mDuelCheer; }},
-        {"ERASE1", [](FxMidi *pFx) { return &pFx->mErase; }},
-        {"ERASE2", [](FxMidi *pFx) { return &pFx->mEraseSection; }},
+         [](FxMidi *pFx) { return &pFx->GetPowerupDeploys(FxMidi::kPowerupSlowdown); }},
+        {"WRONG", [](FxMidi *pFx) { return &pFx->GetWrong(); }},
+        {"SQUARE", [](FxMidi *pFx) { return &pFx->GetSquare(); }},
+        {"LAZYSUSAN", [](FxMidi *pFx) { return &pFx->GetLazySusan(); }},
+        {"SOLOPORTAL", [](FxMidi *pFx) { return &pFx->GetSoloPortal(); }},
+        {"MULTIPORTAL", [](FxMidi *pFx) { return &pFx->GetMultiPortal(); }},
+        {"NETPORTAL", [](FxMidi *pFx) { return &pFx->GetNetPortal(); }},
+        {"TRAVELSWOOSH", [](FxMidi *pFx) { return &pFx->GetTravelSwoosh(); }},
+        {"LEFT", [](FxMidi *pFx) { return &pFx->GetLeft(); }},
+        {"RIGHT", [](FxMidi *pFx) { return &pFx->GetRight(); }},
+        {"UP", [](FxMidi *pFx) { return &pFx->GetUp(); }},
+        {"DOWN", [](FxMidi *pFx) { return &pFx->GetDown(); }},
+        {"SELECT", [](FxMidi *pFx) { return &pFx->GetSelect(); }},
+        {"BACK", [](FxMidi *pFx) { return &pFx->GetBack(); }},
+        {"CHEAT", [](FxMidi *pFx) { return &pFx->GetCheat(); }},
+        {"PROJECTOR", [](FxMidi *pFx) { return &pFx->GetProjector(); }},
+        {"UNLOCK", [](FxMidi *pFx) { return &pFx->GetUnlock(); }},
+        {"REDLEAD", [](FxMidi *pFx) { return &pFx->GetLeads(FxMidi::kColorRed); }},
+        {"REDWINS", [](FxMidi *pFx) { return &pFx->GetWins(FxMidi::kColorRed); }},
+        {"GREENLEAD", [](FxMidi *pFx) { return &pFx->GetLeads(FxMidi::kColorGreen); }},
+        {"GREENWINS", [](FxMidi *pFx) { return &pFx->GetWins(FxMidi::kColorGreen); }},
+        {"PURPLELEAD", [](FxMidi *pFx) { return &pFx->GetLeads(FxMidi::kColorPurple); }},
+        {"PURPLEWINS", [](FxMidi *pFx) { return &pFx->GetWins(FxMidi::kColorPurple); }},
+        {"YELLOWLEAD", [](FxMidi *pFx) { return &pFx->GetLeads(FxMidi::kColorYellow); }},
+        {"YELLOWWINS", [](FxMidi *pFx) { return &pFx->GetWins(FxMidi::kColorYellow); }},
+        {"DUEL_PLAYER1", [](FxMidi *pFx) { return &pFx->GetDuelPlayers(0); }},
+        {"DUEL_PLAYER2", [](FxMidi *pFx) { return &pFx->GetDuelPlayers(1); }},
+        {"KEYBOARD_LEFT_UP", [](FxMidi *pFx) { return &pFx->GetKeyboardLeftUp(); }},
+        {"KEYBOARD_RIGHT_DOWN", [](FxMidi *pFx) { return &pFx->GetKeyboardRightDown(); }},
+        {"KEYBOARD_CIRCLE", [](FxMidi *pFx) { return &pFx->GetKeyboardCircle(); }},
+        {"KEYBOARD_BACK", [](FxMidi *pFx) { return &pFx->GetKeyboardBack(); }},
+        {"KEYBOARD_KEYENTER", [](FxMidi *pFx) { return &pFx->GetKeyboardKeyEnter(); }},
+        {"ARENA_UNLOCK", [](FxMidi *pFx) { return &pFx->GetArenaUnlock(); }},
+        {"DUEL_LAYPATT", [](FxMidi *pFx) { return &pFx->GetDuelLayPattern(); }},
+        {"DUEL_CATCHPATT", [](FxMidi *pFx) { return &pFx->GetDuelCatchPattern(); }},
+        {"DUEL_NICE", [](FxMidi *pFx) { return &pFx->GetDuelNice(); }},
+        {"DUEL_YOUGOTIT", [](FxMidi *pFx) { return &pFx->GetDuelYouGotIt(); }},
+        {"DUEL_ALMOST", [](FxMidi *pFx) { return &pFx->GetDuelAlmost(); }},
+        {"DUEL_ONELETTER", [](FxMidi *pFx) { return &pFx->GetDuelOneLetter(); }},
+        {"DUEL_AWW", [](FxMidi *pFx) { return &pFx->GetDuelAww(); }},
+        {"DUEL_PERFECT", [](FxMidi *pFx) { return &pFx->GetDuelPerfect(); }},
+        {"DUEL_YEAH", [](FxMidi *pFx) { return &pFx->GetDuelYeah(); }},
+        {"DECRYPT", [](FxMidi *pFx) { return &pFx->GetDecrypt(); }},
+        {"TEXT", [](FxMidi *pFx) { return &pFx->GetText(); }},
+        {"DUEL_GAMETIE", [](FxMidi *pFx) { return &pFx->GetDuelGameTie(); }},
+        {"DUEL_GREENWINS", [](FxMidi *pFx) { return &pFx->GetDuelGreenWins(); }},
+        {"DUEL_PURPLEWINS", [](FxMidi *pFx) { return &pFx->GetDuelPurpleWins(); }},
+        {"DUEL_MISS", [](FxMidi *pFx) { return &pFx->GetDuelMiss(); }},
+        {"DUEL_MISSTHIS", [](FxMidi *pFx) { return &pFx->GetDuelMissThis(); }},
+        {"DUEL_CHEER", [](FxMidi *pFx) { return &pFx->GetDuelCheer(); }},
+        {"ERASE1", [](FxMidi *pFx) { return &pFx->GetErase(); }},
+        {"ERASE2", [](FxMidi *pFx) { return &pFx->GetEraseSection(); }},
     };
 
     // TheFxMidi is read only when a name matches, as in the binary's comparison chain.
@@ -155,7 +153,7 @@ void SFXBuilder::OnText([[maybe_unused]] int nTick, const char *pszText, unsigne
     bool bFound = false;
     for (const auto &cue : cues) {
         if (name == cue.pszName) {
-            pCue = cue.pfnCue(TheFxMidi);
+            pCue = cue.pfnCue(TheFxMidi.get());
             bFound = true;
             break;
         }
@@ -164,6 +162,6 @@ void SFXBuilder::OnText([[maybe_unused]] int nTick, const char *pszText, unsigne
         DebugError("unknown sound effect: %s\n", name.c_str());
     }
     if (pCue != nullptr) {
-        mBuilder = new MuseBuilder(0, false, nullptr, pCue);
+        mBuilder = std::make_unique<MuseBuilder>(0, false, nullptr, pCue);
     }
 }

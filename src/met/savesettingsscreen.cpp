@@ -72,7 +72,7 @@ bool SaveSettingsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SaveSettingsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheMCManager.SaveSettings(this, mSlot, TheGameDb->GetOptions(), mOverwriteStatus);
     }
     return false;

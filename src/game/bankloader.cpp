@@ -53,25 +53,21 @@ bool BankLoader::PermBankLoader::IsLoaded() const {
 BankLoader::BankLoader(
     unsigned short nFirstSlot, PlayMap *pPlayMap, int nIntroBars, int nNumBars, int nTicksPerBar)
     : mState(kStateIdle), mFirstSlot(nFirstSlot), mIntroBars(nIntroBars), mNumBars(nNumBars),
-      mTicksPerBar(nTicksPerBar), mPlayMap(pPlayMap), mSwapBanks(nullptr), mLoadCount(0) {
+      mTicksPerBar(nTicksPerBar), mPlayMap(pPlayMap), mLoadCount(0) {
 }
 
 BankLoader::~BankLoader() {
     Stop();
-    delete mSwapBanks;
-    for (auto *pBank : mPermBanks) {
-        delete pBank;
-    }
 }
 
 void BankLoader::AddPermBank(const char *pszFile) {
-    mPermBanks.push_back(new PermBankLoader(GetEndBankSlot(), pszFile));
+    mPermBanks.push_back(std::make_unique<PermBankLoader>(GetEndBankSlot(), pszFile));
 }
 
 void BankLoader::AddSwapBank(const char *pszFile, int nBar) {
     if (mSwapBanks == nullptr) {
-        mSwapBanks =
-            new SwapBankLoader(GetEndBankSlot(), mPlayMap, mIntroBars, mNumBars, mTicksPerBar);
+        mSwapBanks = std::make_unique<SwapBankLoader>(
+            GetEndBankSlot(), mPlayMap, mIntroBars, mNumBars, mTicksPerBar);
     }
     mSwapBanks->AddBank(pszFile, nBar);
 }
@@ -80,7 +76,7 @@ void BankLoader::Load() {
     mState = kStateLoading;
     if (mLoadCount == 0) {
         PartitionSlots();
-        for (auto *pBank : mPermBanks) {
+        for (const auto &pBank : mPermBanks) {
             pBank->Load();
         }
     }
@@ -94,7 +90,7 @@ bool BankLoader::PollLoad() {
     if (mState != kStateLoading) {
         return true;
     }
-    for (auto *pBank : mPermBanks) {
+    for (const auto &pBank : mPermBanks) {
         if (!pBank->IsLoaded()) {
             return false;
         }
@@ -144,13 +140,13 @@ void BankLoader::PartitionSlots() {
     for (auto it = blocks.begin() + mFirstSlot; it != blocks.end(); ++it) {
         *it = kEmptySlotBlocks;
     }
-    for (auto *pBank : mPermBanks) {
-        blocks[pBank->mSlot] = pBank->mBlockCount;
+    for (const auto &pBank : mPermBanks) {
+        blocks[pBank->GetSlot()] = pBank->GetBlockCount();
     }
     if (mSwapBanks != nullptr) {
         const int nBlocks = mSwapBanks->GetMaxBankSize();
-        blocks[mSwapBanks->mBaseSlot] = nBlocks;
-        blocks[mSwapBanks->mBaseSlot + 1] = nBlocks;
+        blocks[mSwapBanks->GetBaseSlot()] = nBlocks;
+        blocks[mSwapBanks->GetBaseSlot() + 1] = nBlocks;
     }
     (void)TheSynth->Partition(blocks); // Yes, the binary discards this call's result.
 }
@@ -236,7 +232,7 @@ void BankLoader::SwapBankLoader::Restart() {
 }
 
 void BankLoader::SwapBankLoader::Advance() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     int nBar = nTick / mTicksPerBar;
     int nNext;
     if (mPlayMap->mLooping == 0) {

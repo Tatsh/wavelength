@@ -169,7 +169,7 @@ unsigned char RndBitmap::sRev = 0;
 
 int RndBitmap::NumMips() const {
     int nCount = 0;
-    for (const RndBitmap *pMip = mMip; pMip != nullptr; pMip = pMip->mMip) {
+    for (const RndBitmap *pMip = mMip.get(); pMip != nullptr; pMip = pMip->GetMip()) {
         ++nCount;
     }
     return nCount;
@@ -320,7 +320,7 @@ void RndBitmap::WriteColor(unsigned char nRed,
     }
 }
 
-void RndBitmap::SetMip(RndBitmap *pMip) {
+void RndBitmap::SetMip(std::unique_ptr<RndBitmap> pMip) {
     if (pMip == nullptr) {
         return;
     }
@@ -332,9 +332,8 @@ void RndBitmap::SetMip(RndBitmap *pMip) {
         DebugNotify("Mipmap has incorrect dimensions");
         return;
     }
-    delete mMip;
-    mMip = pMip;
-    pMip->mPalette = mPalette;
+    mMip = std::move(pMip);
+    mMip->mPalette = mPalette;
 }
 
 void RndBitmap::Reset() {
@@ -349,8 +348,7 @@ void RndBitmap::Reset() {
         PoolMemFree(mBuffer);
         mBuffer = nullptr;
     }
-    delete mMip;
-    mMip = nullptr;
+    mMip.reset();
 }
 
 void RndBitmap::Create(const RndBitmap &source, int nBpp, int nOrder) {
@@ -372,15 +370,12 @@ void RndBitmap::Create(const RndBitmap &source, int nBpp, int nOrder) {
             pDest->mPalette = mPalette;
         }
         pDest->Blit(*pSource, 0, 0, 0, 0, pSource->mWidth, pSource->mHeight);
-        pSource = pSource->mMip;
+        pSource = pSource->mMip.get();
         if (pSource == nullptr) {
             break;
         }
-        delete pDest->mMip;
-        pDest->mMip = nullptr;
-        auto *pMip = new RndBitmap;
-        pDest->mMip = pMip;
-        pDest = pMip;
+        pDest->mMip = std::make_unique<RndBitmap>();
+        pDest = pDest->mMip.get();
     }
 }
 
@@ -458,11 +453,9 @@ void RndBitmap::Create(unsigned char *pBuffer) {
     pData += nPixelBytes;
     RndBitmap *pLast = this;
     while (header.mNumMips-- != 0) {
-        delete pLast->mMip;
-        pLast->mMip = nullptr;
         nPixelBytes >>= 2;
-        auto *pMip = new RndBitmap;
-        pLast->mMip = pMip;
+        pLast->mMip = std::make_unique<RndBitmap>();
+        RndBitmap *pMip = pLast->mMip.get();
         pLast = pMip;
         header.mWidth >>= 1;
         header.mHeight >>= 1;
@@ -573,14 +566,13 @@ void RndBitmap::ConvertTo8Bpp() {
 bool RndBitmap::LoadMip(const char *pszPath) {
     RndBitmap *pLast = this;
     while (pLast->mMip != nullptr) {
-        pLast = pLast->mMip;
+        pLast = pLast->mMip.get();
     }
-    auto *pMip = new RndBitmap;
+    auto pMip = std::make_unique<RndBitmap>();
     if (pMip->LoadBmp(pszPath)) {
-        pLast->SetMip(pMip);
+        pLast->SetMip(std::move(pMip));
         return true;
     }
-    delete pMip;
     return false;
 }
 
@@ -639,7 +631,7 @@ void RndBitmap::LoadAlpha(const char *pszPath) {
 }
 
 bool RndBitmap::LoadBmp(const char *pszPath) {
-    File *pFile = File::New(pszPath, kFileModeRead, 0);
+    std::unique_ptr<File> pFile(File::New(pszPath, kFileModeRead, 0));
     if (pFile == nullptr) {
         return false;
     }
@@ -647,7 +639,6 @@ bool RndBitmap::LoadBmp(const char *pszPath) {
     pFile->Read(&nSignature, sizeof(nSignature));
     if (nSignature != kBmpSignature) {
         DebugNotify("%s not BMP format", pszPath);
-        delete pFile;
         return false;
     }
     BmpFileHeader fileHeader;
@@ -656,12 +647,10 @@ bool RndBitmap::LoadBmp(const char *pszPath) {
     pFile->Read(&info, sizeof(info));
     if (info.mBitCount < kBmpMinBitCount) {
         DebugNotify("%s: Unsupported bit depth %d", pszPath, info.mBitCount);
-        delete pFile;
         return false;
     }
     if (info.mCompression != 0) {
         DebugNotify("%s: Unsupported compression %d", pszPath, info.mCompression);
-        delete pFile;
         return false;
     }
     const int nBitCount = info.mBitCount;
@@ -710,7 +699,7 @@ bool RndBitmap::LoadBmp(const char *pszPath) {
         }
     }
     Create(info.mWidth, info.mHeight, nRowBytes, nBitCount, 0, pPalette, pPixels, pBuffer);
-    delete pFile;
+    pFile.reset();
     int nMode = kBmpAlphaNone;
     if (std::strstr(pszPath, "_tb") != nullptr) {
         nMode = kBmpAlphaTransparentBlack;
@@ -753,7 +742,7 @@ void RndBitmap::SaveBmp(const char *pszPath) const {
         DebugNotify("Order isn't kARGB");
         return;
     }
-    File *pFile = File::New(pszPath, kFileModeWrite, 0);
+    std::unique_ptr<File> pFile(File::New(pszPath, kFileModeWrite, 0));
     const unsigned short nSignature = kBmpSignature;
     pFile->Write(&nSignature, sizeof(nSignature));
     BmpFileHeader fileHeader;
@@ -791,7 +780,6 @@ void RndBitmap::SaveBmp(const char *pszPath) const {
             pFile->Write(pRow, mRowBytes);
         }
     }
-    delete pFile;
 }
 
 bool RndBitmap::SamePalette(const RndBitmap &other) const {
@@ -953,7 +941,7 @@ void RndBitmap::Save(BinStream &stream) const {
     if (mPalette != nullptr) {
         stream.Write(mPalette, PaletteBytes());
     }
-    for (const RndBitmap *pBitmap = this; pBitmap != nullptr; pBitmap = pBitmap->mMip) {
-        stream.Write(pBitmap->mPixels, pBitmap->PixelBytes());
+    for (const RndBitmap *pBitmap = this; pBitmap != nullptr; pBitmap = pBitmap->GetMip()) {
+        stream.Write(pBitmap->GetPixels(), pBitmap->PixelBytes());
     }
 }

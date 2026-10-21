@@ -29,7 +29,7 @@ constexpr int kPhraseBars = 2;
 constexpr float kDoubleEraseMs = 500.0f;
 
 bool IsOnline() {
-    return TheGameDb->mCommunity == GameDb::kCommunityOnline;
+    return TheGameDb->GetCommunity() == GameDb::kCommunityOnline;
 }
 
 } // namespace
@@ -39,7 +39,7 @@ PitchTrack::PitchTrack(int nTrack,
                        int nNumBars,
                        int nTicksPerBar,
                        PitchTrackRiffData *pRiffData,
-                       const std::vector<PitchTrackGems *> *pPatterns,
+                       const std::vector<std::unique_ptr<PitchTrackGems>> *pPatterns,
                        PlayMap *pPlayMap,
                        SectionBoundaries *pSections,
                        SlotGrid *pPatternGrid,
@@ -47,26 +47,22 @@ PitchTrack::PitchTrack(int nTrack,
     : RemixTrack(nTrack), mTicksPerBar(nTicksPerBar), mPlayMap(pPlayMap), mSections(pSections),
       mGems(pSections, pPatternGrid, nNumBars, nTicksPerBar),
       mPlayGems(&mGems, pPlayMap, pSections, pPatternGrid, nNumBars, nTicksPerBar), mPatterns(),
-      mRiffs(pRiffData, pPlayMap), mMusic(&mPlayGems, &mRiffs, nTicksPerBar), mDisplay(nullptr),
-      mRepeat(1), mEditing(0), mMuteRemote(0), mActive(0), mLastEraseMs(0.0f), mStartBar(0),
+      mRiffs(pRiffData, pPlayMap), mMusic(&mPlayGems, &mRiffs, nTicksPerBar), mRepeat(1),
+      mEditing(0), mMuteRemote(0), mActive(0), mLastEraseMs(0.0f), mStartBar(0),
       mPreviewPattern(kNoPattern),
       mPhraseCommand(NewMemFun1Command(this, &PitchTrack::UpdatePhrase, false)) {
     if (bDisplayed) {
-        mDisplay = new PitchTrackDisplay(
+        mDisplay = std::make_unique<PitchTrackDisplay>(
             nTrack, nLeadInBars, nTicksPerBar, pPlayMap, mSections, &mPlayGems);
     }
     for (unsigned int i = 0; i < pPatterns->size(); ++i) {
-        mPatterns.push_back(new PitchTrackPlayGems(
-            (*pPatterns)[i], pPlayMap, pSections, pPatternGrid, nNumBars, nTicksPerBar));
+        mPatterns.push_back(std::make_unique<PitchTrackPlayGems>(
+            (*pPatterns)[i].get(), pPlayMap, pSections, pPatternGrid, nNumBars, nTicksPerBar));
     }
 }
 
 PitchTrack::~PitchTrack() {
     Stop();
-    for (auto *pPattern : mPatterns) {
-        delete pPattern;
-    }
-    delete mDisplay;
 }
 
 void PitchTrack::SetPlayer(Player *pPlayer) {
@@ -110,7 +106,7 @@ void PitchTrack::EndPreview() {
 }
 
 void PitchTrack::SelectPattern(int nPattern, int nStartBar, int nEndBar) {
-    mPlayGems.CopyBars(mPatterns[nPattern], nStartBar, nEndBar);
+    mPlayGems.CopyBars(mPatterns[nPattern].get(), nStartBar, nEndBar);
     mMusic.SetGems(&mPlayGems);
 }
 
@@ -191,7 +187,7 @@ void PitchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
         return;
     }
 
-    const int nNow = TheSongScheduler.mTick;
+    const int nNow = TheSongScheduler.GetTick();
     const int nPlayer = pPlayer->GetIndex();
     const int nOwner = mPlayGems.GetOwner(nNow / mTicksPerBar);
     if (nOwner != kNoOwner && nOwner != nPlayer) {
@@ -228,7 +224,7 @@ void PitchTrack::HandleInput(Player *pPlayer, [[maybe_unused]] const BtnEvent<8>
     }
 
     const int nStep = mTicksPerBar / kStepsPerBar;
-    const int nTick = ((TheSongScheduler.mTick - kPressLeadTicks + nStep / 2) / nStep) * nStep;
+    const int nTick = ((TheSongScheduler.GetTick() - kPressLeadTicks + nStep / 2) / nStep) * nStep;
     const int nBar = nTick / mTicksPerBar;
     const int nOwner = mPlayGems.GetOwner(nBar);
     if (nOwner != kNoOwner && nOwner != pPlayer->GetIndex()) {
@@ -272,7 +268,7 @@ void PitchTrack::Save(BinStream &stream) {
 void PitchTrack::Load(BinStream &stream) {
     mPlayGems.Load(stream);
     if (mDisplay != nullptr) {
-        mDisplay->Redraw(TheSongScheduler.mTick / mTicksPerBar);
+        mDisplay->Redraw(TheSongScheduler.GetTick() / mTicksPerBar);
     }
 }
 
@@ -283,7 +279,7 @@ void PitchTrack::UpdatePhrase(bool bStyle) {
 }
 
 void PitchTrack::ShowPhrase(bool bPlayable, bool bStyle) {
-    const int nNowBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nNowBar = TheSongScheduler.GetTick() / mTicksPerBar;
     const int nBar = mStartBar < nNowBar ? nNowBar : mStartBar;
     const int nSongBar = mPlayMap->MapBar(nBar);
     int nNextTick = 0;

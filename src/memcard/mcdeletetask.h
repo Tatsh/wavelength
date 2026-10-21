@@ -42,6 +42,7 @@ public:
      */
     void OnDelete(int nResult) override;
 
+private:
     String mName; /*!< The file or directory. */
 
 protected:

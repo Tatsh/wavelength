@@ -45,6 +45,8 @@ public:
      */
     void OnCardInfo() override;
 
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
-    MCFormatTask *mFormat;   /*!< The step that formats the card. */
+private:
+    // Both steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+    MCFormatTask *mFormat;   /*!< The step that formats the card. Borrowed. */
 };

@@ -9,15 +9,15 @@
 
 void SetGameListFilterTask::OnStart() {
     mPending = 0;
-    for (const RTFilter &filter : TheLobbyRT->mFilters) {
-        if (std::find(TheLobbyRT->mActiveFilters.begin(),
-                      TheLobbyRT->mActiveFilters.end(),
-                      filter) != TheLobbyRT->mActiveFilters.end()) {
+    for (const RTFilter &filter : TheLobbyRT->GetFilters()) {
+        if (std::find(TheLobbyRT->GetActiveFilters().begin(),
+                      TheLobbyRT->GetActiveFilters().end(),
+                      filter) != TheLobbyRT->GetActiveFilters().end()) {
             continue;
         }
         rtMediusGameListFilterRequest request;
         memset(&request, 0, sizeof(request));
-        strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+        strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
         MakeTag(this, request.header.messageId);
         request.filterField = filter.mField;
         request.comparison = filter.mComparison;

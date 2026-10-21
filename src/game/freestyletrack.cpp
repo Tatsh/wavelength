@@ -106,14 +106,14 @@ void FreestyleTrack::HandleInput(Player *pPlayer, const StickEvent<6> &event) {
 }
 
 void FreestyleTrack::UpdatePoints() {
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetGame || !IsActive()) {
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetGame || !IsActive()) {
         return;
     }
     Player *pPlayer = mPlayer;
     if (!TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
         return;
     }
-    if (TheSongScheduler.mTick / mTicksPerBar >= mNumBars) {
+    if (TheSongScheduler.GetTick() / mTicksPerBar >= mNumBars) {
         return;
     }
 
@@ -123,7 +123,7 @@ void FreestyleTrack::UpdatePoints() {
         mNoteTimer.Resume();
         const float fBarMs = static_cast<float>(mTicksPerBar) * *mMsPerTick;
         const float fSounded = fSoundedMs / fBarMs;
-        const int nMaxPoints = TheGameConfig->mFreestylePoints[TheGameDb->mSkillLevel];
+        const int nMaxPoints = TheGameConfig->mFreestylePoints[TheGameDb->GetSkillLevel()];
         const int nPoints = static_cast<int>(fSounded * static_cast<float>(nMaxPoints) *
                                              kPointsNumerator / kPointsDenominator);
         pPlayer->SetPendingPoints(std::min(nPoints, nMaxPoints), false);
@@ -132,7 +132,7 @@ void FreestyleTrack::UpdatePoints() {
 }
 
 void FreestyleTrack::StartBar(bool bSchedule) {
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         return;
     }
     Player *pPlayer = mPlayer;
@@ -140,7 +140,7 @@ void FreestyleTrack::StartBar(bool bSchedule) {
         return;
     }
 
-    const int nBar = (TheSongScheduler.mTick + 1) / mTicksPerBar;
+    const int nBar = (TheSongScheduler.GetTick() + 1) / mTicksPerBar;
     if (nBar <= mNumBars && !TheGameDb->IsWinSequence()) {
         pPlayer->CommitPendingPoints(false);
     }
@@ -155,7 +155,7 @@ void FreestyleTrack::StartBar(bool bSchedule) {
 }
 
 void FreestyleTrack::SendUpdate(Player *pPlayer, float fX, float fY) {
-    if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
         return;
     }
     if (!TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {

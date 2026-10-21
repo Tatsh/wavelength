@@ -52,7 +52,15 @@ public:
      */
     bool DispatchPriv(Message *pMsg) override;
 
-    std::list<InetConfig> mConfigs; /*!< The configurations found. */
+    /** @return The configurations found. */
+    std::list<InetConfig> &GetConfigs() {
+        return mConfigs;
+    }
+
+    /** @return The configurations found. */
+    const std::list<InetConfig> &GetConfigs() const {
+        return mConfigs;
+    }
 
 protected:
     /**
@@ -73,4 +81,6 @@ private:
      * @ghidraAddress PAL: 0x00165118
      */
     bool OnConfigsResult(InetConfigsResultMsg *pMsg);
+
+    std::list<InetConfig> mConfigs; /*!< The configurations found. */
 };

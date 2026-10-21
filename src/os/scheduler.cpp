@@ -54,7 +54,6 @@ bool Scheduler::ByCommand::operator()(const CommandInfo &info) const {
 
 Scheduler::Recorder::~Recorder() {
     Flush();
-    delete mStream;
 }
 
 void Scheduler::Recorder::Flush() {
@@ -72,32 +71,28 @@ void Scheduler::Recorder::Save() {
     mStream->Seek(0, BinStream::kSeekEnd);
     const int nSize = mStream->Tell();
     mStream->Seek(0, BinStream::kSeekBegin);
-    char *pBuffer = new char[nSize];
-    mStream->Read(pBuffer, nSize);
+    auto pBuffer = std::make_unique<char[]>(nSize);
+    mStream->Read(pBuffer.get(), nSize);
     MemcardGetInfoAndWait(mDevice, nullptr, nullptr, nullptr);
     const int nFlags = mParts != 0 ? kMemcardOpenWrite : (kMemcardOpenWrite | kMemcardOpenCreate);
     const int nFile = MemcardOpenAndWait(mDevice, mFile.c_str(), nFlags);
     if (nFile >= 0) {
-        MemcardWriteAndWait(nFile, pBuffer, nSize);
+        MemcardWriteAndWait(nFile, pBuffer.get(), nSize);
         MemcardCloseAndWait(nFile);
     }
-    delete mStream;
-    mStream = new MemStream(true);
-    delete[] pBuffer;
+    mStream = std::make_unique<MemStream>(true);
     ++mParts;
 }
 
 Scheduler::Playbacker::Playbacker(const char *pszFile, Scheduler *pScheduler)
-    : mStream(new FileStream(pszFile, false, true, 0)), mScheduler(pScheduler) {
+    : mStream(std::make_unique<FileStream>(pszFile, false, true, 0)), mScheduler(pScheduler) {
 }
 
 Scheduler::Playbacker::Playbacker(char *pBuffer, int nSize, Scheduler *pScheduler)
-    : mStream(new BufStream(pBuffer, nSize, true)), mScheduler(pScheduler) {
+    : mStream(std::make_unique<BufStream>(pBuffer, nSize, true)), mScheduler(pScheduler) {
 }
 
-Scheduler::Playbacker::~Playbacker() {
-    delete mStream;
-}
+Scheduler::Playbacker::~Playbacker() = default;
 
 void Scheduler::Playbacker::QueueAll() {
     CommandInfo info{Ptr<Command>(), 0.0f, 0, TheDefaultCommandId, false};
@@ -120,9 +115,9 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler() {
     mCommands->clear();
-    delete mRecorder;
-    delete mPlaybacker;
-    delete mCommands;
+    mRecorder.reset();
+    mPlaybacker.reset();
+    mCommands.reset();
 }
 
 void Scheduler::Reset(const float *pTickDuration, int nTick) {
@@ -138,10 +133,8 @@ void Scheduler::Reset(const float *pTickDuration, int nTick) {
     mPrevFrameTime = fTime;
     mFrameTick = nTick;
     mPrevFrameTick = nTick;
-    delete mRecorder;
-    mRecorder = nullptr;
-    delete mPlaybacker;
-    mPlaybacker = nullptr;
+    mRecorder.reset();
+    mPlaybacker.reset();
 }
 
 void Scheduler::ResetForRecording(const float *pTickDuration,
@@ -153,13 +146,13 @@ void Scheduler::ResetForRecording(const float *pTickDuration,
 
 void Scheduler::ResetForPlayback(const float *pTickDuration, const char *pszFile, int nTick) {
     Reset(pTickDuration, nTick);
-    mPlaybacker = new Playbacker(pszFile, this);
+    mPlaybacker = std::make_unique<Playbacker>(pszFile, this);
     mPlaybacker->QueueAll();
 }
 
 void Scheduler::ResetForPlayback(const float *pTickDuration, char *pBuffer, int nSize, int nTick) {
     Reset(pTickDuration, nTick);
-    mPlaybacker = new Playbacker(pBuffer, nSize, this);
+    mPlaybacker = std::make_unique<Playbacker>(pBuffer, nSize, this);
     mPlaybacker->QueueAll();
 }
 

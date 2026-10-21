@@ -103,7 +103,7 @@ void MCCheckSaveSpaceNeededTask::OnDirListed() {
     } else if (mOverwrite == 0) {
         MemcardTask::sStatus = MemcardTask::kStatusExists;
     }
-    if (mGetInfo->mFree < mNeeded) {
+    if (mGetInfo->GetFree() < mNeeded) {
         MemcardTask::sStatus = MemcardTask::kStatusFull;
     }
 }

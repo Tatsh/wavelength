@@ -49,7 +49,7 @@ void NetArbiter::Start() {
 }
 
 void NetArbiter::RequestTrack(int nPlayer, int nTrack) {
-    const int nVersion = TheGameDb->mRuleSet == GameDb::kRuleSetRemix ?
+    const int nVersion = TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix ?
                              LocalPlayer::sRemixerUpdateVersion :
                              LocalPlayer::sPlayerUpdateVersion;
     Command *pCommand =

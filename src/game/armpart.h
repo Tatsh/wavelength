@@ -93,12 +93,12 @@ public:
      */
     bool Rebuild() override;
 
-    float mUpperLength;   /*!< The distance from the shoulder to the elbow. */
-    RndMesh *mForearm;    /*!< The mesh of the first name of the `anims` array, or null. */
-    float mForearmLength; /*!< The distance from the elbow to the wrist. */
-    RndMesh *mHand;       /*!< The mesh of the second name of the `anims` array, or null. */
-
 private:
+    float mUpperLength; /*!< The distance from the shoulder to the elbow. */
+    RndMesh *mForearm;  /*!< The mesh of the first name of the `anims` array, or null. Borrowed. */
+    float mForearmLength; /*!< The distance from the elbow to the wrist. */
+    RndMesh *mHand; /*!< The mesh of the second name of the `anims` array, or null. Borrowed. */
+
     /**
      * Pose the upper arm, the forearm, and the hand to put the hand at a transform.
      *

@@ -15,10 +15,10 @@ constexpr short kPageSize = 100;
 } // namespace
 
 void GetChannelsTask::OnStart() {
-    TheLobbyRT->mChatrooms.clear();
+    TheLobbyRT->GetChatrooms().clear();
     rtMediusChannelListRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.pageId = kFirstPage;
     request.pageSize = kPageSize;
@@ -56,8 +56,8 @@ void GetChannelsTask::OnResponse(int nConnection,
 #endif
         room.mPlayerCount = pResponse->playerCount;
         // Yes, the binary gives every room the capacity of the room of the local player.
-        room.mMaxPlayers = TheLobbyRT->mChatroom.mMaxPlayers;
-        TheLobbyRT->mChatrooms.push_back(room);
+        room.mMaxPlayers = TheLobbyRT->GetChatroom().mMaxPlayers;
+        TheLobbyRT->GetChatrooms().push_back(room);
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;
         }

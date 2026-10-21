@@ -56,7 +56,7 @@ void NetMainPanel::Poll(float fTime) {
 void NetMainPanel::RequestNow(bool bHilite) {
     mRequestTime = SystemMs() - kRequestLeadMs;
     if (mFlashPanel != 0) {
-        StartFlash(TheUI.mTime, bHilite);
+        StartFlash(TheUI.GetTime(), bHilite);
     }
 }
 
@@ -71,8 +71,8 @@ bool NetMainPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed == 0) {
         return false;
     }
-    UIScreen *pScreen = TheUI.mCurrentScreen;
-    if (pScreen->mNextScreen != nullptr || pScreen->mPrevScreen != nullptr) {
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
+    if (pScreen->GetNextScreen() != nullptr || pScreen->GetPrevScreen() != nullptr) {
         return true;
     }
     const int nButton = pMsg->mButton;

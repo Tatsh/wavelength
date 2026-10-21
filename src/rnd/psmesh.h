@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 
 #include "math/transform.h"
 #include "os/mem.h"
@@ -206,15 +207,15 @@ public:
         return new PsMesh(pszName);
     }
 
-    SkinVert *mSkinVerts;             /*!< The bind pose of a mesh with bones, or null. */
-    MemHandle *mFacesPacket;          /*!< The face packet, or null. */
-    MemHandle *mEdgesPacket;          /*!< The edge packet, or null. */
-    unsigned short mFacesQwords;      /*!< The size of the face packet in quadwords. */
-    unsigned short mEdgesQwords;      /*!< The size of the edge packet in quadwords. */
-    unsigned short mNumFaces;         /*!< The number of faces before Sync() released them. */
-    unsigned short mNumEdges;         /*!< The number of edges before Sync() released them. */
-    unsigned short mFacesSetupQwords; /*!< The quadwords FacesPacket() reports. */
-    unsigned short mFacesVuEnd;       /*!< The VU1 address FacesPacket() reports. */
+    std::unique_ptr<SkinVert[]> mSkinVerts; /*!< The bind pose of a mesh with bones, or null. */
+    MemHandle *mFacesPacket;                /*!< The face packet, or null. */
+    MemHandle *mEdgesPacket;                /*!< The edge packet, or null. */
+    unsigned short mFacesQwords;            /*!< The size of the face packet in quadwords. */
+    unsigned short mEdgesQwords;            /*!< The size of the edge packet in quadwords. */
+    unsigned short mNumFaces;               /*!< The number of faces before Sync() released them. */
+    unsigned short mNumEdges;               /*!< The number of edges before Sync() released them. */
+    unsigned short mFacesSetupQwords;       /*!< The quadwords FacesPacket() reports. */
+    unsigned short mFacesVuEnd;             /*!< The VU1 address FacesPacket() reports. */
 };
 
 /**

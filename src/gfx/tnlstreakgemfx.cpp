@@ -39,7 +39,7 @@ TnlStreakGemFX::TnlStreakGemFX(int nTrack, int nPlayer) {
     mView = dynamic_cast<RndView *>(TheManager.Find("streakarrow.view"));
     mText = dynamic_cast<RndText *>(TheManager.Find("streakarrow.txt"));
     RndMesh *pMesh = dynamic_cast<RndMesh *>(TheManager.Find("streakarrow.mesh"));
-    const char nColor = (TheGameDb->mCommunity == GameDb::kCommunitySolo) ?
+    const char nColor = (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ?
                             kSoloColor :
                             TheGameDb->GetPlayerColor(nPlayer)[0];
     mMat = dynamic_cast<RndMat *>(TheManager.Find(FormatString("streakarrow_%c.mat", nColor)));
@@ -84,7 +84,7 @@ void TnlStreakGemFX::Refresh(GfxTunnel *pTunnel) {
     if ((sShownMask & mBit) == 0) {
         return;
     }
-    if (pTunnel->mChangedRange.Contains(static_cast<char>(mTrack), mTick)) {
+    if (pTunnel->GetChangedRange().Contains(static_cast<char>(mTrack), mTick)) {
         Place(pTunnel);
     }
 }
@@ -123,7 +123,7 @@ void TnlStreakGemFX::Draw() {
     if (mAlpha == 0.0f) {
         return;
     }
-    const float flAlpha = sDistanceFade.Eval(mTick - TheGameDb->mSongTick) * mAlpha;
+    const float flAlpha = sDistanceFade.Eval(mTick - TheGameDb->GetSongTick()) * mAlpha;
     if (!(0.0f < flAlpha)) {
         return;
     }
@@ -140,8 +140,8 @@ void TnlStreakGemFX::Draw() {
 
 void TnlStreakGemFX::Place(GfxTunnel *pTunnel) {
     const float flLateral = (static_cast<float>(mSlot) * TnlGem::kSlotWidth) + TnlGem::kSlotOffset;
-    pTunnel->mGeom->CellXfm(mTrack, &mXfm, false, true, mTick, flLateral);
-    const float flScale = TheGfxManager.mScrollSpeed;
+    pTunnel->GetGeom()->CellXfm(mTrack, &mXfm, false, true, mTick, flLateral);
+    const float flScale = TheGfxManager.GetScrollSpeed();
     Vector3 *rows[] = {&mXfm.mBasisX, &mXfm.mBasisY, &mXfm.mBasisZ};
     for (Vector3 *pRow : rows) {
         pRow->x *= flScale;

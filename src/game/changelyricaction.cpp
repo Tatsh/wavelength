@@ -7,5 +7,5 @@ ChangeLyricAction::ChangeLyricAction(DataArray *pAction) {
 }
 
 void ChangeLyricAction::Exec() {
-    mText->SetText(TheTriggerMgr.mLyric.c_str());
+    mText->SetText(TheTriggerMgr.GetLyric().c_str());
 }

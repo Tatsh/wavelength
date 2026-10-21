@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "gfx/freestylus.h"
 #include "gfx/gfxtunnel.h"
 #include "gfx/quadraticapproach.h"
@@ -273,7 +275,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x003afac4
      * @ghidraAddress PAL: 0x0042e95c
      */
-    static Freestylus *sFreestylus;
+    static std::unique_ptr<Freestylus> sFreestylus;
 
     /**
      * The reach of the stick across and along the track, `range`.
@@ -373,28 +375,30 @@ public:
      */
     static Vector3 sConstraintChangeFunc;
 
-    TnlSabreTrail *mTrail;          /*!< The trail of a scratch freestyle. */
-    int mPlayer;                    /*!< The player. */
-    int mActive;                    /*!< Whether the freestyle runs. */
-    int mAssembled;                 /*!< Whether the freestylus has assembled. */
-    int mVictory;                   /*!< Whether the freestyle rewards a won song. */
-    int mPlaying;                   /*!< Whether the player plays. */
-    int mType;                      /*!< The kind of freestyle, one of Freestylus::Type. */
-    GfxTunnel *mTunnel;             /*!< The tunnel. */
-    Ship *mShip;                    /*!< The ship of the player. */
-    TnlActivator *mActivator;       /*!< The activator of the player. */
-    float mStartTick;               /*!< The tick the freestyle started at. */
-    LinearInterpolator *mAssembly;  /*!< The assembly over the ticks of a change. */
-    LinearInterpolator *mCamBlend;  /*!< The blend of the camera over the ticks of a change. */
-    unsigned char mReserved34[0xc]; // +0x34 to +0x3f are not yet identified.
-    Vector3 mStick;                 /*!< The position of the stick. */
-    Vector3 mShipPos;               /*!< The place of the ship before the path. */
-    Vector3 mPathAxis;              /*!< The first axis of the path at the ship. */
-    QuadraticApproach mX;           /*!< The position across the track. */
-    QuadraticApproach mY;           /*!< The position along the track. */
-    QuadraticApproach mTumbleX;     /*!< The tumble from the speed across the track. */
-    QuadraticApproach mTumbleY;     /*!< The tumble from the speed along the track. */
-    QuadraticApproach mCamX;        /*!< The camera across the track. */
-    QuadraticApproach mCamY;        /*!< The camera along the track. */
-    QuadraticApproach mConstraint;  /*!< The constraint of the arena. */
+private:
+    std::unique_ptr<TnlSabreTrail> mTrail; /*!< The trail of a scratch freestyle. */
+    int mPlayer;                           /*!< The player. */
+    int mActive;                           /*!< Whether the freestyle runs. */
+    int mAssembled;                        /*!< Whether the freestylus has assembled. */
+    int mVictory;                          /*!< Whether the freestyle rewards a won song. */
+    int mPlaying;                          /*!< Whether the player plays. */
+    int mType;                             /*!< The kind of freestyle, one of Freestylus::Type. */
+    GfxTunnel *mTunnel;                    /*!< The tunnel. Borrowed. */
+    Ship *mShip;                           /*!< The ship of the player. Borrowed. */
+    TnlActivator *mActivator;              /*!< The activator of the player. Borrowed. */
+    float mStartTick;                      /*!< The tick the freestyle started at. */
+    std::unique_ptr<LinearInterpolator> mAssembly; /*!< The assembly over the ticks of a change. */
+    std::unique_ptr<LinearInterpolator> mCamBlend; /*!< The blend of the camera over the ticks of
+                                                      a change. */
+    unsigned char mReserved34[0xc];                // +0x34 to +0x3f are not yet identified.
+    Vector3 mStick;                                /*!< The position of the stick. */
+    Vector3 mShipPos;                              /*!< The place of the ship before the path. */
+    Vector3 mPathAxis;                             /*!< The first axis of the path at the ship. */
+    QuadraticApproach mX;                          /*!< The position across the track. */
+    QuadraticApproach mY;                          /*!< The position along the track. */
+    QuadraticApproach mTumbleX;    /*!< The tumble from the speed across the track. */
+    QuadraticApproach mTumbleY;    /*!< The tumble from the speed along the track. */
+    QuadraticApproach mCamX;       /*!< The camera across the track. */
+    QuadraticApproach mCamY;       /*!< The camera along the track. */
+    QuadraticApproach mConstraint; /*!< The constraint of the arena. */
 };

@@ -124,8 +124,7 @@ void RndText::SetShowing(int nShowing) {
     if (nShowing != 0) {
         BuildMesh();
     } else {
-        delete mMesh;
-        mMesh = nullptr;
+        mMesh.reset();
     }
 }
 
@@ -225,7 +224,7 @@ void RndText::DumpText(PrnStream &stream) {
     }
     stream << "text:";
     stream.Print(mText.c_str());
-    stream << "mesh:" << static_cast<const RndObject *>(mMesh) << "\n";
+    stream << "mesh:" << static_cast<const RndObject *>(mMesh.get()) << "\n";
 }
 
 void RndText::Save(BinStream &stream) {
@@ -468,14 +467,13 @@ const char *RndText::MeasureLine(const char *pszLine, float &fWidth) {
 }
 
 void RndText::BuildMesh() {
-    delete mMesh;
-    mMesh = nullptr;
+    mMesh.reset();
     if (mShowing == 0 || mFont == nullptr || mPreWrapText.mLength == 0) {
         return;
     }
     const char *pszMeshName = FormatString("[%s_mesh]", mName.c_str());
     RndObject *pObject = TheManager.Create(RndMesh::sClassName, pszMeshName);
-    mMesh = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
+    mMesh.reset(pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr);
     const int nLines = NumLines();
     mMesh->SetBillboard(mBillboard);
     mMesh->mInternal = 1;
@@ -621,8 +619,7 @@ void RndText::ReleaseRefs() {
     if (mFont != nullptr) {
         mFont->RemoveRef(this);
     }
-    delete mMesh;
-    mMesh = nullptr;
+    mMesh.reset();
 }
 
 void RndText::AcquireRefs() {

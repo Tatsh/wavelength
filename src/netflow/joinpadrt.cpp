@@ -47,27 +47,26 @@ constexpr float kStartWaitMs = 20000.0f;
 JoinpadRT *TheJoinpadRT;
 
 void JoinpadRT::Create(MsgSink *pScreen, MsgSink *pGame, int nWorldId, int nHostAccount) {
-    new JoinpadRT(pScreen, pGame, nWorldId, nHostAccount);
+    TheLaunchpadRT = std::make_unique<JoinpadRT>(pScreen, pGame, nWorldId, nHostAccount);
 }
 
 JoinpadRT::JoinpadRT(MsgSink *pScreen, MsgSink *pGame, int nWorldId, int nHostAccount)
     : LaunchpadRT(pGame), mKeyReceived(0), mClockOffset(0.0f) {
     TheJoinpadRT = this;
     RequestKey(nHostAccount);
-    mConnectTask.Add(new LadderPositionTask(&TheLobbyRT->mLocalPlayer));
+    mConnectTask.Add(new LadderPositionTask(&TheLobbyRT->GetLocalPlayer()));
     mConnectTask.Add(new MediusJoinGameTask());
     mConnectTask.Add(new WaitForKeyTask());
     mConnectTask.Add(new NetConnectTask());
     mConnectTask.Add(new WaitForWelcomeTask());
     mExitTask.Add(new NetDisconnectTask());
     mWorldId = nWorldId;
-    mClockSync = new ClockSyncTask();
+    mClockSync = std::make_unique<ClockSyncTask>();
     mConnectTask.Start(pScreen);
 }
 
 JoinpadRT::~JoinpadRT() {
     mClockSync->Stop();
-    delete mClockSync;
     TheJoinpadRT = nullptr;
 }
 
@@ -131,7 +130,8 @@ bool JoinpadRT::OnMsg(WelcomePkt *pPkt) {
         return false;
     }
     mParams = pPkt->mParams;
-    const NetLaunchpadPlayer player = {TheLobbyRT->mLocalPlayer, mLocalId, pPkt->mColor, kReadyNo};
+    const NetLaunchpadPlayer player = {
+        TheLobbyRT->GetLocalPlayer(), mLocalId, pPkt->mColor, kReadyNo};
     AddPlayer(player);
     mState = kStateWelcomed;
     mClockSync->Start();

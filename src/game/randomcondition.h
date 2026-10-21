@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e3c20
      */
     bool Test() override {
-        return mLow <= TheTriggerMgr.mRandom && TheTriggerMgr.mRandom < mHigh;
+        return mLow <= TheTriggerMgr.GetRandom() && TheTriggerMgr.GetRandom() < mHigh;
     }
 
 private:

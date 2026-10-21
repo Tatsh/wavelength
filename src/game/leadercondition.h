@@ -26,6 +26,6 @@ public:
      * @ghidraAddress PAL: 0x003e4c60
      */
     bool Test() override {
-        return TheTriggerMgr.mLeader == TheTriggerMgr.mPlayer;
+        return TheTriggerMgr.GetLeader() == TheTriggerMgr.GetPlayer();
     }
 };

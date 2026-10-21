@@ -41,7 +41,7 @@ bool NetHostAttemptScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetHostAttemptScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         mCancelling = 0;
         HostpadRT::Create(this, &TheMetagame);
     }
@@ -49,7 +49,7 @@ bool NetHostAttemptScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMs
 }
 
 bool NetHostAttemptScreen::HandleSuccess([[maybe_unused]] HostLaunchpadSuccessMsg *pMsg) {
-    dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_h_lpad_c", false))->mMessages.clear();
+    dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_h_lpad_c", false))->ClearMessages();
     if (mCancelling == 0) {
         TheUI.GotoScreen("netlobby2netlaunchpad_host");
     }

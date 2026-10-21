@@ -23,7 +23,7 @@ FileStreamBuffer::FileStreamBuffer(const char *pszPath, int nFlags) : StreamBuff
     mReadBuffer = nullptr;
     mReserved30 = 0;
     mReserved34 = 0;
-    mFile = File::New(pszPath, kOpenRead, nFlags);
+    mFile.reset(File::New(pszPath, kOpenRead, nFlags));
     if (mFile == nullptr) {
         DebugPrint("tried to load %s.\n", pszPath);
         return;
@@ -33,8 +33,7 @@ FileStreamBuffer::FileStreamBuffer(const char *pszPath, int nFlags) : StreamBuff
 }
 
 FileStreamBuffer::~FileStreamBuffer() {
-    delete mFile;
-    mFile = nullptr;
+    mFile.reset();
     if (mReadBuffer != nullptr) {
         PoolMemFree(mReadBuffer);
         mReadBuffer = nullptr;

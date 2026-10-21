@@ -38,8 +38,10 @@ public:
      */
     void Set(int nPort, const char *pszName);
 
-    MCGetInfoTask *mGetInfo;         /*!< The step that reads the card information. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;         /*!< The step that reads the card information. Borrowed. */
     int mReserved24;                 // +0x24, never written or read.
-    MCFindRemixTask *mFind;          /*!< The step that finds the remix file. */
-    MCDeleteSavedRemixTask *mDelete; /*!< The step that deletes the file. */
+    MCFindRemixTask *mFind;          /*!< The step that finds the remix file. Borrowed. */
+    MCDeleteSavedRemixTask *mDelete; /*!< The step that deletes the file. Borrowed. */
 };

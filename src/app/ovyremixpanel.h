@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "app/hideablepanel.h"
 #include "app/ovyremixgenpanel.h"
@@ -99,7 +100,13 @@ public:
      */
     static Vector3 sPositions[kNumPositions];
 
-    std::list<OvyRemixSubPanel *> mSubPanels; /*!< The effect panels, which the display owns. */
-    OvyRemixSubPanel *mShownSubPanel;         /*!< The effect panel slid out, or null. */
-    OvyRemixSubPanel *mNextSubPanel;          /*!< The effect panel to slide out next, or null. */
+    /** @return The effect panels. */
+    const std::list<std::unique_ptr<OvyRemixSubPanel>> &GetSubPanels() const {
+        return mSubPanels;
+    }
+
+private:
+    std::list<std::unique_ptr<OvyRemixSubPanel>> mSubPanels; /*!< The effect panels. */
+    OvyRemixSubPanel *mShownSubPanel; /*!< The effect panel slid out, or null. Borrowed. */
+    OvyRemixSubPanel *mNextSubPanel;  /*!< The effect panel to slide out next, or null. */
 };

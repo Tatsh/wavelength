@@ -53,7 +53,7 @@ void CatchTrackDisplay::Start() {
 
 void CatchTrackDisplay::Seek(int nTick) {
     Stop();
-    mTickOffset = nTick - TheSongScheduler.mTick;
+    mTickOffset = nTick - TheSongScheduler.GetTick();
     mDrawnBar = nTick / mTicksPerBar - 1;
     (void)Advance(); // The binary discards the result.
     ScheduleUpdate();
@@ -88,7 +88,7 @@ void CatchTrackDisplay::RedrawRange(int nFromBar, int nToBar, int nClear) {
 }
 
 void CatchTrackDisplay::ScheduleUpdate() {
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     const int nStagger = (mTrack + 1) * mTicksPerBar / kStaggerDivisor;
     TheSongScheduler.PostAt(mUpdateCmd.Get(), nBar * mTicksPerBar + mTicksPerBar + nStagger, false);
 }
@@ -147,7 +147,7 @@ void CatchTrackDisplay::DrawBars(int nFromBar, int nToBar, int nVisible) {
 }
 
 bool CatchTrackDisplay::Advance() {
-    int nTarget = (TheSongScheduler.mTick + mTickOffset + kLookaheadTicks) / mTicksPerBar;
+    int nTarget = (TheSongScheduler.GetTick() + mTickOffset + kLookaheadTicks) / mTicksPerBar;
     const int nFirstBar = mDrawnBar;
     const int nLimit = mPlayMap->GetEndBar() + 1;
     if (!(nFirstBar < nLimit)) {

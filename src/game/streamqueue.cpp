@@ -2,11 +2,7 @@
 
 #include <cstring>
 
-StreamQueue::~StreamQueue() {
-    for (auto *pStream : mStreams) {
-        delete pStream;
-    }
-}
+StreamQueue::~StreamQueue() = default;
 
 void StreamQueue::Stop() {
     if (mStreams.begin() != mStreams.end()) {
@@ -18,7 +14,7 @@ void StreamQueue::Enqueue(const char *pszName, bool bSkipIfBusy) {
     if (!mStreams.empty() && bSkipIfBusy) {
         return;
     }
-    mStreams.push_back(new StreamTask(pszName, mDirectory.c_str()));
+    mStreams.push_back(std::make_unique<StreamTask>(pszName, mDirectory.c_str()));
     if (mStreams.size() == 1) {
         mStreams.front()->Start();
     }
@@ -31,7 +27,6 @@ void StreamQueue::Poll() {
     if (mStreams.front()->Poll() == Task::kStateRunning) {
         return;
     }
-    delete mStreams.front();
     mStreams.erase(mStreams.begin());
     if (!mStreams.empty()) {
         mStreams.front()->Start();
@@ -46,7 +41,7 @@ void StreamQueue::SetPaused(bool bPaused) {
 
 void StreamQueue::NotifyWhenDone(Task *pTask, const char *pszName) {
     auto it = mStreams.begin();
-    while (it != mStreams.end() && strcmp((*it)->mName, pszName) != 0) {
+    while (it != mStreams.end() && strcmp((*it)->GetName(), pszName) != 0) {
         ++it;
     }
     if (it == mStreams.end()) {

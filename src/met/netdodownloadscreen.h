@@ -71,6 +71,14 @@ public:
     String mRemixName; /*!< The name the remix is saved under. */
     String mFile;      /*!< The file of the remix on the server. */
 
+#ifdef VIDEO_STANDARD_PAL
+    /** The value of mUploadIndex when the file does not belong to the upload tool. */
+    static constexpr int kNoUploadIndex = -1;
+
+    /** The upload tool's file being downloaded, or kNoUploadIndex. */
+    int mUploadIndex = kNoUploadIndex;
+#endif
+
 private:
     /**
      * Show the part of the remix downloaded on the dialog.
@@ -121,12 +129,5 @@ private:
      * @ghidraAddress PAL: 0x001839d8
      */
     bool HandleRemixDownload(RemixDownloadMsg *pMsg);
-
-public:
-    /** The value of mUploadIndex when the file is not one of the upload tool's. */
-    static constexpr int kNoUploadIndex = -1;
-
-    /** The file of the upload tool being downloaded, or kNoUploadIndex. */
-    int mUploadIndex = kNoUploadIndex;
 #endif
 };

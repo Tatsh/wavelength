@@ -338,10 +338,17 @@ public:
      */
     int StreakMultiplier(int nStreak) const;
 
-protected:
-    // TrackCapturer reads and writes mLastHitTick directly.
-    friend class TrackCapturer;
+    /** @return The tick of the last gem hit, or -1. */
+    int GetLastHitTick() const {
+        return mLastHitTick;
+    }
 
+    /** @param nTick The tick of the last gem hit. */
+    void SetLastHitTick(int nTick) {
+        mLastHitTick = nTick;
+    }
+
+protected:
     int mIndex;                         /*!< The player's index. */
     int mTicksPerBar;                   /*!< The song ticks in one bar. */
     Track *mTrack;                      /*!< The track the player plays, or null. */

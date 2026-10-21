@@ -23,19 +23,16 @@ constexpr int kCryptChunkSize = 256;
 } // namespace
 
 #ifdef VIDEO_STANDARD_PAL
-BinStream::~BinStream() {
-    delete mCrypto;
-}
+BinStream::~BinStream() = default;
 
 void BinStream::EnableReadEncryption() {
     int nSeed;
     ReadEndian(&nSeed, sizeof(nSeed));
-    mCrypto = new Rand(nSeed);
+    mCrypto = std::make_unique<Rand>(nSeed);
 }
 
 void BinStream::DisableEncryption() {
-    delete mCrypto;
-    mCrypto = nullptr;
+    mCrypto.reset();
 }
 
 void BinStream::Read(void *pData, int nBytes) {

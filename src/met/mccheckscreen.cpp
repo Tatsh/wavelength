@@ -103,7 +103,7 @@ bool MCCheckScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MCCheckScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         mLoadFreqs = 0;
         mLoadSettings = 0;
         mAdvanceTime = 0.0f;
@@ -121,7 +121,7 @@ void MCCheckScreen::OnInitialCheck(int nStatus, int nFormat, int nFree, int nNee
             break;
         }
         TheMetagame.SetFreqsOnCard(1);
-        if (TheUI.mEditMode == 0) {
+        if (TheUI.GetEditMode() == 0) {
             mLoadSettings = 1;
         } else {
             TheUI.GotoScreen(mDoneScreen.c_str());
@@ -193,5 +193,5 @@ void MCCheckScreen::OnFreqsLoaded(int nStatus, std::vector<Campaign> *pProfiles)
     } else {
         TheMetagame.SetFreqsOnCard(0);
     }
-    mAdvanceTime = TheUI.mTime + kAdvanceDelayMs;
+    mAdvanceTime = TheUI.GetTime() + kAdvanceDelayMs;
 }

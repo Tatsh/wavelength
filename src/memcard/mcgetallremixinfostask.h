@@ -34,13 +34,6 @@ public:
      */
     void Set(int nPort, std::vector<RemixInfo> *pInfos);
 
-    MCGetRemixInfoTask mInfo; /*!< The work that reads one description. */
-    int mIndex;               /*!< The index into g_RemixNames of the file read now. */
-#ifndef VIDEO_STANDARD_PAL
-    std::list<String>::iterator mIter; /*!< The file of g_RemixNames read now. */
-#endif
-    std::vector<RemixInfo> *mInfos; /*!< Receives the descriptions. */
-
 protected:
     /**
      * Size the descriptions to the files and start reading the first. The PAL build empties the
@@ -68,4 +61,11 @@ private:
      * @ghidraAddress PAL: 0x00164138
      */
     void ReadNext();
+
+    MCGetRemixInfoTask mInfo; /*!< The work that reads one description. */
+    int mIndex;               /*!< The index into g_RemixNames of the file read now. */
+#ifndef VIDEO_STANDARD_PAL
+    std::list<String>::iterator mIter; /*!< The file of g_RemixNames read now. */
+#endif
+    std::vector<RemixInfo> *mInfos; /*!< Receives the descriptions. Borrowed. */
 };

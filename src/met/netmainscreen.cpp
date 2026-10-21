@@ -51,10 +51,11 @@ void NetMainScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     }
     FreqScreen::Enter(pPrevScreen, fTime);
     UIPanel *pFocus = mFocusPanel;
-    if (pFocus->mFocus == nullptr) {
+    if (pFocus->GetFocus() == nullptr) {
         pFocus->SetFocus(TheUI.FindComponent(kMainPanel, kJoinComponent, false), kPadNone);
     }
-    static_cast<HelpPanel *>(TheUI.FindPanel(kHelpPanel, false))->ShowHelp(pFocus, pFocus->mFocus);
+    static_cast<HelpPanel *>(TheUI.FindPanel(kHelpPanel, false))
+        ->ShowHelp(pFocus, pFocus->GetFocus());
 }
 
 void NetMainScreen::Exit(UIScreen *pNextScreen, float fTime) {
@@ -102,28 +103,28 @@ bool NetMainScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetMainScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (!IsNamed(pMsg->mPanel->mName, kMainPanel)) {
+    if (!IsNamed(pMsg->GetPanel()->GetName(), kMainPanel)) {
         return false;
     }
-    UIComponent *pTab = pMsg->mComponent;
-    if (pTab == nullptr || pTab == pMsg->mOldComponent) {
+    UIComponent *pTab = pMsg->GetComponent();
+    if (pTab == nullptr || pTab == pMsg->GetOldComponent()) {
         return false;
     }
-    UIScreen *pScreen = TheUI.FindScreen(FormatString(kTabScreenFormat, pTab->mName), false);
-    if (pScreen != nullptr && pScreen != TheUI.mCurrentScreen) {
+    UIScreen *pScreen = TheUI.FindScreen(FormatString(kTabScreenFormat, pTab->GetName()), false);
+    if (pScreen != nullptr && pScreen != TheUI.GetCurrentScreen()) {
         TheUI.GotoScreen(pScreen);
     }
     return false;
 }
 
 bool NetMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return false;
     }
-    if (!IsNamed(pMsg->mPanel->mName, kMainPanel)) {
+    if (!IsNamed(pMsg->GetPanel()->GetName(), kMainPanel)) {
         return false;
     }
-    const char *pszTab = pMsg->mComponent->mName;
+    const char *pszTab = pMsg->GetComponent()->GetName();
     if (IsNamed(pszTab, kLobbiesComponent) && IsNamed(kLobbiesScreen, mName)) {
         TheMetagame.SetHelpText(TheLocale.Localize(kLobbiesFocusHelpToken, true));
         SetFocus(TheUI.FindPanel(kLobbiesPanel, false));
@@ -136,8 +137,8 @@ bool NetMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetMainScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mButton == kPadDRight && IsNamed(pMsg->mPanel->mName, kMainPanel)) {
-        const char *pszTab = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadDRight && IsNamed(pMsg->GetPanel()->GetName(), kMainPanel)) {
+        const char *pszTab = pMsg->GetComponent()->GetName();
         if (IsNamed(pszTab, kLobbiesComponent)) {
             SetFocus(TheUI.FindPanel(kLobbiesPanel, false));
         } else if (IsNamed(pszTab, kPlayersComponent)) {
@@ -156,14 +157,14 @@ bool NetMainScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         }
         UIPanel *pFocus = TheUI.FocusPanel();
         const int nButton = pMsg->mButton;
-        if (nButton == kPadTriangle && IsNamed(pFocus->mName, kMainPanel)) {
+        if (nButton == kPadTriangle && IsNamed(pFocus->GetName(), kMainPanel)) {
             TheUI.GotoScreen(kLeaveScreen);
-        } else if (nButton == kPadTriangle && IsNamed(pFocus->mName, kLobbiesScreen)) {
+        } else if (nButton == kPadTriangle && IsNamed(pFocus->GetName(), kLobbiesScreen)) {
             TheMetagame.SetHelpText(TheLocale.Localize(kLobbiesHelpToken, true));
         } else if (nButton == kPadCircle) {
-            TheUI.mCurrentScreen->SetFocus(TheUI.FindPanel(kMainPanel, false));
+            TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(kMainPanel, false));
             TheUI.FindPanel(kChatPanel, false)->Dispatch(pMsg);
-        } else if (nButton == kPadL1 && IsNamed(pFocus->mName, kMainPanel) &&
+        } else if (nButton == kPadL1 && IsNamed(pFocus->GetName(), kMainPanel) &&
                    !IsNamed(mL1Panel.c_str(), kNoPanel)) {
             static_cast<NetMainPanel *>(TheUI.FindPanel(mL1Panel.c_str(), false))
                 ->RequestNow(false);
@@ -182,9 +183,9 @@ bool NetMainScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
 }
 
 bool NetMainScreen::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
-    UIScreen *pScreen = TheUI.mCurrentScreen;
-    if (pScreen != nullptr && IsNamed(pScreen->mName, kJoinScreen) &&
-        IsNamed(pScreen->mFocusPanel->mName, kJoinPanel)) {
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
+    if (pScreen != nullptr && IsNamed(pScreen->GetName(), kJoinScreen) &&
+        IsNamed(pScreen->GetFocusPanel()->GetName(), kJoinPanel)) {
         static_cast<NetMainLaunchpadsPanel *>(TheUI.FindPanel(kJoinPanel, false))
             ->ShowPlayers(pMsg->mPlayers, pMsg->mLaunchpad);
     }

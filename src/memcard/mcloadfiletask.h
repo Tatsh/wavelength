@@ -42,10 +42,12 @@ public:
      */
     void Set(MemcardSerialTask *pOwner, int nPort, const char *pszName, void *pBuffer, int nSize);
 
-    MemcardSerialTask *mOwner; /*!< The task OnStop() tells, or null. */
-    MCOpenTask *mOpen;         /*!< The step that opens the file. */
-    MCReadTask *mRead;         /*!< The step that reads the file. */
-    MCCloseTask *mClose;       /*!< The step that closes the file. */
+private:
+    // The steps belong to the SerialTasks list.
+    MemcardSerialTask *mOwner; /*!< The task OnStop() tells, or null. Borrowed. */
+    MCOpenTask *mOpen;         /*!< The step that opens the file. Borrowed. */
+    MCReadTask *mRead;         /*!< The step that reads the file. Borrowed. */
+    MCCloseTask *mClose;       /*!< The step that closes the file. Borrowed. */
 
 protected:
     /**

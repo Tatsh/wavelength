@@ -132,13 +132,11 @@ void TnlFire::Emitter::Stop() {
     mSys->mEmitRate.x = 0.0f;
 }
 
-TnlFire::ChunkModel::~ChunkModel() {
-    delete mMultiMesh;
-}
+TnlFire::ChunkModel::~ChunkModel() = default;
 
 void TnlFire::ChunkModel::CreateMultiMesh() {
-    mMultiMesh = dynamic_cast<RndMultiMesh *>(
-        TheManager.Create(RndMultiMesh::sClassName, FormatString("tnlfire chunk 0x%08x.mm", this)));
+    mMultiMesh.reset(dynamic_cast<RndMultiMesh *>(TheManager.Create(
+        RndMultiMesh::sClassName, FormatString("tnlfire chunk 0x%08x.mm", this))));
     mMultiMesh->SetMesh(mMesh);
 }
 
@@ -197,7 +195,7 @@ void TnlFire::Chunk::Reset(std::list<Transform> *pFreeXfms) {
 }
 
 bool TnlFire::Chunk::Update(float flTicks) {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     if (mEndTick <= flTick) {
         return true;
     }
@@ -223,10 +221,10 @@ TnlFire::TnlFire(const char *pszName, int nPlayer, GfxTunnel *pTunnel, bool bChu
         DataArray *pModeConfig = GetModeGfxConfig();
         DataArray *pChunks;
         FindConfigArray(pModeConfig, GetGfxConfig(), "capture_chunks", &pChunks, true);
-        mModels.resize(pChunks->Size() - 1, ChunkModel());
+        mModels.resize(pChunks->Size() - 1);
         mTotalWeight = 0.0f;
-        if ((TheGameDb->mCommunity == GameDb::kCommunitySolo) ||
-            (TheGameDb->mRuleSet != GameDb::kRuleSetGame)) {
+        if ((TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ||
+            (TheGameDb->GetRuleSet() != GameDb::kRuleSetGame)) {
             mMat = FindObject<RndMat>("panelchunk nrg.mat");
         } else {
             mMat = FindObject<RndMat>("panelchunk multi.mat");
@@ -331,8 +329,8 @@ float TnlFire::StartTick(int nPlayer) const {
 }
 
 void TnlFire::Update(float flTicks, float) {
-    const float flTick = TheGameDb->mSongTick;
-    mView->SetFrame(TheGameDb->mSongTime);
+    const float flTick = TheGameDb->GetSongTick();
+    mView->SetFrame(TheGameDb->GetSongTime());
     for (std::list<Chunk>::iterator it = mChunks.begin(); it != mChunks.end();) {
         if (it->Update(flTicks)) {
             std::list<Chunk>::iterator next = it;
@@ -354,13 +352,13 @@ void TnlFire::Update(float flTicks, float) {
         flHead = mEndTick;
         bDone = true;
     }
-    const float flBuiltEnd = mTunnel->mGeom->BuiltEndTick();
+    const float flBuiltEnd = mTunnel->GetGeom()->BuiltEndTick();
     if (flBuiltEnd <= flHead) {
         flHead = flBuiltEnd;
         bDone = true;
     }
     Transform cellXfm;
-    mTunnel->mGeom->CellXfm(mTrack, &cellXfm, true, true, flHead, kMiddle);
+    mTunnel->GetGeom()->CellXfm(mTrack, &cellXfm, true, true, flHead, kMiddle);
     mView->mLocalXfm = cellXfm;
     mView->mDirty = 1;
 
@@ -368,13 +366,13 @@ void TnlFire::Update(float flTicks, float) {
         const std::vector<float>::iterator gem =
             std::lower_bound(mGemTicks.begin(), mGemTicks.end(), mNextChunkTick - kGemWindowTicks);
         if ((gem != mGemTicks.end()) && (*gem <= mNextChunkTick) && !mFreeChunks.empty()) {
-            TnlGeom *pGeom = mTunnel->mGeom;
+            TnlGeom *pGeom = mTunnel->GetGeom();
             pGeom->CellXfm(mTrack, &cellXfm, true, true, mNextChunkTick, kMiddle);
             Transform middleXfm;
             pGeom->BlendCell(&middleXfm,
                              false,
                              true,
-                             static_cast<float>(pGeom->mNumTracks - 1) * kMiddle,
+                             static_cast<float>(pGeom->GetNumTracks() - 1) * kMiddle,
                              mNextChunkTick,
                              kMiddle);
             float flRoll = RandomFloat(0.0f, mTotalWeight);

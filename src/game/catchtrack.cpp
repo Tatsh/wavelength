@@ -30,8 +30,8 @@ constexpr int kHintDelayBars = 5;
 
 // Bars at the start of each section that are not enabled. An insane solo game has none.
 inline int CheckpointBars() {
-    if (TheGameDb->mSkillLevel == GameDb::kSkillInsane &&
-        TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetSkillLevel() == GameDb::kSkillInsane &&
+        TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         return 0;
     }
     return TheGameConfig->mCheckpointBars;
@@ -61,24 +61,26 @@ CatchTrack::CatchTrack(GameLogic *pLogic,
       mTicksPerBar(nTicksPerBar), mNumBars(nNumBars),
       mDisplay(&mState, pSections, nIndex, nIntroBars, nNumBars, nTicksPerBar, pPlayMap),
       mMusic(&mState, nTicksPerBar, nNumBars, pPlayMap, nFlags),
-      mGuideTicker(&mState, nTicksPerBar), mReceiver(new CaptureReceiver(this)),
+      mGuideTicker(&mState, nTicksPerBar), mReceiver(std::make_unique<CaptureReceiver>(this)),
       mDeactivateCommand(new DeactivateCmd(this)),
       mHintCommand(NewMemFunCommand(this, &CatchTrack::UpdateHint)),
-      mShowHints(!TheGameDb->mTutorial), mCapturer(mReceiver,
-                                                   &mState,
-                                                   pfMsPerTick,
-                                                   pPlayMap,
-                                                   pSections,
-                                                   nNumBars,
-                                                   nIndex,
-                                                   nTicksPerBar,
-                                                   nFlags),
+      mShowHints(!TheGameDb->GetTutorial()), mCapturer(mReceiver.get(),
+                                                       &mState,
+                                                       pfMsPerTick,
+                                                       pPlayMap,
+                                                       pSections,
+                                                       nNumBars,
+                                                       nIndex,
+                                                       nTicksPerBar,
+                                                       nFlags),
       mStarted(0), mEnabled(0) {
 }
 
 CatchTrack::~CatchTrack() {
     CatchTrack::Stop();
-    delete mReceiver;
+    // Preserve the original deletion point, while mCapturer, with its pointer to the receiver,
+    // still exists.
+    mReceiver.reset();
 }
 
 void CatchTrack::AddBackMusic(BackMusic *pMusic) {
@@ -229,7 +231,7 @@ bool CatchTrack::Autocatch(int nBar, Player *pPlayer) {
     }
 
     if (TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
-        pPlayer->AddScore(TheGameConfig->mAutocatcherPoints[TheGameDb->mSkillLevel]);
+        pPlayer->AddScore(TheGameConfig->mAutocatcherPoints[TheGameDb->GetSkillLevel()]);
     }
     pPlayer->SetPendingPoints(0, true);
     pPlayer->SetCatching(false);
@@ -248,7 +250,7 @@ void CatchTrack::CaptureBars(int nBar, Player *pPlayer, bool bAuto) {
         nEndBar >= mSections->SectionEnd(mSections->SectionAt(nBar))) {
         nEndBar += CheckpointBars();
     }
-    TheStats->CaptureTrack(mIndex, TheSongScheduler.mTick, nEndBar - nBar);
+    TheStats->CaptureTrack(mIndex, TheSongScheduler.GetTick(), nEndBar - nBar);
     ActivateBars(nBar, nEndBar, pPlayer, bAuto, false);
     mLogic->CapturePhrase(this, pPlayer, nEndBar, bAuto);
 }
@@ -269,7 +271,7 @@ void CatchTrack::ActivateBars(
     TheSongScheduler.Cancel(mDeactivateCommand.Get());
     if (TheGameConfig->mNoDeactivate == 0) {
         const int nLastTick = (nEndBar * mTicksPerBar) - 1;
-        if (nLastTick >= TheSongScheduler.mTick) {
+        if (nLastTick >= TheSongScheduler.GetTick()) {
             TheSongScheduler.PostAt(mDeactivateCommand.Get(), nLastTick, false);
         }
     }
@@ -294,7 +296,7 @@ void CatchTrack::UpdateHint() {
         return;
     }
 
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     bool bCatchable = false;
     if (mState.IsEnabled(nBar) && mState.GetCapturedBy(nBar) == nullptr) {
         bCatchable = !mState.IsBarEmpty(nBar);
@@ -308,7 +310,8 @@ void CatchTrack::ScheduleHint() {
     }
 
     TheSongScheduler.Cancel(mHintCommand.Get());
-    const int nTick = std::max(TheSongScheduler.mTick, kFirstTick) + kHintDelayBars * mTicksPerBar;
+    const int nTick =
+        std::max(TheSongScheduler.GetTick(), kFirstTick) + kHintDelayBars * mTicksPerBar;
     if (nTick <= mNumBars * mTicksPerBar) {
         TheSongScheduler.PostAt(mHintCommand.Get(), nTick, false);
     }

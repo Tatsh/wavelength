@@ -13,18 +13,16 @@ constexpr int kMaxPlayers = 4;
 
 } // namespace
 
-TransportRT *TheTransportRT;
+std::unique_ptr<TransportRT> TheTransportRT;
 
 NetTransport *TheNetTransport;
 
 TransportRT::TransportRT() : mSink(nullptr), mOpen(0) {
     mAborted.reserve(kMaxPlayers);
-    TheTransportRT = this;
     TheNetTransport = this;
 }
 
 TransportRT::~TransportRT() {
-    TheTransportRT = nullptr;
     TheNetTransport = nullptr;
 }
 
@@ -72,7 +70,7 @@ bool TransportRT::IsHost() {
     if (TheLaunchpadRT == nullptr) {
         return false;
     }
-    return TheLaunchpadRT->mLocalId == LaunchpadRT::kHostId;
+    return TheLaunchpadRT->GetLocalId() == LaunchpadRT::kHostId;
 }
 
 void TransportRT::Leave() {

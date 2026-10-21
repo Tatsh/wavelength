@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/file.h"
 #include "os/streambuffer.h"
 
@@ -56,9 +58,15 @@ public:
      */
     bool IsClosed() const;
 
-    int mDelivered;    /*!< Non-zero once the bytes of the last read went to the buffer. */
-    File *mFile;       /*!< The file, or null when it did not open. */
-    char *mReadBuffer; /*!< The buffer each read fills. */
-    int mReserved30;   // +0x30, cleared by the constructor and not yet identified.
-    int mReserved34;   // +0x34, cleared by the constructor and not yet identified.
+    /** @return The file, or null when it did not open. */
+    File *GetFile() const {
+        return mFile.get();
+    }
+
+private:
+    int mDelivered; /*!< Non-zero once the bytes of the last read went to the buffer. */
+    std::unique_ptr<File> mFile; /*!< The file, or null when it did not open. */
+    char *mReadBuffer;           /*!< The buffer each read fills, freed with PoolMemFree. */
+    int mReserved30;             // +0x30, cleared by the constructor and not yet identified.
+    int mReserved34;             // +0x34, cleared by the constructor and not yet identified.
 };

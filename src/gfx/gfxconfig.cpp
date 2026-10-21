@@ -91,11 +91,11 @@ bool FindConfigColor(
 
 DataArray *GetModeGfxConfig() {
     const char *pszMode;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         pszMode = "solo";
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         pszMode = "duel";
-    } else if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    } else if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         pszMode = "net";
     } else {
         pszMode = "multi";

@@ -18,7 +18,7 @@ void MCLoadSettingsTask::Set(int nPort, GameOptions *pSettings) {
     mLoad->Set(this,
                nPort,
                FormatString("%s/settings%s", g_MemcardPath.c_str(), pszExt),
-               g_pMemcardBuffer,
+               g_pMemcardBuffer.get(),
                g_nMemcardBufferSize);
 }
 
@@ -29,6 +29,6 @@ void MCLoadSettingsTask::OnFileLoaded() {
         return;
     }
 #endif
-    BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
+    BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
     stream >> *mSettings;
 }

@@ -49,7 +49,7 @@ PlayList *FindPlayList() {
 
 void JukeboxScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
-    if (pPrevScreen == nullptr || std::strcmp(pPrevScreen->mName, kPlaybackScreen) != 0) {
+    if (pPrevScreen == nullptr || std::strcmp(pPrevScreen->GetName(), kPlaybackScreen) != 0) {
         mPlaylist.clear();
         mPlaylist.push_back({1, TheLocale.Localize(kAllSongsToken, true)});
         std::vector<SongEntry> songs;
@@ -86,8 +86,8 @@ bool JukeboxScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool JukeboxScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    const char *pszButton = pMsg->mComponent->mName;
-    if (pMsg->mButton != kPadCross) {
+    const char *pszButton = pMsg->GetComponent()->GetName();
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
     if (std::strcmp(pszButton, kCreateComponent) == 0) {
@@ -115,8 +115,9 @@ bool JukeboxScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool JukeboxScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mButton == kPadDRight && std::strcmp(pMsg->mPanel->mName, kButtonPanel) == 0 &&
-        std::strcmp(pMsg->mComponent->mName, kCreateComponent) == 0) {
+    if (pMsg->GetButton() == kPadDRight &&
+        std::strcmp(pMsg->GetPanel()->GetName(), kButtonPanel) == 0 &&
+        std::strcmp(pMsg->GetComponent()->GetName(), kCreateComponent) == 0) {
         TheMetagame.SetHelpText(TheLocale.Localize(kListHelpToken, true));
         TheMetagame.SetActionText(TheLocale.Localize(kListActionToken, true));
         SetFocus(TheUI.FindPanel(kListPanel, false));
@@ -129,7 +130,7 @@ bool JukeboxScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     if (pMsg->mButton == kPadTriangle && pMsg->mPressed != 0) {
-        if (std::strcmp(TheUI.FocusPanel()->mName, kButtonPanel) == 0) {
+        if (std::strcmp(TheUI.FocusPanel()->GetName(), kButtonPanel) == 0) {
             mPlaylist.clear();
             TheUI.GotoScreen(kModeScreen);
         } else {

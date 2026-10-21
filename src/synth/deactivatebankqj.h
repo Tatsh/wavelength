@@ -24,5 +24,11 @@ public:
     ~DeactivateBankQJ() override {
     }
 
+    /** @return The bank slot. */
+    unsigned short GetSlot() const {
+        return mSlot;
+    }
+
+private:
     unsigned short mSlot; /*!< The bank slot. */
 };

@@ -104,21 +104,21 @@ void NetHostingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mModes.clear();
     const char *pszModeFormat = TheLocale.Localize(kModeFormatToken, true);
     AddLabel(mModes, pszModeFormat, kGameToken);
-    if (mIsEdit != 0 && std::strcmp(pPrevScreen->mName, kLaunchpadScreen) == 0) {
-        mSavedParams.mSong = TheGameDb->mSong;
-        mSavedParams.mLoadRemix = TheGameDb->mLoadRemix;
-        mSavedParams.mRemixReadOnly = TheGameDb->mRemixReadOnly;
-        mSavedParams.mRemixName = TheGameDb->mRemixName;
-        mSavedParams.mPracticeMode = TheGameDb->mPracticeMode;
-        mSavedParams.mTutorial = TheGameDb->mTutorial;
-        mSavedParams.mSkillLevel = TheGameDb->mSkillLevel;
-        mSavedParams.mPowerupLevel = TheGameDb->mPowerupLevel;
-        mSavedParams.mRuleSet = TheGameDb->mRuleSet;
-        mSavedParams.mCommunity = TheGameDb->mCommunity;
-        mSavedParams.mMaxPlayers = TheGameDb->mMaxPlayers;
+    if (mIsEdit != 0 && std::strcmp(pPrevScreen->GetName(), kLaunchpadScreen) == 0) {
+        mSavedParams.mSong = TheGameDb->GetSong();
+        mSavedParams.mLoadRemix = TheGameDb->GetLoadRemix();
+        mSavedParams.mRemixReadOnly = TheGameDb->GetRemixReadOnly();
+        mSavedParams.mRemixName = TheGameDb->GetRemixName();
+        mSavedParams.mPracticeMode = TheGameDb->GetPracticeMode();
+        mSavedParams.mTutorial = TheGameDb->GetTutorial();
+        mSavedParams.mSkillLevel = TheGameDb->GetSkillLevel();
+        mSavedParams.mPowerupLevel = TheGameDb->GetPowerupLevel();
+        mSavedParams.mRuleSet = TheGameDb->GetRuleSet();
+        mSavedParams.mCommunity = TheGameDb->GetCommunity();
+        mSavedParams.mMaxPlayers = TheGameDb->GetMaxPlayers();
     }
-    if (mIsEdit != 0 && TheGameDb->mRuleSet != GameDb::kRuleSetDuel &&
-        TheGameDb->mMaxPlayers > kMinPlayers) {
+    if (mIsEdit != 0 && TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel &&
+        TheGameDb->GetMaxPlayers() > kMinPlayers) {
         mDuelMode = -1;
         mRemixMode = 1;
         mLastSkillMode = 0;
@@ -130,18 +130,18 @@ void NetHostingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     }
     AddLabel(mModes, pszModeFormat, kRemixToken);
 
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mMode = mDuelMode;
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         mMode = mRemixMode;
     } else {
         mMode = 0;
     }
     OnModeChanged();
-    if (TheGameDb->mSkillLevel != kNoSkill) {
-        mSkill = TheGameDb->mSkillLevel;
+    if (TheGameDb->GetSkillLevel() != kNoSkill) {
+        mSkill = TheGameDb->GetSkillLevel();
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mSkill -= kDuelSkillOffset;
     }
 
@@ -161,13 +161,13 @@ void NetHostingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     AddLabel(mPowerups, pszPowerupFormat, kPowerupLowToken);
     AddLabel(mPowerups, pszPowerupFormat, kPowerupHighToken);
     AddLabel(mPowerups, pszPowerupFormat, kPowerupOffToken);
-    mPowerup = TheGameDb->mPowerupLevel;
+    mPowerup = TheGameDb->GetPowerupLevel();
 
     OnChoiceChanged(1);
     mDuelNumPlayers = 0;
     mLastNumPlayers = static_cast<int>(mPlayerCounts.size()) - 1;
     if (mIsEdit != 0) {
-        mNumPlayers = TheGameDb->mMaxPlayers - kMinPlayers;
+        mNumPlayers = TheGameDb->GetMaxPlayers() - kMinPlayers;
     } else {
         mNumPlayers = static_cast<int>(mPlayerCounts.size()) - 1;
     }
@@ -208,7 +208,7 @@ void NetHostingScreen::OnChoiceChanged(int bReset) {
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
     String selected;
     if (!pList->mSongs.empty()) {
-        selected = pList->mSongs[pList->mSelected].c_str();
+        selected = pList->mSongs[pList->GetSelected()].c_str();
     }
 
     std::vector<String> choices;
@@ -235,7 +235,7 @@ void NetHostingScreen::OnChoiceChanged(int bReset) {
     int nSelected = kRandomChoice;
     for (unsigned int i = 0; i < songs.size(); ++i) {
         if (std::strcmp(selected.c_str(), songs[i].GetName()) == 0 ||
-            std::strcmp(TheGameDb->mSong.c_str(), songs[i].GetName()) == 0) {
+            std::strcmp(TheGameDb->GetSong().c_str(), songs[i].GetName()) == 0) {
             nSelected = static_cast<int>(i) + mChoiceCount;
         }
         choices.push_back(String(songs[i].GetName()));
@@ -290,12 +290,12 @@ bool NetHostingScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return NetParamsScreen::HandleSelect(pMsg);
     }
-    if (std::strcmp(pMsg->mComponent->mName, kHostComponent) != 0) {
+    if (std::strcmp(pMsg->GetComponent()->GetName(), kHostComponent) != 0) {
         // Yes, the binary focuses the host button on both paths.
-        if (std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
+        if (std::strcmp(pMsg->GetComponent()->GetName(), kCursorComponent) == 0) {
             UIPanel *pPanel = TheUI.FindPanel(mButtonPanelName, false);
             pPanel->SetFocus(pPanel->FindComponent(kHostComponent, false), kPadNone);
         } else {
@@ -313,7 +313,7 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     } else {
         TheGameDb->SetRuleSet(GameDb::kRuleSetGame);
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         TheGameDb->SetSkillLevel(mSkill + kDuelSkillOffset);
     } else {
         TheGameDb->SetSkillLevel(mSkill);
@@ -323,7 +323,7 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 
     auto *pList =
         static_cast<SongSelList *>(TheUI.FindComponent(mSongPanelName, kListComponent, false));
-    int nSong = pList->mSelected;
+    int nSong = pList->GetSelected();
     if (nSong == mCustomChoice && nSong < mChoiceCount) {
         TheUI.GotoScreen(mIsEdit != 0 ? kEditRemixListScreen : kRemixListScreen);
         return NetParamsScreen::HandleSelect(pMsg);
@@ -363,8 +363,8 @@ bool NetHostingScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetHostingScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const char *pszComponent = pMsg->mComponent->mName;
-    const int nButton = pMsg->mButton;
+    const char *pszComponent = pMsg->GetComponent()->GetName();
+    const int nButton = pMsg->GetButton();
     if (std::strcmp(pszComponent, kNumPlayersComponent) == 0) {
         if (nButton == kPadDLeft || nButton == kPadDRight) {
             mNumPlayers = StepChoice(mNumPlayers, static_cast<int>(mPlayerCounts.size()), nButton);

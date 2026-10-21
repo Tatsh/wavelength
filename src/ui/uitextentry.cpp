@@ -152,7 +152,7 @@ void UITextEntry::SetState(int nState, bool bForce) {
 void UITextEntry::SetEditing(bool bEditing) {
     mEditing = bEditing;
     if (bEditing) {
-        mNextBlink = TheUI.mTime;
+        mNextBlink = TheUI.GetTime();
     } else {
         mCaret->SetShowing(false);
         mNextBlink = 0.0f;

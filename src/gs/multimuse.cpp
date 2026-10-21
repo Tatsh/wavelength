@@ -47,7 +47,7 @@ void MultiMuse::PlayWindow(Scheduler *pScheduler, int nStart, int nEnd) {
         mNext = mFirstActive = mMuses.end();
         return;
     }
-    mOffset = mScheduler->mTick - nStart;
+    mOffset = mScheduler->GetTick() - nStart;
     mEnd = mOffset + nEnd;
     mScheduler->PostAt(mCmd.Get(), mOffset + mNext->mTick, false);
 }
@@ -122,8 +122,8 @@ void MultiMuse::Add(Muse *pMuse, int nTick) {
         it =
             mMuses.insert(std::upper_bound(mMuses.begin(), mMuses.end(), timed, TickBefore), timed);
     }
-    if (mScheduler != nullptr && std::prev(mNext) == it && !(nTick < mScheduler->mTick - mOffset) &&
-        mOffset + nTick < mEnd) {
+    if (mScheduler != nullptr && std::prev(mNext) == it &&
+        !(nTick < mScheduler->GetTick() - mOffset) && mOffset + nTick < mEnd) {
         // The new muse starts before the one the command waits on.
         mScheduler->Cancel(mCmd.Get());
         mScheduler->PostAt(mCmd.Get(), mOffset + nTick, false);

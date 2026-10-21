@@ -28,7 +28,7 @@ const Color kNoBackgroundColor{1.0f, 1.0f, 1.0f, 1.0f};
 
 // Stop the animations of every avatar of the game.
 void ClearAllAnims(AvatarPartSet *pSoloAvatar) {
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         pSoloAvatar->ClearAnims();
         return;
     }
@@ -51,13 +51,13 @@ OvyAvatar::OvyAvatar(int nPlayer, int nIndex, RndView *pHudView)
         dynamic_cast<RndMesh *>(TheManager.Find(FormatString("freq placeholder %d.mesh", nIndex)));
     mView = dynamic_cast<RndView *>(
         TheManager.Find(FormatString("%s freq %d.view", Overlay::sHudPrefix, nIndex)));
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel ||
-        TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel ||
+        TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         mName = dynamic_cast<RndText *>(
             TheManager.Find(FormatString("%s track%d.txt", Overlay::sHudPrefix, nIndex)));
     }
     mBackgroundMat = dynamic_cast<RndMat *>(TheManager.Find("HUD freq_background.mat"));
-    if (nPlayer < 0 || TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (nPlayer < 0 || TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         mBackgroundColor = mBackgroundMat->mBaseColor;
     } else {
         mBackgroundColor = *TheGfxManager.GetPlayerColor(nPlayer);
@@ -70,8 +70,8 @@ OvyAvatar::OvyAvatar(int nPlayer, int nIndex, RndView *pHudView)
     }
     static_cast<RndDrawable *>(pHudView)->RemoveDraw(mView);
     static_cast<RndDrawable *>(mView)->SetShowing(true);
-    if (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
-        TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo &&
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         auto *pSwingAnim = dynamic_cast<RndAnimatable *>(
             TheManager.Find(FormatString("%s freq %d fx.tnm", Overlay::sHudPrefix, nIndex)));
         if (pSwingAnim != nullptr) {
@@ -104,16 +104,16 @@ void OvyAvatar::UpdateShown() {
 }
 
 void OvyAvatar::Draw() {
-    if (mSlide.mValue == 0.0f) {
-        if (mPlayer >= 0 && TheGfxManager.mWinner == mPlayer) {
+    if (mSlide.GetValue() == 0.0f) {
+        if (mPlayer >= 0 && TheGfxManager.GetWinner() == mPlayer) {
             mAvatar->Render(nullptr);
-            TheGfxManager.mWinnerDrawn = 1;
+            TheGfxManager.SetWinnerDrawn(1);
         }
         return;
     }
     if (mAvatar != nullptr) {
         mAvatar->Render(nullptr);
-        TheGfxManager.mWinnerDrawn = TheGfxManager.mWinner == mPlayer;
+        TheGfxManager.SetWinnerDrawn(TheGfxManager.GetWinner() == mPlayer);
     }
     if (mNameMat != nullptr) {
         mNameMat->SetBaseColor(mNameColor);
@@ -126,7 +126,7 @@ void OvyAvatar::Draw() {
 void OvyAvatar::Poll(float fDelta) {
     HideablePanel::Poll();
     if (!mSwing.Update(fDelta, false) || mNextPlayer == kNoChange ||
-        !(kSwingSwap <= mSwing.mValue)) {
+        !(kSwingSwap <= mSwing.GetValue())) {
         return;
     }
     mPlayer = mNextPlayer;
@@ -167,7 +167,7 @@ void OvyAvatar::SetFreqSize(int nFreqSize) {
 void OvyAvatar::Reset() {
     ClearAllAnims(mAvatar);
     SetFreqSize(TheGameDb->GetOptions()->mFreqSize);
-    if (mSwing.mAnim == nullptr) {
+    if (mSwing.GetAnim() == nullptr) {
         return;
     }
     mNextPlayer = kNoPlayer;

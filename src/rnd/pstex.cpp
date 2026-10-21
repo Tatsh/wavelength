@@ -435,7 +435,7 @@ void PsTex::ReserveDisplayMemory() {
 }
 
 void PsTex::Place() {
-    int nSlot = mBitmap.mPalette == nullptr ? kSlotTbp0 : kSlotClut;
+    int nSlot = mBitmap.GetPalette() == nullptr ? kSlotTbp0 : kSlotClut;
     for (auto it = mRanges.begin(); it != mRanges.end(); ++it, ++nSlot) {
         UsedRange &range = *it;
         if (range.mStart != 0) {
@@ -486,7 +486,7 @@ void PsTex::BuildMoviePacket(bool bBuild) {
         PoolMemFree(mMoviePacket);
         mMoviePacket = nullptr;
     }
-    if (!bBuild || mBitmap.mPixels == nullptr) {
+    if (!bBuild || mBitmap.GetPixels() == nullptr) {
         return;
     }
 
@@ -500,7 +500,7 @@ void PsTex::BuildMoviePacket(bool bBuild) {
     const int nBlockQwords = ((mTex0 >> kTex0PsmShift) & kTex0PsmMask) == kPsmCt32 ?
                                  kMovieBlockQwords32 :
                                  kMovieBlockQwords16;
-    const unsigned char *pPixels = mBitmap.mPixels;
+    const unsigned char *pPixels = mBitmap.GetPixels();
     for (int nY = 0; nY < mHeight; nY += kMovieBlockSize) {
         const unsigned long long qwY = static_cast<unsigned long long>(nY) << kTrxPosDsayShift;
         for (int nX = 0; nX < mWidth; nX += kMovieBlockSize) {
@@ -588,7 +588,7 @@ void PsTex::UploadImage(
 void PsTex::Upload() {
     Place();
     const RndBitmap *pMip = &mBitmap;
-    int nSlot = mBitmap.mPalette == nullptr ? kSlotTbp0 : kSlotClut;
+    int nSlot = mBitmap.GetPalette() == nullptr ? kSlotTbp0 : kSlotClut;
     for (auto it = mRanges.begin(); it != mRanges.end(); ++it, ++nSlot) {
         if (((mDirty >> nSlot) & 1) == 0) {
             continue;
@@ -600,17 +600,17 @@ void PsTex::Upload() {
                         kClutBpp,
                         bSmall ? kSmallClutWidth : kClutWidth,
                         bSmall ? kSmallClutHeight : kClutHeight,
-                        mBitmap.mPalette);
+                        mBitmap.GetPalette());
         } else if (mMoviePacket != nullptr) {
             UploadMovie();
         } else {
             UploadImage(it->mStart,
                         static_cast<int>((mTex0 >> kTex0PsmShift) & kTex0PsmMask),
                         mBpp,
-                        pMip->mWidth,
-                        pMip->mHeight,
-                        pMip->mPixels);
-            pMip = pMip->mMip;
+                        pMip->GetWidth(),
+                        pMip->GetHeight(),
+                        pMip->GetPixels());
+            pMip = pMip->GetMip();
         }
     }
     mDirty = 0;
@@ -674,13 +674,13 @@ void PsTex::Init() {
 }
 
 int PsTex::NumBlocks(const RndBitmap &bitmap) {
-    const int nWidth = bitmap.mWidth;
-    const int nHeight = bitmap.mHeight;
+    const int nWidth = bitmap.GetWidth();
+    const int nHeight = bitmap.GetHeight();
     // The block grid of the bitmap, one side in each variable, in the order the GS page shapes of
     // each depth make convenient.
     int nPrimary;
     int nSecondary;
-    switch (bitmap.mBpp) {
+    switch (bitmap.GetBpp()) {
     case kBpp8:
         nPrimary = BlocksAcross(nWidth, kBlockShift16);
         nSecondary = BlocksAcross(nHeight, kBlockShift16);
@@ -711,15 +711,15 @@ int PsTex::NumBlocks(const RndBitmap &bitmap) {
 }
 
 void PsTex::SyncRegisters() {
-    if (mBitmap.mPixels == nullptr) {
+    if (mBitmap.GetPixels() == nullptr) {
         return;
     }
 
-    int nBpp = mBitmap.mBpp;
+    int nBpp = mBitmap.GetBpp();
     if (mRendered != 0 && nBpp < kMinRenderedBpp) {
         // The test always selects 16 for a depth below 16.
         nBpp = nBpp > kBpp32 - 1 ? kBpp32 : kMinRenderedBpp;
-        mBitmap.Create(mBitmap.mWidth, mBitmap.mHeight, 0, nBpp, kRenderedOrder);
+        mBitmap.Create(mBitmap.GetWidth(), mBitmap.GetHeight(), 0, nBpp, kRenderedOrder);
     }
 
     unsigned long long qwPsm;
@@ -756,7 +756,7 @@ void PsTex::SyncRegisters() {
     mTex1 = SetField(qwTex1, mMipMapK, kTex1KShift, kTex1KMask);
 
     UsedRange range;
-    if (mBitmap.mPalette != nullptr) {
+    if (mBitmap.GetPalette() != nullptr) {
         range.mStart = 0;
         range.mPinned = mRendered & 1;
         range.mFrame = 0;
@@ -765,14 +765,14 @@ void PsTex::SyncRegisters() {
     }
 
     int nLevel = kLevel0;
-    for (const RndBitmap *pMip = &mBitmap; pMip != nullptr; pMip = pMip->mMip, ++nLevel) {
+    for (const RndBitmap *pMip = &mBitmap; pMip != nullptr; pMip = pMip->GetMip(), ++nLevel) {
         range.mCount = static_cast<unsigned short>(NumBlocks(*pMip));
         range.mStart = 0;
         range.mPinned = mRendered & 1;
         range.mFrame = 0;
         mRanges.push_back(range);
 
-        const unsigned long long qwWidth = BufferWidth(nBpp, pMip->mWidth);
+        const unsigned long long qwWidth = BufferWidth(nBpp, pMip->GetWidth());
         switch (nLevel) {
         case kLevel0:
             mTex0 = SetField(mTex0, qwWidth, kTex0TbwShift, kWidthMask);
@@ -811,7 +811,7 @@ void PsTex::ReleaseSurfaces() {
 }
 
 void PsTex::Select(int nTexFunction) {
-    if (mBitmap.mPixels == nullptr) {
+    if (mBitmap.GetPixels() == nullptr) {
         return;
     }
     Upload();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -1509,34 +1510,393 @@ public:
      */
     static Vector3 sGridEighthScale;
 
+    /** @return Whether SetTrackPlayers() changed the players of a track. */
+    int GetTrackPlayersDirty() const {
+        return mTrackPlayersDirty;
+    }
+
+    /**
+     * Set whether SetTrackPlayers() changed the players of a track.
+     *
+     * @param nValue The new value.
+     */
+    void SetTrackPlayersDirty(int nValue) {
+        mTrackPlayersDirty = nValue;
+    }
+
+    /** @return Whether the next poll restores the colours of the panels. */
+    int GetPanelColorsDirty() const {
+        return mPanelColorsDirty;
+    }
+
+    /**
+     * Set whether the next poll restores the colours of the panels.
+     *
+     * @param nValue The new value.
+     */
+    void SetPanelColorsDirty(int nValue) {
+        mPanelColorsDirty = nValue;
+    }
+
+    /** @return The track the gems focus on, or -1. */
+    signed char GetDefaultFocusTrack() const {
+        return mDefaultFocusTrack;
+    }
+
+    /**
+     * Set the track the gems focus on.
+     *
+     * @param nValue The new value.
+     */
+    void SetDefaultFocusTrack(signed char nValue) {
+        mDefaultFocusTrack = nValue;
+    }
+
+    /** @return The boundaries between the sections of the song. Belongs to the tunnel. */
+    TnlDivider *GetDivider() const {
+        return mDivider.get();
+    }
+
+    /** @return The particle arms, or null. Belongs to the tunnel. */
+    ParticleArms *GetArms() const {
+        return mArms.get();
+    }
+
+    /** @return The fires of captured tracks. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlFire>> &GetFires() const {
+        return mFires;
+    }
+
+    /** @return The effects of each track. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlTrackFX>> &GetTrackFX() const {
+        return mTrackFX;
+    }
+
+    /** @return The flashes of the gems. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlFlashFX>> &GetFlashes() const {
+        return mFlashes;
+    }
+
+    /** @return The crippler of each player. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlCripFX>> &GetCrippleFX() const {
+        return mCrippleFX;
+    }
+
+    /** @return The shell of a slowdown. Belongs to the tunnel. */
+    TnlSlowdownFX *GetSlowdown() const {
+        return mSlowdown.get();
+    }
+
+    /** @return The spotlights of the gems. Belongs to the tunnel. */
+    SpotLightFX *GetSpotLights() const {
+        return mSpotLights.get();
+    }
+
+    /** @return The erased gems that burst later. Belongs to the tunnel. */
+    GemEraseFX *GetGemErase() const {
+        return mGemErase.get();
+    }
+
+    /** @return The shell of a won song. Belongs to the tunnel. */
+    TnlWinShell *GetWinShell() const {
+        return mWinShell.get();
+    }
+
+    /** @return The blurs of the slowdowns. Belongs to the tunnel. */
+    TnlBlurs *GetBlurs() const {
+        return mBlurs.get();
+    }
+
+    /** @return The capture bursts of the gems. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlGemCapFX>> &GetGemCaps() const {
+        return mGemCaps;
+    }
+
+    /** @return The arrow of each track. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlStreakGemFX>> &GetStreakGems() const {
+        return mStreakGems;
+    }
+
+    /** @return The gems. Belongs to the tunnel. */
+    TnlGems *GetGems() const {
+        return mGems.get();
+    }
+
+    /** @return The geometry of the tracks. Belongs to the tunnel. */
+    TnlGeom *GetGeom() const {
+        return mGeom.get();
+    }
+
+    /** @return `tnl transparent`. Borrowed. */
+    RndView *GetTransparentView() const {
+        return mTransparentView;
+    }
+
+    /** @return `grid1.view`. Borrowed. */
+    RndView *GetGridView() const {
+        return mGridView;
+    }
+
+    /** @return The arena. Borrowed from GfxManager. */
+    GfxArena *GetArena() const {
+        return mArena;
+    }
+
+    /** @return `tunnel track color.lit` of a solo game, or null. Borrowed. */
+    RndLight *GetTrackColorLight() const {
+        return mTrackColorLight;
+    }
+
+    /** @return The player the track colour light follows, or -1. */
+    int GetTrackColorPlayer() const {
+        return mTrackColorPlayer;
+    }
+
+    /** @return `tunnel fade.mesh`. Borrowed. */
+    RndMesh *GetFadeMesh() const {
+        return mFadeMesh;
+    }
+
+    /** @return The fade of the fade mesh. */
+    LinearInterpolator &GetFadeCurve() {
+        return mFadeCurve;
+    }
+
+    /** @return The graphics of each player. Belongs to the tunnel. */
+    const std::vector<std::unique_ptr<TnlPlayer>> &GetPlayers() const {
+        return mPlayers;
+    }
+
+    /** @return The clear colour of the renderer to restore. */
+    const Color &GetSavedClearColor() const {
+        return mSavedClearColor;
+    }
+
+    /** @return The panels waiting to apply. Belongs to the tunnel. */
+    const std::list<std::unique_ptr<GfxTunnelPanel>> &GetPanels() const {
+        return mPanels;
+    }
+
+    /** @return The sprite gem group of each instrument. */
+    const std::vector<signed char> &GetInstrumentGemGroups() const {
+        return mInstrumentGemGroups;
+    }
+
+    /** @return The sprite gem group of each track. */
+    const std::vector<signed char> &GetTrackGemGroups() const {
+        return mTrackGemGroups;
+    }
+
+    /** @return The gem group of each player. */
+    const std::vector<signed char> &GetPlayerGemGroups() const {
+        return mPlayerGemGroups;
+    }
+
+    /** @return The gem group of each powerup gem. */
+    const std::vector<signed char> &GetPowerupGemGroups() const {
+        return mPowerupGemGroups;
+    }
+
+    /** @return The gem group `gem_miss`. */
+    signed char GetMissGemGroup() const {
+        return mMissGemGroup;
+    }
+
+    /** @return The gem group `gem_slot`. */
+    signed char GetSlotGemGroup() const {
+        return mSlotGemGroup;
+    }
+
+    /** @return The gem group `gem_b`. */
+    signed char GetGemGroup() const {
+        return mGemGroup;
+    }
+
+    /** @return The state of each track. */
+    const std::vector<TrackData> &GetTracks() const {
+        return mTracks;
+    }
+
+    /** @return One bit for each track whose player is crippled. */
+    signed char GetCrippledTracks() const {
+        return mCrippledTracks;
+    }
+
+    /**
+     * Set the tracks whose players are crippled.
+     *
+     * @param nValue The new value.
+     */
+    void SetCrippledTracks(signed char nValue) {
+        mCrippledTracks = nValue;
+    }
+
+    /** @return The number of tracks. */
+    int GetNumTracks() const {
+        return mNumTracks;
+    }
+
+    /** @return The colour of each instrument. */
+    const std::vector<Color> &GetInstrumentColors() const {
+        return mInstrumentColors;
+    }
+
+    /** @return The colour of each track. */
+    const std::vector<Color> &GetTrackColors() const {
+        return mTrackColors;
+    }
+
+    /** @return `panel ckpt.mat`. Borrowed. */
+    RndMat *GetCheckpointMat() const {
+        return mCheckpointMat;
+    }
+
+    /** @return `panel ckpt finish.mat`. Borrowed. */
+    RndMat *GetCheckpointFinishMat() const {
+        return mCheckpointFinishMat;
+    }
+
+    /** @return `tnl overlay.cam`. Borrowed. */
+    RndCam *GetOverlayCam() const {
+        return mOverlayCam;
+    }
+
+    /** @return The cameras BuildOuterCams() fits. Borrowed. */
+    const std::vector<RndCam *> &GetOuterCams() const {
+        return mOuterCams;
+    }
+
+    /** @return How far the letterbox is closed, from 0 to 1. */
+    float GetLetterbox() const {
+        return mLetterbox;
+    }
+
+    /** @return The views of the capture bursts of each player. Borrowed. */
+    const std::vector<std::vector<RndView *>> &GetPlayerBurstViews() const {
+        return mPlayerBurstViews;
+    }
+
+    /** @return The views of the bursts of each kind. Borrowed. */
+    const std::vector<std::vector<RndView *>> &GetGemBurstViews() const {
+        return mGemBurstViews;
+    }
+
+    /** @return Whether the gems and the panels react to captures. */
+    int GetCaptureReveals() const {
+        return mCaptureReveals;
+    }
+
+    /** @return The tracks and ticks the last poll changed. */
+    TnlTrackRange &GetChangedRange() {
+        return mChangedRange;
+    }
+
+    /** @return Whether the boss journey has ended. */
+    int GetBossJourneyDone() const {
+        return mBossJourneyDone;
+    }
+
+    /** @return Whether no effect of the tunnel runs. */
+    int GetIdle() const {
+        return mIdle;
+    }
+
+    /**
+     * Set whether no effect of the tunnel runs.
+     *
+     * @param nValue The new value.
+     */
+    void SetIdle(int nValue) {
+        mIdle = nValue;
+    }
+
+    /** @return The extra ticks of a result that unlocks a path. */
+    float GetUnlockDoneTicks() const {
+        return mUnlockDoneTicks;
+    }
+
+    /**
+     * Set the extra ticks of a result that unlocks a path.
+     *
+     * @param fValue The new value.
+     */
+    void SetUnlockDoneTicks(float fValue) {
+        mUnlockDoneTicks = fValue;
+    }
+
+    /** @return The ticks the boss journey lasts. */
+    float GetBossDoneTicks() const {
+        return mBossDoneTicks;
+    }
+
+    /**
+     * Set the ticks the boss journey lasts.
+     *
+     * @param fValue The new value.
+     */
+    void SetBossDoneTicks(float fValue) {
+        mBossDoneTicks = fValue;
+    }
+
+    /** @return The tick the result of the song ends at. */
+    float GetResultDoneTick() const {
+        return mResultDoneTick;
+    }
+
+    /** @return The tick the boss journey ends at. */
+    float GetBossJourneyDoneTick() const {
+        return mBossJourneyDoneTick;
+    }
+
+    /** @return The camera of the players. Belongs to the tunnel. */
+    PlayerCamFX *GetCamFX() const {
+        return mCamFX.get();
+    }
+
+    /** @return The blend of the camera towards the arena path. */
+    ATanInterpolator &GetPathBlendCurve() {
+        return mPathBlendCurve;
+    }
+
+    /** @return Whether the path blend curve runs. */
+    int GetPathBlending() const {
+        return mPathBlending;
+    }
+
+    /** @return The centre of the cross section of the tracks. */
+    const Vector3 &GetCenter() const {
+        return mCenter;
+    }
+
+private:
     int mTrackPlayersDirty; /*!< Whether SetTrackPlayers() changed the players of a track. */
     int mPanelColorsDirty;  /*!< Whether the next poll restores the colours of the panels. */
-    signed char mDefaultFocusTrack;      /*!< The track the gems focus on, or -1. */
-    TnlDivider *mDivider;                /*!< The boundaries between the sections of the song. */
-    ParticleArms *mArms;                 /*!< The particle arms, or null. */
-    std::vector<TnlFire *> mFires;       /*!< The fires of captured tracks. */
-    std::vector<TnlTrackFX *> mTrackFX;  /*!< The effects of each track. */
-    std::vector<TnlFlashFX *> mFlashes;  /*!< The flashes of the gems, `gem_flash.ps`. */
-    std::vector<TnlCripFX *> mCrippleFX; /*!< The crippler of each player. */
-    TnlSlowdownFX *mSlowdown;            /*!< The shell of a slowdown, `slowdown_shell`. */
-    SpotLightFX *mSpotLights;            /*!< The spotlights of the gems. */
-    GemEraseFX *mGemErase;               /*!< The erased gems that burst later. */
-    TnlWinShell *mWinShell;              /*!< The shell of a won song. */
-    TnlBlurs *mBlurs;                    /*!< The blurs of the slowdowns. */
-    std::vector<TnlGemCapFX *> mGemCaps; /*!< The capture bursts of the gems. */
-    std::vector<TnlStreakGemFX *> mStreakGems; /*!< The arrow of each track, or none. */
-    TnlGems *mGems;                            /*!< The gems. */
-    TnlGeom *mGeom;                            /*!< The geometry of the tracks. */
-    RndView *mTransparentView;                 /*!< `tnl transparent`. */
-    RndView *mGridView;                        /*!< `grid1.view`. */
-    GfxArena *mArena;                          /*!< The arena. */
-    RndLight *mTrackColorLight;          /*!< `tunnel track color.lit` of a solo game, or null. */
-    int mTrackColorPlayer;               /*!< The player mTrackColorLight follows, or -1. */
-    RndMesh *mFadeMesh;                  /*!< `tunnel fade.mesh`. */
-    LinearInterpolator mFadeCurve;       /*!< The fade of mFadeMesh. */
-    std::vector<TnlPlayer *> mPlayers;   /*!< The graphics of each player. */
-    alignas(16) Color mSavedClearColor;  /*!< The clear colour of the renderer to restore. */
-    std::list<GfxTunnelPanel *> mPanels; /*!< The panels waiting to apply. */
+    signed char mDefaultFocusTrack;                     /*!< The track the gems focus on, or -1. */
+    std::unique_ptr<TnlDivider> mDivider;               /*!< The boundaries between the sections. */
+    std::unique_ptr<ParticleArms> mArms;                /*!< The particle arms, or null. */
+    std::vector<std::unique_ptr<TnlFire>> mFires;       /*!< The fires of captured tracks. */
+    std::vector<std::unique_ptr<TnlTrackFX>> mTrackFX;  /*!< The effects of each track. */
+    std::vector<std::unique_ptr<TnlFlashFX>> mFlashes;  /*!< The flashes of the gems. */
+    std::vector<std::unique_ptr<TnlCripFX>> mCrippleFX; /*!< The crippler of each player. */
+    std::unique_ptr<TnlSlowdownFX> mSlowdown;           /*!< The shell of a slowdown. */
+    std::unique_ptr<SpotLightFX> mSpotLights;           /*!< The spotlights of the gems. */
+    std::unique_ptr<GemEraseFX> mGemErase;              /*!< The erased gems that burst later. */
+    std::unique_ptr<TnlWinShell> mWinShell;             /*!< The shell of a won song. */
+    std::unique_ptr<TnlBlurs> mBlurs;                   /*!< The blurs of the slowdowns. */
+    std::vector<std::unique_ptr<TnlGemCapFX>> mGemCaps; /*!< The capture bursts of the gems. */
+    std::vector<std::unique_ptr<TnlStreakGemFX>> mStreakGems; /*!< The arrow of each track. */
+    std::unique_ptr<TnlGems> mGems;                           /*!< The gems. */
+    std::unique_ptr<TnlGeom> mGeom;                           /*!< The geometry of the tracks. */
+    RndView *mTransparentView;                                /*!< `tnl transparent`. Borrowed. */
+    RndView *mGridView;                                       /*!< `grid1.view`. Borrowed. */
+    GfxArena *mArena;              /*!< The arena. Borrowed from GfxManager. */
+    RndLight *mTrackColorLight;    /*!< `tunnel track color.lit`, or null. Borrowed. */
+    int mTrackColorPlayer;         /*!< The player mTrackColorLight follows, or -1. */
+    RndMesh *mFadeMesh;            /*!< `tunnel fade.mesh`. Borrowed. */
+    LinearInterpolator mFadeCurve; /*!< The fade of mFadeMesh. */
+    std::vector<std::unique_ptr<TnlPlayer>> mPlayers; /*!< The graphics of each player. */
+    alignas(16) Color mSavedClearColor; /*!< The clear colour of the renderer to restore. */
+    std::list<std::unique_ptr<GfxTunnelPanel>> mPanels; /*!< The panels waiting to apply. */
     std::vector<signed char> mInstrumentGemGroups; /*!< The sprite gem group of each instrument. */
     std::vector<signed char> mTrackGemGroups;      /*!< The sprite gem group of each track. */
     std::vector<signed char> mPlayerGemGroups;     /*!< The gem group `gem_<c>` of each player. */
@@ -1549,15 +1909,15 @@ public:
     int mNumTracks;                 /*!< The number of tracks. */
     std::vector<Color> mInstrumentColors; /*!< The colour of each instrument. */
     std::vector<Color> mTrackColors;      /*!< The colour of each track. */
-    RndMat *mCheckpointMat;               /*!< `panel ckpt.mat`. */
-    RndMat *mCheckpointFinishMat;         /*!< `panel ckpt finish.mat`. */
-    RndCam *mOverlayCam;                  /*!< `tnl overlay.cam`. */
-    /*!< The cameras BuildOuterCams() fits, five for each player. */
+    RndMat *mCheckpointMat;               /*!< `panel ckpt.mat`. Borrowed. */
+    RndMat *mCheckpointFinishMat;         /*!< `panel ckpt finish.mat`. Borrowed. */
+    RndCam *mOverlayCam;                  /*!< `tnl overlay.cam`. Borrowed. */
+    /*!< The cameras BuildOuterCams() fits, five for each player. Borrowed. */
     std::vector<RndCam *> mOuterCams;
     float mLetterbox; /*!< How far the letterbox is closed, from 0 to 1. */
-    /*!< The views of the capture bursts of each player. */
+    /*!< The views of the capture bursts of each player. Borrowed. */
     std::vector<std::vector<RndView *>> mPlayerBurstViews;
-    /*!< The views of the bursts of each GemBurst. */
+    /*!< The views of the bursts of each GemBurst. Borrowed. */
     std::vector<std::vector<RndView *>> mGemBurstViews;
     /*!< Whether the gems and the panels react to the captures of the tracks. Always set. */
     int mCaptureReveals;
@@ -1568,12 +1928,11 @@ public:
     float mBossDoneTicks;        /*!< The ticks the boss journey lasts, `boss`. */
     float mResultDoneTick;       /*!< The tick the result of the song ends at. */
     float mBossJourneyDoneTick;  /*!< The tick the boss journey ends at. */
-    PlayerCamFX *mCamFX;         /*!< The camera of the players. */
-    ATanInterpolator mPathBlendCurve; /*!< The blend of the camera towards the arena path. */
-    int mPathBlending;                /*!< Whether mPathBlendCurve runs. */
-    alignas(16) Vector3 mCenter;      /*!< The centre of the cross section of the tracks. */
+    std::unique_ptr<PlayerCamFX> mCamFX; /*!< The camera of the players. */
+    ATanInterpolator mPathBlendCurve;    /*!< The blend of the camera towards the arena path. */
+    int mPathBlending;                   /*!< Whether mPathBlendCurve runs. */
+    alignas(16) Vector3 mCenter;         /*!< The centre of the cross section of the tracks. */
 
-private:
     /**
      * Give the panel of a bar its look, at once or through a queued reveal, and refresh the grids
      * on the track.

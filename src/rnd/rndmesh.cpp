@@ -354,8 +354,7 @@ void RndMesh::Replace(RndObject *pFrom, RndObject *pTo) {
         if (mBones->mTrans[1] != nullptr) {
             mBones->mTrans[1]->RemoveRef(this);
         }
-        delete mBones;
-        mBones = nullptr;
+        mBones.reset();
     }
 }
 
@@ -382,7 +381,7 @@ void RndMesh::Copy(const RndObject *pSource, int nFlags) {
     }
     if ((nFlags & kCopyBones) != 0) {
         if (pMesh->mBones != nullptr) {
-            mBones = new Bones;
+            mBones = std::make_unique<Bones>();
             mBones->mTrans[0] = pMesh->mBones->mTrans[0];
             mBones->mTrans[1] = pMesh->mBones->mTrans[1];
             // Yes, the binary copies the first bind transform twice and leaves the second unset.
@@ -467,7 +466,7 @@ void RndMesh::Load(BinStream &stream) {
     if (sLoadRev >= kRevBones) {
         RndTransformable *pTrans1 = FindByName<RndTransformable>(stream);
         if (pTrans1 != nullptr) {
-            mBones = new Bones;
+            mBones = std::make_unique<Bones>();
             mBones->mTrans[0] = pTrans1;
             mBones->mTrans[1] = FindByName<RndTransformable>(stream);
             ReadTransform(stream, mBones->mXfms[0]);
@@ -576,8 +575,7 @@ void RndMesh::ReleaseRefs() {
         if (mBones->mTrans[1] != nullptr) {
             mBones->mTrans[1]->RemoveRef(this);
         }
-        delete mBones;
-        mBones = nullptr;
+        mBones.reset();
     }
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "app/msgsink.h"
@@ -123,9 +124,25 @@ public:
      */
     void SetOpen(int nOpen);
 
-    MsgSink *mSink;            /*!< The sink the messages of the game go to, or null. */
+    /** @return The sink the messages of the game go to, or null. Borrowed. */
+    MsgSink *GetSink() const {
+        return mSink;
+    }
+
+    /** @return Non-zero while the game runs. */
+    int GetOpen() const {
+        return mOpen;
+    }
+
+    /** @return The players who exited the game. */
+    const std::vector<int> &GetAborted() const {
+        return mAborted;
+    }
+
+private:
+    MsgSink *mSink;            /*!< The sink the messages of the game go to, or null. Borrowed. */
     int mOpen;                 /*!< Non-zero while the game runs. */
-    std::vector<int> mAborted; /*!< The players who left the game. */
+    std::vector<int> mAborted; /*!< The players who exited the game. */
 };
 
 /**
@@ -134,4 +151,4 @@ public:
  * @ghidraAddress NTSC-U/C: 0x003b0ca8
  * @ghidraAddress PAL: 0x0042fb78
  */
-extern TransportRT *TheTransportRT;
+extern std::unique_ptr<TransportRT> TheTransportRT;

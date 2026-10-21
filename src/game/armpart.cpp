@@ -64,7 +64,7 @@ void ArmPart::SetFrame(float fFrame) {
     AvatarPart *pInstrument = mAvatar->GetPart(AvatarPartSet::kPartInstrument);
     Transform toJoint;
     Invert(toJoint, mJoint->mWorldXfm);
-    Multiply(toJoint, toJoint, pInstrument->mTransRoot->mWorldXfm);
+    Multiply(toJoint, toJoint, pInstrument->GetTransRoot()->mWorldXfm);
 
     Transform hand;
     mAnims[kHandAnim]->MakeTransform(fFrame, hand, 0);
@@ -83,12 +83,12 @@ void ArmPart::SetFrames(float fFrom, float fTo, float fBlend) {
     AvatarPart *pInstrument = mAvatar->GetPart(AvatarPartSet::kPartInstrument);
     Transform toJoint;
     Invert(toJoint, mJoint->mWorldXfm);
-    Multiply(toJoint, toJoint, pInstrument->mTransRoot->mWorldXfm);
+    Multiply(toJoint, toJoint, pInstrument->GetTransRoot()->mWorldXfm);
 
     Transform hand;
-    BlendTranslation(mAnims[kHandAnim], fFrom, fTo, fBlend, hand.mTranslation);
+    BlendTranslation(mAnims[kHandAnim].get(), fFrom, fTo, fBlend, hand.mTranslation);
     Quat rotation;
-    BlendRotation(mAnims[kHandAnim], fFrom, fTo, fBlend, rotation);
+    BlendRotation(mAnims[kHandAnim].get(), fFrom, fTo, fBlend, rotation);
     Transform basis;
     Rnd::MakeRotMatrix(rotation, &basis.mBasisX.x);
     hand.mBasisX = basis.mBasisX;
@@ -97,7 +97,7 @@ void ArmPart::SetFrames(float fFrom, float fTo, float fBlend) {
     Multiply(hand, toJoint, hand);
 
     Vector3 pole;
-    BlendTranslation(mAnims[kForearmAnim], fFrom, fTo, fBlend, pole);
+    BlendTranslation(mAnims[kForearmAnim].get(), fFrom, fTo, fBlend, pole);
     MultiplyPoint(toJoint, pole, pole);
     SolveIK(hand, pole);
 }
@@ -185,16 +185,16 @@ bool ArmPart::Rebuild() {
     }
     DataArray *pAnims = mData->FindArray("anims", true);
     mForearm =
-        FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->mIndex, pAnims->Sym(kForearmBone)));
-    mHand = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->mIndex, pAnims->Sym(kHandBone)));
+        FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->GetIndex(), pAnims->Sym(kForearmBone)));
+    mHand = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->GetIndex(), pAnims->Sym(kHandBone)));
     mTransRoot->RemoveTrans(mForearm);
     mForearm->RemoveTrans(mHand);
     mUpperLength = Distance(mTransRoot, mForearm);
     mForearmLength = Distance(mForearm, mHand);
     if (mAvatar->GetPart(AvatarPartSet::kPartLeftArm) == this) {
         AvatarPart *pRightArm = mAvatar->GetPart(AvatarPartSet::kPartRightArm);
-        pRightArm->mPendingType = mType;
-        pRightArm->mMat = mMat;
+        pRightArm->SetPendingType(mType);
+        pRightArm->SetMat(mMat);
         pRightArm->Rebuild(); // The binary discards the result.
     }
     return true;

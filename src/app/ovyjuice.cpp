@@ -42,9 +42,9 @@ OvyJuice::OvyJuice()
 
 void OvyJuice::Show(bool bShow) {
     bool bShown = false;
-    if (bShow && TheGfxManager.mVictoryLap == 0 &&
-        TheGameDb->mCommunity == GameDb::kCommunitySolo &&
-        TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+    if (bShow && TheGfxManager.GetVictoryLap() == 0 &&
+        TheGameDb->GetCommunity() == GameDb::kCommunitySolo &&
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         bShown = true;
     }
     HideablePanel::Show(bShown);
@@ -74,7 +74,7 @@ void OvyJuice::SetLevel(float fLevel, int nColor) {
         fClamped = fLevel;
     }
     if (fClamped < mLevel) {
-        const float fNow = TheGameDb->mSongTime;
+        const float fNow = TheGameDb->GetSongTime();
         mGhostFade.Reset(0.0f, kFramesPerLevel, fNow, fNow + sGhostFadeTime);
         mGhostAnim->SetFrame(mLevel * kFramesPerLevel);
     }
@@ -93,7 +93,7 @@ void OvyJuice::SetWarning(bool bWarn) {
 
 void OvyJuice::Poll(float fDelta) {
     HideablePanel::Poll();
-    const float fNow = TheGameDb->mSongTime;
+    const float fNow = TheGameDb->GetSongTime();
     if (mWarn != 0) {
         mWarningLeft -= fDelta;
         if (mWarningLeft < 0.0f) {
@@ -104,7 +104,7 @@ void OvyJuice::Poll(float fDelta) {
             mWarning->SetShowing(mWarning->mShowing ^ 1);
         }
     }
-    if (mGhostFade.mX1 <= fNow) {
+    if (mGhostFade.GetX1() <= fNow) {
         mGhost->SetShowing(false);
     } else {
         mGhostFadeAnim->SetFrame(mGhostFade.LinearInterpolator::Interp(fNow));
@@ -115,7 +115,7 @@ void OvyJuice::Poll(float fDelta) {
         mBar->SetShowing(false);
         return;
     }
-    if (mLevel <= sBlinkRate.mX1) {
+    if (mLevel <= sBlinkRate.GetX1()) {
         sBlinkLeft -= fDelta * sBlinkRate.Interpolator::Eval(mLevel);
         if (sBlinkLeft < 0.0f) {
             do {

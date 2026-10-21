@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gs/axecontour.h"
@@ -18,9 +19,9 @@ public:
     /** The number of gem buttons, each with the notes of one AxeContour. */
     static constexpr int kSetSize = 3;
 
-    /** The notes of the gem buttons from one tick on. */
+    /** The notes of the gem buttons from one tick on, deleted with the data. */
     struct ContourSet {
-        AxeContour *mContours[kSetSize]; /*!< The notes of each gem button. */
+        std::unique_ptr<AxeContour> mContours[kSetSize]; /*!< The notes of each gem button. */
     };
 
     /**
@@ -97,8 +98,20 @@ public:
      */
     int GetHarmony(int nTick, const AxeHarmony **ppHarmony) const;
 
+    /** @return The end tick AddContours() and AddHarmony() test. */
+    int GetEndTick() const {
+        return mEndTick;
+    }
+
+    /** @return The value each Axer receives. Its use is not yet identified. */
+    int GetReserved() const {
+        return mReserved;
+    }
+
+private:
     int mEndTick;  /*!< The end tick AddContours() and AddHarmony() test. */
     int mReserved; /*!< The value each Axer receives. Its use is not yet identified. */
-    std::vector<TickObj<ContourSet> > mContours;          /*!< The sets of notes by tick. */
-    std::vector<TickObj<const AxeHarmony *> > mHarmonies; /*!< The chords by tick. */
+    std::vector<TickObj<ContourSet>> mContours; /*!< The sets of notes by tick. */
+    /** The chords by tick, deleted with the data. */
+    std::vector<TickObj<std::unique_ptr<const AxeHarmony>>> mHarmonies;
 };

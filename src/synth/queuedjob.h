@@ -34,6 +34,26 @@ public:
     virtual ~QueuedJob() {
     }
 
+    /** @return One of Type. */
+    int GetType() const {
+        return mType;
+    }
+
+    /** @return 1 once the job has sent its request. */
+    int GetStarted() const {
+        return mStarted;
+    }
+
+    /**
+     * Record that the job has sent its request.
+     *
+     * @param nStarted 1 once the request is sent.
+     */
+    void SetStarted(int nStarted) {
+        mStarted = nStarted;
+    }
+
+private:
     int mStarted; /*!< 1 once the job has sent its request. */
     int mType;    /*!< One of Type. */
 };

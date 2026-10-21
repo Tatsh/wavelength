@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e4d00
      */
     bool Test() override {
-        const int nHealth = TheTriggerMgr.mHealth[TheTriggerMgr.mPlayer];
+        const int nHealth = TheTriggerMgr.GetHealth(TheTriggerMgr.GetPlayer());
         return mLow <= nHealth && nHealth <= mHigh;
     }
 

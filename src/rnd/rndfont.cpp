@@ -245,8 +245,8 @@ RndFont::CharInfo RndFont::CellInfo(int nRow, int nCol) const {
     const float fRow = static_cast<float>(nRow);
     const float fCol = static_cast<float>(nCol);
     const RndBitmap *pBitmap = pTex->LockBitmap(kLockBitmapFlags);
-    const int nWidth = pBitmap->mWidth;
-    const int nHeight = pBitmap->mHeight;
+    const int nWidth = pBitmap->GetWidth();
+    const int nHeight = pBitmap->GetHeight();
     const auto nXStart = static_cast<int>(static_cast<float>(nCol * nWidth) / mCols);
     const auto nXEnd = static_cast<int>(static_cast<float>(nCol * nWidth + nWidth) / mCols);
     const auto nYStart = static_cast<int>(static_cast<float>(nRow * nHeight) / mRows);

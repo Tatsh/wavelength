@@ -28,6 +28,8 @@ public:
      */
     MCUnformatCardTask();
 
-    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. */
-    MCUnformatTask *mUnformat; /*!< The step that unformats the card. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. Borrowed. */
+    MCUnformatTask *mUnformat; /*!< The step that unformats the card. Borrowed. */
 };

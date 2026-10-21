@@ -125,9 +125,9 @@ constexpr int kCatchSoundCount = sizeof(kCatchSounds) / sizeof(kCatchSounds[0]);
 DuelLogic::DuelLogic(Song *pSong)
     : mPitcher(nullptr), mCatcher(nullptr), mPhase(kPhasePitch), mState(kStateNone), mPaused(0),
       mQuit(0), mEndTick(0), mCommandsStopped(0), mPitcherTrack(nullptr), mCatcherTrack(nullptr),
-      mCatchMissed(0), mCatchMade(0), mSong(pSong), mTicksPerBar(pSong->mBuilder->mTicksPerBar),
+      mCatchMissed(0), mCatchMade(0), mSong(pSong), mTicksPerBar(pSong->GetTicksPerBar()),
       mPhraseBars(kPhraseBars), mPlayMap(pSong->GetPlayMap()), mReserved5c(0), mSectionStartBar(0),
-      mNextSectionBar(pSong->GetSections()->SectionEnd(0)), mSection(0), mTrackSelector(nullptr),
+      mNextSectionBar(pSong->GetSections()->SectionEnd(0)), mSection(0),
       mBarCommand(NewMemFunCommand(this, &DuelLogic::OnBarTick)),
       mScrollCommand(NewMemFunCommand(this, &DuelLogic::OnScrollTick)),
       mPhraseCueCommand(NewMemFunCommand(this, &DuelLogic::OnPhraseCueTick)),
@@ -139,29 +139,29 @@ DuelLogic::DuelLogic(Song *pSong)
     for (int nPad = 0; nPad < TheGameDb->GetNumPads(); ++nPad) {
         JoypadSetMenuControl(nPad, true);
     }
-    mPlayMap->AddLoop(0, mSong->mNumBars, 0);
+    mPlayMap->AddLoop(0, mSong->GetNumBars(), 0);
 
     const float *pTickDuration = mSong->GetMsPerTick();
     mState = kStatePlaying;
     mSlopTicks = static_cast<int>(static_cast<float>(TheGameConfig->mSlopMs) / *pTickDuration);
 
     for (int nSide = 0; nSide < kSideCount; ++nSide) {
-        mGems.push_back(new CatchTrackData(mTicksPerBar * mSong->mNumBars));
+        mGems.push_back(std::make_unique<CatchTrackData>(mTicksPerBar * mSong->GetNumBars()));
     }
 
     int nLocalPlayers = 0;
     for (int nPlayer = 0; nPlayer < TheGameDb->GetNumPlayers(); ++nPlayer) {
-        Player *pPlayer;
+        std::unique_ptr<Player> pPlayer;
         if (TheGameDb->IsLocalPlayer(nPlayer)) {
-            pPlayer = new LocalPlayer(nPlayer, mTicksPerBar, nLocalPlayers++);
+            pPlayer = std::make_unique<LocalPlayer>(nPlayer, mTicksPerBar, nLocalPlayers++);
         } else {
-            pPlayer = new RemotePlayer(nPlayer, mTicksPerBar);
+            pPlayer = std::make_unique<RemotePlayer>(nPlayer, mTicksPerBar);
         }
-        mPlayers.push_back(pPlayer);
         TheGfxManager.SetStreakMultiplier(pPlayer->GetIndex(), 1, 1, 0);
+        mPlayers.push_back(std::move(pPlayer));
     }
 
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         !(TheGameDb->GetPlayerNetOrder(mPlayers[kFirstSide]->GetIndex()) <
           TheGameDb->GetPlayerNetOrder(mPlayers[kSecondSide]->GetIndex()))) {
         mInputPlayers.push_back(kSecondSide);
@@ -174,27 +174,27 @@ DuelLogic::DuelLogic(Song *pSong)
 
     BuildBarData();
 
-    const int nFirstTrack = mBarData[0].mTrack;
+    const int nFirstTrack = mBarData[0].GetTrack();
     for (int nSide = 0; nSide < kSideCount; ++nSide) {
         const int nOtherSide = kSecondSide - nSide;
-        DuelTrack *pTrack = new DuelTrack(this,
-                                          mPlayers[nSide],
-                                          mGems[nSide],
-                                          mGems[nOtherSide],
-                                          mSong->GetTrackRiffData(nFirstTrack),
-                                          mSong->GetDuelPatterns(),
-                                          mSong->GetMsPerTick(),
-                                          mPlayMap,
-                                          mSong->GetSections(),
-                                          GetPlayerSide(nSide),
-                                          GetPlayerSide(nOtherSide),
-                                          mSong->mIntroBars,
-                                          mSong->mNumBars,
-                                          mTicksPerBar,
-                                          mPhraseBars,
-                                          mSong->mDifficulty == kEasiestDifficulty);
+        auto pTrack = std::make_unique<DuelTrack>(this,
+                                                  mPlayers[nSide].get(),
+                                                  mGems[nSide].get(),
+                                                  mGems[nOtherSide].get(),
+                                                  mSong->GetTrackRiffData(nFirstTrack),
+                                                  mSong->GetDuelPatterns(),
+                                                  mSong->GetMsPerTick(),
+                                                  mPlayMap,
+                                                  mSong->GetSections(),
+                                                  GetPlayerSide(nSide),
+                                                  GetPlayerSide(nOtherSide),
+                                                  mSong->GetIntroBars(),
+                                                  mSong->GetNumBars(),
+                                                  mTicksPerBar,
+                                                  mPhraseBars,
+                                                  mSong->GetDifficulty() == kEasiestDifficulty);
         pTrack->Start();
-        mTracks.push_back(pTrack);
+        mTracks.push_back(std::move(pTrack));
     }
 
     TheMixer->Init(kSideCount, Mixer::kInstrumentNone);
@@ -202,20 +202,20 @@ DuelLogic::DuelLogic(Song *pSong)
     for (int nTrack = 0; nTrack < mSong->GetNumTracks(); ++nTrack) {
         if (mSong->GetTrackType(nTrack) == Song::kTrackTypePitch &&
             mSong->GetTrackRiffData(nTrack)->IsEnabled()) {
-            PitchTrack *pPitchTrack = new PitchTrack(nTrack,
-                                                     mSong->mIntroBars,
-                                                     mSong->mNumBars,
-                                                     mSong->mBuilder->mTicksPerBar,
-                                                     mSong->GetTrackRiffData(nTrack),
-                                                     mSong->GetTrackPitchData(nTrack),
-                                                     mPlayMap,
-                                                     mSong->GetSections(),
-                                                     mSong->GetSlotGrid(),
-                                                     false);
-            pPitchTrack->SelectPattern(0, 0, mSong->mNumBars);
+            auto pPitchTrack = std::make_unique<PitchTrack>(nTrack,
+                                                            mSong->GetIntroBars(),
+                                                            mSong->GetNumBars(),
+                                                            mSong->GetTicksPerBar(),
+                                                            mSong->GetTrackRiffData(nTrack),
+                                                            mSong->GetTrackPitchData(nTrack),
+                                                            mPlayMap,
+                                                            mSong->GetSections(),
+                                                            mSong->GetSlotGrid(),
+                                                            false);
+            pPitchTrack->SelectPattern(0, 0, mSong->GetNumBars());
             pPitchTrack->RebuildGems();
             pPitchTrack->Start();
-            mPitchTracks.push_back(pPitchTrack);
+            mPitchTracks.push_back(std::move(pPitchTrack));
         }
     }
 
@@ -228,7 +228,7 @@ DuelLogic::DuelLogic(Song *pSong)
 
     mSong->GetBankTrack()->Start();
 
-    const int nStartTick = mTicksPerBar - mTicksPerBar * mSong->mIntroBars;
+    const int nStartTick = mTicksPerBar - mTicksPerBar * mSong->GetIntroBars();
     TheForceFeedbackMgr->Start(mSong->GetMsPerTick(), mTicksPerBar);
     TheForceFeedbackMgr->StartMetronome(kTicksPerBeat, nStartTick);
     for (int nSide = 0; nSide < kSideCount; ++nSide) {
@@ -238,24 +238,27 @@ DuelLogic::DuelLogic(Song *pSong)
     }
 
     std::vector<Track *> tracks;
-    tracks.insert(tracks.end(), mTracks.begin(), mTracks.end());
-    mTrackSelector = new GameTrackSelector(tracks, nullptr, 0, 0);
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
+    tracks.reserve(mTracks.size());
+    for (const auto &pTrack : mTracks) {
+        tracks.push_back(pTrack.get());
+    }
+    mTrackSelector = std::make_unique<GameTrackSelector>(tracks, nullptr, 0, 0);
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         !TheGameDb->IsLocalPlayer(mPlayers[kFirstSide]->GetIndex())) {
-        mTrackSelector->AddPlayer(mPlayers[kSecondSide], kSecondSide);
-        mTrackSelector->AddPlayer(mPlayers[kFirstSide], kFirstSide);
+        mTrackSelector->AddPlayer(mPlayers[kSecondSide].get(), kSecondSide);
+        mTrackSelector->AddPlayer(mPlayers[kFirstSide].get(), kFirstSide);
     } else {
-        mTrackSelector->AddPlayer(mPlayers[kFirstSide], kFirstSide);
-        mTrackSelector->AddPlayer(mPlayers[kSecondSide], kSecondSide);
+        mTrackSelector->AddPlayer(mPlayers[kFirstSide].get(), kFirstSide);
+        mTrackSelector->AddPlayer(mPlayers[kSecondSide].get(), kSecondSide);
     }
 
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         for (int nPlayer = 0; nPlayer < TheGameDb->GetNumPlayers(); ++nPlayer) {
             const int nIndex = mPlayers[nPlayer]->GetIndex();
             if (TheGameDb->IsLocalPlayer(nIndex)) {
-                mLocalPlayer = mPlayers[nPlayer];
+                mLocalPlayer = mPlayers[nPlayer].get();
             } else {
-                mRemotePlayer = mPlayers[nPlayer];
+                mRemotePlayer = mPlayers[nPlayer].get();
             }
             const unsigned int nSeat =
                 static_cast<unsigned int>(TheGameDb->GetPlayerNetOrder(nIndex));
@@ -270,18 +273,19 @@ DuelLogic::DuelLogic(Song *pSong)
 DuelLogic::~DuelLogic() {
     TheSongScheduler.Cancel(mAnnounceCommand.Get());
     StopCommands();
-    delete mTrackSelector;
+    // Preserve every original deletion point and order, before the play map loops are cleared.
+    mTrackSelector.reset();
     for (unsigned int i = 0; i < mPlayers.size(); ++i) {
-        delete mPlayers[i];
+        mPlayers[i].reset();
     }
     for (unsigned int i = 0; i < mTracks.size(); ++i) {
-        delete mTracks[i];
+        mTracks[i].reset();
     }
     for (unsigned int i = 0; i < mPitchTracks.size(); ++i) {
-        delete mPitchTracks[i];
+        mPitchTracks[i].reset();
     }
     for (unsigned int i = 0; i < mGems.size(); ++i) {
-        delete mGems[i];
+        mGems[i].reset();
     }
     mPlayMap->ClearLoops();
 }
@@ -298,18 +302,18 @@ void DuelLogic::StopCommands() {
 }
 
 void DuelLogic::BuildBarData() {
-    const int nTrackCount = static_cast<int>(mSong->mDuelTrackOrder.size());
+    const int nTrackCount = static_cast<int>(mSong->GetDuelTrackOrder().size());
     const SectionBoundaries *pSections = mSong->GetSections();
-    for (int nBar = 0; nBar < mSong->mNumBars; ++nBar) {
+    for (int nBar = 0; nBar < mSong->GetNumBars(); ++nBar) {
         const int nSection = pSections->SectionAt(nBar);
-        mBarData.push_back(BarData{mSong->mDuelTrackOrder[nSection % nTrackCount]});
+        mBarData.push_back(BarData(mSong->GetDuelTrackOrder()[nSection % nTrackCount]));
     }
 }
 
 int DuelLogic::GetBarInstrument(int nBar) {
     // Yes, the binary checks the bar count against zero and discards the wrapped bar.
-    (void)(nBar % mSong->mNumBars);
-    return mSong->GetTrackInstrument(mBarData[nBar].mTrack);
+    (void)(nBar % mSong->GetNumBars());
+    return mSong->GetTrackInstrument(mBarData[nBar].GetTrack());
 }
 
 void DuelLogic::Start() {
@@ -318,12 +322,12 @@ void DuelLogic::Start() {
     }
     mSong->GetLyric()->Start();
 
-    mPitcher = mPlayers[kFirstSide];
-    mCatcher = mPlayers[kSecondSide];
-    mPitcherTrack = mTracks[kFirstSide];
-    mCatcherTrack = mTracks[kSecondSide];
-    mPitcherGems = mGems[kFirstSide];
-    mCatcherGems = mGems[kSecondSide];
+    mPitcher = mPlayers[kFirstSide].get();
+    mCatcher = mPlayers[kSecondSide].get();
+    mPitcherTrack = mTracks[kFirstSide].get();
+    mCatcherTrack = mTracks[kSecondSide].get();
+    mPitcherGems = mGems[kFirstSide].get();
+    mCatcherGems = mGems[kSecondSide].get();
     mPhase = kPhasePitch;
     StartFirstPhrase();
 
@@ -337,7 +341,7 @@ void DuelLogic::Start() {
             kCheckpointScale);
     }
     TheGfxManager.AddCheckpoint(nullptr,
-                                static_cast<float>(mSong->mNumBars * mTicksPerBar),
+                                static_cast<float>(mSong->GetNumBars() * mTicksPerBar),
                                 kCheckpointOffset,
                                 kCheckpointScale);
 
@@ -386,7 +390,7 @@ void DuelLogic::SetPaused(bool bPaused, int nPad, int nReason) {
         mState = kStatePaused;
         const Metagame::DialogType type =
             nReason != 0 ? Metagame::kDialogNoController : Metagame::kDialogPause;
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             TheMetagame.ShowDialog(type, OnOnlinePauseDialog, this, nPad);
         } else {
             TheSongScheduler.Pause();
@@ -397,10 +401,10 @@ void DuelLogic::SetPaused(bool bPaused, int nPad, int nReason) {
     } else {
         TheForceFeedbackMgr->Resume();
         mState = mStateBeforePause;
-        if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
             TheSongScheduler.Resume();
         }
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
             TheGfxManager.SetFreqSize(kGfxPlayer, TheGameDb->GetOptions()->mFreqSize);
         }
     }
@@ -443,7 +447,7 @@ void DuelLogic::OnOnlinePauseDialog(Metagame::DialogAction action, void *pUserDa
         break;
     case Metagame::kDialogActionEnd:
         TheNetTransport->Leave();
-        TheStats->PlayerAborted(0, TheSongScheduler.mTick);
+        TheStats->PlayerAborted(0, TheSongScheduler.GetTick());
         pLogic->StartEnding();
         break;
     default:
@@ -490,7 +494,7 @@ void DuelLogic::StartEnding() {
         const int nOutroTicks = static_cast<int>(fOutro / *mSong->GetMsPerTick());
         const int nFadeTicks = std::max(kMinFadeTicks, nOutroTicks);
         TheMixer->FadeOut(nFadeTicks);
-        mEndTick = TheSongScheduler.mTick + nFadeTicks + kEndTickMargin;
+        mEndTick = TheSongScheduler.GetTick() + nFadeTicks + kEndTickMargin;
         TheSongScheduler.PostAt(
             new MemFunCommand<void (WorldLogic::*)(), DuelLogic>(this, &WorldLogic::AllNotesOff),
             mEndTick - 1,
@@ -518,7 +522,7 @@ void DuelLogic::Poll() {
     if (!TheGfxManager.IsOutroDone()) {
         return;
     }
-    if (TheSongScheduler.IsRunning() && TheSongScheduler.mTick < mEndTick) {
+    if (TheSongScheduler.IsRunning() && TheSongScheduler.GetTick() < mEndTick) {
         return;
     }
     Stop();
@@ -533,13 +537,13 @@ void DuelLogic::StartFirstPhrase() {
     for (int nSide = 0; nSide < kSideCount; ++nSide) {
         int nMode = DuelTrack::kModePitch;
         int nNextMode = DuelTrack::kModeIdle;
-        if (mPlayers[nSide] != mPitcher) {
+        if (mPlayers[nSide].get() != mPitcher) {
             mCuePhase = kPhaseCatch;
             mCuePlayer = nSide;
             nMode = DuelTrack::kModeIdle;
             nNextMode = DuelTrack::kModeCatch;
         }
-        DuelTrack *pTrack = mTracks[nSide];
+        DuelTrack *pTrack = mTracks[nSide].get();
         pTrack->SetMode(nMode, 0);
         pTrack->ShowPhrase(nNextMode, nBar, nBar + mPhraseBars);
         if (nMode == DuelTrack::kModePitch) {
@@ -578,16 +582,16 @@ void DuelLogic::ShowNextPhrase(int nBar, int nPhase) {
     for (int nSide = 0; nSide < kSideCount; ++nSide) {
         int nMode = DuelTrack::kModeIdle;
         int nNextMode = DuelTrack::kModeIdle;
-        if (nBar < mSong->mNumBars) {
+        if (nBar < mSong->GetNumBars()) {
             if (nPhase == kPhaseCatch) {
-                if (mPlayers[nSide] == mCatcher) {
+                if (mPlayers[nSide].get() == mCatcher) {
                     nMode = DuelTrack::kModeCatch;
                     nNextMode = DuelTrack::kModePitch;
                     mCuePhase = kPhasePitch;
                     mCuePlayer = nSide;
                 }
             } else if (nPhase == kPhasePitch) {
-                if (mPlayers[nSide] == mPitcher) {
+                if (mPlayers[nSide].get() == mPitcher) {
                     nMode = DuelTrack::kModePitch;
                 } else {
                     mCuePhase = kPhaseCatch;
@@ -598,11 +602,11 @@ void DuelLogic::ShowNextPhrase(int nBar, int nPhase) {
             }
         }
 
-        DuelTrack *pTrack = mTracks[nSide];
+        DuelTrack *pTrack = mTracks[nSide].get();
         if (mPhase != kPhaseBreak) {
             pTrack->SetMode(nMode, nBar);
         }
-        if (mNextPhraseBar < mSong->mNumBars) {
+        if (mNextPhraseBar < mSong->GetNumBars()) {
             pTrack->ShowPhrase(nNextMode, mNextPhraseBar, mNextPhraseBar + mPhraseBars);
         }
         if (nMode == DuelTrack::kModePitch) {
@@ -613,7 +617,7 @@ void DuelLogic::ShowNextPhrase(int nBar, int nPhase) {
                                      static_cast<float>((nBar + mPhraseBars) * mTicksPerBar),
                                      kPhraseStyle,
                                      kPhraseSlide);
-        } else if (nNextMode == DuelTrack::kModeCatch && mNextPhraseBar < mSong->mNumBars) {
+        } else if (nNextMode == DuelTrack::kModeCatch && mNextPhraseBar < mSong->GetNumBars()) {
             TheGfxManager.ShowPhrase(
                 pTrack->GetPlayer()->GetIndex(),
                 pTrack->mIndex,
@@ -627,7 +631,7 @@ void DuelLogic::ShowNextPhrase(int nBar, int nPhase) {
 }
 
 void DuelLogic::OnScrollTick() {
-    const int nBar = (TheSongScheduler.mTick + mSlopTicks) / mTicksPerBar;
+    const int nBar = (TheSongScheduler.GetTick() + mSlopTicks) / mTicksPerBar;
     if (mState == kStateDecided) {
         for (unsigned int i = 0; i < mTracks.size(); ++i) {
             mTracks[i]->SetMode(DuelTrack::kModeIdle, nBar);
@@ -646,7 +650,7 @@ void DuelLogic::OnScrollTick() {
 }
 
 bool DuelLogic::IsBarSkipped(int nBar) const {
-    return std::binary_search(mSong->mSkippedBars.begin(), mSong->mSkippedBars.end(), nBar);
+    return std::binary_search(mSong->GetSkippedBars().begin(), mSong->GetSkippedBars().end(), nBar);
 }
 
 int DuelLogic::AdvancePhrase(int nBar) {
@@ -691,7 +695,7 @@ int DuelLogic::AdvancePhrase(int nBar) {
 }
 
 float DuelLogic::GetProgress() {
-    return static_cast<float>(GetTick()) / static_cast<float>(mTicksPerBar * mSong->mNumBars);
+    return static_cast<float>(GetTick()) / static_cast<float>(mTicksPerBar * mSong->GetNumBars());
 }
 
 void DuelLogic::HandleInput([[maybe_unused]] const RotateEvent &event) {
@@ -748,7 +752,7 @@ bool DuelLogic::CheckForWinner() {
 }
 
 void DuelLogic::PlayMissSound() {
-    const int nGem = mCatcherGems->FindGem(TheSongScheduler.mTick);
+    const int nGem = mCatcherGems->FindGem(TheSongScheduler.GetTick());
     const int nGemCount = mCatcherGems->GetNumGems();
     if (nGem != kNoGem && nGem < nGemCount - 1) {
         return;
@@ -766,9 +770,9 @@ void DuelLogic::OnCatchMissed(DuelTrack *pTrack, Player *pPlayer, int nBar) {
     mCatchMissed = 1;
 
     Player *pCatcher = pTrack->GetPlayer();
-    Player *pScorer = mPlayers[kFirstSide];
+    Player *pScorer = mPlayers[kFirstSide].get();
     if (pScorer == pCatcher) {
-        pScorer = mPlayers[kSecondSide];
+        pScorer = mPlayers[kSecondSide].get();
     }
     TheGfxManager.SetPendingPointsResult(
         kGfxPlayer, pCatcher->GetIndex() != 0 ? kPointForFirstSide : kPointForSecondSide);
@@ -795,7 +799,7 @@ void DuelLogic::OnCatchMissed(DuelTrack *pTrack, Player *pPlayer, int nBar) {
 
 void DuelLogic::OnCatchMade(DuelTrack *pTrack, Player *pPlayer, bool bReact) {
     mCatchMade = 1;
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     mCatchMadeTick = nTick;
 
     Player *pCatcher = pTrack->GetPlayer();
@@ -808,7 +812,7 @@ void DuelLogic::OnCatchMade(DuelTrack *pTrack, Player *pPlayer, bool bReact) {
     if (!bReact || !TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
         return;
     }
-    if (mSong->mDifficulty == kEasiestDifficulty && mCuesPlayed < kCoachedPhaseCount) {
+    if (mSong->GetDifficulty() == kEasiestDifficulty && mCuesPlayed < kCoachedPhaseCount) {
         return;
     }
     if (nTick % (mTicksPerBar * mPhraseBars) < mTicksPerBar - kPraiseWindowTicks) {
@@ -822,7 +826,7 @@ void DuelLogic::RewindCatcherTrack() {
 }
 
 void DuelLogic::OnBarTick() {
-    const int nBar = (TheSongScheduler.mTick + mTicksPerBar) / mTicksPerBar;
+    const int nBar = (TheSongScheduler.GetTick() + mTicksPerBar) / mTicksPerBar;
     if (nBar == mNextSectionBar) {
         AdvanceSection(nBar);
     }
@@ -842,7 +846,7 @@ void DuelLogic::AdvanceSection(int nBar) {
 }
 
 void DuelLogic::OnPhraseCueTick() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     if ((nTick + mTicksPerBar) / mTicksPerBar == mNextPhraseBar && mCuePhase != kPhaseBreak) {
         const bool bSecondSide = mCuePlayer != kFirstSide;
         const char *pszText =
@@ -859,10 +863,10 @@ void DuelLogic::OnPhraseCueTick() {
 }
 
 void DuelLogic::OnSoundCueTick() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     if ((nTick + mTicksPerBar) / mTicksPerBar == mNextPhraseBar) {
         if (mCuesPlayed < kCoachedPhaseCount) {
-            const bool bCoach = mSong->mDifficulty == kEasiestDifficulty;
+            const bool bCoach = mSong->GetDifficulty() == kEasiestDifficulty;
             if (mCuePhase == kPhasePitch) {
                 if (bCoach && TheGameDb->IsLocalPlayer(mPlayers[mCuePlayer]->GetIndex())) {
                     FxMidi::PlayDuelLayPattern();
@@ -901,11 +905,11 @@ unsigned char DuelLogic::GetTrackVolume(int nTrack, bool bMuted) {
 
 void DuelLogic::ApplyBarTrack(int nBar) {
     // Yes, the binary checks the bar count against zero and discards the wrapped bar.
-    (void)(nBar % mSong->mNumBars);
-    const int nTrack = mBarData[nBar].mTrack;
+    (void)(nBar % mSong->GetNumBars());
+    const int nTrack = mBarData[nBar].GetTrack();
 
     for (unsigned int i = 0; i < mPitchTracks.size(); ++i) {
-        PitchTrack *pPitchTrack = mPitchTracks[i];
+        PitchTrack *pPitchTrack = mPitchTracks[i].get();
         const int nPitchTrack = pPitchTrack->mIndex;
         if (nPitchTrack == nTrack) {
             pPitchTrack->SetActive(true);
@@ -949,7 +953,7 @@ void DuelLogic::DecideDuel(bool bLocalWinner) {
     }
     TheSongScheduler.PostAfter(mAnnounceCommand.Get(), kAnnounceDelay, false);
 
-    if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
         LogEndMultiGame();
         TheMetagame.ShowDialog(Metagame::kDialogEndGame, OnGameOverDialog, this, kNoPad);
         return;
@@ -1024,16 +1028,16 @@ int DuelLogic::OnPlayerUpdate(PlayerUpdatePacket *pPacket) {
 int DuelLogic::OnEditGem(EditGemPacket *pPacket) {
     const int nSide = pPacket->mTrack;
     const int nOtherSide = kSecondSide - nSide;
-    CatchTrackData *pGems = mGems[nSide];
+    CatchTrackData *pGems = mGems[nSide].get();
     const int nTick = pPacket->mTick;
     const int nSlot = pPacket->mSlot;
-    if (nTick < TheSongScheduler.mTick + kMinGemLeadTicks) {
+    if (nTick < TheSongScheduler.GetTick() + kMinGemLeadTicks) {
         return 0;
     }
 
     const float fCatchTick = static_cast<float>(nTick - mTicksPerBar * mPhraseBars);
-    const int nBar = (nTick / mTicksPerBar) % mSong->mNumBars;
-    Muse *pRiff = mSong->GetTrackRiffData(mBarData[nBar].mTrack)->GetRiff(nTick, nSlot);
+    const int nBar = (nTick / mTicksPerBar) % mSong->GetNumBars();
+    Muse *pRiff = mSong->GetTrackRiffData(mBarData[nBar].GetTrack())->GetRiff(nTick, nSlot);
     const Gem gem{nSlot, nTick, Ptr<Muse>(pRiff)};
     pGems->AddGem(gem);
     mTracks[nSide]->CountGem();
@@ -1045,7 +1049,7 @@ int DuelLogic::OnEditGem(EditGemPacket *pPacket) {
 }
 
 int DuelLogic::OnCapture(CapturePacket *pPacket) {
-    DuelTrack *pTrack = mTracks[pPacket->mTrack];
+    DuelTrack *pTrack = mTracks[pPacket->mTrack].get();
     if (pPacket->mValid) {
         pTrack->MakeCatch(pPacket->mBar);
     } else {
@@ -1105,7 +1109,7 @@ int DuelLogic::OnGameEnded(GameEndedMsg *pMsg) {
 
 int DuelLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     const int nPlayer = mSeatPlayers[pMsg->mNetOrder];
-    Player *pPlayer = mPlayers[mInputPlayers[nPlayer]];
+    Player *pPlayer = mPlayers[mInputPlayers[nPlayer]].get();
     if (pPlayer->IsAborted()) {
         return 0;
     }
@@ -1121,7 +1125,7 @@ int DuelLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
                               kAbortMessageOffset,
                               kAbortMessageOffset);
     TheNetTransport->Leave();
-    TheStats->PlayerAborted(nPlayer, TheSongScheduler.mTick);
+    TheStats->PlayerAborted(nPlayer, TheSongScheduler.GetTick());
     StartEnding();
     return 0;
 }

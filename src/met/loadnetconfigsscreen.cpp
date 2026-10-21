@@ -86,7 +86,7 @@ bool LoadNetConfigsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool LoadNetConfigsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         const std::list<InetConfig> noConfigs;
         FindConfigScreen()->SetConfigs(noConfigs);
         TheMCManager.ListNetConfigs(this, mSlot);

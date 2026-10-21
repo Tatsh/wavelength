@@ -158,7 +158,7 @@ bool NetMainLaunchpadsPanel::HandleLaunchpads(LobbyLaunchpadsMsg *pMsg) {
     if (mLoaded) {
         NetMainLaunchpadsList *pList = FindList(this);
         pList->SetLaunchpads(pMsg->mLaunchpads, kCurrentSelection);
-        if (TheUI.mCurrentScreen->mFocusPanel != this) {
+        if (TheUI.GetCurrentScreen()->GetFocusPanel() != this) {
             pList->SetCursorSelected(false);
             HidePlayers();
         }
@@ -169,8 +169,9 @@ bool NetMainLaunchpadsPanel::HandleLaunchpads(LobbyLaunchpadsMsg *pMsg) {
 }
 
 bool NetMainLaunchpadsPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
-        TheUI.mCurrentScreen->SetFocus(TheUI.FindPanel(kMainPanel, false));
+    if (pMsg->GetButton() == kPadCross &&
+        std::strcmp(pMsg->GetComponent()->GetName(), kCursorComponent) == 0) {
+        TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(kMainPanel, false));
         TheUI.GotoScreen(kJoinScreen);
     }
     return false;

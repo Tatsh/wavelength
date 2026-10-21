@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "os/arkfile.h"
@@ -47,8 +48,33 @@ public:
      */
     void Touch();
 
-    char *mBuffer;  /*!< The block's data. */
-    int mBlockNum;  /*!< The block of the disc the buffer holds, or -1. */
+    /** @return The block's data. */
+    char *GetBuffer() const {
+        return mBuffer;
+    }
+
+    /** @return The block of the disc the buffer stores, or -1. */
+    int GetBlockNum() const {
+        return mBlockNum;
+    }
+
+    /**
+     * Set the block of the disc the buffer stores.
+     *
+     * @param nBlockNum The block, or -1.
+     */
+    void SetBlockNum(int nBlockNum) {
+        mBlockNum = nBlockNum;
+    }
+
+    /** @return The use mark of the last Touch(). */
+    int GetTimestamp() const {
+        return mTimestamp;
+    }
+
+private:
+    char *mBuffer;  /*!< The block's data. One of the static buffers, borrowed. */
+    int mBlockNum;  /*!< The block of the disc the buffer stores, or -1. */
     int mTimestamp; /*!< The use mark of the last Touch(). */
 };
 
@@ -233,10 +259,16 @@ public:
      */
     static bool Read(int nSector, int nCount, void *pBuffer);
 
-    std::list<BlockRequest> mRequests; /*!< The waiting requests in block order. */
-    std::vector<Block *> mBlocks;      /*!< The blocks of the cache. */
-    Block *mLoading;                   /*!< The block loading, or null. */
-    int mSectorsPerBlock;              /*!< Sectors of the disc in one block. */
+    /** @return The blocks of the cache. */
+    const std::vector<std::unique_ptr<Block>> &GetBlocks() const {
+        return mBlocks;
+    }
+
+private:
+    std::list<BlockRequest> mRequests;           /*!< The waiting requests in block order. */
+    std::vector<std::unique_ptr<Block>> mBlocks; /*!< The blocks of the cache. */
+    Block *mLoading;                             /*!< The block loading, or null. Borrowed. */
+    int mSectorsPerBlock;                        /*!< Sectors of the disc in one block. */
 };
 
 /**

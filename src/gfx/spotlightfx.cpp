@@ -43,11 +43,11 @@ Vector3 sGlowScale{1.0f, 1.0f, 1.0f};
 SpotLightFX::SpotLightFX() {
     mMesh = dynamic_cast<RndMesh *>(TheManager.Find("gem spotlight.mesh"));
     auto *pGlowMesh = dynamic_cast<RndMesh *>(TheManager.Find("gem base glow.mesh"));
-    mSpots = dynamic_cast<RndMultiMesh *>(
-        TheManager.Create(RndMultiMesh::sClassName, "gem spotlight.mm"));
+    mSpots.reset(dynamic_cast<RndMultiMesh *>(
+        TheManager.Create(RndMultiMesh::sClassName, "gem spotlight.mm")));
     mSpots->SetMesh(mMesh);
-    mGlows = dynamic_cast<RndMultiMesh *>(
-        TheManager.Create(RndMultiMesh::sClassName, "gem base glow.mm"));
+    mGlows.reset(dynamic_cast<RndMultiMesh *>(
+        TheManager.Create(RndMultiMesh::sClassName, "gem base glow.mm")));
     mGlows->SetMesh(pGlowMesh);
     auto *pSpotAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("gem spotlight.mnm"));
     dynamic_cast<RndAnimatable *>(TheManager.Find("tnl.view"))->AddAnim(pSpotAnim);
@@ -64,10 +64,7 @@ SpotLightFX::SpotLightFX() {
     mTransforms.resize(kInitialTransforms, Transform());
 }
 
-SpotLightFX::~SpotLightFX() {
-    delete mGlows;
-    delete mSpots;
-}
+SpotLightFX::~SpotLightFX() = default;
 
 void SpotLightFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *, int) {
     Vector2 fade;
@@ -77,7 +74,7 @@ void SpotLightFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel
     FindConfigVector3(pConfig, pDefaults, "spotlight_scale", &sSpotScale, true);
     float flBaseScale;
     FindConfigFloat(pConfig, pDefaults, "spotlight_base_scale", &flBaseScale, true);
-    const float flWorldScale = TheGfxManager.mScrollSpeed;
+    const float flWorldScale = TheGfxManager.GetScrollSpeed();
     sGlowScale.x = flBaseScale / sSpotScale.x;
     sGlowScale.y = flBaseScale / sSpotScale.y;
     sGlowScale.z = flBaseScale / sSpotScale.z;
@@ -90,7 +87,7 @@ void SpotLightFX::Poll() {
 }
 
 void SpotLightFX::Draw() {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     const float flFadeStart = flTick + sFadeStartTicks;
     const float flFadeEnd = flTick + sFadeEndTicks;
     const float flTrailTick = flTick - kTrailTicks;

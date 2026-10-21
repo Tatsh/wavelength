@@ -41,7 +41,7 @@ bool NetCreateAccount::DispatchPriv(Message *pMsg) {
 }
 
 bool NetCreateAccount::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLobby->CreateAccount(this, mPassword.c_str());
     }
     return false;

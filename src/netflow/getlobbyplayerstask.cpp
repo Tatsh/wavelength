@@ -7,12 +7,12 @@
 #include "os/utf8.h"
 
 void GetLobbyPlayersTask::OnStart() {
-    TheLobbyRT->mLobbyPlayers.clear();
+    TheLobbyRT->GetLobbyPlayers().clear();
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
-    request.id = TheLobbyRT->mChatroom.mId;
+    request.id = TheLobbyRT->GetChatroom().mId;
     const int nError = rtMediusChannelPlayers(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1492, nError);
@@ -49,7 +49,7 @@ void GetLobbyPlayersTask::OnResponse(int nConnection,
         player.mConnectionType = LobbyRT::ConnectionTypeOf(pResponse->connectionClass);
         player.mRank = 0;
         LobbyRT::DecodePlayer(&player, pResponse->stats);
-        TheLobbyRT->mLobbyPlayers.push_back(player);
+        TheLobbyRT->GetLobbyPlayers().push_back(player);
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;
         }

@@ -35,17 +35,15 @@ StreamBuffer::StreamBuffer(int nSize) {
     mMargin = kDefaultMargin;
     mSize = nSize;
     // The binary rounds the allocation down to whole quadwords but clears mSize bytes.
-    mBuffer = new char[static_cast<unsigned int>(nSize) / kQuadwordSize * kQuadwordSize];
-    memset(mBuffer, 0, mSize);
-    mReadHead = mBuffer;
-    mWriteHead = mBuffer;
+    mBuffer =
+        std::make_unique<char[]>(static_cast<unsigned int>(nSize) / kQuadwordSize * kQuadwordSize);
+    memset(mBuffer.get(), 0, mSize);
+    mReadHead = mBuffer.get();
+    mWriteHead = mBuffer.get();
     mEndOfBuffer = &mBuffer[mSize];
 }
 
-StreamBuffer::~StreamBuffer() {
-    delete[] mBuffer;
-    mBuffer = nullptr;
-}
+StreamBuffer::~StreamBuffer() = default;
 
 bool StreamBuffer::IsEof() {
     if (!(mWriteHead < mEndOfBuffer)) {
@@ -97,7 +95,7 @@ void StreamBuffer::CommitReadRun(char **ppRun) {
     CheckHeads();
     mReadHead = mReadRunEnd;
     if (mReadRunEnd == mEndOfBuffer) {
-        mReadHead = mBuffer;
+        mReadHead = mBuffer.get();
     }
     mReadRunEnd = nullptr;
     CheckHeads();
@@ -127,13 +125,13 @@ void StreamBuffer::Add(const char *pData, int nBytes, int bLast) {
             DebugPrint("mWriteHead [%i] > mEndOfBuffer [%i]. (1)\n", mWriteHead, mEndOfBuffer);
         }
         if (mWriteHead == mEndOfBuffer) {
-            mWriteHead = mBuffer;
+            mWriteHead = mBuffer.get();
         }
     } else {
         CheckHeads();
         const int nRest = nBytes - nTail;
         memcpy(mWriteHead, pData, nTail);
-        memcpy(mBuffer, &pData[nTail], nRest);
+        memcpy(mBuffer.get(), &pData[nTail], nRest);
         mWriteHead = &mBuffer[nRest];
         CheckHeads();
     }
@@ -157,6 +155,6 @@ int StreamBuffer::BytesAvailable(int *pbInputDone) {
 }
 
 void StreamBuffer::Rewind() {
-    mReadHead = mBuffer;
-    mWriteHead = mBuffer;
+    mReadHead = mBuffer.get();
+    mWriteHead = mBuffer.get();
 }

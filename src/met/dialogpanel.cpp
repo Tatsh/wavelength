@@ -110,9 +110,9 @@ void DialogPanel::SetText(const char *pszText) {
 
     UIComponent *pFocus = mFocus;
     for (const auto &entry : mComponents) {
-        UIComponent *pComponent = entry.second;
+        UIComponent *pComponent = entry.second.get();
         pComponent->SetShowing(true);
-        pComponent->SetText(TheLocale.Localize(pComponent->mName, false));
+        pComponent->SetText(TheLocale.Localize(pComponent->GetName(), false));
         pComponent->SetState(UIComponent::kStateNormal, true);
     }
     if (pFocus != nullptr) {

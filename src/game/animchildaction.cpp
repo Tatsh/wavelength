@@ -10,8 +10,8 @@ AnimChildAction::AnimChildAction(DataArray *pAction, bool bAdd) {
         const char *pszMissing = mChild != nullptr ? pAction->Sym(2) : pAction->Sym(1);
         DebugWarn("Couldn't find '%s' object (file %s, line %d)",
                   pszMissing,
-                  pAction->mFile,
-                  pAction->mLine);
+                  pAction->GetFile(),
+                  pAction->GetLine());
     }
     mAdd = bAdd;
 }

@@ -82,7 +82,7 @@ bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     UIPanel *pPanel = mFocusPanel;
-    if (pPanel == nullptr || std::strcmp(pPanel->mFocus->mName, kNoteEntry) != 0) {
+    if (pPanel == nullptr || std::strcmp(pPanel->GetFocus()->GetName(), kNoteEntry) != 0) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
@@ -92,7 +92,7 @@ bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
                 dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
             UITextEntry *pNote =
                 static_cast<UITextEntry *>(pPanel->FindComponent(kNoteEntry, false));
-            UIScreen *pScreen = TheUI.mCurrentScreen;
+            UIScreen *pScreen = TheUI.GetCurrentScreen();
             const KeyboardRequest request(this,
                                           pScreen,
                                           pNote->Text(),
@@ -114,7 +114,8 @@ bool UploadNoteScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool UploadNoteScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && std::strcmp(pMsg->mComponent->mName, kUploadButton) == 0) {
+    if (pMsg->GetButton() == kPadCross &&
+        std::strcmp(pMsg->GetComponent()->GetName(), kUploadButton) == 0) {
         UIComponent *pNote = TheUI.FindComponent(kNotePanel, kNoteEntry, false);
 #ifdef VIDEO_STANDARD_PAL
         if (mIsTool != 0) {
@@ -134,7 +135,7 @@ bool UploadNoteScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool UploadNoteScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    UITextEntry *pFocus = dynamic_cast<UITextEntry *>(pMsg->mComponent);
+    UITextEntry *pFocus = dynamic_cast<UITextEntry *>(pMsg->GetComponent());
     UITextEntry *pNote =
         dynamic_cast<UITextEntry *>(TheUI.FindComponent(kNotePanel, kNoteEntry, false));
     pNote->SetEditing(pFocus == pNote);

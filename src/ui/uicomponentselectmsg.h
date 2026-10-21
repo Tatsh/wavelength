@@ -110,8 +110,29 @@ public:
      */
     void PrintExtra(PrnStream &stream) const override;
 
-    UIComponent *mComponent; /*!< The chosen component. */
-    UIPanel *mPanel;         /*!< The panel with the focus. */
-    UIScreen *mScreen;       /*!< The current screen. */
+    /** @return The chosen component. */
+    UIComponent *GetComponent() const {
+        return mComponent;
+    }
+
+    /** @return The panel with the focus. */
+    UIPanel *GetPanel() const {
+        return mPanel;
+    }
+
+    /** @return The current screen. */
+    UIScreen *GetScreen() const {
+        return mScreen;
+    }
+
+    /** @return The controller button that chose the component. */
+    int GetButton() const {
+        return mButton;
+    }
+
+private:
+    UIComponent *mComponent; /*!< The chosen component. Borrowed. */
+    UIPanel *mPanel;         /*!< The panel with the focus. Borrowed. */
+    UIScreen *mScreen;       /*!< The current screen. Borrowed. */
     int mButton;             /*!< The controller button that chose the component. */
 };

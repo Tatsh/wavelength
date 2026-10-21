@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <set>
 
 #include "os/binstream.h"
@@ -150,10 +151,10 @@ public:
          */
         void Save();
 
-        BinStream *mStream; // The runs not yet saved.
-        String mFile;       // The file on the memory card.
-        int mDevice;        // The memory card, or -1 for none.
-        int mParts;         // The number of parts saved.
+        std::unique_ptr<BinStream> mStream; // The runs not yet saved.
+        String mFile;                       // The file on the memory card.
+        int mDevice;                        // The memory card, or -1 for none.
+        int mParts;                         // The number of parts saved.
     };
 
     /**
@@ -203,8 +204,8 @@ public:
         void QueueAll();
 
     private:
-        BinStream *mStream;    // The recording.
-        Scheduler *mScheduler; // The scheduler the runs are queued on.
+        std::unique_ptr<BinStream> mStream; // The recording.
+        Scheduler *mScheduler;              // The scheduler the runs are queued on. Borrowed.
     };
 
     /**
@@ -465,19 +466,59 @@ public:
      */
     void Poll();
 
-    std::multiset<CommandInfo> *mCommands; /*!< The queued runs. */
-    Recorder *mRecorder;                   /*!< The recorder, or null. */
-    Playbacker *mPlaybacker;               /*!< The playback, or null. */
-    const float *mTickDuration;            /*!< The duration of one tick Reset() was given. */
-    float mTime;                           /*!< The song clock in milliseconds. */
-    int mTick;                             /*!< The song clock in ticks. */
-    float mFrameTime;      /*!< The clock time the last pump ran the commands up to. */
-    int mFrameTick;        /*!< The clock tick the last pump ran the commands up to. */
-    float mPrevFrameTime;  /*!< The clock time the pump before the last ran up to. */
-    int mPrevFrameTick;    /*!< The clock tick the pump before the last ran up to. */
-    SchedulerClock mClock; /*!< The clock. */
+    /** @return The queued runs. */
+    const std::multiset<CommandInfo> &GetCommands() const {
+        return *mCommands;
+    }
+
+    /** @return The duration of one tick Reset() was given. */
+    const float *GetTickDuration() const {
+        return mTickDuration;
+    }
+
+    /** @return The song clock in milliseconds. */
+    float GetTime() const {
+        return mTime;
+    }
+
+    /** @return The song clock in ticks. */
+    int GetTick() const {
+        return mTick;
+    }
+
+    /** @return The clock time the last pump ran the commands up to. */
+    float GetFrameTime() const {
+        return mFrameTime;
+    }
+
+    /** @return The clock tick the last pump ran the commands up to. */
+    int GetFrameTick() const {
+        return mFrameTick;
+    }
+
+    /** @return The clock time the pump before the last ran up to. */
+    float GetPrevFrameTime() const {
+        return mPrevFrameTime;
+    }
+
+    /** @return The clock tick the pump before the last ran up to. */
+    int GetPrevFrameTick() const {
+        return mPrevFrameTick;
+    }
 
 private:
+    std::unique_ptr<std::multiset<CommandInfo>> mCommands; /*!< The queued runs. */
+    std::unique_ptr<Recorder> mRecorder;                   /*!< The recorder, or null. */
+    std::unique_ptr<Playbacker> mPlaybacker;               /*!< The playback, or null. */
+    const float *mTickDuration; /*!< The duration of one tick Reset() was given. Borrowed. */
+    float mTime;                /*!< The song clock in milliseconds. */
+    int mTick;                  /*!< The song clock in ticks. */
+    float mFrameTime;           /*!< The clock time the last pump ran the commands up to. */
+    int mFrameTick;             /*!< The clock tick the last pump ran the commands up to. */
+    float mPrevFrameTime;       /*!< The clock time the pump before the last ran up to. */
+    int mPrevFrameTick;         /*!< The clock tick the pump before the last ran up to. */
+    SchedulerClock mClock;      /*!< The clock. */
+
     /**
      * Queue a run of a command.
      *

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include <librtmedius.h>
 
@@ -51,8 +52,10 @@ public:
     static void
     OnResponse(int nConnection, int nType, int nSize, const rtMediusLadderListResponse *pResponse);
 
-    PlayerInfoTask *mInfoTask;              /*!< The step reading the player mNext, or null. */
-    std::list<LobbyPlayer>::iterator mNext; /*!< The player whose details are read next. */
+    /** @return The step reading the player mNext, or null. */
+    PlayerInfoTask *GetInfoTask() const {
+        return mInfoTask.get();
+    }
 
 protected:
     /**
@@ -79,4 +82,7 @@ private:
      * @ghidraAddress PAL: 0x0026f028
      */
     void StartNextInfo();
+
+    std::unique_ptr<PlayerInfoTask> mInfoTask; /*!< The step reading the player mNext, or null. */
+    std::list<LobbyPlayer>::iterator mNext;    /*!< The player whose details are read next. */
 };

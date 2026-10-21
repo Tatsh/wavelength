@@ -235,17 +235,7 @@ public:
     String mPreviewSong;   /*!< The song whose clip starts next, or an empty string. */
     float mPreviewMixTime; /*!< The system time the preview mix starts at, or -1. */
     UIPanel *mBandPanel;   /*!< The `s_g_sel_song_band` panel. */
-private:
-    // Go to a screen, once the preview ends in the PAL build.
-    void GotoNextScreen(const char *pszScreen) {
-#ifdef VIDEO_STANDARD_PAL
-        GotoScreenAfterPreview(pszScreen);
-#else
-        TheUI.GotoScreen(pszScreen);
-#endif
-    }
 
-public:
 #ifndef VIDEO_STANDARD_PAL
     UIScreen *mExitScreen; /*!< The screen of the deferred exit. */
     float mExitTime;       /*!< The front-end time of the deferred exit. */
@@ -256,4 +246,14 @@ public:
 #ifdef VIDEO_STANDARD_PAL
     String mExitScreenName; /*!< The screen GotoScreenAfterPreview() goes to. */
 #endif
+
+private:
+    // Go to a screen, once the preview ends in the PAL build.
+    void GotoNextScreen(const char *pszScreen) {
+#ifdef VIDEO_STANDARD_PAL
+        GotoScreenAfterPreview(pszScreen);
+#else
+        TheUI.GotoScreen(pszScreen);
+#endif
+    }
 };

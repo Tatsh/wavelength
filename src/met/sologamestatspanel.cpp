@@ -18,7 +18,7 @@ SoloGameStatsPanel::SoloGameStatsPanel(DataArray *pData, const char *pszDir)
 }
 
 void SoloGameStatsPanel::Refresh() {
-    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())};
     SetLabel(kBandLabel, entry.GetArtistShort());
     SetLabel(kSongLabel, entry.GetTitleShort());
     SetLabel(kSkillLabel, TheGameDb->GetDifficultyName());

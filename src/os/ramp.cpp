@@ -29,7 +29,7 @@ void Ramp::Move(int nTicks, int nStepTicks, float fFrom, float fTarget) {
     if (mMoving != 0) {
         Stop();
     }
-    const int nNow = mScheduler->mTick;
+    const int nNow = mScheduler->GetTick();
     if (nTicks == 0 || fTarget == fFrom) {
         Apply(fTarget, nNow);
         mValue = fTarget;
@@ -54,7 +54,7 @@ float Ramp::GetValue() const {
 }
 
 void Ramp::Step() {
-    const int nNow = mScheduler->mTick;
+    const int nNow = mScheduler->GetTick();
     mValue = mInterp.Interp(static_cast<float>(nNow));
     Apply(mValue, nNow);
     if (nNow == mEndTick) {

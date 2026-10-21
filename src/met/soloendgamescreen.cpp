@@ -52,13 +52,13 @@ void SoloEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     if (strcmp(kWinStatsPanel, mStatsPanel) == 0) {
         Campaign *pProfile = TheGameDb->GetProfile(0);
-        const bool bBeatenGame = pProfile->HasBeatenGame(TheGameDb->mSkillLevel);
+        const bool bBeatenGame = pProfile->HasBeatenGame(TheGameDb->GetSkillLevel());
         const bool bFinished =
-            pProfile->IsSongFinished(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel);
+            pProfile->IsSongFinished(TheGameDb->GetSong().c_str(), TheGameDb->GetSkillLevel());
         TheMetagame.RecordCampaignResult();
         UIPanel *pPanel;
-        if (TheGameDb->mLoadRemix || TheGameDb->IsWinSequence() || bFinished || bBeatenGame ||
-            SongEntry{TheGameDb->FindSong(TheGameDb->mSong.c_str())}.GetType() ==
+        if (TheGameDb->GetLoadRemix() || TheGameDb->IsWinSequence() || bFinished || bBeatenGame ||
+            SongEntry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())}.GetType() ==
                 SongEntry::kTypeBonus) {
             pPanel = TheUI.FindPanel("s_g_end_win", false);
             pPanel->FindComponent(kContinueButton, false)
@@ -70,7 +70,7 @@ void SoloEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         }
     } else {
         UIComponent *pReplay = TheUI.FindComponent("s_g_end_lose", kReplayButton, false);
-        if (TheGameDb->mPracticeMode) {
+        if (TheGameDb->GetPracticeMode()) {
             pReplay->SetText(TheLocale.Localize("s_g_end_lose_play", true));
         } else {
             pReplay->SetText(TheLocale.Localize("s_g_end_lose_play_again", true));
@@ -99,8 +99,8 @@ const char *SoloEndGameScreen::Title() {
 }
 
 bool SoloEndGameScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszName = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszName = pMsg->GetComponent()->GetName();
         Metagame::DialogAction action;
         if (strcmp(pszName, kContinueButton) == 0) {
             action = Metagame::kDialogActionResume;
@@ -125,7 +125,7 @@ bool SoloEndGameScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 bool SoloEndGameScreen::HandleTransitionComplete([[maybe_unused]] UITransitionCompleteMsg *pMsg) {
     if (strcmp(kWinStatsPanel, mStatsPanel) == 0) {
         dynamic_cast<SoloWinStatsPanel *>(TheUI.FindPanel(kWinStatsPanel, false))
-            ->StartAnim(TheUI.mTime);
+            ->StartAnim(TheUI.GetTime());
     }
     return false;
 }
@@ -143,6 +143,7 @@ bool SoloEndGameScreen::DispatchPriv(Message *pMsg) {
 
 void SoloEndGameScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
-    dynamic_cast<RndMovie *>(TheManager.Find("freq_winner.mov"))->SetFrame(TheGameDb->mSongTick);
+    dynamic_cast<RndMovie *>(TheManager.Find("freq_winner.mov"))
+        ->SetFrame(TheGameDb->GetSongTick());
     Avatar::Poll(fTime);
 }

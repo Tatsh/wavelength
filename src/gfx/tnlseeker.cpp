@@ -76,31 +76,28 @@ float sInnerProngWidth = sProngWidth - sFrameWidth;
 float TnlSeeker::sFadeSpeed = 0.005f;
 
 TnlSeeker::TnlSeeker(TnlGeom *pGeom, int, const char *pszColor)
-    : mGeom(pGeom), mTrackCurve(new InvExpInterpolator(0.0f, 0.0f, 0.0f, 1.0f, kGlidePower)),
-      mDepthCurve(new InvExpInterpolator(0.0f, 0.0f, 0.0f, 1.0f, kGlidePower)),
+    : mGeom(pGeom),
+      mTrackCurve(std::make_unique<InvExpInterpolator>(0.0f, 0.0f, 0.0f, 1.0f, kGlidePower)),
+      mDepthCurve(std::make_unique<InvExpInterpolator>(0.0f, 0.0f, 0.0f, 1.0f, kGlidePower)),
       mFromTrack(kNoTrack), mTrack(kNoTrack), mTargetTrack(kNoTargetTrack),
       mDrawnTrack(kNoDrawnTrack), mFromStartTick(0.0f), mStartTick(0.0f), mTargetStartTick(0.0f),
       mDrawnStartTick(kNoTick), mFromEndTick(0.0f), mEndTick(0.0f), mTargetEndTick(0.0f),
       mDrawnEndTick(kNoTick), mSectionVerts(kNoCount), mNumQuads(kNoCount), mDirty(0),
       mMultiplier(0), mMultiplierStartTime(kNoTick), mMultiplierFade(0.0f, 0.0f, 0.0f, 1.0f) {
     const char nLetter =
-        (TheGameDb->mCommunity == GameDb::kCommunitySolo) ? kSoloLetter : pszColor[0];
+        (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ? kSoloLetter : pszColor[0];
     mMat = dynamic_cast<RndMat *>(TheManager.Find(FormatString("seeker_%c.mat", nLetter)));
     mMultiplierMat =
         dynamic_cast<RndMat *>(TheManager.Find(FormatString("seeker mult_%c.mat", nLetter)));
-    mMesh = dynamic_cast<RndMesh *>(
-        TheManager.Create(RndMesh::sClassName, FormatString("seeker %s.mesh", pszColor)));
+    mMesh.reset(dynamic_cast<RndMesh *>(
+        TheManager.Create(RndMesh::sClassName, FormatString("seeker %s.mesh", pszColor))));
     mMesh->SetMat(mMat);
     mMesh->mGeomOwner->mMutable = 1;
-    dynamic_cast<RndView *>(TheManager.Find("tnl opaque"))->AddDraw(mMesh, nullptr);
+    dynamic_cast<RndView *>(TheManager.Find("tnl opaque"))->AddDraw(mMesh.get(), nullptr);
     mMesh->SetShowing(0);
 }
 
-TnlSeeker::~TnlSeeker() {
-    delete mMesh;
-    delete mDepthCurve;
-    delete mTrackCurve;
-}
+TnlSeeker::~TnlSeeker() = default;
 
 void TnlSeeker::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *, int) {
     DataArray *pFrame;
@@ -113,18 +110,18 @@ void TnlSeeker::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *
     pFrame->FindFloat("prong_thickness", &sProngThickness, true);
     DataArray *pDivisions = pFrame->FindArray("divisions", true);
     int nCommunity;
-    switch (TheGameDb->mCommunity) {
+    switch (TheGameDb->GetCommunity()) {
     case GameDb::kCommunityLocal:
     case GameDb::kCommunityOnline:
-        nCommunity = TheGameDb->mCommunity;
+        nCommunity = TheGameDb->GetCommunity();
         break;
     default:
         nCommunity = GameDb::kCommunitySolo;
         break;
     }
     sDivisions = pDivisions->Int(nCommunity);
-    sFrameHeight *= TheGfxManager.mScrollSpeed;
-    sMultiFrameHeight *= TheGfxManager.mScrollSpeed;
+    sFrameHeight *= TheGfxManager.GetScrollSpeed();
+    sMultiFrameHeight *= TheGfxManager.GetScrollSpeed();
 
     mSectionVerts = (sDivisions * 2) + kExtraSectionVerts;
     std::vector<RndMesh::Vert> &verts = mMesh->mGeomOwner->mVerts;
@@ -286,11 +283,11 @@ void TnlSeeker::Layout(std::vector<RndMesh::Vert> &verts,
     Timer timer;
     timer.Start();
     if (flStartTick < flEndTick) {
-        const float flCutoff = TheGameDb->mSongTick - kMaxTrailTicks;
+        const float flCutoff = TheGameDb->GetSongTick() - kMaxTrailTicks;
         const int n = sDivisions;
         float flHeight;
         if (mMultiplier) {
-            const float flFade = mMultiplierFade.Interp(TheGameDb->mSongTick);
+            const float flFade = mMultiplierFade.Interp(TheGameDb->GetSongTick());
             flHeight = ((sFrameHeight - sMultiFrameHeight) * flFade) + sMultiFrameHeight;
         } else {
             flHeight = sFrameHeight;
@@ -359,13 +356,14 @@ void TnlSeeker::SetTarget(char nTrack, float flStartTick, float flEndTick) {
     mTargetStartTick = flStartTick;
     mTargetEndTick = flEndTick;
 
-    const float flEndDistance = std::fabs(mGeom->mBarsPerTick * (flEndTick - mFromEndTick));
-    const float flStartDistance = std::fabs(mGeom->mBarsPerTick * (flStartTick - mFromStartTick));
+    const float flEndDistance = std::fabs(mGeom->GetBarsPerTick() * (flEndTick - mFromEndTick));
+    const float flStartDistance =
+        std::fabs(mGeom->GetBarsPerTick() * (flStartTick - mFromStartTick));
     const float flTimeScale = 2.0f / sFadeSpeed;
     float flTrackDistance = std::fabs(flTrack - mFromTrack);
     const float flDepthDistance =
         (flStartDistance < flEndDistance) ? flEndDistance : flStartDistance;
-    if (static_cast<int>(flTrackDistance + kTrackRounding) == mGeom->mNumTracks) {
+    if (static_cast<int>(flTrackDistance + kTrackRounding) == mGeom->GetNumTracks()) {
         flTrackDistance = 1.0f;
     }
     const float flTotal = flTrackDistance + flDepthDistance;
@@ -375,15 +373,15 @@ void TnlSeeker::SetTarget(char nTrack, float flStartTick, float flEndTick) {
     }
     const float flTrackTime = flTrackDistance * flInvTotal * flTimeScale;
     const float flDepthTime = flDepthDistance * flInvTotal * flTimeScale;
-    const float flNow = TheGameDb->mSongTime;
+    const float flNow = TheGameDb->GetSongTime();
     const float flDepthStart = flNow + flTrackTime;
     mTrackCurve->Reset(mFromTrack, flTrack, flNow, flDepthStart);
     mDepthCurve->Reset(0.0f, 1.0f, flDepthStart, flDepthStart + flDepthTime);
 }
 
 void TnlSeeker::StartMultiplier(float flEndTick) {
-    mMultiplierStartTime = TheGameDb->mSongTime;
-    const float flTick = TheGameDb->mSongTick;
+    mMultiplierStartTime = TheGameDb->GetSongTime();
+    const float flTick = TheGameDb->GetSongTick();
     if (flEndTick <= flTick) {
         return;
     }
@@ -407,8 +405,8 @@ void TnlSeeker::OnRangeChanged(const TnlTrackRange *pRange) {
 }
 
 void TnlSeeker::Poll(float, float) {
-    const float flNow = TheGameDb->mSongTime;
-    const float flTick = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTime();
+    const float flTick = TheGameDb->GetSongTick();
     mTrack = mTrackCurve->Eval(flNow);
     const float flDepth = mDepthCurve->Eval(flNow);
     mEndTick = ((mTargetEndTick - mFromEndTick) * flDepth) + mFromEndTick;
@@ -438,7 +436,7 @@ void TnlSeeker::Poll(float, float) {
         }
     }
 
-    if (mMultiplier && mMultiplierFade.mX1 <= flTick) {
+    if (mMultiplier && mMultiplierFade.GetX1() <= flTick) {
         mMultiplier = 0;
         mMesh->SetMat(mMat);
     }

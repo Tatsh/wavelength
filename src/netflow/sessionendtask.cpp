@@ -14,7 +14,7 @@ constexpr float kResponseWaitMs = 3000.0f;
 
 void SessionEndTask::OnStart() {
     mDeadline = SystemMs() + kResponseWaitMs;
-    if (TheLobbyRT->mSessionKey == "") {
+    if (TheLobbyRT->GetSessionKey() == "") {
         Finish(true, 0);
         return;
     }
@@ -27,8 +27,8 @@ void SessionEndTask::OnStart() {
 #else
     LobbyRT::ReportMediusError(447, nError);
 #endif
-    if (nError != 0 || TheLobbyRT->mDisconnected != 0) {
-        TheLobbyRT->mSessionKey = "";
+    if (nError != 0 || TheLobbyRT->GetDisconnected() != 0) {
+        TheLobbyRT->GetSessionKey() = "";
         Finish(true, 0);
     }
 }
@@ -50,6 +50,6 @@ void SessionEndTask::OnResponse(int nConnection,
     if (pTask == nullptr) {
         return;
     }
-    TheLobbyRT->mSessionKey = "";
+    TheLobbyRT->GetSessionKey() = "";
     pTask->Finish(true, 0);
 }

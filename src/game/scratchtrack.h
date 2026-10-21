@@ -136,10 +136,11 @@ public:
      */
     void Refresh() override;
 
+private:
     int mTicksPerBar;                         /*!< The length of a bar, in ticks. */
     int mNumBars;                             /*!< The length of the song, in bars. */
-    ScratchTrackData *mData;                  /*!< The scratchers to play. */
-    Scratcher *mScratchers[kNumScratchers];   /*!< The scratchers of the current set. */
+    ScratchTrackData *mData;                  /*!< The scratchers to play. Borrowed. */
+    Scratcher *mScratchers[kNumScratchers];   /*!< The scratchers of the current set. Borrowed. */
     int mActiveButton;                        /*!< The button that scratches, or kNoButton. */
     int mLastButton;                          /*!< The button that scratched last. */
     float mX;                                 /*!< The last horizontal stick position. */
@@ -147,8 +148,6 @@ public:
     Ptr<Command> mUpdateCommand;              /*!< Calls UpdateScratchers(). */
     Ptr<Command> mRetriggerCommand;           /*!< Calls Retrigger(). */
     Ptr<Muse> mReleaseSounds[kNumScratchers]; /*!< The release sound of each button. */
-
-private:
     /** The value of mActiveButton while no scratch is active. */
     static constexpr int kNoButton = -1;
 

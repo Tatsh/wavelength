@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "app/hideablepanel.h"
 #include "math/vector3.h"
@@ -32,8 +33,8 @@ public:
             return mPos < fPos;
         }
 
-        float mPos;     /*!< The place on the bar, from 0 (start) to 1 (end). */
-        RndText *mText; /*!< The label of the checkpoint, which the bar owns, or null. */
+        float mPos;                     /*!< The place on the bar, from 0 (start) to 1 (end). */
+        std::unique_ptr<RndText> mText; /*!< The label of the checkpoint. */
     };
 
     /**

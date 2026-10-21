@@ -1,6 +1,7 @@
 #include "netflow/launchpadrt.h"
 
 #include <cstring>
+#include <memory>
 
 #include "game/gamedb.h"
 #include "math/rand.h"
@@ -72,7 +73,7 @@ int LaunchpadRT::sPlayersVersion = 1;
 // NTSC-U/C: 0x003b0ae0, PAL: 0x0042f9ac
 NetTask *LaunchpadRT::sNetTask;
 
-LaunchpadRT *TheLaunchpadRT;
+std::unique_ptr<LaunchpadRT> TheLaunchpadRT;
 
 NetLaunchpad *TheNetLaunchpad;
 
@@ -109,11 +110,10 @@ LaunchpadRT::LaunchpadRT(MsgSink *pGame)
       mError(0), mGameSink(pGame), mPlayerReport(kReportPeriodMs), mStartTime(0.0f), mSeed(0),
       mActive(0), mShareOnly(0), mStarting(0), mInGame(0) {
     TheNetLaunchpad = this;
-    TheLaunchpadRT = this;
     mPlayerReport.SetTask(new MediusSendPlayerReportTask());
     mRatings.reserve(kMaxPlayers);
     ChatMsg::AddHandler(kKeyChannel, this);
-    mRankTask.Add(new LadderPositionFastTask(&TheLobbyRT->mLocalPlayer));
+    mRankTask.Add(new LadderPositionFastTask(&TheLobbyRT->GetLocalPlayer()));
 }
 
 LaunchpadRT::~LaunchpadRT() {
@@ -121,7 +121,6 @@ LaunchpadRT::~LaunchpadRT() {
     mExitTask.Stop();
     mRankTask.Stop();
     TheNetLaunchpad = nullptr;
-    TheLaunchpadRT = nullptr;
     ChatMsg::RemoveSink(kKeyChannel);
 }
 
@@ -165,7 +164,7 @@ int LaunchpadRT::Poll() {
     const int nConnectState = mConnectTask.Poll();
     if (nConnectState == Task::kStateFailed) {
         mConnectTask.Stop();
-        Exit(mConnectTask.mSink, mConnectTask.mResult);
+        Exit(mConnectTask.GetSink(), mConnectTask.GetResult());
     } else if (nConnectState == Task::kStateDone) {
         OnConnected();
         mConnectTask.Stop();
@@ -173,14 +172,14 @@ int LaunchpadRT::Poll() {
     }
 
     if (mExitTask.Poll() == Task::kStateDone) {
-        LaunchpadAbortedMsg msg(mExitTask.mResult);
+        LaunchpadAbortedMsg msg(mExitTask.GetResult());
         mExitTask.Notify(&msg);
         mExitTask.Stop();
         return 1;
     }
 
     if (mRankTask.Poll() == Task::kStateDone) {
-        SendRating(TheLobbyRT->mLocalPlayer.mRank);
+        SendRating(TheLobbyRT->GetLocalPlayer().mRank);
         mRankTask.Stop();
     }
 
@@ -265,7 +264,7 @@ void LaunchpadRT::StartGame() {
     StartGameMsg msg(mSeed);
     TheTransportRT->Notify(&msg);
 
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetGame || mPlayers.size() == 1) {
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetGame || mPlayers.size() == 1) {
         mRatings.clear();
         return;
     }
@@ -339,7 +338,7 @@ void LaunchpadRT::Exit(MsgSink *pSink, int nReason) {
         TheTransportRT->Notify(&msg);
     }
     TheTransportRT->SetOpen(false);
-    mExitTask.mResult = nReason;
+    mExitTask.SetResult(nReason);
     mExitTask.Start(pSink);
 }
 
@@ -394,22 +393,22 @@ int LaunchpadRT::Receive(int nConnection, int nType, int nSender, rtDmeMessage *
     BufStream stream(pMessage->data, pMessage->length, true);
     unsigned char nSalt;
     stream.Read(&nSalt, sizeof(nSalt));
-    Message *pMsg = nullptr;
-    stream >> pMsg;
+    Message *pRead = nullptr;
+    stream >> pRead;
+    std::unique_ptr<Message> pMsg(pRead);
     if (!stream.Fail()) {
-        Packet *pPacket = dynamic_cast<Packet *>(pMsg);
+        Packet *pPacket = dynamic_cast<Packet *>(pMsg.get());
         if (pPacket != nullptr) {
             pPacket->mSender = nSender;
             const int nRoute = pPacket->Route();
             if ((nRoute & Packet::kRouteLaunchpad) != 0) {
-                static_cast<MsgSink *>(TheLaunchpadRT)->Dispatch(pMsg);
+                static_cast<MsgSink *>(TheLaunchpadRT.get())->Dispatch(pMsg.get());
             }
             if ((nRoute & Packet::kRouteTransport) != 0) {
                 TheTransportRT->Receive(pPacket);
             }
         }
     }
-    delete pMsg;
     return pMessage->length + kLengthSize;
 }
 
@@ -419,7 +418,7 @@ void LaunchpadRT::OnNetConnect(int nConnection, int nReserved1, int nReserved2, 
     if (sNetTask == nullptr) {
         return;
     }
-    TheLaunchpadRT->mConnection = nConnection;
+    TheLaunchpadRT->SetConnection(nConnection);
     int nClient;
     if (nStatus == 0) {
         nStatus = rtDmeGetLocalClient(&nClient, nConnection);
@@ -431,7 +430,7 @@ void LaunchpadRT::OnNetConnect(int nConnection, int nReserved1, int nReserved2, 
     }
     if (bSucceeded) {
         TheLaunchpadRT->SetLocalId(nClient);
-        bSucceeded = rtDmeEnableConnection(TheLaunchpadRT->mConnection, 1) == 0;
+        bSucceeded = rtDmeEnableConnection(TheLaunchpadRT->GetConnection(), 1) == 0;
     } else {
         nReason = TheHostpadRT != nullptr ? LaunchpadAbortedMsg::kReasonHostFailed :
                                             LaunchpadAbortedMsg::kReasonConnectFailed;

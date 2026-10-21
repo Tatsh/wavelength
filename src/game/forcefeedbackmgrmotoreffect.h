@@ -77,6 +77,26 @@ public:
         TheForceFeedbackMgr->SetVibration(nController, nSmallMotor, nBigMotor);
     }
 
+    /** @return The controller. */
+    int GetController() const {
+        return mController;
+    }
+
+    /** @return Whether the effect runs. */
+    int GetActive() const {
+        return mActive;
+    }
+
+    /**
+     * Set whether the effect runs.
+     *
+     * @param nActive Whether it runs.
+     */
+    void SetActive(int nActive) {
+        mActive = nActive;
+    }
+
+private:
     int mController;      /*!< The controller. */
     int mSmallMotor;      /*!< The small motor's state while the effect runs. */
     int mBigMotor;        /*!< The big motor's level while the effect runs. */

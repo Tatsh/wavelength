@@ -22,7 +22,7 @@ AsyncStream::AsyncStream(const char *pszFile, bool bLittleEndian)
     mBuffer = nullptr;
     mFile = nullptr;
     mSize = -1;
-    mFile = File::New(pszFile, kOpenRead, kNoOpenFlags);
+    mFile.reset(File::New(pszFile, kOpenRead, kNoOpenFlags));
     mSize = mFile->Size();
     mBuffer = static_cast<char *>(PoolMemAlloc(mSize, "AsyncStream buf", 0));
     mFile->ReadAsync(mBuffer, mSize);
@@ -34,8 +34,6 @@ AsyncStream::~AsyncStream() {
         PoolMemFree(mBuffer);
         mBuffer = nullptr;
     }
-    delete mFile;
-    mFile = nullptr;
 }
 
 bool AsyncStream::Ready(int nBytes) {
@@ -45,8 +43,7 @@ bool AsyncStream::Ready(int nBytes) {
     // The binary leaves the count uninitialised, and ReadDone() sets it only once the read ends.
     int nRead = 0;
     if (mFile->ReadDone(&nRead)) {
-        delete mFile;
-        mFile = nullptr;
+        mFile.reset();
         return true;
     }
     return nRead >= nBytes;

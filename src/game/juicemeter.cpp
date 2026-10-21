@@ -18,7 +18,7 @@ constexpr float kLowFraction = 1.0f / 6.0f;
 } // namespace
 
 JuiceMeter::JuiceMeter(float fValue) : mValue(fValue), mMax(kUnsetMax), mWarned(0) {
-    mMax = TheGameConfig->mJuiceMeterMax * TheGameConfig->mInitialJuice[TheGameDb->mSkillLevel];
+    mMax = TheGameConfig->mJuiceMeterMax * TheGameConfig->mInitialJuice[TheGameDb->GetSkillLevel()];
     UpdateDisplay();
 }
 
@@ -28,7 +28,7 @@ void JuiceMeter::Set(float fValue) {
     }
     mValue = fValue;
     UpdateDisplay();
-    TheStats->Juice(fValue, TheSongScheduler.mTick);
+    TheStats->Juice(fValue, TheSongScheduler.GetTick());
 }
 
 void JuiceMeter::Add(float fAmount) {

@@ -81,7 +81,7 @@ bool DeleteFreqScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool DeleteFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) != 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) != 0) {
         return false;
     }
     if (mSlot == kFirstSlot && TheGameDb->GetProfile(kFirstPlayer)->mCustom != 0 &&

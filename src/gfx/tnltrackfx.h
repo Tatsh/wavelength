@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "gfx/gfxtunnel.h"
@@ -189,18 +190,31 @@ public:
      */
     static float sSpewFrame;
 
-    char mState;                     /*!< The effect, one of State. */
-    char mTrack;                     /*!< The track. */
-    char mPhase;                     /*!< The step of the effect, from 1, or 0 for none. */
-    float mStartTime;                /*!< The time the effect started, in milliseconds. */
-    RndMat *mMat;                    /*!< The material drawn over the track. */
-    LinearInterpolator mEnableCurve; /*!< The step of the enable effect over time. */
-    InvExpInterpolator mDropCurve;   /*!< The drop of a capture over time. */
-    ExpInterpolator mFallCurve;      /*!< The fall of a capture over time. */
-    float mCaptureTick;              /*!< The tick the captured phrase ends at. */
-    std::vector<float> mGemTicks;    /*!< The ticks of the gems of the captured phrase. */
+    /** @return The effect, one of State. */
+    char GetState() const {
+        return mState;
+    }
+
+    /** @return The track. */
+    char GetTrack() const {
+        return mTrack;
+    }
 
 private:
+    char mState;      /*!< The effect, one of State. */
+    char mTrack;      /*!< The track. */
+    char mPhase;      /*!< The step of the effect, from 1, or 0 for none. */
+    float mStartTime; /*!< The time the effect started, in milliseconds. */
+    RndMat *mMat;     /*!< The material drawn over the track, mMatCopy or the shared material of
+                         track 0. Borrowed. */
+    std::unique_ptr<RndMat> mMatCopy; /*!< The copy of the material a track other than 0 draws
+                                         with, or null for track 0. */
+    LinearInterpolator mEnableCurve;  /*!< The step of the enable effect over time. */
+    InvExpInterpolator mDropCurve;    /*!< The drop of a capture over time. */
+    ExpInterpolator mFallCurve;       /*!< The fall of a capture over time. */
+    float mCaptureTick;               /*!< The tick the captured phrase ends at. */
+    std::vector<float> mGemTicks;     /*!< The ticks of the gems of the captured phrase. */
+
     /**
      * Set the size of the glow particle of each mesh gem of a track that has not passed.
      *

@@ -53,7 +53,7 @@ void Debug::Print(const char *pszText) {
 #ifdef VIDEO_STANDARD_PAL
 void Debug::OpenLog(const char *pszFile, bool bAppend) {
     CloseLog();
-    mLog = File::New(pszFile, bAppend ? kAppendLogMode : kNewLogMode, 0);
+    mLog.reset(File::New(pszFile, bAppend ? kAppendLogMode : kNewLogMode, 0));
     if (mLog == nullptr) {
         DebugNotify("Couldn't open log %s", pszFile);
     }
@@ -61,18 +61,16 @@ void Debug::OpenLog(const char *pszFile, bool bAppend) {
 #else
 void Debug::OpenLog(const char *pszFile) {
     CloseLog();
-    mLog = new FileStream(pszFile, true, true, 0);
+    mLog = std::make_unique<FileStream>(pszFile, true, true, 0);
     if (mLog->Fail()) {
         DebugNotify("Couldn't open log %s", pszFile);
-        delete mLog;
-        mLog = nullptr;
+        mLog.reset();
     }
 }
 #endif
 
 void Debug::CloseLog() {
-    delete mLog;
-    mLog = nullptr;
+    mLog.reset();
 }
 
 void DebugPrint([[maybe_unused]] const char *pszFormat, ...) {

@@ -67,6 +67,7 @@ public:
     }
 #endif
 
+private:
     int mResult; /*!< The outcome, one of MemcardTask::Status. */
 
 protected:

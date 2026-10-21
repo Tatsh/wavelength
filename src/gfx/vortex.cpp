@@ -135,14 +135,15 @@ void Vortex::Poll() {
     const float fNow = SystemMs();
     if (mStartMs == kNotStarted) {
         mStartMs = fNow;
-        mInterp.Reset(mInterp.mY0, mInterp.mY1, fNow, fNow + (mInterp.mX1 - mInterp.mX0));
+        mInterp.Reset(
+            mInterp.GetY0(), mInterp.GetY1(), fNow, fNow + (mInterp.GetX1() - mInterp.GetX0()));
     }
     if (mMode != kModeHold) {
         if ((mMode <= kModeIdle) || ((mMode > kModeHold) && (mMode != kModeOut))) {
             return;
         }
-        if (mInterp.mX1 < fNow) {
-            mFrame = mInterp.mY1;
+        if (mInterp.GetX1() < fNow) {
+            mFrame = mInterp.GetY1();
             if (mMode == kModeIn) {
                 mMode = kModeHold;
             } else if (mMode != kModeOutro) {

@@ -3,6 +3,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 #include <sifdev.h>
 
@@ -49,7 +50,7 @@ String gBootPath;
 File *gBootFile;
 
 // NTSC-U/C: 0x003b20d4, PAL: 0x00430fa4
-File *gTraceLog;
+std::unique_ptr<File> gTraceLog;
 
 // NTSC-U/C: 0x003b20d8, PAL: 0x00430fa8
 int gTraceEnabled;
@@ -84,7 +85,7 @@ void FileOpenTraceLog(const char *pszPath) {
     if (pszPath == nullptr || *pszPath == '\0') {
         return;
     }
-    gTraceLog = File::New(pszPath, kTraceLogMode, 0);
+    gTraceLog.reset(File::New(pszPath, kTraceLogMode, 0));
     gTraceEnabled = 1;
 }
 
@@ -101,21 +102,18 @@ void FileInit() {
 }
 
 void FileTerminate() {
-    if (gTraceLog != nullptr) {
-        delete gTraceLog;
-    }
+    gTraceLog.reset();
     AsyncFile::Terminate();
 }
 
 File *File::New(const char *pszPath, int nMode, int nFlags) {
-    File *pFile;
+    std::unique_ptr<File> pFile;
     if (UsingCD() && nMode == kModeRead && nFlags != kFlagNoArchive) {
-        pFile = new ArkFile(pszPath, kModeRead);
+        pFile = std::make_unique<ArkFile>(pszPath, kModeRead);
     } else {
-        pFile = new AsyncFile(pszPath, nMode);
+        pFile = std::make_unique<AsyncFile>(pszPath, nMode);
     }
     if (pFile->Fail()) {
-        delete pFile;
         return nullptr;
     }
     if (gTraceEnabled != 0 && gTraceLog != nullptr && nMode == kModeRead) {
@@ -123,7 +121,7 @@ File *File::New(const char *pszPath, int nMode, int nFlags) {
         gTraceLog->Write(pszLine, strlen(pszLine));
         gTraceLog->Flush();
     }
-    return pFile;
+    return pFile.release();
 }
 
 void FileNoteRead(const char *) {

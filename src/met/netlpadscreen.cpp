@@ -48,7 +48,7 @@ NetLpadScreen::NetLpadScreen(DataArray *pData) : FreqScreen(pData), mPlayersVers
 void NetLpadScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     if (pPrevScreen != nullptr) {
         mForceEntryExit = dynamic_cast<NetLpadScreen *>(pPrevScreen) != nullptr;
-        if (strcmp(pPrevScreen->mName, "load_remix") == 0) {
+        if (strcmp(pPrevScreen->GetName(), "load_remix") == 0) {
             SendNotice("host_done_edit_msg");
             if (TheNetLaunchpad != nullptr) {
                 TheNetLaunchpad->EndEdit();
@@ -74,7 +74,7 @@ void NetLpadScreen::Exit(UIScreen *pNextScreen, float fTime) {
 
 void NetLpadScreen::UpdateGameParams(const NetGameParams *pParams) {
     TheGameDb->SetGameParams(pParams);
-    if (strcmp(mName, TheUI.mCurrentScreen->mName) != 0) {
+    if (strcmp(mName, TheUI.GetCurrentScreen()->GetName()) != 0) {
         return;
     }
     auto *pPanel = dynamic_cast<NetLPadGamePanel *>(TheUI.FindPanel(mDataPanel, false));
@@ -101,7 +101,7 @@ void NetLpadScreen::Poll(float fTime) {
         dynamic_cast<NetLPadPanel *>(TheUI.FindPanel(mButtonPanel, false))->Update(&mPlayers);
     } else {
         UIPanel *pButtons = TheUI.FindPanel(mButtonPanel, false);
-        if (pButtons->mFocus == nullptr) {
+        if (pButtons->GetFocus() == nullptr) {
             pButtons->SetFocus(pButtons->FindComponent("data", false), kPadNone);
         }
     }
@@ -139,8 +139,8 @@ bool NetLpadScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     if (pMsg->mButton == kPadCircle && pMsg->mPressed != 0) {
-        TheUI.mCurrentScreen->SetFocus(TheUI.FindPanel(mButtonPanel, false));
-        TheUI.mCurrentScreen->mFocusPanel->SetFocus(nullptr, kPadNone);
+        TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(mButtonPanel, false));
+        TheUI.GetCurrentScreen()->GetFocusPanel()->SetFocus(nullptr, kPadNone);
         FindChatPanel()->Dispatch(pMsg);
     }
     return FreqScreen::HandleJoypad(pMsg);
@@ -155,27 +155,28 @@ bool NetLpadScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
 }
 
 bool NetLpadScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (strcmp(pMsg->mPanel->mName, mButtonPanel) != 0) {
+    if (strcmp(pMsg->GetPanel()->GetName(), mButtonPanel) != 0) {
         return false;
     }
-    UIComponent *pComponent = pMsg->mComponent;
-    if (pComponent == nullptr || pComponent == pMsg->mOldComponent) {
+    UIComponent *pComponent = pMsg->GetComponent();
+    if (pComponent == nullptr || pComponent == pMsg->GetOldComponent()) {
         return false;
     }
     const char *pszScreen = mButtonPanel;
-    if (strcmp(pComponent->mName, kPlayerCommand) == 0) {
+    if (strcmp(pComponent->GetName(), kPlayerCommand) == 0) {
         pszScreen = FormatString("%s_play", mButtonPanel);
     }
     UIScreen *pScreen = TheUI.FindScreen(pszScreen, false);
-    if (pScreen != nullptr && pScreen != TheUI.mCurrentScreen) {
+    if (pScreen != nullptr && pScreen != TheUI.GetCurrentScreen()) {
         TheUI.GotoScreen(pScreen);
     }
     return false;
 }
 
 bool NetLpadScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mButton == kPadDRight && strcmp(pMsg->mComponent->mName, kPlayerCommand) == 0) {
-        const char *pszPanel = pMsg->mPanel->mName;
+    if (pMsg->GetButton() == kPadDRight &&
+        strcmp(pMsg->GetComponent()->GetName(), kPlayerCommand) == 0) {
+        const char *pszPanel = pMsg->GetPanel()->GetName();
         if (strcmp(pszPanel, "fn_g_lpad") == 0 || strcmp(pszPanel, "fn_h_lpad") == 0) {
             SetFocus(TheUI.FindPanel(mDataPanel, false));
         }
@@ -184,10 +185,10 @@ bool NetLpadScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool NetLpadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
-    const char *pszCommand = pMsg->mComponent->mName;
+    const char *pszCommand = pMsg->GetComponent()->GetName();
     if (TheNetLaunchpad != nullptr && strcmp(pszCommand, "launch") == 0) {
         TheUI.GotoScreen("net_launch");
     } else if (strcmp(pszCommand, "edit") == 0) {
@@ -199,7 +200,7 @@ bool NetLpadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
             TheUI.GotoScreen("net_share_remix");
         }
     } else if (strcmp(pszCommand, kPlayerCommand) == 0) {
-        if (strcmp(mFocusPanel->mName, mButtonPanel) == 0) {
+        if (strcmp(mFocusPanel->GetName(), mButtonPanel) == 0) {
             SetFocus(TheUI.FindPanel(mDataPanel, false));
         }
     } else if (strcmp(pszCommand, "abort") == 0) {
@@ -209,7 +210,7 @@ bool NetLpadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetLpadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (TheNetLaunchpad != nullptr && strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (TheNetLaunchpad != nullptr && strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLaunchpad->Activate();
     } else {
         NetJoinLPadScreen::ShowLaunchpadLost();

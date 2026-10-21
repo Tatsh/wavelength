@@ -209,6 +209,12 @@ public:
      */
     RndText *CloneText(int nRow, RndText *pTemplate);
 
+    /** Forget every line shown. */
+    void ClearMessages() {
+        mMessages.clear();
+    }
+
+private:
     String mText;                     /*!< The last line typed into the entry. */
     std::list<ChatMessage> mMessages; /*!< The lines shown, oldest first. */
     int mNumLines;                    /*!< The `num_chat_lines` setting, the number of rows. */

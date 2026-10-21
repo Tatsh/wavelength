@@ -39,7 +39,7 @@ public:
      * @ghidraAddress PAL: 0x003e42f8
      */
     bool Test() override {
-        return mNote == TheTriggerMgr.mNote;
+        return mNote == TheTriggerMgr.GetNote();
     }
 
 private:

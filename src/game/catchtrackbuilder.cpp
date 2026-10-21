@@ -154,8 +154,8 @@ bool CatchTrackBuilder::AddGem(int nTick,
         return true;
     }
 
-    if (g_bScrambleGems != 0 && TheGameDb->mCommunity != GameDb::kCommunityOnline &&
-        TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+    if (g_bScrambleGems != 0 && TheGameDb->GetCommunity() != GameDb::kCommunityOnline &&
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         nLane = RandomInt(kFirstLane, kNumLanes);
     }
     GemData gem{nTick, nLane};

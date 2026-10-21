@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/binstream.h"
 #include "os/prnstream.h"
 
@@ -87,17 +89,30 @@ public:
      */
     typedef void (*ModalCallback)(int *pState, const char *pszMessage);
 
+    /**
+     * Set the routine that shows a message on the screen.
+     *
+     * @param pfnCallback The routine the renderer installs, or null.
+     */
+    void SetModalCallback(ModalCallback pfnCallback) {
+        mModalCallback = pfnCallback;
+    }
+
+    /** @return The routine that shows a message on the screen, or null. */
+    ModalCallback GetModalCallback() const {
+        return mModalCallback;
+    }
+
 private:
     int mReserved08; // +0x08, cleared by the constructor and not yet identified.
     int mReserved0C; // +0x0c, cleared by the constructor and not yet identified.
     int mEnabled;    // Non-zero while the stream writes.
 #ifdef VIDEO_STANDARD_PAL
-    File *mLog; // The log file, or null for standard output.
+    std::unique_ptr<File> mLog; // The log file, or null for standard output.
 #else
-    BinStream *mLog; // The log file, or null for standard output.
+    std::unique_ptr<BinStream> mLog; // The log file, or null for standard output.
 #endif
 
-public:
     /** The routine the renderer installs to show a message, or null. The name is inferred. */
     ModalCallback mModalCallback;
 };

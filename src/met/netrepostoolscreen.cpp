@@ -33,7 +33,7 @@ bool NetReposToolScreen::DispatchPriv(Message *pMsg) {
 void NetReposToolScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     mList = static_cast<ReposToolList *>(
-        TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
+        TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
     mList->SetRemixes(mRemixes);
     if (mSelection == kNoSelection) {
         mList->SetSelected(kFirstItem);
@@ -48,11 +48,11 @@ void NetReposToolScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
 void NetReposToolScreen::Exit(UIScreen *pNextScreen, float fTime) {
     FreqScreen::Exit(pNextScreen, fTime);
-    if (std::strcmp(pNextScreen->mName, kNoteScreen) != 0) {
+    if (std::strcmp(pNextScreen->GetName(), kNoteScreen) != 0) {
         mSelection = kNoSelection;
         return;
     }
-    mSelection = mList->mSelected;
+    mSelection = mList->GetSelected();
     auto *pNoteScreen = dynamic_cast<UploadNoteScreen *>(TheUI.FindScreen(kNoteScreen, false));
     const NetRepoRemix &remix = *ListAt(mRemixes, mSelection);
     pNoteScreen->mKeyboardText = remix.mNote.c_str();
@@ -81,7 +81,7 @@ bool NetReposToolScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     if (mNextScreen != nullptr || mPrevScreen != nullptr) {
         return true;
     }
-    const int nSelected = mList->mSelected;
+    const int nSelected = mList->GetSelected();
     if (static_cast<unsigned int>(nSelected) >= mRemixes.size()) {
         return UIScreen::HandleJoypad(pMsg);
     }

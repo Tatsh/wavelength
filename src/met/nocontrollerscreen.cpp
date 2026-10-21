@@ -28,7 +28,7 @@ void NoControllerScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         mFocusPanel != nullptr ? dynamic_cast<DialogPanel *>(mFocusPanel) : nullptr;
 #ifdef VIDEO_STANDARD_PAL
     // The multitap dialog has its own text.
-    if (strcmp(pDialog->mName, kNoControllerDialog) == 0) {
+    if (strcmp(pDialog->GetName(), kNoControllerDialog) == 0) {
         pDialog->SetText(FormatString(TheLocale.Localize(kNoControllerDialog, true), port.c_str()));
     }
 #else
@@ -45,8 +45,8 @@ bool NoControllerScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NoControllerScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const String button(pMsg->mComponent->mName);
+    if (pMsg->GetButton() == kPadCross) {
+        const String button(pMsg->GetComponent()->GetName());
         if (button == "resume") {
             if (mInGame != 0) {
                 TheMetagame.ShowEndGameScreens(Metagame::kDialogActionResume);

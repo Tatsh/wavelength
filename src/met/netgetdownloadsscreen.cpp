@@ -29,7 +29,7 @@ bool NetGetDownloadsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetGetDownloadsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLobby->RequestRemixes(this);
     }
     return false;

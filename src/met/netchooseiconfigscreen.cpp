@@ -107,8 +107,8 @@ bool NetChooseIConfigScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetChooseIConfigScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        if (std::strcmp(kCreateButton, pMsg->mComponent->mName) == 0) {
+    if (pMsg->GetButton() == kPadCross) {
+        if (std::strcmp(kCreateButton, pMsg->GetComponent()->GetName()) == 0) {
             TheUI.GotoScreen(kCreateConfigScreen);
         } else {
             UIScreen *pConnect = TheUI.FindScreen(kConnectScreen, false);
@@ -120,14 +120,14 @@ bool NetChooseIConfigScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetChooseIConfigScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mComponent == nullptr || pMsg->mPanel == nullptr ||
-        std::strcmp(pMsg->mPanel->mName, kConfigPanel) != 0) {
+    if (pMsg->GetComponent() == nullptr || pMsg->GetPanel() == nullptr ||
+        std::strcmp(pMsg->GetPanel()->GetName(), kConfigPanel) != 0) {
         return false;
     }
-    if (std::strcmp(pMsg->mComponent->mName, kCreateButton) == 0) {
+    if (std::strcmp(pMsg->GetComponent()->GetName(), kCreateButton) == 0) {
         ShowDescription(false);
     } else if (!mConfigs.empty()) {
-        const char *pszName = pMsg->mComponent->mName;
+        const char *pszName = pMsg->GetComponent()->GetName();
         mSelected = pszName[std::strlen(pszName) - 1] - '1';
         ShowDescription(true);
     }

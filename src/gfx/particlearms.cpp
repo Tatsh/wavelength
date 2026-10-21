@@ -1,6 +1,7 @@
 #include "gfx/particlearms.h"
 
 #include <cstring>
+#include <memory>
 
 #include "os/debug.h"
 #include "script/scriptfunction.h"
@@ -21,21 +22,18 @@ enum MoveArgument {
 
 ParticleArms::ParticleArms(DataArray *pData, TnlGeom *pGeom) : mGeom(pGeom) {
     ScriptFunction::Register(MoveCommand, kMoveCommandName, this);
-    mAssemblies.resize(pData->mSize - 1, nullptr);
-    for (int i = 1; i < pData->mSize; ++i) {
-        mAssemblies[i - 1] = new ParticleArmsAssembly(pData->Array(i));
+    mAssemblies.resize(pData->Size() - 1);
+    for (int i = 1; i < pData->Size(); ++i) {
+        mAssemblies[i - 1] = std::make_unique<ParticleArmsAssembly>(pData->Array(i));
     }
 }
 
 ParticleArms::~ParticleArms() {
     ScriptFunction::Unregister(MoveCommand);
-    for (unsigned i = 0; i < mAssemblies.size(); ++i) {
-        delete mAssemblies[i];
-    }
 }
 
 void ParticleArms::LoadConfig(DataArray *pData) {
-    for (int i = 1; i < pData->mSize; ++i) {
+    for (int i = 1; i < pData->Size(); ++i) {
         mAssemblies[i - 1]->LoadConfig(pData->Array(i));
     }
 }

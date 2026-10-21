@@ -43,7 +43,7 @@ inline void TwistBasis(const Vector3 *pBase, const Twist &twist, Vector3 *pOut) 
 
 // The last bar of the panels a wave bends, from which it counts down to the first.
 inline int LastWaveBar(const TnlGeom *pGeom) {
-    return (pGeom->mFirstBar + (pGeom->mNumBars - pGeom->mBarsBehind)) - 1;
+    return (pGeom->GetFirstBar() + (pGeom->GetNumBars() - pGeom->GetBarsBehind())) - 1;
 }
 
 } // namespace
@@ -73,7 +73,7 @@ TnlCripFX::TnlCripFX(int nIndex) {
         return;
     }
     sParticles = dynamic_cast<RndParticleSys *>(TheManager.Find("crippler.part"));
-    ScaleParticles(sParticles, TheGfxManager.mScrollSpeed);
+    ScaleParticles(sParticles, TheGfxManager.GetScrollSpeed());
     sParticleFrame = 0.0f;
     sParticles->SetEmitFrame(sParticleFrame);
     sParticles->FreeAllParticles();
@@ -89,12 +89,14 @@ bool TnlCripFX::Poll(float flDelta, GfxTunnel *pTunnel) {
         mDelta = flDelta;
         const float flRise = sHeightAcceleration * flDelta;
         const float flClimb = mHeightVelocity * flDelta;
-        mFlyTick = ((TheGameDb->mSongTime - mStartTime) * sTickVelocity) + TheGameDb->mSongTick;
+        mFlyTick =
+            ((TheGameDb->GetSongTime() - mStartTime) * sTickVelocity) + TheGameDb->GetSongTick();
         mHeightVelocity += flRise;
         mHeight += flClimb;
-        TnlGeom *pGeom = pTunnel->mGeom;
-        pGeom->BlendCell(&mXfm, true, false, pGeom->GetPlayer(mVictim)->mPosition, mFlyTick, 0.5f);
-        const float flScale = TheGfxManager.mScrollSpeed;
+        TnlGeom *pGeom = pTunnel->GetGeom();
+        pGeom->BlendCell(
+            &mXfm, true, false, pGeom->GetPlayer(mVictim)->GetPosition(), mFlyTick, 0.5f);
+        const float flScale = TheGfxManager.GetScrollSpeed();
         Vector3 *rows[] = {&mXfm.mBasisX, &mXfm.mBasisY, &mXfm.mBasisZ};
         for (Vector3 *pRow : rows) {
             pRow->x *= flScale;
@@ -111,22 +113,22 @@ bool TnlCripFX::Poll(float flDelta, GfxTunnel *pTunnel) {
         return false;
     }
 
-    const float flElapsed = TheGameDb->mSongTime - mStartTime;
+    const float flElapsed = TheGameDb->GetSongTime() - mStartTime;
     const float flPhaseA = flElapsed * sTimeFreqs[0];
     const float flPhaseB = flElapsed * sTimeFreqs[1];
     const float flReach = flPhaseA / sSpatialFreqs[0];
     const float flLife = 1.0f - (flElapsed / sWaveTime);
-    mArrived = (mWaveTick - flReach) <= TheGameDb->mSongTick;
+    mArrived = (mWaveTick - flReach) <= TheGameDb->GetSongTick();
     if (flLife <= 0.0f) {
         Stop(pTunnel, false);
         return true;
     }
 
-    TnlGeom *pGeom = pTunnel->mGeom;
+    TnlGeom *pGeom = pTunnel->GetGeom();
     const bool bIdle = pTunnel->IsActivatorIdle(mVictim);
-    const char nTrack = pGeom->GetPlayer(mVictim)->mTrack;
+    const char nTrack = pGeom->GetPlayer(mVictim)->GetTrack();
     mPrevWaveTrack = (nTrack != mWaveTrack) ? mWaveTrack : kNoTrack;
-    for (int nBar = LastWaveBar(pGeom); nBar >= pGeom->mFirstBar; --nBar) {
+    for (int nBar = LastWaveBar(pGeom); nBar >= pGeom->GetFirstBar(); --nBar) {
         if (!bIdle) {
             pGeom->RestoreSections(mWaveTrack, nBar);
             continue;
@@ -142,7 +144,7 @@ bool TnlCripFX::Poll(float flDelta, GfxTunnel *pTunnel) {
         const float flSectionTicks =
             kBarTicks / static_cast<float>(static_cast<unsigned int>(pSections->size() - 1));
         float flSectionTick = static_cast<float>(nBar) * kBarTicks;
-        const TnlGeom::CrossSectionXfm *pBase = pPanel->mBaseSections.data();
+        const TnlGeom::CrossSectionXfm *pBase = pPanel->GetBaseSections().data();
         for (TnlGeom::CrossSectionXfm &section : *pSections) {
             const float flDistance = std::fabs(mWaveTick - flSectionTick);
             if (!(0.0f < (flDistance - flReach))) {
@@ -176,7 +178,7 @@ bool TnlCripFX::Poll(float flDelta, GfxTunnel *pTunnel) {
 
 void TnlCripFX::Draw(GfxTunnel *pTunnel) {
     if (mState == kStateWave) {
-        const float flElapsed = TheGameDb->mSongTime - mStartTime;
+        const float flElapsed = TheGameDb->GetSongTime() - mStartTime;
         if (flElapsed <= sFadeTime) {
             mView->SetFrame(flElapsed + sFlyTime);
             mView->mLocalXfm = mXfm;
@@ -189,7 +191,7 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
     if (mState != kStateFly) {
         return;
     }
-    const float flElapsed = TheGameDb->mSongTime - mStartTime;
+    const float flElapsed = TheGameDb->GetSongTime() - mStartTime;
     Transform shadow = mXfm;
     shadow.mTranslation = mShadowPos;
     mShadow->mLocalXfm = shadow;
@@ -210,15 +212,15 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
     mState = kStateWave;
     mWaveTick = flTick;
     mStartTime += sFlyTime;
-    const char nTrack = pTunnel->mGeom->GetPlayer(mVictim)->mTrack;
+    const char nTrack = pTunnel->GetGeom()->GetPlayer(mVictim)->GetTrack();
     mArrived = 0;
     mPrevWaveTrack = kNoTrack;
     mWaveTrack = nTrack;
-    pTunnel->mCamFX->Kick(sImpactCamJiggle);
+    pTunnel->GetCamFX()->Kick(sImpactCamJiggle);
 }
 
 void TnlCripFX::DrawParticles() {
-    sParticles->SetFrame(TheGameDb->mSongTime);
+    sParticles->SetFrame(TheGameDb->GetSongTime());
     sParticles->Draw();
 }
 
@@ -228,17 +230,17 @@ void TnlCripFX::Start(GfxTunnel *pTunnel, char, char nVictim) {
     }
     mVictim = nVictim;
     mState = kStateFly;
-    mFlyTick = TheGameDb->mSongTick;
+    mFlyTick = TheGameDb->GetSongTick();
     mHeight = sStartHeight;
     mHeightVelocity = sStartHeightVelocity;
-    mStartTime = TheGameDb->mSongTime;
+    mStartTime = TheGameDb->GetSongTime();
     mDelta = 0.0f;
 }
 
 void TnlCripFX::Stop(GfxTunnel *pTunnel, bool bRestore) {
     if ((mState == kStateWave) && bRestore && (pTunnel != nullptr)) {
-        TnlGeom *pGeom = pTunnel->mGeom;
-        for (int nBar = LastWaveBar(pGeom); nBar >= pGeom->mFirstBar; --nBar) {
+        TnlGeom *pGeom = pTunnel->GetGeom();
+        for (int nBar = LastWaveBar(pGeom); nBar >= pGeom->GetFirstBar(); --nBar) {
             pGeom->RestoreSections(mWaveTrack, nBar);
         }
     }

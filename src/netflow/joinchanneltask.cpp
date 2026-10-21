@@ -8,9 +8,9 @@
 void JoinChannelTask::OnStart() {
     rtMediusJoinChannelRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
-    request.worldId = TheLobbyRT->mJoinChatroomId;
+    request.worldId = TheLobbyRT->GetJoinChatroomId();
     request.password[0] = '\0';
     const int nError = rtMediusJoinChannel(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
@@ -36,7 +36,7 @@ void JoinChannelTask::OnResponse(int nConnection,
     }
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
         TheLobbyRT->SetAccount(
-            TheLobbyRT->mLocalPlayer.mId, TheLobbyRT->mJoinChatroomId, &pResponse->info);
+            TheLobbyRT->GetLocalPlayer().mId, TheLobbyRT->GetJoinChatroomId(), &pResponse->info);
     }
     pTask->Finish(pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS,
                   JoinChatroomResultMsg::kResultFailed);

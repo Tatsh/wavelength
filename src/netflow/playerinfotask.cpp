@@ -10,7 +10,7 @@
 void PlayerInfoTask::OnStart() {
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.id = mPlayer->mId;
     const int nError = rtMediusPlayerInfo(&request, OnResponse);

@@ -39,8 +39,8 @@ void Mixer::ReadVolumes(const DataArray *pConfig,
                         const char *pszKey,
                         std::vector<unsigned char> &volumes) {
     const DataArray *pList = pConfig->FindArray(pszKey, true);
-    volumes.resize(pList->mSize - 1, 0);
-    for (int i = 1; i < pList->mSize; ++i) {
+    volumes.resize(pList->Size() - 1, 0);
+    for (int i = 1; i < pList->Size(); ++i) {
         volumes[i - 1] = static_cast<unsigned char>(pList->Int(i));
     }
 }
@@ -73,15 +73,11 @@ Mixer::Mixer() {
     mHasInstrumentTrack = 0;
     mMuteUnoccupied = 0;
     for (int i = 0; i < kChannelCount; ++i) {
-        mRamps[i] = new VolumeRamp(&TheSongScheduler, kRampStartVolume, i);
+        mRamps[i] = std::make_unique<VolumeRamp>(&TheSongScheduler, kRampStartVolume, i);
     }
 }
 
-Mixer::~Mixer() {
-    for (VolumeRamp *pRamp : mRamps) {
-        delete pRamp;
-    }
-}
+Mixer::~Mixer() = default;
 
 void Mixer::Init(int nTracks, int nInstrument) {
     mHasInstrumentTrack = nInstrument != kInstrumentNone;
@@ -165,7 +161,7 @@ void Mixer::RemovePlayer(int nTrack) {
 }
 
 void Mixer::HoldTrack(int nTrack, int nUntilTick) {
-    if (TheSongScheduler.mTick >= nUntilTick) {
+    if (TheSongScheduler.GetTick() >= nUntilTick) {
         return;
     }
     (void)IsInstrumentTrack(nTrack); // Yes, the binary discards this call's result.

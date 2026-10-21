@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 /**
  * Ring buffer of bytes a producer appends and a consumer takes in runs.
  *
@@ -122,16 +124,28 @@ public:
      */
     int BytesAvailable(int *pbInputDone);
 
-    int mSize;          /*!< The size of the buffer in bytes. */
-    char *mBuffer;      /*!< The buffer. */
-    char *mReadHead;    /*!< The next byte the consumer takes. */
-    char *mWriteHead;   /*!< The next byte the producer fills. */
-    char *mEndOfBuffer; /*!< The end of the buffer. */
-    char *mReadRunEnd;  /*!< The end of the run AcquireReadRun() handed out, or null. */
-    int mInputDone;     /*!< 1 once the producer has no more bytes. */
-    int mMargin;        /*!< The bytes EmptySpaceForFilling() keeps free, 16. */
+    /** @return The size of the buffer in bytes. */
+    int GetSize() const {
+        return mSize;
+    }
+
+    /** @return The buffer. */
+    char *GetBuffer() const {
+        return mBuffer.get();
+    }
+
+protected:
+    int mInputDone; /*!< 1 once the producer has no more bytes. */
 
 private:
+    int mSize;                       /*!< The size of the buffer in bytes. */
+    std::unique_ptr<char[]> mBuffer; /*!< The buffer. */
+    char *mReadHead;                 /*!< The next byte the consumer takes. Into mBuffer. */
+    char *mWriteHead;                /*!< The next byte the producer fills. Into mBuffer. */
+    char *mEndOfBuffer;              /*!< The end of the buffer. Into mBuffer. */
+    char *mReadRunEnd; /*!< The end of the run AcquireReadRun() handed out, or null. */
+    int mMargin;       /*!< The bytes EmptySpaceForFilling() reserves, 16. */
+
     // Report the heads through DebugPrint() when the write head is not before the end.
     inline void CheckHeads();
 };

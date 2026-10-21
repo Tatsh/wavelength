@@ -59,7 +59,7 @@ bool MultiFreqSelectScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MultiFreqSelectScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const int nPad = pMsg->mPad;
+    const int nPad = pMsg->GetPad();
     if (nPad >= mNumPlayers) {
         return false;
     }
@@ -70,10 +70,10 @@ bool MultiFreqSelectScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 
 bool MultiFreqSelectScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     bool bHandled = false;
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return bHandled;
     }
-    const char *pszName = pMsg->mComponent->mName;
+    const char *pszName = pMsg->GetComponent()->GetName();
     const int nDigit = pszName[std::strlen(pszName) - 1];
     const int nPlayer = nDigit - '1';
     if (nPlayer < mNumPlayers) {
@@ -106,8 +106,8 @@ bool MultiFreqSelectScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             bAnyConfirmed |= mConfirmed[i];
         }
         if (!bAnyConfirmed) {
-            TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetDuel ? kDuelBackScreen :
-                                                                           kBackScreen);
+            TheUI.GotoScreen(TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel ? kDuelBackScreen :
+                                                                               kBackScreen);
         }
         return false;
     }
@@ -132,9 +132,9 @@ void MultiFreqSelectScreen::CheckDone() {
         }
     }
     const char *pszScreen;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         pszScreen = kDuelDoneScreen;
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         pszScreen = kRemixDoneScreen;
     } else {
         pszScreen = kDoneScreen;

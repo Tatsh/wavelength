@@ -1,5 +1,6 @@
 #include "memcard/memcardconfig.h"
 
+#include <memory>
 #include <string.h>
 
 #include "os/file.h"
@@ -30,12 +31,12 @@ constexpr char kIconSysMagic[] = "PS2D";
 } // namespace
 
 DataArray *g_pMemcardConfig;
-char *g_pMemcardBuffer;
+std::unique_ptr<char[]> g_pMemcardBuffer;
 int g_nMemcardBufferSize;
 #ifdef VIDEO_STANDARD_PAL
 int g_nMemcardReadResult;
 #endif
-char *g_pMemcardIcon;
+std::unique_ptr<char[]> g_pMemcardIcon;
 int g_nMemcardIconSize;
 int g_bMemcardDirExists;
 int g_nMemcardDirKilobytes;
@@ -79,15 +80,15 @@ bool MemcardReadSizeIs(int nBytes) {
 void LoadMemcardConfig() {
     g_pMemcardConfig = SystemConfig()->FindArray("metagame", true)->FindArray("mc", true);
     g_pMemcardConfig->FindInt("buff_size", &g_nMemcardBufferSize, true);
-    g_pMemcardBuffer = new char[g_nMemcardBufferSize];
+    g_pMemcardBuffer = std::make_unique<char[]>(g_nMemcardBufferSize);
 
     const char *pszIcon;
     g_pMemcardConfig->FindSymbol("icon_file", &pszIcon, true);
-    File *pFile = File::New(FormatString("mc/%s", pszIcon), kFileReadMode, 0);
+    std::unique_ptr<File> pFile(File::New(FormatString("mc/%s", pszIcon), kFileReadMode, 0));
     g_nMemcardIconSize = pFile->Size();
-    g_pMemcardIcon = new char[g_nMemcardIconSize];
-    pFile->Read(g_pMemcardIcon, g_nMemcardIconSize);
-    delete pFile;
+    g_pMemcardIcon = std::make_unique<char[]>(g_nMemcardIconSize);
+    pFile->Read(g_pMemcardIcon.get(), g_nMemcardIconSize);
+    pFile.reset();
 
     memset(&g_MemcardIconSys, 0, sizeof(g_MemcardIconSys));
     // Yes, the binary copies the terminator of the magic into the reserved field after it.
@@ -140,6 +141,6 @@ void LoadMemcardConfig() {
 
 void FreeMemcardConfig() {
     // Yes, the binary releases both arrays with the scalar delete.
-    delete g_pMemcardBuffer;
-    delete g_pMemcardIcon;
+    g_pMemcardBuffer.reset();
+    g_pMemcardIcon.reset();
 }

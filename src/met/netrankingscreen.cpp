@@ -23,10 +23,10 @@ FullRankedPanel *FindRankPanel() {
 }
 
 void HideArrows(UIList *pList) {
-    pList->mUpArrow->SetShowing(false);
-    pList->mShowUpArrow = 0;
-    pList->mDownArrow->SetShowing(false);
-    pList->mShowDownArrow = 0;
+    pList->GetUpArrow()->SetShowing(false);
+    pList->SetShowUpArrow(0);
+    pList->GetDownArrow()->SetShowing(false);
+    pList->SetShowDownArrow(0);
 }
 
 } // namespace
@@ -45,7 +45,7 @@ void NetRankingScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     TheNetLobby->RequestRanks(this, kPageSize, kPageTop, kRankingMode);
     mSelectFirst = 1;
     mHasPrevious = 0;
-    FindRankPanel()->StartFlash(TheUI.mTime, false);
+    FindRankPanel()->StartFlash(TheUI.GetTime(), false);
     mLoading = 1;
     HideArrows(mList);
 }
@@ -66,23 +66,23 @@ void NetRankingScreen::RequestPage(int nPage) {
         mList->SetPlayers(&empty, kNoSelection);
     }
     mSelectFirst = nPage != kPagePrevious;
-    FindRankPanel()->StartFlash(TheUI.mTime, false);
+    FindRankPanel()->StartFlash(TheUI.GetTime(), false);
     mLoading = 1;
     TheNetLobby->RequestRanks(this, kPageSize, nPage, kRankingMode);
     HideArrows(mList);
 }
 
 bool NetRankingScreen::HandleLobbyPlayers(LobbyPlayersMsg *pMsg) {
-    if (TheUI.mCurrentScreen != this || mNextScreen != nullptr) {
+    if (TheUI.GetCurrentScreen() != this || mNextScreen != nullptr) {
         return false;
     }
     mHasPrevious = pMsg->mHasPrevious;
     mList->SetPlayers(pMsg->mPlayers, mSelectFirst != 0 ? kSelectFirst : kSelectLast);
     mLoading = 0;
     FindRankPanel()->HideFlash();
-    mList->mUpArrow->SetShowing(mHasPrevious != 0);
-    mList->mShowUpArrow = mHasPrevious != 0;
-    mList->mDownArrow->SetShowing(true);
-    mList->mShowDownArrow = 1;
+    mList->GetUpArrow()->SetShowing(mHasPrevious != 0);
+    mList->SetShowUpArrow(mHasPrevious != 0);
+    mList->GetDownArrow()->SetShowing(true);
+    mList->SetShowDownArrow(1);
     return false;
 }

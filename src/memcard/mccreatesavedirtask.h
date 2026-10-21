@@ -50,11 +50,6 @@ public:
      */
     void Set(int nPort, const char *pszTitle);
 
-    MCMkDirTask mMkDir;           /*!< The step that creates the directory. */
-    MCSaveFileTask mSaveFile;     /*!< The step that saves one file. */
-    std::vector<FileData> mFiles; /*!< The files to save. */
-    int mFileIndex;               /*!< The index into mFiles of the file being saved. */
-
 protected:
     /**
      * List the files and start creating the directory.
@@ -80,4 +75,9 @@ private:
      * @ghidraAddress PAL: 0x001625e0
      */
     void SaveNextFile();
+
+    MCMkDirTask mMkDir;           /*!< The step that creates the directory. */
+    MCSaveFileTask mSaveFile;     /*!< The step that saves one file. */
+    std::vector<FileData> mFiles; /*!< The files to save. */
+    int mFileIndex;               /*!< The index into mFiles of the file being saved. */
 };

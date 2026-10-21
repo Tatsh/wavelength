@@ -7,10 +7,10 @@
 #include "os/utf8.h"
 
 void AccountUpdatePasswordTask::OnStart() {
-    const char *pszNewPassword = TheLobbyRT->mNewPassword.c_str();
+    const char *pszNewPassword = TheLobbyRT->GetNewPassword().c_str();
     rtMediusChangePasswordRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
 #ifdef VIDEO_STANDARD_PAL
     strncpy(request.oldPassword,

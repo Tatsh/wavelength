@@ -41,7 +41,9 @@ public:
      */
     void Set(int nPort, const char *pszName, void *pBuffer, int nSize);
 
-    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. */
-    MCFindRemixTask *mFind;    /*!< The step that finds the remix file. */
-    MCGetRemixDataTask *mData; /*!< The work that reads the remix. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;   /*!< The step that reads the card information. Borrowed. */
+    MCFindRemixTask *mFind;    /*!< The step that finds the remix file. Borrowed. */
+    MCGetRemixDataTask *mData; /*!< The work that reads the remix. Borrowed. */
 };

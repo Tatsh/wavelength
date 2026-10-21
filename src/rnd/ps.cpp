@@ -504,7 +504,7 @@ void Ps::Init() {
     PsEnviron::Init();
     TheManager.SetClassFactory(RndParticleSys::sClassName, PsParticleSys::New);
     TheManager.SetClassFactory(RndMultiMesh::sClassName, PsMultiMesh::New);
-    TheDebug.mModalCallback = ModalCallback;
+    TheDebug.SetModalCallback(ModalCallback);
     RestoreAfterMovie();
 }
 
@@ -519,7 +519,7 @@ void Ps::Terminate() {
     TheManager.SetClassFactory(RndParticleSys::sClassName, RndParticleSys::New);
     TheManager.SetClassFactory(RndMultiMesh::sClassName, RndMultiMesh::New);
     sceGsSyncVCallback(nullptr);
-    TheDebug.mModalCallback = nullptr;
+    TheDebug.SetModalCallback(nullptr);
     sceGsSyncPath(0, 0);
     PoolMemFree(mMfifo); // Yes, the binary does not clear mMfifo.
 }
@@ -846,7 +846,7 @@ void Ps::ScreenDump(const char *pszName) {
                           static_cast<short>(mScreenWidth),
                           static_cast<short>(mScreenHeight));
     FlushCache(WRITEBACK_DCACHE);
-    sceGsExecStoreImage(&sStoreImage, screen.mPixels);
+    sceGsExecStoreImage(&sStoreImage, screen.GetPixels());
 
     RndBitmap rgb;
     rgb.Create(mScreenWidth, mScreenHeight, 0, kBpp24, 0);

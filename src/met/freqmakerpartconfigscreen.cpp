@@ -212,8 +212,8 @@ void FreqMakerPartConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     mChoices.clear();
 
-    UIComponent *pFocus = TheUI.FindPanel("f_maker_c", false)->mFocus;
-    const char *pszButton = pFocus->mName;
+    UIComponent *pFocus = TheUI.FindPanel("f_maker_c", false)->GetFocus();
+    const char *pszButton = pFocus->GetName();
     if (strcmp(pszButton, "heads") == 0) {
         mPart = AvatarPartSet::kPartHead;
     } else if (strcmp(pszButton, "torsos") == 0) {
@@ -350,13 +350,13 @@ void FreqMakerPartConfigScreen::StepUp(
 }
 
 bool FreqMakerPartConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && strcmp(pMsg->mComponent->mName, "done") != 0) {
+    if (pMsg->GetButton() == kPadCross && strcmp(pMsg->GetComponent()->GetName(), "done") != 0) {
         UIPanel *pPanel = TheUI.FindPanel("f_maker_s", false);
         pPanel->SetFocus(pPanel->FindComponent("done", false), kPadNone);
     }
 
-    const char *pszButton = pMsg->mComponent->mName;
-    const int nButton = pMsg->mButton;
+    const char *pszButton = pMsg->GetComponent()->GetName();
+    const int nButton = pMsg->GetButton();
     if (strcmp(pszButton, "part") == 0) {
         const int nChoices = static_cast<int>(mChoices.size());
         if (nButton == kPadDLeft) {
@@ -424,8 +424,8 @@ bool FreqMakerPartConfigScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool FreqMakerPartConfigScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mComponent != nullptr &&
-        pMsg->mComponent == TheUI.FindComponent("f_maker_s", "part", false)) {
+    if (pMsg->GetComponent() != nullptr &&
+        pMsg->GetComponent() == TheUI.FindComponent("f_maker_s", "part", false)) {
         ShowPartHelp();
     }
     return false;

@@ -21,11 +21,11 @@ constexpr int kSearchFound = 1;
 
 } // namespace
 
-Archive *TheArchive;
+std::unique_ptr<Archive> TheArchive;
 
 void Archive::Init() {
     if (UsingCD()) {
-        TheArchive = new Archive("gen/main.ark");
+        TheArchive = std::make_unique<Archive>("gen/main.ark");
     }
     TheBlockMgr.Init();
 }

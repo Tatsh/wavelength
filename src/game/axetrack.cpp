@@ -26,7 +26,7 @@ AxeTrack::AxeTrack(AxeTrackData *pData,
                    int nNumBars,
                    int nTicksPerBar)
     : FreestyleTrack(pSections, pPlayMap, pfMsPerTick, nIndex, nNumBars, nTicksPerBar),
-      mTicksPerBar(nTicksPerBar), mNumBars(nNumBars), mData(pData), mAxers(kNumAxers, nullptr),
+      mTicksPerBar(nTicksPerBar), mNumBars(nNumBars), mData(pData), mAxers(kNumAxers),
       mActiveButton(kNoButton), mX(0.0f), mY(0.0f), mHarmony(nullptr),
       mHarmonyCommand(NewMemFunCommand(this, &AxeTrack::UpdateHarmony)),
       mContourCommand(NewMemFunCommand(this, &AxeTrack::UpdateContours)) {
@@ -34,16 +34,17 @@ AxeTrack::AxeTrack(AxeTrackData *pData,
     (void)mData->GetHarmony(kFirstTick, &mHarmony);
 
     float fVolume = TheGameConfig->mAxeSoftFxVolume;
-    TheGameDb->FindSong(TheGameDb->mSong.c_str())->FindFloat(kAxeSoftFxVolume, &fVolume, false);
+    TheGameDb->FindSong(TheGameDb->GetSong().c_str())->FindFloat(kAxeSoftFxVolume, &fVolume, false);
     for (int i = 0; i < kNumAxers; ++i) {
-        mAxers[i] = new Axer(mContours[i], mHarmony, mData->mReserved, fVolume);
+        mAxers[i] = std::make_unique<Axer>(mContours[i], mHarmony, mData->GetReserved(), fVolume);
     }
 }
 
 AxeTrack::~AxeTrack() {
     AxeTrack::Stop();
-    for (auto *pAxer : mAxers) {
-        delete pAxer;
+    // Preserve the original deletion point, after Stop() has deactivated every player.
+    for (auto &pAxer : mAxers) {
+        pAxer.reset();
     }
 }
 
@@ -56,7 +57,7 @@ void AxeTrack::Stop() {
     FreestyleTrack::Stop();
     TheSongScheduler.Cancel(mHarmonyCommand.Get());
     TheSongScheduler.Cancel(mContourCommand.Get());
-    for (auto *pAxer : mAxers) {
+    for (auto &pAxer : mAxers) {
         pAxer->Deactivate();
     }
 }
@@ -67,7 +68,7 @@ void AxeTrack::SetPlayer(Player *pPlayer) {
 }
 
 void AxeTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     (void)(nTick / mTicksPerBar); // Yes, the binary computes this quotient and discards it.
     if (nTick < 0) {
         return;
@@ -93,7 +94,7 @@ void AxeTrack::HandleInput(Player *pPlayer, const StickEvent<2> &event) {
 
     mX = event.mX;
     mY = event.mY;
-    Axer *pAxer = mAxers[mActiveButton];
+    Axer *pAxer = mAxers[mActiveButton].get();
     (void)pAxer->IsActive(); // Yes, the binary discards this call's result.
     pAxer->SetX(mX);
     pAxer->SetSweep(mY);
@@ -106,8 +107,8 @@ void AxeTrack::StartNote(int nButton, float fX, float fY) {
 
     TheGfxManager.SetFreestyle(mPlayer->GetIndex(), true, kNoColumn);
     mActiveButton = nButton;
-    Axer *pAxer = mAxers[nButton];
-    const int nTick = TheSongScheduler.mTick;
+    Axer *pAxer = mAxers[nButton].get();
+    const int nTick = TheSongScheduler.GetTick();
     (void)(nTick / mTicksPerBar); // Yes, the binary computes this quotient and discards it.
     const int nOffset = nTick % pAxer->GetLength();
     pAxer->SetX(fX);
@@ -124,13 +125,13 @@ void AxeTrack::EndNote() {
     mAxers[mActiveButton]->Deactivate();
     mActiveButton = kNoButton;
     if (mPlayer != nullptr) {
-        TheStats->AxeEnd(mIndex, TheSongScheduler.mTick);
+        TheStats->AxeEnd(mIndex, TheSongScheduler.GetTick());
         TheGfxManager.SetFreestyle(mPlayer->GetIndex(), false, kNoColumn);
     }
 }
 
 void AxeTrack::UpdateHarmony() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nWrapped = WrapTick(nTick);
     const int nSetTick = (nWrapped >= 0) ? nWrapped : 0;
 
@@ -146,7 +147,7 @@ void AxeTrack::UpdateHarmony() {
 }
 
 void AxeTrack::UpdateContours() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nWrapped = WrapTick(nTick);
     const int nSetTick = (nWrapped >= 0) ? nWrapped : 0;
 

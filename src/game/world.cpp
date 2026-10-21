@@ -183,9 +183,7 @@ public:
 void MakeUniqueHostName(String &file) {
     const String base(file);
     int nNumber = 0;
-    File *pExisting;
-    while ((pExisting = File::New(file.c_str(), kOpenRead, kNoOpenFlags)) != nullptr) {
-        delete pExisting;
+    while (std::unique_ptr<File>(File::New(file.c_str(), kOpenRead, kNoOpenFlags)) != nullptr) {
         ++nNumber;
         file = base;
         file << kNumberSeparator << nNumber;
@@ -228,7 +226,7 @@ World::World() {
     mDemoBuffer = nullptr;
     mLeadTicks = 0;
     TheWorldLogic = nullptr;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         TheNetTransport->SetSink(this);
     }
 }
@@ -236,18 +234,16 @@ World::World() {
 World::~World() {
     TheSongScheduler.Pause();
     TheSongScheduler.Clear();
-    delete TheWorldLogic;
-    delete mSong;
-    delete mDemoFile;
+    mLogic.reset(); // The sink below is cleared once the logic is gone.
     PoolMemFree(mDemoBuffer);
     TheWorldLogic = nullptr;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         TheNetTransport->SetSink(nullptr);
     }
 }
 
 void World::SetLogic(WorldLogic *pLogic) {
-    delete TheWorldLogic;
+    mLogic.reset(pLogic);
     TheWorldLogic = pLogic;
 }
 
@@ -257,8 +253,8 @@ void World::DeleteLogic() {
 
 void World::Start() {
     const int nStartTick = -mLeadTicks - kTrackLeadTicks;
-    TheGameDb->mSongTick = static_cast<float>(-mLeadTicks);
-    TheGameDb->mSongTime = static_cast<float>(-mLeadTicks) * *mSong->GetMsPerTick();
+    TheGameDb->SetSongTick(static_cast<float>(-mLeadTicks));
+    TheGameDb->SetSongTime(static_cast<float>(-mLeadTicks) * *mSong->GetMsPerTick());
     BuildTracks(nStartTick);
     StartClock(nStartTick);
     CreateLogic();
@@ -269,8 +265,7 @@ void World::Start() {
 
 void World::Stop() {
     TheWorldLogic->Stop();
-    delete mDemoFile;
-    mDemoFile = nullptr;
+    mDemoFile.reset();
     if (mDemoBuffer != nullptr) {
         PoolMemFree(mDemoBuffer);
         mDemoBuffer = nullptr;
@@ -279,24 +274,18 @@ void World::Stop() {
 
 void World::OnSongStart() {
     TheWorldLogic->Start();
-    if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
         return;
     }
     TheNetTransport->SetSink(TheWorldLogic);
     if (!mGameEndedMsgs.empty()) {
-        TheWorldLogic->Dispatch(mGameEndedMsgs.front());
+        TheWorldLogic->Dispatch(mGameEndedMsgs.front().get());
     } else {
         for (unsigned int i = 0; i < mPlayerAbortedMsgs.size(); ++i) {
-            TheWorldLogic->Dispatch(mPlayerAbortedMsgs[i]);
+            TheWorldLogic->Dispatch(mPlayerAbortedMsgs[i].get());
         }
     }
-    for (GameEndedMsg *pMsg : mGameEndedMsgs) {
-        delete pMsg;
-    }
     mGameEndedMsgs.clear();
-    for (PlayerAbortedMsg *pMsg : mPlayerAbortedMsgs) {
-        delete pMsg;
-    }
     mPlayerAbortedMsgs.clear();
 }
 
@@ -340,8 +329,7 @@ void World::PollLoad() {
     case kLoadStepDemo: {
         int nBytes;
         if (mDemoFile->ReadDone(&nBytes)) {
-            delete mDemoFile;
-            mDemoFile = nullptr;
+            mDemoFile.reset();
             mLoadStep = kLoadStepSong;
             mSong->Load();
         }
@@ -350,11 +338,11 @@ void World::PollLoad() {
     case kLoadStepSong:
         mSong->PollLoad();
         if (mSong->IsLoaded()) {
-            if (TheGameDb->mRuleSet == GameDb::kRuleSetGame && TheGameDb->mLoadRemix != 0) {
+            if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame && TheGameDb->GetLoadRemix() != 0) {
                 mSong->ApplySavedRemix();
             }
             mLoadStep = kLoadStepTracks;
-            mLeadTicks = mSong->mBuilder->mTicksPerBar * mSong->mIntroBars;
+            mLeadTicks = mSong->GetTicksPerBar() * mSong->GetIntroBars();
             BeginSongLoad();
             FadeOutSharedMusic();
         }
@@ -384,7 +372,7 @@ void World::PollLoad() {
 }
 
 void World::FinishLoad() {
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         if (TheNetLaunchpad != nullptr) {
             TheNetLaunchpad->NotifyLoaded();
         }
@@ -418,8 +406,8 @@ void World::Restart() {
     TheSongScheduler.Clear();
     DeleteLogic();
     StartClock(-mLeadTicks);
-    TheGameDb->mSongTick = static_cast<float>(-mLeadTicks);
-    TheGameDb->mSongTime = static_cast<float>(-mLeadTicks) * *mSong->GetMsPerTick();
+    TheGameDb->SetSongTick(static_cast<float>(-mLeadTicks));
+    TheGameDb->SetSongTime(static_cast<float>(-mLeadTicks) * *mSong->GetMsPerTick());
     TheGfxManager.SetActive(false);
     TheGfxManager.ClearAll();
     (void)TheGfxManager.Poll(kStartTime); // Yes, the binary discards the result.
@@ -449,19 +437,19 @@ bool World::IsLoaded() const {
 void World::LoadAssets() {
     mState = kStateLoading;
     gWorldLoadStartMs = SystemMs();
-    mSongConfig = TheGameDb->FindSong(TheGameDb->mSong.c_str());
-    int nSkillLevel = TheGameDb->mSkillLevel;
+    mSongConfig = TheGameDb->FindSong(TheGameDb->GetSong().c_str());
+    int nSkillLevel = TheGameDb->GetSkillLevel();
     int nRuleSet = GetRuleSet();
-    if (TheGameDb->mTutorial != 0) {
+    if (TheGameDb->GetTutorial() != 0) {
         nSkillLevel = kTutorialSkillLevel;
     }
     if (nRuleSet == GameDb::kRuleSetGame) {
-        nRuleSet = TheGameDb->mLoadRemix != 0 ? GameDb::kRuleSetRemix : GameDb::kRuleSetGame;
+        nRuleSet = TheGameDb->GetLoadRemix() != 0 ? GameDb::kRuleSetRemix : GameDb::kRuleSetGame;
     }
-    mSong = new Song(mSongConfig, nSkillLevel, nRuleSet);
+    mSong = std::make_unique<Song>(mSongConfig, nSkillLevel, nRuleSet);
     if (TheGameDb->GetDemo() != nullptr) {
         mLoadStep = kLoadStepDemo;
-        mDemoFile = File::New(TheGameDb->GetDemo(), kOpenRead, kNoOpenFlags);
+        mDemoFile.reset(File::New(TheGameDb->GetDemo(), kOpenRead, kNoOpenFlags));
         mDemoSize = mDemoFile->Size();
         mDemoBuffer =
             static_cast<char *>(PoolMemAlloc(mDemoSize, kDemoBufferTag, kDefaultAlignment));
@@ -541,7 +529,7 @@ int World::OnStartGame(StartGameMsg *pMsg) {
 
 int World::OnGameEnded(GameEndedMsg *pMsg) {
     // The binary copy-constructs the message inline.
-    mGameEndedMsgs.push_back(static_cast<GameEndedMsg *>(pMsg->Clone()));
+    mGameEndedMsgs.emplace_back(static_cast<GameEndedMsg *>(pMsg->Clone()));
     if (mState == kStateLoading && mLoadStep == kLoadStepSession) {
         mState = kStateLoaded;
         mLoadStep = kLoadStepComplete;
@@ -551,7 +539,7 @@ int World::OnGameEnded(GameEndedMsg *pMsg) {
 
 int World::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     // The binary copy-constructs the message inline.
-    mPlayerAbortedMsgs.push_back(static_cast<PlayerAbortedMsg *>(pMsg->Clone()));
+    mPlayerAbortedMsgs.emplace_back(static_cast<PlayerAbortedMsg *>(pMsg->Clone()));
     return 0;
 }
 

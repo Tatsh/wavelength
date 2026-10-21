@@ -50,8 +50,8 @@ const char *JoinErrorToken(int nReason) {
 }
 
 bool IsErrorScreen(const UIScreen *pScreen) {
-    return strcmp(pScreen->mName, kLobbyErrorScreen) == 0 ||
-           strcmp(pScreen->mName, kErrorScreen) == 0;
+    return strcmp(pScreen->GetName(), kLobbyErrorScreen) == 0 ||
+           strcmp(pScreen->GetName(), kErrorScreen) == 0;
 }
 
 } // namespace
@@ -63,12 +63,12 @@ NetJoinLPadScreen::NetJoinLPadScreen(DataArray *pData) : FreqScreen(pData) {
 }
 
 void NetJoinLPadScreen::ShowLaunchpadLost() {
-    UIScreen *pCurrent = TheUI.mCurrentScreen;
+    UIScreen *pCurrent = TheUI.GetCurrentScreen();
     if (pCurrent != nullptr && IsErrorScreen(pCurrent)) {
         return;
     }
     // The binary reads mNextScreen through the null pointer when no screen shows.
-    UIScreen *pNext = pCurrent != nullptr ? pCurrent->mNextScreen : nullptr;
+    UIScreen *pNext = pCurrent != nullptr ? pCurrent->GetNextScreen() : nullptr;
     if (pNext != nullptr && IsErrorScreen(pNext)) {
         return;
     }
@@ -96,9 +96,9 @@ bool NetJoinLPadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetJoinLPadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         mCancelling = 0;
-        mReturnScreen = pMsg->mPrevScreen->mName;
+        mReturnScreen = pMsg->mPrevScreen->GetName();
         JoinpadRT::Create(this, &TheMetagame, mLaunchpadId, mLaunchpadWorld);
     }
     return false;
@@ -109,7 +109,7 @@ bool NetJoinLPadScreen::HandleSuccess(JoinLaunchpadSuccessMsg *pMsg) {
         return false;
     }
     TheGameDb->SetGameParams(&pMsg->mParams);
-    dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_h_lpad_c", false))->mMessages.clear();
+    dynamic_cast<ChatPanel *>(TheUI.FindPanel("fn_h_lpad_c", false))->ClearMessages();
     TheUI.GotoScreen("netlobby2netlaunchpad_guest");
     return false;
 }

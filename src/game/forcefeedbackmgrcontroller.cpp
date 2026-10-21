@@ -20,27 +20,31 @@ constexpr int kAutocatchTicks = 240;
 ForceFeedbackMgr::Controller::Controller(int nController, int nTicksPerBar)
     : mSmallMotor(0), mBigMotor(0), mEnabled(1), mEffects(kEffectCount) {
     // The configured duration is in milliseconds by its key, and the scheduler reads it as ticks.
-    mBeatEffect =
-        new MotorEffect(nController, kSmallMotorOn, kBigMotorOff, TheGameConfig->mBeatDurationMs);
-    mEffects[kEffectCripple] = new MotorEffect(nController,
-                                               kSmallMotorOn,
-                                               kBigMotorFull,
-                                               TheGameConfig->mCripplerDurationBars * nTicksPerBar);
-    mEffects[kEffectBump] = new MotorEffect(nController, kSmallMotorOff, kBigMotorFull, kBumpTicks);
-    mEffects[kEffectAutocatch] =
-        new MotorEffect(nController, kSmallMotorOn, kBigMotorAutocatch, kAutocatchTicks);
+    mBeatEffect = std::make_unique<MotorEffect>(
+        nController, kSmallMotorOn, kBigMotorOff, TheGameConfig->mBeatDurationMs);
+    mEffects[kEffectCripple] =
+        std::make_unique<MotorEffect>(nController,
+                                      kSmallMotorOn,
+                                      kBigMotorFull,
+                                      TheGameConfig->mCripplerDurationBars * nTicksPerBar);
+    mEffects[kEffectBump] =
+        std::make_unique<MotorEffect>(nController, kSmallMotorOff, kBigMotorFull, kBumpTicks);
+    mEffects[kEffectAutocatch] = std::make_unique<MotorEffect>(
+        nController, kSmallMotorOn, kBigMotorAutocatch, kAutocatchTicks);
 }
 
 ForceFeedbackMgr::Controller::~Controller() {
-    for (auto *pEffect : mEffects) {
-        delete pEffect;
+    // Preserve the original order: the effects first, then the beat pulse. Member destruction would
+    // destroy the beat pulse first, because it is declared last.
+    for (auto &pEffect : mEffects) {
+        pEffect.reset();
     }
-    delete mBeatEffect;
+    mBeatEffect.reset();
 }
 
 void ForceFeedbackMgr::Controller::CancelAll() {
     mBeatEffect->Cancel();
-    for (auto *pEffect : mEffects) {
+    for (auto &pEffect : mEffects) {
         pEffect->Cancel();
     }
 }

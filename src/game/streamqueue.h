@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/streamtask.h"
@@ -67,6 +68,27 @@ public:
      */
     void NotifyWhenDone(Task *pTask, const char *pszName) override;
 
-    std::vector<StreamTask *> mStreams; /*!< The queued streams, the playing one first. */
-    String mDirectory;                  /*!< The directory the stream files are read from. */
+    /** @return The queued streams, the playing one first. */
+    const std::vector<std::unique_ptr<StreamTask>> &GetStreams() const {
+        return mStreams;
+    }
+
+    /**
+     * Set the directory the stream files are read from.
+     *
+     * @param pszDirectory The directory.
+     */
+    void SetDirectory(const char *pszDirectory) {
+        mDirectory = pszDirectory;
+    }
+
+    /** @return The directory the stream files are read from. */
+    const String &GetDirectory() const {
+        return mDirectory;
+    }
+
+private:
+    std::vector<std::unique_ptr<StreamTask>>
+        mStreams;      /*!< The queued streams, the playing one first. */
+    String mDirectory; /*!< The directory the stream files are read from. */
 };

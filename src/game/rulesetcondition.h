@@ -31,7 +31,7 @@ public:
      * @ghidraAddress PAL: 0x003e4ef8
      */
     bool Test() override {
-        return TheTriggerMgr.mRuleSet == mRuleSet;
+        return TheTriggerMgr.GetRuleSet() == mRuleSet;
     }
 
 private:

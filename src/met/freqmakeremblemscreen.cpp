@@ -54,15 +54,15 @@ const char *FreqMakerEmblemScreen::Title() {
 }
 
 bool FreqMakerEmblemScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && strcmp(pMsg->mComponent->mName, "done") != 0) {
+    if (pMsg->GetButton() == kPadCross && strcmp(pMsg->GetComponent()->GetName(), "done") != 0) {
         UIPanel *pPanel = TheUI.FindPanel("f_maker_e", false);
         pPanel->SetFocus(pPanel->FindComponent("done", false), kPadNone);
     }
-    if (strcmp(pMsg->mComponent->mName, "part") == 0) {
+    if (strcmp(pMsg->GetComponent()->GetName(), "part") == 0) {
         const int nEmblems = static_cast<int>(mEmblems.size());
-        if (pMsg->mButton == kPadDLeft) {
+        if (pMsg->GetButton() == kPadDLeft) {
             mIndex = mIndex - 1 > -1 ? mIndex - 1 : nEmblems - 1;
-        } else if (pMsg->mButton == kPadDRight) {
+        } else if (pMsg->GetButton() == kPadDRight) {
             mIndex = mIndex + 1 < nEmblems ? mIndex + 1 : 0;
         }
         const char *pszEmblem = mEmblems[mIndex];

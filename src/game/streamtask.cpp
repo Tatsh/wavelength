@@ -23,8 +23,8 @@ void StreamTask::OnStart() {
     (void)TheSynth->GetStream(); // Yes, the binary discards this call's result.
 #endif
     const char *pszPath = FormatString(kStreamPathFormat, mDirectory, mName);
-    mPlayer = new StreamPlayer(0, pszPath, false);
-    TheSynth->SetStream(mPlayer);
+    mPlayer = std::make_unique<StreamPlayer>(0, pszPath, false);
+    TheSynth->SetStream(mPlayer.get());
     mPlayer->SetPlaying(true);
 }
 
@@ -33,8 +33,7 @@ void StreamTask::OnStop() {
         mPlayer->SetPlaying(false);
     }
     TheSynth->SetStream(nullptr);
-    delete mPlayer;
-    mPlayer = nullptr;
+    mPlayer.reset();
 }
 
 void StreamTask::SetPaused(bool bPaused) {
@@ -46,8 +45,7 @@ void StreamTask::OnPoll() {
         return;
     }
     TheSynth->SetStream(nullptr);
-    delete mPlayer;
-    mPlayer = nullptr;
+    mPlayer.reset();
     Finish(true);
     if (mWaitingTask != nullptr) {
         TaskDoneNotifier::ReportDone(mWaitingTask);

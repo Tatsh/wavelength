@@ -7,24 +7,20 @@ OvyAllPlayer::OvyAllPlayer(int nPlayer, int nIndex, RndView *pHudView) {
     mScore = nullptr;
     mDuelScore = nullptr;
     mAvatar = nullptr;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
-        mScore = new OvyScore(nPlayer, nIndex, pHudView);
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
-        mDuelScore = new OvyDuelScore(nIndex, pHudView);
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
+        mScore = std::make_unique<OvyScore>(nPlayer, nIndex, pHudView);
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
+        mDuelScore = std::make_unique<OvyDuelScore>(nIndex, pHudView);
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-        TheGameDb->mRuleSet == GameDb::kRuleSetDuel ||
-        (TheGameDb->IsLocalPlayer(nPlayer) && TheGameDb->mRuleSet == GameDb::kRuleSetRemix &&
-         TheGameDb->mCommunity == GameDb::kCommunityOnline)) {
-        mAvatar = new OvyAvatar(nPlayer, nIndex, pHudView);
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel ||
+        (TheGameDb->IsLocalPlayer(nPlayer) && TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix &&
+         TheGameDb->GetCommunity() == GameDb::kCommunityOnline)) {
+        mAvatar = std::make_unique<OvyAvatar>(nPlayer, nIndex, pHudView);
     }
 }
 
-OvyAllPlayer::~OvyAllPlayer() {
-    delete mAvatar;
-    delete mScore;
-    delete mDuelScore;
-}
+OvyAllPlayer::~OvyAllPlayer() = default;
 
 void OvyAllPlayer::Poll(float fSongDelta, float fRealDelta, float fTickDelta) {
     if (mScore != nullptr) {

@@ -36,7 +36,7 @@ TrackCapturer::Faker::Faker(TrackCapturer *pCapturer)
 
 void TrackCapturer::Faker::Start() {
     TheSongScheduler.Cancel(mUpdateCmd.Get());
-    mCursor = mCapturer->mState->GetCursor(TheSongScheduler.mTick);
+    mCursor = mCapturer->mState->GetCursor(TheSongScheduler.GetTick());
     if (mCursor.IsValid()) {
         TheSongScheduler.PostAt(mUpdateCmd.Get(), mCursor.GetTick(), false);
     }
@@ -66,37 +66,39 @@ TrackCapturer::TrackCapturer(Receiver *pReceiver,
                              int nTrack,
                              int nTicksPerBar,
                              int nStopPreviousNote)
-    : mCatchReceiver(new CatchReceiver(this)), mSections(pSections),
-      mCatcher(mCatchReceiver, pState, pMsPerTick, nTrack, nTicksPerBar), mNetFaker(nullptr),
-      mFaker(nullptr), mPlayer(nullptr), mLastMuse(nullptr), mStopPreviousNote(nStopPreviousNote),
-      mEndBar(pPlayMap->GetEndBar()), mStarted(0), mCaptureStartCmd(new SetCaptureStartCmd(this)),
-      mGemsCaught(0), mRunStart(kNoBar), mRunEnd(kNoBar), mRunHidden(0) {
+    : mCatchReceiver(std::make_unique<CatchReceiver>(this)), mSections(pSections),
+      mCatcher(mCatchReceiver.get(), pState, pMsPerTick, nTrack, nTicksPerBar), mPlayer(nullptr),
+      mLastMuse(nullptr), mStopPreviousNote(nStopPreviousNote), mEndBar(pPlayMap->GetEndBar()),
+      mStarted(0), mCaptureStartCmd(new SetCaptureStartCmd(this)), mGemsCaught(0),
+      mRunStart(kNoBar), mRunEnd(kNoBar), mRunHidden(0) {
     mState = pState;
     mTicksPerBar = nTicksPerBar;
     mReceiver = pReceiver;
     mTrack = nTrack;
     mRunGems = 0;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
-        mNetFaker = new NetFaker(this, 1);
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
+        mNetFaker = std::make_unique<NetFaker>(this, 1);
     }
-    if ((TheGameConfig->mFakeInput || TheGameDb->mTutorial) &&
-        TheGameDb->mCommunity != GameDb::kCommunityOnline) {
-        mFaker = new Faker(this);
+    if ((TheGameConfig->mFakeInput || TheGameDb->GetTutorial()) &&
+        TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
+        mFaker = std::make_unique<Faker>(this);
         mFaker->Start();
-        mFaker->mEnabled = TheGameConfig->mFakeInput;
+        mFaker->SetEnabled(TheGameConfig->mFakeInput);
     }
 }
 
 TrackCapturer::~TrackCapturer() {
     Stop();
-    delete mCatchReceiver;
+    // Preserve the original deletion order, while mCatcher, with its pointer to the receiver, still
+    // exists.
+    mCatchReceiver.reset();
     if (mNetFaker != nullptr) {
         mNetFaker->Stop();
-        delete mNetFaker;
+        mNetFaker.reset();
     }
     if (mFaker != nullptr) {
         mFaker->Stop();
-        delete mFaker;
+        mFaker.reset();
     }
 }
 
@@ -105,7 +107,7 @@ void TrackCapturer::Start() {
         return;
     }
     mStarted = 1;
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     UpdateRun(nBar > kNoBar ? nBar : 0);
     mCatcher.Start();
     if (mNetFaker != nullptr) {
@@ -152,7 +154,7 @@ void TrackCapturer::SetPlayer(Player *pPlayer) {
     mGemsCaught = 0;
 #endif
     if (pPrevious != nullptr) {
-        const int nTick = TheSongScheduler.mTick;
+        const int nTick = TheSongScheduler.GetTick();
         if (pPrevious->GetCatching()) {
             EndRun(nTick, 0);
         }
@@ -165,12 +167,12 @@ void TrackCapturer::Press(int nLane) {
     if (mStarted) {
         mCatcher.Catch(nLane);
     } else {
-        ShowPressHint(TheSongScheduler.mTick);
+        ShowPressHint(TheSongScheduler.GetTick());
     }
 }
 
 void TrackCapturer::SetFakeInput(int nEnabled) {
-    mFaker->mEnabled = nEnabled;
+    mFaker->SetEnabled(nEnabled);
 }
 
 void TrackCapturer::SetRunHidden(int nHidden) {
@@ -180,7 +182,7 @@ void TrackCapturer::SetRunHidden(int nHidden) {
 }
 
 void TrackCapturer::RefreshRun() {
-    UpdateRun(TheSongScheduler.mTick / mTicksPerBar);
+    UpdateRun(TheSongScheduler.GetTick() / mTicksPerBar);
 #ifdef VIDEO_STANDARD_PAL
     if (mPlayer != nullptr && !mPlayer->GetCatching()) {
         mGemsCaught = 0;
@@ -208,11 +210,11 @@ bool TrackCapturer::IsBarActive(int nBar) {
 }
 
 void TrackCapturer::HitGem(int nTick, const GemCursor &cursor, bool bRemote) {
-    if (cursor.GetTick() < mPlayer->mLastHitTick) {
+    if (cursor.GetTick() < mPlayer->GetLastHitTick()) {
         MissPress(nTick, cursor.GetLane());
         return;
     }
-    mPlayer->mLastHitTick = cursor.GetTick();
+    mPlayer->SetLastHitTick(cursor.GetTick());
     if (mStopPreviousNote && mLastMuse != nullptr) {
         mLastMuse->Stop();
     }
@@ -333,7 +335,7 @@ void TrackCapturer::UpdateRun(int nBar) {
     } else {
         mRunStart = kNoBar;
         mRunEnd = kNoBar;
-        mCaptureStartCmd->mBar = nBar + 1;
+        mCaptureStartCmd->SetBar(nBar + 1);
         TheSongScheduler.Cancel(mCaptureStartCmd.Get());
         TheSongScheduler.PostIn(mCaptureStartCmd.Get(), mTicksPerBar, false);
     }
@@ -368,7 +370,7 @@ void TrackCapturer::CompleteBar(const GemCursor &cursor, int nQuiet) {
         const int nPowerup = mState->GetPowerup(nBar);
         if (nPowerup != kNoPowerup) {
             mPlayer->SetPowerup(nPowerup);
-            TheStats->CatchPowerup(mPlayer->GetIndex(), TheSongScheduler.mTick, nPowerup);
+            TheStats->CatchPowerup(mPlayer->GetIndex(), TheSongScheduler.GetTick(), nPowerup);
             FxMidi::PlayPowerupCatchSound(nPowerup);
         }
     }

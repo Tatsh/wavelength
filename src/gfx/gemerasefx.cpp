@@ -24,15 +24,15 @@ void GemEraseFX::Clear() {
 }
 
 void GemEraseFX::Poll() {
-    const float flTime = TheGameDb->mSongTime;
+    const float flTime = TheGameDb->GetSongTime();
     auto it = mGems.begin();
     while (it != mGems.end()) {
         if (it->mTime <= flTime) {
             const std::vector<RndView *> *pViews;
             if (it->mPlayer >= 0) {
-                pViews = &mTunnel->mPlayerBurstViews[it->mPlayer];
+                pViews = &mTunnel->GetPlayerBurstViews()[it->mPlayer];
             } else {
-                pViews = &mTunnel->mGemBurstViews[0];
+                pViews = &mTunnel->GetGemBurstViews()[0];
             }
             (void)mTunnel->Burst(pViews, it->mTrack, true, it->mTick, it->mLateral);
             it = mGems.erase(it);

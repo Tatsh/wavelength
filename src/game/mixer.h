@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/command.h"
@@ -351,9 +352,9 @@ private:
     unsigned char mVictoryLapVolume;                    /*!< The instrument's victory lap volume. */
     int mHeldCount;                                     /*!< The number of held tracks. */
     int mMode;                                          /*!< One of Mode. */
-    int mHasInstrumentTrack;           /*!< Whether there is an instrument track. */
-    int mMuteUnoccupied;               /*!< The `track_solo` cheat. */
-    VolumeRamp *mRamps[kChannelCount]; /*!< Each channel's volume. */
+    int mHasInstrumentTrack;                           /*!< Whether there is an instrument track. */
+    int mMuteUnoccupied;                               /*!< The `track_solo` cheat. */
+    std::unique_ptr<VolumeRamp> mRamps[kChannelCount]; /*!< Each channel's volume. */
 };
 
 /**

@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "gfx/gfxtunnel.h"
@@ -246,18 +247,42 @@ public:
      */
     std::list<TnlGem>::iterator Find(float flTick);
 
-    GfxTunnel *mTunnel;                       /*!< The tunnel. */
-    std::list<Transform> mTransforms;         /*!< The pool of free instance transforms. */
-    std::vector<MeshGroup *> mMeshGroups;     /*!< The first mesh group of each type. */
-    std::vector<SpriteGroup *> mSpriteGroups; /*!< The sprite group of each sprite type. */
-    std::list<RndObject *> mObjects;          /*!< The animations the gems created. */
-    std::list<TnlGem> mGems;                  /*!< The gems, sorted by tick. */
-    float mTrailTicks;                        /*!< The ticks a gem stays behind the song. */
-    int mMaxGems;                             /*!< The most gems placed at once. */
-    char mFocusTrack;                         /*!< The track whose passing gems fire hit events. */
-    int mHasFocusTrack;                       /*!< Whether mFocusTrack applies. */
+    /** @return The gems, sorted by tick. */
+    std::list<TnlGem> &GetGemList() {
+        return mGems;
+    }
+
+    /**
+     * Set the track whose passing gems fire hit events.
+     *
+     * @param nTrack The track.
+     */
+    void SetFocusTrack(char nTrack) {
+        mFocusTrack = nTrack;
+    }
+
+    /**
+     * Set whether the focus track applies.
+     *
+     * @param bHasFocusTrack Whether it applies.
+     */
+    void SetHasFocusTrack(int bHasFocusTrack) {
+        mHasFocusTrack = bHasFocusTrack;
+    }
 
 private:
+    GfxTunnel *mTunnel;               /*!< The tunnel. */
+    std::list<Transform> mTransforms; /*!< The pool of free instance transforms. */
+    std::vector<std::unique_ptr<MeshGroup>> mMeshGroups; /*!< The first mesh group of each type. */
+    /*!< The sprite group of each sprite type. */
+    std::vector<std::unique_ptr<SpriteGroup>> mSpriteGroups;
+    std::list<std::unique_ptr<RndObject>> mObjects; /*!< The animations the gems created. */
+    std::list<TnlGem> mGems;                        /*!< The gems, sorted by tick. */
+    float mTrailTicks;                              /*!< The ticks a gem stays behind the song. */
+    int mMaxGems;                                   /*!< The most gems placed at once. */
+    char mFocusTrack;   /*!< The track whose passing gems fire hit events. */
+    int mHasFocusTrack; /*!< Whether mFocusTrack applies. */
+
     /**
      * Set the render scale of an object.
      *
@@ -306,7 +331,7 @@ private:
      * @ghidraAddress PAL: 0x001fc7c8
      */
     static void AddRotation(RndMesh *pMesh,
-                            std::list<RndObject *> *pObjects,
+                            std::list<std::unique_ptr<RndObject>> *pObjects,
                             int nKeys,
                             int bLoop,
                             RndAnimatable *pParent,

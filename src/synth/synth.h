@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/string.h"
@@ -456,4 +457,4 @@ public:
  * @ghidraAddress NTSC-U/C: 0x003b0a84
  * @ghidraAddress PAL: 0x0042f91c
  */
-extern Synth *TheSynth;
+extern std::unique_ptr<Synth> TheSynth;

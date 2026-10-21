@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "app/msgsink.h"
@@ -34,11 +35,83 @@ public:
             mRepeatTimer.mRunning = 0;
         }
 
-        ExpressionStick *mStick; /*!< The stick that bends the notes of the player. */
-        int mPositionStick;      /*!< The stick whose position goes to the world every frame. */
-        Timer mRepeatTimer;      /*!< The time a rotation button has been down. */
-        float mRepeatMs;         /*!< mRepeatTimer in milliseconds at the last repeat check. */
-        int mDirection;          /*!< The direction of the rotation that repeats. */
+        /** @return The stick that bends the notes of the player. */
+        ExpressionStick *GetStick() {
+            return mStick.get();
+        }
+
+        /** @return The stick that bends the notes of the player. */
+        const ExpressionStick *GetStick() const {
+            return mStick.get();
+        }
+
+        /**
+         * Take the stick that bends the notes of the player.
+         *
+         * @param pStick The stick. The state deletes it afterwards.
+         */
+        void SetStick(std::unique_ptr<ExpressionStick> pStick) {
+            mStick = std::move(pStick);
+        }
+
+        /** Release the stick at the point the destructor originally deleted it. */
+        void ResetStick() {
+            mStick.reset();
+        }
+
+        /** @return The stick whose position goes to the world every frame. */
+        int GetPositionStick() const {
+            return mPositionStick;
+        }
+
+        /**
+         * Set the stick whose position goes to the world every frame.
+         *
+         * @param nPositionStick The stick.
+         */
+        void SetPositionStick(int nPositionStick) {
+            mPositionStick = nPositionStick;
+        }
+
+        /** @return The time a rotation button has been down. */
+        Timer &GetRepeatTimer() {
+            return mRepeatTimer;
+        }
+
+        /** @return mRepeatTimer in milliseconds at the last repeat check. */
+        float GetRepeatMs() const {
+            return mRepeatMs;
+        }
+
+        /**
+         * Set mRepeatTimer in milliseconds at the last repeat check.
+         *
+         * @param fRepeatMs The time.
+         */
+        void SetRepeatMs(float fRepeatMs) {
+            mRepeatMs = fRepeatMs;
+        }
+
+        /** @return The direction of the rotation that repeats. */
+        int GetDirection() const {
+            return mDirection;
+        }
+
+        /**
+         * Set the direction of the rotation that repeats.
+         *
+         * @param nDirection The direction.
+         */
+        void SetDirection(int nDirection) {
+            mDirection = nDirection;
+        }
+
+    private:
+        std::unique_ptr<ExpressionStick> mStick; /*!< The stick that bends the notes. */
+        int mPositionStick; /*!< The stick whose position goes to the world every frame. */
+        Timer mRepeatTimer; /*!< The time a rotation button has been down. */
+        float mRepeatMs;    /*!< mRepeatTimer in milliseconds at the last repeat check. */
+        int mDirection = 0; /*!< The direction of the rotation that repeats. */
     };
 
     /**

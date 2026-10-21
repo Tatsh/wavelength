@@ -49,7 +49,7 @@ void TnlBlurs::Reset() {
 }
 
 void TnlBlurs::Update() {
-    const float flTick = TheGameDb->mSongTick;
+    const float flTick = TheGameDb->GetSongTick();
     int nEnlarge = mEnlarge;
     float flAlpha = 0.0f;
     std::list<ActiveBlur>::iterator it = mBlurs.begin();

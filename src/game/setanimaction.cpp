@@ -24,20 +24,20 @@ SetAnimAction::SetAnimAction(DataArray *pAction) {
 }
 
 inline void SetAnimAction::CheckFirstFilter(DataArray *pAction, int nType, const char *pszType) {
-    if (!mAnim->mFilters.empty() && mAnim->mFilters.front()->Type() == nType) {
+    if (!mAnim->GetFilters().empty() && mAnim->GetFilters().front()->Type() == nType) {
         return;
     }
     DebugWarn("First filter not '%s' in animatable '%s' (file %s, line %d)",
               pszType,
               pAction->Sym(1),
-              pAction->mFile,
-              pAction->mLine);
+              pAction->GetFile(),
+              pAction->GetLine());
 }
 
 void SetAnimAction::Exec() {
     if ((mFlags & kFlagScale) != 0) {
         RndAnimatable::ScaleOffset *pFilter =
-            static_cast<RndAnimatable::ScaleOffset *>(mAnim->mFilters.front());
+            static_cast<RndAnimatable::ScaleOffset *>(mAnim->GetFilters().front());
         if ((mFlags & kFlagOffset) == 0) {
             pFilter->mOffset = (mAnim->mFrame * (pFilter->mScale - mScale)) + pFilter->mOffset;
         }

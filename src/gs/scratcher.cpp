@@ -36,24 +36,24 @@ constexpr int kRestartPosition = 1;
 
 void Scratcher::ScratchNoteCB::OnNote(unsigned char, int nDuration) {
     TheGfxManager.ShowScratchNote(mPlayer,
-                                  static_cast<float>(TheSongScheduler.mTick + mTickOffset),
+                                  static_cast<float>(TheSongScheduler.GetTick() + mTickOffset),
                                   static_cast<float>(nDuration));
 }
 
 Scratcher::Scratcher(
     Muse *pFirst, Muse *pSecond, Muse *pThird, int nQuantumTicks, int nLengthTicks, int nChannel)
-    : mChannel(nChannel), mQuantumTicks(nQuantumTicks), mLoopers(kNumPieces, nullptr),
-      mCopies(kNumPieces), mRestartCmd(NewMemFunCommand(this, &Scratcher::Restart)), mScratching(0),
-      mPitch(0.0f), mReserved34(0), mPiece(0) {
+    : mChannel(nChannel), mQuantumTicks(nQuantumTicks), mLoopers(kNumPieces), mCopies(kNumPieces),
+      mRestartCmd(NewMemFunCommand(this, &Scratcher::Restart)), mScratching(0), mPitch(0.0f),
+      mReserved34(0), mPiece(0) {
     (void)pFirst->GetLength(); // The binary discards the three lengths.
     (void)pSecond->GetLength();
     (void)pThird->GetLength();
     pFirst->SetNoteCB(&mNoteCB);
     pSecond->SetNoteCB(&mNoteCB);
     pThird->SetNoteCB(&mNoteCB);
-    mLoopers[kPieceLeft] = new MuseLooper(pFirst, nLengthTicks);
-    mLoopers[kPieceCentre] = new MuseLooper(pSecond, nLengthTicks);
-    mLoopers[kPieceRight] = new MuseLooper(pThird, nLengthTicks);
+    mLoopers[kPieceLeft] = std::make_unique<MuseLooper>(pFirst, nLengthTicks);
+    mLoopers[kPieceCentre] = std::make_unique<MuseLooper>(pSecond, nLengthTicks);
+    mLoopers[kPieceRight] = std::make_unique<MuseLooper>(pThird, nLengthTicks);
     mCopies[kPieceLeft] = Ptr<Muse>(pFirst->Clone());
     mCopies[kPieceCentre] = Ptr<Muse>(pSecond->Clone());
     mCopies[kPieceRight] = Ptr<Muse>(pThird->Clone());
@@ -61,9 +61,6 @@ Scratcher::Scratcher(
 
 Scratcher::~Scratcher() {
     Stop();
-    for (MuseLooper *pLooper : mLoopers) {
-        delete pLooper;
-    }
 }
 
 void Scratcher::Start(int nPlayer, int nTickOffset) {
@@ -71,7 +68,7 @@ void Scratcher::Start(int nPlayer, int nTickOffset) {
     SwitchPiece(mPiece);
     mNoteCB.mPlayer = nPlayer;
     mNoteCB.mTickOffset = nTickOffset;
-    const int nPosition = TheSongScheduler.mTick % mQuantumTicks;
+    const int nPosition = TheSongScheduler.GetTick() % mQuantumTicks;
     if (nPosition < mQuantumTicks / 2) {
         mLoopers[mPiece]->Play(&TheSongScheduler, nPosition);
     } else {
@@ -129,7 +126,7 @@ void Scratcher::SendPitchBend(float fPitch) {
 void Scratcher::SwitchPiece(int nPiece) {
     if (mScratching) {
         mLoopers[mPiece]->Stop();
-        const int nPosition = TheSongScheduler.mTick % mQuantumTicks;
+        const int nPosition = TheSongScheduler.GetTick() % mQuantumTicks;
         if (nPosition < mQuantumTicks / 2) {
             mLoopers[nPiece]->Play(&TheSongScheduler, nPosition);
         } else {

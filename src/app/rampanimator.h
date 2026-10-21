@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "math/interpolator.h"
 #include "rnd/rndanimatable.h"
 
@@ -80,9 +82,25 @@ public:
      */
     bool Update(float fDelta, bool bForce);
 
-    float mValue;          /*!< The current value. */
-    float mElapsed;        /*!< The time since the move started. */
-    float mTimePerUnit;    /*!< The time per unit of change, or 0. */
-    Interpolator *mInterp; /*!< The curve the value follows. */
-    RndAnimatable *mAnim;  /*!< The animation posed on the value, or null. */
+    /** @return The current value. */
+    float GetValue() const {
+        return mValue;
+    }
+
+    /** @return The curve the value follows. */
+    Interpolator *GetInterp() const {
+        return mInterp.get();
+    }
+
+    /** @return The animation posed on the value, or null. */
+    RndAnimatable *GetAnim() const {
+        return mAnim;
+    }
+
+private:
+    float mValue;                          /*!< The current value. */
+    float mElapsed;                        /*!< The time since the move started. */
+    float mTimePerUnit;                    /*!< The time per unit of change, or 0. */
+    std::unique_ptr<Interpolator> mInterp; /*!< The curve the value follows. */
+    RndAnimatable *mAnim;                  /*!< The animation posed on the value. Borrowed. */
 };

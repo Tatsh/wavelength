@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "app/msgsink.h"
 #include "game/remixinfo.h"
 #include "netflow/launchpadrt.h"
@@ -249,12 +251,38 @@ public:
 
     using LaunchpadRT::OnMsg;
 
-    int mKeyReceived;          /*!< Non-zero once the key of the session arrived. */
-    ClockSyncTask *mClockSync; /*!< The task that follows the clock of the host. */
-    NetGameParams mParams;     /*!< The settings of the game the host published. */
-    float mClockOffset;        /*!< The clock of the host less the clock of this console. */
-    int mReserved1D4;          // +0x1d4, the alignment of mRemixInfo to eight bytes.
-    RemixInfo mRemixInfo;      /*!< The description of the remix the host shares. */
+    /** @return Non-zero once the key of the session arrived. */
+    int GetKeyReceived() const {
+        return mKeyReceived;
+    }
+
+    /** @return The task that follows the clock of the host. */
+    ClockSyncTask *GetClockSync() const {
+        return mClockSync.get();
+    }
+
+    /** @return The settings of the game the host published. */
+    const NetGameParams &GetParams() const {
+        return mParams;
+    }
+
+    /** @return The clock of the host less the clock of this console. */
+    float GetClockOffset() const {
+        return mClockOffset;
+    }
+
+    /** @return The description of the remix the host shares. */
+    const RemixInfo &GetRemixInfo() const {
+        return mRemixInfo;
+    }
+
+private:
+    int mKeyReceived;                          /*!< Non-zero once the key of the session arrived. */
+    std::unique_ptr<ClockSyncTask> mClockSync; /*!< The task that follows the clock of the host. */
+    NetGameParams mParams;                     /*!< The settings of the game the host published. */
+    float mClockOffset;   /*!< The clock of the host less the clock of this console. */
+    int mReserved1D4;     // +0x1d4, the alignment of mRemixInfo to eight bytes.
+    RemixInfo mRemixInfo; /*!< The description of the remix the host shares. */
 };
 
 /**

@@ -29,6 +29,26 @@ public:
     ~EnableDisableSoftFxQJ() override {
     }
 
+    /** @return 1 to turn the software effects on, 0 to turn them off. */
+    int GetEnable() const {
+        return mEnable;
+    }
+
+    /** @return The polls still to wait once the request is sent. */
+    int GetWaitPolls() const {
+        return mWaitPolls;
+    }
+
+    /**
+     * Set the polls still to wait once the request is sent.
+     *
+     * @param nWaitPolls The polls still to wait.
+     */
+    void SetWaitPolls(int nWaitPolls) {
+        mWaitPolls = nWaitPolls;
+    }
+
+private:
     int mEnable;    /*!< 1 to turn the software effects on, 0 to turn them off. */
-    int mWaitPolls; /*!< The polls left to wait once the request is sent. */
+    int mWaitPolls; /*!< The polls still to wait once the request is sent. */
 };

@@ -21,7 +21,7 @@ void MuseLooper::Play(Scheduler *pScheduler, int nPosition) {
     mMuse->PlayFrom(pScheduler, nInLoop);
     pScheduler->PostIn(mRepeatCmd.Get(), mLength - nInLoop, false);
     mScheduler = pScheduler;
-    mStartTick = pScheduler->mTick - nInLoop;
+    mStartTick = pScheduler->GetTick() - nInLoop;
 }
 
 void MuseLooper::Stop() {
@@ -45,5 +45,5 @@ int MuseLooper::GetPosition() const {
     if (mScheduler == nullptr) {
         return 0;
     }
-    return (mScheduler->mTick - mStartTick) % mLength;
+    return (mScheduler->GetTick() - mStartTick) % mLength;
 }

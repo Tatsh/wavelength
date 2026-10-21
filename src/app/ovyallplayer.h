@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "app/ovyavatar.h"
 #include "app/ovyduelscore.h"
 #include "app/ovyscore.h"
@@ -70,8 +72,29 @@ public:
      */
     void Reset();
 
-    int mPlayer;              /*!< The player. */
-    OvyScore *mScore;         /*!< The score, or null. */
-    OvyDuelScore *mDuelScore; /*!< The letters of a duel, or null. */
-    OvyAvatar *mAvatar;       /*!< The avatar, or null. */
+    /** @return The player. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return The score, or null. */
+    OvyScore *GetScore() const {
+        return mScore.get();
+    }
+
+    /** @return The letters of a duel, or null. */
+    OvyDuelScore *GetDuelScore() const {
+        return mDuelScore.get();
+    }
+
+    /** @return The avatar, or null. */
+    OvyAvatar *GetAvatar() const {
+        return mAvatar.get();
+    }
+
+private:
+    int mPlayer;                              /*!< The player. */
+    std::unique_ptr<OvyScore> mScore;         /*!< The score, or null. */
+    std::unique_ptr<OvyDuelScore> mDuelScore; /*!< The letters of a duel, or null. */
+    std::unique_ptr<OvyAvatar> mAvatar;       /*!< The avatar, or null. */
 };

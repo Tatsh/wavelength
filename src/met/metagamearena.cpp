@@ -1,5 +1,6 @@
 #include "met/metagamearena.h"
 
+#include <memory>
 #include <vector>
 
 #include "game/gamedb.h"
@@ -69,9 +70,8 @@ void MetagameArena::PollLoad([[maybe_unused]] float flTime) {
         if (mTriggerStream == nullptr || !mTriggerStream->Ready(kWholeFile)) {
             return;
         }
-        TheTriggerMgr.Load(mTriggerFile, mTriggerStream);
-        delete mTriggerStream;
-        mTriggerStream = nullptr;
+        TheTriggerMgr.Load(mTriggerFile, mTriggerStream.get());
+        mTriggerStream.reset();
         TheTriggerMgr.BeginEvent(0);
         mLoadState = kLoadStateDone;
         if (mRevealArena >= 0) {
@@ -104,14 +104,16 @@ void MetagameArena::PollLoad([[maybe_unused]] float flTime) {
         SystemConfig()->FindArray(kMetagameTag, false)->FindArray(kTriggerFileTag, false)->Sym(1);
     char szPath[kMaxPathLength];
     DataArray::MakeCompiledPath(szPath, mTriggerFile, false);
-    mTriggerStream = new AsyncStream(szPath, true);
+    mTriggerStream = std::make_unique<AsyncStream>(szPath, true);
     mLoadState = kLoadStateTriggers;
 }
 
 void MetagameArena::ShowUnlocks() {
     std::vector<const char *> arenas;
-    TheGameDb->GetUnlockedArenas(
-        &arenas, TheGameDb->mSkillLevel, TheGameDb->mCommunity == GameDb::kCommunitySolo, false);
+    TheGameDb->GetUnlockedArenas(&arenas,
+                                 TheGameDb->GetSkillLevel(),
+                                 TheGameDb->GetCommunity() == GameDb::kCommunitySolo,
+                                 false);
     const int nUnlocked = static_cast<int>(arenas.size());
 
     RndView *pView = dynamic_cast<RndView *>(TheManager.Find(kFifthUnlockView));

@@ -27,22 +27,22 @@ HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults
     : mMessage("HUD genmsg.txt", pHudView), mMessage2("HUD genmsg2.txt", pHudView),
       mTextMessage(pHudView), mLetterbox(pHudView) {
     mPlaying = 0;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetGame ||
-        TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame ||
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         mSongPos = std::make_unique<OvySongPos>(pHudView);
     }
     for (int i = 0; i < kNumLanes; ++i) {
         mButtons[i] = std::make_unique<HudFlyingButton>(i, pHudView);
     }
-    if (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
-        TheGameDb->mRuleSet != GameDb::kRuleSetRemix &&
-        TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo &&
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix &&
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel) {
         mLeaderAvatar = std::make_unique<OvyAvatar>(kLeaderPlayer, kLeaderIndex, pHudView);
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         char chHud = kHudSolo;
-        if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
-            chHud = TheGameDb->mCommunity == GameDb::kCommunityOnline ? kHudOnline : kHudLocal;
+        if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
+            chHud = TheGameDb->GetCommunity() == GameDb::kCommunityOnline ? kHudOnline : kHudLocal;
         }
         pHudView->AddAnim(dynamic_cast<RndAnimatable *>(
             TheManager.Find(FormatString("HUD%cr selected font.mnm", chHud))));
@@ -51,15 +51,15 @@ HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults
         mSections = std::make_unique<OvySectionPanel>(
             chHud, String(FormatString("HUD%cr", chHud)), pLetterbox);
         mStick = std::make_unique<HudStick>(chHud, pHudView, pLetterbox);
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             mChat = std::make_unique<OvyChat>(pConfig, pDefaults, pHudView);
         }
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mLetterExit = std::make_unique<HudLetterExit>();
     }
-    if (TheGameDb->mCommunity != GameDb::kCommunityLocal &&
-        TheGameDb->mRuleSet != GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityLocal &&
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel) {
         mTrackLabel = std::make_unique<OvyTrackLabel>();
     }
     mMaterialAnim = dynamic_cast<RndAnimatable *>(TheManager.Find("mat_2d_always.anim"));
@@ -68,8 +68,8 @@ HudCommon::HudCommon(RndView *pHudView, DataArray *pConfig, DataArray *pDefaults
 HudCommon::~HudCommon() = default;
 
 void HudCommon::Poll(float fSongDelta, float fRealDelta, float fTickDelta) {
-    const float fSongTime = TheGameDb->mSongTime;
-    const float fTick = TheGameDb->mSongTick;
+    const float fSongTime = TheGameDb->GetSongTime();
+    const float fTick = TheGameDb->GetSongTick();
     if (mMaterialAnim != nullptr) {
         mMaterialAnim->SetFrame(fSongTime);
     }

@@ -51,7 +51,7 @@ bool NetServerLogin::DispatchPriv(Message *pMsg) {
 }
 
 bool NetServerLogin::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLobby->Login(this, mLocation, mPassword.c_str());
     }
     return false;
@@ -76,7 +76,7 @@ bool NetServerLogin::HandleLoginResult(LoginResultMsg *pMsg) {
         return false;
     }
 
-    dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->mMessages.clear();
+    dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->ClearMessages();
     TheMetagame.SetChatroom(pMsg->mChatroom);
     dynamic_cast<NetWelcomeScreen *>(TheUI.FindScreen(kWelcomeScreen, false))->mNews = pMsg->mNews;
     dynamic_cast<NetEULAScreen *>(TheUI.FindScreen(kEulaScreen, false))->SetText(pMsg->mEula);

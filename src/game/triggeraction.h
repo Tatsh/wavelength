@@ -64,8 +64,33 @@ public:
      */
     void Start();
 
-    float mDelay; /*!< Time on the clock of the action before Exec() runs. */
-    int mClock;   /*!< The TriggerMgr::Clock the action runs on. */
+    /** @return Time on the clock of the action before Exec() runs. */
+    float GetDelay() const {
+        return mDelay;
+    }
+
+    /**
+     * Set the time on the clock of the action before Exec() runs.
+     *
+     * @param fDelay The time.
+     */
+    void SetDelay(float fDelay) {
+        mDelay = fDelay;
+    }
+
+    /** @return The TriggerMgr::Clock the action runs on. */
+    int GetClock() const {
+        return mClock;
+    }
+
+    /**
+     * Set the TriggerMgr::Clock the action runs on.
+     *
+     * @param nClock The clock.
+     */
+    void SetClock(int nClock) {
+        mClock = nClock;
+    }
 
 protected:
     /**
@@ -83,9 +108,13 @@ protected:
         if (pObject == nullptr) {
             DebugWarn("Couldn't find '%s' object (file %s, line %d)",
                       pszName,
-                      pAction->mFile,
-                      pAction->mLine);
+                      pAction->GetFile(),
+                      pAction->GetLine());
         }
         return pObject;
     }
+
+private:
+    float mDelay; /*!< Time on the clock of the action before Exec() runs. */
+    int mClock;   /*!< The TriggerMgr::Clock the action runs on. */
 };

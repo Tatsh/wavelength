@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/file.h"
@@ -167,16 +168,18 @@ private:
      */
     bool ReadChunkHeader(std::vector<unsigned char> &data);
 
-    LazyFileStream *mAudioFileStream; /*!< Reader of the audio data file, or null. */
-    String mFilename;                 /*!< Path of the bank file. */
-    FileStream *mAudioDataOutputFile; /*!< Writer of the audio data file, always null. */
-    FileStream *mBankOutputFile;      /*!< Writer of the bank file, or null. */
-    File *mBankAsyncInputFile;        /*!< Reader of the bank file, or null. */
-    char mChunkTag[kTagSize];         /*!< Identifier of the chunk being looked for. */
-    int mReadState;                   /*!< State of the chunk reader, a ReadState. */
-    int mIODirection;                 /*!< The direction, an IODirection. */
-    int mChunkStart;                  /*!< Offset of the header of the chunk being written. */
-    char mHeaderData[kHeaderSize];    /*!< The chunk header being read. */
-    char mCurTag[kTagSize];           /*!< Identifier of the chunk being written. */
-    int mChunkSize;                   /*!< Size of the chunk being written. */
+    std::unique_ptr<LazyFileStream>
+        mAudioFileStream; /*!< Reader of the audio data file, or null. */
+    String mFilename;     /*!< Path of the bank file. */
+    std::unique_ptr<FileStream>
+        mAudioDataOutputFile;                    /*!< Writer of the audio data file, always null. */
+    std::unique_ptr<FileStream> mBankOutputFile; /*!< Writer of the bank file, or null. */
+    std::unique_ptr<File> mBankAsyncInputFile;   /*!< Reader of the bank file, or null. */
+    char mChunkTag[kTagSize];                    /*!< Identifier of the chunk being looked for. */
+    int mReadState;                              /*!< State of the chunk reader, a ReadState. */
+    int mIODirection;                            /*!< The direction, an IODirection. */
+    int mChunkStart;               /*!< Offset of the header of the chunk being written. */
+    char mHeaderData[kHeaderSize]; /*!< The chunk header being read. */
+    char mCurTag[kTagSize];        /*!< Identifier of the chunk being written. */
+    int mChunkSize;                /*!< Size of the chunk being written. */
 };

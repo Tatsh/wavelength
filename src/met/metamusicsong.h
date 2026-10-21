@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "met/mix.h"
 #include "met/mixmidibuilder.h"
 #include "os/string.h"
@@ -81,9 +83,10 @@ public:
      */
     void AddTracks();
 
-    MixMidiBuilder *mBuilder; /*!< The reader of the song's MIDI file, or null. */
-    Mix *mMix;                /*!< The music the tracks load into. */
-    String mBankFile;         /*!< The path of the sample bank. */
-    int mLoaded;              /*!< Whether the tracks have been handed to the music. */
-    DataArray *mConfig;       /*!< The entry of the song. */
+private:
+    std::unique_ptr<MixMidiBuilder> mBuilder; /*!< The reader of the song's MIDI file, or null. */
+    Mix *mMix;                                /*!< The music the tracks load into. Borrowed. */
+    String mBankFile;                         /*!< The path of the sample bank. */
+    int mLoaded;        /*!< Whether the tracks have been handed to the music. */
+    DataArray *mConfig; /*!< The entry of the song. Borrowed. */
 };

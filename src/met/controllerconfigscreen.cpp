@@ -99,14 +99,14 @@ void ControllerConfigScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mStickChoices.resize(mStickEvents->Size() - 1, 0);
 #ifdef VIDEO_STANDARD_PAL
     UIPanel *pPanel = TheUI.FindPanel(kPanel, false);
-    mFocusName = pPanel->FindComponent(kFirstComponent, false)->mName;
+    mFocusName = pPanel->FindComponent(kFirstComponent, false)->GetName();
 #else
-    mFocusName = TheUI.FindPanel(kPanel, false)->FindComponent(kFirstComponent, false)->mName;
+    mFocusName = TheUI.FindPanel(kPanel, false)->FindComponent(kFirstComponent, false)->GetName();
 #endif
     LoadBindings(TheGameDb->GetProfile(0)->GetInputMap());
     mActive = 1;
 
-    const char *pszFocus = TheUI.FindPanel(kPanel, false)->mFocus->mName;
+    const char *pszFocus = TheUI.FindPanel(kPanel, false)->GetFocus()->GetName();
     if (strcmp(pszFocus, kSaveComponent) != 0 && strcmp(pszFocus, kDefaultComponent) != 0) {
         ShowOnMap(pszFocus);
     }
@@ -357,9 +357,9 @@ void ControllerConfigScreen::ShowOnMap(const char *pszComponent) {
 }
 
 bool ControllerConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const char *pszName = pMsg->mComponent->mName;
+    const char *pszName = pMsg->GetComponent()->GetName();
     if (strcmp(pszName, kDefaultComponent) == 0) {
-        if (pMsg->mButton == kPadCross) {
+        if (pMsg->GetButton() == kPadCross) {
             ResetBindings();
         }
     } else if (strcmp(pszName, kSaveComponent) == 0) {
@@ -371,7 +371,7 @@ bool ControllerConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) 
 #ifdef VIDEO_STANDARD_PAL
                 pSave->SetDoneScreen("s_mode");
 #else
-                pSave->SetDoneScreen(mReturnScreen->mName);
+                pSave->SetDoneScreen(mReturnScreen->GetName());
 #endif
                 pSave->mOverwriteStatus = 1;
                 TheUI.GotoScreen(pSave);
@@ -380,10 +380,10 @@ bool ControllerConfigScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) 
             }
         }
     } else {
-        if (pMsg->mButton == kPadDLeft || pMsg->mButton == kPadDRight) {
-            CycleChoice(pszName, pMsg->mButton);
+        if (pMsg->GetButton() == kPadDLeft || pMsg->GetButton() == kPadDRight) {
+            CycleChoice(pszName, pMsg->GetButton());
         }
-        if (pMsg->mButton == kPadCross && Validate()) {
+        if (pMsg->GetButton() == kPadCross && Validate()) {
             UIPanel *pPanel = TheUI.FindPanel(kPanel, false);
             pPanel->SetFocus(pPanel->FindComponent(kSaveComponent, false), kPadNone);
         }
@@ -398,7 +398,7 @@ bool ControllerConfigScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         }
 #ifdef VIDEO_STANDARD_PAL
         // Saving bindings that do not validate only sounds the error.
-        const char *pszFocus = mFocusPanel->mFocus->mName;
+        const char *pszFocus = mFocusPanel->GetFocus()->GetName();
         if (pMsg->mButton == kPadCross && strcmp(pszFocus, kSaveComponent) == 0 && !Validate()) {
             FxMidi::PlayWrong();
             return true;
@@ -414,10 +414,10 @@ bool ControllerConfigScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool ControllerConfigScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mComponent == nullptr) {
+    if (pMsg->GetComponent() == nullptr) {
         return false;
     }
-    const char *pszName = pMsg->mComponent->mName;
+    const char *pszName = pMsg->GetComponent()->GetName();
     if (strcmp(pszName, kDefaultComponent) == 0 || strcmp(pszName, kSaveComponent) == 0) {
         return false;
     }

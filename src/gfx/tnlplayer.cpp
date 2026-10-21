@@ -40,7 +40,7 @@ TnlPlayer::TnlPlayer(int nPlayer,
       mGeom(pGeom), mReserved18(0), mPlayer(nPlayer), mCamIndex(nCam), mColor(&mTrackColor),
       mActivator(pTunnel, nPlayer, nCam + 1, pszColor), mGrid(pTunnel, nCam + 1),
       mCursor(pTunnel, nPlayer, pszColor, nExcludedType, nOtherExcludedType),
-      mFreestyle(nPlayer, nFreestyleType, TheGfxManager.mShips[nPlayer], &mActivator, pTunnel) {
+      mFreestyle(nPlayer, nFreestyleType, TheGfxManager.GetShip(nPlayer), &mActivator, pTunnel) {
     mTrackColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
     mStreakColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
     TnlGeom::Player *pPlayer = mGeom->GetPlayer(nPlayer);
@@ -64,9 +64,9 @@ void TnlPlayer::LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, RndCam *pCa
     Vector3 offset;
     FindConfigVector3(pConfig, pDefaults, "player_cam_base_offset", &offset, true);
     flPitch = (flPitch * kPi) / kHalfTurnDegrees;
-    offset.x *= TheGfxManager.mScrollSpeed;
-    offset.y *= TheGfxManager.mScrollSpeed;
-    offset.z *= TheGfxManager.mScrollSpeed;
+    offset.x *= TheGfxManager.GetScrollSpeed();
+    offset.y *= TheGfxManager.GetScrollSpeed();
+    offset.z *= TheGfxManager.GetScrollSpeed();
     const float flCos = SinApprox(flPitch + kQuarterTurn);
     const float flSin = SinApprox(flPitch);
     const Transform xfm{Vector3{1.0f, 0.0f, 0.0f},
@@ -91,7 +91,7 @@ void TnlPlayer::LoadConfig(
     }
     mTrackColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
     mStreakColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
-    const bool bFail = TheGameDb->mCommunity != GameDb::kCommunitySolo;
+    const bool bFail = TheGameDb->GetCommunity() != GameDb::kCommunitySolo;
     FindConfigColor(
         pConfig, pDefaults, FormatString("track_color_%c", cColor), &mTrackColor, bFail);
     FindConfigColor(
@@ -110,7 +110,7 @@ bool TnlPlayer::SelectColor(int nMultiplier) {
 void TnlPlayer::Update([[maybe_unused]] GfxArena *pArena, float flTicks, float flTime) {
     mActivator.Update(flTime);
     mGrid.Update();
-    const int nTrack = mGeom->GetPlayer(mPlayer)->mTrack;
+    const int nTrack = mGeom->GetPlayer(mPlayer)->GetTrack();
     mCursor.Poll(mTunnel->IsTrackCaptured(nTrack), flTicks, flTime);
 }
 

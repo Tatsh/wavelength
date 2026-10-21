@@ -36,6 +36,7 @@ public:
      */
     void OnSeek(int nResult) override;
 
+private:
     int mOffset; /*!< The offset. */
     int mMode;   /*!< The origin of the offset. */
 

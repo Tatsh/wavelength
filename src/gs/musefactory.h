@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gs/midichannelstate.h"
@@ -147,6 +148,6 @@ private:
     std::vector<TickMuse> mMessages; /*!< The messages in the order they arrived. */
     std::vector<int> mOpenNotes;     /*!< The indices of the unpaired note ons. */
     int mChannel;                    /*!< The MIDI channel, or -1 before the first message. */
-    MidiChannelState *mState;        /*!< The controller state, built with the first message. */
-    int mResumeIndex;                /*!< The message the last Extract() started at, or -1. */
+    std::unique_ptr<MidiChannelState> mState; /*!< The controller state, built with the first. */
+    int mResumeIndex; /*!< The message the last Extract() started at, or -1. */
 };

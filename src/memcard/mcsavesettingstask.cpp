@@ -23,7 +23,7 @@ MCSaveSettingsTask::MCSaveSettingsTask() : mName("settings") {
 void MCSaveSettingsTask::Set(int nPort, GameOptions *pSettings, int nOverwrite) {
     mPort = nPort;
     mNeeded = 0;
-    BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
+    BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
     stream << *pSettings;
     mSize = stream.Tell();
     const char *pszExt;
@@ -44,7 +44,7 @@ void MCSaveSettingsTask::OnSaveSpace(int nNeeded) {
         g_pMemcardConfig->FindSymbol("settings_ext", &pszExt, true);
         mSaveFile->Set(mPort,
                        FormatString("%s/%s%s", g_MemcardPath.c_str(), mName.c_str(), pszExt),
-                       g_pMemcardBuffer,
+                       g_pMemcardBuffer.get(),
                        mSize);
     } else {
         mNeeded = nNeeded;

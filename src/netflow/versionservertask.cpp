@@ -8,7 +8,7 @@
 void VersionServerTask::OnStart() {
     rtMediusRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.messageId);
     const int nError = rtMediusVersionServer(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL

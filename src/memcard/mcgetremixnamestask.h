@@ -28,9 +28,6 @@ public:
      */
     void Set(int nPort);
 
-    MCGetDirTask mGetDir; /*!< The step that lists one directory. */
-    int mDirIndex;        /*!< The directory listed now. */
-
 protected:
     /**
      * Clear g_RemixNames and start listing the first directory.
@@ -56,4 +53,7 @@ private:
      * @ghidraAddress PAL: 0x00163848
      */
     void ListNextDir();
+
+    MCGetDirTask mGetDir; /*!< The step that lists one directory. */
+    int mDirIndex;        /*!< The directory listed now. */
 };

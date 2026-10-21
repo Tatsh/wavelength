@@ -63,7 +63,19 @@ public:
      */
     static NetTask *FindTag(const char *pszTag);
 
-    NetMultiTask *mParent; /*!< The NetMultiTask that runs the task, or null. */
+    /** @return The NetMultiTask that runs the task, or null. */
+    NetMultiTask *GetParent() const {
+        return mParent;
+    }
+
+    /**
+     * Set the NetMultiTask that runs the task.
+     *
+     * @param pParent The NetMultiTask, or null.
+     */
+    void SetParent(NetMultiTask *pParent) {
+        mParent = pParent;
+    }
 
     /**
      * The tags MakeTag() created and RemoveTag() has not removed.
@@ -88,4 +100,7 @@ protected:
      * @ghidraAddress PAL: 0x00273fc0
      */
     void OnStop() override;
+
+private:
+    NetMultiTask *mParent; /*!< The NetMultiTask that runs the task, or null. Borrowed. */
 };

@@ -24,10 +24,10 @@ bool SelRemixUploadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SelRemixUploadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         auto *pList =
             static_cast<UIList *>(TheUI.FindComponent(kUploadPanel, kListComponent, false));
-        RemixInfo info = mRemixes[pList->mSelected];
+        RemixInfo info = mRemixes[pList->GetSelected()];
         TheGameDb->SetRemix(&info);
         TheGameDb->SetSong(info.mSong);
         auto *pLoad = dynamic_cast<LoadRemixScreen *>(TheUI.FindScreen(kLoadRemixScreen, false));

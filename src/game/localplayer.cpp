@@ -60,7 +60,7 @@ void LocalPlayer::SetCatching(bool bCatching) {
 
 void LocalPlayer::ActivateMultiplier() {
     Player::ActivateMultiplier();
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         MultiplierPacket packet;
         TheNetTransport->Send(packet);
     }
@@ -72,12 +72,12 @@ void LocalPlayer::SetRepeat(bool bRepeat) {
 }
 
 void LocalPlayer::Broadcast() {
-    if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
         return;
     }
     TheSongScheduler.Cancel(mBroadcastCommand.Get());
 
-    const int nRuleSet = TheGameDb->mRuleSet;
+    const int nRuleSet = TheGameDb->GetRuleSet();
     if (nRuleSet == GameDb::kRuleSetGame || nRuleSet == GameDb::kRuleSetDuel) {
         PlayerUpdatePacket packet(mTrack->mIndex, mScore, mCatching, ++sPlayerUpdateVersion);
         TheNetTransport->Send(packet);

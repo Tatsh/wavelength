@@ -57,7 +57,7 @@ void MultiSetupRemixSaveScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     SetupRemixSaveScreen::Enter(pPrevScreen, fTime);
     UIComponent *pNumber = TheUI.FindComponent(kPanel, "player_num", false);
     pNumber->SetText(FormatString(TheLocale.Localize("m_r_end_03", true), mPlayer));
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         TheMetagame.SetReserved144(0);
     }
 }
@@ -79,7 +79,7 @@ void MultiSetupRemixSaveScreen::Proceed() {
     auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix", false));
     pSave->SetStartScreen(mName);
     pSave->mOverwriteStatus = 0;
-    if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
         if (mPlayer < TheGameDb->GetNumPlayers()) {
             pSave->SetDoneScreen(FormatString(kSaveFormat, mPlayer + 1));
         } else {
@@ -125,7 +125,7 @@ bool MultiSetupRemixSaveScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MultiSetupRemixSaveScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (strcmp(pMsg->mPrevScreen->mName, "net_share_remix") == 0) {
+    if (strcmp(pMsg->mPrevScreen->GetName(), "net_share_remix") == 0) {
         mFromShare = 1;
 #ifdef VIDEO_STANDARD_PAL
     } else if ((mPlayer == kThirdPlayer || mPlayer == kFourthPlayer) &&

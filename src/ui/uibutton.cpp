@@ -81,10 +81,11 @@ bool UIButton::HandleSelect(JoypadInputMsg *pMsg) {
     if (pMsg->mButton != kPadCross || mFlashDone == 0 || pMsg->mPressed == 0) {
         return false;
     }
-    UIScreen *pScreen = TheUI.mCurrentScreen;
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
     UIComponentSelectStartMsg msg(this, TheUI.FocusPanel(), pScreen, pMsg->mButton, pMsg->mPad);
     if (!Dispatch(&msg)) {
-        StartFlash(TheUI.mTime, sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
+        StartFlash(
+            TheUI.GetTime(), sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
     }
     return true;
 }
@@ -105,7 +106,7 @@ void UIButton::Poll(float fTime) {
         SetState(mRevertState, true);
         mFlashDone = 1;
         UIPanel *pPanel = TheUI.FocusPanel();
-        UIComponentSelectMsg msg(this, pPanel, TheUI.mCurrentScreen, kPadCross);
+        UIComponentSelectMsg msg(this, pPanel, TheUI.GetCurrentScreen(), kPadCross);
         Dispatch(&msg);
         return;
     }

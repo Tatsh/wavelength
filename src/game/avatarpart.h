@@ -61,7 +61,8 @@ public:
          */
         int ShouldLoad(RndObject *pExisting, const char *pszName, const char *pszClass) override;
 
-        AvatarPart *mOwner; /*!< The part. */
+    private:
+        AvatarPart *mOwner; /*!< The part. Borrowed. */
     };
 
     /**
@@ -186,28 +187,43 @@ public:
      */
     void SetColor(const Color *pColor);
 
-    Callback mCallback;       /*!< The callback of the loads of the part. */
-    DataArray *mData;         /*!< The entry of the part in the `parts` array. */
-    const char *mType;        /*!< The choice the meshes show, or null before the first. */
-    const char *mPendingType; /*!< The choice SetType() last requested, or null. */
-    Color mColor;             /*!< The colour, opaque white until SetColor(). +0x20 */
-    RndMesh *mMesh;           /*!< The `draw_root` mesh drawn, or null. */
-    RndMesh *mTransRoot;      /*!< The `trans_root` mesh the model hangs from, or null. */
-    RndMesh *mJoint;          /*!< The joint mesh of the parent the model hangs from, or null. */
-    RndMat *mMat;             /*!< The material of the model, or null. */
+    /** @return The choice the meshes show, or null before the first. */
+    const char *GetType() const {
+        return mType;
+    }
 
-    /** The animations of the bones the `anims` array lists, in its order. */
-    std::vector<RndTransAnim *> mAnims;
+    /** @return The choice SetType() last requested, or null. */
+    const char *GetPendingType() const {
+        return mPendingType;
+    }
 
-    AvatarPart *mParent;                /*!< The part the model hangs from, or null. */
-    Avatar *mAvatar;                    /*!< The avatar the part belongs to. */
-    std::unique_ptr<RndLoader> mLoader; /*!< The load of the files the meshes come from, or null. */
+    /**
+     * Set the choice SetType() last requested.
+     *
+     * @param pszType The choice, or null.
+     */
+    void SetPendingType(const char *pszType) {
+        mPendingType = pszType;
+    }
 
-    /** The load of the first file of mPendingType, or null. */
-    std::unique_ptr<RndLoader> mPendingLoader;
+    /**
+     * Set the material of the model.
+     *
+     * @param pMat The material, or null. Borrowed.
+     */
+    void SetMat(RndMat *pMat) {
+        mMat = pMat;
+    }
 
-    /** The load of the second file of mPendingType, or null. */
-    std::unique_ptr<RndLoader> mPendingExtraLoader;
+    /** @return The `trans_root` mesh the model hangs from, or null. Borrowed. */
+    RndMesh *GetTransRoot() {
+        return mTransRoot;
+    }
+
+    /** @return The animations of the bones the `anims` array lists, in its order. */
+    const std::vector<std::unique_ptr<RndTransAnim>> &GetAnims() const {
+        return mAnims;
+    }
 
 protected:
     /**
@@ -318,4 +334,25 @@ protected:
         pMesh->mLocalXfm = identity;
         pMesh->mDirty = 1;
     }
+
+    Callback mCallback;       /*!< The callback of the loads of the part. */
+    DataArray *mData;         /*!< The entry of the part in the `parts` array. Borrowed. */
+    const char *mType;        /*!< The choice the meshes show, or null before the first. */
+    const char *mPendingType; /*!< The choice SetType() last requested, or null. */
+    RndMesh *mTransRoot;      /*!< The `trans_root` mesh the model hangs from, or null. Borrowed. */
+    RndMesh *mJoint; /*!< The joint mesh of the parent the model hangs from, or null. Borrowed. */
+    RndMat *mMat;    /*!< The material of the model, or null. Borrowed. */
+    /** The animations of the bones the `anims` array lists, in its order, deleted with the part. */
+    std::vector<std::unique_ptr<RndTransAnim>> mAnims;
+    Avatar *mAvatar;                    /*!< The avatar the part belongs to. Borrowed. */
+    std::unique_ptr<RndLoader> mLoader; /*!< The load of the files the meshes come from, or null. */
+    Color mColor;                       /*!< The colour, opaque white until SetColor(). +0x20 */
+    RndMesh *mMesh;                     /*!< The `draw_root` mesh drawn, or null. Borrowed. */
+
+private:
+    AvatarPart *mParent; /*!< The part the model hangs from, or null. Borrowed. */
+    /** The load of the first file of mPendingType, or null. */
+    std::unique_ptr<RndLoader> mPendingLoader;
+    /** The load of the second file of mPendingType, or null. */
+    std::unique_ptr<RndLoader> mPendingExtraLoader;
 };

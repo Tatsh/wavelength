@@ -87,7 +87,7 @@ void SetScale(RndTransformable *pTrans, float fScale) {
 HudPoints::HudPoints(int nIndex)
     : mEnabled(1), mExit(kExitRestFrame, nullptr, nullptr, kExitSpeed) {
     const char *pszHud = Overlay::sHudPrefix;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         nIndex = 0;
         pszHud = kOnlineHudPrefix;
     }
@@ -139,7 +139,8 @@ void HudPoints::Poll([[maybe_unused]] float fUnused, float fDelta) {
         return;
     }
     mExit.Update(fDelta, false);
-    static_cast<RndDrawable *>(mExitView)->SetShowing(mExit.mValue != mExit.mInterp->mY1);
+    static_cast<RndDrawable *>(mExitView)->SetShowing(mExit.GetValue() !=
+                                                      mExit.GetInterp()->GetY1());
     ScaleText(mPointsText);
     const float fGlow = mGlow * 0.5f + 0.5f;
     mMultMat->SetBaseColor(Color{fGlow, fGlow, fGlow, 1.0f});
@@ -195,7 +196,8 @@ void HudPoints::Flash(float fMinSwell) {
 
 void HudPoints::End(int nResult) {
     float fDelay = kCapturedExitStart;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel && nResult == GfxManager::kPendingPointsLost) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel &&
+        nResult == GfxManager::kPendingPointsLost) {
         fDelay = kDuelLostDelay;
         nResult = GfxManager::kPendingPointsCaptured;
     }

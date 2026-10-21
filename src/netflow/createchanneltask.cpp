@@ -17,19 +17,19 @@ constexpr int kStatusVulgarName = -967;
 void CreateChannelTask::OnStart() {
     rtMediusCreateChannelRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.applicationId = LobbyRT::ApplicationId();
-    request.maxPlayers = TheLobbyRT->mChatroom.mMaxPlayers;
+    request.maxPlayers = TheLobbyRT->GetChatroom().mMaxPlayers;
     request.password[0] = '\0';
 #ifdef VIDEO_STANDARD_PAL
     strncpy(request.name,
-            Utf8String(TheLobbyRT->mNewChatroomName.c_str()).c_str(),
+            Utf8String(TheLobbyRT->GetNewChatroomName().c_str()).c_str(),
             RT_MEDIUS_GAME_NAME_SIZE);
     const int nError = rtMediusCreateChannel(&request, OnResponse);
     LobbyRT::ReportMediusError(2030, nError);
 #else
-    strncpy(request.name, TheLobbyRT->mNewChatroomName.c_str(), RT_MEDIUS_GAME_NAME_SIZE);
+    strncpy(request.name, TheLobbyRT->GetNewChatroomName().c_str(), RT_MEDIUS_GAME_NAME_SIZE);
     const int nError = rtMediusCreateChannel(&request, OnResponse);
     LobbyRT::ReportMediusError(1831, nError);
 #endif
@@ -51,7 +51,7 @@ void CreateChannelTask::OnResponse(int nConnection,
     }
     const int nStatus = pResponse->header.status;
     if (nStatus == RT_MEDIUS_STATUS_SUCCESS) {
-        TheLobbyRT->mJoinChatroomId = pResponse->worldId;
+        TheLobbyRT->SetJoinChatroomId(pResponse->worldId);
         pTask->Finish(true, 0);
     } else if (nStatus == kStatusNameExists) {
         pTask->Finish(false, JoinChatroomResultMsg::kResultNameExists);

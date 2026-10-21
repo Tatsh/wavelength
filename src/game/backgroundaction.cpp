@@ -11,13 +11,13 @@ BackgroundAction::BackgroundAction(DataArray *pAction) {
 }
 
 void BackgroundAction::Exec() {
-    mStartTime = TheTriggerMgr.mTime[TheTriggerMgr.mClock];
+    mStartTime = TheTriggerMgr.GetCurrentTime();
     mStartColor = TheRnd->mClearColor;
     TheTriggerMgr.AddRunning(this);
 }
 
 bool BackgroundAction::Poll() {
-    const float flElapsed = TheTriggerMgr.mTime[TheTriggerMgr.mClock] - mStartTime;
+    const float flElapsed = TheTriggerMgr.GetCurrentTime() - mStartTime;
     if (mDuration <= flElapsed) {
         TheRnd->SetClearColor(mColor);
     } else {

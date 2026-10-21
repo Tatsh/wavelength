@@ -116,7 +116,7 @@ void TnlDivider::Reset() {
 }
 
 void TnlDivider::AddSection(float flTick, const char *pszLabel, float flTextScale) {
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     while (!mSections.empty() && IsBehind(mSections.front(), flNow)) {
         mSections.pop_front();
     }
@@ -147,7 +147,7 @@ void TnlDivider::Poll(float flDelta, GfxTunnel *pTunnel) {
         mTransparentView->SetShowing(0);
         return;
     }
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     if (!mStarted) {
         mCurrent = mSections.begin();
     }
@@ -178,7 +178,7 @@ void TnlDivider::Poll(float flDelta, GfxTunnel *pTunnel) {
         mView->SetShowing(1);
         mTransparentView->SetShowing(1);
         if (mCurrent != it) {
-            PlaceOnPath(mTopView, pTunnel->mGeom, it->mTick);
+            PlaceOnPath(mTopView, pTunnel->GetGeom(), it->mTick);
             const float flScale = it->mTextScale;
             Transform xfm = Transform{Vector3{flScale, 0.0f, 0.0f},
                                       Vector3{0.0f, flScale, 0.0f},
@@ -197,17 +197,17 @@ void TnlDivider::Poll(float flDelta, GfxTunnel *pTunnel) {
         ScaleParticles(mParticleFade.Eval(flSince));
         if (mFlashing) {
             Segment sight;
-            sight.mEnds[0] = pTunnel->mCamFX->mView.mTranslation;
+            sight.mEnds[0] = pTunnel->GetCamFX()->mView.mTranslation;
             sight.mEnds[1] = mTopView->mLocalXfm.mTranslation;
             int nTrack;
             int nBar;
             const float flTarget =
-                pTunnel->mGeom->Pick(&sight, &nTrack, &nBar) ? kFlashFrames : 0.0f;
-            if (flTarget != mFlash.mInterp->mY1) {
+                pTunnel->GetGeom()->Pick(&sight, &nTrack, &nBar) ? kFlashFrames : 0.0f;
+            if (flTarget != mFlash.GetInterp()->GetY1()) {
                 mFlash.SetTarget(flTarget);
             }
             mFlash.Update(flDelta, false);
-            mFlashMesh->SetShowing((mFlash.mValue == kFlashFrames) ? 0 : 1);
+            mFlashMesh->SetShowing((mFlash.GetValue() == kFlashFrames) ? 0 : 1);
         }
     }
     mStarted = 1;
@@ -239,7 +239,7 @@ void TnlDivider::UpdateText(std::list<Section>::iterator section) {
             pszText = section->mLabel;
         } else if (section == mSections.begin()) {
             pszText = TheLocale.Localize("GAME_DIVIDER_START", true);
-        } else if (TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
+        } else if (TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
             ++section;
             if (section == mSections.end()) {
                 pszText = TheLocale.Localize("GAME_DIVIDER_FINISH", true);

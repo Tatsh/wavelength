@@ -19,5 +19,5 @@ AvatarBodyAnimateAction::AvatarBodyAnimateAction(DataArray *pAction) : mAnim(pAc
 }
 
 void AvatarBodyAnimateAction::Exec() {
-    TheGameDb->GetAvatar(TheTriggerMgr.mPlayer)->SetBaseAnim(mAnim, mFlags);
+    TheGameDb->GetAvatar(TheTriggerMgr.GetPlayer())->SetBaseAnim(mAnim, mFlags);
 }

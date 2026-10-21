@@ -29,10 +29,10 @@ constexpr int kNoOrder = -1;
 constexpr unsigned int kRowsShown = 7;
 
 void HideArrows(UIList *pList) {
-    pList->mUpArrow->SetShowing(false);
-    pList->mShowUpArrow = 0;
-    pList->mDownArrow->SetShowing(false);
-    pList->mShowDownArrow = 0;
+    pList->GetUpArrow()->SetShowing(false);
+    pList->SetShowUpArrow(0);
+    pList->GetDownArrow()->SetShowing(false);
+    pList->SetShowDownArrow(0);
 }
 
 } // namespace
@@ -71,7 +71,7 @@ void NetSortedLaunchpadsPanel::Request(int nPage) {
     mPage = nPage;
     static_cast<NetSortedDataPanel *>(TheUI.FindPanel(kDataPanel, false))->Reset();
     TheNetLobby->RequestLaunchpads(this, nPage, kNoMode, mArena.c_str(), mRuleSet, mSkillLevel);
-    StartFlash(TheUI.mTime, false);
+    StartFlash(TheUI.GetTime(), false);
     HideArrows(static_cast<UIList *>(FindComponent(kListComponent, false)));
 }
 
@@ -93,8 +93,8 @@ bool NetSortedLaunchpadsPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed == 0) {
         return false;
     }
-    UIScreen *pScreen = TheUI.mCurrentScreen;
-    if (pScreen->mNextScreen != nullptr || pScreen->mPrevScreen != nullptr) {
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
+    if (pScreen->GetNextScreen() != nullptr || pScreen->GetPrevScreen() != nullptr) {
         return true;
     }
     if (pMsg->mButton == kPadL1) {
@@ -122,16 +122,17 @@ bool NetSortedLaunchpadsPanel::HandleLobbyLaunchpads(LobbyLaunchpadsMsg *pMsg) {
     pList->SetLaunchpads(pMsg->mLaunchpads, nSelected);
     mHasPrevious = pMsg->mHasPrevious;
     const unsigned int nCount = pMsg->mLaunchpads->size();
-    pList->mUpArrow->SetShowing(mHasPrevious != 0);
-    pList->mShowUpArrow = mHasPrevious != 0;
-    pList->mDownArrow->SetShowing(nCount >= kRowsShown);
-    pList->mShowDownArrow = nCount >= kRowsShown;
+    pList->GetUpArrow()->SetShowing(mHasPrevious != 0);
+    pList->SetShowUpArrow(mHasPrevious != 0);
+    pList->GetDownArrow()->SetShowing(nCount >= kRowsShown);
+    pList->SetShowDownArrow(nCount >= kRowsShown);
     HideFlash();
     return false;
 }
 
 bool NetSortedLaunchpadsPanel::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross && std::strcmp(pMsg->mComponent->mName, kCursorComponent) == 0) {
+    if (pMsg->GetButton() == kPadCross &&
+        std::strcmp(pMsg->GetComponent()->GetName(), kCursorComponent) == 0) {
         TheUI.GotoScreen(kJoinScreen);
     }
     return false;

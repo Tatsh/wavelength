@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/string.h"
@@ -22,15 +23,15 @@ public:
 
     /** A named object. */
     struct Entry {
-        String mName;    /*!< The name. */
-        Object *mObject; /*!< The object, or null. */
+        String mName;                    /*!< The name. */
+        std::unique_ptr<Object> mObject; /*!< The object, or null. */
     };
 
     /** A named group of objects. */
     struct Group {
         String mName;                   /*!< The name. */
         int mReserved14[2];             // +0x14, not yet identified.
-        std::vector<Object *> mMembers; /*!< The objects of the group. */
+        std::vector<Object *> mMembers; /*!< The objects of the group. Borrowed. */
     };
 
     /**
@@ -66,8 +67,19 @@ public:
      */
     void DeleteEntries();
 
-    std::vector<Entry *> mEntries; /*!< The named objects. */
-    std::vector<Group> mGroups;    /*!< The named groups. */
+    /** @return The named objects. */
+    const std::vector<std::unique_ptr<Entry>> &GetEntries() const {
+        return mEntries;
+    }
+
+    /** @return The named groups. */
+    const std::vector<Group> &GetGroups() const {
+        return mGroups;
+    }
+
+private:
+    std::vector<std::unique_ptr<Entry>> mEntries; /*!< The named objects. */
+    std::vector<Group> mGroups;                   /*!< The named groups. */
 };
 
 /**

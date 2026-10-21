@@ -371,8 +371,9 @@ public:
      */
     static void OnWinSequence(DataArray *pCommand, void *pUserData);
 
+private:
     JuiceMeter mJuice;                         /*!< The juice of the player. */
-    Player *mPlayer;                           /*!< The player, the first local player. */
+    Player *mPlayer;                           /*!< The player, the first local player. Borrowed. */
     int mTickOffset;                           /*!< GetTick() minus the song tick. */
     float mTimeOffset;                         /*!< GetTime() minus the song time. */
     int mBankSlot;                             /*!< `game_fx_bank_slot`, the sound bank slot. */

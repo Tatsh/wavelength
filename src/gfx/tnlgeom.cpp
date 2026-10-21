@@ -323,7 +323,7 @@ void RndMesh::FillEdges(int nEdgeA,
 
 TnlGeom::TnlGeom()
     : mNumBars(0), mReserved04(kDefaultDetail), mSlabDepth(kDefaultSlabDepth),
-      mSlabAngle(kDefaultSlabAngle), mPath(new TnlPath()), mBarsBehind(0),
+      mSlabAngle(kDefaultSlabAngle), mPath(std::make_unique<TnlPath>()), mBarsBehind(0),
       mMoveLength(kDefaultMoveLength), mCamMoveSpeed(kDefaultCamMoveSpeed), mWraps(0),
       mShowPanels(1), mAnimateMoves(0), mBarsPerTick(1.0f / kBarTicks), mTicksPerBar(kBarTicks),
       mSectionsPerBar(kDefaultSectionsPerBar), mFirstBar(0), mMinFirstBar(0), mEndBar(kNoBar),
@@ -334,7 +334,6 @@ TnlGeom::TnlGeom()
 
 TnlGeom::~TnlGeom() {
     Clear(true);
-    delete mPath;
 }
 
 void TnlGeom::LoadConfig([[maybe_unused]] DataArray *pConfig,
@@ -348,10 +347,10 @@ void TnlGeom::DrawPanels() {
         const int nFirstBar = (mFirstBar < 0) ? 0 : mFirstBar;
         const int nEndBar = (mFirstBar + mNumBars) - mBarsBehind;
         DrawCheckpoints(nFirstBar, nEndBar);
-        DrawPass(mPassMats[0], nFirstBar, nEndBar, kPassColorBase);
+        DrawPass(mPassMats[0].get(), nFirstBar, nEndBar, kPassColorBase);
         // Yes, the binary starts at the second pass without checking for a first.
         for (auto it = mPassMats.begin() + 1; it != mPassMats.end(); ++it) {
-            DrawPass(*it, nFirstBar, nEndBar, kPassColorNone);
+            DrawPass(it->get(), nFirstBar, nEndBar, kPassColorNone);
         }
         DrawBarValues(nFirstBar, nEndBar, false);
     }
@@ -364,10 +363,10 @@ void TnlGeom::DrawPanelsMultiplayer() {
         const int nFirstBar = (mFirstBar < 0) ? 0 : mFirstBar;
         const int nEndBar = (mFirstBar + mNumBars) - mBarsBehind;
         DrawCheckpoints(nFirstBar, nEndBar);
-        DrawPass(mPassMats[0], nFirstBar, nEndBar, kPassColorNone);
+        DrawPass(mPassMats[0].get(), nFirstBar, nEndBar, kPassColorNone);
         // Yes, the binary starts at the second pass without checking for a first.
         for (auto it = mPassMats.begin() + 1; it != mPassMats.end(); ++it) {
-            DrawPass(*it, nFirstBar, nEndBar, kPassColorLit);
+            DrawPass(it->get(), nFirstBar, nEndBar, kPassColorLit);
         }
         DrawBarValues(nFirstBar, nEndBar, false);
     }
@@ -384,7 +383,7 @@ void TnlGeom::DrawOverlays() {
 
 void TnlGeom::DrawCheckpoints(int nFirstBar, int nEndBar) {
     for (int nTrack = 0; nTrack < mNumTracks; ++nTrack) {
-        if (mTracks[nTrack].mOverlayMode != 0) {
+        if (mTracks[nTrack].GetOverlayMode() != 0) {
             continue;
         }
         for (int nBar = nEndBar - 1; nBar >= nFirstBar; --nBar) {
@@ -393,8 +392,8 @@ void TnlGeom::DrawCheckpoints(int nFirstBar, int nEndBar) {
                 continue;
             }
             const PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-            if (panel.mCheckpointMat != nullptr) {
-                DrawWithMat(panel.mMesh, panel.mCheckpointMat);
+            if (panel.GetCheckpointMat() != nullptr) {
+                DrawWithMat(panel.GetMesh(), panel.GetCheckpointMat());
             }
         }
     }
@@ -406,7 +405,7 @@ void TnlGeom::DrawPass(RndMat *pMat, int nFirstBar, int nEndBar, PassColor nColo
     // Yes, the binary discards whether the pass was selected.
     (void)static_cast<PsMat *>(pMat)->Select(kSelectPass);
     for (int nTrack = 0; nTrack < mNumTracks; ++nTrack) {
-        if (mTracks[nTrack].mOverlayMode != 0) {
+        if (mTracks[nTrack].GetOverlayMode() != 0) {
             continue;
         }
         for (int nBar = nEndBar - 1; nBar >= nFirstBar; --nBar) {
@@ -415,16 +414,16 @@ void TnlGeom::DrawPass(RndMat *pMat, int nFirstBar, int nEndBar, PassColor nColo
                 continue;
             }
             PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-            if (panel.mTransparent || (panel.mCheckpointMat != nullptr)) {
+            if (panel.GetTransparent() || (panel.GetCheckpointMat() != nullptr)) {
                 continue;
             }
             if (nColor == kPassColorLit) {
-                pMat->SetLightColor(mPassLightColors[static_cast<int>(panel.mHighlighted)]);
+                pMat->SetLightColor(mPassLightColors[static_cast<int>(panel.GetHighlighted())]);
             }
             if (nColor != kPassColorNone) {
-                pMat->SetBaseColor(panel.mColor);
+                pMat->SetBaseColor(panel.GetColor());
             }
-            static_cast<PsMesh *>(panel.mMesh)->DrawFaces(sIdentity);
+            static_cast<PsMesh *>(panel.GetMesh())->DrawFaces(sIdentity);
         }
     }
 }
@@ -432,8 +431,8 @@ void TnlGeom::DrawPass(RndMat *pMat, int nFirstBar, int nEndBar, PassColor nColo
 void TnlGeom::DrawBarValues(int nFirstBar, int nEndBar, bool bWriteDepth) {
     for (int nTrack = 0; nTrack < mNumTracks; ++nTrack) {
         const TrackData &track = mTracks[nTrack];
-        const unsigned char nPlayers = track.mPlayers;
-        RndMat *pOverlay = track.mOverlayMat;
+        const unsigned char nPlayers = track.GetPlayers();
+        RndMat *pOverlay = track.GetOverlayMat();
         if ((nPlayers == 0) && (pOverlay == nullptr) && !mBarValuesDirty) {
             continue;
         }
@@ -446,24 +445,24 @@ void TnlGeom::DrawBarValues(int nFirstBar, int nEndBar, bool bWriteDepth) {
             int savedZMode = RndMesh::kZModeDisable;
             int savedZFunc = RndMesh::kZFuncNever;
             if (bWriteDepth) {
-                savedZMode = panel.mMesh->mZMode;
-                panel.mMesh->mZMode = RndMesh::kZModeZReadWrite;
-                savedZFunc = panel.mMesh->mZFunc;
+                savedZMode = panel.GetMesh()->mZMode;
+                panel.GetMesh()->mZMode = RndMesh::kZModeZReadWrite;
+                savedZFunc = panel.GetMesh()->mZFunc;
             }
-            if (!panel.mTransparent) {
+            if (!panel.GetTransparent()) {
                 RndMat *pMat = mBarValues[nSlot];
                 if (pMat == nullptr) {
                     pMat = pOverlay;
                 }
                 if (pMat != nullptr) {
-                    DrawWithMat(panel.mMesh, pMat);
+                    DrawWithMat(panel.GetMesh(), pMat);
                 }
-            } else if ((nPlayers != 0) && (panel.mTransparent == 1)) {
-                DrawWithMat(panel.mMesh, mBarMats[nSlot]);
+            } else if ((nPlayers != 0) && (panel.GetTransparent() == 1)) {
+                DrawWithMat(panel.GetMesh(), mBarMats[nSlot]);
             }
             if (bWriteDepth) {
-                panel.mMesh->mZFunc = savedZFunc;
-                panel.mMesh->mZMode = savedZMode;
+                panel.GetMesh()->mZFunc = savedZFunc;
+                panel.GetMesh()->mZMode = savedZMode;
             }
         }
     }
@@ -478,7 +477,7 @@ bool TnlGeom::Pick(const Segment *pSegment, int *pnTrack, int *pnBar) {
                 continue;
             }
             const PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-            if (panel.mPickable && panel.Hit(pSegment)) {
+            if (panel.GetPickable() && panel.Hit(pSegment)) {
                 *pnTrack = nTrack;
                 *pnBar = nBar;
                 return true;
@@ -500,8 +499,8 @@ void TnlGeom::RebuildPanels() {
                 continue;
             }
             PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-            if (bMoved || panel.mDirty) {
-                panel.Rebuild(&mMeshes[static_cast<int>(panel.mTransparent)], pOffset, nRows);
+            if (bMoved || panel.GetDirty()) {
+                panel.Rebuild(&mMeshes[static_cast<int>(panel.GetTransparent())], pOffset, nRows);
             }
         }
         mTrackOffsetChanged[nTrack] = false;
@@ -511,7 +510,7 @@ void TnlGeom::RebuildPanels() {
 void TnlGeom::Poll(float flTick, float flDeltaTicks) {
     float flTrail = 0.0f;
     for (const auto &player : mPlayers) {
-        flTrail = std::min(flTrail, player.mTrailTicks);
+        flTrail = std::min(flTrail, player.GetTrailTicks());
     }
     mFirstBar = static_cast<int>(std::floor((flTick + flTrail) * mBarsPerTick));
     if (mFirstBar < mMinFirstBar) {
@@ -527,12 +526,12 @@ void TnlGeom::Poll(float flTick, float flDeltaTicks) {
         BlendCell(&xfm,
                   true,
                   false,
-                  player.mCamPosition,
-                  flTick + player.mActivatorPosition,
+                  player.GetCamPosition(),
+                  flTick + player.GetActivatorPosition(),
                   kTrackCenter);
         player.PlaceActivator(&xfm);
     }
-    for (RndMatAnim *pAnim : mPassAnims) {
+    for (const auto &pAnim : mPassAnims) {
         pAnim->SetFrame(flTick);
     }
 }
@@ -607,38 +606,34 @@ void TnlGeom::Clear(bool bClear) {
     }
     mPanels.clear();
     mTracks.clear();
-    for (unsigned i = 0; i < mPassMats.size(); ++i) {
-        delete mPassMats[i];
-        mPassMats[i] = nullptr;
+    for (auto &pMat : mPassMats) {
+        pMat.reset();
     }
-    for (unsigned i = 0; i < mPassAnims.size(); ++i) {
-        delete mPassAnims[i];
-        mPassAnims[i] = nullptr;
+    for (auto &pAnim : mPassAnims) {
+        pAnim.reset();
     }
 }
 
 void TnlGeom::BuildPanels() {
-    {
-        const PanelData blank;
-        mPanels.resize(mNumTracks * mNumBars, blank);
-    }
+    mPanels.resize(mNumTracks * mNumBars);
     const unsigned nSections = static_cast<unsigned>(mSectionsPerBar + 1);
     int nIndex = 0;
     for (auto &panel : mPanels) {
-        if (panel.mMesh == nullptr) {
-            panel.mMesh = CreateObject<RndMesh>(RndMesh::sClassName,
-                                                FormatString("panel %d dest.mesh", nIndex));
-            panel.mMesh->mGeomOwner->mMutable = 1;
-            panel.mMesh->Copy(mMeshes[kSourceMeshOpaque].mMesh, kPanelCopyFlags);
-            panel.mDirty = 1;
+        if (panel.GetMesh() == nullptr) {
+            panel.SetMesh(std::unique_ptr<RndMesh>(CreateObject<RndMesh>(
+                RndMesh::sClassName, FormatString("panel %d dest.mesh", nIndex))));
+            panel.GetMesh()->mGeomOwner->mMutable = 1;
+            panel.GetMesh()->Copy(mMeshes[kSourceMeshOpaque].GetMesh(), kPanelCopyFlags);
+            panel.SetDirty(1);
         }
         ++nIndex;
-        panel.mBaseSections.resize(nSections);
-        panel.mSections.resize(nSections);
+        panel.GetBaseSections().resize(nSections);
+        panel.GetSections().resize(nSections);
     }
 }
 
-RndMesh *TnlGeom::BuildPanelMesh(float flWidth, int nLevel, Vector3 *pExtent, bool bSolid) {
+std::unique_ptr<RndMesh>
+TnlGeom::BuildPanelMesh(float flWidth, int nLevel, Vector3 *pExtent, bool bSolid) {
     const int nRows = mSectionsPerBar + 1;
     const float flSections = static_cast<float>(mSectionsPerBar);
     const Color white{1.0f, 1.0f, 1.0f, 1.0f};
@@ -723,12 +718,12 @@ RndMesh *TnlGeom::BuildPanelMesh(float flWidth, int nLevel, Vector3 *pExtent, bo
     pMesh->AddQuadStrip(kVertTopLeft, kVertBottomLeft, nRows, kRowVerts, nStep);
     pMesh->AddQuadStrip(kVertBottomRight, kVertTopRight, nRows, kRowVerts, nStep);
     pMesh->AddQuad(kVertTopLeft, kVertBottomLeft, kVertTopRight, kVertBottomRight);
-    return pMesh;
+    return std::unique_ptr<RndMesh>(pMesh);
 }
 
 void TnlGeom::BuildMeshes() {
     mMeshes.clear();
-    mMeshes.resize(kSourceMeshCount, MeshHolder{nullptr});
+    mMeshes.resize(kSourceMeshCount);
     BuildSourceMeshes();
 }
 
@@ -739,17 +734,16 @@ void TnlGeom::BuildSourceMeshes() {
     }
     int nIndex = 0;
     for (auto &holder : mMeshes) {
-        delete holder.mMesh;
-        holder.mMesh = nullptr;
+        holder.SetMesh(nullptr);
         Vector3 extent;
         if (nIndex == kSourceMeshTransparent) {
-            holder.mMesh = BuildPanelMesh(flWidth, kSourceMeshLevel, &extent, false);
-            holder.mMesh->mZFunc = RndMesh::kZFuncLessEqual;
-            holder.mMesh->mZMode = RndMesh::kZModeZReadOnly;
-            holder.mMesh->SetName(FormatString(kSourceMeshFormat, nIndex));
+            holder.SetMesh(BuildPanelMesh(flWidth, kSourceMeshLevel, &extent, false));
+            holder.GetMesh()->mZFunc = RndMesh::kZFuncLessEqual;
+            holder.GetMesh()->mZMode = RndMesh::kZModeZReadOnly;
+            holder.GetMesh()->SetName(FormatString(kSourceMeshFormat, nIndex));
         } else {
-            holder.mMesh = BuildPanelMesh(flWidth, kSourceMeshLevel, &extent, true);
-            holder.mMesh->SetName(FormatString(kSourceMeshFormat, nIndex));
+            holder.SetMesh(BuildPanelMesh(flWidth, kSourceMeshLevel, &extent, true));
+            holder.GetMesh()->SetName(FormatString(kSourceMeshFormat, nIndex));
         }
         ++nIndex;
     }
@@ -787,30 +781,28 @@ bool TnlGeom::Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
         geometry.mRightX = edge.second.x;
         geometry.mRightZ = edge.second.y;
         const int nLastColor = static_cast<int>(pColors->size()) - 1;
-        mTracks[i].mColor = (*pColors)[std::min(static_cast<int>(i), nLastColor)];
-        mTracks[i].mPlayers = 0;
-        mTracks[i].mOverlayMat = nullptr;
+        mTracks[i].SetColor((*pColors)[std::min(static_cast<int>(i), nLastColor)]);
+        mTracks[i].SetPlayers(0);
+        mTracks[i].SetOverlayMat(nullptr);
     }
 
-    for (unsigned i = 0; i < mPassMats.size(); ++i) {
-        delete mPassMats[i];
-        mPassMats[i] = nullptr;
+    for (auto &pMat : mPassMats) {
+        pMat.reset();
     }
-    for (unsigned i = 0; i < mPassAnims.size(); ++i) {
-        delete mPassAnims[i];
-        mPassAnims[i] = nullptr;
+    for (auto &pAnim : mPassAnims) {
+        pAnim.reset();
     }
 
     const int nPasses = static_cast<int>(pPanelMat->mStages.size());
-    mPassMats.resize(nPasses, nullptr);
-    const bool bMulti = !(TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-                          TheGameDb->mRuleSet != GameDb::kRuleSetGame);
+    mPassMats.resize(nPasses);
+    const bool bMulti = !(TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+                          TheGameDb->GetRuleSet() != GameDb::kRuleSetGame);
     mPassLightColors[kPanelPlain] = Color{0.0f, 0.0f, 0.0f, 1.0f};
     mPassLightColors[kPanelHighlighted] = pPanelMat->mLightColor;
     for (int i = 0; i < nPasses; ++i) {
         RndMat *pMat =
             CreateObject<RndMat>(RndMat::sClassName, FormatString("tnl std panel mat pass %d", i));
-        mPassMats[i] = pMat;
+        mPassMats[i].reset(pMat);
         pMat->AddStage();
         pMat->SetAlpha(1.0f);
         pMat->SetBaseColor(Color{0.0f, 0.0f, 0.0f, 0.0f});
@@ -831,7 +823,7 @@ bool TnlGeom::Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
             stage.mBlend = RndMat::kBlendSrc;
             pMat->SetLighting(0, 0, 0, 0, 0, 0);
         }
-        if (TheGfxManager.mNoPanels != 0 && i == 0) {
+        if (TheGfxManager.GetNoPanels() != 0 && i == 0) {
             pMat->mBlend = RndMat::kBlendDest;
         }
         pMat->mCull = pPanelMat->mCull;
@@ -850,7 +842,7 @@ bool TnlGeom::Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
             ++nAnims;
         }
     }
-    mPassAnims.resize(nAnims, nullptr);
+    mPassAnims.resize(nAnims);
     nAnims = 0;
     for (unsigned i = 0; i < pPanelAnim->mKeysOwner->mStages.size(); ++i) {
         const RndMatAnim::Stage &source = pPanelAnim->mKeysOwner->mStages[i];
@@ -864,9 +856,9 @@ bool TnlGeom::Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
             pFilter->Copy(*it);
             pAnim->mFilters.push_back(pFilter);
         }
-        pAnim->SetMat(mPassMats[i]);
+        pAnim->SetMat(mPassMats[i].get());
         pAnim->ResizeStages(kPassStageCount);
-        mPassAnims[nAnims++] = pAnim;
+        mPassAnims[nAnims++].reset(pAnim);
         RndMatAnim::Stage &target = pAnim->mKeysOwner->mStages[0];
         if (!source.mTransKeys.empty()) {
             target.mTransKeys = source.mTransKeys;
@@ -909,7 +901,7 @@ void TnlGeom::BuildBar(int nBar) {
             bLast = true;
         }
         Transform path;
-        const float flTime = flTick * *TheGfxManager.mMsPerTick;
+        const float flTime = flTick * *TheGfxManager.GetMsPerTick();
         if (mPath->mSegments[1].mAnim == nullptr) {
             SetIdentity(&path);
         } else {
@@ -917,23 +909,23 @@ void TnlGeom::BuildBar(int nBar) {
         }
         for (int nTrack = 0; nTrack < mNumTracks; ++nTrack) {
             PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-            CrossSectionXfm &section = panel.mBaseSections[nSection];
+            CrossSectionXfm &section = panel.GetBaseSections()[nSection];
             const TrackGeometry &geometry = mTrackGeometry[nTrack];
             sceVu0MulAffineMatrixXyz(
                 &section.mXfm.mBasisX.x, &path.mBasisX.x, &geometry.mXfm.mBasisX.x);
             for (int i = 0; i < 3; ++i) {
                 section.mCellBasis[i] = RotateDir(&path.mBasisX, geometry.mBasis[i]);
             }
-            panel.mSections[nSection] = section;
+            panel.GetSections()[nSection] = section;
             if (bLast) {
-                panel.mTransparent = 1;
-                panel.mMesh->mZFunc = RndMesh::kZFuncLessEqual;
-                panel.mMesh->mZMode = RndMesh::kZModeZReadOnly;
-                panel.mCheckpointMat = nullptr;
-                panel.mDirty = 1;
-                panel.mPickable = 0;
-                panel.mColor = mTracks[nTrack].mColor;
-                panel.mHighlighted = 0;
+                panel.SetTransparent(1);
+                panel.GetMesh()->mZFunc = RndMesh::kZFuncLessEqual;
+                panel.GetMesh()->mZMode = RndMesh::kZModeZReadOnly;
+                panel.SetCheckpointMat(nullptr);
+                panel.SetDirty(1);
+                panel.SetPickable(0);
+                panel.SetColor(mTracks[nTrack].GetColor());
+                panel.SetHighlighted(0);
             }
         }
         if (bLast) {
@@ -955,14 +947,14 @@ void TnlGeom::BuildBar(int nBar) {
 void TnlGeom::ResetPanels() {
     mAnimateMoves = 0;
     for (auto &panel : mPanels) {
-        panel.mDirty = 1;
-        panel.mTransparent = 1;
-        panel.mMesh->mZFunc = RndMesh::kZFuncLessEqual;
-        panel.mMesh->mZMode = RndMesh::kZModeZReadOnly;
-        panel.mCheckpointMat = nullptr;
-        panel.mPickable = 0;
-        panel.mColor = Color{1.0f, 1.0f, 1.0f, 1.0f};
-        panel.mHighlighted = 0;
+        panel.SetDirty(1);
+        panel.SetTransparent(1);
+        panel.GetMesh()->mZFunc = RndMesh::kZFuncLessEqual;
+        panel.GetMesh()->mZMode = RndMesh::kZModeZReadOnly;
+        panel.SetCheckpointMat(nullptr);
+        panel.SetPickable(0);
+        panel.SetColor(Color{1.0f, 1.0f, 1.0f, 1.0f});
+        panel.SetHighlighted(0);
     }
     std::fill(mBarRing.begin(), mBarRing.end(), kNoBar);
 }
@@ -1016,8 +1008,8 @@ void TnlGeom::TrackXfm(
             flBlend = flSections - static_cast<float>(nSection);
         }
         const PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-        const CrossSectionXfm &first = panel.mBaseSections[nSection];
-        const CrossSectionXfm &second = panel.mBaseSections[nSection + 1];
+        const CrossSectionXfm &first = panel.GetBaseSections()[nSection];
+        const CrossSectionXfm &second = panel.GetBaseSections()[nSection + 1];
         if (bSmoothBasis) {
             pXfm->mBasisY = LerpRow(first.mCellBasis[1], second.mCellBasis[1], flBlend);
             pXfm->mBasisZ = LerpRow(first.mCellBasis[2], second.mCellBasis[2], flBlend);
@@ -1044,7 +1036,7 @@ void TnlGeom::TrackXfm(
     pXfm->mTranslation.z = ((geometry.mRightZ - geometry.mLeftZ) * flLateral) + geometry.mLeftZ;
     pXfm->mTranslation.y = 0.0f;
     Transform path;
-    mPath->Xfm(flTick, flTick * *TheGfxManager.mMsPerTick, &path);
+    mPath->Xfm(flTick, flTick * *TheGfxManager.GetMsPerTick(), &path);
     sceVu0MulAffineMatrixXyz(&pXfm->mBasisX.x, &path.mBasisX.x, &pXfm->mBasisX.x);
 }
 
@@ -1098,8 +1090,8 @@ void TnlGeom::CellXfm(int nTrack,
             flBlend = flSections - static_cast<float>(nSection);
         }
         const PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-        const CrossSectionXfm &first = panel.mSections[nSection];
-        const CrossSectionXfm &second = panel.mSections[nSection + 1];
+        const CrossSectionXfm &first = panel.GetSections()[nSection];
+        const CrossSectionXfm &second = panel.GetSections()[nSection + 1];
         if (bSmoothBasis) {
             pXfm->mBasisY = LerpRow(first.mCellBasis[1], second.mCellBasis[1], flBlend);
             pXfm->mBasisZ = LerpRow(first.mCellBasis[2], second.mCellBasis[2], flBlend);
@@ -1124,7 +1116,7 @@ void TnlGeom::CellXfm(int nTrack,
         pXfm->mTranslation.z = ((geometry.mRightZ - geometry.mLeftZ) * flLateral) + geometry.mLeftZ;
         pXfm->mTranslation.y = 0.0f;
         Transform path;
-        mPath->Xfm(flTick, flTick * *TheGfxManager.mMsPerTick, &path);
+        mPath->Xfm(flTick, flTick * *TheGfxManager.GetMsPerTick(), &path);
         sceVu0MulAffineMatrixXyz(&pXfm->mBasisX.x, &path.mBasisX.x, &pXfm->mBasisX.x);
     }
     if (bTrackOffset) {
@@ -1179,7 +1171,7 @@ void TnlGeom::PathXfm(Transform *pXfm, float flTick) {
         SetIdentity(pXfm);
         return;
     }
-    mPath->Xfm(flTick, flTick * *TheGfxManager.mMsPerTick, pXfm);
+    mPath->Xfm(flTick, flTick * *TheGfxManager.GetMsPerTick(), pXfm);
 }
 
 std::vector<TnlGeom::CrossSectionXfm> *TnlGeom::GetSections(int nTrack, int nBar, bool bDirty) {
@@ -1188,9 +1180,9 @@ std::vector<TnlGeom::CrossSectionXfm> *TnlGeom::GetSections(int nTrack, int nBar
         return nullptr;
     }
     if (bDirty) {
-        pPanel->mDirty = 1;
+        pPanel->SetDirty(1);
     }
-    return &pPanel->mSections;
+    return &pPanel->GetSections();
 }
 
 TnlGeom::PanelData *TnlGeom::GetPanel(int nTrack, int nBar) {
@@ -1200,8 +1192,8 @@ TnlGeom::PanelData *TnlGeom::GetPanel(int nTrack, int nBar) {
 void TnlGeom::RestoreSections(int nTrack, int nBar) {
     PanelData *pPanel = FindPanel(nTrack, nBar);
     if (pPanel != nullptr) {
-        pPanel->mSections = pPanel->mBaseSections;
-        pPanel->mDirty = 1;
+        pPanel->GetSections() = pPanel->GetBaseSections();
+        pPanel->SetDirty(1);
     }
 }
 
@@ -1222,11 +1214,11 @@ void TnlGeom::SetTrackOffset(int nTrack, const Vector3 *pOffset) {
 }
 
 void TnlGeom::SetTrackColor(int nTrack, const Color *pColor) {
-    mTracks[nTrack].mColor = *pColor;
+    mTracks[nTrack].SetColor(*pColor);
 }
 
 Color *TnlGeom::GetTrackColor(int nTrack) {
-    return &mTracks[nTrack].mColor;
+    return &mTracks[nTrack].GetColor();
 }
 
 void TnlGeom::SetBarValue(int nBar, RndMat *pMat) {
@@ -1251,16 +1243,16 @@ void TnlGeom::SetPanelState(int nTrack,
     if (pPanel == nullptr) {
         return;
     }
-    pPanel->mDirty = 1;
-    pPanel->mTransparent = bTransparent;
-    pPanel->mMesh->mZFunc = RndMesh::kZFuncLessEqual;
-    pPanel->mMesh->mZMode =
+    pPanel->SetDirty(1);
+    pPanel->SetTransparent(bTransparent);
+    pPanel->GetMesh()->mZFunc = RndMesh::kZFuncLessEqual;
+    pPanel->GetMesh()->mZMode =
         (bTransparent == 1) ? RndMesh::kZModeZReadOnly : RndMesh::kZModeZReadWrite;
-    pPanel->mCheckpointMat = pCheckpointMat;
-    pPanel->mPickable = bPickable;
-    pPanel->mHighlighted = bHighlighted ? 1 : 0;
+    pPanel->SetCheckpointMat(pCheckpointMat);
+    pPanel->SetPickable(bPickable);
+    pPanel->SetHighlighted(bHighlighted ? 1 : 0);
     if (pColor != nullptr) {
-        pPanel->mColor = *pColor;
+        pPanel->SetColor(*pColor);
     }
     if (bPickable) {
         pPanel->UpdateTriangles();
@@ -1272,9 +1264,9 @@ void TnlGeom::SetPanelColor(int nTrack, int nBar, const Color *pColor, bool bHig
     if (pPanel == nullptr) {
         return;
     }
-    pPanel->mHighlighted = bHighlighted ? 1 : 0;
+    pPanel->SetHighlighted(bHighlighted ? 1 : 0);
     if (pColor != nullptr) {
-        pPanel->mColor = *pColor;
+        pPanel->SetColor(*pColor);
     }
 }
 
@@ -1286,7 +1278,7 @@ void TnlGeom::SetAllPanelColors(const Color *pColor, bool bHighlighted) {
     const int nEndBar = mFirstBar + mNumBars;
     for (int nTrack = 0; nTrack < mNumTracks; ++nTrack) {
         if (pColor == nullptr) {
-            color = mTracks[nTrack].mColor;
+            color = mTracks[nTrack].GetColor();
         }
         for (int nBar = mFirstBar; nBar < nEndBar; ++nBar) {
             const int nSlot = nBar & kRingMask;
@@ -1294,29 +1286,29 @@ void TnlGeom::SetAllPanelColors(const Color *pColor, bool bHighlighted) {
                 continue;
             }
             PanelData &panel = mPanels[(nTrack * mNumBars) + nSlot];
-            panel.mHighlighted = bHighlighted ? 1 : 0;
-            panel.mColor = color;
+            panel.SetHighlighted(bHighlighted ? 1 : 0);
+            panel.SetColor(color);
         }
     }
 }
 
 Color *TnlGeom::GetPanelColor(int nTrack, int nBar) {
     PanelData *pPanel = FindPanel(nTrack, nBar);
-    return (pPanel != nullptr) ? &pPanel->mColor : nullptr;
+    return (pPanel != nullptr) ? &pPanel->GetColor() : nullptr;
 }
 
 void TnlGeom::SetPanelStartSection(int nTrack, int nBar, char nSection) {
     PanelData *pPanel = FindPanel(nTrack, nBar);
     if (pPanel != nullptr) {
-        pPanel->mStartSection = nSection;
-        pPanel->mDirty = 1;
+        pPanel->SetStartSection(nSection);
+        pPanel->SetDirty(1);
     }
 }
 
 void TnlGeom::SetTrackOverlay(int nTrack, RndMat *pMat, int nMode) {
     TrackData &track = mTracks[nTrack];
-    track.mOverlayMode = nMode;
-    track.mOverlayMat = pMat;
+    track.SetOverlayMode(nMode);
+    track.SetOverlayMat(pMat);
 }
 
 void TnlGeom::SetPanelMat(RndMat *pMat, int nKind) {
@@ -1347,15 +1339,11 @@ TnlGeom::PanelData::PanelData()
       mDirty(1), mPickable(0), mTransparent(1), mStartSection(0) {
 }
 
-TnlGeom::PanelData::~PanelData() {
-    delete mMesh;
-}
-
 void TnlGeom::PanelData::Rebuild(const MeshHolder *pSource, const Vector3 *pOffset, int nRows) {
     const CrossSectionXfm *pEnd = mSections.data() + nRows;
     const CrossSectionXfm *pSection = mSections.data() + mStartSection;
     RndMesh::Vert *pOut = mMesh->mGeomOwner->mVerts.data();
-    const RndMesh::Vert *pIn = pSource->mMesh->mGeomOwner->mVerts.data();
+    const RndMesh::Vert *pIn = pSource->GetMesh()->mGeomOwner->mVerts.data();
     char nHold = mStartSection;
     while (pSection != pEnd) {
         for (int i = 0; i < kRowVerts; ++i) {
@@ -1416,9 +1404,8 @@ void TnlGeom::TrackData::Clear() {
 }
 
 TnlGeom::MeshHolder::~MeshHolder() {
-    if (!sKeepMeshes) {
-        delete mMesh;
-        mMesh = nullptr;
+    if (sKeepMeshes) {
+        (void)mMesh.release(); // The mesh is deliberately retained, as in the binary.
     }
 }
 
@@ -1439,10 +1426,7 @@ TnlGeom::Player::Player() {
     mTrailTicks = kPlayerTrailTicks;
 }
 
-TnlGeom::Player::~Player() {
-    delete mCamCurve;
-    delete mMoveCurve;
-}
+TnlGeom::Player::~Player() = default;
 
 void TnlGeom::Player::Init(TnlGeom *pGeom, char nIndex) {
     mIndex = nIndex;
@@ -1463,7 +1447,7 @@ void TnlGeom::Player::Update(float flTick, float flDeltaTicks) {
     float flMoved = 0.0f;
     const float flTrack = static_cast<float>(mTrack);
     if (mPosition != flTrack) {
-        if (mMoveCurve->mX1 < flTick) {
+        if (mMoveCurve->GetX1() < flTick) {
             flMoved = flTrack - mPosition;
             mPosition = flTrack;
         } else {
@@ -1479,7 +1463,7 @@ void TnlGeom::Player::Update(float flTick, float flDeltaTicks) {
     if ((mCamPosition == flTrack) || mHoldCam) {
         return;
     }
-    if (mCamCurve->mX1 < flTick) {
+    if (mCamCurve->GetX1() < flTick) {
         mCamPosition = flTrack;
         return;
     }
@@ -1493,8 +1477,10 @@ void TnlGeom::Player::SetCamSlide(RndTransformable *pSlide) {
 
 void TnlGeom::Player::SetTrack(char nTrack) {
     const unsigned char bit = static_cast<unsigned char>(1 << mIndex);
-    mGeom->mTracks[mTrack].mPlayers &= static_cast<unsigned char>(~bit);
-    mGeom->mTracks[nTrack].mPlayers |= bit;
+    TrackData &from = mGeom->mTracks[mTrack];
+    from.SetPlayers(from.GetPlayers() & static_cast<unsigned char>(~bit));
+    TrackData &to = mGeom->mTracks[nTrack];
+    to.SetPlayers(to.GetPlayers() | bit);
     if (nTrack == mTrack) {
         return;
     }
@@ -1507,7 +1493,7 @@ void TnlGeom::Player::SetTrack(char nTrack) {
         return;
     }
 
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     const float flNumTracks = static_cast<float>(mGeom->mNumTracks);
     if (mGeom->mWraps) {
         const float flDistance = WrapDistance(flTrack - mCamPosition, flNumTracks);
@@ -1519,7 +1505,7 @@ void TnlGeom::Player::SetTrack(char nTrack) {
         if (mCamCurve != nullptr) {
             mCamCurve->Resample(curve, kCamCurveSamples);
         } else {
-            mCamCurve = new TableLinInterpolator(curve, kCamCurveSamples);
+            mCamCurve = std::make_unique<TableLinInterpolator>(curve, kCamCurveSamples);
         }
     } else {
         const float flScale = (std::fabs(flTrack - mCamPosition) * 0.5f) + 0.5f;
@@ -1531,7 +1517,7 @@ void TnlGeom::Player::SetTrack(char nTrack) {
         if (mCamCurve != nullptr) {
             mCamCurve->Resample(curve, kCamCurveSamples);
         } else {
-            mCamCurve = new TableLinInterpolator(curve, kCamCurveSamples);
+            mCamCurve = std::make_unique<TableLinInterpolator>(curve, kCamCurveSamples);
         }
     }
 
@@ -1545,7 +1531,7 @@ void TnlGeom::Player::SetTrack(char nTrack) {
         if (mMoveCurve != nullptr) {
             mMoveCurve->Resample(curve, kMoveCurveSamples);
         } else {
-            mMoveCurve = new TableLinInterpolator(curve, kMoveCurveSamples);
+            mMoveCurve = std::make_unique<TableLinInterpolator>(curve, kMoveCurveSamples);
         }
     } else {
         const float flLength = mGeom->MoveLength(mPosition, flTrack);
@@ -1554,13 +1540,14 @@ void TnlGeom::Player::SetTrack(char nTrack) {
         if (mMoveCurve != nullptr) {
             mMoveCurve->Resample(curve, kMoveCurveSamples);
         } else {
-            mMoveCurve = new TableLinInterpolator(curve, kMoveCurveSamples);
+            mMoveCurve = std::make_unique<TableLinInterpolator>(curve, kMoveCurveSamples);
         }
     }
 }
 
 void TnlGeom::Player::LeaveTrack() {
-    mGeom->mTracks[mTrack].mPlayers &= static_cast<unsigned char>(~(1 << mIndex));
+    TrackData &track = mGeom->mTracks[mTrack];
+    track.SetPlayers(track.GetPlayers() & static_cast<unsigned char>(~(1 << mIndex)));
 }
 
 void TnlGeom::Player::SetActivator(RndView *pView) {

@@ -9,13 +9,11 @@ constexpr int kOpenWrite = 0x602;
 
 FileStream::FileStream(const char *pszPath, bool bWrite, bool bLittleEndian, int nFlags)
     : BinStream(bLittleEndian) {
-    mFile = File::New(pszPath, bWrite ? kOpenWrite : File::kModeRead, nFlags);
+    mFile.reset(File::New(pszPath, bWrite ? kOpenWrite : File::kModeRead, nFlags));
     mFail = mFile == nullptr;
 }
 
-FileStream::~FileStream() {
-    delete mFile;
-}
+FileStream::~FileStream() = default;
 
 #ifdef VIDEO_STANDARD_PAL
 void FileStream::ReadImpl(void *pData, int nBytes) {

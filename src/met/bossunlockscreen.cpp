@@ -67,7 +67,7 @@ void BossUnlockScreen::Poll(float fTime) {
 
 bool BossUnlockScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     TheGfxManager.StartBossJourney();
-    mAnimPlayer.Start(TheUI.mTime);
+    mAnimPlayer.Start(TheUI.GetTime());
     mStarted = 1;
     return FreqScreen::HandleTransitionComplete(pMsg);
 }

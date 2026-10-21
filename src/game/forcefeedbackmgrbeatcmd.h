@@ -33,13 +33,23 @@ public:
      * @ghidraAddress PAL: 0x003a33b8
      */
     void Execute() override {
-        for (auto *pController : TheForceFeedbackMgr->mControllers) {
-            if (pController->mEnabled && !pController->IsPlayingEffect()) {
-                pController->mBeatEffect->Start();
+        for (const auto &pController : TheForceFeedbackMgr->GetControllers()) {
+            if (pController->GetEnabled() && !pController->IsPlayingEffect()) {
+                pController->GetBeatEffect()->Start();
             }
         }
         TheSongScheduler.PostIn(this, mPeriod, false);
     }
 
+    /**
+     * Set the ticks between two pulses.
+     *
+     * @param nPeriod The period.
+     */
+    void SetPeriod(int nPeriod) {
+        mPeriod = nPeriod;
+    }
+
+private:
     int mPeriod; /*!< The ticks between two pulses. */
 };

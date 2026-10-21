@@ -39,7 +39,7 @@ bool NetDoUploadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetDoUploadScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         ShowProgress(0.0f);
         TheNetLobby->UploadRemix(this, mNote.c_str());
     }

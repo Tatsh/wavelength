@@ -50,7 +50,7 @@ void Lyric::Advance() {
     }
 
     ++mCurrent;
-    int nLoop = TheSongScheduler.mTick / mTicksPerBar / mLoopBars;
+    int nLoop = TheSongScheduler.GetTick() / mTicksPerBar / mLoopBars;
     if (mCurrent == mLyrics.end()) {
         mCurrent = mLyrics.begin();
         ++nLoop;

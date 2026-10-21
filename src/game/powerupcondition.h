@@ -31,7 +31,7 @@ public:
      * @ghidraAddress PAL: 0x003e4bc8
      */
     bool Test() override {
-        return TheTriggerMgr.mPowerup == mPowerup;
+        return TheTriggerMgr.GetPowerup() == mPowerup;
     }
 
 private:

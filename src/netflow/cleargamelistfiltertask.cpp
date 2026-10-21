@@ -16,13 +16,13 @@ bool ClearGameListFilterTask::HasField(int nField, const std::vector<RTFilter> *
 
 void ClearGameListFilterTask::OnStart() {
     mPending = 0;
-    for (const RTFilter &filter : TheLobbyRT->mActiveFilters) {
-        if (HasField(filter.mField, &TheLobbyRT->mFilters)) {
+    for (const RTFilter &filter : TheLobbyRT->GetActiveFilters()) {
+        if (HasField(filter.mField, &TheLobbyRT->GetFilters())) {
             continue;
         }
         rtMediusIdRequest request;
         memset(&request, 0, sizeof(request));
-        strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+        strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
         MakeTag(this, request.header.messageId);
         request.id = filter.mField;
         const int nError = rtMediusClearGameListFilter(&request, OnResponse);

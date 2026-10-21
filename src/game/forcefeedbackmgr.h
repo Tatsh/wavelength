@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/ptr.h"
@@ -191,11 +192,28 @@ public:
      */
     void Resume();
 
-    Ptr<BeatCmd> mBeatCmd;                  /*!< The command of the beat pulse. */
-    const float *mTickDuration;             /*!< The duration of one tick, from Start(). */
-    std::vector<Controller *> mControllers; /*!< One controller for each player. */
-    int mEnabled;                           /*!< Whether vibration runs, set by Start(). */
-    int mPaused;                            /*!< Whether Pause() stopped the motors. */
+    /** @return The command of the beat pulse. */
+    BeatCmd *GetBeatCmd() {
+        return mBeatCmd.Get();
+    }
+
+    /** @return The controllers, one for each player, deleted with the manager. */
+    const std::vector<std::unique_ptr<Controller>> &GetControllers() const {
+        return mControllers;
+    }
+
+    /** @return Whether vibration runs, set by Start(). */
+    int GetEnabled() const {
+        return mEnabled;
+    }
+
+private:
+    Ptr<BeatCmd> mBeatCmd; /*!< The command of the beat pulse. */
+    /** The duration of one tick, from Start(). Borrowed. */
+    const float *mTickDuration;
+    std::vector<std::unique_ptr<Controller>> mControllers; /*!< One controller for each player. */
+    int mEnabled; /*!< Whether vibration runs, set by Start(). */
+    int mPaused;  /*!< Whether Pause() stopped the motors. */
 };
 
 /**

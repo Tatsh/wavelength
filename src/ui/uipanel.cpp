@@ -66,7 +66,7 @@ void UIPanel::Init(DataArray *pConfig) {
 }
 
 UIPanel::UIPanel(DataArray *pData, const char *pszDir)
-    : mIdleFrame(kIdleFrame), mState(kStateHidden) {
+    : mState(kStateHidden), mIdleFrame(kIdleFrame) {
     mHiddenFrame = kDefaultHiddenFrame;
     mExitMs = kDefaultExitMs;
     mView = nullptr;
@@ -106,17 +106,9 @@ void UIPanel::Unload() {
     if (--mLoadRefs != 0) {
         return;
     }
-    if (mNavigator != nullptr) {
-        delete mNavigator;
-    }
-    mNavigator = nullptr;
+    mNavigator.reset();
     if (mFocus != nullptr) {
-        mFocusName = mFocus->mName;
-    }
-    for (const auto &entry : mComponents) {
-        if (entry.second != nullptr) {
-            delete entry.second;
-        }
+        mFocusName = mFocus->GetName();
     }
     mComponents.clear();
     mFocus = nullptr;
@@ -173,14 +165,14 @@ void UIPanel::FinishLoad() {
         } else if (std::strcmp("focus", pszType) == 0 && mFocusName == nullptr) {
             mFocus = FindComponent(pEntry->Sym(kEntryNameIndex), true);
         } else if (std::strcmp("navigator", pszType) == 0) {
-            mNavigator = new UINavigator(pEntry, this);
+            mNavigator = std::make_unique<UINavigator>(pEntry, this);
         }
     }
     if (mFocusName != nullptr) {
         mFocus = FindComponent(mFocusName, true);
     }
     if (mFocus == nullptr && !mComponents.empty()) {
-        mFocus = mComponents.begin()->second;
+        mFocus = mComponents.begin()->second.get();
     }
     mLoaded = 1;
 }
@@ -192,8 +184,8 @@ UIPanel::~UIPanel() {
 }
 
 void UIPanel::AddComponent(UIComponent *pComponent) {
-    (void)FindComponent(pComponent->mName, true); // Yes, the binary discards the lookup.
-    mComponents[pComponent->mName] = pComponent;
+    (void)FindComponent(pComponent->GetName(), true); // Yes, the binary discards the lookup.
+    mComponents[pComponent->GetName()].reset(pComponent);
 }
 
 void UIPanel::SetTextsShowing(bool bShowing) {
@@ -256,7 +248,8 @@ void UIPanel::Exit(bool bForce, float fTime) {
 
 bool UIPanel::Dispatch(Message *pMsg) {
     const bool bNavigation = TheUI.IsNavigationMsg(pMsg);
-    if (!bNavigation && TheUI.mCurrentScreen != nullptr && TheUI.mCurrentScreen->Dispatch(pMsg)) {
+    if (!bNavigation && TheUI.GetCurrentScreen() != nullptr &&
+        TheUI.GetCurrentScreen()->Dispatch(pMsg)) {
         return true;
     }
     if (DispatchPriv(pMsg)) {
@@ -343,7 +336,7 @@ void UIPanel::SetFocus(UIComponent *pComponent, [[maybe_unused]] int nButton) {
     if (pComponent == mFocus) {
         return;
     }
-    UIComponentFocusChangeMsg msg(pComponent, mFocus, this, TheUI.mCurrentScreen);
+    UIComponentFocusChangeMsg msg(pComponent, mFocus, this, TheUI.GetCurrentScreen());
     if (Dispatch(&msg)) {
         return;
     }
@@ -361,7 +354,7 @@ UIComponent *UIPanel::FindComponent(const char *pszName, [[maybe_unused]] bool b
     if (it == mComponents.end()) {
         return nullptr;
     }
-    return it->second;
+    return it->second.get();
 }
 
 void UIPanel::LocalizeTexts(const char *pszFile, std::list<RndObject *> &objects) {
@@ -378,18 +371,18 @@ void UIPanel::LocalizeTexts(const char *pszFile, std::list<RndObject *> &objects
             token.Erase(token.mLength - kTextSuffixLength, kTextSuffixLength);
         }
         const char *pszLocalized = TheLocale.Localize(token.c_str(), false);
-        if (TheUI.mEditMode) {
+        if (TheUI.GetEditMode()) {
             LocalizeErrors::CountToken(token.c_str(), 1);
         }
         if (pszLocalized != token.c_str()) {
             pText->SetText(pszLocalized);
-        } else if (TheUI.mEditMode) {
-            errors.mErrors.push_back(LocalizeErrors::SingleError{
+        } else if (TheUI.GetEditMode()) {
+            errors.GetErrors().push_back(LocalizeErrors::SingleError{
                 String(pText->mName.c_str()), String(pText->mPreWrapText.c_str())});
         }
         pText->UpdateCursors();
     }
-    if (errors.mErrors.size() != 0) {
+    if (errors.GetErrors().size() != 0) {
         errors.Store();
     }
 }

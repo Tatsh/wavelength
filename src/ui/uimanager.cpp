@@ -103,7 +103,7 @@ void UIManager::Init() {
             const auto pLoader =
                 TheManager.AddLoader(pShared->Sym(i), kSharedLoadFlags, mCallback.get(), nullptr);
             for (RndObject *pObject : pLoader->mObjects) {
-                mSharedObjects.push_back(pObject);
+                mSharedObjects.emplace_back(pObject);
             }
         }
         mCallback->Report();
@@ -123,37 +123,36 @@ void UIManager::Init() {
 }
 
 void UIManager::Terminate() {
-    for (const auto &entry : mStyles) {
-        delete entry.second;
+    for (auto &entry : mStyles) {
+        entry.second.reset();
     }
     mStyles.clear();
-    for (const auto &entry : mScreens) {
-        delete entry.second;
+    for (auto &entry : mScreens) {
+        entry.second.reset();
     }
     mScreens.clear();
-    for (const auto &entry : mPanels) {
-        delete entry.second;
+    for (auto &entry : mPanels) {
+        entry.second.reset();
     }
     mPanels.clear();
     while (!mSharedObjects.empty()) {
-        delete mSharedObjects.front();
         mSharedObjects.pop_front();
     }
 }
 
 void UIManager::AddScreen(UIScreen *pScreen) {
-    (void)FindScreen(pScreen->mName, true); // Yes, the binary discards this lookup.
-    mScreens[pScreen->mName] = pScreen;
+    (void)FindScreen(pScreen->GetName(), true); // Yes, the binary discards this lookup.
+    mScreens[pScreen->GetName()].reset(pScreen);
 }
 
 void UIManager::AddPanel(UIPanel *pPanel) {
-    (void)FindPanel(pPanel->mName, true); // Yes, the binary discards this lookup.
-    mPanels[pPanel->mName] = pPanel;
+    (void)FindPanel(pPanel->GetName(), true); // Yes, the binary discards this lookup.
+    mPanels[pPanel->GetName()].reset(pPanel);
 }
 
 void UIManager::AddStyle(UIStyle *pStyle) {
     (void)FindStyle(pStyle->mName, true); // Yes, the binary discards this lookup.
-    mStyles[pStyle->mName] = pStyle;
+    mStyles[pStyle->mName].reset(pStyle);
 }
 
 bool UIManager::IsNavigationMsg(Message *pMsg) {
@@ -252,12 +251,12 @@ void UIManager::Draw() {
 
 UIScreen *UIManager::FindScreen(const char *pszName, [[maybe_unused]] bool bFail) {
     const auto it = mScreens.find(pszName);
-    return it == mScreens.end() ? nullptr : it->second;
+    return it == mScreens.end() ? nullptr : it->second.get();
 }
 
 UIPanel *UIManager::FindPanel(const char *pszName, [[maybe_unused]] bool bFail) {
     const auto it = mPanels.find(pszName);
-    return it == mPanels.end() ? nullptr : it->second;
+    return it == mPanels.end() ? nullptr : it->second.get();
 }
 
 UIComponent *UIManager::FindComponent(const char *pszPanel, const char *pszComponent, bool bFail) {
@@ -270,7 +269,7 @@ UIComponent *UIManager::FindComponent(const char *pszPanel, const char *pszCompo
 
 UIStyle *UIManager::FindStyle(const char *pszName, [[maybe_unused]] bool bFail) {
     const auto it = mStyles.find(pszName);
-    return it == mStyles.end() ? nullptr : it->second;
+    return it == mStyles.end() ? nullptr : it->second.get();
 }
 
 void UIManager::GotoScreen(const char *pszName) {
@@ -279,7 +278,7 @@ void UIManager::GotoScreen(const char *pszName) {
 
 void UIManager::GotoScreen(UIScreen *pScreen) {
     if (mCurrentScreen != nullptr) {
-        if (mCurrentScreen == pScreen || mCurrentScreen->mNextScreen == pScreen) {
+        if (mCurrentScreen == pScreen || mCurrentScreen->GetNextScreen() == pScreen) {
             return;
         }
         UIScreenChangeMsg msg(pScreen, mCurrentScreen);
@@ -300,13 +299,13 @@ void UIManager::SetCurrentScreen(UIScreen *pScreen) {
 }
 
 UIPanel *UIManager::FocusPanel() {
-    return mCurrentScreen->mFocusPanel;
+    return mCurrentScreen->GetFocusPanel();
 }
 
 void UIManager::LoadGroup(const char *pszGroup) {
     const char *pszSymbol = LookupSymbol(pszGroup);
     for (const auto &entry : mScreens) {
-        if (entry.second->mGroup == pszSymbol) {
+        if (entry.second->GetGroup() == pszSymbol) {
             entry.second->Load();
         }
     }
@@ -315,7 +314,7 @@ void UIManager::LoadGroup(const char *pszGroup) {
 void UIManager::UnloadGroup(const char *pszGroup) {
     const char *pszSymbol = LookupSymbol(pszGroup);
     for (const auto &entry : mScreens) {
-        if (entry.second->mGroup == pszSymbol) {
+        if (entry.second->GetGroup() == pszSymbol) {
             entry.second->Unload();
         }
     }
@@ -324,7 +323,7 @@ void UIManager::UnloadGroup(const char *pszGroup) {
 bool UIManager::IsGroupLoaded(const char *pszGroup) {
     const char *pszSymbol = LookupSymbol(pszGroup);
     for (const auto &entry : mScreens) {
-        if (entry.second->mGroup == pszSymbol && !entry.second->IsLoaded()) {
+        if (entry.second->GetGroup() == pszSymbol && !entry.second->IsLoaded()) {
             return false;
         }
     }
@@ -390,7 +389,7 @@ void UIManager::LoadFile(const char *pszFile, bool bLoadAll) {
         } else if (std::strstr(pszType, "screen") != nullptr) {
             AddScreen(CreateScreen(pEntry));
         } else if (std::strstr(pszType, "panel") != nullptr) {
-            AddPanel(CreatePanel(pEntry, FileGetPath(pEntry->mFile)));
+            AddPanel(CreatePanel(pEntry, FileGetPath(pEntry->GetFile())));
         } else if (std::strcmp("focus", pszType) == 0) {
             GotoScreen(FindScreen(pEntry->Sym(kNameIndex), false));
         }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/playmap.h"
 #include "mid/trackbuilder.h"
 
@@ -31,7 +33,7 @@ public:
                      int nNumBars,
                      int nTicksPerBeat,
                      const float *pfMsPerTick,
-                     PlayMap **ppPlayMap,
+                     std::unique_ptr<PlayMap> *ppPlayMap,
                      int *pTicksPerBar);
 
     /**
@@ -123,9 +125,9 @@ public:
      */
     void OnTimeSignature(int nTick, int nNumerator, int nDenominator) override;
 
-    int mNumBars;            /*!< The length of the song in bars. */
-    int mTicksPerBeat;       /*!< The song ticks in one beat. */
-    const float *mMsPerTick; /*!< The length of a tick that the song text gives. */
-    PlayMap **mPlayMap;      /*!< Receives the play map. */
-    int *mTicksPerBar;       /*!< Receives the song ticks in one bar. */
+    int mNumBars;                       /*!< The length of the song in bars. */
+    int mTicksPerBeat;                  /*!< The song ticks in one beat. */
+    const float *mMsPerTick;            /*!< The length of a tick that the song text gives. */
+    std::unique_ptr<PlayMap> *mPlayMap; /*!< Receives the play map. */
+    int *mTicksPerBar;                  /*!< Receives the song ticks in one bar. */
 };

@@ -62,8 +62,8 @@ void WaitInteractiveTask::OnStart() {
     mCaptureFailCount = 0;
     mStreak = 0;
     mPowerupCount = 0;
-    mPromptTime = TheSongScheduler.mTime;
-    mActiveIdleTime = TheSongScheduler.mTime;
+    mPromptTime = TheSongScheduler.GetTime();
+    mActiveIdleTime = TheSongScheduler.GetTime();
 }
 
 void WaitInteractiveTask::OnStop() {
@@ -73,7 +73,7 @@ void WaitInteractiveTask::OnStop() {
 void WaitInteractiveTask::OnPoll() {
     DataArray *pCondition = mStep->FindArray(kInactiveDelayCondition, false);
     if (pCondition != nullptr) {
-        const float fNow = TheSongScheduler.mTime;
+        const float fNow = TheSongScheduler.GetTime();
         if (mLogic->IsPhraseAbsent()) {
             mPromptTime = fNow;
         } else if (mPromptTime + pCondition->Float(kConditionValue) * kMillisecondsPerSecond <
@@ -85,7 +85,7 @@ void WaitInteractiveTask::OnPoll() {
 
     pCondition = mStep->FindArray(kDelayCondition, false);
     if (pCondition != nullptr) {
-        const float fNow = TheSongScheduler.mTime;
+        const float fNow = TheSongScheduler.GetTime();
         if (mPromptTime + pCondition->Float(kConditionValue) * kMillisecondsPerSecond < fNow) {
             mPromptTime = fNow;
             RunActions(pCondition, kActionsAfterValue);
@@ -94,7 +94,7 @@ void WaitInteractiveTask::OnPoll() {
 
     pCondition = mStep->FindArray(kActiveIdleCondition, false);
     if (pCondition != nullptr && mLogic->IsPhraseAbsent()) {
-        const float fNow = TheSongScheduler.mTime;
+        const float fNow = TheSongScheduler.GetTime();
         if (mActiveIdleTime + pCondition->Float(kConditionValue) * kMillisecondsPerSecond < fNow) {
             mActiveIdleTime = fNow;
             RunActions(pCondition, kActionsAfterValue);

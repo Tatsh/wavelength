@@ -21,10 +21,13 @@ constexpr int kMinPlayers = 1;
 
 void MediusSendWorldReportTask::OnStart() {
     const int nPlayers = static_cast<int>(TheHostpadRT->GetPlayers()->size());
-    const NetGameParams *pParams = &TheHostpadRT->mParams;
+    const NetGameParams *pParams = &TheHostpadRT->GetParams();
     String name;
-    LobbyRT::EncodeGameName(
-        &name, pParams, nPlayers, TheNetInet->GetConnectionType(), TheLobbyRT->mLocalPlayer.mId);
+    LobbyRT::EncodeGameName(&name,
+                            pParams,
+                            nPlayers,
+                            TheNetInet->GetConnectionType(),
+                            TheLobbyRT->GetLocalPlayer().mId);
     int nRules;
     int nRulesVariant;
     LobbyRT::EncodeRules(&nRules, &nRulesVariant, pParams->mRuleSet, pParams->mSkillLevel);
@@ -33,9 +36,9 @@ void MediusSendWorldReportTask::OnStart() {
 
     rtMediusWorldReportData report;
     memset(&report, 0, sizeof(report));
-    strcpy(report.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(report.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     report.playerCount = kReportPlayerCount;
-    report.worldId = TheLaunchpadRT->mWorldId;
+    report.worldId = TheLaunchpadRT->GetWorldId();
     strncpy(report.gameName, name.c_str(), RT_MEDIUS_GAME_NAME_SIZE);
     report.minPlayers = kMinPlayers;
     report.maxPlayers = LaunchpadRT::kMaxClients;
@@ -44,7 +47,7 @@ void MediusSendWorldReportTask::OnStart() {
     report.gameStats[0] = '\0';
     report.playerSkillLevel = 0;
     report.genericField1 = 0;
-    report.genericField2 = TheLobbyRT->mChatroom.mId;
+    report.genericField2 = TheLobbyRT->GetChatroom().mId;
     report.genericField3 = TheHostpadRT->CanJoin();
     report.worldStatus = TheHostpadRT->GetWorldStatus();
     (void)rtMediusWorldReport(&report);

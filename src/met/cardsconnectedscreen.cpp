@@ -66,7 +66,7 @@ bool CardsConnectedScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool CardsConnectedScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheMCManager.GetCardStatus(this, mSlot);
     }
     return false;

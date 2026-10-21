@@ -64,15 +64,16 @@ DuelTrack::DuelTrack(DuelLogic *pLogic,
                      int nTicksPerBar,
                      int nPhraseBars,
                      bool bEasiest)
-    : Track(nSide), mSidePlayer(pPlayer), mCatchReceiver(new CatchReceiver(this)),
-      mPitchReceiver(new PitchReceiver(this)), mPatterns(pPatterns), mPlayMap(pPlayMap),
-      mLogic(pLogic), mNumBars(nNumBars), mTicksPerBar(nTicksPerBar), mPhraseBars(nPhraseBars),
+    : Track(nSide), mSidePlayer(pPlayer), mCatchReceiver(std::make_unique<CatchReceiver>(this)),
+      mPitchReceiver(std::make_unique<PitchReceiver>(this)), mPatterns(pPatterns),
+      mPlayMap(pPlayMap), mLogic(pLogic), mNumBars(nNumBars), mTicksPerBar(nTicksPerBar),
+      mPhraseBars(nPhraseBars),
       mFirstPhraseTick(nTicksPerBar * nPhraseBars * kFirstPhraseEighths / kEighths),
       mCatchState(pCatchGems, nNumBars, nTicksPerBar, pPlayMap),
       mPitchState(pPitchGems, nNumBars, nTicksPerBar, pPlayMap), mMode(kModeIdle),
-      mGemCatcher(mCatchReceiver, &mCatchState, pTickDuration, nSide, nTicksPerBar),
+      mGemCatcher(mCatchReceiver.get(), &mCatchState, pTickDuration, nSide, nTicksPerBar),
       mPitcher(this,
-               mPitchReceiver,
+               mPitchReceiver.get(),
                pRiffData,
                pPitchGems,
                pPlayMap,
@@ -86,21 +87,23 @@ DuelTrack::DuelTrack(DuelLogic *pLogic,
       mCatchMissed(0), mCatchMade(0), mCatchPoints(0),
       mPhraseCommand(NewMemFunCommand(this, &DuelTrack::OnPhraseTick)), mCaughtGems(0),
       mPhraseGems(0), mCatchBar(kNoBar), mCatchEndBar(kNoBar), mRejectEndTick(0),
-      mPhraseBonus(kPhraseBonus), mPitchedGems(0), mMuse(nullptr), mNetFaker(nullptr),
-      mIgnoreMisses(0) {
+      mPhraseBonus(kPhraseBonus), mPitchedGems(0), mMuse(nullptr), mIgnoreMisses(0) {
     // Yes, the binary sets mPitchPoints only once the first gem of a phrase is placed.
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
-        mNetFaker = new NetFaker(this);
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
+        mNetFaker = std::make_unique<NetFaker>(this);
     }
 }
 
 DuelTrack::~DuelTrack() {
     TheSongScheduler.Cancel(mPhraseCommand.Get());
-    delete mCatchReceiver;
-    delete mPitchReceiver;
+    // Preserve the original deletion order, while mGemCatcher and mPitcher, with their pointers to
+    // the receivers, still exist.
+    mCatchReceiver.reset();
+    mPitchReceiver.reset();
     if (mNetFaker != nullptr) {
         mNetFaker->Stop();
-        delete mNetFaker;
+        // Preserve the original deletion point, after Stop().
+        mNetFaker.reset();
     }
 }
 
@@ -160,11 +163,11 @@ void DuelTrack::SetMode(int nMode, int nBar) {
         GemCursor cursor = mCatchState.GetCursor(mCatchBar * mTicksPerBar);
         if (!mIgnoreMisses && (!cursor.IsValid() || cursor.GetTick() >= nEndTick)) {
             mCatchPoints = mPhraseBonus;
-            if (TheGameDb->mCommunity != GameDb::kCommunityOnline ||
+            if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline ||
                 TheGameDb->IsLocalPlayer(mSidePlayer->GetIndex())) {
                 mLogic->OnCatchMade(this, mSidePlayer, false);
                 mCatchMade = 1;
-                if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+                if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                     CapturePacket packet(mIndex, nBar, false);
                     TheNetTransport->Send(packet);
                 }
@@ -200,7 +203,7 @@ void DuelTrack::DropBars(int nStartBar, int nEndBar) {
 
 void DuelTrack::Rewind() {
     mGemCatcher.Reset();
-    const GemCursor cursor = mCatchState.GetCursor(TheSongScheduler.mTick);
+    const GemCursor cursor = mCatchState.GetCursor(TheSongScheduler.GetTick());
     if (mNetFaker != nullptr) {
         mNetFaker->SetCursor(cursor);
     }
@@ -336,7 +339,7 @@ void DuelTrack::CheckCatchMissed(int nTick) {
 }
 
 void DuelTrack::MissCatch() {
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         TheGameDb->IsLocalPlayer(mPlayer->GetIndex())) {
         CapturePacket packet(mIndex, mCatchBar, false);
         packet.mValid = 0;
@@ -382,7 +385,7 @@ void DuelTrack::MakeCatch(int nBar) {
     mCatchBar = kNoBar;
     mCaughtGems = 0;
     mCatchMade = 1;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         TheGameDb->IsLocalPlayer(mPlayer->GetIndex())) {
         CapturePacket packet(mIndex, nBar, false);
         TheNetTransport->Send(packet);
@@ -391,7 +394,7 @@ void DuelTrack::MakeCatch(int nBar) {
 
 void DuelTrack::OnPhraseTick() {
     mPitchedGems = 0;
-    if (TheSongScheduler.mTick / mTicksPerBar < mNumBars) {
+    if (TheSongScheduler.GetTick() / mTicksPerBar < mNumBars) {
         TheSongScheduler.PostIn(mPhraseCommand.Get(), mTicksPerBar * mPhraseBars, false);
     }
 }

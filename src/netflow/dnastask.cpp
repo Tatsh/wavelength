@@ -57,7 +57,7 @@ constexpr char kHintEmpty[] = "dnas_foot_empty";
 
 void NotifyRunning(int nRunning) {
     DNASStatusMsg msg(nRunning);
-    TheLobbyRT->mConnectTask.Notify(&msg);
+    TheLobbyRT->GetConnectTask().Notify(&msg);
 }
 
 } // namespace

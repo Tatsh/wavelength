@@ -17,7 +17,7 @@ void FreqMakerErrorScreen::SetScreens(const char *pszContinue, const char *pszCa
 }
 
 bool FreqMakerErrorScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const char *pszButton = pMsg->mComponent->mName;
+    const char *pszButton = pMsg->GetComponent()->GetName();
     if (strcmp(pszButton, "continue") == 0) {
         dynamic_cast<FreqMakerUndoScreen *>(mCancelScreen)->Undo();
         TheUI.GotoScreen(mContinueScreen);

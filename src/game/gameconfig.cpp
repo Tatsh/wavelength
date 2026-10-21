@@ -43,12 +43,12 @@ void GameConfig::ReadFloatMatrix(DataArray *pArray,
     DataArray *pTable = pArray->FindArray(pszKey, true);
     table.clear();
     table.resize(kMaxPlayers);
-    for (int nRow = kFirstValue; nRow < pTable->mSize; ++nRow) {
+    for (int nRow = kFirstValue; nRow < pTable->Size(); ++nRow) {
         // Neither the rows nor the columns of the child array are checked against the table size.
         std::vector<float> &row = table[nRow - kFirstValue];
         row.resize(kPowerupDistColumnCount);
         const DataArray *pRow = pTable->Array(nRow);
-        for (int nColumn = 0; nColumn < pRow->mSize; ++nColumn) {
+        for (int nColumn = 0; nColumn < pRow->Size(); ++nColumn) {
             row[nColumn] = pRow->Float(nColumn);
         }
     }
@@ -59,7 +59,7 @@ void GameConfig::ReadFloatVector(DataArray *pArray,
                                  std::vector<float> &values) {
     const DataArray *pValues = pArray->FindArray(pszKey, true);
     values.clear();
-    for (int i = kFirstValue; i < pValues->mSize; ++i) {
+    for (int i = kFirstValue; i < pValues->Size(); ++i) {
         values.push_back(pValues->Float(i));
     }
 }
@@ -67,7 +67,7 @@ void GameConfig::ReadFloatVector(DataArray *pArray,
 void GameConfig::ReadIntVector(DataArray *pArray, const char *pszKey, std::vector<int> &values) {
     const DataArray *pValues = pArray->FindArray(pszKey, true);
     values.clear();
-    for (int i = kFirstValue; i < pValues->mSize; ++i) {
+    for (int i = kFirstValue; i < pValues->Size(); ++i) {
         values.push_back(pValues->Int(i));
     }
 }
@@ -177,7 +177,7 @@ void GameConfig::Load() {
     pPoints->FindInt("phrase_scale", &mPhraseScale, true);
     const DataArray *pGems = pPoints->FindArray("gem", true);
     mGemPoints.clear();
-    for (int nGem = kFirstValue; nGem < pGems->mSize; ++nGem) {
+    for (int nGem = kFirstValue; nGem < pGems->Size(); ++nGem) {
         const DataArray *pGem = pGems->Array(nGem);
         const int nDivisor = pGem->Int(0);
         const int nPoints = pGem->Int(1);

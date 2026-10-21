@@ -10,6 +10,6 @@ void MGCLDisconnectTask::OnPoll() {
         return;
     }
     (void)rtMgclDisconnect();
-    TheHostpadRT->mMgclConnected = 0;
+    TheHostpadRT->SetMgclConnected(0);
     Finish(true, 0);
 }

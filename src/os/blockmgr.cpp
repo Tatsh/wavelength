@@ -92,10 +92,10 @@ BlockRequest::BlockRequest(int nBlock, const AsyncTask &task) : mBlockNum(nBlock
 void BlockMgr::Init() {
     gNextBuffer = 0;
     mSectorsPerBlock = gBlockSize / kSectorBytes;
-    mBlocks.resize(kBlockCount, nullptr);
+    mBlocks.resize(kBlockCount);
     mLoading = nullptr;
     for (unsigned int i = 0; i < mBlocks.size(); ++i) {
-        mBlocks[i] = new Block();
+        mBlocks[i] = std::make_unique<Block>();
     }
 }
 
@@ -124,7 +124,7 @@ void BlockMgr::KillBlockRequests(ArkFile *pFile) {
             }
         }
         if (request->mTasks.size() == 0 &&
-            (mLoading == nullptr || request->mBlockNum != mLoading->mBlockNum)) {
+            (mLoading == nullptr || request->mBlockNum != mLoading->GetBlockNum())) {
             request = mRequests.erase(request);
         } else {
             ++request;
@@ -142,7 +142,7 @@ char *BlockMgr::GetBlockData(int nBlock) {
         return nullptr;
     }
     pBlock->Touch();
-    return pBlock->mBuffer;
+    return pBlock->GetBuffer();
 }
 
 void BlockMgr::AddRequest(const AsyncTask &task) {
@@ -167,15 +167,16 @@ void BlockMgr::Poll() {
         const int nError = ReadError();
         if (nError != 0) {
             DebugPrint(" CD READING ERROR!!!  %d", nError);
-            if (!Read(
-                    mLoading->mBlockNum * mSectorsPerBlock, mSectorsPerBlock, mLoading->mBuffer)) {
+            if (!Read(mLoading->GetBlockNum() * mSectorsPerBlock,
+                      mSectorsPerBlock,
+                      mLoading->GetBuffer())) {
                 DebugWarn(" CAN'T RECOVER FROM CD ERROR, BAILING OUT\n");
             }
             return;
         }
         mLoading->Touch();
         auto request = mRequests.begin();
-        while (request != mRequests.end() && request->mBlockNum != mLoading->mBlockNum) {
+        while (request != mRequests.end() && request->mBlockNum != mLoading->GetBlockNum()) {
             ++request;
         }
         mLoading = nullptr;
@@ -194,15 +195,15 @@ void BlockMgr::Poll() {
     }
     const int nBlock = mRequests.front().mBlockNum;
     mLoading = pBlock;
-    pBlock->mBlockNum = nBlock;
+    pBlock->SetBlockNum(nBlock);
     mLoading->Touch();
-    Read(nBlock * mSectorsPerBlock, mSectorsPerBlock, mLoading->mBuffer);
+    Read(nBlock * mSectorsPerBlock, mSectorsPerBlock, mLoading->GetBuffer());
 }
 
 Block *BlockMgr::FindBlock(int nBlock) {
     for (unsigned int i = 0; i < mBlocks.size(); ++i) {
-        if (mBlocks[i]->mBlockNum == nBlock) {
-            return mBlocks[i];
+        if (mBlocks[i]->GetBlockNum() == nBlock) {
+            return mBlocks[i].get();
         }
     }
     return nullptr;
@@ -212,9 +213,9 @@ Block *BlockMgr::FindOldestBlock() {
     int nOldest = Block::CurrentTime();
     Block *pOldest = nullptr;
     for (unsigned int i = 0; i < mBlocks.size(); ++i) {
-        if (mBlocks[i]->mTimestamp < nOldest) {
-            pOldest = mBlocks[i];
-            nOldest = mBlocks[i]->mTimestamp;
+        if (mBlocks[i]->GetTimestamp() < nOldest) {
+            pOldest = mBlocks[i].get();
+            nOldest = mBlocks[i]->GetTimestamp();
         }
     }
     return pOldest;

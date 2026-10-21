@@ -22,11 +22,11 @@ bool ReadOnlyCheckScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool ReadOnlyCheckScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
     bool bReadOnly = false;
-    if (strcmp(pMsg->mComponent->mName, "no") == 0) {
+    if (strcmp(pMsg->GetComponent()->GetName(), "no") == 0) {
         if (mNeedsShareWarning) {
             TheUI.GotoScreen("net_share_read_only_warning");
             return true;

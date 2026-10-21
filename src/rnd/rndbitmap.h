@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/binstream.h"
 #include "os/prnstream.h"
 
@@ -133,7 +135,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0021cda8
      * @ghidraAddress PAL: 0x00225bc0
      */
-    void SetMip(RndBitmap *pMip);
+    void SetMip(std::unique_ptr<RndBitmap> pMip);
 
     /**
      * Release the pixels and the mipmaps and empty the bitmap.
@@ -472,13 +474,59 @@ public:
      */
     static unsigned char sRev;
 
+    /** @return The width in pixels. */
+    unsigned short GetWidth() const {
+        return mWidth;
+    }
+
+    /** @return The height in pixels. */
+    unsigned short GetHeight() const {
+        return mHeight;
+    }
+
+    /** @return The size of a row in bytes. */
+    unsigned short GetRowBytes() const {
+        return mRowBytes;
+    }
+
+    /** @return The bits per pixel. */
+    unsigned char GetBpp() const {
+        return mBpp;
+    }
+
+    /** @return The Order bits. */
+    unsigned char GetOrder() const {
+        return mOrder;
+    }
+
+    /** @return The pixels. */
+    unsigned char *GetPixels() const {
+        return mPixels;
+    }
+
+    /** @return The palette, or null. */
+    unsigned char *GetPalette() const {
+        return mPalette;
+    }
+
+    /** @return The next smaller mipmap, or null. */
+    const RndBitmap *GetMip() const {
+        return mMip.get();
+    }
+
+    /** @return The next smaller mipmap, or null. */
+    RndBitmap *GetMip() {
+        return mMip.get();
+    }
+
+private:
     unsigned short mWidth;    /*!< The width in pixels. */
     unsigned short mHeight;   /*!< The height in pixels. */
     unsigned short mRowBytes; /*!< The size of a row in bytes. */
     unsigned char mBpp;       /*!< The bits per pixel. */
     unsigned char mOrder;     /*!< The Order bits. */
-    unsigned char *mPixels;   /*!< The pixels. */
-    unsigned char *mPalette;  /*!< The palette, or null. */
-    unsigned char *mBuffer;   /*!< The block Reset() releases, or null. */
-    RndBitmap *mMip;          /*!< The next smaller mipmap, or null. */
+    unsigned char *mPixels;   /*!< The pixels. Into mBuffer, not freed separately. */
+    unsigned char *mPalette;  /*!< The palette, or null. Into mBuffer, not freed separately. */
+    unsigned char *mBuffer;   /*!< The block Reset() releases with PoolMemFree, or null. */
+    std::unique_ptr<RndBitmap> mMip; /*!< The next smaller mipmap, or null. */
 };

@@ -93,7 +93,7 @@ bool NetInetConnect::DispatchPriv(Message *pMsg) {
 }
 
 bool NetInetConnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheMCManager.GetCardStatus(this, kConfigSlot);
     }
     return false;

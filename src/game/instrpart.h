@@ -65,6 +65,7 @@ public:
      */
     void ReleaseType() override;
 
+private:
     /**
      * Non-zero once the objects of the instrument file have the avatar names. The constructor does
      * not set it, and the first SetType() clears it.

@@ -64,7 +64,7 @@ void VoxTrackDisplay::Redraw(int nStartBar, int nEndBar) {
 }
 
 void VoxTrackDisplay::Update() {
-    const int nEndBar = (TheSongScheduler.mTick + kLookaheadTicks) / mTicksPerBar;
+    const int nEndBar = (TheSongScheduler.GetTick() + kLookaheadTicks) / mTicksPerBar;
     DrawRange(mEndBar, nEndBar, false);
     mEndBar = nEndBar;
     TheSongScheduler.PostIn(mUpdateCommand.Get(), mTicksPerBar, false);

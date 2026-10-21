@@ -8,7 +8,7 @@ LaunchScreen::LaunchScreen(DataArray *pData) : FreqScreen(pData) {
 
 void LaunchScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UIScreen *pDialog;
-    if (TheGameDb->mTutorial) {
+    if (TheGameDb->GetTutorial()) {
         pDialog = TheUI.FindScreen("d_launch_training", false);
     } else {
         pDialog = TheUI.FindScreen("d_launch", false);

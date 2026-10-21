@@ -58,7 +58,7 @@ bool ShareRemixScreen::HandleProgress(ShareRemixProgressMsg *pMsg) {
     } else if (pMsg->mReceived != 0 && TheNetLaunchpad->IsGuest() != kHostIndex) {
         auto *pSave = dynamic_cast<SaveRemixScreen *>(TheUI.FindScreen("save_remix", false));
         TheDebug << "just received this remix " << *TheGameDb->GetRemixInfo() << "\n";
-        if (TheGameDb->mRemixReadOnly != 0) {
+        if (TheGameDb->GetRemixReadOnly() != 0) {
             next = "net_save_read_only";
             pSave->mRemixName = TheGameDb->GetRemixInfo()->mName;
         } else {
@@ -72,7 +72,7 @@ bool ShareRemixScreen::HandleProgress(ShareRemixProgressMsg *pMsg) {
         next = kGuestLaunchpad;
     }
 
-    if (TheUI.mCurrentScreen == this) {
+    if (TheUI.GetCurrentScreen() == this) {
         DebugPrint("ShareRemixProgressMsg::going to%s\n", next.c_str());
         TheUI.GotoScreen(next.c_str());
     } else {

@@ -7,18 +7,14 @@ constexpr int kNoCurrent = -1;
 
 } // namespace
 
-SerialTasks::~SerialTasks() {
-    for (Task *pTask : mTasks) {
-        delete pTask;
-    }
-}
+SerialTasks::~SerialTasks() = default;
 
 void SerialTasks::Add(Task *pTask) {
     int nCurrent = kNoCurrent;
     if (GetState() == kStateRunning) {
         nCurrent = mCurrent - mTasks.begin();
     }
-    mTasks.push_back(pTask);
+    mTasks.emplace_back(pTask);
     if (nCurrent != kNoCurrent) {
         mCurrent = mTasks.begin() + nCurrent;
     }

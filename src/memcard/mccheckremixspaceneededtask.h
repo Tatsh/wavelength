@@ -73,28 +73,6 @@ public:
     void OnDirChecked(int bWhole) override;
 #endif
 
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
-#ifdef VIDEO_STANDARD_PAL
-    /** One step for each remix directory that deletes the directory when damaged. */
-    std::vector<MCCheckDirExistsTask *> mCheckDirs;
-#endif
-    std::vector<MCGetDirTask *> mGetDirs; /*!< One listing step for each remix directory. */
-#ifdef VIDEO_STANDARD_PAL
-    /** The remix files of each remix directory, or -1 for a directory that does not exist. */
-    std::vector<int> mDirRemixCounts;
-#endif
-    SaveSpaceUser *mUser; /*!< The receiver of the outcome. */
-    String mFileName;     /*!< The remix file, with its extension. */
-    int mFileSize;        /*!< The size of the file in bytes. */
-    int mNeeded;          /*!< The kilobytes the save needs. */
-#ifndef VIDEO_STANDARD_PAL
-    unsigned char mRemixCount; /*!< The remix files in the listed directories. */
-#endif
-    unsigned char mDirIndex; /*!< The directory whose check or listing ends next. */
-    int mFound;              /*!< Non-zero once a directory includes the file. */
-    int mFoundSize;          /*!< The size of the file found, in bytes. */
-    int mOverwrite;          /*!< Non-zero when an existing file may be replaced. */
-
 protected:
     /**
      * End with the outcome, and report it to mUser.
@@ -104,8 +82,8 @@ protected:
      */
     void OnStop() override;
 
-#ifdef VIDEO_STANDARD_PAL
 private:
+#ifdef VIDEO_STANDARD_PAL
     /**
      * Choose the directory, measure the space the save needs, and record the outcome.
      *
@@ -116,4 +94,27 @@ private:
      */
     void Evaluate();
 #endif
+
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+#ifdef VIDEO_STANDARD_PAL
+    /** One step for each remix directory that deletes the directory when damaged. */
+    std::vector<MCCheckDirExistsTask *> mCheckDirs;
+#endif
+    std::vector<MCGetDirTask *> mGetDirs; /*!< Listing steps. Borrowed. */
+#ifdef VIDEO_STANDARD_PAL
+    /** The remix files of each remix directory, or -1 for a directory that does not exist. */
+    std::vector<int> mDirRemixCounts;
+#endif
+    SaveSpaceUser *mUser; /*!< The receiver of the outcome. Borrowed. */
+    String mFileName;     /*!< The remix file, with its extension. */
+    int mFileSize;        /*!< The size of the file in bytes. */
+    int mNeeded;          /*!< The kilobytes the save needs. */
+#ifndef VIDEO_STANDARD_PAL
+    unsigned char mRemixCount; /*!< The remix files in the listed directories. */
+#endif
+    unsigned char mDirIndex; /*!< The directory whose check or listing ends next. */
+    int mFound;              /*!< Non-zero once a directory includes the file. */
+    int mFoundSize;          /*!< The size of the file found, in bytes. */
+    int mOverwrite;          /*!< Non-zero when an existing file may be replaced. */
 };

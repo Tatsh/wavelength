@@ -21,14 +21,14 @@ void NetConnectTask::OnStart() {
     memset(&params, 0, sizeof(params));
     (void)rtDmeInitConnectParams(&params);
     params.maxClients = LaunchpadRT::kMaxClients;
-    params.info = TheLaunchpadRT->mConnectionInfo;
+    params.info = TheLaunchpadRT->GetConnectionInfo();
     params.onClientLeave = LaunchpadRT::OnNetClientLeave;
     params.onConnect = LaunchpadRT::OnNetConnect;
     params.onClientJoin = LaunchpadRT::OnNetClientJoin;
     params.onStatus = nullptr;
     rtDmeConnectStatus status;
     memset(&status, 0, sizeof(status));
-    LaunchpadRT::sNetTask = this;
+    LaunchpadRT::SetNetTask(this);
     if (rtDmeConnect(&params, &status) != 0) {
         Finish(false, LaunchpadAbortedMsg::kReasonConnectFailed);
     }
@@ -41,5 +41,5 @@ void NetConnectTask::OnPoll() {
 }
 
 void NetConnectTask::OnStop() {
-    LaunchpadRT::sNetTask = nullptr;
+    LaunchpadRT::SetNetTask(nullptr);
 }

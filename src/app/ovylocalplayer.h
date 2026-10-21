@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "app/hudpoints.h"
 #include "app/ovyremixpanel.h"
 
@@ -70,9 +72,25 @@ public:
      */
     void Reset();
 
-    int mPlayer;           /*!< The player. */
-    int mPosition;         /*!< The place of the parts. */
-    HudPoints *mPoints;    /*!< The pending points, or null. */
-    OvyRemixPanel *mRemix; /*!< The remix menu, or null. */
-    int mReserved10[2];    // +0x10, cleared by the constructor and not yet identified.
+    /** @return The player. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return The pending points, or null. */
+    HudPoints *GetPoints() const {
+        return mPoints.get();
+    }
+
+    /** @return The remix menu, or null. */
+    OvyRemixPanel *GetRemix() const {
+        return mRemix.get();
+    }
+
+private:
+    int mPlayer;                           /*!< The player. */
+    int mPosition;                         /*!< The place of the parts. */
+    std::unique_ptr<HudPoints> mPoints;    /*!< The pending points, or null. */
+    std::unique_ptr<OvyRemixPanel> mRemix; /*!< The remix menu, or null. */
+    int mReserved10[2]; // +0x10, cleared by the constructor and not yet identified.
 };

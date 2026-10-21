@@ -167,16 +167,16 @@ LevelMidiBuilder::Tracks::Tracks(int nType, CatchTrackData *pGems, int nInstrume
     mVox = nullptr;
     mFlags = 0;
     if (nType == Song::kTrackTypeCatch) {
-        mCatch = pGems;
+        mCatch.reset(pGems);
     } else if (nType == Song::kTrackTypeVox) {
-        mVox = pGems;
+        mVox.reset(pGems);
     } else {
         DebugWarn(kIllegalTrackTypeWarning);
     }
 }
 
 LevelMidiBuilder::Tracks::Tracks(ScratchTrackData *pScratch, int nInstrument) {
-    mScratch = pScratch;
+    mScratch.reset(pScratch);
     mInstrument = nInstrument;
     mCatch = nullptr;
     mAxe = nullptr;
@@ -186,7 +186,7 @@ LevelMidiBuilder::Tracks::Tracks(ScratchTrackData *pScratch, int nInstrument) {
 }
 
 LevelMidiBuilder::Tracks::Tracks(AxeTrackData *pAxe, int nInstrument) {
-    mAxe = pAxe;
+    mAxe.reset(pAxe);
     mInstrument = nInstrument;
     mCatch = nullptr;
     mScratch = nullptr;
@@ -196,21 +196,13 @@ LevelMidiBuilder::Tracks::Tracks(AxeTrackData *pAxe, int nInstrument) {
 }
 
 LevelMidiBuilder::Tracks::Tracks(PitchTrackRiffData *pRiffs, int nInstrument) {
-    mRiffs = pRiffs;
+    mRiffs.reset(pRiffs);
     mFlags = 1;
     mInstrument = nInstrument;
     mCatch = nullptr;
     mScratch = nullptr;
     mAxe = nullptr;
     mVox = nullptr;
-}
-
-void LevelMidiBuilder::Tracks::Free() {
-    delete mCatch;
-    delete mScratch;
-    delete mAxe;
-    delete mRiffs;
-    delete mVox;
 }
 
 LevelMidiBuilder::LevelMidiBuilder(const char *pszMidiFile,
@@ -223,9 +215,7 @@ LevelMidiBuilder::LevelMidiBuilder(const char *pszMidiFile,
                                    SectionBoundaries *pSections,
                                    float *pMsPerTick,
                                    SlotGrid *pSlotGrid)
-    : mPlayMap(nullptr), mBankTrack(nullptr), mLyric(nullptr), mFXMgr(nullptr), mSpeed(1.0f),
-      mBuffer(nullptr), mSize(0), mFile(nullptr), mReader(nullptr),
-      mDirectory(FileGetPath(pszMidiFile)) {
+    : mSpeed(1.0f), mBuffer(nullptr), mSize(0), mDirectory(FileGetPath(pszMidiFile)) {
     mMidiFile = pszMidiFile;
     mDifficulty = nDifficulty;
     mNumBars = nNumBars;
@@ -235,7 +225,7 @@ LevelMidiBuilder::LevelMidiBuilder(const char *pszMidiFile,
     mReadDone = 0;
     mDone = 0;
     mTicksPerBar = 0;
-    mReceiver = new BuilderReceiver(this);
+    mReceiver = std::make_unique<BuilderReceiver>(this);
     mValidate = 0;
     mErrorHandler = nullptr;
     mTrackIndex = 0;
@@ -253,20 +243,6 @@ LevelMidiBuilder::LevelMidiBuilder(const char *pszMidiFile,
 
 LevelMidiBuilder::~LevelMidiBuilder() {
     PoolMemFree(mBuffer);
-    delete mFile;
-    delete mReceiver;
-    delete mReader;
-    std::for_each(mTracks.begin(), mTracks.end(), std::mem_fn(&Tracks::Free));
-    for (BackMusic *pMusic : mBackMusic) {
-        delete pMusic;
-    }
-    for (ScriptTrackData *pScript : mScriptTracks) {
-        delete pScript;
-    }
-    delete mPlayMap;
-    delete mBankTrack;
-    delete mFXMgr;
-    delete mLyric;
 }
 
 void LevelMidiBuilder::StartLoad() {
@@ -282,7 +258,7 @@ void LevelMidiBuilder::StartLoad(TrackBuilder::ErrorHandler pfnError) {
 }
 
 void LevelMidiBuilder::OpenFile() {
-    mFile = File::New(mMidiFile, kOpenRead, kNoOpenFlags);
+    mFile.reset(File::New(mMidiFile, kOpenRead, kNoOpenFlags));
     if (mFile == nullptr) {
         Error(kNoTick, String(FormatString(kFileMissingFormat, mMidiFile)));
     }
@@ -304,21 +280,19 @@ void LevelMidiBuilder::Poll() {
         return;
     }
     if (mReader == nullptr) {
-        mReader = new MidiReader(mBuffer, mSize, mReceiver);
+        mReader = std::make_unique<MidiReader>(mBuffer, mSize, mReceiver.get());
         return;
     }
     mDone = !mReader->ReadFor(kParseMsPerPoll);
     if (!mDone) {
         return;
     }
-    delete mReader;
-    mReader = nullptr;
+    mReader.reset();
     if (mBuffer != nullptr) {
         PoolMemFree(mBuffer);
         mBuffer = nullptr;
     }
-    delete mFile;
-    mFile = nullptr;
+    mFile.reset();
 }
 
 int LevelMidiBuilder::IsDone() const {
@@ -339,11 +313,10 @@ void LevelMidiBuilder::OnNewTrack([[maybe_unused]] unsigned char nTrack) {
 void LevelMidiBuilder::OnEndTrack() {
     if (mTrackBuilder != nullptr) {
         mTrackBuilder->OnEndTrack();
-        delete mTrackBuilder;
-        mTrackBuilder = nullptr;
+        mTrackBuilder.reset();
     }
     if (mTrackIndex == kConductorTrack) {
-        mLyric = new Lyric(mTicksPerBar, mNumBars);
+        mLyric = std::make_unique<Lyric>(mTicksPerBar, mNumBars);
     }
     ++mTrackIndex;
 }
@@ -558,54 +531,54 @@ void LevelMidiBuilder::CreateTrackBuilder() {
         }
         break;
     case kTrackKindConductor:
-        mTrackBuilder = new ConductorBuilder(mTrackIndex,
-                                             mValidate,
-                                             mErrorHandler,
-                                             mNumBars,
-                                             kTicksPerBeat,
-                                             mMsPerTick,
-                                             &mPlayMap,
-                                             &mTicksPerBar);
+        mTrackBuilder = std::make_unique<ConductorBuilder>(mTrackIndex,
+                                                           mValidate,
+                                                           mErrorHandler,
+                                                           mNumBars,
+                                                           kTicksPerBeat,
+                                                           mMsPerTick,
+                                                           &mPlayMap,
+                                                           &mTicksPerBar);
         break;
     case kTrackKindCatch: {
         auto *pGems = new CatchTrackData(mNumBars * mTicksPerBar);
         mTracks.push_back(Tracks(Song::kTrackTypeCatch, pGems, mInstrument));
-        mTrackBuilder = new CatchTrackBuilder(mTrackIndex,
-                                              mValidate,
-                                              mErrorHandler,
-                                              nChannel,
-                                              nIntroTicks,
-                                              pGems,
-                                              mLyric,
-                                              kCatchFilterEffects,
-                                              mDifficulty);
+        mTrackBuilder = std::make_unique<CatchTrackBuilder>(mTrackIndex,
+                                                            mValidate,
+                                                            mErrorHandler,
+                                                            nChannel,
+                                                            nIntroTicks,
+                                                            pGems,
+                                                            mLyric.get(),
+                                                            kCatchFilterEffects,
+                                                            mDifficulty);
         break;
     }
     case kTrackKindPitch: {
         auto *pRiffs = new PitchTrackRiffData();
         mTracks.push_back(Tracks(pRiffs, mInstrument));
-        mTrackBuilder = new PitchTrackBuilder(mTrackIndex,
-                                              mValidate,
-                                              mErrorHandler,
-                                              mTrackLabel,
-                                              nChannel,
-                                              nIntroTicks,
-                                              mNumBars * mTicksPerBar,
-                                              pRiffs);
+        mTrackBuilder = std::make_unique<PitchTrackBuilder>(mTrackIndex,
+                                                            mValidate,
+                                                            mErrorHandler,
+                                                            mTrackLabel,
+                                                            nChannel,
+                                                            nIntroTicks,
+                                                            mNumBars * mTicksPerBar,
+                                                            pRiffs);
         break;
     }
     case kTrackKindVox: {
         auto *pGems = new CatchTrackData(mNumBars * mTicksPerBar);
         mTracks.push_back(Tracks(Song::kTrackTypeVox, pGems, mInstrument));
-        mTrackBuilder = new CatchTrackBuilder(mTrackIndex,
-                                              mValidate,
-                                              mErrorHandler,
-                                              nChannel,
-                                              nIntroTicks,
-                                              pGems,
-                                              mLyric,
-                                              kVoxFilterEffects,
-                                              kVoxSkill);
+        mTrackBuilder = std::make_unique<CatchTrackBuilder>(mTrackIndex,
+                                                            mValidate,
+                                                            mErrorHandler,
+                                                            nChannel,
+                                                            nIntroTicks,
+                                                            pGems,
+                                                            mLyric.get(),
+                                                            kVoxFilterEffects,
+                                                            kVoxSkill);
         break;
     }
     case kTrackKindScratch: {
@@ -614,52 +587,63 @@ void LevelMidiBuilder::CreateTrackBuilder() {
             pScratch = new ScratchTrackData(mNumBars * mTicksPerBar);
             mTracks.push_back(Tracks(pScratch, mInstrument));
         } else {
-            pScratch = mTracks.back().mScratch;
+            pScratch = mTracks.back().mScratch.get();
         }
-        mTrackBuilder = new ScratchTrackBuilder(mTrackIndex,
-                                                mValidate,
-                                                mErrorHandler,
-                                                nChannel,
-                                                mScratchIndex,
-                                                mTicksPerBar,
-                                                nIntroTicks,
-                                                mFreestyleEffectsBus,
-                                                pScratch);
+        mTrackBuilder = std::make_unique<ScratchTrackBuilder>(mTrackIndex,
+                                                              mValidate,
+                                                              mErrorHandler,
+                                                              nChannel,
+                                                              mScratchIndex,
+                                                              mTicksPerBar,
+                                                              nIntroTicks,
+                                                              mFreestyleEffectsBus,
+                                                              pScratch);
         break;
     }
     case kTrackKindAxeContour: {
         auto *pAxe = new AxeTrackData(mNumBars * mTicksPerBar, mFreestyleEffectsBus);
         mTracks.push_back(Tracks(pAxe, mInstrument));
-        mTrackBuilder = new AxeTrackContourBuilder(
+        mTrackBuilder = std::make_unique<AxeTrackContourBuilder>(
             mTrackIndex, mValidate, mErrorHandler, nChannel, mTicksPerBar, nIntroTicks, pAxe);
         break;
     }
     case kTrackKindAxeHarmony:
-        mTrackBuilder = new AxeTrackHarmonyBuilder(
-            mTrackIndex, mValidate, mErrorHandler, nChannel, nIntroTicks, mTracks.back().mAxe);
+        mTrackBuilder = std::make_unique<AxeTrackHarmonyBuilder>(mTrackIndex,
+                                                                 mValidate,
+                                                                 mErrorHandler,
+                                                                 nChannel,
+                                                                 nIntroTicks,
+                                                                 mTracks.back().mAxe.get());
         break;
     case kTrackKindBackground: {
-        auto *pMusic = new BackMusic(mTrackName.c_str(), mIntroBars, mNumBars, mTicksPerBar);
-        mBackMusic.push_back(pMusic);
-        mTrackBuilder = new BackMusicBuilder(
-            mTrackIndex, mValidate, mErrorHandler, mIntroBars, mNumBars, mTicksPerBar, pMusic);
+        mBackMusic.push_back(
+            std::make_unique<BackMusic>(mTrackName.c_str(), mIntroBars, mNumBars, mTicksPerBar));
+        mTrackBuilder = std::make_unique<BackMusicBuilder>(mTrackIndex,
+                                                           mValidate,
+                                                           mErrorHandler,
+                                                           mIntroBars,
+                                                           mNumBars,
+                                                           mTicksPerBar,
+                                                           mBackMusic.back().get());
         break;
     }
     case kTrackKindIntro:
         mIntroMuses.push_back(Ptr<Muse>());
-        mTrackBuilder = new MuseBuilder(mTrackIndex, mValidate, mErrorHandler, &mIntroMuses.back());
+        mTrackBuilder = std::make_unique<MuseBuilder>(
+            mTrackIndex, mValidate, mErrorHandler, &mIntroMuses.back());
         break;
     case kTrackKindWorld:
-        mTrackBuilder =
-            new WorldBeatBuilder(mTrackIndex, mValidate, mErrorHandler, nIntroTicks, &mWorldTrack);
+        mTrackBuilder = std::make_unique<WorldBeatBuilder>(
+            mTrackIndex, mValidate, mErrorHandler, nIntroTicks, &mWorldTrack);
         break;
     case kTrackKindScript:
         if (mTrackName[kScriptSeparatorPos] != kScriptSeparator) {
             Error(kNoTick, String(kScriptNameError));
         }
-        mScriptTracks.push_back(new ScriptTrackData(mTrackName.c_str() + kScriptNamePos));
-        mTrackBuilder = new ScriptTrackBuilder(
-            mTrackIndex, mValidate, mErrorHandler, nIntroTicks, mScriptTracks.back());
+        mScriptTracks.push_back(
+            std::make_unique<ScriptTrackData>(mTrackName.c_str() + kScriptNamePos));
+        mTrackBuilder = std::make_unique<ScriptTrackBuilder>(
+            mTrackIndex, mValidate, mErrorHandler, nIntroTicks, mScriptTracks.back().get());
         break;
     case kTrackKindBank: {
         if (mBankTrack != nullptr) {
@@ -667,18 +651,19 @@ void LevelMidiBuilder::CreateTrackBuilder() {
         }
         int nFxSlot = 0;
         SystemConfig()->FindArray(kGameKey, false)->FindInt(kGameFxBankSlotKey, &nFxSlot, true);
-        mBankTrack = new BankLoader(static_cast<unsigned short>(nFxSlot + kBankSlotAfterFx),
-                                    mPlayMap,
-                                    mIntroBars,
-                                    mNumBars,
-                                    mTicksPerBar);
-        mTrackBuilder = new BankLoaderBuilder(mTrackIndex,
-                                              mValidate,
-                                              mErrorHandler,
-                                              nIntroTicks,
-                                              mTicksPerBar,
-                                              &mDirectory,
-                                              mBankTrack);
+        mBankTrack =
+            std::make_unique<BankLoader>(static_cast<unsigned short>(nFxSlot + kBankSlotAfterFx),
+                                         mPlayMap.get(),
+                                         mIntroBars,
+                                         mNumBars,
+                                         mTicksPerBar);
+        mTrackBuilder = std::make_unique<BankLoaderBuilder>(mTrackIndex,
+                                                            mValidate,
+                                                            mErrorHandler,
+                                                            nIntroTicks,
+                                                            mTicksPerBar,
+                                                            &mDirectory,
+                                                            mBankTrack.get());
         break;
     }
     case kTrackKindIgnore:
@@ -718,7 +703,7 @@ void LevelMidiBuilder::LoadRemix() {
     unsigned char nVersion = 0; // Yes, the binary reads the version and never checks it.
     stream.Read(&nVersion, sizeof(nVersion));
     stream.ReadEndian(&mSpeed, sizeof(mSpeed));
-    mFXMgr = new FXMgr(GetNumTracks() - 1, mRemixEffectsBus);
+    mFXMgr = std::make_unique<FXMgr>(GetNumTracks() - 1, mRemixEffectsBus);
     mFXMgr->Load(stream);
 
     for (int i = 0; i < GetNumTracks(); ++i) {
@@ -726,7 +711,7 @@ void LevelMidiBuilder::LoadRemix() {
         switch (GetTrackType(i)) {
         case Song::kTrackTypePitch: {
             PitchTrackGems gems(mSections, mSlotGrid, mNumBars, mTicksPerBar);
-            track.mCatch = new CatchTrackData();
+            track.mCatch = std::make_unique<CatchTrackData>();
             gems.Load(stream);
             gems.ApplyPatterns();
             for (int nBar = 0; nBar < mNumBars; ++nBar) {
@@ -736,18 +721,16 @@ void LevelMidiBuilder::LoadRemix() {
                     track.mCatch->AddGem(gem);
                 }
             }
-            delete track.mRiffs;
-            track.mRiffs = nullptr;
+            track.mRiffs.reset();
             break;
         }
         case Song::kTrackTypeAxe:
         case Song::kTrackTypeScratch:
             break;
         case Song::kTrackTypeVox: {
-            track.mCatch = track.mVox;
-            track.mVox = nullptr;
-            VoxTrack vox(track.mCatch,
-                         mPlayMap,
+            track.mCatch = std::move(track.mVox);
+            VoxTrack vox(track.mCatch.get(),
+                         mPlayMap.get(),
                          mSections,
                          mSlotGrid,
                          i,
@@ -788,23 +771,23 @@ int LevelMidiBuilder::GetTrackInstrument(int nTrack) const {
 }
 
 CatchTrackData *LevelMidiBuilder::GetCatchTrackData(int nTrack) const {
-    return mTracks[nTrack].mCatch;
+    return mTracks[nTrack].mCatch.get();
 }
 
 ScratchTrackData *LevelMidiBuilder::GetScratchData(int nTrack) const {
-    return mTracks[nTrack].mScratch;
+    return mTracks[nTrack].mScratch.get();
 }
 
 AxeTrackData *LevelMidiBuilder::GetAxeData(int nTrack) const {
-    return mTracks[nTrack].mAxe;
+    return mTracks[nTrack].mAxe.get();
 }
 
 PitchTrackRiffData *LevelMidiBuilder::GetTrackRiffData(int nTrack) const {
-    return mTracks[nTrack].mRiffs;
+    return mTracks[nTrack].mRiffs.get();
 }
 
 CatchTrackData *LevelMidiBuilder::GetVoxData(int nTrack) const {
-    return mTracks[nTrack].mVox;
+    return mTracks[nTrack].mVox.get();
 }
 
 int LevelMidiBuilder::GetTrackFlags(int nTrack) const {
@@ -816,7 +799,7 @@ int LevelMidiBuilder::GetNumBackMusic() const {
 }
 
 BackMusic *LevelMidiBuilder::GetBackMusic(int nIndex) const {
-    return mBackMusic[nIndex];
+    return mBackMusic[nIndex].get();
 }
 
 int LevelMidiBuilder::GetNumIntroMuses() const {
@@ -828,9 +811,9 @@ Muse *LevelMidiBuilder::GetIntroMuse(int nIndex) const {
 }
 
 ScriptTrackData *LevelMidiBuilder::FindScriptTrack(const char *pszName) const {
-    for (ScriptTrackData *pScript : mScriptTracks) {
+    for (const auto &pScript : mScriptTracks) {
         if (pScript->mName == pszName) {
-            return pScript;
+            return pScript.get();
         }
     }
     return nullptr;

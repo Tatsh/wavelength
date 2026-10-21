@@ -34,7 +34,7 @@ void MCCreateSaveDirTask::OnStart() {
     const char *pszIcon;
     g_pMemcardConfig->FindSymbol("icon_file", &pszIcon, true);
     FileData icon = {String(FormatString("%s/%s", g_MemcardPath.c_str(), pszIcon)),
-                     g_pMemcardIcon,
+                     g_pMemcardIcon.get(),
                      g_nMemcardIconSize};
     mFiles.push_back(icon);
 

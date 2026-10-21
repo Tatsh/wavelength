@@ -42,8 +42,8 @@ void InitRTTask::OnStart() {
         memset(&settings, 0, sizeof(settings));
         (void)rtNetDefaultSettings(&settings);
         settings.applicationId = LobbyRT::ApplicationId();
-        if (TheLobbyRT->mSecure != 0) {
-            settings.keyPair = &TheLobbyRT->mKeyPair;
+        if (TheLobbyRT->GetSecure() != 0) {
+            settings.keyPair = &TheLobbyRT->GetKeyPair();
         }
         rtNetInitStatus status;
         memset(&status, 0, sizeof(status));
@@ -80,7 +80,7 @@ void InitRTTask::OnStart() {
                     char szVersion[kVersionBufferSize];
                     szVersion[0] = '\0';
                     (void)rtMediusGetVersion(szVersion); // Yes, the binary discards the version.
-                    TheLobbyRT->mRtReady = 1;
+                    TheLobbyRT->SetRtReady(1);
                     Finish(true, 0);
                     return;
                 }

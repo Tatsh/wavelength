@@ -48,7 +48,7 @@ void HideablePanel::ShowNow(bool bShow) {
 void HideablePanel::Poll() {
     mSlide.Update(sDeltaTime, false);
     if (mDrawable != nullptr) {
-        mDrawable->SetShowing(mSlide.mValue != 0.0f);
+        mDrawable->SetShowing(mSlide.GetValue() != 0.0f);
     }
 }
 

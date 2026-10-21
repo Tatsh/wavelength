@@ -5,7 +5,7 @@
 LazyFileStream::LazyFileStream(const String &filename, int nBufferSize)
     : mMoreData(1), mPosition(0), mFile(nullptr), mCurBuffer(0), mBufferSize(nBufferSize),
       mBytesAvailable(-1) {
-    mFile = File::New(filename.c_str(), File::kModeRead, 0);
+    mFile.reset(File::New(filename.c_str(), File::kModeRead, 0));
     for (unsigned int i = 0; i < kNumBuffers; ++i) {
         mBuffers[i] = static_cast<char *>(PoolMemAlloc(nBufferSize, "LazyFileStream buf", 0));
     }
@@ -13,7 +13,7 @@ LazyFileStream::LazyFileStream(const String &filename, int nBufferSize)
 }
 
 LazyFileStream::~LazyFileStream() {
-    delete mFile;
+    mFile.reset();
     for (unsigned int i = 0; i < kNumBuffers; ++i) {
         PoolMemFree(mBuffers[i]);
     }

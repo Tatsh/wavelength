@@ -27,11 +27,11 @@ bool ModeScreen::DispatchPriv(Message *pMsg) {
 
 void ModeScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
-    if (TheGameDb->mCommunity == GameDb::kCommunityLocal &&
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal &&
         TheGameDb->GetProfile(0)->mCustom != 0) {
         TheMetagame.GetGizmo()->SetShowAvatar(false);
     }
-    if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         return;
     }
 
@@ -54,11 +54,11 @@ void ModeScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 bool ModeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     if (button == "game_but") {
         TheGameDb->SetTutorial(0);
         TheGameDb->SetRuleSet(GameDb::kRuleSetGame);

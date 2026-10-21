@@ -43,13 +43,14 @@ bool InstrPart::Rebuild() {
     if (mRenamed == 0) {
         mRenamed = 1;
         for (RndObject *pObject : mLoader->mObjects) {
-            pObject->SetName(FormatString("avatar%d_%s", mAvatar->mIndex, pObject->mName.c_str()));
+            pObject->SetName(
+                FormatString("avatar%d_%s", mAvatar->GetIndex(), pObject->mName.c_str()));
         }
     }
     mType = mPendingType;
     DataArray *pType = mData->FindArray("types", true)->FindArray(mType, true);
     mMesh = FindMesh(
-        FormatString("avatar%d_instr_%02d.mesh", mAvatar->mIndex, pType->Int(kMeshNumber)));
+        FormatString("avatar%d_instr_%02d.mesh", mAvatar->GetIndex(), pType->Int(kMeshNumber)));
     mTransRoot = mMesh;
     ResetLocalXfm(mTransRoot);
     if (!mAnims.empty()) {

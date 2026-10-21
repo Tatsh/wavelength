@@ -40,11 +40,27 @@ public:
      */
     void OnGetInfo(int nResult) override;
 
+    /** @return The free space in kilobytes. */
+    int GetFree() const {
+        return mFree;
+    }
+
+    /** @return The card type. */
+    int GetType() const {
+        return mType;
+    }
+
+    /** @return Non-zero for a formatted card. */
+    int GetFormat() const {
+        return mFormat;
+    }
+
+private:
     int mFree;                 /*!< The free space in kilobytes. */
     int mType;                 /*!< The card type. */
     int mFormat;               /*!< Non-zero for a formatted card. */
     int mAcceptNewCard;        /*!< Non-zero when another card than before counts as success. */
-    MemcardSerialTask *mOwner; /*!< The task OnGetInfo() tells, or null. */
+    MemcardSerialTask *mOwner; /*!< The task OnGetInfo() tells, or null. Borrowed. */
 
 protected:
     /**

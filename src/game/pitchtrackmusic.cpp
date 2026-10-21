@@ -49,7 +49,7 @@ void PitchTrackMusic::SetMuted(bool bMuted) {
 }
 
 void PitchTrackMusic::StartBar() {
-    const int nNow = TheSongScheduler.mTick;
+    const int nNow = TheSongScheduler.GetTick();
     const int nBar = nNow / mTicksPerBar;
     if (nBar >= 0) {
         mBar = mGems->GetBar(nBar);
@@ -66,7 +66,7 @@ void PitchTrackMusic::StartBar() {
 
 void PitchTrackMusic::PlayGem() {
     const int nGems = mBar.Size();
-    const int nNow = TheSongScheduler.mTick;
+    const int nNow = TheSongScheduler.GetTick();
     if (mNextGem >= nGems) {
         return;
     }

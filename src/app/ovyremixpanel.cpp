@@ -32,7 +32,7 @@ OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, RndTransformable *pPare
     mNextSubPanel = nullptr;
     char chHud = kHudSolo;
     int nLayout = 1;
-    switch (TheGameDb->mCommunity) {
+    switch (TheGameDb->GetCommunity()) {
     case GameDb::kCommunitySolo:
         nLayout = 0;
         break;
@@ -61,35 +61,34 @@ OvyRemixPanel::OvyRemixPanel(int nPlayer, int nPosition, RndTransformable *pPare
     String unused(FormatString("HUD%cr", chHud)); // Yes, the binary builds this and never reads it.
     SetObjects(pSlideAnim->mName.c_str(), nullptr, false);
 
-    mSubPanels.push_back(new OvyRemixSubPanel(GfxManager::kRemixSubPanelChorus, chHud, nPlayer));
-    mSubPanels.push_back(new OvyRemixSubPanel(GfxManager::kRemixSubPanelStutter, chHud, nPlayer));
-    mSubPanels.push_back(new OvyRemixSubPanel(GfxManager::kRemixSubPanelEcho, chHud, nPlayer));
+    mSubPanels.push_back(
+        std::make_unique<OvyRemixSubPanel>(GfxManager::kRemixSubPanelChorus, chHud, nPlayer));
+    mSubPanels.push_back(
+        std::make_unique<OvyRemixSubPanel>(GfxManager::kRemixSubPanelStutter, chHud, nPlayer));
+    mSubPanels.push_back(
+        std::make_unique<OvyRemixSubPanel>(GfxManager::kRemixSubPanelEcho, chHud, nPlayer));
     if (chHud == kHudOnline) {
-        mSubPanels.push_back(
-            new OvyRemixSubPanel(GfxManager::kRemixSubPanelBoot, kHudOnline, nPlayer));
+        mSubPanels.push_back(std::make_unique<OvyRemixSubPanel>(
+            GfxManager::kRemixSubPanelBoot, kHudOnline, nPlayer));
     } else {
-        mSubPanels.push_back(new OvyRemixSubPanel(GfxManager::kRemixSubPanelTempo, chHud, nPlayer));
+        mSubPanels.push_back(
+            std::make_unique<OvyRemixSubPanel>(GfxManager::kRemixSubPanelTempo, chHud, nPlayer));
     }
-    for (OvyRemixSubPanel *pSubPanel : mSubPanels) {
+    for (const auto &pSubPanel : mSubPanels) {
         mPanel->AddTrans(pSubPanel->mPanel);
     }
 }
 
-OvyRemixPanel::~OvyRemixPanel() {
-    for (auto it = mSubPanels.begin(); it != mSubPanels.end();) {
-        delete *it;
-        it = mSubPanels.erase(it);
-    }
-}
+OvyRemixPanel::~OvyRemixPanel() = default;
 
 void OvyRemixPanel::Poll(float fDelta) {
     HideablePanel::Poll();
     OvyRemixGenPanel::Poll(fDelta);
-    for (OvyRemixSubPanel *pSubPanel : mSubPanels) {
+    for (const auto &pSubPanel : mSubPanels) {
         pSubPanel->Poll(fDelta);
     }
     if (mNextSubPanel != mShownSubPanel &&
-        mShownSubPanel->mSlide.mValue == OvyRemixSubPanel::kHiddenFrame) {
+        mShownSubPanel->mSlide.GetValue() == OvyRemixSubPanel::kHiddenFrame) {
         mShownSubPanel = mNextSubPanel;
         if (mNextSubPanel != nullptr) {
             mNextSubPanel->Show(true);
@@ -98,20 +97,21 @@ void OvyRemixPanel::Poll(float fDelta) {
 }
 
 void OvyRemixPanel::Draw() {
-    if (mSlide.mValue == 0.0f) {
+    if (mSlide.GetValue() == 0.0f) {
         return;
     }
-    for (OvyRemixSubPanel *pSubPanel : mSubPanels) {
+    for (const auto &pSubPanel : mSubPanels) {
         pSubPanel->Draw();
     }
     mBackground->Draw();
 }
 
 void OvyRemixPanel::ShowSubPanel(int nType) {
-    auto it = std::find_if(mSubPanels.begin(), mSubPanels.end(), [nType](OvyRemixSubPanel *pPanel) {
-        return pPanel->IsType(nType);
-    });
-    OvyRemixSubPanel *pSubPanel = it != mSubPanels.end() ? *it : nullptr;
+    auto it = std::find_if(
+        mSubPanels.begin(),
+        mSubPanels.end(),
+        [nType](const std::unique_ptr<OvyRemixSubPanel> &pPanel) { return pPanel->IsType(nType); });
+    OvyRemixSubPanel *pSubPanel = it != mSubPanels.end() ? it->get() : nullptr;
     if (pSubPanel == mShownSubPanel) {
         return;
     }
@@ -129,10 +129,11 @@ OvyRemixGenPanel *OvyRemixPanel::FindSubPanel(int nType, [[maybe_unused]] int nU
     if (nType == GfxManager::kRemixSubPanelMain) {
         return this;
     }
-    auto it = std::find_if(mSubPanels.begin(), mSubPanels.end(), [nType](OvyRemixSubPanel *pPanel) {
-        return pPanel->IsType(nType);
-    });
-    return it != mSubPanels.end() ? *it : nullptr;
+    auto it = std::find_if(
+        mSubPanels.begin(),
+        mSubPanels.end(),
+        [nType](const std::unique_ptr<OvyRemixSubPanel> &pPanel) { return pPanel->IsType(nType); });
+    return it != mSubPanels.end() ? it->get() : nullptr;
 }
 
 void OvyRemixPanel::LoadPositions(DataArray *pConfig,

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "game/triggerhandler.h"
 #include "script/dataarray.h"
@@ -87,5 +88,5 @@ public:
     void AddHandler(DataArray *pTrigger);
 
 private:
-    std::list<TriggerHandler *> mHandlers;
+    std::list<std::unique_ptr<TriggerHandler>> mHandlers;
 };

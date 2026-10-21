@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "memcard/mcclosetask.h"
 #include "memcard/mcopentask.h"
 #include "memcard/mcreadtask.h"
@@ -38,9 +40,21 @@ public:
      */
     void Set(int nPort, const char *pszName);
 
-    char *mBuffer;       /*!< Receives the description as stored, of RemixInfo::WireSize() bytes. */
-    int mSize;           /*!< The size of mBuffer. */
-    MCOpenTask *mOpen;   /*!< The step that opens the file. */
-    MCReadTask *mRead;   /*!< The step that reads the description. */
-    MCCloseTask *mClose; /*!< The step that closes the file. */
+    /** @return The buffer that receives the description as stored. */
+    char *GetBuffer() const {
+        return mBuffer.get();
+    }
+
+    /** @return The size of the buffer. */
+    int GetSize() const {
+        return mSize;
+    }
+
+private:
+    std::unique_ptr<char[]> mBuffer; /*!< Receives the description as stored. */
+    int mSize;                       /*!< The size of mBuffer. */
+    // The steps belong to the SerialTasks list.
+    MCOpenTask *mOpen;   /*!< The step that opens the file. Borrowed. */
+    MCReadTask *mRead;   /*!< The step that reads the description. Borrowed. */
+    MCCloseTask *mClose; /*!< The step that closes the file. Borrowed. */
 };

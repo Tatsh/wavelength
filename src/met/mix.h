@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "gs/muse.h"
@@ -148,11 +149,12 @@ public:
      */
     void Stop();
 
+private:
     int mLoopTicks;                           /*!< The ticks of the loop, `music_bars` bars. */
     int mFadeTicks;                           /*!< `music_fade_ticks`, the fade of ChangeMix(). */
     int mStartTick;                           /*!< The tick of the front-end clock Start() used. */
     std::vector<std::vector<String> > mMixes; /*!< The track names of each mix. */
-    std::map<String, MixTrack *> mTracks;     /*!< The tracks by name. */
-    int mMix;                                 /*!< The mix that plays, or kNoMix. */
-    Ptr<Command> mStopCmd;                    /*!< The command that calls StopTracks(). */
+    std::map<String, std::unique_ptr<MixTrack> > mTracks; /*!< The tracks by name. */
+    int mMix;                                             /*!< The mix that plays, or kNoMix. */
+    Ptr<Command> mStopCmd; /*!< The command that calls StopTracks(). */
 };

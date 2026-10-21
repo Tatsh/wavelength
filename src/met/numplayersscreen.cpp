@@ -53,11 +53,11 @@ bool NumPlayersScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NumPlayersScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     if (TheGameDb->GetProfile(0)->mCustom != 0) {
         Campaign first(*TheGameDb->GetProfile(0));
         TheGameDb->ClearPlayers();

@@ -31,7 +31,7 @@ public:
      * @ghidraAddress PAL: 0x003e4e60
      */
     bool Test() override {
-        return TheTriggerMgr.mGameState == mGameState;
+        return TheTriggerMgr.GetGameState() == mGameState;
     }
 
 private:

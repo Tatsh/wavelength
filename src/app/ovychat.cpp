@@ -71,15 +71,14 @@ OvyChat::Line::Line(DataArray *pConfig, DataArray *pDefaults, RndText *pText) {
     mText = pText;
     DataArray *pSlide;
     FindConfigArray(pConfig, pDefaults, "chat_line_slide", &pSlide, true);
-    mSlide = ObjectToInterpolator(pSlide->Array(1));
+    mSlide.reset(ObjectToInterpolator(pSlide->Array(1)));
     if (sSlideTime == kNever) {
-        sSlideTime = mSlide->mX1;
+        sSlideTime = mSlide->GetX1();
     }
 }
 
 OvyChat::Line::~Line() {
     sSlideTime = kNever;
-    delete mSlide;
 }
 
 void OvyChat::Line::SetPosition(bool bJump, float fTime, float fRow) {
@@ -151,13 +150,13 @@ OvyChat::OvyChat(DataArray *pConfig, DataArray *pDefaults, RndView *pHudView)
         if (pText == nullptr) {
             break;
         }
-        mLines.push_back(new Line(pConfig, pDefaults, pText));
+        mLines.push_back(std::make_unique<Line>(pConfig, pDefaults, pText));
         static_cast<RndTransformable *>(pText)->RemoveTrans(mCursor);
     }
     mRows.resize(mLines.size() + 1, 0.0f);
     std::vector<float>::iterator pRow = mRows.begin();
-    for (Line *pLine : mLines) {
-        *pRow++ = static_cast<RndTransformable *>(pLine->mText)->mLocalXfm.mTranslation.z;
+    for (const auto &pLine : mLines) {
+        *pRow++ = static_cast<RndTransformable *>(pLine->GetText())->mLocalXfm.mTranslation.z;
     }
     const int nLast = static_cast<int>(mRows.size()) - 1;
     mRows[nLast] = mRows[nLast - 1] + mRows[nLast - 1] - mRows[nLast - 2];
@@ -176,18 +175,14 @@ OvyChat::OvyChat(DataArray *pConfig, DataArray *pDefaults, RndView *pHudView)
 OvyChat::~OvyChat() {
     ChatMsg::RemoveSink(kGameChatChannel);
     KeyboardRemoveSink(this);
-    for (auto it = mLines.begin(); it != mLines.end();) {
-        delete *it;
-        it = mLines.erase(it);
-    }
 }
 
 void OvyChat::Reset() {
     mSlide.Jump(kHiddenPosition, kHiddenPosition);
     mPending.clear();
     std::vector<float>::iterator pRow = mRows.begin();
-    for (Line *pLine : mLines) {
-        pLine->mText->SetText("");
+    for (const auto &pLine : mLines) {
+        pLine->GetText()->SetText("");
         pLine->SetPosition(true, mLastTime, *pRow++);
     }
     mSlide.Jump(mHiddenPosition, mHiddenPosition);
@@ -198,7 +193,7 @@ void OvyChat::Reset() {
     mLastActivity = kNever;
     mEdit.Clear();
     if (mEditLine != nullptr) {
-        static_cast<RndTransformable *>(mEditLine->mText)->RemoveTrans(mCursor);
+        static_cast<RndTransformable *>(mEditLine->GetText())->RemoveTrans(mCursor);
     }
     mEditLine = nullptr;
 }
@@ -211,12 +206,12 @@ void OvyChat::Poll() {
     const float fDelta = fNow - mLastTime;
     mLastTime = fNow;
     const bool bSliding = mSlide.Update(fDelta, false);
-    mDrawable->SetShowing(mSlide.mValue != mHiddenPosition);
+    mDrawable->SetShowing(mSlide.GetValue() != mHiddenPosition);
     if (mDrawable->mShowing == 0) {
         return;
     }
     bool bMoved = false;
-    for (Line *pLine : mLines) {
+    for (const auto &pLine : mLines) {
         if (pLine->Update(fNow, fDelta)) {
             bMoved = true;
         }
@@ -225,7 +220,7 @@ void OvyChat::Poll() {
         mLastActivity = fNow;
     }
     if (!mPending.empty()) {
-        mLines.front()->mText->SetText(mPending.front().mText.c_str());
+        mLines.front()->GetText()->SetText(mPending.front().mText.c_str());
         mLines.front()->SetColor(mPending.front().mPlayer);
         mPending.pop_front();
         Layout(mEditLine != nullptr);
@@ -293,9 +288,9 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
         mRule->SetShowing(bEditing);
         mCursor->SetShowing(bEditing);
         if (bEditing) {
-            mEditLine = mLines.front();
-            static_cast<RndTransformable *>(mEditLine->mText)->AddTrans(mCursor);
-            mLines.front()->mText->SetText("");
+            mEditLine = mLines.front().get();
+            static_cast<RndTransformable *>(mEditLine->GetText())->AddTrans(mCursor);
+            mLines.front()->GetText()->SetText("");
             mLines.front()->SetColor(kNoPlayer);
             Layout(false);
         } else {
@@ -305,15 +300,15 @@ bool OvyChat::HandleKey(KeyboardKeyMsg *pMsg) {
             } else {
                 Collapse();
             }
-            static_cast<RndTransformable *>(mEditLine->mText)->RemoveTrans(mCursor);
+            static_cast<RndTransformable *>(mEditLine->GetText())->RemoveTrans(mCursor);
             mEditLine = nullptr;
         }
     }
     if (mEditLine != nullptr) {
         if (nAction == EditField::kKeyChanged) {
-            mEditLine->mText->SetText(mEdit.GetText());
+            mEditLine->GetText()->SetText(mEdit.GetText());
         }
-        const Vector3 position = mEditLine->mText->CharPosition(mEdit.mCursor);
+        const Vector3 position = mEditLine->GetText()->CharPosition(mEdit.mCursor);
         RndTransformable *pCursor = mCursor;
         pCursor->mDirty = 1;
         pCursor->mLocalXfm.mTranslation = position;
@@ -326,9 +321,9 @@ void OvyChat::Layout(bool bEditing) {
         mRows.begin() + (bEditing ? kFirstRowWhileEditing : kFirstRow);
     bool bSwap = bEditing;
     bool bSlide = bEditing;
-    std::list<Line *>::iterator it = mLines.begin();
+    std::list<std::unique_ptr<Line>>::iterator it = mLines.begin();
     while (it != mLines.end()) {
-        std::list<Line *>::iterator next = std::next(it);
+        std::list<std::unique_ptr<Line>>::iterator next = std::next(it);
         if (bSwap) {
             bSwap = false;
             if (next != mLines.end()) {
@@ -353,11 +348,12 @@ void OvyChat::Collapse() {
     if (mLines.empty()) {
         return;
     }
-    mLines.front()->mText->SetText("");
+    mLines.front()->GetText()->SetText("");
     mLines.splice(mLines.end(), mLines, mLines.begin());
     std::vector<float>::iterator pRow = mRows.begin();
-    std::list<Line *>::iterator it = mLines.begin();
-    for (std::list<Line *>::iterator next = std::next(it); next != mLines.end(); ++next) {
+    std::list<std::unique_ptr<Line>>::iterator it = mLines.begin();
+    for (std::list<std::unique_ptr<Line>>::iterator next = std::next(it); next != mLines.end();
+         ++next) {
         (*it)->SetPosition(false, mLastTime, *pRow++);
         it = next;
     }

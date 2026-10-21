@@ -54,11 +54,12 @@ inline void WriteByte(BinStream &stream, unsigned char nByte) {
 }
 
 DataArray *PartTypes(int nPart) {
-    return AvatarPartSet::sParts->FindArray(nPart)->FindArray("types", true);
+    return AvatarPartSet::GetParts()->FindArray(nPart)->FindArray("types", true);
 }
 
 DataArray *EmblemTypes() {
-    return AvatarPartSet::sParts->FindArray(AvatarPartSet::kPartTorso)
+    return AvatarPartSet::GetParts()
+        ->FindArray(AvatarPartSet::kPartTorso)
         ->FindArray("emblem", true)
         ->FindArray("types", true);
 }
@@ -118,9 +119,9 @@ AvatarPartSet &AvatarPartSet::operator=(const AvatarPartSet &other) {
     mVersion = other.mVersion;
     mEmblem = other.mEmblem;
     for (int i = 0; i < kNumParts; ++i) {
-        mParts[i].mType = other.mParts[i].mType;
+        mParts[i].SetType(other.mParts[i].GetType());
         for (int j = kRed; j <= kBlue; ++j) {
-            mParts[i].mColor[j] = other.mParts[i].mColor[j];
+            mParts[i].SetColor(j, other.mParts[i].GetColor(j));
         }
     }
     ReleasePlayer();
@@ -134,7 +135,7 @@ void AvatarPartSet::Load(DataArray *pData) {
         const int nPart = pPart->Int(kPartKey);
         const char *pszType;
         pPart->FindSymbol("type", &pszType, true);
-        mParts[nPart].mType = static_cast<unsigned char>(FindPartType(nPart, pszType));
+        mParts[nPart].SetType(static_cast<unsigned char>(FindPartType(nPart, pszType)));
 
         Color color;
         color.a = kOpaque;
@@ -142,9 +143,9 @@ void AvatarPartSet::Load(DataArray *pData) {
         color.g = kDefaultComponent;
         color.b = kDefaultComponent;
         pPart->FindColor("color", &color, false);
-        mParts[nPart].mColor[kRed] = ColorToByte(color.r);
-        mParts[nPart].mColor[kGreen] = ColorToByte(color.g);
-        mParts[nPart].mColor[kBlue] = ColorToByte(color.b);
+        mParts[nPart].SetColor(kRed, ColorToByte(color.r));
+        mParts[nPart].SetColor(kGreen, ColorToByte(color.g));
+        mParts[nPart].SetColor(kBlue, ColorToByte(color.b));
 
         if (nPart == kPartTorso) {
             const char *pszEmblem;
@@ -157,21 +158,21 @@ void AvatarPartSet::Load(DataArray *pData) {
 
 void AvatarPartSet::SetPart(int nPart, const char *pszType) {
     const char *pszSymbol = LookupSymbol(pszType);
-    mParts[nPart].mType = static_cast<unsigned char>(FindPartType(nPart, pszSymbol));
+    mParts[nPart].SetType(static_cast<unsigned char>(FindPartType(nPart, pszSymbol)));
     if (nPart == kPartLeftArm) {
-        mParts[kPartRightArm].mType =
-            static_cast<unsigned char>(FindPartType(kPartRightArm, pszSymbol));
+        mParts[kPartRightArm].SetType(
+            static_cast<unsigned char>(FindPartType(kPartRightArm, pszSymbol)));
     }
     ReleasePlayer();
 }
 
 void AvatarPartSet::SetColor(int nPart, const Color *pColor) {
-    mParts[nPart].mColor[kRed] = ColorToByte(pColor->r);
-    mParts[nPart].mColor[kGreen] = ColorToByte(pColor->g);
-    mParts[nPart].mColor[kBlue] = ColorToByte(pColor->b);
+    mParts[nPart].SetColor(kRed, ColorToByte(pColor->r));
+    mParts[nPart].SetColor(kGreen, ColorToByte(pColor->g));
+    mParts[nPart].SetColor(kBlue, ColorToByte(pColor->b));
     if (nPart == kPartLeftArm) {
         for (int i = kRed; i <= kBlue; ++i) {
-            mParts[kPartRightArm].mColor[i] = mParts[kPartLeftArm].mColor[i];
+            mParts[kPartRightArm].SetColor(i, mParts[kPartLeftArm].GetColor(i));
         }
     }
     if (mPlayer != nullptr) {
@@ -192,7 +193,7 @@ bool AvatarPartSet::IsIncomplete() const {
         if (i == kPartHeadGear || i == kPartFaceGear || i == kPartInstrument) {
             continue;
         }
-        if (mParts[i].mType == 0) {
+        if (mParts[i].GetType() == 0) {
             return true;
         }
     }
@@ -204,10 +205,10 @@ void AvatarPartSet::Clear() {
         if (i == kPartInstrument) {
             continue;
         }
-        mParts[i].mType = 0;
-        mParts[i].mColor[kRed] = kClearedComponent;
-        mParts[i].mColor[kGreen] = kClearedComponent;
-        mParts[i].mColor[kBlue] = kClearedComponent;
+        mParts[i].SetType(0);
+        mParts[i].SetColor(kRed, kClearedComponent);
+        mParts[i].SetColor(kGreen, kClearedComponent);
+        mParts[i].SetColor(kBlue, kClearedComponent);
     }
     mEmblem = 0;
     ReleasePlayer();
@@ -249,14 +250,14 @@ const char *AvatarPartSet::EmblemName() const {
 }
 
 const char *AvatarPartSet::PartName(int nPart) const {
-    return PartTypes(nPart)->Array(mParts[nPart].mType + kFirstType)->Sym(kTypeName);
+    return PartTypes(nPart)->Array(mParts[nPart].GetType() + kFirstType)->Sym(kTypeName);
 }
 
 Color AvatarPartSet::PartColor(int nPart) const {
     Color color;
-    color.r = ByteToColor(mParts[nPart].mColor[kRed]);
-    color.g = ByteToColor(mParts[nPart].mColor[kGreen]);
-    color.b = ByteToColor(mParts[nPart].mColor[kBlue]);
+    color.r = ByteToColor(mParts[nPart].GetColor(kRed));
+    color.g = ByteToColor(mParts[nPart].GetColor(kGreen));
+    color.b = ByteToColor(mParts[nPart].GetColor(kBlue));
     color.a = kOpaque;
     return color;
 }
@@ -268,7 +269,7 @@ void AvatarPartSet::Poll(float fTime) {
     }
     const int nStaleFrame = TheRnd->mFrameCount - 1;
     for (int i = 0; i < Avatar::NumAvatars(); ++i) {
-        AvatarPartSet *pUser = Avatar::GetAvatar(i)->mUser;
+        AvatarPartSet *pUser = Avatar::GetAvatar(i)->GetUser();
         if (pUser != nullptr && pUser->mFrame < nStaleFrame) {
             pUser->ReleasePlayer();
         }
@@ -281,12 +282,12 @@ int AvatarPartSet::CountDifferences(Avatar *pAvatar) const {
         if (i == kPartRightArm) {
             continue;
         }
-        const char *pszType = pAvatar->GetPart(i)->mType;
-        if (pszType == nullptr || FindPartType(i, pszType) != mParts[i].mType) {
+        const char *pszType = pAvatar->GetPart(i)->GetType();
+        if (pszType == nullptr || FindPartType(i, pszType) != mParts[i].GetType()) {
             ++nDifferences;
         }
     }
-    const char *pszEmblem = static_cast<TorsoPart *>(pAvatar->GetPart(kPartTorso))->mEmblem;
+    const char *pszEmblem = static_cast<TorsoPart *>(pAvatar->GetPart(kPartTorso))->GetEmblem();
     if (pszEmblem == nullptr || FindEmblem(pszEmblem) != mEmblem) {
         ++nDifferences;
     }
@@ -314,7 +315,7 @@ void AvatarPartSet::AcquirePlayer() {
     int nFewest = kMoreDifferences;
     for (int i = 0; i < Avatar::NumAvatars(); ++i) {
         Avatar *pAvatar = Avatar::GetAvatar(i);
-        if (pAvatar->mUser != nullptr) {
+        if (pAvatar->GetUser() != nullptr) {
             continue;
         }
         const int nDifferences = CountDifferences(pAvatar);
@@ -345,9 +346,9 @@ bool AvatarPartSet::UpdatePlayer() {
     }
     for (int i = 0; i < kNumParts; ++i) {
         Color color;
-        color.r = ByteToColor(mParts[i].mColor[kRed]);
-        color.g = ByteToColor(mParts[i].mColor[kGreen]);
-        color.b = ByteToColor(mParts[i].mColor[kBlue]);
+        color.r = ByteToColor(mParts[i].GetColor(kRed));
+        color.g = ByteToColor(mParts[i].GetColor(kGreen));
+        color.b = ByteToColor(mParts[i].GetColor(kBlue));
         color.a = kOpaque;
         mPlayer->GetPart(i)->SetColor(&color);
     }
@@ -406,10 +407,10 @@ void AvatarPartSet::Save(BinStream &stream) const {
     WriteByte(stream, mVersion);
     WriteByte(stream, mEmblem);
     for (const PartSetting &part : mParts) {
-        WriteByte(stream, part.mType);
-        WriteByte(stream, part.mColor[kRed]);
-        WriteByte(stream, part.mColor[kGreen]);
-        WriteByte(stream, part.mColor[kBlue]);
+        WriteByte(stream, part.GetType());
+        WriteByte(stream, part.GetColor(kRed));
+        WriteByte(stream, part.GetColor(kGreen));
+        WriteByte(stream, part.GetColor(kBlue));
     }
 }
 
@@ -422,13 +423,17 @@ void AvatarPartSet::Load(BinStream &stream) {
     }
     for (int i = 0; i < kNumParts; ++i) {
         PartSetting &part = mParts[i];
-        stream.Read(&part.mType, sizeof(part.mType));
-        stream.Read(&part.mColor[kRed], sizeof(part.mColor[kRed]));
-        stream.Read(&part.mColor[kGreen], sizeof(part.mColor[kGreen]));
-        stream.Read(&part.mColor[kBlue], sizeof(part.mColor[kBlue]));
+        unsigned char nType = 0;
+        stream.Read(&nType, sizeof(nType));
+        part.SetType(nType);
+        for (int j = kRed; j <= kBlue; ++j) {
+            unsigned char nColor = 0;
+            stream.Read(&nColor, sizeof(nColor));
+            part.SetColor(j, nColor);
+        }
         DataArray *pTypes = PartTypes(i);
-        if (part.mType >= pTypes->Size()) {
-            part.mType = static_cast<unsigned char>(pTypes->Size() - 1);
+        if (part.GetType() >= pTypes->Size()) {
+            part.SetType(static_cast<unsigned char>(pTypes->Size() - 1));
         }
     }
 }

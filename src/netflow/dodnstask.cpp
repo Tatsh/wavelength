@@ -6,7 +6,7 @@
 #include "netflow/netinet.h"
 
 void DoDNSTask::OnStart() {
-    TheNetInet->LookupHost(this, TheLobbyRT->mServerName);
+    TheNetInet->LookupHost(this, TheLobbyRT->GetServerName());
 }
 
 void DoDNSTask::OnStop() {
@@ -16,7 +16,7 @@ void DoDNSTask::OnStop() {
 bool DoDNSTask::OnResult(InetDNSLookupResultMsg *pMsg) {
     Finish(pMsg->mResult == 0, LobbyConnectResultMsg::kResultLookupFailed);
     if (pMsg->mResult == 0) {
-        TheLobbyRT->mServerAddress = pMsg->mAddress;
+        TheLobbyRT->GetServerAddress() = pMsg->mAddress;
     }
     return false;
 }

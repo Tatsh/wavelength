@@ -25,7 +25,7 @@ constexpr LanguageCode kLanguageCodes[] = {
 void SetLocParamsTask::OnStart() {
     rtMediusSetLocalizationParamsRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.characterEncoding = RT_MEDIUS_CHARACTER_ENCODING_UTF8;
     const char *pszLanguage = GetSystemLanguage();

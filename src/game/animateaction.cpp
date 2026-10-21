@@ -25,12 +25,12 @@ void AnimateAction::Exec() {
         mAnim->SetFrame(mStart);
         return;
     }
-    mStartTime = TheTriggerMgr.mTime[TheTriggerMgr.mClock];
+    mStartTime = TheTriggerMgr.GetCurrentTime();
     TheTriggerMgr.AddRunning(this);
 }
 
 bool AnimateAction::Poll() {
-    float flElapsed = TheTriggerMgr.mTime[TheTriggerMgr.mClock] - mStartTime;
+    float flElapsed = TheTriggerMgr.GetCurrentTime() - mStartTime;
     if (mDuration < flElapsed) {
         flElapsed = mDuration;
     }

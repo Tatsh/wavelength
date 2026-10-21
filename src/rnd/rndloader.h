@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "os/binstream.h"
@@ -259,17 +260,19 @@ public:
      */
     void Finish();
 
-    State mState;                    /*!< The stage the next Poll() runs. */
-    int mOwnsStream;                 /*!< Non-zero when LoadFile() opened mStream. */
-    String mFile;                    /*!< The file. */
-    int mFlags;                      /*!< The Flags of the load. */
-    String mDir;                     /*!< The directory the paths of the file are relative to. */
-    BinStream *mStream;              /*!< The stream being read. */
-    std::list<RndObject *> mObjects; /*!< The objects the file created and loaded. */
-    int mVersion;                    /*!< The version of the file. */
-    int mRemaining;                  /*!< The entries of the current table not read. */
-    std::vector<FilePath> mTextures; /*!< The texture reads in flight. */
-    std::list<ObjectLoader> mObjectLoaders;       /*!< The objects of the file, in file order. */
+    State mState;       /*!< The stage the next Poll() runs. */
+    int mOwnsStream;    /*!< Non-zero when LoadFile() opened mStream. */
+    String mFile;       /*!< The file. */
+    int mFlags;         /*!< The Flags of the load. */
+    String mDir;        /*!< The directory the paths of the file are relative to. */
+    BinStream *mStream; /*!< The stream being read. Freed only when mOwnsStream is set. */
+    std::unique_ptr<BinStream> mOwnedStream; /*!< The stream LoadFile() opened, or null. */
+    std::list<RndObject *> mObjects;        /*!< The objects the file created and loaded. The loader
+                                               deletes them only under the kDeleteObjects flag. */
+    int mVersion;                           /*!< The version of the file. */
+    int mRemaining;                         /*!< The entries of the current table not read. */
+    std::vector<FilePath> mTextures;        /*!< The texture reads in flight. */
+    std::list<ObjectLoader> mObjectLoaders; /*!< The objects of the file, in file order. */
     std::list<ObjectLoader>::iterator mCurLoader; /*!< The object the current stage is at. */
     Callback *mCallback;                          /*!< The callback, or null. */
 };

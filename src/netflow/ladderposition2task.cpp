@@ -17,7 +17,7 @@ constexpr int kLadderStat = 11;
 void LadderPosition2Task::OnStart() {
     rtMediusLadderPositionRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.accountId = mAccount;
     request.ladderType = kLadderType;

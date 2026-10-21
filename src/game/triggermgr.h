@@ -418,9 +418,206 @@ public:
      */
     void PathUnlockedEvent(int nPath);
 
-    // The conditions and the actions read the values below directly, and the image has no
-    // accessor for them.
+    /** @return The clock of the action in progress. */
+    int GetClock() const {
+        return mClock;
+    }
 
+    /**
+     * Set the clock of the action in progress.
+     *
+     * @param nClock One of Clock.
+     */
+    void SetClock(int nClock) {
+        mClock = nClock;
+    }
+
+    /** @return The time of the clock of the action in progress. */
+    float GetCurrentTime() const {
+        return mTime[mClock];
+    }
+
+    /**
+     * Report the time of a clock.
+     *
+     * @param nClock One of Clock.
+     * @return The time.
+     */
+    float GetTime(int nClock) const {
+        return mTime[nClock];
+    }
+
+    /** @return The player of the last event that specifies one. */
+    int GetPlayer() const {
+        return mPlayer;
+    }
+
+    /** @return The note of the last beat event. */
+    char GetNote() const {
+        return mNote;
+    }
+
+    /** @return The lane of the last hit, miss, or gem event. */
+    int GetGemPos() const {
+        return mGemPos;
+    }
+
+    /** @return The lyric of the last lyric event. */
+    const String &GetLyric() const {
+        return mLyric;
+    }
+
+    /** @return The bar of the last new bar event. */
+    int GetBar() const {
+        return mBar;
+    }
+
+    /** @return The buttons of the last button event. */
+    int GetButtons() const {
+        return mButtons;
+    }
+
+    /**
+     * Report the player who captured a track.
+     *
+     * @param nTrack The track.
+     * @return The player, or kNoPlayer.
+     */
+    int GetCapturer(int nTrack) const {
+        return mCapturer[nTrack];
+    }
+
+    /** @return The component of the last component event. */
+    const String &GetComponent() const {
+        return mComponent;
+    }
+
+    /** @return The distance of the last time event. */
+    float GetDistance() const {
+        return mDistance;
+    }
+
+    /**
+     * Report whether a player is dying.
+     *
+     * @param nPlayer The player.
+     * @return Non-zero for a dying player.
+     */
+    int GetDying(int nPlayer) const {
+        return mDying[nPlayer];
+    }
+
+    /** @return The state of the game GameStateCondition tests. */
+    int GetGameState() const {
+        return mGameState;
+    }
+
+    /**
+     * Report the health of a player.
+     *
+     * @param nPlayer The player.
+     * @return The health.
+     */
+    int GetHealth(int nPlayer) const {
+        return mHealth[nPlayer];
+    }
+
+    /**
+     * Report the instrument of the track of a player.
+     *
+     * @param nPlayer The player.
+     * @return The instrument.
+     */
+    int GetInstrument(int nPlayer) const {
+        return mInstrument[nPlayer];
+    }
+
+    /** @return The player in the lead. */
+    int GetLeader() const {
+        return mLeader;
+    }
+
+    /**
+     * Report the music mode of the track of a player.
+     *
+     * @param nPlayer The player.
+     * @return The music mode.
+     */
+    int GetMode(int nPlayer) const {
+        return mMode[nPlayer];
+    }
+
+    /** @return The component that lost the focus. */
+    const String &GetOldComponent() const {
+        return mOldComponent;
+    }
+
+    /** @return The previous panel. */
+    const String &GetOldPanel() const {
+        return mOldPanel;
+    }
+
+    /** @return The screen exited by the last screen event. */
+    const String &GetOldScreen() const {
+        return mOldScreen;
+    }
+
+    /** @return The panel of the last component event. */
+    const String &GetPanel() const {
+        return mPanel;
+    }
+
+    /** @return The powerup. */
+    int GetPowerup() const {
+        return mPowerup;
+    }
+
+    /** @return A random value from 0 to 1, new for each time event. */
+    float GetRandom() const {
+        return mRandom;
+    }
+
+    /** @return The rule set of the last begin event. */
+    int GetRuleSet() const {
+        return mRuleSet;
+    }
+
+    /**
+     * Report the score of a player.
+     *
+     * @param nPlayer The player.
+     * @return The score.
+     */
+    int GetScore(int nPlayer) const {
+        return mScore[nPlayer];
+    }
+
+    /** @return The screen of the last component or screen event. */
+    const String &GetScreen() const {
+        return mScreen;
+    }
+
+    /**
+     * Report the phrase streak of a player.
+     *
+     * @param nPlayer The player.
+     * @return The phrase streak.
+     */
+    int GetStreak(int nPlayer) const {
+        return mStreak[nPlayer];
+    }
+
+    /**
+     * Report the track of a player.
+     *
+     * @param nPlayer The player.
+     * @return The track.
+     */
+    int GetTrack(int nPlayer) const {
+        return mTrack[nPlayer];
+    }
+
+private:
     std::vector<TriggerEvent> mEvents;   /*!< One event per TriggerEvent::Type. */
     std::list<TriggerAction *> mRunning; /*!< Actions Poll() polls until they are done. */
     /*!< Actions waiting on each clock, in the order of their times. */

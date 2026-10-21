@@ -36,9 +36,9 @@ constexpr int kStopLoad = -1;
 } // namespace
 
 AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
-    : mCallback(this), mType(nullptr), mPendingType(nullptr), mColor{1.0f, 1.0f, 1.0f, 1.0f},
-      mMesh(nullptr), mTransRoot(nullptr), mJoint(nullptr), mMat(nullptr), mParent(nullptr),
-      mAvatar(pAvatar) {
+    : mCallback(this), mType(nullptr), mPendingType(nullptr), mTransRoot(nullptr), mJoint(nullptr),
+      mMat(nullptr), mAvatar(pAvatar), mColor{1.0f, 1.0f, 1.0f, 1.0f}, mMesh(nullptr),
+      mParent(nullptr) {
     mData = SystemConfig()
                 ->FindArray("db", true)
                 ->FindArray("avatar", true)
@@ -49,16 +49,18 @@ AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
     }
     DataArray *pAnims = mData->FindArray("anims", false);
     if (pAnims == nullptr) {
-        mAnims.resize(0, nullptr);
+        mAnims.resize(0);
         return;
     }
-    mAnims.resize(pAnims->Size() - kFirstAnim, nullptr);
+    mAnims.resize(pAnims->Size() - kFirstAnim);
     for (size_t i = 0; i < mAnims.size(); ++i) {
         const char *pszName = pAnims->Sym(static_cast<int>(i) + kFirstAnim);
         RndTransAnim *pBase =
             dynamic_cast<RndTransAnim *>(TheManager.Find(FormatString("fbase_%s.tnm", pszName)));
-        mAnims[i] = dynamic_cast<RndTransAnim *>(TheManager.Create(
-            RndTransAnim::sClassName, FormatString("avatar%d_%s.tnm", mAvatar->mIndex, pszName)));
+        // The part created the animation through TheManager and deletes it.
+        mAnims[i].reset(dynamic_cast<RndTransAnim *>(
+            TheManager.Create(RndTransAnim::sClassName,
+                              FormatString("avatar%d_%s.tnm", mAvatar->GetIndex(), pszName))));
         mAnims[i]->mTransInterp = RndTransAnim::kInterpLinear;
         mAnims[i]->SetFramesOwner(pBase);
         // The keys belong to the shared `fbase_` animation, and every avatar clears them again.
@@ -71,10 +73,9 @@ AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
 }
 
 AvatarPart::~AvatarPart() {
+    // Preserve the original forward deletion order of the animations.
     for (size_t i = 0; i < mAnims.size(); ++i) {
-        if (mAnims[i] != nullptr) {
-            delete mAnims[i];
-        }
+        mAnims[i].reset();
     }
 }
 
@@ -136,7 +137,7 @@ void AvatarPart::SetFrame(float fFrame) {
 
 void AvatarPart::SetFrames(float fFrom, float fTo, float fBlend) {
     for (size_t i = 0; i < mAnims.size(); ++i) {
-        RndTransAnim *pAnim = mAnims[i];
+        RndTransAnim *pAnim = mAnims[i].get();
         if (!pAnim->mFramesOwner->mTransKeys.empty()) {
             Vector3 translation;
             BlendTranslation(pAnim, fFrom, fTo, fBlend, translation);
@@ -171,15 +172,16 @@ bool AvatarPart::Rebuild() {
             mPendingExtraLoader.reset();
         }
         for (RndObject *pObject : mLoader->mObjects) {
-            pObject->SetName(FormatString("avatar%d_%s", mAvatar->mIndex, pObject->mName.c_str()));
+            pObject->SetName(
+                FormatString("avatar%d_%s", mAvatar->GetIndex(), pObject->mName.c_str()));
         }
     }
 
     const char *pszRoot;
     mData->FindSymbol("draw_root", &pszRoot, true);
-    mMesh = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->mIndex, pszRoot));
+    mMesh = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->GetIndex(), pszRoot));
     mData->FindSymbol("trans_root", &pszRoot, true);
-    mTransRoot = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->mIndex, pszRoot));
+    mTransRoot = FindMesh(FormatString("avatar%d_%s.mesh", mAvatar->GetIndex(), pszRoot));
     ResetLocalXfm(mTransRoot);
 
     if (mLoader != nullptr) {
@@ -199,7 +201,7 @@ bool AvatarPart::Rebuild() {
         for (size_t i = 0; i < mAnims.size(); ++i) {
             mAnims[i]->SetTrans(
                 FindMesh(FormatString("avatar%d_%s.mesh",
-                                      mAvatar->mIndex,
+                                      mAvatar->GetIndex(),
                                       pAnims->Sym(static_cast<int>(i) + kFirstAnim))));
         }
     }
@@ -222,7 +224,7 @@ void AvatarPart::Update() {
 void AvatarPart::FindJoint() {
     const char *pszRoot;
     mData->FindSymbol("trans_root", &pszRoot, true);
-    mJoint = FindMesh(FormatString("avatar%d_%s_joint.mesh", mAvatar->mIndex, pszRoot));
+    mJoint = FindMesh(FormatString("avatar%d_%s_joint.mesh", mAvatar->GetIndex(), pszRoot));
 }
 
 void AvatarPart::SetColor(const Color *pColor) {
@@ -241,6 +243,6 @@ int AvatarPart::Callback::ShouldLoad(RndObject *pExisting,
         return kCreateObject;
     }
     DebugPrint("Resetting avatar because found %s\n", pExisting->mName.c_str());
-    mOwner->SetType(mOwner->mPendingType);
+    mOwner->SetType(mOwner->GetPendingType());
     return kStopLoad;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/axetrackdata.h"
@@ -76,17 +77,36 @@ public:
 
         /** Release the file and its contents. */
         ~PatternFile() {
-            delete mFile;
             PoolMemFree(mBuffer);
         }
 
-        String mPath;  /*!< The path of the file. */
-        int mIndex;    /*!< The pattern the file holds, from 0. */
-        Song *mSong;   /*!< The song. */
-        File *mFile;   /*!< The file, or null when it was not found. */
-        char *mBuffer; /*!< The contents of the file. */
-        int mSize;     /*!< The size of the file in bytes. */
-        int mDone;     /*!< Whether the file is read or was not found. */
+        /**
+         * Open the file and start reading it into a buffer.
+         *
+         * The Song routine StartPatternLoad() expands the body.
+         *
+         * @param nIndex The pattern the file stores, from 0.
+         * @param pSong The song.
+         */
+        void Start(int nIndex, Song *pSong);
+
+        /**
+         * Report whether the file is read, and load the patterns of each pitch track once it is.
+         *
+         * The Song routine PollLoad() expands the body.
+         *
+         * @return Whether the file is read or was not found.
+         */
+        bool Poll();
+
+    private:
+        String mPath;                /*!< The path of the file. */
+        int mIndex;                  /*!< The pattern the file stores, from 0. */
+        Song *mSong;                 /*!< The song. Borrowed. */
+        std::unique_ptr<File> mFile; /*!< The file, or null when it was not found. */
+        char *mBuffer;               /*!< The contents of the file, a pool allocation. */
+        int mSize;                   /*!< The size of the file in bytes. */
+        int mDone;                   /*!< Whether the file is read or was not found. */
     };
 
     /**
@@ -411,7 +431,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x0011f038
      * @ghidraAddress PAL: 0x001207c8
      */
-    std::vector<PitchTrackGems *> *GetTrackPitchData(int nTrack);
+    std::vector<std::unique_ptr<PitchTrackGems>> *GetTrackPitchData(int nTrack);
 
     /**
      * Report the steps of the catch tracks to enable, each a list of track indices.
@@ -515,37 +535,40 @@ public:
      */
     const char *GetSectionLabel(int nIndex) const;
 
-    int mState;      /*!< The load state, one of LoadState. */
-    int mDifficulty; /*!< The difficulty. The duel coaches the players at 1. */
-    int mRuleSet;    /*!< The rule set, one of GameDb::RuleSet. */
-    TrackBuilder::ErrorHandler mErrorHandler; /*!< The routine that reports an error. */
-    int mValidate;                            /*!< Whether errors are reported. */
-    int mReserved14;            // +0x14, cleared by the constructor and not otherwise used here.
-    LevelMidiBuilder *mBuilder; /*!< The builder of the tracks. */
-    DataArray *mConfig;         /*!< The entry of the song. */
-    DuelPatternTable mDuelPatterns; /*!< The duel patterns of the song. */
-    String mReserved30;           // +0x30, emptied by the constructor and not otherwise used here.
-    int mNumBars;                 /*!< `song_bars`, the length of the song in bars. */
-    int mIntroBars;               /*!< `intro_bars`, one more than the bars before bar 0. */
-    String mMidiFile;             /*!< The path of the MIDI file. */
-    String mMidiDir;              /*!< The directory of the MIDI file and the pattern files. */
-    SectionBoundaries *mSections; /*!< The sections. */
-    float *mMsPerTick;            /*!< The duration of one tick in milliseconds. */
-    SlotGrid *mSlotGrid;          /*!< The patterns of the sections, or null. */
-    std::vector<int> mBackMusicMasters; /*!< The catch track of each background track, or -1. */
-    std::vector<unsigned char> mLowVolumes[kNumMixerChannels]; /*!< `mixer_low_volumes`. */
-    std::vector<unsigned char> mFreestyleLowVolumes; /*!< `mixer_low_volumes_freestyle`. */
-    std::vector<unsigned char> mTrackVolumes[kNumMixerChannels]; /*!< `duel_mix_volumes`. */
-    std::vector<std::vector<int>> mEnableOrder; /*!< The steps of the tracks to enable. */
-    SynthEffects mEffects;                      /*!< `effects`, the effects buses. */
-    int mFreestyleEffectsBus;                   /*!< `freestyle_effects_bus`. */
-    int mRemixEffectsBus;                       /*!< `remix_effects_bus`. */
-    const char *mRemixEffectsName;      /*!< The localised `remix_effects_name`, or "no name". */
-    std::vector<String> mSectionLabels; /*!< The labels of the remix sections. */
-    std::vector<int> mSkippedBars;      /*!< The bars a duel passes over, ascending. */
-    std::vector<std::vector<PitchTrackGems *>> mPitchGems; /*!< The patterns of each track. */
-    PatternFile *mPatternFiles[kNumPatternFiles]; /*!< The pattern files while they are read. */
-    std::vector<int> mDuelTrackOrder; /*!< The tracks a duel plays, cycled by section. */
+    /** @return The difficulty. The duel coaches the players at 1. */
+    int GetDifficulty() const {
+        return mDifficulty;
+    }
+
+    /** @return The builder of the tracks. */
+    LevelMidiBuilder *GetBuilder() const {
+        return mBuilder.get();
+    }
+
+    /** @return The length of a bar in ticks. */
+    int GetTicksPerBar() const {
+        return mBuilder->GetTicksPerBar();
+    }
+
+    /** @return `song_bars`, the length of the song in bars. */
+    int GetNumBars() const {
+        return mNumBars;
+    }
+
+    /** @return `intro_bars`, one more than the bars before bar 0. */
+    int GetIntroBars() const {
+        return mIntroBars;
+    }
+
+    /** @return The bars a duel passes over, ascending. */
+    const std::vector<int> &GetSkippedBars() const {
+        return mSkippedBars;
+    }
+
+    /** @return The tracks a duel plays, cycled by section. */
+    const std::vector<int> &GetDuelTrackOrder() const {
+        return mDuelTrackOrder;
+    }
 
 private:
     /**
@@ -726,4 +749,36 @@ private:
      * @ghidraAddress PAL: 0x0011fb68
      */
     void ValidateEnableOrder();
+
+    int mState;      /*!< The load state, one of LoadState. */
+    int mDifficulty; /*!< The difficulty. The duel coaches the players at 1. */
+    int mRuleSet;    /*!< The rule set, one of GameDb::RuleSet. */
+    TrackBuilder::ErrorHandler mErrorHandler; /*!< The routine that reports an error. */
+    int mValidate;                            /*!< Whether errors are reported. */
+    int mReserved14; // +0x14, cleared by the constructor and not otherwise used here.
+    std::unique_ptr<LevelMidiBuilder> mBuilder; /*!< The builder of the tracks. */
+    DataArray *mConfig;                         /*!< The entry of the song. Borrowed. */
+    DuelPatternTable mDuelPatterns;             /*!< The duel patterns of the song. */
+    String mReserved30; // +0x30, emptied by the constructor and not otherwise used here.
+    int mNumBars;       /*!< `song_bars`, the length of the song in bars. */
+    int mIntroBars;     /*!< `intro_bars`, one more than the bars before bar 0. */
+    String mMidiFile;   /*!< The path of the MIDI file. */
+    String mMidiDir;    /*!< The directory of the MIDI file and the pattern files. */
+    std::unique_ptr<SectionBoundaries> mSections; /*!< The sections. */
+    std::unique_ptr<float> mMsPerTick;            /*!< The duration of one tick in milliseconds. */
+    std::unique_ptr<SlotGrid> mSlotGrid;          /*!< The patterns of the sections, or null. */
+    std::vector<int> mBackMusicMasters; /*!< The catch track of each background track, or -1. */
+    std::vector<unsigned char> mLowVolumes[kNumMixerChannels]; /*!< `mixer_low_volumes`. */
+    std::vector<unsigned char> mFreestyleLowVolumes; /*!< `mixer_low_volumes_freestyle`. */
+    std::vector<unsigned char> mTrackVolumes[kNumMixerChannels]; /*!< `duel_mix_volumes`. */
+    std::vector<std::vector<int>> mEnableOrder; /*!< The steps of the tracks to enable. */
+    SynthEffects mEffects;                      /*!< `effects`, the effects buses. */
+    int mFreestyleEffectsBus;                   /*!< `freestyle_effects_bus`. */
+    int mRemixEffectsBus;                       /*!< `remix_effects_bus`. */
+    const char *mRemixEffectsName;      /*!< The localised `remix_effects_name`, or "no name". */
+    std::vector<String> mSectionLabels; /*!< The labels of the remix sections. */
+    std::vector<int> mSkippedBars;      /*!< The bars a duel passes over, ascending. */
+    std::vector<std::vector<std::unique_ptr<PitchTrackGems>>> mPitchGems; /*!< Track patterns. */
+    std::unique_ptr<PatternFile> mPatternFiles[kNumPatternFiles]; /*!< The files being read. */
+    std::vector<int> mDuelTrackOrder; /*!< The tracks a duel plays, cycled by section. */
 };

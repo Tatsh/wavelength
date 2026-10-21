@@ -8,11 +8,13 @@ void SpaceErrorScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     const String slot(GetSlotName());
 #ifdef VIDEO_STANDARD_PAL
-    const String text(FormatString(
-        TheLocale.Localize(mFocusPanel->mName, false), slot.c_str(), mSpace, mSaveName.c_str()));
+    const String text(FormatString(TheLocale.Localize(mFocusPanel->GetName(), false),
+                                   slot.c_str(),
+                                   mSpace,
+                                   mSaveName.c_str()));
 #else
     const String text(
-        FormatString(TheLocale.Localize(mFocusPanel->mName, false), slot.c_str(), mSpace));
+        FormatString(TheLocale.Localize(mFocusPanel->GetName(), false), slot.c_str(), mSpace));
 #endif
     dynamic_cast<DialogPanel *>(mFocusPanel)->SetText(text.c_str());
 }

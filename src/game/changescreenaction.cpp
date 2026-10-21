@@ -8,8 +8,8 @@ ChangeScreenAction::ChangeScreenAction(DataArray *pAction) {
     if (mScreen == nullptr) {
         DebugWarn("Couldn't find '%s' object (file %s, line %d)",
                   pAction->Sym(1),
-                  pAction->mFile,
-                  pAction->mLine);
+                  pAction->GetFile(),
+                  pAction->GetLine());
     }
 }
 

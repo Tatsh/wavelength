@@ -71,8 +71,8 @@ OvyScore::OvyScore(int nPlayer, int nIndex, RndView *pHudView)
         FormatString("%s score%d.tnm", Overlay::sHudPrefix, nIndex), mMesh->mName.c_str(), false);
     mScoreText = FindIndexed<RndText>("%s score%d.txt", nIndex);
     auto *pPoints = FindIndexed<RndMesh>("%s pts%d.mesh", nIndex);
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-        TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         mMesh = nullptr;
         mTop = nullptr;
     } else {
@@ -90,28 +90,26 @@ OvyScore::OvyScore(int nPlayer, int nIndex, RndView *pHudView)
         mBarMat->SetBaseColor(*pColor);
         static_cast<RndDrawable *>(pHudView)->RemoveDraw(mMesh);
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetGame &&
-        TheGameDb->mCommunity == GameDb::kCommunityLocal) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame &&
+        TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
         auto *pPointsAnim = FindIndexed<RndAnimatable>("%s pts%d hide.tnm", nIndex);
         pPoints->SetShowing(true);
-        mPointsSlide = new RampAnimator(0.0f, pPointsAnim, nullptr, kPointsSlideSpeed);
+        mPointsSlide =
+            std::make_unique<RampAnimator>(0.0f, pPointsAnim, nullptr, kPointsSlideSpeed);
     } else if (pPoints != nullptr) {
         pPoints->SetShowing(false);
     }
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetRemix &&
-        TheGameDb->mRuleSet != GameDb::kRuleSetDuel && TheGameDb->IsLocalPlayer(nPlayer)) {
-        mPowerup = new HudPowerup(nIndex, pHudView);
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix &&
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel && TheGameDb->IsLocalPlayer(nPlayer)) {
+        mPowerup = std::make_unique<HudPowerup>(nIndex, pHudView);
     }
     Reset();
 }
 
-OvyScore::~OvyScore() {
-    delete mPointsSlide;
-    delete mPowerup;
-}
+OvyScore::~OvyScore() = default;
 
 void OvyScore::Show(bool bShow) {
-    HideablePanel::Show(bShow && TheGfxManager.mVictoryLap == 0);
+    HideablePanel::Show(bShow && TheGfxManager.GetVictoryLap() == 0);
 }
 
 void OvyScore::Reset() {
@@ -136,10 +134,10 @@ void OvyScore::Reset() {
 void OvyScore::SetScore(int nScore) {
     mScore = nScore;
     const GameDb *pDb = TheGameDb;
-    if (pDb->mCommunity == GameDb::kCommunitySolo ||
-        (pDb->mCommunity == GameDb::kCommunityOnline && TheGameDb->IsLocalPlayer(mPlayer)) ||
-        TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
-        mScoreTime = TheGameDb->mSongTime;
+    if (pDb->GetCommunity() == GameDb::kCommunitySolo ||
+        (pDb->GetCommunity() == GameDb::kCommunityOnline && TheGameDb->IsLocalPlayer(mPlayer)) ||
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
+        mScoreTime = TheGameDb->GetSongTime();
     } else {
         mScoreTime = kNoScoreTime;
     }
@@ -147,12 +145,12 @@ void OvyScore::SetScore(int nScore) {
 
 void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
     HideablePanel::Poll();
-    const float fTick = TheGameDb->mSongTick;
+    const float fTick = TheGameDb->GetSongTick();
     switch (mState) {
     case kStateMoveIn:
     case kStateMoveOut: {
         float fProgress;
-        if (mMove.mX1 <= fTick) {
+        if (mMove.GetX1() <= fTick) {
             if (mState == kStateMoveIn) {
                 mState = kStateGrow;
                 mBar->SetShowing(true);
@@ -195,9 +193,9 @@ void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
         break;
     case kStateFade: {
         Color color = mBarMat->mEdgeColor;
-        if (mMove.mX1 <= fTick) {
+        if (mMove.GetX1() <= fTick) {
             mState = kStateMoveOut;
-            mMove.Reset(1.0f, 0.0f, mMove.mX1, mMove.mX1 + sMoveOutTicks);
+            mMove.Reset(1.0f, 0.0f, mMove.GetX1(), mMove.GetX1() + sMoveOutTicks);
             color.a = 0.0f;
             mBar->SetShowing(false);
         } else {
@@ -210,7 +208,7 @@ void OvyScore::Poll(float fDelta, float fUnused, float fDeltaTicks) {
     default:
         break;
     }
-    if (mScoreTime != kScoreShown && kScoreDelay < TheGameDb->mSongTime - mScoreTime) {
+    if (mScoreTime != kScoreShown && kScoreDelay < TheGameDb->GetSongTime() - mScoreTime) {
         mScoreText->SetText(FormatString("%d", mScore));
         mScoreTime = kScoreShown;
     }
@@ -229,7 +227,7 @@ void OvyScore::Draw() {
 }
 
 void OvyScore::ShowCheckpoint(float fShare, int nPlace) {
-    const float fNow = TheGameDb->mSongTick;
+    const float fNow = TheGameDb->GetSongTick();
     mState = kStateMoveIn;
     mMove.Reset(0.0f, 1.0f, fNow, fNow + sMoveInTicks);
     const float fFrames = fShare * kBarFramesPerShare;
@@ -237,7 +235,7 @@ void OvyScore::ShowCheckpoint(float fShare, int nPlace) {
     mBarGrow.Jump(0.0f, fFrames);
     mBarGrow.Update(0.0f, true);
     mCheckpointPos = &sCheckpointPositions[nPlace];
-    mStableEnd = mMove.mX1 + sBarGrowTicks + sStableTicks;
+    mStableEnd = mMove.GetX1() + sBarGrowTicks + sStableTicks;
     Color color = mBarMat->mEdgeColor;
     color.a = 1.0f;
     mBarMat->SetEdgeColor(color);

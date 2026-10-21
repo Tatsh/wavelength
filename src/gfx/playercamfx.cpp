@@ -190,7 +190,7 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel,
                        [[maybe_unused]] GfxArena *pArena,
                        float flTick,
                        float flTime) {
-    const bool bLocal = (TheGameDb->mCommunity == GameDb::kCommunityLocal);
+    const bool bLocal = (TheGameDb->GetCommunity() == GameDb::kCommunityLocal);
     if (mFx == nullptr) {
         return;
     }
@@ -213,15 +213,15 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel,
 
     if (!bLocal) {
         if (mPullingBack) {
-            if (mPullBackCurve.mX1 <= flTime) {
+            if (mPullBackCurve.GetX1() <= flTime) {
                 mPullingBack = 0;
-                mPullBackLevel = mPullBackCurve.mY1;
+                mPullBackLevel = mPullBackCurve.GetY1();
             } else {
                 mPullBackLevel = mPullBackCurve.ATanInterpolator::Interp(flTime);
             }
         }
-        if (flTick < sIntroEndTick && TheGameDb->mRuleSet != GameDb::kRuleSetRemix &&
-            !TheGameDb->mTutorial && !mSkipIntro) {
+        if (flTick < sIntroEndTick && TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix &&
+            !TheGameDb->GetTutorial() && !mSkipIntro) {
             PlayIntro(flTick);
         } else {
             mView.mBasisX = mCamera.mBasisX;
@@ -285,8 +285,8 @@ void PlayerCamFX::PlayIntro(float flTick) {
 
 void PlayerCamFX::LookAlong(
     GfxTunnel *pTunnel, Transform &track, Transform &camera, int, bool, float flTrack) {
-    const float flTick = TheGameDb->mSongTick;
-    TnlGeom *pGeom = pTunnel->mGeom;
+    const float flTick = TheGameDb->GetSongTick();
+    TnlGeom *pGeom = pTunnel->GetGeom();
     pGeom->BlendCell(&track, true, false, flTrack, flTick, kCenterLateral);
     pGeom->BlendCell(&camera, true, false, flTrack, flTick - sTrailingFrames, kCenterLateral);
     RotateBasisAboutX(camera, sViewDownAngle, camera);
@@ -301,8 +301,12 @@ void PlayerCamFX::LookAlong(
 
 void PlayerCamFX::Trailing(
     GfxTunnel *pTunnel, Transform &track, Transform &camera, int nPlayer, bool bLocal) {
-    LookAlong(
-        pTunnel, track, camera, nPlayer, bLocal, pTunnel->mGeom->GetPlayer(nPlayer)->mPosition);
+    LookAlong(pTunnel,
+              track,
+              camera,
+              nPlayer,
+              bLocal,
+              pTunnel->GetGeom()->GetPlayer(nPlayer)->GetPosition());
 }
 
 void PlayerCamFX::TrailingFixed(
@@ -312,24 +316,24 @@ void PlayerCamFX::TrailingFixed(
               camera,
               nPlayer,
               bLocal,
-              static_cast<float>(pTunnel->mNumTracks - 1) * kCenterLateral);
+              static_cast<float>(pTunnel->GetNumTracks() - 1) * kCenterLateral);
 }
 
 void PlayerCamFX::Solo(GfxTunnel *pTunnel, Transform &track, Transform &camera, int nPlayer, bool) {
-    const float flTick = TheGameDb->mSongTick;
-    TnlGeom *pGeom = pTunnel->mGeom;
+    const float flTick = TheGameDb->GetSongTick();
+    TnlGeom *pGeom = pTunnel->GetGeom();
     pGeom->BlendCell(
-        &track, true, false, pGeom->GetPlayer(nPlayer)->mPosition, flTick, kCenterLateral);
+        &track, true, false, pGeom->GetPlayer(nPlayer)->GetPosition(), flTick, kCenterLateral);
     RotateBasisAboutX(track, sViewDownAngle, camera);
     PullBackFromTrack(track, camera);
 }
 
 void PlayerCamFX::Multi(GfxTunnel *pTunnel, Transform &track, Transform &camera, int, bool) {
-    const float flTick = TheGameDb->mSongTick;
-    TnlGeom *pGeom = pTunnel->mGeom;
+    const float flTick = TheGameDb->GetSongTick();
+    TnlGeom *pGeom = pTunnel->GetGeom();
     float flTrack;
     if (mFocusPlayer >= 0) {
-        flTrack = pGeom->GetPlayer(mFocusPlayer)->mPosition;
+        flTrack = pGeom->GetPlayer(mFocusPlayer)->GetPosition();
     } else {
         flTrack = mCenterTrack;
     }
@@ -348,9 +352,9 @@ void PlayerCamFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel
     FindConfigVector3(pConfig, pDefaults, "view_pull_back", &sPullBack, true);
     FindConfigFloat(pConfig, pDefaults, "view_pull_back_time", &sPullBackTime, true);
     FindConfigFloat(pConfig, pDefaults, "view_pull_back_severity", &sPullBackSeverity, true);
-    sPullBack.x *= TheGfxManager.mScrollSpeed;
-    sPullBack.y *= TheGfxManager.mScrollSpeed;
-    sPullBack.z *= TheGfxManager.mScrollSpeed;
+    sPullBack.x *= TheGfxManager.GetScrollSpeed();
+    sPullBack.y *= TheGfxManager.GetScrollSpeed();
+    sPullBack.z *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(
         pConfig, pDefaults, "view_tutorial_pull_back_level", &sTutorialPullBackLevel, true);
     Vector2 levels;
@@ -374,14 +378,14 @@ void PlayerCamFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel
     if (FindConfigInt(pConfig, pDefaults, "view_skew_correction", &nSkewCorrection, true)) {
         sSkewCorrection = (nSkewCorrection != 0);
     }
-    sViewDistance *= TheGfxManager.mScrollSpeed;
+    sViewDistance *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(
         pConfig, pDefaults, "camera_multi_player_change_severity", &sChangeSeverity, true);
     FindConfigFloat(pConfig, pDefaults, "camera_multi_player_change_ticks", &sChangeTicks, true);
     FindConfigFloat(pConfig, pDefaults, "camera_jiggle_spring", &sJiggleSpring, true);
     FindConfigFloat(pConfig, pDefaults, "camera_jiggle_damper", &sJiggleDamper, true);
     FindConfigFloat(pConfig, pDefaults, "camera_jiggle_scale", &sJiggleScale, true);
-    sJiggleScale *= TheGfxManager.mScrollSpeed;
+    sJiggleScale *= TheGfxManager.GetScrollSpeed();
     FindConfigVector3(pConfig, pDefaults, "camera_jiggle_variation", &sJiggleVariation, true);
     FindConfigFloat(pConfig, pDefaults, "camera_jiggle_2d_mult", &sScreenJiggleScale, true);
     FindConfigSymbol(pConfig, pDefaults, "camera_alg", &sAlgorithmName, false);
@@ -414,7 +418,7 @@ void PlayerCamFX::UpdateZoom(bool bImmediate) {
     if (!mPullingBack && flLevel == mPullBackLevel) {
         return;
     }
-    const float flNow = TheGameDb->mSongTime;
+    const float flNow = TheGameDb->GetSongTime();
     mPullingBack = 1;
     mPullBackCurve.Reset(mPullBackLevel, flLevel, flNow, flNow + sPullBackTime, sPullBackSeverity);
 }
@@ -429,7 +433,7 @@ void PlayerCamFX::Reset(bool bNearPullBack) {
     mFx->mDirty = 1;
     mFx->UpdateWorldXfm(nullptr, 0);
 
-    if (TheGameDb->mTutorial) {
+    if (TheGameDb->GetTutorial()) {
         mPullingBack = 0;
         mPullBackLevel = sTutorialPullBackLevel;
     } else if (bNearPullBack) {

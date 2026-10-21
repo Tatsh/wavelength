@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/task.h"
@@ -55,7 +56,12 @@ protected:
      */
     void OnPoll() override;
 
-public:
-    std::vector<Task *> mTasks;             /*!< The tasks, in the order they run. */
-    std::vector<Task *>::iterator mCurrent; /*!< The task that runs now. */
+    /** @return The tasks, in the order they run. */
+    const std::vector<std::unique_ptr<Task>> &GetTasks() const {
+        return mTasks;
+    }
+
+private:
+    std::vector<std::unique_ptr<Task>> mTasks;             /*!< The tasks, in the order they run. */
+    std::vector<std::unique_ptr<Task>>::iterator mCurrent; /*!< The task that runs now. */
 };

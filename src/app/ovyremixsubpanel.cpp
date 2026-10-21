@@ -51,7 +51,7 @@ void OvyRemixSubPanel::Show(bool bShow) {
 
 void OvyRemixSubPanel::Poll(float fDelta) {
     if (mSlide.Update(fDelta, false)) {
-        mBackground->SetShowing(mSlide.mValue != kHiddenFrame);
+        mBackground->SetShowing(mSlide.GetValue() != kHiddenFrame);
     }
     OvyRemixGenPanel::Poll(fDelta);
 }

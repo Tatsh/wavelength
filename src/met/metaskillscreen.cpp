@@ -27,13 +27,13 @@ bool MetaSkillScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MetaSkillScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
     TheGameDb->SetLoadRemix(false);
     TheGameDb->SetTutorial(0);
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     if (button == "novice_but") {
         TheGameDb->SetSkillLevel(GameDb::kSkillNovice);
     } else if (button == "intermediate_but") {
@@ -47,7 +47,7 @@ bool MetaSkillScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     const char *pszNext;
     if (button == "custom_but") {
         TheGameDb->SetLoadRemix(true);
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
             pszNext = "load_remix_list_game";
         } else {
             pszNext = "load_remix_list_multi_game";
@@ -58,9 +58,9 @@ bool MetaSkillScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         pszNext = "m_tip_in";
     } else if (button == "pup_but") {
         pszNext = "pup_tip_in";
-    } else if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    } else if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         pszNext = "soloskill2soloarena";
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         pszNext = "duel2multisong";
     } else {
         pszNext = "m_powerup";
@@ -71,26 +71,27 @@ bool MetaSkillScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool MetaSkillScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mComponent == nullptr || pMsg->mPanel != mFocusPanel) {
+    if (pMsg->GetComponent() == nullptr || pMsg->GetPanel() != mFocusPanel) {
         return false;
     }
     String token;
-    token = FormatString("%s_%s_HELP", pMsg->mPanel->mName, pMsg->mComponent->mName);
+    token =
+        FormatString("%s_%s_HELP", pMsg->GetPanel()->GetName(), pMsg->GetComponent()->GetName());
     TheMetagame.SetHelpText(TheLocale.Localize(token.c_str(), true));
     return false;
 }
 
 bool MetaSkillScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (pMsg->mScreen == this) {
-        mFocusPanel->SetFocus(mFocusPanel->mFocus, kPadNone);
+        mFocusPanel->SetFocus(mFocusPanel->GetFocus(), kPadNone);
     }
     return false;
 }
 
 void MetaSkillScreen::Enter(UIScreen *pPrevScreen, float fTime) {
-    UIPanel *pPanel = TheUI.FindPanel(mFocusPanel->mName, false);
+    UIPanel *pPanel = TheUI.FindPanel(mFocusPanel->GetName(), false);
     const char *pszButton = "";
-    switch (TheGameDb->mSkillLevel) {
+    switch (TheGameDb->GetSkillLevel()) {
     case GameDb::kSkillNovice:
         pszButton = "novice_but";
         break;

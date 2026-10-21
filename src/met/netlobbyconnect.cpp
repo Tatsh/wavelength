@@ -92,7 +92,7 @@ void NetLobbyConnect::ShowDNAS(int nRunning, int nShow) {
 #endif
 
 bool NetLobbyConnect::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLobby->Connect(this);
     }
     return false;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/backmusic.h"
@@ -518,22 +519,22 @@ private:
      */
     void OnRunStart(const GemCursor &cursor, int nEndBar);
 
-    PlayMap *mPlayMap;                   /*!< The map of the song positions. */
-    GameLogic *mLogic;                   /*!< The logic of the game. */
-    CatchTrackState mState;              /*!< The state of the bars of the track. */
-    const SectionBoundaries *mSections;  /*!< The sections of the song. */
-    int mTicksPerBar;                    /*!< The length of a bar in ticks. */
-    int mNumBars;                        /*!< The length of the song in bars. */
-    CatchTrackDisplay mDisplay;          /*!< The display of the bars and gems. */
-    CatchTrackMusic mMusic;              /*!< The music of the captured bars. */
-    GuideTicker mGuideTicker;            /*!< The guide sound of the gems. */
-    CaptureReceiver *mReceiver;          /*!< The receiver of the runs of mCapturer. */
-    Ptr<Command> mDeactivateCommand;     /*!< The DeactivateCmd of the track. */
-    Ptr<Command> mIdleCommand;           /*!< Never set. Stop() withdraws it. */
-    Ptr<Command> mHintCommand;           /*!< Calls UpdateHint(). */
-    std::vector<BackMusic *> mBackMusic; /*!< The music a captured run plays. */
-    int mShowHints;                      /*!< Whether the hints are shown, outside the tutorial. */
-    TrackCapturer mCapturer;             /*!< The rules of the runs of the track. */
-    int mStarted;                        /*!< Whether Start() ran since the last Stop(). */
-    int mEnabled;                        /*!< Whether Enable() ran. */
+    PlayMap *mPlayMap;                          /*!< The map of the song positions. Borrowed. */
+    GameLogic *mLogic;                          /*!< The logic of the game. Borrowed. */
+    CatchTrackState mState;                     /*!< The state of the bars of the track. */
+    const SectionBoundaries *mSections;         /*!< The sections of the song. Borrowed. */
+    int mTicksPerBar;                           /*!< The length of a bar in ticks. */
+    int mNumBars;                               /*!< The length of the song in bars. */
+    CatchTrackDisplay mDisplay;                 /*!< The display of the bars and gems. */
+    CatchTrackMusic mMusic;                     /*!< The music of the captured bars. */
+    GuideTicker mGuideTicker;                   /*!< The guide sound of the gems. */
+    std::unique_ptr<CaptureReceiver> mReceiver; /*!< The receiver of the runs of mCapturer. */
+    Ptr<Command> mDeactivateCommand;            /*!< The DeactivateCmd of the track. */
+    Ptr<Command> mIdleCommand;                  /*!< Never set. Stop() withdraws it. */
+    Ptr<Command> mHintCommand;                  /*!< Calls UpdateHint(). */
+    std::vector<BackMusic *> mBackMusic;        /*!< The music a captured run plays. Borrowed. */
+    int mShowHints;          /*!< Whether the hints are shown, outside the tutorial. */
+    TrackCapturer mCapturer; /*!< The rules of the runs of the track. */
+    int mStarted;            /*!< Whether Start() ran since the last Stop(). */
+    int mEnabled;            /*!< Whether Enable() ran. */
 };

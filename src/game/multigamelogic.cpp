@@ -55,7 +55,7 @@ constexpr float kNoticeMessageMs = 3200.0f;
 constexpr float kNoticeMessageScale = 0.9f;
 
 bool IsOnline() {
-    return TheGameDb->mCommunity == GameDb::kCommunityOnline;
+    return TheGameDb->GetCommunity() == GameDb::kCommunityOnline;
 }
 
 } // namespace
@@ -68,11 +68,11 @@ MultiGameLogic::MultiGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
       mFinished(TheGameDb->GetNumPlayers(), false) {
     if (IsOnline()) {
         if (TheNetTransport->IsHost()) {
-            mArbiter = new NetArbiter(mTrackSelector);
+            mArbiter = std::make_unique<NetArbiter>(mTrackSelector.get());
         }
         for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
             if (TheGameDb->IsLocalPlayer(i)) {
-                mLocalPlayer = mPlayers[i];
+                mLocalPlayer = mPlayers[i].get();
             }
             const unsigned nNetOrder = TheGameDb->GetPlayerNetOrder(i);
             if (nNetOrder >= mNetToPlayer.size()) {
@@ -85,13 +85,14 @@ MultiGameLogic::MultiGameLogic(Song *pSong, DataArray *pConfig, int nSeed)
 }
 
 MultiGameLogic::~MultiGameLogic() {
-    delete mArbiter;
+    // Preserve the original deletion point, before the song speed is restored.
+    mArbiter.reset();
     SetSongSpeed(mSong->GetSpeed());
     ScriptFunction::Unregister(WinCheat);
 }
 
 void MultiGameLogic::OnStart() {
-    for (CatchTrack *pTrack : mCatchTracks) {
+    for (auto &pTrack : mCatchTracks) {
         pTrack->Enable(0);
     }
     TheSongScheduler.PostAt(mFinishCommand.Get(), mNumBars * mTicksPerBar, false);
@@ -191,7 +192,7 @@ void MultiGameLogic::OnOnlinePauseDialog(Metagame::DialogAction action, void *pU
         break;
     case Metagame::kDialogActionEnd:
         TheNetTransport->Leave();
-        TheStats->PlayerAborted(0, TheSongScheduler.mTick);
+        TheStats->PlayerAborted(0, TheSongScheduler.GetTick());
         pLogic->EndSong();
         break;
     default:
@@ -263,7 +264,7 @@ void MultiGameLogic::OnPhraseCaptured(CatchTrack *pTrack,
                                       bool bAutocatch) {
     UpdateLeader();
     if (IsOnline() && TheGameDb->IsLocalPlayer(pPlayer->GetIndex())) {
-        CapturePacket packet(pTrack->mIndex, TheSongScheduler.mTick / mTicksPerBar, bAutocatch);
+        CapturePacket packet(pTrack->mIndex, TheSongScheduler.GetTick() / mTicksPerBar, bAutocatch);
         TheNetTransport->Send(packet);
     }
 }
@@ -408,8 +409,8 @@ bool MultiGameLogic::DeployBumper(Player *pPlayer) {
     Track *pTrack = pPlayer->GetTrack();
     bool bBumped = false;
 
-    for (Player *pOther : mPlayers) {
-        if (pOther == pPlayer || pOther->IsAborted() || pOther->GetTrack() != pTrack) {
+    for (auto &pOther : mPlayers) {
+        if (pOther.get() == pPlayer || pOther->IsAborted() || pOther->GetTrack() != pTrack) {
             continue;
         }
         const int nVictim = pOther->GetIndex();
@@ -450,8 +451,8 @@ bool MultiGameLogic::DeployCrippler(Player *pPlayer) {
     Track *pTrack = pPlayer->GetTrack();
     bool bCrippled = false;
 
-    for (Player *pOther : mPlayers) {
-        if (pOther == pPlayer || pOther->IsAborted() || pOther->GetTrack() != pTrack) {
+    for (auto &pOther : mPlayers) {
+        if (pOther.get() == pPlayer || pOther->IsAborted() || pOther->GetTrack() != pTrack) {
             continue;
         }
         const int nVictim = pOther->GetIndex();
@@ -519,7 +520,7 @@ void MultiGameLogic::OnPlayerUpdate(PlayerUpdatePacket *pPacket) {
     }
     mVersions[nPlayer] = nVersion;
 
-    Player *pPlayer = mPlayers[nPlayer];
+    Player *pPlayer = mPlayers[nPlayer].get();
     pPlayer->SetScore(pPacket->mPoints);
     const int nTrack = pPacket->mTrack;
     if (mTrackSelector->GetPlayerTrack(nPlayer) != nTrack) {
@@ -571,8 +572,8 @@ void MultiGameLogic::OnCapture(CapturePacket *pPacket) {
         return;
     }
     const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    CatchTrack *pTrack = mCatchTracks[pPacket->mTrack];
-    Player *pPlayer = mPlayers[nPlayer];
+    CatchTrack *pTrack = mCatchTracks[pPacket->mTrack].get();
+    Player *pPlayer = mPlayers[nPlayer].get();
     if (pPacket->mAutocatch == 0) {
         pTrack->Capture(pPacket->mBar, pPlayer);
         return;
@@ -630,7 +631,7 @@ void MultiGameLogic::OnSlowdown(SlowdownPacket *pPacket) {
         return;
     }
     const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    DeploySlowdown(mPlayers[nPlayer]);
+    DeploySlowdown(mPlayers[nPlayer].get());
     FxMidi::PlayPowerupSound(kPowerupSlowdown);
 }
 
@@ -638,7 +639,7 @@ void MultiGameLogic::OnMultiplier(MultiplierPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->mSender)];
+    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->mSender)].get();
     if (pPlayer->IsAborted()) {
         return;
     }
@@ -651,8 +652,8 @@ void MultiGameLogic::OnFreestyle(FreestylePacket *pPacket) {
         return;
     }
     const int nPlayer = GetPlayerFromNetOrder(pPacket->mSender);
-    Player *pPlayer = mPlayers[nPlayer];
-    if (pPlayer->IsAborted() || pPlayer->GetTrack() != mFreestyleTrack) {
+    Player *pPlayer = mPlayers[nPlayer].get();
+    if (pPlayer->IsAborted() || pPlayer->GetTrack() != mFreestyleTrack.get()) {
         return;
     }
     if (pPacket->mActive != mFreestyleTrack->IsActive()) {
@@ -672,8 +673,8 @@ void MultiGameLogic::OnFreestyleBump(FreestyleBumpPacket *pPacket) {
     if (IsPastEnd()) {
         return;
     }
-    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->mNetOrder)];
-    if (pPlayer->GetTrack() != mFreestyleTrack || pPlayer->IsAborted()) {
+    Player *pPlayer = mPlayers[GetPlayerFromNetOrder(pPacket->mNetOrder)].get();
+    if (pPlayer->GetTrack() != mFreestyleTrack.get() || pPlayer->IsAborted()) {
         return;
     }
     LeaveFreestyle(pPlayer, pPacket->mTrack);
@@ -733,7 +734,7 @@ void MultiGameLogic::OnGameEnded(GameEndedMsg *pMsg) {
 
 void MultiGameLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     const int nPlayer = GetPlayerFromNetOrder(pMsg->mNetOrder);
-    Player *pPlayer = mPlayers[nPlayer];
+    Player *pPlayer = mPlayers[nPlayer].get();
     if (pPlayer->IsAborted()) {
         return;
     }
@@ -747,7 +748,7 @@ void MultiGameLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
         FormatString(TheLocale.Localize("CLIENT_ABORTED", true), TheGameDb->GetPlayerName(nPlayer));
     TheGfxManager.ShowMessage(
         pszText, nullptr, kNoPlayer, kNoticeMessageMs, kNoticeMessageScale, 0.0f, 0.0f);
-    TheStats->PlayerAborted(nPlayer, TheSongScheduler.mTick);
+    TheStats->PlayerAborted(nPlayer, TheSongScheduler.GetTick());
 
     if (TheNetTransport->IsHost() && AllPlayersFinished()) {
         SendResults();

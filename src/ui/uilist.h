@@ -231,6 +231,42 @@ public:
      */
     void Refresh(int nItemCount, int nSelected);
 
+    /** @return The selected item. */
+    int GetSelected() const {
+        return mSelected;
+    }
+
+    /** @return The number of items. */
+    int GetItemCount() const {
+        return mItemCount;
+    }
+
+    /** @return The number of rows. */
+    int GetRowCount() const {
+        return mRowCount;
+    }
+
+    /** @return The arrow above the rows, or null. */
+    RndMesh *GetUpArrow() const {
+        return mUpArrow;
+    }
+
+    /** @return The arrow below the rows, or null. */
+    RndMesh *GetDownArrow() const {
+        return mDownArrow;
+    }
+
+    /** @param nShow Whether the up arrow shows even when no item lies above. */
+    void SetShowUpArrow(int nShow) {
+        mShowUpArrow = nShow;
+    }
+
+    /** @param nShow Whether the down arrow shows even when no item lies below. */
+    void SetShowDownArrow(int nShow) {
+        mShowDownArrow = nShow;
+    }
+
+protected:
     UIStyle *mStyle;                         /*!< The style of the cursor. */
     int mItemCount;                          /*!< The number of items. */
     int mRowCount;                           /*!< The number of rows. */

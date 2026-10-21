@@ -35,7 +35,7 @@ SetupNameScreen::SetupNameScreen(DataArray *pData) : FreqScreen(pData) {
 void SetupNameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     mEntry =
-        dynamic_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->mName, kNameEntry, false));
+        dynamic_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->GetName(), kNameEntry, false));
     mEntry->SetText(mText.c_str());
     mText = kNoText;
     mEntry->SetEditing(true);
@@ -62,15 +62,15 @@ bool SetupNameScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed != 0 && (mNextScreen != nullptr || mPrevScreen != nullptr)) {
         return true;
     }
-    if (mFocusPanel == nullptr || std::strcmp(mFocusPanel->mFocus->mName, kNameEntry) != 0 ||
-        pMsg->mPressed == 0) {
+    if (mFocusPanel == nullptr ||
+        std::strcmp(mFocusPanel->GetFocus()->GetName(), kNameEntry) != 0 || pMsg->mPressed == 0) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
     if (pMsg->mButton == kPadCircle) {
         KeyboardPanel *pKeyboard =
             dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
-        UIScreen *pScreen = TheUI.mCurrentScreen;
+        UIScreen *pScreen = TheUI.GetCurrentScreen();
         const int nMaxWidth = static_cast<int>(mEntry->mMaxEntryWidth);
         const char *pszText = mEntry->Text();
 #ifdef VIDEO_STANDARD_PAL

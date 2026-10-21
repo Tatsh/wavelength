@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gs/multimuse.h"
@@ -206,12 +207,12 @@ public:
     int GetPosition() const;
 
 private:
-    unsigned char mChannel;          /*!< The MIDI channel of the notes. */
-    Ptr<MultiMuse> mMuse;            /*!< The notes and the other muses. */
-    MuseLooper mLooper;              /*!< The looper of mMuse. */
-    std::vector<ContourNote> mNotes; /*!< The notes, in the order they were added. */
-    unsigned char mLowestKey;        /*!< The lowest note as written. */
-    unsigned char mHighestKey;       /*!< The highest note as written. */
-    int mCurrentNote;                /*!< The note that started last, or -1. */
-    AxeNoteCB *mNoteCB;              /*!< The receiver of the notes. */
+    unsigned char mChannel;             /*!< The MIDI channel of the notes. */
+    Ptr<MultiMuse> mMuse;               /*!< The notes and the other muses. */
+    MuseLooper mLooper;                 /*!< The looper of mMuse. */
+    std::vector<ContourNote> mNotes;    /*!< The notes, in the order they were added. */
+    unsigned char mLowestKey;           /*!< The lowest note as written. */
+    unsigned char mHighestKey;          /*!< The highest note as written. */
+    int mCurrentNote;                   /*!< The note that started last, or -1. */
+    std::unique_ptr<AxeNoteCB> mNoteCB; /*!< The receiver of the notes. */
 };

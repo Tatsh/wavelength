@@ -24,7 +24,7 @@ void ChannelInfoTask::OnStart() {
     }
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.id = mChatroom->mId;
     const int nError = rtMediusChannelInfo(&request, OnResponse);

@@ -1,5 +1,6 @@
 #include "script/datafile.h"
 
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +44,10 @@ int g_nDataParseLineNumber = 0;
 static const char *g_pszDataParseFile = nullptr;
 
 // NTSC-U/C: 0x003b2378, PAL: 0x00431238
+// The stream ParseBlock() reads. A stream Read() or ReadText() created belongs to
+// g_pOwnedDataParseStream; a stream the caller passed is only borrowed here.
 static BinStream *g_pDataParseStream = nullptr;
+static std::unique_ptr<BinStream> g_pOwnedDataParseStream;
 
 // NTSC-U/C: 0x003b237c, PAL: 0x0043123c
 static int g_nDataReadCompiled = 0;
@@ -54,10 +58,11 @@ DataArray *DataArray::ReadText(const char *pszPath, BinStream *pStream) {
     if (pStream != nullptr) {
         g_pDataParseStream = pStream;
     } else {
-        g_pDataParseStream = new FileStream(pszPath, false, true, 0);
+        g_pOwnedDataParseStream = std::make_unique<FileStream>(pszPath, false, true, 0);
+        g_pDataParseStream = g_pOwnedDataParseStream.get();
         if (g_pDataParseStream->Fail()) {
             DebugPrint("DataReadTxtFile: Can't open %s\n", pszPath);
-            delete g_pDataParseStream;
+            g_pOwnedDataParseStream.reset();
             g_pDataParseStream = nullptr;
             return nullptr;
         }
@@ -69,7 +74,7 @@ DataArray *DataArray::ReadText(const char *pszPath, BinStream *pStream) {
     g_nDataParseLineNumber = 1;
     DataArray *pArray = ParseBlock();
     if (pStream == nullptr) {
-        delete g_pDataParseStream;
+        g_pOwnedDataParseStream.reset();
         g_pDataParseStream = nullptr;
     }
     return pArray;
@@ -273,10 +278,11 @@ DataArray *DataArray::Read(const char *pszPath, BinStream *pStream) {
     } else {
         char szCompiled[kPathSize];
         MakeCompiledPath(szCompiled, pszPath, true);
-        g_pDataParseStream = new FileStream(szCompiled, false, true, 0);
+        g_pOwnedDataParseStream = std::make_unique<FileStream>(szCompiled, false, true, 0);
+        g_pDataParseStream = g_pOwnedDataParseStream.get();
         if (g_pDataParseStream->Fail()) {
             DebugPrint("DataReadFile: Can't open %s\n", szCompiled);
-            delete g_pDataParseStream;
+            g_pOwnedDataParseStream.reset();
             g_pDataParseStream = nullptr;
             return nullptr;
         }
@@ -300,7 +306,7 @@ DataArray *DataArray::Read(const char *pszPath, BinStream *pStream) {
     g_pDataParseStream->DisableEncryption();
 #endif
     if (pStream == nullptr) {
-        delete g_pDataParseStream;
+        g_pOwnedDataParseStream.reset();
         g_pDataParseStream = nullptr;
     }
     return pArray;

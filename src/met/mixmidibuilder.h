@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -298,20 +299,20 @@ private:
     void OnTimeSignature(int nTick, int nNumerator, int nDenominator);
 
     std::vector<TrackData> mTracks; /*!< The pieces, in the order of their tracks. */
-    char *mBuffer;                  /*!< The contents of the file, or null. */
+    char *mBuffer;                  /*!< The contents of the file, or null. Pool-allocated. */
     int mSize;                      /*!< The size of the file in bytes. */
-    File *mFile;                    /*!< The file while it is read, or null. */
+    std::unique_ptr<File> mFile;    /*!< The file while it is read, or null. */
     String mReserved1c;             // +0x1c, constructed and destroyed, not otherwise used here.
     int mReadDone;                  /*!< Whether the file has been read. */
     int mDone;                      /*!< Whether every event has been parsed. */
-    MidiReader *mReader;            /*!< The parser of the events, or null. */
-    std::set<String> mNames;        /*!< The names of the tracks the mixes list. */
-    BuilderReceiver *mReceiver;     /*!< The receiver the parser reports to. */
-    int mReserved50;                // +0x50, cleared by the constructor, not otherwise used here.
-    int mTrackIndex;                /*!< The index of the current track, or -1. */
-    String mTrackName;              /*!< The name of the current track. */
-    float mMillisecondsPerBeat;     /*!< The length of a beat, or -1. */
-    int mTicksPerBar;               /*!< The length of a bar in ticks, or -1. */
-    MuseBuilder *mMuseBuilder;      /*!< The builder of the current piece, or null. */
-    int mHasTrack;                  /*!< Whether the current track has a piece. */
+    std::unique_ptr<MidiReader> mReader;        /*!< The parser of the events, or null. */
+    std::set<String> mNames;                    /*!< The names of the tracks the mixes list. */
+    std::unique_ptr<BuilderReceiver> mReceiver; /*!< The receiver the parser reports to. */
+    int mReserved50;            // +0x50, cleared by the constructor, not otherwise used here.
+    int mTrackIndex;            /*!< The index of the current track, or -1. */
+    String mTrackName;          /*!< The name of the current track. */
+    float mMillisecondsPerBeat; /*!< The length of a beat, or -1. */
+    int mTicksPerBar;           /*!< The length of a bar in ticks, or -1. */
+    std::unique_ptr<MuseBuilder> mMuseBuilder; /*!< The builder of the current piece, or null. */
+    int mHasTrack;                             /*!< Whether the current track has a piece. */
 };

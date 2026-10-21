@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/axetrackdata.h"
@@ -145,19 +146,19 @@ public:
      */
     void Refresh() override;
 
-    int mTicksPerBar;                 /*!< The length of a bar, in ticks. */
-    int mNumBars;                     /*!< The length of the song, in bars. */
-    AxeTrackData *mData;              /*!< The notes and chords to play. */
-    std::vector<Axer *> mAxers;       /*!< The player of each gem button. */
-    int mActiveButton;                /*!< The held gem button, or kNoButton. */
-    float mX;                         /*!< The last horizontal stick position. */
-    float mY;                         /*!< The last vertical stick position. */
-    const AxeHarmony *mHarmony;       /*!< The chord the players have. */
-    AxeContour *mContours[kNumAxers]; /*!< The notes each player has. */
-    Ptr<Command> mHarmonyCommand;     /*!< Calls UpdateHarmony(). */
-    Ptr<Command> mContourCommand;     /*!< Calls UpdateContours(). */
-
 private:
+    int mTicksPerBar;                          /*!< The length of a bar, in ticks. */
+    int mNumBars;                              /*!< The length of the song, in bars. */
+    AxeTrackData *mData;                       /*!< The notes and chords to play. Borrowed. */
+    std::vector<std::unique_ptr<Axer>> mAxers; /*!< The player of each gem button. */
+    int mActiveButton;                         /*!< The held gem button, or kNoButton. */
+    float mX;                                  /*!< The last horizontal stick position. */
+    float mY;                                  /*!< The last vertical stick position. */
+    const AxeHarmony *mHarmony;                /*!< The chord the players have. Borrowed. */
+    AxeContour *mContours[kNumAxers];          /*!< The notes each player has. Borrowed. */
+    Ptr<Command> mHarmonyCommand;              /*!< Calls UpdateHarmony(). */
+    Ptr<Command> mContourCommand;              /*!< Calls UpdateContours(). */
+
     static constexpr int kNoButton = -1;
 
     /**

@@ -101,8 +101,8 @@ TriggerCondition *TriggerCondition::New(DataArray *pCondition) {
     if (pNew == nullptr) {
         DebugWarn("Don't recognize %s condition (file %s, line %d)",
                   pszName,
-                  pCondition->mFile,
-                  pCondition->mLine);
+                  pCondition->GetFile(),
+                  pCondition->GetLine());
     }
     return pNew;
 }

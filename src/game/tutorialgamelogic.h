@@ -443,6 +443,7 @@ public:
      */
     void EnableNext();
 
+private:
     SerialTasks mScript;                          /*!< The steps, in order. */
     StreamQueue mStreams;                         /*!< The narration streams. */
     std::vector<Ptr<PlayScriptCmd> > mScriptCmds; /*!< The tracks `midi` started. +0x504 */
@@ -460,8 +461,6 @@ public:
     int mSavedStreaksEnabled; /*!< GameConfig::mStreaksEnabled before the tutorial. +0x54c */
     int mSavedGuideTicks;     /*!< GameConfig::mGuideTicks before the tutorial. +0x550 */
     int mSavedStrandBars;     /*!< The strand bars of the player count. +0x554 */
-
-private:
     /**
      * Build the task for one script step.
      *

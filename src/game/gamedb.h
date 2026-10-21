@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/avatarpartset.h"
@@ -226,7 +227,7 @@ public:
      * Report whether a player plays on this console.
      *
      * @param nPlayer The player.
-     * @return PlayerInfo::mLocal of the player, non-zero for a local player.
+     * @return PlayerInfo::GetLocal() of the player, non-zero for a local player.
      * @ghidraAddress NTSC-U/C: 0x0026e958
      * @ghidraAddress PAL: 0x002784f8
      */
@@ -817,7 +818,167 @@ public:
      */
     bool FindSongById(DataArray **ppSong, int nId);
 
-    std::vector<PlayerInfo *> mPlayers; /*!< The players, which the database allocates. */
+    /** @return The players, freed with the database. */
+    const std::vector<std::unique_ptr<PlayerInfo>> &GetPlayers() const {
+        return mPlayers;
+    }
+
+    /** @return The song of the game. */
+    const String &GetSong() const {
+        return mSong;
+    }
+
+    /** @return Whether a saved remix is played. */
+    int GetLoadRemix() const {
+        return mLoadRemix;
+    }
+
+    /** @return Non-zero when the remix may not be saved over. */
+    int GetRemixReadOnly() const {
+        return mRemixReadOnly;
+    }
+
+    /** @return The name of the saved remix played. */
+    const String &GetRemixName() const {
+        return mRemixName;
+    }
+
+    /**
+     * Set the name of the saved remix played.
+     *
+     * @param name The name.
+     */
+    void SetRemixName(const String &name) {
+        mRemixName = name;
+    }
+
+    /** @return Whether the game plays in practice mode. */
+    int GetPracticeMode() const {
+        return mPracticeMode;
+    }
+
+    /** @return Whether the tutorial is played. */
+    int GetTutorial() const {
+        return mTutorial;
+    }
+
+    /** @return The skill level. */
+    int GetSkillLevel() const {
+        return mSkillLevel;
+    }
+
+    /** @return The power-up level. */
+    int GetPowerupLevel() const {
+        return mPowerupLevel;
+    }
+
+    /** @return The rule set, one of RuleSet. */
+    int GetRuleSet() const {
+        return mRuleSet;
+    }
+
+    /** @return The community, one of Community. */
+    int GetCommunity() const {
+        return mCommunity;
+    }
+
+    /** @return The number of players an online session takes. */
+    int GetMaxPlayers() const {
+        return mMaxPlayers;
+    }
+
+    /** @return The arena of the game. */
+    const String &GetArena() const {
+        return mArena;
+    }
+
+    /**
+     * Set the arena of the game from a string.
+     *
+     * @param arena The arena.
+     */
+    void SetArena(const String &arena) {
+        mArena = arena;
+    }
+
+    /** @return Non-zero once UnlockAllSongs() ran and lifted every lock. */
+    int GetUnlockAll() const {
+        return mUnlockAll;
+    }
+
+    /** @return The value of SetWon(). */
+    int GetWon() const {
+        return mWon;
+    }
+
+    /** @return The value at +0xa4, not yet identified. */
+    int GetReservedA4() const {
+        return mReservedA4;
+    }
+
+    /**
+     * Set the value at +0xa4, not yet identified.
+     *
+     * @param nValue The value.
+     */
+    void SetReservedA4(int nValue) {
+        mReservedA4 = nValue;
+    }
+
+    /** @return The `songs` array of the "db" section. Borrowed. */
+    DataArray *GetSongs() const {
+        return mSongs;
+    }
+
+    /**
+     * Set the `songs` array of the "db" section. Borrowed.
+     *
+     * @param pSongs The array. The caller retains ownership.
+     */
+    void SetSongs(DataArray *pSongs) {
+        mSongs = pSongs;
+    }
+
+    /** @return The running world's position in ticks. */
+    float GetSongTick() const {
+        return mSongTick;
+    }
+
+    /**
+     * Set the running world's position in ticks.
+     *
+     * @param fTick The position in ticks.
+     */
+    void SetSongTick(float fTick) {
+        mSongTick = fTick;
+    }
+
+    /** @return The running world's position on its song clock. */
+    float GetSongTime() const {
+        return mSongTime;
+    }
+
+    /**
+     * Set the running world's position on its song clock.
+     *
+     * @param fTime The position on the song clock.
+     */
+    void SetSongTime(float fTime) {
+        mSongTime = fTime;
+    }
+
+    /** @return The scheduler the interface sounds play on. */
+    Scheduler &GetSfxScheduler() {
+        return mSfxScheduler;
+    }
+
+    /** @return The scheduler the interface sounds play on. */
+    const Scheduler &GetSfxScheduler() const {
+        return mSfxScheduler;
+    }
+
+private:
+    std::vector<std::unique_ptr<PlayerInfo>> mPlayers; /*!< The players, freed with the database. */
     String mSong;            /*!< The song of the game, the "song" entry of the "db" section. */
     int mLoadRemix;          /*!< `load_remix`, whether a saved remix is played. */
     int mRemixReadOnly;      /*!< Non-zero when the remix may not be saved over. */
@@ -840,8 +1001,8 @@ public:
     int mBestStreak;         /*!< The value of SetBestStreak(). */
     float mProgress;         /*!< The value of SetProgress(). */
     int mReservedA4;         // +0xa4, cleared with the results and not yet identified.
-    DataArray *mSongs;       /*!< The `songs` array of the "db" section, one entry per arena. */
-    char *mRemixBuffer;      /*!< The packed data of the remix, which SetRemixBuffer() replaces. */
+    DataArray *mSongs;       /*!< The `songs` array of the "db" section. Borrowed. */
+    char *mRemixBuffer;      /*!< The packed data of the remix, a pool allocation. */
     RemixInfo mRemixInfo;    /*!< The description of the remix played, which SetRemix() copies. */
     int mRemixActive;        /*!< The flag SetRemixActive() sets, 1 at construction. */
     int mNetRemixEnded;      /*!< Whether the remix of an online game has ended. */
@@ -850,7 +1011,6 @@ public:
     Scheduler mSfxScheduler; /*!< The scheduler the interface sounds play on. */
     GameOptions mOptions;    /*!< The settings of the game options screen. */
 
-private:
     /**
      * Read an integer of a section of the configuration.
      *
@@ -898,7 +1058,7 @@ private:
     static void GetSkillRange(int nSkillLevel, bool bExact, int *pnFirst, int *pnEnd);
 
     /**
-     * Rank the players by mScore, 0 for the best. Equal scores share a rank.
+     * Rank the players by score, 0 for the best. Equal scores share a rank.
      *
      * @ghidraAddress NTSC-U/C: 0x0026ed00
      * @ghidraAddress PAL: 0x002788a0

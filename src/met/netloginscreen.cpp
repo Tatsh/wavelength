@@ -95,7 +95,7 @@ void NetLoginScreen::OpenKeyboard() {
         static_cast<UITextEntry *>(pPanel->FindComponent(kPasswordEntry, false));
     const int nMaxWidth = static_cast<int>(pPassword->mMaxEntryWidth);
     const KeyboardRequest request(this,
-                                  TheUI.mCurrentScreen,
+                                  TheUI.GetCurrentScreen(),
                                   pPassword->Text(),
                                   kKeyboardPad,
                                   kMaxPasswordChars,
@@ -129,7 +129,7 @@ bool NetLoginScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 
     UIPanel *pPanel = mFocusPanel;
     if (pPanel != nullptr && pMsg->mPressed != 0) {
-        const char *pszFocus = pPanel->mFocus->mName;
+        const char *pszFocus = pPanel->GetFocus()->GetName();
         if (pMsg->mButton == kPadCross) {
             if (std::strcmp(pszFocus, kPasswordEntry) == 0) {
                 UITextEntry *pPassword =
@@ -156,7 +156,7 @@ bool NetLoginScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool NetLoginScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    UITextEntry *pEntry = dynamic_cast<UITextEntry *>(pMsg->mComponent);
+    UITextEntry *pEntry = dynamic_cast<UITextEntry *>(pMsg->GetComponent());
     UITextEntry *pPassword =
         static_cast<UITextEntry *>(TheUI.FindComponent(kLoginPanel, kPasswordEntry, false));
     UIComponent *pPrefix = TheUI.FindComponent(kLoginPanel, kPasswordPrefix, false);

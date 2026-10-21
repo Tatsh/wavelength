@@ -40,8 +40,8 @@ bool NetNewChatroomScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetNewChatroomScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
-        dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->mMessages.clear();
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
+        dynamic_cast<ChatPanel *>(TheUI.FindPanel(kChatPanel, false))->ClearMessages();
         TheUI.FindPanel(kMainPanel, false)->SetFocus(nullptr, kPadNone);
         TheNetLobby->CreateChatroom(this, mChatroomName);
     }

@@ -105,7 +105,7 @@ TnlGrid::TnlGrid(GfxTunnel *pTunnel, int nCam) : mTrack(0), mTunnel(pTunnel), mM
             it->Attach(&sQuarterScale, mMesh);
             bEighth = true;
         }
-        it->Place(mTunnel->mGeom, mTrack, static_cast<int>(flTick));
+        it->Place(mTunnel->GetGeom(), mTrack, static_cast<int>(flTick));
         flTick += kLineTicks;
     }
 }
@@ -117,10 +117,10 @@ TnlGrid::~TnlGrid() {
 }
 
 void TnlGrid::SetTrack(int nTrack) {
-    const float flSongTick = TheGameDb->mSongTick;
+    const float flSongTick = TheGameDb->GetSongTick();
     for (auto it = mLines.begin(); it != mLines.end(); ++it) {
         if (!(kRecycleTicks < flSongTick - it->mTick)) {
-            it->Place(mTunnel->mGeom, nTrack, static_cast<int>(it->mTick));
+            it->Place(mTunnel->GetGeom(), nTrack, static_cast<int>(it->mTick));
         }
     }
     mTrack = nTrack;
@@ -144,13 +144,13 @@ void TnlGrid::RefreshTrack(int nTrack, bool bPlace) {
 }
 
 void TnlGrid::Update() {
-    const float flSongTick = TheGameDb->mSongTick;
+    const float flSongTick = TheGameDb->GetSongTick();
     int nLastBar = kNoBar;
     bool bBarShown = false;
     for (auto it = mLines.begin(); it != mLines.end(); ++it) {
         bool bMoved = mRefresh;
         if (kRecycleTicks < flSongTick - it->mTick) {
-            it->Place(mTunnel->mGeom, mTrack, static_cast<int>(it->mTick + kSpanTicks));
+            it->Place(mTunnel->GetGeom(), mTrack, static_cast<int>(it->mTick + kSpanTicks));
             bMoved = true;
         } else if ((0.0f < flSongTick) && (flSongTick + kSpanTicks < it->mTick)) {
             float flSongPhase = fmodf(flSongTick, kSpanTicks);
@@ -158,7 +158,7 @@ void TnlGrid::Update() {
                 flSongPhase += kSpanTicks;
             }
             const float flSpanStart = flSongTick - flSongPhase;
-            TnlGeom *pGeom = mTunnel->mGeom;
+            TnlGeom *pGeom = mTunnel->GetGeom();
             float flLinePhase = fmodf(it->mTick, kSpanTicks);
             if (flLinePhase < 0.0f) {
                 flLinePhase += kSpanTicks;
@@ -174,7 +174,7 @@ void TnlGrid::Update() {
             it->SetShowing(false, mMesh, mHidden);
             continue;
         }
-        const int nBar = static_cast<int>(floorf(it->mTick * mTunnel->mGeom->mBarsPerTick));
+        const int nBar = static_cast<int>(floorf(it->mTick * mTunnel->GetGeom()->GetBarsPerTick()));
         if (nBar != nLastBar) {
             nLastBar = nBar;
             bBarShown = mTunnel->HasActiveBar(mTrack, it->mTick);

@@ -111,7 +111,7 @@ void HudTextMessage::Show(const char *pszText,
     mOffsetView->mLocalXfm.mTranslation.y = 0.0f;
     mOffsetView->mLocalXfm.mTranslation.z = fZ;
     mDuration = fDuration;
-    mStartTime = TheGameDb->mSongTime;
+    mStartTime = TheGameDb->GetSongTime();
     mFlight->SetFrame(0.0f);
 }
 
@@ -119,7 +119,7 @@ void HudTextMessage::Poll() {
     if (mStartTime == kNotShown) {
         return;
     }
-    const float fElapsed = TheGameDb->mSongTime - mStartTime;
+    const float fElapsed = TheGameDb->GetSongTime() - mStartTime;
     if (fElapsed < kFlyTime) {
         mFrame = fElapsed;
     } else if (fElapsed < mDuration) {

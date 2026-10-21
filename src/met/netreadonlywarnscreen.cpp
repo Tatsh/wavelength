@@ -19,8 +19,8 @@ bool NetReadOnlyWarnScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetReadOnlyWarnScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        if (strcmp(pMsg->mComponent->mName, "yes") == 0) {
+    if (pMsg->GetButton() == kPadCross) {
+        if (strcmp(pMsg->GetComponent()->GetName(), "yes") == 0) {
             RemixInfo record = *TheGameDb->GetRemixInfo();
             record.mReadOnly = true;
             TheGameDb->SetRemix(&record);

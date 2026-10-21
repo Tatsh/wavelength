@@ -16,7 +16,7 @@ PitchTrackRiffs::~PitchTrackRiffs() {
 }
 
 Muse *PitchTrackRiffs::GetRiff(int nSlot) {
-    return GetRiff(nSlot, TheSongScheduler.mTick);
+    return GetRiff(nSlot, TheSongScheduler.GetTick());
 }
 
 Muse *PitchTrackRiffs::GetRiff(int nSlot, int nTick) {

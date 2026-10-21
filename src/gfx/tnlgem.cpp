@@ -39,7 +39,7 @@ Color TnlGem::PlayerColor(char nColor) {
 }
 
 void TnlGem::Update(TnlGems *pGems, GfxTunnel *pTunnel, const TnlTrackRange *pRange, float flTick) {
-    TnlGeom *pGeom = pTunnel->mGeom;
+    TnlGeom *pGeom = pTunnel->GetGeom();
     if ((static_cast<unsigned char>(mType) & kTypeSprite) == 0) {
         bool bPlace;
         if (mMeshGroup == nullptr) {

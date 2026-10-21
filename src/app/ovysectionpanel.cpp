@@ -49,7 +49,7 @@ void OvySectionPanel::Poll() {
 }
 
 void OvySectionPanel::Draw() {
-    if (mSlide.mValue != 0.0f) {
+    if (mSlide.GetValue() != 0.0f) {
         mBackground->Draw();
     }
 }

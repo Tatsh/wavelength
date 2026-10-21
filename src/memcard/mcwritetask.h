@@ -36,7 +36,8 @@ public:
      */
     void OnWrite(int nResult) override;
 
-    const void *mData; /*!< The bytes. */
+private:
+    const void *mData; /*!< The bytes. Borrowed. */
     int mSize;         /*!< The number of bytes. */
 
 protected:

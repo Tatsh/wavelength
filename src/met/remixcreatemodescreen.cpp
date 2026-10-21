@@ -21,10 +21,10 @@ bool RemixCreateModeScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool RemixCreateModeScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     TheGameDb->SetRemixActive(button == "modify" ? 0 : 1);
     TheUI.GotoScreen("remix_controller");
     return true;
@@ -38,7 +38,7 @@ bool RemixCreateModeScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     if (pMsg->mButton == kPadTriangle) {
-        if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
             TheUI.GotoScreen("m_r_sel_song");
         } else {
             TheUI.GotoScreen("s_r_sel_song");

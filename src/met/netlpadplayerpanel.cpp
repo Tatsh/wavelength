@@ -97,7 +97,7 @@ void NetLPadPlayerPanel::Update(std::list<NetLaunchpadPlayer> *pPlayers) {
             SetAvatar(&player->mPlayer.mAvatar);
             ShowPlayer(&*player);
             SetFocus(pButton, kPadNone);
-            if (TheUI.mCurrentScreen->mFocusPanel == this) {
+            if (TheUI.GetCurrentScreen()->GetFocusPanel() == this) {
                 mFocus->SetState(UIComponent::kStateSelected, false);
             } else {
                 mFocus->SetState(UIComponent::kStateNormal, false);
@@ -114,7 +114,7 @@ void NetLPadPlayerPanel::Update(std::list<NetLaunchpadPlayer> *pPlayers) {
         SetAvatar(&player->mPlayer.mAvatar);
         ShowPlayer(&*player);
         SetFocus(FindComponent(kFirstPlayerButton, false), kPadNone);
-        if (TheUI.mCurrentScreen->mFocusPanel == this) {
+        if (TheUI.GetCurrentScreen()->GetFocusPanel() == this) {
             mFocus->SetState(UIComponent::kStateSelected, false);
         } else {
             mFocus->SetState(UIComponent::kStateNormal, false);
@@ -156,7 +156,7 @@ void NetLPadPlayerPanel::Unfocus() {
 }
 
 void NetLPadPlayerPanel::UpdateHelp() {
-    NetLpadScreen *pScreen = dynamic_cast<NetLpadScreen *>(TheUI.mCurrentScreen);
+    NetLpadScreen *pScreen = dynamic_cast<NetLpadScreen *>(TheUI.GetCurrentScreen());
     auto player = FindPlayer(pScreen->mPlayers, mSelected);
     if (TheNetLaunchpad != nullptr && TheNetLaunchpad->IsGuest() == kHostId &&
         player->mId != TheNetLaunchpad->IsGuest()) {
@@ -178,8 +178,8 @@ bool NetLPadPlayerPanel::DispatchPriv(Message *pMsg) {
 }
 
 bool NetLPadPlayerPanel::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mComponent != nullptr && TheUI.mCurrentScreen != nullptr &&
-        TheUI.mCurrentScreen->mFocusPanel == this) {
+    if (pMsg->GetComponent() != nullptr && TheUI.GetCurrentScreen() != nullptr &&
+        TheUI.GetCurrentScreen()->GetFocusPanel() == this) {
         UpdateHelp();
     }
     return false;
@@ -189,8 +189,8 @@ bool NetLPadPlayerPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mPressed == 0) {
         return false;
     }
-    UIScreen *pCurrent = TheUI.mCurrentScreen;
-    if (pCurrent->mNextScreen != nullptr || pCurrent->mPrevScreen != nullptr) {
+    UIScreen *pCurrent = TheUI.GetCurrentScreen();
+    if (pCurrent->GetNextScreen() != nullptr || pCurrent->GetPrevScreen() != nullptr) {
         return true;
     }
 
@@ -222,7 +222,7 @@ bool NetLPadPlayerPanel::HandleJoypad(JoypadInputMsg *pMsg) {
             return false;
         }
         FxMidi::PlaySquare();
-        NetLpadScreen *pLpad = dynamic_cast<NetLpadScreen *>(TheUI.mCurrentScreen);
+        NetLpadScreen *pLpad = dynamic_cast<NetLpadScreen *>(TheUI.GetCurrentScreen());
         pLpad->SetFocus(TheUI.FindPanel(pLpad->mButtonPanel, false));
         BootScreen *pBoot = dynamic_cast<BootScreen *>(TheUI.FindScreen(kBootScreen, false));
         pBoot->mPlayerName = player->mPlayer.mName.c_str();

@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e4508
      */
     bool Test() override {
-        const int nStreak = TheTriggerMgr.mStreak[TheTriggerMgr.mPlayer];
+        const int nStreak = TheTriggerMgr.GetStreak(TheTriggerMgr.GetPlayer());
         return mLow <= nStreak && nStreak <= mHigh;
     }
 

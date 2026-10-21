@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "math/box.h"
@@ -460,7 +461,7 @@ public:
     Sphere mSphere;                /*!< The bounding sphere, of radius 0 for none. */
     RndMesh *mGeomOwner;           /*!< The mesh that has the geometry. */
     RndTransformable *mTransOwner; /*!< The transformable whose world transform places the mesh. */
-    Bones *mBones;                 /*!< The bones, or null. */
+    std::unique_ptr<Bones> mBones; /*!< The bones, or null. */
     float mMinScreen;              /*!< The least projected size to draw at, or 0 for any. */
     RndMesh *mNext;                /*!< The next lower detail mesh, or null. */
     int mMutable;                  /*!< Non-zero when the geometry changes at run time. */

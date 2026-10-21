@@ -177,7 +177,7 @@ void PsMovie::StartFrame() {
     sceIpuRestartDMA(&mIpuEnv);
 
     RndBitmap *pBitmap = mTex->LockBitmap(kLockForMovie);
-    *D3_MADR = static_cast<unsigned int>(reinterpret_cast<std::uintptr_t>(pBitmap->mPixels)) &
+    *D3_MADR = static_cast<unsigned int>(reinterpret_cast<std::uintptr_t>(pBitmap->GetPixels())) &
                kDmaAddressMask;
     *D3_QWC = static_cast<unsigned int>(mNumBlocks) << kBlockQwordsShift;
     *D3_CHCR = kChcrStart;

@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e3db0
      */
     bool Test() override {
-        return TheTriggerMgr.mComponent == mName;
+        return TheTriggerMgr.GetComponent() == mName;
     }
 
 private:

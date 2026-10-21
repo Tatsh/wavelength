@@ -23,7 +23,7 @@ CatchTrackMusic::~CatchTrackMusic() {
 
 void CatchTrackMusic::Start() {
     Stop();
-    int nTick = TheSongScheduler.mTick;
+    int nTick = TheSongScheduler.GetTick();
     if (nTick < kFirstTick) {
         nTick = kFirstTick;
     }
@@ -41,7 +41,7 @@ void CatchTrackMusic::Stop() {
 }
 
 void CatchTrackMusic::Refresh() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nBar = nTick / mTicksPerBar;
     const int nWrittenBar = mPlayMap->MapBar(nBar);
     const int nBarStart = nWrittenBar * mTicksPerBar;
@@ -83,7 +83,7 @@ void CatchTrackMusic::BuildBars(int nNumBars) {
 }
 
 void CatchTrackMusic::PlayBar() {
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     const int nEndBar = mPlayMap->GetEndBar();
     Muse *pBar;
     if (nBar < nEndBar) {

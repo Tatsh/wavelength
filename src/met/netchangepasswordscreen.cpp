@@ -82,7 +82,7 @@ void NetChangePasswordScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mOld = kNoText;
     mConfirm = kNoText;
 
-    if (std::strcmp(pPrevScreen->mName, kKeyboardScreen) != 0) {
+    if (std::strcmp(pPrevScreen->GetName(), kKeyboardScreen) != 0) {
         mFocusPanel->SetFocus(
             dynamic_cast<UITextEntry *>(mFocusPanel->FindComponent(kOldEntry, false)), kPadNone);
     }
@@ -117,7 +117,7 @@ void NetChangePasswordScreen::OpenKeyboard(const char *pszEntry) {
     KeyboardPanel *pKeyboard =
         dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
     const int nMaxWidth =
-        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->mFocus)->mMaxEntryWidth);
+        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->GetFocus())->mMaxEntryWidth);
 
     const String *pText = nullptr;
     if (std::strcmp(pszEntry, kOldEntry) == 0) {
@@ -129,7 +129,7 @@ void NetChangePasswordScreen::OpenKeyboard(const char *pszEntry) {
     }
     if (pText != nullptr) {
         const KeyboardRequest request(this,
-                                      TheUI.mCurrentScreen,
+                                      TheUI.GetCurrentScreen(),
                                       pText->c_str(),
                                       kKeyboardPad,
                                       kMaxPasswordChars,
@@ -170,7 +170,7 @@ bool NetChangePasswordScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
-    const char *pszFocus = pPanel->mFocus->mName;
+    const char *pszFocus = pPanel->GetFocus()->GetName();
     if (pMsg->mButton == kPadCircle) {
         if (std::strcmp(pszFocus, kOldEntry) == 0 || std::strcmp(pszFocus, kNewEntry) == 0 ||
             std::strcmp(pszFocus, kConfirmEntry) == 0) {
@@ -191,8 +191,8 @@ bool NetChangePasswordScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             bEntry = false;
         }
         if (pszNext != nullptr) {
-            if (bEntry &&
-                std::strcmp(dynamic_cast<UITextEntry *>(pPanel->mFocus)->Text(), kNoText) == 0) {
+            if (bEntry && std::strcmp(dynamic_cast<UITextEntry *>(pPanel->GetFocus())->Text(),
+                                      kNoText) == 0) {
                 OpenKeyboard(pszFocus);
                 return true;
             }
@@ -204,16 +204,16 @@ bool NetChangePasswordScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool NetChangePasswordScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    UITextEntry *pOld = dynamic_cast<UITextEntry *>(pMsg->mOldComponent);
-    UITextEntry *pNew = dynamic_cast<UITextEntry *>(pMsg->mComponent);
+    UITextEntry *pOld = dynamic_cast<UITextEntry *>(pMsg->GetOldComponent());
+    UITextEntry *pNew = dynamic_cast<UITextEntry *>(pMsg->GetComponent());
     // Yes, the binary does not check that the prefixes were found.
     if (pOld != nullptr) {
-        TheUI.FindComponent(kPasswordPanel, FormatString(kPrefixFormat, pOld->mName), false)
+        TheUI.FindComponent(kPasswordPanel, FormatString(kPrefixFormat, pOld->GetName()), false)
             ->SetState(UIComponent::kStateNormal, false);
         pOld->SetEditing(false);
     }
     if (pNew != nullptr) {
-        TheUI.FindComponent(kPasswordPanel, FormatString(kPrefixFormat, pNew->mName), false)
+        TheUI.FindComponent(kPasswordPanel, FormatString(kPrefixFormat, pNew->GetName()), false)
             ->SetState(UIComponent::kStateSelected, false);
         pNew->SetEditing(true);
     }
@@ -221,14 +221,14 @@ bool NetChangePasswordScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg)
 }
 
 bool NetChangePasswordScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (std::strcmp(pMsg->mComponent->mName, kDoneButton) == 0) {
+    if (std::strcmp(pMsg->GetComponent()->GetName(), kDoneButton) == 0) {
         Submit();
     }
     return UIScreen::HandleSelect(pMsg);
 }
 
 bool NetChangePasswordScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    const char *pszEntry = pMsg->mEntry->mName;
+    const char *pszEntry = pMsg->mEntry->GetName();
     const char *pszNext = nullptr;
     if (std::strcmp(pszEntry, kOldEntry) == 0) {
         pszNext = kNewEntry;

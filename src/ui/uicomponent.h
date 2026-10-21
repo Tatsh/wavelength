@@ -181,11 +181,20 @@ public:
      */
     virtual void Print(PrnStream &stream) = 0;
 
+    /** @return The name, a symbol. */
+    const char *GetName() const {
+        return mName;
+    }
+
+    /** @return Whether the component shows. */
+    int GetShowing() const {
+        return mShowing;
+    }
+
+protected:
     const char *mName; /*!< The name, a symbol. */
     int mShowing;      /*!< Whether the component shows. */
     int mState;        /*!< One of State. */
-
-protected:
     /**
      * Number of times a chosen button flashes before it reports the choice.
      *

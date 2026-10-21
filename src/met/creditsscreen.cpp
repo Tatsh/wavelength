@@ -50,7 +50,8 @@ CreditsScreen::CreditsScreen(DataArray *pData) : UIScreen(pData) {
 void CreditsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UIScreen::Enter(pPrevScreen, fTime);
     mEndTime = SystemMs() + mHoldMs;
-    if (strcmp(pPrevScreen->mName, mBetweenScreen) != 0 || mCursor == nullptr || mEnd == nullptr) {
+    if (strcmp(pPrevScreen->GetName(), mBetweenScreen) != 0 || mCursor == nullptr ||
+        mEnd == nullptr) {
         mCursor = TheLocale.Localize(mTextTag, true);
         mEnd = mCursor;
         while (*mEnd++ != '\0') {

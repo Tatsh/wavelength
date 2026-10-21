@@ -166,11 +166,11 @@ void NetCreateUserScreen::OpenKeyboard(const char *pszEntry) {
     KeyboardPanel *pKeyboard =
         dynamic_cast<KeyboardPanel *>(TheUI.FindPanel(kKeyboardPanel, false));
     const int nMaxWidth =
-        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->mFocus)->mMaxEntryWidth);
+        static_cast<int>(dynamic_cast<UITextEntry *>(mFocusPanel->GetFocus())->mMaxEntryWidth);
 
     if (std::strcmp(pszEntry, kNameEntry) == 0) {
         const KeyboardRequest request(this,
-                                      TheUI.mCurrentScreen,
+                                      TheUI.GetCurrentScreen(),
                                       mUserName.c_str(),
                                       kKeyboardPad,
                                       kMaxNameChars,
@@ -182,7 +182,7 @@ void NetCreateUserScreen::OpenKeyboard(const char *pszEntry) {
         pKeyboard->SetRequest(request);
     } else if (std::strcmp(pszEntry, kPasswordEntry) == 0) {
         const KeyboardRequest request(this,
-                                      TheUI.mCurrentScreen,
+                                      TheUI.GetCurrentScreen(),
                                       mPassword.c_str(),
                                       kKeyboardPad,
                                       kMaxPasswordChars,
@@ -194,7 +194,7 @@ void NetCreateUserScreen::OpenKeyboard(const char *pszEntry) {
         pKeyboard->SetRequest(request);
     } else if (std::strcmp(pszEntry, kConfirmEntry) == 0) {
         const KeyboardRequest request(this,
-                                      TheUI.mCurrentScreen,
+                                      TheUI.GetCurrentScreen(),
                                       mConfirm.c_str(),
                                       kKeyboardPad,
                                       kMaxPasswordChars,
@@ -238,7 +238,7 @@ bool NetCreateUserScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return FreqScreen::HandleJoypad(pMsg);
     }
 
-    const char *pszFocus = pPanel->mFocus->mName;
+    const char *pszFocus = pPanel->GetFocus()->GetName();
     if (pMsg->mButton == kPadCircle) {
         if (std::strcmp(pszFocus, kNameEntry) == 0 || std::strcmp(pszFocus, kPasswordEntry) == 0 ||
             std::strcmp(pszFocus, kConfirmEntry) == 0) {
@@ -259,8 +259,8 @@ bool NetCreateUserScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             bEntry = false;
         }
         if (pszNext != nullptr) {
-            if (bEntry &&
-                std::strcmp(dynamic_cast<UITextEntry *>(pPanel->mFocus)->Text(), kNoText) == 0) {
+            if (bEntry && std::strcmp(dynamic_cast<UITextEntry *>(pPanel->GetFocus())->Text(),
+                                      kNoText) == 0) {
                 OpenKeyboard(pszFocus);
                 return true;
             }
@@ -272,18 +272,18 @@ bool NetCreateUserScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool NetCreateUserScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    UITextEntry *pOld = dynamic_cast<UITextEntry *>(pMsg->mOldComponent);
-    UITextEntry *pNew = dynamic_cast<UITextEntry *>(pMsg->mComponent);
-    if (pMsg->mOldComponent != nullptr) {
+    UITextEntry *pOld = dynamic_cast<UITextEntry *>(pMsg->GetOldComponent());
+    UITextEntry *pNew = dynamic_cast<UITextEntry *>(pMsg->GetComponent());
+    if (pMsg->GetOldComponent() != nullptr) {
         UIComponent *pPrefix = TheUI.FindComponent(
-            kUserPanel, FormatString(kPrefixFormat, pMsg->mOldComponent->mName), true);
+            kUserPanel, FormatString(kPrefixFormat, pMsg->GetOldComponent()->GetName()), true);
         if (pPrefix != nullptr) {
             pPrefix->SetState(UIComponent::kStateNormal, false);
         }
     }
-    if (pMsg->mComponent != nullptr) {
+    if (pMsg->GetComponent() != nullptr) {
         UIComponent *pPrefix = TheUI.FindComponent(
-            kUserPanel, FormatString(kPrefixFormat, pMsg->mComponent->mName), true);
+            kUserPanel, FormatString(kPrefixFormat, pMsg->GetComponent()->GetName()), true);
         if (pPrefix != nullptr) {
             pPrefix->SetState(UIComponent::kStateSelected, false);
         }
@@ -298,14 +298,14 @@ bool NetCreateUserScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
 }
 
 bool NetCreateUserScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (std::strcmp(pMsg->mComponent->mName, kLoginButton) == 0) {
+    if (std::strcmp(pMsg->GetComponent()->GetName(), kLoginButton) == 0) {
         Submit();
     }
     return UIScreen::HandleSelect(pMsg);
 }
 
 bool NetCreateUserScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) {
-    const char *pszEntry = pMsg->mEntry->mName;
+    const char *pszEntry = pMsg->mEntry->GetName();
     const char *pszNext = nullptr;
     if (std::strcmp(pszEntry, kNameEntry) == 0) {
         pszNext = kPasswordEntry;
@@ -324,7 +324,7 @@ bool NetCreateUserScreen::HandleTextEntryComplete(UITextEntryCompleteMsg *pMsg) 
 }
 
 bool NetCreateUserScreen::HandleTextEntryInvalid(UITextEntryInvalidMsg *pMsg) {
-    if (std::strcmp(pMsg->mEntry->mName, kNameEntry) == 0) {
+    if (std::strcmp(pMsg->mEntry->GetName(), kNameEntry) == 0) {
         FxMidi::PlayWrong();
     }
     return false;

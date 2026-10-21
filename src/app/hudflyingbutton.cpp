@@ -49,7 +49,7 @@ HudFlyingButton::HudFlyingButton(int nLane, [[maybe_unused]] RndView *pHudView) 
         DataArray *pCurve =
             SystemConfig()->FindArray("gfx", true)->FindArray("button_icon_interp", true);
         sFlight.reset(ObjectToInterpolator(pCurve->Array(1)));
-        sFlightTime = sFlight->mX1;
+        sFlightTime = sFlight->GetX1();
     }
     Reset();
 }
@@ -74,7 +74,7 @@ void HudFlyingButton::Fly(const Vector2 *pFrom, const Vector2 *pTo) {
         mStartTime = kNoFlight;
         SetPulse(true);
     } else {
-        mStartTime = TheGameDb->mSongTime;
+        mStartTime = TheGameDb->GetSongTime();
         SetPulse(false);
     }
     mBlur->mXfms.clear();
@@ -97,8 +97,8 @@ void HudFlyingButton::Poll([[maybe_unused]] float fRealDelta) {
     if (mText->mShowing == 0 || mStartTime == kNoFlight) {
         return;
     }
-    const float fElapsed = TheGameDb->mSongTime - mStartTime;
-    if (sFlight->mX1 <= fElapsed) {
+    const float fElapsed = TheGameDb->GetSongTime() - mStartTime;
+    if (sFlight->GetX1() <= fElapsed) {
         Place(mText, mTo.x, mTo.y);
         mStartTime = kNoFlight;
         SetPulse(true);
@@ -113,7 +113,7 @@ void HudFlyingButton::Draw() {
         return;
     }
     if (mPulse != 0) {
-        const float fTick = TheGameDb->mSongTick;
+        const float fTick = TheGameDb->GetSongTick();
         const float fWave = FastSin((fTick + fTick) * kPi * kPulseTurnsPerTick + kHalfPi);
         mText->mFont->mMat->SetAlpha(fWave * 0.5f + 0.5f);
     } else {

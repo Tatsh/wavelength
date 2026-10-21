@@ -120,7 +120,7 @@ bool ChatMsg::AllowLine() {
 void ChatMsg::SendPrivate(int nChannel, int nAccountId, const char *pszText) {
     rtMediusChatRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     request.header.messageId[1] = static_cast<char>(nChannel + kChannelBase);
     request.targetAccountId = nAccountId;
     request.toAccount = 1;
@@ -139,14 +139,14 @@ bool ChatMsg::Send(int nChannel, int nRecipient, const char *pszText, int nEcho)
         MsgSink *pSink = FindHandler(nChannel);
         int nPlayer = kNoPlayer;
         if (TheLaunchpadRT != nullptr) {
-            nPlayer = TheLaunchpadRT->mLocalId;
+            nPlayer = TheLaunchpadRT->GetLocalId();
         }
-        ChatMsg msg(TheLobbyRT->mLocalPlayer.mId, nPlayer, pszText, TheLobbyRT->GetName());
+        ChatMsg msg(TheLobbyRT->GetLocalPlayer().mId, nPlayer, pszText, TheLobbyRT->GetName());
         pSink->Dispatch(&msg); // Yes, the binary does not test for a missing sink.
     }
     rtMediusChatRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     // NTSC-U/C: 0x0043ca30
     // The function-local vector is destroyed at exit by the routine at 0x00252618.
     // NTSC-U/C: 0x00252618, PAL: 0x0025afc0
@@ -159,7 +159,7 @@ bool ChatMsg::Send(int nChannel, int nRecipient, const char *pszText, int nEcho)
         request.toAccount = 1;
         const std::list<NetLaunchpadPlayer> players = *TheLaunchpadRT->GetPlayers();
         for (const auto &player : players) {
-            if (player.mPlayer.mId != TheLobbyRT->mLocalPlayer.mId) {
+            if (player.mPlayer.mId != TheLobbyRT->GetLocalPlayer().mId) {
                 recipients.push_back(player.mPlayer.mId);
             }
         }

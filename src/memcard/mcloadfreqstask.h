@@ -41,7 +41,9 @@ public:
      */
     void Set(int nPort, std::vector<Campaign> *pProfiles);
 
-    MCGetInfoTask *mGetInfo;         /*!< The step that reads the card information. */
-    MCGetDirTask *mGetDir;           /*!< The step that lists the Freq files. */
-    MCLoadFreqFilesTask *mLoadFiles; /*!< The step that loads the Freq files. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;         /*!< The step that reads the card information. Borrowed. */
+    MCGetDirTask *mGetDir;           /*!< The step that lists the Freq files. Borrowed. */
+    MCLoadFreqFilesTask *mLoadFiles; /*!< The step that loads the Freq files. Borrowed. */
 };

@@ -113,7 +113,7 @@ void ControllerDisplay::Refresh() {
 }
 
 void ControllerDisplay::RefreshLabels() {
-    if (TheGameDb->mTutorial != 0) {
+    if (TheGameDb->GetTutorial() != 0) {
         return;
     }
     InputMap *pMap = TheGameDb->GetProfile(kFirstPlayer)->GetInputMap();

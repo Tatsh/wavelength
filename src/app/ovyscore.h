@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "app/hideablepanel.h"
 #include "app/hudpowerup.h"
 #include "app/rampanimator.h"
@@ -163,13 +165,24 @@ public:
      */
     static Vector3 sCheckpointPositions[kNumCheckpointPositions];
 
-    HudPowerup *mPowerup;          /*!< The power-up icon, or null. */
-    RndText *mScoreText;           /*!< `<hud> score<n>.txt`. */
-    float mScoreTime;              /*!< The song time of the last score, or a sentinel. */
-    int mScore;                    /*!< The last score. */
-    RndMat *mBackgroundMat;        /*!< `HUD score<n> bg.mat`, or null. */
-    signed char mPlayer;           /*!< The player. */
-    RampAnimator *mPointsSlide;    /*!< The slide of `<hud> pts<n>.mesh`, or null. */
+    /** @return The power-up icon, or null. */
+    HudPowerup *GetPowerup() const {
+        return mPowerup.get();
+    }
+
+    /** @return The last score. */
+    int GetScore() const {
+        return mScore;
+    }
+
+private:
+    std::unique_ptr<HudPowerup> mPowerup; /*!< The power-up icon, or null. */
+    RndText *mScoreText;                  /*!< `<hud> score<n>.txt`. Borrowed. */
+    float mScoreTime;                     /*!< The song time of the last score, or a sentinel. */
+    int mScore;                           /*!< The last score. */
+    RndMat *mBackgroundMat;               /*!< `HUD score<n> bg.mat`, or null. Borrowed. */
+    signed char mPlayer;                  /*!< The player. */
+    std::unique_ptr<RampAnimator> mPointsSlide; /*!< The slide of `<hud> pts<n>.mesh`. */
     signed char mState;            /*!< The stage of the checkpoint display, one of State. */
     RndTransformable *mTop;        /*!< `<hud> score top<n>.view`, which moves, or null. */
     RndDrawable *mMesh;            /*!< `<hud> score<n>.mesh`, or null. */

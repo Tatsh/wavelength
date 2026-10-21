@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 
 #include "math/color.h"
 #include "math/plane.h"
@@ -367,10 +368,15 @@ public:
      */
     static int sLoadRev;
 
-    RndParticleSys *mParticlesOwner;      /*!< The system that has the pool, possibly this one. */
-    Particle *mParticles;                 /*!< The pool. */
-    int mNumParticles;                    /*!< The size of the pool. */
-    Particle *mLiveParticles;             /*!< The head of the live list. */
+    /** @return The pool. */
+    Particle *GetParticles() const {
+        return mParticles.get();
+    }
+
+    RndParticleSys *mParticlesOwner;        /*!< The system that has the pool. Borrowed. */
+    std::unique_ptr<Particle[]> mParticles; /*!< The pool this system allocated. */
+    int mNumParticles;                      /*!< The size of the pool. */
+    Particle *mLiveParticles;               /*!< The head of the live list. */
     Particle *mFreeParticles;             /*!< The head of the free list, used in the owner only. */
     float mLastFrame;                     /*!< The frame SetFrameSelf() last received. */
     float mLastEmitFrame;                 /*!< The frame SetEmitFrame() last received. */

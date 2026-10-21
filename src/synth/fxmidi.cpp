@@ -27,16 +27,16 @@ const char *FindRequiredSymbol(DataArray *pData, const char *pszName) {
 }
 
 void Play(Ptr<Muse> &cue) {
-    cue->Play(&TheGameDb->mSfxScheduler);
+    cue->Play(&TheGameDb->GetSfxScheduler());
 }
 
 } // namespace
 
-FxMidi *TheFxMidi;
+std::unique_ptr<FxMidi> TheFxMidi;
 
 void GameDb::InitSfx() {
     DataArray *pDb = SystemConfig()->FindArray(kDbSection, true);
-    TheFxMidi = new FxMidi;
+    TheFxMidi = std::make_unique<FxMidi>();
 #ifdef VIDEO_STANDARD_PAL
     SFXBuilder builder(
         FindRequiredSymbol(pDb, FormatString(kLanguageFxMidiFileTag, GetSystemLanguage())));
@@ -44,109 +44,108 @@ void GameDb::InitSfx() {
     SFXBuilder builder(FindRequiredSymbol(pDb, kFxMidiFileTag));
 #endif
     builder.Read();
-    mSfxScheduler.Reset(TheSfxTickDuration, kStartTick);
+    mSfxScheduler.Reset(TheSfxTickDuration.get(), kStartTick);
     mSfxScheduler.Resume();
 }
 
 void GameDb::TerminateSfx() {
     mSfxScheduler.Pause();
     mSfxScheduler.Clear();
-    delete TheSfxTickDuration;
-    delete TheFxMidi;
-    TheFxMidi = nullptr;
+    TheSfxTickDuration.reset();
+    TheFxMidi.reset();
 }
 
 void FxMidi::PlayMenuLeft() {
-    Play(TheFxMidi->mLeft);
+    Play(TheFxMidi->GetLeft());
 }
 
 void FxMidi::PlayMenuRight() {
-    Play(TheFxMidi->mRight);
+    Play(TheFxMidi->GetRight());
 }
 
 void FxMidi::PlayMenuUp() {
-    Play(TheFxMidi->mUp);
+    Play(TheFxMidi->GetUp());
 }
 
 void FxMidi::PlayMenuDown() {
-    Play(TheFxMidi->mDown);
+    Play(TheFxMidi->GetDown());
 }
 
 void FxMidi::PlayMenuSelect() {
-    Play(TheFxMidi->mSelect);
+    Play(TheFxMidi->GetSelect());
 }
 
 void FxMidi::PlayBack() {
-    Play(TheFxMidi->mBack);
+    Play(TheFxMidi->GetBack());
 }
 
 void FxMidi::PlayCheat() {
-    Play(TheFxMidi->mCheat);
+    Play(TheFxMidi->GetCheat());
 }
 
 void FxMidi::PlayProjector() {
-    Play(TheFxMidi->mProjector);
+    Play(TheFxMidi->GetProjector());
 }
 
 void FxMidi::PlaySound0() {
-    Play(TheFxMidi->mMiss);
+    Play(TheFxMidi->GetMiss());
 }
 
 void FxMidi::PlaySound1() {
-    Play(TheFxMidi->mUncatchable);
+    Play(TheFxMidi->GetUncatchable());
 }
 
 void FxMidi::PlaySound2() {
-    Play(TheFxMidi->mCheckpointCheer);
+    Play(TheFxMidi->GetCheckpointCheer());
 }
 
 void FxMidi::PlaySound3() {
-    Play(TheFxMidi->mCheckpointInsane);
+    Play(TheFxMidi->GetCheckpointInsane());
 }
 
 void FxMidi::PlayWinSound() {
-    Play(TheFxMidi->mWinCheer);
+    Play(TheFxMidi->GetWinCheer());
 }
 
 void FxMidi::StopLoop() {
-    TheFxMidi->mWinCheer->Stop();
+    TheFxMidi->GetWinCheer()->Stop();
 }
 
 void FxMidi::PlayDecrypt() {
-    Play(TheFxMidi->mDecrypt);
+    Play(TheFxMidi->GetDecrypt());
 }
 
 void FxMidi::PlayCursorLoop() {
-    Play(TheFxMidi->mText);
+    Play(TheFxMidi->GetText());
 }
 
 void FxMidi::StopCursorLoop() {
-    TheFxMidi->mText->Stop();
+    TheFxMidi->GetText()->Stop();
 }
 
 void FxMidi::PlayJuiceLowSound() {
-    Play(TheFxMidi->mWarning);
+    Play(TheFxMidi->GetWarning());
 }
 
 void FxMidi::PlayUnlock() {
-    Play(TheFxMidi->mUnlock);
+    Play(TheFxMidi->GetUnlock());
 }
 
 void FxMidi::PlayPowerupCatchSound(int nPowerup) {
-    Play(TheFxMidi->mPowerupCatches[nPowerup]);
+    Play(TheFxMidi->GetPowerupCatches(nPowerup));
 }
 
 void FxMidi::PlayPowerupSound(int nPowerup) {
-    Play(TheFxMidi->mPowerupDeploys[nPowerup]);
+    Play(TheFxMidi->GetPowerupDeploys(nPowerup));
 }
 
 void FxMidi::PlayGuideSound(int nLane) {
-    Play(TheFxMidi->mGuideTicks[nLane]);
+    Play(TheFxMidi->GetGuideTicks(nLane));
 }
 
 bool FxMidi::IsLeaderSoundPlaying() {
     for (int i = 0; i < kColorCount; ++i) {
-        if (TheFxMidi->mLeads[i]->IsPlaying()) {
+        if (TheFxMidi->GetLeads(i)->IsPlaying()) {
             return true;
         }
     }
@@ -154,127 +153,127 @@ bool FxMidi::IsLeaderSoundPlaying() {
 }
 
 void FxMidi::PlayLeaderSound(int nSlot) {
-    Play(TheFxMidi->mLeads[nSlot]);
+    Play(TheFxMidi->GetLeads(nSlot));
 }
 
 void FxMidi::PlayWinnerSound(int nSlot) {
-    Play(TheFxMidi->mWins[nSlot]);
+    Play(TheFxMidi->GetWins(nSlot));
 }
 
 void FxMidi::PlayDuelLayPattern() {
-    Play(TheFxMidi->mDuelLayPattern);
+    Play(TheFxMidi->GetDuelLayPattern());
 }
 
 void FxMidi::PlayDuelCatchPattern() {
-    Play(TheFxMidi->mDuelCatchPattern);
+    Play(TheFxMidi->GetDuelCatchPattern());
 }
 
 void FxMidi::PlayDuelNice() {
-    Play(TheFxMidi->mDuelNice);
+    Play(TheFxMidi->GetDuelNice());
 }
 
 void FxMidi::PlayDuelYouGotIt() {
-    Play(TheFxMidi->mDuelYouGotIt);
+    Play(TheFxMidi->GetDuelYouGotIt());
 }
 
 void FxMidi::PlayDuelAlmost() {
-    Play(TheFxMidi->mDuelAlmost);
+    Play(TheFxMidi->GetDuelAlmost());
 }
 
 void FxMidi::PlayDuelOneLetter() {
-    Play(TheFxMidi->mDuelOneLetter);
+    Play(TheFxMidi->GetDuelOneLetter());
 }
 
 void FxMidi::PlayDuelAww() {
-    Play(TheFxMidi->mDuelAww);
+    Play(TheFxMidi->GetDuelAww());
 }
 
 void FxMidi::PlayDuelPerfect() {
-    Play(TheFxMidi->mDuelPerfect);
+    Play(TheFxMidi->GetDuelPerfect());
 }
 
 void FxMidi::PlayDuelGameTie() {
-    Play(TheFxMidi->mDuelGameTie);
+    Play(TheFxMidi->GetDuelGameTie());
 }
 
 void FxMidi::PlayDuelGreenWins() {
-    Play(TheFxMidi->mDuelGreenWins);
+    Play(TheFxMidi->GetDuelGreenWins());
 }
 
 void FxMidi::PlayDuelPurpleWins() {
-    Play(TheFxMidi->mDuelPurpleWins);
+    Play(TheFxMidi->GetDuelPurpleWins());
 }
 
 void FxMidi::PlayDuelMiss() {
-    Play(TheFxMidi->mDuelMiss);
+    Play(TheFxMidi->GetDuelMiss());
 }
 
 void FxMidi::PlayDuelMissThis() {
-    Play(TheFxMidi->mDuelMissThis);
+    Play(TheFxMidi->GetDuelMissThis());
 }
 
 void FxMidi::PlayDuelCheer() {
-    Play(TheFxMidi->mDuelCheer);
+    Play(TheFxMidi->GetDuelCheer());
 }
 
 void FxMidi::PlayEraseSound() {
-    Play(TheFxMidi->mErase);
+    Play(TheFxMidi->GetErase());
 }
 
 void FxMidi::PlayEraseSectionSound() {
-    Play(TheFxMidi->mEraseSection);
+    Play(TheFxMidi->GetEraseSection());
 }
 
 void FxMidi::PlayWrong() {
-    Play(TheFxMidi->mWrong);
+    Play(TheFxMidi->GetWrong());
 }
 
 void FxMidi::PlaySquare() {
-    Play(TheFxMidi->mSquare);
+    Play(TheFxMidi->GetSquare());
 }
 
 void FxMidi::PlayLazySusan() {
-    Play(TheFxMidi->mLazySusan);
+    Play(TheFxMidi->GetLazySusan());
 }
 
 void FxMidi::PlayKeyboardLeftUp() {
-    Play(TheFxMidi->mKeyboardLeftUp);
+    Play(TheFxMidi->GetKeyboardLeftUp());
 }
 
 void FxMidi::PlayKeyboardBack() {
-    Play(TheFxMidi->mKeyboardBack);
+    Play(TheFxMidi->GetKeyboardBack());
 }
 
 void FxMidi::PlayKeyboardKeyEnter() {
-    Play(TheFxMidi->mKeyboardKeyEnter);
+    Play(TheFxMidi->GetKeyboardKeyEnter());
 }
 
 void FxMidi::PlayArenaUnlock() {
-    Play(TheFxMidi->mArenaUnlock);
+    Play(TheFxMidi->GetArenaUnlock());
 }
 
 void FxMidi::PlaySoloPortal() {
-    Play(TheFxMidi->mSoloPortal);
+    Play(TheFxMidi->GetSoloPortal());
 }
 
 void FxMidi::PlayMultiPortal() {
-    Play(TheFxMidi->mMultiPortal);
+    Play(TheFxMidi->GetMultiPortal());
 }
 
 void FxMidi::PlayNetPortal() {
-    Play(TheFxMidi->mNetPortal);
+    Play(TheFxMidi->GetNetPortal());
 }
 
 void FxMidi::StopPortals() {
-    TheFxMidi->mSoloPortal->Stop();
-    TheFxMidi->mMultiPortal->Stop();
-    TheFxMidi->mNetPortal->Stop();
+    TheFxMidi->GetSoloPortal()->Stop();
+    TheFxMidi->GetMultiPortal()->Stop();
+    TheFxMidi->GetNetPortal()->Stop();
 }
 
 void FxMidi::PlayTransition() {
-    Play(TheFxMidi->mTravelSwoosh);
+    Play(TheFxMidi->GetTravelSwoosh());
 }
 
 void FxMidi::StopTransition() {
-    TheFxMidi->mTravelSwoosh->Stop();
+    TheFxMidi->GetTravelSwoosh()->Stop();
 }

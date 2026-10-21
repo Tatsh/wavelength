@@ -169,7 +169,7 @@ public:
 
 // The tick at the start of the bar a number of bars after the current one.
 inline int BarTickAhead(int nBarsAhead, int nTicksPerBar) {
-    return (nBarsAhead + TheSongScheduler.mTick / nTicksPerBar) * nTicksPerBar;
+    return (nBarsAhead + TheSongScheduler.GetTick() / nTicksPerBar) * nTicksPerBar;
 }
 
 } // namespace
@@ -187,7 +187,7 @@ void TutorialGameLogic::OnSchedDeactivateTrackCommand(DataArray *pCommand, void 
 
 void TutorialGameLogic::OnStreamCommand(DataArray *pCommand, void *pUserData) {
     bool bSkipIfBusy = false;
-    if (pCommand->mSize == kStreamCommandWithOptionSize) {
+    if (pCommand->Size() == kStreamCommandWithOptionSize) {
         bSkipIfBusy = strcmp(pCommand->Sym(kCommandNodeSecond), kNoQueueOption) == 0;
     }
     static_cast<TutorialGameLogic *>(pUserData)->QueueStream(pCommand->Sym(kCommandNodeFirst),
@@ -364,17 +364,17 @@ TutorialGameLogic::TutorialGameLogic(Song *pSong, DataArray *pSongConfig)
 
 #ifdef VIDEO_STANDARD_PAL
     if (strcmp(GetSystemLanguage(), kEnglishLanguage) == 0) {
-        mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+        mStreams.SetDirectory(FormatString(kStreamDirectoryFormat, TheGameDb->GetSong().c_str()));
     } else {
-        mStreams.mDirectory = FormatString(
-            kLanguageStreamDirectoryFormat, TheGameDb->mSong.c_str(), GetSystemLanguage());
+        mStreams.SetDirectory(FormatString(
+            kLanguageStreamDirectoryFormat, TheGameDb->GetSong().c_str(), GetSystemLanguage()));
     }
 #else
-    mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+    mStreams.SetDirectory(FormatString(kStreamDirectoryFormat, TheGameDb->GetSong().c_str()));
 #endif
 
     DataArray *pScript = pSongConfig->FindArray(kScriptEntry, false);
-    const int nSize = pScript->mSize;
+    const int nSize = pScript->Size();
     for (int i = kFirstStep; i < nSize; ++i) {
         mScript.Add(CreateTask(pScript->Array(i)));
     }
@@ -536,7 +536,7 @@ void TutorialGameLogic::OnPhraseCaptured([[maybe_unused]] CatchTrack *pTrack,
 }
 
 void TutorialGameLogic::EnableNext() {
-    EnableNextTracks(std::max(TheSongScheduler.mTick / mTicksPerBar + 1, kFirstBar));
+    EnableNextTracks(std::max(TheSongScheduler.GetTick() / mTicksPerBar + 1, kFirstBar));
 }
 
 void TutorialGameLogic::OnPhraseEnded([[maybe_unused]] Track *pTrack) {
@@ -586,7 +586,7 @@ void TutorialGameLogic::PlayScriptTrack(const char *pszName) {
     Ptr<PlayScriptCmd> cmd(new PlayScriptCmd(pTrack, mSong->GetMsPerTick()));
     mScriptCmds.push_back(cmd);
     cmd->mNextCommand = 0;
-    cmd->mStartTick = TheSongScheduler.mTick;
+    cmd->mStartTick = TheSongScheduler.GetTick();
     cmd->ScheduleNext();
 }
 
@@ -606,7 +606,7 @@ void TutorialGameLogic::QueueStream(const char *pszName, bool bSkipIfBusy) {
 
 void TutorialGameLogic::LoopTrack(int nStartBar, int nNumBars, int nBarsAhead) {
     mPlayMap->AddLoop(nStartBar, nNumBars, mBar + nBarsAhead);
-    for (CatchTrack *pTrack : mCatchTracks) {
+    for (auto &pTrack : mCatchTracks) {
         pTrack->Loop(mBar + nBarsAhead);
     }
 }
@@ -624,28 +624,28 @@ void TutorialGameLogic::SetPowerupsDisabled(bool bDisabled) {
 }
 
 void TutorialGameLogic::ActivateBars(int nBar, int nBars, int nTrack) {
-    mCatchTracks[nTrack]->AssignBars(nBar, nBars, mPlayers[kTutorialPlayer]);
+    mCatchTracks[nTrack]->AssignBars(nBar, nBars, mPlayers[kTutorialPlayer].get());
 }
 
 void TutorialGameLogic::ScheduleDeactivateTrack(int nBarsAhead, int nBar, int nBars) {
-    const int nTick = TheSongScheduler.mTick - TheSongScheduler.mTick % mTicksPerBar +
+    const int nTick = TheSongScheduler.GetTick() - TheSongScheduler.GetTick() % mTicksPerBar +
                       (nBarsAhead * mTicksPerBar + mTicksPerBar);
     const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
-    auto *pDeactivator = new TrackDeactivator(nTrack, nBar, nBars, mCatchTracks[nTrack]);
+    auto *pDeactivator = new TrackDeactivator(nTrack, nBar, nBars, mCatchTracks[nTrack].get());
     mDeactivators.push_back(Ptr<Command>(pDeactivator));
     TheSongScheduler.PostAt(pDeactivator, nTick, false);
 }
 
 void TutorialGameLogic::CaptureTrack() {
     const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
-    mCatchTracks[nTrack]->Capture(mBar, mPlayers[kTutorialPlayer]);
+    mCatchTracks[nTrack]->Capture(mBar, mPlayers[kTutorialPlayer].get());
 }
 
 void TutorialGameLogic::CaptureAllTracks() {
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     const int nTracks = mCatchTracks.size();
     for (int i = 0; i < nTracks; ++i) {
-        mCatchTracks[i]->Capture(nBar, mPlayers[kTutorialPlayer]);
+        mCatchTracks[i]->Capture(nBar, mPlayers[kTutorialPlayer].get());
     }
 }
 
@@ -689,7 +689,7 @@ Task *TutorialGameLogic::CreateTask(DataArray *pStep) {
 }
 
 bool TutorialGameLogic::IsPhraseAbsent() {
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     const int nTrack = mPlayers[kTutorialPlayer]->GetTrack()->mIndex;
     int nStartTick;
     int nEndTick;
@@ -697,7 +697,7 @@ bool TutorialGameLogic::IsPhraseAbsent() {
 }
 
 void TutorialGameLogic::ShowStreakArrow(int nTrack, int nBarsAhead, [[maybe_unused]] int nUnused) {
-    const int nBar = TheSongScheduler.mFrameTick / mTicksPerBar + nBarsAhead;
+    const int nBar = TheSongScheduler.GetFrameTick() / mTicksPerBar + nBarsAhead;
     int nStartTick;
     int nEndTick;
     // Yes, the binary discards the result and reads the ticks either way.

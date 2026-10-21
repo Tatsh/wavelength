@@ -35,7 +35,7 @@ bool NetChangePassword::DispatchPriv(Message *pMsg) {
 }
 
 bool NetChangePassword::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLobby->ChangePassword(this, mOldPassword.c_str(), mNewPassword.c_str());
     }
     return false;

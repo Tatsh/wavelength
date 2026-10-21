@@ -64,9 +64,9 @@ bool ChooseMemCardScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
     if (nSlots == 0) {
         return false;
     }
-    if (pMsg->mButton == kPadDLeft) {
+    if (pMsg->GetButton() == kPadDLeft) {
         mSlot = mSlot - 1 > -1 ? mSlot - 1 : nSlots - 1;
-    } else if (pMsg->mButton == kPadDRight) {
+    } else if (pMsg->GetButton() == kPadDRight) {
         mSlot = mSlot + 1 < nSlots ? mSlot + 1 : 0;
     }
 

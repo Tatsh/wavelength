@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "game/catchtrackdata.h"
 #include "game/catchtrackstate.h"
 #include "game/duelpatterntable.h"
@@ -515,34 +517,34 @@ private:
      */
     void OnPhraseTick();
 
-    Player *mSidePlayer;           /*!< The player of the side the track belongs to. */
-    CatchReceiver *mCatchReceiver; /*!< The receiver of mGemCatcher. */
-    PitchReceiver *mPitchReceiver; /*!< The receiver of mPitcher. */
-    DuelPatternTable *mPatterns;   /*!< The duel patterns of the song. */
-    PlayMap *mPlayMap;             /*!< The map of the song positions. */
-    DuelLogic *mLogic;             /*!< The rules the track reports to. */
-    int mNumBars;                  /*!< The length of the song in bars. */
-    int mTicksPerBar;              /*!< The song ticks in one bar. */
-    int mPhraseBars;               /*!< The length of a phrase in bars. */
-    int mFirstPhraseTick;          /*!< The tick OnPhraseTick() first runs at. */
-    CatchTrackState mCatchState;   /*!< The bars of the gems the player catches. */
-    CatchTrackState mPitchState;   /*!< The bars of the gems the player places. */
-    int mMode;                     /*!< One of Mode. */
-    GemCatcher mGemCatcher;        /*!< The judge of the presses of a catch. */
-    DuelTrackPitcher mPitcher;     /*!< The judge of the presses of a phrase placed. */
-    int mCatchMissed;              /*!< Whether the current catch ended as missed. */
-    int mCatchMade;                /*!< Whether the current catch ended as made. */
-    int mCatchPoints;              /*!< The points of the phrase to catch. */
-    Ptr<Command> mPhraseCommand;   /*!< The command that calls OnPhraseTick(). */
-    int mCaughtGems;               /*!< The gems of the phrase to catch caught so far. */
-    int mPhraseGems;               /*!< The gems of the phrase to catch. */
-    int mCatchBar;                 /*!< The first bar of the phrase to catch, or -1. */
-    int mCatchEndBar;              /*!< The bar after the phrase to catch, or -1. */
-    int mRejectEndTick;            /*!< The tick the mark of the last refused press ends at. */
-    int mPhraseBonus;              /*!< The points a phrase to catch adds to its gems. */
-    int mPitchPoints;              /*!< The points of the gems placed in the phrase. */
-    int mPitchedGems;              /*!< The gems placed in the phrase. */
-    Muse *mMuse;                   /*!< The riff of the gem caught last, or null. */
-    NetFaker *mNetFaker;           /*!< The stand-in for a remote player, online only. */
-    int mIgnoreMisses;             /*!< Whether a missed gem or an empty phrase ends nothing. */
+    Player *mSidePlayer; /*!< The player of the side the track belongs to. Borrowed. */
+    std::unique_ptr<CatchReceiver> mCatchReceiver; /*!< The receiver of mGemCatcher. */
+    std::unique_ptr<PitchReceiver> mPitchReceiver; /*!< The receiver of mPitcher. */
+    DuelPatternTable *mPatterns;                   /*!< The duel patterns of the song. Borrowed. */
+    PlayMap *mPlayMap;                             /*!< The map of the song positions. Borrowed. */
+    DuelLogic *mLogic;                             /*!< The rules the track reports to. Borrowed. */
+    int mNumBars;                                  /*!< The length of the song in bars. */
+    int mTicksPerBar;                              /*!< The song ticks in one bar. */
+    int mPhraseBars;                               /*!< The length of a phrase in bars. */
+    int mFirstPhraseTick;                          /*!< The tick OnPhraseTick() first runs at. */
+    CatchTrackState mCatchState;                   /*!< The bars of the gems the player catches. */
+    CatchTrackState mPitchState;                   /*!< The bars of the gems the player places. */
+    int mMode;                                     /*!< One of Mode. */
+    GemCatcher mGemCatcher;                        /*!< The judge of the presses of a catch. */
+    DuelTrackPitcher mPitcher;   /*!< The judge of the presses of a phrase placed. */
+    int mCatchMissed;            /*!< Whether the current catch ended as missed. */
+    int mCatchMade;              /*!< Whether the current catch ended as made. */
+    int mCatchPoints;            /*!< The points of the phrase to catch. */
+    Ptr<Command> mPhraseCommand; /*!< The command that calls OnPhraseTick(). */
+    int mCaughtGems;             /*!< The gems of the phrase to catch caught so far. */
+    int mPhraseGems;             /*!< The gems of the phrase to catch. */
+    int mCatchBar;               /*!< The first bar of the phrase to catch, or -1. */
+    int mCatchEndBar;            /*!< The bar after the phrase to catch, or -1. */
+    int mRejectEndTick;          /*!< The tick the mark of the last refused press ends at. */
+    int mPhraseBonus;            /*!< The points a phrase to catch adds to its gems. */
+    int mPitchPoints;            /*!< The points of the gems placed in the phrase. */
+    int mPitchedGems;            /*!< The gems placed in the phrase. */
+    Muse *mMuse;                 /*!< The riff of the gem caught last, or null. Borrowed. */
+    std::unique_ptr<NetFaker> mNetFaker; /*!< The stand-in for a remote player, online only. */
+    int mIgnoreMisses;                   /*!< Whether a missed gem or an empty phrase is ignored. */
 };

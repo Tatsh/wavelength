@@ -27,6 +27,7 @@ public:
      */
     void Set(int nPort);
 
+private:
     MCOpenTask mOpen; /*!< The step that opens the file. */
 
 protected:

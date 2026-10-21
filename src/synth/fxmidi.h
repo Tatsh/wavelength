@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "gs/muse.h"
 #include "os/ptr.h"
 
@@ -496,6 +498,332 @@ public:
      */
     static void StopTransition();
 
+    /** @return The `MISS` cue. */
+    Ptr<Muse> &GetMiss() {
+        return mMiss;
+    }
+
+    /** @return The `UNCATCHABLE` cue. */
+    Ptr<Muse> &GetUncatchable() {
+        return mUncatchable;
+    }
+
+    /** @return The `CHECKPOINT_CHEER` cue. */
+    Ptr<Muse> &GetCheckpointCheer() {
+        return mCheckpointCheer;
+    }
+
+    /** @return The `CHECKPOINT_INSANE` cue. */
+    Ptr<Muse> &GetCheckpointInsane() {
+        return mCheckpointInsane;
+    }
+
+    /** @return The `WIN_CHEER` cue. */
+    Ptr<Muse> &GetWinCheer() {
+        return mWinCheer;
+    }
+
+    /** @return The `WARNING` cue. */
+    Ptr<Muse> &GetWarning() {
+        return mWarning;
+    }
+
+    /** @return The `GUIDETICK1` to `GUIDETICK3` cues. */
+    Ptr<Muse> *GetGuideTicks() {
+        return mGuideTicks;
+    }
+
+    /**
+     * Report one of the guide tick cues.
+     *
+     * @param nIndex The cue, from 0.
+     * @return The cue.
+     */
+    Ptr<Muse> &GetGuideTicks(int nIndex) {
+        return mGuideTicks[nIndex];
+    }
+
+    /** @return The `<POWERUP>_CATCH` cues, by Powerup. */
+    Ptr<Muse> *GetPowerupCatches() {
+        return mPowerupCatches;
+    }
+
+    /**
+     * Report one of the catch cues.
+     *
+     * @param nPowerup One of Powerup.
+     * @return The cue.
+     */
+    Ptr<Muse> &GetPowerupCatches(int nPowerup) {
+        return mPowerupCatches[nPowerup];
+    }
+
+    /** @return The `<POWERUP>_DEPLOY` cues, by Powerup. */
+    Ptr<Muse> *GetPowerupDeploys() {
+        return mPowerupDeploys;
+    }
+
+    /**
+     * Report one of the deploy cues.
+     *
+     * @param nPowerup One of Powerup.
+     * @return The cue.
+     */
+    Ptr<Muse> &GetPowerupDeploys(int nPowerup) {
+        return mPowerupDeploys[nPowerup];
+    }
+
+    /** @return The `WRONG` cue. */
+    Ptr<Muse> &GetWrong() {
+        return mWrong;
+    }
+
+    /** @return The `SQUARE` cue. */
+    Ptr<Muse> &GetSquare() {
+        return mSquare;
+    }
+
+    /** @return The `LAZY_SUSAN` cue. */
+    Ptr<Muse> &GetLazySusan() {
+        return mLazySusan;
+    }
+
+    /** @return The solo portal cue. */
+    Ptr<Muse> &GetSoloPortal() {
+        return mSoloPortal;
+    }
+
+    /** @return The multiplayer portal cue. */
+    Ptr<Muse> &GetMultiPortal() {
+        return mMultiPortal;
+    }
+
+    /** @return The net portal cue. */
+    Ptr<Muse> &GetNetPortal() {
+        return mNetPortal;
+    }
+
+    /** @return The travel swoosh cue. */
+    Ptr<Muse> &GetTravelSwoosh() {
+        return mTravelSwoosh;
+    }
+
+    /** @return The menu-left cue. */
+    Ptr<Muse> &GetLeft() {
+        return mLeft;
+    }
+
+    /** @return The menu-right cue. */
+    Ptr<Muse> &GetRight() {
+        return mRight;
+    }
+
+    /** @return The menu-up cue. */
+    Ptr<Muse> &GetUp() {
+        return mUp;
+    }
+
+    /** @return The menu-down cue. */
+    Ptr<Muse> &GetDown() {
+        return mDown;
+    }
+
+    /** @return The menu-select cue. */
+    Ptr<Muse> &GetSelect() {
+        return mSelect;
+    }
+
+    /** @return The menu-back cue. */
+    Ptr<Muse> &GetBack() {
+        return mBack;
+    }
+
+    /** @return The cheat cue. */
+    Ptr<Muse> &GetCheat() {
+        return mCheat;
+    }
+
+    /** @return The projector cue. */
+    Ptr<Muse> &GetProjector() {
+        return mProjector;
+    }
+
+    /** @return The unlock cue. */
+    Ptr<Muse> &GetUnlock() {
+        return mUnlock;
+    }
+
+    /** @return The win cues, by colour. */
+    Ptr<Muse> *GetWins() {
+        return mWins;
+    }
+
+    /**
+     * Report one of the win cues.
+     *
+     * @param nColor One of Color.
+     * @return The cue.
+     */
+    Ptr<Muse> &GetWins(int nColor) {
+        return mWins[nColor];
+    }
+
+    /** @return The lead cues, by colour. */
+    Ptr<Muse> *GetLeads() {
+        return mLeads;
+    }
+
+    /**
+     * Report one of the lead cues.
+     *
+     * @param nColor One of Color.
+     * @return The cue.
+     */
+    Ptr<Muse> &GetLeads(int nColor) {
+        return mLeads[nColor];
+    }
+
+    /** @return The duel player cues. */
+    Ptr<Muse> *GetDuelPlayers() {
+        return mDuelPlayers;
+    }
+
+    /**
+     * Report one of the duel player cues.
+     *
+     * @param nPlayer The player, from 0.
+     * @return The cue.
+     */
+    Ptr<Muse> &GetDuelPlayers(int nPlayer) {
+        return mDuelPlayers[nPlayer];
+    }
+
+    /** @return The keyboard left-up cue. */
+    Ptr<Muse> &GetKeyboardLeftUp() {
+        return mKeyboardLeftUp;
+    }
+
+    /** @return The keyboard right-down cue. */
+    Ptr<Muse> &GetKeyboardRightDown() {
+        return mKeyboardRightDown;
+    }
+
+    /** @return The keyboard circle cue. */
+    Ptr<Muse> &GetKeyboardCircle() {
+        return mKeyboardCircle;
+    }
+
+    /** @return The keyboard back cue. */
+    Ptr<Muse> &GetKeyboardBack() {
+        return mKeyboardBack;
+    }
+
+    /** @return The keyboard key-enter cue. */
+    Ptr<Muse> &GetKeyboardKeyEnter() {
+        return mKeyboardKeyEnter;
+    }
+
+    /** @return The arena unlock cue. */
+    Ptr<Muse> &GetArenaUnlock() {
+        return mArenaUnlock;
+    }
+
+    /** @return The duel lay-pattern cue. */
+    Ptr<Muse> &GetDuelLayPattern() {
+        return mDuelLayPattern;
+    }
+
+    /** @return The duel catch-pattern cue. */
+    Ptr<Muse> &GetDuelCatchPattern() {
+        return mDuelCatchPattern;
+    }
+
+    /** @return The duel nice cue. */
+    Ptr<Muse> &GetDuelNice() {
+        return mDuelNice;
+    }
+
+    /** @return The duel you-got-it cue. */
+    Ptr<Muse> &GetDuelYouGotIt() {
+        return mDuelYouGotIt;
+    }
+
+    /** @return The duel almost cue. */
+    Ptr<Muse> &GetDuelAlmost() {
+        return mDuelAlmost;
+    }
+
+    /** @return The duel one-letter cue. */
+    Ptr<Muse> &GetDuelOneLetter() {
+        return mDuelOneLetter;
+    }
+
+    /** @return The duel aww cue. */
+    Ptr<Muse> &GetDuelAww() {
+        return mDuelAww;
+    }
+
+    /** @return The duel perfect cue. */
+    Ptr<Muse> &GetDuelPerfect() {
+        return mDuelPerfect;
+    }
+
+    /** @return The duel yeah cue. */
+    Ptr<Muse> &GetDuelYeah() {
+        return mDuelYeah;
+    }
+
+    /** @return The decrypt cue. */
+    Ptr<Muse> &GetDecrypt() {
+        return mDecrypt;
+    }
+
+    /** @return The text cue. */
+    Ptr<Muse> &GetText() {
+        return mText;
+    }
+
+    /** @return The duel game-tie cue. */
+    Ptr<Muse> &GetDuelGameTie() {
+        return mDuelGameTie;
+    }
+
+    /** @return The duel green-wins cue. */
+    Ptr<Muse> &GetDuelGreenWins() {
+        return mDuelGreenWins;
+    }
+
+    /** @return The duel purple-wins cue. */
+    Ptr<Muse> &GetDuelPurpleWins() {
+        return mDuelPurpleWins;
+    }
+
+    /** @return The duel miss cue. */
+    Ptr<Muse> &GetDuelMiss() {
+        return mDuelMiss;
+    }
+
+    /** @return The duel miss-this cue. */
+    Ptr<Muse> &GetDuelMissThis() {
+        return mDuelMissThis;
+    }
+
+    /** @return The duel cheer cue. */
+    Ptr<Muse> &GetDuelCheer() {
+        return mDuelCheer;
+    }
+
+    /** @return The `ERASE1` cue. */
+    Ptr<Muse> &GetErase() {
+        return mErase;
+    }
+
+    /** @return The `ERASE2` cue. */
+    Ptr<Muse> &GetEraseSection() {
+        return mEraseSection;
+    }
+
+private:
     Ptr<Muse> mMiss;                          /*!< `MISS`. */
     Ptr<Muse> mUncatchable;                   /*!< `UNCATCHABLE`. */
     Ptr<Muse> mCheckpointCheer;               /*!< `CHECKPOINT_CHEER`. */
@@ -556,4 +884,4 @@ public:
  *
  * @ghidraAddress NTSC-U/C: 0x00440d58
  */
-extern FxMidi *TheFxMidi;
+extern std::unique_ptr<FxMidi> TheFxMidi;

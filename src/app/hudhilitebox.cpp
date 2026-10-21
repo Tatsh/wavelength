@@ -132,7 +132,7 @@ void HudHiliteBox::UnitToScreen(float *pfX0, float *pfY0, float *pfX1, float *pf
 void HudHiliteBox::SetBoxRect(float fX0, float fY0, float fX1, float fY1, float fDuration) {
     UnitToScreen(&fX0, &fY0, &fX1, &fY1);
     const float fWidth = fX1 - fX0;
-    const float fNow = TheGameDb->mSongTick;
+    const float fNow = TheGameDb->GetSongTick();
     const float fHeight = fY0 - fY1;
     if (!(mCornerSize.x + mCornerSize.x < fWidth)) {
         DebugNotify("too narrow.\n");
@@ -155,16 +155,16 @@ void HudHiliteBox::SetBoxRect(float fX0, float fY0, float fX1, float fY1, float 
 
 void HudHiliteBox::ShowBox(bool bShow) {
     const float fAlpha = bShow ? 1.0f : 0.0f;
-    if (fAlpha == mBoxFade.mY1) {
+    if (fAlpha == mBoxFade.GetY1()) {
         return;
     }
     mChanging |= kChangingBoxFade;
-    const float fNow = TheGameDb->mSongTick;
+    const float fNow = TheGameDb->GetSongTick();
     mBoxFade.Reset(mBoxFade.Interpolator::Eval(fNow), fAlpha, fNow, fNow + kBoxFadeTicks);
 }
 
 void HudHiliteBox::SetArrowTarget(float fX, float fY, float fAngle, float fDuration) {
-    const float fNow = TheGameDb->mSongTick;
+    const float fNow = TheGameDb->GetSongTick();
     float fUnused = 0.0f;
     UnitToScreen(&fX, &fY, &fUnused, &fUnused);
     const float fProgress = mArrowMove.Interpolator::Eval(fNow);
@@ -181,11 +181,11 @@ void HudHiliteBox::SetArrowTarget(float fX, float fY, float fAngle, float fDurat
 
 void HudHiliteBox::ShowArrow(bool bShow) {
     const float fAlpha = bShow ? 1.0f : 0.0f;
-    if (fAlpha == mArrowFade.mY1) {
+    if (fAlpha == mArrowFade.GetY1()) {
         return;
     }
     mChanging |= kChangingArrowFade;
-    const float fNow = TheGameDb->mSongTick;
+    const float fNow = TheGameDb->GetSongTick();
     mArrowFade.Reset(mArrowFade.Interpolator::Eval(fNow), fAlpha, fNow, fNow + kArrowFadeTicks);
 }
 
@@ -197,7 +197,7 @@ void HudHiliteBox::Update(float fTick) {
         const float fAlpha = mArrowFade.Interpolator::Eval(fTick);
         mArrowMat->SetAlpha(fAlpha);
         static_cast<RndDrawable *>(mArrow)->SetShowing(fAlpha != 0.0f);
-        if (mArrowFade.mX1 <= fTick) {
+        if (mArrowFade.GetX1() <= fTick) {
             mChanging &= ~kChangingArrowFade;
         }
     }
@@ -228,7 +228,7 @@ void HudHiliteBox::Update(float fTick) {
         pArrow->mDirty = 1; // Yes, the binary marks the transform before the last row is written.
         CopyRow(pArrow->mLocalXfm.mBasisZ, basis[kXfmRowBasisZ]);
 #pragma GCC diagnostic pop
-        if (mArrowMove.mX1 <= fTick) {
+        if (mArrowMove.GetX1() <= fTick) {
             mChanging &= ~kChangingArrowMove;
         }
     }
@@ -236,7 +236,7 @@ void HudHiliteBox::Update(float fTick) {
         const float fAlpha = mBoxFade.Interpolator::Eval(fTick);
         mBoxMat->SetAlpha(fAlpha);
         mBox->SetShowing(fAlpha != 0.0f);
-        if (mBoxFade.mX1 <= fTick) {
+        if (mBoxFade.GetX1() <= fTick) {
             mChanging &= ~kChangingBoxFade;
         }
     }

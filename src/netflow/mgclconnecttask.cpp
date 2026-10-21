@@ -27,15 +27,15 @@ void MGCLConnectTask::OnStart() {
     if (mServer != kServerGame) {
         (void)rtMgclInitConnectParams(&params);
         (void)rtMgclSetConnectParams(&params,
-                                     TheLobbyRT->mServerAddress.c_str(),
-                                     TheLobbyRT->mServerPort,
+                                     TheLobbyRT->GetServerAddress().c_str(),
+                                     TheLobbyRT->GetServerPort(),
                                      kLobbyServerWorld,
                                      OnConnect);
-        if (TheLobbyRT->mSecure != 0) {
+        if (TheLobbyRT->GetSecure() != 0) {
             (void)rtMgclGetServerKey(params.info.serverKey);
         }
     } else {
-        params.info = TheHostpadRT->mServerInfo;
+        params.info = TheHostpadRT->GetServerInfo();
         params.onConnect = OnConnect;
     }
     int nStatus;
@@ -56,7 +56,7 @@ void MGCLConnectTask::OnConnect(int nConnection, int nStatus) {
     (void)nConnection;
     sConnecting = 0;
     if (sTask != nullptr) {
-        TheHostpadRT->mMgclConnected = nStatus == 0;
+        TheHostpadRT->SetMgclConnected(nStatus == 0);
         sTask->Finish(nStatus == 0, LaunchpadAbortedMsg::kReasonServer);
     }
 }

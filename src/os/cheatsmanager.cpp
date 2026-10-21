@@ -1,5 +1,7 @@
 #include "os/cheatsmanager.h"
 
+#include <memory>
+
 #include "os/debug.h"
 #include "os/joypad.h"
 #include "os/system.h"
@@ -19,7 +21,7 @@ enum EntryNode { kEntryButtons = 0, kEntryAction = 1, kEntryMarksEntered = 2 };
 constexpr int kControllerValue = 1;
 
 // NTSC-U/C: 0x003b235c, PAL: 0x0043121c
-CheatsManager *gCheatsManager;
+std::unique_ptr<CheatsManager> gCheatsManager;
 
 } // namespace
 
@@ -136,14 +138,13 @@ int CheatsManager::IsCheatEntered() {
 }
 
 void CheatsManager::Init() {
-    gCheatsManager = new CheatsManager;
-    JoypadAddSink(gCheatsManager);
+    gCheatsManager = std::make_unique<CheatsManager>();
+    JoypadAddSink(gCheatsManager.get());
     LoadLongCheats(SystemConfig()->FindArray("long-cheats", true));
     ScriptFunction::Register(TestCmd, "test", nullptr);
 }
 
 void CheatsManager::Terminate() {
-    JoypadRemoveSink(gCheatsManager);
-    delete gCheatsManager;
-    gCheatsManager = nullptr;
+    JoypadRemoveSink(gCheatsManager.get());
+    gCheatsManager.reset();
 }

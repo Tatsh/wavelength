@@ -369,13 +369,13 @@ void GfxTunnel::LoadConfig(
     sLetterboxFov = DegreesToRadians(sLetterboxFov);
     FindConfigFloat(pConfig, pDefaults, "gem_rotate_period", &sGemRotatePeriod, true);
     FindConfigFloat(pConfig, pDefaults, "gem_hit_flash_size", &sGemHitFlashSize, true);
-    sGemHitFlashSize *= TheGfxManager.mScrollSpeed;
+    sGemHitFlashSize *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "gem_hit_flash_time", &sGemHitFlashGrowth, true);
-    sGemHitFlashGrowth = TheGfxManager.mScrollSpeed / sGemHitFlashGrowth;
+    sGemHitFlashGrowth = TheGfxManager.GetScrollSpeed() / sGemHitFlashGrowth;
     FindConfigFloat(pConfig, pDefaults, "gem_pitch_flash_size", &sGemPitchFlashSize, true);
-    sGemPitchFlashSize *= TheGfxManager.mScrollSpeed;
+    sGemPitchFlashSize *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "gem_pitch_flash_time", &sGemPitchFlashGrowth, true);
-    sGemPitchFlashGrowth = TheGfxManager.mScrollSpeed / sGemPitchFlashGrowth;
+    sGemPitchFlashGrowth = TheGfxManager.GetScrollSpeed() / sGemPitchFlashGrowth;
     FindConfigFloat(pConfig, pDefaults, "mesh_gem_scale", &sMeshGemScale, true);
     FindConfigFloat(pConfig, pDefaults, "track_capture_speed", &TnlFire::sCaptureSpeed, true);
     FindConfigFloat(
@@ -393,7 +393,7 @@ void GfxTunnel::LoadConfig(
     FindConfigBool(pConfig, pDefaults, "show_miss_gems", &sShowMissGems, true);
     FindConfigBool(pConfig, pDefaults, "use_slab", &sUseSlab, true);
     FindConfigFloat(pConfig, pDefaults, "slab_depth", &sSlabDepth, true);
-    sSlabDepth *= TheGfxManager.mScrollSpeed;
+    sSlabDepth *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "slab_angle", &sSlabAngle, true);
     sSlabAngle = DegreesToRadians(sSlabAngle);
     FindConfigInt(pConfig, pDefaults, "capture_max_chunks", &TnlFire::sMaxChunks, true);
@@ -422,7 +422,7 @@ void GfxTunnel::LoadConfig(
                       "autocapture_chunk_initial_velocity_max",
                       &TnlFire::sAutoCaptureVelocity[TnlFire::kRangeMax],
                       true);
-    const float flScrollSpeed = TheGfxManager.mScrollSpeed;
+    const float flScrollSpeed = TheGfxManager.GetScrollSpeed();
     ScaleVector(&TnlFire::sChunkForce, flScrollSpeed);
     ScaleVector(&TnlFire::sCaptureVelocity[TnlFire::kRangeMin], flScrollSpeed);
     ScaleVector(&TnlFire::sCaptureVelocity[TnlFire::kRangeMax], flScrollSpeed);
@@ -432,7 +432,7 @@ void GfxTunnel::LoadConfig(
     FindConfigBool(pConfig, pDefaults, "capture_chunks_lit", &TnlFire::sChunksLit, true);
     FindConfigFloat(
         pConfig, pDefaults, "capture_chunk_y_displace", &TnlFire::sChunkYDisplace, true);
-    TnlFire::sChunkYDisplace *= TheGfxManager.mScrollSpeed;
+    TnlFire::sChunkYDisplace *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "win_sequence_duration", &sWinSequenceDuration, true);
     FindConfigFloat(pConfig, pDefaults, "fade_to_black_duration", &sFadeToBlackDuration, true);
     FindConfigFloat(pConfig, pDefaults, "preview_cam_change_time", &sPreviewCamChangeTime, true);
@@ -443,7 +443,7 @@ void GfxTunnel::LoadConfig(
     FindConfigInt(pConfig, pDefaults, "tunnel_bars", &sTunnelBars, true);
     FindConfigInt(pConfig, pDefaults, "tunnel_low_res_bars", &sTunnelLowResBars, true);
     sTrackLightFade.Reset(
-        0.0f, TheGfxManager.mInvScrollSpeed, sTrackLightFade.mX0, sTrackLightFade.mX1);
+        0.0f, TheGfxManager.GetInvScrollSpeed(), sTrackLightFade.GetX0(), sTrackLightFade.GetX1());
 
     if (FindConfigArray(pConfig, pDefaults, "tunnel", &pShape, true)) {
         sInvertTunnel = 0;
@@ -465,13 +465,13 @@ void GfxTunnel::LoadConfig(
         }
         const char *pszStyle = pShape->Sym(i++);
 
-        const signed char nCheatShape = TheGfxManager.mTunnelShape;
+        const signed char nCheatShape = TheGfxManager.GetTunnelShape();
         const bool bFlipped = nCheatShape == kTunnelShapeFlipped;
         if (bFlipped) {
             sFlipTunnel = 1;
         }
         const bool bCheat = nCheatShape == kTunnelShapeCircular || bFlipped;
-        if ((bCheat && TheGameDb->mCommunity == GameDb::kCommunitySolo) ||
+        if ((bCheat && TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ||
             strcasecmp(pszStyle, "circular") == 0) {
             sShape.resize(0);
         } else if (strcasecmp(pszStyle, "continuous") == 0) {
@@ -499,21 +499,20 @@ void GfxTunnel::LoadConfig(
         pTunnel->SetShowPanels(sShowPanels);
         pTunnel->SetShowDividers(sShowDividers);
         pTunnel->SetShowActivator(sShowActivator);
-        pTunnel->BuildPanels(0, pTunnel->mArena->mCamPath);
+        pTunnel->BuildPanels(0, pTunnel->mArena->GetCamPath());
     }
-    delete pTunnel->mArms;
-    pTunnel->mArms = nullptr;
+    pTunnel->mArms.reset();
     DataArray *pArms;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         pArms = pDefaults->FindArray("duel_particle_arms", true);
     } else {
         pArms = pDefaults->FindArray(
-            FormatString("%s_arena_particle_arms", pTunnel->mArena->mName.c_str()), false);
+            FormatString("%s_arena_particle_arms", pTunnel->mArena->GetName().c_str()), false);
         if (pArms == nullptr) {
             pArms = pDefaults->FindArray("particle_arms", true);
         }
     }
-    pTunnel->mArms = new ParticleArms(pArms, pTunnel->mGeom);
+    pTunnel->mArms = std::make_unique<ParticleArms>(pArms, pTunnel->mGeom.get());
     if (nOption != 0) {
         TheTriggerMgr.Load(kTriggersFile, nullptr);
     }
@@ -540,31 +539,31 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
 
     mTransparentView = FindObject<RndView>("tnl transparent");
     mGridView = FindObject<RndView>("grid1.view");
-    if (mArena->mCamPath == nullptr) {
+    if (mArena->GetCamPath() == nullptr) {
         mArena->SetCamPath(FindObject<RndTransAnim>("tunnel path"));
     }
-    mSlowdown = new TnlSlowdownFX("slowdown_shell", this);
-    mWinShell = new TnlWinShell();
-    mBlurs = new TnlBlurs();
+    mSlowdown = std::make_unique<TnlSlowdownFX>("slowdown_shell", this);
+    mWinShell = std::make_unique<TnlWinShell>();
+    mBlurs = std::make_unique<TnlBlurs>();
     DataArray *pConfig = GetModeGfxConfig();
     DataArray *pDefaults = GetGfxConfig();
     LoadConfig(this, pConfig, pDefaults, mNumTracks, 0);
-    mSpotLights = new SpotLightFX();
-    mGemErase = new GemEraseFX(this);
+    mSpotLights = std::make_unique<SpotLightFX>();
+    mGemErase = std::make_unique<GemEraseFX>(this);
 
     for (int i = 0; i < mNumTracks; ++i) {
         mTracks[i].mIndex = i;
         mTracks[i].mInstrument = instruments[i];
         mTracks[i].mType = trackTypes[i];
-        if ((TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-             TheGameDb->mRuleSet == GameDb::kRuleSetRemix) &&
+        if ((TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+             TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) &&
             instruments[i] == GfxManager::kInstrumentDrum && mDefaultFocusTrack == -1) {
             mDefaultFocusTrack = static_cast<signed char>(i);
         }
     }
 
     // Yes, the binary multiplies and divides by the same number.
-    const float flMsPerTick = (*TheGfxManager.mMsPerTick * kTicksPerBeat) / kTicksPerBeat;
+    const float flMsPerTick = (*TheGfxManager.GetMsPerTick() * kTicksPerBeat) / kTicksPerBeat;
     SetFilterScale(FindObject<RndAnimatable>("realtime.view"), flMsPerTick);
     mGeom->SetMoveLength(kMoveLengthMs / flMsPerTick);
 
@@ -591,27 +590,27 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     (void)FindConfigArray(pConfig, pDefaults, "max_gems", &pMaxGems, true);
     // Yes, the binary compares the solo test with the local community, so it always reads the
     // first count.
-    const int nSolo = (TheGameDb->mCommunity == GameDb::kCommunitySolo) ? 1 : 0;
+    const int nSolo = (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ? 1 : 0;
     const int nMaxGems =
         pMaxGems->Int((nSolo == GameDb::kCommunityLocal) ? kMaxGemsLocalIndex : kMaxGemsIndex);
-    mArena->mView->SetShowing(1);
+    mArena->GetView()->SetShowing(1);
 
     RndParticleSys *pFlashSys = FindObject<RndParticleSys>("gem_flash.ps");
     mFlashes.resize(kNumFlashes);
     for (unsigned i = 0; i < mFlashes.size(); ++i) {
-        mFlashes[i] = new TnlFlashFX(pFlashSys);
+        mFlashes[i] = std::make_unique<TnlFlashFX>(pFlashSys);
     }
     mTrackFX.resize(mNumTracks);
     for (unsigned i = 0; i < mTrackFX.size(); ++i) {
-        mTrackFX[i] = new TnlTrackFX(static_cast<char>(i));
+        mTrackFX[i] = std::make_unique<TnlTrackFX>(static_cast<char>(i));
     }
     mCrippleFX.resize(TheGameDb->GetNumPlayers());
     for (unsigned i = 0; i < mCrippleFX.size(); ++i) {
-        mCrippleFX[i] = new TnlCripFX(static_cast<int>(i));
+        mCrippleFX[i] = std::make_unique<TnlCripFX>(static_cast<int>(i));
     }
     mGemCaps.resize((TheGameDb->GetNumPlayers() * kGemCapsPerPlayer) + kExtraGemCaps);
     for (unsigned i = 0; i < mGemCaps.size(); ++i) {
-        mGemCaps[i] = new TnlGemCapFX();
+        mGemCaps[i] = std::make_unique<TnlGemCapFX>();
     }
 
     mGemBurstViews.resize(kNumGemBursts);
@@ -622,8 +621,8 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     LoadViews(&mGemBurstViews[kGemBurstFree], "free_explode %d.view");
     LoadViews(&mGemBurstViews[kGemBurstBump], "bump_explode %d.view");
     LoadViews(&mGemBurstViews[kGemBurstCrip], "crip_explode %d.view");
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix ||
-        TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix ||
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mPlayerBurstViews.resize(TheGameDb->GetNumPlayers());
         for (unsigned i = 0; i < mPlayerBurstViews.size(); ++i) {
             String format(FormatString("gem explode %%d_%c.view",
@@ -646,17 +645,17 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
         pPlayer->SetCamSlide(pCamSlide);
         pPlayer->SetActivator(pActivator);
     }
-    BuildPanels(1, mArena->mCamPath);
+    BuildPanels(1, mArena->GetCamPath());
 
     char szName[kNameLength];
     for (int i = 0; i < kNumTrackFires; ++i) {
         sprintf(szName, "fire%d", i);
-        mFires.push_back(new TnlFire(szName, TnlFire::kChunkPlayer, this, true));
+        mFires.push_back(std::make_unique<TnlFire>(szName, TnlFire::kChunkPlayer, this, true));
     }
     for (int i = 0; i < kNumFreestyleFires; ++i) {
         sprintf(szName, "fire fs%d", i);
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-            mFires.push_back(new TnlFire(szName, kFreestyleFirePlayer, this, true));
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
+            mFires.push_back(std::make_unique<TnlFire>(szName, kFreestyleFirePlayer, this, true));
         } else {
             TnlFire::Disable(szName, mTransparentView);
         }
@@ -666,7 +665,7 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     FindObject<RndDrawable>("boundary_ring.mesh")->SetShowing(1);
     RndEnviron *pShown;
     RndEnviron *pHidden;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         pHidden = FindObject<RndEnviron>("tunnel multi.env");
         pShown = FindObject<RndEnviron>("tunnel solo.env");
         mTrackColorLight = FindObject<RndLight>("tunnel track color.lit");
@@ -685,17 +684,17 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     pShown->SetShowing(1);
     ScaleLights(pShown);
 
-    mGems = new TnlGems(this, nMaxGems, mNumTracks);
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
-        mGems->mHasFocusTrack = 1;
+    mGems = std::make_unique<TnlGems>(this, nMaxGems, mNumTracks);
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
+        mGems->SetHasFocusTrack(1);
     }
-    if (TheGfxManager.mMonkeyGems != 0) {
+    if (TheGfxManager.GetMonkeyGems() != 0) {
         mGemGroup = mGems->AddMeshGroups("monkey", nullptr, 0.0f);
     } else {
         mGemGroup = mGems->AddCompositeMeshGroups("gem_b", nullptr, 0.0f);
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix ||
-        TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix ||
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mPlayerGemGroups.resize(TheGameDb->GetNumPlayers());
         for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
             sprintf(szName, "gem_%c", TheGameDb->GetPlayerColor(i)[0]);
@@ -714,7 +713,7 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     mMissGemGroup = mGems->AddMeshGroups("gem_miss", nullptr, 0.0f);
     bool bRotateSlots = false;
     RndDrawable *pSlots;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mSlotGemGroup = mGems->AddMeshGroups("gem_duel_slot", nullptr, 0.0f);
         pSlots = FindObject<RndDrawable>("gem_duel_slot0.mm");
     } else {
@@ -773,13 +772,13 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     (void)FindObject<RndView>("tnl.view"); // Yes, the binary discards the view it finds.
     RndDrawable *pMisses = FindObject<RndDrawable>("gem_miss0.mm");
     mTransparentView->AddDraw(pSlots, pMisses);
-    if (TheGfxManager.mMonkeyGems != 0) {
+    if (TheGfxManager.GetMonkeyGems() != 0) {
         RndDrawable *pMonkeys = FindObject<RndDrawable>("monkey0.mm");
         FindObject<RndDrawable>("tnl opaque")->AddDraw(pMonkeys, nullptr);
     }
     mTrackGemGroups.resize(mNumTracks);
     UpdateTrackGemGroups();
-    if (TheGfxManager.mBlackPanels != 0) {
+    if (TheGfxManager.GetBlackPanels() != 0) {
         FindObject<RndMesh>("panel mat scale.mesh")->SetShowing(0);
     }
 
@@ -793,36 +792,37 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
             ++nLocalPlayers;
         }
         const char nOtherExcluded =
-            (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) ? -1 : mSlotGemGroup;
+            (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) ? -1 : mSlotGemGroup;
         TnlPlayer *pPlayer = new TnlPlayer(i,
                                            nCam,
                                            TheGameDb->GetPlayerColor(i),
                                            this,
-                                           mGeom,
+                                           mGeom.get(),
                                            nOption,
                                            mMissGemGroup,
                                            nOtherExcluded);
-        mPlayers.push_back(pPlayer);
+        mPlayers.emplace_back(pPlayer);
         pPlayer->LoadConfig(pConfig, pDefaults, this, 0, i == 0);
     }
-    mCamFX = new PlayerCamFX(nMainPlayer, mNumTracks, mArena->mUnlockIndex == kBossArena);
-    if (TheGameDb->mCommunity != GameDb::kCommunityLocal) {
+    mCamFX = std::make_unique<PlayerCamFX>(
+        nMainPlayer, mNumTracks, mArena->GetUnlockIndex() == kBossArena);
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityLocal) {
         mStreakGems.resize(mNumTracks);
         for (int i = 0; i < mNumTracks; ++i) {
-            mStreakGems[i] = new TnlStreakGemFX(i, nMainPlayer);
+            mStreakGems[i] = std::make_unique<TnlStreakGemFX>(i, nMainPlayer);
         }
     }
-    mDivider = new TnlDivider();
+    mDivider = std::make_unique<TnlDivider>();
     mSavedClearColor = TheRnd->mClearColor;
-    if (mArena->mEnviron != nullptr) {
-        TheRnd->SetClearColor(mArena->mEnviron->mFogColor);
+    if (mArena->GetEnviron() != nullptr) {
+        TheRnd->SetClearColor(mArena->GetEnviron()->mFogColor);
     }
     SetShowPanels(sShowPanels);
     SetShowDividers(sShowDividers);
     SetShowActivator(sShowActivator);
-    mGeom->mMinFirstBar = kLeadInBar;
+    mGeom->SetMinFirstBar(kLeadInBar);
     if (1.0f <= fSongTicks) {
-        mGeom->mEndBar = static_cast<int>(floorf(fSongTicks * mGeom->mBarsPerTick)) + 1;
+        mGeom->SetEndBar(static_cast<int>(floorf(fSongTicks * mGeom->GetBarsPerTick())) + 1);
     }
     mGeom->Poll(fStartTick, 0.0f);
     TheTriggerMgr.Load(kTriggersFile, TheGfxManager.FindPreload(kTriggersFile));
@@ -830,7 +830,7 @@ GfxTunnel::GfxTunnel(const std::vector<int> &instruments,
     ScriptFunction::Register(OnArenaDoneIn, "arena_done_in", this);
     ScriptFunction::Register(OnSetParticlePlayerColor, "set_particle_player_color", this);
     ScriptFunction::Register(OnGfxDebug, "gfx_debug", this);
-    ScaleHudGems(TheGfxManager.mScrollSpeed);
+    ScaleHudGems(TheGfxManager.GetScrollSpeed());
     timer.Stop(); // Yes, the binary never stops loadTimer.
 }
 
@@ -846,8 +846,8 @@ int GfxTunnel::BuildOuterCams() {
     // Yes, the field of view is the radians LoadConfig() left in sCameraFov, and the outer clip
     // distances are not scaled by the scroll speed.
     const float flFov = sCameraFov;
-    const float flFar = pTemplate->mFarPlane * TheGfxManager.mScrollSpeed;
-    const float flNear = pTemplate->mNearPlane * TheGfxManager.mScrollSpeed;
+    const float flFar = pTemplate->mFarPlane * TheGfxManager.GetScrollSpeed();
+    const float flNear = pTemplate->mNearPlane * TheGfxManager.GetScrollSpeed();
     const float flOuterFar = pOuterTemplate->mFarPlane;
     const float flOuterNear = pOuterTemplate->mNearPlane;
     Rect rect = pTemplate->mScreenRect;
@@ -902,7 +902,7 @@ int GfxTunnel::BuildOuterCams() {
         pOuterNear->mZRange = sTnlzZ;
         pOuterNear->SetShowing(1);
 
-        ScaleTransKeys(FormatString("tnl cam intro%d.tnm", n), TheGfxManager.mScrollSpeed);
+        ScaleTransKeys(FormatString("tnl cam intro%d.tnm", n), TheGfxManager.GetScrollSpeed());
     }
     return i;
 }
@@ -915,8 +915,8 @@ RndView *GfxTunnel::CreateMainView() {
     FindConfigVector2(pConfig, pDefaults, "tnlz_z", &sTnlzZ, true);
     RndCam *pCam = FindObject<RndCam>("tnl cam1");
     const float flFov = DegreesToRadians(sCameraFov);
-    const float flNear = pCam->mNearPlane * TheGfxManager.mScrollSpeed;
-    const float flFar = pCam->mFarPlane * TheGfxManager.mScrollSpeed;
+    const float flNear = pCam->mNearPlane * TheGfxManager.GetScrollSpeed();
+    const float flFar = pCam->mFarPlane * TheGfxManager.GetScrollSpeed();
     Rect rect = pCam->mScreenRect;
     RndCam *pCamZ = FindObject<RndCam>("tnl cam1z");
     RndView *pLocal = FindObject<RndView>("tnl local1.view");
@@ -960,8 +960,8 @@ void GfxTunnel::LoadViews(std::vector<RndView *> *pViews, const char *pszFormat)
 
 void GfxTunnel::LoadTrackColors() {
     const char *pszSuffix;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-        TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         pszSuffix = "";
     } else {
         pszSuffix = " multi";
@@ -998,7 +998,7 @@ void GfxTunnel::LoadTrackColors() {
         mInstrumentColors[i].a = 1.0f;
     }
     mTrackColors.resize(mNumTracks);
-    if (TheGfxManager.mBlackPanels == 0) {
+    if (TheGfxManager.GetBlackPanels() == 0) {
         for (int i = 0; i < mNumTracks; ++i) {
             mTrackColors[i] = mInstrumentColors[GetTrackInstrument(i)];
         }
@@ -1015,43 +1015,27 @@ GfxTunnel::~GfxTunnel() {
     ScriptFunction::Unregister(OnArenaDoneIn);
     ScriptFunction::Unregister(OnBlendToPath);
     TheRnd->SetClearColor(mSavedClearColor);
-    delete mCamFX;
+    // The resets preserve the deletion order of the binary, not the member order.
+    mCamFX.reset();
     mOuterCams.clear();
     mTrackColors.clear();
-    delete mGems;
-    for (auto it = mFlashes.begin(); it != mFlashes.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = mGemCaps.begin(); it != mGemCaps.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = mStreakGems.begin(); it != mStreakGems.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = mCrippleFX.begin(); it != mCrippleFX.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = mTrackFX.begin(); it != mTrackFX.end(); ++it) {
-        delete *it;
-    }
-    delete mWinShell;
-    delete mGemErase;
-    delete mSpotLights;
-    delete mSlowdown;
-    delete mBlurs;
-    for (auto it = mFires.begin(); it != mFires.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = mPanels.begin(); it != mPanels.end(); ++it) {
-        delete *it;
-    }
+    mGems.reset();
+    mFlashes.clear();
+    mGemCaps.clear();
+    mStreakGems.clear();
+    mCrippleFX.clear();
+    mTrackFX.clear();
+    mWinShell.reset();
+    mGemErase.reset();
+    mSpotLights.reset();
+    mSlowdown.reset();
+    mBlurs.reset();
+    mFires.clear();
+    mPlayers.clear();
     mPanels.clear();
-    delete mDivider;
-    delete mArms;
-    delete mGeom;
+    mDivider.reset();
+    mArms.reset();
+    mGeom.reset();
 }
 
 void GfxTunnel::UpdateTrackGemGroups() {
@@ -1061,7 +1045,7 @@ void GfxTunnel::UpdateTrackGemGroups() {
 }
 
 void GfxTunnel::SetShowPanels(int bShow) {
-    mGeom->mShowPanels = bShow;
+    mGeom->SetShowPanels(bShow);
 }
 
 void GfxTunnel::SetShowDividers(int bShow) {
@@ -1088,7 +1072,6 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
 
     auto panel = mPanels.begin();
     while (panel != mPanels.end()) {
-        delete *panel;
         panel = mPanels.erase(panel);
     }
 
@@ -1116,13 +1099,13 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
         }
     }
 
-    if (sInvertTunnel != 0 && TheGfxManager.mTunnelShape != kTunnelShapeCircular) {
+    if (sInvertTunnel != 0 && TheGfxManager.GetTunnelShape() != kTunnelShapeCircular) {
         for (int i = 0, j = mNumTracks - 1; i < j; ++i, --j) {
             std::swap(sSegments[i].first, sSegments[j].second);
             std::swap(sSegments[i].second, sSegments[j].first);
         }
     }
-    if (sFlipTunnel != 0 && TheGfxManager.mTunnelShape != kTunnelShapeCircular) {
+    if (sFlipTunnel != 0 && TheGfxManager.GetTunnelShape() != kTunnelShapeCircular) {
         for (int i = 0; i < mNumTracks; ++i) {
             sSegments[i].first.y = -sSegments[i].first.y;
             sSegments[i].second.y = -sSegments[i].second.y;
@@ -1149,10 +1132,10 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
         }
     }
     for (int i = 0; i < mNumTracks; ++i) {
-        sSegments[i].first.x *= TheGfxManager.mScrollSpeed;
-        sSegments[i].first.y *= TheGfxManager.mScrollSpeed;
-        sSegments[i].second.x *= TheGfxManager.mScrollSpeed;
-        sSegments[i].second.y *= TheGfxManager.mScrollSpeed;
+        sSegments[i].first.x *= TheGfxManager.GetScrollSpeed();
+        sSegments[i].first.y *= TheGfxManager.GetScrollSpeed();
+        sSegments[i].second.x *= TheGfxManager.GetScrollSpeed();
+        sSegments[i].second.y *= TheGfxManager.GetScrollSpeed();
     }
 
     const Segment &left = sSegments[(mNumTracks - 1) / 2];
@@ -1177,15 +1160,15 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
         mGeom->SetPanelMat(FindObject<RndMat>(FormatString("panel intro %d.mat", i + 1)), i);
     }
     const char *pszSuffix;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-        TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         pszSuffix = "";
     } else {
         pszSuffix = " multi";
     }
     float flSlabDepth = sSlabDepth;
-    if (TheGfxManager.mTunnelShape == kTunnelShapeFlipped &&
-        TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGfxManager.GetTunnelShape() == kTunnelShapeFlipped &&
+        TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         flSlabDepth += flSlabDepth;
     }
     RndMat *pBassMat = FindObject<RndMat>(FormatString("panel mat bass%s.mat", pszSuffix));
@@ -1203,8 +1186,8 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
                       pBassMat,
                       pBassAnim);
     if (bResetPanels != 0) {
-        for (int nTrack = 0; nTrack < mGeom->mNumTracks; ++nTrack) {
-            for (int nBar = 0; nBar < mGeom->mNumBars; ++nBar) {
+        for (int nTrack = 0; nTrack < mGeom->GetNumTracks(); ++nTrack) {
+            for (int nBar = 0; nBar < mGeom->GetNumBars(); ++nBar) {
                 mGeom->SetPanelState(nTrack, nBar, 1, nullptr, 0, true, nullptr);
             }
         }
@@ -1216,15 +1199,15 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
     const float flWidth = sqrtf((width.x * width.x) + (width.y * width.y));
     sPanelWidth = flWidth;
     const float flChunkSize = flWidth * kChunkWidths;
-    const Vector3 chunkScale{flChunkSize, flChunkSize, TheGfxManager.mScrollSpeed};
+    const Vector3 chunkScale{flChunkSize, flChunkSize, TheGfxManager.GetScrollSpeed()};
     TnlFire::sPanelSize = flChunkSize;
     for (auto it = TnlFire::sChunkScales.begin(); it != TnlFire::sChunkScales.end(); ++it) {
         *it = chunkScale;
     }
-    LayoutDividers(&sSegments, TheGfxManager.mScrollSpeed);
+    LayoutDividers(&sSegments, TheGfxManager.GetScrollSpeed());
 
     const float flPanelSize = TnlFire::sPanelSize;
-    const float flScrollSpeed = TheGfxManager.mScrollSpeed;
+    const float flScrollSpeed = TheGfxManager.GetScrollSpeed();
     sBurstScale.z = flScrollSpeed;
     TnlGrid::sQuarterScale.x = sGridQuarterScale.x * flPanelSize;
     TnlGrid::sQuarterScale.z = sGridQuarterScale.z * flPanelSize;
@@ -1239,7 +1222,7 @@ void GfxTunnel::BuildPanels(int bResetPanels, RndTransAnim *pCamPath) {
 bool GfxTunnel::HasActiveBar(int nTrack, float flTick) {
     bool bActive = false;
     int bFound;
-    const auto bar = mTracks[nTrack].FindBar(flTick, TheGameDb->mSongTick, &bFound);
+    const auto bar = mTracks[nTrack].FindBar(flTick, TheGameDb->GetSongTick(), &bFound);
     if (bFound != 0 && bar->mOwner < 0) {
         bActive = bar->mInSong != 0;
     }
@@ -1263,7 +1246,8 @@ void GfxTunnel::CollectGemTicks(std::vector<float> *pTicks,
     }
     std::list<BarData> &bars = mTracks[nTrack].mBars;
     const float flFirstTick =
-        static_cast<float>(static_cast<int>(floorf(flFromTick * mGeom->mBarsPerTick))) * kBarTicks;
+        static_cast<float>(static_cast<int>(floorf(flFromTick * mGeom->GetBarsPerTick()))) *
+        kBarTicks;
     float flNextTick = flFirstTick;
     for (auto it = bars.begin(); it != bars.end(); ++it) {
         // Yes, the binary tests each bar against the first bar, not against flNextTick.
@@ -1342,7 +1326,7 @@ void GfxTunnel::StartFire(int nPlayer,
         }
         const float flFireTick = (*it)->StartTick(nPlayer);
         if (flFireTick < flOldestTick) {
-            pOldest = *it;
+            pOldest = it->get();
             flOldestTick = flFireTick;
         }
     }
@@ -1377,7 +1361,7 @@ void GfxTunnel::SetTrackInstrument(int nTrack, int nInstrument) {
     UpdateTrackGemGroups();
     const Color *pColor = &mInstrumentColors[nInstrument];
     mGeom->SetTrackColor(nTrack, pColor);
-    if (TheGfxManager.mBlackPanels == 0) {
+    if (TheGfxManager.GetBlackPanels() == 0) {
         mTrackColors[nTrack] = *pColor;
     }
 }
@@ -1387,23 +1371,23 @@ int GfxTunnel::GetTrackType(int nTrack) {
 }
 
 int GfxTunnel::GetPlayerTrack(int nPlayer) {
-    return mGeom->GetPlayer(nPlayer)->mTrack;
+    return mGeom->GetPlayer(nPlayer)->GetTrack();
 }
 
 bool GfxTunnel::IsActivatorIdle(int nPlayer) {
-    return mPlayers[nPlayer]->mActivator.mPlace.mY1 == 0.0f;
+    return mPlayers[nPlayer]->mActivator.mPlace.GetY1() == 0.0f;
 }
 
 bool GfxTunnel::IsTrackOpen(int nTrack) const {
-    return mTrackFX[nTrack]->mState != TnlTrackFX::kStateEnable;
+    return mTrackFX[nTrack]->GetState() != TnlTrackFX::kStateEnable;
 }
 
 bool GfxTunnel::IsTrackCaptured(int nTrack) const {
-    return mTrackFX[nTrack]->mState == TnlTrackFX::kStateCapture;
+    return mTrackFX[nTrack]->GetState() == TnlTrackFX::kStateCapture;
 }
 
 bool GfxTunnel::IsTrackCaptured(char nTrack) const {
-    return mTrackFX[nTrack]->mState == TnlTrackFX::kStateCapture;
+    return mTrackFX[nTrack]->GetState() == TnlTrackFX::kStateCapture;
 }
 
 const Vector3 *GfxTunnel::GetHudOffset() {
@@ -1411,11 +1395,11 @@ const Vector3 *GfxTunnel::GetHudOffset() {
 }
 
 float GfxTunnel::GetFreestyleConstraint() {
-    return mArena->mFreestyle;
+    return mArena->GetFreestyle();
 }
 
 void GfxTunnel::AddPanel(GfxTunnelPanel *pPanel, int bDeferred, float flRevealTick) {
-    mPanels.push_back(pPanel);
+    mPanels.emplace_back(pPanel);
     pPanel->SetDeferred(bDeferred, flRevealTick);
 }
 
@@ -1439,12 +1423,12 @@ GfxTunnel::TrackData::FindBar(float flTick, float flNow, int *pbFound) {
 }
 
 TnlPlayer *GfxTunnel::GetPlayer(int nPlayer) {
-    return mPlayers[nPlayer];
+    return mPlayers[nPlayer].get();
 }
 
 void GfxTunnel::Poll(float fTicks, float fTime) {
-    const float flTime = TheGameDb->mSongTime;
-    const float flTick = TheGameDb->mSongTick;
+    const float flTime = TheGameDb->GetSongTime();
+    const float flTick = TheGameDb->GetSongTick();
     if (mTrackPlayersDirty != 0) {
         mTrackPlayersDirty = 0;
         for (auto track = mTracks.begin(); track != mTracks.end(); ++track) {
@@ -1471,7 +1455,7 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
             const float flEndTick = cursor.mTargetEndTick;
             for (float flBarTick = cursor.mTargetStartTick; flBarTick < flEndTick;
                  flBarTick += kBarTicks) {
-                const int nBar = static_cast<int>(floorf(flBarTick * mGeom->mBarsPerTick));
+                const int nBar = static_cast<int>(floorf(flBarTick * mGeom->GetBarsPerTick()));
                 mGeom->SetPanelColor(nTrack, nBar, &cursor.mColor, false);
             }
         }
@@ -1479,8 +1463,8 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
 
     mChangedRange.Clear();
     for (auto it = mTrackFX.begin(); it != mTrackFX.end(); ++it) {
-        if ((*it)->Poll(this, mGeom)) {
-            const char nTrack = (*it)->mTrack;
+        if ((*it)->Poll(this, mGeom.get())) {
+            const char nTrack = (*it)->GetTrack();
             mChangedRange.Expand(nTrack, static_cast<char>(nTrack + 1), -kNeverTick, kNeverTick);
         }
     }
@@ -1517,7 +1501,6 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
         if ((*panel)->Update(this, flTick)) {
             ++panel;
         } else {
-            delete *panel;
             panel = mPanels.erase(panel);
         }
     }
@@ -1541,7 +1524,7 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
     if (mPathBlending != 0) {
         const float flBlend = mPathBlendCurve.Eval(flTime);
         mCamFX->SetBlend(flBlend);
-        if (flBlend == 0.0f && mPathBlendCurve.mX1 < flTime) {
+        if (flBlend == 0.0f && mPathBlendCurve.GetX1() < flTime) {
             mCamFX->SetBlendAlgorithm(nullptr, 0.0f);
             mPathBlending = 0;
         }
@@ -1554,7 +1537,7 @@ void GfxTunnel::Poll(float fTicks, float fTime) {
     }
 
     if (mTrackColorLight != nullptr) {
-        const float flPosition = mGeom->GetPlayer(mTrackColorPlayer)->mPosition;
+        const float flPosition = mGeom->GetPlayer(mTrackColorPlayer)->GetPosition();
         const float flFloor = floorf(flPosition);
         const int nTrack = static_cast<int>(flFloor);
         const float flFraction = flPosition - flFloor;
@@ -1611,8 +1594,8 @@ void GfxTunnel::DrawBackground() {
         (*it)->Draw();
     }
     mDivider->Draw();
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-        TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         mGeom->DrawPanels();
     } else {
         mGeom->DrawPanelsMultiplayer();
@@ -1625,7 +1608,7 @@ void GfxTunnel::DrawTracks() {
     static_cast<RndDrawable *>(mTransparentView)->Draw();
     mSpotLights->Draw();
     for (auto it = mGemCaps.begin(); it != mGemCaps.end(); ++it) {
-        (void)(*it)->Draw(mGeom); // Yes, the binary discards whether the burst ended.
+        (void)(*it)->Draw(mGeom.get()); // Yes, the binary discards whether the burst ended.
     }
     for (auto it = mStreakGems.begin(); it != mStreakGems.end(); ++it) {
         (*it)->Draw();
@@ -1633,7 +1616,7 @@ void GfxTunnel::DrawTracks() {
     for (auto it = mCrippleFX.begin(); it != mCrippleFX.end(); ++it) {
         (*it)->Draw(this);
     }
-    static_cast<RndDrawable *>(Ship::sBeamView)->Draw();
+    static_cast<RndDrawable *>(Ship::GetBeamView())->Draw();
     TnlCripFX::DrawParticles();
 }
 
@@ -1649,14 +1632,14 @@ void GfxTunnel::DrawForeground() {
     for (auto track = mTracks.begin(); track != mTracks.end(); ++track) {
         for (auto it = track->mPlayers.end(); it != track->mPlayers.begin();) {
             --it;
-            TheGfxManager.mShips[*it]->DrawArrow();
+            TheGfxManager.GetShip(*it)->DrawArrow();
         }
     }
     const float flOpacity = mFadeCurve.Eval(SystemMs());
     if (flOpacity != 0.0f) {
         mFadeMesh->mMat->SetAlpha(flOpacity);
         static_cast<RndDrawable *>(mFadeMesh)->Draw();
-        TheGfxManager.mVortexAfterViews = 1;
+        TheGfxManager.SetVortexAfterViews(1);
     }
     mSlowdown->Draw();
 }
@@ -1674,7 +1657,7 @@ void GfxTunnel::RefreshChangedRange() {
     for (auto it = mStreakGems.begin(); it != mStreakGems.end(); ++it) {
         (*it)->Refresh(this);
     }
-    mSpotLights->UpdateRange(mGeom, &mChangedRange);
+    mSpotLights->UpdateRange(mGeom.get(), &mChangedRange);
 }
 
 float GfxTunnel::PanelWidth() const {
@@ -1687,7 +1670,7 @@ float GfxTunnel::BurstSpinPeriod() {
 
 void GfxTunnel::ScaleLights(RndEnviron *pEnviron) {
     for (auto it = pEnviron->mLights.begin(); it != pEnviron->mLights.end(); ++it) {
-        const float flScale = TheGfxManager.mInvScrollSpeed;
+        const float flScale = TheGfxManager.GetInvScrollSpeed();
         const Color &diffuse = (*it)->mColor;
         const Color color{
             diffuse.r * flScale, diffuse.g * flScale, diffuse.b * flScale, diffuse.a * flScale};
@@ -1697,7 +1680,7 @@ void GfxTunnel::ScaleLights(RndEnviron *pEnviron) {
 
 void GfxTunnel::OnBlendToPath(DataArray *pCommand, void *pUserData) {
     GfxTunnel *pTunnel = static_cast<GfxTunnel *>(pUserData);
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         return;
     }
     const float flLength = pCommand->Float(1);
@@ -1711,8 +1694,8 @@ void GfxTunnel::OnBlendToPath(DataArray *pCommand, void *pUserData) {
         bLoop = 1;
         flLoopEnd = pCommand->Float(5);
     }
-    const int bUseTime = (TheTriggerMgr.mClock == TriggerMgr::kClockReal) ? 1 : 0;
-    const float flStart = (bUseTime != 0) ? TheGameDb->mSongTime : TheGameDb->mSongTick;
+    const int bUseTime = (TheTriggerMgr.GetClock() == TriggerMgr::kClockReal) ? 1 : 0;
+    const float flStart = (bUseTime != 0) ? TheGameDb->GetSongTime() : TheGameDb->GetSongTick();
     pTunnel->mGeom->BlendPath(
         pAnim, bLoop, bUseTime, flLength, flStart, flFrame, flLoopStart, flLoopEnd);
 }
@@ -1724,11 +1707,11 @@ void GfxTunnel::OnArenaDoneIn(DataArray *pCommand, void *pUserData) {
         const float flValue = pCommand->Float(1);
         const char *pszCommand = pCommand->Sym(2);
         if (strcmp(pszCommand, "unlock") == 0) {
-            pTunnel->mUnlockDoneTicks = flValue / *TheGfxManager.mMsPerTick;
+            pTunnel->mUnlockDoneTicks = flValue / *TheGfxManager.GetMsPerTick();
             return;
         }
         if (strcmp(pszCommand, "boss") == 0) {
-            pTunnel->mBossDoneTicks = flValue / *TheGfxManager.mMsPerTick;
+            pTunnel->mBossDoneTicks = flValue / *TheGfxManager.GetMsPerTick();
             return;
         }
         if (strcmp(pszCommand, "all") == 0) {
@@ -1746,7 +1729,7 @@ void GfxTunnel::OnSetParticlePlayerColor(DataArray *pCommand, [[maybe_unused]] v
     // Yes, the binary does not test the particle system for null.
     RndParticleSys *pSys = FindObject<RndParticleSys>(pCommand->Sym(1));
     DataArray *pColor =
-        pCommand->Array(TheGameDb->GetPlayerSlot(TheTriggerMgr.mPlayer) + kFirstSlotColorArg);
+        pCommand->Array(TheGameDb->GetPlayerSlot(TheTriggerMgr.GetPlayer()) + kFirstSlotColorArg);
     Color color{pColor->Float(0), pColor->Float(1), pColor->Float(2), 1.0f};
     color.a = pCommand->Float(kStartAlphaArg);
     pSys->mStartColorLow = color;
@@ -1761,7 +1744,7 @@ void GfxTunnel::OnGfxDebug([[maybe_unused]] DataArray *pCommand, void *pUserData
 }
 
 void GfxTunnel::PrintBars(int nPlayer) {
-    std::list<BarData> &bars = mTracks[mGeom->GetPlayer(nPlayer)->mTrack].mBars;
+    std::list<BarData> &bars = mTracks[mGeom->GetPlayer(nPlayer)->GetTrack()].mBars;
     for (auto it = bars.begin(); it != bars.end(); ++it) {
         DebugPrint("--bar from %f to %f (bar %d): enabled? %c  owner: %d\n",
                    static_cast<double>(it->mTick),
@@ -1797,7 +1780,7 @@ void GfxTunnel::SetStreakMultiplier(int nPlayer,
 void GfxTunnel::SetMultiplierEndTick(int nPlayer, float flTick) {
     TnlPlayer *pPlayer = GetPlayer(nPlayer);
     if (pPlayer != nullptr) {
-        pPlayer->mCursor.StartMultiplier(mGems, flTick);
+        pPlayer->mCursor.StartMultiplier(mGems.get(), flTick);
     }
 }
 
@@ -1807,7 +1790,7 @@ void GfxTunnel::ShowSlowdown([[maybe_unused]] int nPlayer,
                              float flStopTick) {
     mSlowdown->Start(flStartTick, flEndTick, flStopTick);
     mBlurs->Insert("slowdown_end", flEndTick, flStopTick);
-    mBlurs->Insert("slowdown_start", TheGameDb->mSongTick, flStartTick);
+    mBlurs->Insert("slowdown_start", TheGameDb->GetSongTick(), flStartTick);
 }
 
 void GfxTunnel::ShowCripple(int nAttacker, int nVictim) {
@@ -1843,10 +1826,10 @@ void GfxTunnel::SetPlayerTrack(int nPlayer,
     pPlayer->mFreestyle.SetActive(false, 0, false);
     mGeom->GetPlayer(pPlayer->mPlayer)->SetTrack(static_cast<char>(nTrack));
     pPlayer->mGrid.SetTrack(nTrack);
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix && TheGameDb->IsLocalPlayer(nPlayer)) {
-        mGems->mFocusTrack = static_cast<char>(nTrack);
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix && TheGameDb->IsLocalPlayer(nPlayer)) {
+        mGems->SetFocusTrack(static_cast<char>(nTrack));
     } else if (mDefaultFocusTrack >= 0) {
-        mGems->mFocusTrack = -1; // Yes, the binary clears the focus track when a default is set.
+        mGems->SetFocusTrack(-1); // Yes, the binary clears the focus track when a default is set.
     }
 }
 
@@ -1854,7 +1837,7 @@ void GfxTunnel::SetPlayerFreestyle(int nPlayer, bool bVictory, bool bQuick) {
     GetPlayer(nPlayer)->mFreestyle.SetActive(true, bVictory, bQuick);
     mGeom->GetPlayer(nPlayer)->LeaveTrack();
     if (mDefaultFocusTrack >= 0) {
-        mGems->mFocusTrack = mDefaultFocusTrack;
+        mGems->SetFocusTrack(mDefaultFocusTrack);
     }
 }
 
@@ -1887,7 +1870,7 @@ void GfxTunnel::SetTrackPlayers(int nTrack, int nPlayers, const int *pPlayers) {
 
 void GfxTunnel::PlaceGem(
     int nTrack, int nSlot, int nPlayer, float flTick, int bSlot, int nPowerup) {
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     if (kLateGemTicks < flNow - flTick) {
         return;
     }
@@ -1899,22 +1882,22 @@ void GfxTunnel::PlaceGem(
     if (bSlot != 0) {
         nType = mSlotGemGroup;
     } else if (nPlayer >= 0) {
-        const int nRuleSet = TheGameDb->mRuleSet;
+        const int nRuleSet = TheGameDb->GetRuleSet();
         if (nRuleSet == GameDb::kRuleSetDuel ||
             (nRuleSet == GameDb::kRuleSetRemix && GetTrackType(nTrack) == Song::kTrackTypePitch)) {
             nType = mPlayerGemGroups[nPlayer];
             bTellCursors = true;
         } else {
             nType = mTrackGemGroups[nTrack];
-            if (TheGameDb->mRuleSet == GameDb::kRuleSetGame &&
-                TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+            if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame &&
+                TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
                 nColor = static_cast<char>(TheGameDb->GetPlayerSlot(nPlayer));
             }
             bFlash = 1;
             if (mCaptureReveals != 0) {
-                TnlTrackFX *pTrackFX = mTrackFX[nTrack];
-                if (pTrackFX->mState == TnlTrackFX::kStateCapture) {
-                    flShowTick = pTrackFX->CaptureEndTime() / *TheGfxManager.mMsPerTick;
+                TnlTrackFX *pTrackFX = mTrackFX[nTrack].get();
+                if (pTrackFX->GetState() == TnlTrackFX::kStateCapture) {
+                    flShowTick = pTrackFX->CaptureEndTime() / *TheGfxManager.GetMsPerTick();
                 } else {
                     flShowTick = flNow + ((flTick - flNow) / TnlFire::sCaptureSpeed);
                 }
@@ -1927,7 +1910,7 @@ void GfxTunnel::PlaceGem(
         const float flLateral =
             (static_cast<float>(nSlot) * TnlGem::kSlotWidth) + TnlGem::kSlotOffset;
         nType = mPowerupGemGroups[nPowerup - 1];
-        mSpotLights->AddLight(static_cast<char>(nTrack), mGeom, flTick, flLateral);
+        mSpotLights->AddLight(static_cast<char>(nTrack), mGeom.get(), flTick, flLateral);
         bTellCursors = true;
     }
     mGems->AddGem(static_cast<char>(nTrack),
@@ -1939,31 +1922,32 @@ void GfxTunnel::PlaceGem(
                   flShowTick);
     if (bTellCursors) {
         for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
-            (*it)->mCursor.OnGemAdded(static_cast<char>(nTrack), nType, mGems, flTick);
+            (*it)->mCursor.OnGemAdded(static_cast<char>(nTrack), nType, mGems.get(), flTick);
         }
     }
 }
 
 void GfxTunnel::RemoveGem(int nTrack, int nSlot, float flTick) {
     mGems->RemoveGem(static_cast<char>(nTrack), static_cast<char>(nSlot), flTick);
-    if (kCursorLeadTicks < flTick - TheGameDb->mSongTick) {
+    if (kCursorLeadTicks < flTick - TheGameDb->GetSongTick()) {
         for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
-            (*it)->mCursor.OnGemAdded(static_cast<char>(nTrack), -1, mGems, flTick);
+            (*it)->mCursor.OnGemAdded(static_cast<char>(nTrack), -1, mGems.get(), flTick);
         }
     }
 }
 
 void GfxTunnel::ClearGems(int nTrack, bool bErase, float flStartTick, float flEndTick) {
-    const float flTime = TheGameDb->mSongTime;
-    const float flNow = TheGameDb->mSongTick;
+    const float flTime = TheGameDb->GetSongTime();
+    const float flNow = TheGameDb->GetSongTick();
     if (bErase) {
-        for (auto it = mGems->Find(flStartTick); it != mGems->mGems.end() && it->mTick < flEndTick;
+        for (auto it = mGems->Find(flStartTick);
+             it != mGems->GetGemList().end() && it->mTick < flEndTick;
              ++it) {
             if (it->mTrack != nTrack) {
                 continue;
             }
             const float flEraseTime = flTime + ((it->mTick - flNow) * kEraseMsPerTick);
-            const float flRemoveTick = flEraseTime / *TheGfxManager.mMsPerTick;
+            const float flRemoveTick = flEraseTime / *TheGfxManager.GetMsPerTick();
             if ((it->mType & TnlGem::kTypeSprite) == 0) {
                 int nGemPlayer = static_cast<int>(mPlayerGemGroups.size()) - 1;
                 while (nGemPlayer >= 0 &&
@@ -1983,7 +1967,8 @@ void GfxTunnel::ClearGems(int nTrack, bool bErase, float flStartTick, float flEn
     }
     if (kCursorLeadTicks < flEndTick - flNow) {
         for (auto it = mPlayers.begin(); it != mPlayers.end(); ++it) {
-            (*it)->mCursor.OnTicksChanged(static_cast<char>(nTrack), mGems, flStartTick, flEndTick);
+            (*it)->mCursor.OnTicksChanged(
+                static_cast<char>(nTrack), mGems.get(), flStartTick, flEndTick);
         }
     }
 }
@@ -2016,7 +2001,7 @@ void GfxTunnel::ShowGemResult(
         (void)Flash(&xfm.mTranslation, sGemHitFlashSize, sGemHitFlashGrowth);
         pPlayer->mCursor.Pulse(flTick);
         const std::vector<RndView *> *pViews;
-        if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+        if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
             // The bursts of a duel take the colour of the other player.
             pViews = &mPlayerBurstViews[nPlayer ^ 1];
         } else {
@@ -2024,7 +2009,7 @@ void GfxTunnel::ShowGemResult(
         }
         // Yes, the binary discards whether a burst effect was free.
         (void)Burst(pViews, static_cast<char>(nTrack), false, flTick, flLateral);
-    } else if (sShowMissGems != 0 && TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
+    } else if (sShowMissGems != 0 && TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
         mGems->AddGem(static_cast<char>(nTrack),
                       mMissGemGroup,
                       static_cast<char>(nSlot),
@@ -2049,8 +2034,8 @@ void GfxTunnel::HitGem(int nPlayer, int nTrack, int nSlot, float flTick) {
 
 void GfxTunnel::SetFreestyle(int nPlayer, bool bPlaying, int nColumn) {
     GetPlayer(nPlayer)->mFreestyle.SetPlaying(bPlaying, nColumn);
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
-        mGems->mHasFocusTrack = bPlaying;
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
+        mGems->SetHasFocusTrack(bPlaying);
     }
 }
 
@@ -2060,19 +2045,19 @@ void GfxTunnel::ResetFreestyle(int nPlayer) {
 
 void GfxTunnel::ShowCapture(
     int nPlayer, int nTrack, int bAuto, bool bFreestyle, float flStartTick, float flEndTick) {
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         return;
     }
     TrackData &track = mTracks[nTrack];
     track.mCaptureStartTick = flStartTick;
     track.mCaptureEndTick = flEndTick;
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     if (bAuto != 0) {
         mTrackFX[nTrack]->Capture(this, flEndTick);
         return;
     }
     const Color *pColor;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         pColor = TheGfxManager.GetInstrumentColor(GetTrackInstrument(nTrack));
     } else {
         pColor = TheGfxManager.GetPlayerColor(nPlayer);
@@ -2092,8 +2077,8 @@ void GfxTunnel::ShowResult([[maybe_unused]] bool bWon,
                            [[maybe_unused]] int nPlayer,
                            bool bCampaignWin,
                            bool bUnlocked) {
-    const float flNow = TheGameDb->mSongTick;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    const float flNow = TheGameDb->GetSongTick();
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         StartFade(true);
         TheGfxManager.ShowHud(false);
         mIdle = (flNow != 0.0f) ? 1 : 0; // Yes, a duel goes idle at once unless the tick is 0.
@@ -2107,14 +2092,14 @@ void GfxTunnel::ShowResult([[maybe_unused]] bool bWon,
     }
     mResultDoneTick = flNow + flDoneTicks;
     if (bCampaignWin) {
-        mWinShell->Start(bUnlocked ? mArena->mUnlockIndex : TnlWinShell::kNoPath);
+        mWinShell->Start(bUnlocked ? mArena->GetUnlockIndex() : TnlWinShell::kNoPath);
     } else {
         TheGfxManager.ShowHud(false);
     }
 }
 
 void GfxTunnel::StartBossJourney() {
-    mBossJourneyDoneTick = TheGameDb->mSongTick + mBossDoneTicks;
+    mBossJourneyDoneTick = TheGameDb->GetSongTick() + mBossDoneTicks;
 }
 
 void GfxTunnel::ShowPhrase(int nPlayer,
@@ -2125,12 +2110,12 @@ void GfxTunnel::ShowPhrase(int nPlayer,
                            int nStyle,
                            [[maybe_unused]] bool bSlide) {
     TnlPlayer *pPlayer = GetPlayer(nPlayer);
-    if (TheGameDb->mCommunity != GameDb::kCommunitySolo &&
-        TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo &&
+        TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         mPanelColorsDirty = 1;
     }
     if (bPlayable && sShowSeeker != 0) {
-        pPlayer->mCursor.SetTarget(static_cast<char>(nTrack), mGems, flStartTick, flEndTick);
+        pPlayer->mCursor.SetTarget(static_cast<char>(nTrack), mGems.get(), flStartTick, flEndTick);
     } else {
         pPlayer->mCursor.Refresh(nStyle);
     }
@@ -2147,7 +2132,7 @@ void GfxTunnel::SetBar(int nTrack,
                        float flTicks) {
     TrackData &track = mTracks[nTrack];
     int bFound;
-    auto bar = track.FindBar(flTick, TheGameDb->mSongTick, &bFound);
+    auto bar = track.FindBar(flTick, TheGameDb->GetSongTick(), &bFound);
     if (kLeadInTick <= flTick && flTick + flTicks <= 0.0f) {
         nFlags |= kBarFlagBeforeSong;
     }
@@ -2158,10 +2143,10 @@ void GfxTunnel::SetBar(int nTrack,
     } else {
         bar = track.mBars.insert(bar, BarData{flTick, flTicks, bInSong, nOwner, nFlags});
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix || (!bInSong && kTwoBarTicks < flTick)) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix || (!bInSong && kTwoBarTicks < flTick)) {
         const float flSinceSection = mDivider->TicksSinceSection(flTick);
         if (flSinceSection < kBarTicks) {
-            const float flSongTicks = mArena->mSongTicks;
+            const float flSongTicks = mArena->GetSongTicks();
             if (flSongTicks != 0.0f && flSongTicks <= flTick) {
                 bar->mFlags |= kBarFlagNoReveal | kBarFlagCheckpoint | kBarFlagFinish;
             } else {
@@ -2184,7 +2169,7 @@ void GfxTunnel::ApplyBar(TrackData *pTrack,
     if (mCaptureReveals != 0) {
         bReveal = !bNow;
     }
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     int bWaitForTrack = 0;
     if (flNow < 0.0f) {
         bReveal = false;
@@ -2196,7 +2181,7 @@ void GfxTunnel::ApplyBar(TrackData *pTrack,
     if (pBar->mOwner < 0) {
         flRevealTick = 0.0f;
         bReveal = false;
-    } else if (mTrackFX[pTrack->mIndex]->mState == TnlTrackFX::kStateCapture) {
+    } else if (mTrackFX[pTrack->mIndex]->GetState() == TnlTrackFX::kStateCapture) {
         flRevealTick = flNow;
         bWaitForTrack = 1;
     } else {
@@ -2215,7 +2200,7 @@ void GfxTunnel::ApplyBar(TrackData *pTrack,
 }
 
 void GfxTunnel::DimBar(int nTrack, float flTick) {
-    const int nBar = static_cast<int>(floorf(flTick * mGeom->mBarsPerTick));
+    const int nBar = static_cast<int>(floorf(flTick * mGeom->GetBarsPerTick()));
     const Color *pColor = mGeom->GetPanelColor(nTrack, nBar);
     if (pColor != nullptr) {
         const Color dimmed{pColor->r * sDuelFailDarkening,
@@ -2253,12 +2238,12 @@ void GfxTunnel::SetZoom(float flZoom) {
 }
 
 void GfxTunnel::BlendToArenaPath(bool bArena) {
-    const float flTime = TheGameDb->mSongTime;
+    const float flTime = TheGameDb->GetSongTime();
     mPathBlendCurve.Reset(mPathBlendCurve.Eval(flTime),
                           bArena ? kArenaBlendOn : kArenaBlendOff,
                           flTime,
                           flTime + sPreviewCamChangeTime);
-    mCamFX->SetBlendAlgorithm(kArenaBlendAlgorithm, mPathBlendCurve.mY0);
+    mCamFX->SetBlendAlgorithm(kArenaBlendAlgorithm, mPathBlendCurve.GetY0());
     mPathBlending = 1;
 }
 
@@ -2297,7 +2282,7 @@ void GfxTunnel::ClearAll() {
         it->mCaptureStartTick = TrackData::kNoTick;
         it->mBars.clear();
     }
-    mGeom->SetPath(mArena->mCamPath);
+    mGeom->SetPath(mArena->GetCamPath());
     mArms->LoadConfig(GetGfxConfig()->FindArray("particle_arms", true));
     for (auto it = mTrackFX.begin(); it != mTrackFX.end(); ++it) {
         (*it)->Stop(this);
@@ -2305,7 +2290,6 @@ void GfxTunnel::ClearAll() {
     auto panel = mPanels.begin();
     while (panel != mPanels.end()) {
         (*panel)->Refresh();
-        delete *panel;
         panel = mPanels.erase(panel);
     }
     for (auto it = mGemCaps.begin(); it != mGemCaps.end(); ++it) {
@@ -2326,7 +2310,7 @@ void GfxTunnel::ClearAll() {
     mSpotLights->Clear();
     mGemErase->Clear();
     mGeom->ResetPanels();
-    mGeom->Poll(TheGameDb->mSongTick, 0.0f);
+    mGeom->Poll(TheGameDb->GetSongTick(), 0.0f);
     mPanelColorsDirty = 1;
     mTrackPlayersDirty = 1;
 }

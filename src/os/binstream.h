@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "math/rand.h"
@@ -89,7 +90,6 @@ public:
      */
     void DisableEncryption();
 
-protected:
     /**
      * Read bytes as they are stored.
      *
@@ -114,7 +114,6 @@ protected:
      */
     virtual void SeekImpl(int nOffset, SeekType eFrom) = 0;
 
-public:
 #else
     /**
      * Release the stream.
@@ -243,8 +242,7 @@ public:
 private:
     int mLittleEndian; /*!< Whether values are stored in the console's byte order. */
 #ifdef VIDEO_STANDARD_PAL
-    Rand *mCrypto =
-        nullptr; /*!< The generator of the encryption, or null while encryption is off. */
+    std::unique_ptr<Rand> mCrypto; /*!< The generator of the encryption, or null while off. */
 #endif
 };
 

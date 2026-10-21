@@ -29,11 +29,11 @@ bool ReadOnlySaveScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool ReadOnlySaveScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
     const char *pszNext;
-    if (strcmp(pMsg->mComponent->mName, "no") == 0) {
+    if (strcmp(pMsg->GetComponent()->GetName(), "no") == 0) {
         pszNext = kGuestLaunchpad;
     } else {
         pszNext = "save_remix";

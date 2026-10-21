@@ -86,7 +86,7 @@ TnlTrackFX::TnlTrackFX(char nTrack)
       mFallCurve(0.0f, 0.0f, 0.0f, 1.0f, kCurvePower) {
     if (nTrack == 0) {
         sSpew = FindObject<RndParticleSys>("autocapture spew.part");
-        ScaleParticles(sSpew, TheGfxManager.mScrollSpeed);
+        ScaleParticles(sSpew, TheGfxManager.GetScrollSpeed());
         sSpewFrame = 0.0f;
         sSpew->SetEmitFrame(sSpewFrame);
         sSpew->FreeAllParticles();
@@ -95,8 +95,9 @@ TnlTrackFX::TnlTrackFX(char nTrack)
     if (nTrack == 0) {
         mMat = pBase;
     } else {
-        mMat = dynamic_cast<RndMat *>(
-            TheManager.Create(RndMat::sClassName, FormatString("panel enable trk %d.mat", nTrack)));
+        mMatCopy.reset(dynamic_cast<RndMat *>(TheManager.Create(
+            RndMat::sClassName, FormatString("panel enable trk %d.mat", nTrack))));
+        mMat = mMatCopy.get();
         mMat->Copy(pBase, 0);
     }
     mGemTicks.reserve(kReservedGemTicks);
@@ -105,9 +106,6 @@ TnlTrackFX::TnlTrackFX(char nTrack)
 TnlTrackFX::~TnlTrackFX() {
     sSpew = nullptr;
     sSpewFrame = 0.0f;
-    if ((mTrack != 0) && (mMat != nullptr)) {
-        delete mMat;
-    }
 }
 
 void TnlTrackFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *, int) {
@@ -127,7 +125,7 @@ void TnlTrackFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel 
     TnlStreakGemFX::sBlinkRate = flRate;
 
     FindConfigVector2(pConfig, pDefaults, "autocapture_flare_size", &sFlareSize, true);
-    const float flScrollSpeed = TheGfxManager.mScrollSpeed;
+    const float flScrollSpeed = TheGfxManager.GetScrollSpeed();
     sFlareSize.y *= flScrollSpeed;
     sFlareSize.x *= flScrollSpeed;
 
@@ -137,8 +135,8 @@ void TnlTrackFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel 
     sCaptureTimes[1] = times.y;
     FindConfigFloat(pConfig, pDefaults, "autocapture_offset_height", &sCaptureHeight, true);
     FindConfigFloat(pConfig, pDefaults, "track_enable_offset_height", &sEnableHeight, true);
-    sCaptureHeight *= TheGfxManager.mScrollSpeed;
-    sEnableHeight *= TheGfxManager.mScrollSpeed;
+    sCaptureHeight *= TheGfxManager.GetScrollSpeed();
+    sEnableHeight *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "autocapture_burst_tick", &sCaptureSpewTicks, true);
     FindConfigFloat(pConfig, pDefaults, "autocapture_cam_jiggle", &sCaptureCamJiggle, true);
     FindConfigFloat(pConfig, pDefaults, "autocapture_track_brightness", &sCaptureBrightness, true);
@@ -160,8 +158,8 @@ void TnlTrackFX::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel 
     FindConfigFloat(
         pConfig, pDefaults, "crippler_wave_death_length", &TnlCripFX::sWaveDeathLength, true);
     FindConfigVector2(pConfig, pDefaults, "crippler_wave_magnitudes", &pair, true);
-    TnlCripFX::sWaveMagnitudes[0] = pair.x * TheGfxManager.mScrollSpeed;
-    TnlCripFX::sWaveMagnitudes[1] = pair.y * TheGfxManager.mScrollSpeed;
+    TnlCripFX::sWaveMagnitudes[0] = pair.x * TheGfxManager.GetScrollSpeed();
+    TnlCripFX::sWaveMagnitudes[1] = pair.y * TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "crippler_tick_vel", &TnlCripFX::sTickVelocity, true);
     FindConfigFloat(pConfig, pDefaults, "crippler_start_height", &TnlCripFX::sStartHeight, true);
     FindConfigFloat(
@@ -181,10 +179,10 @@ void TnlTrackFX::Enable(GfxTunnel *pTunnel) {
         Stop(pTunnel);
     }
     mState = kStateEnable;
-    mStartTime = TheGameDb->mSongTime;
+    mStartTime = TheGameDb->GetSongTime();
     mEnableCurve.Reset(0.0f, 1.0f, mStartTime, mStartTime + sEnableTimes[0]);
     mMat->mBlend = RndMat::kBlendSrcAlphaAdd;
-    pTunnel->mGeom->SetTrackOverlay(mTrack, mMat, kOverlayEnabling);
+    pTunnel->GetGeom()->SetTrackOverlay(mTrack, mMat, kOverlayEnabling);
     mPhase = kPhaseRise;
 }
 
@@ -194,16 +192,16 @@ void TnlTrackFX::Capture(GfxTunnel *pTunnel, float flTick) {
     }
     mState = kStateCapture;
     mCaptureTick = flTick;
-    mStartTime = TheGameDb->mSongTime;
+    mStartTime = TheGameDb->GetSongTime();
     mDropCurve.Reset(0.0f, 1.0f, mStartTime, mStartTime + sCaptureTimes[0]);
     mMat->mBlend = RndMat::kBlendSrcAlphaAdd;
     mMat->mStages[0].mBlend = RndMat::kBlendSrcAlphaAdd;
-    pTunnel->mGeom->SetTrackOverlay(mTrack, mMat, kOverlayNormal);
+    pTunnel->GetGeom()->SetTrackOverlay(mTrack, mMat, kOverlayNormal);
 
     Transform xfm;
-    pTunnel->mGeom->CellXfm(
-        mTrack, &xfm, false, true, TheGameDb->mSongTick + sCaptureSpewTicks, kSpewLateral);
-    ScaleBasis(&xfm, TheGfxManager.mScrollSpeed);
+    pTunnel->GetGeom()->CellXfm(
+        mTrack, &xfm, false, true, TheGameDb->GetSongTick() + sCaptureSpewTicks, kSpewLateral);
+    ScaleBasis(&xfm, TheGfxManager.GetScrollSpeed());
     sSpew->mLocalXfm = xfm;
     sSpew->mDirty = 1;
     sSpew->UpdateWorldXfm(nullptr, 0);
@@ -211,14 +209,14 @@ void TnlTrackFX::Capture(GfxTunnel *pTunnel, float flTick) {
     sSpew->SetEmitFrame(sSpewFrame);
 
     mGemTicks.clear();
-    pTunnel->CollectGemTicks(&mGemTicks, mTrack, TheGameDb->mSongTick, flTick);
+    pTunnel->CollectGemTicks(&mGemTicks, mTrack, TheGameDb->GetSongTick(), flTick);
     mPhase = kPhaseDrop;
 }
 
 void TnlTrackFX::Stop(GfxTunnel *pTunnel) {
     const Vector3 rest{0.0f, 0.0f, 0.0f};
-    pTunnel->mGeom->SetTrackOffset(mTrack, &rest);
-    pTunnel->mGeom->SetTrackOverlay(mTrack, nullptr, kOverlayNormal);
+    pTunnel->GetGeom()->SetTrackOffset(mTrack, &rest);
+    pTunnel->GetGeom()->SetTrackOverlay(mTrack, nullptr, kOverlayNormal);
     mPhase = kPhaseNone;
     mMat->SetAlpha(0.0f);
     mState = kStateIdle;
@@ -229,18 +227,18 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
     case kStateIdle:
         return false;
     case kStateEnable: {
-        const float flNow = TheGameDb->mSongTime;
+        const float flNow = TheGameDb->GetSongTime();
         float flAlpha;
         int stageBlend = RndMat::kBlendSrcAlpha;
         if (mPhase == kPhaseRise) {
             const char nTrack = mTrack;
             Vector3 offset{0.0f, 0.0f, 0.0f};
-            if (mEnableCurve.mX1 <= flNow) {
+            if (mEnableCurve.GetX1() <= flNow) {
                 mPhase = kPhaseHold;
                 flAlpha = 1.0f;
                 mEnableCurve.Reset(
-                    flAlpha, 0.0f, mEnableCurve.mX1, mEnableCurve.mX1 + sEnableTimes[1]);
-                pTunnel->mGeom->SetTrackOverlay(mTrack, mMat, kOverlayNormal);
+                    flAlpha, 0.0f, mEnableCurve.GetX1(), mEnableCurve.GetX1() + sEnableTimes[1]);
+                pTunnel->GetGeom()->SetTrackOverlay(mTrack, mMat, kOverlayNormal);
             } else {
                 flAlpha = mEnableCurve.Interp(flNow);
                 offset.x = 0.0f;
@@ -249,18 +247,18 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
             }
             pGeom->SetTrackOffset(nTrack, &offset);
         } else if (mPhase == kPhaseHold) {
-            if (mEnableCurve.mX1 <= flNow) {
+            if (mEnableCurve.GetX1() <= flNow) {
                 mPhase = kPhaseFade;
                 flAlpha = 0.0f;
                 mEnableCurve.Reset(
-                    1.0f, flAlpha, mEnableCurve.mX1, mEnableCurve.mX1 + sEnableTimes[2]);
+                    1.0f, flAlpha, mEnableCurve.GetX1(), mEnableCurve.GetX1() + sEnableTimes[2]);
                 mMat->mBlend = RndMat::kBlendSrcAlpha;
             } else {
                 flAlpha = mEnableCurve.Interp(flNow);
             }
             stageBlend = RndMat::kBlendSrcAlphaAdd;
         } else if (mPhase == kPhaseFade) {
-            if (mEnableCurve.mX1 <= flNow) {
+            if (mEnableCurve.GetX1() <= flNow) {
                 mPhase = kPhaseNone;
                 mState = kStateIdle;
                 pGeom->SetTrackOverlay(mTrack, nullptr, kOverlayNormal);
@@ -276,54 +274,55 @@ bool TnlTrackFX::Poll(GfxTunnel *pTunnel, TnlGeom *pGeom) {
         return false;
     }
     case kStateCapture: {
-        const float flNow = TheGameDb->mSongTime;
+        const float flNow = TheGameDb->GetSongTime();
         if (mPhase == kPhaseDrop) {
             float flSize;
             float flAlpha;
             float flHeight;
-            if (mDropCurve.mX1 <= flNow) {
+            if (mDropCurve.GetX1() <= flNow) {
                 mPhase = kPhaseFall;
                 flSize = sFlareSize.y;
                 flHeight = sCaptureHeight;
                 flAlpha = sCaptureBrightness;
-                mFallCurve.Reset(1.0f, 0.0f, mDropCurve.mX1, mDropCurve.mX1 + sCaptureTimes[1]);
+                mFallCurve.Reset(
+                    1.0f, 0.0f, mDropCurve.GetX1(), mDropCurve.GetX1() + sCaptureTimes[1]);
             } else {
                 const float flDrop = mDropCurve.Interp(flNow);
                 flHeight = flDrop * sCaptureHeight;
                 flAlpha = flDrop * sCaptureBrightness;
                 flSize = ((sFlareSize.y - sFlareSize.x) * flDrop) + sFlareSize.x;
             }
-            SetGlowSizes(&pTunnel->mGems->mGems, mTrack, flSize);
+            SetGlowSizes(&pTunnel->GetGems()->GetGemList(), mTrack, flSize);
             mMat->SetAlpha(flAlpha);
             const Vector3 offset{0.0f, 0.0f, flHeight};
-            pTunnel->mGeom->SetTrackOffset(mTrack, &offset);
+            pTunnel->GetGeom()->SetTrackOffset(mTrack, &offset);
             return true;
         }
         if (mPhase != kPhaseFall) {
             return true;
         }
         float flHeight;
-        if (mFallCurve.mX1 <= flNow) {
+        if (mFallCurve.GetX1() <= flNow) {
             pGeom->SetTrackOverlay(mTrack, nullptr, kOverlayNormal);
             flHeight = 0.0f;
-            pTunnel->mCamFX->Kick(sCaptureCamJiggle);
+            pTunnel->GetCamFX()->Kick(sCaptureCamJiggle);
             pTunnel->StartFire(kNoPlayer,
                                mTrack,
                                1,
-                               TheGameDb->mSongTick,
-                               TheGameDb->mSongTick,
+                               TheGameDb->GetSongTick(),
+                               TheGameDb->GetSongTick(),
                                mCaptureTick,
                                &kWhite,
                                &kWhite,
                                &mGemTicks);
-            RestoreGlowSizes(&pTunnel->mGems->mGems, mTrack, flHeight);
+            RestoreGlowSizes(&pTunnel->GetGems()->GetGemList(), mTrack, flHeight);
             mState = kStateIdle;
             mPhase = kPhaseNone;
         } else {
             flHeight = mFallCurve.Interp(flNow) * sCaptureHeight;
         }
         const Vector3 offset{0.0f, 0.0f, flHeight};
-        pTunnel->mGeom->SetTrackOffset(mTrack, &offset);
+        pTunnel->GetGeom()->SetTrackOffset(mTrack, &offset);
         return true;
     }
     default:

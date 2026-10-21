@@ -26,7 +26,7 @@ constexpr unsigned char kControllerGate = 17;
 Stutter::Stutter()
     : mRunning(0), mPeriodTicks(kUnsetPeriod), mOpenCmd(NewMemFunCommand(this, &Stutter::Open)),
       mCloseCmd(NewMemFunCommand(this, &Stutter::Close)) {
-    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())};
     mPeriodTicks = kFastBpm <= entry.GetBpm() ? kFastPeriodTicks : kSlowPeriodTicks;
     std::fill(mChannels, mChannels + kNumChannels, 0);
 }
@@ -52,7 +52,7 @@ void Stutter::Start() {
         return;
     }
     mRunning = 1;
-    int nTick = std::max(TheSongScheduler.mTick, 0);
+    int nTick = std::max(TheSongScheduler.GetTick(), 0);
     const int nRemainder = nTick % mPeriodTicks;
     if (nRemainder != 0) {
         nTick += mPeriodTicks - nRemainder;

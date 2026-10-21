@@ -195,24 +195,25 @@ void HelpPanel::LayoutActions() {
 }
 
 void HelpPanel::Refresh() {
-    UIScreen *pScreen = TheUI.mCurrentScreen;
-    if (pScreen == nullptr || pScreen->mFocusPanel == nullptr) {
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
+    if (pScreen == nullptr || pScreen->GetFocusPanel() == nullptr) {
         ClearHelp();
         return;
     }
-    ShowHelp(pScreen->mFocusPanel, pScreen->mFocusPanel->mFocus);
+    ShowHelp(pScreen->GetFocusPanel(), pScreen->GetFocusPanel()->GetFocus());
 }
 
 void HelpPanel::ShowHelp(UIPanel *pPanel, UIComponent *pComponent) {
-    const char *pszKey = FormatString(kHelpFormat, TheUI.mCurrentScreen->mName);
+    const char *pszKey = FormatString(kHelpFormat, TheUI.GetCurrentScreen()->GetName());
     const char *pszText = TheLocale.Localize(pszKey, false);
     if (strcmp(pszText, pszKey) == 0) {
-        pszKey = FormatString(kHelpFormat, pPanel->mName);
+        pszKey = FormatString(kHelpFormat, pPanel->GetName());
         pszText = TheLocale.Localize(pszKey, false);
         // The locale returns the token itself when it lacks the token.
         if (pszText == pszKey && pComponent != nullptr) {
             pszText = TheLocale.Localize(
-                FormatString(kComponentHelpFormat, pPanel->mName, pComponent->mName), false);
+                FormatString(kComponentHelpFormat, pPanel->GetName(), pComponent->GetName()),
+                false);
         }
     }
     if (pszText == nullptr || strcmp(mHelpText, pszText) == 0) {
@@ -229,11 +230,11 @@ void HelpPanel::ShowActions(UIScreen *pScreen) {
     if (pScreen == nullptr) {
         pszText = TheLocale.Localize(kDefaultAction, false);
     } else {
-        UIPanel *pPanel = pScreen->mFocusPanel;
-        pszKey = FormatString(kActionFormat, pScreen->mName);
+        UIPanel *pPanel = pScreen->GetFocusPanel();
+        pszKey = FormatString(kActionFormat, pScreen->GetName());
         pszText = TheLocale.Localize(pszKey, false);
         if (strcmp(pszText, pszKey) == 0 && pPanel != nullptr) {
-            pszKey = FormatString(kActionFormat, pPanel->mName);
+            pszKey = FormatString(kActionFormat, pPanel->GetName());
             pszText = TheLocale.Localize(pszKey, false);
         }
     }

@@ -21,13 +21,13 @@ void BlurAction::Exec() {
     }
     ThePs.mBlurActive = 1;
     if (mDuration != 0.0f) {
-        mEndTime = TheTriggerMgr.mTime[TheTriggerMgr.mClock] + mDuration;
+        mEndTime = TheTriggerMgr.GetCurrentTime() + mDuration;
         TheTriggerMgr.AddRunning(this);
     }
 }
 
 bool BlurAction::Poll() {
-    if (!(mEndTime <= TheTriggerMgr.mTime[TheTriggerMgr.mClock])) {
+    if (!(mEndTime <= TheTriggerMgr.GetCurrentTime())) {
         return false;
     }
     ThePs.mBlurActive = 0;

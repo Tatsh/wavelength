@@ -56,7 +56,7 @@ bool FreqCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     }
     {
         UIList *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kListComponent, false));
-        Campaign profile(mProfiles[pList->mSelected]);
+        Campaign profile(mProfiles[pList->GetSelected()]);
         if (pMsg->mButton == kPadCircle) {
             const int nOtherSlot = mSlot == 0;
             CopyFreqScreen *pCopy =
@@ -70,7 +70,7 @@ bool FreqCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
             if (mSlot == 0 && TheGameDb->GetProfile(kFirstPlayer)->mCustom != 0 &&
                 strcmp(profile.mName.c_str(), TheGameDb->GetProfile(kFirstPlayer)->mName.c_str()) ==
                     0) {
-                if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+                if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
                     FxMidi::PlayWrong();
                     TheUI.GotoScreen("no_del_freq_net");
                     return UIScreen::HandleJoypad(pMsg);

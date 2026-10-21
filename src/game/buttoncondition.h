@@ -31,7 +31,7 @@ public:
      * @ghidraAddress PAL: 0x003e47b0
      */
     bool Test() override {
-        return (TheTriggerMgr.mButtons & mMask) != 0;
+        return (TheTriggerMgr.GetButtons() & mMask) != 0;
     }
 
 private:

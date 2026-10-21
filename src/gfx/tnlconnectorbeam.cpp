@@ -1,6 +1,7 @@
 #include "gfx/tnlconnectorbeam.h"
 
 #include <iterator>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -57,7 +58,7 @@ float sGlowBoostDecay = 0.0012f;
 // NTSC-U/C: 0x003afc1c, PAL: 0x0042eab4
 float sAmplitude = 0.3f;
 // NTSC-U/C: 0x003afc20, PAL: 0x0042eab8
-Interpolator *sEnergyModel = nullptr;
+std::unique_ptr<Interpolator> sEnergyModel;
 // NTSC-U/C: 0x003afc24, PAL: 0x0042eabc
 float sHeight = 0.04f;
 // NTSC-U/C: 0x003afc28, PAL: 0x0042eac0
@@ -110,7 +111,8 @@ TnlConnectorBeam::TnlConnectorBeam(GfxTunnel *pTunnel,
     mExcludedType = nExcludedType;
     mOtherExcludedType = nOtherExcludedType;
     mLine->SetShowing(0);
-    sNumPoints = (TheGameDb->mCommunity == GameDb::kCommunitySolo) ? kSoloPoints : kSharedPoints;
+    sNumPoints =
+        (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) ? kSoloPoints : kSharedPoints;
     mLine->SetNumPoints(sNumPoints);
 }
 
@@ -120,12 +122,11 @@ TnlConnectorBeam::~TnlConnectorBeam() {
 void TnlConnectorBeam::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxTunnel *pTunnel) {
     DataArray *pSection = pConfig->FindArray(kSectionName, false);
     DataArray *pDefaultSection = pDefaults->FindArray(kSectionName, true);
-    delete sEnergyModel;
-    sEnergyModel = nullptr;
+    sEnergyModel.reset();
 
     DataArray *pValue;
     FindConfigArray(pSection, pDefaultSection, "gem_energy_model", &pValue, true);
-    sEnergyModel = ObjectToInterpolator(pValue->Array(1));
+    sEnergyModel.reset(ObjectToInterpolator(pValue->Array(1)));
     FindConfigArray(pSection, pDefaultSection, "line_energy_falloff", &pValue, true);
     sLineEnergyFalloff.Load(pValue);
 
@@ -138,17 +139,17 @@ void TnlConnectorBeam::LoadConfig(DataArray *pConfig, DataArray *pDefaults, GfxT
                     true);
     FindConfigFloat(pSection, pDefaultSection, "height", &sHeight, true);
     FindConfigFloat(pSection, pDefaultSection, "width", &flWidth, true);
-    sHeight = 1.0f - (TheGfxManager.mScrollSpeed * sHeight);
+    sHeight = 1.0f - (TheGfxManager.GetScrollSpeed() * sHeight);
     mLine->mWidth = flWidth * pTunnel->PanelWidth();
-    sParticleBaseSize *= TheGfxManager.mScrollSpeed;
-    sParticleMultiplierBaseSize *= TheGfxManager.mScrollSpeed;
+    sParticleBaseSize *= TheGfxManager.GetScrollSpeed();
+    sParticleMultiplierBaseSize *= TheGfxManager.GetScrollSpeed();
 
     FindConfigFloat(pSection, pDefaultSection, "gem_energy_falloff", &sGlowBoostDecay, true);
     sGlowBoostDecay /= 100.0f;
     FindConfigFloat(pSection, pDefaultSection, "min_frequency", &mMinFrequency, true);
     FindConfigFloat(pSection, pDefaultSection, "max_frequency", &mMaxFrequency, true);
     FindConfigFloat(pSection, pDefaultSection, "amplitude", &sAmplitude, true);
-    sAmplitude *= TheGfxManager.mScrollSpeed;
+    sAmplitude *= TheGfxManager.GetScrollSpeed();
 
     mSway.mAmplitude = 1.0f;
     mBeat.mAmplitude = 1.0f;
@@ -188,7 +189,7 @@ void TnlConnectorBeam::SetWindow(char nTrack, TnlGems *pGems, float flStartTick,
     mGems.clear();
     int nLinked = 0;
     float flLastTick = kNoTick;
-    for (auto it = pGems->LowerBound(flFirstTick); it != pGems->mGems.end(); ++it) {
+    for (auto it = pGems->LowerBound(flFirstTick); it != pGems->GetGemList().end(); ++it) {
         const float flTick = it->mTick;
         if (mEndTick < flTick) {
             break;
@@ -248,7 +249,7 @@ void TnlConnectorBeam::RebuildSpans() {
     Transform *pTo = &xfms[1];
     float flArchPhase = 0.0f;
     const bool bCaptured = mTunnel->IsTrackCaptured(mTrack);
-    TnlGeom *pGeom = mTunnel->mGeom;
+    TnlGeom *pGeom = mTunnel->GetGeom();
     auto it = mGems.begin();
     pGeom->PlaceCell(mTrack, pFrom, false, bCaptured, it->mTick, it->mLateral, sHeight);
     for (;;) {
@@ -400,11 +401,11 @@ void TnlConnectorBeam::StopMultiplier() {
 }
 
 void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
-    const float flNow = TheGameDb->mSongTick;
+    const float flNow = TheGameDb->GetSongTick();
     mLineMat->SetAlpha(flAlpha);
     if (!bCaptured) {
         if (mMultiplier) {
-            const float flSize = (sEnergyModel->mY1 + mGlowBoost) * sParticleMultiplierBaseSize;
+            const float flSize = (sEnergyModel->GetY1() + mGlowBoost) * sParticleMultiplierBaseSize;
             if (mMultiplierEndTick <= flNow) {
                 StopMultiplier();
             } else {
@@ -502,13 +503,13 @@ void TnlConnectorBeam::Poll(bool bCaptured, float flDelta, float flAlpha) {
         // Unreachable, the spans having been tested above, but present in the original.
         Transform xfm;
         const Gem &last = mGems.back();
-        mTunnel->mGeom->PlaceCell(mTrack,
-                                  &xfm,
-                                  false,
-                                  mTunnel->IsTrackCaptured(mTrack),
-                                  last.mTick,
-                                  last.mLateral,
-                                  sHeight);
+        mTunnel->GetGeom()->PlaceCell(mTrack,
+                                      &xfm,
+                                      false,
+                                      mTunnel->IsTrackCaptured(mTrack),
+                                      last.mTick,
+                                      last.mLateral,
+                                      sHeight);
         mLine->SetPoint(nPoint--, xfm.mTranslation);
     }
     if (nPoint == sNumPoints - 1) {

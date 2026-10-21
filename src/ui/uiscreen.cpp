@@ -17,7 +17,7 @@ constexpr int kTransitionScreenIndex = 1;
 } // namespace
 
 UIScreen::UIScreen(DataArray *pData)
-    : mGroup(nullptr), mPrevScreen(nullptr), mNextScreen(nullptr), mForceEntryExit(0) {
+    : mPrevScreen(nullptr), mNextScreen(nullptr), mForceEntryExit(0), mGroup(nullptr) {
     mFocusPanel = nullptr;
     mName = pData->Sym(kNameIndex);
 
@@ -75,7 +75,7 @@ void UIScreen::AddTransition(const char *pszComponent, int nButton, const char *
 }
 
 void UIScreen::AddPanel(UIPanel *pPanel) {
-    mPanels[pPanel->mName] = pPanel;
+    mPanels[pPanel->GetName()] = pPanel;
 }
 
 bool UIScreen::Dispatch(Message *pMsg) {
@@ -118,10 +118,10 @@ bool UIScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool UIScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return false;
     }
-    Transition *pTransition = FindTransition(pMsg->mComponent, true);
+    Transition *pTransition = FindTransition(pMsg->GetComponent(), true);
     if (pTransition == nullptr) {
         return false;
     }
@@ -134,11 +134,11 @@ void UIScreen::Poll(float fTime) {
     bool bAnimating = false;
     for (const auto &entry : mPanels) {
         UIPanel *pPanel = entry.second;
-        if (pPanel->mTransitionStart != 0.0f) {
+        if (pPanel->GetTransitionStart() != 0.0f) {
             bWasAnimating = true;
         }
         pPanel->Poll(fTime);
-        if (pPanel->mTransitionStart != 0.0f) {
+        if (pPanel->GetTransitionStart() != 0.0f) {
             bAnimating = true;
         }
     }
@@ -205,7 +205,7 @@ UIComponent *UIScreen::FindComponent(const char *pszName) {
                                   "\" failed because there are at least two\ncomponents with the "
                                   "name \"" +
                                   pszName + "\".\nThey are found on panels:\n   \"" +
-                                  pFoundPanel->mName + "\"\n   \"" + entry.first + "\"";
+                                  pFoundPanel->GetName() + "\"\n   \"" + entry.first + "\"";
             DebugWarn(report.c_str());
         }
         pFound = pComponent;
@@ -228,7 +228,7 @@ void UIScreen::Exit(UIScreen *pNextScreen, float fTime) {
         }
         if (!bShared) {
             pPanel->Exit(mForceEntryExit, fTime);
-        } else if (pPanel->mState == UIPanel::kStateExiting) {
+        } else if (pPanel->GetState() == UIPanel::kStateExiting) {
             pPanel->Enter(mForceEntryExit, fTime);
         }
     }
@@ -237,7 +237,7 @@ void UIScreen::Exit(UIScreen *pNextScreen, float fTime) {
 UIScreen::Transition *UIScreen::FindTransition(UIComponent *pComponent,
                                                [[maybe_unused]] bool bFail) {
     for (auto &transition : mTransitions) {
-        if (transition.mComponent == pComponent->mName) {
+        if (transition.mComponent == pComponent->GetName()) {
             return &transition;
         }
     }

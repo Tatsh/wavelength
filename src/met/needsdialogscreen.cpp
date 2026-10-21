@@ -14,8 +14,8 @@ constexpr char kTitlePanel[] = "title";
 void NeedsDialogScreen::SetPanelsShowing(bool bShowing) {
     for (const auto &entry : mPanels) {
         UIPanel *pPanel = entry.second;
-        if (std::strcmp(pPanel->mName, kHelpPanel) != 0 &&
-            std::strcmp(pPanel->mName, kTitlePanel) != 0) {
+        if (std::strcmp(pPanel->GetName(), kHelpPanel) != 0 &&
+            std::strcmp(pPanel->GetName(), kTitlePanel) != 0) {
             pPanel->SetShowing(bShowing);
         }
     }

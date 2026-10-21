@@ -117,12 +117,12 @@ public:
     void Reset();
 #endif
 
-private:
-#ifdef VIDEO_STANDARD_PAL
-    // Continuing past a slot without a memory card moves on to the next slot.
-    friend class MultiNoCardScreen;
-#endif
+    /** @param nLoaded Non-zero to move on to the next slot at the next poll. */
+    void SetLoaded(int nLoaded) {
+        mLoaded = nLoaded;
+    }
 
+private:
     /**
      * Load the next slot, or after the last slot hand the Freqs to the selection panels and go
      * to the selection screen.

@@ -102,44 +102,44 @@ void NetLPadGamePanel::ShowPlayers(const char *pszPanel, std::list<NetLaunchpadP
 }
 
 void NetLPadGamePanel::RefreshGame() {
-    SetBandPicture(TheGameDb->mSong.c_str(), true, false, false);
-    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    SetBandPicture(TheGameDb->GetSong().c_str(), true, false, false);
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())};
     FindComponent(kGenreComponent, false)->SetText(entry.GetGenreName());
 
     UIComponent *pBpm = FindComponent(kBpmComponent, false);
-    if (TheGameDb->mLoadRemix != 0) {
+    if (TheGameDb->GetLoadRemix() != 0) {
         pBpm->SetText(kNoText);
     } else {
         pBpm->SetText(
             FormatString(TheLocale.Localize(kBpmToken, true), static_cast<int>(entry.GetBpm())));
     }
 
-    const char *pszMode = TheGameDb->GetModeName(TheGameDb->mRuleSet);
+    const char *pszMode = TheGameDb->GetModeName(TheGameDb->GetRuleSet());
     const char *pszDifficulty =
-        TheGameDb->GetDifficultyName(TheGameDb->mSkillLevel, TheGameDb->mRuleSet);
+        TheGameDb->GetDifficultyName(TheGameDb->GetSkillLevel(), TheGameDb->GetRuleSet());
     UIComponent *pMode = FindComponent(kModeComponent, false);
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         pMode->SetText(FormatString(kRemixModeFormat, pszMode));
     } else {
         pMode->SetText(FormatString(kModeFormat, pszMode, pszDifficulty));
     }
 
     UIComponent *pRemixName = FindComponent(kRemixNameComponent, false);
-    if (TheGameDb->mLoadRemix != 0) {
-        pRemixName->SetText(TheGameDb->mRemixName.c_str());
+    if (TheGameDb->GetLoadRemix() != 0) {
+        pRemixName->SetText(TheGameDb->GetRemixName().c_str());
     } else {
         pRemixName->SetText(kNoText);
     }
 
     UIComponent *pPowerup = FindComponent(kPowerupComponent, false);
     const String format(TheLocale.Localize(kPowerupToken, true));
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         pPowerup->SetText(
-            FormatString(format.c_str(), TheGameDb->GetPowerupName(TheGameDb->mPowerupLevel)));
+            FormatString(format.c_str(), TheGameDb->GetPowerupName(TheGameDb->GetPowerupLevel())));
     } else {
         pPowerup->SetText(FormatString(format.c_str(), TheLocale.Localize(kNoPowerupToken, true)));
     }
 
     FindComponent(kReadOnlyComponent, false)
-        ->SetShowing(TheGameDb->mLoadRemix != 0 && TheGameDb->mRemixReadOnly != 0);
+        ->SetShowing(TheGameDb->GetLoadRemix() != 0 && TheGameDb->GetRemixReadOnly() != 0);
 }

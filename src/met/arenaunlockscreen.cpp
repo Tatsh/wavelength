@@ -20,7 +20,7 @@ ArenaUnlockScreen::ArenaUnlockScreen(DataArray *pData)
 void ArenaUnlockScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     std::vector<const char *> arenas;
-    TheGameDb->GetUnlockedArenas(&arenas, TheGameDb->mSkillLevel, true, false);
+    TheGameDb->GetUnlockedArenas(&arenas, TheGameDb->GetSkillLevel(), true, false);
     mCount = static_cast<int>(arenas.size());
     UILabel *pLabel = dynamic_cast<UILabel *>(TheUI.FindComponent("s_unlock_arena", "03", false));
     const String arena(TheMetagame.ArenaName(arenas[mCount - 1]));
@@ -48,8 +48,8 @@ void ArenaUnlockScreen::Poll(float fTime) {
 }
 
 bool ArenaUnlockScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    mStartMs = TheUI.mTime;
-    mAnimPlayer.Start(TheUI.mTime);
+    mStartMs = TheUI.GetTime();
+    mAnimPlayer.Start(TheUI.GetTime());
     return FreqScreen::HandleTransitionComplete(pMsg);
 }
 

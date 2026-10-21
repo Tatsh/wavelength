@@ -198,6 +198,7 @@ public:
      */
     void Poll(bool bCaptured, float flDelta, float flAlpha);
 
+private:
     TnlWave mSway;            /*!< The wave across the track, along the length of the beam. */
     TnlWave mBeat;            /*!< The wave in time that scales the sway. */
     float mDecayRate;         /*!< The energy lost per tick. */
@@ -226,7 +227,6 @@ public:
     int mMultiplier;          /*!< Whether the glows have the multiplier colouring. */
     float mMultiplierEndTick; /*!< The tick the multiplier colouring ends at. */
 
-private:
     /**
      * Link one gem, with its particle or a new glow particle.
      *

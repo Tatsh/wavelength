@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 
 #include "gs/muse.h"
 #include "gs/muselooper.h"
@@ -52,7 +53,8 @@ public:
          */
         void Apply(float fValue, int nTick) override;
 
-        MixTrack *mOwner; /*!< The track. */
+    private:
+        MixTrack *mOwner; /*!< The track. Borrowed. */
     };
 
     /**
@@ -155,8 +157,9 @@ public:
      */
     void RampTo(float fTarget, int nTicks);
 
-    VolumeRamp *mRamp;      /*!< The ramp of the volume. */
-    unsigned char mChannel; /*!< The MIDI channel of the music. */
-    float mMaxVolume;       /*!< `music_max_volume`, the volume FadeIn() fades to. */
-    Ptr<Command> mStopCmd;  /*!< The command that calls MuseLooper::Stop() after a fade out. */
+private:
+    std::unique_ptr<VolumeRamp> mRamp; /*!< The ramp of the volume. */
+    unsigned char mChannel;            /*!< The MIDI channel of the music. */
+    float mMaxVolume;                  /*!< `music_max_volume`, the volume FadeIn() fades to. */
+    Ptr<Command> mStopCmd; /*!< The command that calls MuseLooper::Stop() after a fade out. */
 };

@@ -70,11 +70,13 @@ public:
      */
     void OnSaveSpace(int nNeeded) override;
 
-    MCGetInfoTask *mGetInfo;            /*!< The step that reads the card information. */
-    MCCheckSaveSpaceNeededTask *mCheck; /*!< The work that measures the space. */
-    MCCreateSaveDirTask *mCreateDir;    /*!< The step that creates the directory. */
-    MCSaveFileTask *mSaveFile;          /*!< The work that saves the file. */
-    MCDeleteTask *mDelete;              /*!< The step that deletes the previous file. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;            /*!< The step that reads the card information. Borrowed. */
+    MCCheckSaveSpaceNeededTask *mCheck; /*!< The work that measures the space. Borrowed. */
+    MCCreateSaveDirTask *mCreateDir;    /*!< The step that creates the directory. Borrowed. */
+    MCSaveFileTask *mSaveFile;          /*!< The work that saves the file. Borrowed. */
+    MCDeleteTask *mDelete;              /*!< The step that deletes the previous file. Borrowed. */
     int mNeeded;                        /*!< The value GetNeeded() reports. */
     int mPort;                          /*!< The memory card slot. */
     String mName;                       /*!< The Freq's name, lowered. */

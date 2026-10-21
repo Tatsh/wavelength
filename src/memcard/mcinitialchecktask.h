@@ -51,8 +51,20 @@ public:
      */
     void OnDirListed() override;
 
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
-    MCGetDirTask *mGetDirs[kInitialCheckListingCount]; /*!< The directory, then the Freq files. */
+    /** @return The step that reads the card information. */
+    MCGetInfoTask *GetGetInfo() const {
+        return mGetInfo;
+    }
+
+    /** @return The kilobytes one more Freq needs. */
+    int GetNeeded() const {
+        return mNeeded;
+    }
+
+private:
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+    // The step above belongs to the SerialTasks list.
+    MCGetDirTask *mGetDirs[kInitialCheckListingCount]; /*!< The listings. Borrowed. */
     int mNeeded;                                       /*!< The kilobytes one more Freq needs. */
     unsigned char mListing;                            /*!< The listing that ends next. */
 };

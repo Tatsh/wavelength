@@ -16,7 +16,7 @@ constexpr int kUserActionInLobby = 1;
 void UpdateClientStateTask::OnStart() {
     rtMediusUserState state;
     memset(&state, 0, sizeof(state));
-    strcpy(state.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(state.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     state.userAction = kUserActionInLobby;
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1181, rtMediusUpdateUserState(&state));

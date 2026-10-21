@@ -69,12 +69,14 @@ public:
      */
     void OnDirListed() override;
 
+private:
+    // The steps belong to the SerialTasks list.
 #ifdef VIDEO_STANDARD_PAL
-    MCCheckDirExistsTask *mCheckDir; /*!< The step that deletes a damaged directory. */
+    MCCheckDirExistsTask *mCheckDir; /*!< The step that deletes a damaged directory. Borrowed. */
 #endif
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
-    MCGetDirTask *mGetDirs[kSaveSpaceListingCount]; /*!< The directory, then its files. */
-    SaveSpaceUser *mUser;                           /*!< The receiver of the outcome. */
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+    MCGetDirTask *mGetDirs[kSaveSpaceListingCount]; /*!< The listings. Borrowed. */
+    SaveSpaceUser *mUser;                           /*!< The receiver of the outcome. Borrowed. */
     int mNeeded;                                    /*!< The kilobytes the save needs. */
     String mFileName;                               /*!< The file, with its extension. */
     int mFileSize;                                  /*!< The size of the file in bytes. */

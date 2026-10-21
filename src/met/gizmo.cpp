@@ -58,7 +58,7 @@ bool Gizmo::IsShowing() const {
 void Gizmo::SetShowAvatar(bool bShowAvatar) {
     int nBlend;
     if (bShowAvatar) {
-        mMat->mStages.front().SetTex(Avatar::sTargetTex);
+        mMat->mStages.front().SetTex(Avatar::GetTargetTex());
         nBlend = RndMat::kBlendSrcAlpha;
     } else {
         mMat->mStages.front().SetTex(mMovie->mTex);
@@ -118,7 +118,7 @@ void Gizmo::Poll(float fTime) {
     }
 
     if (!IsShowingAvatar()) {
-        mMovie->SetFrame(TheGameDb->mSongTick);
+        mMovie->SetFrame(TheGameDb->GetSongTick());
     }
     mView->SetFrame(fTime);
     sceVu0MulAffineMatrixXyz(&xfm.mBasisX.x, &xfm.mBasisX.x, &mMesh->mLocalXfm.mBasisX.x);

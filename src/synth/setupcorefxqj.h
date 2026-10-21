@@ -32,6 +32,26 @@ public:
     ~SetupCoreFxQJ() override {
     }
 
+    /** @return The packed messages. */
+    const std::vector<unsigned int> &GetMessages() const {
+        return mMessages;
+    }
+
+    /** @return The polls still to wait once the messages are sent. */
+    int GetWaitPolls() const {
+        return mWaitPolls;
+    }
+
+    /**
+     * Set the polls still to wait once the messages are sent.
+     *
+     * @param nWaitPolls The polls still to wait.
+     */
+    void SetWaitPolls(int nWaitPolls) {
+        mWaitPolls = nWaitPolls;
+    }
+
+private:
     std::vector<unsigned int> mMessages; /*!< The packed messages. */
-    int mWaitPolls;                      /*!< The polls left to wait once the messages are sent. */
+    int mWaitPolls;                      /*!< The polls still to wait once the messages are sent. */
 };

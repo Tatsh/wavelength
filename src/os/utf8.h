@@ -2,6 +2,8 @@
 
 #ifdef VIDEO_STANDARD_PAL
 
+#include <memory>
+
 #include "os/string.h"
 
 /**
@@ -64,10 +66,9 @@ void Utf8Decode(char *pszOut, const char *pszUtf8, int nSize);
  */
 inline String Utf8String(const char *pszText) {
     const int nSize = Utf8Size(pszText);
-    char *pszBuffer = new char[nSize];
-    Utf8Encode(pszBuffer, pszText, nSize);
-    String text(pszBuffer);
-    delete[] pszBuffer;
+    auto pszBuffer = std::make_unique<char[]>(nSize);
+    Utf8Encode(pszBuffer.get(), pszText, nSize);
+    String text(pszBuffer.get());
     return text;
 }
 
@@ -81,10 +82,9 @@ inline String Utf8String(const char *pszText) {
  */
 inline String Utf8DecodedString(const char *pszUtf8) {
     const int nSize = Utf8DecodedSize(pszUtf8);
-    char *pszBuffer = new char[nSize];
-    Utf8Decode(pszBuffer, pszUtf8, nSize);
-    String text(pszBuffer);
-    delete[] pszBuffer;
+    auto pszBuffer = std::make_unique<char[]>(nSize);
+    Utf8Decode(pszBuffer.get(), pszUtf8, nSize);
+    String text(pszBuffer.get());
     return text;
 }
 

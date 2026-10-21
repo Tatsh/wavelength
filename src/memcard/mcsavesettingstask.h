@@ -64,9 +64,11 @@ public:
      */
     void OnSaveSpace(int nNeeded) override;
 
-    MCCheckSaveSpaceNeededTask *mCheck; /*!< The work that measures the space. */
-    MCCreateSaveDirTask *mCreateDir;    /*!< The step that creates the directory. */
-    MCSaveFileTask *mSaveFile;          /*!< The work that saves the file. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCCheckSaveSpaceNeededTask *mCheck; /*!< The work that measures the space. Borrowed. */
+    MCCreateSaveDirTask *mCreateDir;    /*!< The step that creates the directory. Borrowed. */
+    MCSaveFileTask *mSaveFile;          /*!< The work that saves the file. Borrowed. */
     int mNeeded;                        /*!< The value GetNeeded() reports. */
     int mPort;                          /*!< The memory card slot. */
     int mSize;                          /*!< The bytes serialised into g_pMemcardBuffer. */

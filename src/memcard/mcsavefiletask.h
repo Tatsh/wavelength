@@ -40,7 +40,9 @@ public:
      */
     void Set(int nPort, const char *pszName, const void *pData, int nSize);
 
-    MCOpenTask *mOpen;   /*!< The step that opens the file. */
-    MCWriteTask *mWrite; /*!< The step that writes the file. */
-    MCCloseTask *mClose; /*!< The step that closes the file. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCOpenTask *mOpen;   /*!< The step that opens the file. Borrowed. */
+    MCWriteTask *mWrite; /*!< The step that writes the file. Borrowed. */
+    MCCloseTask *mClose; /*!< The step that closes the file. Borrowed. */
 };

@@ -157,23 +157,23 @@ const char *GameOptionsScreen::OutputModeLabel(int nOutputMode) const {
 }
 
 bool GameOptionsScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    UIComponent *pComponent = pMsg->mComponent;
-    const char *pszName = pComponent->mName;
-    if (pMsg->mButton == kPadCross && strcmp(pszName, kDoneComponent) == 0) {
+    UIComponent *pComponent = pMsg->GetComponent();
+    const char *pszName = pComponent->GetName();
+    if (pMsg->GetButton() == kPadCross && strcmp(pszName, kDoneComponent) == 0) {
         Commit();
         if (TheMetagame.GetState() == Metagame::kStateFrontEnd) {
             TheUI.GotoScreen(kSaveSettingsScreen);
         } else if (mReturnScreen != nullptr) {
             TheUI.GotoScreen(mReturnScreen);
         }
-    } else if (pMsg->mButton == kPadCross) {
+    } else if (pMsg->GetButton() == kPadCross) {
         UIPanel *pPanel = TheUI.FindPanel(kPanel, false);
         pPanel->SetFocus(pPanel->FindComponent(kDoneComponent, false), kPadNone);
     } else if (strcmp(pszName, kFreqSizeComponent) == 0) {
-        mFreqSize = StepChoice(mFreqSize, pMsg->mButton);
+        mFreqSize = StepChoice(mFreqSize, pMsg->GetButton());
         pComponent->SetText(FreqSizeLabel(mFreqSize));
     } else if (strcmp(pszName, kAudioComponent) == 0) {
-        mOutputMode = StepChoice(mOutputMode, pMsg->mButton);
+        mOutputMode = StepChoice(mOutputMode, pMsg->GetButton());
         pComponent->SetText(OutputModeLabel(mOutputMode));
     } else {
         unsigned char nToggle = kToggleHelpText;

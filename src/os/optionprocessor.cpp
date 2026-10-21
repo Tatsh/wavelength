@@ -14,13 +14,11 @@ constexpr int kFirstArgument = 1;
 } // namespace
 
 void OptionProcessor::AddBool(const char *pszName, int *pnTarget, int nValue) {
-    Option *pOption = new BoolOption(pszName, pnTarget, nValue);
-    mOptions.push_back(pOption);
+    mOptions.push_back(std::make_unique<BoolOption>(pszName, pnTarget, nValue));
 }
 
 void OptionProcessor::AddString(const char *pszName, String *pTarget) {
-    Option *pOption = new StringOption(pszName, pTarget);
-    mOptions.push_back(pOption);
+    mOptions.push_back(std::make_unique<StringOption>(pszName, pTarget));
 }
 
 void OptionProcessor::Process(int argc, char **argv) {
@@ -51,15 +49,11 @@ void OptionProcessor::Process(int argc, char **argv) {
         } while (mIndex < mArgc && argv[mIndex][0] == '-');
     }
     if (bShowOptions != 0) {
-        for (const Option *pOption : mOptions) {
+        for (const auto &pOption : mOptions) {
             pOption->PrintUsage();
         }
         exit(0);
     }
 }
 
-OptionProcessor::~OptionProcessor() {
-    for (Option *pOption : mOptions) {
-        delete pOption;
-    }
-}
+OptionProcessor::~OptionProcessor() = default;

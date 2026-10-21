@@ -172,17 +172,7 @@ Song::Song(DataArray *pSongConfig, int nSkillLevel, int nRuleSet) {
     mReserved30 = kNoText;
 }
 
-Song::~Song() {
-    delete mSections;
-    delete mMsPerTick;
-    delete mSlotGrid;
-    delete mBuilder;
-    for (auto &gems : mPitchGems) {
-        for (PitchTrackGems *pGems : gems) {
-            delete pGems;
-        }
-    }
-}
+Song::~Song() = default;
 
 void Song::Load() {
     mErrorHandler = nullptr;
@@ -192,16 +182,16 @@ void Song::Load() {
 
 void Song::StartLoad() {
     ReadConfig();
-    mBuilder = new LevelMidiBuilder(mMidiFile.c_str(),
-                                    mDifficulty,
-                                    mRuleSet,
-                                    mNumBars,
-                                    mIntroBars,
-                                    mFreestyleEffectsBus,
-                                    mRemixEffectsBus,
-                                    mSections,
-                                    mMsPerTick,
-                                    mSlotGrid);
+    mBuilder = std::make_unique<LevelMidiBuilder>(mMidiFile.c_str(),
+                                                  mDifficulty,
+                                                  mRuleSet,
+                                                  mNumBars,
+                                                  mIntroBars,
+                                                  mFreestyleEffectsBus,
+                                                  mRemixEffectsBus,
+                                                  mSections.get(),
+                                                  mMsPerTick.get(),
+                                                  mSlotGrid.get());
     if (mValidate) {
         mBuilder->StartLoad(mErrorHandler);
     } else {
@@ -231,33 +221,12 @@ void Song::PollLoad() {
         break;
     case kLoadStatePatterns: {
         bool bAllDone = true;
-        for (PatternFile *pFile : mPatternFiles) {
-            bool bDone;
-            if (pFile->mDone) {
-                bDone = true;
-            } else {
-                int nBytes;
-                pFile->mDone = pFile->mFile->ReadDone(&nBytes);
-                if (pFile->mDone) {
-                    BufStream stream(pFile->mBuffer, pFile->mSize, true);
-                    std::vector<std::vector<PitchTrackGems *>> &pitchGems =
-                        pFile->mSong->mPitchGems;
-                    for (unsigned int i = 0; i < pitchGems.size(); ++i) {
-                        PitchTrackGems *pGems = pitchGems[i][pFile->mIndex];
-                        if (pGems != nullptr) {
-                            pGems->Load(stream);
-                        }
-                    }
-                    bDone = true;
-                } else {
-                    bDone = false;
-                }
-            }
-            bAllDone = bAllDone && bDone;
+        for (const auto &pFile : mPatternFiles) {
+            bAllDone = pFile->Poll() && bAllDone;
         }
         if (bAllDone) {
-            for (PatternFile *pFile : mPatternFiles) {
-                delete pFile;
+            for (auto &pFile : mPatternFiles) {
+                pFile.reset();
             }
             mState = kLoadStateDone;
         }
@@ -317,15 +286,16 @@ DataArray *Song::ReadArray(const char *pszName, DataArray *pData, bool bRequired
 
 void Song::StartPatternLoad() {
     const int nTracks = GetNumTracks();
-    const int nTicksPerBar = mBuilder->mTicksPerBar;
+    const int nTicksPerBar = mBuilder->GetTicksPerBar();
     for (int i = 0; i < nTracks; ++i) {
-        std::vector<PitchTrackGems *> gems(kNumPatternFiles, nullptr);
+        std::vector<std::unique_ptr<PitchTrackGems>> gems(kNumPatternFiles);
         if (GetTrackType(i) == kTrackTypePitch) {
             for (int j = 0; j < kNumPatternFiles; ++j) {
-                gems[j] = new PitchTrackGems(GetSections(), GetSlotGrid(), mNumBars, nTicksPerBar);
+                gems[j] = std::make_unique<PitchTrackGems>(
+                    GetSections(), GetSlotGrid(), mNumBars, nTicksPerBar);
             }
         }
-        mPitchGems.push_back(gems);
+        mPitchGems.push_back(std::move(gems));
     }
 
     for (int i = 0; i < kNumPatternFiles; ++i) {
@@ -336,26 +306,46 @@ void Song::StartPatternLoad() {
         } else {
             path << kRemixPatternFile << i + 1;
         }
-        auto *pFile = new PatternFile(path.c_str());
-        pFile->mIndex = i;
-        mPatternFiles[i] = pFile;
-        pFile->mSong = this;
-        pFile->mFile = nullptr;
-        pFile->mBuffer = nullptr;
-        pFile->mSize = 0;
-        pFile->mDone = 0;
-        pFile->mFile = File::New(pFile->mPath.c_str(), kOpenRead, kNoOpenFlags);
-        if (pFile->mFile == nullptr) {
-            DebugNotify(kPatternFileMissingFormat, pFile->mPath.c_str());
-            pFile->mDone = 1;
-        } else {
-            pFile->mSize = pFile->mFile->Size();
-            pFile->mBuffer =
-                static_cast<char *>(PoolMemAlloc(pFile->mSize, kPatternBufferTag, kDefaultAlign));
-            pFile->mFile->ReadAsync(pFile->mBuffer, pFile->mSize);
-            pFile->mDone = 0;
+        mPatternFiles[i] = std::make_unique<PatternFile>(path.c_str());
+        mPatternFiles[i]->Start(i, this);
+    }
+}
+
+void Song::PatternFile::Start(int nIndex, Song *pSong) {
+    mIndex = nIndex;
+    mSong = pSong;
+    mFile = nullptr;
+    mBuffer = nullptr;
+    mSize = 0;
+    mDone = 0;
+    mFile.reset(File::New(mPath.c_str(), kOpenRead, kNoOpenFlags));
+    if (mFile == nullptr) {
+        DebugNotify(kPatternFileMissingFormat, mPath.c_str());
+        mDone = 1;
+    } else {
+        mSize = mFile->Size();
+        mBuffer = static_cast<char *>(PoolMemAlloc(mSize, kPatternBufferTag, kDefaultAlign));
+        mFile->ReadAsync(mBuffer, mSize);
+        mDone = 0;
+    }
+}
+
+bool Song::PatternFile::Poll() {
+    if (mDone) {
+        return true;
+    }
+    int nBytes;
+    mDone = mFile->ReadDone(&nBytes);
+    if (!mDone) {
+        return false;
+    }
+    BufStream stream(mBuffer, mSize, true);
+    for (const auto &gems : mSong->mPitchGems) {
+        if (gems[mIndex] != nullptr) {
+            gems[mIndex]->Load(stream);
         }
     }
+    return true;
 }
 
 void Song::ReadConfig() {
@@ -370,8 +360,7 @@ void Song::ReadConfig() {
     }
     mIntroBars = ReadInt(kIntroBarsKey, mConfig);
     const float fBpm = ReadFloat(kBpmKey, mConfig);
-    mMsPerTick = new float;
-    *mMsPerTick = kMsPerMinute / fBpm / kTicksPerBeat;
+    mMsPerTick = std::make_unique<float>(kMsPerMinute / fBpm / kTicksPerBeat);
 
     const char *pszMidiKey = nullptr;
     switch (mRuleSet) {
@@ -391,7 +380,7 @@ void Song::ReadConfig() {
         DebugWarn(kIllegalModeWarning);
         break;
     }
-    mMidiDir = FileGetPath(mConfig->FindArray(pszMidiKey, false)->mFile);
+    mMidiDir = FileGetPath(mConfig->FindArray(pszMidiKey, false)->GetFile());
     mMidiFile = mMidiDir;
     mMidiFile += kPathSeparator;
     mMidiFile += ReadSymbol(pszMidiKey, mConfig);
@@ -443,7 +432,7 @@ void Song::ReadRemixSections() {
     if (mSections == nullptr) {
         return;
     }
-    mSlotGrid = new SlotGrid(mSections->NumSections());
+    mSlotGrid = std::make_unique<SlotGrid>(mSections->NumSections());
 
     DataArray *pNames;
     DataArray *pLinks;
@@ -613,7 +602,7 @@ void Song::BuildSections(DataArray *pStarts) {
         }
         ends.push_back(mNumBars);
     }
-    mSections = new SectionBoundaries{ends};
+    mSections = std::make_unique<SectionBoundaries>(ends);
 
     if (mRuleSet == GameDb::kRuleSetRemix && mValidate) {
         for (int i = 0; i < mSections->NumSections();) {
@@ -789,7 +778,7 @@ void Song::ReadDuelPatterns() {
         return;
     }
     DataArray *pLevel = pPatterns->Array(mDifficulty);
-    const int nTicksPerBar = mBuilder->mTicksPerBar;
+    const int nTicksPerBar = mBuilder->GetTicksPerBar();
     for (int i = 0; i < pLevel->Size(); ++i) {
         DataArray *pEntry = pLevel->Array(i);
         const int nTick = (pEntry->Int(0) - kFirstBar) * nTicksPerBar;
@@ -824,7 +813,7 @@ void Song::ValidateEnableOrder() {
 
 void Song::ApplySynthSettings() {
     mEffects.Apply();
-    Synth *pSynth = TheSynth;
+    Synth *pSynth = TheSynth.get();
     int nLevel = kInitialLevel;
     for (int i = 0; i < kNumMixerChannels; ++i) {
         if (i < GetNumTracks()) {
@@ -849,11 +838,6 @@ void Song::ApplySynthSettings() {
 }
 
 void Song::ApplySavedRemix() {
-    for (unsigned int i = 0; i < mPitchGems.size(); ++i) {
-        for (PitchTrackGems *pGems : mPitchGems[i]) {
-            delete pGems;
-        }
-    }
     mPitchGems.clear();
     ReadBackgroundTracks();
 
@@ -873,8 +857,7 @@ void Song::ApplySavedRemix() {
         ends.push_back(mSections->SectionStart(mSections->SectionAt(nBar)));
     }
     ends.push_back(mNumBars);
-    delete mSections;
-    mSections = new SectionBoundaries{ends};
+    mSections = std::make_unique<SectionBoundaries>(ends);
 }
 
 int Song::GetNumTracks() const {
@@ -942,42 +925,42 @@ ScriptTrackData *Song::GetScriptTrack(const char *pszName) const {
 }
 
 SectionBoundaries *Song::GetSections() const {
-    return mSections;
+    return mSections.get();
 }
 
 float *Song::GetMsPerTick() const {
-    return mMsPerTick;
+    return mMsPerTick.get();
 }
 
 PlayMap *Song::GetPlayMap() const {
-    return mBuilder->mPlayMap;
+    return mBuilder->GetPlayMap();
 }
 
 BankLoader *Song::GetBankTrack() const {
-    return mBuilder->mBankTrack;
+    return mBuilder->GetBankTrack();
 }
 
 WorldTrack *Song::GetWorldTrack() const {
-    return &mBuilder->mWorldTrack;
+    return mBuilder->GetWorldTrack();
 }
 
 Lyric *Song::GetLyric() const {
-    return mBuilder->mLyric;
+    return mBuilder->GetLyric();
 }
 
 FXMgr *Song::GetFXMgr() const {
-    return mBuilder->mFXMgr;
+    return mBuilder->GetFXMgr();
 }
 
 float Song::GetSpeed() const {
-    return mBuilder->mSpeed;
+    return mBuilder->GetSpeed();
 }
 
 SlotGrid *Song::GetSlotGrid() const {
-    return mSlotGrid;
+    return mSlotGrid.get();
 }
 
-std::vector<PitchTrackGems *> *Song::GetTrackPitchData(int nTrack) {
+std::vector<std::unique_ptr<PitchTrackGems>> *Song::GetTrackPitchData(int nTrack) {
     (void)GetTrackType(nTrack); // Yes, the binary discards the type.
     return &mPitchGems[nTrack];
 }

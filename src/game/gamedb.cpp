@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <memory>
 
 #include "game/avatar.h"
 #include "game/avatarpartset.h"
@@ -192,7 +193,7 @@ void GameDb::GetHostSongs(std::vector<SongEntry> *pSongs, int nSkillLevel, bool 
     auto it = pSongs->begin();
     while (it != pSongs->end()) {
         if (it->GetType() == SongEntry::kTypeSecret &&
-            !mPlayers[0]->mProfile.IsUnlocked(it->GetName(), nSkillLevel)) {
+            !mPlayers[0]->GetProfile().IsUnlocked(it->GetName(), nSkillLevel)) {
             it = pSongs->erase(it);
         } else {
             ++it;
@@ -230,7 +231,7 @@ void GameDb::GetUnlockedSongs(std::vector<SongEntry> *pSongs,
             const int nType = it->GetType();
             int nLevel = nFirst;
             while (nLevel < nEnd && nType != SongEntry::kTypeNormal &&
-                   !mPlayers[i]->mProfile.IsUnlocked(it->GetName(), nLevel)) {
+                   !mPlayers[i]->GetProfile().IsUnlocked(it->GetName(), nLevel)) {
                 ++nLevel;
             }
             if (nLevel != nEnd) {
@@ -264,7 +265,7 @@ void GameDb::GetUnlockedArenas(std::vector<const char *> *pArenas,
         int i = 0;
         while (i < nPlayers) {
             int nLevel = nFirst;
-            while (nLevel < nEnd && !mPlayers[i]->mProfile.IsUnlocked(*it, nLevel)) {
+            while (nLevel < nEnd && !mPlayers[i]->GetProfile().IsUnlocked(*it, nLevel)) {
                 ++nLevel;
             }
             if (nLevel != nEnd) {
@@ -418,11 +419,8 @@ void GameDb::Poll() {
 }
 
 void GameDb::ClearPlayers() {
-    for (PlayerInfo *pPlayer : mPlayers) {
-        delete pPlayer;
-    }
-    mReservedA4 = 0;
     mPlayers.clear();
+    mReservedA4 = 0;
     mNumPads = 0;
     mWon = 0;
     mEnergized = 0.0f;
@@ -433,12 +431,12 @@ void GameDb::ClearPlayers() {
 
 void GameDb::AddPlayer(const Campaign *pProfile) {
     const int nSlot = static_cast<int>(mPlayers.size());
-    mPlayers.push_back(new PlayerInfo(1, nSlot, *pProfile, kUnranked));
+    mPlayers.push_back(std::make_unique<PlayerInfo>(1, nSlot, *pProfile, kUnranked));
     ++mNumPads;
 }
 
 void GameDb::AddPlayer(int bLocal, const Campaign *pProfile, int nSlot, int nNetOrder) {
-    mPlayers.push_back(new PlayerInfo(bLocal, nSlot, *pProfile, nNetOrder));
+    mPlayers.push_back(std::make_unique<PlayerInfo>(bLocal, nSlot, *pProfile, nNetOrder));
     if (bLocal != 0) {
         ++mNumPads;
     }
@@ -453,23 +451,23 @@ int GameDb::GetNumPads() const {
 }
 
 int GameDb::IsLocalPlayer(int nPlayer) const {
-    return mPlayers[nPlayer]->mLocal;
+    return mPlayers[nPlayer]->GetLocal();
 }
 
 int GameDb::GetPlayerSlot(int nPlayer) const {
-    return mPlayers[nPlayer]->mSlot;
+    return mPlayers[nPlayer]->GetSlot();
 }
 
 const char *GameDb::GetPlayerColor(int nPlayer) const {
-    return GetSlotColor(mPlayers[nPlayer]->mSlot);
+    return GetSlotColor(mPlayers[nPlayer]->GetSlot());
 }
 
 const char *GameDb::GetPlayerName(int nPlayer) const {
-    return mPlayers[nPlayer]->mProfile.mName.c_str();
+    return mPlayers[nPlayer]->GetProfile().mName.c_str();
 }
 
 int GameDb::GetPlayerNetOrder(int nPlayer) const {
-    return mPlayers[nPlayer]->mNetOrder;
+    return mPlayers[nPlayer]->GetNetOrder();
 }
 
 int GameDb::GetPlayerPad(int nPlayer) const {
@@ -480,27 +478,27 @@ int GameDb::GetPlayerPad(int nPlayer) const {
 }
 
 Campaign *GameDb::GetProfile(int nPlayer) {
-    return &mPlayers[nPlayer]->mProfile;
+    return &mPlayers[nPlayer]->GetProfile();
 }
 
 AvatarPartSet *GameDb::GetAvatar(int nPlayer) {
-    return &mPlayers[nPlayer]->mProfile.mAvatar;
+    return &mPlayers[nPlayer]->GetProfile().mAvatar;
 }
 
 int GameDb::GetPlayerScore(int nPlayer) const {
-    return mPlayers[nPlayer]->mScore;
+    return mPlayers[nPlayer]->GetScore();
 }
 
 int GameDb::GetPlayerRank(int nPlayer) const {
-    return mPlayers[nPlayer]->mRank;
+    return mPlayers[nPlayer]->GetRank();
 }
 
 InputMap *GameDb::GetInputMap(int nPlayer) {
-    return mPlayers[nPlayer]->mProfile.GetInputMap();
+    return mPlayers[nPlayer]->GetProfile().GetInputMap();
 }
 
 void GameDb::SetPlayerScore(int nPlayer, int nScore) {
-    mPlayers[nPlayer]->mScore = nScore;
+    mPlayers[nPlayer]->SetScore(nScore);
     RankPlayers();
 }
 
@@ -617,15 +615,15 @@ void GameDb::SetWon(bool bWon) {
 void GameDb::RankPlayers() {
     std::vector<int> scores;
     for (size_t i = 0; i < mPlayers.size(); ++i) {
-        scores.push_back(mPlayers[i]->mScore);
+        scores.push_back(mPlayers[i]->GetScore());
     }
     // The binary discards the end std::unique() reports and sorts every element.
     (void)std::unique(scores.begin(), scores.end());
     std::sort(scores.begin(), scores.end(), std::greater<int>());
     for (size_t i = 0; i < mPlayers.size(); ++i) {
-        PlayerInfo *pPlayer = mPlayers[i];
-        pPlayer->mRank = static_cast<int>(std::find(scores.begin(), scores.end(), pPlayer->mScore) -
-                                          scores.begin());
+        PlayerInfo *pPlayer = mPlayers[i].get();
+        pPlayer->SetRank(static_cast<int>(
+            std::find(scores.begin(), scores.end(), pPlayer->GetScore()) - scores.begin()));
     }
 }
 

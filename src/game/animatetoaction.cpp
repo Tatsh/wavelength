@@ -32,19 +32,21 @@ AnimateToAction::AnimateToAction(DataArray *pAction) {
     mDuration = pAction->Float(3);
     switch (pAction->Int(4)) {
     case kCurveLinear:
-        mCurve = new LinearInterpolator(kUnitStart, kUnitStart, kUnitStart, kUnitEnd);
+        mCurve = std::make_unique<LinearInterpolator>(kUnitStart, kUnitStart, kUnitStart, kUnitEnd);
         break;
     case kCurveInvExp:
-        mCurve = new InvExpInterpolator(kUnitStart, kUnitStart, kUnitStart, kUnitEnd, kInvExpPower);
+        mCurve = std::make_unique<InvExpInterpolator>(
+            kUnitStart, kUnitStart, kUnitStart, kUnitEnd, kInvExpPower);
         break;
     case kCurveATan:
-        mCurve = new ATanInterpolator(kUnitStart, kUnitStart, kUnitStart, kUnitEnd, kATanSeverity);
+        mCurve = std::make_unique<ATanInterpolator>(
+            kUnitStart, kUnitStart, kUnitStart, kUnitEnd, kATanSeverity);
         break;
     default:
         DebugWarn("Interp %d not 0 - 2 (file %s, line %d)",
                   pAction->Int(4),
-                  pAction->mFile,
-                  pAction->mLine);
+                  pAction->GetFile(),
+                  pAction->GetLine());
         break;
     }
     mLoops = pAction->Size() >= kMinSizeWithLoop;
@@ -53,12 +55,10 @@ AnimateToAction::AnimateToAction(DataArray *pAction) {
     }
 }
 
-AnimateToAction::~AnimateToAction() {
-    delete mCurve;
-}
+AnimateToAction::~AnimateToAction() = default;
 
 void AnimateToAction::Exec() {
-    const float flNow = TheTriggerMgr.mTime[TheTriggerMgr.mClock];
+    const float flNow = TheTriggerMgr.GetCurrentTime();
     mEndTime = flNow + mDuration;
     float flFrom = mAnim->mFrame;
     if (mLoops == 0) {
@@ -86,7 +86,7 @@ void AnimateToAction::Exec() {
 }
 
 bool AnimateToAction::Poll() {
-    float flNow = TheTriggerMgr.mTime[TheTriggerMgr.mClock];
+    float flNow = TheTriggerMgr.GetCurrentTime();
     if (mEndTime < flNow) {
         flNow = mEndTime;
     }

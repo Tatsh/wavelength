@@ -47,7 +47,9 @@ public:
      */
     void OnFileLoaded() override;
 
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
-    MCLoadFileTask *mLoad;   /*!< The work that loads the file. */
-    GameOptions *mSettings;  /*!< Receives the settings. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+    MCLoadFileTask *mLoad;   /*!< The work that loads the file. Borrowed. */
+    GameOptions *mSettings;  /*!< Receives the settings. Borrowed. */
 };

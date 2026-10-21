@@ -6,23 +6,22 @@
 #include "synth/synthnull.h"
 #include "synth/synthps2.h"
 
-Synth *TheSynth;
+std::unique_ptr<Synth> TheSynth;
 
 void Synth::Create() {
     int bUseNullSynth = 0;
     SystemConfig()->FindArray("synth", true)->FindInt("use_null_synth", &bUseNullSynth, false);
     if (bUseNullSynth) {
-        TheSynth = new SynthNull;
+        TheSynth = std::make_unique<SynthNull>();
     } else {
-        TheSynth = new SynthPS2;
+        TheSynth = std::make_unique<SynthPS2>();
     }
     (void)TheSynth->Init(); // Yes, the binary discards the status.
 }
 
 void Synth::Destroy() {
     (void)TheSynth->Terminate(); // Yes, the binary discards the status.
-    delete TheSynth;
-    TheSynth = nullptr;
+    TheSynth.reset();
 }
 
 int Synth::Unsupported() {

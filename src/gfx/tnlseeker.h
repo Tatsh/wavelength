@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gfx/gfxtunnel.h"
@@ -124,10 +125,10 @@ public:
      */
     static float sFadeSpeed;
 
-    TnlGeom *mGeom;                     /*!< The geometry of the tunnel. */
-    RndMesh *mMesh;                     /*!< The mesh, `seeker <colour>.mesh`. */
-    InvExpInterpolator *mTrackCurve;    /*!< The glide across the tracks, over song time. */
-    InvExpInterpolator *mDepthCurve;    /*!< The glide along the track, over song time. */
+    TnlGeom *mGeom;                                  /*!< The geometry of the tunnel. Borrowed. */
+    std::unique_ptr<RndMesh> mMesh;                  /*!< The mesh, `seeker <colour>.mesh`. */
+    std::unique_ptr<InvExpInterpolator> mTrackCurve; /*!< The glide across the tracks. */
+    std::unique_ptr<InvExpInterpolator> mDepthCurve; /*!< The glide along the track. */
     float mFromTrack;                   /*!< The track the glide started from, or -1. */
     float mTrack;                       /*!< The track the frame is on, fractional while gliding. */
     char mTargetTrack;                  /*!< The track the glide ends on. */

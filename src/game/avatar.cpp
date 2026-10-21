@@ -92,7 +92,7 @@ DataArray *Avatar::sAnims = nullptr;
 // The unit's static initialiser at NTSC-U/C: 0x002715a8, PAL: 0x0027b158, and its global
 // constructor and destructor at NTSC-U/C: 0x00271650, PAL: 0x0027b200, and NTSC-U/C: 0x00271670,
 // PAL: 0x0027b220, construct and destroy the list.
-std::vector<Avatar *> Avatar::sAvatars;
+std::vector<std::unique_ptr<Avatar>> Avatar::sAvatars;
 
 void Avatar::Init() {
     DataArray *pAvatar = SystemConfig()->FindArray("db", true)->FindArray("avatar", true);
@@ -118,18 +118,17 @@ void Avatar::Init() {
 
     int nAvatars = kDefaultAvatarCount;
     pAvatar->FindInt("num_avatars", &nAvatars, true);
-    sAvatars.resize(nAvatars, nullptr);
+    sAvatars.resize(nAvatars);
     for (int i = 0; i < nAvatars; ++i) {
-        sAvatars[i] = new Avatar(i);
+        sAvatars[i] = std::make_unique<Avatar>(i);
     }
     SnapCamera(kStartCam);
 }
 
 void Avatar::Terminate() {
+    // Preserve the original deletion point, before the loader of the base model is released.
     for (size_t i = 0; i < sAvatars.size(); ++i) {
-        if (sAvatars[i] != nullptr) {
-            delete sAvatars[i];
-        }
+        sAvatars[i].reset();
     }
     sLoader.reset();
 }
@@ -139,39 +138,39 @@ int Avatar::NumAvatars() {
 }
 
 Avatar *Avatar::GetAvatar(int nIndex) {
-    return sAvatars[nIndex];
+    return sAvatars[nIndex].get();
 }
 
-Avatar::Avatar(int nIndex)
-    : mParts(AvatarPartSet::kNumParts, nullptr), mIndex(nIndex), mUser(nullptr) {
-    mBody.mAnim = nullptr;
-    mPrevBody.mAnim = nullptr;
-    mPoseAnim.mAnim = nullptr;
-    mPrevPoseAnim.mAnim = nullptr;
+Avatar::Avatar(int nIndex) : mParts(AvatarPartSet::kNumParts), mIndex(nIndex), mUser(nullptr) {
+    mBody.SetAnim(nullptr);
+    mPrevBody.SetAnim(nullptr);
+    mPoseAnim.SetAnim(nullptr);
+    mPrevPoseAnim.SetAnim(nullptr);
     // The binary discards the lookup.
     (void)SystemConfig()->FindArray("db", true)->FindArray("avatar", true);
     mParts[AvatarPartSet::kPartLowerBody] =
-        new AvatarPart(AvatarPartSet::kPartLowerBody, kNoParentPart, this);
-    mParts[AvatarPartSet::kPartTorso] = new TorsoPart(AvatarPartSet::kPartLowerBody, this);
-    mParts[AvatarPartSet::kPartInstrument] = new InstrPart(AvatarPartSet::kPartTorso, this);
+        std::make_unique<AvatarPart>(AvatarPartSet::kPartLowerBody, kNoParentPart, this);
+    mParts[AvatarPartSet::kPartTorso] =
+        std::make_unique<TorsoPart>(AvatarPartSet::kPartLowerBody, this);
+    mParts[AvatarPartSet::kPartInstrument] =
+        std::make_unique<InstrPart>(AvatarPartSet::kPartTorso, this);
     mParts[AvatarPartSet::kPartLeftArm] =
-        new ArmPart(AvatarPartSet::kPartLeftArm, AvatarPartSet::kPartTorso, this);
+        std::make_unique<ArmPart>(AvatarPartSet::kPartLeftArm, AvatarPartSet::kPartTorso, this);
     mParts[AvatarPartSet::kPartRightArm] =
-        new ArmPart(AvatarPartSet::kPartRightArm, AvatarPartSet::kPartTorso, this);
+        std::make_unique<ArmPart>(AvatarPartSet::kPartRightArm, AvatarPartSet::kPartTorso, this);
     mParts[AvatarPartSet::kPartHead] =
-        new AvatarPart(AvatarPartSet::kPartHead, AvatarPartSet::kPartTorso, this);
+        std::make_unique<AvatarPart>(AvatarPartSet::kPartHead, AvatarPartSet::kPartTorso, this);
     mParts[AvatarPartSet::kPartFaceGear] =
-        new AvatarPart(AvatarPartSet::kPartFaceGear, AvatarPartSet::kPartHead, this);
+        std::make_unique<AvatarPart>(AvatarPartSet::kPartFaceGear, AvatarPartSet::kPartHead, this);
     mParts[AvatarPartSet::kPartHeadGear] =
-        new AvatarPart(AvatarPartSet::kPartHeadGear, AvatarPartSet::kPartHead, this);
+        std::make_unique<AvatarPart>(AvatarPartSet::kPartHeadGear, AvatarPartSet::kPartHead, this);
     Reset();
 }
 
 Avatar::~Avatar() {
+    // Preserve the original forward deletion order of the parts.
     for (int i = 0; i < AvatarPartSet::kNumParts; ++i) {
-        if (mParts[i] != nullptr) {
-            delete mParts[i];
-        }
+        mParts[i].reset();
     }
 }
 
@@ -208,7 +207,7 @@ void Avatar::SetPose(const char *pszPose, bool bImmediate) {
 
 void Avatar::SetBaseAnim(const char *pszAnim, bool bOneShot, bool bImmediate) {
     const char *pszSymbol = LookupSymbol(pszAnim);
-    const char *pszOldAnim = mBody.mAnim;
+    const char *pszOldAnim = mBody.GetAnim();
     if (pszSymbol == pszOldAnim) {
         return;
     }
@@ -278,7 +277,7 @@ void Avatar::Reset() {
 }
 
 AvatarPart *Avatar::GetPart(int nPart) {
-    return mParts[nPart];
+    return mParts[nPart].get();
 }
 
 void Avatar::Draw(const Rect *pScreenRect) {
@@ -296,7 +295,7 @@ void Avatar::Draw(const Rect *pScreenRect) {
         mOneShot = 0;
         mActiveTime = sTime;
     }
-    if (mOneShot == 0 && mBody.mAnim != sIdle && mActiveTime + sTimeToIdle < sTime) {
+    if (mOneShot == 0 && mBody.GetAnim() != sIdle && mActiveTime + sTimeToIdle < sTime) {
         mPrevBody = mBody;
         mBody.Set(sIdle, kBodyKey);
         mBodyBlendStart = sTime;
@@ -305,7 +304,7 @@ void Avatar::Draw(const Rect *pScreenRect) {
     UpdateInstrument();
     SetPartFrames(&mPrevBody, &mBody, &mBodyBlendStart, kFirstBodyPart, AvatarPartSet::kNumParts);
     sCam->UpdateWorldXfm(nullptr, 0);
-    mParts[AvatarPartSet::kPartLowerBody]->mTransRoot->UpdateWorldXfm(sView, 1);
+    mParts[AvatarPartSet::kPartLowerBody]->GetTransRoot()->UpdateWorldXfm(sView, 1);
     mParts[AvatarPartSet::kPartTorso]->Update();
     mParts[AvatarPartSet::kPartInstrument]->Update();
     mParts[AvatarPartSet::kPartHead]->Update();
@@ -472,7 +471,7 @@ void Avatar::Anim::Set(const char *pszAnim, int nKey) {
 }
 
 void Avatar::UpdateInstrument() {
-    AvatarPart *pInstrument = mParts[AvatarPartSet::kPartInstrument];
+    AvatarPart *pInstrument = mParts[AvatarPartSet::kPartInstrument].get();
     if (mPoseChangeTime == kNever) {
         pInstrument->SetType(mPose);
         mParts[AvatarPartSet::kPartInstrument]->SetBlend(1.0f);
@@ -524,10 +523,10 @@ void Avatar::Poll(float fTime) {
     sTime = fTime;
     for (size_t i = 0; i < sAvatars.size(); ++i) {
         AvatarPart *pInstrument = sAvatars[i]->GetPart(AvatarPartSet::kPartInstrument);
-        if (pInstrument->mType != nullptr) {
+        if (pInstrument->GetType() != nullptr) {
             continue;
         }
-        if (pInstrument->mPendingType != nullptr) {
+        if (pInstrument->GetPendingType() != nullptr) {
             pInstrument->Rebuild();
         } else {
             pInstrument->SetType(sNone);
@@ -584,9 +583,9 @@ void Avatar::CatchGem(int nKey, int bRestartPose) {
         return;
     }
     if (bRestartPose != 0 && mPose != sNone) {
-        mPoseAnim.Set(mPoseAnim.mAnim, nKey);
+        mPoseAnim.Set(mPoseAnim.GetAnim(), nKey);
     }
-    if (mBody.mAnim == sIdle && mPrevBody.mLoop != 0) {
+    if (mBody.GetAnim() == sIdle && mPrevBody.GetLoop() != 0) {
         std::swap(mBody, mPrevBody);
         mBodyBlendStart = sTime;
     }

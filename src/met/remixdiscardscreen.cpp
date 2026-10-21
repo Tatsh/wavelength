@@ -30,15 +30,15 @@ bool RemixDiscardScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool RemixDiscardScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     String next;
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         next = button == kYesButton ? "s_r_mode" : "s_r_end_remix";
-    } else if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
+    } else if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
         if (!(button == kYesButton)) {
             next = FormatString(kLocalSaveFormat, mPlayer);
         } else if (mPlayer == TheGameDb->GetNumPlayers()) {

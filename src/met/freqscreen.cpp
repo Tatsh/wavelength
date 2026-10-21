@@ -133,7 +133,7 @@ void FreqScreen::PlayButtonSound(int nButton) {
 }
 
 bool FreqScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    PlayButtonSound(pMsg->mButton);
+    PlayButtonSound(pMsg->GetButton());
     return false;
 }
 

@@ -122,13 +122,12 @@ RndParticleSys::RndParticleSys(const char *pszName) : RndObject(pszName) {
     mLineLength = kDefaultLineLength;
     mMode = kModeLine;
     // Yes, the binary allocates a pool here that AddObjectRefs() releases at once.
-    mParticles = new Particle[mNumParticles];
+    mParticles = std::make_unique<Particle[]>(mNumParticles);
     AddObjectRefs();
 }
 
 RndParticleSys::~RndParticleSys() {
     RemoveObjectRefs();
-    delete[] mParticles;
 }
 
 void RndParticleSys::SetNumParticles(int nCount) {
@@ -367,13 +366,12 @@ void RndParticleSys::AddObjectRefs() {
         mParticlesOwner->AddRef(this);
     }
     if (mParticlesOwner == this) {
-        delete[] mParticles;
-        mParticles = new Particle[mNumParticles];
-        Particle *pEnd = mParticles + mNumParticles;
-        for (Particle *pParticle = mParticles; pParticle != pEnd; ++pParticle) {
+        mParticles = std::make_unique<Particle[]>(mNumParticles);
+        Particle *pEnd = mParticles.get() + mNumParticles;
+        for (Particle *pParticle = mParticles.get(); pParticle != pEnd; ++pParticle) {
             pParticle->mNext = pParticle + 1;
         }
-        mFreeParticles = mParticles;
+        mFreeParticles = mParticles.get();
         for (RndParticleSys *pSharer : mSharers) {
             pSharer->mLiveParticles = nullptr;
         }
@@ -428,7 +426,7 @@ void RndParticleSys::Replace(RndObject *pFrom, RndObject *pTo) {
 Particle *RndParticleSys::AllocParticle() {
     RndParticleSys *pOwner = mParticlesOwner;
     Particle *pParticle = pOwner->mFreeParticles;
-    if (pParticle == pOwner->mParticles + pOwner->mNumParticles) {
+    if (pParticle == pOwner->GetParticles() + pOwner->mNumParticles) {
         return nullptr;
     }
     pOwner->mFreeParticles = pParticle->mNext;

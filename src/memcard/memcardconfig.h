@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include <libmc.h>
@@ -25,7 +26,7 @@ extern DataArray *g_pMemcardConfig;
  * @ghidraAddress NTSC-U/C: 0x003af858
  * @ghidraAddress PAL: 0x0042e6f0
  */
-extern char *g_pMemcardBuffer;
+extern std::unique_ptr<char[]> g_pMemcardBuffer;
 
 /**
  * The size of g_pMemcardBuffer, the `buff_size` of the configuration.
@@ -62,7 +63,7 @@ bool MemcardReadSizeIs(int nBytes);
  * @ghidraAddress NTSC-U/C: 0x003af860
  * @ghidraAddress PAL: 0x0042e6fc
  */
-extern char *g_pMemcardIcon;
+extern std::unique_ptr<char[]> g_pMemcardIcon;
 
 /**
  * The size of g_pMemcardIcon.

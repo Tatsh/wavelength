@@ -78,7 +78,7 @@ void ScratchTrack::SetPlayer(Player *pPlayer) {
 }
 
 void ScratchTrack::HandleInput(Player *pPlayer, const PlayNoteEvent &event) {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     (void)(nTick / mTicksPerBar); // Yes, the binary computes this quotient and discards it.
     if (nTick < 0) {
         return;
@@ -139,7 +139,7 @@ void ScratchTrack::StartScratch(int nButton, float fX, float fY) {
         EndScratch();
     }
 
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     (void)(nTick / mTicksPerBar); // Yes, the binary computes this quotient and discards it.
     const int nPlayer = mPlayer->GetIndex();
     TheGfxManager.SetFreestyle(nPlayer, true, 0);
@@ -166,13 +166,13 @@ void ScratchTrack::EndScratch() {
     mScratchers[mActiveButton]->Stop();
     mActiveButton = kNoButton;
     if (mPlayer != nullptr) {
-        TheStats->ScratchEnd(mIndex, TheSongScheduler.mTick);
+        TheStats->ScratchEnd(mIndex, TheSongScheduler.GetTick());
         TheGfxManager.SetFreestyle(mPlayer->GetIndex(), false, 0);
     }
 }
 
 void ScratchTrack::UpdateScratchers() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nWrapped = WrapTick(nTick);
     const int nSetTick = (nWrapped >= 0) ? nWrapped : 0;
 
@@ -196,7 +196,7 @@ void ScratchTrack::UpdateScratchers() {
 
 void ScratchTrack::PlayReleaseSound(int nButton) {
     const int nQuantum = TheGameConfig->mScratcherSampleQuantizationTicks;
-    const int nRemainder = TheSongScheduler.mTick % nQuantum;
+    const int nRemainder = TheSongScheduler.GetTick() % nQuantum;
     const int nDelay = (nRemainder == 0) ? 0 : (nQuantum - nRemainder);
     mReleaseSounds[nButton]->PlayFrom(&TheSongScheduler, -nDelay);
 }

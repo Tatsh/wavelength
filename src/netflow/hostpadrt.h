@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include <librtdme.h>
@@ -424,6 +425,67 @@ public:
 
     using LaunchpadRT::OnMsg;
 
+    /** @return Non-zero while the game server library is connected. */
+    int GetMgclConnected() const {
+        return mMgclConnected;
+    }
+
+    /** @param nValue Non-zero while the game server library is connected. */
+    void SetMgclConnected(int nValue) {
+        mMgclConnected = nValue;
+    }
+
+    /** @return Non-zero once the game server library failed. */
+    int GetLost() const {
+        return mLost;
+    }
+
+    /** @return The game server the authentication returned. */
+    rtNetConnectionInfo &GetServerInfo() {
+        return mServerInfo;
+    }
+
+    /** @return The game server the authentication returned. */
+    const rtNetConnectionInfo &GetServerInfo() const {
+        return mServerInfo;
+    }
+
+    /** @return The key of the session on the game server. */
+    String &GetSessionKey() {
+        return mSessionKey;
+    }
+
+    /** @return The key of the session on the game server. */
+    const String &GetSessionKey() const {
+        return mSessionKey;
+    }
+
+    /** @return The settings of the game. */
+    NetGameParams &GetParams() {
+        return mParams;
+    }
+
+    /** @return The settings of the game. */
+    const NetGameParams &GetParams() const {
+        return mParams;
+    }
+
+    /** @return The share of the remix before the song loads. */
+    NetMultiTask &GetShareTask() {
+        return mShareTask;
+    }
+
+    /** @return Non-zero while the remix is shared. */
+    int GetSharing() const {
+        return mSharing;
+    }
+
+    /** @param nValue Non-zero while the remix is shared. */
+    void SetSharing(int nValue) {
+        mSharing = nValue;
+    }
+
+private:
     int mMgclConnected;              /*!< Non-zero while the game server library is connected. */
     int mLost;                       /*!< Non-zero once the game server library failed. */
     rtNetConnectionInfo mServerInfo; /*!< The game server the authentication returned. */

@@ -276,7 +276,7 @@ void RndLine::DumpText(PrnStream &stream) {
     if (stream.mDumpLevel < 2) {
         return;
     }
-    stream << "mesh:" << static_cast<const RndObject *>(mMesh) << "\n";
+    stream << "mesh:" << static_cast<const RndObject *>(mMesh.get()) << "\n";
 }
 
 void RndLine::Save(BinStream &stream) {
@@ -469,14 +469,13 @@ void RndLine::FindPointVerts(int nIndex, PointVerts &verts) {
 }
 
 void RndLine::ReleaseMesh() {
-    delete mMesh;
-    mMesh = nullptr;
+    mMesh.reset();
 }
 
 void RndLine::BuildMesh() {
     const char *pszMeshName = FormatString("[%s_mesh]", mName.c_str());
     RndObject *pObject = TheManager.Create(RndMesh::sClassName, pszMeshName);
-    mMesh = pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr;
+    mMesh.reset(pObject != nullptr ? dynamic_cast<RndMesh *>(pObject) : nullptr);
     mMesh->mInternal = 1;
     mMesh->mGeomOwner->mMutable = 1;
     mMesh->SetMat(mMat);

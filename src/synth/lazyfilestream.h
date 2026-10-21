@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/file.h"
 #include "os/string.h"
 
@@ -72,8 +74,8 @@ private:
 
     int mMoreData;               /*!< Whether a read remains. */
     int mPosition;               /*!< Offset in the file of the next data handed out. */
-    File *mFile;                 /*!< The file. */
-    char *mBuffers[kNumBuffers]; /*!< The buffers. */
+    std::unique_ptr<File> mFile; /*!< The file. */
+    char *mBuffers[kNumBuffers]; /*!< The buffers, freed with PoolMemFree. */
     unsigned int mCurBuffer;     /*!< Index of the buffer of the read in flight. */
     int mBufferSize;             /*!< Size of each buffer in bytes. */
     int mBytesAvailable;         /*!< Bytes of the completed read, or -1 while it is in flight. */

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "game/triggeraction.h"
 #include "game/triggercondition.h"
@@ -66,6 +67,15 @@ private:
      */
     void AddConditions(DataArray *pConditions);
 
-    std::list<std::list<TriggerCondition *>> mConditions;
-    std::list<TriggerAction *> mActions;
+    /** @return The groups of conditions. */
+    const std::list<std::list<std::unique_ptr<TriggerCondition>>> &GetConditions() const {
+        return mConditions;
+    }
+
+    /** @return The actions. */
+    const std::list<std::unique_ptr<TriggerAction>> &GetActions() const {
+        return mActions;
+    }
+    std::list<std::list<std::unique_ptr<TriggerCondition>>> mConditions;
+    std::list<std::unique_ptr<TriggerAction>> mActions;
 };

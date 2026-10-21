@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/task.h"
 #include "synth/streamplayer.h"
 
@@ -49,10 +51,21 @@ public:
      */
     void SetPaused(bool bPaused);
 
-    Task *mWaitingTask;     /*!< The task that learns when the stream is done, or null. */
-    StreamPlayer *mPlayer;  /*!< The playing stream, or null. */
-    const char *mName;      /*!< The stream name. */
-    const char *mDirectory; /*!< The directory of the stream file. */
+    /** @return The stream name. */
+    const char *GetName() const {
+        return mName;
+    }
+
+    /** @return The playing stream, or null. */
+    StreamPlayer *GetPlayer() const {
+        return mPlayer.get();
+    }
+
+private:
+    Task *mWaitingTask; /*!< The task that learns when the stream is done, or null. Borrowed. */
+    std::unique_ptr<StreamPlayer> mPlayer; /*!< The playing stream, or null. */
+    const char *mName;                     /*!< The stream name. Borrowed. */
+    const char *mDirectory;                /*!< The directory of the stream file. Borrowed. */
 
 protected:
     /**

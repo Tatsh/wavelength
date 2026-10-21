@@ -46,14 +46,14 @@ void TnlWinShell::Reset() {
 
 void TnlWinShell::Start(int nPath) {
     mPath = nPath;
-    mStartTick = TheGameDb->mSongTick;
+    mStartTick = TheGameDb->GetSongTick();
 }
 
 void TnlWinShell::Update() {
     if (mStartTick == kNoTick) {
         return;
     }
-    const float flElapsed = TheGameDb->mSongTick - mStartTick;
+    const float flElapsed = TheGameDb->GetSongTick() - mStartTick;
     if (mDuration <= flElapsed) {
         if (mPath >= 0) {
             TheTriggerMgr.PathUnlockedEvent(mPath);

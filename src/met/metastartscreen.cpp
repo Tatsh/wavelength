@@ -46,7 +46,7 @@ MetaStartScreen::MetaStartScreen(DataArray *pData) : FreqScreen(pData) {
 void MetaStartScreen::Poll(float fTime) {
     FreqScreen::Poll(fTime);
     if (mMusicView != nullptr) {
-        mMusicView->SetFrame(TheGameDb->mSongTick);
+        mMusicView->SetFrame(TheGameDb->GetSongTick());
     }
     if (mAttractTime > 0.0f && mAttractTime < SystemMs()) {
         LaunchAttract();

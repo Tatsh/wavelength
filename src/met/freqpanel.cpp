@@ -200,7 +200,7 @@ void FreqPanel::Draw() {
     if (mLoaded == 0) {
         return;
     }
-    const float fTime = TheUI.mTime;
+    const float fTime = TheUI.GetTime();
     mMatAlwaysAnim->SetFrame(fTime);
     if (mMatStart != 0.0f) {
         float fFrame = fTime - mMatStart;

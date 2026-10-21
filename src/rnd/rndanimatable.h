@@ -748,10 +748,16 @@ public:
      */
     static int sRev;
 
+    /** @return The filter chain, applied first to last. */
+    const std::list<Filter *> &GetFilters() const {
+        return mFilters;
+    }
+
     std::list<RndAnimatable *> mAnims; /*!< The children, which receive the filtered frame. */
     std::list<Filter *> mFilters;      /*!< The filter chain, applied first to last. */
-    float mFrame;                      /*!< The frame SetFrame() last received. */
-    float mFilteredFrame;              /*!< The frame after the filters. */
+
+    float mFrame;         /*!< The frame SetFrame() last received. */
+    float mFilteredFrame; /*!< The frame after the filters. */
 
 protected:
     /**

@@ -103,7 +103,7 @@ void LRButton::Poll(float fTime) {
         mArrowButton = kPadNone;
         UIPanel *pPanel = TheUI.FocusPanel();
         // The button is read after it is cleared, so the message carries kPadNone.
-        UIComponentSelectMsg msg(this, pPanel, TheUI.mCurrentScreen, mArrowButton);
+        UIComponentSelectMsg msg(this, pPanel, TheUI.GetCurrentScreen(), mArrowButton);
         Dispatch(&msg);
         return;
     }
@@ -150,7 +150,7 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
     if (!bArrow || pMsg->mPressed == 0) {
         return false;
     }
-    UIScreen *pScreen = TheUI.mCurrentScreen;
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
     UIComponentSelectStartMsg msg(this, TheUI.FocusPanel(), pScreen, pMsg->mButton, pMsg->mPad);
     (void)Dispatch(&msg); // The arrow flashes even when a handler stops the choice.
     if (mArrowButton == kPadDLeft) {
@@ -159,7 +159,8 @@ bool LRButton::HandleSelect(JoypadInputMsg *pMsg) {
         mRightArrow->SetMat(mArrowStyle->GetMat(mRevertState));
     }
     mArrowButton = pMsg->mButton;
-    StartFlash(TheUI.mTime, sArrowFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
+    StartFlash(
+        TheUI.GetTime(), sArrowFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
     mFlashDone = 1;
     mArrowFlashDone = 0;
     return true;

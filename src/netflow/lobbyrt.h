@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -641,63 +642,375 @@ public:
      */
     static int sUnlimitedUpload;
 
-    int mDisconnectReason;                /*!< One of DisconnectReason. */
-    int mDisconnected;                    /*!< Non-zero once the connection failed. */
-    NetMultiTask mConnectTask;            /*!< The chain of Connect(). */
-    NetMultiTask mDisconnectTask;         /*!< The chain of Disconnect() and Fail(). */
-    NetMultiTask mCreateAccountTask;      /*!< The chain of CreateAccount(). */
-    NetMultiTask mDeleteAccountTask;      /*!< The chain of DeleteAccount(). */
-    NetMultiTask mChangePasswordTask;     /*!< The chain of ChangePassword(). */
-    NetMultiTask mLoginTask;              /*!< The chain of Login(). */
-    NetMultiTask mChatroomsTask;          /*!< The chain of RequestChatrooms(). */
-    NetMultiTask mJoinChatroomTask;       /*!< The chain of JoinChatroom(). */
-    NetMultiTask mCreateChatroomTask;     /*!< The chain of CreateChatroom(). */
-    NetMultiTask mLobbyPlayersTask;       /*!< The chain of RequestLobbyPlayers(). */
-    NetMultiTask mLaunchpadPlayersTask;   /*!< The chain of RequestLaunchpadPlayers(). */
-    NetMultiTask mLaunchpadsTask;         /*!< The chain of RequestLaunchpads(). */
-    NetMultiTask mFindPlayerTask;         /*!< The chain of FindPlayer(). */
-    NetMultiTask mRanksTask;              /*!< The chain of RequestRanks(). */
-    NetMultiTask mDownloadTask;           /*!< The chain of the downloads. */
-    NetMultiTask mUploadTask;             /*!< The chain of the uploads. */
-    NetMultiTask mFileListTask;           /*!< The chain of RequestFiles(). */
-    NetMultiTask mDeleteFileTask;         /*!< The chain of DeleteFile(). */
-    TaskList mTasks;                      /*!< The steps that run on their own. */
-    PeriodicTask mCheckInet;              /*!< The check of the network connection each second. */
-    int mRtReady;                         /*!< Non-zero while the library is started. */
-    int mMediusConnected;                 /*!< Non-zero while the lobby server is connected. */
-    String mSessionKey;                   /*!< The key of the lobby session. */
-    rtNetKeyPair mKeyPair;                /*!< The key pair of the console. */
-    int mSecure;                          /*!< Non-zero when the connection is encrypted. */
-    const char *mServerName;              /*!< The host name of the lobby server. */
-    int mServerPort;                      /*!< The port of the lobby server. */
-    String mServerAddress;                /*!< The address the name of the server resolves to. */
-    std::list<LobbyLocation> mLocations;  /*!< The locations of the server. */
-    int mLocationId;                      /*!< The location of the login. */
-    int mJoinChatroomId;                  /*!< The room JoinChatroom() joins. */
-    String mNewChatroomName;              /*!< The name of the room CreateChatroom() creates. */
-    int mLaunchpadsPage;                  /*!< The page of the launchpads, from 0. */
-    int mLaunchpadsPageSize;              /*!< The launchpads of a page. */
-    int mLaunchpadId;                     /*!< The launchpad RequestLaunchpadPlayers() lists. */
-    String mReserved398;                  // +0x398, never read or written after construction.
-    String mNewPassword;                  /*!< The password ChangePassword() sets. */
-    std::vector<RTFilter> mFilters;       /*!< The filters of the next list of launchpads. */
-    int mRanksPage;                       /*!< The page of the ranking, from 0. */
-    int mRanksPageSize;                   /*!< The players of a page of the ranking. */
-    int mRanksMode;                       /*!< The mode of RequestRanks(). */
-    int mUploadAttempts;                  /*!< The uploads of the current remix tried. */
-    int mTransferSize;                    /*!< The size of mTransferBuffer in bytes. */
-    String mTransferName;                 /*!< The file of the transfer. */
-    char *mTransferBuffer;                /*!< The bytes of the transfer, or null. */
-    int mTransferMode;                    /*!< One of TransferMode. */
-    int mDeleteBeforeUpload;              /*!< Non-zero to delete the file before the upload. */
-    std::list<String> mFiles;             /*!< The files the last list found. */
-    LobbyPlayer mLocalPlayer;             /*!< The local player. */
-    String mPassword;                     /*!< The password of the local player. */
-    String mStatsText;                    /*!< The text GetPlayerStats() encodes. */
-    rtNetConnectionInfo mLobbyInfo;       /*!< The connection to the lobby server. */
-    NetChatroomInfo mChatroom;            /*!< The chat room of the local player. */
-    std::set<int> mMuted;                 /*!< The muted accounts. */
-    std::list<LobbyPlayer> mLobbyPlayers; /*!< The players of the chat room. */
+    /** @return One of DisconnectReason. */
+    int GetDisconnectReason() const {
+        return mDisconnectReason;
+    }
+
+    /** @param nValue One of DisconnectReason. */
+    void SetDisconnectReason(int nValue) {
+        mDisconnectReason = nValue;
+    }
+
+    /** @return Non-zero once the connection failed. */
+    int GetDisconnected() const {
+        return mDisconnected;
+    }
+
+    /** @param nValue Non-zero once the connection failed. */
+    void SetDisconnected(int nValue) {
+        mDisconnected = nValue;
+    }
+
+    /** @return The chain of Connect(). */
+    NetMultiTask &GetConnectTask() {
+        return mConnectTask;
+    }
+
+    /** @return The chain of Disconnect() and Fail(). */
+    NetMultiTask &GetDisconnectTask() {
+        return mDisconnectTask;
+    }
+
+    /** @return The chain of Login(). */
+    NetMultiTask &GetLoginTask() {
+        return mLoginTask;
+    }
+
+    /** @return The steps that run on their own. */
+    TaskList &GetTasks() {
+        return mTasks;
+    }
+
+    /** @return Non-zero while the library is started. */
+    int GetRtReady() const {
+        return mRtReady;
+    }
+
+    /** @param nValue Non-zero while the library is started. */
+    void SetRtReady(int nValue) {
+        mRtReady = nValue;
+    }
+
+    /** @return Non-zero while the lobby server is connected. */
+    int GetMediusConnected() const {
+        return mMediusConnected;
+    }
+
+    /** @param nValue Non-zero while the lobby server is connected. */
+    void SetMediusConnected(int nValue) {
+        mMediusConnected = nValue;
+    }
+
+    /** @return The key of the lobby session. */
+    String &GetSessionKey() {
+        return mSessionKey;
+    }
+
+    /** @return The key of the lobby session. */
+    const String &GetSessionKey() const {
+        return mSessionKey;
+    }
+
+    /** @return The key pair of the console. */
+    rtNetKeyPair &GetKeyPair() {
+        return mKeyPair;
+    }
+
+    /** @return Non-zero when the connection is encrypted. */
+    int GetSecure() const {
+        return mSecure;
+    }
+
+    /** @param nValue Non-zero when the connection is encrypted. */
+    void SetSecure(int nValue) {
+        mSecure = nValue;
+    }
+
+    /** @return The host name of the lobby server. Borrowed. */
+    const char *GetServerName() const {
+        return mServerName;
+    }
+
+    /** @param pszValue The host name of the lobby server. Borrowed. */
+    void SetServerName(const char *pszValue) {
+        mServerName = pszValue;
+    }
+
+    /** @return The port of the lobby server. */
+    int GetServerPort() const {
+        return mServerPort;
+    }
+
+    /** @param nValue The port of the lobby server. */
+    void SetServerPort(int nValue) {
+        mServerPort = nValue;
+    }
+
+    /** @return The address the name of the server resolves to. */
+    String &GetServerAddress() {
+        return mServerAddress;
+    }
+
+    /** @return The address the name of the server resolves to. */
+    const String &GetServerAddress() const {
+        return mServerAddress;
+    }
+
+    /** @return The location of the login. */
+    int GetLocationId() const {
+        return mLocationId;
+    }
+
+    /** @param nValue The location of the login. */
+    void SetLocationId(int nValue) {
+        mLocationId = nValue;
+    }
+
+    /** @return The room JoinChatroom() joins. */
+    int GetJoinChatroomId() const {
+        return mJoinChatroomId;
+    }
+
+    /** @param nValue The room JoinChatroom() joins. */
+    void SetJoinChatroomId(int nValue) {
+        mJoinChatroomId = nValue;
+    }
+
+    /** @return The name of the room CreateChatroom() creates. */
+    String &GetNewChatroomName() {
+        return mNewChatroomName;
+    }
+
+    /** @return The name of the room CreateChatroom() creates. */
+    const String &GetNewChatroomName() const {
+        return mNewChatroomName;
+    }
+
+    /** @return The launchpads of a page. */
+    int GetLaunchpadsPageSize() const {
+        return mLaunchpadsPageSize;
+    }
+
+    /** @return The page of the launchpads, from 0. */
+    int GetLaunchpadsPage() const {
+        return mLaunchpadsPage;
+    }
+
+    /** @return The launchpad RequestLaunchpadPlayers() lists. */
+    int GetLaunchpadId() const {
+        return mLaunchpadId;
+    }
+
+    /** @param nValue The launchpad RequestLaunchpadPlayers() lists. */
+    void SetLaunchpadId(int nValue) {
+        mLaunchpadId = nValue;
+    }
+
+    /** @return The password ChangePassword() sets. */
+    String &GetNewPassword() {
+        return mNewPassword;
+    }
+
+    /** @return The password ChangePassword() sets. */
+    const String &GetNewPassword() const {
+        return mNewPassword;
+    }
+
+    /** @return The filters of the next list of launchpads. */
+    std::vector<RTFilter> &GetFilters() {
+        return mFilters;
+    }
+
+    /** @return The filters of the next list of launchpads. */
+    const std::vector<RTFilter> &GetFilters() const {
+        return mFilters;
+    }
+
+    /** @return The filters the server applies. */
+    std::vector<RTFilter> &GetActiveFilters() {
+        return mActiveFilters;
+    }
+
+    /** @return The filters the server applies. */
+    const std::vector<RTFilter> &GetActiveFilters() const {
+        return mActiveFilters;
+    }
+
+    /** @return The page of the ranking, from 0. */
+    int GetRanksPage() const {
+        return mRanksPage;
+    }
+
+    /** @return The players of a page of the ranking. */
+    int GetRanksPageSize() const {
+        return mRanksPageSize;
+    }
+
+    /** @return The mode of RequestRanks(). */
+    int GetRanksMode() const {
+        return mRanksMode;
+    }
+
+    /** @return The size of the transfer buffer in bytes. */
+    int GetTransferSize() const {
+        return mTransferSize;
+    }
+
+    /** @param nValue The size of the transfer buffer in bytes. */
+    void SetTransferSize(int nValue) {
+        mTransferSize = nValue;
+    }
+
+    /** @return The file of the transfer. */
+    String &GetTransferName() {
+        return mTransferName;
+    }
+
+    /** @return The bytes of the transfer, or null. Freed with PoolMemFree(). */
+    char *GetTransferBuffer() const {
+        return mTransferBuffer;
+    }
+
+    /** @param pValue The bytes of the transfer, or null. Freed with PoolMemFree(). */
+    void SetTransferBuffer(char *pValue) {
+        mTransferBuffer = pValue;
+    }
+
+    /** @return The local player. */
+    LobbyPlayer &GetLocalPlayer() {
+        return mLocalPlayer;
+    }
+
+    /** @return The local player. */
+    const LobbyPlayer &GetLocalPlayer() const {
+        return mLocalPlayer;
+    }
+
+    /** @return The connection to the lobby server. */
+    rtNetConnectionInfo &GetLobbyInfo() {
+        return mLobbyInfo;
+    }
+
+    /** @return The chat room of the local player. */
+    NetChatroomInfo &GetChatroom() {
+        return mChatroom;
+    }
+
+    /** @return The chat room of the local player. */
+    const NetChatroomInfo &GetChatroom() const {
+        return mChatroom;
+    }
+
+    /** @return The players of the chat room. */
+    std::list<LobbyPlayer> &GetLobbyPlayers() {
+        return mLobbyPlayers;
+    }
+
+    /** @return The players of a launchpad. */
+    std::list<LobbyPlayer> &GetLaunchpadPlayers() {
+        return mLaunchpadPlayers;
+    }
+
+    /** @return The page of the ranking. */
+    std::list<LobbyPlayer> &GetRankedPlayers() {
+        return mRankedPlayers;
+    }
+
+    /** @return The page of the launchpads. */
+    std::list<NetLaunchpadInfo> &GetLaunchpads() {
+        return mLaunchpads;
+    }
+
+    /** @return The chat rooms. */
+    std::list<NetChatroomInfo> &GetChatrooms() {
+        return mChatrooms;
+    }
+
+    /** @return The player FindPlayer() finds. */
+    LobbyPlayer &GetFoundPlayer() {
+        return mFoundPlayer;
+    }
+
+    /** @return The news of the lobby server. */
+    String &GetAnnouncement() {
+        return mAnnouncement;
+    }
+
+    /** @return The news of the lobby server. */
+    const String &GetAnnouncement() const {
+        return mAnnouncement;
+    }
+
+    /** @return The licence agreement of the lobby server. */
+    String &GetPolicy() {
+        return mPolicy;
+    }
+
+    /** @return The licence agreement of the lobby server. */
+    const String &GetPolicy() const {
+        return mPolicy;
+    }
+
+private:
+    int mDisconnectReason;               /*!< One of DisconnectReason. */
+    int mDisconnected;                   /*!< Non-zero once the connection failed. */
+    NetMultiTask mConnectTask;           /*!< The chain of Connect(). */
+    NetMultiTask mDisconnectTask;        /*!< The chain of Disconnect() and Fail(). */
+    NetMultiTask mCreateAccountTask;     /*!< The chain of CreateAccount(). */
+    NetMultiTask mDeleteAccountTask;     /*!< The chain of DeleteAccount(). */
+    NetMultiTask mChangePasswordTask;    /*!< The chain of ChangePassword(). */
+    NetMultiTask mLoginTask;             /*!< The chain of Login(). */
+    NetMultiTask mChatroomsTask;         /*!< The chain of RequestChatrooms(). */
+    NetMultiTask mJoinChatroomTask;      /*!< The chain of JoinChatroom(). */
+    NetMultiTask mCreateChatroomTask;    /*!< The chain of CreateChatroom(). */
+    NetMultiTask mLobbyPlayersTask;      /*!< The chain of RequestLobbyPlayers(). */
+    NetMultiTask mLaunchpadPlayersTask;  /*!< The chain of RequestLaunchpadPlayers(). */
+    NetMultiTask mLaunchpadsTask;        /*!< The chain of RequestLaunchpads(). */
+    NetMultiTask mFindPlayerTask;        /*!< The chain of FindPlayer(). */
+    NetMultiTask mRanksTask;             /*!< The chain of RequestRanks(). */
+    NetMultiTask mDownloadTask;          /*!< The chain of the downloads. */
+    NetMultiTask mUploadTask;            /*!< The chain of the uploads. */
+    NetMultiTask mFileListTask;          /*!< The chain of RequestFiles(). */
+    NetMultiTask mDeleteFileTask;        /*!< The chain of DeleteFile(). */
+    TaskList mTasks;                     /*!< The steps that run on their own. */
+    PeriodicTask mCheckInet;             /*!< The check of the network connection each second. */
+    int mRtReady;                        /*!< Non-zero while the library is started. */
+    int mMediusConnected;                /*!< Non-zero while the lobby server is connected. */
+    String mSessionKey;                  /*!< The key of the lobby session. */
+    rtNetKeyPair mKeyPair;               /*!< The key pair of the console. */
+    int mSecure;                         /*!< Non-zero when the connection is encrypted. */
+    const char *mServerName;             /*!< The host name of the lobby server. */
+    int mServerPort;                     /*!< The port of the lobby server. */
+    String mServerAddress;               /*!< The address the name of the server resolves to. */
+    std::list<LobbyLocation> mLocations; /*!< The locations of the server. */
+    int mLocationId;                     /*!< The location of the login. */
+    int mJoinChatroomId;                 /*!< The room JoinChatroom() joins. */
+    String mNewChatroomName;             /*!< The name of the room CreateChatroom() creates. */
+    int mLaunchpadsPage;                 /*!< The page of the launchpads, from 0. */
+    int mLaunchpadsPageSize;             /*!< The launchpads of a page. */
+    int mLaunchpadId;                    /*!< The launchpad RequestLaunchpadPlayers() lists. */
+    String mReserved398;                 // +0x398, never read or written after construction.
+    String mNewPassword;                 /*!< The password ChangePassword() sets. */
+    std::vector<RTFilter> mFilters;      /*!< The filters of the next list of launchpads. */
+    int mRanksPage;                      /*!< The page of the ranking, from 0. */
+    int mRanksPageSize;                  /*!< The players of a page of the ranking. */
+    int mRanksMode;                      /*!< The mode of RequestRanks(). */
+    int mUploadAttempts;                 /*!< The uploads of the current remix tried. */
+    int mTransferSize;                   /*!< The size of mTransferBuffer in bytes. */
+    String mTransferName;                /*!< The file of the transfer. */
+    char *mTransferBuffer;    /*!< The bytes of the transfer, or null. Freed with PoolMemFree().
+                               */
+    int mTransferMode;        /*!< One of TransferMode. */
+    int mDeleteBeforeUpload;  /*!< Non-zero to delete the file before the upload. */
+    std::list<String> mFiles; /*!< The files the last list found. */
+    LobbyPlayer mLocalPlayer; /*!< The local player. */
+    String mPassword;         /*!< The password of the local player. */
+    String mStatsText;        /*!< The text GetPlayerStats() encodes. */
+    rtNetConnectionInfo mLobbyInfo;           /*!< The connection to the lobby server. */
+    NetChatroomInfo mChatroom;                /*!< The chat room of the local player. */
+    std::set<int> mMuted;                     /*!< The muted accounts. */
+    std::list<LobbyPlayer> mLobbyPlayers;     /*!< The players of the chat room. */
     std::list<LobbyPlayer> mLaunchpadPlayers; /*!< The players of a launchpad. */
     std::list<LobbyPlayer> mRankedPlayers;    /*!< The page of the ranking. */
     std::list<NetLaunchpadInfo> mLaunchpads;  /*!< The page of the launchpads. */
@@ -708,7 +1021,6 @@ public:
     String mPolicy;                           /*!< The licence agreement of the lobby server. */
     std::vector<RTFilter> mActiveFilters;     /*!< The filters the server applies. */
 
-private:
     /**
      * Read the name, the port, and the security of the lobby server from `server.cfg`.
      *
@@ -796,7 +1108,7 @@ private:
  * @ghidraAddress NTSC-U/C: 0x003b0af0
  * @ghidraAddress PAL: 0x0042f9bc
  */
-extern LobbyRT *TheLobbyRT;
+extern std::unique_ptr<LobbyRT> TheLobbyRT;
 
 inline void LobbyRT::ReportNetError(int nLine, int nError) {
     if (TheLobbyRT != nullptr) {

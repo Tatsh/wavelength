@@ -108,7 +108,7 @@ void MultiEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         mPlayerRows[ranking[nRow]] = nRow;
     }
 
-    SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    SongEntry entry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())};
     UIComponent *pComponent = TheUI.FindComponent(kBandPanel, "song", false);
     pComponent->SetText(FormatString(pComponent->Text(), entry.GetTitleShort()));
     pComponent = TheUI.FindComponent(kBandPanel, "band", false);
@@ -131,8 +131,8 @@ void MultiEndGameScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 bool MultiEndGameScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszName = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszName = pMsg->GetComponent()->GetName();
         Metagame::DialogAction action;
         if (strcmp(pszName, "replay") == 0) {
             action = Metagame::kDialogActionQuit;
@@ -155,5 +155,6 @@ bool MultiEndGameScreen::DispatchPriv(Message *pMsg) {
 
 void MultiEndGameScreen::Poll(float fTime) {
     UIScreen::Poll(fTime);
-    dynamic_cast<RndMovie *>(TheManager.Find("freq_winner.mov"))->SetFrame(TheGameDb->mSongTick);
+    dynamic_cast<RndMovie *>(TheManager.Find("freq_winner.mov"))
+        ->SetFrame(TheGameDb->GetSongTick());
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "gfx/gfxtunnel.h"
 #include "gfx/tnlgeom.h"
@@ -142,11 +143,11 @@ public:
      */
     void UpdateRange(TnlGeom *pGeom, const TnlTrackRange *pRange);
 
-    std::list<Transform> mTransforms; /*!< The pool of free instance transforms. */
-    RndMesh *mMesh;                   /*!< The spotlight, `gem spotlight.mesh`. */
-    RndMultiMesh *mSpots;             /*!< The spotlights, `gem spotlight.mm`. */
-    RndMultiMesh *mGlows;             /*!< The glows, `gem base glow.mm`. */
-    std::list<LightPos> mLights;      /*!< The lights, sorted by tick. */
+    std::list<Transform> mTransforms;     /*!< The pool of free instance transforms. */
+    RndMesh *mMesh;                       /*!< The spotlight, `gem spotlight.mesh`. */
+    std::unique_ptr<RndMultiMesh> mSpots; /*!< The spotlights, `gem spotlight.mm`. */
+    std::unique_ptr<RndMultiMesh> mGlows; /*!< The glows, `gem base glow.mm`. */
+    std::list<LightPos> mLights;          /*!< The lights, sorted by tick. */
 
 private:
     /**

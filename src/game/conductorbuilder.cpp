@@ -18,7 +18,7 @@ ConductorBuilder::ConductorBuilder(int nTrack,
                                    int nNumBars,
                                    int nTicksPerBeat,
                                    const float *pfMsPerTick,
-                                   PlayMap **ppPlayMap,
+                                   std::unique_ptr<PlayMap> *ppPlayMap,
                                    int *pTicksPerBar)
     : TrackBuilder(nTrack, bValidate, pfnError), mNumBars(nNumBars), mTicksPerBeat(nTicksPerBeat),
       mMsPerTick(pfMsPerTick), mPlayMap(ppPlayMap), mTicksPerBar(pTicksPerBar) {
@@ -46,5 +46,5 @@ void ConductorBuilder::OnTimeSignature(int nTick,
         Error(nTick, "time signature set more than once; variable time signature not supported.");
     }
     *mTicksPerBar = nNumerator * mTicksPerBeat;
-    *mPlayMap = new PlayMap(*mTicksPerBar, mNumBars);
+    *mPlayMap = std::make_unique<PlayMap>(*mTicksPerBar, mNumBars);
 }

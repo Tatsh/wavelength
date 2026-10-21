@@ -46,7 +46,7 @@ bool RemixCopyDelScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
     UIList *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kListComponent, false));
-    RemixInfo info = mRemixes[pList->mSelected];
+    RemixInfo info = mRemixes[pList->GetSelected()];
     if (pMsg->mButton == kPadCircle) {
         const int nOtherSlot = mSlot == 0;
         TheGameDb->SetRemix(&info);

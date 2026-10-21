@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 /**
  * Fixed pool of effects, handed out from a free list and stolen oldest first when it runs dry.
  *
@@ -19,9 +21,8 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00367da8
      * @ghidraAddress PAL: 0x003d64d8
      */
-    explicit FxPool(int nCount) : mCount(nCount) {
-        mItems = new T[nCount];
-        mFree = mItems;
+    explicit FxPool(int nCount) : mCount(nCount), mItems(std::make_unique<T[]>(nCount)) {
+        mFree = mItems.get();
         for (int i = 0; i < nCount; ++i) {
             mFree[i].mNextFree = i == nCount - 1 ? nullptr : &mFree[i + 1];
             Prepare(&mFree[i]);
@@ -46,9 +47,7 @@ public:
      * @ghidraAddress NTSC-U/C: 0x00367eb0
      * @ghidraAddress PAL: 0x003d65e0
      */
-    virtual ~FxPool() {
-        delete[] mItems;
-    }
+    virtual ~FxPool() = default;
 
     /**
      * Report the effect that started first.
@@ -61,8 +60,9 @@ public:
         if (mCount == 0) {
             return nullptr;
         }
-        T *pOldest = mItems;
-        for (T *pItem = mItems + 1; pItem != mItems + mCount; ++pItem) {
+        T *const pItems = mItems.get();
+        T *pOldest = pItems;
+        for (T *pItem = pItems + 1; pItem != pItems + mCount; ++pItem) {
             if (pItem->mStartTime < pOldest->mStartTime) {
                 pOldest = pItem;
             }
@@ -128,7 +128,8 @@ public:
         Release(pItem);
     }
 
-    int mCount; /*!< The number of effects. */
-    T *mFree;   /*!< The head of the free list. */
-    T *mItems;  /*!< The effects. */
+protected:
+    int mCount;                  /*!< The number of effects. */
+    T *mFree;                    /*!< The head of the free list. */
+    std::unique_ptr<T[]> mItems; /*!< The effects. */
 };

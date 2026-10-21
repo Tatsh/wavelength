@@ -115,13 +115,13 @@ void Freestylus::Setup(float flScale) {
         return;
     }
     mScale = flScale;
-    const float flSize = flScale * TheGfxManager.mScrollSpeed;
+    const float flSize = flScale * TheGfxManager.GetScrollSpeed();
     mButtonForce = mButton.mSys->mForce;
     ScaleParticles(mButton.mSys, flSize);
     mArm.Init(FindObject<RndParticleSys>("freestylus2.part"), mView, flSize);
     mArm.Scale(mParticles, flSize);
     mView->RemoveDraw(mArm.mSys);
-    SetScaleBasis(mFlash, TheGfxManager.mScrollSpeed);
+    SetScaleBasis(mFlash, TheGfxManager.GetScrollSpeed());
 }
 
 void Freestylus::Reset() {
@@ -168,11 +168,11 @@ void Freestylus::Spin(float flTime, float flTumbleX, float flTumbleY) {
 }
 
 void Freestylus::Flash() {
-    mFlashTime = TheGameDb->mSongTime;
+    mFlashTime = TheGameDb->GetSongTime();
 }
 
 void Freestylus::ClearParticles() {
-    const float flTime = TheGameDb->mSongTime;
+    const float flTime = TheGameDb->GetSongTime();
     mParticles->SetEmitFrame(flTime);
     mParticles->FreeAllParticles();
     mArm.mSys->SetEmitFrame(flTime);
@@ -190,7 +190,7 @@ void Freestylus::Update(bool bPlaying, float, float flTime, float flScale) {
 
 void Freestylus::Draw(RndTransformable *pParent, int) {
     bool bFlash = false;
-    const float flTime = TheGameDb->mSongTime;
+    const float flTime = TheGameDb->GetSongTime();
     if (mFlashTime != kNoFlash) {
         const float flSinceFlash = flTime - mFlashTime;
         if (kFlashLength <= flSinceFlash) {
@@ -203,14 +203,14 @@ void Freestylus::Draw(RndTransformable *pParent, int) {
     const Transform &world = pParent->mWorldXfm;
     const Vector3 basis[] = {world.mBasisX, world.mBasisY, world.mBasisZ};
     mButton.mSys->mForce = RotateDir(basis, mButtonForce);
-    mView->SetFrame(TheGameDb->mSongTime);
-    mTempo->SetFrame(TheGameDb->mSongTick);
+    mView->SetFrame(TheGameDb->GetSongTime());
+    mTempo->SetFrame(TheGameDb->GetSongTick());
     mView->UpdateWorldXfm(pParent, 1);
     mFlash->UpdateWorldXfm(pParent, 1);
     mParticles->SetEmitFrame(flTime);
     mArm.mSys->SetEmitFrame(flTime);
     mButton.Update(flTime, mTime);
-    mBeams->SetShowing(mBeamGrow.mValue != 0.0f);
+    mBeams->SetShowing(mBeamGrow.GetValue() != 0.0f);
     mView->Draw();
     mArm.Draw();
     if (bFlash) {

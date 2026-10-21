@@ -37,6 +37,41 @@ public:
 
     /** The choice and the colour of one part. */
     struct PartSetting {
+        /** @return The index of the choice in the `types` array, less one. */
+        unsigned char GetType() const {
+            return mType;
+        }
+
+        /**
+         * Set the index of the choice.
+         *
+         * @param nType The index, less one.
+         */
+        void SetType(unsigned char nType) {
+            mType = nType;
+        }
+
+        /**
+         * Report one byte of the colour.
+         *
+         * @param nComponent The component, 0 to 2.
+         * @return The byte.
+         */
+        unsigned char GetColor(int nComponent) const {
+            return mColor[nComponent];
+        }
+
+        /**
+         * Set one byte of the colour.
+         *
+         * @param nComponent The component, 0 to 2.
+         * @param nValue The byte.
+         */
+        void SetColor(int nComponent, unsigned char nValue) {
+            mColor[nComponent] = nValue;
+        }
+
+    private:
         unsigned char mType;     /*!< The index of the choice in the `types` array, less one. */
         unsigned char mColor[3]; /*!< The red, green, and blue bytes of the colour. */
     };
@@ -47,6 +82,11 @@ public:
      * @ghidraAddress NTSC-U/C: 0x002718a0
      * @ghidraAddress PAL: 0x0027b450
      */
+    /** @return The `parts` array of the `avatar` entry, as Init() finds it. Borrowed. */
+    static DataArray *GetParts() {
+        return sParts;
+    }
+
     static void Init();
 
     /**
@@ -359,6 +399,7 @@ public:
      */
     Color PartColor(int nPart) const;
 
+private:
     unsigned char mVersion;        /*!< The format of the set, 1 once loaded or constructed. */
     PartSetting mParts[kNumParts]; /*!< The choice and colour of each part. +0x01 */
     unsigned char mEmblem;         /*!< The emblem of the torso, an index as in mParts. +0x21 */
@@ -376,8 +417,6 @@ public:
      * @ghidraAddress PAL: 0x004303cc
      */
     static DataArray *sParts;
-
-private:
     /**
      * Borrow the free avatar that needs the fewest parts changed, and start loading the parts of
      * the set on it. A set that already has a player keeps it.

@@ -47,7 +47,7 @@ bool PlaylistPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     case kPadDLeft:
         TheMetagame.SetHelpText(TheLocale.Localize(kHelpToken, true));
         TheMetagame.SetActionText(TheLocale.Localize(kActionToken, true));
-        TheUI.mCurrentScreen->SetFocus(TheUI.FindPanel(kButtonPanel, false));
+        TheUI.GetCurrentScreen()->SetFocus(TheUI.FindPanel(kButtonPanel, false));
         return false;
     case kPadSquare:
         FxMidi::PlaySquare();

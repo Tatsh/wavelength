@@ -55,9 +55,9 @@ void TnlGemCapFX::Start(GfxTunnel *,
     mTrack = nTrack;
     mView = pView;
     mLateral = flLateral;
-    const float flNow = TheGameDb->mSongTime;
+    const float flNow = TheGameDb->GetSongTime();
     mFrameCurve.Reset(0.0f, sAnimFrames, flNow, flNow + sLengths[nKind]);
-    mTickCurve.Reset(flTick, flTick + sTravels[nKind], flNow, mFrameCurve.mX1);
+    mTickCurve.Reset(flTick, flTick + sTravels[nKind], flNow, mFrameCurve.GetX1());
 
     const float flPeriod = GfxTunnel::BurstSpinPeriod();
     const int nTurn = RandomInt(0, kTurnChoices);
@@ -93,16 +93,16 @@ bool TnlGemCapFX::Draw(TnlGeom *pGeom) {
     if (mTrack < 0) {
         return false;
     }
-    const float flNow = TheGameDb->mSongTime;
-    if (mTickCurve.mX1 <= flNow) {
+    const float flNow = TheGameDb->GetSongTime();
+    if (mTickCurve.GetX1() <= flNow) {
         mTrack = kIdle;
         return true;
     }
-    if ((flNow - mTickCurve.mX0) <= 0.0f) {
+    if ((flNow - mTickCurve.GetX0()) <= 0.0f) {
         return false;
     }
     const float flTick = mTickCurve.Interp(flNow);
-    if (kTrailTicks < (TheGameDb->mSongTick - flTick)) {
+    if (kTrailTicks < (TheGameDb->GetSongTick() - flTick)) {
         mTrack = kIdle;
         return true;
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gfx/particlearmsassembly.h"
@@ -57,10 +58,10 @@ public:
      */
     void Report();
 
-    std::vector<ParticleArmsAssembly *> mAssemblies; /*!< The assemblies. */
-    TnlGeom *mGeom;                                  /*!< The geometry of the tunnel. */
-
 private:
+    std::vector<std::unique_ptr<ParticleArmsAssembly>> mAssemblies; /*!< The assemblies. */
+    TnlGeom *mGeom; /*!< The geometry of the tunnel. Borrowed. */
+
     /**
      * The `move_particle_arms` command, which moves the assembly its first argument names.
      *

@@ -35,20 +35,20 @@ void PowerupScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     mLabels.push_back(String(FormatString(pszFormat, TheLocale.Localize("pup_low", true))));
     mLabels.push_back(String(FormatString(pszFormat, TheLocale.Localize("pup_hi", true))));
     mLabels.push_back(String(FormatString(pszFormat, TheLocale.Localize("pup_off", true))));
-    mLevel = TheGameDb->mPowerupLevel;
+    mLevel = TheGameDb->GetPowerupLevel();
     UIComponent *pButton = TheUI.FindComponent("m_g_sel_pup", kPowerupButton, false);
     pButton->SetText(mLabels[mLevel].c_str());
     pButton->SetState(UIComponent::kStateSelected, true);
 }
 
 bool PowerupScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    if (strcmp(pMsg->mComponent->mName, kPowerupButton) != 0) {
+    if (strcmp(pMsg->GetComponent()->GetName(), kPowerupButton) != 0) {
         return FreqScreen::HandleSelectStart(pMsg);
     }
     const int nCount = static_cast<int>(mLabels.size());
-    if (pMsg->mButton == kPadDLeft) {
+    if (pMsg->GetButton() == kPadDLeft) {
         mLevel = mLevel - 1 > -1 ? mLevel - 1 : nCount - 1;
-    } else if (pMsg->mButton == kPadDRight) {
+    } else if (pMsg->GetButton() == kPadDRight) {
         mLevel = mLevel + 1 < nCount ? mLevel + 1 : 0;
     }
     UIComponent *pButton = TheUI.FindComponent("m_g_sel_pup", kPowerupButton, false);
@@ -57,8 +57,8 @@ bool PowerupScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
 }
 
 bool PowerupScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        if (strcmp(pMsg->mComponent->mName, kPowerupButton) == 0) {
+    if (pMsg->GetButton() == kPadCross) {
+        if (strcmp(pMsg->GetComponent()->GetName(), kPowerupButton) == 0) {
             TheGameDb->SetPowerupLevel(mLevel);
         }
         TheUI.GotoScreen("multiskill2multiarena");

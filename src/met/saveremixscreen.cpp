@@ -144,7 +144,7 @@ bool SaveRemixScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SaveRemixScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         RemixInfo info = *TheGameDb->GetRemixInfo();
         std::strcpy(info.mName, mRemixName.c_str());
         info.mSource = RemixInfo::kSourceMemcard;

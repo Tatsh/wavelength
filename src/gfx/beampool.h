@@ -27,8 +27,9 @@ public:
      */
     BeamPool(int nCount, RndDrawable *pParent, const char *pszName)
         : FxPool<Beam, bArg>(nCount), mParams(pszName) {
-        for (Beam *pBeam = this->mItems; pBeam != this->mItems + this->mCount; ++pBeam) {
-            pParent->AddDraw(pBeam->mLine, nullptr);
+        for (Beam *pBeam = this->mItems.get(); pBeam != this->mItems.get() + this->mCount;
+             ++pBeam) {
+            pParent->AddDraw(pBeam->GetLine(), nullptr);
         }
     }
 
@@ -52,7 +53,8 @@ public:
      */
     void LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload, float fScale) {
         mParams.Load(pConfig, pDefaults, bReload, fScale);
-        for (Beam *pBeam = this->mItems; pBeam != this->mItems + this->mCount; ++pBeam) {
+        for (Beam *pBeam = this->mItems.get(); pBeam != this->mItems.get() + this->mCount;
+             ++pBeam) {
             pBeam->Configure(&mParams);
         }
     }

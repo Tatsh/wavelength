@@ -73,7 +73,7 @@ void PartUnlockScreen::Poll(float fTime) {
             mNextMs = SystemMs() + mDelayMs;
             ShowNextItems();
             mAnimPlayer.SetAnim(dynamic_cast<RndView *>(TheManager.Find(kViewName)));
-            mAnimPlayer.Start(TheUI.mTime);
+            mAnimPlayer.Start(TheUI.GetTime());
         } else {
             TheUI.GotoScreen("unlock_parts_done");
         }
@@ -184,7 +184,7 @@ bool PartUnlockScreen::AddItem(const UnlockableItem &item) {
 
 bool PartUnlockScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     mNextMs = SystemMs() + mDelayMs;
-    mAnimPlayer.Start(TheUI.mTime);
+    mAnimPlayer.Start(TheUI.GetTime());
     return FreqScreen::HandleTransitionComplete(pMsg);
 }
 

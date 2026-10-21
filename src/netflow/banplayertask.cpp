@@ -7,7 +7,7 @@
 void BanPlayerTask::OnStart() {
     rtMediusBanPlayerRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     request.worldId = mWorldId;
     request.accountId = mAccountId;
     request.duration = kBanDuration;

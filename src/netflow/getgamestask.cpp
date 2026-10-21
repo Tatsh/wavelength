@@ -8,14 +8,14 @@
 #include "os/utf8.h"
 
 void GetGamesTask::OnStart() {
-    TheLobbyRT->mLaunchpads.clear();
+    TheLobbyRT->GetLaunchpads().clear();
     rtMediusGameListRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.applicationId = LobbyRT::ApplicationId();
-    request.pageId = static_cast<short>(TheLobbyRT->mLaunchpadsPage + 1);
-    request.pageSize = static_cast<short>(TheLobbyRT->mLaunchpadsPageSize);
+    request.pageId = static_cast<short>(TheLobbyRT->GetLaunchpadsPage() + 1);
+    request.pageSize = static_cast<short>(TheLobbyRT->GetLaunchpadsPageSize());
     const int nError = rtMediusGameList(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1424, nError);
@@ -61,7 +61,7 @@ void GetGamesTask::OnResponse(int nConnection,
         if (info.mPlayerCount >= info.mParams.mMaxPlayers) {
             info.mStatus = NetLaunchpadInfo::kStatusFull;
         }
-        TheLobbyRT->mLaunchpads.push_back(info);
+        TheLobbyRT->GetLaunchpads().push_back(info);
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;
         }

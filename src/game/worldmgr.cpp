@@ -47,9 +47,8 @@ void WorldMgr::Init() {
 }
 
 void WorldMgr::Terminate() {
-    // The pointers are not cleared after the objects are destroyed.
-    delete mWorld;
-    delete mInputMgr;
+    mWorld.reset();
+    mInputMgr.reset();
     TheGfxManager.Terminate();
 }
 
@@ -75,15 +74,15 @@ void WorldMgr::Load() {
     Timer timer{};
     timer.Start();
     TheGfxManager.Load(kGfxLoadStartTime);
-    switch (TheGameDb->mRuleSet) {
+    switch (TheGameDb->GetRuleSet()) {
     case GameDb::kRuleSetGame:
-        mWorld = new Game;
+        mWorld = std::make_unique<Game>();
         break;
     case GameDb::kRuleSetRemix:
-        mWorld = new Remix;
+        mWorld = std::make_unique<Remix>();
         break;
     case GameDb::kRuleSetDuel:
-        mWorld = new Duel;
+        mWorld = std::make_unique<Duel>();
         break;
     default:
         DebugWarn("invalid ruleset");
@@ -100,7 +99,7 @@ void WorldMgr::Start() {
     timer.Start();
     ResetSynthControllers();
     mWorld->Start();
-    mInputMgr = new InputMgr(mWorld);
+    mInputMgr = std::make_unique<InputMgr>(mWorld.get());
     mState = kStatePlaying;
     timer.Stop();
 }
@@ -109,10 +108,8 @@ void WorldMgr::Unload() {
     Timer timer{};
     timer.Start();
     mWorld->Stop();
-    delete mInputMgr;
-    mInputMgr = nullptr;
-    delete mWorld;
-    mWorld = nullptr;
+    mInputMgr.reset();
+    mWorld.reset();
     ResetSynthControllers();
     TheGfxManager.Unload();
     mState = kStateUnloaded;
@@ -126,8 +123,8 @@ void WorldMgr::UpdateTime() {
     }
     const float fTick = static_cast<float>(mWorld->GetTick());
     const float fTime = mWorld->GetTime();
-    TheGameDb->mSongTime = fTime;
-    TheGameDb->mSongTick = fTick;
+    TheGameDb->SetSongTime(fTime);
+    TheGameDb->SetSongTick(fTick);
 }
 
 int WorldMgr::Poll() {

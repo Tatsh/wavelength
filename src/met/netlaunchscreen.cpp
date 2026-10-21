@@ -18,9 +18,9 @@ bool NetLaunchScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetLaunchScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (TheNetLaunchpad != nullptr && strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (TheNetLaunchpad != nullptr && strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         (void)TheNetLaunchpad->Launch(); // Yes, the binary discards this call's result.
-        if (TheGameDb->mLoadRemix != 0) {
+        if (TheGameDb->GetLoadRemix() != 0) {
             TheUI.GotoScreen("net_share_remix");
         }
     } else {

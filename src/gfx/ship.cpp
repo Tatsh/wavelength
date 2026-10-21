@@ -281,7 +281,7 @@ void ToRows(const Transform &xfm, float (*pRows)[kTransformRowFloatCount]) {
 
 // The geometry of the tracks of the song.
 TnlGeom *Geom() {
-    return GfxTunnel::sCurrent->mGeom;
+    return GfxTunnel::sCurrent->GetGeom();
 }
 
 } // namespace
@@ -326,10 +326,10 @@ float Ship::sCrippledCamJiggle = 0.1f;
 float Ship::sIntroEndTick = -5760.0f;
 float Ship::sIntroBlendEndTick = -6800.0f;
 float Ship::sIntroTrodeEnd = -1920.0f;
-BeamPool<false> *Ship::sMissBeams;
-BeamPool<false> *Ship::sHitBeams;
-BeamPool<false> *Ship::sHit2Beams;
-RndView *Ship::sBeamView;
+std::unique_ptr<BeamPool<false>> Ship::sMissBeams;
+std::unique_ptr<BeamPool<false>> Ship::sHitBeams;
+std::unique_ptr<BeamPool<false>> Ship::sHit2Beams;
+std::unique_ptr<RndView> Ship::sBeamView;
 RndEnviron *Ship::sEnviron;
 RndView *Ship::sLoadingView;
 RndTransAnim *Ship::sWinFlyOff;
@@ -340,7 +340,7 @@ RndMesh *Ship::sArrowMesh;
 #pragma mark - Configuration
 
 void Ship::ConfigureCrippler(RndParticleSys *pSys, int nPlayer) {
-    const int nCommunity = TheGameDb->mCommunity;
+    const int nCommunity = TheGameDb->GetCommunity();
     if (nCommunity != GameDb::kCommunityLocal) {
         if (nCommunity != GameDb::kCommunityOnline || TheGameDb->IsLocalPlayer(nPlayer)) {
             return;
@@ -363,7 +363,7 @@ void Ship::ConfigureCrippler(RndParticleSys *pSys, int nPlayer) {
 }
 
 void Ship::ConfigureArm(RndParticleSys *pSys, int nPlayer) {
-    const int nCommunity = TheGameDb->mCommunity;
+    const int nCommunity = TheGameDb->GetCommunity();
     if (nCommunity != GameDb::kCommunityLocal) {
         if (nCommunity != GameDb::kCommunityOnline || TheGameDb->IsLocalPlayer(nPlayer)) {
             return;
@@ -390,7 +390,7 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
     FindConfigVector3(pConfig, pDefaults, "ship_multi_offset_end", &sMultiOffsets[1], true);
     FindConfigVector3(pConfig, pDefaults, "ship_offset", &sOffset, true);
     FindConfigVector3(pConfig, pDefaults, "ship_pivot", &sPivot, true);
-    const float fScale = TheGfxManager.mScrollSpeed;
+    const float fScale = TheGfxManager.GetScrollSpeed();
     sOffsetPivot.x = (sOffset.x + sPivot.x) * fScale;
     sOffsetPivot.y = (sOffset.y + sPivot.y) * fScale;
     sOffsetPivot.z = (sOffset.z + sPivot.z) * fScale;
@@ -408,18 +408,18 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
     }
     FindConfigFloat(pConfig, pDefaults, "ship_tilt", &sTilt, true);
     FindConfigFloat(pConfig, pDefaults, "ship_scale", &sScale, true);
-    sScale *= TheGfxManager.mScrollSpeed;
+    sScale *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "view_distance", &sViewDistance, true);
-    sViewDistance *= TheGfxManager.mScrollSpeed;
+    sViewDistance *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "ship_bank_spring", &sBankSpring, true);
     FindConfigFloat(pConfig, pDefaults, "ship_bank_damper", &sBankDamper, true);
     FindConfigFloat(pConfig, pDefaults, "ship_bank_magnitude", &sBankMagnitude, true);
     FindConfigFloat(pConfig, pDefaults, "ship_bank_force", &sBankForce, true);
-    sBankForce *= TheGfxManager.mScrollSpeed;
+    sBankForce *= TheGfxManager.GetScrollSpeed();
     FindConfigFloat(pConfig, pDefaults, "ship_fire_offset", &sFireOffset, true);
     FindConfigFloat(pConfig, pDefaults, "ship_fire_scale", &sFireScale, true);
     FindConfigFloat(pConfig, pDefaults, "ship_sputter_force", &sSputterForce, true);
-    sSputterForce *= TheGfxManager.mScrollSpeed;
+    sSputterForce *= TheGfxManager.GetScrollSpeed();
 
     DataArray *pArray;
     FindConfigArray(pConfig, pDefaults, "ship_move_miss_beams", &pArray, true);
@@ -447,7 +447,7 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
     FindConfigFloat(pConfig, pDefaults, "ship_intro_end_tick", &sIntroEndTick, true);
     FindConfigFloat(pConfig, pDefaults, "ship_intro_blend_end_tick", &sIntroBlendEndTick, true);
     FindConfigVector3(pConfig, pDefaults, "ship_intro_pos", &sIntroPos, true);
-    const float fPosScale = TheGfxManager.mScrollSpeed;
+    const float fPosScale = TheGfxManager.GetScrollSpeed();
     sIntroPos.x *= fPosScale;
     sIntroPos.y *= fPosScale;
     sIntroPos.z *= fPosScale;
@@ -456,7 +456,7 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
     sIntroTrodeEnd = sIntroTrodeSizeMult.back().mFrame;
     FindConfigArray(pConfig, pDefaults, "ship_fire_trode_size_mult", &pArray, true);
     LoadFloatKeys(pArray, &sFireTrodeSizeMult);
-    const float fBeamScale = TheGfxManager.mScrollSpeed;
+    const float fBeamScale = TheGfxManager.GetScrollSpeed();
     sFireTrodeEnd = sFireTrodeSizeMult.back().mFrame;
     if (sMissBeams != nullptr) {
         sMissBeams->LoadConfig(pConfig, pDefaults, bReload, fBeamScale);
@@ -468,8 +468,8 @@ void Ship::LoadConfig(DataArray *pConfig, DataArray *pDefaults, bool bReload) {
         sHit2Beams->LoadConfig(pConfig, pDefaults, bReload, fBeamScale);
     }
     if (sBeamView == nullptr) {
-        sBeamView =
-            dynamic_cast<RndView *>(TheManager.Create(RndView::sClassName, "ship beam draw.view"));
+        sBeamView.reset(
+            dynamic_cast<RndView *>(TheManager.Create(RndView::sClassName, "ship beam draw.view")));
     }
 }
 
@@ -495,36 +495,36 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     mBumpStart = kFarFuture;
     mArrowStart = kUnset;
     mAttackTime = kFarFuture;
-    mMulti = TheGameDb->mCommunity != GameDb::kCommunitySolo;
-    mBank = new RndAnimatable::SecondOrder;
+    mMulti = TheGameDb->GetCommunity() != GameDb::kCommunitySolo;
+    mBank = std::make_unique<RndAnimatable::SecondOrder>();
     mBank->mLevel = 0.0f;
     mBank->mSpring = sBankSpring;
     mBank->mDamper = sBankDamper;
     mFlyIn = nullptr;
 
-    const float fScrollSpeed = TheGfxManager.mScrollSpeed;
+    const float fScrollSpeed = TheGfxManager.GetScrollSpeed();
     const int nBeams = TheGameDb->GetNumPlayers() + kSpareBeams;
-    RndDrawable *pBeamParent = sBeamView;
+    RndDrawable *pBeamParent = sBeamView.get();
     if (sMissBeams == nullptr) {
-        sMissBeams = new BeamPool<false>(nBeams, pBeamParent, "ship_miss");
+        sMissBeams = std::make_unique<BeamPool<false>>(nBeams, pBeamParent, "ship_miss");
         sMissBeams->LoadConfig(GetModeGfxConfig(), GetGfxConfig(), false, fScrollSpeed);
     }
     if (sHitBeams == nullptr) {
-        sHitBeams = new BeamPool<false>(nBeams, pBeamParent, "ship_hit");
+        sHitBeams = std::make_unique<BeamPool<false>>(nBeams, pBeamParent, "ship_hit");
         sHitBeams->LoadConfig(GetModeGfxConfig(), GetGfxConfig(), false, fScrollSpeed);
     }
     if (sHit2Beams == nullptr) {
-        sHit2Beams = new BeamPool<false>(nBeams, pBeamParent, "ship_hit2");
+        sHit2Beams = std::make_unique<BeamPool<false>>(nBeams, pBeamParent, "ship_hit2");
         sHit2Beams->LoadConfig(GetModeGfxConfig(), GetGfxConfig(), false, fScrollSpeed);
     }
 
     const int nColor = mMulti ? pszColor[0] : kSoloColor;
     mView = FindObject<RndView>(FormatString("ship_%c.view", nColor));
     mMesh = FindObject<RndMesh>(FormatString("ship_%c.mesh", nColor));
-    mPsAnim = dynamic_cast<RndView *>(
-        TheManager.Create(RndView::sClassName, FormatString("ship ps anim %c.view", nColor)));
-    mBackPsAnim = dynamic_cast<RndView *>(
-        TheManager.Create(RndView::sClassName, FormatString("ship backps anim %c.view", nColor)));
+    mPsAnim.reset(dynamic_cast<RndView *>(
+        TheManager.Create(RndView::sClassName, FormatString("ship ps anim %c.view", nColor))));
+    mBackPsAnim.reset(dynamic_cast<RndView *>(
+        TheManager.Create(RndView::sClassName, FormatString("ship backps anim %c.view", nColor))));
     mFxView = FindObject<RndView>(FormatString("ship fx_%c.view", nColor));
     mMat = FindObject<RndMat>(FormatString("ship_%c.mat", nColor));
     if (mMulti != 0) {
@@ -591,7 +591,7 @@ Ship::Ship(const char *pszColor, int nPlayer) {
     ConfigureCrippler(pThrusterSys, mPlayer);
     mThruster.Init(pThrusterSys, pThrusterXfm, sScale);
     pViewDraw->RemoveDraw(mThruster.mSys);
-    const float fSpeedOffset = TheGfxManager.mCamPathScale / fScrollSpeed;
+    const float fSpeedOffset = TheGfxManager.GetCamPathScale() / fScrollSpeed;
     mCripplerPs = FindObject<RndParticleSys>(FormatString("ship crippler_%c.part", nColor));
     if (mCripplerPs != nullptr) {
         mCripplerPs->SetEmitFrame(mCripplerTime);
@@ -674,24 +674,13 @@ Ship::Ship(const char *pszColor, int nPlayer) {
 }
 
 Ship::~Ship() {
-    delete mFlyIn;
-    delete sBeamView;
-    sBeamView = nullptr;
-    delete sMissBeams;
-    sMissBeams = nullptr;
-    delete sHitBeams;
-    sHitBeams = nullptr;
-    delete sHit2Beams;
-    sHit2Beams = nullptr;
-    // The spring declares no destructor, and the binary releases it with a bare delete.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
-    delete mBank;
-#pragma GCC diagnostic pop
-    delete mBackPsAnim;
-    mBackPsAnim = nullptr;
-    delete mPsAnim;
-    mPsAnim = nullptr;
+    // The flight goes before the shared beam objects, as in the binary; the spring and the two
+    // created views go with the members.
+    mFlyIn.reset();
+    sBeamView.reset();
+    sMissBeams.reset();
+    sHitBeams.reset();
+    sHit2Beams.reset();
     sAllAnim = nullptr;
     sIntroAnim = nullptr;
     sEnviron = nullptr;
@@ -715,10 +704,11 @@ void Ship::Reset() {
     for (int i = kNumArms - 1; i >= 0; --i) {
         mFireTimes[i] = kUnset;
     }
-    if (TheGameDb->mTutorial != 0) {
-        delete mFlyIn;
-        // Yes, the binary leaves mFlyIn pointing at the deleted flight while the new one is built.
-        mFlyIn = new ShipFlyIn(this);
+    if (TheGameDb->GetTutorial() != 0) {
+        // In the binary, mFlyIn still points at the deleted flight while the new flight is built.
+        // Here the flight is cleared first and the new flight's SetShown() finds no flight.
+        mFlyIn.reset();
+        mFlyIn = std::make_unique<ShipFlyIn>(this);
     } else {
         SetShown(true);
     }
@@ -728,7 +718,7 @@ void Ship::Reset() {
     mBumpVel = 0.0f;
     mBumpHeight = 0.0f;
     if (GfxTunnel::sCurrent != nullptr) {
-        Geom()->GetPlayer(mPlayer)->mMoveTime = 1.0f;
+        Geom()->GetPlayer(mPlayer)->SetMoveTime(1.0f);
     }
     mFlags &= ~kFlagBumped;
     alignas(kMatrixAlign) float aflIdentity[kTransformRowCount][kTransformRowFloatCount];
@@ -844,25 +834,25 @@ void Ship::SetOverride(const float (*pXfm)[kTransformRowFloatCount], float fBlen
 void Ship::StartBump(bool bVictim, int nTrack) {
     TnlGeom *pGeom = Geom();
     TnlGeom::Player *pPlayer = pGeom->GetPlayer(mPlayer);
-    const float fTime = TheGameDb->mSongTime;
+    const float fTime = TheGameDb->GetSongTime();
     if (!bVictim) {
         mFlags |= kFlagAttacking;
         mAttackTime = fTime;
-        mAttackTrack = pPlayer->mTrack;
+        mAttackTrack = pPlayer->GetTrack();
         return;
     }
-    const float fTick = TheGameDb->mSongTick;
+    const float fTick = TheGameDb->GetSongTick();
     const float fSlowdown = sBumpShipMoveSlowdown;
-    pPlayer->mMoveTime = fSlowdown;
-    const float fMoveLength = pGeom->MoveLength(pPlayer->mPosition, static_cast<float>(nTrack));
+    pPlayer->SetMoveTime(fSlowdown);
+    const float fMoveLength = pGeom->MoveLength(pPlayer->GetPosition(), static_cast<float>(nTrack));
     const float fTicks = fSlowdown * kBumpDurationScale * fMoveLength;
     mBumpStart = fTime;
     mFlags |= kFlagBumped;
     mBumpHeight = 0.0f;
-    const float fEnd = (fTick + fTicks) * *TheGfxManager.mMsPerTick;
+    const float fEnd = (fTick + fTicks) * *TheGfxManager.GetMsPerTick();
     mBumpEnd = fEnd;
     mBumpVel = sBumpHeightAccel * -0.5f * (fEnd - fTime);
-    if (nTrack < pPlayer->mTrack) {
+    if (nTrack < pPlayer->GetTrack()) {
         mFlags |= kFlagBumpReverse;
     } else {
         mFlags &= ~kFlagBumpReverse;
@@ -925,16 +915,16 @@ void Ship::ClearBeams() {
 }
 
 void Ship::Fire(int nSlot, signed char nTrack, bool bHit) {
-    const float fTime = TheGameDb->mSongTime;
-    const float fTick = TheGameDb->mSongTick;
+    const float fTime = TheGameDb->GetSongTime();
+    const float fTick = TheGameDb->GetSongTick();
     mFireTimes[nSlot] = fTime;
     const signed char nBeamSlot = static_cast<signed char>(nSlot);
     const float fEnd = fTime + kBeamTime;
     if (bHit) {
-        AddBeam(&mHitBeams, sHitBeams, nBeamSlot, nTrack, fTick, fTime, fEnd);
-        AddBeam(&mHit2Beams, sHit2Beams, nBeamSlot, nTrack, fTick, fTime, fEnd);
+        AddBeam(&mHitBeams, sHitBeams.get(), nBeamSlot, nTrack, fTick, fTime, fEnd);
+        AddBeam(&mHit2Beams, sHit2Beams.get(), nBeamSlot, nTrack, fTick, fTime, fEnd);
     } else {
-        AddBeam(&mMissBeams, sMissBeams, nBeamSlot, nTrack, fTick, fTime, fEnd);
+        AddBeam(&mMissBeams, sMissBeams.get(), nBeamSlot, nTrack, fTick, fTime, fEnd);
     }
 }
 
@@ -944,7 +934,7 @@ void Ship::UpdateBeams(std::list<BeamData> *pList,
                        const Color *pColor,
                        bool bMoveStart,
                        bool bMoveEnd) {
-    const float fTick = TheGameDb->mSongTick;
+    const float fTick = TheGameDb->GetSongTick();
     int nCellSlot = -1;
     alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
     std::list<BeamData>::iterator it = pList->begin();
@@ -994,17 +984,17 @@ void Ship::UpdateBeams(std::list<BeamData> *pList,
 
 void Ship::PollBump(float fTimeDelta) {
     if (mBumperPs != nullptr) {
-        mBumperPs->SetFrame(TheGameDb->mSongTick);
+        mBumperPs->SetFrame(TheGameDb->GetSongTick());
     }
     if ((mFlags & kFlagBumped) == 0) {
         return;
     }
     float fFrame = 0.0f;
-    const float fTime = TheGameDb->mSongTime;
+    const float fTime = TheGameDb->GetSongTime();
     if (mBumpEnd <= fTime) {
         mBumpVel = 0.0f;
         mBumpHeight = 0.0f;
-        Geom()->GetPlayer(mPlayer)->mMoveTime = 1.0f;
+        Geom()->GetPlayer(mPlayer)->SetMoveTime(1.0f);
         mFlags &= ~kFlagBumped;
     } else {
         const float fDuration = mBumpEnd - mBumpStart;
@@ -1030,7 +1020,8 @@ void Ship::PollBump(float fTimeDelta) {
     if (mBumperPs == nullptr) {
         return;
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunityLocal || !TheGameDb->IsLocalPlayer(mPlayer)) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal ||
+        !TheGameDb->IsLocalPlayer(mPlayer)) {
         mBumperTime += fTimeDelta;
         mBumperPs->SetEmitFrame(mBumperTime);
     }
@@ -1038,13 +1029,13 @@ void Ship::PollBump(float fTimeDelta) {
 
 void Ship::PollCrippler(float fTimeDelta, bool bCrippled) {
     if (mCripplerPs != nullptr) {
-        mCripplerPs->SetFrame(TheGameDb->mSongTick);
+        mCripplerPs->SetFrame(TheGameDb->GetSongTick());
     }
-    PlayerCamFX *pCamFX = GfxTunnel::sCurrent->mCamFX;
+    PlayerCamFX *pCamFX = GfxTunnel::sCurrent->GetCamFX();
     if (!bCrippled) {
         return;
     }
-    if (TheGameDb->IsLocalPlayer(mPlayer) && TheGameDb->mCommunity != GameDb::kCommunityLocal &&
+    if (TheGameDb->IsLocalPlayer(mPlayer) && TheGameDb->GetCommunity() != GameDb::kCommunityLocal &&
         fTimeDelta != 0.0f) {
         // Yes, the binary shakes the camera of a crippled player here and leaves its particles be.
         if (RandomFraction() <= sCrippledCamJiggleProbability) {
@@ -1060,10 +1051,10 @@ void Ship::PollCrippler(float fTimeDelta, bool bCrippled) {
 
 void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     TnlGeom::Player *pPlayer = Geom()->GetPlayer(mPlayer);
-    const float fTick = TheGameDb->mSongTick;
-    const float fTime = TheGameDb->mSongTime;
-    const float fVelocity = fTick < kBankStartTick ? 0.0f : pPlayer->mVelocity;
-    PlayerCamFX *pCamFX = GfxTunnel::sCurrent->mCamFX;
+    const float fTick = TheGameDb->GetSongTick();
+    const float fTime = TheGameDb->GetSongTime();
+    const float fVelocity = fTick < kBankStartTick ? 0.0f : pPlayer->GetVelocity();
+    PlayerCamFX *pCamFX = GfxTunnel::sCurrent->GetCamFX();
     bool bShowThrusters = mMulti != 0 || pCamFX->mPullBackLevel != 0.0f;
 
     float fBankTarget = 0.0f;
@@ -1098,12 +1089,12 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         } else {
             LerpPoint(&sMultiOffsetPivots[1].x, &sMultiOffsetPivots[0].x, fSpread, &offset.x);
         }
-        if (TheGameDb->mCommunity != GameDb::kCommunityLocal && 1.0f < mSpread) {
+        if (TheGameDb->GetCommunity() != GameDb::kCommunityLocal && 1.0f < mSpread) {
             offset.y *= ((mSpread - 1.0f) * kSpreadLift) + 1.0f;
         }
         alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
         Transform cell;
-        Geom()->BlendCell(&cell, true, false, pPlayer->mPosition, fTick, kCellCentre);
+        Geom()->BlendCell(&cell, true, false, pPlayer->GetPosition(), fTick, kCellCentre);
         ToRows(cell, aflCell);
         XfmPoint(aflCell, offset, pPosition);
         // Yes, the binary leaves the fourth word of both rows unset.
@@ -1140,7 +1131,7 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
         InterpBasis(aflBasis[0], &mXfm.mBasisX.x, aflBasis[0], fBlend);
     } else if (mIntroActive != 0) {
         bShowThrusters = true;
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
             PollSoloIntro(fTick, pCamFX, aflBasis);
         } else {
             PollIntro(fTick, pCamFX, aflBasis);
@@ -1148,11 +1139,11 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     }
 
     if (mFlyIn != nullptr && mFlyIn->Poll(fTick, fTime, aflBasis)) {
-        delete mFlyIn;
-        mFlyIn = nullptr;
+        mFlyIn.reset();
     }
     PollBump(fTimeDelta);
-    PollCrippler(fTimeDelta, ((GfxTunnel::sCurrent->mCrippledTracks >> pPlayer->mTrack) & 1) != 0);
+    PollCrippler(fTimeDelta,
+                 ((GfxTunnel::sCurrent->GetCrippledTracks() >> pPlayer->GetTrack()) & 1) != 0);
 
     for (int i = 0; i < kNumComponents; ++i) {
         for (int j = 0; j < kNumComponents; ++j) {
@@ -1195,12 +1186,24 @@ void Ship::Poll([[maybe_unused]] float fTicks, float fTimeDelta) {
     mPsAnim->SetFrame(fNow);
     static_cast<RndTransformable *>(mView)->UpdateWorldXfm(nullptr, 0);
 
-    UpdateBeams(
-        &mMissBeams, sMissBeams, aflBasis, &mColor, sMoveMissBeams[0] != 0, sMoveMissBeams[1] != 0);
-    UpdateBeams(
-        &mHitBeams, sHitBeams, aflBasis, &mColor, sMoveHitBeams[0] != 0, sMoveHitBeams[1] != 0);
-    UpdateBeams(
-        &mHit2Beams, sHit2Beams, aflBasis, &mColor, sMoveHit2Beams[0] != 0, sMoveHit2Beams[1] != 0);
+    UpdateBeams(&mMissBeams,
+                sMissBeams.get(),
+                aflBasis,
+                &mColor,
+                sMoveMissBeams[0] != 0,
+                sMoveMissBeams[1] != 0);
+    UpdateBeams(&mHitBeams,
+                sHitBeams.get(),
+                aflBasis,
+                &mColor,
+                sMoveHitBeams[0] != 0,
+                sMoveHitBeams[1] != 0);
+    UpdateBeams(&mHit2Beams,
+                sHit2Beams.get(),
+                aflBasis,
+                &mColor,
+                sMoveHit2Beams[0] != 0,
+                sMoveHit2Beams[1] != 0);
     if (mPlayer == 0) {
         sAllAnim->SetFrame(fTick);
         if (fTick < 0.0f) {
@@ -1365,14 +1368,14 @@ void Ship::DrawEffects() {
     if ((mFlags & kFlagAttacking) == 0) {
         return;
     }
-    const float fSinceAttack = TheGameDb->mSongTime - mAttackTime;
+    const float fSinceAttack = TheGameDb->GetSongTime() - mAttackTime;
     if (sBumpAttackTime <= fSinceAttack) {
         mFlags &= ~kFlagAttacking;
         return;
     }
     alignas(kMatrixAlign) float aflCell[kTransformRowCount][kTransformRowFloatCount];
     Transform cell;
-    Geom()->CellXfm(mAttackTrack, &cell, true, false, TheGameDb->mSongTick, kCellCentre);
+    Geom()->CellXfm(mAttackTrack, &cell, true, false, TheGameDb->GetSongTick(), kCellCentre);
     ToRows(cell, aflCell);
     mBumperAttack->SetFrame((fSinceAttack * kBumpFrames) / sBumpAttackTime);
     SetLocalXfm(mBumperAttack, aflCell);
@@ -1391,7 +1394,7 @@ void Ship::DrawArrow() {
         return;
     }
     if (mArrowStart == kUnset) {
-        mArrowStart = TheGameDb->mSongTime;
+        mArrowStart = TheGameDb->GetSongTime();
     }
     // Slide the arrow along the line from the centre of the screen to the ship until it lies on
     // the edge the ship left by.
@@ -1428,7 +1431,7 @@ void Ship::DrawArrow() {
     CrossVec3(pUp, pDirection, pRight);
 
     RndMat *pMat = sArrowMesh->mMat;
-    const float fSinceArrow = TheGameDb->mSongTime - mArrowStart;
+    const float fSinceArrow = TheGameDb->GetSongTime() - mArrowStart;
     if (kArrowPulseTime < fSinceArrow || fSinceArrow < 0.0f) {
         pMat->SetBaseColor(mColor);
     } else {

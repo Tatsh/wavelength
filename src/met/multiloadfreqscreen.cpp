@@ -42,7 +42,7 @@ constexpr int kFirstSlot = 0;
 } // namespace
 
 void MultiLoadFreqScreen::Enter(UIScreen *pPrevScreen, float fTime) {
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         mStartScreen = kDuelStartScreen;
     } else {
         mStartScreen = kStartScreen;
@@ -107,7 +107,7 @@ void MultiLoadFreqScreen::LoadNextSlot() {
             FormatString(kSelectPanelFormat, TheGameDb->GetNumPlayers(), nPlayer + 1), false));
         pPanel->SetProfiles(mProfiles, mSelected[nPlayer]);
     }
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
         TheUI.GotoScreen(kDuelSelectScreen);
     } else {
         TheUI.GotoScreen(FormatString(kSelectScreenFormat, TheGameDb->GetNumPlayers()));
@@ -149,7 +149,7 @@ bool MultiLoadFreqScreen::DispatchPriv(Message *pMsg) {
 
 #ifdef VIDEO_STANDARD_PAL
 bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0 && mLoaded == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0 && mLoaded == 0) {
         TheMCManager.LoadFreqs(this, mSlot);
     }
     return false;
@@ -165,7 +165,7 @@ void MultiLoadFreqScreen::Reset() {
 }
 #else
 bool MultiLoadFreqScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         mProfiles.clear();
         for (int i = 0; i < kMaxPlayers; ++i) {
             mFirstProfile[i] = kNone;

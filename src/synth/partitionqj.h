@@ -27,5 +27,11 @@ public:
     ~PartitionQJ() override {
     }
 
+    /** @return The size of each bank slot in 64-byte blocks. */
+    const std::vector<int> &GetBlocks() const {
+        return mBlocks;
+    }
+
+private:
     std::vector<int> mBlocks; /*!< The size of each bank slot in 64-byte blocks. */
 };

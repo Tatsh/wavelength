@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "os/option.h"
 #include "os/string.h"
@@ -57,8 +58,19 @@ public:
      */
     void Process(int argc, char **argv);
 
-    std::list<Option *> mOptions; /*!< The options, in the order they were added. */
-    int mIndex;                   /*!< The index of the next argument Process() reads. */
-    char **mArgv;                 /*!< The arguments Process() received. */
-    int mArgc;                    /*!< The argument count Process() received. */
+    /** @return The options, in the order they were added. */
+    const std::list<std::unique_ptr<Option>> &GetOptions() const {
+        return mOptions;
+    }
+
+    /** @return The index of the next argument Process() reads. */
+    int GetIndex() const {
+        return mIndex;
+    }
+
+private:
+    std::list<std::unique_ptr<Option>> mOptions; /*!< The options, in the order added. */
+    int mIndex;   /*!< The index of the next argument Process() reads. */
+    char **mArgv; /*!< The arguments Process() received. Borrowed. */
+    int mArgc;    /*!< The argument count Process() received. */
 };

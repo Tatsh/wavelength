@@ -18,7 +18,7 @@ void MGCLSessionBeginTask::OnStart() {
     memset(&request, 0, sizeof(request));
     MakeTag(this, request.messageId);
     request.applicationId = LobbyRT::ApplicationId();
-    request.locationId = TheLobbyRT->mLocationId;
+    request.locationId = TheLobbyRT->GetLocationId();
     request.serverType = kServerType;
     if (rtMgclSessionBegin(&request, OnResponse) != 0) {
         Finish(false, LaunchpadAbortedMsg::kReasonServer);
@@ -37,9 +37,9 @@ void MGCLSessionBeginTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MGCL_STATUS_SUCCESS) {
-        TheHostpadRT->mSessionKey = pResponse->sessionKey;
+        TheHostpadRT->GetSessionKey() = pResponse->sessionKey;
     } else {
-        TheHostpadRT->mSessionKey = "";
+        TheHostpadRT->GetSessionKey() = "";
     }
     pTask->Finish(pResponse->header.status == RT_MGCL_STATUS_SUCCESS,
                   LaunchpadAbortedMsg::kReasonServer);

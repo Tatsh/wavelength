@@ -74,7 +74,7 @@ bool LoadRemixScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool LoadRemixScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         RemixInfo info = *TheGameDb->GetRemixInfo();
         TheGameDb->SetRemixBuffer(info.mDataSize);
         TheMCManager.LoadRemix(

@@ -15,7 +15,7 @@ constexpr char kRecordLabel[] = "03";
 } // namespace
 
 void LaunchMTVPanel::Enter(bool bForce, float fTime) {
-    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.c_str())};
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())};
     TheUI.FindComponent(kBandPanel, kTitleLabel, false)->SetText(entry.GetTitleShort());
     TheUI.FindComponent(kBandPanel, kArtistLabel, false)->SetText(entry.GetArtistShort());
     TheUI.FindComponent(kBandPanel, kRecordLabel, false)->SetText(entry.GetLabel());

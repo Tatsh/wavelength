@@ -13,11 +13,11 @@ WaitTimeTask::WaitTimeTask(float fSeconds)
 }
 
 void WaitTimeTask::OnStart() {
-    mEndTime = TheSongScheduler.mTime + mDuration;
+    mEndTime = TheSongScheduler.GetTime() + mDuration;
 }
 
 void WaitTimeTask::OnPoll() {
-    if (mEndTime <= TheSongScheduler.mTime) {
+    if (mEndTime <= TheSongScheduler.GetTime()) {
         Finish(true);
     }
 }

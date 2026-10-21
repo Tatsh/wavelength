@@ -58,6 +58,8 @@ public:
      */
     std::list<InetConfig> *GetConfigs();
 
-    MCGetInfoTask *mGetInfo;     /*!< The step that reads the card information. */
-    MCNetConfigTask *mNetConfig; /*!< The step that requests the configurations. */
+private:
+    // The steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo;     /*!< The step that reads the card information. Borrowed. */
+    MCNetConfigTask *mNetConfig; /*!< The step that requests the configurations. Borrowed. */
 };

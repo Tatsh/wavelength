@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/binstream.h"
 #include "os/file.h"
 #include "os/string.h"
@@ -139,10 +141,10 @@ public:
     }
 
 private:
-    String mFileName; /*!< The file. */
-    int mFail;        /*!< Whether a transfer failed. */
-    int mPosition;    /*!< The position in the buffer. */
-    int mSize;        /*!< The size of the file in bytes, or -1. */
-    char *mBuffer;    /*!< The contents of the file. */
-    File *mFile;      /*!< The file while it is read, or null. */
+    String mFileName;            /*!< The file. */
+    int mFail;                   /*!< Whether a transfer failed. */
+    int mPosition;               /*!< The position in the buffer. */
+    int mSize;                   /*!< The size of the file in bytes, or -1. */
+    char *mBuffer;               /*!< The contents of the file, freed with PoolMemFree. */
+    std::unique_ptr<File> mFile; /*!< The file while it is read, or null. */
 };

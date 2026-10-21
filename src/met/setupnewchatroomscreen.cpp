@@ -17,7 +17,7 @@ constexpr float kNameMaxWidth = 173.0f;
 void SetupNewChatroomScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     SetupNameScreen::Enter(pPrevScreen, fTime);
     mEntry =
-        dynamic_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->mName, kNameEntry, false));
+        dynamic_cast<UITextEntry *>(TheUI.FindComponent(mFocusPanel->GetName(), kNameEntry, false));
     mEntry->mMaxEntryWidth = kNameMaxWidth;
 }
 

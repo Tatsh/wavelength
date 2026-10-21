@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/btnevent.h"
@@ -115,6 +116,82 @@ public:
          */
         explicit PlayerData(Command *pEndFreestyle);
 
+        /** @return The command that runs EndFreestyle() for the player. */
+        Ptr<Command> &GetEndFreestyleCmd() {
+            return mEndFreestyleCmd;
+        }
+
+        /** @return First bar of the phrase to play next, or -1. */
+        int GetNextPhraseBar() const {
+            return mNextPhraseBar;
+        }
+
+        /**
+         * Set the first bar of the phrase to play next.
+         *
+         * @param nBar The bar, or -1.
+         */
+        void SetNextPhraseBar(int nBar) {
+            mNextPhraseBar = nBar;
+        }
+
+        /** @return The previous GetNextPhraseBar(). */
+        int GetLastNextPhraseBar() const {
+            return mLastNextPhraseBar;
+        }
+
+        /**
+         * Set the previous first bar of the phrase to play next.
+         *
+         * @param nBar The bar.
+         */
+        void SetLastNextPhraseBar(int nBar) {
+            mLastNextPhraseBar = nBar;
+        }
+
+        /** @return The bar the player last missed a phrase in. */
+        int GetMissedBar() const {
+            return mMissedBar;
+        }
+
+        /**
+         * Set the bar the player last missed a phrase in.
+         *
+         * @param nBar The bar.
+         */
+        void SetMissedBar(int nBar) {
+            mMissedBar = nBar;
+        }
+
+        /** @return The streak of the player when the phrase was found. */
+        int GetSavedStreak() const {
+            return mSavedStreak;
+        }
+
+        /**
+         * Set the streak of the player when the phrase was found.
+         *
+         * @param nStreak The streak.
+         */
+        void SetSavedStreak(int nStreak) {
+            mSavedStreak = nStreak;
+        }
+
+        /** @return The track the search for the next phrase skipped. */
+        int GetCapturedTrack() const {
+            return mCapturedTrack;
+        }
+
+        /**
+         * Set the track the search for the next phrase skipped.
+         *
+         * @param nTrack The track.
+         */
+        void SetCapturedTrack(int nTrack) {
+            mCapturedTrack = nTrack;
+        }
+
+    private:
         Ptr<Command> mEndFreestyleCmd; /*!< Runs EndFreestyle() for the player. */
         int mNextPhraseBar;            /*!< First bar of the phrase to play next, or -1. */
         int mLastNextPhraseBar;        /*!< The previous mNextPhraseBar. */
@@ -588,36 +665,35 @@ public:
      */
     bool DeployMultiplier(Player *pPlayer);
 
-    Song *mSong;                              /*!< The song. */
-    int mState;                               /*!< One of State. */
-    int mPaused;                              /*!< Whether SetPaused() paused the song. */
-    int mTicksPerBar;                         /*!< Length of a bar, in ticks. */
-    int mNumBars;                             /*!< Length of the song, in bars. */
-    PlayMap *mPlayMap;                        /*!< The map of the song positions. */
-    std::vector<Player *> mPlayers;           /*!< Every player, by index. */
-    std::vector<LocalPlayer *> mLocalPlayers; /*!< The players on this console. */
-    std::vector<CatchTrack *> mCatchTracks;   /*!< The catch tracks, by index. */
-    FreestyleTrack *mFreestyleTrack;          /*!< The freestyle track, or null. */
-    GameTrackSelector *mTrackSelector;        /*!< The assignment of the players to the tracks. */
-    SpeedRamp *mSpeedRamp;                    /*!< The speed of the song. */
-    int mPhraseThisBar;                       /*!< Whether a catch track has a phrase this bar. */
-    int mQuit;                                /*!< Set by the derived logic when a player quit. */
-    int mReserved60;                          // +0x60, reported by IsRestartRequested().
-    int mSectionStartBar;                     /*!< First bar of the current section. */
-    int mNextSectionBar;                      /*!< First bar of the next section. */
-    int mSection;                             /*!< Index of the current section. */
-    WorldBeat mWorldBeat;                     /*!< The events of the track named "WORLD". */
-    int mSavedState;                          /*!< The state SetPaused() restores. */
-    int mReserved8c;                          // +0x8c, not written by the constructor.
-    int mSlowdown;                            /*!< Whether StartSlowdown() slowed the song. */
-    int mNextEnableStep;                      /*!< The step EnableNextTracks() enables next. */
-    std::vector<PlayerData> mPlayerData;      /*!< The record of each player. */
-    Ptr<Command> mBarCmd;                     /*!< Runs TickBar(). */
-    Ptr<Command> mStopSlowdownCmd;            /*!< Runs StopSlowdown(). */
-    Rand mRand;                               /*!< The random numbers of the logic. */
-    int mEndTick;                             /*!< The tick the song stops at. */
-
 protected:
+    Song *mSong;                                   /*!< The song. Borrowed. */
+    int mState;                                    /*!< One of State. */
+    int mPaused;                                   /*!< Whether SetPaused() paused the song. */
+    int mTicksPerBar;                              /*!< Length of a bar, in ticks. */
+    int mNumBars;                                  /*!< Length of the song, in bars. */
+    PlayMap *mPlayMap;                             /*!< The map of the song positions. Borrowed. */
+    std::vector<std::unique_ptr<Player>> mPlayers; /*!< Every player, by index. */
+    std::vector<LocalPlayer *> mLocalPlayers;      /*!< The players on this console. Borrowed. */
+    std::vector<std::unique_ptr<CatchTrack>> mCatchTracks; /*!< The catch tracks, by index. */
+    std::unique_ptr<FreestyleTrack> mFreestyleTrack;       /*!< The freestyle track, or null. */
+    std::unique_ptr<GameTrackSelector> mTrackSelector;     /*!< The assignment of the players. */
+    std::unique_ptr<SpeedRamp> mSpeedRamp;                 /*!< The speed of the song. */
+    int mPhraseThisBar;                  /*!< Whether a catch track has a phrase this bar. */
+    int mQuit;                           /*!< Set by the derived logic when a player quit. */
+    int mReserved60;                     // +0x60, reported by IsRestartRequested().
+    int mSectionStartBar;                /*!< First bar of the current section. */
+    int mNextSectionBar;                 /*!< First bar of the next section. */
+    int mSection;                        /*!< Index of the current section. */
+    WorldBeat mWorldBeat;                /*!< The events of the track named "WORLD". */
+    int mSavedState;                     /*!< The state SetPaused() restores. */
+    int mReserved8c;                     // +0x8c, not written by the constructor.
+    int mSlowdown;                       /*!< Whether StartSlowdown() slowed the song. */
+    int mNextEnableStep;                 /*!< The step EnableNextTracks() enables next. */
+    std::vector<PlayerData> mPlayerData; /*!< The record of each player. */
+    Ptr<Command> mBarCmd;                /*!< Runs TickBar(). */
+    Ptr<Command> mStopSlowdownCmd;       /*!< Runs StopSlowdown(). */
+    Rand mRand;                          /*!< The random numbers of the logic. */
+    int mEndTick;                        /*!< The tick the song stops at. */
     /**
      * Assign each player to a random catch track.
      *

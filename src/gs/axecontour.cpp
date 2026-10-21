@@ -10,12 +10,11 @@ constexpr int kNoNote = -1;
 
 AxeContour::AxeContour(int nLength, unsigned char nChannel)
     : mChannel(nChannel), mMuse(new MultiMuse(0)), mLooper(mMuse.Get(), nLength), mNotes(),
-      mLowestKey(0), mHighestKey(0), mCurrentNote(kNoNote), mNoteCB(new AxeNoteCB(this)) {
+      mLowestKey(0), mHighestKey(0), mCurrentNote(kNoNote),
+      mNoteCB(std::make_unique<AxeNoteCB>(this)) {
 }
 
-AxeContour::~AxeContour() {
-    delete mNoteCB;
-}
+AxeContour::~AxeContour() = default;
 
 int AxeContour::GetLength() {
     return mLooper.GetLength();
@@ -27,7 +26,7 @@ unsigned char AxeContour::GetChannel() const {
 
 void AxeContour::AddNote(int nTick, unsigned char nKey, unsigned char nVelocity, int nDuration) {
     MutableNoteMuse *pMuse = new MutableNoteMuse(nKey, nVelocity, nDuration, mChannel);
-    pMuse->SetNoteCB(mNoteCB);
+    pMuse->SetNoteCB(mNoteCB.get());
     mMuse->Add(pMuse, nTick);
     if (mNotes.empty()) {
         mHighestKey = nKey;

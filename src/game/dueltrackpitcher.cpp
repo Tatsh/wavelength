@@ -68,7 +68,7 @@ void DuelTrackPitcher::ShowPattern(int nStartBar) {
 }
 
 void DuelTrackPitcher::Press(int nSlot) {
-    const int nStep = (TheSongScheduler.mTick + mStepTicks / 2) / mStepTicks;
+    const int nStep = (TheSongScheduler.GetTick() + mStepTicks / 2) / mStepTicks;
     const int nPhraseSteps = (mTicksPerBar * mPhraseBars) / mStepTicks;
     const int nTick = nStep * mStepTicks;
     const int nSongTick = mPlayMap->MapTick(nTick);
@@ -135,7 +135,7 @@ void DuelTrackPitcher::Press(int nSlot) {
                            kGemFlags);
     mReceiver->OnPlaced(nTick);
 
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         EditGemPacket packet(mCatchSide, nSlot, nCatchSongTick, false);
         TheNetTransport->Send(packet);
     }

@@ -39,7 +39,7 @@ void BackMusic::Stop() {
 }
 
 void BackMusic::PlayBar() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nBar = nTick / mTicksPerBar;
     const int nSongBar = mPlayMap->mLooping ? mPlayMap->MapBar(nBar) : nBar % mNumBars;
     mPlaying = mBars[nSongBar + mIntroBars].Get();

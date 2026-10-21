@@ -139,6 +139,11 @@ private:
      */
     static void LoadLongCheats(DataArray *pCheats);
 
+    /** @return Non-zero once a cheat that marks the game was entered. */
+    int GetCheatEntered() const {
+        return mCheatEntered;
+    }
+
     std::vector<LongCheat> mLongCheats;                /*!< The sequences. */
     std::vector<ComboCheat> mComboCheats[kComboCount]; /*!< The presses of each combination. */
     std::deque<int> mHistory;                          /*!< The latest presses, oldest first. */

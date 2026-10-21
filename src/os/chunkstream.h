@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/binstream.h"
 #include "os/file.h"
 
@@ -193,7 +195,7 @@ private:
      */
     void DecodeBlock();
 
-    File *mFile;        /*!< The file, or null when it did not open. */
+    std::unique_ptr<File> mFile; /*!< The file, or null when it did not open. */
     int mFail;          /*!< Non-zero when the file did not open or a block write failed. */
     Mode mMode;         /*!< The direction. */
     Header mHeader;     /*!< The header. */

@@ -1453,6 +1453,256 @@ public:
      */
     static int sTerminated;
 
+    /** @return The vortex of the intro and the outro. Belongs to the display. */
+    Vortex *GetVortex() const {
+        return mVortex.get();
+    }
+
+    /** @return Whether the vortex draws after the head-up display. */
+    int GetVortexAfterViews() const {
+        return mVortexAfterViews;
+    }
+
+    /**
+     * Set whether the vortex draws after the head-up display.
+     *
+     * @param nValue The new value.
+     */
+    void SetVortexAfterViews(int nValue) {
+        mVortexAfterViews = nValue;
+    }
+
+    /** @return The loaders of the files of the `load` list. */
+    const std::list<GfxLoader> &GetLoaders() const {
+        return mLoaders;
+    }
+
+    /** @return The streams of `data_preloads`. Belongs to the display. */
+    const std::list<std::unique_ptr<AsyncStream>> &GetPreloads() const {
+        return mPreloads;
+    }
+
+    /** @return One of LoadStage. */
+    int GetLoadStage() const {
+        return mLoadStage;
+    }
+
+    /** @return The loader of the head-up display, or null. Borrowed. */
+    RndLoader *GetHudLoader() const {
+        return mHudLoader;
+    }
+
+    /** @return Whether the files of the world have loaded. */
+    int GetLoaded() const {
+        return mLoaded;
+    }
+
+    /** @return The system time Load() ran at. */
+    float GetLoadStartMs() const {
+        return mLoadStartMs;
+    }
+
+    /** @return One of State. */
+    int GetState() const {
+        return mState;
+    }
+
+    /** @return The song tick of the last poll. */
+    float GetLastTick() const {
+        return mLastTick;
+    }
+
+    /** @return The song time of the last poll. */
+    float GetLastTime() const {
+        return mLastTime;
+    }
+
+    /** @return The scroll speed of the tunnel. */
+    float GetScrollSpeed() const {
+        return mScrollSpeed;
+    }
+
+    /** @return The reciprocal of the scroll speed. */
+    float GetInvScrollSpeed() const {
+        return mInvScrollSpeed;
+    }
+
+    /** @return The length of the song in ticks. */
+    float GetSongTicks() const {
+        return mSongTicks;
+    }
+
+    /**
+     * Set the length of the song in ticks.
+     *
+     * @param fValue The new value.
+     */
+    void SetSongTicks(float fValue) {
+        mSongTicks = fValue;
+    }
+
+    /** @return The length of the camera path for each tick. */
+    float GetCamPathScale() const {
+        return mCamPathScale;
+    }
+
+    /** @return Whether the victory lap runs. */
+    int GetVictoryLap() const {
+        return mVictoryLap;
+    }
+
+    /**
+     * Set whether the victory lap runs.
+     *
+     * @param nValue The new value.
+     */
+    void SetVictoryLap(int nValue) {
+        mVictoryLap = nValue;
+    }
+
+    /** @return Whether the path of the arena is unlocked. */
+    int GetArenaUnlocked() const {
+        return mArenaUnlocked;
+    }
+
+    /** @return The `no_arena` cheat. */
+    int GetNoArena() const {
+        return mNoArena;
+    }
+
+    /** @return The `monkey` cheat. */
+    int GetMonkeyGems() const {
+        return mMonkeyGems;
+    }
+
+    /** @return The `drugs` cheat. */
+    int GetDrugs() const {
+        return mDrugs;
+    }
+
+    /** @return The `black_panels` cheat. */
+    int GetBlackPanels() const {
+        return mBlackPanels;
+    }
+
+    /** @return The `no_panels` cheat. */
+    int GetNoPanels() const {
+        return mNoPanels;
+    }
+
+    /** @return The shape of the `circular` cheat, from 0 to 2. */
+    signed char GetTunnelShape() const {
+        return mTunnelShape;
+    }
+
+    /** @return The display of `toggle_hud`. */
+    int GetHudFlags() const {
+        return mHudFlags;
+    }
+
+    /** @return The tunnel of tracks, or null. Belongs to the display. */
+    GfxTunnel *GetTunnel() const {
+        return mTunnel.get();
+    }
+
+    /** @return The head-up display, or null. Belongs to the display. */
+    Overlay *GetOverlay() const {
+        return mOverlay.get();
+    }
+
+    /** @return The arena, or null. Belongs to the display. */
+    GfxArena *GetArena() const {
+        return mArena.get();
+    }
+
+    /** @return The `tunnelview` view, or null. Borrowed. */
+    RndView *GetTunnelView() const {
+        return mTunnelView;
+    }
+
+    /** @return The main view of the tunnel, or null. Borrowed. */
+    RndView *GetMainView() const {
+        return mMainView;
+    }
+
+    /** @return The views of each player. */
+    const std::vector<LocalViews> &GetLocalViews() const {
+        return mLocalViews;
+    }
+
+    /** @return `panel mat render.view`, or null. Borrowed. */
+    RndView *GetPanelView() const {
+        return mPanelView;
+    }
+
+    /** @return The ship of each player, or null. Each ship belongs to the display. */
+    const std::unique_ptr<Ship> *GetShips() const {
+        return mShips;
+    }
+
+    /**
+     * Report the ship of a player.
+     *
+     * @param nPlayer The player.
+     * @return The ship, or null.
+     */
+    Ship *GetShip(int nPlayer) const {
+        return mShips[nPlayer].get();
+    }
+
+    /** @return The player in the lead. */
+    int GetLeader() const {
+        return mLeader;
+    }
+
+    /**
+     * Set the player in the lead.
+     *
+     * @param nValue The new value.
+     */
+    void SetLeader(int nValue) {
+        mLeader = nValue;
+    }
+
+    /** @return Whether the winner's avatar was drawn this frame. */
+    int GetWinnerDrawn() const {
+        return mWinnerDrawn;
+    }
+
+    /**
+     * Set whether the winner's avatar was drawn this frame.
+     *
+     * @param nValue The new value.
+     */
+    void SetWinnerDrawn(int nValue) {
+        mWinnerDrawn = nValue;
+    }
+
+    /** @return The winning player, or -1. */
+    int GetWinner() const {
+        return mWinner;
+    }
+
+    /** @return The milliseconds per tick of the song, or null. Borrowed. */
+    const float *GetMsPerTick() const {
+        return mMsPerTick;
+    }
+
+    /** @return The localized `MULTIPLIER_FORMAT`. Borrowed. */
+    const char *GetMultiplierFormat() const {
+        return mMultiplierFormat;
+    }
+
+    /** @return Messages for debugging. */
+    const std::list<DebugMsg> &GetDebugMsgs() const {
+        return mDebugMsgs;
+    }
+
+    /** @return More messages for debugging. */
+    const std::list<DebugMsg> &GetDebugMsgs2() const {
+        return mDebugMsgs2;
+    }
+
 private:
     /**
      * Read the colours and the configuration of the head-up display, and with bReload clear
@@ -1674,23 +1924,22 @@ private:
      */
     static void OnStickDiagram(DataArray *pCommand, void *pUserData);
 
-public:
-    Vortex *mVortex;                    /*!< The vortex of the intro and the outro. */
-    int mVortexAfterViews;              /*!< Whether the vortex draws after the head-up display. */
-    std::list<GfxLoader> mLoaders;      /*!< The loaders of the files of the `load` list. */
-    std::list<AsyncStream *> mPreloads; /*!< The streams of `data_preloads`. */
-    int mLoadStage;                     /*!< One of LoadStage. */
-    RndLoader *mHudLoader;              /*!< The loader of the head-up display, or null. */
-    int mLoaded;                        /*!< Whether the files of the world have loaded. */
-    float mLoadStartMs;                 /*!< The system time Load() ran at. */
-    int mReserved34;                    // +0x34, cleared by the constructor and never read.
-    int mState;                         /*!< One of State. */
-    float mLastTick;                    /*!< The song tick of the last poll. */
-    float mLastTime;                    /*!< The song time of the last poll. */
-    float mScrollSpeed;                 /*!< The scroll speed of the tunnel. */
-    float mInvScrollSpeed;              /*!< The reciprocal of mScrollSpeed. */
-    float mSongTicks;                   /*!< The length of the song in ticks. */
-    float mCamPathScale;                /*!< The length of the camera path for each tick. */
+    std::unique_ptr<Vortex> mVortex; /*!< The vortex of the intro and the outro. */
+    int mVortexAfterViews;           /*!< Whether the vortex draws after the head-up display. */
+    std::list<GfxLoader> mLoaders;   /*!< The loaders of the files of the `load` list. */
+    std::list<std::unique_ptr<AsyncStream>> mPreloads; /*!< The streams of `data_preloads`. */
+    int mLoadStage;                                    /*!< One of LoadStage. */
+    RndLoader *mHudLoader; /*!< The loader of the head-up display, or null. Borrowed. */
+    int mLoaded;           /*!< Whether the files of the world have loaded. */
+    float mLoadStartMs;    /*!< The system time Load() ran at. */
+    int mReserved34;       // +0x34, cleared by the constructor and never read.
+    int mState;            /*!< One of State. */
+    float mLastTick;       /*!< The song tick of the last poll. */
+    float mLastTime;       /*!< The song time of the last poll. */
+    float mScrollSpeed;    /*!< The scroll speed of the tunnel. */
+    float mInvScrollSpeed; /*!< The reciprocal of mScrollSpeed. */
+    float mSongTicks;      /*!< The length of the song in ticks. */
+    float mCamPathScale;   /*!< The length of the camera path for each tick. */
     int mVictoryLap;    /*!< Whether the victory lap runs, which hides the energy and score bars. */
     int mArenaUnlocked; /*!< Whether the path of the arena is unlocked. */
     int mNoArena;       /*!< The `no_arena` cheat. */
@@ -1700,21 +1949,21 @@ public:
     int mNoPanels;      /*!< The `no_panels` cheat. */
     signed char mTunnelShape;            /*!< The shape of the `circular` cheat, from 0 to 2. */
     int mHudFlags;                       /*!< The display of `toggle_hud`. Bit 0 draws the hud. */
-    GfxTunnel *mTunnel;                  /*!< The tunnel of tracks, or null. */
-    Overlay *mOverlay;                   /*!< The head-up display, or null. */
-    GfxArena *mArena;                    /*!< The arena, or null. */
-    RndView *mTunnelView;                /*!< The `tunnelview` view, or null. */
-    RndView *mMainView;                  /*!< The main view of the tunnel, or null. */
+    std::unique_ptr<GfxTunnel> mTunnel;  /*!< The tunnel of tracks, or null. */
+    std::unique_ptr<Overlay> mOverlay;   /*!< The head-up display, or null. */
+    std::unique_ptr<GfxArena> mArena;    /*!< The arena, or null. */
+    RndView *mTunnelView;                /*!< The `tunnelview` view, or null. Borrowed. */
+    RndView *mMainView;                  /*!< The main view of the tunnel, or null. Borrowed. */
     std::vector<LocalViews> mLocalViews; /*!< The views of each player. */
-    RndView *mPanelView;                 /*!< `panel mat render.view`, or null. */
-    Ship *mShips[kMaxPlayers];           /*!< The ship of each player, or null. */
-    int mLeader;                         /*!< The leading player. */
-    int mWinnerDrawn;                    /*!< Whether the winner's avatar was drawn this frame. */
-    int mWinner;                         /*!< The winning player, or -1. */
-    const float *mMsPerTick;             /*!< The milliseconds per tick of the song, or null. */
-    const char *mMultiplierFormat;       /*!< The localized `MULTIPLIER_FORMAT`. */
-    std::list<DebugMsg> mDebugMsgs;      /*!< Messages for debugging. */
-    std::list<DebugMsg> mDebugMsgs2;     /*!< More messages for debugging. */
+    RndView *mPanelView;                 /*!< `panel mat render.view`, or null. Borrowed. */
+    std::unique_ptr<Ship> mShips[kMaxPlayers]; /*!< The ship of each player, or null. */
+    int mLeader;                               /*!< The player in the lead. */
+    int mWinnerDrawn;              /*!< Whether the winner's avatar was drawn this frame. */
+    int mWinner;                   /*!< The winning player, or -1. */
+    const float *mMsPerTick;       /*!< The milliseconds per tick of the song, or null. Borrowed. */
+    const char *mMultiplierFormat; /*!< The localized `MULTIPLIER_FORMAT`. Borrowed. */
+    std::list<DebugMsg> mDebugMsgs;  /*!< Messages for debugging. */
+    std::list<DebugMsg> mDebugMsgs2; /*!< More messages for debugging. */
 };
 
 /**

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "mid/midireceiver.h"
@@ -250,11 +251,11 @@ private:
      */
     void Flush();
 
-    BinStream *mStream;           /*!< The stream of the file. */
-    MidiReceiver *mReceiver;      /*!< The receiver of the tracks and events. */
-    int mState;                   /*!< One of State. */
-    short mNumTracks;             /*!< The tracks of the file. */
-    short mDivision;              /*!< The ticks per quarter note of the file. */
+    std::unique_ptr<BinStream> mStream; /*!< The stream of the file. */
+    MidiReceiver *mReceiver;            /*!< The receiver of the tracks and events. Borrowed. */
+    int mState;                         /*!< One of State. */
+    short mNumTracks;                   /*!< The tracks of the file. */
+    short mDivision;                    /*!< The ticks per quarter note of the file. */
     short mTargetDivision;        /*!< The ticks per quarter note of the reported positions. */
     int mTrackIndex;              /*!< The tracks started so far. */
     int mTrackTick;               /*!< The position in the current track, in file ticks. */

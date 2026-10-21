@@ -7,12 +7,12 @@
 #include "os/utf8.h"
 
 void GetGamePlayersTask::OnStart() {
-    TheLobbyRT->mLaunchpadPlayers.clear();
+    TheLobbyRT->GetLaunchpadPlayers().clear();
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
-    request.id = TheLobbyRT->mLaunchpadId;
+    request.id = TheLobbyRT->GetLaunchpadId();
     const int nError = rtMediusGamePlayers(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1559, nError);
@@ -49,7 +49,7 @@ void GetGamePlayersTask::OnResponse(int nConnection,
         player.mConnectionType = LobbyRT::ConnectionTypeOf(pResponse->connectionClass);
         player.mRank = 0;
         LobbyRT::DecodePlayer(&player, pResponse->stats);
-        TheLobbyRT->mLaunchpadPlayers.push_back(player);
+        TheLobbyRT->GetLaunchpadPlayers().push_back(player);
         if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;
         }

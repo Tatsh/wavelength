@@ -42,7 +42,7 @@ void MCLoadFreqFilesTask::LoadNext() {
             nullptr,
             mCardPort,
             FormatString("%s%s/%s", g_pszMemcardBaseDir, pszDirExt, sDirEntries[mIndex].mName),
-            g_pMemcardBuffer,
+            g_pMemcardBuffer.get(),
             g_nMemcardBufferSize);
         mLoad.Start();
     } else {
@@ -59,7 +59,7 @@ void MCLoadFreqFilesTask::OnPoll() {
         g_pMemcardConfig->FindInt("max_freq_size", &nMaxSize, true);
         // A file of another size than a whole profile is deleted as corrupt.
         if (MemcardReadSizeIs(nMaxSize)) {
-            BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
+            BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
             mProfiles->push_back(Campaign());
             stream >> mProfiles->back();
             mProfiles->back().mCustom = 1;
@@ -68,7 +68,7 @@ void MCLoadFreqFilesTask::OnPoll() {
         }
         ++mIndex;
 #else
-        BufStream stream(g_pMemcardBuffer, g_nMemcardBufferSize, true);
+        BufStream stream(g_pMemcardBuffer.get(), g_nMemcardBufferSize, true);
         stream >> mProfiles->at(sDirCount - (mIndex + 1));
         mProfiles->at(sDirCount - (mIndex + 1)).mCustom = 1;
         --mIndex;

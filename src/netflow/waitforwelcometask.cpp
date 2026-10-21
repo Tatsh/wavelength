@@ -6,9 +6,9 @@ void WaitForWelcomeTask::OnPoll() {
     if (TheLaunchpadRT == nullptr) {
         return;
     }
-    if (TheLaunchpadRT->mState >= LaunchpadRT::kStateWelcomed) {
+    if (TheLaunchpadRT->GetState() >= LaunchpadRT::kStateWelcomed) {
         Finish(true, 0);
-    } else if (TheLaunchpadRT->mState == LaunchpadRT::kStateFailed) {
-        Finish(false, TheLaunchpadRT->mError);
+    } else if (TheLaunchpadRT->GetState() == LaunchpadRT::kStateFailed) {
+        Finish(false, TheLaunchpadRT->GetError());
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "math/key.h"
@@ -186,23 +187,88 @@ public:
      */
     static float sLowEnergy;
 
-    String mName;                /*!< The name of the arena. */
-    int mLoaded;                 /*!< Whether PollLoad() has gathered the objects. */
-    int mTriggersLoaded;         /*!< Whether the triggers are loaded or the arena has none. */
-    DataArray *mConfig;          /*!< The `arena_paths` entry of the arena. */
-    AsyncStream *mTriggerStream; /*!< The stream of the triggers, or null. */
-    RndLoader *mLoader;          /*!< The loader of the file of the arena, or null. */
-    RndView *mView;              /*!< The top view of the arena, or null. */
-    int mOwnsView;               /*!< Whether mView is the placeholder the arena created. */
-    RndTransAnim *mCamPath;      /*!< The path of the camera. */
-    RndTex *mFrequencyTex;       /*!< `fbase_freq.tex`. */
-    float mFrameScale;           /*!< The frames of the camera path per tick. */
-    float mFrameOffset;          /*!< The frame of the camera path at tick 0. */
-    float mLength;               /*!< The ticks the camera path covers, `length`. */
-    float mSongTicks;            /*!< The length of the song SetSongTicks() fitted. */
-    float mCamPathLength;        /*!< The length of the camera path the data expects. */
-    RndEnviron *mEnviron;        /*!< The first environment of the file of the arena. */
-    int mUnlockIndex;            /*!< The index of the arena among the unlocked arenas. */
+    /** @return The name of the arena. */
+    const String &GetName() const {
+        return mName;
+    }
+
+    /** @return The `arena_paths` entry of the arena. */
+    DataArray *GetConfig() const {
+        return mConfig;
+    }
+
+    /** @param pLoader The loader of the file of the arena. */
+    void SetLoader(RndLoader *pLoader) {
+        mLoader = pLoader;
+    }
+
+    /** @return The top view of the arena, or null. */
+    RndView *GetView() const {
+        return mView;
+    }
+
+    /** @return The path of the camera, or null. */
+    RndTransAnim *GetCamPath() const {
+        return mCamPath;
+    }
+
+    /** @return The length of the song SetSongTicks() fitted. */
+    float GetSongTicks() const {
+        return mSongTicks;
+    }
+
+    /** @return The length of the camera path the data expects. */
+    float GetCamPathLength() const {
+        return mCamPathLength;
+    }
+
+    /** @return The index of the arena among the unlocked arenas. */
+    int GetUnlockIndex() const {
+        return mUnlockIndex;
+    }
+
+    /** @return The first environment of the file of the arena, or null. */
+    RndEnviron *GetEnviron() const {
+        return mEnviron;
+    }
+
+    /** @return The value of `freestyle_constraints` at the frame of the camera. */
+    float GetFreestyle() const {
+        return mFreestyle;
+    }
+
+    /** @return Whether the triggers are loaded or the arena has none. */
+    int GetTriggersLoaded() const {
+        return mTriggersLoaded;
+    }
+
+    /** @return The stream of the triggers, or null. */
+    AsyncStream *GetTriggerStream() const {
+        return mTriggerStream.get();
+    }
+
+protected:
+    DataArray *mConfig; /*!< The `arena_paths` entry of the arena. Borrowed. */
+    float mFrameScale;  /*!< The frames of the camera path per tick. */
+
+private:
+    String mName;        /*!< The name of the arena. */
+    int mLoaded;         /*!< Whether PollLoad() has gathered the objects. */
+    int mTriggersLoaded; /*!< Whether the triggers are loaded or the arena has none. */
+    std::unique_ptr<AsyncStream> mTriggerStream; /*!< The stream of the triggers, or null. */
+    RndLoader *mLoader; /*!< The loader of the file of the arena, or null. Borrowed. */
+    RndView *mView;     /*!< The top view of the arena, mOwnedView or the view of the file, or
+                           null. Borrowed. */
+    std::unique_ptr<RndView> mOwnedView; /*!< The placeholder view the arena created when it has
+                                            no file, or null. */
+    RndTransAnim *mCamPath;              /*!< The path of the camera. Borrowed. */
+    RndTex *mFrequencyTex;               /*!< `fbase_freq.tex`. Borrowed. */
+    float mFrameOffset;                  /*!< The frame of the camera path at tick 0. */
+    float mLength;                       /*!< The ticks the camera path covers, `length`. */
+    float mSongTicks;                    /*!< The length of the song SetSongTicks() fitted. */
+    float mCamPathLength;                /*!< The length of the camera path the data expects. */
+    RndEnviron *mEnviron; /*!< The first environment of the file of the arena. Borrowed. */
+    int mUnlockIndex;     /*!< The index of the arena among the unlocked arenas. */
     std::vector<Key<float>> mFreestyleKeys; /*!< `freestyle_constraints` over camera frames. */
     float mFreestyle; /*!< The value of mFreestyleKeys at the frame of the camera. */
     char mPanelFlags; /*!< The look of the panels, a set of PanelFlag. */
@@ -212,9 +278,8 @@ public:
     std::list<MovieMat> mMovieMats;    /*!< The material stages that show the movies. */
     std::vector<RndMovie *> mMovies;   /*!< `movie1.mov` to `movie4.mov`. */
     float mBeatTick;                   /*!< The tick the last beat started. */
-    RndMovie *mSnow;                   /*!< `snow.ipu`. */
+    RndMovie *mSnow;                   /*!< `snow.ipu`. Borrowed. */
 
-private:
     /**
      * Record every material stage that shows a texture.
      *

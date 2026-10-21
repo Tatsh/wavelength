@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/binstream.h"
 #include "os/file.h"
 
@@ -108,6 +110,12 @@ public:
      */
     bool Fail() override;
 
-    File *mFile; /*!< The file, or null when it did not open. */
-    int mFail;   /*!< Non-zero once an operation failed. */
+    /** @return The file, or null when it did not open. */
+    File *GetFile() const {
+        return mFile.get();
+    }
+
+private:
+    std::unique_ptr<File> mFile; /*!< The file, or null when it did not open. */
+    int mFail;                   /*!< Non-zero once an operation failed. */
 };

@@ -22,8 +22,8 @@ NetServerSelScreen::NetServerSelScreen(DataArray *pData) : FreqScreen(pData) {
 void NetServerSelScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     UIPanel *pPanel = TheUI.FindPanel(kServerPanel, false);
     auto location = mLocations.begin();
-    for (const auto &entry : pPanel->mComponents) {
-        UIComponent *pButton = entry.second;
+    for (const auto &entry : pPanel->GetComponents()) {
+        UIComponent *pButton = entry.second.get();
         if (location != mLocations.end()) {
             pButton->SetState(UIComponent::kStateNormal, false);
             pButton->SetShowing(true);
@@ -36,7 +36,7 @@ void NetServerSelScreen::Enter(UIScreen *pPrevScreen, float fTime) {
         }
     }
     if (!mLocations.empty()) {
-        pPanel->mComponents.begin()->second->SetState(UIComponent::kStateSelected, false);
+        pPanel->GetComponents().begin()->second->SetState(UIComponent::kStateSelected, false);
     }
     FreqScreen::Enter(pPrevScreen, fTime);
 }
@@ -49,8 +49,8 @@ bool NetServerSelScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetServerSelScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszLocation = pMsg->mComponent->Text();
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszLocation = pMsg->GetComponent()->Text();
         auto location = mLocations.begin();
         while (location != mLocations.end() &&
                std::strcmp(pszLocation, location->mName.c_str()) != 0) {

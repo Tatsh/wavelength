@@ -37,7 +37,7 @@ Duel::~Duel() {
 }
 
 void Duel::CreateLogic() {
-    SetLogic(new DuelLogic(mSong));
+    SetLogic(new DuelLogic(mSong.get()));
 }
 
 void Duel::SetLogic(DuelLogic *pLogic) {
@@ -54,7 +54,7 @@ bool Duel::IsSongLoadDone() {
 }
 
 void Duel::BeginAssetLoad() {
-    Synth *pSynth = TheSynth;
+    Synth *pSynth = TheSynth.get();
     DataArray *pGame = SystemConfig()->FindArray(kGameSection, false);
     const char *pszBankFile = nullptr;
     (void)pGame->FindSymbol(kFxBankFileKey, &pszBankFile, true); // Yes, the result is discarded.
@@ -99,7 +99,7 @@ void Duel::BuildTracks(int nStartTick) {
     }
 
     const float fStartTick = static_cast<float>(nStartTick);
-    const int nEndTick = mSong->mNumBars * mSong->mBuilder->mTicksPerBar;
+    const int nEndTick = mSong->GetNumBars() * mSong->GetTicksPerBar();
     const float *pTickDuration = mSong->GetMsPerTick();
     const std::vector<bool> flags(kDuelTrackFlagCount, false);
     TheGfxManager.BuildTracks(fStartTick,

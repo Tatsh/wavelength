@@ -47,10 +47,10 @@ bool NetPasswordScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetPasswordScreen::HandleSaveToggle(UIComponentSelectStartMsg *pMsg) {
-    if (std::strcmp(pMsg->mComponent->mName, kSaveButton) == 0 &&
-        (pMsg->mButton == kPadDLeft || pMsg->mButton == kPadDRight)) {
+    if (std::strcmp(pMsg->GetComponent()->GetName(), kSaveButton) == 0 &&
+        (pMsg->GetButton() == kPadDLeft || pMsg->GetButton() == kPadDRight)) {
         mSavePassword ^= 1;
-        LabelSaveChoice(pMsg->mComponent);
+        LabelSaveChoice(pMsg->GetComponent());
     }
     return HandleSelectStart(pMsg);
 }

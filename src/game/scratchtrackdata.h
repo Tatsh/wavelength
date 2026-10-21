@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "gs/scratcher.h"
@@ -16,9 +17,9 @@ public:
     /** The number of scratchers in a set. */
     static constexpr int kSetSize = 3;
 
-    /** The scratchers that play from one tick on. */
+    /** The scratchers that play from one tick on, deleted with the data. */
     struct ScratcherSet {
-        Scratcher *mScratchers[kSetSize]; /*!< The scratchers, null where none was given. */
+        std::unique_ptr<Scratcher> mScratchers[kSetSize]; /*!< The scratchers, or null. */
     };
 
     /**
@@ -67,6 +68,12 @@ public:
     int
     GetScratchers(int nTick, Scratcher **ppFirst, Scratcher **ppSecond, Scratcher **ppThird) const;
 
-    std::vector<TickObj<ScratcherSet> > mSets; /*!< The sets in ascending tick order. */
-    int mEndTick;                              /*!< The end tick SetScratcher() tests. */
+    /** @return The end tick SetScratcher() tests. */
+    int GetEndTick() const {
+        return mEndTick;
+    }
+
+private:
+    std::vector<TickObj<ScratcherSet>> mSets; /*!< The sets in ascending tick order. */
+    int mEndTick;                             /*!< The end tick SetScratcher() tests. */
 };

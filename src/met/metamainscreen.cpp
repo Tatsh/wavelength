@@ -53,11 +53,11 @@ bool MetaMainScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     TheGameDb->SetSkillLevel(GameDb::kSkillIntermediate);
     TheGameDb->SetTutorial(0);
     TheGameDb->SetPracticeMode(false);
@@ -101,12 +101,12 @@ bool MetaMainScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool MetaMainScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    if (pMsg->mPanel->mName != kMainPanel) {
+    if (pMsg->GetPanel()->GetName() != kMainPanel) {
         return false;
     }
 
     FxMidi::StopPortals();
-    String button(pMsg->mComponent->mName);
+    String button(pMsg->GetComponent()->GetName());
     if (button == "solo_but") {
         FxMidi::PlaySoloPortal();
     } else if (button == "multi_but") {

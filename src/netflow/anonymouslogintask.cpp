@@ -12,7 +12,7 @@
 void AnonymousLoginTask::OnStart() {
     rtMediusAnonymousLoginRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
 #ifdef VIDEO_STANDARD_PAL
     strncpy(

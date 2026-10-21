@@ -53,17 +53,18 @@ void GfxTunnelPanel::SetDeferred(int bDeferred, float flRevealTick) {
 }
 
 void GfxTunnelPanel::ResolveState() {
-    if ((mFlags & GfxTunnel::kBarFlagFinish) != 0 && TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
+    if ((mFlags & GfxTunnel::kBarFlagFinish) != 0 &&
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
         mTransparent = 1;
         mPickable = 0;
-        mCheckpointMat = mTunnel->mCheckpointFinishMat;
+        mCheckpointMat = mTunnel->GetCheckpointFinishMat();
         return;
     }
     if ((mFlags & GfxTunnel::kBarFlagCheckpoint) != 0 &&
-        TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
         mTransparent = 1;
         mPickable = 0;
-        mCheckpointMat = mTunnel->mCheckpointMat;
+        mCheckpointMat = mTunnel->GetCheckpointMat();
         return;
     }
     if (mOwner >= 0 || mInSong == 0) {
@@ -78,13 +79,13 @@ void GfxTunnelPanel::ResolveState() {
 }
 
 void GfxTunnelPanel::Apply() {
-    TnlGeom *pGeom = mTunnel->mGeom;
+    TnlGeom *pGeom = mTunnel->GetGeom();
     pGeom->SetPanelState(
         mTrack, mBar, static_cast<char>(mTransparent), mCheckpointMat, mPickable, true, mColor);
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix && mTrack == kCheckpointTrack) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix && mTrack == kCheckpointTrack) {
         RndMat *pMat = nullptr;
         if ((mFlags & GfxTunnel::kBarFlagCheckpoint) != 0) {
-            pMat = mTunnel->mCheckpointMat;
+            pMat = mTunnel->GetCheckpointMat();
         }
         pGeom->SetBarValue(mBar, pMat);
     }
@@ -92,7 +93,7 @@ void GfxTunnelPanel::Apply() {
 
 void GfxTunnelPanel::Refresh() {
     if (mRevealTicks != 0) {
-        mTunnel->mGeom->SetPanelStartSection(mTrack, mBar, kFirstSection);
+        mTunnel->GetGeom()->SetPanelStartSection(mTrack, mBar, kFirstSection);
         Apply();
     }
 }
@@ -116,7 +117,7 @@ bool GfxTunnelPanel::Update(GfxTunnel *pTunnel, float flTick) {
         return true;
     }
     const int nElapsed = static_cast<int>((flTick - mRevealTick) + kRounding);
-    TnlGeom *pGeom = mTunnel->mGeom;
+    TnlGeom *pGeom = mTunnel->GetGeom();
     if (mRevealTicks < nElapsed) {
         pGeom->SetPanelStartSection(mTrack, mBar, kFirstSection);
         Apply();
@@ -126,7 +127,7 @@ bool GfxTunnelPanel::Update(GfxTunnel *pTunnel, float flTick) {
         return true;
     }
     const int nSection =
-        (((pGeom->mSectionsPerBar - 1) * nElapsed) + mRevealTicks - 1) / mRevealTicks;
+        (((pGeom->GetSectionsPerBar() - 1) * nElapsed) + mRevealTicks - 1) / mRevealTicks;
     pGeom->SetPanelStartSection(mTrack, mBar, static_cast<char>(nSection));
     return true;
 }

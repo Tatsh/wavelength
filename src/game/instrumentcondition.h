@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e4708
      */
     bool Test() override {
-        return TheTriggerMgr.mInstrument[TheTriggerMgr.mPlayer] == mInstrument;
+        return TheTriggerMgr.GetInstrument(TheTriggerMgr.GetPlayer()) == mInstrument;
     }
 
 private:

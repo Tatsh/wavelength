@@ -89,12 +89,12 @@ void Game::CreateLogic() {
     if (TheGameDb->GetDemo() != nullptr || TheGameConfig->mZeroRandSeed) {
         mSeed = 0;
     }
-    if (TheGameDb->mTutorial != 0) {
-        mLogic = new TutorialGameLogic(mSong, mSongConfig);
-    } else if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-        mLogic = new SoloGameLogic(mSong, mSongConfig, mSeed);
+    if (TheGameDb->GetTutorial() != 0) {
+        mLogic = new TutorialGameLogic(mSong.get(), mSongConfig);
+    } else if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
+        mLogic = new SoloGameLogic(mSong.get(), mSongConfig, mSeed);
     } else {
-        mLogic = new MultiGameLogic(mSong, mSongConfig, mSeed);
+        mLogic = new MultiGameLogic(mSong.get(), mSongConfig, mSeed);
     }
     World::SetLogic(mLogic);
 }
@@ -140,12 +140,13 @@ void Game::Handle(const BtnEvent<10> &event) {
 }
 
 void Game::BeginAssetLoad() {
-    Synth *pSynth = TheSynth;
+    Synth *pSynth = TheSynth.get();
     DataArray *pGame = SystemConfig()->FindArray(kGameSection, false);
     const char *pszFxBankFile = nullptr;
     const char *pszCheerBankFile = nullptr;
-    const char *pszFxBankKey =
-        TheGameDb->mCommunity == GameDb::kCommunitySolo ? kSoloFxBankFileKey : kMultiFxBankFileKey;
+    const char *pszFxBankKey = TheGameDb->GetCommunity() == GameDb::kCommunitySolo ?
+                                   kSoloFxBankFileKey :
+                                   kMultiFxBankFileKey;
     (void)pGame->FindSymbol(pszFxBankKey, &pszFxBankFile, true); // Yes, the result is discarded.
 #ifdef VIDEO_STANDARD_PAL
     const char *pszFxBankPath;
@@ -223,14 +224,14 @@ void Game::BuildTracks(int nStartTick) {
     }
 
     const int nEndTick =
-        TheGameDb->mTutorial != 0 ? 0 : mSong->mNumBars * mSong->mBuilder->mTicksPerBar;
+        TheGameDb->GetTutorial() != 0 ? 0 : mSong->GetNumBars() * mSong->GetTicksPerBar();
     std::vector<bool> clearedSongs;
-    const SongEntry entry{TheGameDb->FindSong(TheGameDb->mSong.mBuffer)};
+    const SongEntry entry{TheGameDb->FindSong(TheGameDb->GetSong().c_str())};
     const int nSongType = entry.GetType();
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo && TheGameDb->mTutorial == 0 &&
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo && TheGameDb->GetTutorial() == 0 &&
         nSongType != kSongTypeWithoutClearedSongs) {
         Campaign *pProfile = TheGameDb->GetProfile(0);
-        const int nSkillLevel = TheGameDb->mSkillLevel;
+        const int nSkillLevel = TheGameDb->GetSkillLevel();
         pProfile->GetClearedSongs(nSkillLevel, TheGameDb->FindSongGroup(), &clearedSongs);
     } else {
         clearedSongs.assign(kGroupSongCount, false);
@@ -256,8 +257,9 @@ void Game::TogglePlayAllGems([[maybe_unused]] DataArray *pCommand,
 
 void Game::TogglePracticeMode([[maybe_unused]] DataArray *pCommand,
                               [[maybe_unused]] void *pUserData) {
-    TheGameDb->SetPracticeMode(TheGameDb->mPracticeMode == 0);
-    DebugPrint("CHEAT: %sin practice mode\n", TheGameDb->mPracticeMode != 0 ? kOnText : kNotText);
+    TheGameDb->SetPracticeMode(TheGameDb->GetPracticeMode() == 0);
+    DebugPrint("CHEAT: %sin practice mode\n",
+               TheGameDb->GetPracticeMode() != 0 ? kOnText : kNotText);
 }
 
 void Game::ToggleNoCapture([[maybe_unused]] DataArray *pCommand, [[maybe_unused]] void *pUserData) {

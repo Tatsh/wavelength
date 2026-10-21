@@ -1,5 +1,7 @@
 #include "gfx/particlearmsassembly.h"
 
+#include <memory>
+
 #include "math/sine.h"
 #include "math/transform.h"
 #include "math/transformops.h"
@@ -46,32 +48,29 @@ inline Vector2 ToRadians(const Vector2 &degrees) {
 } // namespace
 
 ParticleArmsAssembly::ParticleArmsAssembly(DataArray *pData)
-    : mPath(nullptr), mTicksAhead(nullptr), mNumArms(1), mRotationSpeed(0.0f), mArmLength(1.0f),
-      mTick(0.0f), mAngle(0.0f) {
-    mSys = dynamic_cast<RndParticleSys *>(
-        TheManager.Create(RndParticleSys::sClassName, pData->Sym(0)));
+    : mPath(nullptr), mNumArms(1), mRotationSpeed(0.0f), mArmLength(1.0f), mTick(0.0f),
+      mAngle(0.0f) {
+    mSys.reset(dynamic_cast<RndParticleSys *>(
+        TheManager.Create(RndParticleSys::sClassName, pData->Sym(0))));
     mSys->mMode = RndParticleSys::kModeSprite;
     const char *pszParent = kDefaultDrawParent;
     pData->FindSymbol("draw_parent", &pszParent, false);
-    dynamic_cast<RndDrawable *>(TheManager.Find(pszParent))->AddDraw(mSys, nullptr);
+    dynamic_cast<RndDrawable *>(TheManager.Find(pszParent))->AddDraw(mSys.get(), nullptr);
     LoadConfig(pData);
 }
 
-ParticleArmsAssembly::~ParticleArmsAssembly() {
-    delete mSys;
-    delete mTicksAhead;
-}
+ParticleArmsAssembly::~ParticleArmsAssembly() = default;
 
 void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
     mSys->FreeAllParticles();
     mSys->mEmitRate.y = 0.0f;
     mSys->mEmitRate.x = 0.0f;
-    delete mTicksAhead;
     DataArray *pTicksAhead = pData->FindArray("ticks_ahead", false);
     if (pTicksAhead != nullptr) {
-        mTicksAhead = ObjectToInterpolator(pTicksAhead->Array(1));
+        mTicksAhead.reset(ObjectToInterpolator(pTicksAhead->Array(1)));
     } else {
-        mTicksAhead = new LinearInterpolator(kDefaultTicksAhead, kDefaultTicksAhead, 0.0f, 1.0f);
+        mTicksAhead = std::make_unique<LinearInterpolator>(
+            kDefaultTicksAhead, kDefaultTicksAhead, 0.0f, 1.0f);
     }
     pData->FindInt("num_arms", &mNumArms, false);
     pData->FindFloat("first_arm_angle", &mAngle, false);
@@ -163,7 +162,7 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
 }
 
 void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
-    RndParticleSys *pSys = mSys;
+    RndParticleSys *pSys = mSys.get();
     if (pSys->mLiveParticles == nullptr && pSys->mEmitRate.x == 0.0f && pSys->mEmitRate.y == 0.0f) {
         mTick = flTick;
         pSys->ResetEmitFrame();
@@ -212,7 +211,7 @@ void ParticleArmsAssembly::Report() {
     const int nLive = mSys->NumLiveParticles();
     RndParticleSys *pOwner = mSys->mParticlesOwner;
     const int nPool = pOwner->mNumParticles;
-    const char *pszOwner = (pOwner == mSys) ? "self" : pOwner->mName.c_str();
+    const char *pszOwner = (pOwner == mSys.get()) ? "self" : pOwner->mName.c_str();
     DebugPrint(
         "particle arm %s: %d particles of %d (owner: %s)\n", pszName, nLive, nPool, pszOwner);
 }

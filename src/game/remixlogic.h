@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/btnevent.h"
@@ -884,47 +885,47 @@ private:
      */
     int OnKeyboardKey(KeyboardKeyMsg *pMsg);
 
-    Song *mSong;                               /*!< The song. */
-    int mTicksPerBar;                          /*!< The song ticks in one bar. */
-    int mNumBars;                              /*!< The length of the song in bars. */
-    int mState;                                /*!< One of State. */
-    int mSavedState;                           /*!< The state SetPaused() restores. */
-    int mPaused;                               /*!< Whether SetPaused() paused the song. */
-    PlayMap *mPlayMap;                         /*!< The map of the song positions. */
-    SectionBoundaries *mSections;              /*!< The sections of the song. */
-    std::vector<RemixTrack *> mRemixTracks;    /*!< The pitch and vocal tracks, by index. */
-    std::vector<PitchTrack *> mPitchTracks;    /*!< The pitch tracks. */
-    std::vector<VoxTrack *> mVoxTracks;        /*!< The vocal tracks. */
-    FreestyleTrack *mFreestyleTrack;           /*!< The guitar or turntable track, or null. */
-    std::vector<Player *> mPlayers;            /*!< Every player, by index. */
-    GameTrackSelector *mTrackSelector;         /*!< The assignment of the players to tracks. */
-    WorldBeat mWorldBeat;                      /*!< The events of the track named "WORLD". */
-    std::vector<int> mPlayableSections;        /*!< The sections no pattern fills, ascending. */
-    int mSectionIndex;                         /*!< The index of the current section. */
-    int mLoopBar;                              /*!< The bar the current loop plays from. */
-    int mMuteRemote;                           /*!< Whether remote players silence the tracks. */
-    int mPreviewing;                           /*!< Whether a preview plays. */
-    int mQuit;                                 /*!< Whether a player quit from a menu. */
-    int mModified;                             /*!< Whether the remix was edited. */
-    int mReadOnly;                             /*!< Whether the remix may not be edited. */
-    float mBaseTempo;                          /*!< The tempo at normal speed, in BPM. */
-    std::vector<int> mNetOrderPlayers;         /*!< The player of each session order. */
-    NetArbiter *mNetArbiter;                   /*!< The arbitration of the host, or null. */
-    unsigned int mArbiterVersion;              /*!< The newest assignment taken. */
-    std::vector<unsigned int> mUpdateVersions; /*!< The newest update of each player. */
-    std::vector<int> mPlayerTracks;            /*!< The track the host assigned each player. */
-    std::vector<int> mTrackVolumes;            /*!< The volume of each track after the intro. */
-    std::vector<RemixHUD *> mHuds;             /*!< The remix menu of each controller. */
-    FXMgr mFx;                                 /*!< The effect sets of the sections. */
-    Ptr<Command> mTransitionCmd;               /*!< Runs OnTransition(). */
-    Ptr<Command> mSectionStartCmd;             /*!< Runs ApplySectionTracks(). */
-    Ptr<Command> mUpdateHudsCmd;               /*!< Runs UpdateHuds(). */
-    Ptr<Command> mSectionEndCmd;               /*!< Runs OnSectionEnd(). */
-    Ptr<Command> mApplyEffectsCmd;             /*!< Runs ApplySectionEffects(). */
-    Ptr<Command> mPlayIntroCmd;                /*!< Runs PlayIntro(). */
-    Ptr<Command> mEndIntroCmd;                 /*!< Runs EndIntro(). */
-    RemixTutorial *mTutorial;                  /*!< The tutorial the remix plays, or null. */
-    int mSavedMuteRemote;                      /*!< mMuteRemote before the preview. */
-    int mEndTick;                              /*!< The tick the faded song ends at. */
-    int mRemixLoaded;                          /*!< Whether LoadRemix() read a saved remix. */
+    Song *mSong;                  /*!< The song. Borrowed. */
+    int mTicksPerBar;             /*!< The song ticks in one bar. */
+    int mNumBars;                 /*!< The length of the song in bars. */
+    int mState;                   /*!< One of State. */
+    int mSavedState;              /*!< The state SetPaused() restores. */
+    int mPaused;                  /*!< Whether SetPaused() paused the song. */
+    PlayMap *mPlayMap;            /*!< The map of the song positions. Borrowed. */
+    SectionBoundaries *mSections; /*!< The sections of the song. Borrowed. */
+    std::vector<std::unique_ptr<RemixTrack>> mRemixTracks; /*!< The pitch and vocal tracks. */
+    std::vector<PitchTrack *> mPitchTracks;                /*!< The pitch tracks. Borrowed. */
+    std::vector<VoxTrack *> mVoxTracks;                    /*!< The vocal tracks. Borrowed. */
+    std::unique_ptr<FreestyleTrack> mFreestyleTrack; /*!< The guitar or turntable track, or null. */
+    std::vector<std::unique_ptr<Player>> mPlayers;   /*!< Every player, by index. */
+    std::unique_ptr<GameTrackSelector> mTrackSelector; /*!< The assignment of the players. */
+    WorldBeat mWorldBeat;                         /*!< The events of the track named "WORLD". */
+    std::vector<int> mPlayableSections;           /*!< The sections no pattern fills, ascending. */
+    int mSectionIndex;                            /*!< The index of the current section. */
+    int mLoopBar;                                 /*!< The bar the current loop plays from. */
+    int mMuteRemote;                              /*!< Whether remote players silence the tracks. */
+    int mPreviewing;                              /*!< Whether a preview plays. */
+    int mQuit;                                    /*!< Whether a player quit from a menu. */
+    int mModified;                                /*!< Whether the remix was edited. */
+    int mReadOnly;                                /*!< Whether the remix may not be edited. */
+    float mBaseTempo;                             /*!< The tempo at normal speed, in BPM. */
+    std::vector<int> mNetOrderPlayers;            /*!< The player of each session order. */
+    std::unique_ptr<NetArbiter> mNetArbiter;      /*!< The arbitration of the host, or null. */
+    unsigned int mArbiterVersion;                 /*!< The newest assignment taken. */
+    std::vector<unsigned int> mUpdateVersions;    /*!< The newest update of each player. */
+    std::vector<int> mPlayerTracks;               /*!< The track the host assigned each player. */
+    std::vector<int> mTrackVolumes;               /*!< The volume of each track after the intro. */
+    std::vector<std::unique_ptr<RemixHUD>> mHuds; /*!< The remix menu of each controller. */
+    FXMgr mFx;                                    /*!< The effect sets of the sections. */
+    Ptr<Command> mTransitionCmd;                  /*!< Runs OnTransition(). */
+    Ptr<Command> mSectionStartCmd;                /*!< Runs ApplySectionTracks(). */
+    Ptr<Command> mUpdateHudsCmd;                  /*!< Runs UpdateHuds(). */
+    Ptr<Command> mSectionEndCmd;                  /*!< Runs OnSectionEnd(). */
+    Ptr<Command> mApplyEffectsCmd;                /*!< Runs ApplySectionEffects(). */
+    Ptr<Command> mPlayIntroCmd;                   /*!< Runs PlayIntro(). */
+    Ptr<Command> mEndIntroCmd;                    /*!< Runs EndIntro(). */
+    std::unique_ptr<RemixTutorial> mTutorial;     /*!< The tutorial the remix plays, or null. */
+    int mSavedMuteRemote;                         /*!< mMuteRemote before the preview. */
+    int mEndTick;                                 /*!< The tick the faded song ends at. */
+    int mRemixLoaded;                             /*!< Whether LoadRemix() read a saved remix. */
 };

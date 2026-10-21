@@ -37,6 +37,8 @@ public:
      */
     void Set(int nPort, const char *pszName);
 
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
-    MCDeleteTask *mDelete;   /*!< The step that deletes the file. */
+private:
+    // Both steps belong to the SerialTasks list.
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+    MCDeleteTask *mDelete;   /*!< The step that deletes the file. Borrowed. */
 };

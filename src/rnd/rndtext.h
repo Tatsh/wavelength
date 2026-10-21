@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 
 #include "math/color.h"
 #include "math/plane.h"
@@ -428,8 +429,8 @@ public:
     float mWrapWidth;    /*!< The width lines wrap at. */
     String mText;        /*!< The text the mesh shows, after the tabs and the wrapping. */
     String mPreWrapText; /*!< The text as set. */
-    RndMesh *mMesh;      /*!< The mesh of the characters, or null. */
-    int mDepthTest;      /*!< Non-zero for the mesh to test depth. */
+    std::unique_ptr<RndMesh> mMesh; /*!< The mesh of the characters, or null. */
+    int mDepthTest;                 /*!< Non-zero for the mesh to test depth. */
 
 protected:
     /**

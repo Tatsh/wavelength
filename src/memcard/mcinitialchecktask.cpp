@@ -54,7 +54,7 @@ void MCInitialCheckTask::OnDirListed() {
             g_pMemcardConfig->FindInt("max_freq_size", &nFreqSize, true);
             mNeeded += BytesToKilobytes(nFreqSize);
         }
-        if (mGetInfo->mFree < mNeeded) {
+        if (mGetInfo->GetFree() < mNeeded) {
             MemcardTask::sStatus = MemcardTask::kStatusFull;
         } else {
             MemcardTask::sStatus = MemcardTask::kStatusOk;

@@ -30,6 +30,22 @@ public:
     ~BankLoadQJ() override {
     }
 
+    /** @return The timer that measures the load. */
+    Timer &GetTimer() {
+        return mTimer;
+    }
+
+    /** @return The bank slot. */
+    unsigned short GetSlot() const {
+        return mSlot;
+    }
+
+    /** @return The bank file. */
+    const String &GetFile() const {
+        return mFile;
+    }
+
+private:
     Timer mTimer;         /*!< Measures the load. */
     unsigned short mSlot; /*!< The bank slot. */
     String mFile;         /*!< The bank file. */

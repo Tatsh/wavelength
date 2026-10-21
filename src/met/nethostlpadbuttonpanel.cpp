@@ -64,14 +64,15 @@ void NetHostLPadButtonPanel::Update(std::list<NetLaunchpadPlayer> *pPlayers) {
 
     if (bCanLaunch) {
         UIComponent *pLaunch = FindComponent(kLaunchComponent, false);
-        if (TheGameDb->mRemixReadOnly != 0 && TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+        if (TheGameDb->GetRemixReadOnly() != 0 &&
+            TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
             pLaunch->SetState(UIComponent::kStateDisabled, false);
         } else if (pLaunch->GetState() == UIComponent::kStateDisabled) {
             pLaunch->SetState(UIComponent::kStateNormal, false);
         }
 
         UIComponent *pShare = FindComponent(kShareComponent, false);
-        if (TheGameDb->mLoadRemix != 0 && pPlayers->size() >= kMinPlayers) {
+        if (TheGameDb->GetLoadRemix() != 0 && pPlayers->size() >= kMinPlayers) {
             if (pShare->GetState() != UIComponent::kStateSelected) {
                 pShare->SetState(UIComponent::kStateNormal, false);
             }

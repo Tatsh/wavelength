@@ -22,7 +22,7 @@ bool ShipFlyIn::Poll(float fTick,
     if (mStarted == 0) {
         return false;
     }
-    if (mPath.mX1 <= fTick) {
+    if (mPath.GetX1() <= fTick) {
         return true;
     }
     Transform flight;
@@ -36,7 +36,7 @@ bool ShipFlyIn::Start(bool bShow) {
         return bShow;
     }
     mStarted = 1;
-    const float fTick = TheGameDb->mSongTick;
+    const float fTick = TheGameDb->GetSongTick();
     mPath.Reset(0.0f, kFlightTicks, fTick, fTick + kFlightTicks);
     return bShow;
 }

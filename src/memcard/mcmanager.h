@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/campaign.h"
@@ -248,29 +249,44 @@ public:
      */
     const char *GetSlotName(int nSlot);
 
-    MemcardUser *mUser;                    /*!< The user of the running task. */
-    MCInitialCheckTask *mInitialCheck;     /*!< The work of InitialCheck(). */
-    MCCardStatusTask *mCardStatus;         /*!< The work of GetCardStatus(). */
-    MCSaveFreqTask *mSaveFreq;             /*!< The work of SaveFreq(). */
-    MCLoadFreqsTask *mLoadFreqs;           /*!< The work of LoadFreqs(). */
-    MCDeleteFreqTask *mDeleteFreq;         /*!< The work of DeleteFreq(). */
-    MCSaveRemixTask *mSaveRemix;           /*!< The work of SaveRemix(). */
-    MCLoadRemixTask *mLoadRemix;           /*!< The work of LoadRemix(). */
-    MCListRemixesTask *mListRemixes;       /*!< The work of ListRemixes(). */
-    MCDeleteRemixTask *mDeleteRemix;       /*!< The work of DeleteRemix(). */
-    MCSaveSettingsTask *mSaveSettings;     /*!< The work of SaveSettings(). */
-    MCLoadSettingsTask *mLoadSettings;     /*!< The work of LoadSettings(). */
-    MCSaveDataTask *mSaveData;             /*!< The work of SaveFile(). */
-    MCFormatCardTask *mFormatCard;         /*!< The work of FormatCard(). */
-    MCUnformatCardTask *mUnformatCard;     /*!< Unformat work. No routine starts it. */
-    MCListNetConfigsTask *mListNetConfigs; /*!< The work of ListNetConfigs(). */
-    MemcardSerialTask *mCurrentTask;       /*!< The running task, or null. */
-    std::vector<Campaign> mProfiles;       /*!< The profiles LoadFreqs() loads. */
-    std::vector<RemixInfo> mRemixInfos;    /*!< The descriptions ListRemixes() reads. */
-    GameOptions mSettings;                 /*!< The settings LoadSettings() loads. */
-    std::vector<int> mReserved80;          // +0x80, emptied by ClearResults() and never read.
+    /** @return The profiles LoadFreqs() loads. */
+    const std::vector<Campaign> &GetProfiles() const {
+        return mProfiles;
+    }
+
+    /** @return The descriptions ListRemixes() reads. */
+    const std::vector<RemixInfo> &GetRemixInfos() const {
+        return mRemixInfos;
+    }
+
+    /** @return The settings LoadSettings() loads. */
+    const GameOptions &GetSettings() const {
+        return mSettings;
+    }
 
 private:
+    MemcardUser *mUser; /*!< The user of the running task. Borrowed. */
+    std::unique_ptr<MCInitialCheckTask> mInitialCheck;     /*!< The work of InitialCheck(). */
+    std::unique_ptr<MCCardStatusTask> mCardStatus;         /*!< The work of GetCardStatus(). */
+    std::unique_ptr<MCSaveFreqTask> mSaveFreq;             /*!< The work of SaveFreq(). */
+    std::unique_ptr<MCLoadFreqsTask> mLoadFreqs;           /*!< The work of LoadFreqs(). */
+    std::unique_ptr<MCDeleteFreqTask> mDeleteFreq;         /*!< The work of DeleteFreq(). */
+    std::unique_ptr<MCSaveRemixTask> mSaveRemix;           /*!< The work of SaveRemix(). */
+    std::unique_ptr<MCLoadRemixTask> mLoadRemix;           /*!< The work of LoadRemix(). */
+    std::unique_ptr<MCListRemixesTask> mListRemixes;       /*!< The work of ListRemixes(). */
+    std::unique_ptr<MCDeleteRemixTask> mDeleteRemix;       /*!< The work of DeleteRemix(). */
+    std::unique_ptr<MCSaveSettingsTask> mSaveSettings;     /*!< The work of SaveSettings(). */
+    std::unique_ptr<MCLoadSettingsTask> mLoadSettings;     /*!< The work of LoadSettings(). */
+    std::unique_ptr<MCSaveDataTask> mSaveData;             /*!< The work of SaveFile(). */
+    std::unique_ptr<MCFormatCardTask> mFormatCard;         /*!< The work of FormatCard(). */
+    std::unique_ptr<MCUnformatCardTask> mUnformatCard;     /*!< Unformat work. */
+    std::unique_ptr<MCListNetConfigsTask> mListNetConfigs; /*!< The work of ListNetConfigs(). */
+    MemcardSerialTask *mCurrentTask;    /*!< The running task, or null. One of the tasks above. */
+    std::vector<Campaign> mProfiles;    /*!< The profiles LoadFreqs() loads. */
+    std::vector<RemixInfo> mRemixInfos; /*!< The descriptions ListRemixes() reads. */
+    GameOptions mSettings;              /*!< The settings LoadSettings() loads. */
+    std::vector<int> mReserved80;       // +0x80, emptied by ClearResults() and never read.
+
     /**
      * Make a task the running task and start it.
      *

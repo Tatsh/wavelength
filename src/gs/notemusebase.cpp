@@ -11,7 +11,7 @@ constexpr float kRound = 0.5f;
 
 // The milliseconds into the current pump of a scheduler. They time a message within the frame.
 int FrameOffsetMs(const Scheduler *pScheduler) {
-    return static_cast<int>(pScheduler->mTime - pScheduler->mPrevFrameTime + kRound);
+    return static_cast<int>(pScheduler->GetTime() - pScheduler->GetPrevFrameTime() + kRound);
 }
 
 } // namespace

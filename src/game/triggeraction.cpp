@@ -79,14 +79,14 @@ TriggerAction *TriggerAction::New(DataArray *pAction) {
     if (pNew == nullptr) {
         DebugWarn("Don't recognize %s action (file %s, line %d)",
                   pszName,
-                  pAction->mFile,
-                  pAction->mLine);
+                  pAction->GetFile(),
+                  pAction->GetLine());
     }
     return pNew;
 }
 
 void TriggerAction::Start() {
-    TheTriggerMgr.mClock = mClock;
+    TheTriggerMgr.SetClock(mClock);
     if (mDelay <= 0.0f) {
         Exec();
     } else {

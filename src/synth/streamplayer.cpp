@@ -14,17 +14,13 @@ float g_flStreamEndDelayMs = 640.0f;
 
 StreamPlayer::StreamPlayer(int nChannel, const char *pszFile, bool bAudio)
     : mChannel(nChannel), mPlaying(0), mRun(nullptr), mEndMs(kNoEndMs), mEndSent(0) {
-    mBuffer = new FileStreamBuffer(pszFile, bAudio);
+    mBuffer = std::make_unique<FileStreamBuffer>(pszFile, bAudio);
     if (mBuffer->IsClosed()) {
-        delete mBuffer;
-        mBuffer = new FileStreamBuffer("SoundFX/default.str", 0);
+        mBuffer = std::make_unique<FileStreamBuffer>("SoundFX/default.str", 0);
     }
 }
 
-StreamPlayer::~StreamPlayer() {
-    delete mBuffer;
-    mBuffer = nullptr;
-}
+StreamPlayer::~StreamPlayer() = default;
 
 void StreamPlayer::Poll() {
     if (!IsPlaying()) {

@@ -41,10 +41,12 @@ public:
      */
     void Set(int nPort, void *pBuffer, int nSize);
 
-    void *mBuffer;              /*!< Receives the remix. */
+private:
+    // The steps belong to the SerialTasks list.
+    void *mBuffer;              /*!< Receives the remix. Borrowed. */
     int mSize;                  /*!< The number of bytes to read. */
-    MCOpenCurrRemixTask *mOpen; /*!< The step that opens the file. */
-    MCSeekTask *mSeek;          /*!< The step that skips the description. */
-    MCReadTask *mRead;          /*!< The step that reads the remix. */
-    MCCloseTask *mClose;        /*!< The step that closes the file. */
+    MCOpenCurrRemixTask *mOpen; /*!< The step that opens the file. Borrowed. */
+    MCSeekTask *mSeek;          /*!< The step that skips the description. Borrowed. */
+    MCReadTask *mRead;          /*!< The step that reads the remix. Borrowed. */
+    MCCloseTask *mClose;        /*!< The step that closes the file. Borrowed. */
 };

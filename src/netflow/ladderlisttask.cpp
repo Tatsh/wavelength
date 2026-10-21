@@ -22,21 +22,20 @@ constexpr int kRankedRating = 1000000;
 LadderListTask::~LadderListTask() {
     if (mInfoTask != nullptr) {
         mInfoTask->Stop();
-        delete mInfoTask;
     }
 }
 
 void LadderListTask::OnStart() {
-    TheLobbyRT->mRankedPlayers.clear();
+    TheLobbyRT->GetRankedPlayers().clear();
     rtMediusLadderListRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.header.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.header.messageId);
     request.ladderType = kLadderType;
     request.statId = kLadderStat;
     request.reserved30 = 0;
-    request.startPosition = TheLobbyRT->mRanksPageSize * TheLobbyRT->mRanksPage + 1;
-    request.pageSize = TheLobbyRT->mRanksPageSize;
+    request.startPosition = TheLobbyRT->GetRanksPageSize() * TheLobbyRT->GetRanksPage() + 1;
+    request.pageSize = TheLobbyRT->GetRanksPageSize();
     const int nError = rtMediusLadderList(&request, OnResponse);
 #ifdef VIDEO_STANDARD_PAL
     LobbyRT::ReportMediusError(1644, nError);
@@ -49,11 +48,11 @@ void LadderListTask::OnStart() {
 }
 
 void LadderListTask::StartNextInfo() {
-    if (mNext == TheLobbyRT->mRankedPlayers.end()) {
+    if (mNext == TheLobbyRT->GetRankedPlayers().end()) {
         Finish(true, 0);
         return;
     }
-    mInfoTask = new PlayerInfoTask(&*mNext, 0);
+    mInfoTask = std::make_unique<PlayerInfoTask>(&*mNext, 0);
     mInfoTask->Start();
 }
 
@@ -66,12 +65,11 @@ void LadderListTask::OnPoll() {
         return;
     }
     mInfoTask->Stop();
-    delete mInfoTask;
-    mInfoTask = nullptr;
+    mInfoTask.reset();
     int nRankNewbies = 0;
     SystemConfig()->FindArray("net", false)->FindBool("rank_newbies", &nRankNewbies, false);
     if (nRankNewbies == 0 && mNext->IsNewbie()) {
-        TheLobbyRT->mRankedPlayers.erase(mNext, TheLobbyRT->mRankedPlayers.end());
+        TheLobbyRT->GetRankedPlayers().erase(mNext, TheLobbyRT->GetRankedPlayers().end());
         Finish(true, 0);
         return;
     }
@@ -102,15 +100,15 @@ void LadderListTask::OnResponse(int nConnection,
 #endif
         player.mRank = pResponse->rank;
         player.mRating = kRankedRating;
-        TheLobbyRT->mRankedPlayers.push_back(player);
+        TheLobbyRT->GetRankedPlayers().push_back(player);
         if (pResponse->status == RT_MEDIUS_STATUS_SUCCESS && pResponse->endOfList == 0) {
             return;
         }
     }
-    if (TheLobbyRT->mRanksMode != 0) {
+    if (TheLobbyRT->GetRanksMode() != 0) {
         pTask->Finish(true, 0);
         return;
     }
-    pTask->mNext = TheLobbyRT->mRankedPlayers.begin();
+    pTask->mNext = TheLobbyRT->GetRankedPlayers().begin();
     pTask->StartNextInfo();
 }

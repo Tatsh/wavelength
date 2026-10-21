@@ -87,7 +87,7 @@ InputMap gSavedInputMap;
 
 void RemixTutorial::OnStream(DataArray *pCommand, void *pUserData) {
     bool bSkipIfBusy = false;
-    if (pCommand->mSize == kStreamCommandWithOptionSize) {
+    if (pCommand->Size() == kStreamCommandWithOptionSize) {
         bSkipIfBusy = strcmp(pCommand->Sym(kCommandNodeOption), kNoQueueOption) == 0;
     }
     static_cast<RemixTutorial *>(pUserData)->QueueStream(pCommand->Sym(kCommandNodeArgument),
@@ -215,22 +215,22 @@ RemixTutorial::RemixTutorial(RemixLogic *pLogic) {
 
 #ifdef VIDEO_STANDARD_PAL
     if (strcmp(GetSystemLanguage(), kEnglishLanguage) == 0) {
-        mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+        mStreams.SetDirectory(FormatString(kStreamDirectoryFormat, TheGameDb->GetSong().c_str()));
     } else {
-        mStreams.mDirectory = FormatString(
-            kLanguageStreamDirectoryFormat, TheGameDb->mSong.c_str(), GetSystemLanguage());
+        mStreams.SetDirectory(FormatString(
+            kLanguageStreamDirectoryFormat, TheGameDb->GetSong().c_str(), GetSystemLanguage()));
     }
 #else
-    mStreams.mDirectory = FormatString(kStreamDirectoryFormat, TheGameDb->mSong.c_str());
+    mStreams.SetDirectory(FormatString(kStreamDirectoryFormat, TheGameDb->GetSong().c_str()));
 #endif
 
     DataArray *pScript = SystemConfig()
                              ->FindArray(kDbSection, false)
                              ->FindArray(kSongsEntry, false)
                              ->FindArray(kTutorialEntry, false)
-                             ->FindArray(TheGameDb->mSong.c_str(), false)
+                             ->FindArray(TheGameDb->GetSong().c_str(), false)
                              ->FindArray(kScriptEntry, false);
-    const int nSize = pScript->mSize;
+    const int nSize = pScript->Size();
     for (int i = 1; i < nSize; ++i) {
         mScript.Add(CreateTask(pScript->Array(i)));
     }

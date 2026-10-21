@@ -241,12 +241,12 @@ bool ChatPanel::HandleJoypad(JoypadInputMsg *pMsg) {
     UIScreen *pReturnScreen;
     if (mChatType == kChatLobby) {
         pReturnScreen = TheUI.FindScreen(kLobbyScreen, false);
-    } else if (std::strcmp(kHostPlayScreen, TheUI.mCurrentScreen->mName) == 0) {
+    } else if (std::strcmp(kHostPlayScreen, TheUI.GetCurrentScreen()->GetName()) == 0) {
         pReturnScreen = TheUI.FindScreen(kHostScreen, false);
-    } else if (std::strcmp(kGuestPlayScreen, TheUI.mCurrentScreen->mName) == 0) {
+    } else if (std::strcmp(kGuestPlayScreen, TheUI.GetCurrentScreen()->GetName()) == 0) {
         pReturnScreen = TheUI.FindScreen(kGuestScreen, false);
     } else {
-        pReturnScreen = TheUI.mCurrentScreen;
+        pReturnScreen = TheUI.GetCurrentScreen();
     }
 
     const KeyboardRequest request(this,

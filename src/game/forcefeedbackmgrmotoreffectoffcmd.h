@@ -35,9 +35,10 @@ public:
      * @ghidraAddress PAL: 0x003a35f0
      */
     void Execute() override {
-        mEffect->mActive = 0;
-        mEffect->SetMotors(mEffect->mController, 0, 0);
+        mEffect->SetActive(0);
+        mEffect->SetMotors(mEffect->GetController(), 0, 0);
     }
 
-    MotorEffect *mEffect; /*!< The effect. */
+private:
+    MotorEffect *mEffect; /*!< The effect. Borrowed. */
 };

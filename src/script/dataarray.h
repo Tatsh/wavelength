@@ -433,17 +433,28 @@ public:
      */
     static DataArray *FindMacro(const char *pszName);
 
+    /** @return The file the array was read from. */
+    const char *GetFile() const {
+        return mFile;
+    }
+
+    /** @return The line of GetFile() the array starts at. */
+    short GetLine() const {
+        return mLine;
+    }
+
+private:
     /**
      * The node storage, mSize values followed by the words of node kinds, sixteen kinds a word.
+     * Taken from MemOrPoolAlloc and released by the destructor's matching free.
      */
     Node *mNodes;
-    const char *mFile;    /*!< The file the array was read from. */
+    const char *mFile;    /*!< The file the array was read from. Borrowed. */
     short mSize;          /*!< Number of nodes. */
     unsigned short mRefs; /*!< Reference count Release() decrements. */
     short mLine;          /*!< The line of mFile the array starts at. */
     short mSorted;        /*!< Non-zero once SortByKey() has sorted the child arrays. */
 
-private:
     /**
      * Write one node as script text.
      *

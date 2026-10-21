@@ -51,7 +51,7 @@ void MCGetAllRemixInfosTask::OnPoll() {
 #ifdef VIDEO_STANDARD_PAL
         // A file of another size than a whole description is deleted as corrupt.
         if (MemcardReadSizeIs(RemixInfo::WireSize())) {
-            BufStream stream(mInfo.mBuffer, mInfo.mSize, true);
+            BufStream stream(mInfo.GetBuffer(), mInfo.GetSize(), true);
             mInfos->push_back(RemixInfo());
             stream >> mInfos->back();
         } else {
@@ -59,7 +59,7 @@ void MCGetAllRemixInfosTask::OnPoll() {
         }
         ++mIndex;
 #else
-        BufStream stream(mInfo.mBuffer, mInfo.mSize, true);
+        BufStream stream(mInfo.GetBuffer(), mInfo.GetSize(), true);
         stream >> mInfos->at(mIndex);
         ++mIndex;
         ++mIter;

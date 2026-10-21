@@ -56,6 +56,26 @@ public:
      */
     void Notify(Message *pMsg);
 
-    MsgSink *mSink; /*!< The receiver of the messages of the request, or null. */
+    /** @return The receiver of the messages of the request, or null. */
+    MsgSink *GetSink() const {
+        return mSink;
+    }
+
+    /** @return The result a failed step recorded, or 0. */
+    int GetResult() const {
+        return mResult;
+    }
+
+    /**
+     * Record the result of a failed step.
+     *
+     * @param nResult The result.
+     */
+    void SetResult(int nResult) {
+        mResult = nResult;
+    }
+
+private:
+    MsgSink *mSink; /*!< The receiver of the messages of the request, or null. Borrowed. */
     int mResult;    /*!< The result a failed step recorded, or 0. */
 };

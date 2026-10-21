@@ -102,9 +102,8 @@ public:
      */
     static int sDirCount;
 
-    int mPort; /*!< The memory card slot. */
-
 protected:
+    int mPort; /*!< The memory card slot. */
     /**
      * Advance the memory card command in flight.
      *

@@ -44,12 +44,12 @@ BankFileIO::BankFileIO(const String &filename, int nIODirection)
       mBankOutputFile(nullptr), mBankAsyncInputFile(nullptr), mReadState(kReadDone),
       mIODirection(nIODirection), mChunkStart(0) {
     if (nIODirection == kRead) {
-        mBankAsyncInputFile = File::New(mFilename.c_str(), File::kModeRead, 0);
+        mBankAsyncInputFile.reset(File::New(mFilename.c_str(), File::kModeRead, 0));
         if (mBankAsyncInputFile == nullptr) {
             return;
         }
     } else if (nIODirection == kWrite) {
-        mBankOutputFile = new FileStream(mFilename.c_str(), true, true, 0);
+        mBankOutputFile = std::make_unique<FileStream>(mFilename.c_str(), true, true, 0);
         if (mBankOutputFile == nullptr) {
             return;
         }
@@ -57,11 +57,7 @@ BankFileIO::BankFileIO(const String &filename, int nIODirection)
     memcpy(mChunkTag, kNullChunkTag, sizeof(mChunkTag));
 }
 
-BankFileIO::~BankFileIO() {
-    delete mBankAsyncInputFile;
-    delete mBankOutputFile;
-    delete mAudioFileStream;
-}
+BankFileIO::~BankFileIO() = default;
 
 bool BankFileIO::operator!() const {
     return (mBankOutputFile == nullptr) && (mBankAsyncInputFile == nullptr);
@@ -112,7 +108,7 @@ const char *BankFileIO::GetChunkTag(int nChunkType) {
 
 void BankFileIO::OpenAudioData(int nBufferSize) {
     const String filename = AudioDataFilename(mFilename);
-    mAudioFileStream = new LazyFileStream(filename, nBufferSize);
+    mAudioFileStream = std::make_unique<LazyFileStream>(filename, nBufferSize);
 }
 
 bool BankFileIO::GetAudioData(std::vector<unsigned char> &audioData,
@@ -139,8 +135,7 @@ bool BankFileIO::GetAudioData(std::vector<unsigned char> &audioData,
         bMoreToCome = true;
     }
     if (mAudioFileStream->Eof()) {
-        delete mAudioFileStream;
-        mAudioFileStream = nullptr;
+        mAudioFileStream.reset();
         bMoreToCome = false;
     }
     return bMoreToCome;
@@ -158,7 +153,7 @@ bool BankFileIO::ReadChunkHeader(std::vector<unsigned char> &data) {
     bool bStarted = false;
     int nBytes = 0;
     if (mBankAsyncInputFile->ReadDone(&nBytes)) {
-        BufStream *pStream = new BufStream(mHeaderData, sizeof(mHeaderData), true);
+        auto pStream = std::make_unique<BufStream>(mHeaderData, sizeof(mHeaderData), true);
         char tag[kTagSize];
         for (int i = 0; i < kTagSize; ++i) {
             pStream->Read(&tag[i], 1);
@@ -166,7 +161,7 @@ bool BankFileIO::ReadChunkHeader(std::vector<unsigned char> &data) {
         int nSize;
         pStream->ReadEndian(&nSize, sizeof(nSize));
         (void)pStream->Eof(); // Yes, the binary discards the check.
-        delete pStream;
+        pStream.reset();
         if (memcmp(tag, mChunkTag, sizeof(tag)) == 0) {
             data.resize(nSize, 0);
             if (!data.empty()) {

@@ -165,13 +165,13 @@ void MetaSongScreen::Exit(UIScreen *pNextScreen, float fTime) {
 #endif
 
 const char *MetaSongScreen::Title() {
-    if (TheGameDb->mTutorial != 0) {
+    if (TheGameDb->GetTutorial() != 0) {
         return TheLocale.Localize("training_select_TITLE", true);
     }
     const char *pszFormat = FreqScreen::Title();
     const char *pszDifficulty = TheGameDb->GetDifficultyName();
     const char *pszMode = TheGameDb->GetModeName();
-    if (TheGameDb->mTutorial != 0) {
+    if (TheGameDb->GetTutorial() != 0) {
         pszMode = TheLocale.Localize("mode_tutorial", false);
     }
     return FormatString(pszFormat, pszMode, pszDifficulty, TheMetagame.SelectedArenaName());
@@ -180,9 +180,9 @@ const char *MetaSongScreen::Title() {
 SongEntry MetaSongScreen::FindSong(UIComponent *pButton) {
     std::vector<SongEntry> songs;
     TheGameDb->GetArenaSongs(
-        &songs, TheMetagame.GetSelectedArena(), TheGameDb->mSkillLevel, kArenaSongFilter);
+        &songs, TheMetagame.GetSelectedArena(), TheGameDb->GetSkillLevel(), kArenaSongFilter);
     for (unsigned int i = 0; i < songs.size(); ++i) {
-        if (strcmp(pButton->mName, FormatString("0%d", i + 1)) == 0) {
+        if (strcmp(pButton->GetName(), FormatString("0%d", i + 1)) == 0) {
             return songs[i];
         }
     }
@@ -229,8 +229,8 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
         pBio->SetText(song.GetBio());
         pGenre->SetShowing(true);
         pGenre->SetText(song.GetGenre());
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo &&
-            TheGameDb->GetProfile(0)->IsSongFinished(song.GetName(), TheGameDb->mSkillLevel)) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo &&
+            TheGameDb->GetProfile(0)->IsSongFinished(song.GetName(), TheGameDb->GetSkillLevel())) {
             pStatus->SetText(TheLocale.Localize("beat_label", true));
 #ifdef VIDEO_STANDARD_PAL
         } else if (IsSpanish() && song.GetType() == kSongTypeTutorial) {
@@ -285,7 +285,7 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
     if (song.GetType() == kSongTypeTutorial) {
         TheMetagame.SetActionText(TheLocale.Localize("s_g_sel_song_band_tut_ACTION", true));
         TheMetagame.SetHelpText(TheLocale.Localize("s_g_sel_song_band_tut_HELP", true));
-    } else if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
+    } else if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
         TheMetagame.SetActionText(TheLocale.Localize("m_g_sel_song_band_ACTION", true));
         TheMetagame.SetHelpText(TheLocale.Localize("s_g_sel_song_band_song_HELP", true));
     } else {
@@ -298,7 +298,7 @@ void MetaSongScreen::UpdatePreview(UIComponent *pButton, UIPanel *pPanel) {
         sprintf(szIndex, "%02d", i);
         UIComponent *pScore =
             TheUI.FindComponent("s_g_sel_song_band", FormatString("hi_%s", szIndex), false);
-        if (strcmp(pButton->mName, szIndex) == 0) {
+        if (strcmp(pButton->GetName(), szIndex) == 0) {
             pScore->SetState(UIComponent::kStateSelected, false);
         } else {
             pScore->SetState(UIComponent::kStateNormal, false);
@@ -345,17 +345,19 @@ void MetaSongScreen::SetUpSongButton(SongEntry *pSong, int nIndex, bool bLocked)
     pButton->SetShowing(true);
 
     const bool bFinished =
-        TheGameDb->GetProfile(0)->IsSongFinished(pSong->GetName(), TheGameDb->mSkillLevel);
-    if (pSong->GetType() != kSongTypeTutorial && TheGameDb->mCommunity == GameDb::kCommunitySolo &&
-        bFinished) {
+        TheGameDb->GetProfile(0)->IsSongFinished(pSong->GetName(), TheGameDb->GetSkillLevel());
+    if (pSong->GetType() != kSongTypeTutorial &&
+        TheGameDb->GetCommunity() == GameDb::kCommunitySolo && bFinished) {
         SongStats record;
-        TheGameDb->GetProfile(0)->GetSongStats(pSong->GetName(), TheGameDb->mSkillLevel, &record);
-        String token(FormatString("%s_%s", mBandPanel->mName, pScore->mName));
+        TheGameDb->GetProfile(0)->GetSongStats(
+            pSong->GetName(), TheGameDb->GetSkillLevel(), &record);
+        String token(FormatString("%s_%s", mBandPanel->GetName(), pScore->GetName()));
         pScore->SetText(FormatString(TheLocale.Localize(token.c_str(), true), record.mScore));
         pScore->SetShowing(true);
         pGrade->SetShowing(true);
         pGrade->SetMat(FindGradeMaterial(
-            TheGameDb->GetProfile(0)->GetMedal(pSong->GetName(), TheGameDb->mSkillLevel), false));
+            TheGameDb->GetProfile(0)->GetMedal(pSong->GetName(), TheGameDb->GetSkillLevel()),
+            false));
     } else {
         pScore->SetText("");
         pScore->SetShowing(false);
@@ -365,7 +367,7 @@ void MetaSongScreen::SetUpSongButton(SongEntry *pSong, int nIndex, bool bLocked)
     UIStyle *pStyle;
     if (!bLocked) {
         pStyle = TheUI.FindStyle("beat_song_style", false);
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo && bFinished) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo && bFinished) {
             pStyle = TheUI.FindStyle("beat_song_style", false);
         } else {
             pStyle = TheUI.FindStyle("unlocked_song_style", false);
@@ -404,12 +406,12 @@ void MetaSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     SongPreview::Stop(kEnterFadeSeconds);
     mBandPanel = TheUI.FindPanel("s_g_sel_song_band", false);
     const char *pszArena = TheMetagame.GetSelectedArena();
-    const int nSkillLevel = TheGameDb->mSkillLevel;
+    const int nSkillLevel = TheGameDb->GetSkillLevel();
     std::vector<SongEntry> songs;
     TheGameDb->GetArenaSongs(&songs, pszArena, nSkillLevel, kArenaSongFilter);
     std::vector<SongEntry> unlocked;
     TheGameDb->GetUnlockedSongs(
-        &unlocked, pszArena, nSkillLevel, TheGameDb->mCommunity == GameDb::kCommunitySolo);
+        &unlocked, pszArena, nSkillLevel, TheGameDb->GetCommunity() == GameDb::kCommunitySolo);
 
     UIComponent *pFocus = nullptr;
     int i = 0;
@@ -449,7 +451,7 @@ void MetaSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     RndText *pBeat = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_band_07.txt"));
     RndText *pHigh = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_band_hi_07.txt"));
     RndText *pLabel = dynamic_cast<RndText *>(TheManager.Find("s_g_sel_song_band_label.txt"));
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo && strcmp(pszArena, "Tutorial") != 0) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo && strcmp(pszArena, "Tutorial") != 0) {
         const int nTarget = TheGameDb->GetProfile(0)->GetArenaScoreToBeat(pszArena, nSkillLevel);
         pBeat->SetText(FormatString(TheLocale.Localize("s_g_sel_song_band_07", true), nTarget));
         const int nScore = TheGameDb->GetProfile(0)->GetArenaScore(pszArena, nSkillLevel);
@@ -467,16 +469,16 @@ bool MetaSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (mExitPending != 0) {
         return true;
     }
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
     mSongChosen = 1;
-    UIButton *pButton = dynamic_cast<UIButton *>(pMsg->mComponent);
+    UIButton *pButton = dynamic_cast<UIButton *>(pMsg->GetComponent());
     if (pButton->mStyle == TheUI.FindStyle("locked_song_style", false)) {
         return UIScreen::HandleSelect(pMsg);
     }
-    SongEntry song = FindSong(pMsg->mComponent);
+    SongEntry song = FindSong(pMsg->GetComponent());
     DebugPrint("going to launch\n");
     TheGameDb->SetSong(song.GetName());
     TheGameDb->SetPracticeMode(false);
@@ -490,13 +492,13 @@ bool MetaSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     }
     mSong = song.GetName();
 
-    if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         GotoNextScreen("pre_multi2launchseq");
-    } else if (TheGameDb->mTutorial == 1) {
+    } else if (TheGameDb->GetTutorial() == 1) {
         GotoNextScreen("pre_solotut2launchseq");
     } else {
         const char *pszPowerup =
-            TheGameDb->GetProfile(0)->TakePendingPowerup(TheGameDb->mSkillLevel);
+            TheGameDb->GetProfile(0)->TakePendingPowerup(TheGameDb->GetSkillLevel());
         if (pszPowerup != nullptr) {
             GotoNextScreen(FormatString("%s_tip", pszPowerup));
         } else {
@@ -521,10 +523,10 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         return true;
     }
 
-    if (pMsg->mButton == kPadSquare && TheGameDb->mCommunity == kPracticeCommunity &&
-        TheGameDb->mRuleSet == kPracticeRuleSet) {
+    if (pMsg->mButton == kPadSquare && TheGameDb->GetCommunity() == kPracticeCommunity &&
+        TheGameDb->GetRuleSet() == kPracticeRuleSet) {
         FxMidi::PlaySquare();
-        UIComponent *pFocus = mBandPanel->mFocus;
+        UIComponent *pFocus = mBandPanel->GetFocus();
         SongEntry song = FindSong(pFocus);
         bool bUnlocked = true;
         UIButton *pButton = dynamic_cast<UIButton *>(pFocus);
@@ -542,12 +544,12 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
         }
     } else if (pMsg->mButton == kPadCircle) {
         (void)TheUI.FindPanel("s_g_sel_song_band", false); // Yes, the binary discards these.
-        (void)FindSong(dynamic_cast<UIButton *>(mBandPanel->mFocus));
+        (void)FindSong(dynamic_cast<UIButton *>(mBandPanel->GetFocus()));
         (void)TheUI.FindPanel("s_g_sel_song_pic", false);
         RndView *pBio = dynamic_cast<RndView *>(TheManager.Find("s_g_sel_song_pic_bio.view"));
         ShowPicture(pBio->mShowing != 0);
     } else if (pMsg->mButton == kPadTriangle) {
-        if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+        if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
             GotoNextScreen("multisong2multiarena");
         } else if (strcmp(TheMetagame.SelectedArenaName(), "Tutorial") == 0) {
             GotoNextScreen("solotut2soloarena");
@@ -559,13 +561,13 @@ bool MetaSongScreen::HandleJoypad(JoypadInputMsg *pMsg) {
 }
 
 bool MetaSongScreen::HandleFocusChange(UIComponentFocusChangeMsg *pMsg) {
-    UpdatePreview(pMsg->mComponent, pMsg->mPanel);
+    UpdatePreview(pMsg->GetComponent(), pMsg->GetPanel());
     return false;
 }
 
 bool MetaSongScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
     if (pMsg->mScreen == this) {
-        UpdatePreview(mFocusPanel->mFocus, mFocusPanel);
+        UpdatePreview(mFocusPanel->GetFocus(), mFocusPanel);
     }
     return false;
 }

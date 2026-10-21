@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "os/arkhash.h"
@@ -78,6 +79,17 @@ public:
      */
     void ReadHeader();
 
+    /** @return The file records. */
+    const std::vector<FileEntry> &GetFileEntries() const {
+        return mFileEntries;
+    }
+
+    /** @return The archive, relative to the root of the game files. */
+    const String &GetBasename() const {
+        return mBasename;
+    }
+
+private:
     std::vector<FileEntry> mFileEntries; /*!< The file records. */
     ArkHash mHashTable;                  /*!< The names of the files and directories. */
     String mBasename;        /*!< The archive, relative to the root of the game files. */
@@ -91,4 +103,4 @@ public:
  * @ghidraAddress NTSC-U/C: 0x003b2274
  * @ghidraAddress PAL: 0x00431154
  */
-extern Archive *TheArchive;
+extern std::unique_ptr<Archive> TheArchive;

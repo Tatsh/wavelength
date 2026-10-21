@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "app/msgsink.h"
@@ -516,17 +517,10 @@ public:
      */
     void SetLogic(WorldLogic *pLogic);
 
-    int mState;                                 /*!< One of State. */
-    Song *mSong;                                /*!< The song LoadAssets() built. */
-    DataArray *mSongConfig;                     /*!< The entry of the song in "songs". */
-    int mSeed;                                  /*!< The seed of the logic's random numbers. */
-    int mLoadStep;                              /*!< One of LoadStep. */
-    std::vector<GameEndedMsg *> mGameEndedMsgs; /*!< Copies held until the song starts. */
-    std::vector<PlayerAbortedMsg *> mPlayerAbortedMsgs; /*!< Copies held until the song starts. */
-    File *mDemoFile;   /*!< The demo recording being read, or null. */
-    int mDemoSize;     /*!< The size of the demo recording in bytes. */
-    char *mDemoBuffer; /*!< The demo recording, or null. */
-    int mLeadTicks;    /*!< The ticks the song plays before bar 0. */
+protected:
+    std::unique_ptr<Song> mSong; /*!< The song LoadAssets() built. */
+    DataArray *mSongConfig;      /*!< The entry of the song in "songs". Borrowed. */
+    int mSeed;                   /*!< The seed of the logic's random numbers. */
 
 private:
     /**
@@ -651,6 +645,16 @@ private:
      * @ghidraAddress PAL: 0x00146f80
      */
     int OnPlayerAborted(PlayerAbortedMsg *pMsg);
+
+    int mState;                                                /*!< One of State. */
+    int mLoadStep;                                             /*!< One of LoadStep. */
+    std::vector<std::unique_ptr<GameEndedMsg>> mGameEndedMsgs; /*!< Stored until the song starts. */
+    std::vector<std::unique_ptr<PlayerAbortedMsg>> mPlayerAbortedMsgs; /*!< Stored until start. */
+    std::unique_ptr<File> mDemoFile;    /*!< The demo recording being read, or null. */
+    int mDemoSize;                      /*!< The size of the demo recording in bytes. */
+    char *mDemoBuffer;                  /*!< The demo recording, a pool allocation, or null. */
+    int mLeadTicks;                     /*!< The ticks the song plays before bar 0. */
+    std::unique_ptr<WorldLogic> mLogic; /*!< The installed logic. TheWorldLogic points to it. */
 };
 
 /**

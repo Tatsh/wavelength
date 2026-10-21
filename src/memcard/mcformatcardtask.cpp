@@ -14,7 +14,7 @@ void MCFormatCardTask::Set(int nPort) {
 }
 
 void MCFormatCardTask::OnCardInfo() {
-    if (mGetInfo->mFormat != 0) {
+    if (mGetInfo->GetFormat() != 0) {
         MemcardTask::sStatus = MemcardTask::kStatusFormatted;
         mGetInfo->Finish(false);
     }

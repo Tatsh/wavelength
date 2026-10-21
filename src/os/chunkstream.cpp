@@ -52,7 +52,7 @@ ChunkStream::ChunkStream(
     mWork = nullptr;
     mData = nullptr;
     mBuffer = kNoBuffer;
-    mFile = File::New(pszFile, eMode == kModeRead ? kOpenRead : kOpenWrite, kNoOpenFlags);
+    mFile.reset(File::New(pszFile, eMode == kModeRead ? kOpenRead : kOpenWrite, kNoOpenFlags));
     mFail = mFile == nullptr;
     if (mFile == nullptr) {
         return;
@@ -75,7 +75,7 @@ ChunkStream::~ChunkStream() {
         mFile->Seek(0, kSeekStart);
         mFile->Write(&mHeader, sizeof(mHeader));
     }
-    delete mFile;
+    mFile.reset();
     PoolMemFree(mWork);
     PoolMemFree(mBuffers[0]);
     PoolMemFree(mBuffers[1]);

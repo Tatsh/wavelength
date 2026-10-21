@@ -18,7 +18,7 @@ constexpr float kInstantDuration = 1.0f;
 RampAnimator::RampAnimator(float fValue, RndAnimatable *pAnim, Interpolator *pInterp, float fSpeed)
     : mValue(fValue), mElapsed(0.0f), mInterp(pInterp) {
     if (pInterp == nullptr) {
-        mInterp = new LinearInterpolator(
+        mInterp = std::make_unique<LinearInterpolator>(
             kDefaultFromValue, kDefaultToValue, kDefaultStartTime, kDefaultEndTime);
     }
     SetSpeed(fSpeed);
@@ -26,9 +26,7 @@ RampAnimator::RampAnimator(float fValue, RndAnimatable *pAnim, Interpolator *pIn
     SetAnim(pAnim);
 }
 
-RampAnimator::~RampAnimator() {
-    delete mInterp;
-}
+RampAnimator::~RampAnimator() = default;
 
 void RampAnimator::SetAnim(RndAnimatable *pAnim) {
     mAnim = pAnim;

@@ -29,7 +29,7 @@ Remix::~Remix() {
 }
 
 void Remix::CreateLogic() {
-    mLogic = new RemixLogic(mSong);
+    mLogic = new RemixLogic(mSong.get());
     SetLogic(mLogic);
 }
 
@@ -81,7 +81,7 @@ bool Remix::IsSongLoadDone() {
 }
 
 void Remix::BeginAssetLoad() {
-    Synth *pSynth = TheSynth;
+    Synth *pSynth = TheSynth.get();
     DataArray *pGame = SystemConfig()->FindArray(kGameSection, false);
     const char *pszBankFile = nullptr;
     (void)pGame->FindSymbol(kFxBankFileKey, &pszBankFile, true); // Yes, the result is discarded.

@@ -159,14 +159,14 @@ constexpr int kCatchSlot = 0;
 } // namespace
 
 RemixLogic::RemixLogic(Song *pSong)
-    : mSong(pSong), mTicksPerBar(pSong->mBuilder->mTicksPerBar), mNumBars(pSong->mNumBars),
+    : mSong(pSong), mTicksPerBar(pSong->GetTicksPerBar()), mNumBars(pSong->GetNumBars()),
       mState(kStatePlaying), mSavedState(kStatePlaying), mPaused(0), mPlayMap(pSong->GetPlayMap()),
-      mSections(pSong->GetSections()), mFreestyleTrack(nullptr), mTrackSelector(nullptr),
+      mSections(pSong->GetSections()),
       mWorldBeat(&TheSongScheduler, pSong->GetWorldTrack(), mTicksPerBar * mNumBars),
       mSectionIndex(0), mLoopBar(0), mMuteRemote(0), mPreviewing(0), mQuit(0), mModified(0),
-      mReadOnly(TheGameDb->mTutorial == 0 ? TheGameDb->GetRemixInfo()->mReadOnly != 0 : 0),
-      mBaseTempo(kMsPerMinute / (pSong->GetMsPerTick()[0] * kBeatTicks)), mNetArbiter(nullptr),
-      mArbiterVersion(0), mUpdateVersions(TheGameDb->GetNumPlayers(), 0u),
+      mReadOnly(TheGameDb->GetTutorial() == 0 ? TheGameDb->GetRemixInfo()->mReadOnly != 0 : 0),
+      mBaseTempo(kMsPerMinute / (pSong->GetMsPerTick()[0] * kBeatTicks)), mArbiterVersion(0),
+      mUpdateVersions(TheGameDb->GetNumPlayers(), 0u),
       mPlayerTracks(TheGameDb->GetNumPlayers(), kNoPlayer), mTrackVolumes(pSong->GetNumTracks(), 0),
       mFx(pSong->GetNumTracks() - 1, pSong->GetRemixEffectsBus()),
       mTransitionCmd(NewMemFunCommand(this, &RemixLogic::OnTransition)),
@@ -175,9 +175,9 @@ RemixLogic::RemixLogic(Song *pSong)
       mSectionEndCmd(NewMemFunCommand(this, &RemixLogic::OnSectionEnd)),
       mApplyEffectsCmd(NewMemFunCommand(this, &RemixLogic::ApplySectionEffects)),
       mPlayIntroCmd(NewMemFunCommand(this, &RemixLogic::PlayIntro)),
-      mEndIntroCmd(NewMemFunCommand(this, &RemixLogic::EndIntro)), mTutorial(nullptr),
-      mSavedMuteRemote(0), mEndTick(0), mRemixLoaded(0) {
-    if (TheGameDb->mTutorial == 0) {
+      mEndIntroCmd(NewMemFunCommand(this, &RemixLogic::EndIntro)), mSavedMuteRemote(0), mEndTick(0),
+      mRemixLoaded(0) {
+    if (TheGameDb->GetTutorial() == 0) {
         TheSongScheduler.PostAt(
             NewMemFun1Command(&TheGfxManager, &GfxManager::ShowTrackLabels, true), 0, false);
     }
@@ -185,7 +185,7 @@ RemixLogic::RemixLogic(Song *pSong)
     int nFreestyleType;
     int nFreestyleInstrument;
     BuildTracks(&nFreestyleType, &nFreestyleInstrument);
-    if (TheGameDb->mTutorial == 0) {
+    if (TheGameDb->GetTutorial() == 0) {
         LoadRemix();
     }
     TheMixer->Init(static_cast<int>(mRemixTracks.size()) + 1, nFreestyleType);
@@ -194,7 +194,8 @@ RemixLogic::RemixLogic(Song *pSong)
     (void)SystemConfig()
         ->FindArray(kGameSection, false)
         ->FindInt(kVoxVolumeKey, &nVoxVolume, false);
-    (void)TheGameDb->FindSong(TheGameDb->mSong.c_str())->FindInt(kVoxVolumeKey, &nVoxVolume, false);
+    (void)TheGameDb->FindSong(TheGameDb->GetSong().c_str())
+        ->FindInt(kVoxVolumeKey, &nVoxVolume, false);
     for (int i = 0; i < mSong->GetNumTracks(); ++i) {
         if (mSong->GetTrackType(i) == Song::kTrackTypeVox) {
             mTrackVolumes[i] = nVoxVolume;
@@ -206,9 +207,9 @@ RemixLogic::RemixLogic(Song *pSong)
     int nLocalPlayers = 0;
     for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
         if (TheGameDb->IsLocalPlayer(i)) {
-            mPlayers.push_back(new LocalPlayer(i, mTicksPerBar, nLocalPlayers++));
+            mPlayers.push_back(std::make_unique<LocalPlayer>(i, mTicksPerBar, nLocalPlayers++));
         } else {
-            mPlayers.push_back(new RemotePlayer(i, mTicksPerBar));
+            mPlayers.push_back(std::make_unique<RemotePlayer>(i, mTicksPerBar));
         }
         TheGfxManager.SetEnergyShown(i, false);
         TheGfxManager.SetScoreShown(i, false);
@@ -216,21 +217,25 @@ RemixLogic::RemixLogic(Song *pSong)
 
     const char *pszEffect = mSong->GetRemixEffectsName();
     for (int i = 0; i < TheGameDb->GetNumPads(); ++i) {
-        RemixHUD *pHud = new RemixHUD(i, pszEffect);
+        auto pHud = std::make_unique<RemixHUD>(i, pszEffect);
         pHud->SetCallback(OnHudEvent, this);
         if (i == kFirstPad) {
             const double dSpeedOffset = std::fabs(TheSongScheduler.GetSpeed() - kNormalSpeed);
             (void)(dSpeedOffset < kSpeedMatch); // Yes, the binary compares and passes 1 regardless.
             pHud->SetTempo(GetTempo(), 1);
         }
-        mHuds.push_back(pHud);
+        mHuds.push_back(std::move(pHud));
     }
 
-    const std::vector<Track *> tracks(mRemixTracks.begin(), mRemixTracks.end());
-    mTrackSelector =
-        new GameTrackSelector(tracks, mFreestyleTrack, nFreestyleType, nFreestyleInstrument);
+    std::vector<Track *> tracks;
+    tracks.reserve(mRemixTracks.size());
+    for (const auto &pTrack : mRemixTracks) {
+        tracks.push_back(pTrack.get());
+    }
+    mTrackSelector = std::make_unique<GameTrackSelector>(
+        tracks, mFreestyleTrack.get(), nFreestyleType, nFreestyleInstrument);
 
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
             const unsigned int nNetOrder = TheGameDb->GetPlayerNetOrder(i);
             if (nNetOrder >= mNetOrderPlayers.size()) {
@@ -240,7 +245,7 @@ RemixLogic::RemixLogic(Song *pSong)
         }
     }
 
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         const int nPlayers = TheGameDb->GetNumPlayers();
         std::vector<int> netOrders(nPlayers, 0);
         for (int i = 0; i < nPlayers; ++i) {
@@ -252,20 +257,20 @@ RemixLogic::RemixLogic(Song *pSong)
             playerTracks[GetPlayerFromNetOrder(netOrders[i])] = i;
         }
         for (int i = 0; i < nPlayers; ++i) {
-            mTrackSelector->AddPlayer(mPlayers[i], playerTracks[i]);
+            mTrackSelector->AddPlayer(mPlayers[i].get(), playerTracks[i]);
             mPlayerTracks[i] = playerTracks[i];
         }
-    } else if (TheGameDb->mTutorial != 0) {
-        mTrackSelector->AddPlayer(mPlayers[kFirstPlayer], kTutorialTrack);
+    } else if (TheGameDb->GetTutorial() != 0) {
+        mTrackSelector->AddPlayer(mPlayers[kFirstPlayer].get(), kTutorialTrack);
     } else {
         (void)mSong->GetNumTracks(); // Yes, the binary discards this call's result.
         for (unsigned int i = 0; i < mPlayers.size(); ++i) {
-            mTrackSelector->AddPlayer(mPlayers[i], static_cast<int>(i));
+            mTrackSelector->AddPlayer(mPlayers[i].get(), static_cast<int>(i));
         }
     }
 
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline && TheNetTransport->IsHost()) {
-        mNetArbiter = new NetArbiter(mTrackSelector);
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline && TheNetTransport->IsHost()) {
+        mNetArbiter = std::make_unique<NetArbiter>(mTrackSelector.get());
     }
 
     SlotGrid *pGrid = mSong->GetSlotGrid();
@@ -323,8 +328,8 @@ RemixLogic::RemixLogic(Song *pSong)
     }
     SetMuteRemote(mMuteRemote);
     UpdateHuds();
-    if (TheGameDb->mTutorial != 0) {
-        mTutorial = new RemixTutorial(this);
+    if (TheGameDb->GetTutorial() != 0) {
+        mTutorial = std::make_unique<RemixTutorial>(this);
     }
 }
 
@@ -334,39 +339,39 @@ int RemixLogic::GetPlayerFromNetOrder(int nNetOrder) const {
 
 RemixLogic::~RemixLogic() {
     TheGfxManager.SetLyricText(kEmptyText, true);
-    if (TheGameDb->mTutorial == 0) {
+    if (TheGameDb->GetTutorial() == 0) {
         SaveRemix();
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline && TheNetTransport->IsHost()) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline && TheNetTransport->IsHost()) {
         TheNetTransport->ReportScores(std::vector<NetGameScore>());
     }
 #ifndef VIDEO_STANDARD_PAL
     KeyboardRemoveSink(this);
 #endif
-    delete mTutorial;
-    mTutorial = nullptr;
-    delete mTrackSelector;
-    for (RemixTrack *pTrack : mRemixTracks) {
-        delete pTrack;
+    // Preserve every original deletion point and order, before the play map loops are cleared.
+    mTutorial.reset();
+    mTrackSelector.reset();
+    for (auto &pTrack : mRemixTracks) {
+        pTrack.reset();
     }
-    delete mFreestyleTrack;
-    for (Player *pPlayer : mPlayers) {
-        delete pPlayer;
+    mFreestyleTrack.reset();
+    for (auto &pPlayer : mPlayers) {
+        pPlayer.reset();
     }
-    for (RemixHUD *pHud : mHuds) {
-        delete pHud;
+    for (auto &pHud : mHuds) {
+        pHud.reset();
     }
-    delete mNetArbiter;
+    mNetArbiter.reset();
     mPlayMap->ClearLoops();
     TheGameDb->SetNetRemixEnded(mModified);
 }
 
 void RemixLogic::Start() {
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->Start();
     }
     mFreestyleTrack->Start();
-    for (Player *pPlayer : mPlayers) {
+    for (auto &pPlayer : mPlayers) {
         pPlayer->HidePowerup();
     }
     for (int i = 0; i < mSong->GetNumBackMusic(); ++i) {
@@ -376,7 +381,7 @@ void RemixLogic::Start() {
     mWorldBeat.Start();
     mFx.Activate();
 
-    const int nFirstBeat = mTicksPerBar - mTicksPerBar * mSong->mIntroBars;
+    const int nFirstBeat = mTicksPerBar - mTicksPerBar * mSong->GetIntroBars();
     TheForceFeedbackMgr->Start(mSong->GetMsPerTick(), mTicksPerBar);
     TheForceFeedbackMgr->StartMetronome(kMetronomePeriodTicks, nFirstBeat);
 
@@ -404,10 +409,10 @@ void RemixLogic::Stop() {
     for (int i = 0; i < mSong->GetNumIntroMuses(); ++i) {
         mSong->GetIntroMuse(i)->Stop();
     }
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->Stop();
     }
-    for (Player *pPlayer : mPlayers) {
+    for (auto &pPlayer : mPlayers) {
         pPlayer->CancelMultiplier();
     }
     mWorldBeat.Stop();
@@ -416,8 +421,8 @@ void RemixLogic::Stop() {
 
 void RemixLogic::Poll() {
     if (mTutorial != nullptr && !mTutorial->Poll()) {
-        delete mTutorial;
-        mTutorial = nullptr;
+        // Preserve the original deletion point, before the end-of-tutorial dialog shows.
+        mTutorial.reset();
         mState = kStateTutorialEnd;
         TheMetagame.ShowDialog(Metagame::kDialogTutorialEnd, OnPauseDialog, this, kFirstPad);
     }
@@ -427,7 +432,7 @@ void RemixLogic::Poll() {
     if (!TheGfxManager.IsOutroDone()) {
         return;
     }
-    if (TheSongScheduler.IsRunning() && TheSongScheduler.mTick < mEndTick) {
+    if (TheSongScheduler.IsRunning() && TheSongScheduler.GetTick() < mEndTick) {
         return;
     }
     Stop();
@@ -442,7 +447,7 @@ int RemixLogic::HasQuit() const {
 }
 
 bool RemixLogic::IsFreestyling(int nPlayer) {
-    return mPlayers[nPlayer]->GetTrack() == mFreestyleTrack;
+    return mPlayers[nPlayer]->GetTrack() == mFreestyleTrack.get();
 }
 
 int RemixLogic::GetTick() {
@@ -458,7 +463,7 @@ float RemixLogic::GetProgress() {
         return kProgressOutsidePreview;
     }
     const int nSongTicks = mNumBars * mTicksPerBar;
-    return static_cast<float>((TheSongScheduler.mTick - mLoopBar * mTicksPerBar) % nSongTicks) /
+    return static_cast<float>((TheSongScheduler.GetTick() - mLoopBar * mTicksPerBar) % nSongTicks) /
            static_cast<float>(nSongTicks);
 }
 
@@ -482,7 +487,7 @@ void RemixLogic::SetPaused(bool bPaused, int nPad, int nReason) {
                                this,
                                nPad);
         SystemSetPadCheck(true);
-        if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
             TheSongScheduler.Pause();
             AllNotesOff();
         }
@@ -494,10 +499,10 @@ void RemixLogic::SetPaused(bool bPaused, int nPad, int nReason) {
             JoypadSetMenuControl(i, false);
         }
         SystemSetPadCheck(false);
-        if (TheGameDb->mCommunity != GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline) {
             TheSongScheduler.Resume();
         }
-        if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
             TheGfxManager.SetFreqSize(kFirstPlayer, TheGameDb->GetOptions()->mFreqSize);
         }
     }
@@ -521,7 +526,7 @@ void RemixLogic::OnPauseDialog(Metagame::DialogAction action, void *pUserData) {
         pThis->EndRemix();
         break;
     case Metagame::kDialogActionEnd:
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             TheNetTransport->Leave();
         }
         pThis->EndRemix();
@@ -538,9 +543,9 @@ void RemixLogic::BuildTracks(int *pFreestyleType, int *pFreestyleInstrument) {
         switch (nType) {
         case Song::kTrackTypePitch: {
             auto *pTrack = new PitchTrack(nTrack,
-                                          mSong->mIntroBars,
+                                          mSong->GetIntroBars(),
                                           mNumBars,
-                                          mSong->mBuilder->mTicksPerBar,
+                                          mSong->GetTicksPerBar(),
                                           mSong->GetTrackRiffData(nTrack),
                                           mSong->GetTrackPitchData(nTrack),
                                           mPlayMap,
@@ -548,7 +553,7 @@ void RemixLogic::BuildTracks(int *pFreestyleType, int *pFreestyleInstrument) {
                                           mSong->GetSlotGrid(),
                                           true);
             mPitchTracks.push_back(pTrack);
-            mRemixTracks.push_back(pTrack);
+            mRemixTracks.emplace_back(pTrack);
             break;
         }
         case Song::kTrackTypeVox: {
@@ -557,39 +562,39 @@ void RemixLogic::BuildTracks(int *pFreestyleType, int *pFreestyleInstrument) {
                                         mSections,
                                         mSong->GetSlotGrid(),
                                         nTrack,
-                                        mSong->mIntroBars,
+                                        mSong->GetIntroBars(),
                                         mNumBars,
                                         mTicksPerBar);
             mVoxTracks.push_back(pTrack);
-            mRemixTracks.push_back(pTrack);
+            mRemixTracks.emplace_back(pTrack);
             break;
         }
         case Song::kTrackTypeAxe: {
             *pFreestyleType = nType;
             *pFreestyleInstrument = mSong->GetTrackInstrument(nTrack);
             void *pBlock = PoolMemAlloc(sizeof(AxeTrack), kAxeTrackTag, 0);
-            mFreestyleTrack = new (pBlock) AxeTrack(mSong->GetAxeData(nTrack),
-                                                    mSections,
-                                                    mSong->GetPlayMap(),
-                                                    mSong->GetMsPerTick(),
-                                                    nTrack,
-                                                    mSong->mIntroBars,
-                                                    mNumBars,
-                                                    mTicksPerBar);
+            mFreestyleTrack.reset(new (pBlock) AxeTrack(mSong->GetAxeData(nTrack),
+                                                        mSections,
+                                                        mSong->GetPlayMap(),
+                                                        mSong->GetMsPerTick(),
+                                                        nTrack,
+                                                        mSong->GetIntroBars(),
+                                                        mNumBars,
+                                                        mTicksPerBar));
             break;
         }
         case Song::kTrackTypeScratch: {
             *pFreestyleType = nType;
             *pFreestyleInstrument = mSong->GetTrackInstrument(nTrack);
             void *pBlock = PoolMemAlloc(sizeof(ScratchTrack), kScratchTrackTag, 0);
-            mFreestyleTrack = new (pBlock) ScratchTrack(mSong->GetScratchData(nTrack),
-                                                        mSections,
-                                                        mSong->GetPlayMap(),
-                                                        mSong->GetMsPerTick(),
-                                                        nTrack,
-                                                        mSong->mIntroBars,
-                                                        mNumBars,
-                                                        mTicksPerBar);
+            mFreestyleTrack.reset(new (pBlock) ScratchTrack(mSong->GetScratchData(nTrack),
+                                                            mSections,
+                                                            mSong->GetPlayMap(),
+                                                            mSong->GetMsPerTick(),
+                                                            nTrack,
+                                                            mSong->GetIntroBars(),
+                                                            mNumBars,
+                                                            mTicksPerBar));
             break;
         }
         default:
@@ -600,7 +605,7 @@ void RemixLogic::BuildTracks(int *pFreestyleType, int *pFreestyleInstrument) {
 }
 
 bool RemixLogic::IsInputLocked(int nPressed, bool bNote) {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nBar = nTick / mTicksPerBar;
     if (nTick >= 0 && nBar >= mLoopBar) {
         return false;
@@ -608,7 +613,7 @@ bool RemixLogic::IsInputLocked(int nPressed, bool bNote) {
     if (nPressed == 0) {
         return true;
     }
-    if (bNote && (mPreviewing != 0 || mSong->mIntroBars >= nBar)) {
+    if (bNote && (mPreviewing != 0 || mSong->GetIntroBars() >= nBar)) {
         return true;
     }
     FxMidi::PlaySound1();
@@ -625,7 +630,7 @@ void RemixLogic::EndRemix() {
     const int nFadeTicks =
         std::max(kMinFadeTicks, static_cast<int>(fOutroMs / mSong->GetMsPerTick()[0]));
     TheMixer->FadeOut(nFadeTicks);
-    mEndTick = TheSongScheduler.mTick + nFadeTicks + kEndTickMargin;
+    mEndTick = TheSongScheduler.GetTick() + nFadeTicks + kEndTickMargin;
     TheSongScheduler.PostAt(
         new MemFunCommand<void (WorldLogic::*)(), RemixLogic>(this, &WorldLogic::AllNotesOff),
         mEndTick - 1,
@@ -646,7 +651,7 @@ void RemixLogic::HandleInput(const RotateEvent &event) {
         }
     }
     const int nPlayer = event.mPlayer;
-    if (mPlayers[nPlayer]->GetTrack() == mFreestyleTrack) {
+    if (mPlayers[nPlayer]->GetTrack() == mFreestyleTrack.get()) {
         return;
     }
     if (event.mDirection == RotateEvent::kDirectionNext) {
@@ -671,16 +676,16 @@ void RemixLogic::HandleInput(const PlayNoteEvent &event) {
     if (IsInputLocked(event.mState, true)) {
         return;
     }
-    if (mPreviewing != 0 && TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+    if (mPreviewing != 0 && TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         return;
     }
     if (mTutorial != nullptr && mTutorial->mPitchingEnabled == 0) {
         return;
     }
     const int nPlayer = event.mPlayer;
-    Player *pPlayer = mPlayers[nPlayer];
+    Player *pPlayer = mPlayers[nPlayer].get();
     bool bOnAssignedTrack = true;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         const int nTrack = pPlayer->GetTrack()->mIndex;
         if (TheNetTransport->IsHost()) {
             bOnAssignedTrack = nTrack == mNetArbiter->GetTrack(nPlayer);
@@ -728,7 +733,7 @@ void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
     if (mTutorial != nullptr && (mTutorial->mSectionChangeEnabled == 0 || event.mDirection != 0)) {
         return;
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline && !TheNetTransport->IsHost()) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline && !TheNetTransport->IsHost()) {
         const char *pszFormat = TheLocale.Localize(
             event.mDirection == 0 ? kNextSectionRequestKey : kPrevSectionRequestKey, true);
         (void)ChatMsg::Send(kNoticeChannel,
@@ -737,7 +742,7 @@ void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
                             kEchoChat);
         return;
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunityLocal && event.mPlayer != kFirstPlayer) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal && event.mPlayer != kFirstPlayer) {
         return;
     }
     if (event.mDirection == 0) {
@@ -760,7 +765,7 @@ void RemixLogic::HandleInput(const ChangeSectionEvent &event) {
                               kMessageOffset);
     StartTransition();
     QueueSectionChange(mSectionIndex);
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         SectionChangePacket packet;
         packet.mSection = mSectionIndex;
         packet.mTick = mLoopBar; // Yes, the binary sends the bar the section loops from.
@@ -778,7 +783,7 @@ void RemixLogic::HandleInput(const BtnEvent<9> &event) {
     if (IsInputLocked(1, false)) {
         return;
     }
-    const int nCommunity = TheGameDb->mCommunity;
+    const int nCommunity = TheGameDb->GetCommunity();
     if (nCommunity == GameDb::kCommunityLocal && event.mPlayer != kFirstPlayer) {
         return;
     }
@@ -861,9 +866,9 @@ void RemixLogic::SetHudsActive(int nActive) {
 void RemixLogic::UpdateHud(int nPlayer) {
     int nActive = 0;
     const int nSet = mFx.GetCurrentSet();
-    Player *pPlayer = mPlayers[nPlayer];
+    Player *pPlayer = mPlayers[nPlayer].get();
     const Track *pTrack = pPlayer->GetTrack();
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     const int nTrack = pTrack->mIndex;
     if (pTrack->mPlayer == pPlayer && nBar >= mLoopBar) {
         nActive = mPreviewing == 0;
@@ -885,7 +890,7 @@ void RemixLogic::UpdateHud(int nPlayer) {
         nChorus = mFx.GetChorus(nSet, nTrack);
     }
 
-    RemixHUD *pHud = mHuds[nPlayer];
+    RemixHUD *pHud = mHuds[nPlayer].get();
     pHud->SetActive(nActive);
     pHud->SetChorus(nFilter); // Yes, the binary shows the filter on the chorus panel.
     pHud->SetStutter(nStutter);
@@ -897,7 +902,7 @@ void RemixLogic::UpdateHud(int nPlayer) {
 }
 
 void RemixLogic::UpdateHuds() {
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         UpdateHud(kFirstPlayer);
         return;
     }
@@ -907,7 +912,7 @@ void RemixLogic::UpdateHuds() {
 }
 
 void RemixLogic::QueueSectionChange(int nIndex) {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nBar = std::max(0, nTick / mTicksPerBar + kSectionChangeLeadBars);
     const int nLate = mTicksPerBar / kSectionChangeLateDivisor < nTick % mTicksPerBar;
     ChangeSection(nIndex, nBar + nLate);
@@ -935,8 +940,8 @@ void RemixLogic::OnTransition() {
     const int nLoopTick = mLoopBar * mTicksPerBar;
     TheGfxManager.AddCheckpoint(
         nullptr, static_cast<float>(nLoopTick), kCheckpointOffset, kCheckpointScale);
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
-    for (RemixTrack *pTrack : mRemixTracks) {
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
+    for (auto &pTrack : mRemixTracks) {
         pTrack->SkipBars(nBar, mLoopBar);
         pTrack->Redraw(mLoopBar);
     }
@@ -956,14 +961,14 @@ void RemixLogic::ApplySectionTracks() {
     if (mPreviewing != 0) {
         return;
     }
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->SetActive(false);
     }
     mFx.Activate();
 }
 
 void RemixLogic::RebuildPatterns() {
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->RebuildGems();
     }
     SlotGrid *pGrid = mSong->GetSlotGrid();
@@ -976,7 +981,7 @@ void RemixLogic::RebuildPatterns() {
 }
 
 void RemixLogic::OnSectionEnd() {
-    const int nTick = TheSongScheduler.mTick;
+    const int nTick = TheSongScheduler.GetTick();
     const int nPlayTick = mPlayMap->MapTick(nTick);
     const int nPlayBar = nPlayTick / mTicksPerBar;
     const int nSection = mSections->SectionAt(nPlayBar);
@@ -1032,8 +1037,8 @@ void RemixLogic::StartPreview(int nBar, bool bTransition) {
         return;
     }
     mPreviewing = 1;
-    const int nIntroBars = mSong->mIntroBars;
-    const int nTick = TheSongScheduler.mTick;
+    const int nIntroBars = mSong->GetIntroBars();
+    const int nTick = TheSongScheduler.GetTick();
     const int nCurrentBar = nTick / mTicksPerBar;
     if (nBar == kNoBar) {
         if (bTransition) {
@@ -1052,13 +1057,13 @@ void RemixLogic::StartPreview(int nBar, bool bTransition) {
     }
     const int nStartTick = nBar * mTicksPerBar;
 
-    const int nCommunity = TheGameDb->mCommunity;
+    const int nCommunity = TheGameDb->GetCommunity();
     if (nCommunity == GameDb::kCommunitySolo) {
         TheGfxManager.ShowRemix(kFirstPlayer, false);
-        const int nFreestyleTick = TheSongScheduler.mTick + kFreestyleDelayTicks;
+        const int nFreestyleTick = TheSongScheduler.GetTick() + kFreestyleDelayTicks;
         TheSongScheduler.PostAt(
             NewMemFun2Command(
-                mTrackSelector, &GameTrackSelector::EnterFreestyle, kFirstPlayer, false),
+                mTrackSelector.get(), &GameTrackSelector::EnterFreestyle, kFirstPlayer, false),
             nFreestyleTick,
             false);
         TheSongScheduler.PostAt(NewMemFun2Command(&TheGfxManager,
@@ -1101,7 +1106,7 @@ void RemixLogic::StartPreview(int nBar, bool bTransition) {
     UpdateHuds();
     if (bTransition) {
         StartTransition();
-        const int nIntro = mSong->mIntroBars;
+        const int nIntro = mSong->GetIntroBars();
         SetLoop(-nIntro, mNumBars, nBar - nIntro, nBar);
         TheSongScheduler.PostAt(
             NewMemFun4Command(this, &RemixLogic::SetLoop, kFirstBar, mNumBars, nBar, nBar),
@@ -1123,7 +1128,7 @@ void RemixLogic::PlayIntro() {
     for (int i = 0; i < mSong->GetNumIntroMuses(); ++i) {
         mSong->GetIntroMuse(i)->Play(&TheSongScheduler);
     }
-    TheSongScheduler.PostIn(mEndIntroCmd.Get(), mSong->mIntroBars * mTicksPerBar - 1, false);
+    TheSongScheduler.PostIn(mEndIntroCmd.Get(), mSong->GetIntroBars() * mTicksPerBar - 1, false);
 }
 
 void RemixLogic::EndIntro() {
@@ -1148,7 +1153,7 @@ void RemixLogic::StopPreview(int nBar) {
         ChangeSection(mSectionIndex, nBar);
     }
 
-    const int nCommunity = TheGameDb->mCommunity;
+    const int nCommunity = TheGameDb->GetCommunity();
     if (nCommunity == GameDb::kCommunitySolo) {
         TheGfxManager.ShowRemix(kFirstPlayer, true);
         TheGfxManager.SetLyricText(kEmptyText, true);
@@ -1210,7 +1215,7 @@ void RemixLogic::AdjustTempo(float fDelta) {
 }
 
 void RemixLogic::SetLooping(int nPlayer, bool bLooping) {
-    Player *pPlayer = mPlayers[nPlayer];
+    Player *pPlayer = mPlayers[nPlayer].get();
     pPlayer->SetRepeat(bLooping);
     PitchTrack *pTrack = FindPitchTrack(pPlayer->GetTrack()->mIndex);
     if (pTrack != nullptr) {
@@ -1228,7 +1233,7 @@ void RemixLogic::MuteVocals(int nTrack, bool bMute) {
 }
 
 void RemixLogic::SetMuteRemote(int nMuteRemote) {
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->SetMuteRemote(nMuteRemote != 0);
     }
     mMuteRemote = nMuteRemote;
@@ -1257,7 +1262,8 @@ void RemixLogic::LoadRemix() {
     }
     RemixInfo *pInfo = TheGameDb->GetRemixInfo();
     const int nSize = GzipSizeDecompressed(pPacked, pInfo->mDataSize);
-    (void)strcmp(pInfo->mSong, TheGameDb->mSong.c_str()); // Yes, the binary discards the result.
+    // Yes, the binary discards the result.
+    (void)strcmp(pInfo->mSong, TheGameDb->GetSong().c_str());
     auto *pBuffer = static_cast<char *>(PoolMemAlloc(nSize, kRemixBufferTag, 0));
     (void)GzipDecompressRamToRam(pPacked, nSize, pBuffer);
     BufStream stream(pBuffer, nSize, true);
@@ -1280,7 +1286,7 @@ void RemixLogic::SaveRemix() {
 
     DifficultyRating rating(GetTempo(), mNumBars, mTicksPerBar);
     for (PitchTrack *pTrack : mPitchTracks) {
-        (void)rating.RatePitchTrack(&pTrack->mGems); // Yes, the binary discards the rating.
+        (void)rating.RatePitchTrack(pTrack->GetGems()); // Yes, the binary discards the rating.
     }
     for (int i = 0; i < mSong->GetNumTracks(); ++i) {
         if (mSong->GetTrackType(i) == Song::kTrackTypeVox) {
@@ -1302,7 +1308,7 @@ void RemixLogic::Save(BinStream &stream) {
     const float fSpeed = TheSongScheduler.GetSpeed();
     stream.WriteEndian(&fSpeed, sizeof(fSpeed));
     mFx.Save(stream);
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->Save(stream);
     }
 }
@@ -1314,13 +1320,13 @@ void RemixLogic::Load(BinStream &stream) {
     stream.ReadEndian(&fSpeed, sizeof(fSpeed));
     SetSongSpeed(fSpeed);
     mFx.Load(stream);
-    for (RemixTrack *pTrack : mRemixTracks) {
+    for (auto &pTrack : mRemixTracks) {
         pTrack->Load(stream);
     }
 }
 
 void RemixLogic::ClearGems() {
-    const int nBar = TheSongScheduler.mTick / mTicksPerBar;
+    const int nBar = TheSongScheduler.GetTick() / mTicksPerBar;
     for (PitchTrack *pTrack : mPitchTracks) {
         pTrack->EraseSection(nBar);
     }
@@ -1489,7 +1495,7 @@ int RemixLogic::OnArbiter(ArbiterPacket *pPacket) {
 
 int RemixLogic::OnPlayerAborted(PlayerAbortedMsg *pMsg) {
     const int nPlayer = GetPlayerFromNetOrder(pMsg->mNetOrder);
-    Player *pPlayer = mPlayers[nPlayer];
+    Player *pPlayer = mPlayers[nPlayer].get();
     if (pPlayer->IsAborted()) {
         return 0;
     }
@@ -1561,7 +1567,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         }
         const bool bMute = nEvent == RemixHUD::kEventMuteOn;
         MuteVocals(nTrack, bMute);
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             MuteVocalsPacket packet;
             packet.mSection = mSectionIndex;
             packet.mTrack = nTrack;
@@ -1592,7 +1598,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         }
         const bool bOn = nEvent == RemixHUD::kEventChorusOn;
         SetFilter(nTrack, bOn); // Yes, the chorus panel switches the filter.
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             FXPacket packet;
             packet.mSection = mSectionIndex;
             packet.mTrack = nTrack;
@@ -1611,7 +1617,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         }
         const bool bOn = nEvent == RemixHUD::kEventStutterOn;
         SetStutter(nTrack, bOn);
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             FXPacket packet;
             packet.mSection = mSectionIndex;
             packet.mTrack = nTrack;
@@ -1630,7 +1636,7 @@ void RemixLogic::HandleHudEvent(int nPlayer, int nEvent) {
         }
         const bool bOn = nEvent == RemixHUD::kEventEffectOn;
         SetChorus(nTrack, bOn);
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             FXPacket packet;
             packet.mSection = mSectionIndex;
             packet.mTrack = nTrack;

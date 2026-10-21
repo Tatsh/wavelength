@@ -45,14 +45,16 @@ void ListRemixesScreen::OnRemixesListed(int nStatus, std::vector<RemixInfo> *pIn
             auto *pScreen =
                 dynamic_cast<RemixSelectScreen *>(TheUI.FindScreen(mDoneScreen.c_str(), false));
             pScreen->SetRemixes(*pInfos);
-            if (std::strcmp(pScreen->mName, kMemRemixScreen) == 0) {
+            if (std::strcmp(pScreen->GetName(), kMemRemixScreen) == 0) {
                 TheUI.GotoScreen(pScreen);
-            } else if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
-                TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetRemix ? kSoloRemixScreen :
-                                                                                kSoloGameScreen);
-            } else if (TheGameDb->mCommunity == GameDb::kCommunityLocal) {
-                TheUI.GotoScreen(TheGameDb->mRuleSet == GameDb::kRuleSetRemix ? kLocalRemixScreen :
-                                                                                kLocalGameScreen);
+            } else if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
+                TheUI.GotoScreen(TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix ?
+                                     kSoloRemixScreen :
+                                     kSoloGameScreen);
+            } else if (TheGameDb->GetCommunity() == GameDb::kCommunityLocal) {
+                TheUI.GotoScreen(TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix ?
+                                     kLocalRemixScreen :
+                                     kLocalGameScreen);
             } else {
                 TheUI.GotoScreen(pScreen);
             }
@@ -110,7 +112,7 @@ bool ListRemixesScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool ListRemixesScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheMCManager.ListRemixes(this, mSlot);
     }
     return false;

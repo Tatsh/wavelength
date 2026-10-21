@@ -33,7 +33,7 @@ bool NetEndGameScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetEndGameScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         mEndTime = kNoEndTime;
         TheMetagame.ShowEndGameScreens(Metagame::kDialogActionEnd);
     }

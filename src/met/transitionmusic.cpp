@@ -1,5 +1,6 @@
 #include "met/transitionmusic.h"
 
+#include <memory>
 #include <vector>
 
 #include "gs/muse.h"
@@ -89,16 +90,16 @@ public:
     }
 
 private:
-    const char *mFile;     // The shared MIDI file.
-    MuseBuilder *mBuilder; // The builder of the current transition track, or null.
-    Ptr<Muse> mMuse;       // The piece the builder stores.
-    int mChannel;          // The MIDI channel of the current transition track, or kNoChannel.
-    int mBars;             // `music_bars`, the bars of a loop.
-    int mTrack;            // The index of the track the reader is in.
+    const char *mFile;                     // The shared MIDI file.
+    std::unique_ptr<MuseBuilder> mBuilder; // The builder of the current transition track, or null.
+    Ptr<Muse> mMuse;                       // The piece the builder stores.
+    int mChannel; // The MIDI channel of the current transition track, or kNoChannel.
+    int mBars;    // `music_bars`, the bars of a loop.
+    int mTrack;   // The index of the track the reader is in.
 };
 
 // NTSC-U/C: 0x003af8b0, PAL: 0x0042e744
-LagRamp *sLagRamp;
+std::unique_ptr<LagRamp> sLagRamp;
 
 // The unit's static initialiser constructs and destroys sTracks, and the global constructor and
 // the global destructor of the unit run the initialiser.
@@ -106,7 +107,7 @@ LagRamp *sLagRamp;
 // NTSC-U/C: 0x001974c8, PAL: 0x0019e9e8
 // NTSC-U/C: 0x001974e8, PAL: 0x0019ea08
 // NTSC-U/C: 0x004368b8
-std::vector<MixTrack *> sTracks;
+std::vector<std::unique_ptr<MixTrack> > sTracks;
 
 TransitionBuilder::TransitionBuilder(const char *pszFile) : mFile(pszFile), mBuilder(nullptr) {
     mBars = kNoBars;
@@ -114,9 +115,7 @@ TransitionBuilder::TransitionBuilder(const char *pszFile) : mFile(pszFile), mBui
     mTrack = 0;
 }
 
-TransitionBuilder::~TransitionBuilder() {
-    delete mBuilder;
-}
+TransitionBuilder::~TransitionBuilder() = default;
 
 void TransitionBuilder::Read() {
     SystemConfig()->FindArray("metagame", false)->FindInt("music_bars", &mBars, true);
@@ -127,12 +126,10 @@ void TransitionBuilder::Read() {
 void TransitionBuilder::OnEndTrack() {
     if (mBuilder != nullptr) {
         mBuilder->OnEndTrack();
-        MixTrack *pTrack =
-            new MixTrack(mMuse.Get(), mBars * kTicksPerBar, static_cast<unsigned char>(mChannel));
-        sTracks.push_back(pTrack);
-        delete mBuilder;
+        sTracks.push_back(std::make_unique<MixTrack>(
+            mMuse.Get(), mBars * kTicksPerBar, static_cast<unsigned char>(mChannel)));
     }
-    mBuilder = nullptr;
+    mBuilder.reset();
     ++mTrack;
     mMuse = Ptr<Muse>();
     mChannel = kNoChannel;
@@ -159,14 +156,14 @@ void TransitionBuilder::OnText([[maybe_unused]] int nTick,
     }
     String name(pszText);
     if (name == kTransition1 || name == kTransition3 || name == kTransition4) {
-        mBuilder = new MuseBuilder(0, false, nullptr, &mMuse);
+        mBuilder = std::make_unique<MuseBuilder>(0, false, nullptr, &mMuse);
     }
 }
 
 } // namespace
 
 void LoadSharedMusic() {
-    sLagRamp = new LagRamp;
+    sLagRamp = std::make_unique<LagRamp>();
     const char *pszFile = nullptr;
     SystemConfig()
         ->FindArray("metagame", true)
@@ -176,11 +173,7 @@ void LoadSharedMusic() {
 }
 
 void UnloadSharedMusic() {
-    delete sLagRamp;
-    sLagRamp = nullptr;
-    for (unsigned int i = 0; i < sTracks.size(); ++i) {
-        delete sTracks[i];
-    }
+    sLagRamp.reset();
     sTracks.clear();
 }
 

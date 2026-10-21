@@ -29,16 +29,16 @@ int OvySongPos::sNumLabels = 0;
 OvySongPos::OvySongPos(RndView *pHudView) : HideablePanel(nullptr, nullptr, false) {
     bool bLetterbox = false;
     const char *pszHud;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
-        TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
         bLetterbox = true;
         pszHud = kOnlineHudPrefix;
     } else {
         pszHud = Overlay::sHudPrefix;
     }
     const char *pszSlide;
-    if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix &&
-        TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+    if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix &&
+        TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         pszSlide = "HUDmr songpos.tnm";
     } else {
         pszSlide = FormatString("%s songpos.tnm", pszHud);
@@ -57,7 +57,7 @@ OvySongPos::OvySongPos(RndView *pHudView) : HideablePanel(nullptr, nullptr, fals
     mCheckpointMesh->RemoveDraw(mLabelTemplate);
     mCheckpointMesh->RemoveTrans(mLabelTemplate);
     mLabelTemplate->SetText("");
-    if (TheGameDb->mRuleSet != GameDb::kRuleSetRemix) {
+    if (TheGameDb->GetRuleSet() != GameDb::kRuleSetRemix) {
         mLabelTemplate = nullptr;
     }
     pHudView->RemoveDraw(mView);
@@ -81,22 +81,14 @@ void OvySongPos::AddCheckpoint(float fPos, const char *pszLabel) {
     if (pszLabel == nullptr || mLabelTemplate == nullptr) {
         return;
     }
-    it->mText = dynamic_cast<RndText *>(TheManager.Create(
-        RndText::sClassName, FormatString("HUDr songpos ckpt %0xd.txt", ++sNumLabels)));
+    it->mText.reset(dynamic_cast<RndText *>(TheManager.Create(
+        RndText::sClassName, FormatString("HUDr songpos ckpt %0xd.txt", ++sNumLabels))));
     it->mText->Copy(mLabelTemplate, 0);
     it->mText->SetText(pszLabel);
 }
 
 void OvySongPos::ClearCheckpoints() {
-    if (mLabelTemplate == nullptr) {
-        mCheckpoints.clear();
-        return;
-    }
-    for (auto it = mCheckpoints.begin(); it != mCheckpoints.end();) {
-        delete it->mText;
-        it->mText = nullptr;
-        it = mCheckpoints.erase(it);
-    }
+    mCheckpoints.clear();
 }
 
 void OvySongPos::Reset() {
@@ -113,7 +105,7 @@ void OvySongPos::Poll() {
 }
 
 void OvySongPos::Draw() {
-    if (mSlide.mValue == 0.0f) {
+    if (mSlide.GetValue() == 0.0f) {
         return;
     }
     static_cast<RndDrawable *>(mView)->Draw();

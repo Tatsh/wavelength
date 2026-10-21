@@ -8,6 +8,6 @@
 void CloseRTTask::OnStart() {
     (void)rtMediusClose();
     (void)rtNetClose();
-    TheLobbyRT->mRtReady = 0;
+    TheLobbyRT->SetRtReady(0);
     Finish(true, 0);
 }

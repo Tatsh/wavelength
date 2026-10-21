@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/axetrackdata.h"
@@ -50,73 +51,6 @@ public:
         kTrackKindScript = 11,    /*!< A name starting `SCRIPT`, the commands of a tutorial. */
         kTrackKindBank = 12,      /*!< A name starting `BANK`, the sound banks of the song. */
         kTrackKindIgnore = 13,    /*!< A name starting `IGNORE`, not read. */
-    };
-
-    /**
-     * The data of one instrument track. Exactly one data pointer is set.
-     *
-     * The name comes from the RTTI. The object is 0x1c bytes.
-     */
-    class Tracks {
-    public:
-        /**
-         * Hold the gems of a catch or vocal track.
-         *
-         * @param nType Song::kTrackTypeCatch or Song::kTrackTypeVox. Another type sets no data.
-         * @param pGems The gems.
-         * @param nInstrument The instrument of the track.
-         * @ghidraAddress NTSC-U/C: 0x0011f1a8
-         * @ghidraAddress PAL: 0x00120938
-         */
-        Tracks(int nType, CatchTrackData *pGems, int nInstrument);
-
-        /**
-         * Hold the patterns of a turntable track.
-         *
-         * @param pScratch The patterns.
-         * @param nInstrument The instrument of the track.
-         * @ghidraAddress NTSC-U/C: 0x0011f218
-         * @ghidraAddress PAL: 0x001209a8
-         */
-        Tracks(ScratchTrackData *pScratch, int nInstrument);
-
-        /**
-         * Hold the notes of a guitar track.
-         *
-         * @param pAxe The notes.
-         * @param nInstrument The instrument of the track.
-         * @ghidraAddress NTSC-U/C: 0x0011f240
-         * @ghidraAddress PAL: 0x001209d0
-         */
-        Tracks(AxeTrackData *pAxe, int nInstrument);
-
-        /**
-         * Hold the riffs of a pitch track, and set mFlags to 1.
-         *
-         * @param pRiffs The riffs.
-         * @param nInstrument The instrument of the track.
-         * @ghidraAddress NTSC-U/C: 0x0011f268
-         * @ghidraAddress PAL: 0x001209f8
-         */
-        Tracks(PitchTrackRiffData *pRiffs, int nInstrument);
-
-        /**
-         * Delete the data the track holds.
-         *
-         * The name is inferred. The pointers are not cleared.
-         *
-         * @ghidraAddress NTSC-U/C: 0x0011f290
-         * @ghidraAddress PAL: 0x00120a20
-         */
-        void Free();
-
-        CatchTrackData *mCatch;     /*!< The gems of a catch track, or null. */
-        ScratchTrackData *mScratch; /*!< The patterns of a turntable track, or null. */
-        AxeTrackData *mAxe;         /*!< The notes of a guitar track, or null. */
-        PitchTrackRiffData *mRiffs; /*!< The riffs of a pitch track, or null. */
-        CatchTrackData *mVox;       /*!< The gems of a vocal track, or null. */
-        int mFlags;                 /*!< 1 for a pitch track, otherwise 0. */
-        int mInstrument;            /*!< The instrument of the track. */
     };
 
     /** MidiReceiver that passes the events of the MIDI file to the builder. */
@@ -540,46 +474,40 @@ public:
      */
     static String FormatError(const String &prefix, int nTick, int nTrack, const String &message);
 
-    std::vector<Tracks> mTracks;                  /*!< The instrument tracks. */
-    std::vector<BackMusic *> mBackMusic;          /*!< The background music tracks. */
-    std::vector<Ptr<Muse>> mIntroMuses;           /*!< The performances of the INTRO tracks. */
-    std::vector<ScriptTrackData *> mScriptTracks; /*!< The commands of the SCRIPT tracks. */
-    PlayMap *mPlayMap;                            /*!< The map of the song positions. */
-    BankLoader *mBankTrack;                       /*!< The track named "BANK", or null. */
-    WorldTrack mWorldTrack;                       /*!< The events of the track named "WORLD". */
-    Lyric *mLyric;                                /*!< The lyrics. */
-    FXMgr *mFXMgr;                                /*!< The effect sets of a remix, or null. */
-    float mSpeed;                                 /*!< The speed of the song. */
-    char *mBuffer;                                /*!< The contents of the MIDI file. */
-    int mSize;                                    /*!< The size of the MIDI file in bytes. */
-    File *mFile;                                  /*!< The MIDI file while it is read. */
-    MidiReader *mReader;                          /*!< The parser while it parses. */
-    String mDirectory;                            /*!< The directory of the MIDI file. */
-    int mReadDone;                                /*!< Whether the MIDI file is in memory. */
-    int mDone;                                    /*!< Whether the MIDI file is parsed. */
-    const char *mMidiFile;                        /*!< The MIDI file. */
-    int mDifficulty;                              /*!< The difficulty. */
-    int mTicksPerBar;                             /*!< The length of a bar in ticks. */
-    int mNumBars;                                 /*!< The length of the song in bars. */
-    int mIntroBars;                               /*!< The bars before bar 0. */
-    int mFreestyleEffectsBus;                     /*!< The effects bus of the guitar tracks. */
-    int mRemixEffectsBus;                         /*!< The effects bus of a remix. */
-    BuilderReceiver *mReceiver;                   /*!< The receiver of the parser. */
-    int mValidate;                                /*!< Whether errors are reported. */
-    TrackBuilder::ErrorHandler mErrorHandler;     /*!< The routine that reports an error. */
-    int mTrackIndex;                              /*!< The MIDI track being parsed. */
-    int mGameTrackCount;                          /*!< The instrument tracks parsed so far. */
-    String mTrackName;                            /*!< The name of the MIDI track. */
-    String mTrackLabel;                           /*!< The label after the instrument letter. */
-    int mInstrument;                              /*!< The instrument of the MIDI track. */
-    int mTrackKind;                               /*!< The kind of the MIDI track, a TrackKind. */
-    int mScratchIndex;                            /*!< The last turntable track, or -1. */
-    int mHasWorldTrack;                           /*!< Whether a WORLD track was found. */
-    TrackBuilder *mTrackBuilder;                  /*!< The builder of the MIDI track, or null. */
-    int mRuleSet;                                 /*!< The rule set, one of GameDb::RuleSet. */
-    SectionBoundaries *mSections;                 /*!< The sections of the song. */
-    float *mMsPerTick;                            /*!< The duration of one tick in milliseconds. */
-    SlotGrid *mSlotGrid;                          /*!< The patterns of the sections. */
+    /** @return The length of a bar in ticks. */
+    int GetTicksPerBar() const {
+        return mTicksPerBar;
+    }
+
+    /** @return The map of the song positions. */
+    PlayMap *GetPlayMap() const {
+        return mPlayMap.get();
+    }
+
+    /** @return The track named "BANK", or null. */
+    BankLoader *GetBankTrack() const {
+        return mBankTrack.get();
+    }
+
+    /** @return The events of the track named "WORLD". */
+    WorldTrack *GetWorldTrack() {
+        return &mWorldTrack;
+    }
+
+    /** @return The lyrics. */
+    Lyric *GetLyric() const {
+        return mLyric.get();
+    }
+
+    /** @return The effect sets of a remix, or null. */
+    FXMgr *GetFXMgr() const {
+        return mFXMgr.get();
+    }
+
+    /** @return The speed of the song. */
+    float GetSpeed() const {
+        return mSpeed;
+    }
 
 private:
     /**
@@ -625,4 +553,121 @@ private:
      * @ghidraAddress PAL: 0x00123758
      */
     void Error(int nTick, const String &message);
+
+    /**
+     * The data of one instrument track. Exactly one data pointer is set.
+     *
+     * The name comes from the RTTI. The object is 0x1c bytes.
+     */
+    class Tracks {
+    public:
+        /**
+         * Store the gems of a catch or vocal track.
+         *
+         * @param nType Song::kTrackTypeCatch or Song::kTrackTypeVox. Another type does not set
+         * data.
+         * @param pGems The gems.
+         * @param nInstrument The instrument of the track.
+         * @ghidraAddress NTSC-U/C: 0x0011f1a8
+         * @ghidraAddress PAL: 0x00120938
+         */
+        Tracks(int nType, CatchTrackData *pGems, int nInstrument);
+
+        /**
+         * Store the patterns of a turntable track.
+         *
+         * @param pScratch The patterns.
+         * @param nInstrument The instrument of the track.
+         * @ghidraAddress NTSC-U/C: 0x0011f218
+         * @ghidraAddress PAL: 0x001209a8
+         */
+        Tracks(ScratchTrackData *pScratch, int nInstrument);
+
+        /**
+         * Store the notes of a guitar track.
+         *
+         * @param pAxe The notes.
+         * @param nInstrument The instrument of the track.
+         * @ghidraAddress NTSC-U/C: 0x0011f240
+         * @ghidraAddress PAL: 0x001209d0
+         */
+        Tracks(AxeTrackData *pAxe, int nInstrument);
+
+        /**
+         * Store the riffs of a pitch track, and set mFlags to 1.
+         *
+         * @param pRiffs The riffs.
+         * @param nInstrument The instrument of the track.
+         * @ghidraAddress NTSC-U/C: 0x0011f268
+         * @ghidraAddress PAL: 0x001209f8
+         */
+        Tracks(PitchTrackRiffData *pRiffs, int nInstrument);
+
+        /**
+         * Delete the data the track stores.
+         *
+         * The binary calls the routine Free() from the LevelMidiBuilder destructor. The name is
+         * inferred.
+         *
+         * @ghidraAddress NTSC-U/C: 0x0011f290
+         * @ghidraAddress PAL: 0x00120a20
+         */
+        ~Tracks() = default;
+
+        /**
+         * Move the data of another track.
+         *
+         * @param other The track to take the data from.
+         */
+        Tracks(Tracks &&other) = default;
+
+        std::unique_ptr<CatchTrackData> mCatch;     /*!< The gems of a catch track, or null. */
+        std::unique_ptr<ScratchTrackData> mScratch; /*!< The turntable patterns, or null. */
+        std::unique_ptr<AxeTrackData> mAxe;         /*!< The notes of a guitar track, or null. */
+        std::unique_ptr<PitchTrackRiffData> mRiffs; /*!< The riffs of a pitch track, or null. */
+        std::unique_ptr<CatchTrackData> mVox;       /*!< The gems of a vocal track, or null. */
+        int mFlags;                                 /*!< 1 for a pitch track, otherwise 0. */
+        int mInstrument;                            /*!< The instrument of the track. */
+    };
+
+    std::vector<Tracks> mTracks;                        /*!< The instrument tracks. */
+    std::vector<std::unique_ptr<BackMusic>> mBackMusic; /*!< The background music tracks. */
+    std::vector<Ptr<Muse>> mIntroMuses; /*!< The performances of the INTRO tracks. */
+    std::vector<std::unique_ptr<ScriptTrackData>> mScriptTracks; /*!< The SCRIPT commands. */
+    std::unique_ptr<PlayMap> mPlayMap;           /*!< The map of the song positions. */
+    std::unique_ptr<BankLoader> mBankTrack;      /*!< The track named "BANK", or null. */
+    WorldTrack mWorldTrack;                      /*!< The events of the track named "WORLD". */
+    std::unique_ptr<Lyric> mLyric;               /*!< The lyrics. */
+    std::unique_ptr<FXMgr> mFXMgr;               /*!< The effect sets of a remix, or null. */
+    float mSpeed;                                /*!< The speed of the song. */
+    char *mBuffer;                               /*!< The contents of the MIDI file. */
+    int mSize;                                   /*!< The size of the MIDI file in bytes. */
+    std::unique_ptr<File> mFile;                 /*!< The MIDI file while it is read. */
+    std::unique_ptr<MidiReader> mReader;         /*!< The parser while it parses. */
+    String mDirectory;                           /*!< The directory of the MIDI file. */
+    int mReadDone;                               /*!< Whether the MIDI file is in memory. */
+    int mDone;                                   /*!< Whether the MIDI file is parsed. */
+    const char *mMidiFile;                       /*!< The MIDI file. */
+    int mDifficulty;                             /*!< The difficulty. */
+    int mTicksPerBar;                            /*!< The length of a bar in ticks. */
+    int mNumBars;                                /*!< The length of the song in bars. */
+    int mIntroBars;                              /*!< The bars before bar 0. */
+    int mFreestyleEffectsBus;                    /*!< The effects bus of the guitar tracks. */
+    int mRemixEffectsBus;                        /*!< The effects bus of a remix. */
+    std::unique_ptr<BuilderReceiver> mReceiver;  /*!< The receiver of the parser. */
+    int mValidate;                               /*!< Whether errors are reported. */
+    TrackBuilder::ErrorHandler mErrorHandler;    /*!< The routine that reports an error. */
+    int mTrackIndex;                             /*!< The MIDI track being parsed. */
+    int mGameTrackCount;                         /*!< The instrument tracks parsed so far. */
+    String mTrackName;                           /*!< The name of the MIDI track. */
+    String mTrackLabel;                          /*!< The label after the instrument letter. */
+    int mInstrument;                             /*!< The instrument of the MIDI track. */
+    int mTrackKind;                              /*!< The kind of the MIDI track, a TrackKind. */
+    int mScratchIndex;                           /*!< The last turntable track, or -1. */
+    int mHasWorldTrack;                          /*!< Whether a WORLD track was found. */
+    std::unique_ptr<TrackBuilder> mTrackBuilder; /*!< The builder of the MIDI track, or null. */
+    int mRuleSet;                                /*!< The rule set, one of GameDb::RuleSet. */
+    SectionBoundaries *mSections;                /*!< The sections of the song. Borrowed. */
+    float *mMsPerTick;                           /*!< The milliseconds of one tick. Borrowed. */
+    SlotGrid *mSlotGrid;                         /*!< The section patterns. Borrowed. */
 };

@@ -43,13 +43,13 @@ RemixHUD::RemixHUD(int nPlayer, const char *pszEffectLabel)
       mRepeatDownCmd(NewMemFun2Command(this, &RemixHUD::Navigate, false, true)), mCallback(nullptr),
       mCallbackData(nullptr) {
     AddLoopPanel();
-    if (TheGameDb->mCommunity != GameDb::kCommunityOnline && nPlayer == 0) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityOnline && nPlayer == 0) {
         AddTempoPanel();
     }
-    if (TheGameDb->mCommunity != GameDb::kCommunityLocal) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunityLocal) {
         AddSoloPanel();
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline &&
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
         TheGameDb->GetPlayerNetOrder(nPlayer) == kLocalHost) {
         AddBootPanel();
     }

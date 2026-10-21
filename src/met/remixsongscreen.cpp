@@ -31,7 +31,7 @@ void RemixSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     auto *pList = static_cast<SongSelList *>(TheUI.FindComponent(kPanel, kList, false));
     std::vector<SongEntry> songs;
     TheGameDb->GetUnlockedSongs(
-        &songs, "", GameDb::kSkillAny, TheGameDb->mCommunity == GameDb::kCommunitySolo);
+        &songs, "", GameDb::kSkillAny, TheGameDb->GetCommunity() == GameDb::kCommunitySolo);
     if (songs.empty()) {
         std::vector<const char *> arenas;
         TheGameDb->GetArenaNames(&arenas, false);
@@ -47,7 +47,7 @@ void RemixSongScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 
     mSongs.clear();
     for (unsigned int i = 0; i < songs.size(); ++i) {
-        if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+        if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
             String song(songs[i].GetName());
             mSongs.push_back(song);
         } else {
@@ -71,19 +71,19 @@ bool RemixSongScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool RemixSongScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         auto *pList = static_cast<UIList *>(TheUI.FindComponent(kPanel, kList, false));
-        mSong = mSongs[pList->mSelected];
+        mSong = mSongs[pList->GetSelected()];
         TheGameDb->SetTutorial(0);
         TheGameDb->SetPracticeMode(false);
         DebugPrint("going to launch remix or duel\n");
         TheGameDb->SetSong(mSong.c_str());
-        if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+        if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
             TheGameDb->SetRemixActive(1);
             RemixInfo record = *TheGameDb->GetRemixInfo();
             strcpy(record.mSong, mSong.c_str());
             TheGameDb->SetRemix(&record);
-            if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+            if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
                 TheUI.GotoScreen("remix_create_mode");
             } else {
                 TheGameDb->SetRemixActive(1);

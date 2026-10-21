@@ -38,5 +38,20 @@ public:
      */
     virtual bool Test() = 0;
 
+    /** @return Non-zero when the trigger needs the condition to be false. */
+    int GetNegate() const {
+        return mNegate;
+    }
+
+    /**
+     * Set whether the trigger needs the condition to be false.
+     *
+     * @param nNegate Non-zero to negate.
+     */
+    void SetNegate(int nNegate) {
+        mNegate = nNegate;
+    }
+
+private:
     int mNegate; /*!< Non-zero when the trigger needs the condition not to hold. */
 };

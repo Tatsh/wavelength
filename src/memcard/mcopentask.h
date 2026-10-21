@@ -42,6 +42,7 @@ public:
      */
     void OnOpen(int nResult) override;
 
+private:
     String mName; /*!< The file. */
     int mMode;    /*!< The library's open mode bits. */
 

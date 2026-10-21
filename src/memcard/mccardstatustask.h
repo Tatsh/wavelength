@@ -35,5 +35,12 @@ public:
      */
     void Set(int nPort);
 
-    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. */
+    /** @return The step that reads the card information. */
+    MCGetInfoTask *GetGetInfo() const {
+        return mGetInfo;
+    }
+
+private:
+    MCGetInfoTask *mGetInfo; /*!< The step that reads the card information. Borrowed. */
+    // The step above belongs to the SerialTasks list.
 };

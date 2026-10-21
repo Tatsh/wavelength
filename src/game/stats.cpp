@@ -221,12 +221,10 @@ void Stats::AppendTimestamp(String &text) {
 
 Stats::Stats()
     : mSongBars(kNoValue), mLogName(nullptr), mMemcardSlot(kNoSlot),
-      mMemcardUser(new StatsMemcardUser), mActive(0) {
+      mMemcardUser(std::make_unique<StatsMemcardUser>()), mActive(0) {
 }
 
-Stats::~Stats() {
-    delete mMemcardUser;
-}
+Stats::~Stats() = default;
 
 Stats *Stats::shared() {
     // The instance is destroyed at exit by NTSC-U/C: 0x0013c0f8, PAL: 0x0013d9c8.
@@ -244,8 +242,12 @@ void Stats::End() {
         String name(mLogName);
         if (mMemcardSlot >= 0) {
             AppendTimestamp(name);
-            TheMCManager.SaveFile(
-                mMemcardUser, mMemcardSlot, name.c_str(), mLog.c_str(), mLog.mLength, kSaveFlag);
+            TheMCManager.SaveFile(mMemcardUser.get(),
+                                  mMemcardSlot,
+                                  name.c_str(),
+                                  mLog.c_str(),
+                                  mLog.mLength,
+                                  kSaveFlag);
         } else {
             AppendTimestamp(name);
             FileStream file(name.c_str(), kWriteFile, kLittleEndian, kFileFlags);
@@ -253,10 +255,7 @@ void Stats::End() {
             mLog.Clear();
         }
     }
-    for (auto it = mEvents.begin(); it != mEvents.end(); ++it) {
-        delete *it;
-    }
-    std::vector<Event *>().swap(mEvents);
+    std::vector<std::unique_ptr<Event>>().swap(mEvents); // Yes, the binary frees the capacity.
 }
 
 void Stats::GemHit(int nTrack, int nGemTick, int nButtonTick, float fSlopMs) {
@@ -267,22 +266,24 @@ void Stats::GemHit(int nTrack, int nGemTick, int nButtonTick, float fSlopMs) {
     if (!mLogName) {
         return;
     }
-    mEvents.push_back(new GemHitEvent(nPlayer, nTrack, nGemTick, nButtonTick, fSlopMs));
+    mEvents.push_back(
+        std::make_unique<GemHitEvent>(nPlayer, nTrack, nGemTick, nButtonTick, fSlopMs));
 }
 
 void Stats::GemMiss(int nTrack, int nGemTick, int nButtonTick, float fSlopMs) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(
-        new GemMissEvent(mTrackPlayers[nTrack], nTrack, nGemTick, nButtonTick, fSlopMs));
+    mEvents.push_back(std::make_unique<GemMissEvent>(
+        mTrackPlayers[nTrack], nTrack, nGemTick, nButtonTick, fSlopMs));
 }
 
 void Stats::GemMiss(int nTrack, int nButtonTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new GemMissEvent(mTrackPlayers[nTrack], nTrack, 0, nButtonTick, 0.0f));
+    mEvents.push_back(
+        std::make_unique<GemMissEvent>(mTrackPlayers[nTrack], nTrack, 0, nButtonTick, 0.0f));
 }
 
 void Stats::GemPass(int nTrack, int nTick) {
@@ -293,7 +294,7 @@ void Stats::GemPass(int nTrack, int nTick) {
     if (nPlayer == kNoPlayer || !mLogName) {
         return;
     }
-    mEvents.push_back(new GemPassEvent(nPlayer, nTrack, nTick));
+    mEvents.push_back(std::make_unique<GemPassEvent>(nPlayer, nTrack, nTick));
 }
 
 void Stats::SetTrackPlayer(int nTrack, int nPlayer) {
@@ -307,7 +308,8 @@ void Stats::ChangeTrack(int nPlayer, int nTrack, int nTick) {
         return;
     }
     if (mLogName) {
-        mEvents.push_back(new ChangeTrackEvent(nPlayer, mPlayerTracks[nPlayer], nTick, nTrack));
+        mEvents.push_back(
+            std::make_unique<ChangeTrackEvent>(nPlayer, mPlayerTracks[nPlayer], nTick, nTrack));
     }
     mPlayerTracks[nPlayer] = nTrack;
 }
@@ -320,91 +322,92 @@ void Stats::CaptureTrack(int nTrack, int nTick, int nNumBars) {
     if (!mLogName) {
         return;
     }
-    mEvents.push_back(new CaptureTrackEvent(nPlayer, nTrack, nTick, nNumBars));
+    mEvents.push_back(std::make_unique<CaptureTrackEvent>(nPlayer, nTrack, nTick, nNumBars));
 }
 
 void Stats::CompleteStage(int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new CompleteStageEvent(nTick));
+    mEvents.push_back(std::make_unique<CompleteStageEvent>(nTick));
 }
 
 void Stats::AxeBegin(int nTrack, int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new AxeEvent(mTrackPlayers[nTrack], nTrack, nTick, kStart));
+    mEvents.push_back(std::make_unique<AxeEvent>(mTrackPlayers[nTrack], nTrack, nTick, kStart));
 }
 
 void Stats::AxeEnd(int nTrack, int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new AxeEvent(mTrackPlayers[nTrack], nTrack, nTick, kEnd));
+    mEvents.push_back(std::make_unique<AxeEvent>(mTrackPlayers[nTrack], nTrack, nTick, kEnd));
 }
 
 void Stats::ScratchBegin(int nTrack, int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new ScratchEvent(mTrackPlayers[nTrack], nTrack, nTick, kStart));
+    mEvents.push_back(std::make_unique<ScratchEvent>(mTrackPlayers[nTrack], nTrack, nTick, kStart));
 }
 
 void Stats::ScratchEnd(int nTrack, int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new ScratchEvent(mTrackPlayers[nTrack], nTrack, nTick, kEnd));
+    mEvents.push_back(std::make_unique<ScratchEvent>(mTrackPlayers[nTrack], nTrack, nTick, kEnd));
 }
 
 void Stats::DeployPowerup(int nPlayer, int nTick, int nType) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new DeployPowerupEvent(nPlayer, nTick, nType));
+    mEvents.push_back(std::make_unique<DeployPowerupEvent>(nPlayer, nTick, nType));
 }
 
 void Stats::CatchPowerup(int nPlayer, int nTick, int nType) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new CatchPowerupEvent(nPlayer, nTick, nType));
+    mEvents.push_back(std::make_unique<CatchPowerupEvent>(nPlayer, nTick, nType));
 }
 
 void Stats::LoseSoloGame(int nTick, int nScore, float fProgress) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new LoseSoloGameEvent(nTick, nScore, fProgress));
+    mEvents.push_back(std::make_unique<LoseSoloGameEvent>(nTick, nScore, fProgress));
 }
 
 void Stats::WinSoloGame(int nScore, int nFullMixBars, int nBestStreak, float fEnergized) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new WinSoloGameEvent(nScore, fEnergized, nFullMixBars, nBestStreak));
+    mEvents.push_back(
+        std::make_unique<WinSoloGameEvent>(nScore, fEnergized, nFullMixBars, nBestStreak));
 }
 
 void Stats::EndMultiGame(int nScore0, int nScore1, int nScore2, int nScore3) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new EndMultiGameEvent(nScore0, nScore1, nScore2, nScore3));
+    mEvents.push_back(std::make_unique<EndMultiGameEvent>(nScore0, nScore1, nScore2, nScore3));
 }
 
 void Stats::PlayerAborted(int nPlayer, int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new PlayerAbortedEvent(nPlayer, nTick));
+    mEvents.push_back(std::make_unique<PlayerAbortedEvent>(nPlayer, nTick));
 }
 
 void Stats::Juice(float fValue, int nTick) {
     if (!mActive || !mLogName) {
         return;
     }
-    mEvents.push_back(new JuiceEvent(fValue, nTick));
+    mEvents.push_back(std::make_unique<JuiceEvent>(fValue, nTick));
 }
 
 void Stats::WriteSessionLog() {
@@ -416,22 +419,22 @@ void Stats::WriteSessionLog() {
     }
     {
         String name(kArenaField);
-        String line = FormatField(name, TheGameDb->mArena.c_str(), true);
+        String line = FormatField(name, TheGameDb->GetArena().c_str(), true);
         mLog.Print(line.c_str());
     }
     {
         String name(kSongField);
-        String line = FormatField(name, TheGameDb->mSong.c_str(), true);
+        String line = FormatField(name, TheGameDb->GetSong().c_str(), true);
         mLog.Print(line.c_str());
     }
     {
         String name(kSkillLevelField);
-        String line = FormatField(name, TheGameDb->mSkillLevel);
+        String line = FormatField(name, TheGameDb->GetSkillLevel());
         mLog.Print(line.c_str());
     }
     {
         String name(kPracticeModeField);
-        String line = FormatField(name, TheGameDb->mPracticeMode != 0);
+        String line = FormatField(name, TheGameDb->GetPracticeMode() != 0);
         mLog.Print(line.c_str());
     }
     {
@@ -441,12 +444,12 @@ void Stats::WriteSessionLog() {
     }
     {
         String name(kCommunityField);
-        String line = FormatField(name, TheGameDb->mCommunity);
+        String line = FormatField(name, TheGameDb->GetCommunity());
         mLog.Print(line.c_str());
     }
     {
         String name(kRuleSetField);
-        String line = FormatField(name, TheGameDb->mRuleSet);
+        String line = FormatField(name, TheGameDb->GetRuleSet());
         mLog.Print(line.c_str());
     }
     {
@@ -457,8 +460,8 @@ void Stats::WriteSessionLog() {
     mLog << kEventsOpen;
     for (unsigned int i = 0; i < mEvents.size(); ++i) {
         PrnStream &stream = mLog << kEventIndent;
-        const Event *pEvent = mEvents[i];
-        String name(pEvent->mName);
+        const Event *pEvent = mEvents[i].get();
+        String name(pEvent->GetName());
         String value = pEvent->ToString();
         String line = FormatField(name, value.c_str(), false);
         stream.Print(line.c_str());

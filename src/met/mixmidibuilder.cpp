@@ -1,5 +1,7 @@
 #include "met/mixmidibuilder.h"
 
+#include <memory>
+
 #include "os/mem.h"
 #include "os/system.h"
 
@@ -31,8 +33,8 @@ constexpr int kTicksPerBeat = 480;
 
 MixMidiBuilder::MixMidiBuilder(DataArray *pConfig)
     : mTracks(), mBuffer(nullptr), mSize(0), mFile(nullptr), mReserved1c(), mReadDone(0), mDone(0),
-      mReader(nullptr), mNames(), mReceiver(new BuilderReceiver(this)), mReserved50(0),
-      mTrackIndex(kNoTrack), mTrackName() {
+      mReader(nullptr), mNames(), mReceiver(std::make_unique<BuilderReceiver>(this)),
+      mReserved50(0), mTrackIndex(kNoTrack), mTrackName() {
     mMuseBuilder = nullptr;
     mHasTrack = 0;
     mMillisecondsPerBeat = kUnknownBeatLength;
@@ -48,16 +50,12 @@ MixMidiBuilder::MixMidiBuilder(DataArray *pConfig)
 
 MixMidiBuilder::~MixMidiBuilder() {
     PoolMemFree(mBuffer);
-    delete mFile;
-    delete mReceiver;
-    delete mMuseBuilder;
-    delete mReader;
 }
 
 void MixMidiBuilder::StartLoad() {
     const char *pszFile = nullptr;
     SystemConfig()->FindArray(kMetagameTag, false)->FindSymbol(kMidiFileTag, &pszFile, true);
-    mFile = File::New(pszFile, kOpenRead, kNoOpenFlags);
+    mFile.reset(File::New(pszFile, kOpenRead, kNoOpenFlags));
     mSize = mFile->Size();
     mBuffer = static_cast<char *>(PoolMemAlloc(mSize, kBufferTag, kDefaultAlignment));
     mFile->ReadAsync(mBuffer, mSize);
@@ -78,17 +76,15 @@ void MixMidiBuilder::Poll() {
         return;
     }
     if (mReader == nullptr) {
-        mReader = new MidiReader(mBuffer, mSize, mReceiver);
+        mReader = std::make_unique<MidiReader>(mBuffer, mSize, mReceiver.get());
         return;
     }
     mDone = !mReader->ReadSteps(kStepsPerPoll);
     if (!mDone) {
         return;
     }
-    delete mReader;
-    mReader = nullptr;
-    delete mFile;
-    mFile = nullptr;
+    mReader.reset();
+    mFile.reset();
     if (mBuffer != nullptr) {
         PoolMemFree(mBuffer);
         mBuffer = nullptr;
@@ -127,8 +123,7 @@ void MixMidiBuilder::OnEndTrack() {
         mTracks.back().mName = mTrackName;
     }
     ++mTrackIndex;
-    delete mMuseBuilder;
-    mMuseBuilder = nullptr;
+    mMuseBuilder.reset();
 }
 
 void MixMidiBuilder::OnAllDone() {
@@ -160,7 +155,8 @@ void MixMidiBuilder::OnText(int nTick, const char *pszText, unsigned char nType)
         if (mTrackIndex > 0) {
             if (mNames.find(String(pszText)) != mNames.end()) {
                 mTracks.push_back(TrackData());
-                mMuseBuilder = new MuseBuilder(mTrackIndex, false, nullptr, &mTracks.back().mMuse);
+                mMuseBuilder = std::make_unique<MuseBuilder>(
+                    mTrackIndex, false, nullptr, &mTracks.back().mMuse);
                 mHasTrack = 1;
             }
         }

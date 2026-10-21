@@ -49,6 +49,27 @@ public:
      */
     virtual void Reset(float fY0, float fY1, float fX0, float fX1) = 0;
 
+    /** @return The output at the start of the range. */
+    float GetY0() const {
+        return mY0;
+    }
+
+    /** @return The output at the end of the range. */
+    float GetY1() const {
+        return mY1;
+    }
+
+    /** @return The start of the input range. */
+    float GetX0() const {
+        return mX0;
+    }
+
+    /** @return The end of the input range. */
+    float GetX1() const {
+        return mX1;
+    }
+
+protected:
     float mY0; /*!< The output at the start of the range. */
     float mY1; /*!< The output at the end of the range. */
     float mX0; /*!< The start of the input range. */

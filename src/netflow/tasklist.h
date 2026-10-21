@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "os/task.h"
 
@@ -36,5 +37,11 @@ public:
      */
     void Poll();
 
-    std::list<Task *> mTasks; /*!< The tasks, in the order they were added. */
+    /** @return The tasks, in the order they were added. */
+    const std::list<std::unique_ptr<Task>> &GetTasks() const {
+        return mTasks;
+    }
+
+private:
+    std::list<std::unique_ptr<Task>> mTasks; /*!< The tasks, in the order they were added. */
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "os/string.h"
 #include "synth/streamplayer.h"
 
@@ -178,7 +180,7 @@ private:
      * @ghidraAddress NTSC-U/C: 0x003af894
      * @ghidraAddress PAL: 0x0042e730
      */
-    static StreamPlayer *sPlayer;
+    static std::unique_ptr<StreamPlayer> sPlayer;
 
     /**
      * The output level of the clip.

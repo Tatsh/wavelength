@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 
 #include "os/binstream.h"
 #include "os/mem.h"
@@ -253,13 +254,13 @@ public:
      */
     static int sLoadRev;
 
-    RndText *mText;   /*!< The text the cursor sweeps, or null. */
-    RndBlur *mBlur;   /*!< The blur the internal blur copies, or null. */
-    RndBlur *mCursor; /*!< The internal blur that marks the cursor, or null. */
-    RndMesh *mMask;   /*!< The mesh that hides the characters past the cursor, or null. */
-    float mOffset;    /*!< The depth of the mask in front of the text. */
-    float mStutter;   /*!< The part of each frame the cursor rests on its character. */
-    float mWidth;     /*!< The width of the line, measured by BuildMask(). */
-    float mStartX;    /*!< The left of the line, measured by BuildMask(). */
-    float mCenterZ;   /*!< The vertical centre of the line, measured by BuildMask(). */
+    RndText *mText;                   /*!< The text the cursor sweeps, or null. */
+    RndBlur *mBlur;                   /*!< The blur the internal blur copies, or null. */
+    std::unique_ptr<RndBlur> mCursor; /*!< The internal blur that marks the cursor, or null. */
+    std::unique_ptr<RndMesh> mMask;   /*!< The mesh that hides the characters past the cursor. */
+    float mOffset;                    /*!< The depth of the mask in front of the text. */
+    float mStutter; /*!< The part of each frame the cursor rests on its character. */
+    float mWidth;   /*!< The width of the line, measured by BuildMask(). */
+    float mStartX;  /*!< The left of the line, measured by BuildMask(). */
+    float mCenterZ; /*!< The vertical centre of the line, measured by BuildMask(). */
 };

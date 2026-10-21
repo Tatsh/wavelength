@@ -7,7 +7,7 @@ void LoadGameTask::OnStart() {
     if (TheLaunchpadRT != nullptr) {
         LoadGamePkt pkt;
         TheLaunchpadRT->Send(&pkt);
-        static_cast<MsgSink *>(TheLaunchpadRT)->Dispatch(&pkt);
+        static_cast<MsgSink *>(TheLaunchpadRT.get())->Dispatch(&pkt);
     }
     Finish(true, 0);
 }

@@ -1,6 +1,7 @@
 #include "gfx/gfxarena.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "game/gamedb.h"
@@ -91,10 +92,8 @@ GfxArena::GfxArena(const char *pszName) : mName(pszName) {
     mFreestyle = kNoFreestyle;
     mLoaded = 0;
     mTriggersLoaded = 0;
-    mTriggerStream = nullptr;
     mLoader = nullptr;
     mView = nullptr;
-    mOwnsView = 0;
     mCamPath = nullptr;
     mFrameOffset = 0.0f;
     mLength = kUnset;
@@ -116,9 +115,9 @@ GfxArena::GfxArena(const char *pszName) : mName(pszName) {
     pGfx->FindVector("juice_blink_range", &blinkRange, true);
     sLowEnergy = blinkRange.y;
     if (mConfig->Sym(kFileNode)[0] == '\0') {
-        mOwnsView = 1;
-        mView = dynamic_cast<RndView *>(
-            TheManager.Create(RndView::sClassName, "arena view placeholder"));
+        mOwnedView.reset(dynamic_cast<RndView *>(
+            TheManager.Create(RndView::sClassName, "arena view placeholder")));
+        mView = mOwnedView.get();
         mLoaded = 1;
     }
 
@@ -152,12 +151,7 @@ GfxArena *GfxArena::Create(const char *pszName) {
     return new GfxArena(pszName);
 }
 
-GfxArena::~GfxArena() {
-    if (mOwnsView && (mView != nullptr)) {
-        delete mView;
-    }
-    delete mTriggerStream;
-}
+GfxArena::~GfxArena() = default;
 
 void GfxArena::LoadConfig() {
     DataArray *pGfx = SystemConfig()->FindArray("gfx", true);
@@ -177,7 +171,7 @@ void GfxArena::LoadTriggers() {
     }
     char szPath[kMaxPathLength];
     DataArray::MakeCompiledPath(szPath, mConfig->Sym(kTriggersNode), false);
-    mTriggerStream = new AsyncStream(szPath, true);
+    mTriggerStream = std::make_unique<AsyncStream>(szPath, true);
 }
 
 void GfxArena::PollLoad(bool bHudLoaded) {
@@ -234,10 +228,9 @@ void GfxArena::PollLoad(bool bHudLoaded) {
     // Yes, the timer is never read.
     Timer timer;
     timer.Start();
-    TheTriggerMgr.Load(mConfig->Sym(kTriggersNode), mTriggerStream);
-    delete mTriggerStream;
+    TheTriggerMgr.Load(mConfig->Sym(kTriggersNode), mTriggerStream.get());
+    mTriggerStream.reset();
     mTriggersLoaded = 1;
-    mTriggerStream = nullptr;
     timer.Stop();
 }
 
@@ -266,11 +259,11 @@ void GfxArena::SetSongTicks(float fSongTicks) {
 void GfxArena::Poll(float fTick, float fTime) {
     const float fFrame = (mFrameScale * fTick) + mFrameOffset;
     mView->SetFrame(fFrame);
-    TheTriggerMgr.MetagameEvent(fTick, TheGameDb->mSongTime, fTime);
+    TheTriggerMgr.MetagameEvent(fTick, TheGameDb->GetSongTime(), fTime);
     TheTriggerMgr.Poll();
     mView->UpdateWorldXfm(nullptr, 0);
-    const float fSongTick = TheGameDb->mSongTick;
-    SetPanelFlags(kPanelFrequency, TheGfxManager.mWinnerDrawn != 0);
+    const float fSongTick = TheGameDb->GetSongTick();
+    SetPanelFlags(kPanelFrequency, TheGfxManager.GetWinnerDrawn() != 0);
     if (mPanelFlags == 0) {
         for (RndMatAnim *pAnim : mMatAnims) {
             pAnim->SetFrame(fSongTick);
@@ -311,7 +304,7 @@ void GfxArena::HandleBeat(signed char nEvent) {
     }
     if (nEvent == kBeatStart) {
         SetPanelFlags(kPanelBeat, true);
-        mBeatTick = TheGameDb->mSongTick;
+        mBeatTick = TheGameDb->GetSongTick();
         mMovies[kBeatMovie]->SetFrame(0.0f);
     } else if (nEvent == kBeatEnd) {
         SetPanelFlags(kPanelBeat, false);

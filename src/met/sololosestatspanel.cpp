@@ -20,7 +20,7 @@ void SoloLoseStatsPanel::Refresh() {
     SongStats record;
     // Yes, the binary fetches the record and never reads it.
     TheGameDb->GetProfile(kLocalPlayer)
-        ->GetSongStats(TheGameDb->mSong.c_str(), TheGameDb->mSkillLevel, &record);
+        ->GetSongStats(TheGameDb->GetSong().c_str(), TheGameDb->GetSkillLevel(), &record);
     FindComponent(kProgressComponent, false)
         ->SetText(
             FormatString(kPercentFormat, static_cast<int>(TheGameDb->GetProgress() * kPercent)));

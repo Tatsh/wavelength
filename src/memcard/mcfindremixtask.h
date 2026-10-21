@@ -38,11 +38,6 @@ public:
      */
     void Set(int nPort, const char *pszName);
 
-    String mReserved10;   // +0x10, never read.
-    MCGetDirTask mGetDir; /*!< The step that searches one directory. */
-    int mDirIndex;        /*!< The directory searched now. */
-    String mName;         /*!< The remix file. */
-
 protected:
     /**
      * Clear g_RemixPath and start searching the first directory.
@@ -68,4 +63,9 @@ private:
      * @ghidraAddress PAL: 0x00163600
      */
     void SearchNextDir();
+
+    String mReserved10;   // +0x10, never read.
+    MCGetDirTask mGetDir; /*!< The step that searches one directory. */
+    int mDirIndex;        /*!< The directory searched now. */
+    String mName;         /*!< The remix file. */
 };

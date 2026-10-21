@@ -146,7 +146,7 @@ void KeyboardPanel::SetRequest(const KeyboardRequest &request) {
 }
 
 bool KeyboardPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const char *pszKey = pMsg->mComponent->mName;
+    const char *pszKey = pMsg->GetComponent()->GetName();
     if (strcmp(pszKey, "but_caps") == 0) {
         SetShiftMode(kShiftCaps);
     } else if (strcmp(pszKey, "but_lshift") == 0 || strcmp(pszKey, "but_rshift") == 0) {
@@ -174,7 +174,7 @@ bool KeyboardPanel::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
         if (pszFunctionKey != nullptr) {
             TypeFunctionKey(pszFunctionKey);
         } else {
-            TypeChar(pMsg->mComponent->Text()[0]);
+            TypeChar(pMsg->GetComponent()->Text()[0]);
         }
     }
     FxMidi::PlayKeyboardKeyEnter();
@@ -293,9 +293,11 @@ void KeyboardPanel::SetShiftMode(int nMode) {
     }
 
     for (const auto &entry : mComponents) {
-        UIButton *pKey = entry.second != nullptr ? dynamic_cast<UIButton *>(entry.second) : nullptr;
+        UIButton *pKey =
+            entry.second != nullptr ? dynamic_cast<UIButton *>(entry.second.get()) : nullptr;
         if (pKey != nullptr && pKey->Text() != nullptr) {
-            pKey->SetText(TheLocale.Localize(FormatString("%s%s", pKey->mName, pszSuffix), true));
+            pKey->SetText(
+                TheLocale.Localize(FormatString("%s%s", pKey->GetName(), pszSuffix), true));
         }
     }
 }
@@ -365,7 +367,7 @@ void KeyboardPanel::TypeChar(char ch) {
 }
 
 bool KeyboardPanel::HandleInvalid(UITextEntryInvalidMsg *pMsg) {
-    if (strcmp(pMsg->mEntry->mName, "01") != 0) {
+    if (strcmp(pMsg->mEntry->GetName(), "01") != 0) {
         return false;
     }
     if (pMsg->mEndOfField) {

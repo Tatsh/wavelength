@@ -17,7 +17,7 @@ constexpr short kReportPlayers = 1;
 void MGCLSendServerReportTask::OnStart() {
     rtMgclServerReport report;
     memset(&report, 0, sizeof(report));
-    strcpy(report.sessionKey, TheHostpadRT->mSessionKey.c_str());
+    strcpy(report.sessionKey, TheHostpadRT->GetSessionKey().c_str());
     report.maxPlayersPerWorld = LaunchpadRT::kMaxClients;
     report.activePlayers = kReportPlayers;
     report.maxWorlds = kReportWorlds;

@@ -411,6 +411,27 @@ public:
      */
     void Load(BinStream &stream);
 
+    std::vector<const char *> mUnlocks; /*!< The items unlocked at every skill level. */
+    /** The items unlocked at each skill level. */
+    std::vector<std::vector<const char *>> mSkillUnlocks;
+    /** One bit for each skill level at which each `campaign` entry has passed. */
+    std::vector<unsigned char> mPassedEntries;
+    String mName;                    /*!< The player's name. */
+    DateTime mBorn;                  /*!< The date the Freq was created. */
+    String mPassword;                /*!< The online password, or empty when it is not saved. */
+    int mNameLocked;                 /*!< Non-zero when the player may not rename the Freq. */
+    std::vector<SongStats> mRecords; /*!< The best result of each song at each skill level. */
+    AvatarPartSet mAvatar;           /*!< The Freq's parts and colours. */
+    int mModified;                   /*!< Non-zero when the profile changed since it was saved. */
+    int mCustom;                     /*!< Non-zero for a player's own profile, not a default one. */
+    const char *mPendingPowerup;     /*!< The power-up TakePendingPowerup() grants, or null. */
+    /** The last item unlocked of each UnlockableItem::Kind. */
+    std::vector<const char *> mLastUnlocks;
+    unsigned char mFlags; /*!< Bits of Flag. */
+    int mSoloOption;      /*!< The value GetSoloOption() reports. */
+    int mOnlineOption;    /*!< The value GetOnlineOption() reports. */
+    InputMap mInputMap;   /*!< The controller bindings. */
+
 private:
     // Add a result to the records, keeping the best of each statistic.
     // NTSC-U/C: 0x00277590, PAL: 0x00281020
@@ -503,28 +524,6 @@ private:
     // Report the Flag of a power-up.
     // NTSC-U/C: 0x0027ad98, PAL: 0x00284828
     int GetPowerupBit(const char *pszPowerup);
-
-public:
-    std::vector<const char *> mUnlocks; /*!< The items unlocked at every skill level. */
-    /** The items unlocked at each skill level. */
-    std::vector<std::vector<const char *>> mSkillUnlocks;
-    /** One bit for each skill level at which each `campaign` entry has passed. */
-    std::vector<unsigned char> mPassedEntries;
-    String mName;                    /*!< The player's name. */
-    DateTime mBorn;                  /*!< The date the Freq was created. */
-    String mPassword;                /*!< The online password, or empty when it is not saved. */
-    int mNameLocked;                 /*!< Non-zero when the player may not rename the Freq. */
-    std::vector<SongStats> mRecords; /*!< The best result of each song at each skill level. */
-    AvatarPartSet mAvatar;           /*!< The Freq's parts and colours. */
-    int mModified;                   /*!< Non-zero when the profile changed since it was saved. */
-    int mCustom;                     /*!< Non-zero for a player's own profile, not a default one. */
-    const char *mPendingPowerup;     /*!< The power-up TakePendingPowerup() grants, or null. */
-    /** The last item unlocked of each UnlockableItem::Kind. */
-    std::vector<const char *> mLastUnlocks;
-    unsigned char mFlags; /*!< Bits of Flag. */
-    int mSoloOption;      /*!< The value GetSoloOption() reports. */
-    int mOnlineOption;    /*!< The value GetOnlineOption() reports. */
-    InputMap mInputMap;   /*!< The controller bindings. */
 };
 
 /**

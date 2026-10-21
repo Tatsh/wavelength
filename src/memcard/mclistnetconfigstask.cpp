@@ -19,12 +19,12 @@ void MCListNetConfigsTask::OnCardInfo() {
     if (MemcardTask::sStatus != MemcardTask::kStatusOk) {
         return;
     }
-    if (mGetInfo->mFormat == 0) {
+    if (mGetInfo->GetFormat() == 0) {
         MemcardTask::sStatus = MemcardTask::kStatusUnformatted;
         mGetInfo->Finish(false);
     }
 }
 
 std::list<InetConfig> *MCListNetConfigsTask::GetConfigs() {
-    return &mNetConfig->mConfigs;
+    return &mNetConfig->GetConfigs();
 }

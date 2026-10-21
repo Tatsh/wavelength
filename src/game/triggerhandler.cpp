@@ -24,16 +24,7 @@ TriggerHandler::TriggerHandler(DataArray *pTrigger) {
     AddActions(pTrigger->FindArray(kActionsTag, true));
 }
 
-TriggerHandler::~TriggerHandler() {
-    for (std::list<TriggerCondition *> &group : mConditions) {
-        for (TriggerCondition *pCondition : group) {
-            delete pCondition;
-        }
-    }
-    for (TriggerAction *pAction : mActions) {
-        delete pAction;
-    }
-}
+TriggerHandler::~TriggerHandler() = default;
 
 void TriggerHandler::AddActions(DataArray *pActions) {
     float flDelay = 0.0f;
@@ -48,22 +39,22 @@ void TriggerHandler::AddActions(DataArray *pActions) {
             } else {
                 DebugWarn("Don't recognize '%s' in actions (file %s, line %d, node %d)",
                           pActions->Sym(i),
-                          pActions->mFile,
-                          pActions->mLine,
+                          pActions->GetFile(),
+                          pActions->GetLine(),
                           i);
             }
         } else {
             TriggerAction *pAction = TriggerAction::New(pActions->Array(i));
-            pAction->mDelay = flDelay;
-            pAction->mClock = nClock;
-            mActions.push_back(pAction);
+            pAction->SetDelay(flDelay);
+            pAction->SetClock(nClock);
+            mActions.emplace_back(pAction);
             flDelay = 0.0f; // The clock is not reset, and applies to every later action.
         }
     }
 }
 
 void TriggerHandler::AddConditions(DataArray *pConditions) {
-    mConditions.push_back(std::list<TriggerCondition *>());
+    mConditions.emplace_back();
     int nNegate = 0;
     for (int i = 1; i < pConditions->Size(); ++i) {
         if (pConditions->Type(i) == DataArray::kNodeSymbol) {
@@ -71,15 +62,15 @@ void TriggerHandler::AddConditions(DataArray *pConditions) {
             if (pszSymbol[0] != kNegatePrefix) {
                 DebugWarn("Don't recognize '%s' (file %s, line %d, node %d)",
                           pszSymbol,
-                          pConditions->mFile,
-                          pConditions->mLine,
+                          pConditions->GetFile(),
+                          pConditions->GetLine(),
                           i);
             }
             nNegate = 1;
         } else {
             TriggerCondition *pCondition = TriggerCondition::New(pConditions->Array(i));
-            pCondition->mNegate = nNegate;
-            mConditions.back().push_back(pCondition);
+            pCondition->SetNegate(nNegate);
+            mConditions.back().emplace_back(pCondition);
             nNegate = 0;
         }
     }
@@ -92,7 +83,7 @@ void TriggerHandler::Fire() {
             auto condition = group->begin();
             for (; condition != group->end(); ++condition) {
                 const bool bHolds = (*condition)->Test();
-                if ((*condition)->mNegate != 0 ? bHolds : !bHolds) {
+                if ((*condition)->GetNegate() != 0 ? bHolds : !bHolds) {
                     break;
                 }
             }
@@ -104,7 +95,7 @@ void TriggerHandler::Fire() {
             return;
         }
     }
-    for (TriggerAction *pAction : mActions) {
+    for (const auto &pAction : mActions) {
         pAction->Start();
     }
 }

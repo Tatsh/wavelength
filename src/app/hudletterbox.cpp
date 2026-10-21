@@ -22,10 +22,10 @@ HudLetterbox::HudLetterbox(RndView *pHudView) : mSlide(0.0f, nullptr, nullptr, k
 
 void HudLetterbox::Poll(float fDelta, float fDeltaTicks) {
     if (fDelta == 0.0f) {
-        fDelta = fDeltaTicks / *TheGfxManager.mMsPerTick;
+        fDelta = fDeltaTicks / *TheGfxManager.GetMsPerTick();
     }
     if (mSlide.Update(fDelta, false)) {
-        static_cast<RndDrawable *>(mView)->SetShowing(mSlide.mValue != 0.0f);
+        static_cast<RndDrawable *>(mView)->SetShowing(mSlide.GetValue() != 0.0f);
     }
 }
 

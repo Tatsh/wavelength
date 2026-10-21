@@ -47,23 +47,23 @@ int TriggerEvent::FindType(DataArray *pArray, int nNode) {
             return i;
         }
     }
-    DebugWarn("Don't recognize %s event (file %s, line %d)", pszName, pArray->mFile, pArray->mLine);
+    DebugWarn("Don't recognize %s event (file %s, line %d)",
+              pszName,
+              pArray->GetFile(),
+              pArray->GetLine());
     return kNumTypes;
 }
 
 void TriggerEvent::Fire() {
-    for (TriggerHandler *pHandler : mHandlers) {
+    for (const auto &pHandler : mHandlers) {
         pHandler->Fire();
     }
 }
 
 void TriggerEvent::Clear() {
-    for (TriggerHandler *pHandler : mHandlers) {
-        delete pHandler;
-    }
     mHandlers.clear();
 }
 
 void TriggerEvent::AddHandler(DataArray *pTrigger) {
-    mHandlers.push_back(new TriggerHandler(pTrigger));
+    mHandlers.push_back(std::make_unique<TriggerHandler>(pTrigger));
 }

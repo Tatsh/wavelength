@@ -52,7 +52,7 @@ void NetParamsScreen::UpdateLabels() {
     UIComponent *pSkill = pPanel->FindComponent(kSkillComponent, false);
     if (mLastSkillMode < mMode) {
         pSkill->SetState(UIComponent::kStateDisabled, false);
-    } else if (pPanel->mFocus == pSkill) {
+    } else if (pPanel->GetFocus() == pSkill) {
         pSkill->SetState(UIComponent::kStateSelected, false);
     } else {
         pSkill->SetState(UIComponent::kStateNormal, false);
@@ -75,8 +75,8 @@ bool NetParamsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetParamsScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        const char *pszComponent = pMsg->mComponent->mName;
+    if (pMsg->GetButton() == kPadCross) {
+        const char *pszComponent = pMsg->GetComponent()->GetName();
         if (std::strcmp(pszComponent, kSongComponent) == 0) {
             SetFocus(TheUI.FindPanel(mSongPanelName, false));
         } else if (std::strcmp(pszComponent, kCursorComponent) == 0) {
@@ -89,8 +89,8 @@ bool NetParamsScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
 }
 
 bool NetParamsScreen::HandleSelectStart(UIComponentSelectStartMsg *pMsg) {
-    const char *pszComponent = pMsg->mComponent->mName;
-    const int nButton = pMsg->mButton;
+    const char *pszComponent = pMsg->GetComponent()->GetName();
+    const int nButton = pMsg->GetButton();
     if (std::strcmp(pszComponent, kModeComponent) == 0) {
         if (nButton == kPadDLeft || nButton == kPadDRight) {
             mMode = StepChoice(mMode, static_cast<int>(mModes.size()), nButton);

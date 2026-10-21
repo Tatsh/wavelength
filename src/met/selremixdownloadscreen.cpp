@@ -17,7 +17,7 @@ constexpr char kDoDownloadScreen[] = "fn_do_download";
 void SelRemixDownloadScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
     auto *pList = static_cast<RemixDownloadList *>(
-        TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
+        TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
     pList->SetRemixes(mRemixes);
     pList->SetSelected(0);
     mShowNote = 1;
@@ -36,11 +36,11 @@ bool SelRemixDownloadScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool SelRemixDownloadScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
+    if (pMsg->GetButton() == kPadCross) {
         auto *pList =
             static_cast<UIList *>(TheUI.FindComponent(kDownloadPanel, kListComponent, false));
         auto remix = mRemixes.begin();
-        for (int i = 0; remix != mRemixes.end() && i != pList->mSelected; ++i) {
+        for (int i = 0; remix != mRemixes.end() && i != pList->GetSelected(); ++i) {
             ++remix;
         }
         auto *pScreen =
@@ -58,7 +58,7 @@ bool SelRemixDownloadScreen::HandleJoypad(JoypadInputMsg *pMsg) {
     }
     if (pMsg->mButton == kPadCircle && pMsg->mPressed != 0) {
         auto *pList = static_cast<RemixDownloadList *>(
-            TheUI.FindComponent(mFocusPanel->mName, kListComponent, false));
+            TheUI.FindComponent(mFocusPanel->GetName(), kListComponent, false));
         mShowNote ^= 1;
         pList->SetNoteShowing(mShowNote);
     }

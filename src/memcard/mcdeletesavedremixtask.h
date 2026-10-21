@@ -27,6 +27,7 @@ public:
      */
     void Set(int nPort);
 
+private:
     MCDeleteTask mDelete; /*!< The step that deletes the file. */
 
 protected:

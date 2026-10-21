@@ -18,16 +18,17 @@ bool KeyboardKey::HandleJoypad(JoypadInputMsg *pMsg) {
     if (pMsg->mButton != kPadCross || mFlashDone == 0 || pMsg->mPressed == 0) {
         return false;
     }
-    UIScreen *pScreen = TheUI.mCurrentScreen;
+    UIScreen *pScreen = TheUI.GetCurrentScreen();
     UIComponentSelectStartMsg msg(this, TheUI.FocusPanel(), pScreen, pMsg->mButton, pMsg->mPad);
     if (!Dispatch(&msg)) {
-        StartFlash(TheUI.mTime, sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
+        StartFlash(
+            TheUI.GetTime(), sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
     }
     return true;
 }
 
 void KeyboardKey::Flash() {
-    StartFlash(TheUI.mTime, sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
+    StartFlash(TheUI.GetTime(), sNumFlashes, kStateSelected, kStateNormal, sSelectedMs, sNormalMs);
 }
 
 bool KeyboardKey::DispatchPriv(Message *pMsg) {

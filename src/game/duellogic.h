@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/catchtrackdata.h"
@@ -52,6 +53,20 @@ public:
 
     /** The data the duel records for each bar of the song. */
     struct BarData {
+        /**
+         * Construct the data for a bar.
+         *
+         * @param nTrack The song track the duel plays in the bar.
+         */
+        explicit BarData(int nTrack) : mTrack(nTrack) {
+        }
+
+        /** @return The song track the duel plays in the bar. */
+        int GetTrack() const {
+            return mTrack;
+        }
+
+    private:
         int mTrack; /*!< The song track the duel plays in the bar. */
     };
 
@@ -659,47 +674,47 @@ private:
      */
     int OnPlayerAborted(PlayerAbortedMsg *pMsg);
 
-    Player *mPitcher;                          /*!< The player who lays down the phrase. */
-    Player *mCatcher;                          /*!< The player who repeats the phrase. */
-    int mPhase;                                /*!< One of Phase. */
-    int mCuePhase;                             /*!< The Phase OnPhraseCueTick() announces. */
-    int mCuePlayer;                            /*!< The index in mPlayers of the cued player. */
-    int mNextPhraseBar;                        /*!< The bar the next phrase starts at. */
-    int mState;                                /*!< One of State. */
-    int mStateBeforePause;                     /*!< mState when the duel paused. */
-    int mPaused;                               /*!< Whether the duel is paused. */
-    int mQuit;                                 /*!< Whether a player quit from a menu. */
-    int mEndTick;                              /*!< The tick the faded song ends at. */
-    int mCommandsStopped;                      /*!< Whether StopCommands() ran. */
-    DuelTrack *mPitcherTrack;                  /*!< The track of mPitcher. */
-    DuelTrack *mCatcherTrack;                  /*!< The track of mCatcher. */
-    CatchTrackData *mPitcherGems;              /*!< The gems mPitcher lays down. */
-    CatchTrackData *mCatcherGems;              /*!< The gems mCatcher catches. */
-    int mCatchMissed;                          /*!< Whether the catch of this phrase was missed. */
-    int mCatchMade;                            /*!< Whether the catch of this phrase was made. */
-    Song *mSong;                               /*!< The song. */
-    int mTicksPerBar;                          /*!< The song ticks in one bar. */
-    int mPhraseBars;                           /*!< The length of a phrase in bars. */
-    PlayMap *mPlayMap;                         /*!< The map of the song positions. */
-    int mReserved5c;                           // +0x5c, cleared by the constructor and not read.
-    int mSectionStartBar;                      /*!< The bar the current section started at. */
-    int mNextSectionBar;                       /*!< The bar the next section starts at. */
-    int mSection;                              /*!< The number of sections started. */
-    std::vector<Player *> mPlayers;            /*!< The players, one for each side. */
-    std::vector<DuelTrack *> mTracks;          /*!< The track of each side. */
-    std::vector<CatchTrackData *> mGems;       /*!< The gems of each side. */
-    GameTrackSelector *mTrackSelector;         /*!< The assignment of the players to mTracks. */
-    std::vector<int> mInputPlayers;            /*!< The index in mPlayers of each input player. */
-    std::vector<PitchTrack *> mPitchTracks;    /*!< The song tracks that play behind the duel. */
-    Ptr<Command> mBarCommand;                  /*!< The command that calls OnBarTick(). */
-    Ptr<Command> mScrollCommand;               /*!< The command that calls OnScrollTick(). */
-    Ptr<Command> mPhraseCueCommand;            /*!< The command that calls OnPhraseCueTick(). */
-    Ptr<Command> mSoundCueCommand;             /*!< The command that calls OnSoundCueTick(). */
-    Ptr<Command> mAnnounceCommand;             /*!< The command that calls AnnounceWinner(). */
-    int mSlopTicks;                            /*!< GameConfig::mSlopMs in song ticks. */
-    int mCatchMadeTick;                        /*!< The tick of the last catch made. */
-    Player *mLocalPlayer;                      /*!< The player on this console, online. */
-    Player *mRemotePlayer;                     /*!< The player on the other console, online. */
+    Player *mPitcher;             /*!< The player who places the phrase. Borrowed. */
+    Player *mCatcher;             /*!< The player who repeats the phrase. Borrowed. */
+    int mPhase;                   /*!< One of Phase. */
+    int mCuePhase;                /*!< The Phase OnPhraseCueTick() announces. */
+    int mCuePlayer;               /*!< The index in mPlayers of the cued player. */
+    int mNextPhraseBar;           /*!< The bar the next phrase starts at. */
+    int mState;                   /*!< One of State. */
+    int mStateBeforePause;        /*!< mState when the duel paused. */
+    int mPaused;                  /*!< Whether the duel is paused. */
+    int mQuit;                    /*!< Whether a player quit from a menu. */
+    int mEndTick;                 /*!< The tick the faded song ends at. */
+    int mCommandsStopped;         /*!< Whether StopCommands() ran. */
+    DuelTrack *mPitcherTrack;     /*!< The track of mPitcher. Borrowed. */
+    DuelTrack *mCatcherTrack;     /*!< The track of mCatcher. Borrowed. */
+    CatchTrackData *mPitcherGems; /*!< The gems mPitcher places. Borrowed. */
+    CatchTrackData *mCatcherGems; /*!< The gems mCatcher catches. Borrowed. */
+    int mCatchMissed;             /*!< Whether the catch of this phrase was missed. */
+    int mCatchMade;               /*!< Whether the catch of this phrase was made. */
+    Song *mSong;                  /*!< The song. Borrowed. */
+    int mTicksPerBar;             /*!< The song ticks in one bar. */
+    int mPhraseBars;              /*!< The length of a phrase in bars. */
+    PlayMap *mPlayMap;            /*!< The map of the song positions. Borrowed. */
+    int mReserved5c;              // +0x5c, cleared by the constructor and not read.
+    int mSectionStartBar;         /*!< The bar the current section started at. */
+    int mNextSectionBar;          /*!< The bar the next section starts at. */
+    int mSection;                 /*!< The number of sections started. */
+    std::vector<std::unique_ptr<Player>> mPlayers;      /*!< The players, one for each side. */
+    std::vector<std::unique_ptr<DuelTrack>> mTracks;    /*!< The track of each side. */
+    std::vector<std::unique_ptr<CatchTrackData>> mGems; /*!< The gems of each side. */
+    std::unique_ptr<GameTrackSelector> mTrackSelector;  /*!< The assignment of the players. */
+    std::vector<int> mInputPlayers; /*!< The index in mPlayers of each input player. */
+    std::vector<std::unique_ptr<PitchTrack>> mPitchTracks; /*!< The song tracks behind the duel. */
+    Ptr<Command> mBarCommand;       /*!< The command that calls OnBarTick(). */
+    Ptr<Command> mScrollCommand;    /*!< The command that calls OnScrollTick(). */
+    Ptr<Command> mPhraseCueCommand; /*!< The command that calls OnPhraseCueTick(). */
+    Ptr<Command> mSoundCueCommand;  /*!< The command that calls OnSoundCueTick(). */
+    Ptr<Command> mAnnounceCommand;  /*!< The command that calls AnnounceWinner(). */
+    int mSlopTicks;                 /*!< GameConfig::mSlopMs in song ticks. */
+    int mCatchMadeTick;             /*!< The tick of the last catch made. */
+    Player *mLocalPlayer;           /*!< The player on this console, online. Borrowed. */
+    Player *mRemotePlayer;          /*!< The player on the other console, online. Borrowed. */
     std::vector<unsigned int> mUpdateVersions; /*!< The newest update of each player. */
     std::vector<int> mSeatPlayers;             /*!< The index in mPlayers of each seat, or -1. */
     std::vector<bool> mScoresReceived;         /*!< Whether each player reported a final score. */

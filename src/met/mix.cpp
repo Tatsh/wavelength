@@ -1,5 +1,7 @@
 #include "met/mix.h"
 
+#include <memory>
+
 #include "os/memfuncommand.h"
 #include "os/scheduler.h"
 #include "os/system.h"
@@ -41,14 +43,10 @@ Mix::Mix()
 
 Mix::~Mix() {
     StopTracks();
-    for (const auto &entry : mTracks) {
-        delete entry.second;
-    }
 }
 
 void Mix::AddTrack(Muse *pMuse, unsigned char nChannel, const String &name) {
-    MixTrack *pTrack = new MixTrack(pMuse, mLoopTicks, nChannel);
-    mTracks[name] = pTrack;
+    mTracks[name] = std::make_unique<MixTrack>(pMuse, mLoopTicks, nChannel);
 }
 
 void Mix::SetMixTracks(int nMix, const std::vector<String> &names) {
@@ -81,7 +79,7 @@ void Mix::ExitTube([[maybe_unused]] bool bSpeedingUp) {
 }
 
 void Mix::Start(int nMix) {
-    const int nTick = TheMetaScheduler.mTick;
+    const int nTick = TheMetaScheduler.GetTick();
     mStartTick = nTick - nTick % kTicksPerBar;
     TheSynth->SetSoftFxSweep(kFullLevel);
     TheSynth->SetOutputLevel(kFullLevel);
@@ -107,8 +105,8 @@ void Mix::FadeOutMix(int nMix, int nFadeTicks) {
 void Mix::FadeInMix(int nMix, int nFadeTicks) {
     const std::vector<String> &names = mMixes[nMix];
     for (unsigned int i = 0; i < names.size(); ++i) {
-        MixTrack *pTrack = mTracks[names[i]];
-        pTrack->FadeIn(nFadeTicks, (TheMetaScheduler.mTick - mStartTick) % mLoopTicks);
+        MixTrack *pTrack = mTracks[names[i]].get();
+        pTrack->FadeIn(nFadeTicks, (TheMetaScheduler.GetTick() - mStartTick) % mLoopTicks);
     }
 }
 

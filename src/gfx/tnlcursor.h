@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "gfx/gfxtunnel.h"
 #include "gfx/tnlconnectorbeam.h"
 #include "gfx/tnlgem.h"
@@ -175,18 +177,29 @@ public:
      */
     void Poll(bool bCaptured, float flTime, float flDelta);
 
-    int mPlayer;             /*!< The player. */
-    GfxTunnel *mTunnel;      /*!< The tunnel. */
-    float mFade;             /*!< The opacity of the beam, from 0 to 1. */
-    State mState;            /*!< The fade, one of State. */
-    char mTrack;             /*!< The track of the pending window, or -1. */
-    float mStartTick;        /*!< The start of the pending window. */
-    float mEndTick;          /*!< The end of the pending window. */
-    TnlGems *mGems;          /*!< The gems of the pending window, or null. */
-    Color mColor;            /*!< The colour of the player. */
-    float mTargetStartTick;  /*!< The start of the last target. */
-    float mTargetEndTick;    /*!< The end of the last target. */
-    char mTargetTrack;       /*!< The track of the last target, or -1. */
-    TnlConnectorBeam *mBeam; /*!< The beam. */
-    TnlSeeker *mSeeker;      /*!< The frame. */
+    int mPlayer;            /*!< The player. */
+    GfxTunnel *mTunnel;     /*!< The tunnel. */
+    float mFade;            /*!< The opacity of the beam, from 0 to 1. */
+    State mState;           /*!< The fade, one of State. */
+    char mTrack;            /*!< The track of the pending window, or -1. */
+    float mStartTick;       /*!< The start of the pending window. */
+    float mEndTick;         /*!< The end of the pending window. */
+    TnlGems *mGems;         /*!< The gems of the pending window, or null. */
+    Color mColor;           /*!< The colour of the player. */
+    float mTargetStartTick; /*!< The start of the last target. */
+    float mTargetEndTick;   /*!< The end of the last target. */
+    char mTargetTrack;      /*!< The track of the last target, or -1. */
+    /** @return The beam. */
+    TnlConnectorBeam *GetBeam() const {
+        return mBeam.get();
+    }
+
+    /** @return The frame. */
+    TnlSeeker *GetSeeker() const {
+        return mSeeker.get();
+    }
+
+private:
+    std::unique_ptr<TnlConnectorBeam> mBeam; /*!< The beam. */
+    std::unique_ptr<TnlSeeker> mSeeker;      /*!< The frame. */
 };

@@ -61,13 +61,13 @@ void TnlSlowdownFX::Reset() {
 }
 
 void TnlSlowdownFX::Start(float, float, float flStopTick) {
-    mFrames.Reset(0.0f, kAnimFrames, TheGameDb->mSongTick, flStopTick);
+    mFrames.Reset(0.0f, kAnimFrames, TheGameDb->GetSongTick(), flStopTick);
     mMesh->SetShowing(1);
 }
 
 void TnlSlowdownFX::Update() {
-    const float flTick = TheGameDb->mSongTick;
-    if (mFrames.mX1 <= flTick) {
+    const float flTick = TheGameDb->GetSongTick();
+    if (mFrames.GetX1() <= flTick) {
         return;
     }
     mAnim->SetFrame(mFrames.Interp(flTick));

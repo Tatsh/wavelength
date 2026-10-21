@@ -137,7 +137,9 @@ void RndLoader::Poll(float fDeadlineMs) {
 
 void RndLoader::LoadFile(float fDeadlineMs) {
     if (mStream == nullptr) {
-        mStream = new ChunkStream(mFile.c_str(), ChunkStream::kModeRead, kChunkSize, true, true);
+        mOwnedStream = std::make_unique<ChunkStream>(
+            mFile.c_str(), ChunkStream::kModeRead, kChunkSize, true, true);
+        mStream = mOwnedStream.get();
         mOwnsStream = 1;
         if (mStream->Fail()) {
             DebugNotify("Could not open file: %s", mFile.c_str());
@@ -370,7 +372,7 @@ void RndLoader::Finish() {
     SetStringReadsText(0);
     mObjectLoaders.clear();
     if (mOwnsStream != 0) {
-        delete mStream;
+        mOwnedStream.reset();
         mStream = nullptr;
     }
     if (mState != &RndLoader::DeleteObjects) {

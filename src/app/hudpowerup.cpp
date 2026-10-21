@@ -26,9 +26,10 @@ T *FindIndexed(const char *pszFormat, const char *pszHud, int nIndex) {
 HudPowerup::HudPowerup(int nIndex, RndView *pHudView)
     : mView(nullptr), mSlide(kHiddenFrame, nullptr, nullptr, kSlideSpeed) {
     mEnabled = 1;
-    mHolding = TheGameDb->mTutorial;
-    const char *pszHud =
-        TheGameDb->mCommunity == GameDb::kCommunityOnline ? kOnlineHudPrefix : Overlay::sHudPrefix;
+    mHolding = TheGameDb->GetTutorial();
+    const char *pszHud = TheGameDb->GetCommunity() == GameDb::kCommunityOnline ?
+                             kOnlineHudPrefix :
+                             Overlay::sHudPrefix;
     mSlide.SetAnim(FindIndexed<RndAnimatable>("%s pup%d hide.tnm", pszHud, nIndex));
     mMesh = FindIndexed<RndMesh>("%s pup%d.mesh", pszHud, nIndex);
     mView = FindIndexed<RndView>("%s pup%d.view", pszHud, nIndex);
@@ -40,7 +41,7 @@ HudPowerup::HudPowerup(int nIndex, RndView *pHudView)
     mIcons[kIconFreestyle] = FindIndexed<RndView>("%s pup free%d.view", pszHud, nIndex);
     mIcons[kIconMultiplier] = FindIndexed<RndView>("%s pup mult%d.view", pszHud, nIndex);
     mMesh->SetShowing(false);
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
         auto *pFirstMesh = dynamic_cast<RndMesh *>(
             TheManager.Find(FormatString("%s pup0.mesh", Overlay::sHudPrefix)));
         auto *pLetterbox = dynamic_cast<RndTransformable *>(
@@ -94,14 +95,14 @@ void HudPowerup::ShowPowerup(int nPowerup) {
         break;
     }
     if (pIcon == nullptr) {
-        if (TheGameDb->mTutorial == 0) {
+        if (TheGameDb->GetTutorial() == 0) {
             mHolding = 0;
             UpdateSlide();
         }
         mName->SetShowing(false);
         return;
     }
-    if (TheGameDb->mTutorial == 0) {
+    if (TheGameDb->GetTutorial() == 0) {
         mHolding = 1;
         UpdateSlide();
     }
@@ -116,10 +117,10 @@ void HudPowerup::ShowPowerup(int nPowerup) {
 
 void HudPowerup::Poll(float fDelta, [[maybe_unused]] float fUnused, float fDeltaTicks) {
     if (fDelta == 0.0f) {
-        fDelta = fDeltaTicks / *TheGfxManager.mMsPerTick;
+        fDelta = fDeltaTicks / *TheGfxManager.GetMsPerTick();
     }
     mSlide.Update(fDelta, false);
-    mMesh->SetShowing(mSlide.mValue != kHiddenFrame);
+    mMesh->SetShowing(mSlide.GetValue() != kHiddenFrame);
 }
 
 void HudPowerup::UpdateSlide() {

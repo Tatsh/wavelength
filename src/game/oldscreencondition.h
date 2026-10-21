@@ -32,7 +32,7 @@ public:
      * @ghidraAddress PAL: 0x003e41c0
      */
     bool Test() override {
-        return TheTriggerMgr.mOldScreen == mName;
+        return TheTriggerMgr.GetOldScreen() == mName;
     }
 
 private:

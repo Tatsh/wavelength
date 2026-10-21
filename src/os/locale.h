@@ -54,7 +54,18 @@ public:
      */
     const char *Localize(const char *pszToken, bool bFail);
 
-    DataArray *mStrings; /*!< The text table Init() built, or null. */
+    /** @return The text table Init() built, or null. */
+    DataArray *GetStrings() const {
+        return mStrings;
+    }
+
+    /** @return The number of files the language of Init() lists. */
+    int GetFileCount() const {
+        return mFileCount;
+    }
+
+private:
+    DataArray *mStrings; /*!< The text table Init() built, or null. Borrowed (reference counted). */
     int mFileCount;      /*!< The number of files the language of Init() lists. */
 };
 

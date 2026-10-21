@@ -31,7 +31,7 @@ public:
      * @ghidraAddress PAL: 0x003e45c8
      */
     bool Test() override {
-        return TheTriggerMgr.mGemPos == mGemPos;
+        return TheTriggerMgr.GetGemPos() == mGemPos;
     }
 
 private:

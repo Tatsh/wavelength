@@ -36,7 +36,8 @@ void FreqConfirmScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     String name("");
 
     int nCustom = TheGameDb->GetProfile(0)->mCustom;
-    if (TheGameDb->mCommunity == GameDb::kCommunityOnline && CheatsManager::IsCheatEntered() != 0) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline &&
+        CheatsManager::IsCheatEntered() != 0) {
         nCustom = 0;
     }
     if (nCustom != 0) {
@@ -56,11 +57,11 @@ void FreqConfirmScreen::Enter(UIScreen *pPrevScreen, float fTime) {
 }
 
 bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton != kPadCross) {
+    if (pMsg->GetButton() != kPadCross) {
         return UIScreen::HandleSelect(pMsg);
     }
 
-    const char *pszButton = pMsg->mComponent->mName;
+    const char *pszButton = pMsg->GetComponent()->GetName();
     if (strcmp(pszButton, "edit") == 0) {
         FreqMakerMainScreen *pMaker =
             dynamic_cast<FreqMakerMainScreen *>(TheUI.FindScreen("f_maker", false));
@@ -77,7 +78,7 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
         pMaker->mProfile = *TheGameDb->GetProfile(0);
     } else if (strcmp(pszButton, "load") == 0) {
         String screen;
-        if (TheGameDb->mCommunity == GameDb::kCommunityOnline) {
+        if (TheGameDb->GetCommunity() == GameDb::kCommunityOnline) {
             screen = "f_net_load";
         } else {
             screen = "f_load";
@@ -94,7 +95,7 @@ bool FreqConfirmScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
     if (TheGameDb->GetProfile(0)->mCustom != 0 && TheGameDb->GetProfile(0)->IsModified() != 0) {
         UIScreen *pScreen = TheUI.FindScreen("cur_freq_not_saved", false);
         pScreen->ClearTransitions();
-        const bool bOnline = TheGameDb->mCommunity == GameDb::kCommunityOnline;
+        const bool bOnline = TheGameDb->GetCommunity() == GameDb::kCommunityOnline;
         if (strcmp(pszButton, "create") == 0) {
             pScreen->AddTransition(
                 "save", kPadNone, bOnline ? "pre_f_maker_save_net" : "pre_f_maker_save");

@@ -38,7 +38,7 @@ bool NetGetAllUploadsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool NetGetAllUploadsScreen::HandleTransitionComplete(UITransitionCompleteMsg *pMsg) {
-    if (std::strcmp(pMsg->mScreen->mName, mName) == 0) {
+    if (std::strcmp(pMsg->mScreen->GetName(), mName) == 0) {
         TheNetLobby->RequestFiles(this, kOnlyRemixes);
     }
     return false;

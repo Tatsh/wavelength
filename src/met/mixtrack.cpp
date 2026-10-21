@@ -1,5 +1,7 @@
 #include "met/mixtrack.h"
 
+#include <memory>
+
 #include "os/memfuncommand.h"
 #include "os/scheduler.h"
 #include "os/system.h"
@@ -29,7 +31,7 @@ void MixTrack::VolumeRamp::Apply(float fValue, [[maybe_unused]] int nTick) {
 }
 
 MixTrack::MixTrack(Muse *pMuse, int nLength, unsigned char nChannel)
-    : MuseLooper(pMuse, nLength), mRamp(new VolumeRamp(this)), mChannel(nChannel),
+    : MuseLooper(pMuse, nLength), mRamp(std::make_unique<VolumeRamp>(this)), mChannel(nChannel),
       mMaxVolume(kFullVolume),
       mStopCmd(NewMemFunCommand(static_cast<MuseLooper *>(this), &MuseLooper::Stop)) {
     SystemConfig()->FindArray("metagame", true)->FindFloat("music_max_volume", &mMaxVolume, true);
@@ -37,7 +39,6 @@ MixTrack::MixTrack(Muse *pMuse, int nLength, unsigned char nChannel)
 
 MixTrack::~MixTrack() {
     StopNow();
-    delete mRamp;
 }
 
 void MixTrack::FadeIn(int nFadeTicks, int nPosition) {

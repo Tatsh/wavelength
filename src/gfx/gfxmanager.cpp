@@ -310,7 +310,7 @@ GfxManager::~GfxManager() = default;
 
 void GfxManager::OnHandleBeat([[maybe_unused]] DataArray *pCommand,
                               [[maybe_unused]] void *pUserData) {
-    TheGfxManager.HandleBeat(TheTriggerMgr.mNote);
+    TheGfxManager.HandleBeat(TheTriggerMgr.GetNote());
 }
 
 void GfxManager::OnDebug(DataArray *pCommand, [[maybe_unused]] void *pUserData) {
@@ -330,7 +330,7 @@ void GfxManager::OnAddCheckpoint(DataArray *pCommand, [[maybe_unused]] void *pUs
     if (pCommand->Size() > kArg3) {
         pszLabel = TheLocale.Localize(pCommand->Sym(kArg3), true);
     }
-    const int nBar = static_cast<int>(TheGameDb->mSongTick / kTicksPerBar);
+    const int nBar = static_cast<int>(TheGameDb->GetSongTick() / kTicksPerBar);
     const float fTick = static_cast<float>((pCommand->Int(kArg1) + nBar) * kTicksPerBar);
     TheGfxManager.AddCheckpoint(pszLabel, fTick, pCommand->Float(kArg2), 1.0f);
 }
@@ -511,7 +511,7 @@ void GfxManager::Init() {
     ScriptFunction::Register(OnSetJuice, "set_juice", nullptr);
     TheTriggerMgr.Terminate();
     LoadConfig(false);
-    mVortex = new Vortex("launch");
+    mVortex = std::make_unique<Vortex>("launch");
     mMultiplierFormat = TheLocale.Localize("MULTIPLIER_FORMAT", true);
 }
 
@@ -529,8 +529,7 @@ void GfxManager::Terminate() {
         DebugWarn("weird mode");
         break;
     }
-    delete mVortex;
-    mVortex = nullptr;
+    mVortex.reset();
     ScriptFunction::Unregister(OnDebug);
     ScriptFunction::Unregister(OnCheat);
     ScriptFunction::Unregister(OnShow);
@@ -560,12 +559,12 @@ void GfxManager::Load(float fTime) {
     const char *pszArena;
     if (mNoArena != 0) {
         pszArena = kNoArena;
-    } else if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+    } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
         pszArena = kTutorialArena;
     } else {
-        pszArena = TheGameDb->mArena.c_str();
+        pszArena = TheGameDb->GetArena().c_str();
     }
-    mArena = GfxArena::Create(pszArena);
+    mArena.reset(GfxArena::Create(pszArena));
 
     DataArray *pGfx = SystemConfig()->FindArray("gfx", true);
     DataArray *pPreloads = pGfx->FindArray("data_preloads", true);
@@ -595,18 +594,18 @@ void GfxManager::Load(float fTime) {
                 for (int j = 1; j < pRuleSets->Size(); ++j) {
                     if (pRuleSets->Type(j) == DataArray::kNodeSymbol) {
                         if (strcmp(pRuleSets->Sym(j), "tutorial") == 0 &&
-                            TheGameDb->mTutorial != 0) {
+                            TheGameDb->GetTutorial() != 0) {
                             bMatch = true;
                         }
                     } else if (pRuleSets->Type(j) == DataArray::kNodeInt) {
-                        if (pRuleSets->Int(j) == TheGameDb->mRuleSet) {
+                        if (pRuleSets->Int(j) == TheGameDb->GetRuleSet()) {
                             bMatch = true;
                             break;
                         }
                     } else {
                         DebugWarn("weird type for ruleset node at %d of %s",
-                                  pRuleSets->mLine,
-                                  pRuleSets->mFile);
+                                  pRuleSets->GetLine(),
+                                  pRuleSets->GetFile());
                     }
                 }
                 if (!bMatch) {
@@ -617,7 +616,7 @@ void GfxManager::Load(float fTime) {
             if (pCommunities != nullptr) {
                 bool bMatch = false;
                 for (int j = 1; j < pCommunities->Size(); ++j) {
-                    if (pCommunities->Int(j) == TheGameDb->mCommunity) {
+                    if (pCommunities->Int(j) == TheGameDb->GetCommunity()) {
                         bMatch = true;
                         break;
                     }
@@ -632,7 +631,7 @@ void GfxManager::Load(float fTime) {
             const char *pszFile = pszName;
             if (strcmp(pszName, "arena") == 0) {
                 bArena = true;
-                pszFile = mArena->mConfig->Sym(1);
+                pszFile = mArena->GetConfig()->Sym(1);
                 if (pszFile == nullptr) {
                     continue;
                 }
@@ -640,7 +639,7 @@ void GfxManager::Load(float fTime) {
                     pszFile = nullptr;
                 }
             } else if (strcmp(pszName, "movie") == 0) {
-                const char *pszSong = TheGameDb->mSong.c_str();
+                const char *pszSong = TheGameDb->GetSong().c_str();
                 if (pszSong == nullptr || *pszSong == '\0') {
                     continue;
                 }
@@ -652,7 +651,7 @@ void GfxManager::Load(float fTime) {
             mLoaders.emplace_back(false, bMergeAll, pForceMerge);
             mLoaders.back().Start(pszFile, kLoaderFlags);
             if (bArena) {
-                mArena->mLoader = mLoaders.back().mLoader.get();
+                mArena->SetLoader(mLoaders.back().mLoader.get());
             }
         }
     }
@@ -720,8 +719,8 @@ void GfxManager::BuildTracks(float fStartTick,
         views.mPart4 = FindView(FormatString(pszLocalView, nView, " part4"));
         mLocalViews.push_back(views);
     }
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo ||
-        TheGameDb->mRuleSet != GameDb::kRuleSetGame) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo ||
+        TheGameDb->GetRuleSet() != GameDb::kRuleSetGame) {
         mPanelView = FindView("panel mat render.view");
     } else {
         mPanelView = nullptr;
@@ -730,35 +729,36 @@ void GfxManager::BuildTracks(float fStartTick,
     partTimer.Reset();
     partTimer.Start();
 
-    mTunnel = new GfxTunnel(instruments, trackTypes, mArena, nOption, fStartTick, mSongTicks);
-    GfxTunnel::sCurrent = mTunnel;
+    mTunnel = std::make_unique<GfxTunnel>(
+        instruments, trackTypes, mArena.get(), nOption, fStartTick, mSongTicks);
+    GfxTunnel::sCurrent = mTunnel.get();
     if (mSongTicks > 0.0f) {
-        const float fDataLength = mArena->mCamPathLength;
-        const float fLength = mArena->mCamPath->PathLength(kPreSongTick, mArena->mSongTicks);
+        const float fDataLength = mArena->GetCamPathLength();
+        const float fLength =
+            mArena->GetCamPath()->PathLength(kPreSongTick, mArena->GetSongTicks());
         if (fabsf(fDataLength - fLength) > kCamPathTolerance) {
             DebugNotify("Arena cam path length (%f) different from data (%f)",
-                        mArena->mCamPath->PathLength(kPreSongTick, mArena->mSongTicks),
-                        mArena->mCamPathLength);
+                        mArena->GetCamPath()->PathLength(kPreSongTick, mArena->GetSongTicks()),
+                        mArena->GetCamPathLength());
         }
     }
     partTimer.Stop();
     partTimer.Reset();
 
-    const int nUnlockIndex = mArena->mUnlockIndex;
+    const int nUnlockIndex = mArena->GetUnlockIndex();
     if (nUnlockIndex >= 0 && static_cast<unsigned>(nUnlockIndex) < unlocked.size()) {
         mArenaUnlocked = unlocked[nUnlockIndex];
     } else {
         mArenaUnlocked = 0;
     }
     TheTriggerMgr.SetPaths(unlocked);
-    TheTriggerMgr.BeginEvent(TheGameDb->mRuleSet);
+    TheTriggerMgr.BeginEvent(TheGameDb->GetRuleSet());
     for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
         ShowPlayerOnTrack(i, 0);
     }
     mVortex->Start(kDefaultPosition, Vortex::kModeOut);
     mVortexAfterViews = 0;
     while (!mPreloads.empty()) {
-        delete mPreloads.front();
         mPreloads.pop_front();
     }
     mWinner = -1;
@@ -776,16 +776,12 @@ void GfxManager::Teardown() {
     mLocalViews.clear();
     mTunnelView = nullptr;
     mMainView = nullptr;
-    delete mArena;
-    mArena = nullptr;
-    delete mOverlay;
-    mOverlay = nullptr;
+    mArena.reset();
+    mOverlay.reset();
     GfxTunnel::sCurrent = nullptr;
-    delete mTunnel;
-    mTunnel = nullptr;
+    mTunnel.reset();
     for (int i = 0; i < kMaxPlayers; ++i) {
-        delete mShips[i];
-        mShips[i] = nullptr;
+        mShips[i].reset();
     }
     mDebugMsgs.clear();
     // The loaders go in the order they started.
@@ -810,7 +806,7 @@ void GfxManager::Unload() {
 }
 
 float GfxManager::StartIntro(float fLength) {
-    Vortex *pVortex = mVortex;
+    Vortex *pVortex = mVortex.get();
     mVortexAfterViews = 1;
     pVortex->Start(fLength, Vortex::kModeIn);
     return pVortex->GetInLength();
@@ -821,20 +817,20 @@ bool GfxManager::IsIntroFinished() const {
 }
 
 float GfxManager::RestartIntro() {
-    Vortex *pVortex = mVortex;
+    Vortex *pVortex = mVortex.get();
     pVortex->Start(kDefaultPosition, Vortex::kModeOut);
     return pVortex->GetOutLength();
 }
 
 float GfxManager::StartOutro(float fLength) {
-    Vortex *pVortex = mVortex;
+    Vortex *pVortex = mVortex.get();
     pVortex->Start(fLength, Vortex::kModeOutro);
     mVortexAfterViews = 1;
     return pVortex->GetOutroLength();
 }
 
 bool GfxManager::IsOutroDone() {
-    return mVortex->mFrame == mVortex->mInterp.mY1;
+    return mVortex->mFrame == mVortex->mInterp.GetY1();
 }
 
 void GfxManager::UpdateScrollSpeed(float fSongTicks) {
@@ -842,19 +838,19 @@ void GfxManager::UpdateScrollSpeed(float fSongTicks) {
         mSongTicks = 0.0f;
         float fTempo = kDefaultTempo;
         float fTunnelScale = kDefaultTunnelScale;
-        const char *pszSong = TheGameDb->mSong.c_str();
+        const char *pszSong = TheGameDb->GetSong().c_str();
         if (pszSong != nullptr && *pszSong != '\0') {
             const SongEntry song{TheGameDb->FindSong(pszSong)};
             fTunnelScale = song.GetTunnelScale();
             fTempo = song.GetBpm();
             int nBars;
-            if (TheGameDb->mRuleSet == GameDb::kRuleSetRemix) {
+            if (TheGameDb->GetRuleSet() == GameDb::kRuleSetRemix) {
                 nBars = 0;
-            } else if (TheGameDb->mTutorial != 0) {
+            } else if (TheGameDb->GetTutorial() != 0) {
                 nBars = 0;
-            } else if (TheGameDb->mRuleSet == GameDb::kRuleSetDuel) {
+            } else if (TheGameDb->GetRuleSet() == GameDb::kRuleSetDuel) {
                 nBars = song.GetDuelBars();
-            } else if (TheGameDb->mLoadRemix != 0) {
+            } else if (TheGameDb->GetLoadRemix() != 0) {
                 nBars = song.GetRemixBars();
             } else {
                 nBars = song.GetBars();
@@ -865,14 +861,14 @@ void GfxManager::UpdateScrollSpeed(float fSongTicks) {
         }
         const float fDifficultyScale = GetGfxConfig()
                                            ->FindArray("difficulty_scale_tweaks", true)
-                                           ->Float(TheGameDb->mSkillLevel + 1);
+                                           ->Float(TheGameDb->GetSkillLevel() + 1);
         float fSongLength = mSongTicks;
         float fCamPathLength;
         if (fSongLength <= 0.0f || mArena == nullptr) {
             fSongLength = kDefaultSongTicks;
             fCamPathLength = kDefaultCamPathLength;
         } else {
-            fCamPathLength = mArena->mCamPathLength;
+            fCamPathLength = mArena->GetCamPathLength();
         }
         mCamPathScale = fCamPathLength / fSongLength;
         mScrollSpeed = fDifficultyScale * fTunnelScale * kDefaultSongTicks * kDefaultTempo *
@@ -888,7 +884,7 @@ int GfxManager::Poll(float fTime) {
         pTimer->Start();
     }
     int nResult = 0;
-    const float fTick = TheGameDb->mSongTick;
+    const float fTick = TheGameDb->GetSongTick();
     switch (mState) {
     case kStateLoading: {
         mVortex->Poll();
@@ -901,7 +897,7 @@ int GfxManager::Poll(float fTime) {
         }
         const bool bHudStarted = mLoadStage >= kLoadStageObjects;
         bool bStreamsReady = true;
-        for (AsyncStream *pStream : mPreloads) {
+        for (const auto &pStream : mPreloads) {
             if (!pStream->Ready(kStreamReadyBytes)) {
                 bStreamsReady = false;
             }
@@ -911,9 +907,9 @@ int GfxManager::Poll(float fTime) {
             bReady = CheckLoaders();
         }
         mArena->PollLoad(bHudStarted);
-        if (bReady && mArena->mTriggersLoaded == 0) {
+        if (bReady && mArena->GetTriggersLoaded() == 0) {
             bReady = false;
-            if (mArena->mTriggerStream == nullptr) {
+            if (mArena->GetTriggerStream() == nullptr) {
                 mArena->LoadTriggers();
             }
         }
@@ -928,11 +924,11 @@ int GfxManager::Poll(float fTime) {
                 DataArray *pGfx = GetGfxConfig();
                 Overlay *pOverlay = new Overlay(pMode, pGfx);
                 mHudLoader = nullptr;
-                mOverlay = pOverlay;
+                mOverlay.reset(pOverlay);
                 CamSlide::Init();
                 mMainView = GfxTunnel::CreateMainView();
                 for (int i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
-                    mShips[i] = new Ship(TheGameDb->GetPlayerColor(i), i);
+                    mShips[i] = std::make_unique<Ship>(TheGameDb->GetPlayerColor(i), i);
                     mShips[i]->UpdateTransform();
                 }
                 mLoadStage = kLoadStageObjects;
@@ -957,7 +953,7 @@ int GfxManager::Poll(float fTime) {
         mVortex->Poll();
         const float fTicks = fTick - mLastTick;
         mLastTick = fTick;
-        const float fSongTime = TheGameDb->mSongTime;
+        const float fSongTime = TheGameDb->GetSongTime();
         const float fTimeDelta = fSongTime - mLastTime;
         mLastTime = fSongTime;
         mArena->Poll(fTick, fTime);
@@ -1074,16 +1070,16 @@ bool GfxManager::CheckLoaders() {
 void GfxManager::AddPreload(const char *pszFile) {
     char szPath[kMaxPathLength];
     DataArray::MakeCompiledPath(szPath, pszFile, false);
-    mPreloads.push_back(new AsyncStream(szPath, true));
+    mPreloads.push_back(std::make_unique<AsyncStream>(szPath, true));
 }
 
 AsyncStream *GfxManager::FindPreload(const char *pszFile) {
     char szPath[kMaxPathLength];
     DataArray::MakeCompiledPath(szPath, pszFile, false);
-    for (AsyncStream *pStream : mPreloads) {
+    for (const auto &pStream : mPreloads) {
         if (strcmp(pStream->GetFileName(), szPath) == 0) {
             pStream->Ready(kStreamReadyBytes);
-            return pStream;
+            return pStream.get();
         }
     }
     DebugWarn("File %s not in preload list.", szPath);
@@ -1138,8 +1134,8 @@ void GfxManager::Show(DataArray *pCommand) {
     } else {
         DebugNotify("unknown thing to show: %s\nat line %d of %s",
                     pszThing,
-                    pCommand->mLine,
-                    pCommand->mFile);
+                    pCommand->GetLine(),
+                    pCommand->GetFile());
     }
 }
 
@@ -1216,12 +1212,12 @@ void GfxManager::Debug(DataArray *pCommand) {
 #pragma mark - Forwarders
 
 void GfxManager::SetEnergy(int nPlayer, float fEnergy) {
-    if (TheGameDb->mCommunity != GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() != GameDb::kCommunitySolo) {
         return;
     }
     int nZone;
     float fZoneFraction;
-    if (TheGameDb->mPracticeMode != 0) {
+    if (TheGameDb->GetPracticeMode() != 0) {
         nZone = kEnergyZoneHigh;
         fZoneFraction = kPracticeZoneFraction;
         fEnergy = kPracticeEnergy;
@@ -1472,11 +1468,11 @@ void GfxManager::StartBossJourney() {
 }
 
 bool GfxManager::IsIdle() {
-    return mTunnel->mIdle != 0;
+    return mTunnel->GetIdle() != 0;
 }
 
 int GfxManager::IsBossJourneyDone() {
-    return mTunnel->mBossJourneyDone;
+    return mTunnel->GetBossJourneyDone();
 }
 
 void GfxManager::SetFreqSize(int nPlayer, int nSize) {
@@ -1520,7 +1516,7 @@ void GfxManager::ShowPlayerOnFreestyleTrack(
     int nPlayer, int nType, int nInstrument, bool bVictory, int nReserved) {
     mTunnel->SetPlayerFreestyle(nPlayer, bVictory, nReserved);
     mOverlay->SetTrack(nPlayer, nInstrument, nType);
-    TheTriggerMgr.NewTrackEvent(nPlayer, mTunnel->mNumTracks, nInstrument, nType);
+    TheTriggerMgr.NewTrackEvent(nPlayer, mTunnel->GetNumTracks(), nInstrument, nType);
 }
 
 int GfxManager::GetViewedTrack(int nPlayer) {
@@ -1564,7 +1560,7 @@ void GfxManager::ShowGemResult(
     int nTrack, int nSlot, bool bHit, int nPlayer, int nFlags, float fTick) {
     mTunnel->ShowGemResult(nTrack, nSlot, bHit, nPlayer, nFlags, fTick);
     mShips[nPlayer]->Fire(nSlot, static_cast<signed char>(nTrack), bHit);
-    if (nPlayer != mLeader && TheGameDb->mRuleSet == GameDb::kRuleSetGame) {
+    if (nPlayer != mLeader && TheGameDb->GetRuleSet() == GameDb::kRuleSetGame) {
         return;
     }
     if (bHit) {
@@ -1599,7 +1595,7 @@ void GfxManager::ShowCapture(
 
 void GfxManager::CompleteStage(int nPlayer, [[maybe_unused]] int nSection) {
     mOverlay->ShowCheckpoint();
-    if (TheGameDb->mCommunity == GameDb::kCommunitySolo) {
+    if (TheGameDb->GetCommunity() == GameDb::kCommunitySolo) {
         TheTriggerMgr.StageCompleteEvent(nPlayer);
     }
 }
@@ -1608,12 +1604,12 @@ void GfxManager::ShowResult(bool bWon, int nPlayer, bool bUnlocked) {
     bool bCampaignWin = false;
     int nEndState;
     if (bWon) {
-        bCampaignWin = TheGameDb->mPracticeMode == 0;
+        bCampaignWin = TheGameDb->GetPracticeMode() == 0;
         TheTriggerMgr.HealthEvent(nPlayer, kFullHealth);
-        nEndState = TheGameDb->mPracticeMode == 0 ? kEndStateWon : kEndStatePractice;
+        nEndState = TheGameDb->GetPracticeMode() == 0 ? kEndStateWon : kEndStatePractice;
     } else {
         bUnlocked = false;
-        nEndState = TheGameDb->mPracticeMode == 0 ? kEndStateLost : kEndStatePractice;
+        nEndState = TheGameDb->GetPracticeMode() == 0 ? kEndStateLost : kEndStatePractice;
     }
     TheTriggerMgr.EndEvent(nEndState, nPlayer);
     mOverlay->ShowResult(bWon, nPlayer);
@@ -1653,7 +1649,7 @@ void GfxManager::SetTrackEnabled(int nTrack, bool bEnabled) {
 
 void GfxManager::AddCheckpoint(const char *pszLabel, float fTick, float fOffset, float fScale) {
     mTunnel->AddCheckpoint(pszLabel, fTick, fScale);
-    const float fSongTicks = mArena->mSongTicks;
+    const float fSongTicks = mArena->GetSongTicks();
     if (fSongTicks != 0.0f) {
         mOverlay->AddCheckpoint(fTick / fSongTicks, pszLabel);
     } else {

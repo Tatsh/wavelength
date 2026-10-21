@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 
 #include <librtmedius.h>
 
@@ -209,7 +210,7 @@ constexpr int kSignedChannel = -666;
 NetLobby *TheNetLobby;
 
 // NTSC-U/C: 0x003b0af0, PAL: 0x0042f9bc
-LobbyRT *TheLobbyRT;
+std::unique_ptr<LobbyRT> TheLobbyRT;
 
 // NTSC-U/C: 0x003b0af4, PAL: 0x0042f9c0
 int LobbyRT::sUnlimitedUpload;
@@ -580,7 +581,6 @@ LobbyRT::LobbyRT()
       mTransferSize(0), mTransferBuffer(nullptr), mTransferMode(kTransferNone),
       mDeleteBeforeUpload(0) {
     TheNetLobby = this;
-    TheLobbyRT = this;
     LoadConfig();
 
     int nAnonymous = 0;
@@ -698,21 +698,20 @@ LobbyRT::LobbyRT()
 }
 
 void LobbyRT::LoadConfig() {
-    File *pFile = File::New(kServerConfig, File::kModeRead, File::kFlagNoArchive);
+    std::unique_ptr<File> pFile(File::New(kServerConfig, File::kModeRead, File::kFlagNoArchive));
     if (pFile != nullptr) {
         char *pBuffer = static_cast<char *>(PoolMemAlloc(kServerConfigSize, "nettmp", 0));
         memset(pBuffer, 0, kServerConfigSize);
         const int nRead = pFile->Read(pBuffer, kServerConfigSize);
         BufStream stream(pBuffer, nRead, true);
         DataArray *pConfig = DataArray::ReadText(kServerConfig, &stream);
-        if (pConfig != nullptr && pConfig->mSize >= kServerConfigNodes) {
+        if (pConfig != nullptr && pConfig->Size() >= kServerConfigNodes) {
             mServerName = pConfig->Sym(kServerConfigName);
             mServerPort = pConfig->Int(kServerConfigPort);
             mSecure = pConfig->Int(kServerConfigSecure) != 0;
             pConfig->Release();
         }
         PoolMemFree(pBuffer);
-        delete pFile;
     }
     if (mServerName == nullptr || mServerPort == 0) {
         DebugWarn("Error reading \"server.cfg\". Could not get server name, port, security");
@@ -725,7 +724,6 @@ void LobbyRT::LoadConfig() {
 
 LobbyRT::~LobbyRT() {
     TheNetLobby = nullptr;
-    TheLobbyRT = nullptr;
 }
 
 void LobbyRT::SetProfile(Campaign *pProfile) {
@@ -958,7 +956,7 @@ void LobbyRT::UploadDirectory(MsgSink *pSink, std::list<NetRepoRemix> *pRemixes)
 
 void LobbyRT::OnUploadDone(NetMultiTask *pTask) {
     bool bEnded = true;
-    const int nResult = pTask->mResult;
+    const int nResult = pTask->GetResult();
     switch (mTransferMode) {
     case kTransferUploadRemix:
         if (nResult == 0) {
@@ -967,7 +965,7 @@ void LobbyRT::OnUploadDone(NetMultiTask *pTask) {
             TheGameDb->GetOptions()->RecordUpload();
         } else {
             ++mUploadAttempts;
-            bEnded = StartUpload(pTask->mSink);
+            bEnded = StartUpload(pTask->GetSink());
             if (bEnded) {
                 RepoRemixStatusMsg msg(RepoRemixStatusMsg::kStatusFailed, kProgressDone);
                 pTask->Notify(&msg);
@@ -1009,7 +1007,7 @@ void LobbyRT::DownloadRemix(MsgSink *pSink, const char *pszName) {
 }
 
 void LobbyRT::OnDownloadDone(NetMultiTask *pTask) {
-    const int nResult = pTask->mResult;
+    const int nResult = pTask->GetResult();
     if (mTransferMode == kTransferDirectory) {
         if (nResult != 0) {
             RepoRemixesMsg msg(nResult, nullptr);
@@ -1137,7 +1135,7 @@ void LobbyRT::Poll() {
     int nState = mConnectTask.Poll();
     if (nState == Task::kStateFailed) {
         mConnectTask.Stop();
-        Fail(mConnectTask.mSink, mConnectTask.mResult, kReasonConnect);
+        Fail(mConnectTask.GetSink(), mConnectTask.GetResult(), kReasonConnect);
     } else if (nState == Task::kStateDone) {
         LobbyConnectResultMsg msg(LobbyConnectResultMsg::kResultSuccess);
         if (mLocations.size() != 0) {
@@ -1152,7 +1150,7 @@ void LobbyRT::Poll() {
     nState = mLoginTask.Poll();
     if (nState == Task::kStateFailed) {
         mLoginTask.Stop();
-        Fail(mLoginTask.mSink, mLoginTask.mResult, kReasonLogin);
+        Fail(mLoginTask.GetSink(), mLoginTask.GetResult(), kReasonLogin);
     } else if (nState == Task::kStateDone) {
         mLoginTask.Stop();
         LoginResultMsg msg(
@@ -1165,14 +1163,14 @@ void LobbyRT::Poll() {
         mJoinChatroomTask.Stop();
 #ifdef VIDEO_STANDARD_PAL
         // A failed reconnection to the lobby server of the room loses the lobby.
-        if (mJoinChatroomTask.mResult == LobbyConnectResultMsg::kResultConnectFailed) {
+        if (mJoinChatroomTask.GetResult() == LobbyConnectResultMsg::kResultConnectFailed) {
             Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
         } else {
-            JoinChatroomResultMsg msg(mJoinChatroomTask.mResult);
+            JoinChatroomResultMsg msg(mJoinChatroomTask.GetResult());
             mJoinChatroomTask.Notify(&msg);
         }
 #else
-        JoinChatroomResultMsg msg(mJoinChatroomTask.mResult);
+        JoinChatroomResultMsg msg(mJoinChatroomTask.GetResult());
         mJoinChatroomTask.Notify(&msg);
 #endif
     } else if (nState == Task::kStateDone) {
@@ -1185,14 +1183,14 @@ void LobbyRT::Poll() {
     if (nState == Task::kStateFailed) {
         mCreateChatroomTask.Stop();
 #ifdef VIDEO_STANDARD_PAL
-        if (mCreateChatroomTask.mResult == LobbyConnectResultMsg::kResultConnectFailed) {
+        if (mCreateChatroomTask.GetResult() == LobbyConnectResultMsg::kResultConnectFailed) {
             Fail(mSink, LobbyConnectResultMsg::kResultLostInternet, kReasonLost);
         } else {
-            JoinChatroomResultMsg msg(mCreateChatroomTask.mResult);
+            JoinChatroomResultMsg msg(mCreateChatroomTask.GetResult());
             mCreateChatroomTask.Notify(&msg);
         }
 #else
-        JoinChatroomResultMsg msg(mCreateChatroomTask.mResult);
+        JoinChatroomResultMsg msg(mCreateChatroomTask.GetResult());
         mCreateChatroomTask.Notify(&msg);
 #endif
     } else if (nState == Task::kStateDone) {
@@ -1210,17 +1208,17 @@ void LobbyRT::Poll() {
             break;
         }
         case kReasonConnect: {
-            LobbyConnectResultMsg msg(mDisconnectTask.mResult);
+            LobbyConnectResultMsg msg(mDisconnectTask.GetResult());
             mDisconnectTask.Notify(&msg);
             break;
         }
         case kReasonLogin: {
-            LoginResultMsg msg(mDisconnectTask.mResult);
+            LoginResultMsg msg(mDisconnectTask.GetResult());
             mDisconnectTask.Notify(&msg);
             break;
         }
         case kReasonLost: {
-            LobbyConnectionLostMsg msg(mDisconnectTask.mResult);
+            LobbyConnectionLostMsg msg(mDisconnectTask.GetResult());
             mDisconnectTask.Notify(&msg);
             break;
         }
@@ -1232,7 +1230,7 @@ void LobbyRT::Poll() {
 
     nState = mCreateAccountTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
-        const int nResult = nState == Task::kStateDone ? 0 : mCreateAccountTask.mResult;
+        const int nResult = nState == Task::kStateDone ? 0 : mCreateAccountTask.GetResult();
         mCreateAccountTask.Stop();
         CreateAccountResultMsg msg(nResult);
         mCreateAccountTask.Notify(&msg);
@@ -1240,7 +1238,7 @@ void LobbyRT::Poll() {
 
     nState = mDeleteAccountTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
-        const int nResult = nState == Task::kStateDone ? 0 : mDeleteAccountTask.mResult;
+        const int nResult = nState == Task::kStateDone ? 0 : mDeleteAccountTask.GetResult();
         mDeleteAccountTask.Stop();
         DeleteAccountResultMsg msg(nResult);
         mDeleteAccountTask.Notify(&msg);
@@ -1248,7 +1246,7 @@ void LobbyRT::Poll() {
 
     nState = mChangePasswordTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
-        const int nResult = nState == Task::kStateDone ? 0 : mChangePasswordTask.mResult;
+        const int nResult = nState == Task::kStateDone ? 0 : mChangePasswordTask.GetResult();
         mChangePasswordTask.Stop();
         ChangePasswordResultMsg msg(nResult);
         mChangePasswordTask.Notify(&msg);
@@ -1290,14 +1288,14 @@ void LobbyRT::Poll() {
         mFindPlayerTask.Notify(&msg);
     } else if (nState == Task::kStateFailed) {
         mFindPlayerTask.Stop();
-        FindPlayerMsg msg(mFindPlayerTask.mResult);
+        FindPlayerMsg msg(mFindPlayerTask.GetResult());
         mFindPlayerTask.Notify(&msg);
     }
 
     nState = mDownloadTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
         if (nState == Task::kStateDone) {
-            mDownloadTask.mResult = 0;
+            mDownloadTask.SetResult(0);
         }
         mDownloadTask.Stop();
         OnDownloadDone(&mDownloadTask);
@@ -1306,7 +1304,7 @@ void LobbyRT::Poll() {
     nState = mUploadTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
         if (nState == Task::kStateDone) {
-            mUploadTask.mResult = 0;
+            mUploadTask.SetResult(0);
         }
         mUploadTask.Stop();
         OnUploadDone(&mUploadTask);
@@ -1315,7 +1313,7 @@ void LobbyRT::Poll() {
     nState = mFileListTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
         if (nState == Task::kStateDone) {
-            mFileListTask.mResult = 0;
+            mFileListTask.SetResult(0);
         }
         mFileListTask.Stop();
         OnFileListDone(&mFileListTask);
@@ -1324,7 +1322,7 @@ void LobbyRT::Poll() {
     nState = mDeleteFileTask.Poll();
     if (nState == Task::kStateDone || nState == Task::kStateFailed) {
         if (nState == Task::kStateDone) {
-            mDeleteFileTask.mResult = 0;
+            mDeleteFileTask.SetResult(0);
         }
         mDeleteFileTask.Stop();
         OnDeleteFileDone(&mDeleteFileTask);
@@ -1336,7 +1334,7 @@ void LobbyRT::Poll() {
         mLaunchpadsTask.Stop();
         if (mLaunchpads.empty() && mLaunchpadsPage > 0 && mLaunchpadsPageSize > 0) {
             mLaunchpadsPage = 0;
-            mLaunchpadsTask.Start(mLaunchpadsTask.mSink);
+            mLaunchpadsTask.Start(mLaunchpadsTask.GetSink());
         } else {
             LobbyLaunchpadsMsg msg(&mLaunchpads, mLaunchpadsPage);
             mLaunchpadsTask.Notify(&msg);
@@ -1383,7 +1381,7 @@ void LobbyRT::Fail(MsgSink *pSink, int nResult, int nReason) {
     mFilters.clear();
     mMuted.clear();
     mDisconnectReason = nReason;
-    mDisconnectTask.mResult = nResult;
+    mDisconnectTask.SetResult(nResult);
     mDisconnectTask.Start(pSink);
     PoolMemFree(mTransferBuffer); // Yes, the binary does not clear mTransferBuffer.
 }

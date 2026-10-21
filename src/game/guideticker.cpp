@@ -41,11 +41,11 @@ void GuideTicker::Unmute() {
 void GuideTicker::MuteForTwoBars() {
     Mute();
     mBarsLeft = kMutedBars;
-    mLastBar = TheSongScheduler.mTick / mTicksPerBar;
+    mLastBar = TheSongScheduler.GetTick() / mTicksPerBar;
 }
 
 void GuideTicker::Update() {
-    while (mCursor.IsValid() && mCursor.GetTick() <= TheSongScheduler.mTick) {
+    while (mCursor.IsValid() && mCursor.GetTick() <= TheSongScheduler.GetTick()) {
         const int nBar = mCursor.GetTick() / mTicksPerBar;
         if (mState->IsEnabled(nBar) && !mState->GetCapturedBy(nBar)) {
             if (mMuted && mLastBar < nBar && mBarsLeft > 0) {

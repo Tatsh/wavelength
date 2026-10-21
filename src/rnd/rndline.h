@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "math/color.h"
@@ -339,14 +340,14 @@ public:
      */
     static int sRev;
 
-    RndMat *mMat;               /*!< The material BuildMesh() gives the mesh. */
-    float mWidth;               /*!< The width of the ribbon on the screen. */
-    std::vector<Point> mPoints; /*!< The points. */
-    RndMesh *mMesh;             /*!< The mesh of the ribbon. */
-    int mHasCaps;               /*!< Non-zero to cap the ends of the ribbon. */
-    int mLinePairs;             /*!< Non-zero to draw each pair of points as its own segment. */
-    float mFoldAngle;           /*!< The angle between segments the ribbon folds over at. */
-    float mFoldCos;             /*!< The cosine of mFoldAngle. */
+    RndMat *mMat;                   /*!< The material BuildMesh() gives the mesh. */
+    float mWidth;                   /*!< The width of the ribbon on the screen. */
+    std::vector<Point> mPoints;     /*!< The points. */
+    std::unique_ptr<RndMesh> mMesh; /*!< The mesh of the ribbon. */
+    int mHasCaps;                   /*!< Non-zero to cap the ends of the ribbon. */
+    int mLinePairs;                 /*!< Non-zero to draw each pair of points as its own segment. */
+    float mFoldAngle;               /*!< The angle between segments the ribbon folds over at. */
+    float mFoldCos;                 /*!< The cosine of mFoldAngle. */
 };
 
 /**

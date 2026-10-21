@@ -1,6 +1,7 @@
 #include "met/songpreview.h"
 
 #include <cstring>
+#include <memory>
 
 #include "os/system.h"
 #include "script/dataarray.h"
@@ -39,7 +40,7 @@ const char *SongPreview::sLevelEncrypt = "SoundFX/level_encrypt.str";
 const char *SongPreview::sBonusEncrypt = "SoundFX/bonus_encrypt.str";
 #endif
 int SongPreview::sState = SongPreview::kStateMenu;
-StreamPlayer *SongPreview::sPlayer = nullptr;
+std::unique_ptr<StreamPlayer> SongPreview::sPlayer;
 float SongPreview::sVolume = 0.0f;
 float SongPreview::sFadeRate = 0.0f;
 float SongPreview::sFadeStep = 0.05f;
@@ -160,17 +161,16 @@ void SongPreview::Poll() {
         }
         if (!sPlayer->IsPlaying() || sVolume == 0.0f) {
             TheSynth->SetStream(nullptr);
-            delete sPlayer;
+            sPlayer.reset();
             sVolume = 0.0f;
-            sPlayer = nullptr;
         }
     } else if (sClip.mLength != 0) {
         sFadeRate = sFadeStep;
         sVolume = 0.0f;
         const bool bAudio = sClip.Find(kAudioDir) != String::npos;
-        sPlayer = new StreamPlayer(0, sClip.c_str(), bAudio);
+        sPlayer = std::make_unique<StreamPlayer>(0, sClip.c_str(), bAudio);
         TheSynth->SetOutputLevel(sVolume);
-        TheSynth->SetStream(sPlayer);
+        TheSynth->SetStream(sPlayer.get());
         sPlayer->SetPlaying(true);
         sClip.Clear();
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "game/playmap.h"
@@ -67,6 +68,17 @@ public:
          */
         bool IsLoaded() const;
 
+        /** @return The synthesiser bank slot. */
+        unsigned short GetSlot() const {
+            return mSlot;
+        }
+
+        /** @return The size the synthesiser reports for the file, or -1. */
+        int GetBlockCount() const {
+            return mBlockCount;
+        }
+
+    private:
         unsigned short mSlot; /*!< The synthesiser bank slot. */
         String mFile;         /*!< The bank file. */
         int mBlockCount;      /*!< The size the synthesiser reports for the file, or -1. */
@@ -180,9 +192,12 @@ public:
          */
         void Restart();
 
-    private:
-        friend class BankLoader;
+        /** @return The first of the two synthesiser slots. */
+        unsigned short GetBaseSlot() const {
+            return mBaseSlot;
+        }
 
+    private:
         /**
          * Report the bank of a bar.
          *
@@ -356,16 +371,6 @@ public:
      */
     unsigned short GetEndBankSlot();
 
-    int mState;                               /*!< One of State. */
-    unsigned short mFirstSlot;                /*!< The slot of the first bank. */
-    int mIntroBars;                           /*!< The bars before bar 0. */
-    int mNumBars;                             /*!< The length of the song in bars. */
-    int mTicksPerBar;                         /*!< The song ticks in one bar. */
-    PlayMap *mPlayMap;                        /*!< The map of the song positions. */
-    std::vector<PermBankLoader *> mPermBanks; /*!< The permanent banks. */
-    SwapBankLoader *mSwapBanks;               /*!< The swapped banks, or null. */
-    int mLoadCount;                           /*!< The loads started. */
-
 private:
     /**
      * Give each synthesiser slot of the song the memory its banks need.
@@ -374,4 +379,14 @@ private:
      * @ghidraAddress PAL: 0x0014bad8
      */
     void PartitionSlots();
+
+    int mState;                /*!< One of State. */
+    unsigned short mFirstSlot; /*!< The slot of the first bank. */
+    int mIntroBars;            /*!< The bars before bar 0. */
+    int mNumBars;              /*!< The length of the song in bars. */
+    int mTicksPerBar;          /*!< The song ticks in one bar. */
+    PlayMap *mPlayMap;         /*!< The map of the song positions. Borrowed. */
+    std::vector<std::unique_ptr<PermBankLoader>> mPermBanks; /*!< The permanent banks. */
+    std::unique_ptr<SwapBankLoader> mSwapBanks;              /*!< The swapped banks, or null. */
+    int mLoadCount;                                          /*!< The loads started. */
 };

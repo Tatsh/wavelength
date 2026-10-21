@@ -33,18 +33,19 @@ void PlayerSearchResultsScreen::Enter(UIScreen *pPrevScreen, float fTime) {
     FreqScreen::Enter(pPrevScreen, fTime);
 
     const String unused; // Yes, the binary builds and discards this string.
-    dynamic_cast<UILabel *>(TheUI.FindComponent(mFocusPanel->mName, kNameLabel, false))
+    dynamic_cast<UILabel *>(TheUI.FindComponent(mFocusPanel->GetName(), kNameLabel, false))
         ->SetText(mPlayer.mName.c_str());
     if (mInChatroom != 0) {
-        dynamic_cast<UILabel *>(TheUI.FindComponent(mFocusPanel->mName, kChatroomLabel, false))
+        dynamic_cast<UILabel *>(TheUI.FindComponent(mFocusPanel->GetName(), kChatroomLabel, false))
             ->SetText(mChatroomName.c_str());
     }
 
     UIButton *pBack =
-        dynamic_cast<UIButton *>(TheUI.FindComponent(mFocusPanel->mName, kBackButton, false));
+        dynamic_cast<UIButton *>(TheUI.FindComponent(mFocusPanel->GetName(), kBackButton, false));
     pBack->SetText(TheMetagame.GetChatroom().mName.c_str());
     if (mInChatroom != 0) {
-        dynamic_cast<UIButton *>(TheUI.FindComponent(mFocusPanel->mName, kChatroomButton, false))
+        dynamic_cast<UIButton *>(
+            TheUI.FindComponent(mFocusPanel->GetName(), kChatroomButton, false))
             ->SetText(mChatroomName.c_str());
     } else {
         pBack->SetState(UIComponent::kStateSelected, true);
@@ -59,8 +60,8 @@ bool PlayerSearchResultsScreen::DispatchPriv(Message *pMsg) {
 }
 
 bool PlayerSearchResultsScreen::HandleSelect(UIComponentSelectMsg *pMsg) {
-    if (pMsg->mButton == kPadCross) {
-        if (std::strcmp(pMsg->mComponent->mName, kBackButton) == 0) {
+    if (pMsg->GetButton() == kPadCross) {
+        if (std::strcmp(pMsg->GetComponent()->GetName(), kBackButton) == 0) {
             TheUI.GotoScreen(kLobbyScreen);
         } else {
             NetSwitchLobbyScreen *pSwitch =

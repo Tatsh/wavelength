@@ -9,10 +9,10 @@
 void MediusJoinGameTask::OnStart() {
     rtMediusJoinGameRequest request;
     memset(&request, 0, sizeof(request));
-    strcpy(request.sessionKey, TheLobbyRT->mSessionKey.c_str());
+    strcpy(request.sessionKey, TheLobbyRT->GetSessionKey().c_str());
     MakeTag(this, request.messageId);
     request.gameHostType = LaunchpadRT::kGameHostPeerToPeer;
-    request.worldId = TheLaunchpadRT->mWorldId;
+    request.worldId = TheLaunchpadRT->GetWorldId();
     request.password[0] = '\0';
     if (rtMediusJoinGame(&request, OnResponse) != 0) {
         Finish(false, LaunchpadAbortedMsg::kReasonInit);
@@ -36,7 +36,7 @@ void MediusJoinGameTask::OnResponse(int nConnection,
     } else if (pResponse->header.status != RT_MEDIUS_STATUS_SUCCESS) {
         nReason = LaunchpadAbortedMsg::kReasonConnectFailed;
     } else {
-        TheLaunchpadRT->mConnectionInfo = pResponse->info;
+        TheLaunchpadRT->GetConnectionInfo() = pResponse->info;
         nReason = 0;
     }
     pTask->Finish(pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS, nReason);
