@@ -98,6 +98,11 @@ public:
             return mRotKeys;
         }
 
+        /** @param keys The texture rotation keys, as Euler angles. */
+        void SetRotKeys(const std::vector<Key<Vector3>> &keys) {
+            mRotKeys = keys;
+        }
+
         /** @return The texture scale keys. */
         const std::vector<Key<Vector3>> &GetScaleKeys() const {
             return mScaleKeys;
@@ -106,6 +111,11 @@ public:
         /** @return The texture scale keys, for writing. */
         std::vector<Key<Vector3>> &GetScaleKeys() {
             return mScaleKeys;
+        }
+
+        /** @param keys The texture scale keys. */
+        void SetScaleKeys(const std::vector<Key<Vector3>> &keys) {
+            mScaleKeys = keys;
         }
 
         /** @return The texture keys. */
@@ -126,6 +136,11 @@ public:
         /** @return The texture translation keys, for writing. */
         std::vector<Key<Vector3>> &GetTransKeys() {
             return mTransKeys;
+        }
+
+        /** @param keys The texture translation keys. */
+        void SetTransKeys(const std::vector<Key<Vector3>> &keys) {
+            mTransKeys = keys;
         }
 
     private:

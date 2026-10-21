@@ -206,7 +206,7 @@ inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
     packet.GetCursor()->mDword[kLowDword] = qwLow;
     packet.GetCursor()->mDword[kHighDword] = qwHigh;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline unsigned int DmaAddressOf(const void *pAddress) {
@@ -509,10 +509,10 @@ void PsTex::BuildMoviePacket(bool bBuild) {
             packet.GetCursor()->mDword[kLowDword] =
                 (static_cast<unsigned long long>(nX) << kTrxPosDsaxShift) | qwY;
             packet.GetCursor()->mDword[kHighDword] = kGsRegTrxPos;
-            ++packet.GetCursor();
+            packet.Advance();
             packet.GetCursor()->mDword[kLowDword] = 0;
             packet.GetCursor()->mDword[kHighDword] = kGsRegTrxDir;
-            ++packet.GetCursor();
+            packet.Advance();
             packet.CloseGifTag(0, 0);
             packet.OpenGifTag(kGifFlgImage, 0, 0, 0);
             packet.CloseGifTag(1, nBlockQwords);
@@ -549,9 +549,9 @@ void PsTex::UploadMovie() {
         DmaQuadword *pDest = frame.GetCursor();
         packet.Init(pSource, kDmaChannelToSpr, 1);
         pSource += nQwords;
-        packet.GetCursor() = pSource;
+        packet.SetCursor(pSource);
         packet.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
-        frame.GetCursor() = pDest + nQwords;
+        frame.SetCursor(pDest + nQwords);
         ThePs.Flush();
     }
 }

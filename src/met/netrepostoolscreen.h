@@ -104,9 +104,9 @@ public:
         return mRemixes;
     }
 
-    /** @return The remixes of the repository. */
-    std::list<NetRepoRemix> &GetRemixes() {
-        return mRemixes;
+    /** @param remixes The remixes of the repository. */
+    void SetRemixes(const std::list<NetRepoRemix> &remixes) {
+        mRemixes = remixes;
     }
 
     /** @param pszNote The note being edited. */
@@ -129,10 +129,10 @@ private:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    int mSelection = kNoSelection;    // The remix whose note is being edited.
     ReposToolList *mList;             /*!< The list, from the last entry. */
     std::list<NetRepoRemix> mRemixes; /*!< The remixes of the repository. */
     String mNote;                     /*!< The note being edited. */
+    int mSelection = kNoSelection;    // The remix whose note is being edited.
 };
 
 #endif

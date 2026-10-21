@@ -36,9 +36,9 @@ constexpr int kStopLoad = -1;
 } // namespace
 
 AvatarPart::AvatarPart(int nPart, int nParent, Avatar *pAvatar)
-    : mCallback(this), mType(nullptr), mPendingType(nullptr), mTransRoot(nullptr), mJoint(nullptr),
-      mMat(nullptr), mAvatar(pAvatar), mColor{1.0f, 1.0f, 1.0f, 1.0f}, mMesh(nullptr),
-      mParent(nullptr) {
+    : mCallback(this), mType(nullptr), mPendingType(nullptr), mColor{1.0f, 1.0f, 1.0f, 1.0f},
+      mMesh(nullptr), mTransRoot(nullptr), mJoint(nullptr), mMat(nullptr), mParent(nullptr),
+      mAvatar(pAvatar) {
     mData = SystemConfig()
                 ->FindArray("db", true)
                 ->FindArray("avatar", true)

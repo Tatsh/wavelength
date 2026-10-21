@@ -160,18 +160,27 @@ protected:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    std::vector<String> mModes;   /*!< The names of the modes. */
-    int mDuelMode;                /*!< The entry of mModes for a duel, or -1 for none. */
-    int mRemixMode;               /*!< The entry of mModes for a remix. */
-    int mLastSkillMode;           /*!< The last mode the skill applies to. */
-    int mMode;                    /*!< The chosen entry of mModes. */
-    int mSkill;                   /*!< The chosen entry of mSkills. */
-    std::vector<String> mSkills;  /*!< The names of the skills. */
-    const char *mSongPanelName;   /*!< `song_panel_name`, the panel with the song list. */
-    int mChoiceCount;             /*!< The entries of the song list before the songs. */
+    int mMode; /*!< The chosen entry of mModes. */
+
+    int mSkill; /*!< The chosen entry of mSkills. */
+
+    int mLastSkillMode; /*!< The last mode the skill applies to. */
+
+    int mDuelMode; /*!< The entry of mModes for a duel, or -1 for none. */
+
+    int mRemixMode; /*!< The entry of mModes for a remix. */
+
+    std::vector<String> mModes; /*!< The names of the modes. */
+
+    std::vector<String> mSkills; /*!< The names of the skills. */
+
+    UIPanel *mSongPanel; /*!< The panel mSongPanelName identifies. */
+
+    const char *mSongPanelName; /*!< `song_panel_name`, the panel with the song list. */
+
     const char *mButtonPanelName; /*!< `button_panel_name`, the panel with the choices. */
 
-private:
-    UIPanel *mSongPanel;        /*!< The panel mSongPanelName identifies. */
     const char *mTriBackScreen; /*!< `tri_back`, the screen the triangle button returns to. */
+
+    int mChoiceCount; /*!< The entries of the song list before the songs. */
 };

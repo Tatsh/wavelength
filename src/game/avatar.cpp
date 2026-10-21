@@ -322,14 +322,14 @@ void Avatar::Draw(const Rect *pScreenRect) {
         if (!bSame) {
             const float fFov = RndCam::ConvertFov(
                 1.0f, (pScreenRect->h * TheRnd->AspectRatio()) / pScreenRect->w, sFov);
-            sCam->GetScreenRect() = *pScreenRect;
+            sCam->SetScreenRect(*pScreenRect);
             sCam->UpdateProjection();
             sCam->SetFrustum(sCam->GetNearPlane(), sCam->GetFarPlane(), fFov);
         }
     } else if (sCam->GetTargetTex() == nullptr) {
         sCam->SetTargetTex(sTargetTex);
         const Rect full{0.0f, 0.0f, 1.0f, 1.0f};
-        sCam->GetScreenRect() = full;
+        sCam->SetScreenRect(full);
         sCam->UpdateProjection();
         sCam->SetFrustum(sCam->GetNearPlane(), sCam->GetFarPlane(), sFov);
     }
@@ -372,7 +372,7 @@ void Avatar::GetDepthRange(float *pfNear, float *pfFar) {
 
 void Avatar::SetDepthRange(float fNear, float fFar) {
     const Vector2 range{fNear, fFar};
-    sCam->GetZRange() = range;
+    sCam->SetZRange(range);
 }
 
 void Avatar::SetViewAngles(float fTilt, float fTurn) {

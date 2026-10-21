@@ -308,7 +308,7 @@ int RndCursor::DrawShowing() {
     xfm.mBasisX.x = fScale;
     xfm.mBasisX.y = 0.0f;
     xfm.mBasisX.z = 0.0f;
-    pMesh->GetLocalXfm() = xfm;
+    pMesh->SetLocalXfm(xfm);
     pMesh->SetDirty(1);
     pMesh->UpdateWorldXfm(mText, 0);
     mCursor->Draw();

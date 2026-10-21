@@ -37,7 +37,7 @@ void MGCLSessionEndTask::OnStart() {
     memset(&request, 0, sizeof(request));
     MakeTag(this, request.messageId);
     if (rtMgclSessionEnd(&request, OnResponse) != 0 || TheLobbyRT->GetDisconnected() != 0) {
-        TheHostpadRT->GetSessionKey() = "";
+        TheHostpadRT->SetSessionKey("");
         Finish(true, 0);
     }
 }
@@ -57,7 +57,7 @@ void MGCLSessionEndTask::OnResponse(int nConnection,
     (void)nSize;
     NetTask *pTask = FindTag(pResponse->messageId);
     if (pTask != nullptr) {
-        TheHostpadRT->GetSessionKey() = "";
+        TheHostpadRT->SetSessionKey("");
         pTask->Finish(true, 0);
     }
 }

@@ -202,7 +202,7 @@ void Freestylus::Draw(RndTransformable *pParent, int) {
     }
     const Transform &world = pParent->GetWorldXfm();
     const Vector3 basis[] = {world.mBasisX, world.mBasisY, world.mBasisZ};
-    mButton.GetSys()->GetForce() = RotateDir(basis, mButtonForce);
+    mButton.GetSys()->SetForce(RotateDir(basis, mButtonForce));
     mView->SetFrame(TheGameDb->GetSongTime());
     mTempo->SetFrame(TheGameDb->GetSongTick());
     mView->UpdateWorldXfm(pParent, 1);

@@ -218,9 +218,9 @@ public:
         return mAmbientColor;
     }
 
-    /** @return The ambient colour, for writing. */
-    Color &GetAmbientColor() {
-        return mAmbientColor;
+    /** @param color The ambient colour. */
+    void SetAmbientColor(const Color &color) {
+        mAmbientColor = color;
     }
 
     /** @return The fog colour. */
@@ -228,9 +228,9 @@ public:
         return mFogColor;
     }
 
-    /** @return The fog colour, for writing. */
-    Color &GetFogColor() {
-        return mFogColor;
+    /** @param color The fog colour. */
+    void SetFogColor(const Color &color) {
+        mFogColor = color;
     }
 
     /** @return The density of exponential fog. */
@@ -294,15 +294,19 @@ protected:
      */
     void AcquireRefs();
 
-    Color mAmbientColor;           /*!< The ambient colour. */
-    Color mFogColor;               /*!< The fog colour. */
-    float mFogEnd;                 /*!< The distance fog is full at. */
-    int mFogMode;                  /*!< The FogMode. */
-    float mFogStart;               /*!< The distance fog starts at. */
     std::list<RndLight *> mLights; /*!< The lights. */
 
-private:
+    Color mAmbientColor; /*!< The ambient colour. */
+
+    float mFogStart; /*!< The distance fog starts at. */
+
+    float mFogEnd; /*!< The distance fog is full at. */
+
     float mFogDensity; /*!< The density of exponential fog. */
+
+    Color mFogColor; /*!< The fog colour. */
+
+    int mFogMode; /*!< The FogMode. */
 };
 
 /**

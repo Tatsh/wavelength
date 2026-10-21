@@ -66,7 +66,7 @@ void UIPanel::Init(DataArray *pConfig) {
 }
 
 UIPanel::UIPanel(DataArray *pData, const char *pszDir)
-    : mState(kStateHidden), mIdleFrame(kIdleFrame) {
+    : mIdleFrame(kIdleFrame), mState(kStateHidden) {
     mHiddenFrame = kDefaultHiddenFrame;
     mExitMs = kDefaultExitMs;
     mView = nullptr;

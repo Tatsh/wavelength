@@ -28,7 +28,7 @@ void SessionEndTask::OnStart() {
     LobbyRT::ReportMediusError(447, nError);
 #endif
     if (nError != 0 || TheLobbyRT->GetDisconnected() != 0) {
-        TheLobbyRT->GetSessionKey() = "";
+        TheLobbyRT->SetSessionKey("");
         Finish(true, 0);
     }
 }
@@ -50,6 +50,6 @@ void SessionEndTask::OnResponse(int nConnection,
     if (pTask == nullptr) {
         return;
     }
-    TheLobbyRT->GetSessionKey() = "";
+    TheLobbyRT->SetSessionKey("");
     pTask->Finish(true, 0);
 }

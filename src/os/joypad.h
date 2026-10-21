@@ -95,14 +95,31 @@ public:
         return mSticks;
     }
 
-    /** @return The analogue sticks. */
-    JoypadStick *GetSticks() {
-        return mSticks;
+    /** @return Each button's pressure, from 0 to 1. */
+    const float *GetPressures() const {
+        return mPressures;
     }
 
-    /** @return Each button's pressure, from 0 to 1. */
-    float *GetPressures() {
-        return mPressures;
+    /**
+     * Set the position of a stick.
+     *
+     * @param nStick The stick.
+     * @param fX The horizontal position, -1 to 1.
+     * @param fY The vertical position, -1 to 1.
+     */
+    void SetStick(int nStick, float fX, float fY) {
+        mSticks[nStick].mX = fX;
+        mSticks[nStick].mY = fY;
+    }
+
+    /**
+     * Set the pressure of a button.
+     *
+     * @param nButton The button.
+     * @param fPressure The pressure, 0 to 1.
+     */
+    void SetPressure(int nButton, float fPressure) {
+        mPressures[nButton] = fPressure;
     }
 
     /** @return The buttons pressed, one bit for each JoypadButton. */

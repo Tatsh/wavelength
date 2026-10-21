@@ -215,7 +215,7 @@ inline void PushVector(const Vector3 &v) {
     quad.mFloat[kWordY] = v.y;
     quad.mFloat[kWordZ] = v.z;
     quad.mFloat[kWordW] = v.w;
-    ++DmaPacket::shared().GetCursor();
+    DmaPacket::shared().Advance();
 }
 
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
@@ -224,14 +224,14 @@ inline void PushFloats(float fX, float fY, float fZ, float fW) {
     quad.mFloat[kWordY] = fY;
     quad.mFloat[kWordZ] = fZ;
     quad.mFloat[kWordW] = fW;
-    ++DmaPacket::shared().GetCursor();
+    DmaPacket::shared().Advance();
 }
 
 inline void PushDwords(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaQuadword &quad = *DmaPacket::shared().GetCursor();
     quad.mDword[kLowDword] = qwLow;
     quad.mDword[kHighDword] = qwHigh;
-    ++DmaPacket::shared().GetCursor();
+    DmaPacket::shared().Advance();
 }
 
 inline void PushTransform(const Transform &xfm) {
@@ -249,7 +249,7 @@ inline void PushSettingsUnpack(unsigned int nQwords) {
     packet.GetCursor()->mWord[kWordY] = 0;
     packet.GetCursor()->mWord[kWordZ] = 0;
     packet.GetCursor()->mWord[kWordW] = VifUnpack(kVifUnpackV4_32, nQwords, 0);
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 // Send a packet of a geometry. A mesh that is not mutable sends it by reference. A mutable mesh
@@ -270,9 +270,9 @@ inline void SendPacket(const PsMesh &geom, DmaQuadword *pData, int nQwords) {
     DmaPacket copy;
     copy.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
     copy.Init(pData, DMAC_TO_SPR, 1);
-    copy.GetCursor() = pData + nQwords;
+    copy.SetCursor(pData + nQwords);
     copy.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
-    frame.GetCursor() = pDest + nQwords;
+    frame.SetCursor(pDest + nQwords);
     ThePs.Flush();
 }
 
@@ -732,7 +732,7 @@ void PsMesh::DrawEdges(const Transform &xfm) {
     quad.mWord[kWordY] = nGreen;
     quad.mWord[kWordZ] = nBlue;
     quad.mWord[kWordW] = nAlpha;
-    ++DmaPacket::shared().GetCursor();
+    DmaPacket::shared().Advance();
 
     auto *pGeom = static_cast<PsMesh *>(mGeomOwner);
     auto *pData = static_cast<DmaQuadword *>(pGeom->mEdgesPacket->Lock());
@@ -748,7 +748,7 @@ void PsMesh::DrawEdges(const Transform &xfm) {
         frame.CloseDmaTag(kDmaTagIdCnt, 0, 0);
         for (int n = pGeom->mEdgesQwords; n-- != 0;) {
             *frame.GetCursor() = *pData;
-            ++frame.GetCursor();
+            frame.Advance();
             ++pData;
         }
         ThePs.Flush();

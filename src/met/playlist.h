@@ -100,7 +100,9 @@ public:
     }
 
 private:
-    String mPicPanel; // The description's `pic_panel`, the panel of the picture.
-    int mNumGroups;   // The number of entries at the start that stand for groups of songs.
     std::vector<PlaylistSongData> mSongs; /*!< The entries of the list. */
+
+    String mPicPanel; // The description's `pic_panel`, the panel of the picture.
+
+    int mNumGroups; // The number of entries at the start that stand for groups of songs.
 };

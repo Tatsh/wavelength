@@ -138,9 +138,13 @@ private:
      */
     void ShowSelected();
 
-    int mReserved10C;                // +0x10c, not yet identified.
+    int mAvatarIndex; /*!< `avatar_index`, the player who chooses. */
+
+    int mNumProfiles; /*!< The number of profiles, from the last entry. */
+
+    int mSelected; /*!< The chosen profile. */
+
+    int mReserved10C; // +0x10c, not yet identified.
+
     std::vector<Campaign> mProfiles; /*!< The profiles to choose from. */
-    int mAvatarIndex;                /*!< `avatar_index`, the player who chooses. */
-    int mNumProfiles;                /*!< The number of profiles, from the last entry. */
-    int mSelected;                   /*!< The chosen profile. */
 };

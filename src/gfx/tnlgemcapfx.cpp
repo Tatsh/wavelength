@@ -113,7 +113,7 @@ bool TnlGemCapFX::Draw(TnlGeom *pGeom) {
     mXfm.mBasisX = axisX;
     mXfm.mBasisY = axisY;
     mXfm.mBasisZ = axisZ;
-    mView->GetLocalXfm() = mXfm;
+    mView->SetLocalXfm(mXfm);
     mView->SetDirty(1);
     mView->SetFrame(mFrameCurve.Interp(flNow));
     mView->UpdateWorldXfm(nullptr, 0);

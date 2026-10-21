@@ -331,28 +331,40 @@ protected:
         identity.mBasisY = {0.0f, 1.0f, 0.0f};
         identity.mBasisZ = {0.0f, 0.0f, 1.0f};
         identity.mTranslation = {0.0f, 0.0f, 0.0f, 1.0f};
-        pMesh->GetLocalXfm() = identity;
+        pMesh->SetLocalXfm(identity);
         pMesh->SetDirty(1);
     }
 
-    Callback mCallback;       /*!< The callback of the loads of the part. */
-    DataArray *mData;         /*!< The entry of the part in the `parts` array. Borrowed. */
-    const char *mType;        /*!< The choice the meshes show, or null before the first. */
+    Callback mCallback; /*!< The callback of the loads of the part. */
+
+    DataArray *mData; /*!< The entry of the part in the `parts` array. Borrowed. */
+
+    const char *mType; /*!< The choice the meshes show, or null before the first. */
+
     const char *mPendingType; /*!< The choice SetType() last requested, or null. */
-    RndMesh *mTransRoot;      /*!< The `trans_root` mesh the model hangs from, or null. Borrowed. */
+
+    Color mColor; /*!< The colour, opaque white until SetColor(). +0x20 */
+
+    RndMesh *mMesh; /*!< The `draw_root` mesh drawn, or null. Borrowed. */
+
+    RndMesh *mTransRoot; /*!< The `trans_root` mesh the model hangs from, or null. Borrowed. */
+
     RndMesh *mJoint; /*!< The joint mesh of the parent the model hangs from, or null. Borrowed. */
-    RndMat *mMat;    /*!< The material of the model, or null. Borrowed. */
+
+    RndMat *mMat; /*!< The material of the model, or null. Borrowed. */
+
     /** The animations of the bones the `anims` array lists, in its order, deleted with the part. */
     std::vector<std::unique_ptr<RndTransAnim>> mAnims;
-    Avatar *mAvatar;                    /*!< The avatar the part belongs to. Borrowed. */
-    std::unique_ptr<RndLoader> mLoader; /*!< The load of the files the meshes come from, or null. */
-    Color mColor;                       /*!< The colour, opaque white until SetColor(). +0x20 */
-    RndMesh *mMesh;                     /*!< The `draw_root` mesh drawn, or null. Borrowed. */
 
-private:
     AvatarPart *mParent; /*!< The part the model hangs from, or null. Borrowed. */
+
+    Avatar *mAvatar; /*!< The avatar the part belongs to. Borrowed. */
+
+    std::unique_ptr<RndLoader> mLoader; /*!< The load of the files the meshes come from, or null. */
+
     /** The load of the first file of mPendingType, or null. */
     std::unique_ptr<RndLoader> mPendingLoader;
+
     /** The load of the second file of mPendingType, or null. */
     std::unique_ptr<RndLoader> mPendingExtraLoader;
 };

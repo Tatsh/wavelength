@@ -119,8 +119,8 @@ bool SetParticlesAction::Poll() {
     if ((mFlags & kFlagPos) != 0) {
         const Vector3 low = LerpCorner(mStartPos[kCornerLow], mPos[kCornerLow], flT);
         const Vector3 high = LerpCorner(mStartPos[kCornerHigh], mPos[kCornerHigh], flT);
-        mParticleSys->GetPosLow() = low;
-        mParticleSys->GetPosHigh() = high;
+        mParticleSys->SetPosLow(low);
+        mParticleSys->SetPosHigh(high);
     }
     return flT == 1.0f;
 }

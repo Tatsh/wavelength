@@ -57,14 +57,14 @@ inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
     packet.GetCursor()->mDword[kLowDword] = qwLow;
     packet.GetCursor()->mDword[kHighDword] = qwHigh;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
     DmaPacket &packet = DmaPacket::shared();
     const float afValues[] = {fX, fY, fZ, fW};
     std::memcpy(packet.GetCursor(), afValues, sizeof(afValues));
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline void PushVector(const Vector3 &vector) {
@@ -78,7 +78,7 @@ inline void PushVifCode(unsigned int nCode) {
     packet.GetCursor()->mWord[1] = 0;
     packet.GetCursor()->mWord[2] = 0;
     packet.GetCursor()->mWord[kVifCodeWord] = nCode;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline DmaQuadword *PushClearedQuadword() {
@@ -86,7 +86,7 @@ inline DmaQuadword *PushClearedQuadword() {
     DmaQuadword *pQuadword = packet.GetCursor();
     pQuadword->mDword[kLowDword] = 0;
     pQuadword->mDword[kHighDword] = 0;
-    ++packet.GetCursor();
+    packet.Advance();
     return pQuadword;
 }
 
@@ -176,9 +176,9 @@ void PsMultiMesh::DrawInstances() {
         DmaPacket packet;
         packet.SetBase(nullptr); // Yes, the binary clears the base that Init() then replaces.
         packet.Init(pData, kDmaChannelToSpr, 1);
-        packet.GetCursor() = pData + nSetupQwords;
+        packet.SetCursor(pData + nSetupQwords);
         packet.Send(DmaPacket::kModeNormal, DmaAddressOf(pDest));
-        frame.GetCursor() = pDest + nSetupQwords;
+        frame.SetCursor(pDest + nSetupQwords);
         frame.OpenDmaTag();
     }
     pPacket->Unlock();

@@ -202,7 +202,7 @@ void TnlTrackFX::Capture(GfxTunnel *pTunnel, float flTick) {
     pTunnel->GetGeom()->CellXfm(
         mTrack, &xfm, false, true, TheGameDb->GetSongTick() + sCaptureSpewTicks, kSpewLateral);
     ScaleBasis(&xfm, TheGfxManager.GetScrollSpeed());
-    sSpew->GetLocalXfm() = xfm;
+    sSpew->SetLocalXfm(xfm);
     sSpew->SetDirty(1);
     sSpew->UpdateWorldXfm(nullptr, 0);
     sSpewFrame += kSpewFrames;

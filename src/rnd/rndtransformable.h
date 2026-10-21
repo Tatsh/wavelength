@@ -134,7 +134,7 @@ public:
     void SetOrigin(const Vector3 &origin);
 
     /**
-     * Find the transformable whose children include this one.
+     * Find the transformable whose children include this object.
      *
      * @return The parent, or null.
      * @ghidraAddress NTSC-U/C: 0x00243c50
@@ -225,6 +225,11 @@ public:
         return mLocalXfm;
     }
 
+    /** @param xfm The transform relative to the parent. */
+    void SetLocalXfm(const Transform &xfm) {
+        mLocalXfm = xfm;
+    }
+
     /** @return The transform relative to the world. */
     const Transform &GetWorldXfm() const {
         return mWorldXfm;
@@ -271,14 +276,17 @@ protected:
      */
     void AcquireTransRefs();
 
-    Transform mLocalXfm; /*!< The transform relative to the parent. */
-    Transform mWorldXfm; /*!< The transform relative to the world. */
-    int mDirty;          /*!< Non-zero when mWorldXfm is out of date. */
-    int mBillboard;      /*!< The Billboard mode. */
-
-private:
     std::list<RndTransformable *> mTransList; /*!< The children. Each follows this object. */
-    Vector3 mOrigin;                          /*!< The point the world transform subtracts. */
+
+    Transform mLocalXfm; /*!< The transform relative to the parent. */
+
+    Transform mWorldXfm; /*!< The transform relative to the world. */
+
+    Vector3 mOrigin; /*!< The point the world transform subtracts. */
+
+    int mDirty; /*!< Non-zero when mWorldXfm is out of date. */
+
+    int mBillboard; /*!< The Billboard mode. */
 };
 
 /**

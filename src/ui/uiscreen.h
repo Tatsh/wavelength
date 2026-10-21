@@ -294,15 +294,19 @@ public:
     }
 
 protected:
-    const char *mName;                                  /*!< The name, a symbol. */
+    const char *mName; /*!< The name, a symbol. */
+
+    const char *mGroup; /*!< The loading group, a symbol. */
+
     std::map<const char *, UIPanel *, StrLess> mPanels; /*!< The panels by name. Borrowed. */
-    UIPanel *mFocusPanel;                               /*!< The panel with the focus. */
+
+    UIPanel *mFocusPanel; /*!< The panel with the focus. */
 
     std::vector<Transition> mTransitions; /*!< The transition table. */
-    UIScreen *mPrevScreen; /*!< The screen this one is entering from, until the entry finishes. */
-    UIScreen *mNextScreen; /*!< The screen this one is exiting to, until the exit finishes. */
-    int mForceEntryExit;   /*!< Whether the panels skip their animations. */
 
-private:
-    const char *mGroup; /*!< The loading group, a symbol. */
+    UIScreen *mPrevScreen; /*!< The screen this one is entering from, until the entry finishes. */
+
+    UIScreen *mNextScreen; /*!< The screen this one is exiting to, until the exit finishes. */
+
+    int mForceEntryExit; /*!< Whether the panels skip their animations. */
 };

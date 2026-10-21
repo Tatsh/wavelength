@@ -177,7 +177,7 @@ void RndBlur::ListDrawables(std::list<RndDrawable *> &drawables) {
         const Transform savedWorld = pTrans->GetWorldXfm();
         pSubject->ListDrawables(subjectDrawables);
         for (const Transform &xfm : mXfms) {
-            pTrans->GetLocalXfm() = xfm;
+            pTrans->SetLocalXfm(xfm);
             pTrans->SetDirty(1);
             pTrans->UpdateWorldXfm(nullptr, 0);
             pSubject->ListDrawables(subjectDrawables);
@@ -188,10 +188,10 @@ void RndBlur::ListDrawables(std::list<RndDrawable *> &drawables) {
         }
         // Yes, the binary rebuilds the world transform from the saved world transform as a local
         // one before it puts the saved local transform back.
-        pTrans->GetLocalXfm() = savedWorld;
+        pTrans->SetLocalXfm(savedWorld);
         pTrans->SetDirty(1);
         pTrans->UpdateWorldXfm(nullptr, 0);
-        pTrans->GetLocalXfm() = savedLocal;
+        pTrans->SetLocalXfm(savedLocal);
         pTrans->SetDirty(1);
     }
     RndDrawable::ListDrawables(drawables);
@@ -261,7 +261,7 @@ int RndBlur::DrawShowing() {
     for (const Transform &xfm : mXfms) {
         if (!SameXfm(xfm, *pPrevious)) {
             pMat->SetAlpha(fStepAlpha);
-            pTrans->GetLocalXfm() = xfm;
+            pTrans->SetLocalXfm(xfm);
             pTrans->SetDirty(1);
             pTrans->UpdateWorldXfm(nullptr, 0);
             pSubject->Draw();
@@ -272,10 +272,10 @@ int RndBlur::DrawShowing() {
 
     // Yes, the binary rebuilds the world transform from the saved world transform as a local one
     // before it puts the saved local transform back.
-    pTrans->GetLocalXfm() = savedWorld;
+    pTrans->SetLocalXfm(savedWorld);
     pTrans->SetDirty(1);
     pTrans->UpdateWorldXfm(nullptr, 0);
-    pTrans->GetLocalXfm() = savedLocal;
+    pTrans->SetLocalXfm(savedLocal);
     pTrans->SetDirty(1);
     pMat->SetAlpha(fAlpha);
     if (mText == nullptr) {

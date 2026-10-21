@@ -827,7 +827,7 @@ bool TnlGeom::Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
             pMat->SetBlend(RndMat::kBlendDest);
         }
         pMat->SetCull(pPanelMat->GetCull());
-        stage.GetXfm() = source.GetXfm();
+        stage.SetXfm(source.GetXfm());
         stage.SetUseXfm(source.GetUseXfm());
         stage.SetWrap(source.GetWrap());
         stage.SetTex(source.GetTex());
@@ -863,13 +863,13 @@ bool TnlGeom::Init(const std::vector<std::pair<Vector2, Vector2>> *pEdges,
         mPassAnims[nAnims++].reset(pAnim);
         RndMatAnim::Stage &target = pAnim->GetKeysOwner()->GetStages()[0];
         if (!source.GetTransKeys().empty()) {
-            target.GetTransKeys() = source.GetTransKeys();
+            target.SetTransKeys(source.GetTransKeys());
         }
         if (!source.GetRotKeys().empty()) {
-            target.GetRotKeys() = source.GetRotKeys();
+            target.SetRotKeys(source.GetRotKeys());
         }
         if (!source.GetScaleKeys().empty()) {
-            target.GetScaleKeys() = source.GetScaleKeys();
+            target.SetScaleKeys(source.GetScaleKeys());
         }
     }
 
@@ -918,7 +918,7 @@ void TnlGeom::BuildBar(int nBar) {
             for (int i = 0; i < 3; ++i) {
                 section.mCellBasis[i] = RotateDir(&path.mBasisX, geometry.mBasis[i]);
             }
-            panel.GetSections()[nSection] = section;
+            panel.SetSection(nSection, section);
             if (bLast) {
                 panel.SetTransparent(1);
                 panel.GetMesh()->SetZFunc(RndMesh::kZFuncLessEqual);
@@ -1194,7 +1194,7 @@ TnlGeom::PanelData *TnlGeom::GetPanel(int nTrack, int nBar) {
 void TnlGeom::RestoreSections(int nTrack, int nBar) {
     PanelData *pPanel = FindPanel(nTrack, nBar);
     if (pPanel != nullptr) {
-        pPanel->GetSections() = pPanel->GetBaseSections();
+        pPanel->SetSections(pPanel->GetBaseSections());
         pPanel->SetDirty(1);
     }
 }
@@ -1564,7 +1564,7 @@ void TnlGeom::Player::PlaceActivator(const Transform *pXfm) {
     if (mActivator == nullptr) {
         return;
     }
-    mActivator->GetLocalXfm() = *pXfm;
+    mActivator->SetLocalXfm(*pXfm);
     mActivator->SetDirty(1);
     mActivator->UpdateWorldXfm(nullptr, 0);
 }

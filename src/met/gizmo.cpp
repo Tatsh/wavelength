@@ -122,7 +122,7 @@ void Gizmo::Poll(float fTime) {
     }
     mView->SetFrame(fTime);
     sceVu0MulAffineMatrixXyz(&xfm.mBasisX.x, &xfm.mBasisX.x, &mMesh->GetLocalXfm().mBasisX.x);
-    mMesh->GetLocalXfm() = xfm;
+    mMesh->SetLocalXfm(xfm);
     mMesh->SetDirty(1);
     mView->UpdateWorldXfm(nullptr, 0);
 }

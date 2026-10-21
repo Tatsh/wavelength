@@ -7,7 +7,7 @@
 #include "rnd/rndobject.h"
 
 /**
- * Mix-in for an object driven by a frame, which filters the frame and passes it on to a list of
+ * Mix-in for an object driven by a frame. It filters the frame and passes it on to a list of
  * other animatables.
  *
  * The RTTI includes the class name and records RndObject as a virtual base. Every entry of mAnims
@@ -864,12 +864,13 @@ protected:
      */
     void AcquireAnimRefs();
 
-    float mFrame;         /*!< The frame SetFrame() last received. */
-    float mFilteredFrame; /*!< The frame after the filters. */
-
-private:
     std::list<RndAnimatable *> mAnims; /*!< The children. Each receives the filtered frame. */
-    std::list<Filter *> mFilters;      /*!< The filter chain, applied first to last. */
+
+    std::list<Filter *> mFilters; /*!< The filter chain, applied first to last. */
+
+    float mFrame; /*!< The frame SetFrame() last received. */
+
+    float mFilteredFrame; /*!< The frame after the filters. */
 };
 
 /**

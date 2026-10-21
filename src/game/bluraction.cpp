@@ -17,7 +17,7 @@ void BlurAction::Exec() {
     ThePs.SetBlurAmount(mAmount);
     ThePs.SetBlurCount(mCount);
     for (int i = 0; i < kRectSize; ++i) {
-        ThePs.GetBlurRect()[i] = mRect[i];
+        ThePs.SetBlurRect(i, mRect[i]);
     }
     ThePs.SetBlurActive(1);
     if (mDuration != 0.0f) {

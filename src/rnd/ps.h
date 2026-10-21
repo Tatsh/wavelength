@@ -368,6 +368,16 @@ public:
         return mBlurRect;
     }
 
+    /**
+     * Set one entry of the part of the screen DrawBlur() covers, x, y, w, and h.
+     *
+     * @param nIndex The entry.
+     * @param fValue The value.
+     */
+    void SetBlurRect(int nIndex, float fValue) {
+        mBlurRect[nIndex] = fValue;
+    }
+
     /** @return The bytes of a depth buffer pixel. */
     int GetDepthBytes() const {
         return mDepthBytes;

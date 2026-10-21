@@ -10,8 +10,8 @@
  *
  * The RTTI includes the class name and records Task and GameCallback as the bases. Each node of
  * the step after the first is a condition, an array whose first node is the condition name and
- * whose later nodes are the actions to run when the condition holds. An action is a script command,
- * or the symbol `done`, which finishes the task. The counts reset when their condition fires.
+ * whose later nodes are the actions to run when the condition is met. An action is a script
+ * command, or the symbol `done` to finish the task. The counts reset when their condition fires.
  */
 class WaitInteractiveTask : public Task, public GameCallback {
 public:
@@ -78,7 +78,7 @@ public:
     /**
      * Count a broken streak, and evaluate the conditions.
      *
-     * @param nStreak The length of the streak that broke, which is not read.
+     * @param nStreak The length of the streak that broke. The task does not read it.
      * @ghidraAddress NTSC-U/C: 0x00141d88
      * @ghidraAddress PAL: 0x00143728
      */
@@ -127,7 +127,7 @@ private:
     void EvaluateConditions();
 
     /**
-     * Run the actions of a condition when it holds.
+     * Run the actions of a condition when it is met.
      *
      * @param pCondition The condition.
      * @ghidraAddress NTSC-U/C: 0x00141e60

@@ -136,7 +136,7 @@ void TnlStreakGemFX::Draw() {
     edge.a = flAlpha;
     mMat->SetEdgeColor(edge);
     mMat->SetAlpha(flAlpha);
-    mView->GetLocalXfm() = mXfm;
+    mView->SetLocalXfm(mXfm);
     mView->SetDirty(1);
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();

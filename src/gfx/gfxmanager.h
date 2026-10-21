@@ -23,7 +23,7 @@
  * Display of the play field and the heads-up display of every player.
  *
  * The RTTI records the class as deriving from PrnStream. The object is 0xd4 bytes, and the one
- * instance is TheGfxManager. The display owns the arena, the tunnel of tracks, the ship of each
+ * instance is TheGfxManager. The display manages the arena, the tunnel of tracks, the ship of each
  * player, and the head-up display, and most of its routines forward to them.
  */
 class GfxManager : public PrnStream {
@@ -49,10 +49,10 @@ public:
         kLoadStageObjects = 2, /*!< The head-up display and the ships are built. */
     };
 
-    /** The number of ships the display holds, one for each player. */
+    /** The number of ships the display has, one for each player. */
     static constexpr int kMaxPlayers = 4;
 
-    /** The instruments of the tracks, which scripts know as `kDrum` through `kFX`. */
+    /** The instruments of the tracks, known to scripts as `kDrum` through `kFX`. */
     enum Instrument {
         kInstrumentDrum = 0,   /*!< `drum`. */
         kInstrumentBass = 1,   /*!< `bass`. */
@@ -89,7 +89,7 @@ public:
      */
     enum RemixSubPanel {
         kRemixSubPanelMain = 0,    /*!< The list of remix panels. */
-        kRemixSubPanelPattern = 1, /*!< The `pat` panel, which OvyRemixPanel never builds. */
+        kRemixSubPanelPattern = 1, /*!< The `pat` panel. OvyRemixPanel never builds it. */
         kRemixSubPanelChorus = 2,  /*!< The chorus effect. */
         kRemixSubPanelStutter = 3, /*!< The stutter effect. */
         kRemixSubPanelEcho = 4,    /*!< The echo effect. */
@@ -100,7 +100,7 @@ public:
     /**
      * Loader of one file of the `load` list of the `gfx` configuration.
      *
-     * The RTTI names the class. The object is 0x28 bytes. A file object that already exists is
+     * The RTTI identifies the class. The object is 0x28 bytes. A file object that already exists is
      * loaded again only when force_merge lists it. A skipped object that is not a texture, with
      * merge_all clear, is reported once the file has loaded unless the list
      * `merges_always_allowed` includes it.
@@ -132,7 +132,7 @@ public:
          * @param pExisting The object of the same name that already exists, or null.
          * @param pszName The name of the object.
          * @param pszClass The class of the object.
-         * @return 1 to load the object, or 0 to keep the one that exists.
+         * @return 1 to load the object, or 0 to retain the one that exists.
          * @ghidraAddress NTSC-U/C: 0x001b13c0
          * @ghidraAddress PAL: 0x001ba160
          */
@@ -166,8 +166,9 @@ public:
     /**
      * Views of the camera of one player, in the order they draw.
      *
-     * The RTTI names the type. The views are `<view><n> arena`, `<view><n>`, `<view><n> part2`,
-     * `<view><n> part3`, and `<view><n> part4` for the `localview` name of the configuration.
+     * The RTTI identifies the type. The views are `<view><n> arena`, `<view><n>`,
+     * `<view><n> part2`, `<view><n> part3`, and `<view><n> part4` for the `localview` name of the
+     * configuration.
      */
     struct LocalViews {
         RndView *mArena; /*!< The view of the arena. */
@@ -180,7 +181,7 @@ public:
     /**
      * Message the display lists for debugging.
      *
-     * The RTTI names the type. The display only empties its two lists of them.
+     * The RTTI identifies the type. The display only empties its two lists of them.
      */
     struct DebugMsg {
         int mReserved00; // +0x00, not yet identified.
@@ -423,7 +424,7 @@ public:
     /**
      * Show the energy of the play field of a solo game.
      *
-     * A game that is not solo shows nothing. Practice shows a full meter.
+     * A game that is not solo does not show the energy. Practice shows a full meter.
      *
      * @param nPlayer The player's index.
      * @param fEnergy The energy, from 0 to 1.
@@ -531,7 +532,7 @@ public:
      * Show the power-up icon of a player.
      *
      * @param nPlayer The player's index.
-     * @param nPowerup The kind of power-up the player holds, or GameLogic::kPowerupNone to hide
+     * @param nPowerup The kind of power-up the player has, or GameLogic::kPowerupNone to hide
      *        the icon.
      * @ghidraAddress NTSC-U/C: 0x001b5218
      * @ghidraAddress PAL: 0x001bdfb8
@@ -552,7 +553,7 @@ public:
      * Show the slowdown a player deployed.
      *
      * @param nPlayer The player's index.
-     * @param fStartTick The tick the song reaches the slow speed.
+     * @param fStartTick The tick the song arrives at the slow speed.
      * @param fEndTick The tick the song starts to speed up again.
      * @param fStopTick The tick the song is back at its speed.
      * @ghidraAddress NTSC-U/C: 0x001b5260
@@ -627,7 +628,7 @@ public:
      * Highlight the controller button icon of a lane, or clear the highlight.
      *
      * @param nLane The lane.
-     * @param nHighlight Nonzero to highlight the icon.
+     * @param nHighlight Non-zero to highlight the icon.
      * @ghidraAddress NTSC-U/C: 0x001b5380
      * @ghidraAddress PAL: 0x001be120
      */
@@ -1159,7 +1160,7 @@ public:
      *
      * @param nTrack The track.
      * @param nPlayer The player whose camera shows the bar.
-     * @param nOwner The player who owns the bar, or -1.
+     * @param nOwner The player the bar belongs to, or -1.
      * @param bInSong Whether the bar maps to a bar of the song.
      * @param bVisible Whether the bar is shown.
      * @param nFlags The flags of the bar.
@@ -1337,7 +1338,7 @@ public:
     void ClearAll();
 
     /**
-     * Start or stop the victory lap, which hides the energy and score bars.
+     * Start or stop the victory lap. The victory lap hides the energy and score bars.
      *
      * @param bActive Whether the victory lap runs.
      * @ghidraAddress NTSC-U/C: 0x001b6250
@@ -1688,7 +1689,7 @@ public:
         return mMsPerTick;
     }
 
-    /** @return The localized `MULTIPLIER_FORMAT`. Borrowed. */
+    /** @return The localised `MULTIPLIER_FORMAT`. Borrowed. */
     const char *GetMultiplierFormat() const {
         return mMultiplierFormat;
     }
@@ -1725,7 +1726,8 @@ private:
     /**
      * Work out the scroll speed of the tunnel from the configuration or from the song.
      *
-     * @param fSongTicks The length of the song in ticks, used when the song has no entry.
+     * @param fSongTicks The length of the song in ticks, used when the song does not have an
+     *                   entry.
      * @ghidraAddress NTSC-U/C: 0x001b35d0
      * @ghidraAddress PAL: 0x001bc370
      */
@@ -1940,15 +1942,15 @@ private:
     float mInvScrollSpeed; /*!< The reciprocal of mScrollSpeed. */
     float mSongTicks;      /*!< The length of the song in ticks. */
     float mCamPathScale;   /*!< The length of the camera path for each tick. */
-    int mVictoryLap;    /*!< Whether the victory lap runs, which hides the energy and score bars. */
-    int mArenaUnlocked; /*!< Whether the path of the arena is unlocked. */
-    int mNoArena;       /*!< The `no_arena` cheat. */
-    int mMonkeyGems;    /*!< The `monkey` cheat. */
-    int mDrugs;         /*!< The `drugs` cheat. */
-    int mBlackPanels;   /*!< The `black_panels` cheat. */
-    int mNoPanels;      /*!< The `no_panels` cheat. */
+    int mVictoryLap;       /*!< Whether the victory lap runs. It hides the energy and score bars. */
+    int mArenaUnlocked;    /*!< Whether the path of the arena is unlocked. */
+    int mNoArena;          /*!< The `no_arena` cheat. */
+    int mMonkeyGems;       /*!< The `monkey` cheat. */
+    int mDrugs;            /*!< The `drugs` cheat. */
+    int mBlackPanels;      /*!< The `black_panels` cheat. */
+    int mNoPanels;         /*!< The `no_panels` cheat. */
     signed char mTunnelShape;            /*!< The shape of the `circular` cheat, from 0 to 2. */
-    int mHudFlags;                       /*!< The display of `toggle_hud`. Bit 0 draws the hud. */
+    int mHudFlags;                       /*!< The display of `toggle_hud`. Bit 0 draws the HUD. */
     std::unique_ptr<GfxTunnel> mTunnel;  /*!< The tunnel of tracks, or null. */
     std::unique_ptr<Overlay> mOverlay;   /*!< The head-up display, or null. */
     std::unique_ptr<GfxArena> mArena;    /*!< The arena, or null. */
@@ -1961,7 +1963,7 @@ private:
     int mWinnerDrawn;              /*!< Whether the winner's avatar was drawn this frame. */
     int mWinner;                   /*!< The winning player, or -1. */
     const float *mMsPerTick;       /*!< The milliseconds per tick of the song, or null. Borrowed. */
-    const char *mMultiplierFormat; /*!< The localized `MULTIPLIER_FORMAT`. Borrowed. */
+    const char *mMultiplierFormat; /*!< The localised `MULTIPLIER_FORMAT`. Borrowed. */
     std::list<DebugMsg> mDebugMsgs;  /*!< Messages for debugging. */
     std::list<DebugMsg> mDebugMsgs2; /*!< More messages for debugging. */
 };

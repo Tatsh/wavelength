@@ -550,21 +550,31 @@ protected:
      */
     void AcquireRefs();
 
-    std::unique_ptr<Bones> mBones; /*!< The bones, or null. */
-    std::vector<Edge> mEdges;      /*!< The edges. */
-    std::vector<Face> mFaces;      /*!< The triangles. */
-    RndMesh *mGeomOwner;           /*!< The mesh that has the geometry. */
-    RndMat *mMat;                  /*!< The material, or null. */
-    int mMutable;                  /*!< Non-zero when the geometry changes at run time. */
-    Sphere mSphere;                /*!< The bounding sphere, of radius 0 for none. */
-    RndTransformable *mTransOwner; /*!< The transformable whose world transform places the mesh. */
-    std::vector<Vert> mVerts;      /*!< The vertices. */
-    int mZFunc;                    /*!< The ZFunc. */
-    int mZMode;                    /*!< The ZMode. */
+    int mZMode; /*!< The ZMode. */
 
-private:
+    int mZFunc; /*!< The ZFunc. */
+
+    std::vector<Vert> mVerts; /*!< The vertices. */
+
+    std::vector<Face> mFaces; /*!< The triangles. */
+
+    std::vector<Edge> mEdges; /*!< The edges. */
+
+    RndMat *mMat; /*!< The material, or null. */
+
+    Sphere mSphere; /*!< The bounding sphere, of radius 0 for none. */
+
+    RndMesh *mGeomOwner; /*!< The mesh that has the geometry. */
+
+    RndTransformable *mTransOwner; /*!< The transformable whose world transform places the mesh. */
+
+    std::unique_ptr<Bones> mBones; /*!< The bones, or null. */
+
     float mMinScreen; /*!< The least projected size to draw at, or 0 for any. */
-    RndMesh *mNext;   /*!< The next lower detail mesh, or null. */
+
+    RndMesh *mNext; /*!< The next lower detail mesh, or null. */
+
+    int mMutable; /*!< Non-zero when the geometry changes at run time. */
 };
 
 /**

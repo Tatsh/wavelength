@@ -286,7 +286,7 @@ inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
     packet.GetCursor()->mDword[0] = qwLow;
     packet.GetCursor()->mDword[1] = qwHigh;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline unsigned long long PackColor(const Color &color) {
@@ -594,7 +594,7 @@ void Ps::RestoreAfterMovie() {
     frame.GetCursor()->mWord[1] = 0;
     frame.GetCursor()->mWord[2] = 0;
     frame.GetCursor()->mWord[3] = 0;
-    ++frame.GetCursor();
+    frame.Advance();
     SetGsReg(kGsRegPabe, 0, 0);
     SetGsReg(kGsRegTexA, kTexATa1, 0);
     packet.Wait();

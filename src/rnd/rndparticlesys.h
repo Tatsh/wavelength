@@ -19,9 +19,10 @@
 /**
  * One particle of a RndParticleSys pool.
  *
- * The structure is not polymorphic and emits no RTTI descriptor. The name is inferred from the tag
- * the pool is allocated under. A live particle is linked into the live list of a system through
- * mPrev and mNext, and a free particle into the free list of the pool owner through mNext.
+ * The structure is not polymorphic and does not emit an RTTI descriptor. The name is inferred
+ * from the tag the pool is allocated under. A live particle is linked into the live list of a
+ * system through mPrev and mNext, and a free particle into the free list of the pool owner
+ * through mNext.
  */
 struct Particle {
     /**
@@ -61,8 +62,9 @@ struct Particle {
  * Emitter that spawns, moves, and fades a population of particles.
  *
  * The RTTI includes the class name and records RndAnimatable, RndTransformable, and RndDrawable
- * as bases. The pool belongs to mParticlesOwner, which may be another system. Each system has its
- * own live list, drawn from the free list of the owner. The platform subclass draws the particles.
+ * as bases. The pool belongs to mParticlesOwner, possibly another system. Each system has a
+ * separate live list, drawn from the free list of the owner. The platform subclass draws the
+ * particles.
  */
 class RndParticleSys : public RndAnimatable, public RndTransformable, public RndDrawable {
 public:
@@ -77,9 +79,9 @@ public:
     static constexpr int kCopyShareParticles = 0x400;
 
     /**
-     * Construct a system that owns a pool of 10 particles.
+     * Construct a system with a pool of 10 particles.
      *
-     * The particles are white, live 100 frames, start at the origin, and move at speed 1.
+     * The particles are white, last 100 frames, start at the origin, and move at speed 1.
      *
      * @param pszName The registry key.
      * @ghidraAddress NTSC-U/C: 0x0023efb8
@@ -118,7 +120,7 @@ public:
      * Move the particles on to a frame, then emit for the elapsed frames unless SetEmitFrame()
      * clocks the emission.
      *
-     * Nothing moves on the first frame.
+     * The particles do not move on the first frame.
      *
      * @param fFrame The frame.
      * @return 1, to pass the frame on to the children.
@@ -196,7 +198,7 @@ public:
      * Copy another system and its bases.
      *
      * The line length is not copied. The pool is shared when the flags include
-     * kCopyShareParticles or the source does not own its pool.
+     * kCopyShareParticles or the source is not the owner of its pool.
      *
      * @param pSource The system to copy from.
      * @param nFlags The set of fields to copy.
@@ -262,7 +264,7 @@ public:
     /**
      * Move a live particle to the free list of the owner.
      *
-     * A particle that is already free is reported, and nothing else is done.
+     * A particle that is already free is reported and not moved.
      *
      * @param pParticle The particle, or null.
      * @return The particle after it in the live list, or null.
@@ -280,10 +282,10 @@ public:
     void FreeAllParticles();
 
     /**
-     * Emit for the frames since the previous call, which then clocks the emission in place of
-     * SetFrameSelf().
+     * Emit for the frames since the previous call, and clock the emission from then on in place
+     * of SetFrameSelf().
      *
-     * The first call emits nothing. The name is inferred.
+     * The first call does not emit particles. The name is inferred.
      *
      * @param fFrame The frame.
      * @ghidraAddress NTSC-U/C: 0x0023e2f0
@@ -304,7 +306,7 @@ public:
     /**
      * Emit the particles the emission rate owes for a number of frames.
      *
-     * The fraction of a particle left over is retained for the next call, and dropped when the
+     * The remaining fraction of a particle is retained for the next call, and dropped when the
      * pool is exhausted.
      *
      * @param fDelta The number of frames.
@@ -390,9 +392,9 @@ public:
         return mBubblePeriod;
     }
 
-    /** @return The range of the period of the bubble motion, for writing. */
-    Vector2 &GetBubblePeriod() {
-        return mBubblePeriod;
+    /** @param range The range of the period of the bubble motion. */
+    void SetBubblePeriod(const Vector2 &range) {
+        mBubblePeriod = range;
     }
 
     /** @return The range of the size of the bubble motion. */
@@ -403,6 +405,11 @@ public:
     /** @return The range of the size of the bubble motion, for writing. */
     Vector2 &GetBubbleSize() {
         return mBubbleSize;
+    }
+
+    /** @param range The range of the size of the bubble motion. */
+    void SetBubbleSize(const Vector2 &range) {
+        mBubbleSize = range;
     }
 
     /** @return Non-zero to reflect the particles off mCollidePlane. */
@@ -445,6 +452,11 @@ public:
         return mEndColorHigh;
     }
 
+    /** @param color The high end of the colour a particle fades to. */
+    void SetEndColorHigh(const Color &color) {
+        mEndColorHigh = color;
+    }
+
     /** @return The low end of the colour a particle fades to. */
     const Color &GetEndColorLow() const {
         return mEndColorLow;
@@ -453,6 +465,11 @@ public:
     /** @return The low end of the colour a particle fades to, for writing. */
     Color &GetEndColorLow() {
         return mEndColorLow;
+    }
+
+    /** @param color The low end of the colour a particle fades to. */
+    void SetEndColorLow(const Color &color) {
+        mEndColorLow = color;
     }
 
     /** @return The change of velocity per frame. */
@@ -465,6 +482,11 @@ public:
         return mForce;
     }
 
+    /** @param force The change of velocity per frame. */
+    void SetForce(const Vector3 &force) {
+        mForce = force;
+    }
+
     /** @return The range of the life, in frames. */
     const Vector2 &GetLife() const {
         return mLife;
@@ -473,6 +495,11 @@ public:
     /** @return The range of the life, in frames, for writing. */
     Vector2 &GetLife() {
         return mLife;
+    }
+
+    /** @param range The range of the life, in frames. */
+    void SetLife(const Vector2 &range) {
+        mLife = range;
     }
 
     /** @return The head of the live list. */
@@ -505,9 +532,9 @@ public:
         return mPitch;
     }
 
-    /** @return The range of the pitch of the direction, in radians, for writing. */
-    Vector2 &GetPitch() {
-        return mPitch;
+    /** @param range The range of the pitch of the direction, in radians. */
+    void SetPitch(const Vector2 &range) {
+        mPitch = range;
     }
 
     /** @return The high corner of the emission box, in local space. */
@@ -520,6 +547,11 @@ public:
         return mPosHigh;
     }
 
+    /** @param pos The high corner of the emission box, in local space. */
+    void SetPosHigh(const Vector3 &pos) {
+        mPosHigh = pos;
+    }
+
     /** @return The low corner of the emission box, in local space. */
     const Vector3 &GetPosLow() const {
         return mPosLow;
@@ -528,6 +560,11 @@ public:
     /** @return The low corner of the emission box, in local space, for writing. */
     Vector3 &GetPosLow() {
         return mPosLow;
+    }
+
+    /** @param pos The low corner of the emission box, in local space. */
+    void SetPosLow(const Vector3 &pos) {
+        mPosLow = pos;
     }
 
     /** @return Non-zero to test the particles against the depth buffer. */
@@ -560,6 +597,11 @@ public:
         return mSpeed;
     }
 
+    /** @param range The range of the speed. */
+    void SetSpeed(const Vector2 &range) {
+        mSpeed = range;
+    }
+
     /** @return The high end of the colour a particle starts with. */
     const Color &GetStartColorHigh() const {
         return mStartColorHigh;
@@ -568,6 +610,11 @@ public:
     /** @return The high end of the colour a particle starts with, for writing. */
     Color &GetStartColorHigh() {
         return mStartColorHigh;
+    }
+
+    /** @param color The high end of the colour a particle starts with. */
+    void SetStartColorHigh(const Color &color) {
+        mStartColorHigh = color;
     }
 
     /** @return The low end of the colour a particle starts with. */
@@ -580,14 +627,19 @@ public:
         return mStartColorLow;
     }
 
+    /** @param color The low end of the colour a particle starts with. */
+    void SetStartColorLow(const Color &color) {
+        mStartColorLow = color;
+    }
+
     /** @return The range of the yaw of the direction, in radians. */
     const Vector2 &GetYaw() const {
         return mYaw;
     }
 
-    /** @return The range of the yaw of the direction, in radians, for writing. */
-    Vector2 &GetYaw() {
-        return mYaw;
+    /** @param range The range of the yaw of the direction, in radians. */
+    void SetYaw(const Vector2 &range) {
+        mYaw = range;
     }
 
 protected:
@@ -661,7 +713,7 @@ PrnStream &operator<<(PrnStream &stream, const Particle &particle);
 /**
  * Write the name of a mode.
  *
- * kModeSprite writes nothing.
+ * kModeSprite does not write a name.
  *
  * @param stream The stream to write to.
  * @param eMode The mode.

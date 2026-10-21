@@ -332,38 +332,64 @@ public:
     }
 
 protected:
-    const char *mName;   /*!< The name, a symbol. */
-    String mFile;        /*!< The `.rnd` file. */
-    int mState;          /*!< One of State. */
-    UIComponent *mFocus; /*!< The component with the focus, or null. Borrowed. */
-    float mFrame;        /*!< The frame of the entry and exit animation. */
-    float mIdleFrame;    /*!< The frame ComputeFrame() reports while neither animation plays. */
-    float mShownFrame;   /*!< The frame the entry stops at. */
-    float mHiddenFrame;  /*!< The frame the exit stops at. */
-    float mEnterMs;      /*!< The length of the entry. */
-    float mExitMs;       /*!< The length of the exit. */
-    int mLoaded;         /*!< Whether FinishLoad() has run since the last load. */
-    DataArray *mData;    /*!< The script description. Borrowed (reference counted). */
-    RndLoader *mLoader;  /*!< The loader of the file in use, or null. See mOwnedLoader. */
-    RndView *mView;      /*!< The view of the file, or null. Borrowed. */
-    int mLoadRefs;       /*!< The number of Load() calls not yet balanced by Unload(). */
+    float mFrame; /*!< The frame of the entry and exit animation. */
+
+    float mIdleFrame; /*!< The frame ComputeFrame() reports while neither animation plays. */
+
+    const char *mName; /*!< The name, a symbol. */
+
+    String mFile; /*!< The `.rnd` file. */
+
+    int mState; /*!< One of State. */
+
+    RndView *mView; /*!< The view of the file, or null. Borrowed. */
+
+    const char *mFocusName; /*!< The component that receives the focus after a load. */
+
+    float mLoopStart; /*!< The time the looping animation's frame counts from. */
+
+    RndAnimatable *mLoopAnim; /*!< The looping animation, or null. Borrowed. */
+
+    RndAnimatable *mEnterExitAnim; /*!< The entry and exit animation, or null. Borrowed. */
+
+    float mTransitionStart; /*!< The time the entry or exit started, or 0 for neither. */
+
+    float mShownFrame; /*!< The frame the entry stops at. */
+
+    float mHiddenFrame; /*!< The frame the exit stops at. */
+
+    float mEnterMs; /*!< The length of the entry. */
+
+    float mExitMs; /*!< The length of the exit. */
+
+    int mEnterReversed; /*!< Whether the entry plays its frames backwards. */
+
+    int mExitReversed; /*!< Whether the exit plays its frames backwards. */
+
+    float mEnterStartFrame; /*!< The frame the entry starts at. */
+
+    float mExitStartFrame; /*!< The frame the exit starts at. */
+
+    int mLoadRefs; /*!< The number of Load() calls not yet balanced by Unload(). */
+
+    int mLoaded; /*!< Whether FinishLoad() has run since the last load. */
+
+    DataArray *mData; /*!< The script description. Borrowed (reference counted). */
+
     std::list<RndText *> mTexts; /*!< The text objects of the file. Borrowed. */
+
     std::map<const char *, std::unique_ptr<UIComponent>, StrLess> mComponents; /*!< Components. */
+
     std::unique_ptr<UINavigator> mNavigator; /*!< The navigator that moves the focus. */
 
-private:
-    const char *mFocusName;        /*!< The component that receives the focus after a load. */
-    float mLoopStart;              /*!< The time the looping animation's frame counts from. */
-    RndAnimatable *mLoopAnim;      /*!< The looping animation, or null. Borrowed. */
-    RndAnimatable *mEnterExitAnim; /*!< The entry and exit animation, or null. Borrowed. */
-    float mTransitionStart;        /*!< The time the entry or exit started, or 0 for neither. */
-    int mEnterReversed;            /*!< Whether the entry plays its frames backwards. */
-    int mExitReversed;             /*!< Whether the exit plays its frames backwards. */
-    float mEnterStartFrame;        /*!< The frame the entry starts at. */
-    float mExitStartFrame;         /*!< The frame the exit starts at. */
+    UIComponent *mFocus; /*!< The component with the focus, or null. Borrowed. */
+
+    RndLoader *mLoader; /*!< The loader of the file in use, or null. See mOwnedLoader. */
+
     /** The loader the panel created, or null when it has none or uses a shared one. */
     std::unique_ptr<RndLoader> mOwnedLoader;
 
+private:
     /**
      * The default frame the entry starts at.
      *

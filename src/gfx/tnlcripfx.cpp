@@ -181,7 +181,7 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
         const float flElapsed = TheGameDb->GetSongTime() - mStartTime;
         if (flElapsed <= sFadeTime) {
             mView->SetFrame(flElapsed + sFlyTime);
-            mView->GetLocalXfm() = mXfm;
+            mView->SetLocalXfm(mXfm);
             mView->SetDirty(1);
             mView->UpdateWorldXfm(nullptr, 0);
             mView->Draw();
@@ -194,12 +194,12 @@ void TnlCripFX::Draw(GfxTunnel *pTunnel) {
     const float flElapsed = TheGameDb->GetSongTime() - mStartTime;
     Transform shadow = mXfm;
     shadow.mTranslation = mShadowPos;
-    mShadow->GetLocalXfm() = shadow;
+    mShadow->SetLocalXfm(shadow);
     mShadow->SetDirty(1);
     mShadow->UpdateWorldXfm(nullptr, 0);
     mShadow->Draw();
     mView->SetFrame(flElapsed);
-    mView->GetLocalXfm() = mXfm;
+    mView->SetLocalXfm(mXfm);
     mView->SetDirty(1);
     mView->UpdateWorldXfm(nullptr, 0);
     mView->Draw();

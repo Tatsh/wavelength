@@ -119,7 +119,10 @@ private:
     /** The decoded button word Read() reports. +0x100 */
     int mButtons;
 
-    int mToggledButtons;  // +0x108, each new press toggles its bit
+    int mHeldButtonsSeen; // +0x104, every button pressed since Init()
+
+    int mToggledButtons; // +0x108, each new press toggles its bit
+
     int mPreviousButtons; // +0x10c, mButtons before the latest report
 
     /** The port Init() received. +0x110 */
@@ -141,6 +144,14 @@ private:
      */
     int mReadyLevel;
 
+    int mDeadZone; // +0x128, Init()'s fourth argument
+
+    int mReadCount; // +0x12c, counted by Read()
+
+    unsigned char mLastAxes[kLastAxisCount]; // +0x130, cleared by Init() and otherwise unused
+
+    short mAxisDeltas[kAxisDeltaCount]; // +0x134, cleared by Init() and otherwise unused
+
     /** The pressure baseline Read() subtracts. +0x13c */
     unsigned char mPressureBaseline[kPressureByteCount];
 
@@ -149,10 +160,4 @@ private:
 
     /** The actuator alignment Read() sends during setup. +0x14e */
     unsigned char mActAlign[kActuatorByteCount];
-
-    int mHeldButtonsSeen;                    // +0x104, every button pressed since Init()
-    int mDeadZone;                           // +0x128, Init()'s fourth argument
-    int mReadCount;                          // +0x12c, counted by Read()
-    unsigned char mLastAxes[kLastAxisCount]; // +0x130, cleared by Init() and otherwise unused
-    short mAxisDeltas[kAxisDeltaCount];      // +0x134, cleared by Init() and otherwise unused
 };

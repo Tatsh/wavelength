@@ -108,18 +108,18 @@ void SpotLightFX::Draw() {
         }
         if (flFadeStart < it->mTick) {
             const float flLevel = fade.LinearInterpolator::Interp(it->mTick);
-            pEnviron->GetAmbientColor() = Color{flLevel, flLevel, flLevel, 1.0f};
+            pEnviron->SetAmbientColor(Color{flLevel, flLevel, flLevel, 1.0f});
             pEnviron->Draw();
-            mMesh->GetLocalXfm() = *it->mSpot;
+            mMesh->SetLocalXfm(*it->mSpot);
             mMesh->SetDirty(1);
             mMesh->UpdateWorldXfm(nullptr, 0);
             mMesh->Draw();
         }
     }
-    pEnviron->GetAmbientColor() = Color{1.0f, 1.0f, 1.0f, 1.0f};
+    pEnviron->SetAmbientColor(Color{1.0f, 1.0f, 1.0f, 1.0f});
     pEnviron->Draw();
     mSpots->Draw();
-    pEnviron->GetAmbientColor() = ambient;
+    pEnviron->SetAmbientColor(ambient);
     pEnviron->Draw();
 }
 

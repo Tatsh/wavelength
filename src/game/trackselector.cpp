@@ -70,7 +70,7 @@ void TrackSelector::AddPlayer(int nTrack) {
 
 void TrackSelector::AddPlayer(int nTrack, int nSlot) {
     mPlayerTracks.push_back(nTrack);
-    mTrackInfos[nTrack].GetPlayers()[nSlot] = static_cast<int>(mPlayerTracks.size()) - 1;
+    mTrackInfos[nTrack].SetPlayer(nSlot, static_cast<int>(mPlayerTracks.size()) - 1);
 }
 
 int TrackSelector::GetNumPlayers() const {
@@ -97,8 +97,8 @@ void TrackSelector::SwapPlayer(int nPlayer, int nTrack, int nSlot) {
     int nOldTrack = mPlayerTracks[nPlayer];
     int nOldSlot = mTrackInfos[nOldTrack].Find(nPlayer);
     int nOther = mTrackInfos[nTrack].GetPlayers()[nSlot];
-    mTrackInfos[nOldTrack].GetPlayers()[nOldSlot] = nOther;
-    mTrackInfos[nTrack].GetPlayers()[nSlot] = nPlayer;
+    mTrackInfos[nOldTrack].SetPlayer(nOldSlot, nOther);
+    mTrackInfos[nTrack].SetPlayer(nSlot, nPlayer);
     mPlayerTracks[nPlayer] = nTrack;
     if (nOther != kNoPlayer) {
         mPlayerTracks[nOther] = nOldTrack;

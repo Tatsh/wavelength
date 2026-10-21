@@ -99,6 +99,7 @@ private:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    int mShowNote; // Whether the list shows the note rather than the band picture.
     std::list<NetRepoRemix> mRemixes; /*!< The remixes of the repository. */
+
+    int mShowNote; // Whether the list shows the note rather than the band picture.
 };

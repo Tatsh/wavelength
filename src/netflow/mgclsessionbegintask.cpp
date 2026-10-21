@@ -37,9 +37,9 @@ void MGCLSessionBeginTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MGCL_STATUS_SUCCESS) {
-        TheHostpadRT->GetSessionKey() = pResponse->sessionKey;
+        TheHostpadRT->SetSessionKey(pResponse->sessionKey);
     } else {
-        TheHostpadRT->GetSessionKey() = "";
+        TheHostpadRT->SetSessionKey("");
     }
     pTask->Finish(pResponse->header.status == RT_MGCL_STATUS_SUCCESS,
                   LaunchpadAbortedMsg::kReasonServer);

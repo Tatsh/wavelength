@@ -105,16 +105,16 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
         mSys->GetEmitRate().y = range.y;
     }
     if (pSys->FindVector("life", &range, false)) {
-        mSys->GetLife() = range;
+        mSys->SetLife(range);
     }
     if (pSys->FindVector("speed", &range, false)) {
-        mSys->GetSpeed() = range;
+        mSys->SetSpeed(range);
     }
     if (pSys->FindVector("pitch", &range, false)) {
-        mSys->GetPitch() = ToRadians(range);
+        mSys->SetPitch(ToRadians(range));
     }
     if (pSys->FindVector("yaw", &range, false)) {
-        mSys->GetYaw() = ToRadians(range);
+        mSys->SetYaw(ToRadians(range));
     }
     if (pSys->FindVector("size", &range, false)) {
         mSys->GetSize().x = range.x;
@@ -125,36 +125,36 @@ void ParticleArmsAssembly::LoadConfig(DataArray *pData) {
     if (pRange != nullptr) {
         const Vector3 low = ReadVector3(pRange->Array(1));
         const Vector3 high = ReadVector3(pRange->Array(2));
-        mSys->GetPosLow() = low;
-        mSys->GetPosHigh() = high;
+        mSys->SetPosLow(low);
+        mSys->SetPosHigh(high);
     }
     pRange = pSys->FindArray("start_color", false);
     if (pRange != nullptr) {
         const Color low = ReadColor(pRange->Array(1));
         const Color high = ReadColor(pRange->Array(2));
-        mSys->GetStartColorLow() = low;
-        mSys->GetStartColorHigh() = high;
+        mSys->SetStartColorLow(low);
+        mSys->SetStartColorHigh(high);
     }
     pRange = pSys->FindArray("end_color", false);
     if (pRange != nullptr) {
         const Color low = ReadColor(pRange->Array(1));
         const Color high = ReadColor(pRange->Array(2));
-        mSys->GetEndColorLow() = low;
-        mSys->GetEndColorHigh() = high;
+        mSys->SetEndColorLow(low);
+        mSys->SetEndColorHigh(high);
     }
     DataArray *pBubble = pSys->FindArray("bubble", false);
     if (pBubble != nullptr) {
         mSys->SetBubble(1);
         if (pBubble->FindVector("period", &range, false)) {
-            mSys->GetBubblePeriod() = range;
+            mSys->SetBubblePeriod(range);
         }
         if (pBubble->FindVector("size", &range, false)) {
-            mSys->GetBubbleSize() = range;
+            mSys->SetBubbleSize(range);
         }
     }
     Vector3 force;
     if (pSys->FindVector("force", &force, false)) {
-        mSys->GetForce() = force;
+        mSys->SetForce(force);
     }
     if (pSys->FindInt("read_z", &nValue, false)) {
         mSys->SetReadZ((nValue != 0));
@@ -192,7 +192,7 @@ void ParticleArmsAssembly::Poll(TnlGeom *pGeom, float flTick) {
         arm.mTranslation = Vector3{flSin * mArmLength, mArmLength * 0.0f, flCos * mArmLength};
         sceVu0MulAffineMatrixXyz(&arm.mBasisX.x, &base.mBasisX.x, &arm.mBasisX.x);
 
-        pSys->GetLocalXfm() = arm;
+        pSys->SetLocalXfm(arm);
 
         pSys->SetDirty(1);
         pSys->UpdateWorldXfm(nullptr, 0);

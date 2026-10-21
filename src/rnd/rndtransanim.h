@@ -237,6 +237,11 @@ public:
         return mRotKeys;
     }
 
+    /** @param keys The rotation keys. */
+    void SetRotKeys(const std::vector<Key<Quat>> &keys) {
+        mRotKeys = keys;
+    }
+
     /** @return The scale keys. */
     const std::vector<Key<Vector3>> &GetScaleKeys() const {
         return mScaleKeys;
@@ -245,6 +250,11 @@ public:
     /** @return The scale keys, for writing. */
     std::vector<Key<Vector3>> &GetScaleKeys() {
         return mScaleKeys;
+    }
+
+    /** @param keys The scale keys. */
+    void SetScaleKeys(const std::vector<Key<Vector3>> &keys) {
+        mScaleKeys = keys;
     }
 
     /** @return The transformable the animation drives. */
@@ -270,6 +280,11 @@ public:
     /** @return The translation keys, for writing. */
     std::vector<Key<Vector3>> &GetTransKeys() {
         return mTransKeys;
+    }
+
+    /** @param keys The translation keys. */
+    void SetTransKeys(const std::vector<Key<Vector3>> &keys) {
+        mTransKeys = keys;
     }
 
 protected:

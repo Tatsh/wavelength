@@ -325,9 +325,9 @@ public:
         return mScreenRect;
     }
 
-    /** @return The area drawn to, in fractions of the target, for writing. */
-    Rect &GetScreenRect() {
-        return mScreenRect;
+    /** @param rect The area drawn to, in fractions of the target. */
+    void SetScreenRect(const Rect &rect) {
+        mScreenRect = rect;
     }
 
     /** @return The texture drawn to, or null for the display. */
@@ -345,9 +345,9 @@ public:
         return mZRange;
     }
 
-    /** @return The depth range the projection maps to, for writing. */
-    Vector2 &GetZRange() {
-        return mZRange;
+    /** @param range The depth range the projection maps to. */
+    void SetZRange(const Vector2 &range) {
+        mZRange = range;
     }
 
 protected:
@@ -371,20 +371,31 @@ protected:
      */
     void AcquireTargetTex();
 
-    float mFarPlane;         /*!< The distance to the far plane. */
-    float mFov;              /*!< The field of view in radians, 0 for orthographic. */
-    Transform mInvWorldXfm;  /*!< The inverse of mOrthoWorldXfm. */
-    Frustum mLocalFrustum;   /*!< The view volume in camera space. */
-    Transform mLocalProject; /*!< Camera space to the unit projection. */
-    float mNearPlane;        /*!< The distance to the near plane. */
-    Rect mScreenRect;        /*!< The area drawn to, in fractions of the target. */
-    RndTex *mTargetTex;      /*!< The texture drawn to, or null for the display. */
-    Vector2 mZRange;         /*!< The depth range the projection maps to. */
+    Transform mOrthoWorldXfm; /*!< The world transform with an orthonormal basis. */
 
-private:
-    Transform mOrthoWorldXfm;   /*!< The world transform with an orthonormal basis. */
+    Transform mInvWorldXfm; /*!< The inverse of mOrthoWorldXfm. */
+
+    Transform mLocalProject; /*!< Camera space to the unit projection. */
+
     Transform mInvLocalProject; /*!< The inverse of mLocalProject. */
-    Transform mWorldProject;    /*!< World space to the unit projection. */
+
+    Transform mWorldProject; /*!< World space to the unit projection. */
+
     Transform mInvWorldProject; /*!< The inverse of mWorldProject. */
-    Frustum mWorldFrustum;      /*!< The view volume in world space. */
+
+    Frustum mLocalFrustum; /*!< The view volume in camera space. */
+
+    Frustum mWorldFrustum; /*!< The view volume in world space. */
+
+    float mNearPlane; /*!< The distance to the near plane. */
+
+    float mFarPlane; /*!< The distance to the far plane. */
+
+    float mFov; /*!< The field of view in radians, 0 for orthographic. */
+
+    Vector2 mZRange; /*!< The depth range the projection maps to. */
+
+    Rect mScreenRect; /*!< The area drawn to, in fractions of the target. */
+
+    RndTex *mTargetTex; /*!< The texture drawn to, or null for the display. */
 };

@@ -13,7 +13,7 @@ constexpr int kUsagePolicy = 0;
 } // namespace
 
 void GetPolicyTask::OnStart() {
-    TheLobbyRT->GetPolicy() = "";
+    TheLobbyRT->SetPolicy("");
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());

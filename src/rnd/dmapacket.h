@@ -143,9 +143,18 @@ public:
         return mCursor;
     }
 
-    /** @return The next quadword to write, for writing. */
-    DmaQuadword *&GetCursor() {
-        return mCursor;
+    /** @param pCursor The next quadword to write. */
+    void SetCursor(DmaQuadword *pCursor) {
+        mCursor = pCursor;
+    }
+
+    /**
+     * Move the cursor past quadwords written in place.
+     *
+     * @param nQuadwords The number of quadwords.
+     */
+    void Advance(int nQuadwords = 1) {
+        mCursor += nQuadwords;
     }
 
     /** @return The GIF tag being filled, or null. */

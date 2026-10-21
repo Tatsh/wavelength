@@ -53,6 +53,11 @@ public:
             return mCamPoint;
         }
 
+        /** @param point The position in camera space. */
+        void SetCamPoint(const Vector3 &point) {
+            mCamPoint = point;
+        }
+
         /** @return The colour. */
         const Color &GetColor() const {
             return mColor;
@@ -61,6 +66,11 @@ public:
         /** @return The colour, for writing. */
         Color &GetColor() {
             return mColor;
+        }
+
+        /** @param color The colour. */
+        void SetColor(const Color &color) {
+            mColor = color;
         }
 
         /** @return The screen direction to the next point. */
@@ -73,6 +83,11 @@ public:
             return mDir;
         }
 
+        /** @param dir The screen direction to the next point. */
+        void SetDir(const Vector2 &dir) {
+            mDir = dir;
+        }
+
         /** @return The screen offset of the ribbon's edges from the point. */
         const Vector2 &GetOffset() const {
             return mOffset;
@@ -83,6 +98,11 @@ public:
             return mOffset;
         }
 
+        /** @param offset The screen offset of the ribbon's edges from the point. */
+        void SetOffset(const Vector2 &offset) {
+            mOffset = offset;
+        }
+
         /** @return The position. */
         const Vector3 &GetPoint() const {
             return mPoint;
@@ -91,6 +111,11 @@ public:
         /** @return The position, for writing. */
         Vector3 &GetPoint() {
             return mPoint;
+        }
+
+        /** @param point The position. */
+        void SetPoint(const Vector3 &point) {
+            mPoint = point;
         }
 
         /** @return The position projected onto the screen. */

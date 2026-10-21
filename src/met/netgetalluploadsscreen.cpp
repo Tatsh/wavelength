@@ -62,8 +62,8 @@ bool NetGetAllUploadsScreen::HandleRepoRemixes(RepoRemixesMsg *pMsg) {
     if (pMsg->GetResult() == kRequestSucceeded) {
         pRemixes = pMsg->GetRemixes();
     }
-    dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false))->GetRemixes() =
-        *pRemixes;
+    dynamic_cast<NetReposToolScreen *>(TheUI.FindScreen(kReposToolScreen, false))
+        ->SetRemixes(*pRemixes);
     auto *pUploadTool =
         dynamic_cast<NetUploadToolScreen *>(TheUI.FindScreen(kUploadToolScreen, false));
     pUploadTool->SetFiles(mFiles, *pRemixes);

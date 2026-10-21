@@ -84,6 +84,16 @@ public:
             return mPlayers;
         }
 
+        /**
+         * Put a player in a slot.
+         *
+         * @param nSlot The slot.
+         * @param nPlayer The player, or -1.
+         */
+        void SetPlayer(int nSlot, int nPlayer) {
+            mPlayers[nSlot] = nPlayer;
+        }
+
     private:
         std::vector<int> mPlayers; /*!< The player in each slot, or -1. */
     };

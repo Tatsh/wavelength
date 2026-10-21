@@ -243,12 +243,16 @@ public:
 
 protected:
     RndBitmap mBitmap; /*!< The bitmap. */
-    int mBpp;          /*!< Bits per pixel. */
-    int mHeight;       /*!< Height in pixels. */
-    int mMipMapK;      /*!< The mipmap distance factor. */
-    int mRendered;     /*!< Non-zero for a texture rendered to. */
-    int mWidth;        /*!< Width in pixels. */
 
-private:
+    int mMipMapK; /*!< The mipmap distance factor. */
+
+    int mRendered; /*!< Non-zero for a texture rendered to. */
+
+    int mWidth; /*!< Width in pixels. */
+
+    int mHeight; /*!< Height in pixels. */
+
+    int mBpp; /*!< Bits per pixel. */
+
     FilePath mFile; /*!< The file the bitmap loads from. */
 };

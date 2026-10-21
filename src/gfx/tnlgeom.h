@@ -169,6 +169,21 @@ public:
             return mSections;
         }
 
+        /**
+         * Replace one section as drawn.
+         *
+         * @param nSection The section.
+         * @param section The section.
+         */
+        void SetSection(int nSection, const CrossSectionXfm &section) {
+            mSections[nSection] = section;
+        }
+
+        /** @param sections The sections as drawn. */
+        void SetSections(const std::vector<CrossSectionXfm> &sections) {
+            mSections = sections;
+        }
+
         /** @return The mesh of the panel. */
         RndMesh *GetMesh() const {
             return mMesh.get();

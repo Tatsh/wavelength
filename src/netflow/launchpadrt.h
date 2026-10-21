@@ -569,13 +569,13 @@ public:
     }
 
     /** @return The connection to the session. */
-    rtNetConnectionInfo &GetConnectionInfo() {
+    const rtNetConnectionInfo &GetConnectionInfo() const {
         return mConnectionInfo;
     }
 
-    /** @return The connection to the session. */
-    const rtNetConnectionInfo &GetConnectionInfo() const {
-        return mConnectionInfo;
+    /** @param info The connection to the session. */
+    void SetConnectionInfo(const rtNetConnectionInfo &info) {
+        mConnectionInfo = info;
     }
 
     /** @return The connection of the session library, or -1. */

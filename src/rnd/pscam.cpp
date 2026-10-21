@@ -105,7 +105,7 @@ inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
     packet.GetCursor()->mDword[kLowDword] = qwLow;
     packet.GetCursor()->mDword[kHighDword] = qwHigh;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline unsigned long long PackXy(int nX, int nY) {

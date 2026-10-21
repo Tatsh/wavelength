@@ -48,7 +48,11 @@ public:
     void Error(int nTick, const char *pszMessage);
 
 protected:
+    int mTrack; /*!< The number of the MIDI track. */
+
     int mValidate; /*!< Check the events for authoring errors. */
+
+    ErrorHandler mErrorHandler; /*!< The routine that reports an error, or null. */
 
 private:
     /**
@@ -65,7 +69,4 @@ private:
      * @ghidraAddress PAL: 0x0028a2a8
      */
     static String FormatMessage(const String &prefix, int nTick, int nTrack, const String &message);
-
-    int mTrack;                 /*!< The number of the MIDI track. */
-    ErrorHandler mErrorHandler; /*!< The routine that reports an error, or null. */
 };

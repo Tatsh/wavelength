@@ -5,8 +5,8 @@
 /**
  * Display of the controller buttons on the screen around a song.
  *
- * The class is not polymorphic and has no RTTI. The name is inferred from the button names it
- * shows. Each of the three lanes shows the icon of the controller button it is played with.
+ * The class is not polymorphic and does not have RTTI. The name is inferred from the button names
+ * it shows. Each of the three lanes shows the icon of the controller button it is played with.
  */
 class ControllerDisplay {
 public:
@@ -80,7 +80,7 @@ public:
     /**
      * Refresh the button labels from the first player's controller bindings.
      *
-     * The tutorial keeps the labels it has.
+     * The tutorial retains the labels it has.
      *
      * @ghidraAddress NTSC-U/C: 0x0014b128
      * @ghidraAddress PAL: 0x0014cac8
@@ -108,8 +108,8 @@ private:
     static const char *GetButtonGlyph(InputMap *pMap, int nAction);
 
     int mShowCount; /*!< The requests to show the display. */
-    int mOption;    /*!< Nonzero in the mode that hides the buttons. */
-    int mHighlight; /*!< Nonzero while the buttons are highlighted. */
+    int mOption;    /*!< Non-zero in the mode that hides the buttons. */
+    int mHighlight; /*!< Non-zero while the buttons are highlighted. */
 };
 
 /**

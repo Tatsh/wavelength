@@ -197,7 +197,7 @@ void GfxArena::PollLoad(bool bHudLoaded) {
                                    Vector3{0.0f, 1.0f, 0.0f},
                                    Vector3{0.0f, 0.0f, 1.0f},
                                    Vector3{0.0f, 0.0f, 0.0f, 1.0f}};
-                pCam->GetLocalXfm() = identity;
+                pCam->SetLocalXfm(identity);
                 pCam->SetDirty(1);
                 break;
             }

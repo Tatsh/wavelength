@@ -59,7 +59,7 @@ TnlFire::Emitter::~Emitter() {
     if (mSys != nullptr) {
         mSys->GetEmitRate().x = mEmitRateLow;
         mSys->GetEmitRate().y = mEmitRateHigh;
-        mSys->GetForce() = mForce;
+        mSys->SetForce(mForce);
     }
 }
 
@@ -94,11 +94,11 @@ void TnlFire::Emitter::SetColor(const Color *pColor) {
     }
     Color color = *pColor;
     color.a = 1.0f;
-    mSys->GetStartColorLow() = Color{1.0f, 1.0f, 1.0f, 1.0f};
-    mSys->GetStartColorHigh() = color;
+    mSys->SetStartColorLow(Color{1.0f, 1.0f, 1.0f, 1.0f});
+    mSys->SetStartColorHigh(color);
     color.a = 0.0f;
-    mSys->GetEndColorLow() = color;
-    mSys->GetEndColorHigh() = color;
+    mSys->SetEndColorLow(color);
+    mSys->SetEndColorHigh(color);
 }
 
 void TnlFire::Emitter::Rotate(const Vector3 *pBasis) {
@@ -112,7 +112,7 @@ void TnlFire::Emitter::Rotate(const Vector3 *pBasis) {
     force.x = (x.x * mForce.x) + (y.x * mForce.y) + (z.x * mForce.z);
     force.y = (x.y * mForce.x) + (y.y * mForce.y) + (z.y * mForce.z);
     force.z = (x.z * mForce.x) + (y.z * mForce.y) + (z.z * mForce.z);
-    mSys->GetForce() = force;
+    mSys->SetForce(force);
 }
 
 void TnlFire::Emitter::Start() {
@@ -359,7 +359,7 @@ void TnlFire::Update(float flTicks, float) {
     }
     Transform cellXfm;
     mTunnel->GetGeom()->CellXfm(mTrack, &cellXfm, true, true, flHead, kMiddle);
-    mView->GetLocalXfm() = cellXfm;
+    mView->SetLocalXfm(cellXfm);
     mView->SetDirty(1);
 
     while (mNextChunkTick <= flHead) {

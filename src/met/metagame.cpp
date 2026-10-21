@@ -1866,7 +1866,7 @@ bool Metagame::OnLoadGame([[maybe_unused]] Message *pMsg) {
         }
         Campaign other;
         other.SetName(player.mPlayer.GetName().c_str());
-        other.GetAvatar() = player.mPlayer.GetAvatar();
+        other.SetAvatar(player.mPlayer.GetAvatar());
         TheGameDb->AddPlayer(kRemotePlayer, &other, player.mId, player.mColor);
     }
 

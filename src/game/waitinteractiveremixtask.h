@@ -51,7 +51,7 @@ public:
     /**
      * Record a section change, restart the idle times, and evaluate the conditions.
      *
-     * @param nSection The section, which the task ignores.
+     * @param nSection The section. The task ignores it.
      * @ghidraAddress NTSC-U/C: 0x00142788
      * @ghidraAddress PAL: 0x00144128
      */
@@ -84,7 +84,8 @@ public:
     /**
      * Count a rotation, and evaluate the conditions.
      *
-     * @param bRight The rotation was to the right, which adds one. Otherwise it subtracts one.
+     * @param bRight The rotation was to the right. A right rotation adds one, and otherwise one
+     *               is subtracted.
      * @ghidraAddress NTSC-U/C: 0x00142810
      * @ghidraAddress PAL: 0x001441b0
      */
@@ -133,7 +134,7 @@ private:
     void EvaluateConditions();
 
     /**
-     * Run the actions of a condition when it holds.
+     * Run the actions of a condition when it is met.
      *
      * @param pCondition The condition.
      * @ghidraAddress NTSC-U/C: 0x001424b8
@@ -156,11 +157,11 @@ private:
     int mPitchCount;          /*!< Pitch changes since `pitch` last fired. */
     float mIdleTime;          /*!< Song clock time `idle` counts from. */
     float mIdle2Time;         /*!< Song clock time `idle2` counts from. */
-    int mLoopOn;              /*!< Nonzero once looping was switched on. */
-    int mForwardSection;      /*!< Nonzero once the section changed. */
-    int mBurnPattern;         /*!< Nonzero once a pattern was burned. */
+    int mLoopOn;              /*!< Non-zero once looping was switched on. */
+    int mForwardSection;      /*!< Non-zero once the section changed. */
+    int mBurnPattern;         /*!< Non-zero once a pattern was burned. */
     int mEraseCount;          /*!< Erased patterns. */
     int mRotation;            /*!< Rotations to the right less rotations to the left. */
-    int mEraseSection;        /*!< Nonzero once a section was erased. */
-    int mPatternMenuOpen;     /*!< Nonzero once the pattern menu was opened. */
+    int mEraseSection;        /*!< Non-zero once a section was erased. */
+    int mPatternMenuOpen;     /*!< Non-zero once the pattern menu was opened. */
 };

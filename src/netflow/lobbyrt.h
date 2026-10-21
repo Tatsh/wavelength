@@ -703,13 +703,13 @@ public:
     }
 
     /** @return The key of the lobby session. */
-    String &GetSessionKey() {
+    const String &GetSessionKey() const {
         return mSessionKey;
     }
 
-    /** @return The key of the lobby session. */
-    const String &GetSessionKey() const {
-        return mSessionKey;
+    /** @param pszSessionKey The key of the lobby session. */
+    void SetSessionKey(const char *pszSessionKey) {
+        mSessionKey = pszSessionKey;
     }
 
     /** @return The key pair of the console. */
@@ -748,13 +748,13 @@ public:
     }
 
     /** @return The address the name of the server resolves to. */
-    String &GetServerAddress() {
+    const String &GetServerAddress() const {
         return mServerAddress;
     }
 
-    /** @return The address the name of the server resolves to. */
-    const String &GetServerAddress() const {
-        return mServerAddress;
+    /** @param pszAddress The address the name of the server resolves to. */
+    void SetServerAddress(const char *pszAddress) {
+        mServerAddress = pszAddress;
     }
 
     /** @return The location of the login. */
@@ -933,13 +933,13 @@ public:
     }
 
     /** @return The news of the lobby server. */
-    String &GetAnnouncement() {
+    const String &GetAnnouncement() const {
         return mAnnouncement;
     }
 
-    /** @return The news of the lobby server. */
-    const String &GetAnnouncement() const {
-        return mAnnouncement;
+    /** @param pszAnnouncement The news of the lobby server. */
+    void SetAnnouncement(const char *pszAnnouncement) {
+        mAnnouncement = pszAnnouncement;
     }
 
     /** @return The licence agreement of the lobby server. */
@@ -950,6 +950,11 @@ public:
     /** @return The licence agreement of the lobby server. */
     const String &GetPolicy() const {
         return mPolicy;
+    }
+
+    /** @param pszPolicy The licence agreement of the lobby server. */
+    void SetPolicy(const char *pszPolicy) {
+        mPolicy = pszPolicy;
     }
 
 private:

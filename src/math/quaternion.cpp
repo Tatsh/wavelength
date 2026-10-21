@@ -39,15 +39,18 @@ inline float MatAt(const float *pMat3Rows, int nRow, int nComponent) {
     return pMat3Rows[(nRow * kMat3RowStride) + nComponent];
 }
 
-// The component of a quaternion that an axis index selects.
-inline float &AxisComponent(Quat &quat, int nAxis) {
+// Set the component of a quaternion that an axis index selects.
+inline void SetAxisComponent(Quat &quat, int nAxis, float fValue) {
     switch (nAxis) {
     case kX:
-        return quat.x;
+        quat.x = fValue;
+        break;
     case kY:
-        return quat.y;
+        quat.y = fValue;
+        break;
     default:
-        return quat.z;
+        quat.z = fValue;
+        break;
     }
 }
 
@@ -120,19 +123,23 @@ Quat &Quat::Set(const float *pMat3Rows) {
             sqrtf(((pMat3Rows[(nI * kMat3RowStride) + nI] - pMat3Rows[(nJ * kMat3RowStride) + nJ]) -
                    pMat3Rows[(nK * kMat3RowStride) + nK]) +
                   1.0f);
-        AxisComponent(*this, nI) = flRoot * 0.5f;
+        SetAxisComponent(*this, nI, flRoot * 0.5f);
         if (flRoot != 0.0f) {
             flRoot = 0.5f / flRoot;
         }
 
         w = (pMat3Rows[(nJ * kMat3RowStride) + nK] - pMat3Rows[(nK * kMat3RowStride) + nJ]) *
             flRoot;
-        AxisComponent(*this, nJ) =
+        SetAxisComponent(
+            *this,
+            nJ,
             (pMat3Rows[(nI * kMat3RowStride) + nJ] + pMat3Rows[(nJ * kMat3RowStride) + nI]) *
-            flRoot;
-        AxisComponent(*this, nK) =
+                flRoot);
+        SetAxisComponent(
+            *this,
+            nK,
             (pMat3Rows[(nI * kMat3RowStride) + nK] + pMat3Rows[(nK * kMat3RowStride) + nI]) *
-            flRoot;
+                flRoot);
     }
     return *this;
 }

@@ -753,12 +753,12 @@ void Ship::SetEnergy(float fEnergy, int nZone, [[maybe_unused]] float fZoneFract
         pTrodeMat = mTrodeMats[kArmOfLowZone];
     }
     for (ParticleArm &arm : mArms) {
-        arm.GetSys()->GetStartColorLow() = pColors[kArmColorStartLow];
-        arm.GetSys()->GetStartColorHigh() = pColors[kArmColorStartHigh];
+        arm.GetSys()->SetStartColorLow(pColors[kArmColorStartLow]);
+        arm.GetSys()->SetStartColorHigh(pColors[kArmColorStartHigh]);
     }
     for (ParticleArm &arm : mArms) {
-        arm.GetSys()->GetEndColorLow() = pColors[kArmColorEndLow];
-        arm.GetSys()->GetEndColorHigh() = pColors[kArmColorEndHigh];
+        arm.GetSys()->SetEndColorLow(pColors[kArmColorEndLow]);
+        arm.GetSys()->SetEndColorHigh(pColors[kArmColorEndHigh]);
     }
     for (ParticleArm &arm : mArms) {
         memcpy(&arm.GetSys()->GetForce(), aflForce, sizeof(aflForce));

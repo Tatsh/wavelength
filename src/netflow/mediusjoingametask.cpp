@@ -36,7 +36,7 @@ void MediusJoinGameTask::OnResponse(int nConnection,
     } else if (pResponse->header.status != RT_MEDIUS_STATUS_SUCCESS) {
         nReason = LaunchpadAbortedMsg::kReasonConnectFailed;
     } else {
-        TheLaunchpadRT->GetConnectionInfo() = pResponse->info;
+        TheLaunchpadRT->SetConnectionInfo(pResponse->info);
         nReason = 0;
     }
     pTask->Finish(pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS, nReason);

@@ -14,7 +14,7 @@ constexpr int kBreakTagLength = 4;
 } // namespace
 
 void GetAnnouncementsTask::OnStart() {
-    TheLobbyRT->GetAnnouncement() = "";
+    TheLobbyRT->SetAnnouncement("");
     rtMediusIdRequest request;
     memset(&request, 0, sizeof(request));
     strcpy(request.header.sessionKey, TheLobbyRT->GetSessionKey().c_str());
@@ -45,9 +45,9 @@ void GetAnnouncementsTask::OnResponse(int nConnection,
     if (pResponse->header.status == RT_MEDIUS_STATUS_SUCCESS) {
         ReplaceBreaks(pResponse->announcement);
 #ifdef VIDEO_STANDARD_PAL
-        TheLobbyRT->GetAnnouncement() = Utf8DecodedString(pResponse->announcement);
+        TheLobbyRT->SetAnnouncement(Utf8DecodedString(pResponse->announcement).c_str());
 #else
-        TheLobbyRT->GetAnnouncement() = pResponse->announcement;
+        TheLobbyRT->SetAnnouncement(pResponse->announcement);
 #endif
     }
     pTask->Finish(true, 0);

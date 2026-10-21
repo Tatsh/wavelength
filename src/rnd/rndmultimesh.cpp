@@ -7,7 +7,7 @@ namespace {
 
 // Move a mesh to a transform and recompute its world transform.
 inline void PlaceMesh(RndMesh *pMesh, const Transform &xfm) {
-    pMesh->GetLocalXfm() = xfm;
+    pMesh->SetLocalXfm(xfm);
     pMesh->SetDirty(1);
     pMesh->UpdateWorldXfm(nullptr, 0);
 }
@@ -16,7 +16,7 @@ inline void PlaceMesh(RndMesh *pMesh, const Transform &xfm) {
 // the local one, then the saved local transform is restored without recomputing.
 inline void RestoreMesh(RndMesh *pMesh, const Transform &localXfm, const Transform &worldXfm) {
     PlaceMesh(pMesh, worldXfm);
-    pMesh->GetLocalXfm() = localXfm;
+    pMesh->SetLocalXfm(localXfm);
     pMesh->SetDirty(1);
 }
 

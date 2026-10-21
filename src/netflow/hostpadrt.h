@@ -441,23 +441,23 @@ public:
     }
 
     /** @return The game server the authentication returned. */
-    rtNetConnectionInfo &GetServerInfo() {
-        return mServerInfo;
-    }
-
-    /** @return The game server the authentication returned. */
     const rtNetConnectionInfo &GetServerInfo() const {
         return mServerInfo;
     }
 
-    /** @return The key of the session on the game server. */
-    String &GetSessionKey() {
-        return mSessionKey;
+    /** @param info The game server the authentication returned. */
+    void SetServerInfo(const rtNetConnectionInfo &info) {
+        mServerInfo = info;
     }
 
     /** @return The key of the session on the game server. */
     const String &GetSessionKey() const {
         return mSessionKey;
+    }
+
+    /** @param pszSessionKey The key of the session on the game server. */
+    void SetSessionKey(const char *pszSessionKey) {
+        mSessionKey = pszSessionKey;
     }
 
     /** @return The settings of the game. */

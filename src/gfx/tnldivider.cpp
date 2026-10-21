@@ -92,7 +92,7 @@ TnlDivider::TnlDivider()
     layout.mBasisY = Vector3{0.0f, flScale, 0.0f};
     layout.mBasisZ = Vector3{0.0f, 0.0f, flScale};
     layout.mTranslation = sOffset;
-    mView->GetLocalXfm() = layout;
+    mView->SetLocalXfm(layout);
     mView->SetDirty(1);
     ScaleParticleTree(mView, sScale.x);
     RndTransAnim *pMessage = FindObject<RndTransAnim>("boundary msg.tnm");
@@ -263,7 +263,7 @@ void TnlDivider::UpdateText(std::list<Section>::iterator section) {
 void TnlDivider::PlaceOnPath(RndTransformable *pTrans, TnlGeom *pGeom, float flTick) {
     Transform xfm;
     pGeom->PathXfm(&xfm, flTick);
-    pTrans->GetLocalXfm() = xfm;
+    pTrans->SetLocalXfm(xfm);
     pTrans->SetDirty(1);
     pTrans->UpdateWorldXfm(nullptr, 0);
 }

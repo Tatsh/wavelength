@@ -31,10 +31,10 @@ public:
      * @param bValidate Check the events for authoring errors.
      * @param pfnError The routine that reports an error, or null to print it.
      * @param nChannel The MIDI channel of the track.
-     * @param nIntroTicks The length of the song intro, which must not have notes.
+     * @param nIntroTicks The length of the song intro. The intro must not have notes.
      * @param pData The data to fill.
      * @param pLyric The lyrics to fill.
-     * @param nFilterEffects Nonzero to leave controllers 93 and 94 out of the samples.
+     * @param nFilterEffects Non-zero to omit controllers 93 and 94 from the samples.
      * @param nSkill The skill level whose gems the builder reads.
      * @ghidraAddress NTSC-U/C: 0x0014b390
      * @ghidraAddress PAL: 0x0014cd30
@@ -154,7 +154,7 @@ private:
      * @param nStatus The status byte.
      * @param nData1 The first data byte.
      * @param nData2 The second data byte.
-     * @return False when the message is not a gem note, so that it is a sample.
+     * @return False when the message is not a gem note. The message is then a sample.
      * @ghidraAddress NTSC-U/C: 0x0014b5f0
      * @ghidraAddress PAL: 0x0014cf90
      */
@@ -162,7 +162,7 @@ private:
 
     int mIntroTicks;            /*!< The length of the song intro. */
     CatchTrackData *mData;      /*!< The data to fill. */
-    int mFilterEffects;         /*!< Nonzero to omit controllers 93 and 94 from the samples. */
+    int mFilterEffects;         /*!< Non-zero to omit controllers 93 and 94 from the samples. */
     Lyric *mLyric;              /*!< The lyrics to fill. */
     MidiValidator mValidator;   /*!< The checker of the channel messages. */
     int mSkill;                 /*!< The skill level whose gems the builder reads. */

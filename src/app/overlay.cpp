@@ -126,7 +126,7 @@ Overlay::Overlay(DataArray *pConfig, DataArray *pDefaults) : mStarted(0) {
     }
     mCam = dynamic_cast<RndCam *>(TheManager.Find(kHudCam));
     mCamPos = mCam->GetLocalXfm().mTranslation;
-    mCam->GetZRange() = sHudZ;
+    mCam->SetZRange(sHudZ);
     if (TheGameDb->GetRuleSet() != GameDb::kRuleSetDuel) {
         int nPosition = 0;
         for (int i = 0; i < nPlayers; ++i) {

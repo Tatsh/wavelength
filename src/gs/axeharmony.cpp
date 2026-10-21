@@ -19,7 +19,7 @@ void AxeHarmony::AddNote(unsigned char nNote) {
 }
 
 unsigned char AxeHarmony::GetHighest() const {
-    return *--mNotes.end();
+    return *mNotes.rbegin();
 }
 
 unsigned char AxeHarmony::GetLowest() const {

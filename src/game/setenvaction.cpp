@@ -29,5 +29,5 @@ void SetEnvAction::Exec() {
     mEnviron->SetFogStart(flStart);
     mEnviron->SetFogEnd(flEnd);
     mEnviron->SetFogDensity(flDensity);
-    mEnviron->GetFogColor() = color;
+    mEnviron->SetFogColor(color);
 }

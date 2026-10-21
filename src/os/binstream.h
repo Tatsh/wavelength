@@ -15,8 +15,9 @@
  *
  * In the European release the decryption generator follows that word and the vptr is at `+0x08`.
  * Read(), Write(), and Seek() there are plain members that call the virtual ReadImpl(),
- * WriteImpl(), and SeekImpl(), which take the vtable slots of the originals with SeekImpl() before
- * Flush().
+ * WriteImpl(), and SeekImpl(). In the binary those take the vtable slots of the originals, with
+ * SeekImpl() before Flush(). Here they are protected and declared after the public members, and
+ * the vtable order differs from the binary's.
  */
 class BinStream {
 public:
@@ -89,30 +90,6 @@ public:
      * @ghidraAddress PAL: 0x0029d990
      */
     void DisableEncryption();
-
-    /**
-     * Read bytes as they are stored.
-     *
-     * @param pData The destination.
-     * @param nBytes The number of bytes.
-     */
-    virtual void ReadImpl(void *pData, int nBytes) = 0;
-
-    /**
-     * Write bytes as they are given.
-     *
-     * @param pData The source.
-     * @param nBytes The number of bytes.
-     */
-    virtual void WriteImpl(const void *pData, int nBytes) = 0;
-
-    /**
-     * Move the position.
-     *
-     * @param nOffset The offset in bytes.
-     * @param eFrom The origin of the offset.
-     */
-    virtual void SeekImpl(int nOffset, SeekType eFrom) = 0;
 
 #else
     /**
@@ -238,6 +215,33 @@ public:
      * @ghidraAddress PAL: 0x0029ddb0
      */
     void WriteEndian(const void *pData, int nBytes);
+
+protected:
+#ifdef VIDEO_STANDARD_PAL
+    /**
+     * Read bytes as they are stored.
+     *
+     * @param pData The destination.
+     * @param nBytes The number of bytes.
+     */
+    virtual void ReadImpl(void *pData, int nBytes) = 0;
+
+    /**
+     * Write bytes as they are given.
+     *
+     * @param pData The source.
+     * @param nBytes The number of bytes.
+     */
+    virtual void WriteImpl(const void *pData, int nBytes) = 0;
+
+    /**
+     * Move the position.
+     *
+     * @param nOffset The offset in bytes.
+     * @param eFrom The origin of the offset.
+     */
+    virtual void SeekImpl(int nOffset, SeekType eFrom) = 0;
+#endif
 
 private:
     int mLittleEndian; /*!< Whether values are stored in the console's byte order. */

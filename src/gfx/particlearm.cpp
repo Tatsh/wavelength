@@ -77,12 +77,12 @@ void ParticleArm::Draw() {
     const Transform saved = pCam->GetLocalXfm();
     Transform armToCam;
     Multiply(armToCam, InvertScaled(pCam->GetWorldXfm()), arm);
-    pCam->GetLocalXfm() = InvertScaled(armToCam);
+    pCam->SetLocalXfm(InvertScaled(armToCam));
     pCam->SetDirty(1);
     pCam->UpdateWorldXfm(nullptr, 0);
     pCam->Draw();
     static_cast<RndDrawable *>(mSys)->Draw();
-    pCam->GetLocalXfm() = saved;
+    pCam->SetLocalXfm(saved);
     pCam->SetDirty(1);
     CamSlide::sSlide->UpdateWorldXfm(nullptr, 0);
     pCam->Draw();

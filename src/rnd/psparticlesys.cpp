@@ -53,14 +53,14 @@ inline void PushQuadword(unsigned long long qwLow, unsigned long long qwHigh) {
     DmaPacket &packet = DmaPacket::shared();
     packet.GetCursor()->mDword[kLowDword] = qwLow;
     packet.GetCursor()->mDword[kHighDword] = qwHigh;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline void PushFloats(float fX, float fY, float fZ, float fW) {
     DmaPacket &packet = DmaPacket::shared();
     const float afValues[] = {fX, fY, fZ, fW};
     std::memcpy(packet.GetCursor(), afValues, sizeof(afValues));
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline void PushVector(const Vector3 &vector) {
@@ -78,7 +78,7 @@ inline void PushVifCode(unsigned int nCode) {
     packet.GetCursor()->mWord[1] = 0;
     packet.GetCursor()->mWord[2] = 0;
     packet.GetCursor()->mWord[kVifCodeWord] = nCode;
-    ++packet.GetCursor();
+    packet.Advance();
 }
 
 inline void ClearQuadword(DmaQuadword *pQuadword) {
@@ -141,10 +141,10 @@ void PsParticleSys::DrawParticles() {
     while (pParticle != nullptr) {
         DmaQuadword *pUnpack = frame.GetCursor();
         ClearQuadword(pUnpack);
-        ++frame.GetCursor();
+        frame.Advance();
         DmaQuadword *pCount = frame.GetCursor();
         ClearQuadword(pCount);
-        ++frame.GetCursor();
+        frame.Advance();
 
         int nAddress = kConstantQwords;
         int nQwords = 1;
@@ -156,7 +156,7 @@ void PsParticleSys::DrawParticles() {
                 nQwords = 0;
                 pUnpack = frame.GetCursor();
                 ClearQuadword(pUnpack);
-                ++frame.GetCursor();
+                frame.Advance();
             }
             ++nCount;
             nQwords += kParticleQwords;

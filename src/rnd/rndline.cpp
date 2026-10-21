@@ -198,7 +198,7 @@ int RndLine::DrawShowing() {
                 const float fRatio = (fNear - visible.GetCamPoint().y) /
                                      (clipped.GetCamPoint().y - visible.GetCamPoint().y);
                 if (fRatio == 0.0f) {
-                    clipped.GetCamPoint() = visible.GetCamPoint();
+                    clipped.SetCamPoint(visible.GetCamPoint());
                 } else if (fRatio != 1.0f) {
                     ClipToNear(clipped.GetCamPoint(), visible.GetCamPoint(), 1.0f - fRatio);
                 }
@@ -431,11 +431,11 @@ void RndLine::SetNumPoints(int nPoints) {
 }
 
 void RndLine::SetPoint(int nIndex, const Vector3 &point) {
-    mPoints[nIndex].GetPoint() = point;
+    mPoints[nIndex].SetPoint(point);
 }
 
 void RndLine::SetPointColor(int nIndex, const Color &color) {
-    mPoints[nIndex].GetColor() = color;
+    mPoints[nIndex].SetColor(color);
     PointVerts verts;
     FindPointVerts(nIndex, verts);
     RndMesh::Vert *pVert = verts.mVerts;
@@ -493,8 +493,8 @@ void RndLine::BuildStrip(Point *pFirst, Point *pLast) {
     for (; p != pLast; ++p) {
         SetDirection(*p, p[1].GetScreen(), mWidth);
     }
-    p->GetDir() = p[-1].GetDir();
-    p->GetOffset() = p[-1].GetOffset();
+    p->SetDir(p[-1].GetDir());
+    p->SetOffset(p[-1].GetOffset());
 
     Rnd::Ray edge;
     edge.mPoint.x = pFirst->GetScreen().x + pFirst->GetOffset().x;
@@ -515,7 +515,7 @@ void RndLine::BuildStrip(Point *pFirst, Point *pLast) {
         edge.mPoint.y = p->GetScreen().y + p->GetOffset().y;
         edge.mDirection = p->GetDir();
         if (fCos < kStraightCos) {
-            p->GetOffset() = Rnd::Intersect(edge, previous);
+            p->SetOffset(Rnd::Intersect(edge, previous));
             p->GetOffset().x -= p->GetScreen().x;
             p->GetOffset().y -= p->GetScreen().y;
         }
@@ -528,13 +528,13 @@ void RndLine::BuildStrip(Point *pFirst, Point *pLast) {
     Point *pBegin = &mPoints.front();
     if (pFirst == pBegin) {
         for (Point *pClipped = pLast + 1; pClipped <= &mPoints.back(); ++pClipped) {
-            pClipped->GetOffset() = pLast->GetOffset();
-            pClipped->GetCamPoint() = pLast->GetCamPoint();
+            pClipped->SetOffset(pLast->GetOffset());
+            pClipped->SetCamPoint(pLast->GetCamPoint());
         }
     } else {
         for (Point *pClipped = pBegin; pClipped < pFirst; ++pClipped) {
-            pClipped->GetOffset() = pFirst->GetOffset();
-            pClipped->GetCamPoint() = pFirst->GetCamPoint();
+            pClipped->SetOffset(pFirst->GetOffset());
+            pClipped->SetCamPoint(pFirst->GetCamPoint());
         }
     }
 
@@ -577,7 +577,7 @@ void RndLine::BuildPair(Point *pFirst, Point *pSecond) {
     Project(*pFirst);
     Project(*pSecond);
     SetDirection(*pFirst, pSecond->GetScreen(), mWidth);
-    pSecond->GetOffset() = pFirst->GetOffset();
+    pSecond->SetOffset(pFirst->GetOffset());
     Vector2 cap;
     cap.y = pFirst->GetOffset().x;
     cap.x = -pFirst->GetOffset().y;

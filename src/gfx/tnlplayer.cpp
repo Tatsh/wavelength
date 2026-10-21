@@ -73,7 +73,7 @@ void TnlPlayer::LoadCamXfm(DataArray *pConfig, DataArray *pDefaults, RndCam *pCa
                         Vector3{0.0f, flCos, flSin},
                         Vector3{0.0f, -flSin, flCos},
                         offset};
-    pCam->GetLocalXfm() = xfm;
+    pCam->SetLocalXfm(xfm);
     pCam->SetDirty(1);
 }
 

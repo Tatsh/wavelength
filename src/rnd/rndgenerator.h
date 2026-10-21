@@ -318,9 +318,14 @@ public:
         return mPathVarMax;
     }
 
-    /** @return The most rotation about each axis, in degrees, for writing. */
-    float *GetPathVarMax() {
-        return mPathVarMax;
+    /**
+     * Set one entry of the most rotation about each axis, in degrees.
+     *
+     * @param nIndex The entry.
+     * @param fDegrees The value.
+     */
+    void SetPathVarMax(int nIndex, float fDegrees) {
+        mPathVarMax[nIndex] = fDegrees;
     }
 
     /** @return The most number of frames between births. */

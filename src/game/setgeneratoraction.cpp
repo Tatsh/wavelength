@@ -39,8 +39,8 @@ void SetGeneratorAction::Exec() {
         mGenerator->SetScaleGenHigh(mScale.y);
     }
     if ((mFlags & kFlagPathVar) != 0) {
-        mGenerator->GetPathVarMax()[0] = mPathVar.x;
-        mGenerator->GetPathVarMax()[1] = mPathVar.y;
-        mGenerator->GetPathVarMax()[2] = mPathVar.z;
+        mGenerator->SetPathVarMax(0, mPathVar.x);
+        mGenerator->SetPathVarMax(1, mPathVar.y);
+        mGenerator->SetPathVarMax(2, mPathVar.z);
     }
 }

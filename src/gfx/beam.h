@@ -15,12 +15,12 @@
 /**
  * Beam a ship fires at a gem, a line that two waves ripple along.
  *
- * The RTTI names the class through the beam pools. The object is 0x70 bytes.
+ * The RTTI identifies the class through the beam pools. The object is 0x70 bytes.
  */
 class Beam {
 public:
     /**
-     * Construct an idle beam with a line and a material of its own.
+     * Construct an idle beam, creating its line and its material.
      *
      * @ghidraAddress NTSC-U/C: 0x001ed2d0
      * @ghidraAddress PAL: 0x001f6070
@@ -70,7 +70,7 @@ public:
      * @param direction The direction the waves lift the line in.
      * @param side The direction the second wave moves the line in.
      * @param color The colour an end of no alpha takes.
-     * @return Whether the beam has ended, in which case nothing is changed.
+     * @return Whether the beam has ended. An ended beam is not changed.
      * @ghidraAddress NTSC-U/C: 0x001ed608
      * @ghidraAddress PAL: 0x001f63a8
      */
@@ -136,9 +136,9 @@ private:
     float mEndTime;                          /*!< The time the beam ends. */
     Ship *mOwner;                            /*!< The ship that fired the beam. */
     std::list<Ship::BeamData> *mOwnerList;   /*!< The list of the ship that records the beam. */
-    Vector2 mFrequencies;                    /*!< The waves along the beam of each wave. */
-    Vector2 mTravelPeriods;                  /*!< The period of the travel of each wave. */
-    unsigned char mReserved58[0x08];         // +0x58, not yet recovered.
-    Beam *mNextFree;                         /*!< The next beam of the free list. */
-    unsigned char mReserved64[0x0c];         // +0x64, not yet recovered.
+    Vector2 mFrequencies;   /*!< The number of cycles of each wave along the length of the beam. */
+    Vector2 mTravelPeriods; /*!< The period of the travel of each wave. */
+    unsigned char mReserved58[0x08]; // +0x58, not yet recovered.
+    Beam *mNextFree;                 /*!< The next beam of the free list. */
+    unsigned char mReserved64[0x0c]; // +0x64, not yet recovered.
 };

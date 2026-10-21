@@ -67,7 +67,7 @@ TnlCatcher::TnlCatcher(const char *pszColor, GfxTunnel *pTunnel)
                             Vector3{0.0f, sTargetSize, 0.0f},
                             Vector3{0.0f, 0.0f, 1.0f},
                             Vector3{flX * flPanelWidth, 0.0f, sTargetOffset}};
-        mTargets[i]->GetLocalXfm() = xfm;
+        mTargets[i]->SetLocalXfm(xfm);
         mTargets[i]->SetDirty(1);
         mTargets[i]->UpdateWorldXfm(nullptr, 0);
         mTargetHits[i] =

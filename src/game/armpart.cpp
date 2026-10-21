@@ -166,7 +166,7 @@ void ArmPart::SolveIK(const Transform &hand, const Vector3 &pole) {
     mForearm->SetDirty(1);
     mForearm->GetLocalXfm().mTranslation = elbow;
 
-    mHand->GetLocalXfm() = hand;
+    mHand->SetLocalXfm(hand);
     mHand->SetDirty(1);
 }
 

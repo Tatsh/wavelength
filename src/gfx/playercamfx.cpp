@@ -243,7 +243,7 @@ void PlayerCamFX::Poll(GfxTunnel *pTunnel,
         BlendPosition(mView.mTranslation, mSlideXfm.mTranslation, mSlideBlend);
         InterpBasis(&mView.mBasisX.x, &mSlideXfm.mBasisX.x, &mView.mBasisX.x, mSlideBlend);
     }
-    mSlide->GetLocalXfm() = mView;
+    mSlide->SetLocalXfm(mView);
     mSlide->SetDirty(1);
 
     float flJiggle = mJiggle.Apply(0.0f);
@@ -429,7 +429,7 @@ void PlayerCamFX::Reset(bool bNearPullBack) {
     identity.mBasisY = Vector3{0.0f, 1.0f, 0.0f};
     identity.mBasisZ = Vector3{0.0f, 0.0f, 1.0f};
     identity.mTranslation = Vector3{0.0f, 0.0f, 0.0f};
-    mFx->GetLocalXfm() = identity;
+    mFx->SetLocalXfm(identity);
     mFx->SetDirty(1);
     mFx->UpdateWorldXfm(nullptr, 0);
 

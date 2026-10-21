@@ -471,6 +471,11 @@ public:
         return mAvatar;
     }
 
+    /** @param avatar The Freq's parts and colours. */
+    void SetAvatar(const AvatarPartSet &avatar) {
+        mAvatar = avatar;
+    }
+
 private:
     // Add a result to the records, keeping the best of each statistic.
     // NTSC-U/C: 0x00277590, PAL: 0x00281020

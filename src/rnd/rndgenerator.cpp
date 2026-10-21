@@ -532,12 +532,12 @@ void RndGenerator::ListDrawables(std::list<RndDrawable *> &drawables) {
                 Transform xfm;
                 const float fAge = InstanceXfm(instance, fDirection, xfm);
                 if (mMesh != nullptr) {
-                    mMesh->GetLocalXfm() = xfm;
+                    mMesh->SetLocalXfm(xfm);
                     mMesh->SetDirty(1);
                     mMesh->UpdateWorldXfm(nullptr, 0);
                     mMesh->ListDrawables(subjectDrawables);
                 } else if (mView != nullptr) {
-                    mView->GetLocalXfm() = xfm;
+                    mView->SetLocalXfm(xfm);
                     mView->SetDirty(1);
                     if (mAnimateFromStart != 0) {
                         mView->SetFrame(fAge);
@@ -558,7 +558,7 @@ void RndGenerator::ListDrawables(std::list<RndDrawable *> &drawables) {
 }
 
 void RndGenerator::DrawView(float fAge, const Transform &xfm) {
-    mView->GetLocalXfm() = xfm;
+    mView->SetLocalXfm(xfm);
     mView->SetDirty(1);
     if (mAnimateFromStart != 0) {
         mView->SetFrame(fAge);
@@ -568,7 +568,7 @@ void RndGenerator::DrawView(float fAge, const Transform &xfm) {
 }
 
 void RndGenerator::DrawMesh([[maybe_unused]] float fAge, const Transform &xfm) {
-    mMesh->GetLocalXfm() = xfm;
+    mMesh->SetLocalXfm(xfm);
     mMesh->SetDirty(1);
     mMesh->UpdateWorldXfm(nullptr, 0);
     mMesh->Draw();

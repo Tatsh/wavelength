@@ -27,7 +27,7 @@ void MGCLAuthenticationTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status == RT_MGCL_STATUS_SUCCESS) {
-        TheHostpadRT->GetServerInfo() = pResponse->info;
+        TheHostpadRT->SetServerInfo(pResponse->info);
     }
     pTask->Finish(pResponse->header.status == RT_MGCL_STATUS_SUCCESS,
                   LaunchpadAbortedMsg::kReasonServer);

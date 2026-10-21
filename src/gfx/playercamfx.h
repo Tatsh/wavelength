@@ -14,7 +14,7 @@
 #include "script/dataarray.h"
 
 /**
- * The camera of the tunnel, which follows a player with one of a set of algorithms.
+ * The camera of the tunnel. It follows a player with one of a set of algorithms.
  *
  * The class is not polymorphic. The name comes from the type of the algorithm table, a map of
  * pointers to members of `PlayerCamFX`. The object is 0x1f0 bytes. An algorithm places the camera
@@ -25,7 +25,7 @@
 class PlayerCamFX {
 public:
     /**
-     * An algorithm, which places the camera for a player.
+     * An algorithm that places the camera for a player.
      *
      * The first transform receives the frame of the track and the second the camera. The integer
      * is the player and the flag records a game of several players on one console.
@@ -36,8 +36,8 @@ public:
      * Find the camera objects and the intro animation.
      *
      * @param nPlayer The player the camera follows.
-     * @param nNumTracks The number of tracks, which places the centre of the tunnel.
-     * @param bBoss Whether the song is a boss song, which selects the boss intro.
+     * @param nNumTracks The number of tracks. It places the centre of the tunnel.
+     * @param bBoss Whether the song is a boss song. A boss song selects the boss intro.
      * @ghidraAddress NTSC-U/C: 0x001f7478
      * @ghidraAddress PAL: 0x00200218
      */
@@ -56,8 +56,8 @@ public:
      *
      * @param pTunnel The tunnel.
      * @param pArena The arena of the tunnel. The routine does not read it.
-     * @param flTick The tick of the song, which runs the intro while it is early enough.
-     * @param flTime The time of the song, which runs the pull back.
+     * @param flTick The tick of the song. The intro runs while the tick is early enough.
+     * @param flTime The time of the song. The pull back runs over it.
      * @ghidraAddress NTSC-U/C: 0x001f7818
      * @ghidraAddress PAL: 0x002005b8
      */
@@ -79,7 +79,7 @@ public:
      * @param pConfig The configuration.
      * @param pDefaults The defaults of the configuration.
      * @param pTunnel The tunnel. The routine does not read it.
-     * @param nOption The fourth argument every loader of the tunnel receives. A nonzero value
+     * @param nOption The fourth argument every loader of the tunnel receives. A non-zero value
      *                skips the registration of the algorithms.
      * @ghidraAddress NTSC-U/C: 0x001f8750
      * @ghidraAddress PAL: 0x002014f0
@@ -90,7 +90,7 @@ public:
     /**
      * Select the far pull back, and start the pull back to it.
      *
-     * @param nZoomedOut Nonzero for the far pull back.
+     * @param nZoomedOut Non-zero for the far pull back.
      * @ghidraAddress NTSC-U/C: 0x001f8f20
      * @ghidraAddress PAL: 0x00201cc0
      */
@@ -222,7 +222,7 @@ private:
      * @param camera Receives the camera.
      * @param nPlayer The player. The routine does not read it.
      * @param bLocal Whether several players share the console. The routine does not read it.
-     * @param flTrack The track, which may be fractional.
+     * @param flTrack The track, possibly fractional.
      * @ghidraAddress NTSC-U/C: 0x001f7f70
      * @ghidraAddress PAL: 0x00200d10
      */
@@ -234,7 +234,7 @@ private:
                    float flTrack);
 
     /**
-     * The `trailing` algorithm, which looks along the track of the player.
+     * The `trailing` algorithm. It looks along the track of the player.
      *
      * @param pTunnel The tunnel.
      * @param track Receives the frame of the track at the place of the song.
@@ -248,7 +248,7 @@ private:
     Trailing(GfxTunnel *pTunnel, Transform &track, Transform &camera, int nPlayer, bool bLocal);
 
     /**
-     * The `trailing_fixed` algorithm, which looks along the centre of the tunnel.
+     * The `trailing_fixed` algorithm. It looks along the centre of the tunnel.
      *
      * @param pTunnel The tunnel.
      * @param track Receives the frame of the track at the place of the song.
@@ -262,7 +262,7 @@ private:
         GfxTunnel *pTunnel, Transform &track, Transform &camera, int nPlayer, bool bLocal);
 
     /**
-     * The `solo` algorithm, which sits behind the player.
+     * The `solo` algorithm. It sits behind the player.
      *
      * @param pTunnel The tunnel.
      * @param track Receives the frame of the track at the place of the song.
@@ -275,7 +275,7 @@ private:
     void Solo(GfxTunnel *pTunnel, Transform &track, Transform &camera, int nPlayer, bool bLocal);
 
     /**
-     * The `multi` algorithm, which moves between the players over mTrackCurve.
+     * The `multi` algorithm. It moves between the players over mTrackCurve.
      *
      * @param pTunnel The tunnel.
      * @param track Receives the frame of the track at the place of the song.

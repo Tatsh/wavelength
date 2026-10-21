@@ -224,13 +224,12 @@ void JoypadPoll() {
                 static_cast<float>(static_cast<signed char>(abAxes[j * 2])) * kStickScale;
             const float fY =
                 static_cast<float>(static_cast<signed char>(abAxes[j * 2 + 1])) * kStickScale;
-            JoypadStick &stick = state.GetSticks()[j];
+            const JoypadStick &stick = state.GetSticks()[j];
             if (gStickMessages != 0 && (stick.mX != fX || stick.mY != fY)) {
                 JoypadAnalogStickMsg msg(state.GetPad(), j, fX, fY);
                 gJoypadSource.Send(&msg);
             }
-            stick.mX = fX;
-            stick.mY = fY;
+            state.SetStick(j, fX, fY);
         }
 
         state.AddStickButtons(&nButtons, gMenuControl[state.GetPad()] != 0);
@@ -239,7 +238,7 @@ void JoypadPoll() {
         const int nReleased = nChanged & ~nButtons;
         const int nPressed = nChanged & nButtons;
         for (int j = 0; j < kJoypadNumButtons; ++j) {
-            state.GetPressures()[j] = static_cast<float>(abPressures[j]) / kPressureMax;
+            state.SetPressure(j, static_cast<float>(abPressures[j]) / kPressureMax);
         }
         for (int j = 0; j < kJoypadNumButtons; ++j) {
             const int nBit = 1 << j;

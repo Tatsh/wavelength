@@ -166,6 +166,11 @@ public:
             return mXfm;
         }
 
+        /** @param xfm The texture coordinate transform. */
+        void SetXfm(const Transform &xfm) {
+            mXfm = xfm;
+        }
+
     private:
         int mBlend;      /*!< The Blend of the stage. */
         int mCoordIndex; /*!< Which vertex texture coordinates the stage reads. */
@@ -478,22 +483,33 @@ protected:
      */
     void ReleaseStageTex();
 
-    int mBlend;                 /*!< The Blend of the surface. */
-    int mEnable;                /*!< Non-zero to light the surface. */
-    int mFlat;                  /*!< Non-zero for flat shading. */
-    int mMultiPass;             /*!< The number of extra passes. */
     std::vector<Stage> mStages; /*!< The texture stages. */
 
-private:
-    Color mBaseColor;  /*!< The base colour. */
+    int mBlend; /*!< The Blend of the surface. */
+
+    Color mBaseColor; /*!< The base colour. */
+
     Color mLightColor; /*!< The light colour. */
-    Color mEdgeColor;  /*!< The edge colour. */
-    int mVertBase;     /*!< Non-zero to take the base colour from the vertices. */
-    int mVertLight;    /*!< Non-zero to take the light colour from the vertices. */
-    int mVertEdge;     /*!< Non-zero to take the edge colour from the vertices. */
-    int mNormalize;    /*!< Non-zero to normalise the normals. */
-    int mBaseAmbient;  /*!< Non-zero to light the base colour ambiently. */
-    int mCull;         /*!< The CullMode of the surface. */
+
+    Color mEdgeColor; /*!< The edge colour. */
+
+    int mEnable; /*!< Non-zero to light the surface. */
+
+    int mVertBase; /*!< Non-zero to take the base colour from the vertices. */
+
+    int mVertLight; /*!< Non-zero to take the light colour from the vertices. */
+
+    int mVertEdge; /*!< Non-zero to take the edge colour from the vertices. */
+
+    int mNormalize; /*!< Non-zero to normalise the normals. */
+
+    int mBaseAmbient; /*!< Non-zero to light the base colour ambiently. */
+
+    int mCull; /*!< The CullMode of the surface. */
+
+    int mFlat; /*!< Non-zero for flat shading. */
+
+    int mMultiPass; /*!< The number of extra passes. */
 };
 
 /**

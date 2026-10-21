@@ -191,11 +191,9 @@ public:
 #endif
 
 protected:
-    int mSlot;           /*!< The memory card slot the dialog is about. +0x98 */
     String mDoneScreen;  /*!< The screen the dialog leads to, `done_screen`. +0x70 */
     String mStartScreen; /*!< The screen that opened the dialog, `start_screen`. +0x84 */
-
-private:
+    int mSlot;           /*!< The memory card slot the dialog is about. +0x98 */
 #ifdef VIDEO_STANDARD_PAL
     int mOperation; /*!< The operation that failed, one of Operation. +0x9c */
 #endif

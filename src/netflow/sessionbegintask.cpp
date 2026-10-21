@@ -34,9 +34,9 @@ void SessionBeginTask::OnResponse(int nConnection,
         return;
     }
     if (pResponse->header.status >= RT_MEDIUS_STATUS_SUCCESS) {
-        TheLobbyRT->GetSessionKey() = pResponse->sessionKey;
+        TheLobbyRT->SetSessionKey(pResponse->sessionKey);
     } else {
-        TheLobbyRT->GetSessionKey() = "";
+        TheLobbyRT->SetSessionKey("");
     }
     pTask->Finish(pResponse->header.status >= RT_MEDIUS_STATUS_SUCCESS,
                   LobbyConnectResultMsg::kResultSessionFailed);

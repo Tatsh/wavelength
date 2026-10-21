@@ -217,16 +217,22 @@ public:
 
 protected:
     Color mClearColor; /*!< Colour the frame is cleared to. */
-    int mFrameCount;   /*!< Frames opened by BeginFrame(). */
-    int mScreenBpp;    /*!< Display depth in bits per pixel. */
-    int mScreenHeight; /*!< Display height in pixels. */
-    int mScreenWidth;  /*!< Display width in pixels. */
-    int mShowRate;     /*!< Non-zero to show the frame rate overlay. */
-    int mShowStats;    /*!< Non-zero to show the statistics overlay. */
-    int mShowTimers;   /*!< Non-zero to show the timer overlay. */
 
-private:
+    int mScreenWidth; /*!< Display width in pixels. */
+
+    int mScreenHeight; /*!< Display height in pixels. */
+
+    int mScreenBpp; /*!< Display depth in bits per pixel. */
+
     int mTimerMaxMs; /*!< Time the timer overlay's scale spans, in milliseconds. */
+
+    int mFrameCount; /*!< Frames opened by BeginFrame(). */
+
+    int mShowTimers; /*!< Non-zero to show the timer overlay. */
+
+    int mShowStats; /*!< Non-zero to show the statistics overlay. */
+
+    int mShowRate; /*!< Non-zero to show the frame rate overlay. */
 };
 
 /**

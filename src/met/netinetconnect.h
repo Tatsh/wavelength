@@ -126,8 +126,11 @@ private:
      */
     bool HandleJoypad(JoypadInputMsg *pMsg);
 
-    int mConnecting;    // +0xb4, whether NetInet::Connect() is under way.
-    int mReservedB8[2]; // +0xb8, not yet recovered.
     int mReservedA4[3]; // +0xa4, not yet recovered.
-    int mConfig;        /*!< The identifier of the configuration to connect with. +0xb0 */
+
+    int mConfig; /*!< The identifier of the configuration to connect with. +0xb0 */
+
+    int mConnecting; // +0xb4, whether NetInet::Connect() is under way.
+
+    int mReservedB8[2]; // +0xb8, not yet recovered.
 };

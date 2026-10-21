@@ -872,34 +872,34 @@ int GfxTunnel::BuildOuterCams() {
         rect.x = static_cast<float>(i % kScreenColumns) * kScreenCell;
         rect.y = static_cast<float>(i / kScreenColumns) * kScreenCell;
         pCam->SetFrustum(flNear, flFar, flFov);
-        pCam->GetScreenRect() = rect;
+        pCam->SetScreenRect(rect);
         pCam->UpdateProjection();
-        pCam->GetZRange() = sTnlZ;
+        pCam->SetZRange(sTnlZ);
 
-        pCamZ->GetScreenRect() = pCam->GetScreenRect();
+        pCamZ->SetScreenRect(pCam->GetScreenRect());
         pCamZ->UpdateProjection();
         pCamZ->SetFrustum(flNear, flFar, flFov);
-        pCamZ->GetZRange() = sTnlzZ;
+        pCamZ->SetZRange(sTnlzZ);
 
-        mOverlayCam->GetScreenRect() = rect;
+        mOverlayCam->SetScreenRect(rect);
         mOverlayCam->UpdateProjection();
 
         pWinCam->SetFrustum(pWinCam->GetNearPlane(), pWinCam->GetFarPlane(), flFov);
-        pWinCam->GetScreenRect() = rect;
+        pWinCam->SetScreenRect(rect);
         pWinCam->UpdateProjection();
-        pWinCam->GetZRange() = Vector2{sTnlzZ.y, sTnlzZ.y};
+        pWinCam->SetZRange(Vector2{sTnlzZ.y, sTnlzZ.y});
         pLocal->SetShowing(1);
 
-        pOuter->GetScreenRect() = rect;
+        pOuter->SetScreenRect(rect);
         pOuter->UpdateProjection();
         pOuter->SetFrustum(flOuterNear, flOuterFar, flFov);
-        pOuter->GetZRange() = sArenaZ;
+        pOuter->SetZRange(sArenaZ);
         pOuter->SetShowing(1);
 
-        pOuterNear->GetScreenRect() = rect;
+        pOuterNear->SetScreenRect(rect);
         pOuterNear->UpdateProjection();
         pOuterNear->SetFrustum(flNear, flFar, flFov);
-        pOuterNear->GetZRange() = sTnlzZ;
+        pOuterNear->SetZRange(sTnlzZ);
         pOuterNear->SetShowing(1);
 
         ScaleTransKeys(FormatString("tnl cam intro%d.tnm", n), TheGfxManager.GetScrollSpeed());
@@ -925,18 +925,18 @@ RndView *GfxTunnel::CreateMainView() {
 
     rect.x = 0.0f;
     rect.y = 0.0f;
-    pCamZ->GetScreenRect() = rect;
+    pCamZ->SetScreenRect(rect);
     pCamZ->UpdateProjection(); // Yes, SetFrustum() rebuilds the projection again.
     pCamZ->SetFrustum(flNear, flFar, flFov);
-    pCamZ->GetZRange() = sTnlzZ;
+    pCamZ->SetZRange(sTnlzZ);
 
     const Transform identity{Vector3{1.0f, 0.0f, 0.0f},
                              Vector3{0.0f, 1.0f, 0.0f},
                              Vector3{0.0f, 0.0f, 1.0f},
                              Vector3{0.0f, 0.0f, 0.0f}};
-    pSlide->GetLocalXfm() = identity;
+    pSlide->SetLocalXfm(identity);
     pSlide->SetDirty(1);
-    pCamFX->GetLocalXfm() = identity;
+    pCamFX->SetLocalXfm(identity);
     pCamFX->SetDirty(1);
     TnlPlayer::LoadCamXfm(pConfig, pDefaults, pCam);
     (void)pSlide->UpdateWorldXfm(nullptr, 0); // Yes, the binary discards this call's result.
@@ -1732,11 +1732,11 @@ void GfxTunnel::OnSetParticlePlayerColor(DataArray *pCommand, [[maybe_unused]] v
         pCommand->Array(TheGameDb->GetPlayerSlot(TheTriggerMgr.GetPlayer()) + kFirstSlotColorArg);
     Color color{pColor->Float(0), pColor->Float(1), pColor->Float(2), 1.0f};
     color.a = pCommand->Float(kStartAlphaArg);
-    pSys->GetStartColorLow() = color;
-    pSys->GetStartColorHigh() = color;
+    pSys->SetStartColorLow(color);
+    pSys->SetStartColorHigh(color);
     color.a = pCommand->Float(kEndAlphaArg);
-    pSys->GetEndColorLow() = color;
-    pSys->GetEndColorHigh() = color;
+    pSys->SetEndColorLow(color);
+    pSys->SetEndColorHigh(color);
 }
 
 void GfxTunnel::OnGfxDebug([[maybe_unused]] DataArray *pCommand, void *pUserData) {
