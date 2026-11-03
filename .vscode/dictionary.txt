@@ -209,6 +209,7 @@ controllerpanel
 convertfrombcd
 converttobcd
 copyfreqscreen
+copytree
 corefx
 coveragerc
 cpdext
@@ -600,7 +601,6 @@ isce
 isub
 isubiu
 isystem
-iterdir
 itof
 ivbuf
 ivfilt
@@ -1233,6 +1233,7 @@ rgbaqaddr
 ringbuffer
 ripgreprc
 rmode
+rmtree
 rndanimatable
 rndarena
 rndbitmap
@@ -1385,6 +1386,7 @@ shipflyin
 shoemake
 showaction
 showingcondition
+shutil
 sifcmd
 sifdev
 sifdma
