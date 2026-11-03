@@ -1099,6 +1099,7 @@ pickability
 pickable
 picure
 pidl
+pipefail
 pipx
 pitchtrack
 pitchtrackbuilder
