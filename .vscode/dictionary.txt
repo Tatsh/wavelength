@@ -36,6 +36,7 @@ alphax
 ambiently
 amdf
 analys
+analyzer
 andi
 anim
 animatables
@@ -599,6 +600,7 @@ isce
 isub
 isubiu
 isystem
+iterdir
 itof
 ivbuf
 ivfilt
@@ -1005,6 +1007,7 @@ noat
 nocontrollerscreen
 nodefaultlibs
 nodisc
+nojekyll
 nologo
 nomemcpy
 noname
@@ -1077,6 +1080,7 @@ particlearms
 particlearmsassembly
 partunlockdonescreen
 partunlockscreen
+pathlib
 pausescreen
 pcgth
 pcmct
