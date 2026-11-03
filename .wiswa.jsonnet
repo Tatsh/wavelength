@@ -8,6 +8,10 @@
   want_codeql: true,
   github+: {
     codeql+: {
+      env: {
+        CODEQL_EXTRACTOR_CPP_OPTION_FRONTEND_OPTIONS:
+          '--preinclude\n${{ github.workspace }}/.github/codeql/patches-preinclude.h',
+      },
       languages: ['c-cpp', 'actions'],
       runs_on: 'ubuntu-latest',
       workflow_file: 'codeql.yml',

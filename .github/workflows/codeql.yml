@@ -3,6 +3,10 @@ concurrency:
   group: '${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}'
 jobs:
   analyze:
+    env:
+      CODEQL_EXTRACTOR_CPP_OPTION_FRONTEND_OPTIONS: |-
+        --preinclude
+        ${{ github.workspace }}/.github/codeql/patches-preinclude.h
     name: 'Analyze'
     permissions:
       actions: 'read'

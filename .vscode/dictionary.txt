@@ -104,7 +104,6 @@ bankmax
 bankprogram
 banksampledesc
 banplayertask
-basenames
 bclr
 bcopy
 bdec
@@ -1130,6 +1129,7 @@ ppsz
 preapproved
 preceeding
 preemp
+preinclude
 prelaunchscreen
 previewpacket
 primaddr
