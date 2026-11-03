@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
+#ifdef ENABLE_PATCHES
+#include <cstdlib>
+#endif
 
 #include "game/gamedb.h"
 #include "gfx/gfxmanager.h"
@@ -615,7 +618,17 @@ void TnlGeom::Clear(bool bClear) {
 }
 
 void TnlGeom::BuildPanels() {
+#ifdef ENABLE_PATCHES
+    if (mNumTracks < 0 || mNumBars < 0 ||
+        (mNumBars != 0 &&
+         static_cast<size_t>(mNumTracks) > mPanels.max_size() / static_cast<size_t>(mNumBars))) {
+        DebugNotify("Tunnel panel dimensions exceed the container limit.");
+        std::abort();
+    }
+    mPanels.resize(static_cast<size_t>(mNumTracks) * static_cast<size_t>(mNumBars));
+#else
     mPanels.resize(mNumTracks * mNumBars);
+#endif
     const unsigned nSections = static_cast<unsigned>(mSectionsPerBar + 1);
     int nIndex = 0;
     for (auto &panel : mPanels) {

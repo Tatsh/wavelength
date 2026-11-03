@@ -3663,6 +3663,17 @@ RtDmeFieldNeedsSend(const RtDmeObject *pObject, int nObject, unsigned char uFiel
     return 0;
 }
 
+#ifdef ENABLE_PATCHES
+static int RtDmeFieldByteCount(const RtDmeObjectField *pField) {
+    if (pField->nElementSize < 0 || pField->nElementCount < 0 ||
+        (pField->nElementSize != 0 &&
+         pField->nElementCount > RT_DME_MAX_MESSAGE_SIZE / pField->nElementSize)) {
+        return -1;
+    }
+    return pField->nElementSize * pField->nElementCount;
+}
+#endif
+
 // Write the fields of an object that are due and changed, each an index byte before its data.
 // NTSC-U/C: 0x002b5dd8, PAL: 0x002bfd48
 static unsigned char RtDmeGatherChangedFields(RtDmeObject *pObject,
@@ -3675,7 +3686,11 @@ static unsigned char RtDmeGatherChangedFields(RtDmeObject *pObject,
     unsigned char *pbData;
     unsigned char *pbShadow;
     unsigned char uCount;
+#ifdef ENABLE_PATCHES
+    int uField;
+#else
     unsigned char uField;
+#endif
     int nBytes;
 
     uCount = 0;
@@ -3684,6 +3699,11 @@ static unsigned char RtDmeGatherChangedFields(RtDmeObject *pObject,
         return 0;
     }
     pType = &g_aDmeObjectTypes[pObject->uType];
+#ifdef ENABLE_PATCHES
+    if (pType->nFieldCount < 0 || pType->nFieldCount > kObjectFieldCount) {
+        return 0;
+    }
+#endif
     for (uField = 0; uField < pType->nFieldCount; ++uField) {
         if ((unsigned int)*pnSize >= RT_DME_MAX_MESSAGE_SIZE + 1) {
             continue;
@@ -3700,15 +3720,29 @@ static unsigned char RtDmeGatherChangedFields(RtDmeObject *pObject,
         if (!RtDmeFieldNeedsSend(pObject, nObject, uField)) {
             continue;
         }
+#ifdef ENABLE_PATCHES
+        nBytes = RtDmeFieldByteCount(pField);
+        if (nBytes < 0 || nBytes > RT_DME_MAX_MESSAGE_SIZE - *pnSize - 1) {
+            continue;
+        }
+#endif
         *pbOut++ = uField;
         ++*pnSize;
+#ifdef ENABLE_PATCHES
+        memcpy(pbOut, pbData, (size_t)nBytes);
+#else
         memcpy(pbOut, pbData, pField->nElementSize * pField->nElementCount);
         nBytes = pField->nElementSize * pField->nElementCount;
+#endif
         ++uCount;
         *pnSize += nBytes;
         pbOut = &pbOut[nBytes];
         *pnSendFlags |= pField->nSendFlags;
+#ifdef ENABLE_PATCHES
+        memcpy(pbShadow, pbData, (size_t)nBytes);
+#else
         memcpy(pbShadow, pbData, pField->nElementCount * pField->nElementSize);
+#endif
         pObject->auFieldSendTime[uField] = g_uDmeSessionTime;
     }
     return uCount;
@@ -6355,12 +6389,22 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
     pbField = &pUpdate->abBytes[kObjectUpdateHeaderSize];
     if (g_anDmeObjectState[pUpdate->header.uObject] != RT_DME_OBJECT_USED) {
         // Skip the fields of an object this console does not have.
+#ifdef ENABLE_PATCHES
+        if (pUpdate->header.uType >= RT_DME_OBJECT_TYPE_COUNT) {
+            return -1;
+        }
+#endif
         pType = &g_aDmeObjectTypes[pUpdate->header.uType];
         if (pUpdate->header.uCount == 0) {
             return nPosition;
         }
         do {
             uField = *pbField++;
+#ifdef ENABLE_PATCHES
+            if (uField >= kObjectFieldCount) {
+                return -1;
+            }
+#endif
             if ((int)uField >= pType->nFieldCount) {
                 return -1;
             }
@@ -6370,7 +6414,14 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
             }
             ++nPosition;
             ++uDone;
+#ifdef ENABLE_PATCHES
+            nSize = RtDmeFieldByteCount(pField);
+            if (nSize < 0 || nSize > RT_DME_MAX_MESSAGE_SIZE - nPosition) {
+                return -1;
+            }
+#else
             nSize = pField->nElementSize * pField->nElementCount;
+#endif
             nPosition += nSize;
             pbField += nSize;
         } while (uDone < pUpdate->header.uCount);
@@ -6385,6 +6436,11 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
     }
     do {
         uField = *pbField++;
+#ifdef ENABLE_PATCHES
+        if (uField >= kObjectFieldCount) {
+            return -1;
+        }
+#endif
         if ((int)uField >= pType->nFieldCount) {
             return -1;
         }
@@ -6394,13 +6450,26 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
         }
         ++nPosition;
         ++uDone;
+#ifdef ENABLE_PATCHES
+        nSize = RtDmeFieldByteCount(pField);
+        if (nSize < 0 || nSize > RT_DME_MAX_MESSAGE_SIZE - nPosition) {
+            return -1;
+        }
+#else
         nSize = pField->nElementSize * pField->nElementCount;
+#endif
         memcpy(&pObject->pbData[pType->anFieldOffsets[uField]], pbField, nSize);
+#ifdef ENABLE_PATCHES
+        memcpy(&pObject->pbShadow[pType->anFieldOffsets[uField]], pbField, (size_t)nSize);
+#else
         memcpy(&pObject->pbShadow[pType->anFieldOffsets[uField]],
                pbField,
                pField->nElementSize * pField->nElementCount);
+#endif
         pObject->auFieldSendTime[uField] = g_uDmeSessionTime;
+#ifndef ENABLE_PATCHES
         nSize = pField->nElementSize * pField->nElementCount;
+#endif
         nPosition += nSize;
         pbField += nSize;
         RtDmeNotifyObjectChanged(pObject->nOwner, pUpdate->header.uObject, uField);

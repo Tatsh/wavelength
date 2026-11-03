@@ -254,14 +254,14 @@ int BankWin::Save(const String &filename, bool forceAudioData) {
     }
     if (mInstruments.size() > kMaxInstruments) {
         String message(
-            FormatString("This bank contains %i instruments. The maximum is %i. Save aborted.",
+            FormatString("This bank contains %zu instruments. The maximum is %i. Save aborted.",
                          mInstruments.size(),
                          kMaxInstruments));
         TheDebug.Notify(message.c_str());
         return -1;
     }
     if (mSamples.size() > kMaxSamples) {
-        String message(FormatString("This bank uses %i samples. The maximum is %i. Save aborted.",
+        String message(FormatString("This bank uses %zu samples. The maximum is %i. Save aborted.",
                                     mSamples.size(),
                                     kMaxSamples));
         TheDebug.Notify(message.c_str());

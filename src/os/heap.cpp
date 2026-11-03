@@ -255,7 +255,11 @@ void Heap::Print(PrnStream &stream, bool bSummary) {
     int nAllocCount = 0;
     int *pWord = mStart;
     FreeBlock *pFree = mFreeList;
+#ifdef ENABLE_PATCHES
+    stream.Printf(" (START)               Addr: %p\n", static_cast<void *>(pWord));
+#else
     stream.Printf(" (START)               Addr: %7x\n", pWord);
+#endif
     int *pEnd = &mStart[mSizeWords];
     while (pWord < pEnd) {
         int nWords;
@@ -267,7 +271,13 @@ void Heap::Print(PrnStream &stream, bool bSummary) {
             nWords = pFree->mSizeWords;
             pFree = pFree->mNext;
             if (bSummary) {
+#ifdef ENABLE_PATCHES
+                stream.Printf(" (FREE)  Size:%8d Addr: %p\n",
+                              nWords * kWordBytes,
+                              static_cast<void *>(pWord));
+#else
                 stream.Printf(" (FREE)  Size:%8d Addr: %7x\n", nWords * kWordBytes, pWord);
+#endif
             }
             nAllocCount = 0;
             nAllocWords = 0;
@@ -280,7 +290,12 @@ void Heap::Print(PrnStream &stream, bool bSummary) {
             nWords = HeaderAt(pHeaderWord)->mSizeWords;
             nAllocWords += nWords;
             if (!bSummary) {
+#ifdef ENABLE_PATCHES
+                stream.Printf(
+                    " (ALLOC) Size:%8d Addr: %p", nWords * kWordBytes, static_cast<void *>(pWord));
+#else
                 stream.Printf(" (ALLOC) Size:%8d Addr: %7x", nWords * kWordBytes, pWord);
+#endif
                 stream.Printf("\n");
             }
         }

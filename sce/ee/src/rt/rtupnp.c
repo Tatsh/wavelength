@@ -603,7 +603,11 @@ static int RtUpnpSendQuery(RtUpnpContext *pContext, int nService, const char *ps
         return nResult;
     }
     sprintf(szMessage,
+#ifdef ENABLE_PATCHES
+            "M-POST /%s HTTP/1.1\r\nHost:%s:%d\r\nContent-length:%zu\r\nConnection:close\r\n"
+#else
             "M-POST /%s HTTP/1.1\r\nHost:%s:%d\r\nContent-length:%d\r\nConnection:close\r\n"
+#endif
             "Content-type:text/xml;charset=\"utf-8\"\r\n"
             "Soapaction:\"urn:schemas-upnp-org:control-1-0#QueryStateVariable\"\r\n\r\n"
             "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope\" "
@@ -661,7 +665,11 @@ RtUpnpSendAction(RtUpnpContext *pContext, const char *pszAction, const char *psz
         return nResult;
     }
     sprintf(szMessage,
+#ifdef ENABLE_PATCHES
+            "M-POST /%s HTTP/1.1\r\nHost:%s:%d\r\nContent-length:%zu\r\nConnection:close\r\n"
+#else
             "M-POST /%s HTTP/1.1\r\nHost:%s:%d\r\nContent-length:%d\r\nConnection:close\r\n"
+#endif
             "Content-type:text/xml;charset=\"utf-8\"\r\n"
             "Soapaction:\"urn:schemas-upnp-org:service:%s:1#%s\"\r\n\r\n"
             "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope\" "

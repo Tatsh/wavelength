@@ -135,8 +135,13 @@ void TnlFire::Emitter::Stop() {
 TnlFire::ChunkModel::~ChunkModel() = default;
 
 void TnlFire::ChunkModel::CreateMultiMesh() {
+#ifdef ENABLE_PATCHES
+    mMultiMesh.reset(dynamic_cast<RndMultiMesh *>(TheManager.Create(
+        RndMultiMesh::sClassName, FormatString("tnlfire chunk %p.mm", static_cast<void *>(this)))));
+#else
     mMultiMesh.reset(dynamic_cast<RndMultiMesh *>(TheManager.Create(
         RndMultiMesh::sClassName, FormatString("tnlfire chunk 0x%08x.mm", this))));
+#endif
     mMultiMesh->SetMesh(mMesh);
 }
 

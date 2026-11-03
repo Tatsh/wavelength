@@ -1,6 +1,9 @@
 #include "app/hudcommon.h"
 
 #include <memory>
+#ifdef ENABLE_PATCHES
+#include <limits>
+#endif
 
 #include "app/overlay.h"
 #include "game/gamedb.h"
@@ -138,7 +141,12 @@ void HudCommon::DrawAvatar() {
 }
 
 void HudCommon::SetPlaying(int nPlayer, bool bPlaying) {
+#ifdef ENABLE_PATCHES
+    constexpr int kPlayerMaskBits = std::numeric_limits<unsigned char>::digits;
+    if (nPlayer < 0 || nPlayer >= kPlayerMaskBits) {
+#else
     if (nPlayer < 0) {
+#endif
         return;
     }
     const unsigned char bit = static_cast<unsigned char>(1 << nPlayer);
@@ -152,7 +160,11 @@ void HudCommon::SetPlaying(int nPlayer, bool bPlaying) {
     }
     int nLeader = kNoLeader;
     const signed char mask = static_cast<signed char>(mPlaying);
+#ifdef ENABLE_PATCHES
+    for (int i = 0; i < kPlayerMaskBits && i < TheGameDb->GetNumPlayers(); ++i) {
+#else
     for (signed char i = 0; i < TheGameDb->GetNumPlayers(); ++i) {
+#endif
         if (((mask >> i) & 1) == 0) {
             continue;
         }

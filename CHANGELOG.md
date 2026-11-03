@@ -20,6 +20,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
     pinned commit with Git.
   - With the song, the image is rebuilt from a disc root instead of patched in place.
 
+### Fixed
+
+- Corrected instrument and sample counts in SynthEdit bank save errors.
+
+### Security
+
+- With `ENABLE_PATCHES`, validated network field sizes, bounded player-mask shifts, and checked
+  tunnel panel allocation sizes.
+- With `ENABLE_PATCHES`, corrected pointer formats in heap diagnostics and tunnel mesh identifiers,
+  and content lengths in UPnP requests.
+
 ## [1.0.0] - 2026-10-17
 
 First release.
