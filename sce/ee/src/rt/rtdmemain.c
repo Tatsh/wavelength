@@ -6399,6 +6399,11 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
             return nPosition;
         }
         do {
+#ifdef ENABLE_PATCHES
+            if (nPosition >= RT_DME_MAX_MESSAGE_SIZE) {
+                return -1;
+            }
+#endif
             uField = *pbField++;
 #ifdef ENABLE_PATCHES
             if (uField >= kObjectFieldCount) {
@@ -6435,6 +6440,11 @@ static int RtDmeOnObjectUpdate(int nConnection, int nWorldId, int nSender, rtDme
         return nPosition;
     }
     do {
+#ifdef ENABLE_PATCHES
+        if (nPosition >= RT_DME_MAX_MESSAGE_SIZE) {
+            return -1;
+        }
+#endif
         uField = *pbField++;
 #ifdef ENABLE_PATCHES
         if (uField >= kObjectFieldCount) {
