@@ -1315,6 +1315,7 @@ rtvlc
 safn
 sampledesc
 sanm
+sarif
 saturator
 saveeditedfreqscreen
 saveerrorscreen
