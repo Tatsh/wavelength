@@ -201,7 +201,6 @@
           run: 'pipx install cmake',
         },
       ],
-      workflow_file: 'pages.yml',
     },
   } },
 }
